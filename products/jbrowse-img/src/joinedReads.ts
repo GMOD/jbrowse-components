@@ -1,11 +1,6 @@
 /**
- * The reads behind the arcs a track draws between two displayed regions: one
- * `support` an arc, summed over the track's lanes. The number is the picture's
- * by construction. Counting read names with an alignment in both windows
- * instead read 10 at a collapsed repeat on COLO829 chr2 whose reads split to
- * other loci, under a band with no arc across the seam.
- *
- * `arcsByLane` is the display's `crossRegionArcsByGroup`.
+ * Summed off the drawn arcs, so the count matches the picture. Read names in
+ * both windows would also count reads split to other loci.
  */
 export function readsJoiningRegions(
   arcsByLane: ReadonlyMap<string, readonly { support: number }[]>,

@@ -1,19 +1,7 @@
-// Progress for a bulk render. A hundred junctions over a remote CRAM is minutes,
-// and the two things a person wants to know are "is it moving" and "how long".
-//
-// Two shapes on purpose, chosen by whether stderr is a terminal:
-//
-// - **a terminal** gets ONE line, rewritten in place. A hundred lines of
-//   `[57/100] wrote ...` is a wall that scrolls the run's actual output (the
-//   skipped-record warning, the failures) off the screen.
-// - **a pipe or a file** gets one line per record, because a log is read after
-//   the fact and a carriage-returned bar collapses to gibberish in it. This is
-//   also what CI captures.
-//
-// Failures print on their own line in both shapes, above the bar, so they
-// survive the rewriting.
+// A terminal gets one line rewritten in place; a pipe gets a line per record,
+// since a carriage-returned bar is gibberish in a log.
 
-/** `2m10s`, `45s`, `1h04m`. Blank when there is nothing to estimate from yet. */
+/** `2m10s`, `45s`, `1h04m` */
 export function formatDuration(ms: number) {
   if (!Number.isFinite(ms) || ms < 0) {
     return ''
@@ -28,19 +16,8 @@ export function formatDuration(ms: number) {
   return m > 0 ? `${m}m${String(s).padStart(2, '0')}s` : `${s}s`
 }
 
-/**
- * The one-line bar.
- *
- * The ETA is a flat mean of the records finished so far rather than a windowed
- * rate, because the thing that actually varies here is per-record fetch size
- * (a junction into a deep repeat pulls far more read data than one in a quiet
- * arm) and a window over that swings wildly between neighbouring rows. A mean
- * over the whole run is the honest estimate for a queue of unknown-cost items.
- *
- * No ETA until two records are done: one sample of a network-bound render says
- * nothing, and a confidently wrong "eta 41m" on the first row is worse than
- * nothing.
- */
+// The ETA is a whole-run mean, not a windowed rate, since per-record fetch size
+// swings wildly between neighbouring rows.
 export function progressLine({
   done,
   total,
@@ -68,20 +45,12 @@ export function progressLine({
 }
 
 export interface ProgressReporter {
-  /**
-   * Called once per record, whether it rendered or failed; `error` is the
-   * failure message. One call rather than a separate `fail`, because the queue
-   * advances either way and two calls let the two counts disagree.
-   */
+  /** Called once per record, rendered or failed */
   step: (label: string, error?: string) => void
-  /** Final line; leaves the terminal on a fresh row. */
   finish: (summary: string) => void
 }
 
-// \r and a clear-to-end-of-line, so a shorter line does not leave the tail of
-// the previous one behind. Written as an escape rather than carried as a raw
-// control byte in the source, which is invisible in a diff and one stray
-// reformat from disappearing.
+// clears the line, so a shorter one leaves no tail of the previous
 const CLEAR_LINE = '\r\u001B[2K'
 
 export function createProgress({
@@ -105,8 +74,7 @@ export function createProgress({
         failed++
       }
       if (isTty) {
-        // the failure lands above the bar, on its own line, so the rewriting
-        // cannot eat it
+        // above the bar, so the rewriting cannot eat it
         if (error) {
           write(`${CLEAR_LINE}${error}\n`)
         }
@@ -119,9 +87,6 @@ export function createProgress({
           })}`,
         )
       } else {
-        // The counter leads whichever it was. A failure used to print its own
-        // line and then an ordinary `[n/total] name` line under it, which in a
-        // piped log reads exactly like a record that rendered.
         write(`[${done}/${total}] ${error ?? label}\n`)
       }
     },

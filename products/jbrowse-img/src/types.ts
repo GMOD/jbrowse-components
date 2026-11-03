@@ -12,23 +12,13 @@ import type {
 } from '@jbrowse/launch-args'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
-// Compile-time assertion that a type is empty. Used with `Exclude<...>` to prove
-// a hand-written list covers every member of an upstream union: a member added
-// there makes the Exclude non-never and fails the build.
 export type AssertNever<T extends never> = T
 
-// Compile-time assertion that a check resolved to `true`. Use this instead of
-// AssertNever when the checked type is computed inside a generic alias, where an
-// `extends never` parameter is checked against the type parameter's constraint
-// rather than the instantiated type.
+// Use instead of AssertNever when the checked type is computed inside a generic
+// alias, where `extends never` is checked against the parameter's constraint.
 export type AssertTrue<T extends true> = T
 
-// Proof that a hand-written value list covers every member of an upstream union.
-// A value the union has but the list lacks resolves to that value instead of
-// `true`, so the AssertTrue wrapping it fails the build and names the straggler.
-// The Exclude can't go straight into an `extends never` type parameter: inside a
-// generic alias it is checked against Upstream's own constraint (`string`),
-// which is never empty, so the assertion failed for every list.
+// Resolves to the missing values rather than `false`, so the failure names them
 export type Covers<Upstream extends string, List extends readonly string[]> = [
   Exclude<Upstream, List[number]>,
 ] extends [never]
@@ -38,33 +28,19 @@ export type Covers<Upstream extends string, List extends readonly string[]> = [
 export interface Opts {
   noRasterize?: boolean
   loc?: string
-  // batch's per-record pileup sort, for an alignments track stating none
   sortAt?: VariantSortColumn
-  /**
-   * `loc` is a junction's two ends on one contig, side by side in one row:
-   * alignments tracks draw their read arcs and lay split reads out first, and
-   * the reads joining the two regions are counted
-   */
+  /** `loc` is a junction's two ends on one contig, drawn side by side */
   joined?: boolean
-  /**
-   * Leave the data adapters this render opened in the cache when its view goes,
-   * for a caller about to render the same tracks again: a batch. Each adapter
-   * otherwise goes with the view and the next record reads every index and
-   * header over again.
-   */
+  /** Keep this render's adapters cached for the next render of a batch */
   keepAdapters?: boolean
-  /** what a read with the variant's ALT has at `sortAt`; counted alone */
   sortAllele?: VariantAllele
-  // a band over a linear view's tracks, 0-based half-open
+  // 0-based half-open
   highlight?: { refName: string; start: number; end: number }
   width?: number
   session?: string
   assembly?: string
   config?: string
-  // A genomes.jbrowse.org assembly to pull the whole config from: a UCSC db name
-  // (hg19, mm10) or a GenArk accession (GCA_/GCF_...). Supplies the assembly
-  // (sequence, cytobands, refNameAliases, geneticCodes) plus hosted trackIds
-  // referenceable via --track. See resolveHub.ts.
+  // a UCSC db name or GenArk accession on genomes.jbrowse.org
   genome?: string
   fasta?: string
   defaultSession?: boolean
@@ -72,30 +48,16 @@ export interface Opts {
   trackConfigs?: string
   themeName?: (typeof themeNames)[number]
   themeMode?: (typeof themeModes)[number]
-  // Font family applied to the whole SVG root so every <text> (ruler, track
-  // labels, and SvgCanvas feature labels) renders in one consistent font
-  // instead of relying on each SVG viewer's default. Defaults to serif.
   fontFamily?: string
   showGridlines?: boolean
   trackLabels?: TrackLabelMode
   refseq?: boolean
   mode?: ViewMode
-  // The raw parsed CLI entries, in argv order. Comparative modes (dotplot /
-  // synteny) build their stacked assemblies + per-level synteny tracks from this
-  // — each --fasta/--chromSizes opens an assembly, each synteny file binds to the
-  // gap it sits in. See @jbrowse/launch-args comparative.ts.
+  // in argv order, since a synteny file binds to the gap between the assemblies
+  // around it
   argv?: Entry[]
-  // `--view`'s settings, written over the view's own: a session spec's view
-  // object, as `viewSettings` reads them off the command line
   view?: Record<string, unknown>
-  // N-way comparative views: a session-spec JSON (inline or path to .json,
-  // the same shape as the web's `&session=spec-`) that supplies the view's
-  // sub-views and level-indexed tracks directly. Assemblies and synteny-track
-  // configs it references by name come from --config. See urlparams.md.
   spec?: string
-  // Hosted trackIds (from --genome/--config) to show in a linear view, each with
-  // optional display modifiers — same [key, [trackId, ...opts]] shape as a
-  // track-type flag. See renderRegion/applyDisplayOpts.
   showTracks?: Entry[]
 }
 
@@ -106,17 +68,12 @@ export interface TextSearchAdapter {
   [key: string]: unknown
 }
 
-// A track built from a track-type CLI flag (--bam, --bigwig, …), paired with the
-// display modifiers that followed the filename. readData assigns the trackId
-// while building the config — it is the only place that can see two inputs
-// competing for one basename — so the renderer opens what was actually built
-// rather than re-deriving an id the config may not use.
 export interface OpenTrack {
   trackId: string
   opts: string[]
 }
 
-/** A config.json as read or fetched, unvalidated */
+/** Unvalidated */
 export interface ConfigFile {
   assemblies?: Assembly[]
   tracks?: Track[]
@@ -125,19 +82,14 @@ export interface ConfigFile {
   [key: string]: unknown
 }
 
-/** What readData resolves a run's inputs to */
 export interface Config {
   assemblies: Assembly[]
   assembly: Assembly
   tracks: Track[]
-  /** the tracks the file flags built, to open in argv order */
+  /** the tracks the file flags built, in argv order */
   openTracks: OpenTrack[]
-  /** lets --loc navigate by gene name */
   aggregateTextSearchAdapters?: TextSearchAdapter[]
-  /**
-   * A comparative view's rows when built from CLI args, each at its `loc:` or
-   * whole. Undefined stacks `assemblies` whole.
-   */
+  /** Undefined stacks `assemblies` whole */
   comparativeRows?: ComparativeRow[]
   defaultSession?: Record<string, unknown>
 }

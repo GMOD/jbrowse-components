@@ -9,21 +9,12 @@ import type {
   VariantSortColumn,
 } from '@jbrowse/alignments-core/variantSortColumn'
 
-// A VCF's records, for `batch` to render. The ALT bracket grammar is
-// `@gmod/vcf`'s `parseBreakend`: a regex over the bracket drops the 28 of 66
-// COLO829 breakends that carry inserted sequence. What no library owns is the
-// two file-level facts below: which spelling of a contig the file itself uses,
-// and which records are two halves of one adjacency.
-//
-// From `@gmod/vcf` itself, where sv-core wraps the same call: that package's
-// entry point loads the UI toolkit behind its dialogs, and a --dryRun and the
-// process that hands a --jobs run to its workers read a VCF and draw nothing.
+// parseBreakend comes from `@gmod/vcf`, not sv-core, whose entry point loads
+// the UI toolkit.
 
 const CONTIG_ID = /^##contig=<.*ID=([^,>]+)/
 
-// How far apart the two records of one reciprocal breakend pair may place it
-// and still count as one junction. It asks whether two records are one
-// adjacency written twice, which callers disagree about by a base or two.
+// callers place the two halves of a reciprocal pair a base or two apart
 const DEDUP_TOLERANCE = 10
 
 function infoField(info: string, key: string) {
@@ -39,7 +30,6 @@ type Endpoint = [string, number]
 
 interface VcfRecord {
   own: Endpoint
-  /** REF's length: the reference bases the record's own locus covers */
   span: number
   sort?: VariantSortColumn
   carried?: CarriedCall
@@ -54,13 +44,8 @@ function near(a: number, b: number, tolerance: number) {
   return Math.abs(a - b) <= tolerance
 }
 
-/**
- * Collapse the two records of a reciprocal breakend pair into one junction.
- * Each junction is compared against what has already been kept rather than its
- * neighbour, so a run of drifting records cannot chain: 300, 308 and 316 at
- * tolerance 10 keeps the two ends and drops only the middle. A record naming
- * one locus is never a duplicate: two insertions at one position are two calls.
- */
+// Compared against what was kept, not the neighbour, so drifting records cannot
+// chain. A one-locus record is never a duplicate.
 function dedupe(records: VcfRecord[], tolerance: number) {
   const kept: VcfRecord[] = []
   for (const rec of records) {
@@ -90,8 +75,6 @@ function dedupe(records: VcfRecord[], tolerance: number) {
   return kept
 }
 
-// parseBreakend throws on an ALT it cannot read, and one bad allele is a row to
-// report, not a run to end
 function safeParseBreakend(alt: string) {
   try {
     return parseBreakend(alt)
@@ -112,8 +95,6 @@ function breakendMate(alt: string): Endpoint | undefined {
   return ref && Number.isFinite(p) ? [ref, p] : undefined
 }
 
-// A symbolic allele sorts as its spelled-out form would: a deletion's carriers
-// have a gap over the base after the anchor, an insertion's an insertion there.
 function symbolicCall(
   pos: number,
   alt?: string,
@@ -126,10 +107,8 @@ function symbolicCall(
       : undefined
 }
 
-// An insertion is counted at half its length or more, and one of
-// structural-variant size wherever it sits in the image. A deletion of that
-// size is counted at half its length or more too: a few bases missing at its
-// first base are in any deep pileup.
+// A large deletion needs a gap of half its length, since a few missing bases
+// at its first base are in any deep pileup.
 function carriedCall({ carried }: VariantCall, deleted: number): CarriedCall {
   return 'base' in carried
     ? carried.base === '*' && deleted >= SMALL_VARIANT_BP
@@ -141,22 +120,14 @@ function carriedCall({ carried }: VariantCall, deleted: number): CarriedCall {
       }
 }
 
-/**
- * Every record a VCF holds that `batch` can draw, with the loci it is drawn on:
- * both ends of a junction (a breakend's mate, or INFO END on the contig CHR2
- * names), and the record's own position alone where it names no other end — an
- * insertion, a single breakend, an SNV or indel. A record with no SVTYPE is
- * drawn where its ALT spells out bases, which gives the pileup a column to sort
- * at. `text` is the decompressed VCF. Rows left out are reported with a reason.
- */
+/** `text` is the decompressed VCF */
 export function parseVcfJunctions(
   text: string,
   { tolerance = DEDUP_TOLERANCE, passOnly = false } = {},
 ) {
   const skipped: string[] = []
-  // The spelling the FILE uses, keyed case-insensitively. Callers upper-case
-  // the mate contig in the ALT bracket (`G]CHR3:25359111]`), and `CHR3` is not
-  // a region the assembly has, so the panel renders empty rather than failing.
+  // Callers upper-case the mate contig in the ALT bracket (`G]CHR3:1]`), which
+  // would render an empty panel, so names map to the file's own spelling.
   const contigs = new Map<string, string>()
   const found: VcfRecord[] = []
   let lineNo = 0
@@ -188,7 +159,6 @@ export function parseVcfJunctions(
     if (!contigs.has(chrom.toLowerCase())) {
       contigs.set(chrom.toLowerCase(), chrom)
     }
-    // `.` is "no filter applied", which is a pass
     if (passOnly && filter && filter !== 'PASS' && filter !== '.') {
       skipped.push(`line ${lineNo}: FILTER is "${filter}", not PASS`)
       continue
@@ -251,14 +221,12 @@ export function parseVcfJunctions(
     })
   }
 
-  // After the loop: `contigs` is still filling while the records are read, so a
-  // mate spelled `CHR3` ahead of the record that establishes `chr3` would stay
-  // uncanonical. Before dedupe, which compares contig names.
+  // after the loop, since `contigs` fills as records are read, and before
+  // dedupe, which compares contig names
   const canonical = ([refName, pos]: Endpoint): Endpoint => [
     contigs.get(refName.toLowerCase()) ?? refName,
     pos,
   ]
-  // 1-based VCF POS in, 0-based half-open out
   const locus = ([refName, pos]: Endpoint): Locus => ({
     refName,
     start: pos - 1,
@@ -284,6 +252,5 @@ export function parseVcfJunctions(
       ...(event ? { event } : {}),
     }),
   )
-  // header order, then first appearance: the order an event's panels stack in
   return { records, skipped, refNames: [...contigs.values()] }
 }

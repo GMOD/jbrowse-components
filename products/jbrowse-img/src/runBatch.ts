@@ -29,13 +29,8 @@ import type { ProgressReporter } from './progress.ts'
 import type { Opts } from './types.ts'
 import type { Entry } from '@jbrowse/launch-args'
 
-// Drives `renderRegionReport` once per record, in-process. The module graph loads
-// once for the whole callset rather than once per variant, which is the reason
-// this is a subcommand and not a shell loop over `jb2export`: on a few hundred
-// rows the per-process startup dominates everything else. So do each track's
-// index and header, which is why a record leaves its adapters open for the
-// next: twelve records over two remote read files took 24 to 33 s that way
-// and 44 to 53 s reopening them per record.
+// Renders in-process so module loading and each track's index and header are
+// paid once per run, not per record. That is why records keep their adapters.
 
 export interface BatchOpts extends Opts {
   /**
@@ -50,21 +45,12 @@ export interface BatchOpts extends Opts {
   format?: BatchFormat
   /** VCF only: skip records whose FILTER is neither PASS nor `.` */
   passOnly?: boolean
-  /** Skip a record whose image is already in `outDir` */
   resume?: boolean
-  /** Also write `manifest.tsv` */
   manifest?: boolean
-  /** Print what would render, render nothing */
   dryRun?: boolean
-  /** Injected by the tests; production builds one from stderr. */
   progress?: ProgressReporter
-  /** Processes to render in; the default is `defaultJobs` */
   jobs?: number
-  /**
-   * The command line that started this run, which `jobs` starts again once per
-   * worker. The CLI supplies it; a library caller without one renders in
-   * process.
-   */
+  /** Restarted once per worker; without it a run renders in process */
   respawn?: { command: string; args: string[] }
   /** A worker's slice of the plan: every `of`-th row from `index` */
   shard?: { index: number; of: number }
@@ -77,7 +63,6 @@ interface PlannedRow {
   rows: string[][]
 }
 
-/** How one row ended: what a worker reports to the run that started it */
 interface RowResult {
   file: string
   status: RecordStatus
@@ -87,14 +72,9 @@ interface RowResult {
   error?: string
 }
 
-// What a worker's open files may keep decoded between records. A record draws
-// a flank around a locus the next one is nowhere near, so past reads are worth
-// little here, and the gigabyte an interactive session pans back through would
-// be held by each of four workers.
+// Records rarely revisit each other's reads, so a small decode cache suffices
 const BATCH_CACHE_BYTES = 256 * 2 ** 20
 
-// A render is one core's work between its own fetches, and two of them side by
-// side ran at full pace each. Each holds about a gigabyte.
 const ROWS_WORTH_A_WORKER = 8
 const WORKER_BYTES = 2 ** 31
 
@@ -117,23 +97,16 @@ export function defaultJobs() {
   )
 }
 
-// How one record ended, as the manifest reports it. `exists` is a --resume skip,
-// i.e. an image an earlier run already produced.
+// `exists` is a --resume skip
 type RecordStatus = 'ok' | 'failed' | 'exists'
 
-// bgzip is gzip, so one check covers `.vcf.gz` and a plain `.vcf` whatever it is
-// named: the magic bytes decide, not the extension. A `.vcf` that is actually
-// gzipped is otherwise read as binary noise and every row is reported as
-// malformed, which is a confusing way to say "this file is compressed".
+// The magic bytes decide, not the extension, since a `.vcf` may be gzipped
 function readMaybeGzip(file: string) {
   const buf = fs.readFileSync(file)
   const gzipped = buf[0] === 0x1f && buf[1] === 0x8b
   return (gzipped ? zlib.gunzipSync(buf) : buf).toString('utf8')
 }
 
-// Junctions from --sites. BEDPE stays the interchange format (a LINX TSV, a
-// caller this tool has never heard of, anything an awk can reshape); a VCF is
-// what callers actually emit.
 function readJunctions({ sites, passOnly }: BatchOpts) {
   if (!sites) {
     throw new Error('batch needs --sites <file>: a VCF or a BEDPE')
@@ -150,11 +123,8 @@ function readJunctions({ sites, passOnly }: BatchOpts) {
   }
 }
 
-// A track whose index estimates too many bytes draws "Region too large to
-// render" until someone presses Force load, which nobody can on a PNG: beside a
-// drawn tumor panel, a gated normal reads as a locus with no supporting reads.
-// A batch window is a flank wide, so loading it is bounded. Ahead of the
-// track's own modifiers, so a `force:false` still wins.
+// Force load can't be clicked on an image, and a flank-wide window is bounded.
+// Ahead of the track's own modifiers, so a `force:false` still wins.
 function forceLoaded(tracks: Entry[] | undefined) {
   return tracks?.map((entry): Entry =>
     comparativeRole(entry) || entry[1][0] === undefined
@@ -164,24 +134,11 @@ function forceLoaded(tracks: Entry[] | undefined) {
 }
 
 /**
- * Render every record of a callset, one image each, a contig a row: a linear
- * view where the record's loci are on one contig, its windows side by side, and
- * a breakpoint split view of one panel a contig where they are on several.
- *
- * Keeps going after a failed row and reports the failures at the end. A callset
- * always has a row whose refName the assembly does not have, or whose window is
- * more alignment than the track will fetch, and aborting the run there means a
- * reviewer waits ten minutes to be told nothing rendered. The exit status still
- * reflects it, so a script can tell a clean run from a partial one.
+ * One image per record: a linear view for loci on one contig, a breakpoint
+ * view of one panel a contig otherwise. A failed row does not stop the run.
  */
 export async function runBatch(opts: BatchOpts) {
   const { outDir, flank, limit, format = 'png', dryRun } = opts
-  // A batch draws the view its junction file describes, so a flag that FIXES the
-  // view cannot also be honored — `renderBreakpoint` prefers a spec over the
-  // per-record panels, and `addLaunchView` adopts a session's view of the same
-  // type. Refused rather than ignored, because the failure is silent and looks
-  // like success: N identical images under N filenames each naming a different
-  // junction, and a `wrote N/N` to finish.
   const supplied = new Map<string, unknown>(Object.entries(opts))
   const fixed = batchRefusedOptions.filter(key => supplied.get(key))
   if (fixed.length > 0) {
@@ -191,24 +148,16 @@ export async function runBatch(opts: BatchOpts) {
   }
   const source = opts.sites
   const { records, skipped, refNames } = readJunctions(opts)
-  // Counted rather than listed one line each: a whole-genome callset's
-  // insertions are hundreds of rows, and burying the run's real output under
-  // them is its own kind of silence. Not "name no junction to draw" any more —
-  // a --passOnly skip names one perfectly well and was asked to be left out.
   if (skipped.length > 0 && !opts.shard) {
     console.warn(
       `Warning: skipped ${skipped.length} record(s), e.g. ${skipped[0]}`,
     )
   }
-  // An event whose loci fit two windows is the picture its records already
-  // draw: GRIDSS files each breakpoint's two mates under one EVENT, and an
-  // inversion's two junctions share their loci.
+  // an event of two windows is already drawn by its own records
   const events = eventRecords(records, refNames).filter(
     e => recordRows(e, flank).flat().length > 2,
   )
-  // Named and located up front, so `--dryRun` and the manifest report the rows
-  // the loop renders. The index pads to the whole callset, so a `--limit` run
-  // writes the names the full run will and `--resume` finds them.
+  // names pad to the whole callset, so a `--limit` run matches a full one
   const planned = [
     ...records.map((rec, idx) => ({
       rec,
@@ -222,9 +171,6 @@ export async function runBatch(opts: BatchOpts) {
     .slice(0, limit)
     .map(row => ({ ...row, rows: recordRows(row.rec, flank) }))
   if (planned.length === 0) {
-    // Which of the two emptied it: the file having nothing usable in it is a
-    // different problem from `--limit 0`, and blaming the file for the flag sends
-    // a reader to re-check their callset.
     throw new Error(
       records.length
         ? `--limit ${limit} selected none of the ${records.length} records in ${source}`
@@ -308,8 +254,6 @@ export async function runBatch(opts: BatchOpts) {
       `${[MANIFEST_COLUMNS.join('\t'), ...planned.map((row, i) => manifestLine(row, finished[i]!))].join('\n')}\n`,
     )
   }
-  // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
-  // reads as a run in which nothing worked.
   const reused = finished.filter(r => r.status === 'exists').length
   progress.finish(
     `wrote ${done}/${planned.length} images to ${outDir}${
@@ -319,11 +263,8 @@ export async function runBatch(opts: BatchOpts) {
   return { done, failures, skipped }
 }
 
-/**
- * One process per worker, each started as this run was and told its slice. A
- * worker prints a line of JSON per row and nothing else on stdout. A row its
- * worker never reported is a worker that died, and counts as failed.
- */
+// A worker prints one JSON line per row. A row it never reported counts as
+// failed.
 function renderInWorkers(
   planned: PlannedRow[],
   respawn: { command: string; args: string[] },
@@ -371,12 +312,9 @@ async function renderRows(
   report: (result: RowResult) => void,
 ) {
   const { outDir, flank } = opts
-  // once for the whole run: a --genome or a URL --config is a network round
-  // trip, and a --genome's chromAlias fetch can fail transiently
   const configObject = await resolveConfigObject(opts)
   const width = opts.width ?? DEFAULT_WIDTH
-  // Imported here, where a row is about to be drawn: a --dryRun and the process
-  // that hands its rows to workers never load the render stack.
+  // imported lazily so a --dryRun or a worker parent never loads the render stack
   const { setupEnv } = await import('./setupEnv.ts')
   setupEnv()
   const { decompressedBytesBudget } =
@@ -390,9 +328,6 @@ async function renderRows(
       continue
     }
     try {
-      // The record's own panels REPLACE any --loc on the command line: in a
-      // batch the file says where to look, and a stray --loc would otherwise
-      // render the same windows for every row.
       const argv = (opts.argv ?? []).filter(([key]) => key !== 'loc')
       const shared = {
         ...opts,
@@ -425,8 +360,7 @@ async function renderRows(
             },
         configObject,
       )
-      // under another name until whole, so an interrupted write is not an
-      // image --resume skips
+      // so --resume never skips an interrupted write
       const partial = path.join(outDir, `.partial-${file}`)
       writeRendered(rendered.svg, partial, width)
       fs.renameSync(partial, out)
@@ -447,25 +381,8 @@ async function renderRows(
   }
 }
 
-// A run's own index: which file is which record, under the caller's own name,
-// and which rows produced no image at all. Failures otherwise exist only in the
-// stderr of a run that has already scrolled past, and pairing a tumor directory
-// against a normal one rests on both having produced identical row orders,
-// true until a --limit or a --passOnly differs between them.
-//
-// `line` is the record's line in the input, the key that joins a row back to
-// every column the file holds. `locs` is one locus per window, space separated.
-// An event's row has no line and its label as both name and event, so filtering
-// on `event` lists the event's image above its records'. `links` is the reads
-// behind the connectors and arcs joining an image's windows, per alignments
-// track: what a reviewer reads as a fan of curves or an arc, as a number a
-// queue can be sorted on. Empty for an image of one window. `alt` is
-// `count/depth` per alignments track: the reads with the record's ALT at its
-// column, over the reads spanning it. An insertion of 50 bases or more is
-// counted within the flank, wherever the aligner put it, and a deletion of
-// that size as a gap of half its length or more. Empty for a record
-// with no such column and for one on several contigs. `spec` is the view as a
-// session spec opens it, JSON: its rows and the `--track` tracks as drawn.
+// `line` is the record's line in the input. An event's row has no line and its
+// label as both name and event. `links` and `alt` are per alignments track.
 const REPORTED_COLUMNS = ['links', 'alt', 'spec'] as const
 type ReportedColumn = (typeof REPORTED_COLUMNS)[number]
 
@@ -483,11 +400,7 @@ const MANIFEST_FILE = 'manifest.tsv'
 
 type ReportedCounts = Partial<Record<ReportedColumn, string>>
 
-/**
- * The counts an earlier run wrote for each image it drew, the last row per
- * file winning: rows are appended as records finish, so an interrupted run's
- * manifest holds them too.
- */
+// The last row per file wins, since rows are appended as records finish
 function priorResults(manifestFile: string) {
   const [head = '', ...lines] = fs.existsSync(manifestFile)
     ? fs.readFileSync(manifestFile, 'utf8').split('\n')

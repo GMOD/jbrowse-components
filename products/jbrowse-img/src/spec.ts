@@ -7,22 +7,14 @@ import { STDIN_ARG, isFile, readStdin } from './util.ts'
 
 import type { ViewMode } from './modes.ts'
 
-// A parsed --spec view object: the same shape as a web session-spec view (see
-// urlparams.md). `type` selects the render mode; the remaining fields ARE the
-// view's settings (sub-views + level-indexed tracks for comparative views), so
-// they pass straight to addLaunchView.
+// A web session-spec view (see urlparams.md)
 export interface ViewSpec {
   type: string
   [key: string]: unknown
 }
 
-// Accepts the documented `{ views: [viewObject] }` wrapper (so JSON copied from
-// a `&session=spec-` URL works) or a bare view object. Reads stdin for `-`, a
-// file when `spec` is a path, else parses it as inline JSON.
 // Inline JSON opens with a brace or a bracket, so anything else that is not a
-// file on disk is a path that isn't there. Left to JSON.parse, a mistyped
-// `--spec synteny.jsno` came back as `Unexpected token 's'`, which reads as a
-// malformed spec rather than as the missing file it is.
+// file is a missing path rather than malformed JSON.
 function specText(spec: string) {
   if (spec === STDIN_ARG) {
     return readStdin()
@@ -38,6 +30,7 @@ function specText(spec: string) {
   return spec
 }
 
+// Takes a bare view or the `{ views: [...] }` wrapper a `&session=spec-` URL has
 export function parseSpec(spec: string): ViewSpec {
   const raw = specText(spec)
   const obj = JSON.parse(raw) as Record<string, unknown>
@@ -65,9 +58,6 @@ export function specMode(spec: ViewSpec): ViewMode {
   return mode
 }
 
-// The view snapshot a comparative renderer feeds to addLaunchView: the spec
-// minus its `type` discriminator. Every setting is already written on the view
-// object, which is the one shape a view takes.
 export function viewSettingsFromSpec({
   type,
   ...settings
@@ -75,10 +65,8 @@ export function viewSettingsFromSpec({
   return settings
 }
 
-/**
- * `settings` with `--view`'s written over them, member by member, so
- * `--view mark.interpolate=bump` keeps a spec's other `mark` members.
- */
+// Merged member by member, so `--view mark.interpolate=bump` keeps a spec's
+// other `mark` members.
 export function withViewSettings<T extends object>(
   settings: T,
   view: Record<string, unknown> = {},

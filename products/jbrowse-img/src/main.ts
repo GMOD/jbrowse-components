@@ -30,17 +30,12 @@ import {
 } from './options.ts'
 import { writeRendered } from './util.ts'
 
-// Everything that draws is imported where it is first needed. Loading it is
-// about three seconds of a process's start, which --help, --version, `list`
-// and `batch --dryRun` have no use for, and the process that hands a --jobs run
-// to its workers draws nothing itself.
+// The render stack is imported lazily, since most commands never draw.
 
 const scriptName = 'jb2export'
 
 async function main() {
   const argv = process.argv.slice(2)
-  // A leading word (not a --flag or a data file) selects a subcommand, e.g.
-  // `jb2export dotplot --fasta a.fa --fasta b.fa ...`
   const first = argv[0]
   const isSubcommand =
     first !== undefined && !first.startsWith('-') && !isDataFile(first)
@@ -57,16 +52,13 @@ async function main() {
     args.includes('--help') ||
     args.includes('-h')
   ) {
-    // ahead of `list`, so `jb2export list --help` prints help rather than going
-    // to the network for a genome literally named "--help"
+    // ahead of `list`, which would look up a genome named "--help"
     console.log(
       first === 'batch'
         ? buildBatchHelp(scriptName)
         : buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode),
     )
   } else if (first === 'list') {
-    // a text-only discovery command (no rendering): `list` prints the hosted
-    // assemblies, `list <genome> [filter]` prints that genome's tracks
     console.log(await runList(argv.slice(1)))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
@@ -132,8 +124,7 @@ async function main() {
     }
 
     if (first === 'batch') {
-      // --spec/--session are refused inside runBatch, which is handed them and
-      // so can say so to a library caller too
+      // runBatch refuses --spec/--session itself, so library callers hear it too
       const dropped = batchDroppedOptions.filter(name => name in rest)
       if (dropped.length) {
         console.warn(
@@ -159,9 +150,6 @@ async function main() {
         },
         shard: parseShard(getString(rest, 'shard')),
       })
-      // A partial run is reported as one: the images are still there and worth
-      // keeping, but a script that treats this as success would be wrong about
-      // how much of its callset it just reviewed.
       if (failures.length) {
         process.exitCode = 1
       }

@@ -29,7 +29,6 @@ import type {
 } from './types.ts'
 import type { ComparativeRow, Entry, HostedConfig } from '@jbrowse/launch-args'
 
-// how to name an input in an error message
 function inputName(file: string) {
   return file === STDIN_ARG ? 'stdin' : file
 }
@@ -45,16 +44,11 @@ function read(file: string): unknown {
   }
 }
 
-// a `localPath` inside a JSON input resolves relative to that input's file; piped
-// JSON has no file, so its paths resolve against the cwd the pipe ran in
 function baseDirOf(file: string) {
   return file === STDIN_ARG ? process.cwd() : path.dirname(path.resolve(file))
 }
 
-// The `--multiwig` argument is either a path/URL list (comma-separated BigWig
-// URLs → the `bigWigs` shorthand) or a `.json` file holding an array of BigWig
-// URLs or full subadapter objects. A JSON file's `localPath`s resolve relative
-// to that file, matching how --trackConfigs/--config paths resolve.
+// A comma-separated URL list, or a `.json` array of URLs or subadapter objects
 function readMultiWiggleSources(file: string): unknown[] {
   if (file !== STDIN_ARG && !file.toLowerCase().endsWith('.json')) {
     return file
@@ -77,8 +71,6 @@ function readMultiWiggleSources(file: string): unknown[] {
   return data
 }
 
-// Resolve every `localPath` nested anywhere in `value` relative to `baseDir`,
-// so paths inside a config/assembly/tracks JSON are relative to that file.
 function resolveLocalPaths(value: unknown, baseDir: string) {
   if (value !== null && typeof value === 'object') {
     const obj = value as Record<string, unknown>
@@ -93,8 +85,6 @@ function resolveLocalPaths(value: unknown, baseDir: string) {
   }
 }
 
-// --trackConfigs names a JSON array of track configs, whose localPaths resolve relative
-// to it (or to the cwd when piped)
 function readTrackArray(file: string): Track[] {
   const data = read(file)
   if (!Array.isArray(data)) {
@@ -108,8 +98,7 @@ function readTrackArray(file: string): Track[] {
   return tracks
 }
 
-// `--bam tumor/sample.bam --bam normal/sample.bam` would open one track under
-// one id; the second gets a suffix, and both keep the basename as their name.
+// two files with one basename would otherwise share a trackId
 function uniqueTrackId(used: Set<string>, base: string) {
   const id = uniqueId(used, base)
   if (id !== base) {
@@ -128,9 +117,8 @@ function readConfigFile(file: string) {
   return config
 }
 
-// A session file is a raw session or File → Export session's `{ session }`.
-// Its first view is the one exported; a session from the LGV-only host holds
-// that one view as `view`.
+// A raw session or an exported `{ session }`. A session from the LGV-only host
+// holds its one view as `view`.
 function readSession(file: string) {
   const raw = read(file) as Record<string, unknown>
   const session = (raw.session ?? raw) as Record<string, unknown>
@@ -210,7 +198,6 @@ function genomeFileAssemblies([flag, values]: Entry): ResolvedAssemblies {
   return { assemblies: [assembly], assembly, syntenyTracks: [] }
 }
 
-/** `base`'s tracks with `added` over them, a same-id track replaced in place */
 function withTracks(base: Track[], added: Track[]) {
   const tracks = [...base]
   for (const track of added) {
@@ -225,10 +212,8 @@ function withTracks(base: Track[], added: Track[]) {
 }
 
 /**
- * The run's inputs as one config. `configObject` is a config already fetched
- * off the network (--genome, or a URL --config), standing in for the --config
- * file read; it is read and not changed, so a batch hands the same one to
- * every record. A `uri` in a --config file is relative to that file.
+ * `configObject` is a fetched config standing in for the --config file. It is
+ * not changed, so a batch hands the same one to every record.
  */
 export function readData(
   {
@@ -247,8 +232,6 @@ export function readData(
   const comparative = hasComparativeArgs(argv)
   const isGenome = (entry: Entry) =>
     entry[0] !== 'genome' && comparativeRole(entry) === 'genome'
-  // the genome a linear view opens on: --fasta (a library caller passes it
-  // bare), or a bare genome file
   const genome: Entry | undefined =
     argv.find(isGenome) ??
     (fasta ? ['fasta', [fasta]] : undefined) ??
@@ -256,9 +239,8 @@ export function readData(
 
   const file = configObject ?? (config ? readConfigFile(config) : {})
   const fromConfig = configAssemblies(file, asm)
-  // the config's assemblies and the CLI's genome files are alternatives: the
-  // config's would win, dropping the genome file and every comparison file
-  // that binds to it
+  // the config's assemblies would win, dropping the genome file and every
+  // comparison file bound to it
   if (fromConfig && genome) {
     throw new Error(
       `${genome[1][0]} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
@@ -294,8 +276,6 @@ export function readData(
     })
   }
 
-  // every other file is a track on the primary assembly, recorded under the
-  // id it actually got so the renderer opens exactly what was built
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
@@ -326,8 +306,7 @@ export function readData(
     assembly,
     tracks,
     openTracks,
-    // a config's own defaultSession can name assemblies other than the one
-    // opened, so it is read only when asked for
+    // it can name assemblies other than the one opened
     defaultSession: session
       ? readSession(session)
       : defaultSession

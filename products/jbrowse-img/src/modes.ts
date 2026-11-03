@@ -1,10 +1,3 @@
-// Every render mode jbrowse-img supports and how each is dispatched. This is the
-// single source of truth that the CLI subcommands + help (options.ts), the
-// --spec view-type mapping, and the renderer dispatch (renderRegion.ts) all
-// derive from. `linear` is the implicit default (bare invocation with no
-// subcommand) but is registered here so `jb2export lgv ...` also works and so
-// the renderer Record stays exhaustive.
-
 export type ViewMode =
   | 'linear'
   | 'dotplot'
@@ -13,13 +6,9 @@ export type ViewMode =
   | 'breakpoint'
 
 export interface ModeDescriptor {
-  // The CLI subcommand token a user types to select this mode. `linear` uses
-  // `lgv` (LinearGenomeView) rather than its internal mode name.
   subcommand: string
-  // MST view type, also the session-spec `type` discriminator
   viewType: string
-  // Renders two or more assemblies: a repeated --fasta or --chromSizes, and the
-  // comparison track types.
+  // takes a second assembly and comparison tracks
   comparative: boolean
 }
 
@@ -44,10 +33,7 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
     viewType: 'CircularView',
     comparative: false,
   },
-  // One assembly, several windows of it stacked with the reads that leave one
-  // and arrive in another drawn between them — so `comparative: false` even
-  // though it renders more than one panel. `comparative` asks whether a mode
-  // takes a SECOND ASSEMBLY (and comparison tracks), which this does not.
+  // several panels, but of one assembly
   breakpoint: {
     subcommand: 'breakpoint',
     viewType: 'BreakpointSplitView',
@@ -57,7 +43,6 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
 
 export const viewModes = Object.keys(modeDescriptors) as ViewMode[]
 
-// CLI subcommand token -> mode, e.g. `lgv` -> `linear`, `dotplot` -> `dotplot`.
 const subcommandToMode = new Map(
   viewModes.map(mode => [modeDescriptors[mode].subcommand, mode]),
 )
@@ -70,9 +55,6 @@ export const subcommandTokens = viewModes.map(
   mode => modeDescriptors[mode].subcommand,
 )
 
-// Inverse of modeDescriptors[mode].viewType: MST view type -> mode. Used by
-// --spec to pick its renderer, and to point a user at the right subcommand when
-// a --session carries a view the mode they asked for can't draw.
 export const viewTypeModes = new Map(
   viewModes.map(mode => [modeDescriptors[mode].viewType, mode]),
 )

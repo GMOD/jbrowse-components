@@ -5,15 +5,7 @@ import { isUrl } from '@jbrowse/launch-args'
 import type { Assembly, ConfigFile } from './types.ts'
 import type { HostedConfig } from '@jbrowse/launch-args'
 
-// genomes.jbrowse.org hosts a self-contained config.json per assembly: the
-// assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
-// its full track set, all as remote URIs. `--genome` pulls one of these so a user
-// gets cytobands/aliasing/hosted trackIds without hand-wiring a genome file.
-// The fetch is core's fetchHub (shared with the embedded mounts), which also
-// stamps each relative URI with the config URL as baseUri.
-
-// fetch has no timeout of its own, and a stalled connection otherwise hangs
-// the command forever
+// fetch has no timeout of its own
 const FETCH_TIMEOUT_MS = 30000
 
 export async function fetchJson(url: string, context: string) {
@@ -32,8 +24,8 @@ function fetchHostedConfig(name: string) {
   }) as Promise<ConfigFile>
 }
 
-// Same baseUri stamping as fetchHub: the config is injected as an object, so
-// resolveUriLocation needs the baseUri written on each location.
+// an injected config object needs baseUri written on each location, as
+// fetchHub does
 async function fetchConfig(url: string) {
   const config = (await fetchJson(
     url,
@@ -43,7 +35,6 @@ async function fetchConfig(url: string) {
   return config
 }
 
-/** Each of a comparative view's `--genome` configs, keyed by its name. */
 export async function fetchHostedGenomes(names: string[]) {
   return new Map<string, HostedConfig<Assembly>>(
     await Promise.all(
@@ -52,10 +43,7 @@ export async function fetchHostedGenomes(names: string[]) {
   )
 }
 
-// Fetch the config object when it must come off the network: a --genome token
-// (resolved to its jbrowse.org URL) or a --config that is itself a URL.
-// Returns undefined when neither applies, so readData falls back to its local
-// --config file read.
+// undefined when the config is a local file readData reads itself
 export async function resolveConfigObject({
   genome,
   config,

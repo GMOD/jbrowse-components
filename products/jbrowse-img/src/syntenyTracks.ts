@@ -2,27 +2,18 @@ import { canonicalAssemblyName } from './assemblyName.ts'
 
 import type { Config, Track } from './types.ts'
 
-// Which SyntenyTracks in a config belong to which pair of stacked assemblies.
-// Both comparative modes need this: synteny places each track at the level
-// between the two assemblies it compares, and dotplot (pairwise by definition)
-// takes only the comparisons between its two axes.
-
 function syntenyTracks(data: Config) {
   return data.tracks.filter(track => track.type === 'SyntenyTrack')
 }
 
-/** The rows the command line stacked, top first, or else every assembly whole. */
 export function stackedRows(data: Config) {
   return (
     data.comparativeRows ?? data.assemblies.map(asm => ({ assembly: asm.name }))
   )
 }
 
-// Whether a SyntenyTrack compares this pair of assemblies. Order-free: a track's
-// assemblyNames are [query, target] and which side is which follows the file
-// format (a chain's query is the LOWER assembly), not the stacking order. A
-// self pair needs the assembly named twice. A track declaring no
-// assemblyNames matches nothing.
+// Order-free, since which side is the query follows the file format, not the
+// stacking order. A self pair needs the assembly named twice.
 function comparesPair(data: Config, track: Track, a: string, b: string) {
   const names = (track.assemblyNames ?? []).map(name =>
     canonicalAssemblyName(data.assemblies, name),
@@ -32,21 +23,13 @@ function comparesPair(data: Config, track: Track, a: string, b: string) {
     : names.includes(a) && names.includes(b)
 }
 
-// The comparisons between two assemblies, for the pairwise dotplot. Passing
-// every SyntenyTrack in the config instead opened tracks belonging to another
-// pair, which fetched their (often remote) alignment file only to refuse every
-// block's assembly.
 export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
   return syntenyTracks(data)
     .filter(track => comparesPair(data, track, a, b))
     .map(track => track.trackId)
 }
 
-// The config's SyntenyTracks that compare some adjacent pair of the stack, as
-// the view's flat `tracks`; the view puts each on every band it covers. A track
-// no band can use is skipped with a warning: a config holding every pairwise
-// alignment is the ordinary way to get one, and the view would report it as an
-// error and fail the render.
+// The view fails the render on a track no band can use, so those are skipped
 export function stackSyntenyTrackIds(data: Config) {
   const order = stackedRows(data).map(row => row.assembly)
   return syntenyTracks(data)

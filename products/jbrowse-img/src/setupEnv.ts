@@ -6,21 +6,18 @@ import { enableStaticRendering } from 'mobx-react'
 
 let ready = false
 
-/** Once per process: `batch` calls it as well as whoever called `batch`. */
+/** `batch` calls it as well as whoever called `batch` */
 export function setupEnv() {
   if (ready) {
     return
   }
   ready = true
-  // We render to static markup (renderToStaticMarkup), never to a live DOM, so
-  // observer components must not subscribe to observables — otherwise their
-  // reactions linger past the render and fire on destroy(), reading dead MST
-  // nodes. This is the standard mobx SSR switch.
+  // otherwise observer reactions outlive the static render and read dead MST
+  // nodes on destroy()
   enableStaticRendering(true)
 
-  // jsdom's undici installs itself as the dispatcher behind Node's built-in
-  // fetch, which then gets no headers from an HTTP/2 response and hands back a
-  // compressed body undecoded. Fetch through that same undici instead.
+  // jsdom's undici takes over Node's built-in fetch, which then loses HTTP/2
+  // headers and leaves compressed bodies undecoded
   global.fetch = (
     createRequire(import.meta.resolve('jsdom'))('undici') as {
       fetch: typeof fetch

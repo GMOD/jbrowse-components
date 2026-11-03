@@ -3,15 +3,12 @@ import fs from 'node:fs'
 
 import { DEFAULT_WIDTH } from './options.ts'
 
-// `-` as a file argument means stdin, so a JSON input can be piped in rather
-// than staged as a file: `jq … | jb2export --spec -`
 export const STDIN_ARG = '-'
 
 let stdinConsumed = false
 
 export function readStdin() {
-  // reading fd 0 twice yields nothing the second time, which would surface as a
-  // baffling JSON parse error rather than the mistake it is
+  // a second read of fd 0 yields nothing, which would surface as a JSON error
   if (stdinConsumed) {
     throw new Error('stdin ("-") can only be read once per command')
   }
@@ -31,13 +28,6 @@ export function isFile(file: string) {
   }
 }
 
-// Write a rendered SVG: to stdout when no `outFile`, else by extension. .png and
-// .pdf route through rsvg-convert (.pdf via `-f pdf`); anything else is the raw
-// SVG. Both raster formats honor `width` so PDF matches PNG.
-//
-// One function for the single render and for each image of a batch, so `--format
-// pdf` means the same thing as `--out fig.pdf` rather than being a second,
-// smaller list of formats that batch happens to know.
 export function writeRendered(
   result: string,
   outFile: string | undefined,
@@ -50,9 +40,6 @@ export function writeRendered(
     } else if (lower.endsWith('.pdf')) {
       convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
     } else {
-      // Only .png/.pdf are converted; everything else gets the raw SVG. Say so
-      // for an extension that asks for something else, since `--out fig.jpg`
-      // otherwise wrote SVG bytes under a name no viewer will open as SVG.
       if (!lower.endsWith('.svg')) {
         console.warn(
           `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
@@ -71,14 +58,10 @@ export function convert(
   spawnArgs: string[] = [],
 ) {
   const { width = String(DEFAULT_WIDTH), out } = args
-  // the SVG goes in on stdin, so nothing is staged on disk
   const ls = spawnSync('rsvg-convert', ['-w', width, '-o', out, ...spawnArgs], {
     input: result,
   })
-  // The spawn itself failing (e.g. rsvg-convert not installed) leaves
-  // stdout/stderr unset, so check ls.error before touching them — otherwise a
-  // missing binary surfaces as a confusing "cannot read toString of undefined"
-  // instead of naming the real problem.
+  // a failed spawn leaves stdout and stderr unset
   if (ls.error) {
     const notFound = 'code' in ls.error && ls.error.code === 'ENOENT'
     throw new Error(

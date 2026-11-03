@@ -60,9 +60,8 @@ export type AssertDisplaySettingsMatchPlugins = [
   AssertNever<Differ<keyof FilterEntry, keyof FieldPredicate>>,
 ]
 
-// Every DisplaySnapshot key exists on a display model, so a property renamed
-// upstream fails the build instead of going dead. The config slots read
-// through differently named getters, which `keyof` the instance misses.
+// Config slots read through differently named getters, which `keyof` the
+// instance misses.
 type ConfigSlotKey =
   | 'encoding'
   | 'legend'
@@ -83,16 +82,10 @@ export type AssertSnapshotKeysExist = AssertNever<
   Exclude<keyof DisplaySnapshot, DisplayKeys>
 >
 
-// Two tracks at this ceiling, a sample over its control, are a card a laptop
-// window holds without scaling.
+// two tracks at this height fit a laptop window unscaled
 const CARD_GROW_MAX_HEIGHT = 250
 
-/**
- * Open a track with its modifiers applied, plus what a batch card and a
- * joined junction add: `sortAt` sorts a card's pileup at its variant, and
- * `joined` draws the arcs between a junction's two ends and puts the SV
- * evidence on top. A track stating otherwise keeps its own.
- */
+// `sortAt` and `joined` defaults yield to anything the track states itself
 export async function applyDisplayOpts(
   view: LinearGenomeViewModel,
   trackId: string,
@@ -126,8 +119,6 @@ export async function applyDisplayOpts(
           if (!sort && region) {
             snap.sort = { ...sortAt, refName: region.refName }
           }
-          // one row height on every card of a run: a shallow pileup takes the
-          // room it needs, and a deep one stops at the ceiling
           if (snap.heightMode === undefined && snap.height === undefined) {
             snap.heightMode = 'grow'
             snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT

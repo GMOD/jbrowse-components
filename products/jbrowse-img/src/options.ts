@@ -14,29 +14,16 @@ export interface OptionDef {
   modes?: readonly ViewMode[]
 }
 
-// Default output width in pixels, shared by the --width help default, the CLI
-// (main.ts), and the renderRegion library default so they can't drift.
 export const DEFAULT_WIDTH = 1500
 
-// Default font for the whole SVG, shared by the --fontFamily help default and
-// the renderRegion library default (applied in baseSvgOpts) so the CLI and
-// library agree and the value lives in one place.
 export const DEFAULT_FONT_FAMILY = 'serif'
 
-// "a, b, or c" — builds the help text of an enum-valued flag from its value list
-// so the two can't drift.
 function orList(values: readonly string[]) {
   return `${values.slice(0, -1).join(', ')}, or ${values.at(-1)}`
 }
 
-// The fixed value sets of the enum-valued flags. Each is pinned to the union the
-// consuming plugin/package actually accepts, in both directions:
-//  - `satisfies` rejects a value the union no longer has (renamed or removed
-//    upstream), which would otherwise leave the CLI accepting a dead value
-//  - AssertCovers rejects a value the union GAINED, which would otherwise leave
-//    the CLI warning on a mode that now works
-// `as const` keeps the literal types, so each getter returns a narrow union
-// rather than string, and the help text below is generated from the same list.
+// `satisfies` catches a value upstream dropped, and the Covers assertion below
+// one upstream added.
 const trackLabelModes = [
   'offset',
   'overlapping',
@@ -54,9 +41,7 @@ export const themeNames = [
 
 export const themeModes = ['light', 'dark'] as const
 
-// Collected into one alias, and exported, because a type alias referenced
-// nowhere is a lint error — the same reason AssertSnapshotKeysExist is exported
-// from applyTrackOpts.ts.
+// exported because an unreferenced type alias is a lint error
 export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
   AssertTrue<Covers<PaletteName, typeof themeNames>>,
@@ -225,10 +210,6 @@ const circularExamples: [string, string][] = [
   ],
 ]
 
-// Repeating --loc stacks a panel; a space INSIDE one --loc adds a window to
-// that panel, which is what a space already means to a LinearGenomeView. The
-// two levels need different separators or the common case stops being
-// expressible the moment one side wants a second window.
 const breakpointExamples: [string, string][] = [
   [
     'breakpoint --fasta ref.fa --bam tumor.bam --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000 --out sv.png',
@@ -249,13 +230,8 @@ export function getString(rest: Record<string, unknown>, key: string) {
   return typeof v === 'string' ? v : undefined
 }
 
-// Parse a boolean CLI value. `true`/`false` (and a bare flag, which arrives as
-// the boolean `true`) map directly; an absent flag is `false`. Anything else
-// warns and is treated as false, so a typo (`--refseq ture`) or a loose value
-// (`--refseq 0`, which the old `!!str` wrongly made truthy) is visible instead
-// of silently on. Track modifiers ask the same question but THROW on an
-// unusable value (launch-args' parseBool): the flags here are view
-// cosmetics, a modifier changes what the image shows.
+// Warns rather than throws, unlike launch-args' parseBool for track modifiers:
+// these flags are cosmetic, a modifier changes what the image shows.
 export function getBooleanValue(value: unknown, label: string) {
   const result =
     value === true || value === 'true'
@@ -275,12 +251,7 @@ export function getBoolean(rest: Record<string, unknown>, key: string) {
   return getBooleanValue(rest[key], `--${key}`)
 }
 
-// A numeric flag. Absent is undefined; a present value that isn't a number
-// warns and is treated as absent, so `--width 120O` reports itself rather than
-// quietly rendering at the default — the reporting the enum-valued (getEnum) and
-// boolean (getBooleanValue) flags already do, which numbers were the last flag
-// type not to. An empty value (`--width=`) counts as unusable too: `Number('')`
-// is 0, which would render a zero-width image.
+// `Number('')` is 0, so an empty value counts as unusable
 export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
   if (v === undefined) {
@@ -304,12 +275,7 @@ export function getNumber(
   return getOptionalNumber(rest, key) ?? fallback
 }
 
-// A count: a whole number of things, so a fraction or a negative is a mistake
-// rather than a value. Both spellings reached something that accepted them
-// quietly — `--limit=-2` is `slice(0, -2)`, which renders all but the LAST two,
-// and a negative `--flank` inverts the window into a `start greater than end`
-// that every record then fails on separately. Warned and dropped, like every
-// other unusable flag value here.
+// A negative `--limit` would reach `slice(0, -n)` and drop the last rows
 export function getOptionalCount(rest: Record<string, unknown>, key: string) {
   const n = getOptionalNumber(rest, key)
   if (n !== undefined && (n < 0 || !Number.isInteger(n))) {
@@ -321,10 +287,6 @@ export function getOptionalCount(rest: Record<string, unknown>, key: string) {
   return n
 }
 
-// Resolve a flag against a fixed set of allowed values, warning (rather than
-// silently falling back to the default) when a present value isn't one of them —
-// a typo like `--themeMode drak` or `--trackLabels lft` should be reported, the
-// same way an unknown option name is.
 function getEnum<T extends string>(
   rest: Record<string, unknown>,
   key: string,
@@ -340,9 +302,6 @@ function getEnum<T extends string>(
   return match
 }
 
-// One getter per enum-valued flag, so the flag name and its allowed-value list
-// are bound in one place — a bare getEnum(rest, key, allowed) call site can pair
-// the wrong list with a key and still compile.
 export function getTrackLabels(rest: Record<string, unknown>) {
   return getEnum(rest, 'trackLabels', trackLabelModes)
 }
@@ -355,9 +314,7 @@ export function getThemeMode(rest: Record<string, unknown>) {
   return getEnum(rest, 'themeMode', themeModes)
 }
 
-// The output formats of a batch run, which are the extensions writeRendered
-// dispatches on. Validated rather than folded to png by an `=== 'svg'` test:
-// `--format jpg` silently wrote a PNG, and `--format SVG` did too.
+// the extensions writeRendered dispatches on
 const batchFormats = ['png', 'svg', 'pdf'] as const
 
 export type BatchFormat = (typeof batchFormats)[number]
@@ -366,9 +323,6 @@ export function getFormat(rest: Record<string, unknown>) {
   return getEnum(rest, 'format', batchFormats)
 }
 
-// Options only the `batch` subcommand reads. Kept out of optionDefs so they do
-// not appear in every subcommand's help, but listed here so they are not
-// reported as unknown when batch is what is running.
 export const batchOptionDefs: OptionDef[] = [
   {
     name: 'sites',
@@ -421,24 +375,12 @@ export const batchOptionDefs: OptionDef[] = [
   },
 ]
 
-// Exposed so the CLI can warn when a batch-only flag is passed without the
-// batch subcommand: every one is in knownOptions, so without this a
-// `--sites calls.vcf` passed the unknown-option check and then rendered
-// nothing from the file, silently.
+// batch-only flags pass the unknown-option check, so outside batch they need
+// their own warning
 export const batchOptionNames = batchOptionDefs.map(o => o.name)
 
-// Options a batch run cannot honor, in the two kinds it has of not honoring
-// them. Neither appears in `batch --help`, which used to list every one.
-//
-// DROPPED: `--outDir` replaces `--out`, and the junction file replaces `--loc`
-// (a stray one would render the same window for every row). Harmless, so they
-// are warned about and ignored.
-//
-// REFUSED: `--spec` and `--session` FIX the view, and in a batch that is N
-// identical images under N filenames each naming a different junction —
-// `renderBreakpoint` prefers a spec over the per-record panels, and
-// `addLaunchView` adopts a session's view of the same type. Silent, and wrong in
-// the direction that looks like it worked.
+// Dropped options are warned about and ignored. Refused ones fix the view, so
+// every row would render the same image.
 export const batchDroppedOptions = ['out', 'loc']
 export const batchRefusedOptions = ['spec', 'session']
 const batchUnsupported = new Set([
@@ -547,8 +489,6 @@ function formatExamples(scriptName: string, list: [string, string][]) {
   return list.map(([cmd, desc]) => `  ${scriptName} ${cmd}\n      ${desc}`)
 }
 
-// Examples shown in a subcommand's --help. Dotplot and synteny share the same
-// comparative examples; circular and linear have their own.
 function examplesForMode(mode: ViewMode) {
   switch (mode) {
     case 'dotplot':
@@ -567,7 +507,6 @@ export function appliesTo(option: OptionDef, mode: ViewMode) {
   return option.modes?.includes(mode) ?? true
 }
 
-/** The options given to a run that draw nothing in its view. */
 export function optionsWithoutEffect(mode: ViewMode, given: string[]) {
   return optionDefs
     .filter(o => given.includes(o.name) && !appliesTo(o, mode))
@@ -607,8 +546,6 @@ export function buildHelp(
   if (mode) {
     return buildSubcommandHelp(scriptName, mode, trackTypes, syntenyTrackTypes)
   }
-  // linear is the implicit default, so the explicit subcommands users invoke are
-  // the non-linear view types (shown by their CLI token).
   const subcommandNames = viewModes
     .filter(mode => mode !== 'linear')
     .map(mode => modeDescriptors[mode].subcommand)
@@ -637,10 +574,7 @@ export function buildHelp(
   ].join('\n')
 }
 
-// The complete help reference: the top-level help, then each subcommand's. The
-// docs embed this so the published help can't drift from the code — which means
-// `batch` belongs here too, since it is a subcommand a reader can type and its
-// options appear in no other help.
+// The docs embed this
 export function buildFullHelp(
   scriptName: string,
   trackTypes: string[],

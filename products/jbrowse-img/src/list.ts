@@ -4,12 +4,6 @@ import { fetchJson, resolveConfigObject } from './resolveHub.ts'
 
 import type { Track } from './types.ts'
 
-// `jb2export list` discovery: print the assemblies hosted on
-// genomes.jbrowse.org, or the tracks inside one genome's config, so a user can find
-// the --genome name and --track ids without leaving the terminal. The formatting is
-// split from the fetch so it's unit-testable without the network.
-
-// UCSC genome-list metadata (jbrowse.org/ucsc/list.json), keyed by db name.
 interface UcscGenome {
   organism?: string
   description?: string
@@ -54,8 +48,6 @@ export function formatTracks(genome: string, tracks: Track[], filter?: string) {
   ].join('\n')
 }
 
-// `jb2export list` -> assemblies; `jb2export list <genome> [filter]` -> that genome's
-// tracks. Returns the text to print.
 export async function runList(args: string[]) {
   const [genome, filter] = args
   if (genome) {
