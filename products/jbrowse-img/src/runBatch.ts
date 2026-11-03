@@ -5,6 +5,8 @@ import path from 'node:path'
 import readline from 'node:readline'
 import zlib from 'node:zlib'
 
+import { comparativeRole } from '@jbrowse/launch-args'
+
 import {
   eventOutputName,
   eventRecords,
@@ -154,10 +156,11 @@ function readJunctions({ sites, passOnly }: BatchOpts) {
 // A batch window is a flank wide, so loading it is bounded. Ahead of the
 // track's own modifiers, so a `force:false` still wins.
 function forceLoaded(tracks: Entry[] | undefined) {
-  return tracks?.map(([key, [first, ...rest]]): Entry => [
-    key,
-    first === undefined ? [] : [first, 'force:true', ...rest],
-  ])
+  return tracks?.map((entry): Entry =>
+    comparativeRole(entry) || entry[1][0] === undefined
+      ? entry
+      : [entry[0], [entry[1][0], 'force:true', ...entry[1].slice(1)]],
+  )
 }
 
 /**

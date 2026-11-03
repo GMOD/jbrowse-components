@@ -246,6 +246,25 @@ describe('runBatch', () => {
     expect(handed.trackList).toEqual([['bam', ['reads.bam', 'force:true']]])
   })
 
+  it('leaves the genome file of a batch unforced', async () => {
+    await runBatch(
+      opts({
+        trackList: [
+          ['file', ['ref.fa']],
+          ['file', ['reads.bam']],
+        ],
+        progress: steps().progress,
+      }),
+    )
+    const handed = mockRenderRegion.mock.calls[0]![0] as {
+      trackList: [string, string[]][]
+    }
+    expect(handed.trackList).toEqual([
+      ['file', ['ref.fa']],
+      ['file', ['reads.bam', 'force:true']],
+    ])
+  })
+
   function manifestRows() {
     return fs
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')

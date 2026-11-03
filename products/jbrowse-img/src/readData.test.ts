@@ -139,3 +139,18 @@ describe('readData with a config', () => {
     }
   })
 })
+
+test('a bare genome file is the genome when the track list holds a modified copy of its entry', () => {
+  const data = readData({
+    argv: [
+      ['file', ['ref.fa']],
+      ['file', ['reads.bam']],
+    ],
+    trackList: [
+      ['file', ['ref.fa', 'force:true']],
+      ['file', ['reads.bam', 'force:true']],
+    ],
+  })
+  expect(data.assembly.name).toBe('ref.fa')
+  expect(data.tracks.map(t => t.trackId)).toEqual(['reads.bam'])
+})

@@ -10,12 +10,11 @@ import {
   genomeAssembly,
   hasComparativeArgs,
   hostedComparative,
-  isGenomeFlag,
   modifierValue,
   uniqueId,
 } from '@jbrowse/launch-args'
 
-import { makeMultiWiggleTrackConfig, syntenyTrackTypes } from './makeConfigs.ts'
+import { makeMultiWiggleTrackConfig } from './makeConfigs.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
 import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
@@ -135,10 +134,12 @@ export function readData(
   // the genome a linear view opens on: --fasta (a library caller passes it bare),
   // or a bare genome file
   const comparative = hasComparativeArgs(argv)
+  const isGenome = (entry: Entry) =>
+    entry[0] !== 'genome' && comparativeRole(entry) === 'genome'
   const genome: Entry | undefined =
-    argv.find(([key]) => isGenomeFlag(key)) ??
+    argv.find(isGenome) ??
     (fasta ? ['fasta', [fasta]] : undefined) ??
-    trackList.find(entry => comparativeRole(entry) === 'genome')
+    trackList.find(isGenome)
 
   const tracksData = tracks ? readTrackArray(tracks) : undefined
   const configData: Partial<Config> & Record<string, unknown> = configObject
@@ -278,11 +279,7 @@ export function readData(
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
-    const consumed =
-      opts === genome?.[1] ||
-      syntenyTrackTypes.includes(type) ||
-      (comparative && !!comparativeRole([type, opts]))
-    if (!consumed) {
+    if (!comparativeRole([type, opts])) {
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }
