@@ -20,8 +20,9 @@ opposite order. We:
 - configure the haplotype lanes track, and read each lane's genes from that
   haplotype's own annotation
 - at CFH, open the lanes from the HPRC page's **Haplotypes** launch
-- at GSTT1, choose lanes and order them by structure from the **Lanes** menu
+- at GSTT1, read how the launch stacks the lanes by structure
 - at FLNA / EMD, add the graph's bubbles track and filter it to inversions
+- at IGL, choose lanes by name from the **Lanes** menu
 
 :::caution Experimental
 
@@ -151,37 +152,38 @@ genes across the graph.
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 **CFH / CFHR** example, the complement factor H gene cluster. Under **More about
 this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
-genes (hg38) track. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006)
-opens a hole across both.
+genes (hg38) track, the known alleles and the GWAS Catalog's hits:
 
-<Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_lanes.png" />
+- **Each structural form gets lanes**, more for a commoner form, and each lane's
+  header counts the haplotypes that share its form.
+- **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) opens a hole
+  across both, under the **Known alleles** row naming the deletion.
+
+<Figure caption="The CFH cluster from the Haplotypes launch. The lanes missing CFHR3 and CFHR1 open a hole across both." src="/img/pangenome/hprc_cfhr_lanes.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
 GRCh38's chromosome 22 has the common _GSTT1_ deletion, so the gene sits on an
-alternate contig and no chr22 track draws it. From any **Haplotypes** launch,
-we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
-`HG00146.2`, `HG01109.1`, `HG00099.1`, `HG00232.1`, `HG00133.1`, `HG00126.2`,
-`HG00146.1` and `HG00097.1` under **Lanes → Choose lanes...**, and then:
+alternate contig and no chr22 track draws it. Click the **GSTT1** example on the
+HPRC page, then **Haplotypes** under **More about this window**:
 
-- **Lanes → Order lanes by structure** stacks each lane beside the one whose
-  deletions and insertions against GRCh38 are most alike.
+- **The lanes stack by structure**, each beside the one whose deletions and
+  insertions against GRCh38 are most alike, so the lanes of one form sit
+  together.
 - **The band between two lanes** aligns the two haplotypes on the nodes both
   walks share, and fans open where the lower lane has sequence the upper lacks.
 
-<Figure caption="GSTT1 with ten lanes ordered by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+<Figure caption="GSTT1 from the Haplotypes launch, its lanes stacked by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## FLNA / EMD: two genes in the opposite order {#inversions}
 
 _FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
-them is inverted on many X chromosomes (Small et al. 1997). From any
-**Haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`.
-
-**Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
-`HG01978.1`. Then:
+them is inverted on many X chromosomes (Small et al. 1997). Click the **FLNA /
+EMD** example on the HPRC page, then **Haplotypes** under **More about this
+window**. Then:
 
 - **The band between two lanes** crosses itself, in blue, where the lower lane
-  runs the block in the other direction, and that lane's header names the
+  runs the block in the other direction, and an inverted lane's header names the
   inversion.
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
   `gfatools bubble` flags one as `inversion` when its paths disagree about
@@ -193,7 +195,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The band crosses in blue between HG00099's two haplotypes, and the inverted lanes' headers name the inversion." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="FLNA / EMD from the Haplotypes launch, with the bubbles track filtered to inversions. The band crosses in blue where the inverted lanes meet the lanes in GRCh38's orientation." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 
@@ -216,16 +218,15 @@ Five cases mislead in the lanes:
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page groups haplotypes into
-  structural forms by their structural variants of 50 bp or more, gives each
-  form a lane and the commoner forms more, and names each lane with how many
-  haplotypes share its form (`HG00099.1 · 1 of 140 alike`). Two haplotypes in
-  one form can still differ in everything smaller.
+  structural forms by their structural variants of 50 bp or more, so two
+  haplotypes in one form can still differ in everything smaller.
 - **Near-identical gene copies share one path**, so where the graph merges the
   copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
-At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
-`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two skip
-rows at the foot.
+**Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
+not seat. At IGL, from any **Haplotypes** launch, type
+`chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
+`HG002.2` and `HG01074.1`, which puts two skip rows at the foot.
 
 <Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 

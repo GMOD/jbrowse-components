@@ -34,12 +34,6 @@ const dock2Spec: ScreenshotSpec = {
             type: 'LinearBasicDisplay',
             height: 52,
           },
-          {
-            trackId: 'mouse_minigraph_alleles',
-            coverage: { show: false },
-            sashimi: { show: false },
-            height: 110,
-          },
           graphTrack('mouse_minigraph_segments', {
             layoutMode: 'force',
             paneHeight: 600,
@@ -53,7 +47,7 @@ const dock2Spec: ScreenshotSpec = {
   readySelector: GRAPH_DRAWN,
   readyTimeout: 300000,
   viewportWidth: 1400,
-  viewportHeight: 1150,
+  viewportHeight: 1040,
   tooltip: 'hide',
   annotations: [
     {
@@ -150,6 +144,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineGenes,
         bovineVariants(300),
         graphTrack('bovine_minigraph_segments', {
+          layoutMode: 'force',
           color: { field: 'position' },
           bubbleSpread: 'compress',
           paneHeight: 240,
@@ -168,6 +163,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineGenes,
         bovineVariants(300),
         graphTrack('bovine_minigraph_segments', {
+          layoutMode: 'force',
           color: { field: 'position' },
           bubbleSpread: 'compress',
           paneHeight: 240,
@@ -199,13 +195,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       'chr23:27,508,000-27,536,000',
       [
         bovineGenes,
-        bovineVariants(260),
-        {
-          trackId: 'bovine_minigraph_alleles',
-          coverage: { show: false },
-          sashimi: { show: false },
-          height: 90,
-        },
+        bovineVariants(300),
         graphTrack('bovine_minigraph_segments', {
           layoutMode: 'force',
           bubbleSpread: 'compress',
@@ -214,24 +204,9 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           maxRegionBp: cutNear(28_000),
         }),
       ],
-      1190,
+      1150,
     ),
     readySelector: GRAPH_DRAWN,
-    annotations: [
-      {
-        type: 'text',
-        text: 'graph alleles, each sequence once, whichever assemblies have it',
-        fontSize: 18,
-        leader: true,
-        anchor: {
-          trackId: 'bovine_minigraph_alleles',
-          loc: 'chr23:27,521,000',
-          fracY: 0.45,
-        },
-        dx: 80,
-        dy: -10,
-      },
-    ],
   },
   {
     mode: 'url',

@@ -15,7 +15,11 @@ import {
   ECOLI_DEMO_BASE,
   ecoliAvaStack,
 } from './demoBase.ts'
-import { PORTAL_LOCI, portalHaplotypeLanes } from './genomes_pangenome.ts'
+import {
+  PORTAL_LOCI,
+  portalHaplotypeLanes,
+  portalLaunch,
+} from './genomes_pangenome.ts'
 import { GRAPH_VIEW_DRAWN, referencePositionColor } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1050,10 +1054,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/hprc_cfhr_lanes',
-    url: portalHaplotypeLanes(PORTAL_LOCI.cfhr),
+    url: portalLaunch('cfh', 'haplotypes'),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 560,
+    viewportHeight: 1600,
   },
 
   {
@@ -1404,10 +1408,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_gstt1_lanes',
-    url: portalHaplotypeLanes(PORTAL_LOCI.gstt1),
+    url: portalLaunch('gstt1', 'haplotypes'),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 900,
+    viewportHeight: 1550,
     // the first label in document order is the topmost lane carrying the gene
     annotations: [
       {

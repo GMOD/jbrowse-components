@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { graphTrack } from './graph-fixtures.ts'
 
@@ -45,13 +48,8 @@ export function portalGraphLaunch({
   })
 }
 
-// GSTT1's lanes follow the order "Order lanes by structure" writes: four
-// matching GRCh38, then six carrying the insertion.
+// Haplotypes chosen by name, for the figures whose page step names them.
 export const PORTAL_LOCI = {
-  cfhr: {
-    loc: 'chr1:196740001-196850000',
-    lanes: ['HG00097#1', 'HG00253#2', 'HG00133#1', 'HG00235#2'],
-  },
   amylase: {
     loc: 'chr1:103610001-103760000',
     lanes: ['HG01361#1', 'HG00133#2', 'HG00133#1', 'NA18608#2', 'HG00232#1'],
@@ -60,21 +58,24 @@ export const PORTAL_LOCI = {
     loc: 'chr22:22800001-22850000',
     lanes: ['HG00099#1', 'HG002#1', 'HG00097#1', 'HG002#2', 'HG01074#1'],
   },
-  gstt1: {
-    loc: 'chr22:23950001-24060000',
-    lanes: [
-      'HG00128#2',
-      'HG01960#1',
-      'HG00146#2',
-      'HG01109#1',
-      'HG00099#1',
-      'HG00232#1',
-      'HG00133#1',
-      'HG00126#2',
-      'HG00146#1',
-      'HG00097#1',
-    ],
-  },
+}
+
+interface LaunchSession {
+  views: { tracks: unknown[]; [key: string]: unknown }[]
+  sessionTracks?: object[]
+}
+
+// A launch as the HPRC page builds it, saved by scripts/fetch-hprc-launches.ts.
+export function portalLaunchSession(
+  locus: string,
+  launch: string,
+): LaunchSession {
+  const file = new URL(`hprc_${locus}_${launch}.session.json`, import.meta.url)
+  return JSON.parse(readFileSync(fileURLToPath(file), 'utf8'))
+}
+
+export function portalLaunch(locus: string, launch: string) {
+  return sessionSpec(PORTAL_CONFIG, portalLaunchSession(locus, launch))
 }
 
 // haplotypeLanesForRegion's view, in the same jb2hubs file.

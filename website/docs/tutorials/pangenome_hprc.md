@@ -118,6 +118,8 @@ Press **Open in JBrowse**. Under the genes:
   degeneration hits sit one on either side of the deletion
 - the matrix under the graph marks the deletion in each carrier's row
 
+<Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype." src="/img/pangenome/hprc_cfh_graph_launch.png" />
+
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
 Open
@@ -192,7 +194,11 @@ allele and no _HLA-DRB5_, the gene it hangs across on hg38.
 The graph names one source assembly per allele. HPRC's phased VCF lists every
 haplotype's allele at every bubble: a record is one allele written against
 GRCh38, and each sample's genotype holds a 1 for each of its haplotypes with
-that allele. We'll add it to the graph launch's session:
+that allele. The variant matrix the launch opened reads the same callset
+realigned with vcfwave, which splits each allele into the deletions and
+insertions it makes against GRCh38. The phased VCF keeps each graph allele whole
+as one record, so a record matches a node of the graph track. We'll add it to
+the graph launch's session:
 
 ```json addtrack loc=chr6:32,500,000-32,560,000
 {

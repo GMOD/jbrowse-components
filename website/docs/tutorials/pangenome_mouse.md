@@ -30,9 +30,6 @@ launches the JBrowse 5 development build until JBrowse 5 ships.
 
 The graph view is a beta plugin. We welcome your [feedback](/contact).
 
-The mouse graph lists the alleles that exist. Which strains have them is absent,
-because the graph holds no path per strain.
-
 :::
 
 ## Prerequisites
@@ -74,7 +71,6 @@ builds the files for strains of your own.
 | The eighteen assemblies, one GenArk folder per GenBank accession                   | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                    |
 | Segments and links, the graph's nodes and edges at their reference coordinates     | [mouse-mm39-minigraph.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.graph.bed.gz)                     |
 | Bubbles, where the strains' paths split and rejoin                                 | [mouse-mm39-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz)                 |
-| The allele inventory, one row per alternative sequence at a bubble                 | [mouse-mm39-minigraph.alleles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz)                 |
 | The whole-chromosome overview, with variants under 10 kb folded into the reference | [mouse-mm39-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz) |
 
 </details>
@@ -159,9 +155,16 @@ in each launch.
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 16.8 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 The graph holds no path per strain, so it cannot say which strains have the
-exons. mm39's liftOver chains can, one lane per strain assembly:
-[choosing mouse strain lanes at Nnt](/docs/tutorials/genomes_synteny#choosing-which-mouse-strains-become-lanes-at-nnt)
-turns on **mm39 vs 76 genomes (liftOver, multi-way)** at the same gene.
+exons. mm39's liftOver chains can, one lane per strain assembly. We'll open them
+at the same gene:
+
+- Open
+  [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
+  and turn on **mm39 vs 76 genomes (liftOver, multi-way)** under **Pairwise
+  alignments**.
+- Type `Nnt` into the location box.
+- In the track menu, pick **Lanes → Choose lanes...**, type `house mouse` into
+  the filter and tick the strains, the C57BL/6J T2T assembly among them.
 
 <Figure caption="mm39 at Nnt over the Mus assemblies the liftOver track holds, the C57BL/6J T2T assembly first." src="/img/genomes_synteny/mouse_strains_nnt.png" />
 
@@ -187,10 +190,7 @@ To open the _Dock2_ bubble:
   **Graph**.
 - In the graph track's menu, tick **Show → Show bubble halos**.
 
-<Figure caption="The Dock2 intron bubble in the bubbles track, the allele inventory and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
-
-The allele inventory's `firstSeenIn` names the first assembly to contribute each
-allele.
+<Figure caption="The Dock2 intron bubble in the bubbles track and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 ## Building a minigraph graph from the strain assemblies
 

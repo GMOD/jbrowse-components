@@ -1,0 +1,154 @@
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "hg38",
+      "loc": "chr1:196740001-196850000",
+      "tracks": [
+        {
+          "trackId": "hg38_ncbiRefSeq_ucsc",
+          "geneGlyphMode": "longestCoding",
+          "displayMode": "compact",
+          "height": 60
+        },
+        {
+          "trackId": "hprc-known-alleles",
+          "height": 50
+        },
+        {
+          "trackId": "hprc-gwas-catalog",
+          "height": 60
+        },
+        {
+          "trackId": "hprc_v2_1_walk_lanes",
+          "type": "MultiWaySyntenyDisplay",
+          "rows": {
+            "kept": [
+              "HG00097#1",
+              "HG00097#2",
+              "HG00099#1",
+              "HG00099#2",
+              "HG00126#1",
+              "HG00126#2",
+              "HG00128#1",
+              "HG00128#2",
+              "HG00133#1",
+              "HG00133#2",
+              "HG00140#1",
+              "HG00140#2",
+              "HG00146#1",
+              "HG00146#2",
+              "HG002#2",
+              "HG00232#1",
+              "HG00232#2",
+              "HG00235#1",
+              "HG00235#2",
+              "HG00253#1",
+              "HG00280#1",
+              "HG002#1",
+              "HG00253#2",
+              "HG00280#2",
+              "HG00323#2",
+              "HG00642#1",
+              "HG00735#2",
+              "HG01071#1",
+              "HG01099#1",
+              "HG01109#1",
+              "HG01109#2",
+              "HG01891#2"
+            ],
+            "labels": {
+              "HG00097#1": "HG00097#1 \u00b7 1 of 319 alike",
+              "HG00097#2": "HG00097#2 \u00b7 1 of 319 alike",
+              "HG00099#1": "HG00099#1 \u00b7 1 of 319 alike",
+              "HG00099#2": "HG00099#2 \u00b7 1 of 319 alike",
+              "HG00126#1": "HG00126#1 \u00b7 1 of 319 alike",
+              "HG00126#2": "HG00126#2 \u00b7 1 of 319 alike",
+              "HG00128#1": "HG00128#1 \u00b7 1 of 319 alike",
+              "HG00128#2": "HG00128#2 \u00b7 1 of 319 alike",
+              "HG00133#1": "HG00133#1 \u00b7 1 of 319 alike",
+              "HG00133#2": "HG00133#2 \u00b7 1 of 319 alike",
+              "HG00140#1": "HG00140#1 \u00b7 1 of 319 alike",
+              "HG00140#2": "HG00140#2 \u00b7 1 of 319 alike",
+              "HG00146#1": "HG00146#1 \u00b7 1 of 319 alike",
+              "HG00146#2": "HG00146#2 \u00b7 1 of 319 alike",
+              "HG002#2": "HG002#2 \u00b7 1 of 319 alike",
+              "HG00232#1": "HG00232#1 \u00b7 1 of 319 alike",
+              "HG00232#2": "HG00232#2 \u00b7 1 of 319 alike",
+              "HG00235#1": "HG00235#1 \u00b7 1 of 319 alike",
+              "HG00235#2": "HG00235#2 \u00b7 1 of 319 alike",
+              "HG00253#1": "HG00253#1 \u00b7 1 of 319 alike",
+              "HG00280#1": "HG00280#1 \u00b7 1 of 319 alike",
+              "HG002#1": "HG002#1 \u00b7 1 of 138 alike",
+              "HG00253#2": "HG00253#2 \u00b7 1 of 138 alike",
+              "HG00280#2": "HG00280#2 \u00b7 1 of 138 alike",
+              "HG00323#2": "HG00323#2 \u00b7 1 of 138 alike",
+              "HG00642#1": "HG00642#1 \u00b7 1 of 138 alike",
+              "HG00735#2": "HG00735#2 \u00b7 1 of 138 alike",
+              "HG01071#1": "HG01071#1 \u00b7 1 of 138 alike",
+              "HG01099#1": "HG01099#1 \u00b7 1 of 138 alike",
+              "HG01109#1": "HG01109#1 \u00b7 1 of 138 alike",
+              "HG01109#2": "HG01109#2 \u00b7 1 of 138 alike",
+              "HG01891#2": "HG01891#2 \u00b7 1 of 5 alike"
+            }
+          },
+          "height": 1320
+        }
+      ]
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc-known-alleles",
+      "name": "Known alleles",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/known-alleles.gff3"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc-gwas-catalog",
+      "name": "GWAS Catalog (NHGRI-EBI)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi"
+          }
+        },
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "pubMedID",
+          "author",
+          "pubDate",
+          "journal",
+          "title",
+          "trait",
+          "initSample",
+          "replSample",
+          "region",
+          "genes",
+          "riskAllele",
+          "riskAlFreq",
+          "pValue",
+          "pValueDesc",
+          "orOrBeta",
+          "ci95",
+          "platform",
+          "cnv"
+        ]
+      }
+    }
+  ]
+}

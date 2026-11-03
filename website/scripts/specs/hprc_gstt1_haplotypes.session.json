@@ -1,0 +1,140 @@
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "hg38",
+      "loc": "chr22:23940001-24070000",
+      "tracks": [
+        {
+          "trackId": "hg38_ncbiRefSeq_ucsc",
+          "geneGlyphMode": "longestCoding",
+          "displayMode": "compact",
+          "height": 60
+        },
+        {
+          "trackId": "hprc-gwas-catalog",
+          "height": 60
+        },
+        {
+          "trackId": "hprc_v2_1_walk_lanes",
+          "type": "MultiWaySyntenyDisplay",
+          "rows": {
+            "kept": [
+              "HG00097#1",
+              "HG00097#2",
+              "HG00099#1",
+              "HG00126#1",
+              "HG00126#2",
+              "HG00140#1",
+              "HG00146#1",
+              "HG002#2",
+              "HG00128#1",
+              "HG00128#2",
+              "HG00146#2",
+              "HG002#1",
+              "HG00232#2",
+              "HG00280#1",
+              "HG00133#2",
+              "HG00235#1",
+              "HG00235#2",
+              "HG00253#1",
+              "HG00344#1",
+              "HG00099#2",
+              "HG00320#1",
+              "HG00609#2",
+              "HG00621#2",
+              "HG00133#1",
+              "HG00140#2",
+              "HG00329#1",
+              "HG00544#2",
+              "HG02257#1",
+              "HG02258#1",
+              "HG02055#1",
+              "HG02258#2",
+              "HG01243#1"
+            ],
+            "labels": {
+              "HG00097#1": "HG00097#1 \u00b7 1 of 130 alike",
+              "HG00097#2": "HG00097#2 \u00b7 1 of 130 alike",
+              "HG00099#1": "HG00099#1 \u00b7 1 of 130 alike",
+              "HG00126#1": "HG00126#1 \u00b7 1 of 130 alike",
+              "HG00126#2": "HG00126#2 \u00b7 1 of 130 alike",
+              "HG00140#1": "HG00140#1 \u00b7 1 of 130 alike",
+              "HG00146#1": "HG00146#1 \u00b7 1 of 130 alike",
+              "HG002#2": "HG002#2 \u00b7 1 of 130 alike",
+              "HG00128#1": "HG00128#1 \u00b7 1 of 104 alike",
+              "HG00128#2": "HG00128#2 \u00b7 1 of 104 alike",
+              "HG00146#2": "HG00146#2 \u00b7 1 of 104 alike",
+              "HG002#1": "HG002#1 \u00b7 1 of 104 alike",
+              "HG00232#2": "HG00232#2 \u00b7 1 of 104 alike",
+              "HG00280#1": "HG00280#1 \u00b7 1 of 104 alike",
+              "HG00133#2": "HG00133#2 \u00b7 1 of 78 alike",
+              "HG00235#1": "HG00235#1 \u00b7 1 of 78 alike",
+              "HG00235#2": "HG00235#2 \u00b7 1 of 78 alike",
+              "HG00253#1": "HG00253#1 \u00b7 1 of 78 alike",
+              "HG00344#1": "HG00344#1 \u00b7 1 of 78 alike",
+              "HG00099#2": "HG00099#2 \u00b7 1 of 66 alike",
+              "HG00320#1": "HG00320#1 \u00b7 1 of 66 alike",
+              "HG00609#2": "HG00609#2 \u00b7 1 of 66 alike",
+              "HG00621#2": "HG00621#2 \u00b7 1 of 66 alike",
+              "HG00133#1": "HG00133#1 \u00b7 1 of 50 alike",
+              "HG00140#2": "HG00140#2 \u00b7 1 of 50 alike",
+              "HG00329#1": "HG00329#1 \u00b7 1 of 50 alike",
+              "HG00544#2": "HG00544#2 \u00b7 1 of 50 alike",
+              "HG02257#1": "HG02257#1 \u00b7 1 of 13 alike",
+              "HG02258#1": "HG02258#1 \u00b7 1 of 13 alike",
+              "HG02055#1": "HG02055#1 \u00b7 1 of 11 alike",
+              "HG02258#2": "HG02258#2 \u00b7 1 of 11 alike",
+              "HG01243#1": "HG01243#1 \u00b7 1 of 10 alike"
+            }
+          },
+          "height": 1320
+        }
+      ]
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc-gwas-catalog",
+      "name": "GWAS Catalog (NHGRI-EBI)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi"
+          }
+        },
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "pubMedID",
+          "author",
+          "pubDate",
+          "journal",
+          "title",
+          "trait",
+          "initSample",
+          "replSample",
+          "region",
+          "genes",
+          "riskAllele",
+          "riskAlFreq",
+          "pValue",
+          "pValueDesc",
+          "orOrBeta",
+          "ci95",
+          "platform",
+          "cnv"
+        ]
+      }
+    }
+  ]
+}

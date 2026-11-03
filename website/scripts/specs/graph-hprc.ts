@@ -8,6 +8,8 @@ import {
   PORTAL_LOCI,
   portalGraphLaunch,
   portalLanesView,
+  portalLaunch,
+  portalLaunchSession,
 } from './genomes_pangenome.ts'
 import {
   GRAPH_DRAWN,
@@ -31,19 +33,10 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // the cut's ids.
 const HPRC_ALLELE = 's348700+'
 
-// The bubble `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags as an inversion at
-// FLNA / EMD: lanes are one forward haplotype, both of HG00099's and a second
-// carrier.
-const INV_REGION = {
-  refName: 'chrX',
-  assemblyName: 'hg38',
-  start: 154320000,
-  end: 154410000,
-}
-const INV_WINDOW = `chrX:${INV_REGION.start + 1}-${INV_REGION.end}`
+// The block between FLNA and EMD's inverted repeats, which
+// `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags as an inversion.
 const INV_BLOCK = { refName: 'chrX', start: 154347246, end: 154384867 }
-const INV_LANES = ['HG00097#1', 'HG00099#1', 'HG00099#2', 'HG01978#1']
-const INV_LANES_VIEW = portalLanesView({ loc: INV_WINDOW, lanes: INV_LANES })
+const INV_LAUNCH = portalLaunchSession('flna', 'haplotypes')
 
 // C4. FMMM lays a near-path graph out as one thread, so a wider cut only
 // shrinks every bubble; the force figures pass `maxRegionBp` a little over
@@ -478,27 +471,36 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/hprc_inversion',
     url: sessionSpec(PORTAL_CONFIG, {
-      views: [
-        {
-          ...INV_LANES_VIEW,
-          highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
-          tracks: [
-            hg38GeneLane(60),
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              filter: ['jexl:feature.inversion'],
-              height: 60,
-            },
-            INV_LANES_VIEW.tracks[1],
-          ],
-        },
-      ],
+      ...INV_LAUNCH,
+      views: INV_LAUNCH.views.map(view => ({
+        ...view,
+        highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
+        tracks: [
+          ...view.tracks.slice(0, -1),
+          {
+            trackId: 'hprc_minigraph_bubbles',
+            type: 'LinearBasicDisplay',
+            filter: ['jexl:feature.inversion'],
+            height: 60,
+          },
+          ...view.tracks.slice(-1),
+        ],
+      })),
     }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1000,
-    viewportHeight: 680,
+    viewportHeight: 1600,
+    tooltip: 'hide',
+  },
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_cfh_graph_launch',
+    url: portalLaunch('cfh', 'graph'),
+    readySelector: `body:has(${displaySettled('variant-display')}) ${GRAPH_DRAWN}`,
+    readyTimeout: 240000,
+    viewportWidth: 1000,
+    viewportHeight: 1000,
     tooltip: 'hide',
   },
   // pangenome/hprc_repeat_classes is retired. A synteny view of its two windows

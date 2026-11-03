@@ -18,7 +18,7 @@ which assemblies have it. We:
 - load the graph as a graph track, and open a whole chromosome with small
   variants folded
 - at _HSPA1A_, load the deconstructed callset as a variant track with one row
-  per assembly, beside the allele inventory
+  per assembly, over the graph track
 - add OMIA's curated variants as a track, and read three published breed and
   species variants in the callset
 
@@ -72,7 +72,6 @@ graph of your own, swap the prefix in `uri` for your `gfa-to-tabix build`, as
 | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | The segment and link index                                                                   | [bovine-arsucd12-minigraph.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz)                     |
 | The bubble index, where assemblies' paths split and rejoin                                   | [bovine-arsucd12-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz)                 |
-| The allele inventory, one row per alternative sequence at a bubble                           | [bovine-arsucd12-minigraph.alleles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz)                 |
 | The overview used for whole chromosomes, with variants under 10 kb folded into the reference | [bovine-arsucd12-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.graph.bed.gz) |
 
 </details>
@@ -134,9 +133,8 @@ section.
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
-in every assembly they built. The **graph** lists that segment in the allele
-inventory. These graphs record no build order, so its `firstSeenIn` column names
-the first assembly in a fixed list, which need not contain the segment.
+in every assembly they built. The **graph** draws that segment as a loop off the
+reference.
 
 The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
 chromosome over the same graph:
@@ -237,12 +235,12 @@ table's `lineage` column through `domain` to `range`. The config also sets:
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000` to draw
 the graph around _HSPA1A_. Then:
 
-- Turn on the callset and the allele inventory in the track selector.
+- Turn on the callset in the track selector.
 - Open **Graph settings...** in the graph track's menu and set **Bubble spread**
   to **Compress lengths**, which pulls the longest and shortest nodes towards
   the mean so a cut spanning kb and bp nodes fits one pane.
 
-<Figure caption="HSPA1A with the deconstructed callset, one row per assembly, the allele inventory and the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A with the deconstructed callset, one row per assembly, over the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
 
 ## Published variants in the callset
 
@@ -301,9 +299,7 @@ allele.
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
 breeds have extra copies, color-headed breeds a deletion. The Hereford reference
-holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put the graph
-track back on the reference's coordinates under the callset with **Anchored**
-under the **Layout** row of its menu.
+holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
