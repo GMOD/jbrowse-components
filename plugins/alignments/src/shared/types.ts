@@ -140,9 +140,7 @@ export function usesMethylationLegend(layer: BaseLayer | undefined) {
   return isMethylationView(layer) || layer?.field === 'bisulfite'
 }
 
-// The modes painting the explicit "not modified" (blue) state, gating that
-// legend swatch, two-color over a non-cytosine mod included, which paints
-// blue low-probability 6mA calls (extract.ts).
+// The modes painting unmethylated cytosines blue, gating that legend swatch.
 export function paintsUnmodifiedState(layer: BaseLayer | undefined) {
   return (
     (layer?.field === 'modifications' || layer?.field === 'bisulfite') &&

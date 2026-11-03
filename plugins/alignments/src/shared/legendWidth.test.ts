@@ -129,7 +129,6 @@ test('the sweep reaches the modification rows', () => {
       '5mC',
       '5hmC',
       'Unmethylated',
-      'Unmodified',
       'inosine',
     ]),
   )

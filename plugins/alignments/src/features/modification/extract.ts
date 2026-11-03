@@ -39,11 +39,8 @@ import type {
 // colors in shared/modificationData.ts — theme.ts is source of truth, converted
 // once here for the worker context.
 //
-// ABGR_UNMODIFIED is the generic "this base is NOT modified" blue for every
-// mode that paints that state — the methylation fill, bisulfite, and two-color
-// over any mod type (a low-probability 6mA call paints it too). It is not
-// 5mC-specific despite the theme export it comes from; naming it as if it were
-// is what hid the missing two-color legend swatch for non-cytosine mods.
+// ABGR_UNMODIFIED is the unmethylated-cytosine blue the methylation fill and
+// bisulfite paint; no other type has an unmodified side.
 const ABGR_5MC_METHYLATED = cssColorToABGR(methylated5mC)
 const ABGR_UNMODIFIED = cssColorToABGR(unmethylated5mC)
 const ABGR_5HMC_METHYLATED = cssColorToABGR(methylated5hmC)
@@ -135,9 +132,13 @@ export function extractModifications(
   const { filter, unmodified: twoColor } = layer
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
-  // and unmodified against each other per cytosine; the read's other types
-  // (a Fiber-seq read's 6mA) are still drawn here. Unticked types leave before
-  // the per-position max, so a hidden type never outscores a shown one.
+  // and unmodified against each other per cytosine. The read's other types
+  // (a Fiber-seq read's 6mA) are drawn here as the by-type view draws them,
+  // with no unmodified side: a producer that lists every A at a low
+  // probability (ONT's chromatin-accessibility model) would otherwise paint
+  // nearly every A blue, and one that lists only confident calls (fibertools'
+  // `ft predict -m 254`) says nothing about the rest. Unticked types leave
+  // before the per-position max, so a hidden type never outscores a shown one.
   const drawn = modifications.filter(
     m =>
       admitsCode(filter, m.type) &&
@@ -153,22 +154,16 @@ export function extractModifications(
       strand,
       window,
       (refPos, { type, base }, prob) => {
-        // twoColor renders every call, painting low-confidence ones in the
-        // unmethylated color (with prob = 1-prob = the unmodified confidence);
-        // default mode hides calls below the threshold and paints the rest in the
-        // mod color at their own prob. `isMeth` unifies both without an
-        // intermediate alloc.
-        if (twoColor || (strict ? prob > min : prob >= min)) {
-          const isMeth = !twoColor || prob > 0.5
+        if (strict ? prob > min : prob >= min) {
           modificationsData.push({
             readIndex,
             position: featureStart + refPos,
             base,
             modType: type,
             strand: modStrand,
-            color: isMeth ? modColorForType(type) : ABGR_UNMODIFIED,
-            prob: isMeth ? prob : 1 - prob,
-            noMod: !isMeth,
+            color: modColorForType(type),
+            prob,
+            noMod: false,
           })
         }
       },

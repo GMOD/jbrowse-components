@@ -13,6 +13,7 @@ import {
 } from '../../shared/basesFilter.ts'
 import { layerForTest } from '../../shared/splitFieldForTest.ts'
 import { isMethylationView } from '../../shared/types.ts'
+import { getColorForModification } from '../../util.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
 import type { LayerSpec } from '../../shared/splitFieldForTest.ts'
@@ -254,20 +255,20 @@ describe('extractModifications', () => {
     expect(colorAt100(true)).toBe(cssColorToABGR(methylated5hmC))
   })
 
-  test('twoColor renders every call, painting low-confidence ones blue', () => {
-    const { out } = run({
+  test('twoColor draws a non-cytosine call as by type, never blue', () => {
+    const above = run({ field: 'modifications', unmodified: true }).out
+    const a = above.find(m => m.modType === 'a')!
+    expect(a.color).toBe(cssColorToABGR(getColorForModification('a')))
+    expect(a.noMod).toBe(false)
+    expect(a.prob).toBeCloseTo((50 + 0.5) / 256, 5)
+
+    const below = run({
       field: 'modifications',
       unmodified: true,
       filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
-    })
-    const byType = Object.fromEntries(out.map(m => [m.modType, m]))
-    // both present despite threshold 50 (twoColor ignores the threshold)
-    expect(Object.keys(byType).sort()).toEqual(['a', 'm'])
-    // high-confidence m keeps its modification color (red)
-    expect(byType.m!.color).toBe(packAbgr(255, 0, 0, 255))
-    // low-confidence a is rendered in the unmethylated/blue color
-    expect(byType.a!.color).toBe(cssColorToABGR(unmethylated5mC))
-    expect(byType.a!.prob).toBeCloseTo(1 - (50 + 0.5) / 256, 5)
+    }).out
+    expect(below.map(m => m.modType)).toEqual(['m'])
+    expect(below[0]!.color).toBe(packAbgr(255, 0, 0, 255))
   })
 })
 

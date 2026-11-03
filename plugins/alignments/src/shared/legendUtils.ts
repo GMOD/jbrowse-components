@@ -861,11 +861,9 @@ export function getArcLegendItems(
 
 // The modification family's own key: the methylation views (fill-unmarked and
 // bisulfite) key the 5mC/5hmC states, not the per-type MM palette; every other
-// modification view keys each detected type in the color the reads use. Both
-// append the blue "not modified" swatch whenever the mode paints that state, so
-// two-color over a non-cytosine mod (blue low-probability 6mA calls) is keyed
-// too — it previously showed only the 6mA swatch, leaving its blue marks
-// unexplained.
+// modification view keys each detected type in the color the reads use. Blue
+// is only ever an unmethylated cytosine, so its swatch follows the cytosines
+// drawn: a 6mA-only read in the fill view draws none.
 function modificationLegend(
   layer: ModificationLayer,
   detectedModifications: ReadonlyMap<string, string>,
@@ -883,24 +881,13 @@ function modificationLegend(
         color,
         label: getModificationName(type),
       }))
-  // "Unmethylated" only where every blue mark IS an unmethylated cytosine. The
-  // fill view draws the non-cytosine remainder two-color (extract.ts), so a
-  // Fiber-seq read's low-probability 6mA calls are painted the same blue over
-  // adenines, and naming the swatch for the cytosine walk labels those wrong.
   // Bisulfite keys nothing here and is cytosine by construction.
-  const onlyCytosineIsBlue = [...keyed.keys()].every(isMethylationFillType)
+  const drawsCytosines =
+    layer.field === 'bisulfite' || [...keyed.keys()].some(isMethylationFillType)
   return [
     ...items,
-    ...(paintsUnmodifiedState(layer)
-      ? [
-          {
-            color: unmethylated5mC,
-            label:
-              isMethylation && onlyCytosineIsBlue
-                ? 'Unmethylated'
-                : 'Unmodified',
-          },
-        ]
+    ...(paintsUnmodifiedState(layer) && drawsCytosines
+      ? [{ color: unmethylated5mC, label: 'Unmethylated' }]
       : []),
   ]
 }

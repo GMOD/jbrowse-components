@@ -670,13 +670,13 @@ describe('getReadDisplayLegendItems', () => {
 
   // Two-color over a non-cytosine mod paints blue low-probability calls
   // (extract.ts), so the legend keys that blue beside 6mA.
-  test('two-color over a non-cytosine mod keys its blue unmodified swatch', () => {
+  test('two-color over a non-cytosine mod alone keys no blue swatch', () => {
     const mods = new Map([['a', 'purple']])
     expect(
       legendFor({ field: 'modifications', unmodified: true }, [], {
         detectedModifications: mods,
       }).map(i => i.label),
-    ).toEqual(['6mA', 'Unmodified'])
+    ).toEqual(['6mA'])
   })
 
   // `detectedModifications` takes each region's types as that region's fetch
@@ -1306,23 +1306,20 @@ describe('the fill view keys the types drawn beside the methylation states', () 
     const items = legendFor({ field: 'modifications', unmodified: true }, [], {
       detectedModifications: fiberseq,
     })
-    expect(items.map(i => i.label)).toEqual(['5mC', '6mA', 'Unmodified'])
+    expect(items.map(i => i.label)).toEqual(['5mC', '6mA', 'Unmethylated'])
     // the mark's own color: extractModifications packs a 6mA call through
     // getColorForModification, which is where this swatch comes from too
     expect(items.find(i => i.label === '6mA')?.color).toBe('rgb(51,0,111)')
   })
 
-  // The blue swatch covers both walks in this mode, so it cannot be named for
-  // the cytosine one: extract.ts draws the non-cytosine remainder two-color, and
-  // a 6mA call under the threshold is painted the same blue over an ADENINE.
-  // "Unmethylated" over those is a wrong statement about a drawn color.
-  test('the blue swatch is Unmodified once a non-cytosine type is drawn', () => {
+  // extract.ts draws the non-cytosine remainder as by type, so blue is only
+  // ever an unmethylated cytosine, beside 6mA or not.
+  test('the blue swatch is Unmethylated whatever else is drawn', () => {
     const labels = (detected: Map<string, string>) =>
       legendFor({ field: 'modifications', unmodified: true }, [], {
         detectedModifications: detected,
       }).map(i => i.label)
-    expect(labels(fiberseq).at(-1)).toBe('Unmodified')
-    // an ordinary methylation modBAM keeps the cytosine wording
+    expect(labels(fiberseq).at(-1)).toBe('Unmethylated')
     expect(labels(new Map([['m', 'rgb(255,0,0)']])).at(-1)).toBe('Unmethylated')
     expect(
       labels(
