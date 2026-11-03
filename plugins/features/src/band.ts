@@ -8,7 +8,7 @@ export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRende
 export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'
 export { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
 export { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export { fitLadderViews } from './LinearBasicDisplay/fitLadderViews.ts'
+export { featureBandViews } from './LinearBasicDisplay/featureBandViews.ts'
 export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
 export {
   scaleLaidOutData,
@@ -66,7 +66,7 @@ export {
   performMultiRegionHitDetection,
 } from './LinearBasicDisplay/components/hitTesting.ts'
 
-export type { FitLadderHost } from './LinearBasicDisplay/fitLadderViews.ts'
+export type { FeatureBandHost } from './LinearBasicDisplay/featureBandViews.ts'
 export type {
   FeatureHighlightMenuSelf,
   FeatureMenuHit,
@@ -86,6 +86,7 @@ export type {
   FeatureGroupSection,
 } from './LinearBasicDisplay/facet.ts'
 export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
+export type { LabelPlacementContext } from './LinearBasicDisplay/components/labelPositioning.ts'
 export type {
   FeatureInkHost,
   FeatureMatch,

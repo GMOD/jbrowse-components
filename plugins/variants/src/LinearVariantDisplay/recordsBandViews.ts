@@ -10,7 +10,6 @@ import { boundBandHeight, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   sameAsLast,
   stableIdentityComputed,
@@ -21,22 +20,15 @@ import {
   FEATURE_DESCRIPTION_FIELD,
   FEATURE_NAME_FIELD,
   MIN_GROW_HEIGHT,
-  buildFeatureFlatbushIndex,
   countTruncatedFeatures,
   createMembershipMemo,
-  featureGroupSections,
+  featureBandViews,
   featureIdsTouchingBlocks,
   hiddenSectionFeatureIds,
-  indexById,
-  fitLadderViews,
-  isPlacedRow,
   labelFontSize,
   labelVisibility,
   maxBottom,
-  scaleLaidOutData,
-  unplaceBelow,
 } from '@jbrowse/plugin-features/band'
-import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { computed, observable } from 'mobx'
 
 import { cellHueField } from '../shared/cellHue.ts'
@@ -74,12 +66,12 @@ import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   DisplayMode,
+  FeatureBandHost,
   FeatureDataResult,
   FeatureFacet,
   FeatureGroupSection,
-  FitLadderHost,
   FitStage,
-  FlatbushRegionIndexes,
+  LabelPlacementContext,
   LayoutRegionData,
 } from '@jbrowse/plugin-features/band'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -438,7 +430,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      * rung varies. `coarseBpPerPx`, so packing does not recompute per
      * frame of a zoom.
      */
-    get recordsLayoutInputs(): FitLadderHost['layoutInputs'] {
+    get recordsLayoutInputs(): FeatureBandHost['layoutInputs'] {
       return {
         bpPerPx: self.view.coarseBpPerPx,
         displayMode: this.recordsPackMode,
@@ -642,11 +634,11 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
 }
 
 export function recordsLayoutViews(self: RecordsLayoutHost) {
-  // LinearBasicDisplay's own fit ladder, hosted for the band. Its host
+  // LinearBasicDisplay's own feature band, hosted for the records. Its host
   // is a plain object and not this model, whose `facet` is the sample
-  // facet and not a feature one; `observable` caches each ladder getter
-  // as a computed, as spreading it into a model's views would.
-  const host: FitLadderHost = {
+  // facet and not a feature one; `observable` caches each band getter as a
+  // computed, as spreading it into a model's views would.
+  const host: FeatureBandHost = {
     get rpcDataMap() {
       return self.recordsRenderDataMap
     },
@@ -682,15 +674,21 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     get labelFontSize() {
       return self.recordsFontSize
     },
+    // over rows a record the band has no room for hides; with no rows the
+    // band is the display, and squeezes as a feature track does
+    get hidesOverflow() {
+      return !self.recordsOnly
+    },
   }
-  const ladder = observable(fitLadderViews(host), {
+  const band = observable(featureBandViews(host), {
     fitLayoutAt: false,
     decimatedLayoutInputs: false,
     solveLabelRoomFactors: false,
     bodyScaleHeightProbe: false,
+    searchFeatureByID: false,
   })
   const fullStackHeight = computed(() =>
-    maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
+    maxBottom(band.baseLaidOutDataMap, self.recordsMeasureIds),
   )
   // over rows the band's height is added to the display's, so it reads
   // nothing of the display's height
@@ -706,45 +704,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
           }),
       showChips: self.atGenomicPositions && !self.recordsOnly,
       connectorsHeight: self.connectorsHeight,
-    }),
-  )
-  const sameHitInputs = sameAsLast<{
-    bpPerPx: number
-    showLabels: boolean
-    showDescriptions: boolean
-    fontSize: number
-  }>()
-  const laidOut = computed(() => {
-    const { layout, scale } = ladder.fitStage
-    const facet = self.recordsFacet
-    return !self.recordsOnly
-      ? unplaceBelow(layout, bands.get().reserved.records)
-      : scale === 1
-        ? layout
-        : scaleLaidOutData(
-            layout,
-            scale,
-            facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-          )
-  })
-  const flatbushIndexes = createEncodeMemo(
-    () => laidOut.get(),
-    () =>
-      sameHitInputs({
-        bpPerPx: self.view.coarseBpPerPx,
-        showLabels: ladder.fitStage.showLabels,
-        showDescriptions: ladder.fitStage.showDescriptions,
-        fontSize: self.recordsFontSize,
-      }),
-    (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
-      feature: buildFeatureFlatbushIndex(
-        data.flatbushItems,
-        data.floatingLabelsData,
-        bpPerPx,
-        self.recordsRenderDataMap.get(idx)?.reversed === true,
-        labels,
-      ),
-      subfeature: null,
     }),
   )
   return {
@@ -777,7 +736,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * bodies thin, names decimate, names go, and the boxes squeeze.
      */
     get recordsFitStage(): FitStage {
-      return ladder.fitStage
+      return band.fitStage
     },
     /**
      * #getter
@@ -787,7 +746,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * last rung a record that does not fit the band hides.
      */
     get recordsLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-      return laidOut.get()
+      return band.laidOutDataMap
     },
     /**
      * #getter
@@ -814,23 +773,15 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * packer reserved above it; empty while the records are one section.
      */
     get recordsGroupSections(): FeatureGroupSection[] {
-      const facet = self.recordsFacet
-      return facet
-        ? featureGroupSections(
-            this.recordsLaidOutDataMap,
-            facet,
-            GROUP_LABEL_HEIGHT,
-          )
-        : []
+      return band.groupSections
     },
     /**
      * #getter
      * Which label kinds the band paints: what the kept rung reserved, so a
      * box never claims width for a description the band had no room for.
      */
-    get recordsRenderedLabels() {
-      const { showLabels, showDescriptions } = this.recordsFitStage
-      return { showLabels, showDescriptions }
+    get recordsRenderedLabels(): LabelPlacementContext {
+      return band.renderedLabels
     },
     /**
      * #getter
@@ -840,7 +791,16 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * across pointer frames.
      */
     get recordsFlatbushIndexes() {
-      return flatbushIndexes()
+      return band.flatbushIndexes
+    },
+    /**
+     * #getter
+     * The band's record ids to the primitives they painted, per region.
+     * Held by no autorun, as a feature track's: built when a hover or a
+     * highlight first asks, and the per-region memo outlives the computed.
+     */
+    get recordsRegionInstanceIndexes() {
+      return band.regionInstanceIndexes
     },
     /**
      * #getter
@@ -886,13 +846,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       return self.showRecords && self.canRender && self.cellData !== undefined
     },
     /**
-     * #getter
-     * The band's laid-out records by id, what `searchFeatureByID` reads.
-     */
-    get recordsItemById() {
-      return indexById(this.recordsLaidOutDataMap, data => data.flatbushItems)
-    },
-    /**
      * #method
      * Where a record drew, `[startBp, top, endBp, bottom]`, as a feature
      * track answers it: the breakpoint split view's overlay subtracts the
@@ -900,15 +853,10 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * does not scroll. A record the band hides is not found.
      */
     searchFeatureByID(id: string) {
-      const item = this.recordsItemById.get(id)
+      const drawn = band.searchFeatureByID(id)
       const shift = self.scrollTop - this.recordsScrollTop
-      return item && isPlacedRow(item.topPx)
-        ? ([
-            item.startBp,
-            item.topPx + shift,
-            item.endBp,
-            item.bottomPx + shift,
-          ] as const)
+      return drawn
+        ? ([drawn[0], drawn[1] + shift, drawn[2], drawn[3] + shift] as const)
         : undefined
     },
   }

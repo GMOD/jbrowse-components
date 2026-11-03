@@ -5,14 +5,12 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  buildRegionInstanceIndex,
   createMembershipMemo,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
   resolveFeatureHighlights,
 } from '@jbrowse/plugin-features/band'
-import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 
 import type { VariantTopBands } from './variantTopBands.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -22,6 +20,7 @@ import type {
   FeatureHighlightModel,
   FeatureInkHost,
   FeatureMatch,
+  LabelPlacementContext,
   LayoutRegionData,
   RegionInstanceIndex,
   ResolvedHighlights,
@@ -36,8 +35,8 @@ interface RecordsHighlightHost extends IStateTreeNode {
   canvasWidthPx: number
   topBands: Pick<VariantTopBands, 'reserved'>
   recordsScrollTop: number
-  recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
-  recordsFontSize: number
+  recordsRenderedLabels: LabelPlacementContext
+  recordsRegionInstanceIndexes: ReadonlyMap<number, RegionInstanceIndex>
   view: { displayedRegions: readonly { refName: string }[] }
 }
 
@@ -48,31 +47,13 @@ interface RecordsHighlightHost extends IStateTreeNode {
  */
 export function recordsHighlightViews(self: RecordsHighlightHost) {
   const sameBoxed = createMembershipMemo()
-  const instanceIndexOf = createEncodeMemo(
-    () => self.recordsLaidOutDataMap,
-    undefined,
-    data => buildRegionInstanceIndex(data),
-  )
   return {
-    /**
-     * #getter
-     * The band's record ids to the primitives they painted, per region.
-     * Held by no autorun, as a feature track's: built when a hover or a
-     * highlight first asks, and the per-region memo outlives the computed.
-     */
-    get recordsRegionInstanceIndexes(): ReadonlyMap<
-      number,
-      RegionInstanceIndex
-    > {
-      return instanceIndexOf()
-    },
     /**
      * #getter
      * The band as plugin-features's ink reads a feature track: its stack,
      * its scroll and height, and the labels it drew.
      */
     get recordsInkHost(): FeatureInkHost {
-      const { showLabels, showDescriptions } = self.recordsRenderedLabels
       return {
         renderBlocks: self.renderBlocks,
         renderDataMap: self.recordsLaidOutDataMap,
@@ -82,13 +63,8 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
           canvasHeight: self.topBands.reserved.records,
           outlineColor: 0,
         },
-        regionInstanceIndexes: this.recordsRegionInstanceIndexes,
-        renderedLabels: {
-          showLabels,
-          showDescriptions,
-          showSubfeatureLabels: false,
-          fontSize: self.recordsFontSize,
-        },
+        regionInstanceIndexes: self.recordsRegionInstanceIndexes,
+        renderedLabels: self.recordsRenderedLabels,
       }
     },
     /**

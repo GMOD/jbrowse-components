@@ -10,6 +10,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   FeatureDataResult,
   FeatureGroupSection,
+  LabelPlacementContext,
 } from '@jbrowse/plugin-features/band'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -21,8 +22,7 @@ export interface RecordsBandPaintModel {
   topBands: VariantTopBands
   renderBlocks: RenderBlock[]
   recordsLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
-  recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
-  recordsFontSize: number
+  recordsRenderedLabels: LabelPlacementContext
   recordsGroupSections: FeatureGroupSection[]
   recordsScrollTop: number
 }
@@ -46,7 +46,6 @@ export function recordsBandPainter(
     bandHeight: model.topBands.reserved.records,
     scrollY: model.recordsScrollTop,
     ...model.recordsRenderedLabels,
-    fontSize: model.recordsFontSize,
     palette,
   }
   return (ctx: Ctx2D) => {

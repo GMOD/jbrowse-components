@@ -293,7 +293,7 @@ describe('the description over rows rides the one label line', () => {
 
   test('over rows, the line still draws', () => {
     const display = recordsDisplayAt(FEW, 10, namesOff).display
-    expect(display.recordsRenderedLabels).toEqual({
+    expect(display.recordsRenderedLabels).toMatchObject({
       showLabels: true,
       showDescriptions: false,
     })
@@ -301,7 +301,7 @@ describe('the description over rows rides the one label line', () => {
 
   test('with no rows, the description line alone draws', () => {
     const display = recordsDisplayAt(FEW, 10, namesOff, false).display
-    expect(display.recordsRenderedLabels).toEqual({
+    expect(display.recordsRenderedLabels).toMatchObject({
       showLabels: false,
       showDescriptions: true,
     })

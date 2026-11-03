@@ -45,13 +45,10 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -70,13 +67,8 @@ import {
 } from '../shared/fetchFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createFeatureDetailsOpener } from '../shared/openFeatureDetails.ts'
-import { scaleLaidOutData } from './applyLayout.ts'
-import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
+import { findSubfeatureById } from './baseModelHelpers.ts'
 import { colorViews } from './colorViews.ts'
-import {
-  buildFeatureFlatbushIndex,
-  buildSubfeatureFlatbushIndex,
-} from './components/hitTesting.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
   forEachDisplayLabel,
@@ -84,16 +76,11 @@ import {
 } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
-import {
-  facetField,
-  featureGroupSections,
-  hiddenSectionFeatureIds,
-  sectionIdsOf,
-} from './facet.ts'
+import { facetField, hiddenSectionFeatureIds, sectionIdsOf } from './facet.ts'
+import { featureBandViews } from './featureBandViews.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
-  buildRegionInstanceIndex,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
@@ -104,8 +91,6 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
-import { renderedLabelContext } from './fitLadder.ts'
-import { fitLadderViews } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
@@ -114,7 +99,6 @@ import {
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
-import { isPlacedRow } from './rowPlacement.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import {
   labelVisibility,
@@ -149,14 +133,9 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
-import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
-import type { LabelPlacementContext } from './components/labelPositioning.ts'
-import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
+import type { FeatureFacet } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
-import type {
-  FeatureMatch,
-  RegionInstanceIndex,
-} from './featureHighlightInk.ts'
+import type { FeatureMatch } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { LayoutRegionData } from './layoutInputs.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
@@ -774,71 +753,24 @@ export default function baseStateModelFactory(
       get reservesBelowLabelRows() {
         return self.effectiveSubfeatureLabels === 'below'
       },
+      /**
+       * #getter
+       * A feature track squeezes an overflowing stack into its height
+       * rather than hide what overflows.
+       */
+      get hidesOverflow() {
+        return false
+      },
     }))
-    .views(fitLadderViews)
-    .views(self => {
-      let squeezed:
-        | {
-            layout: ReadonlyMap<number, FeatureDataResult>
-            scale: number
-            facet: FeatureFacet | undefined
-            out: ReadonlyMap<number, FeatureDataResult>
-          }
-        | undefined
-      return {
-        /**
-         * #getter
-         * Uniform vertical scale for fit mode; below 1 only while the stack
-         * is squeezed to fit.
-         */
-        get fitScale() {
-          return self.fitStage.scale
-        },
-        /**
-         * #getter
-         * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only when squeezed.
-         */
-        // A settle re-resolves the fit stage onto the same layout and scale,
-        // and fresh clones would re-index and re-upload every region.
-        get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-          const { layout, scale } = self.fitStage
-          const { facet } = self
-          if (scale === 1) {
-            return layout
-          }
-          if (
-            squeezed?.layout !== layout ||
-            squeezed.scale !== scale ||
-            squeezed.facet !== facet
-          ) {
-            squeezed = {
-              layout,
-              scale,
-              facet,
-              out: scaleLaidOutData(
-                layout,
-                scale,
-                facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-              ),
-            }
-          }
-          return squeezed.out
-        },
-      }
-    })
+    .views(featureBandViews)
     .views(self => ({
       /**
        * #getter
-       * The stacked sections in stacking order, each with the chip row
-       * the packer reserved above it, read off the same rows the glyphs
-       * paint; empty while ungrouped.
+       * Uniform vertical scale for fit mode; below 1 only while the stack
+       * is squeezed to fit.
        */
-      get groupSections(): FeatureGroupSection[] {
-        const { facet } = self
-        return facet
-          ? featureGroupSections(self.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
-          : []
+      get fitScale() {
+        return self.fitStage.scale
       },
       /**
        * #getter
@@ -846,7 +778,7 @@ export default function baseStateModelFactory(
        * the layout produced a section for it.
        */
       get showsGroupLabels() {
-        return this.groupSections.length > 0
+        return self.groupSections.length > 0
       },
       /**
        * #getter
@@ -859,44 +791,31 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * The labels the kept rung reserved room for, and the size it priced
-       * them at: what the canvas, the DOM layer, the hit test, the highlight
-       * and the SVG export all draw or measure.
-       */
-      get renderedLabels(): LabelPlacementContext {
-        return renderedLabelContext(
-          self.fitStage,
-          self.reservesBelowLabelRows,
-          self.labelFontSize,
-        )
-      },
-      /**
-       * #getter
        * @deprecated read `renderedLabels.showDescriptions`
        */
       get renderedShowDescriptions() {
-        return this.renderedLabels.showDescriptions
+        return self.renderedLabels.showDescriptions
       },
       /**
        * #getter
        * @deprecated read `renderedLabels.showLabels`
        */
       get renderedShowLabels() {
-        return this.renderedLabels.showLabels
+        return self.renderedLabels.showLabels
       },
       /**
        * #getter
        * @deprecated read `renderedLabels.showSubfeatureLabels`
        */
       get renderedShowSubfeatureLabels() {
-        return this.renderedLabels.showSubfeatureLabels
+        return self.renderedLabels.showSubfeatureLabels
       },
       /**
        * #getter
        * @deprecated read `renderedLabels.fontSize`
        */
       get renderedLabelFontSize() {
-        return this.renderedLabels.fontSize
+        return self.renderedLabels.fontSize
       },
       /**
        * #getter
@@ -970,19 +889,6 @@ export default function baseStateModelFactory(
         )
         return labels
       },
-      /**
-       * #getter
-       */
-      get featureIdIndex() {
-        return indexById(self.laidOutDataMap, d => d.flatbushItems)
-      },
-
-      /**
-       * #getter
-       */
-      get subfeatureIdIndex() {
-        return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
-      },
     }))
     .views(self => ({
       /**
@@ -1022,25 +928,6 @@ export default function baseStateModelFactory(
         return info ? info.subfeature : self.hoveredSubfeature
       },
     }))
-    .views(self => {
-      const instanceIndexOf = createEncodeMemo(
-        () => self.laidOutDataMap,
-        undefined,
-        data => buildRegionInstanceIndex(data),
-      )
-      return {
-        /**
-         * #getter
-         * Feature and subfeature ids to the primitives they painted, per
-         * laid-out region. Deliberately held by no autorun: nothing builds it
-         * until a hover or a selection asks which instances to light, and the
-         * per-region memo outlives the computed that MobX drops between hovers.
-         */
-        get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
-          return instanceIndexOf()
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -1120,62 +1007,12 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #method
-       * Where a feature drew, `[startBp, top, endBp, bottom]`. A feature the
-       * layout left unplaced, truncated or in a hidden section, is not found.
        */
-      searchFeatureByID(id: string) {
-        const item = self.featureIdIndex.get(id)
-        return item && isPlacedRow(item.topPx)
-          ? ([item.startBp, item.topPx, item.endBp, item.bottomPx] as const)
-          : undefined
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
       },
     }))
-    .views(self => {
-      const sameHitInputs = sameAsLast<{
-        bpPerPx: number
-        showLabels: boolean
-        showDescriptions: boolean
-        fontSize: number
-      }>()
-      // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
-      // were packed at. Per region, since the incremental layout keeps an
-      // unchanged region's object and a rebuild costs a Hilbert sort.
-      const indexesOf = createEncodeMemo(
-        () => self.laidOutDataMap,
-        () =>
-          sameHitInputs({
-            bpPerPx: containingLgv(self).coarseBpPerPx,
-            showLabels: self.renderedLabels.showLabels,
-            showDescriptions: self.renderedLabels.showDescriptions,
-            fontSize: self.renderedLabels.fontSize,
-          }),
-        (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
-          feature: buildFeatureFlatbushIndex(
-            data.flatbushItems,
-            data.floatingLabelsData,
-            bpPerPx,
-            self.rpcDataMap.get(idx)?.reversed === true,
-            labels,
-          ),
-          subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
-        }),
-      )
-      return {
-        /**
-         * #getter
-         */
-        get flatbushIndexes() {
-          return indexesOf()
-        },
-        /**
-         * #method
-         */
-        async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts)
-        },
-      }
-    })
     .actions(self => ({
       /**
        * #action

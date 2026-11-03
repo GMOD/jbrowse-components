@@ -11,7 +11,6 @@ import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
-import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
 import {
@@ -28,8 +27,7 @@ import {
   featureGroupSections,
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
-import { renderedLabelContext } from './LinearBasicDisplay/fitLadder.ts'
-import { fitLadderViews } from './LinearBasicDisplay/fitLadderViews.ts'
+import { featureBandViews } from './LinearBasicDisplay/featureBandViews.ts'
 import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
 import {
   ARROW_LENGTH_PX,
@@ -455,7 +453,7 @@ export async function featureTables(
       ]
     }),
   )
-  const stage = fitLadderViews({
+  const band = featureBandViews({
     rpcDataMap,
     layoutReady: true,
     layoutInputs: {
@@ -480,15 +478,9 @@ export async function featureTables(
     reservesBelowLabelRows: subfeatureLabels === 'below',
     fitTargetHeight: trackHeight,
     labelFontSize: fontSize,
-  }).fitStage
-  const laid =
-    stage.scale === 1
-      ? stage.layout
-      : scaleLaidOutData(
-          stage.layout,
-          stage.scale,
-          facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-        )
+    hidesOverflow: false,
+  })
+  const laid = band.laidOutDataMap
   const palette = resolvePalette()
   const colors = featureColorViews({
     conf: { encoding: { color: conf.encoding.color } },
@@ -509,7 +501,7 @@ export async function featureTables(
   const key = colorKeyTables(scales)
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
-    ...renderedLabelContext(stage, subfeatureLabels === 'below', fontSize),
+    ...band.renderedLabels,
     colors: labelColors(palette),
   }
   const regionLabels = displayLabels(regions, resolved, labels, bpPerPx)

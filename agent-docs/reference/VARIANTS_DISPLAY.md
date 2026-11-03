@@ -363,12 +363,13 @@ applies `rowsTopOffset` itself, goes on the display's own box, where
 (ADR-254, amending ADR-250). `buildRecordsRenderData` rebuilds each
 structural-variant record from the cell payload as a `SimpleFeature`, and
 everything after is `@jbrowse/plugin-features/band`: the pack,
-LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
-`FitLadderHost`, since this model's `facet` is the sample facet),
-`paintFeatureBand` on screen and in the export, and
+LinearBasicDisplay's own feature band (`featureBandViews` over a plain
+`FeatureBandHost`, since this model's `facet` is the sample facet), which
+owns the fit ladder, the kept stack, its sections, id lookups and hit
+indexes, `paintFeatureBand` on screen and in the export, and
 `performMultiRegionHitDetection` for the pick. Nested records stack. The
 band is one seam on the model, `recordsBandViews.ts`: its settings, actions,
-render data, the hosted ladder and the display hooks it decides
+render data, the hosted feature band and the display hooks it decides
 (`rowsHeaderHeight`, `growMaxHeight`, `growTargetHeight`, the
 scroll hooks, `densityGateActive`), composed in order as views factories, so
 a `recordsOnly` choice in the model belongs there.

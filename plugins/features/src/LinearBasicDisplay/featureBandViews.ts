@@ -1,9 +1,19 @@
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 
+import { scaleLaidOutData, unplaceBelow } from './applyLayout.ts'
+import { indexById } from './baseModelHelpers.ts'
+import {
+  buildFeatureFlatbushIndex,
+  buildSubfeatureFlatbushIndex,
+} from './components/hitTesting.ts'
 import { featureGroupSections } from './facet.ts'
+import { buildRegionInstanceIndex } from './featureHighlightInk.ts'
 import {
   MIN_FIT_BOX_PX,
   labeledBodyFloorScale,
+  renderedLabelContext,
   resolveFitLadder,
   solveBodyScale,
   solveIsoformCount,
@@ -24,9 +34,13 @@ import {
   maxDrawnBoxHeight,
   minDrawnBoxHeight,
 } from './layoutQueries.ts'
+import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureFacet } from './facet.ts'
+import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
+import type { LabelPlacementContext } from './components/labelPositioning.ts'
+import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
+import type { RegionInstanceIndex } from './featureHighlightInk.ts'
 import type { FitRung, FitStage, LabelReservation } from './fitLadder.ts'
 import type { IncrementalLayout, PackHeightCache } from './layout.ts'
 import type {
@@ -51,7 +65,10 @@ const BARE_RESERVATION: LabelReservation = {
   dropBelowLabelRows: true,
 }
 
-export interface FitLadderHost {
+// Structural, so a host that is not a LinearBasicDisplay (the variant
+// display's records band, the R export) carries the band without importing a
+// model type.
+export interface FeatureBandHost {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>
   layoutReady: boolean
   // `expandedGeneIds` is Required, not merely picked: every rung spreads
@@ -77,9 +94,65 @@ export interface FitLadderHost {
   reservesBelowLabelRows: boolean
   fitTargetHeight: number
   labelFontSize: number
+  // Past the ladder's last rung, leave unplaced what overflows
+  // `fitTargetHeight` rather than squeeze the stack into it.
+  hidesOverflow: boolean
 }
 
-export function fitLadderViews(self: FitLadderHost) {
+interface HitIndexSource {
+  laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
+  renderedLabels: LabelPlacementContext
+}
+
+// `bpPerPx` is the layout's, the debounced `coarseBpPerPx` the rows were
+// packed at. Per region, since the incremental layout keeps an unchanged
+// region's object and a Flatbush rebuild costs a Hilbert sort.
+function createHitIndexes(self: FeatureBandHost, band: HitIndexSource) {
+  const sameInputs = sameAsLast<{
+    bpPerPx: number
+    showLabels: boolean
+    showDescriptions: boolean
+    fontSize: number
+  }>()
+  return {
+    flatbush: createEncodeMemo(
+      () => band.laidOutDataMap,
+      () => {
+        const { showLabels, showDescriptions, fontSize } = band.renderedLabels
+        return sameInputs({
+          bpPerPx: self.layoutInputs.bpPerPx,
+          showLabels,
+          showDescriptions,
+          fontSize,
+        })
+      },
+      (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
+        feature: buildFeatureFlatbushIndex(
+          data.flatbushItems,
+          data.floatingLabelsData,
+          bpPerPx,
+          self.rpcDataMap.get(idx)?.reversed === true,
+          labels,
+        ),
+        subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
+      }),
+    ),
+    instances: createEncodeMemo(
+      () => band.laidOutDataMap,
+      undefined,
+      data => buildRegionInstanceIndex(data),
+    ),
+  }
+}
+
+/**
+ * The feature pipeline from fetched regions to what a band draws and picks:
+ * the fit ladder, the kept stack, the labels it reserved, its sections, its
+ * id lookups and its hit indexes. LinearBasicDisplay mixes it into its views;
+ * the variant display's records band and the R export host it on a plain
+ * object.
+ */
+export function featureBandViews(self: FeatureBandHost) {
   // One memo per reservation config, since an instance caches one config at a
   // time. Closure state, so MobX sees neither the memos nor their caches.
   const incrementalLayout = createIncrementalLayout()
@@ -100,6 +173,19 @@ export function fitLadderViews(self: FitLadderHost) {
   const packHeightsIsoforms = createPackHeightCache()
   const packHeightsThinned = createPackHeightCache()
   const packHeightsDecimated = createPackHeightCache()
+  // A settle re-resolves the fit stage onto the same layout and scale, and
+  // fresh clones would re-index and re-upload every region.
+  let squeezed:
+    | {
+        layout: ReadonlyMap<number, FeatureDataResult>
+        scale: number
+        facet: FeatureFacet | undefined
+        out: ReadonlyMap<number, FeatureDataResult>
+      }
+    | undefined
+  // Built on the first read, off the band as hosted: an MST node or a MobX
+  // observable, which the memos must read through to see its computeds.
+  let hitIndexes: ReturnType<typeof createHitIndexes> | undefined
   // A rung the ladder stops reaching would otherwise keep its cloned layout
   // and the raw regions it was packed from alive, so each solve empties what
   // this mode cannot reach and drops what the store has since evicted from the
@@ -612,6 +698,111 @@ export function fitLadderViews(self: FitLadderHost) {
       )
       releaseUnreachedMemos()
       return stage
+    },
+    /**
+     * #getter
+     * What every consumer (hit test, GPU upload, React render) reads: the
+     * kept stack, cloned and scaled only when squeezed, or with what
+     * overflows left unplaced on a host that hides it.
+     */
+    get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
+      const { layout, scale } = this.fitStage
+      const { facet } = self
+      if (self.hidesOverflow) {
+        return unplaceBelow(layout, self.fitTargetHeight)
+      }
+      if (scale === 1) {
+        return layout
+      }
+      if (
+        squeezed?.layout !== layout ||
+        squeezed.scale !== scale ||
+        squeezed.facet !== facet
+      ) {
+        squeezed = {
+          layout,
+          scale,
+          facet,
+          out: scaleLaidOutData(
+            layout,
+            scale,
+            facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+          ),
+        }
+      }
+      return squeezed.out
+    },
+    /**
+     * #getter
+     * The labels the kept rung reserved room for, and the size it priced
+     * them at: what the canvas, the DOM layer, the hit test, the highlight
+     * and the SVG export all draw or measure.
+     */
+    get renderedLabels(): LabelPlacementContext {
+      return renderedLabelContext(
+        this.fitStage,
+        self.reservesBelowLabelRows,
+        self.labelFontSize,
+      )
+    },
+    /**
+     * #getter
+     * The stacked sections in stacking order, each with the chip row the
+     * packer reserved above it, read off the same rows the glyphs paint;
+     * empty while ungrouped.
+     */
+    get groupSections(): FeatureGroupSection[] {
+      const { facet } = self
+      return facet
+        ? featureGroupSections(this.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
+        : []
+    },
+    /**
+     * #getter
+     */
+    get featureIdIndex() {
+      return indexById(this.laidOutDataMap, d => d.flatbushItems)
+    },
+    /**
+     * #getter
+     */
+    get subfeatureIdIndex() {
+      return indexById(this.laidOutDataMap, d => d.subfeatureInfos)
+    },
+    /**
+     * #method
+     * Where a feature drew, `[startBp, top, endBp, bottom]`. A feature the
+     * layout left unplaced, truncated or in a hidden section, is not found.
+     */
+    searchFeatureByID(id: string) {
+      const item = this.featureIdIndex.get(id)
+      return item && isPlacedRow(item.topPx)
+        ? ([item.startBp, item.topPx, item.endBp, item.bottomPx] as const)
+        : undefined
+    },
+    /**
+     * #getter
+     * Per-region hit index over the kept stack and the RENDERED label
+     * flags, a label's overhang being part of its hit box.
+     */
+    get flatbushIndexes(): ReadonlyMap<number, FlatbushRegionIndexes> {
+      if (!hitIndexes) {
+        hitIndexes = createHitIndexes(self, this)
+      }
+      return hitIndexes.flatbush()
+    },
+    /**
+     * #getter
+     * Feature and subfeature ids to the primitives they painted, per
+     * laid-out region. Deliberately held by no autorun: nothing builds it
+     * until a hover or a selection asks which instances to light, and the
+     * per-region memo outlives the computed that MobX drops between hovers.
+     */
+    get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
+      if (!hitIndexes) {
+        hitIndexes = createHitIndexes(self, this)
+      }
+      return hitIndexes.instances()
     },
   }
 }
