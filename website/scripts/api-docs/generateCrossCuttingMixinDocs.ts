@@ -1,7 +1,7 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { composeCalls, markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the cross-cutting-mixin table in the architecture spec from the source,
 // the way `generateDisplayFoundationDocs` already does for the foundations.

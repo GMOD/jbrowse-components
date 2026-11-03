@@ -1,7 +1,7 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the list of adapters wired to the shared BGZF inflate pool into
 // BGZF_WORKER_POOL.md, from the call sites.

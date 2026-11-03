@@ -43,7 +43,7 @@ import { writeShaderShapeDocs } from './generateShaderShapeDocs.ts'
 import { writeSlotTypeDocs } from './generateSlotTypeDocs.ts'
 import { writeTutorialInstallDocs } from './generateTutorialInstallDocs.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Every marker-block generator that needs nothing from the TypeScript program —
 // one list, so `generate.ts` (which writes them as part of a full run) and

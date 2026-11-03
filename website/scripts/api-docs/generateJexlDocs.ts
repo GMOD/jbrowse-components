@@ -4,9 +4,10 @@ import {
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from '../markerDocs.ts'
-import { jsDocText, parsePipeTags, parseSourceFileSyntactic } from './util.ts'
+import { parseSourceFileSyntactic } from './sourceCorpus.ts'
+import { jsDocText, parsePipeTags } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the jexl function catalog into the jexl config guide straight from the
 // `j.addFunction(...)` / `j.addBinaryOp(...)` registrations, so the documented

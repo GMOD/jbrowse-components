@@ -2,15 +2,11 @@ import {
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from '../markerDocs.ts'
-import {
-  jsDocText,
-  markdownTable,
-  parsePipeTags,
-  parseSourceFileSyntactic,
-  tableCell,
-} from './util.ts'
+import { parseSourceFileSyntactic } from './sourceCorpus.ts'
+import { jsDocText, markdownTable, parsePipeTags, tableCell } from './util.ts'
 
-import type { DisplayTrackLink, SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
+import type { DisplayTrackLink } from './util.ts'
 import type { Node } from 'typescript'
 
 // Render the format -> adapter -> track type tables into the "Supported file

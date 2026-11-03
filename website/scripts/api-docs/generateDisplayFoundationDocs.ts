@@ -1,7 +1,7 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { composeCalls, markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the display-foundations table into the hand-written creating_display
 // guide from the source itself, so the "used by" column can't drift. It already

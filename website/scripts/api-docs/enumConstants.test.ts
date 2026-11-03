@@ -11,7 +11,7 @@ import {
   slotFieldConstantPairs,
   slotFieldFactoryPairs,
 } from './enumConstants.ts'
-import { parseSourceFileSyntactic } from './util.ts'
+import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
 import type * as ts from 'typescript'
 

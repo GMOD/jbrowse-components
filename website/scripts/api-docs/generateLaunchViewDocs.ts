@@ -5,7 +5,7 @@ import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { scanLaunchArgs } from './generateSpecKeyDocs.ts'
 import { markdownTable, tableCell } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // The `LaunchView-<type>` extension points, rendered into the extension-points
 // guide from the same registry `SPEC_KEYS` reads on the URL parameters page.

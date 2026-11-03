@@ -9,7 +9,7 @@ import {
 import { markdownTable, proseCell } from './util.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the "what can I put in a session spec for this view type" tables into
 // the URL parameters page, from the views' own declarations.

@@ -3,7 +3,7 @@ import fs from 'fs'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // The menus guide used to carry the whole of `MenuTypes.ts` as an `include:`
 // fence — ~130 lines of interface declarations and maintainer rationale — plus a

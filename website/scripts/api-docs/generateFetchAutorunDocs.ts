@@ -3,11 +3,8 @@ import { readFileSync } from 'node:fs'
 import * as ts from 'typescript'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
-import {
-  lastTaggedLine,
-  markdownTable,
-  parseSourceFileSyntactic,
-} from './util.ts'
+import { parseSourceFileSyntactic } from './sourceCorpus.ts'
+import { lastTaggedLine, markdownTable } from './util.ts'
 
 // Render the fetch-lifecycle autorun table into the data-fetching guide and the
 // architecture spec from the install sites themselves. Both had drifted, in the

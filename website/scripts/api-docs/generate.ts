@@ -26,13 +26,11 @@ import {
 import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
+import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
-  corpusFiles,
   createDocProgram,
   extractWithComment,
-  getAllFiles,
-  sourceCorpus,
   unreadableSignature,
 } from './util.ts'
 

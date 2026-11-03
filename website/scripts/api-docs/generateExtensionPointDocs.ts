@@ -1,7 +1,7 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render a completeness index of every extension point into the hand-written
 // extension_points guide, sourced from the actual registration/fire sites so the

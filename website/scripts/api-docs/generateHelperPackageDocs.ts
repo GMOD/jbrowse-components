@@ -5,7 +5,7 @@ import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { servedPackages } from './generateReExportDocs.ts'
 import { markdownTable } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Render the standalone-helper-package table into the imports guide from the
 // workspace manifests, because the hand-written version was not merely stale
