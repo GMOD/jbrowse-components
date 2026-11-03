@@ -123,7 +123,7 @@ interface ModelHeader {
   category?: string
   // false when the #stateModel JSDoc is attached to a declaration that builds no
   // MST model, so its composition chain (and every inherited member row) is
-  // silently empty — see definesStateModel in util.ts
+  // silently empty — see definesStateModel in docProgram.ts
   definesModel?: boolean
 }
 export interface StateModel {

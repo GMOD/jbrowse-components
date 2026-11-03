@@ -264,7 +264,7 @@ function collectRegistrations(): Registration[] {
         const [arg] = n.arguments ?? []
         if (arg && ts.isObjectLiteralExpression(arg)) {
           // `name` and `viewType` must be string literals in the object, the
-          // same constraint `api-docs/util.ts` puts on the display↔track link
+          // same constraint `api-docs/docProgram.ts` puts on the display↔track link
           // — and `plugins/variants/src/LDDisplay/index.ts` carries the comment
           // explaining what it cost to learn that: fed identifiers from a loop,
           // that scan silently finds nothing and both LD displays drop out of a

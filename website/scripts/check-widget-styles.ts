@@ -215,7 +215,7 @@ const WIDGETS: Widget[] = [
     ],
   },
   {
-    // scripts/api-docs/util.ts dialogCell
+    // scripts/api-docs/markdown.ts dialogCell
     name: 'api-docs cell dialog',
     find: 'class="cell-dialog"',
     check: async page => [

@@ -28,7 +28,7 @@ right as of that date; the gaps that let them drift are still open.
 
 ## What is checked now
 
-`assertExamplesValidate` in `website/scripts/api-docs/generateConfigDocs.ts`
+`assertExamplesValidate` in `website/scripts/api-docs/configExamples.ts`
 validates every js/json fence in a `#config` `#example` against the config
 schema, keys and values, on each `pnpm autogen`.
 

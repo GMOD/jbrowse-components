@@ -125,11 +125,11 @@ it.
 
 Type signatures come from the TypeScript checker, which truncates past ~340
 characters by cutting mid-token and by emptying nested groups. `typeSignature`
-in `util.ts` re-renders a truncated type whole, and `elideSignature` shortens an
-over-long one structurally instead, collapsing generic arguments from the inside
-out (`IConfigurationReference<ConfigurationSchemaType<…>>`) so what survives is
-the outer constructor and the function's own parameter/return shape. An
-overloaded function prints one arrow per overload.
+in `typeSignatures.ts` re-renders a truncated type whole, and `elideSignature`
+shortens an over-long one structurally instead, collapsing generic arguments
+from the inside out (`IConfigurationReference<ConfigurationSchemaType<…>>`) so
+what survives is the outer constructor and the function's own parameter/return
+shape. An overloaded function prints one arrow per overload.
 
 The composition graph is **derived from code**, not authored — the generator
 resolves the models passed to the factory's `types.compose(...)` call, and the
@@ -334,7 +334,7 @@ doc renders, and a doc block no generator writes, are both errors. Unchecked,
 both would be silent — the second keeps whatever was committed, and the first
 reports itself up to date forever. A block that renders empty is an error too.
 
-Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
+Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `jsDocTags.ts`):
 
 ```js
 /** #color alignments-indicators | Insertion | Reads with an insertion */

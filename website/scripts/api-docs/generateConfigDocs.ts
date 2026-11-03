@@ -65,7 +65,7 @@ import type { SlotMeta } from './slotSource.ts'
 // enumConstants.ts) contributes its properties, in declaration order.
 //
 // A spread whose own JSDoc carries `#slot <name>` sections documents those
-// slots in place instead (`emitSpreadSlots` in util.ts), and the declared
+// slots in place instead (`emitSpreadSlots` in docProgram.ts), and the declared
 // name then wins below.
 //
 // **A spread inside a nested sub-schema keeps its parent's key**, so
@@ -372,7 +372,7 @@ export function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
 
 // Everything renderConfig/displayTypesSection need to resolve a Track's
 // "Display types" links: which Displays declare `trackType: 'ThisTrack'`
-// (see DisplayTrackLink in util.ts), the config-doc index to turn a Display
+// (see DisplayTrackLink in docProgram.ts), the config-doc index to turn a Display
 // name into a page, and which Displays also have a documented state model.
 // displayToTrackType/adaptersByTrack additionally link a display or track to the
 // data adapters that feed it (see compatibleAdaptersSection).

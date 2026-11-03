@@ -260,7 +260,7 @@ export function parseFrontmatter(
 // formatter otherwise pads every cell out to its column's widest member, so one
 // long description reflows every row into the diff.
 //
-// Named for its return type because api-docs/util.ts exports a `markdownTable`
+// Named for its return type because api-docs/markdown.ts exports a `markdownTable`
 // of its own, with the same parameters and a different return (one joined
 // string, led by a `prettier-ignore`), and that file imports this one — so the
 // two were a single mistaken import away from a table rendered as

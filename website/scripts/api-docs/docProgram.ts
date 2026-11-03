@@ -1551,7 +1551,7 @@ interface ParsedNode {
   gotchas: string[]
   category?: string
   // `#trackType <TrackType>` on an adapter's #config — the track type its
-  // example should be wrapped in (see wrapAdapterExample in generateConfigDocs)
+  // example should be wrapped in (see wrapAdapterExample in configExamples.ts)
   trackType?: string
   code: string
   signature: string

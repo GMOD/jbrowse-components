@@ -1,4 +1,4 @@
-/* The generated config/model reference tables. Markup: scripts/api-docs/util.ts
+/* The generated config/model reference tables. Markup: scripts/api-docs/markdown.ts
    (`dialogCell`, the slot-group rows), emitted into the markdown those scripts
    write. The dialog's open-on-click and light-dismiss come from
    layouts/DocsLayout.astro and components/SpecDialog.astro respectively.
