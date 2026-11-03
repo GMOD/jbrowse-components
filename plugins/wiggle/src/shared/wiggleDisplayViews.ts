@@ -30,19 +30,13 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   plotGeometry: WigglePlotGeometry
   /** The `color` object resolved against the origin and the layout. */
   wiggleColor: ResolvedWiggleColor
-  summaryField: string
-  effectiveExtent: string
-  resolution: number
-  yField: string
   /** The heading of the score key: the color's legend title, else the axis title. */
   colorKeyTitle: string
 }
 
 /**
  * The views a wiggle-family display states once `plotGeometry` names where its
- * plot sits. Installed as a `.views()` layer of its own, under the layer where
- * the display spreads `sharedRpcProps`/`sharedGpuProps` into its own
- * `rpcProps()`/`gpuProps()` — the solid-color override and the row list.
+ * plot sits. Installed as a `.views()` layer of its own.
  *
  * A plain function rather than another mixin: `types.compose` depth is a real
  * ceiling in these chains (ADR-041), and a mixin composed beside
@@ -82,41 +76,6 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
         height: plotHeight,
         numRows,
       })
-    },
-
-    /**
-     * #method
-     * The fetch cache keys, spread into the display's own
-     * `rpcProps()`. The color settings are not among them: every mode
-     * partitions by sign on the main thread, so moving the pivot re-encodes
-     * and refetches nothing.
-     *
-     * Named apart from `rpcProps` rather than overridden through it: MST
-     * *intersects* what each `.views()` layer returns, so two same-named
-     * methods resolve to the first one at the type level however the runtime
-     * member behaves.
-     */
-    sharedRpcProps() {
-      return {
-        resolution: self.resolution,
-        yField: self.yField,
-      }
-    },
-
-    /**
-     * #method
-     * The encoder inputs — everything but the row list and the row layout. Spread
-     * into the display's `gpuProps()`; see `sharedRpcProps` for why it isn't an
-     * override.
-     */
-    sharedGpuProps() {
-      return {
-        wiggleColor: self.wiggleColor,
-        origin: self.origin,
-        summaryField: self.summaryField,
-        effectiveExtent: self.effectiveExtent,
-        renderingType: self.renderingType,
-      }
     },
   }
 }

@@ -1,14 +1,16 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
-import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
+import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { WiggleScoreConfigHost } from '@jbrowse/wiggle-core'
 
 // A host widened to `AnyConfigurationModel` switches the slot-name check off
-// with no symptom, so the mixin names its own field table.
+// with no symptom, so the host names its own field table.
+type WiggleCommonHost = { configuration: WiggleConfigModel }
+
 const wiggleCommonPin: HostChecksSlotNames<WiggleCommonHost> = true
 
-test('the common host checks the slot names its mixin reads', () => {
+test('the wiggle config host checks the slot names the display reads', () => {
   const common = {} as WiggleCommonHost
   const reads = () => [
     // @ts-expect-error

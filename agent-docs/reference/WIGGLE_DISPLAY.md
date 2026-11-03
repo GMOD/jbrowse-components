@@ -116,15 +116,14 @@ pair a subtrack with no color paints, so `resolveWiggleColor`'s `categorical`
 arm paints the misconfiguration grey only to cover the shared encoding union.
 ADR-144, ADR-153.
 
-**Everything shared over the geometry is `wiggleDisplayViews`**:
-`scoreColorScale`, `renderState` and the shared halves of the two props methods,
-as a plain function the display installs as one `.views()` layer. Not a mixin —
-composed beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx`
-without casting to reach them, and `types.compose` depth is a real ceiling
-(ADR-041). `sharedRpcProps` / `sharedGpuProps` are named apart from the methods
-they feed, deliberately: MST _intersects_ what each `.views()` layer returns, so
-two same-named methods resolve to the **first** at the type level however the
-runtime member behaves.
+**What reads the geometry is `wiggleDisplayViews`**: `scoreColorScale` and
+`renderState`, as a plain function the display installs as one `.views()`
+layer. Not a mixin — composed beside `TrackHeightMixin` it could not see
+`height` or `canvasWidthPx` without casting to reach them, and `types.compose`
+depth is a real ceiling (ADR-041). The display's other wiggle members
+(`resolution`, `origin`, `renderingType`, `autoscaleRange`, the setters) are
+views and actions on its own chain over `YFieldConfigMixin`, which is the one
+wiggle mixin composed in.
 
 ## A BigWig answers in bins below its first zoom level
 

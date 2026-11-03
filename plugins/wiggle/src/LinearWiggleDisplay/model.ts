@@ -8,7 +8,12 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getDialogHost,
+  getEnv,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
@@ -43,15 +48,24 @@ import {
 } from '@jbrowse/tree-sidebar'
 import {
   SCORE_RANGE_LABEL,
+  YFieldConfigMixin,
+  autoscaleDomainFromStats,
   axisPlotBox,
+  computeScoreStats,
   makeScoreAxisMenuItem,
+  visibleStatsRange,
+  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { renderingOf } from '../renderingTypes.ts'
-import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import {
+  DEFAULT_LINE_WIDTH_PX,
+  DEFAULT_POINT_SIZE_PX,
+  renderingOf,
+} from '../renderingTypes.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { clampResolution } from '../shared/resolution.ts'
 import { colorKeyTitleOf } from '../shared/scoreRampScale.ts'
 import {
   declaredCuts,
@@ -66,17 +80,25 @@ import {
 } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
+import { wiggleFeatureWidgetData } from '../shared/wiggleHitTest.ts'
 import {
   makeMarkSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
+import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
 
+import type {
+  LineInterpolation,
+  WiggleMark,
+  WiggleRendering,
+} from '../renderingTypes.ts'
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
+import type { Extent } from '../shared/wiggleMarkConfigSchema.ts'
 import type { Source, WiggleHoveredFeature, WiggleMarkObject } from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
@@ -85,12 +107,17 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { Region } from '@jbrowse/core/util'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
-import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
+import type {
+  ValueScale,
+  WiggleDataResult,
+  WiggleRenderingBackend,
+} from '@jbrowse/wiggle-core'
 
 const RowArrangementDialog = lazy(
   () => import('./components/RowArrangementDialog.tsx'),
@@ -173,7 +200,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin(),
+      YFieldConfigMixin(WIGGLE_Y_PATHS),
       StoredHoverMixin<WiggleHoveredFeature>(),
       LegendMixin(),
       ParkedColorMixin(),
@@ -195,6 +222,259 @@ export default function stateModelFactory(
         // over the view's zoom (clusterScoreMatrixArgs).
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * Points per pixel the fetch asks for, clamped to what the Resolution
+       * menu offers: the slot is reachable from a track config, which runs no
+       * setter, and `0` there divides by zero inside the adapter.
+       */
+      get resolution(): number {
+        return clampResolution(getConf(self, ['data', 'resolution']))
+      },
+      /**
+       * #getter
+       * The fetched scores, keyed by displayedRegionIndex — the foundation's
+       * per-region store, narrowed.
+       */
+      get rpcDataMap(): ReadonlyMap<number, WiggleDataResult> {
+        return self.regionPayloads as ReadonlyMap<number, WiggleDataResult>
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The value bars grow from, which a color scale also reads where its
+       * domain is unset.
+       */
+      get origin(): number {
+        return getConf(self, 'origin')
+      },
+      /**
+       * #getter
+       * A line's width, `encoding.strokeWidth` or 1 px while unset.
+       */
+      get lineWidth(): number {
+        return (
+          getConf(self, ['encoding', 'strokeWidth', 'value']) ??
+          DEFAULT_LINE_WIDTH_PX
+        )
+      },
+      /**
+       * #getter
+       * A point's diameter, `encoding.size` or 2 px while unset.
+       */
+      get size(): number {
+        return (
+          getConf(self, ['encoding', 'size', 'value']) ?? DEFAULT_POINT_SIZE_PX
+        )
+      },
+      /**
+       * #getter
+       */
+      get extent(): Extent {
+        return getConf(self, ['mark', 'extent'])
+      },
+      /**
+       * #getter
+       */
+      get renderingType(): WiggleRendering {
+        return renderingOf(
+          getConf(self, ['mark', 'type']),
+          getConf(self, ['mark', 'interpolate']),
+        )
+      },
+      /**
+       * #getter
+       * Asked of the display's OWN adapter, which for the GC display is the
+       * synthesized GCContentAdapter rather than the track's raw sequence
+       * adapter — the two diverged when the adapter config moved onto the
+       * shared model. It answers the same today, since only BigWigAdapter and
+       * MultiWiggleAdapter declare the capability, and the display's adapter is
+       * the honest subject: the resolution slot it gates is passed to whatever
+       * this display fetches from.
+       */
+      get hasResolution() {
+        return getEnv(self)
+          .pluginManager.getAdapterType(String(self.adapterConfig.type))
+          .adapterCapabilities.includes('hasResolution')
+      },
+      /**
+       * #getter
+       * The extent actually drawn. A heatmap maps score to color and has no
+       * min-max presentation, so the autoscale domain reads this rather than
+       * the raw slot; otherwise the color ramp spans the min and max while
+       * the plot paints one summary, and the score legend reports a range
+       * nothing on screen reaches. Single-wiggle defaults to min-max, so plain
+       * "Plot type → Heatmap" hit this.
+       */
+      get effectiveExtent(): Extent {
+        return self.isDensityMode ? 'none' : this.extent
+      },
+      /**
+       * #getter
+       * Whether a summary bin's tooltip lists its min and max: where they are
+       * drawn, or where the bar is one of them rather than the mean.
+       */
+      get tooltipShowsMinMax() {
+        return (
+          this.effectiveExtent === 'min-max' || self.summaryField !== 'score'
+        )
+      },
+    }))
+    .views(() => ({
+      /**
+       * #getter
+       * Source names to include when computing the autoscale domain;
+       * `undefined` means every fetched source. The wiggle display always
+       * fetches all sources and filters client-side, so it overrides this to
+       * the visible subset — otherwise a subtree filter that hides sources
+       * would leave the Y-axis scaled to the hidden ones.
+       */
+      get autoscaleSourceNames(): Set<string> | undefined {
+        return undefined
+      },
+    }))
+    .views(() => ({
+      /**
+       * #getter
+       * Scores the axis must reach whatever the data does, so a rule drawn at
+       * one stays on it. `[]` here and overridden by the display that draws
+       * `encoding.y.rules`.
+       */
+      get scoreRuleValues(): number[] {
+        return []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the sources visible in the settled blocks span, under the
+       * autoscale mode. `undefined` until the view and the data are ready,
+       * which is not the `[0, 1]` a caller falls back to — see
+       * `visibleStatsRange`.
+       */
+      get autoscaleRange() {
+        const names = self.autoscaleSourceNames
+        return visibleStatsRange({
+          active: true,
+          view: self.host,
+          payloadFor: index => self.rpcDataMap.get(index),
+          itemsFor: regionData =>
+            regionData.sources.filter(
+              source => names === undefined || names.has(source.name),
+            ),
+          accumulate: entries =>
+            computeScoreStats(self.summaryField, entries, self.effectiveExtent),
+          range: (stats, entries) =>
+            widenRangeToRules(
+              autoscaleDomainFromStats({
+                stats,
+                quantile: self.fenceQuantile,
+                zero: self.axisReachesZero,
+                field: self.summaryField,
+                extent: self.effectiveExtent,
+                visibleEntries: entries,
+              }),
+              self.scoreRuleValues,
+            ),
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get domain() {
+        return self.autoscaledDomain
+      },
+      /**
+       * #getter
+       * The bounds the adapter declares its values lie in, where it declares
+       * any (`getValueDomain`): a GC content track's [0, 1], so its axis
+       * reads alike at every locus. Config bounds still win.
+       */
+      get defaultScoreDomain(): [number | undefined, number | undefined] {
+        for (const data of self.rpcDataMap.values()) {
+          if (data.valueDomain) {
+            return data.valueDomain
+          }
+        }
+        return [undefined, undefined]
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Stage a region as fetched, with this mixin's payload shape — so a test
+       * stands up a loaded display in one call. Production goes through
+       * `ctx.commitRegion`.
+       */
+      setRpcData(
+        displayedRegionIndex: number,
+        data: WiggleDataResult,
+        region: Region,
+      ) {
+        self.setLoadedRegion(displayedRegionIndex, region, data)
+      },
+      /**
+       * #action
+       */
+      selectFeature(feat: WiggleHoveredFeature) {
+        openFeatureWidget(self, wiggleFeatureWidgetData(feat))
+      },
+      /**
+       * #action
+       */
+      setResolution(res: number) {
+        setConf(self, ['data', 'resolution'], clampResolution(res))
+      },
+      /**
+       * #action
+       */
+      setOrigin(val?: number) {
+        setConf(self, 'origin', val)
+      },
+      /**
+       * #action
+       * The plot's `mark.type`, and a line's `mark.interpolate`; any other
+       * type resets `interpolate`, which only a line reads.
+       */
+      setMark(mark: WiggleMark, interpolate?: LineInterpolation) {
+        setConf(self, ['mark', 'type'], mark)
+        setConf(
+          self,
+          ['mark', 'interpolate'],
+          mark === 'line' ? interpolate : undefined,
+        )
+      },
+      /**
+       * #action
+       * The field plotted on the value axis: a stored summary (`score`,
+       * `minScore`, `maxScore`) or any feature field.
+       */
+      setY(field: string) {
+        setConf(self, ['encoding', 'y', 'field'], field)
+      },
+      /**
+       * #action
+       */
+      setExtent(val: Extent) {
+        setConf(self, ['mark', 'extent'], val)
+      },
+      /**
+       * #action
+       */
+      setPointSize(val?: number) {
+        setConf(self, ['encoding', 'size', 'value'], val)
+      },
+      /**
+       * #action
+       */
+      setStrokeWidth(val?: number) {
+        setConf(self, ['encoding', 'strokeWidth', 'value'], val)
+      },
+    }))
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
       // axisReachesZero getter keys on
@@ -566,10 +846,15 @@ export default function stateModelFactory(
        * #method
        * `y` is a fetch key as written, so picking another stored summary
        * refetches arrays the worker already shipped; `extent` is not
-       * (WIGGLE_DISPLAY.md, "`y`, `mark.extent`").
+       * (WIGGLE_DISPLAY.md, "`y`, `mark.extent`"). The color settings are not
+       * among the keys: every mode partitions by sign on the main thread, so
+       * moving the pivot re-encodes and refetches nothing.
        */
       rpcProps() {
-        return self.sharedRpcProps()
+        return {
+          resolution: self.resolution,
+          yField: self.yField,
+        }
       },
 
       /**
@@ -584,7 +869,11 @@ export default function stateModelFactory(
        */
       gpuProps() {
         return {
-          ...self.sharedGpuProps(),
+          wiggleColor: self.wiggleColor,
+          origin: self.origin,
+          summaryField: self.summaryField,
+          effectiveExtent: self.effectiveExtent,
+          renderingType: self.renderingType,
           sources: self.markSources,
           rowLayout: self.isRowLayout,
         }

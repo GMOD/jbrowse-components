@@ -20,7 +20,7 @@ import type {
   WiggleMark,
   WiggleMarkObject,
 } from '../renderingTypes.ts'
-import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
+import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
 import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
@@ -89,7 +89,7 @@ export function makeMarkSizeMenuItems(self: {
   lineWidth: number
   setPointSize: (n?: number) => void
   setStrokeWidth: (n?: number) => void
-  configuration: WiggleCommonHost['configuration']
+  configuration: WiggleConfigModel
 }): MenuItem[] {
   const unset = (channel: 'size' | 'strokeWidth') =>
     readConfObject(self.configuration, ['encoding', channel, 'value']) ===
