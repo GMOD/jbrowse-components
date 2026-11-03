@@ -19,8 +19,8 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { rewriteMarkerBlock } from './api-docs/util.ts'
 import { markdownTableLines, parseFrontmatter } from './check-utils.ts'
+import { rewriteMarkerBlock } from './markerDocs.ts'
 import { repoRoot } from './paths.ts'
 
 const adrDir = join(repoRoot, 'agent-docs', 'architecture-decision-records')

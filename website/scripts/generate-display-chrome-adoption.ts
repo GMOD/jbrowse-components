@@ -45,8 +45,8 @@ import { dirname, join, resolve as resolvePath } from 'node:path'
 
 import * as ts from 'typescript'
 
-import { rewriteMarkerBlock } from './api-docs/util.ts'
 import { isFile, markdownTableLines, sourceFiles } from './check-utils.ts'
+import { rewriteMarkerBlock } from './markerDocs.ts'
 import { repoRoot } from './paths.ts'
 
 const CHROMES = new Set(['DisplayChrome'])

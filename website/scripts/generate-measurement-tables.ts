@@ -14,7 +14,7 @@
 // read by nobody.
 //
 // Runs in `website/scripts/api-docs/markers.ts` (`pnpm measurement-tables`).
-import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './api-docs/util.ts'
+import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './markerDocs.ts'
 import { loadMeasurements, renderTable } from './measurements.ts'
 
 export function writeMeasurementTables() {

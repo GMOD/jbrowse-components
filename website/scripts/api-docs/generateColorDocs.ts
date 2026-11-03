@@ -1,11 +1,11 @@
 import * as ts from 'typescript'
 
+import { rewriteGroupedMarkerBlocks } from '../markerDocs.ts'
 import {
   jsDocText,
   markdownTable,
   parsePipeTags,
   parseSourceFileSyntactic,
-  rewriteGroupedMarkerBlocks,
 } from './util.ts'
 
 // Render small color-swatch tables into the hand-written guides, sourced from

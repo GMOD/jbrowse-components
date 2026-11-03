@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { rewriteGroupedMarkerBlocks } from './util.ts'
+import { rewriteGroupedMarkerBlocks } from '../markerDocs.ts'
 
 // The install fence under a tutorial's `## Prerequisites`, from one registry.
 //

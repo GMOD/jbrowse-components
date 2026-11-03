@@ -1,8 +1,9 @@
 import fs from 'fs'
 
 import { markerBlocks } from '../markerBlocks.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { scanLaunchArgs } from './generateSpecKeyDocs.ts'
-import { markdownTable, rewriteMarkerBlock, tableCell } from './util.ts'
+import { markdownTable, tableCell } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
 

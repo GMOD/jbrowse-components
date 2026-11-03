@@ -1,11 +1,11 @@
 import * as ts from 'typescript'
 
+import { rewriteMarkerBlock } from '../markerDocs.ts'
 import {
   jsDocText,
   markdownTable,
   parseSourceFileSyntactic,
   proseCell,
-  rewriteMarkerBlock,
 } from './util.ts'
 
 // The mark display's rule list, as the mark display guide lists it: every

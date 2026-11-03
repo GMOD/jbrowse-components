@@ -1,11 +1,12 @@
 import * as ts from 'typescript'
 
+import { rewriteGroupedMarkerBlocks } from '../markerDocs.ts'
 import {
   memberAnchor,
   modelPageId,
   resolvedProperties,
 } from './generateStateModelDocs.ts'
-import { markdownTable, proseCell, rewriteGroupedMarkerBlocks } from './util.ts'
+import { markdownTable, proseCell } from './util.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
 import type { SourceCorpus } from './util.ts'

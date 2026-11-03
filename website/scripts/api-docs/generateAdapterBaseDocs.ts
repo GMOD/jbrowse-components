@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { markdownTable, rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { markdownTable } from './util.ts'
 
 // The adapter base classes a plugin extends, and what each obliges it to
 // implement, rendered into the custom-adapter guide from the declarations.

@@ -60,8 +60,8 @@
 // page; over there it could only ever be inferred from a number that failed to
 // match, which is the same evidence a typo produces.
 import { readDoc } from './api-docs/format.ts'
-import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './api-docs/util.ts'
 import { linkedAgentDocs } from './check-utils.ts'
+import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './markerDocs.ts'
 import { loadMeasurements } from './measurements.ts'
 
 interface Source {

@@ -1,3 +1,4 @@
+import { assertMarkersAndDocsAgree } from '../markerDocs.ts'
 // Every marker-block table, in one process.
 //
 //   node website/scripts/api-docs/markers.ts            rewrite them all
@@ -18,7 +19,7 @@
 // once (a `#color` tag renders into both a guide and the spec).
 import { flushDocs, staleDocs } from './format.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
-import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
+import { getAllFiles, sourceCorpus } from './util.ts'
 
 const args = process.argv.slice(2)
 const check = args.includes('--check')

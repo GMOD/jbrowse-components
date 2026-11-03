@@ -1,6 +1,7 @@
 import fs from 'fs'
 
-import { markdownTable, rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { markdownTable } from './util.ts'
 
 // What a text search adapter may put on a `BaseResult`, rendered into the
 // text-search-adapter guide from `BaseResultArgs`.

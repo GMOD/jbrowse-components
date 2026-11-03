@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
 
 // The score-example plugin's file tree, rendered into both walkthroughs from the
 // directory itself.

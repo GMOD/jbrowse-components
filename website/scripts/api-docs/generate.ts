@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import { check } from '../check-utils.ts'
+import { assertMarkersAndDocsAgree, unwrittenMarkers } from '../markerDocs.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   flushDocs,
@@ -27,14 +28,12 @@ import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
-  assertMarkersAndDocsAgree,
   corpusFiles,
   createDocProgram,
   extractWithComment,
   getAllFiles,
   sourceCorpus,
   unreadableSignature,
-  unwrittenMarkers,
 } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'

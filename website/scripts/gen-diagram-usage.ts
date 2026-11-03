@@ -28,8 +28,8 @@ import { readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { readDoc } from './api-docs/format.ts'
-import { rewriteMarkerBlock } from './api-docs/util.ts'
 import { docFiles, figureTags, markdownTableLines } from './check-utils.ts'
+import { rewriteMarkerBlock } from './markerDocs.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 const diagramsDir = join(repoRoot, 'website', 'diagrams')

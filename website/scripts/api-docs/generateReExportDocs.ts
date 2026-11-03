@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import { markdownTable, rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { markdownTable } from './util.ts'
 
 // Render the served-package table into the dependencies guide from the
 // generated re-export manifest, so the guide says what the host actually

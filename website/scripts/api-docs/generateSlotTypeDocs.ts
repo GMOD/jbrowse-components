@@ -1,11 +1,7 @@
 import fs from 'fs'
 
-import {
-  codeCell,
-  markdownTable,
-  rewriteMarkerBlock,
-  tableCell,
-} from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { codeCell, markdownTable, tableCell } from './util.ts'
 
 // The closed set of config slot `type` names, rendered into the
 // configuration-schema guide from the three tables that define it:

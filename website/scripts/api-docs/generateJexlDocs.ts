@@ -1,12 +1,10 @@
 import * as ts from 'typescript'
 
 import {
-  jsDocText,
-  parsePipeTags,
-  parseSourceFileSyntactic,
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
-} from './util.ts'
+} from '../markerDocs.ts'
+import { jsDocText, parsePipeTags, parseSourceFileSyntactic } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
 

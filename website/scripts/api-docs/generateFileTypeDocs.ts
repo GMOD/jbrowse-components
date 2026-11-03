@@ -1,10 +1,12 @@
 import {
+  rewriteGroupedMarkerBlocks,
+  rewriteMarkerBlock,
+} from '../markerDocs.ts'
+import {
   jsDocText,
   markdownTable,
   parsePipeTags,
   parseSourceFileSyntactic,
-  rewriteGroupedMarkerBlocks,
-  rewriteMarkerBlock,
   tableCell,
 } from './util.ts'
 

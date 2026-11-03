@@ -1,6 +1,7 @@
 import fs from 'fs'
 
-import { markdownTable, rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { markdownTable } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
 

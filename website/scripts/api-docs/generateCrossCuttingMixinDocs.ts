@@ -1,4 +1,5 @@
-import { composeCalls, markdownTable, rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { composeCalls, markdownTable } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
 

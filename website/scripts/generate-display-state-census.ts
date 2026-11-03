@@ -37,8 +37,8 @@
 import { readFileSync } from 'node:fs'
 import { basename, dirname, relative, sep } from 'node:path'
 
-import { rewriteMarkerBlock } from './api-docs/util.ts'
 import { isTsSource, markdownTableLines, sourceFiles } from './check-utils.ts'
+import { rewriteMarkerBlock } from './markerDocs.ts'
 import { repoRoot } from './paths.ts'
 
 const SCAN_ROOTS = ['plugins', 'packages', 'products']

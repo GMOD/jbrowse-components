@@ -1,11 +1,7 @@
 import fs from 'fs'
 
-import {
-  codeCell,
-  markdownTable,
-  rewriteMarkerBlock,
-  tableCell,
-} from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { codeCell, markdownTable, tableCell } from './util.ts'
 
 // The three species sets `build_orthofinder_synteny.sh` knows, and the two cuts
 // it makes, rendered into the OrthoFinder tutorial from the script itself.

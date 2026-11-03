@@ -15,6 +15,7 @@ import {
   schemaProblems,
 } from '../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 import { escapeRegExp } from '../check-utils.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
 import {
   agentPage,
   exampleBlock,
@@ -53,7 +54,6 @@ import {
   parseNode,
   proseCell,
   repoRelative,
-  rewriteMarkerBlock,
   section,
   stripPropertyName,
   suffixCategory,

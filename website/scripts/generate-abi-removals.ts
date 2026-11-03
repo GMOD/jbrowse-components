@@ -17,8 +17,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { rewriteMarkerBlock } from './api-docs/util.ts'
 import { markdownTableLines } from './check-utils.ts'
+import { rewriteMarkerBlock } from './markerDocs.ts'
 import { repoRoot } from './paths.ts'
 
 interface NameGroup {

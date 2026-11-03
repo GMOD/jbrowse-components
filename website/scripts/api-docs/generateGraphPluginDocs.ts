@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { rewriteMarkerBlock } from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
 
 // The GraphGenomeView `plugins` fence, rendered into every page that tells a
 // reader to install the plugin, out of the configs the demos actually serve.

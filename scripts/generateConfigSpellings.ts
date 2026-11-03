@@ -5,8 +5,8 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import { rewriteMarkerBlock } from '../website/scripts/api-docs/util.ts'
 import { markdownTableLines } from '../website/scripts/check-utils.ts'
+import { rewriteMarkerBlock } from '../website/scripts/markerDocs.ts'
 import { slotPathsByType } from './configSlotPaths.ts'
 
 const ROOT = path.resolve(import.meta.dirname, '..')

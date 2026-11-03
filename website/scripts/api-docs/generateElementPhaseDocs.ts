@@ -1,11 +1,7 @@
 import fs from 'fs'
 
-import {
-  codeCell,
-  markdownTable,
-  rewriteMarkerBlock,
-  tableCell,
-} from './util.ts'
+import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { codeCell, markdownTable, tableCell } from './util.ts'
 
 // The pluggable element types, in the order the plugin manager creates them,
 // rendered into the pluggable-elements guide from the schedule itself.
