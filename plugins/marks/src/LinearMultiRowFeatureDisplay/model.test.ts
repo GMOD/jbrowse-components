@@ -45,7 +45,7 @@ function labels(items: MenuItem[]) {
   return items.flatMap(i => ('label' in i ? [i.label] : []))
 }
 
-test('a painting rows on repClass or name where the features carry it, unless the adapter lists sources', () => {
+test('a painting rows on repClass, else an attribute few values apart before name, unless the adapter lists sources', () => {
   expect(
     multiRowPlot({
       numeric: [],
@@ -58,6 +58,13 @@ test('a painting rows on repClass or name where the features carry it, unless th
       numeric: [],
       categorical: ['sample'],
       attributes: ['name', 'sample'],
+    }).rows,
+  ).toBe('sample')
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: ['strand'],
+      attributes: ['name', 'strand'],
     }).rows,
   ).toBe('name')
   expect(
@@ -334,6 +341,34 @@ test("a file's own colors with no domain take their features' names in the key",
     scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
   )
   expect(labels).toEqual(expect.arrayContaining(['Quiescent', 'Promoter']))
+})
+
+test("Default over the documented parent key raises no notice, and itemRgb brings the key's names back", () => {
+  const model = loaded(
+    display({
+      rows: 'sample',
+      marks: RECT_MARKS,
+      encoding: {
+        color: {
+          scale: {
+            type: 'identity',
+            domain: ['rgb(227,26,28)', 'rgb(31,120,180)'],
+            names: ['Maternal', 'Paternal'],
+          },
+        },
+      },
+    }),
+  )
+  const keyLabels = () =>
+    model.colorScales.flatMap(scale =>
+      scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+    )
+  model.pickDefaultColor()
+  expect(model.colorByMode).toBe('default')
+  expect(model.cornerNotices).toEqual([])
+  model.colorByIdentity()
+  expect(model.colorByMode).toBe('itemRgb')
+  expect(keyLabels()).toEqual(['Maternal', 'Paternal'])
 })
 
 test("a row's color paints its blocks while no mark or display color does", () => {

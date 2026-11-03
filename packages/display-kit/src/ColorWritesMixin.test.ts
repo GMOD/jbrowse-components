@@ -206,11 +206,32 @@ test("the file's own colors park the field, and re-picking it keeps its scale", 
   expect(colorOf(d)).toEqual(tint)
 })
 
+const MATERNAL = {
+  scale: { type: 'identity', domain: ['rgb(227,26,28)'], names: ['Maternal'] },
+}
+
 test("the file's own colors keep a fieldless key's domain and names", () => {
-  const key = { domain: ['rgb(227,26,28)'], names: ['Maternal'] }
+  const { type: _type, ...key } = MATERNAL.scale
   const d = display({ scale: key })
   d.colorByIdentity()
-  expect(colorOf(d)).toEqual({ scale: { ...key, type: 'identity' } })
+  expect(colorOf(d)).toEqual(MATERNAL)
+})
+
+test("Default parks the file's own colors with their key, and itemRgb takes them back", () => {
+  const d = display(MATERNAL)
+  d.pickDefaultColor()
+  expect(colorOf(d)).toEqual({})
+  d.colorByIdentity()
+  expect(colorOf(d)).toEqual(MATERNAL)
+})
+
+test("a field picked over the file's own colors parks their key for itemRgb", () => {
+  const d = display(MATERNAL)
+  d.colorByField('tint')
+  expect(colorOf(d)).toEqual({ field: 'tint' })
+  d.setColorValue('#123456')
+  d.colorByIdentity()
+  expect(colorOf(d)).toEqual(MATERNAL)
 })
 
 test('Solid color paints the constant kept beside a painting field, and opens the picker', () => {

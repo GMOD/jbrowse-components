@@ -306,6 +306,20 @@ describe('colorForField', () => {
       {},
     )
   })
+
+  // A typeless scale left holding names is a config the problems check flags.
+  test("a fieldless identity scale's key goes with it, leaving the constant", () => {
+    expect(
+      colorForField(
+        {
+          value: 'red',
+          scale: { type: 'identity', domain: ['#f00'], names: ['A'] },
+          legend: { title: 'Parent' },
+        },
+        undefined,
+      ),
+    ).toEqual({ value: 'red' })
+  })
 })
 
 // A write compares against the snapshot, which omits an all-default part, so a

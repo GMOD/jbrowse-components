@@ -73,7 +73,8 @@ export function rowsFieldChoices(attributes: readonly string[]) {
   return attributes.filter(name => !NON_ROW_FIELDS.has(name))
 }
 
-const ROWS_FIELD_PREFERENCE = ['repClass', 'name']
+const PREFERRED_ROWS_FIELD = 'repClass'
+const NAME_FIELD = 'name'
 const TRANSCRIPT_FIELD = 'transcript'
 const FAMILY_FIELD = 'name'
 
@@ -85,9 +86,10 @@ const PROTEIN_FEATURE_FIELDS = ['proteinStart', TRANSCRIPT_FIELD]
  * (domains2genome --gff3) draw as transcripts with the matches over them,
  * a row each, colored by family; protein features alone (domains2genome's
  * BED) take a row per transcript they sit on, colored by family. Otherwise
- * a row per adapter source where it lists several, else per `repClass` or
- * `name` where the features carry one, else per the first attribute few
- * values apart, else one lane; a feature's blocks joined
+ * a row per adapter source where it lists several, else per `repClass`
+ * where the features carry one, else per the first attribute few values
+ * apart, else per `name`, which a painting's BED gives its color's label or
+ * an id, else one lane; a feature's blocks joined
  * by a line where the features are spliced; and each feature its own BED
  * color where the file states any.
  */
@@ -107,8 +109,10 @@ export function multiRowPlot(fields: PlotFields): DefaultPlot {
       fields.rows ??
       (placesProteins
         ? TRANSCRIPT_FIELD
-        : (ROWS_FIELD_PREFERENCE.find(f => attributes.includes(f)) ??
-          rowsFieldChoices(fields.categorical)[0])),
+        : attributes.includes(PREFERRED_ROWS_FIELD)
+          ? PREFERRED_ROWS_FIELD
+          : (rowsFieldChoices(fields.categorical)[0] ??
+            (attributes.includes(NAME_FIELD) ? NAME_FIELD : undefined))),
     ...(fields.bedColored
       ? { color: { scale: { type: 'identity' } } }
       : carriesMatches || placesProteins

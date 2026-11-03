@@ -846,10 +846,11 @@ export function definedColor(color: ColorSlots): ColorSlots {
 /**
  * The color object a Color by pick writes over `current`. An undefined field
  * drops the field and its scale and key, leaving `value`, and a fieldless
- * identity scale, which paints each feature's own color, black included; the
- * field already named keeps its scale and key; the field `parked` holds
- * (`parkedColorOf`) takes them back; a new field keeps only `value`.
- * A `''` field clears too, as it did while `''` spelled no field.
+ * identity scale with its key, which `parkedIdentityOf` holds for an itemRgb
+ * pick to take back; the field already named keeps its scale and key; the
+ * field `parked` holds (`parkedColorOf`) takes them back; a new field keeps
+ * only `value`. A `''` field clears too, as it did while `''` spelled no
+ * field.
  */
 export function colorForField(
   current: ColorSlots,
@@ -860,10 +861,7 @@ export function colorForField(
   if (!field) {
     const cleared = withoutField(current)
     return cleared.scale?.type === IDENTITY_SCALE
-      ? definedColor({
-          ...cleared,
-          scale: { ...cleared.scale, type: undefined },
-        })
+      ? definedColor({ value: cleared.value })
       : cleared
   }
   if (field === current.field) {
@@ -887,6 +885,19 @@ export function parkedColorOf({
   ...members
 }: ColorSlots): ColorSlots | undefined {
   return members.field ? definedColor(members) : undefined
+}
+
+/**
+ * The fieldless identity scale and its key a pick takes off `color`, for
+ * `colorForIdentity` to give back; undefined for any other color.
+ */
+export function parkedIdentityOf({
+  value: _value,
+  ...members
+}: ColorSlots): ColorSlots | undefined {
+  return !members.field && members.scale?.type === IDENTITY_SCALE
+    ? definedColor(members)
+    : undefined
 }
 
 /**
@@ -927,13 +938,19 @@ export function colorForValue(
 /**
  * The color object an itemRgb pick writes over `current`: a fieldless
  * identity scale, so each feature paints its file's own color. The field and
- * the constant go, and a fieldless scale's domain and key names stay.
+ * the constant go; a fieldless scale's domain and key names stay, and where
+ * `current` holds none, the key `parked` holds (`parkedIdentityOf`) comes
+ * back.
  */
-export function colorForIdentity(current: ColorSlots): ColorSlots {
+export function colorForIdentity(
+  current: ColorSlots,
+  parked?: ColorSlots,
+): ColorSlots {
   const { value: _value, ...kept } = withoutField(current)
+  const key = kept.scale === undefined && parked ? parked : kept
   return definedColor({
-    ...kept,
-    scale: { ...kept.scale, type: IDENTITY_SCALE },
+    ...key,
+    scale: { ...key.scale, type: IDENTITY_SCALE },
   })
 }
 

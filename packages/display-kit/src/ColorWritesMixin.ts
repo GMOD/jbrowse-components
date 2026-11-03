@@ -99,10 +99,10 @@ export default function ColorWritesMixin() {
         /**
          * #action
          * Paint each feature its file's own color through a fieldless
-         * identity scale, parking the field.
+         * identity scale, parking the field and taking back a parked key.
          */
         colorByIdentity() {
-          write(colorForIdentity(self.writtenColor))
+          write(colorForIdentity(self.writtenColor, self.parkedIdentity))
         },
         /**
          * #action
