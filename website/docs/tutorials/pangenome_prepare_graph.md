@@ -33,7 +33,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.3.0 or later, for the
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.4.0 or later, for the
   graph's files in format 2, which the configs below read, and the walk index
   (walk format 5, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
@@ -151,14 +151,14 @@ does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                      | what it holds                                                                                                                                        |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates; a link row states both ends in full                                         |
-| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                  |
-| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz` |
-| `.contig.graph.bed.gz`    | the segment and link rows under each segment's own coordinate                                                                                        |
-| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                           |
-| `.config.json`            | the tracks below, with the plugin entry                                                                                                              |
+| file                      | what it holds                                                                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates for an rGFA and under each segment's own coordinate for a plain GFA; a link row states both ends in full |
+| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                                              |
+| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz`                             |
+| `.contig.graph.bed.gz`    | an rGFA's segment and link rows under each segment's own coordinate                                                                                                              |
+| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                                                       |
+| `.config.json`            | the tracks below, with the plugin entry                                                                                                                                          |
 
 Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
 tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
@@ -215,11 +215,10 @@ JBrowse otherwise ignores. Without a config, **Open track... → Add pangenome
 graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
 
-For a plain GFA the config's graph track reads the contig layout,
-`<prefix>.contig`, and the tier is folded the same way. The anchored layout at
-the bare prefix files a segment under every reference position its branch spans,
-which on the _E. coli_ pggb and Minigraph-Cactus graphs draws multi-megabase
-rows across every window.
+A plain GFA's index and tier are in the contig layout, each segment under its
+own coordinate. The anchored layout an rGFA gets files a segment under every
+reference position its branch spans, which on the _E. coli_ pggb and
+Minigraph-Cactus graphs draws multi-megabase rows across every window.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
