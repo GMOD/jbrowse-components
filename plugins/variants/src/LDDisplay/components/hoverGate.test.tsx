@@ -8,12 +8,17 @@ import type { LDDataResult } from '../../RenderLDDataRPC/types.ts'
 // A worker result for n evenly spaced SNPs, the shape `overlayCoords.test.ts`
 // builds — uniform columns in the un-rotated frame plus the boundaries array
 // the hit test walks.
-function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
+function ldData(
+  n: number,
+  widthBp: number,
+  originBp: number,
+  refNameOf: (i: number) => string,
+): LDDataResult {
   const uniformW = widthBp / (n * Math.SQRT2)
   return {
     snps: Array.from({ length: n }, (_, i) => ({
       id: `rs${i}`,
-      refName: 'ctgA',
+      refName: refNameOf(i),
       start: i * 1000,
       end: i * 1000 + 1,
     })),
@@ -37,7 +42,7 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
 // harness's bare RPC stub never settles, so the display would otherwise sit at
 // `isLoading` forever — and a test that cannot reach `ready` cannot tell the
 // two spellings of the hover gate apart at all.
-async function loadedDisplay() {
+async function loadedDisplay(refNameOf: (i: number) => string = () => 'ctgA') {
   const env = createTestEnvironment()
   const { display, view } = env.createDisplay()
   view.zoomTo(10)
@@ -45,7 +50,7 @@ async function loadedDisplay() {
   env.mockRpcCall.mockImplementation(
     (_sessionId: string, method: string, args: { originBp: number }) =>
       method === 'RenderLDData'
-        ? Promise.resolve(ldData(4, widthBp, args.originBp))
+        ? Promise.resolve(ldData(4, widthBp, args.originBp, refNameOf))
         : new Promise(() => {}),
   )
 
@@ -158,3 +163,30 @@ test('the hover comes back once the retry lands', async () => {
 
   expect(tooltipShowing()).toBe(true)
 }, 60000) // the only test here that drives a second round trip, so it flushes the most tooltip repositions
+
+test('the tooltip names a SNP by the view’s refName, not the file’s', async () => {
+  const { cell } = await loadedDisplay(() => 'chrA')
+
+  await hoverAt(cell)
+
+  expect(document.body.textContent).toContain('ctgA:')
+  expect(document.body.textContent).not.toContain('chrA:')
+}, 30000)
+
+test('the tooltip gives a distance for a pair on one chromosome', async () => {
+  const { cell } = await loadedDisplay()
+
+  await hoverAt(cell)
+
+  expect(document.body.textContent).toContain('Distance: 1Kbp')
+}, 30000)
+
+test('the tooltip gives no distance for a pair across chromosomes', async () => {
+  const { cell } = await loadedDisplay(i => (i === 2 ? 'ctgB' : 'ctgA'))
+
+  await hoverAt(cell)
+
+  expect(tooltipShowing()).toBe(true)
+  expect(document.body.textContent).toContain('ctgB:')
+  expect(document.body.textContent).not.toContain('Distance')
+}, 30000)

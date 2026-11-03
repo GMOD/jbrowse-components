@@ -22,37 +22,50 @@ import type {
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
 
-const SnpRow = observer(function SnpRow({ snp }: { snp: LDCellHit['snp1'] }) {
+const SnpRow = observer(function SnpRow({
+  snp,
+  refName,
+}: {
+  snp: LDCellHit['snp1']
+  refName: string
+}) {
   return (
     <div>
       {snp.id ? <b>{snp.id} </b> : null}
-      {stringify({ refName: snp.refName, coord: snp.start + 1 })}
+      {stringify({ refName, coord: snp.start + 1 })}
       {snp.maf === undefined ? null : ` · MAF ${snp.maf.toFixed(3)}`}
     </div>
   )
 })
 
 const LDTooltip = observer(function LDTooltip({
+  model,
   item,
   x,
   y,
   ldMetric,
 }: {
+  model: LDDisplayModel
   item: LDCellHit
   x: number
   y: number
   ldMetric: LDMetric
 }) {
+  const refName1 = model.viewRefName(item.snp1.refName)
+  const refName2 = model.viewRefName(item.snp2.refName)
   return (
     <BaseTooltip clientPoint={{ x, y }}>
-      <SnpRow snp={item.snp1} />
-      <SnpRow snp={item.snp2} />
+      <SnpRow snp={item.snp1} refName={refName1} />
+      <SnpRow snp={item.snp2} refName={refName2} />
       <div>
         {ldMetricLabel(ldMetric)}: {ldValueText(item.ldValue)}
       </div>
-      <div>
-        Distance: {getBpDisplayStr(Math.abs(item.snp1.start - item.snp2.start))}
-      </div>
+      {refName1 === refName2 ? (
+        <div>
+          Distance:{' '}
+          {getBpDisplayStr(Math.abs(item.snp1.start - item.snp2.start))}
+        </div>
+      ) : null}
     </BaseTooltip>
   )
 })
@@ -104,6 +117,7 @@ const LDPointer = observer(function LDPointer({
         <Crosshairs model={model} hoveredItem={item} xJ={xJ} xI={xI} />
       ) : null}
       <LDTooltip
+        model={model}
         item={item}
         x={mouseState.clientX}
         y={mouseState.clientY}

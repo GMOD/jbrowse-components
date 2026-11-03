@@ -4,6 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -338,6 +339,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       locusViewportX(refName: string, coord: number): number | undefined {
         return locusViewportXFor(self)(refName, coord)
+      },
+      /**
+       * #method
+       * A file's refName as the view names it: PLINK writes `1` where the
+       * assembly says `chr1`.
+       */
+      viewRefName(refName: string) {
+        return canonicalizeViewRefName(self, refName)
       },
     }))
     .views(self => ({
