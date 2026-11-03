@@ -62,7 +62,7 @@ jb() {
   if command -v jbrowse >/dev/null 2>&1; then
     jbrowse "$@"
   else
-    npx -y @jbrowse/cli "$@"
+    npx -y @jbrowse/cli@next "$@"
   fi
 }
 
@@ -175,7 +175,7 @@ for table in sys.argv[1:]:
 PY
 
 # ── Set up JBrowse ───────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 cp sorghum.wheat.blocks.gz sorghum.tauschii.blocks.gz "$APP"/
 for name in $NAMES; do cp "$name.bed.gz" "$APP"/; done

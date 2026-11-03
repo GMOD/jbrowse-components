@@ -64,7 +64,7 @@ java -jar hap-ibd.jar \
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 # ── Collapse IBD segments into the painted BED9 (father blues, mother reds) ──
@@ -76,7 +76,7 @@ jb sort-bed trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
 tabix -f -p bed trio.hapibd.bed.gz
 
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # hg38 assembly (remote bgzip FASTA, refnames match the trio VCF's "1")
 jb add-assembly "$HG38_FA" --name hg38 --force --out "$APP"

@@ -92,9 +92,9 @@ fi
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
-[ -f jbrowse2/index.html ] || jb create jbrowse2
+[ -f jbrowse2/index.html ] || jb create jbrowse2 --branch main
 
 HUB=https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4
 [ -s hub_config.json ] || curl -fsS -o hub_config.json "$HUB/config.json"

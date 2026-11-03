@@ -35,7 +35,7 @@ MAU_HUB=https://jbrowse.org/hubs/genark/GCF/004/382/145/$MAU_ACC/config.json
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 # ── The two genomes, from the same GenArk release the hosted configs describe ─

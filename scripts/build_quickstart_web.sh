@@ -38,7 +38,7 @@ done
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 # dl URL DEST: download unless DEST already exists (curl ships on macOS + Linux).
@@ -48,7 +48,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 # ── Download JBrowse 2 into ./$APP ───────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # ── Genome assembly (FASTA): fetch, faidx, add ───────────────────────────────
 dl "$BASE/volvox.fa" volvox.fa

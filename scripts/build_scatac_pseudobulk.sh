@@ -156,11 +156,11 @@ PY
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 jb add-assembly "$HG38_FA" --name hg38 --type bgzipFasta \
   --refNameAliases "$HG38_ALIASES" --force --out "$APP"

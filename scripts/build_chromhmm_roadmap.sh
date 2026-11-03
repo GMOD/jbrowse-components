@@ -221,12 +221,12 @@ PY
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 jb sort-bed roadmap.multirow.bed | bgzip -@ 4 > roadmap.multirow.bed.gz
 tabix -f -p bed roadmap.multirow.bed.gz
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────

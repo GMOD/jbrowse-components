@@ -298,9 +298,9 @@ ld_table "$POOLED" lct_1kg38_chr2_pooled
 # relative uris are resolved against the hub before they are written into a
 # config that no longer sits beside it.
 if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
+else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # The 6-population haplotype cut the second figure reads, fetched rather than
 # rebuilt: scripts/build_lct_haploblock.sh re-derives it from the release, and

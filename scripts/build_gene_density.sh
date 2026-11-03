@@ -32,7 +32,7 @@ if [ -n "${JBROWSE_CLI:-}" ]; then
 elif command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 mkdir -p "$OUTDIR"
@@ -72,7 +72,7 @@ for family in Alu L1 Simple_repeat; do
 done
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 jb add-assembly "$UCSC/hg38.2bit" --name hg38 --type twoBit --force --out "$APP"
 cp -f genes.gff.gz genes.gff.gz.tbi genes.gff.density.bw "$APP"/
 for family in Alu L1 Simple_repeat; do

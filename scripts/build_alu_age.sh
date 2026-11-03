@@ -48,7 +48,7 @@ done
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 abspath() { case "$1" in /*) printf '%s\n' "$1" ;; *) printf '%s\n' "$PWD/$1" ;; esac; }
@@ -128,7 +128,7 @@ bgzip -f "$SHARE"
 tabix -f -p bed "$SHARE.gz"
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 if [ -n "$FA" ]; then
   jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 else

@@ -80,7 +80,7 @@ samtools faidx "$FA"
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 # ── .out to a UCSC-shaped BED ────────────────────────────────────────────────
@@ -117,7 +117,7 @@ tabix -f -p bed rmsk.bed.gz
 CLASSES=$(gzip -dc rmsk.bed.gz | awk -F'\t' '!/^#/ { c[$7]++ } END { print length(c) }')
 echo "converted $(basename "$REPEATS") to rmsk.bed.gz, $CLASSES repeat classes"
 
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/
 

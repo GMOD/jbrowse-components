@@ -56,7 +56,7 @@ done
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 # ── Concatenate into one BED9 + a trailing `cellType` column ─────────────────
@@ -75,7 +75,7 @@ fi
 jb sort-bed wgEncodeBroadHmm.multirow.bed | bgzip > wgEncodeBroadHmm.multirow.bed.gz
 tabix -f -p bed wgEncodeBroadHmm.multirow.bed.gz
 
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row ChromHMM track ─────────────────────────

@@ -65,7 +65,7 @@ mkdir -p "$TMPDIR" parts
 
 if [ -n "${JBROWSE_CLI:-}" ]; then jb() { $JBROWSE_CLI "$@"; }
 elif command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
+else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 if command -v pigz >/dev/null 2>&1; then gunzip_stream() { pigz -dc "$@"; }; else gunzip_stream() { gzip -dc "$@"; }; fi
 PAF=hprc_multiway_gfa.paf
 PIF=hprc_multiway_gfa.pif.gz

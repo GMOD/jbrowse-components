@@ -6,6 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
+import { version } from '../version.ts'
 
 jest.mock('../cliFetch')
 
@@ -156,6 +157,47 @@ test('download and unzips to new directory', async () => {
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
       'manifest.json',
     )
+  })
+})
+
+test('installs the newest release in its own channel, never a draft', async () => {
+  await runInTmpDir(async () => {
+    const release = (tag: string, flags: object) => ({
+      tag_name: tag,
+      ...flags,
+      assets: [
+        {
+          browser_download_url: `https://example.com/jbrowse-web-${tag}.zip`,
+          name: `jbrowse-web-${tag}.zip`,
+        },
+      ],
+    })
+    const fetchMock = mockFetch(url =>
+      new URL(url).host === 'api.github.com'
+        ? new URL(url).searchParams.get('page') === '1'
+          ? {
+              json: [
+                release('v9.0.0-beta.2', { prerelease: true, draft: true }),
+                release('v9.0.0-beta.1', { prerelease: true }),
+                release('v8.0.0', { prerelease: false }),
+              ],
+            }
+          : { json: [] }
+        : {
+            headers: { 'content-type': 'application/zip' },
+            arrayBuffer: readZipAsArrayBuffer(),
+          },
+    )
+    fetchMock.mockClear()
+    await runCommand(['create', 'jbrowse'])
+    const downloads = fetchMock.mock.calls
+      .map(([url]) => url.toString())
+      .filter(url => new URL(url).host === 'example.com')
+    expect(downloads).toEqual([
+      version.includes('-')
+        ? 'https://example.com/jbrowse-web-v9.0.0-beta.1.zip'
+        : 'https://example.com/jbrowse-web-v8.0.0.zip',
+    ])
   })
 })
 

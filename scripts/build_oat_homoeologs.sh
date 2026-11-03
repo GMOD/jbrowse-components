@@ -79,7 +79,7 @@ jb() {
   if command -v jbrowse >/dev/null 2>&1; then
     jbrowse "$@"
   else
-    npx -y @jbrowse/cli "$@"
+    npx -y @jbrowse/cli@next "$@"
   fi
 }
 
@@ -332,7 +332,7 @@ for v, k in blocks[:10]:
 PY
 
 # ── Set up JBrowse ───────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp oat.homoeologs.blocks.gz oat.bed.gz "$APP"/
 jb add-assembly oat.chrom.sizes --name oat --load copy --force --out "$APP"
 

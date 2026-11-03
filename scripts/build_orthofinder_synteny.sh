@@ -682,10 +682,10 @@ gzip -f "$SETNAME.blocks.paf"
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # The table + BEDs must sit beside config.json (add-track-json won't copy them)
 cp "$TABLE.gz" "$APP"/

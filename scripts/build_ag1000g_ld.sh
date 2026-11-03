@@ -85,7 +85,7 @@ PLINK="${PLINK:-plink2}"
 # The CLI, used for `sort-bed` in build_track below as well as for the instance
 # at the end, so it is resolved before either.
 if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
+else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 for tool in "$PLINK" bgzip tabix samtools curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done
@@ -444,7 +444,7 @@ else
   done
 fi
 
-[ -f jbrowse2/index.html ] || jb create jbrowse2
+[ -f jbrowse2/index.html ] || jb create jbrowse2 --branch main
 
 # --type is required: the CLI infers the sequence type from the extension, and
 # does not recognize .bgz (it wants .fa.gz), so it cannot guess this one

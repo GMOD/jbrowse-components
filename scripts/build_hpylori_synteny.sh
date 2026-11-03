@@ -56,9 +56,9 @@ minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz    hpylori_26695.fa.gz  > 26695_vs_
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # ── The hub assemblies and gene tracks, verbatim but for the label ───────────
 python3 - "$APP/config.json" <<'PY'

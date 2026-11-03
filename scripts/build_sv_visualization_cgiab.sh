@@ -103,10 +103,10 @@ cd "$OUTDIR"
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 FTP=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab
 

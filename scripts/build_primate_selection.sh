@@ -58,7 +58,7 @@ jb() {
   if command -v jbrowse >/dev/null 2>&1; then
     jbrowse "$@"
   else
-    npx -y @jbrowse/cli "$@"
+    npx -y @jbrowse/cli@next "$@"
   fi
 }
 
@@ -305,7 +305,7 @@ for start, gene, ratio, ds in sorted(locus):
 PY
 
 # ── Set up JBrowse ───────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp primate.blocks.gz human.bed.gz rhesus.bed.gz "$APP"/
 cp human.genes.gff3.gz human.genes.gff3.gz.tbi "$APP"/
 cp rhesus.genes.gff3.gz rhesus.genes.gff3.gz.tbi "$APP"/

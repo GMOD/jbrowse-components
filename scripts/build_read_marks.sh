@@ -33,7 +33,7 @@ done
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 abspath() { case "$1" in /*) printf '%s\n' "$1" ;; *) printf '%s\n' "$PWD/$1" ;; esac; }
@@ -85,7 +85,7 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF "$READS" "
 tabix -f -p bed "$PAIRS"
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 if [ -n "$GENOME" ]; then
   jb add-assembly "$GENOME" --name "$ASM" --load copy --force --out "$APP"
   cp -f "$READS" "$APP/"

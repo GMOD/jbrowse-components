@@ -3,10 +3,12 @@ import path from 'node:path'
 import zlib from 'node:zlib'
 
 import fetch from './cliFetch.ts'
+import { version } from './version.ts'
 
 interface GithubRelease {
   tag_name: string
   prerelease: boolean
+  draft?: boolean
   assets?: {
     browser_download_url: string
     name: string
@@ -184,9 +186,15 @@ function findWebAssetUrl(release: GithubRelease) {
     ?.browser_download_url
 }
 
+// A prerelease CLI writes config spellings the last release cannot read, so it
+// installs the newest prerelease, and a release CLI the newest release
+const takesPrereleases = version.includes('-')
+
 async function getLatest() {
   for await (const versions of fetchVersions()) {
-    const release = versions.find(r => !r.prerelease && r.assets?.length)
+    const release = versions.find(
+      r => !r.draft && (takesPrereleases || !r.prerelease) && r.assets?.length,
+    )
     if (release) {
       const file = findWebAssetUrl(release)
       if (file) {

@@ -59,7 +59,7 @@ if [ -n "${JBROWSE_CLI:-}" ]; then
 elif command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 mkdir -p "$OUTDIR"

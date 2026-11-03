@@ -138,9 +138,9 @@ echo "         $RECURRENCE_ALL.gz ($(du -h "$RECURRENCE_ALL.gz" | cut -f1))"
 # (so the reference is never downloaded) plus the gene track, and this appends
 # the cohort track to what it wrote.
 if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
+else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp "$OUT.vcf.gz" "$OUT.vcf.gz.tbi" "$CLINICAL" "$APP"/
 cp "$RECURRENCE.gz" "$RECURRENCE.gz.tbi" "$APP"/
 

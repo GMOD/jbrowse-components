@@ -167,9 +167,9 @@ tabix -f -p vcf dgrp_In2Lt_sv.vcf.gz
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw pi_ratio_In2Lt.bw tajimad_all.bw sites_all.bw \
    dgrp_In2Lt_sv.vcf.gz dgrp_In2Lt_sv.vcf.gz.tbi dgrp_In2Lt_samples.tsv "$APP"/
 

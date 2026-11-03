@@ -87,11 +87,11 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # ── One assembly per strain (each refName is the plain `chr` from its FASTA) ──
 for strain in $STRAINS; do

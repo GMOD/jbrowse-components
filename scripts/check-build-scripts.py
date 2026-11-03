@@ -265,6 +265,24 @@ for f in scripts:
                   f"`{ln.strip()}`; a re-run fails on the existing trackId")
             failed = True
 
+    # A bare `jb create` installs the newest release a CLI's channel offers, and
+    # the CLI is whatever `jbrowse` the reader has on PATH: a stable one gives
+    # v4.3.0, which has no MCScanBlocksAdapter and reads no v5 config spelling,
+    # so the script's own config fails to load in the app it just made. The
+    # scripts write main's spellings, so they create main's build. The npx
+    # fallback names the beta CLI for the same reason.
+    for i, ln in enumerate(lines):
+        code = ln.split("#", 1)[0]
+        if re.search(r"\bjb create\b", code) and not re.search(
+                r"--(branch|nightly|tag|url)\b", code):
+            print(f"FAIL jb create without --branch main in {f}:{i + 1}: "
+                  f"`{ln.strip()}` installs the CLI's channel, v4 on a stable CLI")
+            failed = True
+        if re.search(r"npx -y @jbrowse/cli(\s|\"|$)", code):
+            print(f"FAIL npx fetches the v4 CLI in {f}:{i + 1}: "
+                  f"`{ln.strip()}`; name @jbrowse/cli@next")
+            failed = True
+
     # each quoted heredoc: <<'TAG' ... TAG. Validate the JSON/PY ones (skip data
     # heredocs like STRAINS). Non-greedy body, backreference closes on the tag.
     #

@@ -47,7 +47,7 @@ HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py
 # setup section far below, because `make-pif` runs during the projections and a
 # bare `jbrowse` there kills the script under `set -e` on an npx-only machine —
 # right after pggb has finished, which is the most expensive place to fail.
-if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
+if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 
 # Checked up front, since the graph track is built after pggb has run.
 G2T_VERSION=$(gfa-to-tabix --version 2>/dev/null | awk '{print $2}')
@@ -464,7 +464,7 @@ gfa-to-tabix alleles ecoli_minigraph
 
 # ── Set up JBrowse ────────────────────────────────────────────────────────────
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # one assembly + gene track per strain (gene seqid renamed to `chr` like the FASTA)
 for strain in $STRAINS; do

@@ -378,9 +378,9 @@ in_cactus samtools sort -o /data/ecoli_cactus_reads.bam /data/reads_mapped.bam
 in_cactus samtools index /data/ecoli_cactus_reads.bam
 
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ─────────────────
-if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
+if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 # one assembly + gene track per strain (gene seqid renamed to `chr` like the FASTA)
 for strain in $STRAINS; do

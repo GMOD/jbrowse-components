@@ -150,10 +150,9 @@ done <<<"$PAIRS"
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
 APP=jbrowse2
-# the latest release is v4, which predates the synteny tracks below
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 while read -r code _ name; do
   [ -z "$code" ] && continue

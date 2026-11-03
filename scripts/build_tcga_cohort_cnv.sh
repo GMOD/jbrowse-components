@@ -221,9 +221,9 @@ echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
 # UCSC hub (so the reference is never downloaded) plus the gene track, and this
 # appends the three cohort tracks to what it wrote.
 if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
+else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp "$OUT.bed.gz" "$OUT.bed.gz.tbi" \
    "${OUT}_recurrence.bedGraph.gz" "${OUT}_recurrence.bedGraph.gz.tbi" \
    "$BY.gz" "$BY.gz.tbi" "$CLINICAL" "$APP"/

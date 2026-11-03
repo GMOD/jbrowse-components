@@ -46,7 +46,7 @@ DEMO=demo
 mkdir -p "$DEMO"
 
 jb() {
-  if command -v jbrowse >/dev/null 2>&1; then jbrowse "$@"; else npx -y @jbrowse/cli "$@"; fi
+  if command -v jbrowse >/dev/null 2>&1; then jbrowse "$@"; else npx -y @jbrowse/cli@next "$@"; fi
 }
 
 # drops rows for the alt/decoy contigs bedGraphToBigWig would otherwise reject
@@ -187,7 +187,7 @@ if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz.tbi" ]; then
 fi
 
 # ------------------------------------------------------------------- JBrowse
-[ -f "$APP/index.html" ] || jb create "$APP"
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
 
 jb add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --name hg38 --type bgzipFasta \
