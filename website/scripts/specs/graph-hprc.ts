@@ -969,7 +969,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: GRAPH_DRAWN,
     readyTimeout: 180000,
-    viewportHeight: 1080,
+    viewportHeight: 820,
     tooltip: 'hide',
   },
 ]
