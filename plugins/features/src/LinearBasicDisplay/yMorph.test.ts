@@ -7,7 +7,6 @@ import {
   canMorph,
   captureFeatureTops,
   interpolateYData,
-  morphOffset,
   rowGeometrySignature,
 } from './yMorph.ts'
 
@@ -141,15 +140,13 @@ test('captureFeatureTops leaves features with no morph source at their row', () 
   expect(captureFeatureTops(target, new Map(), 0.5).get('a')).toBe(40)
 })
 
-test('morphOffset is the displacement interpolateYData applies', () => {
+test('captureFeatureTops is where interpolateYData draws the feature', () => {
   const fromTops = new Map([['a', 60]])
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   for (const t of [0, 0.25, 0.5, 1]) {
     const rectY = interpolateYData(fromTops, target, t).get(0)!.rectYs[0]!
-    expect(morphOffset(fromTops, 'a', 0, t)).toBe(rectY - 0)
+    expect(captureFeatureTops(target, fromTops, t).get('a')).toBe(rectY)
   }
-  expect(morphOffset(fromTops, 'unknown', 0, 0)).toBe(0)
-  expect(morphOffset(fromTops, 'a', -1e6, 0)).toBe(0)
 })
 
 test('a feature overflowing off-screen in the target does not animate', () => {

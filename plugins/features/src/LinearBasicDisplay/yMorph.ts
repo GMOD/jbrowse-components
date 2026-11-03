@@ -26,18 +26,6 @@ function morphDelta(
     : undefined
 }
 
-// The DOM overlay boxes read this: their geometry comes from the settled
-// `laidOutDataMap`, so without it a highlight sits on the destination row
-// while the glyph is still on its way.
-export function morphOffset(
-  fromTops: FeatureTops,
-  featureId: string,
-  targetTop: number,
-  t: number,
-) {
-  return (morphDelta(fromTops, featureId, targetTop) ?? 0) * (1 - t)
-}
-
 // Equal signatures differ only in row assignment and can morph; a changed one
 // rescaled the rows and must snap. Reads the rendered label flags, not the
 // raw config, because a fit-stage boundary can drop descriptions without a
@@ -83,7 +71,8 @@ export function captureFeatureTops(
     for (const item of data.flatbushItems) {
       if (isPlacedRow(item.topPx)) {
         const { featureId, topPx } = item
-        out.set(featureId, topPx + morphOffset(fromTops, featureId, topPx, t))
+        const delta = morphDelta(fromTops, featureId, topPx) ?? 0
+        out.set(featureId, topPx + delta * (1 - t))
       }
     }
   }
