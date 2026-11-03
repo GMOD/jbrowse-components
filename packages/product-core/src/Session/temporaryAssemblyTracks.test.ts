@@ -6,7 +6,10 @@ import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 // The predicate this check asks is `@jbrowse/core/util`'s, and its own cases are
 // pinned beside it in `core/util/temporaryAssembly.test.ts`. What is here is the
 // two things built on top: the report, and the menu.
-const SESSION = { temporaryAssemblies: [{ name: 'der_chr3_1' }] }
+const SESSION = {
+  temporaryAssemblies: [{ name: 'der_chr3_1' }],
+  assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
+}
 
 const SEGMENTS = {
   trackId: 'derivative-segments-1',

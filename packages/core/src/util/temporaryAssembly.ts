@@ -1,9 +1,23 @@
-import { getConfAssemblyNamesOrNone } from './tracks.ts'
+import { getConfAssemblyNamesOrNone, isSameAssemblyName } from './tracks.ts'
 
 import type { AnyConfiguration } from '../configuration/index.ts'
+import type { AssemblyNameResolver } from './tracks.ts'
 
 interface SessionWithTemporaryAssemblies {
-  temporaryAssemblies?: { name?: string }[]
+  temporaryAssemblies: { name?: string }[]
+  assemblyManager: AssemblyNameResolver
+}
+
+function hasTemporaryAssemblies(
+  session: unknown,
+): session is SessionWithTemporaryAssemblies {
+  return (
+    typeof session === 'object' &&
+    session !== null &&
+    'temporaryAssemblies' in session &&
+    Array.isArray(session.temporaryAssemblies) &&
+    'assemblyManager' in session
+  )
 }
 
 /**
@@ -29,12 +43,12 @@ export function namesTemporaryAssembly(
   session: unknown,
   trackConf: AnyConfiguration,
 ) {
-  const temporary = (session as SessionWithTemporaryAssemblies)
-    .temporaryAssemblies
-  if (!temporary?.length) {
-    return false
-  }
-  return getConfAssemblyNamesOrNone(trackConf).some(name =>
-    temporary.some(a => a.name === name),
+  return (
+    hasTemporaryAssemblies(session) &&
+    getConfAssemblyNamesOrNone(trackConf).some(name =>
+      session.temporaryAssemblies.some(a =>
+        isSameAssemblyName(a.name, name, session.assemblyManager),
+      ),
+    )
   )
 }

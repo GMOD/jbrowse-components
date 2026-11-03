@@ -15,6 +15,7 @@ function fakeSession() {
     // isSessionModel keys on these two rather than on MST node-ness
     rpcManager: {},
     configuration: {},
+    assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
     addSessionTrackConf: (conf: { trackId: string }) => {
       calls.push(`session:${conf.trackId}`)
       return conf
