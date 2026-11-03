@@ -205,3 +205,26 @@ describe('a provenance describes only the newick beside it', () => {
     })
   })
 })
+
+// A launch arg `rows.sort=HG002` parses as one string, which failed the whole
+// `rows` key and lost the `rows.field` beside it
+test('a lone sort or kept value is a list of one, and the field beside it lands', () => {
+  const conf = Display.create({ displayId: 's' })
+  const report = applyConfSettings(conf, {
+    rows: { field: 'source', sort: 'HG002', kept: 7 },
+  })
+  expect(report.failed).toEqual([])
+  expect(readConfObject(conf, ['rows', 'field'])).toBe('source')
+  expect(readConfObject(conf, ['rows', 'sort'])).toEqual(['HG002'])
+  expect(readConfObject(conf, ['rows', 'kept'])).toEqual(['7'])
+})
+
+test('an empty sort is none, and a value no list reads is refused', () => {
+  const conf = Display.create({ displayId: 's', rows: { sort: '' } })
+  expect(readConfObject(conf, ['rows', 'sort'])).toEqual([])
+  expect(applyConfSettings(conf, { rows: { sort: { a: 1 } } }).failed).toEqual([
+    expect.objectContaining({
+      error: expect.stringMatching(/rows\.sort is a list/),
+    }),
+  ])
+})

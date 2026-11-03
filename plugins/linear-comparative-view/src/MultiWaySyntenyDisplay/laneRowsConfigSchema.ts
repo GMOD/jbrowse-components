@@ -86,8 +86,8 @@ export const laneRowsConfigSchema = ConfigurationSchema(
     plot: true,
     preProcessSnapshot: (snap = {}) => ({
       ...snap,
-      ...stringList(snap, 'sort'),
-      ...stringList(snap, 'kept'),
+      ...stringList(snap, 'sort', 'rows'),
+      ...stringList(snap, 'kept', 'rows'),
     }),
   },
 )

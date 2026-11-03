@@ -16,16 +16,27 @@ export const ROW_ARRANGEMENT_WRITES = {
   keyed: ROW_ARRANGEMENT_MEMBERS,
 } as const
 
-/** `snap[key]`, a list, with each entry as a string, as the member it fills. */
-export function stringList(snap: Record<string, unknown>, key: string) {
+/**
+ * `snap[key]` as the list of strings it fills, a lone string or number read
+ * as a list of one, as a launch arg `rows.sort=HG002` writes it, and `''` as
+ * none. Anything else that is not a list is refused, naming `setting.key`.
+ */
+export function stringList(
+  snap: Record<string, unknown>,
+  key: string,
+  setting: string,
+) {
   const value = snap[key]
-  if (value === undefined) {
-    return {}
+  const list =
+    value === ''
+      ? []
+      : typeof value === 'string' || typeof value === 'number'
+        ? [value]
+        : value
+  if (list !== undefined && !Array.isArray(list)) {
+    throw new Error(`${setting}.${key} is a list`)
   }
-  if (!Array.isArray(value)) {
-    throw new Error(`rows.${key} is a list`)
-  }
-  return { [key]: value.map(String) }
+  return Array.isArray(list) ? { [key]: list.map(String) } : {}
 }
 
 /**
@@ -103,8 +114,8 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     misnamed: { treeProvenance: 'tree.provenance' },
     preProcessSnapshot: (snap = {}) => ({
       ...snap,
-      ...stringList(snap, 'sort'),
-      ...stringList(snap, 'kept'),
+      ...stringList(snap, 'sort', 'rows'),
+      ...stringList(snap, 'kept', 'rows'),
     }),
   },
 )

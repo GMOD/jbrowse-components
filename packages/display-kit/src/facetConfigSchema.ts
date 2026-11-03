@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { normalizeChannel } from './colorConfigSchema.ts'
+import { stringList } from './rowArrangementConfigSchema.ts'
 
 /** The `facet` object as written: a field, and the order its sections stack in. */
 export interface FacetSetting {
@@ -77,7 +78,15 @@ export const facetConfigSchema = ConfigurationSchema(
     writes: { keyedBy: 'field', keyed: ['sort'] },
     plot: true,
     closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'facet'),
+    preProcessSnapshot: (snap = {}) =>
+      normalizeChannel(
+        {
+          ...snap,
+          ...stringList(snap, 'sort', 'facet'),
+          ...stringList(snap, 'hidden', 'facet'),
+        },
+        'facet',
+      ),
   },
 )
 
