@@ -211,13 +211,11 @@ export function applyLayoutToRegion(
     item.bottomPx = layoutHeights.get(item.featureId)!
   }
 
-  shiftYLanes(data, { byFeature: layoutMap })
-
   // A feature whose labels went unreserved keeps its entry and loses only
   // those labels.
-  for (const [key, labelData] of data.floatingLabelsData) {
+  shiftYLanes(data, { byFeature: layoutMap }, (key, labelData, rowTop) => {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
-    if (!isPlacedRow(layoutMap.get(layoutKey) ?? OFFSCREEN_Y)) {
+    if (!isPlacedRow(rowTop ?? OFFSCREEN_Y)) {
       data.floatingLabelsData.delete(key)
     } else {
       if (droppedNameIds.has(layoutKey)) {
@@ -227,5 +225,5 @@ export function applyLayoutToRegion(
         delete labelData.descriptionLabel
       }
     }
-  }
+  })
 }

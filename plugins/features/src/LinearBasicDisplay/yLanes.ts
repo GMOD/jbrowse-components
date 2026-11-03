@@ -1,6 +1,9 @@
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  FeatureLabelData,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 /**
  * Either every lane rides its feature's entry in `byFeature` (a feature with
@@ -12,14 +15,29 @@ export type YShifts =
   | {
       byFeature: ReadonlyMap<string, number>
       byIndex?: Float64Array
+      ofChild?: never
     }
-  | { ofChild: (featureId: string, childOrdinal: number) => number }
+  | {
+      ofChild: (featureId: string, childOrdinal: number) => number
+      byFeature?: never
+      byIndex?: never
+    }
+
+/**
+ * Sees each label as the walker shifts it, with the shift it read: undefined
+ * where `byFeature` has no entry for the label's feature.
+ */
+export type LabelVisitor = (
+  key: string,
+  label: FeatureLabelData,
+  shift: number | undefined,
+) => void
 
 const PRIMITIVE_KINDS = ['rect', 'line', 'arrow'] as const
 
 function featureShifts(data: FeatureDataResult, shifts: YShifts) {
   const items = data.flatbushItems
-  if ('ofChild' in shifts) {
+  if (shifts.ofChild) {
     const out = new Float64Array(items.length)
     for (let i = 0; i < items.length; i++) {
       out[i] = shifts.ofChild(items[i]!.featureId, ROOT_CHILD_ORDINAL)
@@ -45,12 +63,14 @@ function shiftPrimitiveYs(
   const ys = data[`${kind}Ys`]
   const featureIndices = data[`${kind}FeatureIndices`]
   const ordinals = data[`${kind}ChildOrdinals`]
-  if ('ofChild' in shifts && ordinals.length > 0) {
-    const { ofChild } = shifts
+  if (shifts.ofChild && ordinals.length > 0) {
     for (let i = 0; i < ys.length; i++) {
       ys[i] =
         ys[i]! +
-        ofChild(data.flatbushItems[featureIndices[i]!]!.featureId, ordinals[i]!)
+        shifts.ofChild(
+          data.flatbushItems[featureIndices[i]!]!.featureId,
+          ordinals[i]!,
+        )
     }
   } else {
     for (let i = 0; i < ys.length; i++) {
@@ -64,38 +84,43 @@ function childShift(
   featureId: string,
   childOrdinal: number | undefined,
 ) {
-  return 'ofChild' in shifts
+  return shifts.ofChild
     ? shifts.ofChild(featureId, childOrdinal ?? ROOT_CHILD_ORDINAL)
-    : (shifts.byFeature.get(featureId) ?? 0)
+    : shifts.byFeature.get(featureId)
 }
 
 /**
  * The y-bearing fields a glyph is DRAWN from: the primitive lanes, the label
- * boxes and the amino-acid overlay. The one list of them that a shift walks;
- * a new y-bearing field joins it here, and `yLanes.test.ts` fails until it does.
+ * boxes and the amino-acid overlay. A new y-bearing field joins the walk here,
+ * and `yLanes.test.ts` fails until it does.
  * Mutates `data`, which must be a clone (`cloneMutableFields`).
  */
-export function shiftDrawnYLanes(data: FeatureDataResult, shifts: YShifts) {
+export function shiftDrawnYLanes(
+  data: FeatureDataResult,
+  shifts: YShifts,
+  onLabel?: LabelVisitor,
+) {
   const byFeature = featureShifts(data, shifts)
   for (const kind of PRIMITIVE_KINDS) {
     shiftPrimitiveYs(data, kind, byFeature, shifts)
   }
-  for (const labelData of data.floatingLabelsData.values()) {
-    labelData.topY += childShift(
+  for (const [key, labelData] of data.floatingLabelsData) {
+    const shift = childShift(
       shifts,
       labelData.parentFeatureId ?? labelData.featureId,
       labelData.childOrdinal,
     )
+    labelData.topY += shift ?? 0
+    onLabel?.(key, labelData, shift)
   }
   if (data.aminoAcidOverlay) {
     for (const aa of data.aminoAcidOverlay) {
-      aa.topPx +=
-        'ofChild' in shifts
-          ? shifts.ofChild(
-              data.flatbushItems[aa.flatbushIdx]!.featureId,
-              aa.childOrdinal ?? ROOT_CHILD_ORDINAL,
-            )
-          : byFeature[aa.flatbushIdx]!
+      aa.topPx += shifts.ofChild
+        ? shifts.ofChild(
+            data.flatbushItems[aa.flatbushIdx]!.featureId,
+            aa.childOrdinal ?? ROOT_CHILD_ORDINAL,
+          )
+        : byFeature[aa.flatbushIdx]!
     }
   }
   return byFeature
@@ -103,10 +128,15 @@ export function shiftDrawnYLanes(data: FeatureDataResult, shifts: YShifts) {
 
 /**
  * `shiftDrawnYLanes` and the boxes hit testing reads: the feature rows and the
- * subfeature extents. The only walk of every y a region carries.
+ * subfeature extents. `applyHeightScale` and `isoformTrim` scale and filter
+ * the same fields on lists of their own.
  */
-export function shiftYLanes(data: FeatureDataResult, shifts: YShifts) {
-  const byFeature = shiftDrawnYLanes(data, shifts)
+export function shiftYLanes(
+  data: FeatureDataResult,
+  shifts: YShifts,
+  onLabel?: LabelVisitor,
+) {
+  const byFeature = shiftDrawnYLanes(data, shifts, onLabel)
   for (let i = 0; i < data.flatbushItems.length; i++) {
     const item = data.flatbushItems[i]!
     item.topPx += byFeature[i]!
@@ -114,8 +144,8 @@ export function shiftYLanes(data: FeatureDataResult, shifts: YShifts) {
   }
   for (const info of data.subfeatureInfos) {
     const delta = childShift(shifts, info.parentFeatureId, info.childOrdinal)
-    info.topPx += delta
-    info.bottomPx += delta
+    info.topPx += delta ?? 0
+    info.bottomPx += delta ?? 0
   }
 }
 

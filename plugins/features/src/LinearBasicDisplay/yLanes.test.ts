@@ -437,11 +437,14 @@ test('shiftYLanes with ofChild prices the root rows through it too', () => {
   }
 })
 
-test('applyLayoutToRegion drops the labels of an unplaced or unlaid feature', () => {
+test('applyLayoutToRegion leaves an unplaced feature at the sentinel and drops its labels', () => {
   const data = cloneMutableFields(fixture())
   applyLayoutToRegion(
     data,
-    new Map([['g0', -1e6]]),
+    new Map([
+      ['g0', -1e6],
+      ['g1', 200],
+    ]),
     new Map([
       ['g0', 10],
       ['g1', 10],
@@ -450,7 +453,21 @@ test('applyLayoutToRegion drops the labels of an unplaced or unlaid feature', ()
     new Set(),
     new Set(),
   )
-  expect([...data.floatingLabelsData.keys()]).toEqual([])
+  expect([...data.floatingLabelsData.keys()]).toEqual(['g1'])
+  for (const [key, delta] of deltaBetween(before, entryMap(data))) {
+    expect([key, delta]).toEqual([
+      key,
+      before.get(key)!.owner === 'g0' ? -1e6 : 200,
+    ])
+  }
+})
+
+test('a mixed shift object is rejected', () => {
+  const data = cloneMutableFields(fixture())
+  // @ts-expect-error byFeature and ofChild name two ways to shift
+  shiftYLanes(data, { byFeature: new Map(), ofChild: () => 0 })
+  // @ts-expect-error byIndex belongs to byFeature
+  shiftYLanes(data, { byIndex: new Float64Array(0), ofChild: () => 0 })
 })
 
 test('shiftDrawnYLanes leaves the hit-test boxes where they are', () => {
