@@ -105,7 +105,7 @@ import {
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { showsSubfeatureLabels } from './fitLadder.ts'
-import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
+import { fitLadderViews } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
@@ -331,7 +331,6 @@ export default function baseStateModelFactory(
       onScreenIdsMemo: createMembershipMemo(),
       // #endregion
     }))
-    .volatile(fitLadderVolatiles)
     .volatile(yMorphVolatiles)
     .views(self => ({
       /**

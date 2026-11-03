@@ -5,7 +5,7 @@
 //   node --expose-gc plugins/features/benches/fitLadderRetention.bench.ts --features=60000 --probes=22
 //
 // One display holds seven incremental layouts and three pack caches
-// (`fitLadderVolatiles`). A dense locus is solved through every one of them,
+// (in `fitLadderViews`' closure). A dense locus is solved through every one of them,
 // then the view moves to a sparse locus that only the `full` rung reaches and
 // the dense region is evicted. The heap (plus ArrayBuffers) is read with the
 // memos untouched, after `prune()` to the live regions as every fit solve does,

@@ -8,10 +8,7 @@ export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRende
 export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'
 export { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
 export { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export {
-  fitLadderViews,
-  fitLadderVolatiles,
-} from './LinearBasicDisplay/fitLadderViews.ts'
+export { fitLadderViews } from './LinearBasicDisplay/fitLadderViews.ts'
 export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
 export {
   scaleLaidOutData,

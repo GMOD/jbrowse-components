@@ -29,10 +29,7 @@ import {
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
 import { showsSubfeatureLabels } from './LinearBasicDisplay/fitLadder.ts'
-import {
-  fitLadderViews,
-  fitLadderVolatiles,
-} from './LinearBasicDisplay/fitLadderViews.ts'
+import { fitLadderViews } from './LinearBasicDisplay/fitLadderViews.ts'
 import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
 import {
   ARROW_LENGTH_PX,
@@ -459,7 +456,6 @@ export async function featureTables(
     }),
   )
   const stage = fitLadderViews({
-    ...fitLadderVolatiles(),
     rpcDataMap,
     layoutReady: true,
     layoutInputs: {

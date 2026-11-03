@@ -29,7 +29,6 @@ import {
   hiddenSectionFeatureIds,
   indexById,
   fitLadderViews,
-  fitLadderVolatiles,
   isPlacedRow,
   labelFontSize,
   labelVisibility,
@@ -648,7 +647,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
   // facet and not a feature one; `observable` caches each ladder getter
   // as a computed, as spreading it into a model's views would.
   const host: FitLadderHost = {
-    ...fitLadderVolatiles(),
     get rpcDataMap() {
       return self.recordsRenderDataMap
     },

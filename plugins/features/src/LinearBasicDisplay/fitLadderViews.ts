@@ -77,109 +77,59 @@ export interface FitLadderHost {
   reservesBelowLabelRows: boolean
   fitTargetHeight: number
   labelFontSize: number
-  incrementalLayout: IncrementalLayout
-  incrementalLayoutLabelsOnly: IncrementalLayout
-  incrementalLayoutBodiesOnly: IncrementalLayout
-  incrementalLayoutDecimated: IncrementalLayout
-  incrementalLayoutIsoforms: IncrementalLayout
-  incrementalLayoutThinned: IncrementalLayout
-  incrementalLayoutBare: IncrementalLayout
-  packHeightsIsoforms: PackHeightCache
-  packHeightsThinned: PackHeightCache
-  packHeightsDecimated: PackHeightCache
-}
-
-// One instance per reservation config: a shared instance can only cache one
-// config at a time.
-export function fitLadderVolatiles() {
-  return {
-    /**
-     * #volatile
-     */
-    // Mutating the memo's internal cache is invisible to MobX, so reading it
-    // inside a computed is safe.
-    incrementalLayout: createIncrementalLayout(),
-    /**
-     * #volatile
-     */
-    incrementalLayoutLabelsOnly: createIncrementalLayout(),
-    /**
-     * #volatile
-     */
-    incrementalLayoutBodiesOnly: createIncrementalLayout(),
-    /**
-     * #volatile
-     */
-    // Unseeded because the rung's factor is chosen by measuring unseeded
-    // candidate packs, and the commit has to match what was measured.
-    incrementalLayoutDecimated: createIncrementalLayout({
-      seedPriorRows: false,
-    }),
-    /**
-     * #volatile
-     */
-    // Unseeded for the same reason as `incrementalLayoutDecimated`: the count
-    // is chosen by measuring.
-    incrementalLayoutIsoforms: createIncrementalLayout({
-      seedPriorRows: false,
-    }),
-    /**
-     * #volatile
-     */
-    // Unseeded because the body scale is chosen by measuring.
-    incrementalLayoutThinned: createIncrementalLayout({
-      seedPriorRows: false,
-    }),
-    /**
-     * #volatile
-     */
-    incrementalLayoutBare: createIncrementalLayout(),
-    /**
-     * #volatile
-     */
-    packHeightsIsoforms: createPackHeightCache(),
-    /**
-     * #volatile
-     */
-    packHeightsThinned: createPackHeightCache(),
-    /**
-     * #volatile
-     */
-    packHeightsDecimated: createPackHeightCache(),
-  }
 }
 
 export function fitLadderViews(self: FitLadderHost) {
+  // One memo per reservation config, since an instance caches one config at a
+  // time. Closure state, so MobX sees neither the memos nor their caches.
+  const incrementalLayout = createIncrementalLayout()
+  const incrementalLayoutLabelsOnly = createIncrementalLayout()
+  const incrementalLayoutBodiesOnly = createIncrementalLayout()
+  // Unseeded where the rung's knob is chosen by measuring unseeded candidate
+  // packs, and the commit has to match what was measured.
+  const incrementalLayoutDecimated = createIncrementalLayout({
+    seedPriorRows: false,
+  })
+  const incrementalLayoutIsoforms = createIncrementalLayout({
+    seedPriorRows: false,
+  })
+  const incrementalLayoutThinned = createIncrementalLayout({
+    seedPriorRows: false,
+  })
+  const incrementalLayoutBare = createIncrementalLayout()
+  const packHeightsIsoforms = createPackHeightCache()
+  const packHeightsThinned = createPackHeightCache()
+  const packHeightsDecimated = createPackHeightCache()
   // A rung the ladder stops reaching would otherwise keep its cloned layout
   // and the raw regions it was packed from alive, so each solve empties what
   // this mode cannot reach and drops what the store has since evicted from the
-  // rest. Closure state only, so it is neither observed nor a model member.
+  // rest.
   const releaseUnreachedMemos = () => {
     const live = self.rpcDataMap
     if (!self.fitHeightToDisplay) {
-      self.incrementalLayoutLabelsOnly.clear()
-      self.incrementalLayoutDecimated.clear()
-      self.incrementalLayoutThinned.clear()
-      self.incrementalLayoutBodiesOnly.clear()
-      self.incrementalLayoutBare.clear()
-      self.packHeightsThinned.clear()
-      self.packHeightsDecimated.clear()
+      incrementalLayoutLabelsOnly.clear()
+      incrementalLayoutDecimated.clear()
+      incrementalLayoutThinned.clear()
+      incrementalLayoutBodiesOnly.clear()
+      incrementalLayoutBare.clear()
+      packHeightsThinned.clear()
+      packHeightsDecimated.clear()
     }
     if (self.autoHeight || self.showsEveryIsoform) {
-      self.incrementalLayoutIsoforms.clear()
-      self.packHeightsIsoforms.clear()
+      incrementalLayoutIsoforms.clear()
+      packHeightsIsoforms.clear()
     }
     for (const memo of [
-      self.incrementalLayout,
-      self.incrementalLayoutLabelsOnly,
-      self.incrementalLayoutBodiesOnly,
-      self.incrementalLayoutDecimated,
-      self.incrementalLayoutIsoforms,
-      self.incrementalLayoutThinned,
-      self.incrementalLayoutBare,
-      self.packHeightsIsoforms,
-      self.packHeightsThinned,
-      self.packHeightsDecimated,
+      incrementalLayout,
+      incrementalLayoutLabelsOnly,
+      incrementalLayoutBodiesOnly,
+      incrementalLayoutDecimated,
+      incrementalLayoutIsoforms,
+      incrementalLayoutThinned,
+      incrementalLayoutBare,
+      packHeightsIsoforms,
+      packHeightsThinned,
+      packHeightsDecimated,
     ]) {
       memo.prune(live)
     }
@@ -273,7 +223,7 @@ export function fitLadderViews(self: FitLadderHost) {
         self.rpcDataMap,
         this.decimatedBaseInputs,
         self.fitMeasureFeatureIds,
-        self.packHeightsDecimated,
+        packHeightsDecimated,
       )
     },
     /**
@@ -313,7 +263,7 @@ export function fitLadderViews(self: FitLadderHost) {
         self.rpcDataMap,
         this.isoformsBaseInputs,
         self.fitMeasureFeatureIds,
-        self.packHeightsIsoforms,
+        packHeightsIsoforms,
       )
     },
     /**
@@ -357,7 +307,7 @@ export function fitLadderViews(self: FitLadderHost) {
           ? this.fitLabelsOnlyLayout
           : this.baseLaidOutDataMap
       }
-      return self.incrementalLayoutIsoforms(self.rpcDataMap, {
+      return incrementalLayoutIsoforms(self.rpcDataMap, {
         ...this.isoformsBaseInputs,
         maxIsoformsPerGene,
       })
@@ -422,10 +372,7 @@ export function fitLadderViews(self: FitLadderHost) {
         return undefined
       }
       return solveBodyScale(
-        this.bodyScaleHeightProbe(
-          self.packHeightsThinned,
-          this.thinnedBaseInputs,
-        ),
+        this.bodyScaleHeightProbe(packHeightsThinned, this.thinnedBaseInputs),
         self.fitTargetHeight,
         this.fitLabeledBodyFloor,
       )
@@ -440,7 +387,7 @@ export function fitLadderViews(self: FitLadderHost) {
       // Falls back to a stack the ladder already rejected, so it moves on.
       return bodyScale === undefined
         ? this.fitIsoformsSolved
-        : self.incrementalLayoutThinned(self.rpcDataMap, {
+        : incrementalLayoutThinned(self.rpcDataMap, {
             ...this.thinnedBaseInputs,
             bodyScale,
           })
@@ -451,7 +398,7 @@ export function fitLadderViews(self: FitLadderHost) {
      * and in non-fit modes, and the first stack `fitStage` probes.
      */
     get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
-      return this.fitLayoutAt(self.incrementalLayout, this.fullReservation)
+      return this.fitLayoutAt(incrementalLayout, this.fullReservation)
     },
     /**
      * #getter
@@ -459,10 +406,7 @@ export function fitLadderViews(self: FitLadderHost) {
      */
     get fitLabelsOnlyLayout(): Map<number, FeatureDataResult> {
       return self.effectiveShowDescriptions
-        ? this.fitLayoutAt(
-            self.incrementalLayoutLabelsOnly,
-            this.labelsReservation,
-          )
+        ? this.fitLayoutAt(incrementalLayoutLabelsOnly, this.labelsReservation)
         : this.baseLaidOutDataMap
     },
     /**
@@ -495,7 +439,7 @@ export function fitLadderViews(self: FitLadderHost) {
       if (factors === undefined || bodyScale === undefined) {
         return this.fitIsoformsSolved
       }
-      const layout = self.incrementalLayoutDecimated(self.rpcDataMap, {
+      const layout = incrementalLayoutDecimated(self.rpcDataMap, {
         ...this.decimatedLayoutInputs(factors),
         bodyScale,
       })
@@ -519,7 +463,7 @@ export function fitLadderViews(self: FitLadderHost) {
       return (
         solveBodyScale(
           this.bodyScaleHeightProbe(
-            self.packHeightsDecimated,
+            packHeightsDecimated,
             this.decimatedBaseInputs,
             factors,
           ),
@@ -533,7 +477,7 @@ export function fitLadderViews(self: FitLadderHost) {
       // Shared by reference only while there is no trim to apply, or the
       // reuse drops it.
       return self.showLabels || maxIsoformsPerGene !== undefined
-        ? self.incrementalLayoutBodiesOnly(self.rpcDataMap, {
+        ? incrementalLayoutBodiesOnly(self.rpcDataMap, {
             ...self.layoutInputs,
             ...BODIES_RESERVATION,
             maxIsoformsPerGene,
@@ -547,7 +491,7 @@ export function fitLadderViews(self: FitLadderHost) {
      * whose text the squeeze was about to hide anyway.
      */
     get fitBareLayout(): Map<number, FeatureDataResult> {
-      return self.incrementalLayoutBare(self.rpcDataMap, {
+      return incrementalLayoutBare(self.rpcDataMap, {
         ...self.layoutInputs,
         ...BARE_RESERVATION,
         maxIsoformsPerGene: this.fitIsoformCount,
