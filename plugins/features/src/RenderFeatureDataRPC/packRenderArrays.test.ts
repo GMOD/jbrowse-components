@@ -28,13 +28,13 @@ function line(start: number, end: number): LineData {
     labelRowsAbove: 0,
   }
 }
-function arrow(x: number): ArrowData {
+function arrow(x: number, direction = 1, widthBp = 1000): ArrowData {
   return {
     x,
     y: 0,
     height: 10,
-    widthBp: 1000,
-    direction: 1,
+    widthBp,
+    direction,
     color: 0,
     colorClass: LITERAL,
     flatbushIdx: 0,
@@ -42,9 +42,10 @@ function arrow(x: number): ArrowData {
   }
 }
 
-// Spans use a half-open overlap test; arrows are points, so both ends are
-// inclusive. An arrow on regionEnd caps a feature whose box was kept.
-test('rect/line use half-open spans; arrows keep both endpoints', () => {
+// Spans use a half-open overlap test. An arrow sits at its feature's end on the
+// plus strand and its start on the minus, so it is open on the side where the
+// feature's box is dropped.
+test('rect/line use half-open spans; arrows follow their feature box', () => {
   const regionStart = 100
   const regionEnd = 200
 
@@ -62,21 +63,47 @@ test('rect/line use half-open spans; arrows keep both endpoints', () => {
     line(200, 250),
     line(120, 180),
   ]
-  const arrows = [
+  const plusArrows = [
     arrow(99), // before -> excluded
-    arrow(100), // at regionStart -> included
+    arrow(100), // at regionStart: its box [.., 100) is dropped -> excluded
+    arrow(101), // just inside -> included
     arrow(150), // inside -> included
-    arrow(199), // last bp -> included
-    arrow(200), // at regionEnd -> included (end cap of a kept rect)
+    arrow(200), // at regionEnd: end cap of a kept rect -> included
     arrow(201), // after -> excluded
   ]
+  const minusArrows = [
+    arrow(99, -1), // before -> excluded
+    arrow(100, -1), // at regionStart: start of a kept rect -> included
+    arrow(150, -1), // inside -> included
+    arrow(199, -1), // last bp -> included
+    arrow(200, -1), // at regionEnd: its box [200, ..) is dropped -> excluded
+    arrow(201, -1), // after -> excluded
+  ]
 
-  const packed = packRenderArrays(rects, lines, arrows, regionStart, regionEnd)
+  const packed = packRenderArrays(
+    rects,
+    lines,
+    [...plusArrows, ...minusArrows],
+    regionStart,
+    regionEnd,
+  )
 
   expect(packed.rectPositions.length / 2).toBe(3)
   expect(packed.linePositions.length / 2).toBe(3)
 
-  expect(Array.from(packed.arrowXs)).toEqual([100, 150, 199, 200])
+  expect(Array.from(packed.arrowXs)).toEqual([101, 150, 200, 100, 150, 199])
+})
+
+test('a zero-width feature keeps its arrow at both region ends', () => {
+  const packed = packRenderArrays(
+    [],
+    [],
+    [arrow(100, 1, 0), arrow(200, -1, 0), arrow(99, 1, 0), arrow(201, -1, 0)],
+    100,
+    200,
+  )
+
+  expect(Array.from(packed.arrowXs)).toEqual([100, 200])
 })
 
 // A zero-width rect is a point: a CRISPR cut site or motif tick. The half-open

@@ -53,6 +53,18 @@ function spanInWindow(
     : end > regionStart && start < regionEnd
 }
 
+// An arrow sits at the end of its feature's span on the plus strand and at the
+// start on the minus, so the window is open on the side where that span's box
+// is cut: an arrow at regionStart (plus) or regionEnd (minus) would be left
+// with no body. A zero-width feature is a point, closed at both ends.
+function arrowInWindow(a: ArrowData, regionStart: number, regionEnd: number) {
+  return a.widthBp === 0
+    ? a.x >= regionStart && a.x <= regionEnd
+    : a.direction === 1
+      ? a.x > regionStart && a.x <= regionEnd
+      : a.x >= regionStart && a.x < regionEnd
+}
+
 // A lane that is LENGTH ZERO while every item holds its default, which tells
 // the main thread the pass is off without a parallel boolean that could
 // disagree with the array it gates.
@@ -113,7 +125,7 @@ export function packRenderArrays(
     spanInWindow(l.start, l.end, regionStart, regionEnd),
   )
   const visibleArrows = arrows.filter(a =>
-    spanInWindow(a.x, a.x, regionStart, regionEnd),
+    arrowInWindow(a, regionStart, regionEnd),
   )
 
   const rectPositions = new Uint32Array(visibleRects.length * 2)
