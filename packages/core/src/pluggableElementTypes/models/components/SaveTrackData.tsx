@@ -201,10 +201,12 @@ function previewText({
   return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
 }
 
-function visibleRegionsOf(view: object): Region[] {
+function hasVisibleRegions(view: object): view is { visibleRegions: Region[] } {
   return 'visibleRegions' in view && Array.isArray(view.visibleRegions)
-    ? view.visibleRegions
-    : []
+}
+
+function visibleRegionsOf(view: object) {
+  return hasVisibleRegions(view) ? view.visibleRegions : []
 }
 
 const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
