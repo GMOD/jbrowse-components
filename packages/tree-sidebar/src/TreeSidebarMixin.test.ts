@@ -710,7 +710,7 @@ describe('a dialog submit after a region adds a row', () => {
     display.applyRowEdits(dialog)
     expect(display.rowSort).toEqual([])
     expect(display.rowTree).toBe('(b:1,c:1);')
-    expect(display.editableSources.map(r => r.name)).toEqual(['a', 'b', 'c'])
+    expect(display.editableSources.map(r => r.name)).toEqual(['b', 'c', 'a'])
   })
 })
 

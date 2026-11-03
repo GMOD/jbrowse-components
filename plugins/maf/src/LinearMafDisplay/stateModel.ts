@@ -52,7 +52,6 @@ import {
   ContextMenuMixin,
   TreeSidebarMixin,
   treeOfLeaves,
-  getLeafNames,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -488,19 +487,6 @@ export default function stateModelFactory(
           const known = new Set(names)
           return name =>
             copyParent(name) ?? (known.has(name) ? name : undefined)
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: rows follow the leaves of the rotated
-         * `parsedTree` that `rows.sort` uses, then any rows the tree does not
-         * name. Without a tree, the species `rows.sort` lists lead and the
-         * rest keep adapter order.
-         */
-        get rowOrder(): readonly string[] {
-          const { parsedTree, rowSort } = self
-          return parsedTree
-            ? [...getLeafNames(parsedTree), ...rowSort]
-            : rowSort
         },
       }))
       .views(self => ({

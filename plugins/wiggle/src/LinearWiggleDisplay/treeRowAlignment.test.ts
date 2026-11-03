@@ -33,9 +33,7 @@ test('a row focus keeps the dendrogram leaves on the row centres', () => {
   }
 })
 
-// What the RowArrangement `tree` slot's doc says: the rows follow rows.sort,
-// not the tree
-test('a tree with no sort keeps the source order and draws only where its leaves list it', () => {
+test('a supplied tree orders the rows by its leaves and draws', () => {
   const { display, view } = createTestEnvironment().createDisplay()
   display.setRpcData(
     0,
@@ -44,8 +42,20 @@ test('a tree with no sort keeps the source order and draws only where its leaves
   )
   display.setRowLayout(true)
   setConf(display.configuration, ['rows', 'tree'], '((d,c),(b,a));')
-  expect(display.sources.map(s => s.name)).toEqual(['a', 'b', 'c', 'd'])
-  expect(display.hierarchy).toBeUndefined()
+  expect(display.sources.map(s => s.name)).toEqual(['d', 'c', 'b', 'a'])
+  expect(display.hierarchy).toBeDefined()
+})
+
+test('a supplied tree turns towards rows.sort and the unlisted rows follow its leaves', () => {
+  const { display, view } = createTestEnvironment().createDisplay()
+  display.setRpcData(
+    0,
+    { sources: ['a', 'b', 'c', 'd'].map(makeSource) },
+    view.displayedRegions[0],
+  )
+  display.setRowLayout(true)
   setConf(display.configuration, ['rows', 'tree'], '((a,b),(c,d));')
+  setConf(display.configuration, ['rows', 'sort'], ['d'])
+  expect(display.sources.map(s => s.name)).toEqual(['d', 'c', 'a', 'b'])
   expect(display.hierarchy).toBeDefined()
 })

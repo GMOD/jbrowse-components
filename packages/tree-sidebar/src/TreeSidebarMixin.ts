@@ -714,11 +714,37 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Overridable hook: the row names in display order, `rows.sort` by
-       * default; MAF puts a drawn tree's leaves first.
+       * `rowTree` parsed. A run rotated its tree in the same write as the
+       * order it produced; a tree that arrived as data rotates towards
+       * `rows.sort` here, and the guide tree is `guideTree`'s parse.
+       */
+      get parsedTree() {
+        const tree = storedTree(self)
+        if (tree) {
+          const forks = self.rowForks
+          return buildTree(
+            tree,
+            self.rowTreeProvenance ? [] : self.rowSort,
+            forks.size > 0 ? leaf => forks.get(leaf) : undefined,
+          )
+        }
+        return self.guideTreeHonoursDomain ? self.guideTree : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overridable hook: the row names in display order. A tree that
+       * arrived as data (a supplied `rows.tree` or a guide tree) leads with
+       * its leaves, then `rows.sort` for the rows it lacks. `rows.sort`
+       * alone otherwise, since a computed tree's run wrote its leaf order
+       * there and a later `rows.sort` write is the reader's.
        */
       get rowOrder(): readonly string[] {
-        return self.rowSort
+        const { parsedTree, rowSort, rowTreeProvenance } = self
+        return parsedTree && !rowTreeProvenance
+          ? [...getLeafNames(parsedTree), ...rowSort]
+          : rowSort
       },
     }))
     .views(self => ({
@@ -1033,24 +1059,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get clusterableSources(): S[] {
         return self.narrowRows(self.editableSources)
-      },
-      /**
-       * #getter
-       * `rowTree` parsed. A run rotated its tree in the same write as the
-       * order it produced; a tree that arrived as data rotates towards
-       * `rows.sort` here, and the guide tree is `guideTree`'s parse.
-       */
-      get parsedTree() {
-        const tree = storedTree(self)
-        if (tree) {
-          const forks = self.rowForks
-          return buildTree(
-            tree,
-            self.rowTreeProvenance ? [] : self.rowSort,
-            forks.size > 0 ? leaf => forks.get(leaf) : undefined,
-          )
-        }
-        return self.guideTreeHonoursDomain ? self.guideTree : undefined
       },
       /**
        * #getter

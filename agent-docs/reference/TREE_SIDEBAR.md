@@ -72,9 +72,10 @@ because `rows.sort` is the arrangement itself: a run writes its tree's leaf
 order there in the same action as the tree. A guide tree, the newick a display's
 adapter supplies through `guideTreeNewick` (MAF's `.nh`), never enters
 `rows.tree`: the mixin's `rowTree` draws it while some rotation of it lists
-`rows.sort`, so it carries no provenance and rotates at parse, and maf reads
-its row order back off that same computed, so the leaves and the rows cannot
-drift. Everything else rotates in the run that produced it: `rotateClusterRun`,
+`rows.sort`, so it carries no provenance and rotates at parse. Every
+display's `rowOrder` reads a supplied or guide tree's rows back off that same
+`parsedTree`'s leaves, then `rows.sort`, so such a tree orders the rows it draws
+and the leaves and the rows cannot drift. Everything else rotates in the run that produced it: `rotateClusterRun`,
 called from `applyClusterRun`, which every display's run goes through. Rotating an arranged tree on the
 way out would turn a restored session's dendrogram away from the order saved
 beside it and draw nothing at all. The R-paste `applyOrder` path carries no tree
@@ -178,7 +179,9 @@ hook's name throws at `create`:
   the marks: multi-row's `encoding.color` setting or itemRgb, wiggle's
   gradient or declared `encoding.color`, variants' genotypes.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
-- `rowOrder` — `rows.sort` by default; MAF leads with a drawn tree's leaves.
+- `rowOrder` — a tree that arrived as data (supplied, or a guide tree) leads
+  with its leaves, then `rows.sort` for the rows it lacks; `rows.sort` alone
+  otherwise, since a computed tree's run wrote its leaf order there.
 - `rowBanding` — none by default; the variant displays' `facet`, and the
   multi-row display's `facet` with its `rows.groups` groups listed after the
   facet's `sort`.

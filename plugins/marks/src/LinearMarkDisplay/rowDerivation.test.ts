@@ -531,3 +531,25 @@ test('rows fill the plot, a fraction of a px each where the count does not divid
   expect(plotHeight % 4).not.toBe(0)
   expect(display.effectiveRowHeight * display.rowCount).toBeCloseTo(plotHeight)
 })
+
+test('a supplied tree orders the rows by its leaves, and a sort turns it', () => {
+  const tree = '((dad,s2),(mom,s10));'
+  const supplied = loaded({ rows: { field: 'source', tree } })
+  expect(supplied.sources.map(row => row.name)).toEqual([
+    'dad',
+    's2',
+    'mom',
+    's10',
+  ])
+  expect(supplied.hierarchy).toBeDefined()
+  expect(supplied.rpcProps()).toEqual(loaded({ rows: 'source' }).rpcProps())
+
+  const turned = loaded({ rows: { field: 'source', tree, sort: ['s10'] } })
+  expect(turned.sources.map(row => row.name)).toEqual([
+    's10',
+    'mom',
+    'dad',
+    's2',
+  ])
+  expect(turned.hierarchy).toBeDefined()
+})
