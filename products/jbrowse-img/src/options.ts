@@ -10,6 +10,8 @@ export interface OptionDef {
   name: string
   description: string
   default?: number | boolean | string
+  /** the views the option draws in; absent for every view */
+  modes?: readonly ViewMode[]
 }
 
 // Default output width in pixels, shared by the --width help default, the CLI
@@ -73,6 +75,7 @@ const optionDefs: OptionDef[] = [
   },
   {
     name: 'assembly',
+    modes: ['linear', 'circular', 'breakpoint'],
     description: "Which of the config's assemblies to open, by name",
   },
   {
@@ -82,6 +85,7 @@ const optionDefs: OptionDef[] = [
   },
   {
     name: 'track',
+    modes: ['linear', 'circular', 'breakpoint'],
     description:
       'Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
   },
@@ -92,6 +96,7 @@ const optionDefs: OptionDef[] = [
   { name: 'session', description: 'Path to session JSON (or "-" for stdin)' },
   {
     name: 'loc',
+    modes: ['linear', 'breakpoint'],
     description:
       'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side',
   },
@@ -141,22 +146,25 @@ const optionDefs: OptionDef[] = [
   },
   {
     name: 'showGridlines',
+    modes: ['linear', 'synteny', 'breakpoint'],
     description: 'Show genomic coordinate gridlines in the output',
     default: false,
   },
   {
     name: 'trackLabels',
+    modes: ['linear', 'synteny', 'breakpoint'],
     description: `Track label position: ${orList(trackLabelModes)}`,
   },
   {
     name: 'refseq',
+    modes: ['linear'],
     description: 'Show the reference sequence track',
     default: false,
   },
   {
     name: 'spec',
     description:
-      'Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config',
+      'Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest\'s spec column or a &session=spec- URL writes it; see urlparams.md',
   },
 ]
 
@@ -522,6 +530,9 @@ export function buildBatchHelp(scriptName: string) {
     'Records a caller files under one VCF EVENT are also drawn together, as',
     'event_<n>_<label>, when the event visits more than two loci, its contigs',
     'in the order the VCF header lists them.',
+    '',
+    "A manifest row's spec redraws its image on its own: pass it as --spec",
+    'beside the same genome and track files.',
   ].join('\n')
 }
 
@@ -552,29 +563,38 @@ function examplesForMode(mode: ViewMode) {
   }
 }
 
-// Help for a subcommand. Dotplot/synteny compare assemblies (the comparison
-// file types); circular/linear are single-assembly.
+export function appliesTo(option: OptionDef, mode: ViewMode) {
+  return option.modes?.includes(mode) ?? true
+}
+
+/** The options given to a run that draw nothing in its view. */
+export function optionsWithoutEffect(mode: ViewMode, given: string[]) {
+  return optionDefs
+    .filter(o => given.includes(o.name) && !appliesTo(o, mode))
+    .map(o => o.name)
+}
+
 function buildSubcommandHelp(
   scriptName: string,
   mode: ViewMode,
+  trackTypes: string[],
   syntenyTrackTypes: string[],
 ) {
   const { comparative } = modeDescriptors[mode]
-  const pad = Math.max(...optionDefs.map(o => o.name.length))
+  const defs = optionDefs.filter(o => appliesTo(o, mode))
+  const pad = Math.max(...defs.map(o => o.name.length))
   return [
     `Usage: ${scriptName} ${modeDescriptors[mode].subcommand} [options]`,
     '',
     'Options:',
-    ...formatOpts(optionDefs, pad),
+    ...formatOpts(defs, pad),
     '',
     'Examples:',
     ...formatExamples(scriptName, examplesForMode(mode)),
-    ...(comparative
-      ? [
-          '',
-          `Comparison track options: ${syntenyTrackTypes.map(t => `--${t}`).join(', ')}`,
-        ]
-      : []),
+    '',
+    comparative
+      ? `Comparison track options: ${syntenyTrackTypes.map(t => `--${t}`).join(', ')}`
+      : `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
   ].join('\n')
 }
 
@@ -585,7 +605,7 @@ export function buildHelp(
   mode?: ViewMode,
 ) {
   if (mode) {
-    return buildSubcommandHelp(scriptName, mode, syntenyTrackTypes)
+    return buildSubcommandHelp(scriptName, mode, trackTypes, syntenyTrackTypes)
   }
   // linear is the implicit default, so the explicit subcommands users invoke are
   // the non-linear view types (shown by their CLI token).
@@ -609,7 +629,7 @@ export function buildHelp(
     '',
     `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
     '',
-    `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
+    `Other views (run "${scriptName} <view> --help" for its options): ${subcommandNames.join(', ')}`,
     '',
     `Whole callsets: "${scriptName} batch --sites calls.vcf.gz" writes one image per record (run "${scriptName} batch --help")`,
     '',

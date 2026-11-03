@@ -118,6 +118,26 @@ describe('a session holding a view the subcommand cannot draw', () => {
   }, 60000)
 })
 
+test('a LinearGenomeView --spec draws what its command line draws', async () => {
+  const { assembly, ...flags } = opts
+  const fromFlags = await renderRegion({
+    ...opts,
+    loc: 'ctgA:1-4000',
+    showTracks: [['track', ['volvox_sv', 'height:80']]],
+  })
+  const fromSpec = await renderRegion({
+    ...flags,
+    spec: JSON.stringify({
+      type: 'LinearGenomeView',
+      assembly,
+      loc: 'ctgA:1-4000',
+      tracks: [{ trackId: 'volvox_sv', height: 80 }],
+    }),
+  })
+  expect(fromSpec).toContain('volvox_sv')
+  expect(fromSpec).toBe(fromFlags)
+}, 60000)
+
 describe('track flags a view fixed by --spec or --session would drop', () => {
   const breakpointSpec = JSON.stringify({
     type: 'BreakpointSplitView',
@@ -187,6 +207,7 @@ describe('file-type track flags a comparative view never opens', () => {
   it('names the flag on a dotplot', async () => {
     await attempt({
       ...opts,
+      assembly: undefined,
       mode: 'dotplot',
       trackList: [['bigwig', [bigwig]]],
     })

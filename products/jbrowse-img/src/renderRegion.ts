@@ -38,7 +38,11 @@ import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { readsJoiningRegions } from './joinedReads.ts'
 import { modeDescriptors, subcommandForViewType } from './modes.ts'
-import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
+import {
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_WIDTH,
+  optionsWithoutEffect,
+} from './options.ts'
 import { readData } from './readData.ts'
 import { fetchHostedGenomes, resolveConfigObject } from './resolveHub.ts'
 import {
@@ -478,15 +482,12 @@ async function addLaunchView<T extends InitView, N extends string>(
   ctx: ModeContext,
   viewType: N,
   makeSettings: () => ViewSnapshotInput<N>,
-  settingsFromSpec?: (spec: ViewSpec) => SpecSettings,
+  settingsFromSpec: (spec: ViewSpec) => SpecSettings,
 ) {
   const { session } = ctx.model
   const suppliedType = ctx.spec ? undefined : session.views[0]?.type
   if (suppliedType !== undefined && suppliedType !== viewType) {
     throw wrongViewTypeError(ctx.opts, suppliedType)
-  }
-  if (ctx.spec && !settingsFromSpec) {
-    throw new Error(`--spec cannot describe a ${viewType}`)
   }
   const fixedBy = ctx.spec ? '--spec' : suppliedType ? 'the session' : undefined
   const named = namedTrackFlags(ctx.opts)
@@ -503,7 +504,7 @@ async function addLaunchView<T extends InitView, N extends string>(
   const view: AbstractViewModel =
     suppliedType === viewType
       ? session.views[0]!
-      : ctx.spec && settingsFromSpec
+      : ctx.spec
         ? await session.launchView<string>(
             viewType,
             withViewSettings(settingsFromSpec(ctx.spec), ctx.opts.view),
@@ -539,6 +540,7 @@ const renderLinear: ModeRenderer = async ctx => {
     ctx,
     'LinearGenomeView',
     () => ({}),
+    spec => ({ assembly: data.assembly.name, ...viewSettingsFromSpec(spec) }),
   )
 
   if (loc) {
@@ -563,10 +565,10 @@ const renderLinear: ModeRenderer = async ctx => {
         !!data.aggregateTextSearchAdapters?.length,
       )
     }
-  } else if (!sessionParam && !defaultSession) {
+  } else if (!ctx.spec && !sessionParam && !defaultSession) {
     throw new Error(
       'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
-        'Alternatively pass --session or --defaultSession.',
+        'Alternatively pass --spec, --session or --defaultSession.',
     )
   } else if (!view.displayedRegions.length) {
     // Without --loc the session IS the region, so a session that reaches here
@@ -576,7 +578,7 @@ const renderLinear: ModeRenderer = async ctx => {
     // renderers now throw on themselves, so it fails the same way rather than
     // writing a blank image.
     throw new Error(
-      `the ${sessionParam ? '--session' : 'defaultSession'} has no view positioned on a region; pass --loc to say where to render`,
+      `the ${ctx.spec ? '--spec' : sessionParam ? '--session' : 'defaultSession'} has no view positioned on a region; pass --loc to say where to render`,
     )
   }
 
@@ -866,26 +868,26 @@ function namedTrackFlags(opts: Opts) {
   ]
 }
 
+function givenOptions(opts: Opts) {
+  return Object.entries({
+    ...opts,
+    track: opts.showTracks?.length ? true : undefined,
+  })
+    .filter(([, value]) => value !== undefined && value !== false)
+    .map(([name]) => name)
+}
+
 // A comparative view's levels are its synteny files, so another file flag draws
-// nowhere; --loc means nothing to a circular view, which shows the whole assembly.
-function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
-  if (mode !== 'linear') {
-    const droppedFiles = modeDescriptors[mode].comparative
-      ? fileTrackFlags(opts)
-      : []
-    const ignored = [
-      opts.showTracks?.length && !modeDescriptors[mode].opensNamedTracks
-        ? '--track'
-        : '',
-      opts.refseq ? '--refseq' : '',
-      mode === 'circular' && opts.loc ? '--loc' : '',
-      ...droppedFiles,
-    ].filter(Boolean)
-    if (ignored.length) {
-      console.warn(
-        `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
-      )
-    }
+// nowhere
+function warnOptionsWithoutEffect(mode: ViewMode, opts: Opts) {
+  const ignored = [
+    ...optionsWithoutEffect(mode, givenOptions(opts)).map(name => `--${name}`),
+    ...(modeDescriptors[mode].comparative ? fileTrackFlags(opts) : []),
+  ]
+  if (ignored.length) {
+    console.warn(
+      `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
+    )
   }
 }
 
@@ -949,18 +951,22 @@ export async function renderRegionReport(
   configObject?: Config,
 ): Promise<Rendered> {
   const argv = opts.argv ?? []
+  const spec = opts.spec ? parseSpec(opts.spec) : undefined
+  // before the model is built, so a subcommand that cannot draw the --spec is
+  // reported rather than left to fail against a view it never asked for
+  const mode = resolveMode(opts.mode, spec, hasComparativeArgs(argv))
+  const specAssembly =
+    mode === 'linear' && typeof spec?.assembly === 'string'
+      ? spec.assembly
+      : undefined
   const data = readData(
-    opts,
+    { ...opts, assembly: opts.assembly ?? specAssembly },
     configObject ?? (await resolveConfigObject(opts)),
     await fetchHostedGenomes(
       hasComparativeArgs(argv) ? buildComparative(argv).hosted : [],
     ),
   )
-  const spec = opts.spec ? parseSpec(opts.spec) : undefined
-  // before the model is built, so a subcommand that cannot draw the --spec is
-  // reported rather than left to fail against a view it never asked for
-  const mode = resolveMode(opts.mode, spec, hasComparativeArgs(argv))
-  warnLinearOnlyOptions(mode, opts)
+  warnOptionsWithoutEffect(mode, opts)
   const model = await createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from

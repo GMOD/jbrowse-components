@@ -1,4 +1,4 @@
-import { subcommandForViewType, viewTypeModes } from './modes.ts'
+import { subcommandForViewType } from './modes.ts'
 import {
   parseSpec,
   specMode,
@@ -45,17 +45,9 @@ describe('withViewSettings', () => {
   })
 })
 
-describe('the linear view is not a --spec target', () => {
-  it('refuses a LinearGenomeView spec', () => {
-    expect(() => specMode({ type: 'LinearGenomeView' })).toThrow(
-      /unsupported view type/,
-    )
-  })
-
-  it('still names lgv when pointing at the subcommand that can draw one', () => {
-    // the two halves of the same invariant: absent from the --spec map, present
-    // in the answer a wrong-view-type error gives
-    expect(viewTypeModes.has('LinearGenomeView')).toBe(false)
+describe('the view type a --spec names', () => {
+  it('picks the linear view for a LinearGenomeView spec', () => {
+    expect(specMode({ type: 'LinearGenomeView' })).toBe('linear')
     expect(subcommandForViewType('LinearGenomeView')).toBe('lgv')
   })
 

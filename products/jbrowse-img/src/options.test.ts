@@ -20,6 +20,7 @@ import {
   getTrackLabels,
   knownOptions,
   optionsWithBooleanDefaults,
+  optionsWithoutEffect,
 } from './options.ts'
 
 function parse(args: string) {
@@ -164,7 +165,7 @@ test('help text lists options, examples, and track flags', () => {
   expect(help).toContain('--fasta')
   expect(help).toContain('[default: 1500]')
   expect(help).toContain('Track options: --bam')
-  expect(help).toContain('Comparative subcommands')
+  expect(help).toContain('Other views')
 })
 
 // `batch` is a subcommand a user can type, and main.ts names it in the error
@@ -191,6 +192,32 @@ test('subcommand help lists comparison track options', () => {
   expect(help).toContain('Usage: jb2export dotplot')
   expect(help).toContain('--view')
   expect(help).toContain('Comparison track options: --paf')
+})
+
+test('subcommand help lists only the options its view draws', () => {
+  const dotplot = buildHelp(
+    'jb2export',
+    trackTypes,
+    syntenyTrackTypes,
+    'dotplot',
+  )
+  expect(dotplot).not.toContain('--loc ')
+  expect(dotplot).not.toContain('--track ')
+  expect(dotplot).not.toContain('--showGridlines')
+  const lgv = buildHelp('jb2export', trackTypes, syntenyTrackTypes, 'linear')
+  expect(lgv).toContain('--refseq')
+  expect(lgv).toContain('--spec')
+  expect(lgv).toContain('Track options: --bam')
+})
+
+test('an option its view does not draw is named, and one it does is not', () => {
+  expect(optionsWithoutEffect('circular', ['loc', 'track', 'width'])).toEqual([
+    'loc',
+  ])
+  expect(optionsWithoutEffect('synteny', ['loc', 'trackLabels'])).toEqual([
+    'loc',
+  ])
+  expect(optionsWithoutEffect('linear', ['loc', 'refseq'])).toEqual([])
 })
 
 describe('batch options', () => {

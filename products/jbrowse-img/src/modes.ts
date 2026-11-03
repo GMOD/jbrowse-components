@@ -16,38 +16,33 @@ export interface ModeDescriptor {
   // The CLI subcommand token a user types to select this mode. `linear` uses
   // `lgv` (LinearGenomeView) rather than its internal mode name.
   subcommand: string
-  // MST view type, also the session-spec `type` discriminator. Absent for
-  // linear, which is never selected via --spec.
-  viewType?: string
+  // MST view type, also the session-spec `type` discriminator
+  viewType: string
   // Renders two or more assemblies: a repeated --fasta or --chromSizes, and the
   // comparison track types.
   comparative: boolean
-  // Opens the tracks `--track` and the file flags name. False for the
-  // comparative modes, whose levels are made of the synteny files themselves
-  // and which open nothing else; renderRegion warns rather than drop a --track
-  // silently there.
-  opensNamedTracks: boolean
 }
 
 export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
-  linear: { subcommand: 'lgv', comparative: false, opensNamedTracks: true },
+  linear: {
+    subcommand: 'lgv',
+    viewType: 'LinearGenomeView',
+    comparative: false,
+  },
   dotplot: {
     subcommand: 'dotplot',
     viewType: 'DotplotView',
     comparative: true,
-    opensNamedTracks: false,
   },
   synteny: {
     subcommand: 'synteny',
     viewType: 'LinearSyntenyView',
     comparative: true,
-    opensNamedTracks: false,
   },
   circular: {
     subcommand: 'circular',
     viewType: 'CircularView',
     comparative: false,
-    opensNamedTracks: true,
   },
   // One assembly, several windows of it stacked with the reads that leave one
   // and arrive in another drawn between them — so `comparative: false` even
@@ -57,7 +52,6 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
     subcommand: 'breakpoint',
     viewType: 'BreakpointSplitView',
     comparative: false,
-    opensNamedTracks: true,
   },
 }
 
@@ -80,18 +74,10 @@ export const subcommandTokens = viewModes.map(
 // --spec to pick its renderer, and to point a user at the right subcommand when
 // a --session carries a view the mode they asked for can't draw.
 export const viewTypeModes = new Map(
-  viewModes.flatMap(mode => {
-    const { viewType } = modeDescriptors[mode]
-    return viewType ? ([[viewType, mode]] as const) : []
-  }),
+  viewModes.map(mode => [modeDescriptors[mode].viewType, mode]),
 )
 
-// LinearGenomeView is deliberately absent from viewTypeModes — a --spec must
-// never select linear — so the subcommand that renders one is answered here
-// rather than by widening that map.
 export function subcommandForViewType(viewType: string) {
-  const mode =
-    viewTypeModes.get(viewType) ??
-    (viewType === 'LinearGenomeView' ? 'linear' : undefined)
+  const mode = viewTypeModes.get(viewType)
   return mode && modeDescriptors[mode].subcommand
 }

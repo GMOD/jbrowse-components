@@ -349,13 +349,12 @@ describe('resolveMode', () => {
     )
   })
 
-  it('refuses a spec on lgv rather than rendering an empty linear view', () => {
+  it("refuses another view type's spec on lgv, and takes its own", () => {
     expect(() => resolveMode('linear', { type: 'DotplotView' })).toThrow(
       /render it with "jb2export dotplot" \(not "jb2export lgv"\)/,
     )
-    expect(() => resolveMode('linear', { type: 'LinearGenomeView' })).toThrow(
-      /unsupported view type in --spec: LinearGenomeView/,
-    )
+    expect(resolveMode('linear', { type: 'LinearGenomeView' })).toBe('linear')
+    expect(resolveMode(undefined, { type: 'LinearGenomeView' })).toBe('linear')
   })
 })
 
