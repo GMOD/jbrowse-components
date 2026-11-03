@@ -233,10 +233,12 @@ export default class MultiWiggleAdapter
     )
     const merged = new Map<string, Contig[]>()
     for (const contig of perSource.flat()) {
-      merged.set(contig.refName, [
-        ...(merged.get(contig.refName) ?? []),
-        contig,
-      ])
+      const group = merged.get(contig.refName)
+      if (group) {
+        group.push(contig)
+      } else {
+        merged.set(contig.refName, [contig])
+      }
     }
     return [...merged].map(([refName, contigs]) => {
       const lengths = contigs.flatMap(c => c.length ?? [])
