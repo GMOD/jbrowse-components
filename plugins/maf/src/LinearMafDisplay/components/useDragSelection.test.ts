@@ -43,28 +43,38 @@ function mouseEvent(
   } as unknown as React.MouseEvent
 }
 
-function pointerEvent(extra?: { pointerType?: string; shiftKey?: boolean }) {
+function pointerEvent(extra?: {
+  pointerType?: string
+  shiftKey?: boolean
+  x?: number
+  gestureOwner?: boolean
+}) {
   const stopPropagation = jest.fn()
+  const setPointerCapture = jest.fn()
+  const owner = document.createElement('div')
+  owner.dataset.gestureOwner = 'true'
+  const control = document.createElement('span')
+  owner.append(control)
   const event = {
+    pointerId: 7,
+    clientX: extra?.x ?? 200,
+    clientY: 50,
+    currentTarget: {
+      setPointerCapture,
+      getBoundingClientRect: () => ({
+        left: 0,
+        top: 0,
+        width: WIDTH,
+        height: HEIGHT,
+      }),
+    },
     button: 0,
     pointerType: extra?.pointerType ?? 'mouse',
     shiftKey: extra?.shiftKey ?? false,
-    target: { closest: () => null },
+    target: extra?.gestureOwner ? control : { closest: () => null },
     stopPropagation,
   } as unknown as React.PointerEvent
-  return { event, stopPropagation }
-}
-
-function capturingPointerMove() {
-  const setPointerCapture = jest.fn()
-  const event = {
-    pointerId: 7,
-    currentTarget: {
-      setPointerCapture,
-      hasPointerCapture: () => false,
-    },
-  } as unknown as React.PointerEvent
-  return { event, setPointerCapture }
+  return { event, stopPropagation, setPointerCapture }
 }
 
 test('a mouse press is kept from the view, which pans on pointerdown', () => {
@@ -219,25 +229,24 @@ test('a press in a portal is left alone and starts nothing', () => {
   expect(result.current.isDragging).toBe(false)
 })
 
-test('a live drag captures the pointer so it survives leaving the track', () => {
+test('a press in the data area captures the pointer before any move', () => {
   const { result } = setup()
-  act(() => {
-    result.current.handleMouseDown(mouseEvent(200, 50))
-  })
-  const move = capturingPointerMove()
-  act(() => {
-    result.current.handlePointerMove(move.event)
-  })
-  expect(move.setPointerCapture).toHaveBeenCalledWith(7)
+  const press = pointerEvent()
+  result.current.handlePointerDown(press.event)
+  expect(press.setPointerCapture).toHaveBeenCalledWith(7)
 })
 
-test('a plain hover does not capture the pointer', () => {
+test('a press on the sidebar, a control, or by touch is not captured', () => {
   const { result } = setup()
-  const move = capturingPointerMove()
-  act(() => {
-    result.current.handlePointerMove(move.event)
-  })
-  expect(move.setPointerCapture).not.toHaveBeenCalled()
+  for (const press of [
+    pointerEvent({ x: DATA_LEFT - 1 }),
+    pointerEvent({ gestureOwner: true }),
+    pointerEvent({ pointerType: 'touch' }),
+    pointerEvent({ shiftKey: true }),
+  ]) {
+    result.current.handlePointerDown(press.event)
+    expect(press.setPointerCapture).not.toHaveBeenCalled()
+  }
 })
 
 test('a drag released past the bottom edge selects to the edge', () => {

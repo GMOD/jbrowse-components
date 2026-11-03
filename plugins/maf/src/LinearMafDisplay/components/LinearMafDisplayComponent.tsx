@@ -86,9 +86,6 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       onPointerDown={e => {
         drag.handlePointerDown(e)
       }}
-      onPointerMove={e => {
-        drag.handlePointerMove(e)
-      }}
       onPointerCancel={() => {
         drag.handlePointerCancel()
       }}

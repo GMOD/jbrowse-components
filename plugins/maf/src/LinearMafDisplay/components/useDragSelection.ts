@@ -97,19 +97,19 @@ export function useDragSelection(
   // The LGV pans on pointerdown (useSideScroll), so a press the display keeps
   // is stopped here, including over the sidebar. A touch is left to the view so
   // a finger drag over the rows still pans.
+  //
+  // A press in the data area is captured, so the move and release events keep
+  // coming when the drag overshoots the track, even if the first move already
+  // lands outside it, and the selection is clamped to the track. Controls in
+  // the data area (scrollbar, band handles, corner indicators) carry
+  // `data-gesture-owner`, which `leavesPressToView` honours, and the mouse
+  // events that make a click fire on the container either way.
   function handlePointerDown(e: React.PointerEvent) {
     if (e.pointerType !== 'touch' && !leavesPressToView(e)) {
       e.stopPropagation()
-    }
-  }
-
-  // Captured once the press turns into a drag rather than on pointerdown, so a
-  // plain click on a control inside the display is not retargeted to the
-  // container. The capture keeps move and release events coming when the drag
-  // overshoots the track, and the selection is clamped to the track.
-  function handlePointerMove(e: React.PointerEvent) {
-    if (state.isDragging && !e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.setPointerCapture(e.pointerId)
+      if (pointInTrack(e).x >= dataLeft) {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      }
     }
   }
 
@@ -222,7 +222,6 @@ export function useDragSelection(
     contextCoord,
     setContextCoord,
     handlePointerDown,
-    handlePointerMove,
     handlePointerCancel,
     handleMouseDown,
     handleMouseMove,
