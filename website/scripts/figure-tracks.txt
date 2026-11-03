@@ -18,6 +18,6 @@ tutorials/pangenome_ecoli.md 1
 tutorials/pangenome_hprc_repeats.md 6
 tutorials/pangenome_hprc.md 6
 tutorials/pangenome_mouse.md 3
-tutorials/pangenome_prepare_graph.md 6
+tutorials/pangenome_prepare_graph.md 5
 tutorials/sv_visualization_cgiab.md 4
 tutorials/synteny_visualization.md 8
