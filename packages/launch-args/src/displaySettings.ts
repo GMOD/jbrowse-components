@@ -651,8 +651,8 @@ const modifiers: Record<string, Modifier> = {
       })
     },
   },
-  // They filter before the coverage pipeline, so `svSignal:only` on an
-  // ordinary sample removes almost every read and the coverage band with them.
+  // They hide rows and leave the coverage band counting every read, so
+  // `svSignal:only` on an ordinary sample draws almost no reads over full depth.
   ...readCategoryModifiers(),
   // an omitted half is mask 0
   flags: {
