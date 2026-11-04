@@ -35,12 +35,22 @@ function sideLine({
     .join(' ')
 }
 
+// A syntenic depth of 1, a one-to-one pair, says nothing a reader needs
+function withoutOneToOneDepth({
+  syntenicDepth,
+  ...rest
+}: Record<string, number>) {
+  return syntenicDepth === undefined || syntenicDepth === 1
+    ? rest
+    : { ...rest, syntenicDepth }
+}
+
 /**
  * A synteny block's description, the lines every view's hover shows for it:
  * each side's assembly, name and span, `Inverted` where the two sides run
- * opposite ways, and the numeric channels it carries. No arrow between the
- * names, since an ortholog pair has no direction and the sides' order differs
- * by view.
+ * opposite ways, and the numeric channels it carries, its syntenic depth only
+ * where a gene has more than one partner. No arrow between the names, since an
+ * ortholog pair has no direction and the sides' order differs by view.
  */
 export function syntenyBlockLines({
   sides,
@@ -54,7 +64,7 @@ export function syntenyBlockLines({
   return [
     ...sides.map(sideLine),
     ...(inverted ? ['Inverted'] : []),
-    ...attributeTooltipLines(attributes),
+    ...attributeTooltipLines(withoutOneToOneDepth(attributes)),
   ]
 }
 
