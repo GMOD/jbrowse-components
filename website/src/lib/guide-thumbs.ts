@@ -40,6 +40,7 @@ export const GUIDE_THUMB_OVERRIDES: Record<string, ThumbSpec> = {
   hic_track: {
     src: 'hic/observed_control.png',
     band: [0.19, 1],
+    xband: [0.36, 0.995],
     position: 'center',
   },
   highlights: { src: 'highlight_list_edit_label.png', band: DEFAULT_BAND },
