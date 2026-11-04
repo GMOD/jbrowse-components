@@ -17,6 +17,7 @@ import BamSlightlyLazyFeature from '../src/BamAdapter/BamSlightlyLazyFeature.ts'
 import { groupsOfFetch } from '../src/RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { filterChainFeatures } from '../src/RenderAlignmentDataRPC/filterChainFeatures.ts'
 
+import type { WorkerFacet } from '../src/shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
@@ -54,12 +55,20 @@ for (const r of records) {
 }
 const firstName = records[Math.floor(records.length / 2)]!.get('name')
 
-const arms: Record<string, FieldPredicate[]> = {
-  unfiltered: [],
-  'this read': [{ field: 'name', equal: firstName }],
-  'SV evidence': [{ field: 'svSignal', equal: true }],
-  'not split': [{ field: 'split', equal: false }],
-}
+const SV_EVIDENCE: FieldPredicate[] = [{ field: 'svSignal', equal: true }]
+const SV_CHANNEL: WorkerFacet = { field: 'svChannel' }
+
+// The SV channels preset is the last two: the facet, then the facet under
+// its filter
+const arms: Record<string, { filter: FieldPredicate[]; facet?: WorkerFacet }> =
+  {
+    unfiltered: { filter: [] },
+    'this read': { filter: [{ field: 'name', equal: firstName }] },
+    'SV evidence': { filter: SV_EVIDENCE },
+    'not split': { filter: [{ field: 'split', equal: false }] },
+    'SV channel facet': { filter: [], facet: SV_CHANNEL },
+    'SV channels': { filter: SV_EVIDENCE, facet: SV_CHANNEL },
+  }
 
 // the render reads only `jexl` off it while no sequence adapter is passed
 const pluginManager = { jexl: createJexlInstance() } as unknown as PluginManager
@@ -70,7 +79,13 @@ const region = {
   end: END,
 }
 
-async function render(filter: FieldPredicate[]) {
+async function render({
+  filter,
+  facet,
+}: {
+  filter: FieldPredicate[]
+  facet?: WorkerFacet
+}) {
   const t0 = performance.now()
   await groupsOfFetch({
     pluginManager,
@@ -81,6 +96,7 @@ async function render(filter: FieldPredicate[]) {
       statusCallback: undefined,
       showCoverage: true,
       filter,
+      facet,
     },
     featuresArray: records,
   })
@@ -89,14 +105,14 @@ async function render(filter: FieldPredicate[]) {
 
 const best: Record<string, number> = {}
 for (let r = 0; r < ROUNDS; r++) {
-  for (const [name, filter] of Object.entries(arms)) {
-    best[name] = Math.min(best[name] ?? Infinity, await render(filter))
+  for (const [name, arm] of Object.entries(arms)) {
+    best[name] = Math.min(best[name] ?? Infinity, await render(arm))
   }
 }
 console.log(
   `${only} ${REFNAME}:${START}-${END}  ${records.length} records, min of ${ROUNDS}`,
 )
-for (const [name, filter] of Object.entries(arms)) {
+for (const [name, { filter }] of Object.entries(arms)) {
   const drawn = filterChainFeatures(records, filter).length
   console.log(
     `${name.padEnd(12)} ${best[name]!.toFixed(1).padStart(8)} ms  ${(best[name]! / best.unfiltered!).toFixed(2)}x  ${drawn} drawn`,

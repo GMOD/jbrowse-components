@@ -86,9 +86,9 @@ draft's filter joins the fields the reader already filters
   pair by its orientation, the first version, kept concordant pairs in the LR
   band, where "No SV evidence" read as if it held them.
 - **A chain files where its highest-ranked record files**; a concordant
-  mate files as `none`, last. Amended 2026-11-04: in read mode too
-  (`wholeChain`), and only while the chain is SV evidence as the filter judges
-  it (any record with an `svSignalTier`); any other chain files as `none`. So
+  mate files as `none`, last. Amended 2026-11-04: in read mode too, and by
+  its SV evidence records alone as the filter judges evidence (an
+  `svSignalTier`); a chain with none files as `none`. So
   "No SV evidence" holds exactly what Only SV evidence hides by construction:
   a split read's concordant mate files with it, and a MAPQ-0 split record
   whose placed siblings are out of view files as `none`.
@@ -167,6 +167,15 @@ draft's filter joins the fields the reader already filters
   A long read's category bits are computed twice, in the keyer and in the
   extract, as under `svSignal`; at about 1 µs a record, memoizing them on the
   record would save a couple of milliseconds a fetch.
+
+  Amended 2026-11-04: the facet keys the whole fetch at once (`keyAll`,
+  `svChannelKeys` in `groupFeatures.ts`): one chain key per read and a
+  channel for each evidence record only, with no array built per chain. On
+  `1000x.shortread.bam`, 81,417 records (`benches/drawnReadFilter.bench.ts`,
+  load ~18, min of 11, interleaved), the facet costs 1.33x the unfiltered
+  render where grouping into chain arrays cost 1.96x, and the whole preset,
+  facet and filter, 1.56x where it cost 1.77x. The drawn-read filter groups
+  the reads by name a second time, off the extract's name blocks.
 
 ## Rejected alternatives
 
