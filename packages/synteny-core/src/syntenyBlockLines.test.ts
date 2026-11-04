@@ -32,5 +32,5 @@ test('a gene with more than one partner says how many', () => {
       inverted: false,
       attributes: { syntenicDepth: 3 },
     }),
-  ).toContain('Syntenic depth: 3')
+  ).toContain('Shared by 3 genes')
 })

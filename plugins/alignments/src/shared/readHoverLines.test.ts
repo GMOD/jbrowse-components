@@ -110,7 +110,7 @@ test('an ortholog pair names the other gene, both spans and its depth', () => {
     'hg38 chr10:121,478,001-121,598,000 (120,000 bp)',
     'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
     'Inverted',
-    'Syntenic depth: 2',
+    'Shared by 2 genes',
   ])
 })
 
