@@ -681,9 +681,11 @@ Reads & coloring:
 | `baseColor:field`              | `baseColor:methylation`      | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below) |
 | `sort:field` or `sort:tag:TAG` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `base`, or `tag:<TAG>`)                                  |
 
-The modifiers below choose which reads are drawn. They filter before the
-coverage pipeline as well as before layout, so a filter that removes reads
-removes them from the coverage band too.
+The modifiers below choose which reads are drawn. The flag, MAPQ and tag
+modifiers also decide which reads count, so a read they remove leaves the
+coverage band too; the category modifiers hide rows and leave the coverage
+counting every read, so a category's own depth needs a section of its own
+(`facet=split`, say).
 
 The last four modifiers in the table, `svSignal:`, `split:`, `alone:` and
 `spliced:`, name a read category and take one vocabulary: `only` keeps that

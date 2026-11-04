@@ -2,7 +2,6 @@ import {
   ConfigurationSchema,
   getConfigurationSchemaMetadata,
   isConfigurationSchemaType,
-  listMergedBy,
   plotList,
   refuseOnWrite,
 } from '@jbrowse/core/configuration'
@@ -243,9 +242,7 @@ const listDefaults = new WeakMap<IAnyType, readonly FieldPredicate[]>()
  * A display's `filter` slot: a list of predicates, edited by "Edit plot...".
  * `defaults` are the entries a written list merges with by field (ADR-240):
  * an entry replaces its field's defaults, and `{ field }` alone removes
- * them. Declared here, Edit plot lists them beside the written list. A
- * settings bag or a plot draft merges with the written list by field too
- * (`listMergedBy`), so writing one field's entries keeps the others.
+ * them. Declared here, Edit plot lists them beside the written list.
  */
 export function fieldPredicateList({
   defaults,
@@ -254,7 +251,7 @@ export function fieldPredicateList({
   if (defaults) {
     listDefaults.set(type, defaults)
   }
-  return listMergedBy(plotList(type), 'field')
+  return plotList(type)
 }
 
 /** Every predicate list under a config that declares defaults, by its path. */

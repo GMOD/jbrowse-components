@@ -136,4 +136,3 @@ export {
   plotWrites,
 } from './plot.ts'
 export type { Plot, PlotExample, PlotWriteOptions } from './plot.ts'
-export { listMergedBy } from './mergedList.ts'

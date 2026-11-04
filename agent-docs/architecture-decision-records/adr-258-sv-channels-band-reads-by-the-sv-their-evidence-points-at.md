@@ -31,8 +31,8 @@ sashimi off. Under ADR-259 the filter hides rows and leaves coverage whole,
 and under this ADR's 2026-11-04 keying `none` holds exactly what the filter
 hides, so each band draws its evidence reads over its own coverage and "No SV
 evidence" draws its coverage alone, with no collapse chevron on its chip. The
-draft's filter joins the fields the reader already filters
-(ADR-240's amendment).
+menu row writes the filter by field (`setFilterFields`), so the fields the
+reader already filters stay.
 
 ## Context
 

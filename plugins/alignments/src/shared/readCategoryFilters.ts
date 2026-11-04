@@ -82,7 +82,8 @@ export const READ_CATEGORIES = [
     exclude: 'Hide spliced reads',
     helpText:
       'Reads whose CIGAR carries a reference skip (N) — an intron, in ' +
-      'RNA-seq. The one category decided per record as the adapter parses it, ' +
-      'rather than over the whole chain a read belongs to.',
+      'RNA-seq. The one category decided per record rather than over the ' +
+      'whole chain a read belongs to. It hides rows only: the coverage ' +
+      'still counts every read.',
   },
 ] as const satisfies readonly ReadCategorySpec[]

@@ -466,8 +466,9 @@ function stateModelFactory() {
        * stays, `null` resets one, a channel (`writes: 'whole'`, such as
        * `color`) is replaced whole, a keyed object such as `facet` keeps the
        * members keyed to its field (`sort`, `hidden`) only while that field
-       * stays, and any other object takes the members the draft names, so a
-       * `filter` list keeps the filter's other tests. Under `whole` the draft
+       * stays, any other object takes the members the draft names, and a list
+       * such as `filter` is replaced whole, so a draft lists every entry it
+       * keeps and `[]` clears it. Under `whole` the draft
        * is the plot entire, as the "Edit plot..." text is: a setting it leaves
        * out resets. A draft the schema
        * refuses, or naming a setting outside the plot, throws before anything

@@ -22,13 +22,13 @@ display-wide `legend.show` as the only switch. Amended 2026-10-31: the plain
 being the one paired-end coloring, so `readConnections.encoding.color` has no
 field to choose and retires with them; the connections paint that field's
 levels in the colors the reads' `encoding.color` declares for them. Amended
-2026-11-04: a settings bag or a plot draft writing a `filter` list merges
-with the list already written by field, as the written list merges with the
-defaults (`listMergedBy`, `core/configuration/mergedList.ts`): its entries
-replace the written entries on their fields verbatim, a bare `{ field }`
-keeps meaning "drop this field's defaults", the other fields keep theirs,
-and `null` resets the list. Replacing the list whole had dropped a user's
-MAPQ and tag entries under a preset's one filter.
+2026-11-04 and reverted the same day: a settings bag or a plot draft writing a
+`filter` list merged with the written list by field, so the SV channels
+preset kept a reader's MAPQ and tag entries. It also kept every field a draft
+left out, so an agent's clone-edit-apply of `plot` could not remove one,
+`filter: []` cleared nothing, and the CLI's `mergeBySlots` folded a different
+list from the app. A list stays whole; a menu row writing one field does it
+with `withFields` (`setFilterFields`).
 Amended 2026-11-01: `collapseSections` is `pileup.collapsed`, on the band it
 reshapes, where LGVSyntenyDisplay's own `pileup` object defaults it on. The
 pileup takes no shorthand, so a share link writing `facet: 'HP'` or

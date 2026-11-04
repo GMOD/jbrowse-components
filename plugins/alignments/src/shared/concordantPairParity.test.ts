@@ -20,7 +20,10 @@ import type { Feature } from '@jbrowse/core/util'
 // against a restatement of it: a pair kept as evidence whose arc is hidden as
 // ordinary is the bug, and it is silent.
 // A supplementary names its other piece (SAM requires the SA tag on one), so
-// it is split evidence.
+// it is split evidence. One whose source dropped the tag is the one
+// divergence: it names no junction, so the filter calls it ordinary (ADR-229's
+// 2026-11-04 amendment), while the arcs still treat every supplementary as no
+// concordant pair; only a malformed file reaches it.
 function feature(
   id: string,
   flags: number,

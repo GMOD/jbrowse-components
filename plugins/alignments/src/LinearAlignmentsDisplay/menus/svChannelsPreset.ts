@@ -23,9 +23,9 @@ export const SV_CHANNELS_LABEL = 'SV channels'
 // evidence and leaves every band's coverage counting all its reads (ADR-259),
 // so "No SV evidence" draws its depth alone. Every setting is reachable from
 // the other menus; the preset exists because six of them spread across four
-// menus is not an arrangement anyone finds by looking. Written as a plot
-// draft, the filter joins the fields already filtered (ADR-240's 2026-11-04
-// amendment), and `pileup.show` undoes the earlier preset's hidden pileup.
+// menus is not an arrangement anyone finds by looking. The menu row writes
+// the filter by field (`setFilterFields`), so the fields the reader already
+// filters stay, and `pileup.show` undoes the earlier preset's hidden pileup.
 //
 // `encoding.color` is deliberately NOT among them: the evidence reads keep
 // whatever the reader colors them by.
