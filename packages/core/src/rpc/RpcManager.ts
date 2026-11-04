@@ -142,10 +142,24 @@ export default class RpcManager {
       throw new Error('sessionId is required')
     }
     const driverForCall = this.getDriver()
-    return (await this.withAuthRetry(() =>
+    const pending = this.withAuthRetry(() =>
       driverForCall.call(sessionId, functionName, { ...args, sessionId }),
-    )) as RpcCallReturn<M>
+    )
+    const calls =
+      this.callsInFlight.get(sessionId) ?? new Set<Promise<unknown>>()
+    this.callsInFlight.set(sessionId, calls)
+    calls.add(pending)
+    const settle = () => {
+      calls.delete(pending)
+      if (calls.size === 0) {
+        this.callsInFlight.delete(sessionId)
+      }
+    }
+    void pending.then(settle, settle)
+    return (await pending) as RpcCallReturn<M>
   }
+
+  private callsInFlight = new Map<string, Set<Promise<unknown>>>()
 
   /**
    * Drop everything held for a session — the worker-side adapter cache, and the
@@ -158,8 +172,13 @@ export default class RpcManager {
    *
    * Silent on a destroyed manager, because the destroy already freed strictly
    * more than this would: it terminated the workers the cache lived in.
+   *
+   * Waits for the session's calls in flight, auth retries included: one still
+   * serializing would otherwise reach the worker after the free and rebuild
+   * the adapter under an id nothing releases again.
    */
   async freeSession(sessionId: string) {
+    await Promise.allSettled([...(this.callsInFlight.get(sessionId) ?? [])])
     if (!this.destroyed) {
       await this.getDriver().freeSession(sessionId)
     }

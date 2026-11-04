@@ -271,7 +271,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
    * A session with no assignment never dispatched anything, so there is nothing
    * cached anywhere to free — and no pool to build in order to find that out.
    */
-  protected override async freeSettledSession(sessionId: string) {
+  override async freeSession(sessionId: string) {
     const workerNumber = this.workerAssignments.get(sessionId)
     this.workerAssignments.delete(sessionId)
     if (workerNumber !== undefined) {

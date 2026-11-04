@@ -28,7 +28,6 @@ export async function loadMafSamplesAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
-    undefined,
   )
   if (!(dataAdapter instanceof MafAdapterBase)) {
     throw new Error(

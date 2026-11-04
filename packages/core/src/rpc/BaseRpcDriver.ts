@@ -32,28 +32,15 @@ export default abstract class BaseRpcDriver {
    * a transport that never ran this session and must not outlive `destroy`;
    * routing it through `call` did both. ADR-086.
    *
-   * Waits for the session's calls already in flight: one still serializing
-   * reaches the worker after the free otherwise, and rebuilds the adapter
-   * under an id nothing will release again (or, under a worker pool, on
-   * another worker, the assignment having been dropped).
-   */
-  async freeSession(sessionId: string) {
-    await Promise.allSettled([...(this.inFlight.get(sessionId) ?? [])])
-    await this.freeSettledSession(sessionId)
-  }
-
-  /**
    * The base behavior is the main-thread one: run the method in this realm,
    * where `dataAdapterCache` lives. `invoke`, not `execute`, for the reason
    * `MainThreadRpcDriver.transport` uses it.
    */
-  protected async freeSettledSession(sessionId: string) {
+  async freeSession(sessionId: string) {
     await this.pluginManager
       .getRpcMethodType(CORE_FREE_RESOURCES)
       .invoke({ sessionId })
   }
-
-  private inFlight = new Map<string, Set<Promise<unknown>>>()
 
   destroy() {}
 
@@ -68,25 +55,7 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    const pending = this.dispatch(sessionId, functionName, args)
-    const calls = this.inFlight.get(sessionId) ?? new Set<Promise<unknown>>()
-    this.inFlight.set(sessionId, calls)
-    calls.add(pending)
-    const settle = () => {
-      calls.delete(pending)
-      if (calls.size === 0) {
-        this.inFlight.delete(sessionId)
-      }
-    }
-    void pending.then(settle, settle)
-    return pending
-  }
 
-  private async dispatch(
-    sessionId: string,
-    functionName: string,
-    args: Record<string, unknown> & RpcHandles,
-  ) {
     // An RPC method is addressed by string, so a removed or renamed one is not
     // a type error anywhere — it fails here. It fails WELL: `TypeRecord.get`
     // throws naming the method and listing what is registered, which is the

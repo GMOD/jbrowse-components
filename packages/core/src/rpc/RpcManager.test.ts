@@ -53,6 +53,46 @@ describe('RpcManager session lifecycle', () => {
     await manager.call('mySession', 'CoreGetRegions', { adapterConfig: {} })
     expect(freedSessions).toEqual([])
   })
+
+  test("a free lands after the session's calls in flight, an auth retry included, and waits on no other session's", async () => {
+    const { manager, driver, freedSessions, pluginManager } = makeManager()
+    withMockRootModel(pluginManager)
+    const events: string[] = []
+    let finishRetry = () => {}
+    const retrying = new Promise<void>(resolve => {
+      finishRetry = resolve
+    })
+    let attempts = 0
+    driver.call = async sessionId => {
+      if (sessionId === 'closed') {
+        attempts++
+        if (attempts === 1) {
+          throw new AuthNeededError('needs auth', 'https://example.com/a.bam')
+        }
+        await retrying
+        events.push('retry landed')
+      }
+      return undefined
+    }
+    driver.freeSession = async sessionId => {
+      freedSessions.push(sessionId)
+      events.push(`free ${sessionId}`)
+    }
+
+    const straggler = manager.call('closed', 'CoreGetRegions', {
+      adapterConfig: {},
+    })
+    const other = manager.call('open', 'CoreGetRegions', { adapterConfig: {} })
+    await manager.freeSession('unrelated')
+    const freeing = manager.freeSession('closed')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(attempts).toBe(2)
+    expect(events).toEqual(['free unrelated'])
+
+    finishRetry()
+    await Promise.all([straggler, other, freeing])
+    expect(events).toEqual(['free unrelated', 'retry landed', 'free closed'])
+  })
 })
 
 describe('RpcManager auth retry', () => {

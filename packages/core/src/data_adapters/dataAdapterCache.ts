@@ -234,7 +234,7 @@ export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: ConfigSnap,
-  sequenceAdapter: Record<string, unknown> | undefined,
+  sequenceAdapter?: Record<string, unknown>,
 ) {
   const entry = entryFor(pluginManager, adapterConfigSnapshot, sequenceAdapter)
   entry.sessionIds.add(sessionId)
