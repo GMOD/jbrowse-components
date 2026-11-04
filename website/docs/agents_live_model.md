@@ -459,16 +459,9 @@ and
 
 **An action's argument shape, for a plugin view whose docs leave it out:** take
 the type from `pluginManager.getViewElements().map(v => v.name)`, open a
-throwaway view, call the action with `{}` so the model materializes its
-defaults, inspect what it created, remove the view:
-
-```js
-const probe = session.addView(type, {})
-probe[action]({})
-const shape = jb.inspect(probe)
-session.removeView(probe)
-return shape
-```
+throwaway view with `session.addView(type, {})`, call the action with `{}` so
+the model materializes its defaults, read what it created with
+`jb.inspect(probe)`, and remove it with `session.removeView(probe)`.
 
 ## Showing something you derived
 
