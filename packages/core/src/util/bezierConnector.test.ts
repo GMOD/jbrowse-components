@@ -202,22 +202,22 @@ test('a dip reaches the depth it was asked for when its ends are wide enough apa
   // the renderer bounds the depth by the band its ink has to survive in, so the
   // number it passes has to be the apex and not the control-point drop
   expect(dipDepth(40)).toBeCloseTo(40)
-  expect(dipDepth(40, 40)).toBeCloseTo(40)
+  expect(dipDepth(40, 160)).toBeCloseTo(40)
   expect(dipDepth(40, 2000)).toBeCloseTo(40)
 })
 
-test('a dip between ends close together on screen is no deeper than they are apart', () => {
-  // zoomed out, a pair a few px wide would otherwise draw as a tall spike
-  expect(dipDepth(80, 20)).toBeCloseTo(20)
-  expect(dipDepth(80, 1)).toBeCloseTo(1)
+test('a dip between ends close together on screen is no deeper than a quarter of their separation', () => {
+  // zoomed out, a pair a few px wide would otherwise draw as a U or a spike
+  expect(dipDepth(80, 20)).toBeCloseTo(5)
+  expect(dipDepth(80, 4)).toBeCloseTo(1)
   expect(dipDepth(80, 0)).toBeCloseTo(0)
-  expect(dipDepth(2, 5)).toBeCloseTo(2)
+  expect(dipDepth(2, 20)).toBeCloseTo(2)
 })
 
 test('a dip is bounded by the curve reach the cull pads by', () => {
   // the cull pads its viewport test by this constant, so a caller passing more
   // than it would hide a curve rather than draw it deeper
-  expect(dipDepth(1000)).toBeCloseTo(BEZIER_CONNECTOR_MAX_REACH_PX)
+  expect(dipDepth(1000, 2000)).toBeCloseTo(BEZIER_CONNECTOR_MAX_REACH_PX)
 })
 
 // SPAN_FACTOR's contract: a shaping term may not outrun the distance the curve

@@ -10,9 +10,8 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // deep in a 20 kb view and 7.5 px deep in a 400 kb view. `f` is the log lerp
 // sashimi's `arcHeightFraction` uses, on an SV-scale window rather than that
 // one's 50 bp - 100 kb, and a second copy of it rather than a shared call.
-// Zoomed out until the ends sit closer together than that depth, the connector
-// mark caps the dip at their separation (`connectorLiftPx`), so a narrow pair
-// draws a shallow trough rather than a spike.
+// Zoomed out, the connector mark caps the dip at a quarter of the ends' screen
+// separation (`connectorLiftPx`), so a narrow pair flattens toward a line.
 //
 // Scaling by the BAND is what keeps the ink: each pileup section clips at its
 // band bottom and the split view bleeds past its panel, so a fixed 110 px dip

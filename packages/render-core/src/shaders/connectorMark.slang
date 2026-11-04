@@ -46,9 +46,9 @@ public static const float CONNECTOR_APEX_RATIO = 0.75;
 static const float CONNECTOR_MAX_BOW_PX = 30.0;
 // The deepest a dip may reach below its ends, a ceiling on `bend`.
 public static const float CONNECTOR_MAX_REACH_PX = 110.0;
-// A dip reaches no deeper than its ends are apart on screen, so zoomed out it
-// flattens toward a line rather than drawing a tall spike.
-static const float CONNECTOR_DIP_PER_WIDTH = 1.0;
+// A dip reaches no deeper than a quarter of its ends' screen separation, so
+// zoomed out it flattens toward a line rather than drawing a U or a spike.
+static const float CONNECTOR_DIP_PER_WIDTH = 0.25;
 
 // The `bits` lane.
 public static const uint CONNECTOR_MINUS_1 = 1u;

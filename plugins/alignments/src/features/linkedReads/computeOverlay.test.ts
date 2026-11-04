@@ -418,7 +418,7 @@ describe('connectors — discordant curves dip', () => {
     })
     const { sx1, sy1, cp1y, sx2 } = controlPoints(loop!.d)
     expect(Math.abs(sx2 - sx1)).toBeCloseTo(2)
-    expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeCloseTo(2)
+    expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeCloseTo(0.5)
   })
 
   // The shape language is shared with BreakpointSplitView: a plain line is a
@@ -476,10 +476,10 @@ describe('connectors — discordant curves dip', () => {
   // The depth is the mark's one free channel, so it has to say how big the event
   // is and not how much screen it happens to cover. Keyed on the endpoints' pixel
   // separation, as it was, this same event drew 55 px deep zoomed in and 7.5 px
-  // deep zoomed out. Zoomed out far enough that its ends sit closer together
-  // than that depth, the dip shrinks to their separation instead of drawing a
-  // spike.
-  it('dips the same depth for one event at every zoom its ends are wider than that depth', () => {
+  // deep zoomed out. Zoomed out far enough that a quarter of its ends'
+  // separation is less than that depth, the dip shrinks to that quarter and
+  // flattens.
+  it('dips the same depth for one event at every zoom its ends are wide enough for', () => {
     const data = makeData({
       names: ['p', 'p'],
       flags: [
@@ -510,10 +510,9 @@ describe('connectors — discordant curves dip', () => {
     }
     const zoomedIn = curveAt(1).depth
     expect(curveAt(20).depth).toBeCloseTo(zoomedIn)
-    expect(curveAt(100).depth).toBeCloseTo(zoomedIn)
     for (const bpPerPx of [400, 2000]) {
       const { apex, width } = curveAt(bpPerPx)
-      expect(apex).toBeCloseTo(width)
+      expect(apex).toBeCloseTo(width / 4)
       expect(apex).toBeLessThan(zoomedIn * CUBIC_APEX_RATIO)
     }
   })
