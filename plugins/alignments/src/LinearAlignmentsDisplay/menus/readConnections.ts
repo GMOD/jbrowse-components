@@ -7,14 +7,11 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { getSvChannelsMenuItem } from './svChannels.ts'
-
 import type {
   AlignmentsUnit,
   ReadConnectionsMode,
   ReadConnectionsPlacement,
 } from '../constants.ts'
-import type { SvChannelsModel } from './svChannels.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
@@ -57,9 +54,7 @@ export const PAIR_BAND_LABEL = 'Pair band'
 // Read arcs and the read cloud share one band, so they are radios under their
 // own sub-header. The connection filters live in the "More filters..." dialog
 // and the band's placement and line width in "Advanced".
-export function getReadConnectionsMenuItem(
-  model: ReadConnectionsModel & SvChannelsModel,
-) {
+export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
   const linked = model.unit === 'chain'
   const subMenu: MenuItem[] = [
     checkboxItem('View as pairs/link supplementary alignments', linked, () => {
@@ -72,7 +67,6 @@ export function getReadConnectionsMenuItem(
             model.setShowConnectors(flag)
           }),
         ]),
-    getSvChannelsMenuItem(model),
     ...(model.drawnReadConnections === 'off'
       ? []
       : [

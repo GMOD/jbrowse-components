@@ -217,8 +217,8 @@ rest of its arm.
 Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
 track the same way as HG00113's.
 
-**Read connections → SV channels** in the track menu splits the reads into one
-band per kind of SV evidence, each with a separate coverage curve and arcs:
+**Presets → SV channels** in the track menu splits the reads into one band per
+kind of SV evidence, each with a separate coverage curve and arcs:
 
 - The no-evidence band holds the flat coverage profile of the concordant pairs
 - The inversion band draws two bundles of arcs, the same-strand pairs and split

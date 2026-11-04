@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate"
+summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -10,6 +10,15 @@ summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into si
 Accepted (2026-11-02). Colin asked for the long-read gap to be closed and for
 the reviews to settle the open calls; built in
 `plugins/alignments/src/shared/svChannel.ts`.
+
+Amended 2026-11-04: the row moves from a checkbox in Read connections to an
+action under **Track menu → Presets** (`menus/presets.ts`). Colin found the
+checkbox unexpected: ticking a row in the arcs submenu hid the reads, the tick
+held only while all five settings matched, and unticking unset them rather
+than restoring what was there. An action writes the settings and each owning
+menu shows the result, so there is no checked state and no "off";
+`SV_CHANNELS_OFF` goes. `matchesSvChannels` stays for the figure recipes,
+which name an arrangement by its menu path.
 
 ## Context
 
@@ -65,7 +74,7 @@ the reviews to settle the open calls; built in
 - **Chain mode** files a fragment where its highest-ranked record files; a
   concordant mate files as `none`, last.
 - **A band exists only where a fetched read keys to it**, as for every facet.
-- **The preset turns sashimi off** (`sashimi.show: false`, unset on leaving).
+- **The preset turns sashimi off** (`sashimi.show: false`).
   Sashimi counts split junctions per cut point over the coverage, and each
   band's read arcs draw the same junctions below it, merged on their exact
   coordinates, so every junction drew twice, once above and once below. The two
@@ -175,3 +184,6 @@ the reviews to settle the open calls; built in
 - **Named view presets** (Default / SV / RNA-seq / Long-read) at the top of the
   menu: this preset already cannot restore what it displaced, N presets
   multiply that, and switching between them automatically is ADR-037's case.
+  Amended 2026-11-04: the restore argument was about a toggle, and the
+  Presets submenu's rows are actions with nothing to restore. Further presets
+  are open; an automatic pick between them is still ADR-037's case.

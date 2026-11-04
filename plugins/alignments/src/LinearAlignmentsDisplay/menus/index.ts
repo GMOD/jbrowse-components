@@ -29,6 +29,7 @@ export {
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
+export { getPresetsMenuItem } from './presets.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getJunctionFilterItems, getSashimiPlacementItems } from './sashimi.ts'
 export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

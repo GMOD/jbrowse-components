@@ -230,10 +230,10 @@ basecalling error; a position that disagrees in both bands is a real variant.
 
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
-**Track menu → Read connections → SV channels** groups reads by the kind of SV
-evidence they carry, drops the pileup and the sashimi arcs and turns the read
-arcs on together, so each kind becomes a separate coverage band with a separate
-set of arcs. See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
+**Track menu → Presets → SV channels** groups reads by the kind of SV evidence
+they carry, drops the pileup and the sashimi arcs and turns the read arcs on
+together, so each kind becomes a separate coverage band with a separate set of
+arcs. See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
 
 ## Read height and track sizing
 

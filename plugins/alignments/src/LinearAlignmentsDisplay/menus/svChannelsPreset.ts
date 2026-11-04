@@ -26,12 +26,10 @@ export const SV_CHANNELS_LABEL = 'SV channels'
 // modification or bisulfite field (executeRenderAlignmentData's
 // `modCoverage`).
 //
-// `readConnections.placement` is in NEITHER preset, and that is the same
-// statement `isSvChannelsActive` makes by not matching on it: which side of the
-// coverage the arcs hang on is a framing choice the arrangement has no opinion
-// about. Writing it was the read and the write disagreeing — flipping the side
-// kept the row ticked, then leaving and re-entering silently reverted the flip.
-export const SV_CHANNELS_ON = {
+// `readConnections.placement` is not among them: which side of the coverage
+// the arcs hang on is a framing choice the arrangement has no opinion about, so
+// applying the preset leaves it as it was and `matchesSvChannels` ignores it.
+export const SV_CHANNELS_SETTINGS = {
   pileup: { show: false },
   facet: { field: 'svChannel' },
   readConnections: {
@@ -44,25 +42,12 @@ export const SV_CHANNELS_ON = {
   sashimi: { show: false },
 } as const
 
-// Leaving the arrangement UNSETS what it wrote rather than asserting a state:
-// each member goes back to its default, and `readConnections.mark` stays as
-// it was.
-//
-// It is still not a restore — a tag grouping or a read cloud in place before
-// the row was ticked does not come back, since nothing banks what it displaced.
-export const SV_CHANNELS_OFF = {
-  pileup: { show: null },
-  facet: null,
-  readConnections: { show: null, ordinaryPairs: { show: null } },
-  sashimi: { show: null },
-} as const
-
 /**
  * Whether settings in the config's own shape, the display's resolved values or
  * a figure spec's, are the arrangement. A spec may spell the facet as its field.
  */
-export function isSvChannelsActive(settings: Record<string, unknown>) {
-  const on = SV_CHANNELS_ON
+export function matchesSvChannels(settings: Record<string, unknown>) {
+  const on = SV_CHANNELS_SETTINGS
   const { facet, pileup, readConnections, sashimi } = settings
   return (
     member(pileup, 'show') === on.pileup.show &&

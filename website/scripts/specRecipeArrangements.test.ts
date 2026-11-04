@@ -1,6 +1,6 @@
 import {
   SV_CHANNELS_LABEL,
-  SV_CHANNELS_ON,
+  SV_CHANNELS_SETTINGS,
 } from '../../plugins/alignments/src/LinearAlignmentsDisplay/menus/svChannelsPreset.ts'
 import { takeArrangement } from '../src/lib/spec-recipe/arrangements.ts'
 import { flatSettings } from '../src/lib/spec-recipe/decode.ts'
@@ -10,14 +10,12 @@ const ALIGNMENTS = 'LinearAlignmentsDisplay'
 // A spec entry's settings, in the shape specTrackSettings hands over: each
 // band object flattened to its dotted members.
 function entries(extra: Record<string, unknown> = {}) {
-  return [...flatSettings(SV_CHANNELS_ON), ...flatSettings(extra)]
+  return [...flatSettings(SV_CHANNELS_SETTINGS), ...flatSettings(extra)]
 }
 
 test('the arrangement is one step, and its settings leave the per-field walk', () => {
   const { step, rest } = takeArrangement(entries(), ALIGNMENTS)
-  expect(step?.path).toBe(
-    `Track menu → Read connections → ${SV_CHANNELS_LABEL}`,
-  )
+  expect(step?.path).toBe(`Track menu → Presets → ${SV_CHANNELS_LABEL}`)
   expect(rest).toEqual([])
 })
 
@@ -33,7 +31,7 @@ test('a setting the arrangement does not name walks on', () => {
 // The point of the presence half: a spec one setting short produces a different
 // picture, so it gets the per-field walk rather than an instruction to click a
 // row that would also change the setting it left out.
-test.each(flatSettings(SV_CHANNELS_ON).map(([field]) => field))(
+test.each(flatSettings(SV_CHANNELS_SETTINGS).map(([field]) => field))(
   'a spec that omits %s is not the arrangement',
   field => {
     const short = entries().filter(([name]) => name !== field)
@@ -43,7 +41,7 @@ test.each(flatSettings(SV_CHANNELS_ON).map(([field]) => field))(
   },
 )
 
-// isSvChannelsActive leaves readConnections.placement out of the match on
+// matchesSvChannels leaves readConnections.placement out of the match on
 // purpose, so the arrangement still resolves — but the reader has to flip that
 // row by hand, which means it may not be swallowed.
 test('arcs on the other side of the band stay in the arrangement, and keep a step', () => {

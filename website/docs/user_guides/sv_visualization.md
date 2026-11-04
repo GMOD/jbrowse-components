@@ -177,12 +177,12 @@ an inversion. That is evidence from one molecule rather than from a pair.
 ### SV channels
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
-the rows around it. **Read connections → SV channels** takes the same reads
-apart into one band per kind of SV evidence, each with a coverage curve and its
-reads' arcs, and the pileup and the sashimi arcs over coverage go away:
-deletion-type, duplication-type, inversion, a partner on another chromosome or
-unmapped, an SV-size insertion, and no SV evidence. A discordant pair files by
-its orientation and a split read by its junction, so short and long reads of one
+the rows around it. **Presets → SV channels** takes the same reads apart into
+one band per kind of SV evidence, each with a coverage curve and its reads'
+arcs, and the pileup and the sashimi arcs over coverage go away: deletion-type,
+duplication-type, inversion, a partner on another chromosome or unmapped, an
+SV-size insertion, and no SV evidence. A discordant pair files by its
+orientation and a split read by its junction, so short and long reads of one
 event fill the same band. Concordant pairs and every other read without SV
 evidence fill the last band, the depth the others are read against. Which band
 fills names the rearrangement, and a band that stays empty under a call is a
@@ -259,7 +259,8 @@ event reads the same on both platforms.
 
 <Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
 
-Clicking the row again restores the pileup, with the color scheme untouched.
+Each setting the preset changes stays in its own menu: **Show → Pileup** brings
+the reads back, with the color scheme untouched.
 [](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call band by
 band.
 
@@ -450,7 +451,7 @@ this through with the HG008 phased tumor assembly.
 | Pileup (default)                     | Default lower panel             | Base-level detail, individual reads                |
 | Color by insert size and orientation | Color by in track menu          | Long, short and abnormally oriented pairs          |
 | Read arcs                            | Read connections in track menu  | Overview of long-range connections                 |
-| SV channels                          | Read connections in track menu  | One band per kind of SV evidence, with arcs        |
+| SV channels                          | Presets in track menu           | One band per kind of SV evidence, with arcs        |
 | Read cloud                           | Read connections in track menu  | Counting discordant pairs, orientation per read    |
 | Linear read vs ref                   | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view                | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |

@@ -7,7 +7,7 @@ import {
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
 
-import type { Facet, ConnectionFilter } from '../../shared/types.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type {
   ReadConnectionsMark,
   ReadConnectionsMode,
@@ -52,15 +52,6 @@ function makeModel() {
     readConnectionsStrokeWidth: 1,
     setReadConnectionsStrokeWidth(v?: number) {
       this.readConnectionsStrokeWidth = v ?? 1
-    },
-    showPileup: true,
-    showSashimi: true,
-    facet: undefined as Facet | undefined,
-    get writtenFacet() {
-      return this.facet ?? {}
-    },
-    applyPlot({ facet }: { facet?: unknown }) {
-      this.facet = (facet ?? undefined) as Facet | undefined
     },
   }
 }
@@ -114,7 +105,6 @@ describe('read connections menu', () => {
     expect(labelsOf(items)).toEqual([
       'View as pairs/link supplementary alignments',
       'Pileup connectors',
-      'SV channels',
       'Ordinary pairs',
       'Pair band',
       'None',
@@ -123,7 +113,6 @@ describe('read connections menu', () => {
     ])
     const rowKinds = items.map(i => i.type)
     expect(rowKinds).toEqual([
-      'checkbox',
       'checkbox',
       'checkbox',
       'checkbox',

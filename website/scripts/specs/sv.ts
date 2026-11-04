@@ -608,7 +608,7 @@ export const svSpecs: ScreenshotSpec[] = [
   },
 
   // The same INVdup with one band per kind of SV evidence. The settings are
-  // SV_CHANNELS_ON (svChannelsPreset.ts) verbatim; `readConnectionsDown` and
+  // SV_CHANNELS_SETTINGS (svChannelsPreset.ts) verbatim; `readConnectionsDown` and
   // the heights are this figure's own.
   {
     mode: 'url',
@@ -650,7 +650,7 @@ export const svSpecs: ScreenshotSpec[] = [
   },
 
   // SV channels on long and short reads of one event: HG008-T's homozygous
-  // CDKN2A deletion, PacBio HiFi above Illumina, each in SV_CHANNELS_ON. The
+  // CDKN2A deletion, PacBio HiFi above Illumina, each in SV_CHANNELS_SETTINGS. The
   // HiFi split reads and the Illumina long-insert pairs fill the same
   // deletion-type band.
   {

@@ -1,4 +1,4 @@
-import { isSvChannelsActive } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/svChannelsPreset.ts'
+import { matchesSvChannels } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/svChannelsPreset.ts'
 import {
   demoSessions,
   sampleConfigs,
@@ -24,5 +24,5 @@ test.each([
 })
 
 test('the SV channels link is the menu preset', () => {
-  expect(isSvChannelsActive(volvoxSvChannelsTrack)).toBe(true)
+  expect(matchesSvChannels(volvoxSvChannelsTrack)).toBe(true)
 })

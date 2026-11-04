@@ -1,7 +1,7 @@
 import {
   SV_CHANNELS_LABEL,
-  SV_CHANNELS_ON,
-  isSvChannelsActive,
+  SV_CHANNELS_SETTINGS,
+  matchesSvChannels,
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/svChannelsPreset.ts'
 
 import { flatSettings, nestedSettings } from './decode.ts'
@@ -10,13 +10,13 @@ import type { FieldStep } from './fields.ts'
 
 // An arrangement is a set of display settings one track-menu row applies
 // together. `fieldSteps` is one field, one step, so without this pass a figure
-// that clicks a single checkbox reads as five instructions spread over four
+// that clicks a single preset reads as five instructions spread over four
 // menus — the arrangement the row exists to spare the reader, reassembled in
 // the docs.
 //
 // The predicate is the plugin's own, never a copy. Which slots define the
 // arrangement and which are framing is the arrangement's definition —
-// `isSvChannelsActive` leaves `readConnections.placement` out because the side the
+// `matchesSvChannels` leaves `readConnections.placement` out because the side the
 // arcs hang on is a framing choice — and a second answer here would drift in
 // silence, a figure one slot off emitting five steps with nothing to say why.
 //
@@ -43,10 +43,10 @@ interface Arrangement {
 const ARRANGEMENTS: Arrangement[] = [
   {
     label: SV_CHANNELS_LABEL,
-    menu: 'Read connections',
+    menu: 'Presets',
     displayType: 'LinearAlignmentsDisplay',
-    settings: Object.fromEntries(flatSettings(SV_CHANNELS_ON)),
-    matches: settings => isSvChannelsActive(nestedSettings(settings)),
+    settings: Object.fromEntries(flatSettings(SV_CHANNELS_SETTINGS)),
+    matches: settings => matchesSvChannels(nestedSettings(settings)),
   },
 ]
 

@@ -195,6 +195,7 @@ import {
   getJunctionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
+  getPresetsMenuItem,
   getReadsColorByMenuItem,
   getReadsMenuItems,
   getSashimiPlacementItems,
@@ -3597,6 +3598,7 @@ export default function stateModelFactory(
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, pileupGate),
             getReadConnectionsMenuItem(self),
+            getPresetsMenuItem(self),
             ...editPlotMenuItems(self, [
               ...getCoverageMenuItems(self),
               ...getTrackSizingItems(self, pileupGate),
