@@ -17,8 +17,10 @@ checkbox unexpected: ticking a row in the arcs submenu hid the reads, the tick
 held only while all five settings matched, and unticking unset them rather
 than restoring what was there. An action writes the settings and each owning
 menu shows the result, so there is no checked state and no "off";
-`SV_CHANNELS_OFF` goes. `matchesSvChannels` stays for the figure recipes,
-which name an arrangement by its menu path.
+`SV_CHANNELS_OFF` goes. The click saves the track config at once
+(`persistTrackConfigNow`), so session Undo returns the track to what it was
+as one step. `matchesSvChannels` stays for the figure recipes, which name an
+arrangement by its menu path.
 
 ## Context
 
@@ -184,6 +186,9 @@ which name an arrangement by its menu path.
 - **Named view presets** (Default / SV / RNA-seq / Long-read) at the top of the
   menu: this preset already cannot restore what it displaced, N presets
   multiply that, and switching between them automatically is ADR-037's case.
-  Amended 2026-11-04: the restore argument was about a toggle, and the
-  Presets submenu's rows are actions with nothing to restore. Further presets
-  are open; an automatic pick between them is still ADR-037's case.
+  Amended 2026-11-04: the displaced state is still not banked, but an
+  action promises no "off", and session Undo is the way back. The other half
+  stands: presets writing different members leave each other's residue (one
+  preset's hidden ordinary pairs surviving the next), so a further preset
+  goes in only if every preset in the submenu writes the same members. An
+  automatic pick between them is still ADR-037's case.

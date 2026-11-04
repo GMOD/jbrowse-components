@@ -1,14 +1,17 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getContainingTrack } from '@jbrowse/core/util'
+import { addMiddleware, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { bootAlignmentsDisplay } from '../testUtils.ts'
-import { getPresetsMenuItem } from './presets.ts'
 import {
+  PRESETS_LABEL,
   SV_CHANNELS_LABEL,
   SV_CHANNELS_SETTINGS,
   matchesSvChannels,
 } from './svChannelsPreset.ts'
+
+import type { MenuItem } from '@jbrowse/core/ui'
 
 // A real display, so the preset meets the config the way the menu row writes
 // it: through `applyPlot`, member by member inside each band.
@@ -25,8 +28,24 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
   return mount(Session, { configuration: 'd1' }).display
 }
 
+function trackMenuLabels(display: ReturnType<typeof createDisplay>) {
+  return display
+    .trackMenuItems()
+    .flatMap((i: MenuItem) => ('label' in i ? [String(i.label)] : []))
+}
+
+function subMenuRows(display: ReturnType<typeof createDisplay>, label: string) {
+  const item = display
+    .trackMenuItems()
+    .find((i: MenuItem) => 'label' in i && i.label === label)
+  if (!item || !('subMenu' in item)) {
+    throw new Error(`no ${label} submenu in the track menu`)
+  }
+  return resolveSubMenu(item)
+}
+
 function svChannelsRow(display: ReturnType<typeof createDisplay>) {
-  const row = resolveSubMenu(getPresetsMenuItem(display)).find(
+  const row = subMenuRows(display, PRESETS_LABEL).find(
     i => 'label' in i && i.label === SV_CHANNELS_LABEL,
   )
   if (!row || !('onClick' in row)) {
@@ -38,6 +57,19 @@ function svChannelsRow(display: ReturnType<typeof createDisplay>) {
 function applySvChannels(display: ReturnType<typeof createDisplay>) {
   svChannelsRow(display).onClick()
 }
+
+test('Presets sits right after Read connections, which no longer holds the row', () => {
+  const display = createDisplay()
+  const labels = trackMenuLabels(display)
+  const presetsAt = labels.indexOf(PRESETS_LABEL)
+  expect(labels[presetsAt - 1]).toBe('Read connections')
+  expect(presetsAt).toBeLessThan(labels.indexOf('Advanced'))
+  expect(
+    subMenuRows(display, 'Read connections').some(
+      i => 'label' in i && i.label === SV_CHANNELS_LABEL,
+    ),
+  ).toBe(false)
+})
 
 test('the row is a plain action, with no checked state', () => {
   const row = svChannelsRow(createDisplay())
@@ -53,6 +85,19 @@ test('the preset writes all five settings, not a subset', () => {
   expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
   expect(display.showSashimi).toBe(false)
+})
+
+test('the click saves the track config at once, so it is one undo step', () => {
+  const display = createDisplay()
+  const pileupShownAtSave: boolean[] = []
+  addMiddleware(getContainingTrack(display), (call, next) => {
+    if (call.name === 'persistConfigurationNow') {
+      pileupShownAtSave.push(display.showPileup)
+    }
+    return next(call)
+  })
+  applySvChannels(display)
+  expect(pileupShownAtSave).toEqual([false])
 })
 
 test('applying it again changes nothing', () => {

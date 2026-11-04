@@ -14,6 +14,8 @@ function markType(mark: unknown) {
   return typeof mark === 'string' ? mark : member(mark, 'type')
 }
 
+export const PRESETS_LABEL = 'Presets'
+
 export const SV_CHANNELS_LABEL = 'SV channels'
 
 // One band per SV channel, each with its own coverage and its own arcs,

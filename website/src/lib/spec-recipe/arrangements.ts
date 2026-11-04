@@ -1,4 +1,5 @@
 import {
+  PRESETS_LABEL,
   SV_CHANNELS_LABEL,
   SV_CHANNELS_SETTINGS,
   matchesSvChannels,
@@ -43,7 +44,7 @@ interface Arrangement {
 const ARRANGEMENTS: Arrangement[] = [
   {
     label: SV_CHANNELS_LABEL,
-    menu: 'Presets',
+    menu: PRESETS_LABEL,
     displayType: 'LinearAlignmentsDisplay',
     settings: Object.fromEntries(flatSettings(SV_CHANNELS_SETTINGS)),
     matches: settings => matchesSvChannels(nestedSettings(settings)),

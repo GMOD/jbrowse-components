@@ -45,8 +45,10 @@ picks, whose tests for "a field paints" had drifted four ways.
   written (`writtenFacet`), writing nothing where the pick already holds.
 - **`facetForField(current, field)`** is the rule: the field already grouping
   keeps everything, another drops `domain` and `hidden`, and `''` drops the
-  field too. A dialog building a draft (the feature display's Group by,
-  the SV-channels preset) uses it and writes `applyPlot`.
+  field too. A dialog building a draft (the feature display's Group by)
+  uses it and writes `applyPlot`. Amended 2026-11-04: `applyPlot` itself
+  applies the same keyed rule (`mergeConfSettings` → `keyedBase`), so a draft
+  naming only `facet.field`, as the SV-channels preset does, needs no wrapper.
 - **A side effect of a facet change runs off the grouping.** The feature
   and alignments displays reset their scroll in `dropGroupState`, which
   `HiddenGroupsMixin` calls when `groupKeySpace` moves.

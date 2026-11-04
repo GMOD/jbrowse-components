@@ -259,8 +259,9 @@ event reads the same on both platforms.
 
 <Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
 
-Each setting the preset changes stays in its own menu: **Show → Pileup** brings
-the reads back, with the color scheme untouched.
+**Tools → Undo** (Ctrl+Z) returns the track to how it was before the preset.
+Each setting the preset changes also stays in its own menu: **Show → Pileup**
+brings the reads back, with the color scheme untouched.
 [](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call band by
 band.
 
