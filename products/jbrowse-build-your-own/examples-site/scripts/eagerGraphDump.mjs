@@ -20,6 +20,9 @@ export function eagerGraphDump() {
   const graph = { source: {}, chunks: {} }
   return {
     name: 'jbrowse-eager-graph-dump',
+    // vite's dev server also calls buildEnd/closeBundle on close, which would
+    // overwrite the dump with an empty graph
+    apply: 'build',
     // Pre-treeshake: what the source says could be reached. Barrels are still
     // barrels here, which is exactly what the post-bundle graph loses.
     buildEnd() {

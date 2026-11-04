@@ -25,8 +25,8 @@ export const landingDemo = 'scalebar-and-gridlines'
 // track config. The exception is a demo whose own controls wrap: reserve the
 // **tallest** it gets, since a reservation that is too small jumps the page,
 // while one that is too large only leaves space inside the demo's own border.
-// `view-controls` is the one here — 253px wide, 286px once its control
-// row wraps, so 286 is what it reserves.
+// `view-controls` is the one here: it reserves the height its control row
+// reaches once it wraps.
 //
 // A demo whose height depends on its *data* — anything in a fit-height mode —
 // cannot be pinned this way at all. Reserve the common case and accept the

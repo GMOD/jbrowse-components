@@ -104,7 +104,7 @@ ABI change. If the knot is ever cut, follow `TrackControlIcon`
 
 ## "0 Material elements" and "no Material UI" are different claims
 
-`MUI_BUDGET` in the examples sites' `smoke.mjs` counts **rendered elements**
+`MUI_BUDGET` in the build-your-own examples site's `smoke.mjs` counts **rendered elements**
 (outermost `Mui*` classes in the DOM). It measures an embedder's *look* and
 cannot see the bundle: `alpha()`, `useTheme()` and an imported-but-unmounted
 component draw nothing. **Say which axis when recording a win.**

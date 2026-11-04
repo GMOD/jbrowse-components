@@ -43,7 +43,9 @@ const Pill = observer(function Pill({
           <button
             type="button"
             style={{ font: 'inherit', marginLeft: 8, fontWeight: 600 }}
-            onClick={action.run}
+            onClick={() => {
+              action.run()
+            }}
           >
             {action.label}
           </button>

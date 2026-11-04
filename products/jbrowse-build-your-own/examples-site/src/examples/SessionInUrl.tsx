@@ -45,10 +45,7 @@ const view = {
 }
 
 function readSessionParam() {
-  return (
-    new URLSearchParams(window.location.hash.slice(1)).get('session') ??
-    undefined
-  )
+  return new URLSearchParams(window.location.hash.slice(1)).get('session')
 }
 
 function writeSessionParam(value: string) {
@@ -74,7 +71,7 @@ async function build(report: (status: string) => void) {
 }
 
 const SessionInUrl = observer(function SessionInUrl() {
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('navigate or toggle a track, then save')
   const state = useCreateViewState(() => build(setStatus))
   if (!state) {
     return null
@@ -104,7 +101,7 @@ const SessionInUrl = observer(function SessionInUrl() {
         >
           Save this view to the URL
         </button>
-        {status || 'navigate or toggle a track, then save'}
+        {status}
       </Toolbar>
       <TrackStack view={state.session.view} />
     </EmbedProvider>

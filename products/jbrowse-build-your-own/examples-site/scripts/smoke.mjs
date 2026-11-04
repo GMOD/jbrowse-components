@@ -33,7 +33,6 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // Exact equality, in both directions. A new Material widget appearing in a
 // display's render path has to be noticed here; so does one disappearing,
 // because that is the moment the prose needs rewriting too.
-// zero on every page behind `DisplayUIProvider`; the stock page keeps its three
 const MUI_BUDGET = { 'multiple-tracks': 3 }
 
 // Record every MUI-classed element that is ever inserted, from before the
@@ -66,19 +65,23 @@ const MUI_BUDGET = { 'multiple-tracks': 3 }
 // unmounts inside 100ms is not a thing a reader could see either.
 //
 // Outermost-ness is decided at sample time, while the element still has a
-// parent chain to ask — the same filter the at-rest count applies.
+// parent chain to ask — the same filter the at-rest count applies. What is
+// kept is the busiest single sample: two controls sharing a label count twice,
+// while a control React remounts, or whose label changes as it loads, counts
+// once.
 function recordMuiFromLoad() {
-  const seen = new Set()
-  window.__muiEver = seen
+  window.__muiPeak = []
   setInterval(() => {
-    for (const el of document.querySelectorAll('[class*="Mui"]')) {
-      if (!el.parentElement?.closest('[class*="Mui"]')) {
-        seen.add(
+    const now = [...document.querySelectorAll('[class*="Mui"]')]
+      .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
+      .map(
+        el =>
           el.getAttribute('aria-label') ||
-            el.textContent?.trim().slice(0, 40) ||
-            `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
-        )
-      }
+          el.textContent?.trim().slice(0, 40) ||
+          `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
+      )
+    if (now.length > window.__muiPeak.length) {
+      window.__muiPeak = now
     }
   }, 100)
 }
@@ -98,12 +101,15 @@ async function muiBudget(page, slug) {
       .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
       .map(
         el =>
-          el.getAttribute('aria-label') ??
-          el.textContent.trim().slice(0, 40) ??
-          el.tagName.toLowerCase(),
+          el.getAttribute('aria-label') ||
+          el.textContent.trim().slice(0, 40) ||
+          `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
       ),
   )
-  const ever = await page.evaluate(() => [...(window.__muiEver ?? [])])
+  const ever = await page.evaluate(() => {
+    window.__muiPeakBeforeHover = window.__muiPeak
+    return window.__muiPeak
+  })
   const out =
     found.length === expected
       ? []
@@ -113,7 +119,7 @@ async function muiBudget(page, slug) {
         ]
   if (ever.length > expected) {
     out.push(
-      `rendered ${ever.length} Material UI element(s) at some point during the ` +
+      `rendered ${ever.length} Material UI element(s) at once during the ` +
         `load, expected ${expected}. A page at rest shows ${found.length}, so ` +
         'the difference only exists while something is fetching — which is ' +
         'where a component behind neither bring-your-own provider hides:\n' +
@@ -271,13 +277,13 @@ async function clicksReachTheTrack(page) {
 // `muiThemedStyling` is the only census the sweep runs, and it drops anything
 // carrying a `Mui*` class — on the stated grounds that the count above has
 // those by name. The count above is `muiBudget`, which runs first and reads
-// `window.__muiEver` at that instant, before a pointer has been anywhere. So a
+// `window.__muiPeak` at that instant, before a pointer has been anywhere. So a
 // Material element that exists only while something is under the cursor fell
 // between the two: named-but-not-yet, and themed-but-excluded.
 //
-// The recorder is a `setInterval` nobody clears, so the fix is to read its set
-// again once the sweep is done. One `evaluate`, and it holds the union to the
-// same number both other instants are held to.
+// The recorder is a `setInterval` nobody clears, so the fix is to read it again
+// once the sweep is done. Only a peak the sweep itself set counts: a load
+// already over budget is `muiBudget`'s failure, not this one's.
 //
 // **A tooltip is the shape this is looking for**, because it is the one piece
 // of display chrome behind neither bring-your-own provider — a display renders
@@ -287,15 +293,15 @@ async function clicksReachTheTrack(page) {
 // is the one that notices any other Material widget a pointer can raise.
 async function muiRaisedByHover(page, slug) {
   const expected = MUI_BUDGET[slug] ?? 0
-  const ever = await page.evaluate(() => [...(window.__muiEver ?? [])])
-  return ever.length <= expected
+  const raised = await page.evaluate(() =>
+    window.__muiPeak === window.__muiPeakBeforeHover ? [] : window.__muiPeak,
+  )
+  return raised.length <= expected
     ? []
     : [
-        `${ever.length} Material UI element(s) had rendered by the end of the ` +
-          `hover sweep, expected ${expected}. The same union was within budget ` +
-          'before the pointer moved, so the difference is something a hover ' +
-          'raises:\n' +
-          ever.map(f => `           - ${f}`).join('\n'),
+        `${raised.length} Material UI element(s) were on screen at once ` +
+          `during the hover sweep, expected ${expected}:\n` +
+          raised.map(f => `           - ${f}`).join('\n'),
       ]
 }
 
@@ -304,10 +310,7 @@ async function muiRaisedByHover(page, slug) {
 // driving: a one-base highlight at 40kb of zoom is a hundredth of a pixel, so
 // the method clamps the band to 3px, and losing that clamp reads as "the
 // highlight didn't work" rather than as a rendering bug.
-async function highlightSurvivesAOneBaseRegion(page, slug) {
-  if (slug !== 'highlight-a-region') {
-    return []
-  }
+async function highlightSurvivesAOneBaseRegion(page) {
   const clicked = await page.evaluate(() => {
     const el = [...document.querySelectorAll('button')].find(e =>
       e.innerText.includes('A single base'),
@@ -320,23 +323,30 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
   }
   try {
     await page.waitForFunction(
-      () =>
-        [...document.querySelectorAll('[data-testid="highlight-band"]')].some(
-          el => el.getBoundingClientRect().width >= 3,
-        ),
+      () => {
+        const bands = [
+          ...document.querySelectorAll('[data-testid="highlight-band"]'),
+        ]
+        return (
+          bands.length === 1 &&
+          bands[0].innerText.includes('one base') &&
+          bands[0].getBoundingClientRect().width >= 3
+        )
+      },
       { timeout: 15000 },
     )
     return []
   } catch {
-    const widths = await page.evaluate(() =>
+    const bands = await page.evaluate(() =>
       [...document.querySelectorAll('[data-testid="highlight-band"]')].map(
-        el => el.getBoundingClientRect().width,
+        el => ({ text: el.innerText, width: el.getBoundingClientRect().width }),
       ),
     )
     return [
-      'a one-base highlight zoomed out to 40kb drew no band at least 3px wide ' +
-        `— getHighlightCoords' minimum width is gone, or the band is not being ` +
-        `drawn at all. Band widths found: ${JSON.stringify(widths)}`,
+      'the one-base highlight did not become the only band, 3px or wider — ' +
+        'the click no longer replaces the highlights, getHighlightCoords lost ' +
+        `its minimum width, or the band is not drawn. Bands found: ` +
+        JSON.stringify(bands),
     ]
   }
 }
@@ -356,10 +366,7 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
 // `page.mouse` is viewport coordinates, so the row is scrolled into view and
 // re-measured first, `behavior: 'instant'` pinned rather than left to the page
 // (see `clicksReachTheTrack` for what a smooth scroll does to a coordinate).
-async function dragToZoomFramesTheSpan(page, slug) {
-  if (slug !== 'scalebar-and-gridlines') {
-    return []
-  }
+async function dragToZoomFramesTheSpan(page) {
   // The row names itself. It used to be picked out of the page's
   // `data-gesture-owner` elements by matching a pixel height restated from the
   // example — which every display's overlay slot is now also a candidate for,
@@ -434,17 +441,7 @@ async function dragToZoomFramesTheSpan(page, slug) {
 // picked, the legend is confirmed *present*, and only then is the count taken.
 // A key the page places is derived from what the display painted, so a row
 // naming the data is the proof that the display drew and the page read it.
-const PLACED_KEYS = {
-  'color-and-group-by-a-field': 'protein_coding',
-  'gene-lanes': 'atpA',
-  'plot-from-json': 'AluY',
-}
-
-async function placedKeyNamesItsRows(page, slug) {
-  const row = PLACED_KEYS[slug]
-  if (!row) {
-    return []
-  }
+async function placedKeyNamesItsRows(page, row) {
   try {
     await page.waitForFunction(
       text =>
@@ -460,13 +457,17 @@ async function placedKeyNamesItsRows(page, slug) {
   }
 }
 
-async function aTableRowMovesTheView(page, slug) {
-  if (slug !== 'table-of-calls') {
-    return []
-  }
-  await page.evaluate(() => {
-    document.querySelectorAll('tbody tr')[1]?.querySelector('button')?.click()
+async function aTableRowMovesTheView(page) {
+  const clicked = await page.evaluate(() => {
+    const button = document
+      .querySelectorAll('tbody tr')[1]
+      ?.querySelector('button')
+    button?.click()
+    return !!button
   })
+  if (!clicked) {
+    return ['the table has no second row with a button to click']
+  }
   try {
     await page.waitForFunction(
       () =>
@@ -488,10 +489,7 @@ async function aTableRowMovesTheView(page, slug) {
   }
 }
 
-async function legendIsPlainAndAboveTheSeams(page, slug) {
-  if (slug !== 'track-settings') {
-    return []
-  }
+async function legendIsPlainAndAboveTheSeams(page) {
   const picked = await page.evaluate(() => {
     const el = document.querySelector('select')
     if (!el) {
@@ -677,10 +675,7 @@ async function everyDisplayIsInAnOverlaySlot(page) {
 // never draws, and it is drawn here from `track.refNameMismatch`. So it is
 // asserted on the text of the published message rather than on a class or a
 // count — a notice drawn by nothing is what this catches.
-async function localFileOpensAsATrack(page, slug) {
-  if (slug !== 'local-files') {
-    return []
-  }
+async function localFileOpensAsATrack(page) {
   // by name, with a synthetic click: nothing here is about whether a click
   // reaches a target through the pan handler (`clicksReachTheTrack` owns that),
   // and a coordinate failure reported as a pipeline failure would be a worse
@@ -770,10 +765,7 @@ async function localFileOpensAsATrack(page, slug) {
 //
 // Runs last. Picking the broken scenario replaces the engine with one that has
 // no canvas, so anything after it would be censusing a different page.
-async function viewStatusStatesAreDrawn(page, slug) {
-  if (slug !== 'view-loading-and-errors') {
-    return []
-  }
+async function viewStatusStatesAreDrawn(page) {
   const clickByText = async text => {
     const clicked = await page.evaluate(t => {
       const el = [...document.querySelectorAll('button, label')].find(e =>
@@ -906,6 +898,37 @@ async function viewStatusStatesAreDrawn(page, slug) {
   return out
 }
 
+// No interaction for this one: the dropdown's box starts on `BRCA1`, so a
+// populated list is the evidence that `view.search` reached the hosted index
+// and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
+// typed query itself) proves the query matched, `genes` proves the row was
+// decoded rather than guessed.
+async function searchResultsListsHits(page) {
+  try {
+    await page.waitForFunction(
+      () => {
+        const t =
+          document.querySelector('[data-testid="search-results"]')?.innerText ??
+          ''
+        return t.includes('BRCA1P1') && t.includes('genes')
+      },
+      { timeout: 30000 },
+    )
+    return []
+  } catch {
+    const listed = await page.evaluate(
+      () =>
+        document.querySelector('[data-testid="search-results"]')?.innerText ??
+        '(no result list rendered)',
+    )
+    return [
+      'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
+        `genes — view.search or the hosted trix index is not ` +
+        `answering. List read:\n${listed}`,
+    ]
+  }
+}
+
 // Everything the search page claims is a state you get to by typing, and two of
 // the three are *absences* — a search that resolves nothing, a search that
 // resolves several things and goes nowhere. A census at rest cannot tell any of
@@ -915,41 +938,8 @@ async function viewStatusStatesAreDrawn(page, slug) {
 //
 // Exact text match on the button — a substring match would find `BRCA1P1` for
 // a click aimed at `BRCA1`, which is a different one of the four paths.
-async function searchByNameResolvesNames(page, slug) {
+async function searchByNameResolvesNames(page) {
   const out = []
-  if (slug === 'search-results') {
-    // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
-    // populated list is the evidence that `view.search` reached the hosted index
-    // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
-    // typed query itself) proves the query matched, `genes` proves the row was
-    // decoded rather than guessed.
-    try {
-      await page.waitForFunction(
-        () => {
-          const t =
-            document.querySelector('[data-testid="search-results"]')
-              ?.innerText ?? ''
-          return t.includes('BRCA1P1') && t.includes('genes')
-        },
-        { timeout: 30000 },
-      )
-    } catch {
-      const listed = await page.evaluate(
-        () =>
-          document.querySelector('[data-testid="search-results"]')?.innerText ??
-          '(no result list rendered)',
-      )
-      out.push(
-        'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
-          `genes — view.search or the hosted trix index is not ` +
-          `answering. List read:\n${listed}`,
-      )
-    }
-    return out
-  }
-  if (slug !== 'search-by-name') {
-    return out
-  }
 
   const clickButton = async label =>
     page.evaluate(t => {
@@ -1011,7 +1001,27 @@ async function searchByNameResolvesNames(page, slug) {
   // TP53 is ambiguous by prefix and still must not ask. Losing the exact-first
   // pass would raise the picker.
   if (await clickButton('TP53')) {
-    await new Promise(r => setTimeout(r, 3000))
+    try {
+      await page.waitForFunction(
+        () =>
+          /^(chr)?17:7,\d{3},/.test(
+            document.querySelector(
+              '#search-by-name input[aria-label="Search by name or location"]',
+            )?.value,
+          ) || !!document.querySelector('[data-testid="search-picker"]'),
+        { timeout: 30000 },
+      )
+    } catch {
+      const value = await page.evaluate(
+        () =>
+          document.querySelector(
+            '#search-by-name input[aria-label="Search by name or location"]',
+          )?.value,
+      )
+      out.push(
+        `searching TP53 neither navigated to chr17:7 Mb nor asked; the box reads "${value}"`,
+      )
+    }
     if (await pickerShown()) {
       out.push(
         'searching TP53 raised a picker — the exact pass no longer runs ' +
@@ -1047,13 +1057,41 @@ async function searchByNameResolvesNames(page, slug) {
   return out
 }
 
+const PAGE_CHECKS = {
+  'highlight-a-region': highlightSurvivesAOneBaseRegion,
+  'scalebar-and-gridlines': dragToZoomFramesTheSpan,
+  'search-results': searchResultsListsHits,
+  'search-by-name': searchByNameResolvesNames,
+  'color-and-group-by-a-field': page =>
+    placedKeyNamesItsRows(page, 'protein_coding'),
+  'gene-lanes': page => placedKeyNamesItsRows(page, 'atpA'),
+  'plot-from-json': page => placedKeyNamesItsRows(page, 'AluY'),
+  'table-of-calls': aTableRowMovesTheView,
+  'track-settings': legendIsPlainAndAboveTheSeams,
+  'local-files': localFileOpensAsATrack,
+  'view-loading-and-errors': viewStatusStatesAreDrawn,
+}
+
+// '' first: the landing page runs a live demo, so it gets the same census as
+// any example page rather than being the one page nothing loads
+const allSlugs = ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)]
+// `node scripts/smoke.mjs <slug>...` smokes just those pages
+const only = process.argv.slice(2)
+const slugs = only.length ? allSlugs.filter(s => only.includes(s)) : allSlugs
+
+const orphanChecks = Object.keys(PAGE_CHECKS).filter(s => !allSlugs.includes(s))
+if (orphanChecks.length) {
+  console.error(
+    `PAGE_CHECKS names page(s) the smoke does not visit: ${orphanChecks.join(', ')}`,
+  )
+  process.exit(1)
+}
+
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  // '' first: the landing page runs a live demo, so it gets the same census as
-  // any example page rather than being the one page nothing loads
-  slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
+  slugs,
   // The one page that passes `makeWorkerInstance`. Every other demo here runs
   // main-thread RPC, so this slug is the site's only guard on the Rollup
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
@@ -1100,17 +1138,9 @@ const failures = await smokeExamplesSite({
     // silently stops tracking the page when the theme plumbing is wrong.
     ...(await checkTextContrast(page)),
     ...(await clicksReachTheTrack(page)),
-    ...(await highlightSurvivesAOneBaseRegion(page, slug)),
-    ...(await dragToZoomFramesTheSpan(page, slug)),
-    ...(await searchByNameResolvesNames(page, slug)),
-    ...(await placedKeyNamesItsRows(page, slug)),
-    ...(await aTableRowMovesTheView(page, slug)),
-    ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     ...(await everyDisplayIsInAnOverlaySlot(page)),
-    // adds displays to its own page, so it goes after every census above
-    ...(await localFileOpensAsATrack(page, slug)),
-    // last: this one replaces the engine on the page it runs on
-    ...(await viewStatusStatesAreDrawn(page, slug)),
+    // last: a page's own check may add displays or replace the engine
+    ...(await (PAGE_CHECKS[slug]?.(page) ?? [])),
   ],
   log: m => {
     console.log(m)

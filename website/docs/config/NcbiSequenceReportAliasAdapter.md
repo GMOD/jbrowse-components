@@ -1,14 +1,17 @@
 ---
 id: ncbisequencereportaliasadapter
 title: NcbiSequenceReportAliasAdapter
-description: "Reads refName aliases for an assembly from an NCBI sequencereport.tsv file."
+description: "Reads refName aliases for an assembly from an NCBI sequencereport.tsv file, or the older <accession>assemblyreport.txt that UCSC GenArk hubs ship, along with each sequence's role (assembled-molecule,…"
 sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
 Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
-file.
+file, or the older `<accession>_assembly_report.txt` that UCSC GenArk hubs
+ship, along with each sequence's role (`assembled-molecule`,
+`unplaced-scaffold`, `alt-scaffold`, ...) and molecule type (`Chromosome`,
+`Mitochondrion`, ...).
 
 ## Example usage
 
@@ -72,7 +75,7 @@ Adapter slots go inside the track's `adapter`: `"adapter": { "type": "NcbiSequen
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-location">**location**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of the `sequence_report.tsv` NCBI publishes with an assembly. It lists the RefSeq, GenBank and UCSC-style name of every sequence, so one file aliases them all without hand-writing a chromAlias table. |
+| <span id="slot-location">**location**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of the `sequence_report.tsv` (or `_assembly_report.txt`) NCBI publishes with an assembly. It lists the RefSeq, GenBank and UCSC-style name of every sequence, so one file aliases them all without hand-writing a chromAlias table. |
 | <span id="slot-usenameoverride">**useNameOverride**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | forces usage of the UCSC names over the NCBI style names from a FASTA |
 
 ## Retired keys

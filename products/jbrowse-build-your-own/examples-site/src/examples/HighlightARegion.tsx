@@ -40,7 +40,7 @@ const hits = [
       label: 'clipped to the chromosome',
     },
   },
-]
+] as const
 
 const HighlightARegion = observer(function HighlightARegion() {
   const state = useCreateViewState({
@@ -61,9 +61,9 @@ const HighlightARegion = observer(function HighlightARegion() {
       },
     ],
     view: {
-      loc: hits[0]!.loc,
+      loc: hits[0].loc,
       tracks: ['hg38_genes'],
-      highlight: [hits[0]!.highlight],
+      highlight: [hits[0].highlight],
     },
   })
   if (!state) {

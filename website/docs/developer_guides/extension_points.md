@@ -1000,6 +1000,8 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   mismatchAlpha: v => ({ pileup: { mismatches: mismatchFadeOf(v) } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
+  // permanent: hosts still write v4's spelling; v4's pileup read none of it
+  mouseover: field => ({ tooltip: { field } }),
   // last: where two lifts land on one member the first declared wins, and a
   // display's own featureHeight or mismatchAlpha beats its renderer's
   renderers: rendererSlotsOf,

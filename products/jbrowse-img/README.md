@@ -334,7 +334,7 @@ jb2export --genome hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.1fa07b90ef13.png)
+![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.da1b667fb79a.png)
 
 ### Breakpoint split views
 
@@ -672,9 +672,11 @@ Reads & coloring:
 | `baseColor:field`              | `baseColor:methylation`      | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below) |
 | `sort:field` or `sort:tag:TAG` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `base`, or `tag:<TAG>`)                                  |
 
-The modifiers below choose which reads are drawn. They filter before the
-coverage pipeline as well as before layout, so a filter that removes reads
-removes them from the coverage band too.
+The modifiers below choose which reads are drawn. The flag, MAPQ and tag
+modifiers also decide which reads count, so a read they remove leaves the
+coverage band too; the category modifiers hide rows and leave the coverage
+counting every read, so a category's own depth needs a section of its own
+(`facet=split`, say).
 
 The last four modifiers in the table, `svSignal:`, `split:`, `alone:` and
 `spliced:`, name a read category and take one vocabulary: `only` keeps that
@@ -1454,7 +1456,7 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
@@ -1598,7 +1600,7 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]

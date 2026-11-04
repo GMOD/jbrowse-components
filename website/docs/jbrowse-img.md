@@ -450,10 +450,9 @@ jb2export --fasta ref.fa --bam reads.bam arcs:cloud readConnections.height=300 \
   readConnections.encoding.strokeWidth.value=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
-## read share a row, joined by a connecting line. pileup.connectors.show=true is
-## the separate pileup connectors and leaves the layout an ordinary pileup.
-## Add both to curve the connectors that cross between displayed regions, which
-## the per-region line pass cannot draw.
+## read share a row, each link a connector colored by its kind, curved where it
+## is discordant or crosses displayed regions. pileup.connectors.show=true draws
+## the same connectors over an ordinary pileup.
 jb2export --fasta ref.fa --bam linked.bam unit=chain --loc chr1:1-50000
 ```
 
@@ -1466,7 +1465,7 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
@@ -1610,7 +1609,7 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]

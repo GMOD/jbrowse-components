@@ -89,7 +89,7 @@ export const pages: ExamplePage[] = [
     slug: 'view-loading-and-errors',
     title: 'View loading and error states',
     description:
-      "The page draws the view's loading, error, no-location and notification states.",
+      'Every way a view can fail to show data, and what each one draws.',
     group: 'Loading, errors and theme',
   },
   {
