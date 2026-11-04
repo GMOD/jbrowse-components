@@ -182,6 +182,13 @@ test('an arrowhead strokes its two arms at the far end', () => {
   expect(strokes).toBe(2)
 })
 
+test('no arrowhead where the ends sit closer than its two arms', () => {
+  const narrow = (x2: number) =>
+    paint(channels([{ x: 100, x2, bend: 20, bits: CONNECTOR_ARROW }])).strokes
+  expect(narrow(107)).toBe(1)
+  expect(narrow(108)).toBe(2)
+})
+
 test('a connector with both ends far off the canvas paints nothing', () => {
   const { strokes } = paint(
     channels([{ x: 100, x2: 400, row: 500, row2: 500 }]),

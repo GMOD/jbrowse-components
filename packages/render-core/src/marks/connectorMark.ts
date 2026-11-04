@@ -12,6 +12,7 @@ import {
 } from '../shaders/connectorMark.consts.generated.ts'
 import * as shader from '../shaders/connectorMark.generated.ts'
 import {
+  connectorArrowFits,
   connectorBudgetPx,
   connectorHandlePx,
   connectorLiftPx,
@@ -122,7 +123,9 @@ function place(
   p.strokePx = connectorStrokePx(c.width[i]!, dpr)
   const reversed2 = farRegion.signedPxPerBp < 0
   const strand2 = strandOf(bits, CONNECTOR_MINUS_2)
-  p.arrow = (bits & CONNECTOR_ARROW) !== 0
+  p.arrow =
+    (bits & CONNECTOR_ARROW) !== 0 &&
+    connectorArrowFits(p.x3 - p.x0, params.arrowPx) !== 0
   p.back = (reversed2 ? -strand2 : strand2) * -params.arrowPx
   if ((bits & CONNECTOR_STRAIGHT) !== 0) {
     p.x1 = p.x0
