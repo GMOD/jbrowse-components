@@ -611,6 +611,31 @@ describe('connectorDipReservePx', () => {
     expect(pileupHeight + reserve - apex).toBeLessThan(3)
   })
 
+  it('holds a maps-back loop on the last row', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [300, 600],
+        [200, 500],
+      ],
+      ys: [2, 2],
+    })
+    const reserve = reserveFor(data)
+    const [loop] = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      pileupHeight,
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
+    })
+    const { sy1, cp1y } = controlPoints(loop!.d)
+    const apex = sy1 + (cp1y - sy1) * CUBIC_APEX_RATIO
+    expect(apex).toBeGreaterThan(pileupHeight)
+    expect(apex).toBeLessThan(pileupHeight + reserve)
+    expect(pileupHeight + reserve - apex).toBeLessThan(3)
+  })
+
   it('measures from the lower of two rows', () => {
     expect(reserveFor(rrPair([0, 2]))).toBe(reserveFor(rrPair([2, 2])))
     expect(reserveFor(rrPair([0, 0]))).toBeLessThan(reserveFor(rrPair([2, 2])))

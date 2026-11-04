@@ -27,10 +27,9 @@ import {
   CURVE_STROKE_WIDTH_PX,
   LOOP_ARROW_MIN_FEATURE_HEIGHT_PX,
   LOOP_MAX_ARROW_PX,
-  LOOP_MAX_DIP_PX,
-  LOOP_MIN_DIP_PX,
   LOOP_STROKE_WIDTH_PX,
   connectorShape,
+  loopDipPx,
 } from './computeOverlay.ts'
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -121,11 +120,6 @@ function placeEnd(
         bp: Math.min(Math.max(bp, r.start ?? -Infinity), r.end ?? Infinity),
       }
     : { region: holding, bp }
-}
-
-/** How deep a maps-back loop dips under its row: four rows, within bounds. */
-export function loopDipPx(rowPitch: number) {
-  return Math.min(LOOP_MAX_DIP_PX, Math.max(LOOP_MIN_DIP_PX, 4 * rowPitch))
 }
 
 /**

@@ -348,13 +348,18 @@ export const LOOP_STROKE_WIDTH_PX = 2
 export const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
 export const LOOP_MAX_ARROW_PX = 8
 
+/** How deep a maps-back loop dips under its row at a row pitch of `rowPitch`. */
+export function loopDipPx(rowPitch: number) {
+  return Math.min(LOOP_MAX_DIP_PX, Math.max(LOOP_MIN_DIP_PX, 4 * rowPitch))
+}
+
 // Clearance under the deepest apex for the stroke, which a hover thickens.
 const DIP_RESERVE_PAD_PX = 2
 
-// How far below a section's pileup band its deepest dipping connector reaches,
-// which the section reserves under its last row so that curve can finish
-// (`computeStackedSections`). Zero when nothing dips, or when every dip ends
-// inside the band.
+// How far below a section's pileup band its deepest dipping connector or
+// maps-back loop reaches, which the section reserves under its last row so
+// that curve can finish (`computeStackedSections`). Zero when nothing dips, or
+// when every dip ends inside the band.
 //
 // `pileupHeight` is the band WITHOUT this reserve, the same number the overlay
 // hands the dip law, so reserving room changes no curve's depth. A cubic's
@@ -381,14 +386,15 @@ export function connectorDipReservePx({
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
     if (r1 && r2) {
-      const { dipPx } = connectorShape(
+      const { dipPx, loop } = connectorShape(
         pair,
         r1,
         r2,
         displayedRegions,
         pileupHeight,
       )
-      if (dipPx !== undefined) {
+      const depth = loop ? loopDipPx(rowH) : dipPx
+      if (depth !== undefined) {
         const lowerRow = Math.max(
           e1.data.readYs[e1.readIdx]!,
           e2.data.readYs[e2.readIdx]!,
@@ -397,7 +403,7 @@ export function connectorDipReservePx({
           deepest,
           lowerRow * rowH +
             featureHeight / 2 +
-            Math.min(dipPx, BEZIER_CONNECTOR_MAX_REACH_PX),
+            Math.min(depth, BEZIER_CONNECTOR_MAX_REACH_PX),
         )
       }
     }
