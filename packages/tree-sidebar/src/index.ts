@@ -120,7 +120,6 @@ export {
   rowOrderMenuItems,
 } from './rowArrangementMenuItem.ts'
 export { RowHeightMixin } from './rowHeight/RowHeightMixin.ts'
-export { rowHeightConfigSchemaFields } from './rowHeight/rowHeightConfigSchemaFields.ts'
 export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'
 export type {
   RowHeightModel,

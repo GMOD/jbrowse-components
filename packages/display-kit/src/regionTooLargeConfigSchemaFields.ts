@@ -4,9 +4,7 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * The config slots a display owes `RegionTooLargeMixin` — the byte budget the
  * gate spends, and the declarative way to switch the gate off.
  *
- * A table beside the mixin, for the reason
- * `agent-docs/reference/TREE_SIDEBAR.md` gives for `RowHeightMixin` +
- * `rowHeightConfigSchemaFields`: a mixin's slots live with the mixin, so a
+ * A table beside the mixin: a mixin's slots live with the mixin, so a
  * display composing it declares them by spreading one thing. This mixin was the
  * exception — it read both slots off `baseLinearDisplayConfigSchema`, which
  * most of its composers extend and five do not (the wiggle family, the two
@@ -49,9 +47,8 @@ export const regionTooLargeConfigSchemaFields = {
    */
   // The prose is in `description` rather than in the JSDoc above it, and that
   // is the difference a spread table makes: the config-doc generator renders a
-  // spread slot's `description` and never its JSDoc (same as
-  // `rowHeightConfigSchemaFields`), so prose written up there reaches
-  // neither the docs page nor the config editor.
+  // spread slot's `description` and never its JSDoc, so prose written up
+  // there reaches neither the docs page nor the config editor.
   forceLoad: {
     type: 'boolean',
     defaultValue: false,

@@ -5788,24 +5788,10 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsString": true,
               "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "LaneRowsField"
             }
           ],
           "schema": "LaneRows",
-          "writes": {
-            "keyedBy": "field",
-            "keyed": [
-              "sort",
-              "labels",
-              "kept"
-            ]
-          },
-          "shorthand": {
-            "string": "field"
-          }
+          "writes": "members"
         },
         {
           "name": "ribbons",
@@ -6778,44 +6764,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "VariantRowsField"
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisWithGridConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                }
-              ],
-              "schema": "RowAxisWithGrid",
-              "writes": "members"
-            },
-            {
               "name": "colors",
               "type": "Map<string, string>"
             },
@@ -6856,8 +6804,42 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "step",
-              "type": "(number | \"fit\")"
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "VariantRowsField"
             },
             {
               "name": "filter",
@@ -6904,6 +6886,10 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "step",
+              "type": "(number | \"fit\")"
             }
           ],
           "schema": "VariantRows",
@@ -6912,9 +6898,9 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
+              "colors",
               "tree",
-              "kept",
-              "colors"
+              "kept"
             ],
             "refines": {
               "haplotype": "sample"
@@ -7620,44 +7606,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "QuantitativeRowsField"
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisWithGridConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                }
-              ],
-              "schema": "RowAxisWithGrid",
-              "writes": "members"
-            },
-            {
               "name": "colors",
               "type": "Map<string, string>"
             },
@@ -7696,6 +7644,44 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "QuantitativeRowsField"
             },
             {
               "name": "filter",
@@ -7750,9 +7736,9 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
+              "colors",
               "tree",
-              "kept",
-              "colors"
+              "kept"
             ]
           },
           "shorthand": {
@@ -8219,7 +8205,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "MafRowsConfigurationSchema",
+          "type": "RowArrangementConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -8255,36 +8241,6 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "newick"
               }
-            },
-            {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                }
-              ],
-              "schema": "RowAxis",
-              "writes": "members"
             },
             {
               "name": "colors",
@@ -8325,9 +8281,39 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                }
+              ],
+              "schema": "RowAxis",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
             }
           ],
-          "schema": "MafRows",
+          "schema": "RowArrangement",
           "writes": "members",
           "misnamed": {
             "treeProvenance": "tree.provenance"
@@ -9441,44 +9427,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisWithGridConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                }
-              ],
-              "schema": "RowAxisWithGrid",
-              "writes": "members"
-            },
-            {
               "name": "colors",
               "type": "Map<string, string>"
             },
@@ -9519,8 +9467,42 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "step",
-              "type": "(number | \"fit\")"
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             },
             {
               "name": "filter",
@@ -9569,6 +9551,10 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "step",
+              "type": "(number | \"fit\")"
+            },
+            {
               "name": "groups",
               "type": "RowGroupConfigurationSchema[]",
               "subSlots": [
@@ -9590,9 +9576,9 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
+              "colors",
               "tree",
-              "kept",
-              "colors"
+              "kept"
             ]
           },
           "shorthand": {
@@ -10377,44 +10363,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisWithGridConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                }
-              ],
-              "schema": "RowAxisWithGrid",
-              "writes": "members"
-            },
-            {
               "name": "colors",
               "type": "Map<string, string>"
             },
@@ -10455,8 +10403,42 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "step",
-              "type": "(number | \"fit\")"
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             },
             {
               "name": "filter",
@@ -10505,6 +10487,10 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "step",
+              "type": "(number | \"fit\")"
+            },
+            {
               "name": "groups",
               "type": "RowGroupConfigurationSchema[]",
               "subSlots": [
@@ -10526,9 +10512,9 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
+              "colors",
               "tree",
-              "kept",
-              "colors"
+              "kept"
             ]
           },
           "shorthand": {
@@ -11320,44 +11306,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "kept",
-              "type": "string[]",
-              "liftsString": true,
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "axis",
-              "type": "RowAxisWithGridConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "tree",
-                  "type": "boolean"
-                },
-                {
-                  "name": "branchLength",
-                  "type": "boolean"
-                },
-                {
-                  "name": "labels",
-                  "type": "boolean"
-                },
-                {
-                  "name": "width",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                }
-              ],
-              "schema": "RowAxisWithGrid",
-              "writes": "members"
-            },
-            {
               "name": "colors",
               "type": "Map<string, string>"
             },
@@ -11398,8 +11346,42 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "step",
-              "type": "(number | \"fit\")"
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsString": true,
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             },
             {
               "name": "filter",
@@ -11448,6 +11430,10 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "step",
+              "type": "(number | \"fit\")"
+            },
+            {
               "name": "groups",
               "type": "RowGroupConfigurationSchema[]",
               "subSlots": [
@@ -11469,9 +11455,9 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
+              "colors",
               "tree",
-              "kept",
-              "colors"
+              "kept"
             ]
           },
           "shorthand": {

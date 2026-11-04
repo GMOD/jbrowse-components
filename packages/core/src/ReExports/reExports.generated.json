@@ -3714,6 +3714,7 @@
     "@jbrowse/core/util/resolveRowHeight": {
       "package": "@jbrowse/core",
       "names": [
+        "FIT_ROWS",
         "resolveRowHeight"
       ],
       "worker": "real"
@@ -4947,7 +4948,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "ROW_ARRANGEMENT_MEMBERS",
-        "ROW_ARRANGEMENT_WRITES",
         "rowArrangementConfigSchema",
         "stringList"
       ],
@@ -4988,7 +4988,6 @@
     "@jbrowse/display-kit/rowsConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "ROWS_KEYED_MEMBERS",
         "ROWS_WRITES",
         "rowsConfigSchema",
         "rowsForField"
@@ -4999,7 +4998,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "FIT_ROWS",
-        "rowHeightOfStep",
         "rowsWithStepConfigSchema"
       ],
       "worker": "real"

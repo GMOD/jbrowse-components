@@ -6894,7 +6894,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' a connector between displayed regions curves either way.",
+          "description": "draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' connectors always draw, since they are how a chain's reads join.",
           "default": false,
           "if": {
             "type": "null"
@@ -9208,99 +9208,78 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "LaneRows": {
       "title": "LaneRows",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "assembly",
-          "const": "assembly",
-          "type": "string"
-        },
-        {
-          "title": "LaneRows",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "sort": {
-              "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "sort": {
+          "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
                     }
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
-              }
-            },
-            "labels": {
-              "description": "a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
+                  ]
                 }
-              }
-            },
-            "kept": {
-              "description": "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
-              "if": {
-                "type": "null"
               },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
+              {
+                "type": "string"
               }
-            },
-            "field": {
-              "description": "assembly, the one field a lane can be.",
-              "default": "assembly",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "const": "assembly"
-              }
+            ]
+          }
+        },
+        "labels": {
+          "description": "a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             }
+          }
+        },
+        "kept": {
+          "description": "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
+          "if": {
+            "type": "null"
           },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
         }
-      ]
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "RibbonColorScale": {
       "title": "RibbonColorScale",
@@ -11878,67 +11857,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "RowAxisWithGrid": {
-      "title": "RowAxisWithGrid",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tree": {
-          "description": "draw the clustering tree in the sidebar; rows.tree is the tree itself.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "branchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "labels": {
-          "description": "draw each row’s name over the left of the plot; rows.labels gives a row another label.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "width": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "grid": {
-          "description": "draw a hairline between adjacent rows, once rows are at least 4px tall.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "RowColorScale": {
       "title": "RowColorScale",
       "type": "object",
@@ -12082,6 +12000,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "additionalProperties": false
         }
       ]
+    },
+    "RowAxisWithGrid": {
+      "title": "RowAxisWithGrid",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tree": {
+          "description": "draw the clustering tree in the sidebar; rows.tree is the tree itself.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "branchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "labels": {
+          "description": "draw each row’s name over the left of the plot; rows.labels gives a row another label.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "width": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "grid": {
+          "description": "draw a hairline between adjacent rows, once rows are at least 4px tall.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "RowPredicate": {
       "title": "RowPredicate",
@@ -12305,6 +12284,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowTree"
               }
             },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
             "kept": {
               "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
@@ -12344,32 +12351,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 ]
               }
             },
-            "axis": {
+            "filter": {
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/RowAxisWithGrid"
-              }
-            },
-            "colors": {
-              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
                 }
-              }
-            },
-            "color": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColor"
               }
             },
             "step": {
@@ -12388,17 +12378,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "const": "fit"
                   }
                 ]
-              }
-            },
-            "filter": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/RowPredicate"
-                }
               }
             }
           },
@@ -13909,6 +13888,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowTree"
               }
             },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
             "kept": {
               "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
@@ -13946,34 +13953,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "",
                   "source"
                 ]
-              }
-            },
-            "axis": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowAxisWithGrid"
-              }
-            },
-            "colors": {
-              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "color": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColor"
               }
             },
             "filter": {
@@ -14960,8 +14939,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MafRows": {
-      "title": "MafRows",
+    "RowArrangement": {
+      "title": "RowArrangement",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -15011,6 +14990,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowTree"
           }
         },
+        "colors": {
+          "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
+        },
+        "axis": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowAxis"
+          }
+        },
         "kept": {
           "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
           "if": {
@@ -15035,34 +15042,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "string"
               }
             ]
-          }
-        },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxis"
-          }
-        },
-        "colors": {
-          "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        },
-        "color": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         }
       },
@@ -15419,7 +15398,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/MafRows"
+            "$ref": "#/$defs/RowArrangement"
           }
         },
         "legend": {
@@ -16047,6 +16026,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowTree"
               }
             },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
             "kept": {
               "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
@@ -16083,32 +16090,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "axis": {
+            "filter": {
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/RowAxisWithGrid"
-              }
-            },
-            "colors": {
-              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
                 }
-              }
-            },
-            "color": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColor"
               }
             },
             "step": {
@@ -16127,17 +16117,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "const": "fit"
                   }
                 ]
-              }
-            },
-            "filter": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/RowPredicate"
-                }
               }
             },
             "groups": {

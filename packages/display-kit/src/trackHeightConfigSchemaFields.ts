@@ -4,8 +4,8 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * The config slot a display owes `TrackHeightMixin` — the height its `height`
  * getter reads and every drag-resize writes back.
  *
- * A table beside the mixin, the way `regionTooLargeConfigSchemaFields` and
- * `rowHeightConfigSchemaFields` are: most displays inherit the slot from
+ * A table beside the mixin, the way `regionTooLargeConfigSchemaFields` is:
+ * most displays inherit the slot from
  * `baseLinearDisplayConfigSchema`, and the ones composing the mixin against a
  * schema that does not extend it wrote the same three lines out by hand. Six
  * copies, and the wording had already split two ways ("Default height of the

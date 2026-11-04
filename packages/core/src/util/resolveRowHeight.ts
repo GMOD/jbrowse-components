@@ -1,7 +1,13 @@
+/** `rows.step`'s word for dividing the track's height between the rows. */
+export const FIT_ROWS = 'fit'
+
+/** A `rows.step`: a px row height, or `FIT_ROWS`. */
+export type RowStep = number | typeof FIT_ROWS
+
 /**
- * Resolve a multi-row display's raw `rowHeight` setting, where `0` is the
- * fit-to-display-height sentinel, into the px height consumers actually draw
- * with and divide by. The other half of the contract `applyRowResizeWheel` and
+ * Resolve a multi-row display's `rows.step` into the px height consumers
+ * actually draw with and divide by: a px step as-is, `'fit'` the display's
+ * `autoRowHeight`. The other half of the contract `applyRowResizeWheel` and
  * tree-sidebar's `TreeDrawingModel` both spell `effectiveRowHeight` — see
  * agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
  *
@@ -21,10 +27,10 @@
  *   connector-line zone can swallow the whole display height — so this is
  *   reachable, and it is the one place the floor belongs.
  *
- * Multi-wiggle is always-fit and has no sentinel to resolve, so it computes its
+ * Multi-wiggle is always-fit and has no step to resolve, so it computes its
  * `effectiveRowHeight` directly rather than calling this.
  */
-export function resolveRowHeight(rowHeight: number, autoRowHeight: number) {
-  const height = rowHeight === 0 ? autoRowHeight : rowHeight
+export function resolveRowHeight(step: RowStep, autoRowHeight: number) {
+  const height = step === FIT_ROWS ? autoRowHeight : step
   return height > 0 ? height : 1
 }

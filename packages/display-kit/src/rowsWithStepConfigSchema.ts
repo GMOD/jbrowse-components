@@ -1,15 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { FIT_ROWS } from '@jbrowse/core/util/resolveRowHeight'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
-/** `rows.step`'s word for dividing the track's height between the rows. */
-export const FIT_ROWS = 'fit'
-
-/** `rows.step` as a px row height, `0` while the rows fit. */
-export function rowHeightOfStep(step: number | typeof FIT_ROWS) {
-  return step === FIT_ROWS ? 0 : step
-}
+export { FIT_ROWS } from '@jbrowse/core/util/resolveRowHeight'
 
 /**
  * #config RowsWithStep

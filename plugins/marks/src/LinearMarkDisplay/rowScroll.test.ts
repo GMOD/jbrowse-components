@@ -69,7 +69,7 @@ test('a pinned rows.step is the row height under rows, and fit mode splits the p
   expect(display.effectiveRowHeight).toBe(40)
   expect(display.renderState.rowHeight).toBe(40)
   display.setFitToHeight()
-  expect(display.rowHeight).toBe(0)
+  expect(display.rowStep).toBe('fit')
   expect(display.effectiveRowHeight).toBe(20)
 })
 

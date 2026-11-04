@@ -4,8 +4,8 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-// The raw `rowHeight` setting holds px, or 0 for fit-to-display-height; the
-// resolved value is the `effectiveRowHeight` getter (0 -> availableHeight/nrow).
+// `rows.step` holds px, or 'fit' for fit-to-display-height; the resolved
+// value is the `effectiveRowHeight` getter ('fit' -> availableHeight/nrow).
 // These lock in that contract and the drag-resize behavior.
 function createDisplay() {
   return createTestEnvironment().createDisplay().display
@@ -18,9 +18,9 @@ function createColumnsDisplay() {
 }
 
 describe('row height resolution', () => {
-  it('defaults to fit mode (rowHeight 0)', () => {
+  it('defaults to fit mode', () => {
     const m = createDisplay()
-    expect(m.rowHeight).toBe(0)
+    expect(m.rowStep).toBe('fit')
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
@@ -102,7 +102,7 @@ describe('row height resolution', () => {
     const m = createDisplay()
     m.setRowHeight(20)
     m.setFitToHeight()
-    expect(m.rowHeight).toBe(0)
+    expect(m.rowStep).toBe('fit')
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
@@ -118,7 +118,7 @@ describe('row height resolution', () => {
     const oldVisible = m.availableHeight / m.effectiveRowHeight
     m.resizeHeight(oldHeight) // double the display height
     expect(m.height).toBe(oldHeight * 2)
-    expect(m.rowHeight).toBe(10)
+    expect(m.rowStep).toBe(10)
     expect(m.effectiveRowHeight).toBe(10)
     expect(m.availableHeight / m.effectiveRowHeight).toBeGreaterThan(oldVisible)
   })
@@ -127,7 +127,7 @@ describe('row height resolution', () => {
     const m = createDisplay()
     const oldHeight = m.height
     m.resizeHeight(oldHeight)
-    expect(m.rowHeight).toBe(0)
+    expect(m.rowStep).toBe('fit')
     expect(m.height).toBe(oldHeight * 2)
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
@@ -141,7 +141,7 @@ describe('row height resolution', () => {
     const oldHeight = m.height
     m.resizeHeight(oldHeight - m.connectorsHeight)
     expect(m.height).toBe(2 * oldHeight - m.connectorsHeight)
-    expect(m.rowHeight).toBe(10)
+    expect(m.rowStep).toBe(10)
   })
 
   // Shrinking the matrix to its 20px floor leaves no room for rows at all (the
@@ -156,9 +156,9 @@ describe('row height resolution', () => {
     expect(m.height).toBe(20)
     expect(m.connectorsHeight).toBe(0)
     expect(m.availableHeight).toBe(MIN_BAND_HEIGHT)
-    expect(m.rowHeight).toBe(10)
+    expect(m.rowStep).toBe(10)
     m.resizeHeight(oldHeight - 20)
-    expect(m.rowHeight).toBe(10)
+    expect(m.rowStep).toBe(10)
   })
 
   // rows.step lives on the config node, which outlives the display instance,
@@ -167,7 +167,7 @@ describe('row height resolution', () => {
     const m = createDisplay()
     m.setRowHeight(25)
     expect(readConfObject(m.configuration, ['rows', 'step'])).toBe(25)
-    m.setRowHeight(0)
+    m.setFitToHeight()
     expect(readConfObject(m.configuration, ['rows', 'step'])).toBe('fit')
     expect('rowHeight' in getSnapshot(m)).toBe(false)
   })

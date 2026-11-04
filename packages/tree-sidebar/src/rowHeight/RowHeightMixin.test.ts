@@ -71,12 +71,12 @@ function makeDisplay({
 }
 
 describe('the slot', () => {
-  it('ships the fit sentinel as the default', () => {
-    expect(makeDisplay().rowHeight).toBe(0)
+  it('ships fit as the default', () => {
+    expect(makeDisplay().rowStep).toBe('fit')
   })
 
   it('reads a configured pin back raw', () => {
-    expect(makeDisplay({ rowHeight: 14 }).rowHeight).toBe(14)
+    expect(makeDisplay({ rowHeight: 14 }).rowStep).toBe(14)
   })
 })
 
@@ -84,8 +84,11 @@ describe('setRowHeight', () => {
   it('pins the height the resolved getter reports', () => {
     const display = makeDisplay()
     display.setRowHeight(20)
-    expect(display.rowHeight).toBe(20)
+    expect(display.rowStep).toBe(20)
     expect(display.effectiveRowHeight).toBe(20)
+    display.setFitToHeight()
+    expect(display.rowStep).toBe('fit')
+    expect(display.effectiveRowHeight).toBe(60)
   })
 
   // The pin has to outlive the display instance — unticking and reticking a

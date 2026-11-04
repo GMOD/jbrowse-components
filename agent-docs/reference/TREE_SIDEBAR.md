@@ -405,18 +405,16 @@ adds `grid`, the row separators, on every row display but MAF.
 - **`autoRowHeight` is declared and overridden by a getter.** A `.volatile` of that
   name throws at `create`, since mobx refuses to write a volatile over a computed.
   A display owes the mixin a **value** for it (the rows viewport is a different
-  quantity in each) and `setFitToHeight`, which seeds the `height` slot exactly
-  where the `height` getter is content-derived.
+  quantity in each).
 - **The mixin's `configuration` host member stays a cast**, narrowed to
   `RowHeightHost`: a declared prop would collide with the one BaseDisplay supplies.
   **Narrow is the point**: reaching the host through `AnyConfigurationModel` gets no
   slot-name check at all, and a misspelled read has no runtime diagnostic.
   `RowHeightMixin.test.ts` pins that with `@ts-expect-error` against the host type,
   not a test display, whose concrete schema checks the name itself.
-- **`TreeDrawingModel` takes `effectiveRowHeight`**, never a raw `rowHeight`:
-  variants and marks read `rowHeight` raw, where `0` means fit-to-height, so
-  reading it paints zero-height rects. Structural typing lets that through, so
-  keep the contract field named for the resolved value.
+- **`TreeDrawingModel` takes `effectiveRowHeight`**, never `rowStep`, which
+  is `"fit"` in fit mode and no height at all. Keep the contract field named
+  for the resolved value.
 - **`computeClusterHierarchy` takes `rowsContentHeight`** =
   `rows.length × effectiveRowHeight`, which `TreeSidebarMixin` computes once from
   `sources`, **never the viewport they scroll inside**. Pass the viewport and the

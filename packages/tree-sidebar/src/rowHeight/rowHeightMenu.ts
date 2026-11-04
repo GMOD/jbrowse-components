@@ -1,26 +1,27 @@
 import { lazy } from 'react'
 
 import { getDialogHost } from '@jbrowse/core/util'
+import { FIT_ROWS } from '@jbrowse/core/util/resolveRowHeight'
 import HeightIcon from '@mui/icons-material/Height'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowHeightDialog = lazy(() => import('./SetRowHeightDialog.tsx'))
 
 /**
  * The row-height contract from agent-docs/reference/ROW_HEIGHT_AND_FIT.md, as
- * the menu and the dialog see it. `rowHeight` is the RAW setting — `0` is the
- * fit-to-display-height sentinel — never the resolved `effectiveRowHeight`,
- * which is what the radios have to compare against and what the dialog has to
- * seed from.
+ * the menu and the dialog see it. `rowStep` is the setting, a px height or
+ * `"fit"`, never the resolved `effectiveRowHeight`: the radios compare
+ * against it and the dialog seeds from it.
  *
  * `rowProportion` is optional: a display whose glyphs fill a fraction of the
  * row band answers it, and `undefined` or absent asks the dialog for none.
  */
 export interface RowHeightModel extends IStateTreeNode {
-  rowHeight: number
-  setRowHeight: (n: number) => void
+  rowStep: RowStep
+  setRowHeight: (px: number) => void
   setFitToHeight: () => void
   rowProportion?: number
   setRowProportion?: (n: number) => void
@@ -30,7 +31,7 @@ export interface RowHeightModel extends IStateTreeNode {
  * A named px height, optionally with the glyph proportion that reads best at
  * it. Presets are a display's own vocabulary (the multi-row painting's Normal
  * is 14px) so the table is passed in; what is shared is that
- * they are radios in one group with fit and custom, because `rowHeight` is a
+ * they are radios in one group with fit and custom, because `rows.step` is a
  * single coupled axis rather than two independent settings.
  */
 export interface RowHeightPreset {
@@ -58,10 +59,10 @@ export function rowHeightMenuItem(
   model: RowHeightModel,
   presets: readonly RowHeightPreset[] = [],
 ): MenuItem {
-  const { rowHeight } = model
-  const isFit = rowHeight === 0
+  const { rowStep } = model
+  const isFit = rowStep === FIT_ROWS
   const matchesPreset = (preset: RowHeightPreset) =>
-    rowHeight === preset.rowHeight
+    rowStep === preset.rowHeight
   return {
     label: 'Row height',
     icon: HeightIcon,
@@ -90,7 +91,7 @@ export function rowHeightMenuItem(
         label: 'Custom...',
         type: 'radio',
         // the leftover of the group: a hand-entered height is whatever is
-        // neither the fit sentinel nor one of the presets
+        // neither fit nor one of the presets
         checked: !isFit && !presets.some(matchesPreset),
         // a dialog opener, so it opts out of the checkbox/radio keep-open
         // default

@@ -1,15 +1,16 @@
 ---
 id: lanerows
 title: LaneRows
-description: "The multi-way synteny display's rows: one lane per assembly below the anchor, so assembly is the one field, and the object is the arrangement a reader gives the lanes, and writing it changes only the…"
+description: "The multi-way synteny display's rows: one lane per assembly below the anchor, so a lane is always an assembly and the object takes no field."
 sidebar_label: Display setting -> LaneRows
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts).
 
 The multi-way synteny display's `rows`: one lane per assembly below the
-anchor, so `assembly` is the one field, and the object is the arrangement a
-reader gives the lanes, and writing it changes only the members stated. `sort`
+anchor, so a lane is always an assembly and the object takes no `field`. It
+is the arrangement a reader gives the lanes, by assembly name, and writing
+it changes only the members stated. `sort`
 lists the lanes that stack first, in order, the rest following densest-first
 so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
 names the lanes drawn, empty drawing the track's lanes or every lane.
@@ -29,7 +30,7 @@ take no tree.
 
 ## Config slots
 
-A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
@@ -37,4 +38,3 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes that stack first, by assembly name, in this order; the rest follow densest-first. |
 | <span id="slot-labels">**labels**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A label drawn for a lane in place of its assembly name, by assembly name. Where the lane labels draw is `labels.lanes`. |
 | <span id="slot-kept">**kept**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes drawn, by assembly name: it selects rather than narrows, replacing the track's lanes and able to add a lane the track does not configure. Empty draws the track's lanes, or every lane where it configures none. |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (assembly) = <code>'assembly'</code> | `assembly`, the one field a lane can be. |

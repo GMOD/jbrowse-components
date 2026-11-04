@@ -1,12 +1,9 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
-import {
-  FIT_ROWS,
-  rowHeightOfStep,
-} from '@jbrowse/display-kit/rowsWithStepConfigSchema'
+import { FIT_ROWS, resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 
 /**
@@ -39,29 +36,28 @@ const confNode = (self: object) => self as RowHeightHost
 /**
  * #stateModel RowHeightMixin
  * #category display
- * #crossCuttingMixin The two-valued row height every scrolling row display has. A `rows.step` (`RowsWithStep`) of px or `"fit"`, and an `autoRowHeight` getter saying what fit divides. Brings the raw `rowHeight` getter (`0` while the rows fit), `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
+ * #crossCuttingMixin The two-valued row height every scrolling row display has. A `rows.step` (`RowsWithStep`) of px or `"fit"`, and an `autoRowHeight` getter saying what fit divides. Brings the `rowStep` getter, `setRowHeight`, `setFitToHeight`, and the resolved `effectiveRowHeight` every consumer reads
  *
  * The convention itself is
  * agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
  * `rowHeightMenuItem` and `SetRowHeightDialog` in this directory are the one
  * menu row and dialog for every row display, and `resolveRowHeight` in core is
- * the one place the `0` sentinel resolves and a non-positive result is floored.
+ * the one place `"fit"` resolves and a non-positive result is floored.
  * This mixin sits between them, in place of hand-written copies — the
  * multi-row feature painting and the multi-sample variant base — of the slot,
- * the getter over it and the setter. MAF is always-fit and composes none of it.
+ * the getter over it and the setters. MAF is always-fit and composes none of it.
  *
  * **The mixin declares the members this package depends on.**
- * `rowHeightMenu` restates `rowHeight` / `setRowHeight` / `setFitToHeight` as
+ * `rowHeightMenu` restates `rowStep` / `setRowHeight` / `setFitToHeight` as
  * `RowHeightModel` and `types.ts`'s `TreeDrawingModel` restates
  * `effectiveRowHeight`, so a display wiring in the shared menu and spelling one
  * of them differently would compile and then fail at the first click. Slots and
  * accessors move together, matching `rowAxisConfigSchema` + `TreeSidebarMixin`.
  *
- * **What stays per display is the value, not the declaration.** The per-display
- * members are `autoRowHeight`, because the height available to rows is a different
- * quantity in each (the mark display's plot, variants' `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
- * the way in is required exactly where the `height` getter is content-derived
- * and wrong where it is the slot itself.
+ * **What stays per display is the value, not the declaration.** The one
+ * per-display member is `autoRowHeight`, because the height available to rows
+ * is a different quantity in each (the mark display's plot, variants'
+ * `availableHeight`).
  *
  * `effectiveRowHeight` is overridable, and one display overrides it: the mark
  * display honours a px `rows.step` only while it draws rows.
@@ -72,15 +68,15 @@ export function RowHeightMixin() {
     .views(self => ({
       /**
        * #getter
-       * `rows.step` as a number: `0` while it is `"fit"`, else its fixed px
-       * height. The resolved value is
-       * `effectiveRowHeight` — consumers read that, never this. On the config
-       * rather than the display snapshot for the same reason `height` is: the
-       * config node outlives the display instance, so a fixed height survives
+       * `rows.step`: a fixed px row height, or `"fit"`. The resolved value is
+       * `effectiveRowHeight` — consumers read that, never this; the menu and
+       * the dialog read this, since fit is no height. On the config rather
+       * than the display snapshot for the same reason `height` is: the config
+       * node outlives the display instance, so a fixed height survives
        * unticking and reticking the track.
        */
-      get rowHeight(): number {
-        return rowHeightOfStep(getConf(confNode(self), ['rows', 'step']))
+      get rowStep(): RowStep {
+        return getConf(confNode(self), ['rows', 'step'])
       },
       /**
        * #getter
@@ -116,19 +112,24 @@ export function RowHeightMixin() {
        * result, which consumers divide by.
        */
       get effectiveRowHeight(): number {
-        return resolveRowHeight(self.rowHeight, self.autoRowHeight)
+        return resolveRowHeight(self.rowStep, self.autoRowHeight)
       },
     }))
     .actions(self => ({
       /**
        * #action
-       * Pin a px row height, `rows.step`; `0` writes `"fit"`. Enter fit mode
-       * through `setFitToHeight` instead — displays whose `height` getter is
-       * content-derived have to re-seed the slot on the way in, and that is
-       * what the action is for.
+       * Pin a px row height, `rows.step`, which refuses one at or below 0.
        */
-      setRowHeight(n: number) {
-        setConf(confNode(self), ['rows', 'step'], n > 0 ? n : FIT_ROWS)
+      setRowHeight(px: number) {
+        setConf(confNode(self), ['rows', 'step'], px)
+      },
+      /**
+       * #action
+       * Fit the rows to the track: `rows.step: "fit"` divides
+       * `autoRowHeight` between them.
+       */
+      setFitToHeight() {
+        setConf(confNode(self), ['rows', 'step'], FIT_ROWS)
       },
     }))
 }

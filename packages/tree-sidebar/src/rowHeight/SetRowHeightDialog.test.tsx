@@ -8,7 +8,7 @@ afterEach(cleanup)
 
 function makeModel(extra?: Partial<RowHeightModel>) {
   return {
-    rowHeight: 0,
+    rowStep: 'fit',
     setRowHeight: jest.fn(),
     setFitToHeight: jest.fn(),
     ...extra,
@@ -27,38 +27,36 @@ function submit(getByText: (text: string) => HTMLElement) {
   fireEvent.click(getByText('Submit'))
 }
 
+function typeHeight(baseElement: HTMLElement, value: string) {
+  fireEvent.change(baseElement.querySelector('input')!, { target: { value } })
+}
+
 // The trap this dialog exists to close once: in fit mode the resolved
 // `effectiveRowHeight` is the computed fractional height, so a dialog seeded
 // from it pins that number the moment the user presses submit without touching
-// anything. The type has no such member, and the field shows the raw sentinel.
-test('seeds from the raw rowHeight, so fit mode shows the 0 sentinel', () => {
+// anything. In fit mode the field starts empty and nothing submits.
+test('in fit mode the field starts empty and submits nothing', () => {
+  const model = makeModel()
   // baseElement, not container: the dialog renders into a portal
-  const { baseElement } = open(makeModel({ rowHeight: 0 }))
-  expect(baseElement.querySelector('input')?.value).toBe('0')
-})
-
-test('submitting 0 enters fit mode rather than pinning the sentinel', () => {
-  const model = makeModel({ rowHeight: 0 })
-  const { getByText } = open(model)
+  const { baseElement, getByText } = open(model)
+  expect(baseElement.querySelector('input')?.value).toBe('')
   submit(getByText)
-  expect(model.setFitToHeight).toHaveBeenCalled()
   expect(model.setRowHeight).not.toHaveBeenCalled()
+  expect(model.setFitToHeight).not.toHaveBeenCalled()
 })
 
 test('submitting a positive height pins it', () => {
-  const model = makeModel({ rowHeight: 12 })
+  const model = makeModel({ rowStep: 12 })
   const { getByText } = open(model)
   submit(getByText)
   expect(model.setRowHeight).toHaveBeenCalledWith(12)
   expect(model.setFitToHeight).not.toHaveBeenCalled()
 })
 
-test('a negative height cannot be submitted', () => {
-  const model = makeModel({ rowHeight: 12 })
+test.each(['0', '-5'])('a height of %s cannot be submitted', value => {
+  const model = makeModel({ rowStep: 12 })
   const { baseElement, getByText } = open(model)
-  fireEvent.change(baseElement.querySelector('input')!, {
-    target: { value: '-5' },
-  })
+  typeHeight(baseElement, value)
   submit(getByText)
   expect(model.setRowHeight).not.toHaveBeenCalled()
   expect(model.setFitToHeight).not.toHaveBeenCalled()
@@ -67,13 +65,13 @@ test('a negative height cannot be submitted', () => {
 // The per-consumer opt-out: only a display exposing both halves gets the second
 // field. maf has one, multi-row features and the variant displays do not.
 test('the proportion field appears only where the display has that axis', () => {
-  const { baseElement: without } = open(makeModel({ rowHeight: 12 }))
+  const { baseElement: without } = open(makeModel({ rowStep: 12 }))
   expect(without.querySelectorAll('input')).toHaveLength(1)
 
   cleanup()
 
   const withProportion = makeModel({
-    rowHeight: 12,
+    rowStep: 12,
     rowProportion: 0.8,
     setRowProportion: jest.fn(),
   })

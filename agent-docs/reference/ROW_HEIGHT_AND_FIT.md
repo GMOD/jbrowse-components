@@ -18,11 +18,14 @@ descriptions, then isoforms, then label room) is the fit ladder in
 
 - `rows.step` is a config slot on `RowsWithStep`: a number or `"fit"`, default
   `"fit"`; `0` is refused.
-- `rowHeight` reads it as px, `0` for fit.
+- `rowStep` reads it as written, px or `"fit"`: no `0` stands for fit below
+  the config. The menu and the Custom dialog read it; a dialog opened in fit
+  mode starts empty.
 - `autoRowHeight` is the fit height (rows viewport ÷ `nrow`), supplied by each
   display.
 - `effectiveRowHeight` is the resolved px height, never `0`, never `undefined`.
-- `setFitToHeight()` writes `"fit"`; `setRowHeight(n)` pins one.
+- `setFitToHeight()` writes `"fit"`; `setRowHeight(px)` pins one, the slot
+  refusing a px at or below 0. Both are the mixin's.
 - The menu row is `'Fit to track height'`, a radio exclusive with the fixed
   presets. `heightMode: 'fit'` says the same of a display's bands (ADR-257).
 
@@ -54,7 +57,7 @@ they were handed, so the duck types stay though the mixin declares the getter.
 
 ### Always-fit MAF
 
-MAF has no pinned `rowHeight`, no Row height menu and no `shift`+wheel
+MAF has no `rows.step`, no Row height menu and no `shift`+wheel
 resizing. A pinned height was the only way its rows scrolled, and per-track
 scrolling is the pattern the app is moving off. A reader wanting taller rows
 drags the track taller or focuses a clade. The retired key loads and is dropped
@@ -103,8 +106,8 @@ was asked to fit, so the track re-grows and fit mode reports a scroll it never
 has. The floor belongs only in `effectiveRowHeight`, guarding a **non-positive**
 value (consumers divide by it), and in drawing code widening a sub-pixel band
 (`drawnRowHeightPx`, `drawnCellHeightPx`). Nothing caps or warns about rows past the
-pixels. `packages/core/src/util/resolveRowHeight.ts` resolves the sentinel and
-applies the floor, called once from `RowHeightMixin`; `RowHeightMixin.test.ts` is
+pixels. `packages/core/src/util/resolveRowHeight.ts` resolves `"fit"` (it holds
+`FIT_ROWS`, which display-kit re-exports) and applies the floor, called once from `RowHeightMixin`; `RowHeightMixin.test.ts` is
 the one set of assertions.
 
 ### Drag-resize leaves a fixed height alone

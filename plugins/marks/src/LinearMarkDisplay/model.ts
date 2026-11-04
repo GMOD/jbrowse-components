@@ -37,7 +37,7 @@ import {
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
-import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
+import { FIT_ROWS, resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
@@ -56,7 +56,6 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
-import { FIT_ROWS } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import {
   sameAsLast,
@@ -1333,13 +1332,13 @@ export function stateModelFactory(
           const height = self.height
           const pointInset = this.valueInsetPx
           // One band per row where the marks stand in rows or a pinned
-          // `rowHeight` sizes them, the scale ruling each on its own the way
+          // `rows.step` sizes them, the scale ruling each on its own the way
           // the multi-wiggle display's does; the whole plot box otherwise.
           const { rowCount } = this
           const rowHeight = self.effectiveRowHeight
           const rowsTop = self.rowsTopOffset - self.scrollTop
           const band =
-            rowCount > 1 || (self.drawsRows && self.rowHeight > 0)
+            rowCount > 1 || (self.drawsRows && self.rowStep !== FIT_ROWS)
               ? {
                   height: rowHeight,
                   offset: pointInset,
@@ -1905,7 +1904,7 @@ export function stateModelFactory(
          */
         get effectiveRowHeight(): number {
           return resolveRowHeight(
-            self.drawsRows ? self.rowHeight : 0,
+            self.drawsRows ? self.rowStep : FIT_ROWS,
             self.autoRowHeight,
           )
         },
@@ -1937,14 +1936,6 @@ export function stateModelFactory(
               setConf(mark, ['mark', 'height', 'band'], n)
             }
           }
-        },
-        /**
-         * #action
-         * Fit the rows to the plot. The `height` getter is the slot itself,
-         * so nothing needs seeding on the way in.
-         */
-        setFitToHeight() {
-          setConf(self, ['rows', 'step'], FIT_ROWS)
         },
         /**
          * #action
