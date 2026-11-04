@@ -401,7 +401,7 @@ export default function baseStateModelFactory(
         return hiddenSectionFeatureIds(
           self.rpcDataMap.values(),
           self.facet,
-          self.hiddenGroupKeys,
+          self.hiddenGroups,
         )
       },
     }))
@@ -741,7 +741,7 @@ export default function baseStateModelFactory(
           pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           expandedGeneIds: self.expandedGeneIdSet,
           facet: self.facet,
-          hiddenGroupKeys: self.hiddenGroupKeys,
+          hiddenGroupKeys: self.hiddenGroups,
           geneNamesOnly: self.geneNamesOnly,
         }
       },
@@ -1451,9 +1451,9 @@ export default function baseStateModelFactory(
        * scale's key is its `domain` colors whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
-        const { facet, hiddenGroupKeys, categoricalColorField } = self
+        const { facet, hiddenGroups, categoricalColorField } = self
         const sectionOf =
-          facet && hiddenGroupKeys.size > 0 ? sectionIdsOf(facet) : undefined
+          facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
         const onScreen = self.onScreenFeatureIds
         const regions = [...self.rpcDataMap.values()]
         return featureColorKey(
@@ -1464,7 +1464,7 @@ export default function baseStateModelFactory(
           {
             isHidden:
               sectionOf &&
-              (section => hiddenGroupKeys.has(sectionOf(section).key)),
+              (section => hiddenGroups.has(sectionOf(section).key)),
             order:
               facet && facet.field === categoricalColorField?.field
                 ? scale => ({

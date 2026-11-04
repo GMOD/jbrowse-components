@@ -3,7 +3,7 @@ import { createDisplay } from './testEnv.ts'
 function hidden(display: ReturnType<typeof createDisplay>) {
   display.facetByField('mateAssembly')
   display.setSelfLaneHidden(true)
-  return [...display.hiddenGroupKeys].sort()
+  return [...display.hiddenGroups].sort()
 }
 
 test('hides the lane keyed on the view assembly', () => {
@@ -30,18 +30,15 @@ test('the self lane is one more facet.hidden key', () => {
   display.setSelfLaneHidden(true)
   expect(display.selfLaneHidden).toBe(true)
   display.hideGroup('volvox_random')
-  expect([...display.hiddenGroupKeys].sort()).toEqual([
-    'volvox',
-    'volvox_random',
-  ])
+  expect([...display.hiddenGroups].sort()).toEqual(['volvox', 'volvox_random'])
   display.setSelfLaneHidden(false)
-  expect([...display.hiddenGroupKeys]).toEqual(['volvox_random'])
+  expect([...display.hiddenGroups]).toEqual(['volvox_random'])
   display.setSelfLaneHidden(true)
   display.showAllGroups()
   expect(display.selfLaneHidden).toBe(false)
   display.setSelfLaneHidden(true)
   display.facetByField('strand')
-  expect(display.hiddenGroupKeys.size).toBe(0)
+  expect(display.hiddenGroups.size).toBe(0)
 })
 
 // A group key names a lane only within the grouping that issued it, so the
@@ -50,7 +47,7 @@ test('changing the grouping forgets what was hidden', () => {
   const display = createDisplay()
   display.facetByField('mateAssembly')
   display.hideGroup('volvox_random')
-  expect(display.hiddenGroupKeys.has('volvox_random')).toBe(true)
+  expect(display.hiddenGroups.has('volvox_random')).toBe(true)
   display.facetByField('strand')
-  expect(display.hiddenGroupKeys.size).toBe(0)
+  expect(display.hiddenGroups.size).toBe(0)
 })

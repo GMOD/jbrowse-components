@@ -741,7 +741,7 @@ export function stateModelFactory(
             features,
             filterSteps: self.filterSteps,
             facetField: self.facet?.field,
-            hidden: self.hiddenGroupKeys,
+            hidden: self.hiddenGroups,
             jexl: getEnv(self).pluginManager.jexl,
           })
         },
@@ -974,7 +974,7 @@ export function stateModelFactory(
           return facetLayout(
             self.featurePayloads.values(),
             categoricalField(field, { domain }),
-            self.hiddenGroupKeys,
+            self.hiddenGroups,
             self.markView.visible,
           )
         })

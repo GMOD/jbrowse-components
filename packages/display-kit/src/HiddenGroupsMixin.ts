@@ -20,7 +20,7 @@ const keySpaceHost = (self: object) => self as GroupKeySpaceHost
 /**
  * #stateModel HiddenGroupsMixin
  * #category display
- * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, `hiddenGroupKeys` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+ * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, `hiddenGroups` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
  *
  * The hidden sections are config, `facet.hidden`, so they ride a session and
  * a share link, and a new `field` written whole starts with none. A key names
@@ -50,7 +50,8 @@ export default function HiddenGroupsMixin() {
       /**
        * #getter
        * The sections the user hid: `facet.hidden`, while the stack groups by
-       * the facet's field.
+       * the facet's field. A fresh Set per change, so a layout memo comparing
+       * its inputs by identity sees a hide.
        */
       get hiddenGroups(): ReadonlySet<string> {
         const host = keySpaceHost(self)
@@ -68,8 +69,7 @@ export default function HiddenGroupsMixin() {
     .views(self => ({
       /**
        * #getter
-       * Every key the stack drops. A fresh Set per change, so a layout memo
-       * comparing its inputs by identity sees a hide.
+       * @deprecated read `hiddenGroups`, which this returns
        */
       get hiddenGroupKeys(): ReadonlySet<string> {
         return self.hiddenGroups
@@ -83,7 +83,7 @@ export default function HiddenGroupsMixin() {
        */
       get groupStateKey(): unknown {
         return [
-          [...this.hiddenGroupKeys].sort((a, b) => a.localeCompare(b)),
+          [...self.hiddenGroups].sort((a, b) => a.localeCompare(b)),
           self.ownGroupState,
         ]
       },

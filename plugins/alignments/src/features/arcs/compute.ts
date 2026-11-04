@@ -866,7 +866,7 @@ export interface ArcsByGroupResult {
  *
  * Every group handed in is pooled, so a lane the display doesn't draw must not
  * be in the map: it would shift the scale the visible lanes share. That is the
- * caller's `rawDataByGroup`, which drops `hiddenGroupKeys` at the source
+ * caller's `rawDataByGroup`, which drops `hiddenGroups` at the source
  * (`buildRawDataByGroup`) precisely so no walk of it — this one included — has
  * to re-apply the rule.
  */

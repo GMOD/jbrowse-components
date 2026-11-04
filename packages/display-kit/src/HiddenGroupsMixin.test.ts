@@ -51,20 +51,20 @@ function attached(facet?: unknown) {
 
 test('hide and restore, written to the facet and read back as a fresh Set', () => {
   const host = attached()
-  const before = host.hiddenGroupKeys
+  const before = host.hiddenGroups
   host.hideGroup('-1')
-  expect([...host.hiddenGroupKeys]).toEqual(['-1'])
-  expect(host.hiddenGroupKeys).not.toBe(before)
+  expect([...host.hiddenGroups]).toEqual(['-1'])
+  expect(host.hiddenGroups).not.toBe(before)
   expect(getSnapshot(host.configuration.facet)).toMatchObject({
     hidden: ['-1'],
   })
   host.showAllGroups()
-  expect(host.hiddenGroupKeys.size).toBe(0)
+  expect(host.hiddenGroups.size).toBe(0)
 })
 
 test('a config naming hidden sections opens with them hidden', () => {
   const host = attached({ field: 'strand', hidden: ['0'] })
-  expect([...host.hiddenGroupKeys]).toEqual(['0'])
+  expect([...host.hiddenGroups]).toEqual(['0'])
 })
 
 // A chain grouping by nothing where the facet names a per-read field: the
@@ -72,11 +72,11 @@ test('a config naming hidden sections opens with them hidden', () => {
 // ungrouped stack.
 test('a grouping that is not the facet field leaves the hidden sections unread', () => {
   const host = attached({ field: 'tags.HP', hidden: [''] })
-  expect([...host.hiddenGroupKeys]).toEqual([''])
+  expect([...host.hiddenGroups]).toEqual([''])
   host.setDegraded(true)
-  expect(host.hiddenGroupKeys.size).toBe(0)
+  expect(host.hiddenGroups.size).toBe(0)
   host.setDegraded(false)
-  expect([...host.hiddenGroupKeys]).toEqual([''])
+  expect([...host.hiddenGroups]).toEqual([''])
 })
 
 test("a key-space move drops the display's own state and keeps the facet's", () => {

@@ -87,7 +87,7 @@ test('picking a dimension sets it; picking None ungroups', () => {
   expect(model.facetByField).toHaveBeenCalledWith('')
 })
 
-// `hiddenGroupKeys` only hides a lane under mate-assembly grouping, so under any
+// `hiddenGroups` only hides a lane under mate-assembly grouping, so under any
 // other dimension the box hid nothing whichever way it was ticked.
 test('the self-lane toggle is offered only under mate-assembly grouping', () => {
   expect(items(makeModel('mateAssembly')).map(i => i.label)).toContain(
