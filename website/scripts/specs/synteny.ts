@@ -571,6 +571,7 @@ const PAA_ISLAND_HIGHLIGHT = {
 }
 
 const STX2B = { view: [0, 1], trackId: 'Sakai_genes', feature: 'stx2B' }
+const STX2B_PAD = 18
 
 // The launch figures' drag span; every strain aligns across it, so the dialog
 // opens on all five rows.
@@ -2134,10 +2135,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         from: { x: 1085, y: 365 },
-        anchor: { ...STX2B, alignX: 'right', dx: 10 },
+        // the box's corner, short of the label inside it
+        anchor: {
+          ...STX2B,
+          alignX: 'right',
+          alignY: 'top',
+          dx: STX2B_PAD + 4,
+          dy: -STX2B_PAD - 4,
+        },
       },
       // wide enough to take in the gene's label under its few-px glyph
-      { type: 'box', anchor: STX2B, pad: 14 },
+      { type: 'box', anchor: STX2B, pad: STX2B_PAD },
     ],
   },
 
