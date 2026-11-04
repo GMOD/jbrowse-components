@@ -107,25 +107,26 @@ import * as m121 from '@jbrowse/render-core/linkFeet'
 import * as m122 from '@jbrowse/render-core/marks'
 import * as m123 from '@jbrowse/render-core/marks/backend'
 import * as m124 from '@jbrowse/render-core/marks/colorFill'
-import * as m125 from '@jbrowse/render-core/marks/drawAgainstHit'
-import * as m126 from '@jbrowse/render-core/marks/ellipseDistance'
-import * as m127 from '@jbrowse/render-core/marks/glyphPaint'
-import * as m128 from '@jbrowse/render-core/marks/hit'
-import * as m129 from '@jbrowse/render-core/namedReactions'
-import * as m130 from '@jbrowse/render-core/OverlayCanvas'
-import * as m131 from '@jbrowse/render-core/perRegionRenderingBackend'
-import * as m132 from '@jbrowse/render-core/regionDataMap'
-import * as m133 from '@jbrowse/render-core/renderBlock'
-import * as m134 from '@jbrowse/render-core/RenderCanvas'
-import * as m135 from '@jbrowse/render-core/renderingBackendBase'
-import * as m136 from '@jbrowse/render-core/RenderLifecycleMixin'
-import * as m137 from '@jbrowse/render-core/scoreScale'
-import * as m138 from '@jbrowse/render-core/ScrollLockedOverlay'
-import * as m139 from '@jbrowse/render-core/sharedBackendKey'
-import * as m140 from '@jbrowse/render-core/slangPass'
-import * as m141 from '@jbrowse/render-core/useGraphicsCapabilities'
-import * as m142 from '@jbrowse/render-core/useRenderingBackend'
-import * as m143 from '@jbrowse/render-core/useTabVisibilityRerender'
+import * as m125 from '@jbrowse/render-core/marks/connectorPlacement'
+import * as m126 from '@jbrowse/render-core/marks/drawAgainstHit'
+import * as m127 from '@jbrowse/render-core/marks/ellipseDistance'
+import * as m128 from '@jbrowse/render-core/marks/glyphPaint'
+import * as m129 from '@jbrowse/render-core/marks/hit'
+import * as m130 from '@jbrowse/render-core/namedReactions'
+import * as m131 from '@jbrowse/render-core/OverlayCanvas'
+import * as m132 from '@jbrowse/render-core/perRegionRenderingBackend'
+import * as m133 from '@jbrowse/render-core/regionDataMap'
+import * as m134 from '@jbrowse/render-core/renderBlock'
+import * as m135 from '@jbrowse/render-core/RenderCanvas'
+import * as m136 from '@jbrowse/render-core/renderingBackendBase'
+import * as m137 from '@jbrowse/render-core/RenderLifecycleMixin'
+import * as m138 from '@jbrowse/render-core/scoreScale'
+import * as m139 from '@jbrowse/render-core/ScrollLockedOverlay'
+import * as m140 from '@jbrowse/render-core/sharedBackendKey'
+import * as m141 from '@jbrowse/render-core/slangPass'
+import * as m142 from '@jbrowse/render-core/useGraphicsCapabilities'
+import * as m143 from '@jbrowse/render-core/useRenderingBackend'
+import * as m144 from '@jbrowse/render-core/useTabVisibilityRerender'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
@@ -254,25 +255,26 @@ const libs: Record<string, unknown> = {
   '@jbrowse/render-core/marks': m122,
   '@jbrowse/render-core/marks/backend': m123,
   '@jbrowse/render-core/marks/colorFill': m124,
-  '@jbrowse/render-core/marks/drawAgainstHit': m125,
-  '@jbrowse/render-core/marks/ellipseDistance': m126,
-  '@jbrowse/render-core/marks/glyphPaint': m127,
-  '@jbrowse/render-core/marks/hit': m128,
-  '@jbrowse/render-core/namedReactions': m129,
-  '@jbrowse/render-core/OverlayCanvas': { ...m130, __esModule: true },
-  '@jbrowse/render-core/perRegionRenderingBackend': m131,
-  '@jbrowse/render-core/regionDataMap': m132,
-  '@jbrowse/render-core/renderBlock': m133,
-  '@jbrowse/render-core/RenderCanvas': m134.default,
-  '@jbrowse/render-core/renderingBackendBase': m135,
-  '@jbrowse/render-core/RenderLifecycleMixin': m136,
-  '@jbrowse/render-core/scoreScale': m137,
-  '@jbrowse/render-core/ScrollLockedOverlay': m138,
-  '@jbrowse/render-core/sharedBackendKey': m139,
-  '@jbrowse/render-core/slangPass': m140,
-  '@jbrowse/render-core/useGraphicsCapabilities': m141,
-  '@jbrowse/render-core/useRenderingBackend': m142,
-  '@jbrowse/render-core/useTabVisibilityRerender': m143,
+  '@jbrowse/render-core/marks/connectorPlacement': m125,
+  '@jbrowse/render-core/marks/drawAgainstHit': m126,
+  '@jbrowse/render-core/marks/ellipseDistance': m127,
+  '@jbrowse/render-core/marks/glyphPaint': m128,
+  '@jbrowse/render-core/marks/hit': m129,
+  '@jbrowse/render-core/namedReactions': m130,
+  '@jbrowse/render-core/OverlayCanvas': { ...m131, __esModule: true },
+  '@jbrowse/render-core/perRegionRenderingBackend': m132,
+  '@jbrowse/render-core/regionDataMap': m133,
+  '@jbrowse/render-core/renderBlock': m134,
+  '@jbrowse/render-core/RenderCanvas': m135.default,
+  '@jbrowse/render-core/renderingBackendBase': m136,
+  '@jbrowse/render-core/RenderLifecycleMixin': m137,
+  '@jbrowse/render-core/scoreScale': m138,
+  '@jbrowse/render-core/ScrollLockedOverlay': m139,
+  '@jbrowse/render-core/sharedBackendKey': m140,
+  '@jbrowse/render-core/slangPass': m141,
+  '@jbrowse/render-core/useGraphicsCapabilities': m142,
+  '@jbrowse/render-core/useRenderingBackend': m143,
+  '@jbrowse/render-core/useTabVisibilityRerender': m144,
 }
 
 export default libs

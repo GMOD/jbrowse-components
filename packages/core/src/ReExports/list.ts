@@ -533,6 +533,7 @@ export default [
   '@jbrowse/render-core/marks',
   '@jbrowse/render-core/marks/backend',
   '@jbrowse/render-core/marks/colorFill',
+  '@jbrowse/render-core/marks/connectorPlacement',
   '@jbrowse/render-core/marks/drawAgainstHit',
   '@jbrowse/render-core/marks/ellipseDistance',
   '@jbrowse/render-core/marks/glyphPaint',

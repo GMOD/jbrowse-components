@@ -927,6 +927,7 @@
         "keyedWritesAt",
         "liftPlot",
         "liftRetiredSpellings",
+        "listMergedBy",
         "makeSlotFacade",
         "mergeConfSettings",
         "mergeFormatCallbacks",
@@ -5526,6 +5527,7 @@
         "buildRowTable",
         "connectorEnds",
         "connectorMark",
+        "connectorPlacement",
         "defineMark",
         "ellipseDistance",
         "ellipseNearest",
@@ -5591,6 +5593,15 @@
       "names": [
         "abgrToCssRgba",
         "makeAbgrFill"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/connectorPlacement": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "connectorPlacement",
+        "newPlaced",
+        "placeConnector"
       ],
       "worker": "real"
     },

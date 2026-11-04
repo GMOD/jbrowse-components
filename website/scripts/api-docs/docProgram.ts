@@ -1167,6 +1167,12 @@ function bindsAParameter(decl: ts.Declaration) {
   return !!n && ts.isParameter(n)
 }
 
+// How many calls, arguments and returns deep the walk below follows a slot's
+// value. A display's `filter` reaches its predicate schema at 5:
+// `fieldPredicateList()` returns `listMergedBy(plotList(type))`, whose `type`
+// is a local holding `fieldPredicateArray()`'s `types.array`.
+const SLOT_VALUE_DEPTH = 6
+
 // Every declaration a sub-schema slot's value expression names, nearest first.
 // `facet: facetConfigSchema` names one; `encoding: yEncodingSchema(yChannelSchema())`
 // names a factory whose schema is built by a call further in, so the walk goes
@@ -1188,7 +1194,7 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
   const queue = [{ expr: node.initializer, depth: 0, list: false }]
   while (queue.length) {
     const { expr, depth, list } = queue.shift()!
-    if (depth > 4) {
+    if (depth > SLOT_VALUE_DEPTH) {
       continue
     }
     if (ts.isNonNullExpression(expr) || ts.isParenthesizedExpression(expr)) {

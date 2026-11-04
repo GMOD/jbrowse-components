@@ -8,6 +8,25 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## alignmentConnectorCurves
+
+Each connector of a `connectors` table as the pileup places its cubic at
+`pxPerBp`, through the connector mark's own placement, for a host drawing
+the table at its figure's scale. Both ends lie in one region, `reversed`
+where it is flipped; `featureHeight` and `featureSpacing` are `readPitch`'s.
+Returns each curve's two control points, `handle` and `endHandle` in bp
+with `handleRow` and `endHandleRow` in rows as `row` counts them, a
+straight connector's at its ends; and, where an arrowhead fits at this
+scale, `arrow` true and `arrowBack`, the bp its arms reach back to, which
+stand `arrowRows` rows off the row.
+
+```js
+// type signature
+({ pxPerBp, reversed, featureHeight, featureSpacing, connectors, }: { pxPerBp: number; reversed?: boolean | undefined; featureHeight: number; featureSpacing: number; connectors: {…}; }) => { handle: number[]; handleRow: number[]; endHandle: number[]; endHandleRow: number[]; arrow: boolean[]; arrowBack: number[]; arrowRows: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
+
 ## alignmentMarkAlpha
 
 Each insertion's width in px and each insertion's, deletion's, mismatch's

@@ -52,10 +52,12 @@ Write a settings bag — a session spec's track entry, a share link, an agent ca
 — onto a config. Each key names a member: a slot or a channel is written whole,
 as `setConf` writes it, so `null` resets it (ADR-146); a namespace's object
 names members inside it, at any depth, and the ones it leaves out keep their
-values. The config's own lift and checks run over the bag first, and each
-namespace's over its part, so a shorthand or a legacy key reads the same here as
-in `config.json`. A key the config does not declare is reported for the caller
-to route or refuse, and a declared key whose write throws costs that key alone.
+values; a list declared `listMergedBy` (a `filter`) replaces the entries on each
+field it names and keeps the rest. The config's own lift and checks run over the
+bag first, and each namespace's over its part, so a shorthand or a legacy key
+reads the same here as in `config.json`. A key the config does not declare is
+reported for the caller to route or refuse, and a declared key whose write
+throws costs that key alone.
 
 ```js
 import { applyConfSettings } from '@jbrowse/core/configuration'
@@ -1455,6 +1457,24 @@ One row an adapter lists: `name` is a value of the listing's field, and `label`
 and `color` are what the adapter names and colors that row with.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
+
+### listMergedBy
+
+Declares that a settings bag or a plot draft writing a list of this type merges
+with the list it lands on by one member of each entry, as a `filter` list merges
+by `field`: the written entries replace the entries naming the same value there,
+in place, and every other entry stays. A bare entry, the shorthand naming that
+member, keys as itself. `null` still resets the list, and the "Edit plot..."
+text (`{ whole: true }`) still writes it whole.
+
+```js
+import { listMergedBy } from '@jbrowse/core/configuration'
+
+// type signature
+<T extends IAnyType>(type: T, member: string) => T
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/mergedList.ts)
 
 ### listsRowSources
 
