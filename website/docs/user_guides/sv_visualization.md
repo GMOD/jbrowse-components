@@ -279,7 +279,7 @@ or hides the SV evidence and the reads without a mate.
 
 A long read spans the whole event, so it has what a short-read pair could only
 infer. At an inversion it splits into three alignments, the middle one on the
-opposite strand. With **Link mates and supplementary alignments** on, those
+opposite strand. With **View as pairs/link supplementary alignments** on, those
 segments chain onto one row: the inverted middle paints in the reverse-strand
 color between two forward-strand segments, and an arc joins each breakpoint
 pair: green at the junction LL pairs span, navy at the one RR pairs span. A

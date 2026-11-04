@@ -105,7 +105,7 @@ describe('read connections menu', () => {
     model.drawnReadConnections = 'link'
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
-      'Link mates and supplementary alignments',
+      'View as pairs/link supplementary alignments',
       'Pileup connectors',
       'SV channels',
       'Ordinary pairs',
@@ -137,11 +137,11 @@ describe('read connections menu', () => {
     ).toBe(true)
   })
 
-  test('"Link mates" toggles unit between read and chain', () => {
+  test('"View as pairs" toggles unit between read and chain', () => {
     const model = makeModel()
-    click(rows(model), 'Link mates')
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('chain')
-    click(rows(model), 'Link mates')
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('read')
   })
 

@@ -62,7 +62,7 @@ export function getReadConnectionsMenuItem(
 ) {
   const linked = model.unit === 'chain'
   const subMenu: MenuItem[] = [
-    checkboxItem('Link mates and supplementary alignments', linked, () => {
+    checkboxItem('View as pairs/link supplementary alignments', linked, () => {
       model.setUnit(linked ? 'read' : 'chain')
     }),
     toggleItem('Pileup connectors', model.showConnectors, flag => {

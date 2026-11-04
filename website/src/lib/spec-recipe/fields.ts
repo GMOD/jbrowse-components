@@ -1701,7 +1701,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Read connections → Link mates and supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Read connections → View as pairs/link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'readConnections.height': (value, { displayType }) =>

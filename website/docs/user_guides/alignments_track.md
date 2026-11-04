@@ -403,7 +403,7 @@ mapped:
 
 - **Split current view to show mate** replaces the displayed regions with the
   read's locus and its mate's side by side, each padded by a read length, and
-  turns on **Link mates and supplementary alignments** so the pair is drawn
+  turns on **View as pairs/link supplementary alignments** so the pair is drawn
   joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),

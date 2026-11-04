@@ -542,7 +542,7 @@ describe('ordering controls in chain mode', () => {
     const item = findMenuItem(display.trackMenuItems(), 'Sort by')
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toMatch(
-      /Link mates and supplementary alignments/,
+      /View as pairs\/link supplementary alignments/,
     )
   })
 
