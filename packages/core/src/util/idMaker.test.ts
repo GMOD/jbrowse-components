@@ -1,7 +1,3 @@
-import {
-  adapterConfigCacheKey,
-  withAdapterId,
-} from '../data_adapters/dataAdapterCache.ts'
 import idMaker from './idMaker.ts'
 
 describe('idMaker', () => {
@@ -56,27 +52,6 @@ describe('idMaker', () => {
     const head = { uniqueId: 'extra', refName: 'chr1', start: 0, end: 1 }
     expect(idMaker({ type: 'FromConfigAdapter', features: tail })).not.toBe(
       idMaker({ type: 'FromConfigAdapter', features: [head, ...tail] }),
-    )
-  })
-
-  test('withAdapterId tells apart same-length configs differing past the budget', () => {
-    const tail = Array.from({ length: 200 }, (_, i) => ({
-      uniqueId: `f${i}`,
-      refName: 'chr1',
-      start: i * 100,
-      end: i * 100 + 50,
-    }))
-    const a = {
-      type: 'FromConfigAdapter',
-      features: [{ uniqueId: 'a' }, ...tail],
-    }
-    const b = {
-      type: 'FromConfigAdapter',
-      features: [{ uniqueId: 'b' }, ...tail],
-    }
-    expect(adapterConfigCacheKey(a)).toBe(adapterConfigCacheKey(b))
-    expect(adapterConfigCacheKey(withAdapterId(a))).not.toBe(
-      adapterConfigCacheKey(withAdapterId(b)),
     )
   })
 

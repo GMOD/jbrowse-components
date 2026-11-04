@@ -43,6 +43,7 @@ export async function executeRenderHicData({
     pluginManager,
     sessionId,
     adapterConfig,
+    args.sequenceAdapter,
   )
   const { pairs, numContacts, appliedNormalizations } = await (
     dataAdapter as HicAdapter

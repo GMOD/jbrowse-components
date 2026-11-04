@@ -27,6 +27,7 @@ export function measureLDRegionBytes({
         pluginManager,
         sessionId,
         adapterConfig,
+        args.sequenceAdapter,
       )
       return isLDRecordSource(dataAdapter) && dataAdapter.getRegionByteSize
         ? dataAdapter.getRegionByteSize(measured, opts)

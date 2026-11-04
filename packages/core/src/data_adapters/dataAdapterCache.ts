@@ -1,4 +1,4 @@
-import idMaker from '../util/idMaker.ts'
+import { fingerprintAdapterConfig } from './adapterConfigFingerprint.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -7,20 +7,25 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 
-export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
+function adapterIdentity(conf: Record<string, unknown>) {
   const { adapterId } = conf
-  return typeof adapterId === 'string' && adapterId ? adapterId : idMaker(conf)
+  return typeof adapterId === 'string' && adapterId
+    ? { key: adapterId, credentials: '' }
+    : fingerprintAdapterConfig(conf)
+}
+
+export function adapterConfigCacheKey(conf: Record<string, unknown>) {
+  return adapterIdentity(conf).key
 }
 
 /**
  * #api
- * `conf` with an `adapterId` hashed from all of it. Code that builds an inline
- * config (a FromConfigAdapter's `features`) calls this: `adapterConfigCacheKey`
- * hashes only a prefix, so two such configs differing past it would share an
- * adapter.
+ * `conf` with its key stamped in as `adapterId`, so the worker reads it rather
+ * than hashing the config on every call. For code that builds a large inline
+ * config, such as a FromConfigAdapter's `features`.
  */
 export function withAdapterId<T extends Record<string, unknown>>(conf: T) {
-  return { ...conf, adapterId: idMaker(conf, Infinity) }
+  return { ...conf, adapterId: fingerprintAdapterConfig(conf).key }
 }
 
 /**
@@ -30,9 +35,10 @@ export function withAdapterId<T extends Record<string, unknown>>(conf: T) {
  * without an MD tag, CRAM to rebuild bases, GC content and the reference scans
  * for everything they answer. Such an adapter is built with that reference and
  * keyed on it as well as on its config, so one config shown on two genomes is
- * two instances, each reading the reference of its genome, and an instance never changes reference
- * for its life. Every other adapter keys on its config alone: a synteny adapter
- * is fetched from each of its assemblies and reads no reference.
+ * two instances, each reading the reference of its genome, and an instance
+ * never changes reference for its life. Every other adapter keys on its config
+ * alone: a synteny adapter is fetched from each of its assemblies and reads no
+ * reference.
  */
 export const READS_REFERENCE = 'readsReference'
 
@@ -49,144 +55,234 @@ function readsReference(
   )
 }
 
-interface AdapterCacheEntry {
-  dataAdapter: AnyDataAdapter
+/**
+ * One built instance, as the parent of the sub-adapters it fetches: they are
+ * claimed under `claim`, which is released when this instance is evicted. An
+ * evicted instance still answering a request claims nothing more.
+ */
+interface Owner {
+  claim: string
+  evicted: boolean
+}
+
+interface CachedAdapter {
+  adapter: Promise<AnyDataAdapter>
+  credentials: string
   sessionIds: Set<string>
+  lastRequest: number
+  owner: Owner
 }
 
-// Pruned by storeWithEvict (rejections) and by freeAdapterResources, which the
-// CoreFreeResources RPC reaches when the last track holding an adapter config is
-// closed (releaseAdapterSession). The browser sets no size bound: an adapter
-// whose track stays open lives as long as its worker, by design. A host with no
-// tracks to close bounds it with keepAdapters. Ordered least recently
-// requested first.
-let adapterCache = new Map<string, Promise<AdapterCacheEntry>>()
+// The browser sets no size bound: an adapter whose track stays open lives as
+// long as its worker. A host with no tracks to close bounds it with
+// keepAdapters.
+let adapterCache = new Map<string, CachedAdapter>()
 let requests = 0
-const lastRequests = new WeakMap<AdapterCacheEntry, number>()
+let builds = 0
 
-/** stores a promise in the cache and auto-evicts if it rejects */
-function storeWithEvict(key: string, p: Promise<AdapterCacheEntry>) {
-  p.catch(() => {
-    if (adapterCache.get(key) === p) {
-      adapterCache.delete(key)
-    }
-  })
-  adapterCache.set(key, p)
-  return p
-}
-
-async function getAdapterPre(
+function identify(
   pluginManager: PluginManager,
-  sessionId: string,
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
-  keyedSequence: Record<string, unknown> | undefined,
+  adapterConfig: ConfigSnap,
+  sequenceAdapter: Record<string, unknown> | undefined,
 ) {
-  const adapterType = adapterConfigSnapshot?.type
-
-  if (!adapterType) {
+  if (!adapterConfig?.type) {
     throw new Error(
       `could not determine adapter type from adapter config snapshot ${JSON.stringify(
-        adapterConfigSnapshot,
+        adapterConfig,
       )}`,
     )
   }
-  const dataAdapterType = pluginManager.getAdapterType(adapterType)
+  const keyedSequence =
+    sequenceAdapter && readsReference(pluginManager, adapterConfig)
+      ? sequenceAdapter
+      : undefined
+  const adapterType: string = adapterConfig.type
+  const config = adapterIdentity(adapterConfig)
+  const sequence = keyedSequence ? adapterIdentity(keyedSequence) : undefined
+  return sequence
+    ? {
+        adapterType,
+        key: `${config.key}|${sequence.key}`,
+        credentials: `${config.credentials}|${sequence.credentials}`,
+        keyedSequence,
+      }
+    : { ...config, adapterType, keyedSequence }
+}
 
-  // instantiate the data adapter's config schema so it gets its defaults,
-  // callbacks, etc
+type Identity = ReturnType<typeof identify>
+
+async function buildAdapter(
+  pluginManager: PluginManager,
+  adapterType: string,
+  adapterConfigSnapshot: ConfigSnap,
+  keyedSequence: Record<string, unknown> | undefined,
+  owner: Owner,
+) {
+  const dataAdapterType = pluginManager.getAdapterType(adapterType)
   const adapterConfig = dataAdapterType.configSchema.create(
     adapterConfigSnapshot,
     { pluginManager },
   )
-
   // a sub-adapter reads the reference its parent was built with
-  const getSubAdapter: getSubAdapterType = conf =>
-    getAdapter(pluginManager, sessionId, conf, keyedSequence)
+  const getSubAdapter: getSubAdapterType = async conf =>
+    owner.evicted
+      ? {
+          dataAdapter: await unclaimedAdapter(
+            pluginManager,
+            conf,
+            keyedSequence,
+          ),
+          sessionIds: new Set<string>(),
+        }
+      : getAdapter(pluginManager, owner.claim, conf, keyedSequence)
   const CLASS = await dataAdapterType.getAdapterClass()
-  const dataAdapter = new CLASS(
-    adapterConfig,
-    getSubAdapter,
-    pluginManager,
-    keyedSequence,
-  )
+  return new CLASS(adapterConfig, getSubAdapter, pluginManager, keyedSequence)
+}
 
+function createEntry(
+  pluginManager: PluginManager,
+  adapterConfig: ConfigSnap,
+  { adapterType, keyedSequence, credentials }: Identity,
+  sessionIds: Set<string>,
+): CachedAdapter {
+  const owner = { claim: `sub:${++builds}`, evicted: false }
   return {
-    dataAdapter,
-    sessionIds: new Set([sessionId]),
+    adapter: buildAdapter(
+      pluginManager,
+      adapterType,
+      adapterConfig,
+      keyedSequence,
+      owner,
+    ),
+    credentials,
+    sessionIds,
+    lastRequest: 0,
+    owner,
   }
 }
 
 /**
- * look up the cached entry for a config, creating and storing it if absent.
- * Keyed synchronously, so concurrent callers share one pending entry
+ * The adapter an evicted parent asks for: the cached one if it is current,
+ * else one built outside the cache, so a request finishing after its track
+ * closed leaves nothing cached behind it.
  */
-function getOrCreateEntry(
+async function unclaimedAdapter(
   pluginManager: PluginManager,
-  sessionId: string,
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  adapterConfig: ConfigSnap,
   sequenceAdapter: Record<string, unknown> | undefined,
 ) {
-  const keyedSequence =
-    sequenceAdapter && readsReference(pluginManager, adapterConfigSnapshot)
-      ? sequenceAdapter
-      : undefined
-  const configKey = adapterConfigCacheKey(adapterConfigSnapshot)
-  const cacheKey = keyedSequence
-    ? `${configKey}|${adapterConfigCacheKey(keyedSequence)}`
-    : configKey
-  const cached = adapterCache.get(cacheKey)
-  if (cached) {
-    adapterCache.delete(cacheKey)
-    adapterCache.set(cacheKey, cached)
-    return cached
-  }
-  return storeWithEvict(
-    cacheKey,
-    getAdapterPre(
-      pluginManager,
-      sessionId,
-      adapterConfigSnapshot,
-      keyedSequence,
-    ),
+  const { adapterType, key, credentials, keyedSequence } = identify(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
   )
+  const cached = adapterCache.get(key)
+  return cached?.credentials === credentials
+    ? cached.adapter
+    : buildAdapter(pluginManager, adapterType, adapterConfig, keyedSequence, {
+        claim: '',
+        evicted: true,
+      })
+}
+
+/**
+ * The entry for a config, created if absent. One entry per identity: a request
+ * carrying renewed credentials replaces the instance built with the old ones,
+ * which a worker cannot renew, and inherits its claims.
+ */
+function entryFor(
+  pluginManager: PluginManager,
+  adapterConfig: ConfigSnap,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  const identity = identify(pluginManager, adapterConfig, sequenceAdapter)
+  const cached = adapterCache.get(identity.key)
+  return cached?.credentials === identity.credentials
+    ? cached
+    : storeEntry(pluginManager, adapterConfig, identity, cached)
+}
+
+function storeEntry(
+  pluginManager: PluginManager,
+  adapterConfig: ConfigSnap,
+  identity: Identity,
+  superseded: CachedAdapter | undefined,
+) {
+  const { key } = identity
+  const entry = createEntry(
+    pluginManager,
+    adapterConfig,
+    identity,
+    superseded ? superseded.sessionIds : new Set(),
+  )
+  if (superseded) {
+    void evict(key, superseded)
+  }
+  adapterCache.set(key, entry)
+  void entry.adapter.catch(() => evict(key, entry))
+  return entry
 }
 
 /**
  * instantiate a data adapter, or return a cached one with the same config.
  * `sequenceAdapter` is the reference of the genome the request names; a
  * {@link READS_REFERENCE} type is keyed on it and built with it, any other
- * type ignores it
+ * type ignores it. The caller's claim is recorded before the adapter is
+ * built, so a free racing the build cannot drop an adapter it holds.
  */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
-  sequenceAdapter?: Record<string, unknown>,
-): Promise<AdapterCacheEntry> {
-  const ret = await getOrCreateEntry(
-    pluginManager,
-    sessionId,
-    adapterConfigSnapshot,
-    sequenceAdapter,
-  )
-  ret.sessionIds.add(sessionId)
-  lastRequests.set(ret, ++requests)
-  return ret
+  adapterConfigSnapshot: ConfigSnap,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  const entry = entryFor(pluginManager, adapterConfigSnapshot, sequenceAdapter)
+  entry.sessionIds.add(sessionId)
+  entry.lastRequest = ++requests
+  return { dataAdapter: await entry.adapter, sessionIds: entry.sessionIds }
 }
 
 /**
  * this is a callback that is passed to adapters that allows them to get any
- * sub-adapters that they need internally, staying with the same worker session
- * ID
+ * sub-adapters that they need internally
  */
 export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
+async function evict(cacheKey: string, entry: CachedAdapter): Promise<void> {
+  if (adapterCache.get(cacheKey) === entry) {
+    adapterCache.delete(cacheKey)
+  }
+  if (!entry.owner.evicted) {
+    entry.owner.evicted = true
+    await Promise.all([
+      entry.adapter.then(
+        dataAdapter => {
+          dataAdapter.freeResources()
+        },
+        () => {},
+      ),
+      releaseClaim(entry.owner.claim),
+    ])
+  }
+}
+
+async function releaseClaim(claim: string) {
+  const evictions: Promise<void>[] = []
+  for (const [cacheKey, entry] of [...adapterCache]) {
+    if (entry.sessionIds.delete(claim) && entry.sessionIds.size === 0) {
+      evictions.push(evict(cacheKey, entry))
+    }
+  }
+  await Promise.all(evictions)
+}
+
 /**
  * Drop this session's claim on every cached adapter, and evict the ones no
- * other session still claims. Reached from the CoreFreeResources RPC when the
- * last track using an adapter config closes.
+ * other session still claims, along with the sub-adapters only they claimed.
+ * Reached from the CoreFreeResources RPC when the last track using an adapter
+ * config closes.
  *
  * Deleting the key makes the instance unreachable from here, and for most
  * adapters that is the whole reclamation: a parsed GFF3 goes with it.
@@ -201,38 +297,11 @@ export type getSubAdapterType = (
  * of its four processes reached the 4 GB heap limit 135 s in, with the budget
  * at 3,100 MB against its 1,024 MB limit: the budget left each of 54 caches
  * its last entry. 2.1 keeps one entry per budget instead.
- *
- * The refcount is what makes this safe to call on any track close: an adapter
- * pulled in as a sub-adapter carries its parent's sessionId (getSubAdapter
- * passes it straight through), so a sequence adapter shared by two alignments
- * tracks survives either one of them closing.
  */
 export async function freeAdapterResources(args: { sessionId?: string }) {
   const { sessionId } = args
-  if (!sessionId) {
-    return
-  }
-  for (const [cacheKey, cacheEntryP] of [...adapterCache]) {
-    try {
-      const cacheEntry = await cacheEntryP
-      cacheEntry.sessionIds.delete(sessionId)
-      if (cacheEntry.sessionIds.size === 0) {
-        evict(cacheKey, cacheEntryP)
-        cacheEntry.dataAdapter.freeResources()
-      }
-    } catch (e) {
-      console.error(
-        `dataAdapterCache: evicting failed adapter "${cacheKey}"`,
-        e,
-      )
-      evict(cacheKey, cacheEntryP)
-    }
-  }
-}
-
-function evict(cacheKey: string, entry: Promise<AdapterCacheEntry>) {
-  if (adapterCache.get(cacheKey) === entry) {
-    adapterCache.delete(cacheKey)
+  if (sessionId) {
+    await releaseClaim(sessionId)
   }
 }
 
@@ -252,17 +321,24 @@ export function adapterRequests() {
 export async function keepAdapters(
   keep: (dataAdapter: AnyDataAdapter, lastRequest: number) => boolean,
 ) {
-  const cached = [...adapterCache].reverse()
-  const settled = await Promise.all(
-    cached.map(([, entry]) => entry.catch(() => undefined)),
+  const cached = [...adapterCache].sort(
+    ([, a], [, b]) => b.lastRequest - a.lastRequest,
   )
+  const settled = await Promise.all(
+    cached.map(([, entry]) => entry.adapter.catch(() => undefined)),
+  )
+  const evictions: Promise<void>[] = []
   cached.forEach(([cacheKey, entry], i) => {
-    const adapter = settled[i]
-    if (adapter && !keep(adapter.dataAdapter, lastRequests.get(adapter) ?? 0)) {
-      evict(cacheKey, entry)
-      adapter.dataAdapter.freeResources()
+    const dataAdapter = settled[i]
+    if (
+      dataAdapter &&
+      !entry.owner.evicted &&
+      !keep(dataAdapter, entry.lastRequest)
+    ) {
+      evictions.push(evict(cacheKey, entry))
     }
   })
+  await Promise.all(evictions)
 }
 
 /** How many adapters the cache holds, failed and pending ones included. */

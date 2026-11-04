@@ -481,6 +481,7 @@ export async function multiwayTables(
     pluginManager,
     SESSION,
     adapterConfig,
+    undefined,
   )
   const header: unknown =
     declaresLanes && 'getHeader' in dataAdapter

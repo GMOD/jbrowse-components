@@ -36,12 +36,15 @@ pluginManager.addAdapterType(
 pluginManager.createPluggableElements()
 pluginManager.configure()
 
-const read = (path: string) =>
-  getAdapter(pluginManager, 'tables', {
-    type: 'TestAdapter',
-    adapterId: path,
-    path,
-  })
+const read = async (path: string) =>
+  (
+    await getAdapter(
+      pluginManager,
+      'tables',
+      { type: 'TestAdapter', adapterId: path, path },
+      undefined,
+    )
+  ).dataAdapter
 
 beforeEach(() => {
   clearAdapterCache()

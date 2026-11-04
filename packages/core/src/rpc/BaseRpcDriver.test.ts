@@ -171,4 +171,41 @@ describe('BaseRpcDriver.call envelope', () => {
     expect(invoked).toEqual([{ sessionId: 'sid' }])
     expect(driver.transportCalls).toEqual([])
   })
+
+  test("a free lands after the session's calls already in flight, and waits on no other session's", async () => {
+    const events: string[] = []
+    let finishSerializing = () => {}
+    const serializing = new Promise<void>(resolve => {
+      finishSerializing = resolve
+    })
+    const slowMethod = {
+      ...rpcMethod,
+      serializeArguments: async (args: Record<string, unknown>) => {
+        await serializing
+        return args
+      },
+    }
+    const freeMethod = {
+      invoke: async ({ sessionId }: { sessionId: string }) => {
+        events.push(`free ${sessionId}`)
+      },
+    }
+    const driver = new CapturingDriver({
+      getRpcMethodType: (name: string) =>
+        name === 'CoreFreeResources' ? freeMethod : slowMethod,
+    } as unknown as PluginManager)
+
+    const straggler = driver.call('closed', 'SomeMethod', {}).then(() => {
+      events.push('call closed')
+    })
+    const other = driver.call('open', 'SomeMethod', {})
+    await driver.freeSession('unrelated')
+    const freeing = driver.freeSession('closed')
+    await Promise.resolve()
+    expect(events).toEqual(['free unrelated'])
+
+    finishSerializing()
+    await Promise.all([straggler, freeing, other])
+    expect(events).toEqual(['free unrelated', 'call closed', 'free closed'])
+  })
 })

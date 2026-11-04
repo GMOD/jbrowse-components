@@ -9,8 +9,13 @@ export default class CoreGetMetadata extends RpcMethodType<'CoreGetMetadata'> {
 
   async execute(args: RpcExecuteArgs<'CoreGetMetadata'>) {
     const pm = this.pluginManager
-    const { sessionId, adapterConfig } = args
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { sessionId, adapterConfig, sequenceAdapter } = args
+    const { dataAdapter } = await getAdapter(
+      pm,
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+    )
     return isFeatureAdapter(dataAdapter) ? dataAdapter.getMetadata(args) : null
   }
 }

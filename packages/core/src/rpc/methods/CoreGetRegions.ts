@@ -9,8 +9,13 @@ export default class CoreGetRegions extends RpcMethodType<'CoreGetRegions'> {
 
   async execute(args: RpcExecuteArgs<'CoreGetRegions'>) {
     const pm = this.pluginManager
-    const { sessionId, adapterConfig } = args
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { sessionId, adapterConfig, sequenceAdapter } = args
+    const { dataAdapter } = await getAdapter(
+      pm,
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+    )
     return isRegionsAdapter(dataAdapter) ? dataAdapter.getRegions(args) : []
   }
 }

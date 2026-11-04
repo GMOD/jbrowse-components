@@ -1,9 +1,6 @@
-// generates a short "id fingerprint" from the config passed to the base
-// feature adapter. hashes incrementally during traversal so no large
-// intermediate string is ever allocated, and stops after a 5000 char budget:
-// the worker hashes on every call, and hashing all of a 10k-feature
-// FromConfigAdapter costs ~160ms against ~2ms. Code that builds a large inline
-// config hashes it whole once, via `withAdapterId`.
+// generates a short "id fingerprint" from an adapter config: `BaseAdapter.id`,
+// which feature ids carry. Stops after a 5000 char budget, so two configs can
+// share one; the adapter cache keys on `fingerprintAdapterConfig` instead.
 export default function idMaker(args: Record<string, unknown>, budget = 5000) {
   let hash = 0
   let count = 0

@@ -114,6 +114,7 @@ export async function getLDMatrixFromPlink({
     pluginManager,
     sessionId,
     adapterConfig,
+    undefined,
   )
   if (!isLDRecordSource(dataAdapter)) {
     throw new Error(
