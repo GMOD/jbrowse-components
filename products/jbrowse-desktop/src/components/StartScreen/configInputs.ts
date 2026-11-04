@@ -11,6 +11,11 @@ import type {
 // rather than to what a config has to declare. Last in the list on purpose: a
 // config naming its own account with one of these ids wins, because `dedupe`
 // keeps the first occurrence.
+//
+// No Google Drive account: the drive.file scope needs the Google Picker, which
+// runs only on a web origin, and Google caps an unverified app's restricted
+// drive.readonly at 100 users. Desktop users open Drive files from the folder
+// Google's Drive for desktop syncs.
 const builtinInternetAccounts: InternetAccount[] = [
   {
     type: 'DropboxOAuthInternetAccount',
@@ -18,14 +23,6 @@ const builtinInternetAccounts: InternetAccount[] = [
     name: 'Dropbox',
     description: 'Account to access Dropbox files',
     clientId: 'ykjqg1kr23pl1i7',
-  },
-  {
-    type: 'GoogleDriveOAuthInternetAccount',
-    internetAccountId: 'googleOAuth',
-    name: 'Google Drive',
-    description: 'Account to access Google Drive files',
-    clientId:
-      '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
   },
 ]
 

@@ -6,7 +6,6 @@ test('completeConfig supplies the list fields an input need not carry', () => {
   expect(config.tracks).toEqual([])
   expect(config.internetAccounts.map(a => a.internetAccountId)).toEqual([
     'dropboxOAuth',
-    'googleOAuth',
   ])
 })
 
