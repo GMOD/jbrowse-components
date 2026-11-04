@@ -21,7 +21,7 @@ import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/comp
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { classifyPair, groupReadsByName } from './compute.ts'
+import { classifyPair, groupReadsByName, iterLinkedPairs } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
 import { connectorStyler } from './connectorStyle.ts'
 
@@ -674,6 +674,26 @@ describe('reads past the row cap', () => {
     ])
     expect(lines.size).toBe(0)
   })
+
+  it('join the drawn split segments either side of a parked one', () => {
+    const data = makeData({
+      names: ['r', 'r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1, 1],
+      positions: [
+        [100, 200],
+        [1000, 1100],
+        [2000, 2100],
+      ],
+      orientations: [0, 0, 0],
+      ys: [0, 1, 0],
+      clips: [0, 100, 200],
+    })
+    const pairs = [...iterLinkedPairs(new Map([[0, { ...data, maxY: 1 }]]))]
+    expect(pairs.map(({ e1, e2 }) => [e1.readIdx, e2.readIdx])).toEqual([
+      [0, 2],
+    ])
+  })
 })
 
 describe('the straight-line records', () => {
@@ -906,6 +926,7 @@ describe('groupReadsByName', () => {
     makePileupDataResult({
       readKeys: names.map((n, i) => `${n}-${i}`),
       ...namesToBlock(names),
+      maxY: 1,
     })
 
   it('groups reads by name across regions', () => {
