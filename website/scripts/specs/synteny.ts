@@ -2136,7 +2136,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         from: { x: 1085, y: 365 },
         anchor: { ...STX2B, alignX: 'right', dx: 10 },
       },
-      { type: 'box', anchor: STX2B },
+      // wide enough to take in the gene's label under its few-px glyph
+      { type: 'box', anchor: STX2B, pad: 14 },
     ],
   },
 

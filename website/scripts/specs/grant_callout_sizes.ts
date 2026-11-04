@@ -433,8 +433,8 @@ const overviewPart = (suffix: string, font: number | undefined) => {
   const css = (font ?? 0) / 2
   // Each pill is centered half a ribbon level off what it names, so it grows
   // into that level at any size: chr3's above its row, chr13's below its row
-  // and to the right, and the junction's above hap1 and to the left, clear of
-  // chr13's.
+  // and to its left, and the junction's above hap1 and to its right. chr13's
+  // dx is the least that leaves an 8pt leader's head a line behind it.
   const edits: Edits = {
     hap2: 'drop',
     GRCh38: 'drop',
@@ -442,7 +442,7 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     'chr13 breakend': {
       text: 'chr13\nbreakpoint',
       alignY: 'bottom',
-      dx: 140,
+      dx: -100,
       dy: OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
@@ -452,7 +452,7 @@ const overviewPart = (suffix: string, font: number | undefined) => {
       dy: -OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
-    junction: { dx: -170, dy: -OVERVIEW_LEVEL_HEIGHT / 2 },
+    junction: { dy: -OVERVIEW_LEVEL_HEIGHT / 2 },
   }
   return {
     ...spec,
