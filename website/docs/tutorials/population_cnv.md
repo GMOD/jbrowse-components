@@ -352,7 +352,7 @@ The HGSVC3 track holds every insertion and deletion, so **Filter by → Edit
 filters...** in its track menu takes a `filter` that drops the records under 5
 kb:
 
-```text
+```jexl
 jexl:alleleLength(feature)>=5000
 ```
 

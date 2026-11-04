@@ -191,7 +191,7 @@ window**. Then:
 - **Filter by → Edit filters...** on that track keeps the flagged ones with this
   filter:
 
-  ```text
+  ```jexl
   jexl:feature.inversion
   ```
 

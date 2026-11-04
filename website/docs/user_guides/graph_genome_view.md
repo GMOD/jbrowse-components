@@ -553,7 +553,7 @@ have coordinates.
 Stable rank needs no window, so it is the only scheme a hosted config can use.
 For the same track, set this `encoding.color.value`:
 
-```text
+```jexl
 jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 ```
 
