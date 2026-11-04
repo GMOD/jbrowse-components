@@ -65,11 +65,51 @@ export function withPageBaseUri<T>(config: T): T {
   return copy
 }
 
+// a location node is `{ uri }` plus at most these; anything else carrying a
+// `uri` is a shorthand (`{ type, uri }`, a TwoBit's `{ uri, chromSizes }`)
+// whose other bare files also resolve against its `baseUri`
+const LOCATION_KEYS = new Set([
+  'uri',
+  'baseUri',
+  'locationType',
+  'internetAccountId',
+  'internetAccountPreAuthorization',
+])
+
+/**
+ * A copy of `config` that reads the same anywhere it is pasted, without the
+ * `baseUri` noise: each location node's `uri` resolved against its `baseUri`,
+ * which is dropped. A shorthand keeps its `baseUri`, which its other files
+ * still need.
+ */
+export function withAbsoluteLocations<T>(config: T): T {
+  if (Array.isArray(config)) {
+    return config.map(item => withAbsoluteLocations(item) as unknown) as T
+  }
+  if (typeof config === 'object' && config !== null) {
+    const { uri, baseUri, ...rest } = config as Record<string, unknown>
+    const isLocation =
+      typeof uri === 'string' &&
+      typeof baseUri === 'string' &&
+      URL.canParse(uri, baseUri) &&
+      Object.keys(rest).every(key => LOCATION_KEYS.has(key))
+    return Object.fromEntries(
+      isLocation
+        ? [['uri', new URL(uri, baseUri).href], ...Object.entries(rest)]
+        : Object.entries(config).map(([key, value]) => [
+            key,
+            withAbsoluteLocations(value),
+          ]),
+    ) as T
+  }
+  return config
+}
+
 /**
  * Inverse of {@link addRelativeUris}: recursively delete `baseUri` keys
- * (mutates in place), e.g. before a "Copy config" button. Given the `base`
- * addRelativeUris stamped, only the keys equal to it go, so a `baseUri` the
- * config's author wrote survives the admin "Save config" round trip.
+ * (mutates in place). Given the `base` addRelativeUris stamped, only the keys
+ * equal to it go, so a `baseUri` the config's author wrote survives the admin
+ * "Save config" round trip.
  */
 export function stripBaseUris<T>(config: T, base?: string): T {
   if (typeof config === 'object' && config !== null) {

@@ -68,7 +68,7 @@ test('hideUris hides local paths, Copy config and the file header', () => {
   expect(getByText('Show ref names')).toBeTruthy()
 })
 
-test('Copy config keeps the baseUri a relative uri resolves against', () => {
+test('Copy config writes a relative uri resolved against its baseUri', () => {
   const writeText = jest.fn<Promise<void>, [string]>(async () => {})
   Object.defineProperty(window, 'isSecureContext', {
     value: true,
@@ -78,22 +78,24 @@ test('Copy config keeps the baseUri a relative uri resolves against', () => {
     value: { writeText },
     configurable: true,
   })
-  const bamLocation = {
-    uri: 'x.bam',
-    baseUri: 'https://example.org/hub/config.json',
-    locationType: 'UriLocation',
-  }
   const { getByText } = renderContents(
     makeTrackConf({
       trackId: 'relative',
       name: 'Relative',
-      adapter: { type: 'BamAdapter', bamLocation },
+      adapter: {
+        type: 'BamAdapter',
+        bamLocation: {
+          uri: 'x.bam',
+          baseUri: 'https://example.org/hub/config.json',
+          locationType: 'UriLocation',
+        },
+      },
     }),
   )
   fireEvent.click(getByText('Copy config'))
-  expect(JSON.parse(writeText.mock.calls[0]![0]).adapter.bamLocation).toEqual(
-    expect.objectContaining(bamLocation),
-  )
+  const { bamLocation } = JSON.parse(writeText.mock.calls[0]![0]).adapter
+  expect(bamLocation.uri).toBe('https://example.org/hub/x.bam')
+  expect(bamLocation).not.toHaveProperty('baseUri')
 })
 
 // regression: the metadata card reused the *config* card's omit list, so a

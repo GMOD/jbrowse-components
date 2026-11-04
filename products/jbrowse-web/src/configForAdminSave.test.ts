@@ -39,7 +39,7 @@ afterEach(() => {
 })
 
 test.each(['/?config=data/config.json', '/', '/app/?config=../conf/c.json'])(
-  'the admin save at %s writes back the config the load read',
+  'the admin save at %s strips exactly the baseUris the load stamped',
   async url => {
     window.history.replaceState(null, '', url)
     const configParam = readQueryParams(['config']).config

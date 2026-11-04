@@ -3,11 +3,12 @@ import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 // Where a jbrowse-web page's config lives, resolved one way for everyone: the
 // explicit ?config= param, else the build-time global, else config.json.
 //
-// Two callers, and they have to agree. fetchRemoteConfig stamps the resolved
-// URL onto every relative uri in the config (addRelativeUris), so "volvox.2bit"
-// in data/config.json means data/volvox.2bit, and the admin save strips exactly
-// that URL back off. A second, drifting copy of this resolution would strip
-// nothing, and every synthetic baseUri would land in the admin's config.json.
+// Its callers have to agree. fetchRemoteConfig stamps the resolved URL onto
+// every relative uri in the config (addRelativeUris), so "volvox.2bit" in
+// data/config.json means data/volvox.2bit, and the admin save strips exactly
+// that URL back off; permanentPlugins keys its plugin list by it too. A
+// drifting copy of this resolution would strip nothing, and every synthetic
+// baseUri would land in the admin's config.json.
 export function resolveConfigPath(configPath?: string) {
   return configPath || window.__jbrowseConfigPath || 'config.json'
 }

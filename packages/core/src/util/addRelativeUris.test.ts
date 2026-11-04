@@ -1,6 +1,7 @@
 import {
   addRelativeUris,
   stripBaseUris,
+  withAbsoluteLocations,
   withPageBaseUri,
 } from './addRelativeUris.ts'
 
@@ -113,6 +114,38 @@ test('stripBaseUris round-trips addRelativeUris', () => {
   const original = structuredClone(config)
   addRelativeUris(config, new URL('https://example.com/'))
   expect(stripBaseUris(config)).toEqual(original)
+})
+
+test('withAbsoluteLocations resolves a location and drops its baseUri', () => {
+  const config = {
+    bamLocation: {
+      uri: 'x.bam',
+      baseUri: 'https://example.org/hub/config.json',
+      locationType: 'UriLocation',
+    },
+    plain: { uri: 'https://elsewhere.org/y.bam', baseUri: 'http://page/?k=1' },
+  }
+  expect(withAbsoluteLocations(config)).toEqual({
+    bamLocation: {
+      uri: 'https://example.org/hub/x.bam',
+      locationType: 'UriLocation',
+    },
+    plain: { uri: 'https://elsewhere.org/y.bam' },
+  })
+})
+
+test('withAbsoluteLocations leaves a shorthand its baseUri, which its other files need', () => {
+  const shorthands = [
+    {
+      type: 'TwoBitAdapter',
+      uri: 'x.2bit',
+      chromSizes: 'x.chrom.sizes',
+      baseUri: 'https://example.org/hub/config.json',
+    },
+    { bigWigs: ['a.bw'], baseUri: 'https://example.org/hub/config.json' },
+    { uri: 'x.bam', baseUri: 'not a url' },
+  ]
+  expect(withAbsoluteLocations(shorthands)).toEqual(shorthands)
 })
 
 test('stripBaseUris given the stamped base keeps a baseUri the author wrote', () => {
