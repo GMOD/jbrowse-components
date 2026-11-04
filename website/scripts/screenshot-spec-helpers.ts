@@ -212,7 +212,7 @@ export const trackMenuIcon = (trackId: string): ScreenshotAction => ({
   selector: `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`,
 })
 
-export { PARK_CURSOR } from './screenshot-spec-types.ts'
+export { PARK_CURSOR, RUBBERBAND } from './screenshot-spec-types.ts'
 
 // Shrink the gene track's isoform notice — the loud "Isoforms trimmed" / "RefSeq
 // Select" chip — to the quiet icon that is always in that corner afterwards.
@@ -238,11 +238,6 @@ export const readIsoformNotice = (): ScreenshotAction[] => [
 ]
 
 export const TRACK_SELECTOR = '[data-testid="hierarchical_track_selector"]'
-
-// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts a
-// drag's y here while its x still comes from the locus, so the drag says which
-// bases it selects instead of which pixels.
-export const RUBBERBAND = '[data-testid="rubberband_controls"]'
 
 // The view menu's "Open track selector", the route a tutorial walks a reader
 // through. A figure that only needs the selector open sets the view's

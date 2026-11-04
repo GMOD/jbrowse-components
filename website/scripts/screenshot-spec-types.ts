@@ -99,6 +99,11 @@ export const PARK_CURSOR = {
   selector: '[aria-label="JBrowse"]',
 } satisfies ScreenshotAction
 
+// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts a
+// drag's y here while its x still comes from the locus, so the drag says which
+// bases it selects instead of which pixels.
+export const RUBBERBAND = '[data-testid="rubberband_controls"]'
+
 // One frame of a multi-stage figure, captured after this stage's actions run.
 export interface ScreenshotStage {
   actions?: ScreenshotAction[]

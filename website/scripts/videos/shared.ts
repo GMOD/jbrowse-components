@@ -13,7 +13,7 @@ export const DENDROGRAM = '[data-testid="tree_sidebar_dendrogram"]'
 // would rather than by reloading a session at the next locus.
 export const LOCATION_BOX = 'input[placeholder="Search for location"]'
 
-import { RUBBERBAND } from '../screenshot-spec-helpers.ts'
+import { RUBBERBAND } from '../screenshot-spec-types.ts'
 
 export { RUBBERBAND }
 
