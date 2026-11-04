@@ -2,8 +2,18 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { FirehoseClient, PutRecordCommand } from '@aws-sdk/client-firehose'
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
 
-const firehose = new FirehoseClient()
-const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient())
+// Two attempts of at most 1s connect plus 2s response stay well inside the
+// Lambda's 10s timeout
+const clientConfig = {
+  maxAttempts: 2,
+  requestHandler: {
+    connectionTimeout: 1000,
+    requestTimeout: 2000,
+    throwOnRequestTimeout: true,
+  },
+}
+const firehose = new FirehoseClient(clientConfig)
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient(clientConfig))
 
 const streams = { jb1: process.env.JB1_STREAM, jb2: process.env.JB2_STREAM }
 const tables = { jb1: 'JB1_Analytics_Events', jb2: 'JB2_Analytics_Events' }

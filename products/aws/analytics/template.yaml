@@ -12,7 +12,7 @@ Parameters:
 Resources:
   ArchiveBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
+    DeletionPolicy: RetainExceptOnCreate
     UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub jbrowse-analytics-${AWS::AccountId}

@@ -30,7 +30,7 @@ Needs the AWS CLI and `zip`.
 ```
 
 Pings fail for a few seconds while the Lambda moves from `nodejs12.x` to
-`nodejs22.x`.
+`nodejs24.x`.
 
 ## Moving off DynamoDB
 

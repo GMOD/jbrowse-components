@@ -25,12 +25,12 @@ output() {
 BUNDLE="$(mktemp -d)/function.zip"
 zip -q -j "$BUNDLE" index.mjs
 
-# The old code needs the nodejs12.x runtime and the new code needs nodejs22.x,
+# The old code needs the nodejs12.x runtime and the new code needs nodejs24.x,
 # so pings fail for the few seconds between these two updates.
 aws lambda update-function-configuration \
   --function-name "$FUNCTION" \
   --region "$REGION" \
-  --runtime nodejs22.x \
+  --runtime nodejs24.x \
   --handler index.handler \
   --environment "Variables={JB1_STREAM=$(output Jb1Stream),JB2_STREAM=$(output Jb2Stream),WRITE_DYNAMO=$WRITE_DYNAMO}" \
   >/dev/null
