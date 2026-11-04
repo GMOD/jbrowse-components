@@ -10,6 +10,7 @@ colorScheme
 connectedView
 encoding.color
 encoding.opacity
+gene
 geneGlyphMode
 geneTrackId
 genotypes.show
@@ -20,6 +21,7 @@ loadedRegion
 loadedTrackId
 maxRegionBp
 paneHeight
+pdbId
 pileup.mismatches
 records
 render
@@ -33,4 +35,5 @@ size
 structures
 transcriptId
 uniprotId
+variant
 zoomToBaseLevel

@@ -26,6 +26,8 @@ allele they share would predate domestication. We:
   sheet of each animal's category
 - add the slice as a variant track, one row per animal, with the rows colored by
   category
+- open 7WX0 on the E40K record from a session spec, with the protein view's
+  `variant` key labelling the change on the gene and the structure
 
 ## Prerequisites
 
@@ -172,6 +174,35 @@ To put a site where the wolves have the alternate allele beside codon 40, type
 first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 
 <Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category." />
+
+## Opening the structure on the E40K record
+
+A VCF record names its change on the genome's forward strand, the spelling the
+protein view's `variant` key takes. E40K's record in the slice reads
+`chr31 27123057 . G A`, so a session spec opens 7WX0 on it. Swap the gene, the
+PDB id and the record for your own:
+
+```json live config=https://jbrowse.org/ucsc/canFam4/config.json
+{
+  "views": [
+    {
+      "type": "ProteinView",
+      "gene": "SOD1",
+      "pdbId": "7WX0",
+      "variant": "chr31:27123057 G>A",
+      "sideBySide": true,
+      "connectedView": { "loc": "chr31:27123013-27123103" }
+    }
+  ]
+}
+```
+
+Open it from the link under the spec. `gene` finds the _SOD1_ transcript through
+the hub's search index, and `connectedView.loc` opens the genome view on
+codon 40. The launch translates the record on that transcript, labels the base
+with the protein change and frames residue 40 on the structure.
+
+<Figure src="/img/protein/sod1_e40k_variant.png" caption="SOD1 at codon 40 beside 7WX0, opened on the E40K record. The band on the gene carries the change's label, and the structure labels the residue it has there." />
 
 ## See also
 

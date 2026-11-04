@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { deflateSync } from 'node:zlib'
 
-import { UCSC_HG38_CONFIG } from '../screenshot-spec-helpers.ts'
+import { UCSC_HG38_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { PARK_CURSOR } from '../screenshot-spec-types.ts'
 import { pageTrack } from './pageTrack.ts'
 
@@ -305,6 +305,7 @@ function kgCallouts(controlDx: number): Annotation[] {
 }
 
 const SOD1_SESSION = readSession('sod1_canfam4.session.json')
+const CANFAM4_CONFIG = 'https://jbrowse.org/ucsc/canFam4/config.json'
 const SOD1_GENES = 'canFam4-ncbiRefSeqCurated'
 const DOG10K = 'dog10k_sod1'
 const DOG10K_TRACK = pageTrack(
@@ -325,7 +326,7 @@ function sod1Session(options: SessionOptions) {
   protein.colorScheme = 'mapped-chain'
   return linkedSession(
     session,
-    'https://jbrowse.org/ucsc/canFam4/config.json',
+    CANFAM4_CONFIG,
     'SOD1 orthologs',
     { row: 'dog_query', start: 25, end: 55 },
     options,
@@ -817,6 +818,28 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dy: 0,
       },
     ],
+  },
+  {
+    // the tutorial's `variant` spec, unchanged
+    mode: 'url',
+    name: 'protein/sod1_e40k_variant',
+    url: sessionSpec(CANFAM4_CONFIG, {
+      views: [
+        {
+          type: 'ProteinView',
+          gene: 'SOD1',
+          pdbId: '7WX0',
+          variant: 'chr31:27123057 G>A',
+          sideBySide: true,
+          connectedView: { loc: SOD1_CODON },
+        },
+      ],
+    }),
+    ...READY,
+    readySelector: '[data-testid="protein-view-ready"]',
+    viewportWidth: 1600,
+    viewportHeight: 870,
+    actions: [PARK_CURSOR],
   },
   {
     mode: 'url',
