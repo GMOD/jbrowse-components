@@ -126,6 +126,8 @@ interface ViewSelf {
   initialized?: boolean
   // the launch blob the view is still applying, if any — see viewState
   pendingLaunch?: unknown
+  // a view's own loading term, the one a plugin view has; see viewPhase
+  showLoading?: boolean
   showImportForm?: boolean
   error?: unknown
   // what failed and left the view working, as a display's notices are: a
@@ -287,13 +289,16 @@ function viewPhase(v: ViewSelf) {
   if (v.initialized === false && v.showImportForm !== true) {
     return { phase: 'initializing' }
   }
-  return v.pendingLaunch === undefined
-    ? {}
-    : {
-        phase: 'launching',
-        reason:
-          'the view is still applying what it was launched with (navigation, tracks)',
-      }
+  if (v.pendingLaunch !== undefined) {
+    return {
+      phase: 'launching',
+      reason:
+        'the view is still applying what it was launched with (navigation, tracks)',
+    }
+  }
+  return v.showLoading === true
+    ? { phase: 'loading', reason: 'the view reports it is still loading' }
+    : {}
 }
 
 function viewState(v: ViewSelf) {

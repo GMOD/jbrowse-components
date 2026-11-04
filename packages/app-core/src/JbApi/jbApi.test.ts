@@ -253,6 +253,29 @@ describe('waitReady', () => {
     })
   })
 
+  // AppReadyMarker counts a view's showLoading, the one term a plugin view such
+  // as an MSA running a BLAST search has; without it here a settle that timed
+  // out there answered false with an empty notReady.
+  it('names a view whose own loading term is still on', async () => {
+    document.body.innerHTML = '<div data-app-phase="loading"></div>'
+    const session = {
+      views: [
+        {
+          id: 'v1',
+          type: 'MsaView',
+          showLoading: true,
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await drained(waitReady(300, session))).toMatchObject({
+      settled: false,
+      notReady: [{ viewId: 'v1', phase: 'loading' }],
+    })
+  })
+
   // A plugin view that reports a failed step on its own banner, such as a
   // protein view's superposition, raises no toast and keeps working; its
   // notices are the only place the failure is said.
