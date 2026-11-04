@@ -108,6 +108,23 @@ describe('parseBed', () => {
   test('reads a negative score', () => {
     expect(parseBed('chr1\t1\t2\tg1\t-3\t+').get('g1')?.score).toBe(-3)
   })
+
+  test('spans the thick (coding) columns when a row has them', () => {
+    const g = parseBed('chr1\t100\t900\tg1\t0\t+\t300\t500').get('g1')
+    expect([g?.start, g?.end]).toEqual([300, 500])
+  })
+
+  test('spans the thick columns of a BED12 row', () => {
+    const row = 'chr1\t100\t900\tg1\t0\t-\t300\t500\t0\t2\t50,50,\t200,350,'
+    const g = parseBed(row).get('g1')
+    expect([g?.start, g?.end, g?.strand]).toEqual([300, 500, -1])
+  })
+
+  // a non-coding row writes thickStart == thickEnd, which is no span at all
+  test('keeps the gene span when the thick span is empty', () => {
+    const g = parseBed('chr1\t100\t900\tg1\t0\t+\t100\t100').get('g1')
+    expect([g?.start, g?.end]).toEqual([100, 900])
+  })
 })
 
 // The tier chooser for the all-vs-all indexed adapter (PairwiseIndexedPAFAdapter

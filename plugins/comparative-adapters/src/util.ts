@@ -405,14 +405,27 @@ function parseBedLine(
   if (t6 === -1 || t6 > lineEnd) {
     t6 = lineEnd
   }
+  let t7 = t6 === lineEnd ? lineEnd : text.indexOf('\t', t6 + 1)
+  if (t7 === -1 || t7 > lineEnd) {
+    t7 = lineEnd
+  }
+  let t8 = t7 === lineEnd ? lineEnd : text.indexOf('\t', t7 + 1)
+  if (t8 === -1 || t8 > lineEnd) {
+    t8 = lineEnd
+  }
   const name = text.slice(t3 + 1, t4)
   // BED writes an absent score as `.` (and jcvi's BEDs often do), which
   // coercing turned into a NaN that rode all the way out to the feature
   const score = columnNum(text, t4 + 1, t5)
+  // thickStart/thickEnd is the coding span: a link pairs proteins, so its
+  // ribbon spans the CDS, not a gene whose long UTR isoforms cover a neighbor
+  const thickStart = columnNum(text, t6 + 1, t7)
+  const thickEnd = columnNum(text, t7 + 1, t8)
+  const hasThick = thickEnd > thickStart
   result.set(name, {
     refName: text.slice(pos, t1),
-    start: columnNum(text, t1 + 1, t2),
-    end: columnNum(text, t2 + 1, t3),
+    start: hasThick ? thickStart : columnNum(text, t1 + 1, t2),
+    end: hasThick ? thickEnd : columnNum(text, t2 + 1, t3),
     score: Number.isFinite(score) ? score : 0,
     name,
     // the column is `-` and nothing else, so a `-` with anything after it is

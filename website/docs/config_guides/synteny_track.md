@@ -133,6 +133,10 @@ Each adapter's config page lists its slots. Across all of them:
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
   `MCScanBlocksAdapter` describes N genomes, so its BEDs are `bedLocations`, an
   array positional against the table's columns
+- **A BED row's ribbon spans its coding region where the row has one**: columns
+  7–8 (`thickStart`/`thickEnd`) when they span anything, columns 2–3 otherwise.
+  A gene span takes in every UTR isoform, which can reach over a neighboring
+  gene
 
 ### Gene id matching in the MCScan adapters {#gene-ids-are-the-join-in-the-mcscan-adapters}
 
