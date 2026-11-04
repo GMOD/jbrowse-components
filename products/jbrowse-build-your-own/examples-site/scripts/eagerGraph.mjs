@@ -73,8 +73,7 @@ if (!existsSync(htmlFor(page))) {
 // The eager set: the closure over **static** chunk imports from the chunks a
 // page's HTML names. Same definition as measureEagerBundle.mjs, over the probe's
 // chunk records rather than over a re-lex of the output.
-const chunkFor = file =>
-  graph.chunks[`_astro/${file}`] ?? graph.chunks[file] ?? undefined
+const chunkFor = file => graph.chunks[`_astro/${file}`] ?? graph.chunks[file]
 
 const html = readFileSync(htmlFor(page), 'utf8')
 const entries = [...html.matchAll(/_astro\/([\w.$-]+\.js)/g)].map(m => m[1])
@@ -141,12 +140,16 @@ const firstParty = id => !id.includes('node_modules')
 // gzip does not decompose per module, so this trades unit for stability. And a
 // module two pages both import is billed to **both**, so the per-page figures
 // deliberately do not sum to the site total.
-function attributed(forPage) {
+function attributed() {
   const roots = [...eagerChunks]
     .map(f => chunkFor(f).facadeModuleId)
     .filter(Boolean)
   if (roots.length === 0) {
-    return { modules: 0, bytes: 0, stale: true }
+    console.error(
+      `no eager chunk of "${page}" has a facade module in the dump — rebuild ` +
+        'so eager-graph.json matches dist',
+    )
+    process.exit(1)
   }
   // Walk the SOURCE graph without gating on the eager set, and bill only the
   // intersection at the end. Gating the traversal instead cuts a subtree off at
@@ -173,7 +176,7 @@ function attributed(forPage) {
       modules++
     }
   }
-  return { modules, bytes, page: forPage }
+  return { modules, bytes }
 }
 
 // Package root of a node_modules path: `.../node_modules/@mui/material/Button/
@@ -251,7 +254,7 @@ console.log(
   `page "${page}": ${eagerChunks.size} eager chunks, ${eagerModules.size} ` +
     `modules, ${Math.round(total / 1024)} KB rendered (uncompressed)\n`,
 )
-const own = attributed(page)
+const own = attributed()
 console.log(
   `  of which this page's own static graph reaches: ${own.modules} modules, ` +
     `${Math.round(own.bytes / 1024)} KB — the rest is chunk co-location with ` +

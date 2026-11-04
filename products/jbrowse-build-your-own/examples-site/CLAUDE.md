@@ -20,6 +20,8 @@ Shared rules for all four sites:
 - `EmbedProvider` mounts `Notifications`, so a page owes no error plumbing of
   its own.
 - **A block repeating across pages wants a helper in `@jbrowse/display-ui/embed`
-  with a jest test**, not a `check-duplication.mjs` list entry. That check sees
-  only named top-level declarations, so repeated inline JSX needs a name before
-  a green run means anything.
+  with a jest test**; `check-duplication.mjs` fails one copied into three files
+  and has no allowlist. It sees only named top-level declarations, so repeated
+  inline JSX needs a name before a green run means anything.
+- **A page-specific smoke check is a `PAGE_CHECKS` entry** in `smoke.mjs`, keyed
+  by slug; the smoke fails on a key that names no smoked page.

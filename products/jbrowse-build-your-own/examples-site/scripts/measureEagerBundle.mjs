@@ -29,6 +29,7 @@ import { gzipSync } from 'zlib'
 
 import { init, parse } from 'es-module-lexer/minimal'
 
+import { pages as examplePages } from '../src/examples.ts'
 import { eagerGraphFile } from './eagerGraphDump.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
@@ -90,13 +91,7 @@ function eagerSet(page) {
   return seen
 }
 
-const pages = [
-  'index',
-  ...readdirSync(dist, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name !== '_astro')
-    .map(d => d.name)
-    .sort(),
-]
+const pages = ['index', ...examplePages.map(e => e.slug).sort()]
 
 const measured = {}
 for (const page of pages) {
@@ -186,7 +181,9 @@ const rows = pages.map(
 
 if (process.argv.includes('--check')) {
   const budget = JSON.parse(readFileSync(budgetFile, 'utf8'))
-  const problems = []
+  const problems = Object.keys(budget)
+    .filter(page => !pages.includes(page))
+    .map(page => `${page}: budget entry for a page that no longer exists`)
   for (const page of pages) {
     const allowed = budget[page]?.gzipKb
     if (allowed === undefined) {
