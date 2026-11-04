@@ -61,11 +61,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   alphagenome: {
-    // The four predicted accessibility rows on one axis: K562 dense, GM12878
-    // nearly flat over the same TAL1 window.
+    // TAL1's gene model over the four predicted accessibility rows on one
+    // axis: K562 dense, GM12878 nearly flat.
     src: 'alphagenome/accessibility_shared_axis.png',
-    band: [0.585, 0.894],
-    xband: [0.2, 0.85],
+    band: [0.19, 0.91],
     position: 'center',
   },
   display_settings: {

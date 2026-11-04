@@ -38,8 +38,8 @@ export const GUIDE_THUMB_OVERRIDES: Record<string, ThumbSpec> = {
   graph_genome_view: { src: 'pangenome/graph_context.png', band: DEFAULT_BAND },
   gwas_track: { src: 'gwas/locuszoom_ld.png', band: DEFAULT_BAND },
   hic_track: {
-    src: 'hic/observed_expected.png',
-    band: [0.27, 0.98],
+    src: 'hic/observed_control.png',
+    band: [0.19, 1],
     position: 'center',
   },
   highlights: { src: 'highlight_list_edit_label.png', band: DEFAULT_BAND },
