@@ -5,13 +5,13 @@ import {
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { mafEncodingConfigSchema } from './mafEncodingConfigSchema.ts'
-import { mafRowsConfigSchema } from './mafRowsConfigSchema.ts'
 
 import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -89,7 +89,9 @@ export default function configSchemaF() {
        * written here. `rows.axis` is the guide down their left, the species
        * tree and names, with no `grid`: the rows keep a gap instead.
        * `rows.colors` pins a species row's color, drawn as the bar beside its
-       * label over the color the adapter's `samples` entry gives it.
+       * label over the color the adapter's `samples` entry gives it; a copy
+       * row (`mm10~2`, where a block aligns a species twice) takes its
+       * species'. A row is always a species, so `rows` takes no `field`.
        *
        * #example
        * ```js
@@ -99,7 +101,7 @@ export default function configSchemaF() {
        * { rows: { colors: { mm10: '#f28e2b' } } }
        * ```
        */
-      rows: mafRowsConfigSchema,
+      rows: rowArrangementConfigSchema,
       /**
        * #slot legend
        * The color key for the active row rendering: codon-change categories,

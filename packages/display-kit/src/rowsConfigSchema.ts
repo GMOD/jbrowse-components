@@ -5,31 +5,25 @@ import {
   rowArrangementConfigSchema,
 } from './rowArrangementConfigSchema.ts'
 import { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
-import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
+import { rowFilterList } from './rowPredicateConfigSchema.ts'
 
 /**
- * The members of `rows` naming a row by its value of `field`: the
- * arrangement, and the colors pinned on rows.
+ * How `rows` is written: the arrangement members name the values of `field`,
+ * so a write changing it clears them.
  */
-export const ROWS_KEYED_MEMBERS = [
-  ...ROW_ARRANGEMENT_MEMBERS,
-  'colors',
-] as const
-
-/** How `rows` is written: its keyed members name the values of `field`. */
 export const ROWS_WRITES = {
   keyedBy: 'field',
-  keyed: ROWS_KEYED_MEMBERS,
+  keyed: ROW_ARRANGEMENT_MEMBERS,
 } as const
 
 /**
  * #config Rows
  * #category display
  * The `rows` setting of the displays that draw one row per value of a field,
- * with the dendrogram sidebar beside them: the field, and the arrangement a
- * reader gives the rows. A string is the field; the object adds the order,
- * the labels, the colors, the tree with its provenance and the kept rows,
- * each by value of the field, and `color`, the rows colored by an attribute.
+ * with the dendrogram sidebar beside them: a [RowArrangement](../rowarrangement)
+ * plus the `field`, `filter`, which narrows the rows by attribute, and an axis
+ * with `grid`. A string is the field; the arrangement members name rows by
+ * value of the field, so a write changing it clears them.
  *
  * #example
  * ```js
@@ -61,6 +55,18 @@ export const rowsConfigSchema = ConfigurationSchema(
       description: 'the field whose values each take a row',
     },
     /**
+     * #slot filter
+     * The rows shown by attribute: a list of [RowPredicate](../rowpredicate)
+     * entries over a row attribute, each one a row must pass: a samplesTsv
+     * column on the variant display (`[{ field: 'population', oneOf: ['EUR',
+     * 'AFR'] }]`), a subtrack's field such as `group` on wiggle, and `group`,
+     * which `rows.groups` derives, on the mark displays. A row missing the
+     * attribute fails every test but `valid: false`. It narrows the rows
+     * before `kept`, and a write changing `field` keeps it, since it names no
+     * row by its value; a row's name goes in `kept`.
+     */
+    filter: rowFilterList(),
+    /**
      * #slot axis
      * The guide down the left of the rows, a
      * [RowAxisWithGrid](../rowaxiswithgrid): whether the tree and the row
@@ -68,28 +74,6 @@ export const rowsConfigSchema = ConfigurationSchema(
      * is `rows.tree` and `rows.labels`.
      */
     axis: rowAxisWithGridConfigSchema,
-    /**
-     * #slot colors
-     * A color pinned on a row, by name, over whatever `rows.color` maps it
-     * to, as `labels` pins its text: ggplot2's
-     * `scale_*_manual(values = c(name = ...))`. The arrangement dialog's row
-     * swatches write it. A row with none takes `rows.color`, else the file's
-     * own color (MAF's `samples[].color`, a listed source's color), else the
-     * palette where the rows share one panel.
-     */
-    colors: {
-      type: 'stringMap',
-      defaultValue: {},
-      description:
-        "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color",
-    },
-    /**
-     * #slot color
-     * The rows colored by an attribute: a [RowColor](../rowcolor) channel
-     * from a row field through a scale, `name` (each row) by default. Per-row
-     * colors are `rows.colors`, which win over it.
-     */
-    color: rowColorConfigSchema,
   },
   {
     /**
@@ -98,7 +82,6 @@ export const rowsConfigSchema = ConfigurationSchema(
     baseConfiguration: rowArrangementConfigSchema,
     shorthand: 'field',
     writes: ROWS_WRITES,
-    plot: true,
   },
 )
 

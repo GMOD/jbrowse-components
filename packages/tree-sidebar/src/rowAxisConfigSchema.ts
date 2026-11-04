@@ -1,12 +1,14 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-import type { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 
 /** @deprecated moved to `@jbrowse/display-kit/rowAxisConfigSchema` */
 export { rowAxisConfigSchema } from '@jbrowse/display-kit/rowAxisConfigSchema'
 
-// `rows` typed as `Rows`, whose axis has `grid`; MAF's has none, so a mixin
-// read of `rows.axis.grid` would be undefined there. `grid` stays a read of
-// the displays that draw it.
+/**
+ * The `rows` every display composing `TreeSidebarMixin` declares: MAF's
+ * field-less `RowArrangement`, or a `Rows` adding `field`, `filter` and the
+ * axis `grid` to it.
+ */
 export type TreeSidebarConfigModel = ConfigModelForFields<{
-  rows: typeof rowsConfigSchema
+  rows: typeof rowArrangementConfigSchema
 }>

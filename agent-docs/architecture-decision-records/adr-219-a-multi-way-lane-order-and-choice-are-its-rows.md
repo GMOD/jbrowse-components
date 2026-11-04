@@ -27,7 +27,7 @@ two spellings of one idea.
 - **`rows` is `LaneRows`**
   (`plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts`),
   the shared `Rows` with `assembly` as its one field, as `SampleRows` and
-  `QuantitativeRows` are built. `rows.domain` is the order the Lanes menu and
+  `QuantitativeRows` are built. (ADR-257 dropped that one-value `field`.) `rows.domain` is the order the Lanes menu and
   a header drag write; `rows.kept` is the lanes the picker chose, empty
   drawing the track's lanes or every lane.
 - **A hidden lane stays the session's**, as `hiddenLaneNames`: a hide-set shows

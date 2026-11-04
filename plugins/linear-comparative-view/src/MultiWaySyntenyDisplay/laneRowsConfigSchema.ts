@@ -1,19 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { stringList } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { types } from '@jbrowse/mobx-state-tree'
-
-/** How the lanes' `rows` is written: its keyed members name the lanes. */
-export const LANE_ROWS_WRITES = {
-  keyedBy: 'field',
-  keyed: ['sort', 'labels', 'kept'],
-} as const
 
 /**
  * #config LaneRows
  * #category display
  * The multi-way synteny display's `rows`: one lane per assembly below the
- * anchor, so `assembly` is the one field, and the object is the arrangement a
- * reader gives the lanes, and writing it changes only the members stated. `sort`
+ * anchor, so a lane is always an assembly and the object takes no `field`. It
+ * is the arrangement a reader gives the lanes, by assembly name, and writing
+ * it changes only the members stated. `sort`
  * lists the lanes that stack first, in order, the rest following densest-first
  * so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
  * names the lanes drawn, empty drawing the track's lanes or every lane.
@@ -68,21 +62,9 @@ export const laneRowsConfigSchema = ConfigurationSchema(
       description:
         "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane",
     },
-    /**
-     * #slot field
-     * `assembly`, the one field a lane can be.
-     */
-    field: {
-      type: 'stringEnum',
-      model: types.enumeration('LaneRowsField', ['assembly']),
-      defaultValue: 'assembly',
-      description: 'assembly, the one field a lane can be',
-    },
   },
   {
     closed: true,
-    shorthand: 'field',
-    writes: LANE_ROWS_WRITES,
     plot: true,
     preProcessSnapshot: (snap = {}) => ({
       ...snap,

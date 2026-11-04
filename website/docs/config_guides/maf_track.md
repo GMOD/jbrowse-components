@@ -193,8 +193,8 @@ doc quotes the bytes per base measured on HPRC's published alignment:
 Two display settings work over the species rows.
 [`rows`](/docs/config/linearmafdisplay/#slot-rows) arranges them: its `sort`
 lists species to lead, and the guide tree rotates to that order where its
-topology allows. Its [`colors`](/docs/config/mafrows/#slot-colors) paints the
-bar beside a species label, over the color its `samples` entry gives.
+topology allows. Its [`colors`](/docs/config/rowarrangement/#slot-colors) paints
+the bar beside a species label, over the color its `samples` entry gives.
 [`encoding.y`](/docs/config/mafencoding/#slot-y) set to `identity` draws each
 row as a bar chart of its identity to the reference in place of a band of cells:
 

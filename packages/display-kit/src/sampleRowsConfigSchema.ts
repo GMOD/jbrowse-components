@@ -4,8 +4,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
 /**
- * @deprecated no display's `rows` extends it: MAF's `rows` (`MafRows`) takes
- * no `field`, and the variant display's is `VariantRows`. Kept while
+ * @deprecated no display's `rows` extends it: MAF's `rows` is the field-less
+ * `RowArrangement`, and the variant display's is `VariantRows`. Kept while
  * `@jbrowse/display-kit/sampleRowsConfigSchema` stays a served subpath; a
  * plugin wanting the arrangement extends `rowArrangementConfigSchema`.
  */

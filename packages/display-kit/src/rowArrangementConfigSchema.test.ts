@@ -16,13 +16,15 @@ import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// "Reset row order" and the arrangement writers walk the list, so a slot
-// missing from it survives a reset.
-test('the arrangement members are every RowArrangement slot', () => {
+// "Reset row order" and the keyed write rule walk the list, so a slot naming
+// rows that is missing from it survives a reset and a field change.
+test('the arrangement members are every RowArrangement slot but the axis and the color channel', () => {
   const slots = Object.keys(
     getConfigurationSchemaMetadata(rowArrangementConfigSchema)!.definition,
   )
-  expect([...ROW_ARRANGEMENT_MEMBERS].sort()).toEqual(slots.sort())
+  expect([...ROW_ARRANGEMENT_MEMBERS, 'axis', 'color'].sort()).toEqual(
+    slots.sort(),
+  )
 })
 
 const Display = ConfigurationSchema(

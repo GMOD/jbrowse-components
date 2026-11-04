@@ -1,20 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
+import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
 import { rowTreeConfigSchema } from './rowTreeConfigSchema.ts'
 
-/** The members a reader's arrangement writes, every one a config member. */
+/**
+ * The members naming a row by its name, which a reader's arrangement writes
+ * and "Reset row order" returns: every slot but the axis and the color
+ * channel, which name no row.
+ */
 export const ROW_ARRANGEMENT_MEMBERS = [
   'sort',
   'labels',
+  'colors',
   'tree',
   'kept',
 ] as const
-
-/** How a bare arrangement is written: its members name the values of `field`. */
-export const ROW_ARRANGEMENT_WRITES = {
-  keyedBy: 'field',
-  keyed: ROW_ARRANGEMENT_MEMBERS,
-} as const
 
 /**
  * `snap[key]` as the list of strings it fills, a lone string or number read
@@ -42,17 +43,20 @@ export function stringList(
 /**
  * #config RowArrangement
  * #category display
- * The `rows` setting of a display whose rows are samples or species rather
- * than the values of a field. It holds the arrangement a reader gives the
+ * The `rows` setting of a display whose rows are not the values of a field:
+ * the MAF display's species rows. It holds the arrangement a reader gives the
  * rows, which every product writes as a session edit to this object: the
- * order, the labels, the tree and the focus, each by row name. The
- * field-keyed displays' `Rows` object is this plus `field`.
+ * order, the labels, the pinned colors, the tree and the focus, each by row
+ * name; beside them `color`, the rows colored by an attribute, and `axis`,
+ * the guide that draws the tree and the names. Writing it changes only the
+ * members stated. [Rows](../rows) is this plus the `field` whose values each
+ * take a row.
  *
  * #example
  * ```js
  * {
- *   type: 'LinearVariantDisplay',
- *   rows: { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
+ *   type: 'LinearMafDisplay',
+ *   rows: { sort: ['mm10', 'hg38'], labels: { mm10: 'Mouse' }, axis: { tree: false } },
  * }
  * ```
  */
@@ -98,6 +102,35 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
      */
     tree: rowTreeConfigSchema,
     /**
+     * #slot colors
+     * A color pinned on a row, by name, over whatever `rows.color` maps it
+     * to, as `labels` pins its text: ggplot2's
+     * `scale_*_manual(values = c(name = ...))`. The arrangement dialog's row
+     * swatches write it. A row with none takes `rows.color`, else the file's
+     * own color (MAF's `samples[].color`, a listed source's color), else the
+     * palette where the rows share one panel.
+     */
+    colors: {
+      type: 'stringMap',
+      defaultValue: {},
+      description:
+        "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color",
+    },
+    /**
+     * #slot color
+     * The rows colored by an attribute: a [RowColor](../rowcolor) channel
+     * from a row field through a scale, `name` (each row) by default. Per-row
+     * colors are `rows.colors`, which win over it.
+     */
+    color: rowColorConfigSchema,
+    /**
+     * #slot axis
+     * The guide down the left of the rows, a [RowAxis](../rowaxis): whether
+     * the tree and the row names draw, and the sidebar's width. What it draws
+     * is `rows.tree` and `rows.labels`.
+     */
+    axis: rowAxisConfigSchema,
+    /**
      * #slot kept
      * The rows shown, by name: a clade picked off the tree, or the rows one
      * key row stands for. It narrows the rows to those it names, after
@@ -114,6 +147,7 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
+    plot: true,
     misnamed: { treeProvenance: 'tree.provenance' },
     preProcessSnapshot: (snap = {}) => ({
       ...snap,

@@ -2,6 +2,9 @@ import {
   canonicalSpelling,
   getConf,
   getConfigurationSchemaMetadata,
+  isKeyedWrites,
+  keyedBase,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
@@ -11,7 +14,7 @@ import {
   unreadFieldNotice,
 } from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { ROWS_KEYED_MEMBERS } from '@jbrowse/display-kit/rowsConfigSchema'
+import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
@@ -98,7 +101,7 @@ export interface TreeSidebarHost {
 
 const host = (self: object) => self as TreeSidebarHost
 
-type ArrangementMember = (typeof ROWS_KEYED_MEMBERS)[number]
+type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
 type Arrangement = Partial<Record<ArrangementMember | 'filter', unknown>>
 
 // A row's name, label and colors are what a row color is set on, never what
@@ -113,7 +116,7 @@ const NOT_COLOR_FIELDS = new Set<string>([
 
 // What "Reset row order" is offered on: the shown rows have a clear of their
 // own, the chip's "Show all", and a reset still takes them with the rest.
-const ORDER_MEMBERS = ROWS_KEYED_MEMBERS.filter(m => m !== 'kept')
+const ORDER_MEMBERS = ROW_ARRANGEMENT_MEMBERS.filter(m => m !== 'kept')
 
 // An empty list or map is the member's default, which a stripped snapshot
 // leaves out, so the two spellings compare as one.
@@ -131,15 +134,21 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 
 // The base's `rows` in the spelling the live one is stored in, so a
-// `rows.tree` written as its newick compares equal to the object it lifts to
+// `rows.tree` written as its newick compares equal to the object it lifts to,
+// less what names the base field's rows once the live rows are on another
+// field (the keyed rule, ADR-257), so a reset returns no arrangement of the
+// old rows to the new ones
 function baseArrangement(self: object): Arrangement {
   const { rows } = baseDisplayConfig(self)
-  return isRecord(rows)
-    ? canonicalSpelling(
-        getConfigurationSchemaMetadata(host(self).configuration.rows)!,
-        rows,
-      )
-    : {}
+  const live: AnyConfigurationModel = host(self).configuration.rows
+  const meta = getConfigurationSchemaMetadata(live)!
+  const { writes } = meta.options
+  const base: Arrangement = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
+  return isKeyedWrites(writes)
+    ? keyedBase(writes, base, {
+        [writes.keyedBy]: readConfObject(live, writes.keyedBy),
+      })
+    : base
 }
 
 // A member of the `rows` this display's base declares, none where it writes
@@ -445,19 +454,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get baseRowColorSetting(): RowColorSetting {
         return withPinnedColors(
           self.baseRowColorChannel,
-          pinnedColorsOf(baseRowsMember(self, 'colors')),
+          pinnedColorsOf(baseArrangement(self).colors),
         )
-      },
-      /**
-       * #getter
-       * The `rows.sort` this display's base declares: the order a display
-       * whose rows are values found on features lists them in.
-       */
-      get baseRowSort(): readonly string[] {
-        const base = (baseDisplayConfig(self).rows ?? {}) as {
-          sort?: string[]
-        }
-        return base.sort ?? []
       },
       /**
        * #getter
@@ -1569,11 +1567,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * Return every arrangement member — order, labels, colors, tree,
          * provenance, kept rows and `rows.filter` — to what the config declares, leaving
          * `rows.field`, and `rows.color` to `rowColorResetTarget`: the
-         * config's for the choice, which stays.
+         * config's for the choice, which stays. On another field than the
+         * config's, the members naming rows clear instead, since the
+         * config's name the old field's rows.
          */
         resetRowArrangement() {
           const base = baseArrangement(self)
-          for (const member of ROWS_KEYED_MEMBERS) {
+          for (const member of ROW_ARRANGEMENT_MEMBERS) {
             write(member, base[member])
           }
           writeRowFilter(base.filter)

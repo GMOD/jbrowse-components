@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowFilterList } from '@jbrowse/display-kit/rowPredicateConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -25,16 +24,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 export const quantitativeRowsConfigSchema = ConfigurationSchema(
   'QuantitativeRows',
   {
-    /**
-     * #slot filter
-     * The rows shown by attribute: a list of [RowPredicate](../rowpredicate)
-     * entries over a subtrack's field, such as `group`, each one a row must pass, as
-     * `[{ field: 'group', equal: 'tumor' }]`. A row missing the attribute fails every test but
-     * `valid: false`. It narrows the rows before `kept`, and a write changing
-     * `field` keeps it, since it names no row by its value; a row's name goes
-     * in `kept`.
-     */
-    filter: rowFilterList(),
     /**
      * #slot field
      * `source` for one row per subtrack, or empty for one plot every source

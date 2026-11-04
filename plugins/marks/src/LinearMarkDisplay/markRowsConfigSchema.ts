@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowFilterList } from '@jbrowse/display-kit/rowPredicateConfigSchema'
 import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
@@ -29,16 +28,6 @@ import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema
 export const markRowsConfigSchema = ConfigurationSchema(
   'MarkRows',
   {
-    /**
-     * #slot filter
-     * The rows shown by attribute: a list of [RowPredicate](../rowpredicate)
-     * entries over `group`, which `groups` derives, each one a row must pass, as
-     * `[{ field: 'group', equal: 'Wolf' }]`. A row missing the attribute fails every test but
-     * `valid: false`. It narrows the rows before `kept`, and a write changing
-     * `field` keeps it, since it names no row by its value; a row's name goes
-     * in `kept`.
-     */
-    filter: rowFilterList(),
     /**
      * #slot groups
      * A list of [RowGroup](../rowgroup) `{ match, group }` entries tagging

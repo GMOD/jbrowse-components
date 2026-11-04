@@ -272,6 +272,26 @@ test('One row per... another field drops the pinned row colors and keeps rows.co
   })
 })
 
+test("Reset row order on another field than the config's returns none of the config's arrangement to the new rows", () => {
+  const rows = {
+    field: 'sample',
+    sort: ['kid'],
+    labels: { mom: 'Mother' },
+    colors: { mom: '#f00' },
+    kept: ['mom'],
+  }
+  const model = loaded(display({ rows, marks: RECT_MARKS }))
+  model.setRowsField('name')
+  expect(model.rowArrangementIsCustom).toBe(false)
+  model.setRowLabels({ x: 'X' })
+  expect(model.rowArrangementIsCustom).toBe(true)
+  model.resetRowArrangement()
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
+  model.setRowsField('sample')
+  model.resetRowArrangement()
+  expect(getSnapshot(model.conf.rows)).toEqual(rows)
+})
+
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
   const model = display({ rows: 'sample', marks: SPLICED_MARKS })
   expect(model.rowCompare?.mark).toBe(1)

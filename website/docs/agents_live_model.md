@@ -237,8 +237,8 @@ those it does not state, and the rest stay, but a switch between `'sample'` and
 `'haplotype'` clears nothing. Clustering runs once with no dialog when a
 display's `runClustering` is true (`activeDisplay.setRunClustering(true)`,
 `clusterRegion` naming the locus), and writes `rows.tree` and `rows.sort`. The
-multi-way lanes' `rows` takes `field`, `sort`, `labels` and `kept`, where `kept`
-selects the lanes drawn, and no `tree`.
+multi-way lanes' `rows` takes `sort`, `labels` and `kept`, by assembly name,
+where `kept` selects the lanes drawn, and no `field` or `tree`.
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 

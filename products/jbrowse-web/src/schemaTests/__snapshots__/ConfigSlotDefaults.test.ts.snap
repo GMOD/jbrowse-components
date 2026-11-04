@@ -1002,7 +1002,6 @@ exports[`every registered schema slot default 1`] = `
     "ribbons.encoding.opacity.scale.type": "maybeStringEnum = undefined of ["threshold"]",
     "ribbons.encoding.opacity.value": "maybeNumber = undefined",
     "ribbons.mark.interpolate": "stringEnum = "linear" of ["linear","bump"]",
-    "rows.field": "stringEnum = "assembly" of ["assembly"]",
     "rows.kept": "stringArray = []",
     "rows.labels": "stringMap = {}",
     "rows.sort": "stringArray = []",

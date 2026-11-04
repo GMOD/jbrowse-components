@@ -53,8 +53,9 @@ the mark family. The multi-way lanes' `rows` keeps the `sort` and `labels` it
 already reads and keeps `kept`, a selection there (it replaces the configured
 lanes and can add one) where on a row display it narrows; empty shows the
 configured lanes. It takes no `filter`, and neither does MAF, whose rows carry
-no attributes. MAF's `rows` takes no `field`, which
-would be a one-value enum there.
+no attributes. Neither MAF's `rows` nor the lanes' takes a `field`, which
+would be a one-value enum there (the lanes' `assembly` went 2026-11-04,
+read by nothing).
 
 One naming rule makes each member predictable: a plural member is a map keyed
 by row name (`labels`, `colors`), a singular member is a channel or setting
@@ -140,8 +141,8 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   None included, writes `rows.color` and keeps `rows.colors`; the arrangement
   dialog's row swatches pin a color under any choice and leave the choice as
   it is. "Reset row order" returns the pins with the arrangement.
-- `colors` is a member of `Rows`, beside `color`, so the four row displays
-  declare it and the multi-way lanes, whose `rows` is the bare arrangement,
+- `colors` is a member of `RowArrangement`, beside `color`, so the four row
+  displays declare it and the multi-way lanes, whose `rows` is `LaneRows`,
   do not.
 
 ### The write rule
@@ -336,9 +337,11 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
      the tables export's `haplotype` column count from 1, 0 on a sample row.
    - The tree hint is a mixin hook (`finerTreeHint`), shown where
      `treeOnFinerRows`.
-   - MAF's `rows` is `MafRows` over `RowArrangement`, declaring `axis`,
-     `colors` and `color`, and writes member by member; `SampleRows` stays
-     as a deprecated subpath no display extends.
+   - MAF's `rows` is `RowArrangement`, which declares `axis`, `colors` and
+     `color`, and writes member by member; `Rows` extends it with `field`,
+     `filter` and the axis `grid` (first built as a `MafRows` restating
+     `Rows`' slots, folded 2026-11-04). `SampleRows` stays as a deprecated
+     subpath no display extends.
    - The CLI's `mergedWrites` keeps a refinement only where every keyed
      declaration states it, not the union with a conflict writing whole: one
      merged slot serves every display a bag reaches, and a VariantTrack's mark
