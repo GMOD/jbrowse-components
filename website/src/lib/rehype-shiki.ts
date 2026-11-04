@@ -10,9 +10,11 @@ import type { Plugin } from 'unified'
 // catppuccin-mocha's base/text are the site's --color-code-bg/--color-code-text
 const THEME = 'catppuccin-mocha'
 
-// Shiki bundles no Slang grammar; Slang is HLSL with extensions.
+// Shiki bundles no Slang or jexl grammar; Slang is HLSL with extensions, and
+// a jexl expression reads as JavaScript reads it.
 const LANG_ALIASES: Record<string, BundledLanguage> = {
   slang: 'hlsl',
+  jexl: 'javascript',
 }
 
 function isBundledLanguage(lang: string): lang is BundledLanguage {

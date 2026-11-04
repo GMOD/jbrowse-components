@@ -81,7 +81,7 @@ function resolve(spec: string) {
 //
 // Raise the baseline only for one of these, and say which in the commit. A
 // tested `jb` example fixture would let the agent pages include most of theirs.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '43')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '42')
 export function writeDocSnippets() {
   let unIncluded = 0
   const byPage: [string, number][] = []

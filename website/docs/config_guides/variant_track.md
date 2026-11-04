@@ -38,7 +38,7 @@ The variants plugin registers these for `encoding.color` and `filter`:
 
 <!-- BEGIN GENERATED JEXL_CATEGORY variant-functions -->
 
-```js
+```jexl
 jexl: maf(feature) // minor allele frequency over the called alleles
 jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts half
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ

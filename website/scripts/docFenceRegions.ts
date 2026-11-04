@@ -104,10 +104,10 @@ const INCLUDE_MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
 /**
  * Count the hand-written TS/JS fences in one page: the ratchet's unit of debt.
  *
- * Fences inside another generator's marker block do not count. `jexl.md` is why
- * — its function catalog is generated, emits ```js blocks, and carries no
- * `include:` marker because it is not that kind of generated. Counting those
- * would have booked eight generated fences as debt no one could ever pay down.
+ * Fences inside another generator's marker block do not count: a generated
+ * block carries no `include:` marker because it is not that kind of generated,
+ * and counting its fences would book debt no one could ever pay down. A jexl
+ * expression is tagged `jexl`, which is no TS/JS fence at all.
  */
 export function countUnIncludedFences(text: string, file: string) {
   const lines = withoutMarkerBlocks(text, file).split('\n')

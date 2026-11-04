@@ -18,7 +18,7 @@ color's or a facet's `field`, takes a `jexl:` expression too, as a field derived
 from each feature. Any feature attribute is a plain property, nested attributes
 work (`feature.INFO.SVTYPE`), and `feature.parent` is the parent feature:
 
-```js
+```jexl
 jexl: feature.start // start coordinate, 0-based half open
 jexl: feature.end // end coordinate, 0-based half open
 jexl: feature.refName // chromosome or reference sequence name
@@ -55,7 +55,7 @@ An expression reads as JavaScript reads it: `+`, `-`, `*`, `/`, `%`, `==`, `!=`,
 `<`, `&&`, `||`, `!`, `? :`, `.` and `[]` group the same way, and `` `${…}` ``
 template strings work. Beyond JavaScript:
 
-```js
+```jexl
 jexl: feature.type in ['gene', 'mRNA'] // a member of a list, a substring of a string, or a key of an object
 jexl: feature.type !in ['gene', 'mRNA'] // the negation of in
 jexl: feature.name ~ '^BRCA' // a regular expression match; a leading (?i) ignores case, and !~ negates
@@ -89,13 +89,13 @@ over the differences between BAM and CRAM features to reach their tags.
 
 **Feature operations - getInherited**
 
-```js
+```jexl
 jexl: getInherited(feature, 'gene_biotype') // the attribute from the feature, or from its nearest ancestor that has it, so a CDS reads its gene's value
 ```
 
 **Math functions**
 
-```js
+```jexl
 jexl: max(0, 2)
 jexl: min(feature.INFO.AF)
 jexl: sqrt(4)
@@ -110,14 +110,14 @@ jexl: parseFloat('2.054')
 
 **Binary operators**
 
-```js
+```jexl
 jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 jexl: (feature.flags & 16) == 0 // true on the forward strand
 ```
 
 **String functions**
 
-```js
+```jexl
 jexl: charAt('abc', 2) // c
 jexl: charCodeAt(' ', 0) // 32
 jexl: codePointAt(' ', 0) // 32
@@ -144,14 +144,14 @@ jexl: jsonParse('{"a":1}') // parses a JSON string
 
 **Feature operations - getTag**
 
-```js
+```jexl
 jexl: getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
 jexl: getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
 ```
 
 **Color functions**
 
-```js
+```jexl
 jexl: randomColor(feature.type) // deterministic color from a string (e.g. a feature type)
 jexl: categoricalColor(getInherited(feature, 'biotype'), ['protein_coding']) // a palette color per value: the values listed take the palette (an optional third argument) in order, any other value a stable color no listed value paints, a missing one grey
 jexl: alpha('green', 0.5) // a color at 50% opacity
@@ -161,19 +161,19 @@ jexl: colorString('green') // normalizes a color name or value to a hex string
 
 **Console logging**
 
-```js
+```jexl
 jexl: log(feature) // console.logs output and returns value
 ```
 
 **Slot defaults from plugins**
 
-```js
+```jexl
 jexl: defaultOnChordClick(feature, track) // opens a breakpoint split view on the clicked chord
 ```
 
 **Variant functions**
 
-```js
+```jexl
 jexl: maf(feature) // minor allele frequency over the called alleles
 jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts half
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ

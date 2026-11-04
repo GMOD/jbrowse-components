@@ -26,4 +26,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' a connector between displayed regions curves either way |
+| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' connectors always draw, since they are how a chain's reads join |

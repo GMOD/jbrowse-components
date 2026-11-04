@@ -100,7 +100,7 @@ function renderCategory(entries: Entry[]) {
       e.result ? `jexl: ${e.example} // ${e.result}` : `jexl: ${e.example}`,
     )
     .join('\n')
-  return `\`\`\`js\n${lines}\n\`\`\``
+  return `\`\`\`jexl\n${lines}\n\`\`\``
 }
 
 function renderCatalog(groups: Map<string, Entry[]>) {
