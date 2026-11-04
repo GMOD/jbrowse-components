@@ -958,7 +958,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    viewportHeight: 478,
+    viewportHeight: 494,
   },
 
   // The domain orders lanes by how much of the block each keeps: a ribbon only
@@ -1002,7 +1002,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 680,
+    viewportHeight: 694,
   },
 
   {
@@ -1056,7 +1056,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: LGV_TRACK_ZOOM_SESSION,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 680,
+    viewportHeight: 694,
     tooltip: 'hide',
     clicksChange:
       "select a ribbon, outlining its ortholog group and opening the pair's details",
