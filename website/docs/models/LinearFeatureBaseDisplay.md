@@ -269,7 +269,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The feature right-click menu (open details, zoom to, get sequence, highlight scopes, pin/solo/hide, copy). |
 | <span id="method-colorbysubmenuitems">**colorBySubMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The "Color by" radio choices (solid/strand/attribute). |
 | <span id="method-colormenuitems">**colorMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color-related track menu entries: a single "Color by" entry whose radios pick the track's own color or a field, and whose "Solid color..." item opens the solid+UTR color picker. |
-| <span id="method-featureheightmenuitems">**featureHeightMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | One "Feature height" menu with two independent radio groups: the size presets and, under a "Track sizing" subheader, how the track responds when there are more features than fit. |
+| <span id="method-featureheightmenuitems">**featureHeightMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | One "Feature height" menu with two independent radio groups: the size presets and, under a "When features overflow" subheader, how the track responds when there are more features than fit. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

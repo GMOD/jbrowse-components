@@ -495,7 +495,7 @@ plugin before you put there.
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
 | `Core-extraAboutPanel` | sync | ComponentList | Add extra panels to a track's About dialog |
-| `Core-extraFeaturePanel` | sync | ComponentList | Add extra panels to the feature details widget, for the clicked feature and each subfeature row opened under it |
+| `Core-extraFeaturePanel` | sync | ComponentList | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
@@ -917,10 +917,9 @@ export interface FeaturePanelProps {
   /** the same feature before `formatDetails` ran */
   unformatted?: SimpleFeatureSerialized
   /**
-   * how far down the subfeature tree this feature is: 0 is the feature the
-   * user clicked, 1 its subfeatures, and so on. The point fires for the clicked
-   * feature and for each subfeature row the user opens, so a panel that
-   * belongs only on the clicked feature selects on `depth === 0`
+   * how far down the subfeature tree this card is: 0 is the feature the user
+   * clicked, 1 its subfeatures, and so on. The point fires for every card, so a
+   * panel that belongs only on the clicked feature selects on `depth === 0`
    */
   depth: number
 }

@@ -5633,7 +5633,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
+          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed under \\"Feature height → When features overflow\\"). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
           "default": "fit",
           "if": {
             "type": "null"
@@ -5647,7 +5647,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
+          "description": "Ceiling in pixels for the \\"Grow the track\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
           "default": 800,
           "if": {
             "type": "null"
@@ -7507,7 +7507,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Autogrow\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Grow the track\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -7521,7 +7521,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
+          "description": "Ceiling in pixels for the \\"Grow the track\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
           "default": 800,
           "if": {
             "type": "null"
@@ -8664,7 +8664,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Autogrow\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Grow the track\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -8678,7 +8678,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
+          "description": "Ceiling in pixels for the \\"Grow the track\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
           "default": 800,
           "if": {
             "type": "null"
@@ -13291,6 +13291,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "type": {
+          "description": "linear, the default, runs the statistic along the scheme; threshold paints each interval between the domain's cuts one range color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "threshold"
+            ]
+          }
+        },
+        "domain": {
+          "description": "a threshold scale's cuts, each the lowest value of the interval above it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "a threshold scale's colors, one per interval from the lowest; an interval left unnamed samples the scheme.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CssColorEntry"
+            }
+          }
+        },
         "scheme": {
           "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
           "if": {
@@ -13367,6 +13414,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         }
       },
@@ -13468,27 +13524,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/LDColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "LDGuides": {
-      "title": "LDGuides",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "show": {
-          "description": "on hover, draw guides across the view at the pair's genomic positions.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         }
       },
@@ -13607,30 +13642,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/HiddenLegend"
           }
         },
-        "guides": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/LDGuides"
-          }
-        },
         "labels": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/LDLabels"
-          }
-        },
-        "tickHeight": {
-          "description": "height of the tick marks at the genomic positions.",
-          "default": 6,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "variantLayout": {
@@ -13671,7 +13688,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showVerticalGuides": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
+        },
+        "tickHeight": {
+          "deprecated": true,
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "lineZoneHeight": {
           "deprecated": true,
@@ -18845,14 +18866,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "legend": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/legend"
             },
-            "guides": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/guides"
-            },
             "labels": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/labels"
-            },
-            "tickHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
             },
             "variantLayout": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/variantLayout"
@@ -18877,6 +18892,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showVerticalGuides": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
+            },
+            "tickHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
             },
             "lineZoneHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"

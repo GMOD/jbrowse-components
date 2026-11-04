@@ -7376,6 +7376,19 @@ export const configManifest: ConfigManifest = {
                   "type": "LDColorScaleConfigurationSchema",
                   "subSlots": [
                     {
+                      "name": "type",
+                      "type": "(LDColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
                       "name": "scheme",
                       "type": "(ColorScheme | undefined)"
                     },
@@ -7406,6 +7419,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "LDColorLegend",
@@ -7456,18 +7473,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "guides",
-          "type": "LDGuidesConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            }
-          ],
-          "schema": "LDGuides",
-          "writes": "members"
-        },
-        {
           "name": "labels",
           "type": "LDLabelsConfigurationSchema",
           "subSlots": [
@@ -7488,10 +7493,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "tickHeight",
-          "type": "number"
-        },
-        {
           "name": "variantLayout",
           "type": "VariantLayout"
         }
@@ -7504,6 +7505,7 @@ export const configManifest: ConfigManifest = {
         "ldMetric",
         "showLegend",
         "showVerticalGuides",
+        "tickHeight",
         "lineZoneHeight",
         "fitToHeight",
         "useGenomicPositions",
@@ -7524,6 +7526,8 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "showVerticalGuides",
+        "tickHeight",
         "maxHeight",
         "colorScheme",
         "signedLD",

@@ -167,6 +167,20 @@ the two ends of its value, one array where the packer ships a single scalar.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
+## visibleStats
+
+The stats of what the settled blocks show, walked once so a display can
+read both its autoscaled range and the values in view off one getter.
+`undefined` while there is nothing to scale against — no data, a hidden
+band, or a view that has not initialized.
+
+```js
+// type signature
+<Payload, Item, Stats>({ active, view, payloadFor, itemsFor, accumulate, }: VisibleStatsSpec<Payload, Item, Stats>) => VisibleStats<Item, Stats> | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/visibleStatsDomain.ts)
+
 ## visibleStatsDomain
 
 visibleStatsRange nice-rounded inside the configured bounds: the
@@ -182,15 +196,12 @@ domain of a display whose range comes from that display alone.
 ## visibleStatsRange
 
 The raw autoscaled range the displays with a value scale derive
-identically: walk the settled blocks, accumulate the stats of what each one
-shows, and reduce them to `[min, max]` before any bound or nice-rounding.
-`undefined` while there is nothing to scale against — no data, a hidden
-band, or a view that has not initialized — which every caller distinguishes
-from a range.
+identically: visibleStats reduced to `[min, max]` before any bound
+or nice-rounding. `undefined` where visibleStats is.
 
 ```js
 // type signature
-<Payload, Item, Stats>({ active, view, payloadFor, itemsFor, accumulate, range, }: VisibleStatsRangeSpec<Payload, Item, Stats>) => [number, number] | undefined
+<Payload, Item, Stats>({ range, ...spec }: VisibleStatsRangeSpec<Payload, Item, Stats>) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/visibleStatsDomain.ts)

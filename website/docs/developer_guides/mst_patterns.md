@@ -26,9 +26,7 @@ useEffect(() => {
     const xJ = snp2 && model.locusViewportX(snp2.refName, snp2.start)
     const xI = snp1 && model.locusViewportX(snp1.refName, snp1.start)
     view.setVolatileGuides(
-      xJ !== undefined && xI !== undefined && model.showGuides
-        ? [{ xPos: xJ }, { xPos: xI }]
-        : [],
+      xJ !== undefined && xI !== undefined ? [{ xPos: xJ }, { xPos: xI }] : [],
     )
   })
   return () => {
@@ -337,7 +335,7 @@ the inherited track menu:
       return [
         ...superTrackMenuItems(),
         ...buildMafTrackMenuItems(self),
-        ...editPlotMenuItems(self),
+        ...editPlotMenuItems(self, getCoverageMenuItems(self)),
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,

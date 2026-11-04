@@ -189,7 +189,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/legendHost': m56,
   '@jbrowse/display-kit/LegendMixin': { ...m57, __esModule: true },
   '@jbrowse/display-kit/MarkSvgLayer': m58.default,
-  '@jbrowse/display-kit/MatrixRampMixin': m59.default,
+  '@jbrowse/display-kit/MatrixRampMixin': { ...m59, __esModule: true },
   '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m60, __esModule: true },
   '@jbrowse/display-kit/ParkedColorMixin': m61.default,
   '@jbrowse/display-kit/planRegionFetch': m62,

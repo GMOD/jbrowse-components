@@ -24,22 +24,22 @@ display:
 
 <!-- BEGIN GENERATED PLOT_SETTINGS -->
 
-| Display                                                               | Settings                                                                                                    |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`, `sashimi` |
-| Chord synteny display (`ChordSyntenyDisplay`)                         | `mark`                                                                                                      |
-| Chord variant display (`ChordVariantDisplay`)                         | `mark`, `encoding`                                                                                          |
-| Feature display (`LinearBasicDisplay`)                                | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
-| Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`, `filter`                                                                              |
-| LD heatmap display (`LDTrackDisplay`)                                 | `encoding`, `legend`, `labels`                                                                              |
-| MAF display (`LinearMafDisplay`)                                      | `encoding`, `rows`, `legend`, `coverage`, `alignments`, `conservation`                                      |
-| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
-| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
-| Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
-| Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `labels`, `laneLayers`                                             |
-| Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`            |
-| Variant display (`LinearVariantDisplay`)                              | `filter`, `rows`, `encoding`, `legend`, `facet`, `records`, `genotypes`                                     |
-| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `encoding`, `origin`, `legend`                                                              |
+| Display                                              | Settings                                                                                                    |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Alignments display (`LinearAlignmentsDisplay`)       | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`, `sashimi` |
+| Chord synteny display (`ChordSyntenyDisplay`)        | `mark`                                                                                                      |
+| Chord variant display (`ChordVariantDisplay`)        | `mark`, `encoding`                                                                                          |
+| Feature display (`LinearBasicDisplay`)               | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
+| Hi-C contact matrix display (`LinearHicDisplay`)     | `encoding`, `legend`, `filter`                                                                              |
+| LD heatmap display (`LDTrackDisplay`)                | `connectors`, `encoding`, `legend`, `labels`                                                                |
+| MAF display (`LinearMafDisplay`)                     | `encoding`, `rows`, `legend`, `coverage`, `alignments`, `conservation`                                      |
+| Manhattan plot display (`LinearManhattanDisplay`)    | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
+| Marks (`LinearMarkDisplay`)                          | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
+| Multi-row display (`LinearMultiRowFeatureDisplay`)   | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
+| Multi-way synteny display (`MultiWaySyntenyDisplay`) | `encoding`, `rows`, `ribbons`, `legend`, `labels`, `laneLayers`                                             |
+| Synteny alignments display (`LGVSyntenyDisplay`)     | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`            |
+| Variant display (`LinearVariantDisplay`)             | `connectors`, `filter`, `rows`, `encoding`, `legend`, `facet`, `records`, `genotypes`                       |
+| Wiggle display (`LinearWiggleDisplay`)               | `mark`, `rows`, `encoding`, `origin`, `legend`                                                              |
 
 <!-- END GENERATED PLOT_SETTINGS -->
 

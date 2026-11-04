@@ -61,9 +61,8 @@ a file, and fails on a key it does not know.
 |  | `ldMetric` | `encoding.color.field` |
 |  | `lineZoneHeight` | `connectors.height` |
 |  | `showLegend` | `legend.show` |
-|  | `showVerticalGuides` | `guides.show` |
 |  | `useGenomicPositions` | `variantLayout` |
-|  | `callRateFilter`, `hweFilterThreshold`, `lengthCutoffFilter`, `minorAlleleFrequencyFilter`, `recombinationZoneHeight`, `showLDTriangle`, `showRecombination`, `signedLD` | dropped |
+|  | `callRateFilter`, `hweFilterThreshold`, `lengthCutoffFilter`, `minorAlleleFrequencyFilter`, `recombinationZoneHeight`, `showLDTriangle`, `showRecombination`, `showVerticalGuides`, `signedLD`, `tickHeight` | dropped |
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `colorScheme` | dropped |
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearMafDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `jexlFilters` | dropped |
 | `LDTrackDisplay`, `LinearBasicDisplay` | `showLabels` | `labels.name.show` |

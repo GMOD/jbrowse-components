@@ -1844,7 +1844,8 @@
       "package": "@jbrowse/core",
       "names": [
         "highlightBoxColors",
-        "hoverBoxStyle"
+        "hoverBoxStyle",
+        "hoverBoxStyleFor"
       ],
       "worker": "real"
     },
@@ -2878,40 +2879,30 @@
         "abgrRed",
         "abgrToCssRgba",
         "abgrToHex",
-        "alpha",
-        "blend",
         "cssColorToABGR",
         "cssColorToHex",
         "cssColorToNormalizedRgb",
         "cssColorToNormalizedRgba",
         "cssColorToRgb",
         "cssColorToRgba",
-        "darken",
         "featureBedColor",
         "featureItemRgb",
         "formatHEX",
-        "formatHEXA",
-        "formatRGBA",
         "getAlpha",
         "getBlue",
         "getGreen",
-        "getLuminance",
         "getRed",
         "isCssColor",
-        "lighten",
         "newColor",
         "normalizedRgbToABGR",
         "normalizedRgbToCss",
         "normalizedRgbToCssRgba",
         "normalizedRgbToHex",
         "packAbgr",
-        "parse",
         "parseCssColor",
         "parseCssColorOr",
         "scaleAbgrAlpha",
         "setAbgrFill",
-        "toHSLA",
-        "toRGBA",
         "withAbgrAlpha"
       ],
       "worker": "real"
@@ -3365,7 +3356,6 @@
       "package": "@jbrowse/core",
       "names": [
         "DEFAULT_CANONICAL_TRANSCRIPTS",
-        "codingLength",
         "featureIsoformReader",
         "isCanonicalTranscriptsHost",
         "isCodingIsoform",
@@ -4713,6 +4703,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "GROW_MAX_HEIGHT",
+        "GROW_THE_TRACK_LABEL",
         "HEIGHT_MODE_VALUES",
         "getHeightModeOptions",
         "heightModeLabel"
@@ -4827,6 +4818,7 @@
     "@jbrowse/display-kit/MatrixRampMixin": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "binnedColorValues",
         "default"
       ],
       "worker": "real"

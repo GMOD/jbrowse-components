@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1263)
+# model members with no description (1260)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -532,13 +532,10 @@ LDTrackDisplay.renderSvg
 LDTrackDisplay.rpcProps
 LDTrackDisplay.setConnectorsHeight
 LDTrackDisplay.setIndexSnp
-LDTrackDisplay.setShowGuides
 LDTrackDisplay.setShowNames
 LDTrackDisplay.setVariantLayout
-LDTrackDisplay.showGuides
 LDTrackDisplay.showNames
 LDTrackDisplay.startRenderingBackend
-LDTrackDisplay.tickHeight
 LDTrackDisplay.trackMenuItems
 LDTrackDisplay.variantLayout
 LDTrackDisplay.view

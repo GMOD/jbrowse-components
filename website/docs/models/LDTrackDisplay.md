@@ -36,7 +36,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-focalsnplocus">**focalSnpLocus**</span><br><code>string &#124; undefined</code> | Key (`refName:start:id`) of the SNP whose row and column are emphasized. A key rather than an index, so it survives a refetch. |
+| <span id="volatile-indexsnplocus">**indexSnpLocus**</span><br><code>string &#124; undefined</code> | Key (`refName:start:id`) of the SNP whose row and column are emphasized. A key rather than an index, so it survives a refetch. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited volatiles from 7 models</summary>
@@ -65,9 +65,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `encoding.color.field`, the statistic the fetch asks the file for. |
-| <span id="getter-showguides">**showGuides**</span><br><code>boolean</code> |  |
 | <span id="getter-shownames">**showNames**</span><br><code>boolean</code> |  |
-| <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  |
 | <span id="getter-variantlayout">**variantLayout**</span><br><code>"columns" &#124; "genomic"</code> |  |
 | <span id="getter-snps">**snps**</span><br><code>LDSnp[]</code> | The loaded SNPs in screen order along the column axis. |
 | <span id="getter-cellwidth">**cellWidth**</span><br><code>number</code> | The column width the payload was laid out at. |
@@ -75,7 +73,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-atgenomicpositions">**atGenomicPositions**</span><br><code>boolean</code> | Whether the loaded matrix is at genomic positions: a multi-region view falls back to uniform columns. |
 | <span id="getter-r2available">**r2Available**</span><br><code>boolean</code> |  |
 | <span id="getter-dprimeavailable">**dprimeAvailable**</span><br><code>boolean</code> |  |
-| <span id="getter-focalsnpindex">**focalSnpIndex**</span><br><code>number</code> | Index of the focal SNP in `snps`, or -1. |
+| <span id="getter-indexsnpcolumn">**indexSnpColumn**</span><br><code>number</code> | Index of the index SNP in `snps`, or -1. |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>LDMetric</code> | The loaded metric, so a stale triangle during a metric switch keeps its hue. |
 | <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the statistic's own 0 to 1, not the loaded values, so one r² paints one color on every track. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
@@ -87,9 +85,10 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-depthfraction">**depthFraction**</span><br><code>number</code> | A file listing only nearby pairs draws a strip of the triangle's depth, so fit mode stretches that strip over the display. |
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: a tabix LD file's index says how much a region reads before any of it is downloaded. |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. |
+| <span id="getter-paintedcells">**paintedCells**</span><br><code>ReadonlyMap&lt;number, LDDataResult&gt;</code> | The payload as the painters read it: under a threshold scale each value at its interval's centre (`binnedColorValues`), while the hit test and the tooltip read the file's own. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>91 inherited getters from 12 models</summary>
+<summary>94 inherited getters from 12 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
@@ -97,7 +96,7 @@ From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`w
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
-From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
+From [MatrixRampMixin](../matrixrampmixin): <span id="getter-paintedcolorsetting">[`paintedColorSetting`](../matrixrampmixin#getter-paintedcolorsetting)</span>, <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-schemeramp">[`schemeRamp`](../matrixrampmixin#getter-schemeramp)</span>, <span id="getter-colorbins">[`colorBins`](../matrixrampmixin#getter-colorbins)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -127,11 +126,12 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-locusviewportx">**locusViewportX**</span><br><code>(refName: string, coord: number) =&gt; number &#124; undefined</code> | Viewport x of a locus, or undefined when it has none. |
 | <span id="method-viewrefname">**viewRefName**</span><br><code>(refName: string) =&gt; string</code> | A file's refName as the view names it: PLINK writes `1` where the assembly says `chr1`. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; LDCellHit &#124; undefined</code> | The computed cell under a display-px point: a pair outside the band, or one no estimator filled, is not drawn and not hit. |
+| <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then names asked for with no band to draw in. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>14 inherited methods from 6 models</summary>
+<summary>13 inherited methods from 6 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
 
@@ -143,7 +143,7 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 
@@ -152,9 +152,8 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setfocalsnp">**setFocalSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setindexsnp">**setIndexSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setconnectorsheight">**setConnectorsHeight**</span><br><code>(n: number) =&gt; void</code> |  |
-| <span id="action-setshowguides">**setShowGuides**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshownames">**setShowNames**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |

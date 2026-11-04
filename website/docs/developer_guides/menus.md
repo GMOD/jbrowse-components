@@ -74,7 +74,7 @@ where the display is defined; to add to one belonging to another plugin, use
       return [
         ...superTrackMenuItems(),
         ...buildMafTrackMenuItems(self),
-        ...editPlotMenuItems(self),
+        ...editPlotMenuItems(self, getCoverageMenuItems(self)),
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,
