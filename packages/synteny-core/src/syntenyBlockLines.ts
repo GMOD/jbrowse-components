@@ -35,6 +35,17 @@ function sideLine({
     .join(' ')
 }
 
+const MAX_NAMED_SHARERS = 5
+
+function sharedLine(syntenicDepth: number, sharedBy: readonly string[]) {
+  const named = sharedBy.slice(0, MAX_NAMED_SHARERS)
+  const unnamed = syntenicDepth - named.length
+  const count = `Shared by ${toLocale(syntenicDepth)} genes`
+  return named.length === 0
+    ? count
+    : `${count}: ${named.join(', ')}${unnamed > 0 ? ` and ${toLocale(unnamed)} more` : ''}`
+}
+
 /**
  * A synteny block's description, the lines every view's hover shows for it:
  * each side's assembly, name and span, `Inverted` where the two sides run
@@ -43,22 +54,28 @@ function sideLine({
  * (`Shared by 3 genes`); a one-to-one pair, the common case, says nothing. No
  * arrow between the names, since an ortholog pair has no direction and the
  * sides' order differs by view.
+ *
+ * `sharedBy` names the genes sharing the ortholog, as far as the view holds
+ * them: up to five are listed and the rest of the depth is counted, so a
+ * partner outside the loaded region still counts.
  */
 export function syntenyBlockLines({
   sides,
   inverted,
   attributes: { syntenicDepth, ...attributes },
+  sharedBy = [],
 }: {
   sides: readonly SyntenyBlockSide[]
   inverted: boolean
   attributes: Record<string, number>
+  sharedBy?: readonly string[]
 }) {
   return [
     ...sides.map(sideLine),
     ...(inverted ? ['Inverted'] : []),
     ...attributeTooltipLines(attributes),
     ...(syntenicDepth !== undefined && syntenicDepth > 1
-      ? [`Shared by ${toLocale(syntenicDepth)} genes`]
+      ? [sharedLine(syntenicDepth, sharedBy)]
       : []),
   ]
 }

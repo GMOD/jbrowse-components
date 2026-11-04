@@ -34,3 +34,33 @@ test('a gene with more than one partner says how many', () => {
     }),
   ).toContain('Shared by 3 genes')
 })
+
+test('the genes sharing an ortholog are named, and any past five counted', () => {
+  expect(
+    syntenyBlockLines({
+      sides,
+      inverted: false,
+      attributes: { syntenicDepth: 3 },
+      sharedBy: ['Fgfr2', 'Fgfr2b', 'Fgfr2c'],
+    }),
+  ).toContain('Shared by 3 genes: Fgfr2, Fgfr2b, Fgfr2c')
+  expect(
+    syntenyBlockLines({
+      sides,
+      inverted: false,
+      attributes: { syntenicDepth: 8 },
+      sharedBy: ['a', 'b', 'c', 'd', 'e', 'f'],
+    }),
+  ).toContain('Shared by 8 genes: a, b, c, d, e and 3 more')
+})
+
+test('a sharing gene outside the loaded region is counted, not named', () => {
+  expect(
+    syntenyBlockLines({
+      sides,
+      inverted: false,
+      attributes: { syntenicDepth: 3 },
+      sharedBy: ['Fgfr2', 'Fgfr2b'],
+    }),
+  ).toContain('Shared by 3 genes: Fgfr2, Fgfr2b and 1 more')
+})

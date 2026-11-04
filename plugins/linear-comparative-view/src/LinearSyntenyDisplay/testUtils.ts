@@ -121,6 +121,7 @@ export interface FeatureBlock {
   mateStart?: number
   mateEnd?: number
   mateAssembly?: string
+  mateName?: string
 }
 
 /**
@@ -170,7 +171,7 @@ export function packSyntenyFeatureData(
         refName: b => b.refName ?? 'chr1',
         assemblyName: b => b.assembly ?? 'hg002mat',
         mateRefName: b => b.mateRefName ?? b.refName ?? 'chr1',
-        mateName: () => undefined,
+        mateName: b => b.mateName,
         mateAssemblyName: b => b.mateAssembly ?? 'hg002pat',
       },
       list: {

@@ -32,7 +32,11 @@ import {
 import { admittedOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
-import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
+import {
+  getCigarOpAtInstance,
+  getTooltipLines,
+  sharedByOf,
+} from './components/util.ts'
 import { culledRibbonMateData } from './culledRibbonMates.ts'
 import { computeSyntenyColors } from './syntenyColors.ts'
 
@@ -770,11 +774,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * The hovered ribbon's tooltip, as lines, or undefined when nothing is
-       * hovered. Lines rather than an HTML string — see `getTooltipLines`, and
+       * hovered. A gene with more than one partner has them named, as far as
+       * the loaded links reach. Lines rather than an HTML string — see `getTooltipLines`, and
        * `DotplotDisplay.tooltipLines` for the twin.
        */
       get tooltipLines(): string[] | undefined {
-        const { hoveredInstanceIdx, instanceData } = self
+        const { hoveredInstanceIdx, instanceData, featureData } = self
         if (hoveredInstanceIdx < 0) {
           return undefined
         }
@@ -785,7 +790,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         const cigarOp = instanceData
           ? getCigarOpAtInstance(instanceData, hoveredInstanceIdx)
           : undefined
-        return getTooltipLines(feat, cigarOp)
+        const depth = feat.attributes.syntenicDepth
+        const sharedBy =
+          featureData && depth !== undefined && depth > 1
+            ? sharedByOf(featureData, feat)
+            : undefined
+        return getTooltipLines(feat, cigarOp, sharedBy)
       },
       /**
        * #getter

@@ -3,7 +3,9 @@ import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyKinds.ts'
 import { viewportWindow } from '../../LinearSyntenyRPC/testUtils.ts'
-import { getCigarOpAtInstance, getTooltipLines } from './util.ts'
+import { getFeatureAtIndex } from '../model.ts'
+import { packSyntenyFeatureData } from '../testUtils.ts'
+import { getCigarOpAtInstance, getTooltipLines, sharedByOf } from './util.ts'
 
 import type { FeatPos } from '../model.ts'
 
@@ -170,5 +172,59 @@ test('getTooltipLines names each side of an ortholog pair on its own line', () =
     'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
     'Inverted',
     'Shared by 2 genes',
+  ])
+})
+
+// FGFR2 pairs with three mouse genes, one of them held on the other side of its
+// link, and the human paralog FGFR2B with one of the three: the hover over any
+// FGFR2 link names FGFR2's three partners, the side its depth was counted on,
+// in genome order rather than the order the links were fetched in
+test('a shared gene names every partner the loaded links hold, from either side', () => {
+  const human = { assembly: 'hg38', mateAssembly: 'mm39' }
+  const data = packSyntenyFeatureData([
+    {
+      ...human,
+      start: 0,
+      end: 10,
+      name: 'FGFR2',
+      mateName: 'Fgfr2b',
+      mateStart: 40,
+      mateEnd: 45,
+    },
+    {
+      ...human,
+      start: 0,
+      end: 10,
+      name: 'FGFR2',
+      mateName: 'Fgfr2',
+      mateStart: 10,
+      mateEnd: 15,
+    },
+    {
+      assembly: 'mm39',
+      mateAssembly: 'hg38',
+      start: 50,
+      end: 60,
+      name: 'Fgfr2c',
+      mateName: 'FGFR2',
+    },
+    {
+      ...human,
+      start: 20,
+      end: 30,
+      name: 'FGFR2B',
+      mateName: 'Fgfr2',
+      mateStart: 10,
+      mateEnd: 15,
+    },
+  ])
+  expect(sharedByOf(data, getFeatureAtIndex(data, 0))).toEqual([
+    'Fgfr2',
+    'Fgfr2b',
+    'Fgfr2c',
+  ])
+  expect(sharedByOf(data, getFeatureAtIndex(data, 3))).toEqual([
+    'FGFR2',
+    'FGFR2B',
   ])
 })
