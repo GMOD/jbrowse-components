@@ -211,3 +211,8 @@ draft's filter joins the fields the reader already filters
   `displayDefaults`, and `plotExamples` are plugin code rather than something
   people make their own. The config-side spelling above is the one to build
   when asked.
+- **The preset writing `heightMode: 'grow'`** (2026-11-04, from the
+  `sv_channels` and `sv_channels_long_reads` captures): on HG008-T Illumina at
+  CDKN2A the partner-elsewhere band draws about 800 reads, so a growing track
+  runs to that band's height; at a fixed height each clipped band offers
+  **Show all reads** on its chip instead.

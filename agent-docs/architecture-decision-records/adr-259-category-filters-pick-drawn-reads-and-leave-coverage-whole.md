@@ -9,7 +9,7 @@ summary: "The alignments `filter`'s read fields have two reaches. The flags, `ma
 
 Accepted (2026-11-04). Colin decided the line on 2026-10-12, in the proposal
 this replaces (its Idea 1 landed as ADR-229 and ADR-230 declined its Idea 3).
-The SV channels redesign (`handoffs/sv-channels-preset-redesign.md`) needed it
+The SV channels redesign (ADR-258's second 2026-11-04 amendment) needed it
 built: its filter hides the reads without evidence and its "No SV evidence"
 band must keep their depth.
 
