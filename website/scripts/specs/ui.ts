@@ -1697,11 +1697,12 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'PAX5 transcribed, with genic enhancers, in B cells only',
         leader: true,
-        // rows 40 and 41 of 127 in ROADMAP_FIGURE_GROUPS order
+        // the top edge of the second of the two B cell rows, between them
         anchor: {
           trackId: 'roadmap_chromhmm_multirow_hg19',
+          row: 'Primary B cells from peripheral blood',
           loc: 'chr9:36,900,000',
-          fracY: 40.5 / 127,
+          fracY: 0,
         },
         dx: -260,
         dy: -60,

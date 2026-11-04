@@ -240,8 +240,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: 690,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
-    // Both pills sit over the flat right flank, where an opaque pill covers no
-    // shape. fracY is a fraction of the whole two-row track.
+    // Both pills sit over the flat right flank of their builder's row, where an
+    // opaque pill covers no shape.
     annotations: [
       {
         type: 'text',
@@ -251,8 +251,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         anchor: {
           trackId: 'ecoli_depth_by_builder',
+          row: 'pggb',
           loc: 'chr:3,954,300',
-          fracY: 0.12,
+          fracY: 0.24,
         },
       },
       {
@@ -263,8 +264,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         anchor: {
           trackId: 'ecoli_depth_by_builder',
+          row: 'Minigraph-Cactus',
           loc: 'chr:3,954,300',
-          fracY: 0.62,
+          fracY: 0.24,
         },
       },
     ],

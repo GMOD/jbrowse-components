@@ -235,17 +235,11 @@ export const mafSpecs: ScreenshotSpec[] = [
     // Below 822 the frame clips the last species row.
     viewportHeight: 822,
     actions: [
-      // caePb3's S -> L codon. The ce11 row is the reference, whose tooltip
-      // reads "Change: none". dy 68 lands on the second species row: 16px
-      // rows under a ~50px coverage band.
+      // caePb3's S -> L codon; the ce11 row is the reference, whose tooltip
+      // reads "Change: none"
       {
         type: 'hover',
-        anchor: {
-          trackId: 'ce11.26way',
-          loc: 'chrI:2,999,247',
-          fracY: 0,
-          dy: 68,
-        },
+        anchor: { trackId: 'ce11.26way', row: 'caePb3', loc: 'chrI:2,999,247' },
       },
       { type: 'delay', ms: 2000 },
     ],

@@ -344,7 +344,7 @@ export function countLongDelays(list: ScreenshotSpec[]) {
 // A ratchet for the same reason the one above is: converting a pair moves
 // pixels, so each conversion wants its figure regenerated and they land as
 // figures are touched. Lower LEADER_BASELINE when one does.
-export const LEADER_BASELINE = 20
+export const LEADER_BASELINE = 15
 
 // What the anchor names, without the offsets that differ BETWEEN a pill and
 // its tail, which is the whole point. Keys sorted, so a new anchor kind joins

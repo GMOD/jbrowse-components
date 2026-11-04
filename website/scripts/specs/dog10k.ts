@@ -213,10 +213,9 @@ const AMY2B_ROWS = arrangedSamples(
   ),
 )
 
-// The middle of the widest unbroken run of carriers (Boxer 1 to Alaska village
-// dog 3), measured off the capture. Rows 32-61 are non-carrier wolves and paint
-// nothing, so a lower arrow points at blank grey.
-const AMY2B_CALLOUT_FRAC_Y = 0.23
+// Inside the widest unbroken run of carriers (Boxer 1 to Alaska village dog 3).
+// The wolves below it are non-carriers and paint nothing.
+const AMY2B_CALLOUT_ROW = 'SAMO000001'
 
 const CEA_ROWS = arrangedSamples(
   CEA_GROUPS.flatMap(({ label, ids }) =>
@@ -410,9 +409,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="floating-legend"]',
     readyTimeout: 60000,
     viewportHeight: 905,
-    // Row pitch is 700/64 = 10.94px: gray wolves are rows 0-15 and the wolfdogs
-    // 16-31. Each `dy` is the baseline of the pill's first line, so a wrapped
-    // pill hangs below it; keep both pills one line.
+    // Each pill sits on a row inside its group; keep both one line, since a
+    // wrapped pill hangs below the row.
     annotations: [
       {
         type: 'text',
@@ -421,9 +419,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         maxWidth: 760,
         anchor: {
           trackId: 'dog10k_wolfdog_named',
+          row: 'Gray wolf 8 hap1',
           loc: WOLFDOG_PILL_X,
-          fracY: 0,
-          dy: 55,
         },
       },
       {
@@ -433,9 +430,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         maxWidth: 700,
         anchor: {
           trackId: 'dog10k_wolfdog_named',
+          row: 'Saarloos 4 hap1',
           loc: WOLFDOG_PILL_X,
-          fracY: 0,
-          dy: 250,
         },
       },
     ],
@@ -491,30 +487,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: '7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly',
         fontSize: 22,
         maxWidth: 460,
+        leader: true,
         anchor: {
           trackId: 'dog10k_nhej1_svs',
+          row: 'Collie clade',
           loc: 'chr37:25,574,005-25,581,807',
-          fracY: 0,
-          dx: -704,
-          dy: 170,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          trackId: 'dog10k_nhej1_svs',
-          loc: 'chr37:25,574,005-25,581,807',
-          fracY: 0,
-          dx: -249,
-          dy: 175,
-        },
-        anchor: {
-          trackId: 'dog10k_nhej1_svs',
-          loc: 'chr37:25,574,005-25,581,807',
-          fracY: 0,
           dx: -100,
-          dy: 175,
         },
+        dx: -604,
+        dy: -5,
       },
     ],
   },
@@ -556,30 +537,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // `textAlign: 'end'` places the pill's right edge, where the arrow
         // leaves.
         textAlign: 'end',
+        leader: true,
         anchor: {
           trackId: 'dog10k_amy2b_svs',
+          row: AMY2B_CALLOUT_ROW,
           loc: 'chr6:47,375,677-47,390,529',
-          fracY: AMY2B_CALLOUT_FRAC_Y,
-          dx: -430,
-          dy: 0,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          trackId: 'dog10k_amy2b_svs',
-          loc: 'chr6:47,375,677-47,390,529',
-          fracY: AMY2B_CALLOUT_FRAC_Y,
-          dx: -420,
-          dy: 0,
-        },
-        anchor: {
-          trackId: 'dog10k_amy2b_svs',
-          loc: 'chr6:47,375,677-47,390,529',
-          fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -40,
-          dy: 0,
         },
+        dx: -390,
       },
     ],
   },
@@ -609,8 +574,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr15',
     readyTimeout: 90000,
     viewportHeight: 1278,
-    // The pill sits at the AMY2B pill's height. The anchor is an insertion
-    // mid-way across 5.5 kb, so the dx values differ from the AMY2B part's.
+    // The anchor is an insertion mid-way across 5.5 kb, so the dx values differ
+    // from the AMY2B part's.
     annotations: [
       {
         type: 'text',
@@ -618,30 +583,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fontSize: 22,
         maxWidth: 300,
         textAlign: 'end',
+        leader: true,
         anchor: {
           trackId: 'dog10k_rnase1_svs',
+          row: 'CLUPRU000002',
           loc: 'chr15:18,164,072-18,164,074',
-          fracY: 0.62,
-          dx: -180,
-          dy: 0,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          trackId: 'dog10k_rnase1_svs',
-          loc: 'chr15:18,164,072-18,164,074',
-          fracY: 0.62,
-          dx: -170,
-          dy: 0,
-        },
-        anchor: {
-          trackId: 'dog10k_rnase1_svs',
-          loc: 'chr15:18,164,072-18,164,074',
-          fracY: 0.62,
           dx: -8,
-          dy: 0,
         },
+        dx: -172,
       },
     ],
   },

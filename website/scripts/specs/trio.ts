@@ -37,10 +37,6 @@ export const TRIO_HL_FILL = 0.16
 export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' }
 export const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' }
 
-// The painting's auto-fit row height. Its track height is auto, so callouts
-// take a depth from the top edge, not a fraction.
-export const TRIO_PAINT_ROW_H = 20
-
 function crossoverHalves(loc: string, crossover: string) {
   const win = /^(.+):([\d,]+)-([\d,]+)$/.exec(loc)
   const cut = /^(.+):([\d,]+)$/.exec(crossover)
@@ -65,7 +61,8 @@ export interface TrioCrossover {
   leftSource: string
   rightSource: string
   palette: { left: string; right: string }
-  paintingTopRow: number
+  // the painting's two rows, top to bottom, which the step box spans
+  paintingRows: readonly [string, string]
   leftText: string
   rightText: string
 }
@@ -73,23 +70,17 @@ export interface TrioCrossover {
 export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
   const { child, crossover, leftSource, rightSource, palette } = opts
   const half = crossoverHalves(opts.loc, crossover)
-  const stepTop = opts.paintingTopRow * TRIO_PAINT_ROW_H
-  const stepHeight = TRIO_PAINT_ROW_H * 2
+  const [topRow, bottomRow] = opts.paintingRows
   const step = {
     type: 'box',
     color: '#333',
-    anchor: {
-      trackId: TRIO_PAINT_TRACK,
-      loc: crossover,
-      fracY: 0,
-      dy: stepTop,
-    },
+    fromAnchor: { trackId: TRIO_PAINT_TRACK, row: topRow, loc: crossover },
+    anchor: { trackId: TRIO_PAINT_TRACK, row: bottomRow, loc: crossover },
     // An anchored box is inset by `pad`; these frames must meet the rows
     // exactly.
     pad: 0,
     dx: -28,
     width: 56,
-    height: stepHeight,
   } satisfies Annotation
   const frame = (color: string, locus: string, row: string) =>
     ({
@@ -114,9 +105,9 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       strokeWidth: 2,
       fromAnchor: {
         trackId: TRIO_PAINT_TRACK,
+        row: bottomRow,
         loc: crossover,
-        fracY: 0,
-        dy: stepTop + stepHeight,
+        fracY: 1,
       },
       anchor: {
         trackId: TRIO_VCF_TRACK,
@@ -289,14 +280,12 @@ export const trioSpecs: ScreenshotSpec[] = [
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
         crossover: 'chr1:29,697,418',
-        // Painting rows 0-1 once filtered to the father's pair.
         paintingFilter: ['Father hap1', 'Father hap2'],
         highlights: {
           child: 'Child hap1',
           leftSource: 'Father hap2',
           rightSource: 'Father hap1',
           palette: TRIO_PATERNAL_COLORS,
-          paintingTopRow: 0,
           // Name the frame color: the painting's blue clashes with the variant
           // track.
           leftText: 'Child hap1 = Father hap2',
@@ -313,7 +302,6 @@ export const trioSpecs: ScreenshotSpec[] = [
           leftSource: 'Mother hap2',
           rightSource: 'Mother hap1',
           palette: TRIO_MATERNAL_COLORS,
-          paintingTopRow: 0,
           leftText: 'Child hap2 = Mother hap2',
           rightText: 'Child hap2 = Mother hap1',
         },
@@ -322,8 +310,8 @@ export const trioSpecs: ScreenshotSpec[] = [
       name: string
       loc: string
       crossover: string
-      paintingFilter: string[]
-      highlights: Omit<TrioCrossover, 'loc' | 'crossover'>
+      paintingFilter: [string, string]
+      highlights: Omit<TrioCrossover, 'loc' | 'crossover' | 'paintingRows'>
     }[]
   ).map(({ name, loc, crossover, paintingFilter, highlights }) => ({
     mode: 'url' as const,
@@ -344,7 +332,12 @@ export const trioSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    annotations: crossoverHighlights({ loc, crossover, ...highlights }),
+    annotations: crossoverHighlights({
+      loc,
+      crossover,
+      paintingRows: paintingFilter,
+      ...highlights,
+    }),
     readyText: 'chr1',
     readyTimeout: 60000,
     viewportHeight: 650,

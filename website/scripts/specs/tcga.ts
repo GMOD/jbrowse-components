@@ -21,50 +21,41 @@ const TCGA_BRCA_RECURRENCE_TRACK = pageTrack(
   'tcga_brca_cnv_recurrence',
 )
 
-// Subtype callouts measure their dy in SUBTYPE_ROW_PITCH, one subtype's row.
 const SUBTYPE_ROWS_HEIGHT = 500
 const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 4
 
-// `labelDy`/`headDy` are fractions of the row's height, so the callouts follow
-// a change to SUBTYPE_ROWS_HEIGHT.
+// A label pointing at `fracY` of one subtype's row at `locus`, set off from it
+// by `labelDx` and `labelRows` of a row's height.
 function subtypeCallout({
   text,
   locus,
   row,
-  labelDy,
-  headDy,
+  fracY,
+  labelRows,
   labelDx,
 }: {
   text: string
   locus: string
-  row: number
-  labelDy: number
-  headDy: number
+  row: string
+  fracY: number
+  labelRows: number
   labelDx: number
-}): Annotation[] {
-  const at = {
-    trackId: 'tcga_brca_cnv_recurrence_by_subtype',
-    loc: locus,
-    fracY: 0,
+}): Annotation {
+  return {
+    type: 'text',
+    text,
+    fontSize: 18,
+    maxWidth: 240,
+    leader: true,
+    anchor: {
+      trackId: 'tcga_brca_cnv_recurrence_by_subtype',
+      row,
+      loc: locus,
+      fracY,
+    },
+    dx: labelDx,
+    dy: labelRows * SUBTYPE_ROW_PITCH,
   }
-  const y = (frac: number) => (row + frac) * SUBTYPE_ROW_PITCH
-  // The arrow goes first so the label's opaque pill draws over its tail.
-  const tailDx = labelDx > 0 ? labelDx - 20 : labelDx + 20
-  return [
-    {
-      type: 'arrow',
-      fromAnchor: { ...at, dx: tailDx, dy: y(labelDy) },
-      anchor: { ...at, dy: y(headDy) },
-    },
-    {
-      type: 'text',
-      text,
-      fontSize: 18,
-      maxWidth: 240,
-      anchor: { ...at, dy: y(labelDy) },
-      dx: labelDx,
-    },
-  ]
 }
 
 const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = pageTrack(
@@ -383,20 +374,20 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
     annotations: [
       // right of the locus, over chr18-22 where the HER2+ row is flat
-      ...subtypeCallout({
+      subtypeCallout({
         text: 'ERBB2 (17q12)',
         locus: '17:39,688,094',
-        row: 1,
-        labelDy: 0.12,
-        headDy: 0.35,
+        row: 'HER2+',
+        fracY: 0.35,
+        labelRows: -0.23,
         labelDx: 60,
       }),
-      ...subtypeCallout({
+      subtypeCallout({
         text: '16q loss (CDH1 arm)',
         locus: '16:70,000,000',
-        row: 0,
-        labelDy: 0.85,
-        headDy: 0.65,
+        row: 'HR+/HER2-',
+        fracY: 0.65,
+        labelRows: 0.2,
         // over chr13-14, where this row is flat
         labelDx: -420,
       }),
@@ -427,33 +418,19 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     // Only the lobular band gets a label: one in the empty ductal band names an
-    // absence. The cohort's histology counts put the lobular band in roughly the
-    // last seventh of the rows.
+    // absence. The pill sits up over the ductal band's empty columns.
     annotations: [
       {
         type: 'text',
         text: 'lobular: most of the calls in this window',
+        leader: true,
         anchor: {
           trackId: 'tcga_brca_mutations',
-          fracY: 0.45,
+          row: 'lobular',
           alignX: 'left',
           dx: 400,
         },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          trackId: 'tcga_brca_mutations',
-          fracY: 0.5,
-          alignX: 'left',
-          dx: 400,
-        },
-        anchor: {
-          trackId: 'tcga_brca_mutations',
-          fracY: 0.87,
-          alignX: 'left',
-          dx: 400,
-        },
+        dy: -185,
       },
     ],
   },
