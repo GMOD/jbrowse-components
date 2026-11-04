@@ -86,6 +86,7 @@ import type {
 import type {
   AnyConfigurationModel,
   ConfigModelForFields,
+  KeyedWrites,
 } from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -164,10 +165,13 @@ function baseRows(self: object): RowsMembers {
   const { writes } = meta.options
   const base = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
   return isKeyedWrites(writes)
-    ? keyedBase(writes, base, {
-        [writes.keyedBy]: readConfObject(live, writes.keyedBy),
-      })
+    ? keyedBase(writes, base, keyedFieldOf(live, writes))
     : base
+}
+
+function keyedFieldOf(live: AnyConfigurationModel, writes: KeyedWrites) {
+  const value: unknown = readConfObject(live, writes.keyedBy)
+  return { [writes.keyedBy]: value }
 }
 
 function liveRows(self: object): RowsMembers {
