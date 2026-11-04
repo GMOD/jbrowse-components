@@ -520,16 +520,19 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Which pairs the connector mark draws — see `ConnectorScope`. Chain
-         * mode claims `crossRegion` even with `pileup.connectors` off: only
-         * that mark joins a chain's ends across displayed regions.
+         * Whether the pileup connectors draw: always in chain layout, where a
+         * connector is how a chain's reads join, and otherwise as
+         * `pileup.connectors.show` says.
+         */
+        get drawsConnectors() {
+          return self.unit === 'chain' || self.showConnectors
+        },
+        /**
+         * #getter
+         * Which pairs the connector mark draws — see `ConnectorScope`.
          */
         get connectorScope(): ConnectorScope {
-          return self.showConnectors
-            ? 'all'
-            : self.unit === 'chain'
-              ? 'crossRegion'
-              : 'none'
+          return this.drawsConnectors ? 'all' : 'none'
         },
       }))
       .views(self => {
@@ -1403,11 +1406,11 @@ export default function stateModelFactory(
             return resolveConnectorsByGroup(
               this.laidOutByGroupFramed,
               {
-                lines: self.showConnectors,
+                lines: self.drawsConnectors,
                 scope: self.connectorScope,
                 canonicalRefName: this.canonicalRefName,
                 refNameAt: i => self.loadedRegions.get(i)?.refName,
-                admits: self.showConnectors ? this.connectorFilter : undefined,
+                admits: self.drawsConnectors ? this.connectorFilter : undefined,
               },
               key =>
                 laneLayoutOf(
@@ -2571,7 +2574,7 @@ export default function stateModelFactory(
             canvasHeight: self.height,
             colors: palette,
             unit: self.unit,
-            showConnectors: self.showConnectors,
+            showConnectors: self.drawsConnectors,
             collapseSections: self.collapseSections,
             readConnectionsStrokeScale: self.readConnectionsStrokeScale,
             arcsYDomainBp: this.arcsYDomainBp,

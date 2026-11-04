@@ -284,8 +284,8 @@ segments chain onto one row: the inverted middle paints in the reverse-strand
 color between two forward-strand segments, and an arc joins each breakpoint
 pair: green at the junction LL pairs span, navy at the one RR pairs span. A
 split read across a deletion draws a gold arc. One across a tandem duplication
-draws a teal arc, the color of the pairs that span it, and with **Pileup
-connectors** on, a teal loop under its row where the read maps back over itself.
+draws a teal arc, the color of the pairs that span it, and a teal loop under its
+row where the read maps back over itself.
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the

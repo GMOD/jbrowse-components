@@ -45,7 +45,7 @@ function makeModel({
     bases,
     showSashimi,
     drawnReadConnections,
-    showConnectors: false,
+    drawsConnectors: false,
     detectedModificationTypes: types,
     get junctionFilter() {
       return junctionFilterOf(this.filterPredicates)

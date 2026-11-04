@@ -381,7 +381,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
-                  pileup: { connectors: { show: true }, mark: { height: 3 } },
+                  pileup: { mark: { height: 3 } },
                   coverage: { height: 30 },
                   readConnections: { show: true, height: 110 },
                   heightMode: 'grow',
@@ -481,13 +481,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
-                  pileup: {
-                    // Chain mode joins only pieces that straddle two panels;
-                    // connectors adds the inverted and hidden-segment joins
-                    // inside one panel.
-                    connectors: { show: true },
-                    mark: { height: 5 },
-                  },
+                  pileup: { mark: { height: 5 } },
                   coverage: {
                     // The filter runs before coverage, so this band counts the
                     // split subset, not tumour depth; the caption says so.
@@ -803,7 +797,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             // Sashimi arcs read as read connections joining the wrong places.
             show: false,
           },
-          pileup: { ...SPLIT_READS, connectors: { show: true } },
+          pileup: SPLIT_READS,
           readConnections: {
             show: true,
             height: 90,
@@ -876,7 +870,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           height: 800,
           coverage: { height: 110 },
           sashimi: { show: false },
-          pileup: { ...SPLIT_READS, connectors: { show: true } },
+          pileup: SPLIT_READS,
           readConnections: {
             // The donor tick for the remaining reads keeps its width:
             // `arcStrokeScale` caps at ~44 reads. DEMO_DATASETS.md has the

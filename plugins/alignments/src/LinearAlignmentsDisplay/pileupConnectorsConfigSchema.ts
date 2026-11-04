@@ -24,7 +24,7 @@ export const pileupConnectorsConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        "draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' a connector between displayed regions curves either way",
+        "draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' connectors always draw, since they are how a chain's reads join",
     },
   },
   { closed: true },

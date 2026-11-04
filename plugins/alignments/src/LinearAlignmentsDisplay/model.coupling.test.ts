@@ -747,18 +747,15 @@ describe('chain mode is a main-thread tier', () => {
   })
 })
 
-// Chain layout puts a chain's alignments on one row across displayed regions,
-// but its connecting-line pass is per region and can't join them — so the SVG
-// overlay has to, whether or not the user asked for curved connectors. It stays
-// scoped to the pairs that straddle a boundary; the per-region line owns the
-// rest, and drawing both would double every within-region connector.
-describe('cross-region chain connectors', () => {
-  test('chain mode claims the overlay for straddling pairs alone', () => {
+// Chain layout joins its reads with connectors whether or not "Pileup
+// connectors" is ticked; that setting governs read layout alone.
+describe('chain connectors', () => {
+  test('chain mode draws every connector', () => {
     const display = createDisplay()
     expect(display.connectorScope).toBe('none')
 
     display.setUnit('chain')
-    expect(display.connectorScope).toBe('crossRegion')
+    expect(display.connectorScope).toBe('all')
   })
 
   test('ticking curved connectors widens it back to every connection', () => {
@@ -846,9 +843,17 @@ describe('curved connectors', () => {
       ...display.laidOutByGroup.get('')!.get(0)!.connectingLinePositions,
     ]
     expect(hairlines()).toEqual([100, 500])
+  })
 
+  test('chain layout draws its connectors whatever the pileup connectors setting says', () => {
+    const display = connectorDisplay()
     display.setShowConnectors(false)
-    expect(hairlines()).toEqual([100, 500, 1000, 1500])
+    expect(display.connectorScope).toBe('none')
+
+    display.setUnit('chain')
+    expect(display.connectorScope).toBe('all')
+    expect(display.connectorsByGroup.get('')?.overlayPairs).toHaveLength(1)
+    expect(display.laidOutByGroup.get('')!.get(0)!.numLinkedReadLines).toBe(1)
   })
 
   test('a recolor keeps the cut chain hairlines the GPU holds', () => {

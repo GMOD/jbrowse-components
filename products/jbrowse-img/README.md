@@ -442,10 +442,9 @@ jb2export --fasta ref.fa --bam reads.bam arcs:cloud readConnections.height=300 \
   readConnections.encoding.strokeWidth.value=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
-## read share a row, joined by a connecting line. pileup.connectors.show=true is
-## the separate pileup connectors and leaves the layout an ordinary pileup.
-## Add both to curve the connectors that cross between displayed regions, which
-## the per-region line pass cannot draw.
+## read share a row, each link a connector colored by its kind, curved where it
+## is discordant or crosses displayed regions. pileup.connectors.show=true draws
+## the same connectors over an ordinary pileup.
 jb2export --fasta ref.fa --bam linked.bam unit=chain --loc chr1:1-50000
 ```
 

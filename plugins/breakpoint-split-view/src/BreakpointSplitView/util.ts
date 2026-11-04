@@ -41,10 +41,9 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   stickyBandHeight?: number
   /**
    * What the display's own connector overlay draws, LinearAlignmentsDisplay's
-   * `connectorScope`: `'all'` under curved connectors, `'crossRegion'` in
-   * chain layout, where the per-region line covers the rest. Structural, since
-   * this plugin has no dependency on plugin-alignments, so a rename there
-   * surfaces as `undefined` here, not as a type error.
+   * `connectorScope`: `'all'` in chain layout or under pileup connectors.
+   * Structural, since this plugin has no dependency on plugin-alignments, so a
+   * rename there surfaces as `undefined` here, not as a type error.
    */
   connectorScope?: 'all' | 'crossRegion' | 'none'
   /** the "Filter by" contract, `JexlFilterSource`, on displays that have one */

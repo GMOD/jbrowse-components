@@ -76,7 +76,7 @@ export interface LayerFiltersModel {
   showSashimi?: boolean
   junctionFilter?: JunctionFilter
   drawnReadConnections?: ReadConnectionsMode
-  showConnectors?: boolean
+  drawsConnectors?: boolean
   connectionFilter?: ConnectionFilter
   baseLayer?: BaseLayer
   basesFilter?: BasesFilter
@@ -158,7 +158,7 @@ function percentOf(min: number) {
 export function layersInEffect(
   model: Pick<
     LayerFiltersModel,
-    'showSashimi' | 'drawnReadConnections' | 'showConnectors'
+    'showSashimi' | 'drawnReadConnections' | 'drawsConnectors'
   >,
 ) {
   return {
@@ -166,7 +166,7 @@ export function layersInEffect(
     connections:
       (model.drawnReadConnections !== undefined &&
         model.drawnReadConnections !== 'off') ||
-      model.showConnectors === true,
+      model.drawsConnectors === true,
   }
 }
 

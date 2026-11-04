@@ -233,8 +233,8 @@ box separated by spaces:
 A read crossing the junction is one alignment on chr22 and a supplementary
 alignment (the second piece of the split read) on chr9. In the track menu:
 
-- **Read connections → Pileup connectors** joins the two across the region
-  divider.
+- **Read connections → View as pairs/link supplementary alignments** puts the
+  two on one row and joins them across the region divider.
 - **Filter by → Split reads → Only split reads** drops every read that stays on
   one chromosome.
 - **Read connections → Read arcs** adds a band under the coverage with one arc

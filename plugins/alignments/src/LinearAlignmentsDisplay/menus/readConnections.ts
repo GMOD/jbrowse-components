@@ -65,9 +65,13 @@ export function getReadConnectionsMenuItem(
     checkboxItem('View as pairs/link supplementary alignments', linked, () => {
       model.setUnit(linked ? 'read' : 'chain')
     }),
-    toggleItem('Pileup connectors', model.showConnectors, flag => {
-      model.setShowConnectors(flag)
-    }),
+    ...(linked
+      ? []
+      : [
+          toggleItem('Pileup connectors', model.showConnectors, flag => {
+            model.setShowConnectors(flag)
+          }),
+        ]),
     getSvChannelsMenuItem(model),
     ...(model.drawnReadConnections === 'off'
       ? []

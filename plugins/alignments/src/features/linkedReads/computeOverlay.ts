@@ -41,15 +41,10 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
 /**
  * Which connections this overlay is responsible for.
  *
- * - `all` — the user ticked "Pileup connectors", so it draws every
+ * - `all` — chain layout, or "Pileup connectors" ticked, so it draws every
  *   connection the GPU line pass doesn't own (`isConnectorMarkPair`).
- * - `crossRegion` — chain mode with that box unticked. Chain layout puts a
- *   chain's alignments on ONE row across displayed regions (`mergeChains`) but
- *   its connecting-line pass is per region and counts a chain's reads in that
- *   region alone, so a chain holding one alignment in each of two regions
- *   gets no line from either and the mode silently drops the link it exists to
- *   show. Everything inside a single region is already drawn by that pass, so
- *   this scope adds only the pairs that straddle a boundary.
+ * - `crossRegion` — only the pairs that straddle a displayed-region boundary.
+ *   The display no longer asks for it: chain layout draws every connector.
  * - `none` — no overlay.
  */
 export type ConnectorScope = 'all' | 'crossRegion' | 'none'

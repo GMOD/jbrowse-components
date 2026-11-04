@@ -100,6 +100,13 @@ function checked(model: Model) {
 }
 
 describe('read connections menu', () => {
+  test('offers no pileup connectors row in chain layout, which always draws them', () => {
+    const model = makeModel()
+    expect(labelsOf(rows(model))).toContain('Pileup connectors')
+    model.setUnit('chain')
+    expect(labelsOf(rows(model))).not.toContain('Pileup connectors')
+  })
+
   test('is checkboxes, then the Pair band radios, with no "?"', () => {
     const model = makeModel()
     model.drawnReadConnections = 'link'
