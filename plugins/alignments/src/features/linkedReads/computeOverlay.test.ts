@@ -44,6 +44,7 @@ import {
 import {
   connectorCategories,
   connectorDipReservePx,
+  LOOP_MIN_DIP_PX,
   connectorFilterOf,
   enumerateConnectorPairs,
   resolveConnectors,
@@ -399,6 +400,30 @@ describe('connectors — paired tangent direction', () => {
 })
 
 describe('connectors — discordant curves dip', () => {
+  it('keeps a maps-back loop at its own depth however close its ends sit', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [300, 600],
+        [200, 500],
+      ],
+      ys: [0, 0],
+    })
+    const [loop] = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      bpToScreenX: (_refName: string, bp: number) => bp / 200,
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
+    })
+    const { sx1, sy1, cp1y, sx2 } = controlPoints(loop!.d)
+    expect(Math.abs(sx2 - sx1)).toBeCloseTo(2)
+    expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeGreaterThanOrEqual(
+      LOOP_MIN_DIP_PX,
+    )
+  })
+
   // The shape language is shared with BreakpointSplitView: a plain line is a
   // normal-orientation pair, a curve below the reads is a discordant one. Every
   // pair that gets a curve here is discordant (normal ones take the line

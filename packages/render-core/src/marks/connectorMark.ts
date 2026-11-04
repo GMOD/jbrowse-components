@@ -3,6 +3,7 @@ import {
   CONNECTOR_ARROW,
   CONNECTOR_CURVE_SEGMENTS,
   CONNECTOR_DASHED,
+  CONNECTOR_FIXED_DIP,
   CONNECTOR_LEADING_2,
   CONNECTOR_MAX_HANDLE_PX,
   CONNECTOR_MAX_REACH_PX,
@@ -138,7 +139,13 @@ function place(
     budget,
     params.maxHandlePx ?? CONNECTOR_MAX_HANDLE_PX,
   )
-  const lift = connectorLiftPx(budget, dx, dy, c.bend[i]!)
+  const lift = connectorLiftPx(
+    budget,
+    dx,
+    dy,
+    c.bend[i]!,
+    (bits & CONNECTOR_FIXED_DIP) !== 0 ? 1 : 0,
+  )
   const t1 = connectorTangent(
     strandOf(bits, CONNECTOR_MINUS_1),
     0,

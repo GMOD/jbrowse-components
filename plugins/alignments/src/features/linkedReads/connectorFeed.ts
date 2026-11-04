@@ -7,6 +7,7 @@ import {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
   CONNECTOR_DASHED,
+  CONNECTOR_FIXED_DIP,
   CONNECTOR_LEADING_2,
   CONNECTOR_MINUS_1,
   CONNECTOR_MINUS_2,
@@ -207,6 +208,7 @@ export function buildConnectorFeeds({
         (c.isSplit ? CONNECTOR_LEADING_2 : 0) |
         (straight ? CONNECTOR_STRAIGHT : 0) |
         (hidden ? CONNECTOR_DASHED : 0) |
+        (loop ? CONNECTOR_FIXED_DIP : 0) |
         (loop && arrows ? CONNECTOR_ARROW : 0),
     )
     lanes.hits.push({

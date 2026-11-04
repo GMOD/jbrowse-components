@@ -68,7 +68,7 @@ export function bezierConnectorPath({
   const dy = y2 - y1
   const budget = connectorBudgetPx(dx, dy)
   const handle = connectorHandlePx(budget, maxHandlePx)
-  const lift = connectorLiftPx(budget, dx, dy, dipPx ?? CONNECTOR_BOW)
+  const lift = connectorLiftPx(budget, dx, dy, dipPx ?? CONNECTOR_BOW, 0)
   const c1x = x1 + handle * connectorTangent(s1, 0, reversed1 ? 1 : 0)
   const c2x =
     x2 + handle * connectorTangent(s2, leadingEnd2 ? 1 : 0, reversed2 ? 1 : 0)

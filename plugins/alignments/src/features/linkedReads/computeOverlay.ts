@@ -293,7 +293,8 @@ function crossesOwnAlignment(
 
 // How one pair is drawn, from the layout alone: nothing here reads a screen
 // position, so the section layout can ask it before any curve is projected
-// (`connectorDipReservePx`) and get the answer the overlay draws.
+// (`connectorDipReservePx`) and get the deepest the overlay draws; the mark
+// draws a dip shallower where its ends sit closer on screen than its depth.
 //
 // A normal connection is a plain line and everything else dips below the
 // reads. A same-strand split junction is normal on any pair of chromosomes,
