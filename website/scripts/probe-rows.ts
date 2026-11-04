@@ -57,8 +57,25 @@ const out = await page.evaluate(id => {
   const d = all
     .flatMap(v => v.tracks ?? [])
     .find(t => t.configuration.trackId === id)?.displays[0]
+  const types = d
+    ? Object.fromEntries(
+        [
+          'sources',
+          'bandedSources',
+          'rowBands',
+          'rowsTopOffset',
+          'effectiveRowHeight',
+          'scrollTop',
+          'scrollViewportHeight',
+        ].map(k => {
+          const v = (d as Record<string, unknown>)[k]
+          return [k, typeof v === 'number' ? v : typeof v]
+        }),
+      )
+    : {}
   return d
     ? {
+        types,
         rowHeight: d.effectiveRowHeight,
         rowsTop: d.rowsTopOffset,
         height: d.height,

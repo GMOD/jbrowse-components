@@ -74,6 +74,11 @@ test('a row is its strip under the bands above the rows, across the track', () =
   expect(rect('c')).toEqual({ left: 10, top: 180, width: 800, height: 20 })
 })
 
+test('a display that does not scroll its rows shows them all', () => {
+  setSession({ scrollViewportHeight: 0 })
+  expect(rect('d')).toEqual({ left: 10, top: 200, width: 800, height: 20 })
+})
+
 test('a row answers to the label its sidebar shows', () => {
   setSession()
   expect(rect('b label')).toEqual(rect('b'))

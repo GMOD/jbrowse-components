@@ -24,8 +24,8 @@ const TCGA_BRCA_RECURRENCE_TRACK = pageTrack(
 const SUBTYPE_ROWS_HEIGHT = 500
 const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 4
 
-// A label pointing at `fracY` of one subtype's row at `locus`, set off from it
-// by `labelDx` and `labelRows` of a row's height.
+// A label pointing at `fracY` of one subtype's row at `locus`, its near edge
+// `labelDx` off it and its middle `labelRows` of a row's height off it.
 function subtypeCallout({
   text,
   locus,
@@ -389,7 +389,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         fracY: 0.65,
         labelRows: 0.2,
         // over chr13-14, where this row is flat
-        labelDx: -420,
+        labelDx: -250,
       }),
     ],
   },

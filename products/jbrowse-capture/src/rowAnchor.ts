@@ -94,10 +94,11 @@ export function rowRectInPage(
     const span = spans.length === 1 ? spans[0] : undefined
     const { rowsTopOffset, effectiveRowHeight, scrollTop } = display
     const r = container.getBoundingClientRect()
-    const shownBottom = Math.min(
-      rowsTopOffset + display.scrollViewportHeight,
-      r.height,
-    )
+    // 0 is a display that does not scroll its rows (a multi-row wiggle)
+    const shownBottom =
+      display.scrollViewportHeight > 0
+        ? Math.min(rowsTopOffset + display.scrollViewportHeight, r.height)
+        : r.height
     const top = span
       ? Math.max(
           rowsTopOffset,
