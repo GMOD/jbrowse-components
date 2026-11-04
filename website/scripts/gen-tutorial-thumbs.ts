@@ -53,12 +53,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   agent_synteny: {
-    // The X region: two reverse blocks crossing, below the location bar. Left
-    // anchored so the forward flank stays beside the start of the inversion.
+    // The X region: two reverse blocks crossing, forward alignment red on both
+    // sides. The 2R figure of the same event is a fan of short blocks, which at
+    // card size reads as noise.
     src: 'agent_synteny/inversion_x.png',
-    band: [0.255, 0.955],
-    xband: [0.15, 1],
-    position: 'left',
+    band: [0.1, 1],
+    position: 'center',
   },
   alphagenome: {
     // The four predicted accessibility rows on one axis: K562 dense, GM12878
@@ -69,20 +69,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   display_settings: {
-    // The left end of the pileup, where colored read pairs and their arcs
-    // cluster beside the plain grey reads.
     src: 'display_settings_url_snapshot.png',
-    band: [0.43, 0.99],
-    xband: [0.005, 0.3],
-    position: 'left',
+    band: [0.3, 1],
   },
   embed_linear_genome_view: {
-    // The colored reference sequence over a gene and the exome reads, without
-    // the track labels.
     src: 'embed_linear_genome_view/final.png',
-    band: [0.12, 0.575],
-    xband: [0.2, 0.8],
-    position: 'center',
+    band: [0.06, 0.56],
   },
   analyze_trio: {
     // the haplotype rows and their labels, starting at the connector zone,
@@ -176,11 +168,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   scrna_pseudobulk: {
-    // The per-cell LYZ rows: the solid monocyte block under the faint
-    // lymphocyte rows. The marker panel is too wide to keep its diagonal at 5:3.
+    // The pseudobulk tracks over the per-cell LYZ rows, ending on the solid
+    // monocyte block.
     src: 'scrna/percell_lyz.png',
-    band: [0.6, 0.99],
-    xband: [0.3, 0.83],
+    band: [0.17, 0.99],
     position: 'center',
   },
   ld_human: {
@@ -195,12 +186,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   ld_mosquitoes: {
-    // Cameroon's LD block filling the 2La span, with the pale low-LD wedge
-    // beside it and the inversion bar below. xband starts past the callout.
+    // Both lanes over the same span, one filled and one not, which is the whole
+    // figure. This one keeps its callouts rather than framing past them: they sit
+    // at x 0.62-0.9, so every crop that clears them also drops the filled
+    // triangle and leaves a white card. Centered, so the cover-crop takes the
+    // trim off both edges and neither callout ends up half a sentence.
     src: 'ld/anopheles_2la.png',
-    band: [0.196, 0.494],
-    xband: [0.415, 0.89],
-    position: 'top',
+    band: [0.05, 1],
+    xband: [0.08, 1],
+    position: 'center',
   },
   bxd_qtl: {
     // the red/blue haplotype painting under the QTL scan, framed below the
@@ -428,12 +422,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   syri_synteny: {
-    // The Col-0/Ler chr4 inversion's crossed ribbon between the grey syntenic
-    // ribbons, with the translocation lines across it.
+    // The ribbon band alone: the crossed inversion between grey syntenic
+    // regions is the whole shape, and the two empty track panels above and
+    // below it add nothing at card size.
     src: 'syri/col_ler_chr4.png',
-    band: [0.33, 0.92],
-    xband: [0.24, 0.57],
-    position: 'center',
+    band: [0.1, 0.95],
   },
   odp_linkage_groups_synteny: {
     // the stack's lower bands, where the groups run as bundles; the dotplots
@@ -503,13 +496,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   pangenome_hprc_haplotypes: {
-    // The CFH lanes where the commonest form gives way to the deletion's, framed
-    // on the switch: ribbons with CFHR3 above, ribbons ending after CFH below,
-    // with the contig names kept in the row labels.
+    // The haplotype lanes across the whole window, down to where the CFHR3
+    // form gives way to the deletion's.
     src: 'pangenome/hprc_cfhr_lanes.png',
-    band: [0.62, 0.86],
-    xband: [0, 0.62],
-    position: 'left',
+    band: [0.36, 0.86],
+    position: 'center',
   },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
   // per strain, under the K12 gene lane. It used to be this tutorial's variant
@@ -530,11 +521,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   pangenome_cactus: {
-    // Four rows of strain-to-strain synteny ribbons, ending on NCTC86's blue
-    // inversions. xband drops the row names and the panel controls.
-    src: 'pangenome_cactus/synteny.png',
-    band: [0.215, 0.93],
-    xband: [0.066, 0.9],
+    // The K12 genes over the graph's MAF rows, strain names kept, up to where
+    // the other four strains drop out.
+    src: 'pangenome_cactus/maf.png',
+    band: [0.33, 1],
     position: 'left',
   },
   // The genome-wide TCGA-BRCA CNV cohort matrix. The lower half carries
@@ -545,11 +535,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   tcga_cohort_mutations: {
-    // PIK3CA's exons, the connector fan and the subtype-grouped matrix with its
-    // hotspot column; it clears the legend and the CDH1 figure's callout.
-    src: 'tcga/mutations_pik3ca_grouped.png',
-    band: [0.2, 0.99],
-    xband: [0.25, 0.89],
+    // the histology-grouped CDH1 matrix: everything under the navigation row,
+    // so the card carries the exons, the connector fan and the whole row stack
+    // with its dense lobular band at the bottom. A tighter band on the bands
+    // themselves is much wider than 5:3, so the cover-crop would keep a sixth
+    // of the width and the card would be mostly empty gray.
+    src: 'tcga/mutations_cdh1_histology.png',
+    band: [0.175, 1],
     position: 'center',
   },
   // The 2504-row cohort heatmap rather than the page's hero, left of the
