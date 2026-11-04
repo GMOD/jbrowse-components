@@ -44,7 +44,9 @@ export const SearchPicker = observer(function SearchPicker({
         <button
           type="button"
           aria-label="Close search results"
-          onClick={view.closeSearchPicker}
+          onClick={() => {
+            view.closeSearchPicker()
+          }}
         >
           ✕
         </button>

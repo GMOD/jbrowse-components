@@ -33,10 +33,7 @@ const Settings = observer(function Settings({
         <select
           value={display.colorField ?? ''}
           onChange={event => {
-            const field = event.target.value
-            display.applyPlot({
-              encoding: { color: field ? { field } : null },
-            })
+            display.colorByField(event.target.value || undefined)
           }}
         >
           {colorFields.map(({ field, label }) => (

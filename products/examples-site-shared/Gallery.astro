@@ -1,16 +1,11 @@
 ---
 // Shared example gallery grid for each site's index page. Symlinked into every
-// product's src/layouts/, so — like Shell — it must stay self-contained with no
-// relative imports; the example list arrives via props and its shape is inlined.
-interface ExampleMeta {
-  slug: string
-  title: string
-  description: string
-  group: string
-}
+// product's src/layouts/, so — like Shell — a site module is imported as
+// `~site/...`, never by a relative path.
+import type { ExamplePage } from '~site/exampleModel.ts'
 
 interface Props {
-  examples: ExampleMeta[]
+  examples: ExamplePage[]
 }
 
 const { examples } = Astro.props

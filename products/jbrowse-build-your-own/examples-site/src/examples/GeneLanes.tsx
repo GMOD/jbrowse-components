@@ -34,7 +34,7 @@ const genomes = [
 const loci = [
   { label: 'atp operon', loc: 'NC_000913.3:3,910,000-3,925,000' },
   { label: 'O-antigen cluster', loc: 'NC_000913.3:2,095,000-2,115,000' },
-]
+] as const
 
 const Loci = observer(function Loci({ view }: { view: LinearGenomeViewModel }) {
   return (
@@ -88,7 +88,7 @@ const GeneLanes = observer(function GeneLanes() {
       },
     ],
     view: {
-      loc: loci[0]!.loc,
+      loc: loci[0].loc,
       tracks: ['orthologs'],
     },
   })

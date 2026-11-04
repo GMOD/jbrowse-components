@@ -12,7 +12,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const fields = ['gene_biotype', 'strand', 'source']
 
-const domains: Record<string, string[]> = {
+const domains: Partial<Record<string, string[]>> = {
   gene_biotype: ['protein_coding', 'lncRNA', 'pseudogene'],
 }
 
@@ -60,11 +60,14 @@ const Channels = observer(function Channels({
         label="Color by"
         value={display.colorField}
         onChange={field => {
+          const domain = field ? domains[field] : undefined
           display.applyPlot({
             encoding: {
-              color: field
-                ? { field, scale: { domain: domains[field] } }
-                : null,
+              color: domain
+                ? { field, scale: { domain } }
+                : field
+                  ? { field }
+                  : null,
             },
           })
         }}
@@ -73,8 +76,9 @@ const Channels = observer(function Channels({
         label="Group rows by"
         value={display.facet?.field}
         onChange={field => {
+          const sort = field ? domains[field] : undefined
           display.applyPlot({
-            facet: field ? { field, sort: domains[field] } : null,
+            facet: sort ? { field, sort } : field ? { field } : null,
           })
         }}
       />

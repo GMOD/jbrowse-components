@@ -64,6 +64,7 @@ export const PosterFirst = observer(function PosterFirst({
       childList: true,
       attributeFilter: ['data-app-phase'],
     }
+    let attached = true
     const check = () => {
       if (isReady(el)) {
         observer.disconnect()
@@ -71,7 +72,7 @@ export const PosterFirst = observer(function PosterFirst({
           requestAnimationFrame(() => {
             if (isReady(el)) {
               setReady(true)
-            } else {
+            } else if (attached) {
               observer.observe(el, options)
             }
           })
@@ -82,6 +83,7 @@ export const PosterFirst = observer(function PosterFirst({
     observer.observe(el, options)
     check()
     return () => {
+      attached = false
       observer.disconnect()
     }
   }

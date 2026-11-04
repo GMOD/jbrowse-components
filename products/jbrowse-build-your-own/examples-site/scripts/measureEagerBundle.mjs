@@ -10,30 +10,28 @@
 // the answer was 1.8 MB (667 KB gzipped) across 347 chunks on the page whose
 // prose is "a measured div and one track, nothing else".
 //
-// The eager set is the transitive closure over **static** imports from the
-// chunks a page's HTML names. A dynamic `import()` is excluded, which is the
-// whole point: everything JBrowse defers — every renderer, every display body,
-// every dialog — is deferred, and this counts what is left. `es-module-lexer`
-// rather than a regex because it is the one thing that reliably tells the two
-// apart in minified output.
+// The eager set is `eagerSet.mjs`'s: the closure over static chunk imports from
+// the chunks a page's HTML names, read off the build's own chunk records.
 //
 // The budget is a **ceiling with a ratchet**, not the equality
 // `chromeBundleSizes.json` uses. Exact bytes here move with any dependency bump
 // and with rolldown's chunking, so equality would be a standing nuisance; but a
 // pure ceiling only ever rots upward, so going far enough *under* one fails too
 // and asks you to bank the win.
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { gzipSync } from 'zlib'
 
-import { init, parse } from 'es-module-lexer/minimal'
+import { pages as examplePages } from '../src/examples.ts'
+import {
+  chunkFor,
+  dist,
+  eagerChunks,
+  npmPackageOf,
+  readEagerGraph,
+  site,
+} from './eagerSet.mjs'
 
-import { eagerGraphFile } from './eagerGraphDump.mjs'
-
-const here = path.dirname(fileURLToPath(import.meta.url))
-const site = path.join(here, '..')
-const dist = path.join(site, 'dist')
 const budgetFile = path.join(site, 'eagerBundleSizes.json')
 const floorFile = path.join(site, 'eagerFloor.json')
 
@@ -51,74 +49,45 @@ const UNDER_KB = 25
 const FLOOR_PAGE = 'index'
 const MOVER_KB = 2
 
-await init
+const graph = readEagerGraph()
+const eagerSets = new Map(
+  ['index', ...examplePages.map(e => e.slug).sort()].map(page => [
+    page,
+    eagerChunks(graph, page),
+  ]),
+)
+const pages = [...eagerSets.keys()]
 
-const astroDir = path.join(dist, '_astro')
-const chunks = new Map()
-for (const file of readdirSync(astroDir).filter(f => f.endsWith('.js'))) {
-  const source = readFileSync(path.join(astroDir, file), 'utf8')
-  const [imports] = parse(source, file)
-  chunks.set(file, {
-    gzipBytes: gzipSync(source).byteLength,
-    // i.d === -1 marks a static import; anything else is `import(...)`
-    static: imports
-      .filter(i => i.d === -1 && i.n?.endsWith('.js'))
-      .map(i => path.basename(i.n)),
-  })
-}
-
-// the landing page is `index`: it runs a demo of its own, so it downloads the
-// engine like every other page here, but it is dist/index.html rather than a
-// directory of its own
-const htmlFor = page =>
-  page === 'index'
-    ? path.join(dist, 'index.html')
-    : path.join(dist, page, 'index.html')
-
-function eagerSet(page) {
-  const html = readFileSync(htmlFor(page), 'utf8')
-  const seen = new Set()
-  const queue = [...html.matchAll(/_astro\/([\w.$-]+\.js)/g)].map(m => m[1])
-  while (queue.length) {
-    const file = queue.pop()
-    if (seen.has(file) || !chunks.has(file)) {
-      continue
-    }
-    seen.add(file)
-    queue.push(...chunks.get(file).static)
+const gzipBytes = new Map()
+function gzipBytesOf(file) {
+  if (!gzipBytes.has(file)) {
+    gzipBytes.set(
+      file,
+      gzipSync(readFileSync(path.join(dist, '_astro', file))).byteLength,
+    )
   }
-  return seen
+  return gzipBytes.get(file)
 }
 
-const pages = [
-  'index',
-  ...readdirSync(dist, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name !== '_astro')
-    .map(d => d.name)
-    .sort(),
-]
-
-const measured = {}
-for (const page of pages) {
-  const set = eagerSet(page)
-  measured[page] = {
-    chunks: set.size,
-    gzipKb: Math.round(
-      [...set].reduce((a, f) => a + chunks.get(f).gzipBytes, 0) / 1024,
-    ),
-  }
-}
+const measured = Object.fromEntries(
+  [...eagerSets].map(([page, set]) => [
+    page,
+    {
+      chunks: set.size,
+      gzipKb: Math.round(
+        [...set].reduce((a, f) => a + gzipBytesOf(f), 0) / 1024,
+      ),
+    },
+  ]),
+)
 
 // `npm:<package>`, or a first-party package and its first directory under
 // src: `packages/core/util`, `plugins/marks/LinearMarkDisplay`
 function directoryOf(id) {
-  const npm =
-    /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)/.exec(
-      id,
-    )
+  const npm = npmPackageOf(id)
   const own = /\/(packages|plugins|products)\/([^?]*)/.exec(id)
   return npm
-    ? `npm:${npm[1]}`
+    ? `npm:${npm}`
     : own
       ? [
           own[1],
@@ -133,16 +102,9 @@ function directoryOf(id) {
 }
 
 function floorByDirectory() {
-  const graph = JSON.parse(readFileSync(eagerGraphFile, 'utf8'))
   const bytes = new Map()
-  for (const file of eagerSet(FLOOR_PAGE)) {
-    const chunk = graph.chunks[`_astro/${file}`]
-    if (!chunk) {
-      throw new Error(
-        `${eagerGraphFile} does not describe dist/_astro/${file}: rebuild`,
-      )
-    }
-    for (const [id, length] of Object.entries(chunk.modules)) {
+  for (const file of eagerSets.get(FLOOR_PAGE)) {
+    for (const [id, length] of Object.entries(chunkFor(graph, file).modules)) {
       const dir = directoryOf(id)
       bytes.set(dir, (bytes.get(dir) ?? 0) + length)
     }
@@ -186,7 +148,9 @@ const rows = pages.map(
 
 if (process.argv.includes('--check')) {
   const budget = JSON.parse(readFileSync(budgetFile, 'utf8'))
-  const problems = []
+  const problems = Object.keys(budget)
+    .filter(page => !pages.includes(page))
+    .map(page => `${page}: budget entry for a page that no longer exists`)
   for (const page of pages) {
     const allowed = budget[page]?.gzipKb
     if (allowed === undefined) {

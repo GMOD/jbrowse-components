@@ -65,7 +65,9 @@ export const Notifications = observer(function Notifications({
                 // eslint-disable-next-line @eslint-react/no-array-index-key -- an action has no id, and its name may be an element
                 key={i}
                 type="button"
-                onClick={action.onClick}
+                onClick={() => {
+                  action.onClick()
+                }}
               >
                 {action.name}
               </button>
