@@ -464,8 +464,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     // The dialog is centred, so trimming the reported blank below it crops the
-    // pileup it floats over.
-    viewportHeight: 580,
+    // pileup it floats over. Tall enough for its title and both headings.
+    viewportHeight: 700,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
