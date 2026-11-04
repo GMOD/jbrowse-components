@@ -66,6 +66,46 @@ test('reads the assembly_report.txt spelling of the same table', async () => {
   ])
 })
 
+test('a GenArk report with no UCSC names names each sequence by its Sequence-Name', async () => {
+  const result = await makeAdapter(
+    undefined,
+    'genark_assembly_report.txt',
+  ).getRefNameAliases()
+  expect(
+    result.map(({ refName, aliases, role, molecule }) => ({
+      refName,
+      aliases,
+      role,
+      molecule,
+    })),
+  ).toEqual([
+    {
+      refName: '1',
+      aliases: ['CM028482.1', 'NC_052532.1', '1'],
+      role: 'assembled-molecule',
+      molecule: 'Chromosome',
+    },
+    {
+      refName: 'MT',
+      aliases: ['CM028585.1', 'NC_053523.1', 'MT'],
+      role: 'assembled-molecule',
+      molecule: 'Mitochondrion',
+    },
+    {
+      refName: '1_unloc1',
+      aliases: ['JAENSK010000001.1', 'NW_024095932.1', '1_unloc1'],
+      role: 'unlocalized-scaffold',
+      molecule: 'Chromosome',
+    },
+    {
+      refName: 'scaffold_46',
+      aliases: ['JAENSK010000565.1', 'NW_024095998.1', 'scaffold_46'],
+      role: 'unplaced-scaffold',
+      molecule: undefined,
+    },
+  ])
+})
+
 test('parses an NCBI sequence_report.tsv', async () => {
   const result = await makeAdapter().getRefNameAliases()
   expect(result[0]!.refName).toBe('chr1')

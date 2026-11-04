@@ -394,10 +394,10 @@ covers sixteen scaffolds in one entry and survives the assembly being rebuilt.
 
 The entry `chromosomes` names an assembly's nuclear chromosomes, in assembly
 order, where its `refNameAliases` is an NCBI sequence report
-(`sequence_report.tsv`, or the `_assembly_report.txt` a GenArk hub ships): the
-sequences it calls assembled molecules of type Chromosome or Linkage Group.
-Unlocalized and unplaced scaffolds, alts, patches and organelles are left out,
-so `["chromosomes", "chrM"]` adds the mitochondrion.
+(`sequence_report.tsv` or `_assembly_report.txt`): the sequences it calls
+assembled molecules of type Chromosome or Linkage Group. Unlocalized and
+unplaced scaffolds, alts, patches and organelles are left out, so
+`["chromosomes", "chrM"]` adds the mitochondrion.
 
 - A whole-genome view given no names opens the same set, and `["*"]` opens every
   sequence.

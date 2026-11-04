@@ -270,13 +270,27 @@ describe('resolveNamedRegions', () => {
     expect(said).toEqual([])
   })
 
-  it('says why chromosomes named nothing on an assembly with no roles', () => {
+  it('says why chromosomes named nothing on an assembly with none', () => {
     const said: string[] = []
     expect(
       resolve(['chromosomes', 'chrUn'], m => said.push(m))?.map(r => r.refName),
     ).toEqual(['chrUn'])
     expect(said).toEqual([
-      'asm does not say which of its sequences are chromosomes: its refNameAliases states no sequence roles, as an NCBI sequence report does',
+      'asm has no sequences its refNameAliases calls chromosomes; an NCBI sequence report states which are',
     ])
+  })
+
+  it('says nothing when a contig really named chromosomes answered', () => {
+    const said: string[] = []
+    expect(
+      resolveNamedRegions({
+        regions: [...hap, region('chromosomes')],
+        names: ['chromosomes'],
+        assemblyName: 'asm',
+        getCanonicalRefName: identity,
+        notify: m => said.push(m),
+      })?.map(r => r.refName),
+    ).toEqual(['chromosomes'])
+    expect(said).toEqual([])
   })
 })

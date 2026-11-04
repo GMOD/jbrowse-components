@@ -243,16 +243,20 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * never narrowed to nothing, which would draw an empty circle
+       * the assembly's whole genome (`Assembly.wholeGenomeRegions`), or the
+       * regions any feature names when narrowed to those, which may include a
+       * contig the whole genome leaves out. Never narrowed to nothing, which
+       * would draw an empty circle
        */
       get circularDisplayedRegions() {
-        const regions = this.currentAssembly?.regions
+        const assembly = this.currentAssembly
+        const regions = assembly?.regions
         if (!regions || !self.onlyDisplayRelevantRegionsInCircularView) {
-          return regions
+          return regions ? assembly.wholeGenomeRegions : undefined
         }
         const relevant = this.canonicalFeatureRefNameSet
         const narrowed = regions.filter(r => relevant.has(r.refName))
-        return narrowed.length ? narrowed : regions
+        return narrowed.length ? narrowed : assembly.wholeGenomeRegions
       },
       /**
        * #getter

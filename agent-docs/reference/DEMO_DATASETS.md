@@ -45,8 +45,10 @@ format traps.
   Nextstrain build references, except measles NC_001498.
 - **COLO829 for canonical imprinting.** LOH at every DMR; the methylation tutorial
   uses HG002 germline ONT instead.
-- **Teaching `NcbiSequenceReportAliasAdapter` `*_assembly_report.txt`** was tried and
-  reverted.
+- **A GenArk hub's `*_assembly_report.txt` in place of its chromAlias.**
+  `NcbiSequenceReportAliasAdapter` reads it, for the sequence roles
+  `chromosomes` needs, but the hub's copy usually has `na` UCSC names, so the
+  `chr1` aliases its chromAlias carried are lost.
 
 ## Where things live
 

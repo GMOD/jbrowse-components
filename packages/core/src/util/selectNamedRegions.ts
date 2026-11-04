@@ -203,9 +203,12 @@ export function resolveNamedRegions({
     allRefNames,
     chromosomes,
   )
-  if (!chromosomes.length && names.some(n => n.toLowerCase() === CHROMOSOMES)) {
+  const namesChromosomes = names.some(
+    n => n.toLowerCase() === CHROMOSOMES && !regions.some(r => r.refName === n),
+  )
+  if (namesChromosomes && !chromosomes.length) {
     notify(
-      `${assemblyName} does not say which of its sequences are chromosomes: its refNameAliases states no sequence roles, as an NCBI sequence report does`,
+      `${assemblyName} has no sequences its refNameAliases calls chromosomes; an NCBI sequence report states which are`,
     )
   }
   if (picked.length) {

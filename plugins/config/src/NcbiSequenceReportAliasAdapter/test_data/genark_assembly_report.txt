@@ -1,0 +1,8 @@
+# Assembly name:  bGalGal1.mat.broiler.GRCg7b
+# Description:    bGalGal1 maternal broiler GRCg7b
+# Organism name:  Gallus gallus (chicken)
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+1	assembled-molecule	1	Chromosome	CM028482.1	=	NC_052532.1	Primary Assembly	196449156	na
+MT	assembled-molecule	MT	Mitochondrion	CM028585.1	=	NC_053523.1	non-nuclear	16784	na
+1_unloc1	unlocalized-scaffold	1	Chromosome	JAENSK010000001.1	=	NW_024095932.1	Primary Assembly	42181	na
+scaffold_46	unplaced-scaffold	na	na	JAENSK010000565.1	=	NW_024095998.1	Primary Assembly	172381	na

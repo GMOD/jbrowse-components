@@ -83,7 +83,7 @@ const optionDefs: OptionDef[] = [
     name: 'loc',
     modes: ['linear', 'breakpoint'],
     description:
-      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side',
+      'Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side',
   },
   {
     name: 'view',
