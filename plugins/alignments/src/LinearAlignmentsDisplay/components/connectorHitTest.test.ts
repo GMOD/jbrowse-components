@@ -1,5 +1,6 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
+import { max } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { enumerateConnectorPairs } from '../../features/linkedReads/computeOverlay.ts'
@@ -33,6 +34,7 @@ function splitRead(
     readStrands: Int8Array.from(strands),
     readPositions: Uint32Array.from(starts.flatMap(s => [s, s + 50])),
     readYs: Uint16Array.from(ys),
+    maxY: max(ys, -1) + 1,
     readClipAtStart: Uint32Array.from(ids, (_, i) => i * 100),
   })
 }
