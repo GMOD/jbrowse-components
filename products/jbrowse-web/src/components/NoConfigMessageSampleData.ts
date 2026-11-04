@@ -58,10 +58,6 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Theme (wild color)',
   },
   {
-    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":{"show":true}}}]}]}',
-    label: 'Volvox SV (arc display)',
-  },
-  {
     config: 'test_data/volvox/config_broken.json',
     label: 'Broken track config',
   },
@@ -118,6 +114,109 @@ export const sampleConfigs: readonly SampleLink[] = [
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:16900000-16920000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t","hg002_dipcall_hap1_t2t","hg002_dipcall_hap2_t2t"]}]}',
     label:
       'HG002 diploid assembly (dipcall hap1+hap2 + variant calls vs GRCh38)',
+  },
+]
+
+const volvoxView = (loc: string, track: Record<string, unknown>) =>
+  `?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(
+    JSON.stringify({
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc, tracks: [track] },
+      ],
+    }),
+  )}`
+
+export const volvoxSvChannelsTrack = {
+  trackId: 'volvox_sv_cram',
+  pileup: { show: false },
+  facet: { field: 'svChannel' },
+  readConnections: {
+    show: true,
+    mark: 'link',
+    ordinaryPairs: { show: false },
+  },
+  sashimi: { show: false },
+}
+
+export const volvoxAlignmentsLinks: readonly SampleLink[] = [
+  {
+    href: volvoxView('ctgA:1-50000', volvoxSvChannelsTrack),
+    label: 'Volvox SV: SV channels',
+  },
+  {
+    href: volvoxView('ctgA:1-50000', {
+      trackId: 'volvox_sv_cram',
+      readConnections: { show: true },
+    }),
+    label: 'Volvox SV: read arcs',
+  },
+  {
+    href: volvoxView('ctgA:1-50000', {
+      trackId: 'volvox_sv_cram',
+      readConnections: { show: true, mark: 'rule' },
+      encoding: { color: 'insertSizeAndOrientation' },
+    }),
+    label: 'Volvox SV: read cloud',
+  },
+  {
+    href: volvoxView('ctgA:1-50000', {
+      trackId: 'volvox_sv_cram',
+      facet: { field: 'pairOrientation' },
+    }),
+    label: 'Volvox SV: grouped by pair orientation',
+  },
+  {
+    href: volvoxView('ctgA:1-10000', {
+      trackId: 'volvox_sv_cram',
+      unit: 'chain',
+      encoding: { color: 'insertSizeAndOrientation' },
+    }),
+    label: 'Volvox SV: pairs as chains, colored by insert size/orientation',
+  },
+  {
+    href: volvoxView('ctgA:1-50000', {
+      trackId: 'volvox-long-reads-sv-bam',
+      unit: 'chain',
+    }),
+    label: 'Volvox long reads SV: split reads linked',
+  },
+  {
+    href: volvoxView('ctgA:15000-35000', {
+      trackId: 'volvox-simple-inv-paired.bam',
+      readConnections: { show: true },
+      encoding: { color: 'insertSizeAndOrientation' },
+    }),
+    label: 'Volvox inversion (paired-end arcs, orientation color)',
+  },
+  {
+    href: volvoxView('ctgA:19500-20300', {
+      trackId: 'volvox_translocation',
+      facet: { field: 'mateRefName' },
+      encoding: { color: 'mateRefName' },
+    }),
+    label: 'Volvox translocation: grouped by mate contig',
+  },
+  {
+    href: volvoxView('ctgA:28000-33000', {
+      trackId: 'spliced',
+      sort: 'spliced',
+      sashimi: { labels: { show: true } },
+    }),
+    label: 'Volvox RNA-seq: sashimi labels, spliced reads first',
+  },
+  {
+    href: volvoxView('ctgA:1-11300', {
+      trackId: 'paired_end_stranded_rnaseq',
+      encoding: { color: 'firstOfPairStrand' },
+    }),
+    label: 'Volvox stranded RNA-seq: colored by first-of-pair strand',
+  },
+  {
+    href: volvoxView('ctgA:1-2000', {
+      trackId: 'volvox-rg',
+      facet: { field: 'tags.RG' },
+    }),
+    label: 'Volvox read groups: grouped by RG tag',
   },
 ]
 
@@ -249,7 +348,7 @@ export const demoSessions: readonly SampleLink[] = [
     label: 'Paired-end stranded RNA-seq',
   },
   {
-    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","baseColor":{"field":"modifications"}}}]}]}',
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","pileup":{"bases":{"show":true,"encoding":{"color":"modifications"}}}}]}]}',
     label: 'Fiber-seq (5mC/6mA, MAGEL2)',
   },
   {

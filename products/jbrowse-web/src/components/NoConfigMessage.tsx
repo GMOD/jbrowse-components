@@ -5,6 +5,7 @@ import {
   demoSessions,
   sampleConfigs,
   syntenyConfigs,
+  volvoxAlignmentsLinks,
 } from './NoConfigMessageSampleData.ts'
 
 const NoConfigMessage = observer(function NoConfigMessage() {
@@ -32,7 +33,13 @@ const NoConfigMessage = observer(function NoConfigMessage() {
       </div>
 
       <div style={{ flex: 1 }}>
-        <h3 style={{ margin: '0 0 4px' }}>Synteny and dotplot</h3>
+        <h3 style={{ margin: '0 0 4px' }}>Volvox alignments arrangements</h3>
+        <NoConfigMessageLinkList
+          links={volvoxAlignmentsLinks}
+          buildUrl={buildConfigUrl}
+        />
+
+        <h3 style={{ margin: '16px 0 4px' }}>Synteny and dotplot</h3>
         <NoConfigMessageLinkList
           links={syntenyConfigs}
           buildUrl={buildConfigUrl}
