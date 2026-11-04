@@ -14,6 +14,7 @@ import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   buildChainConnectingData,
+  chainConnectingLinesAround,
   computeMultiRegionChainLayout,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
@@ -806,5 +807,59 @@ describe('buildChainConnectingData', () => {
         ).spans,
       ).toEqual([])
     })
+  })
+})
+
+describe('chainConnectingLinesAround', () => {
+  function trio() {
+    const data = makeChainData({
+      regionStart: 0,
+      chains: [
+        {
+          name: 'trio',
+          minStart: 100,
+          maxEnd: 1500,
+          distance: 1400,
+          numReads: 3,
+        },
+        {
+          name: 'pair',
+          minStart: 2000,
+          maxEnd: 2600,
+          distance: 600,
+          numReads: 2,
+        },
+      ],
+    })
+    return {
+      ...data,
+      readPositions: new Uint32Array([
+        100, 200, 400, 500, 1400, 1500, 2000, 2100, 2500, 2600,
+      ]),
+    }
+  }
+
+  test('a curve on one link of a three-read chain keeps the other link', () => {
+    const out = chainConnectingLinesAround(
+      trio(),
+      new Map([[0, [{ start: 500, end: 1400 }]]]),
+    )
+    expect([...out!.connectingLinePositions]).toEqual([200, 400, 2000, 2600])
+  })
+
+  test('curves on every link leave the chain no hairline', () => {
+    const out = chainConnectingLinesAround(
+      trio(),
+      new Map([
+        [
+          0,
+          [
+            { start: 500, end: 1400 },
+            { start: 200, end: 400 },
+          ],
+        ],
+      ]),
+    )
+    expect([...out!.connectingLinePositions]).toEqual([2000, 2600])
   })
 })

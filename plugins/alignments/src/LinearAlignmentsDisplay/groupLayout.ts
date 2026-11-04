@@ -11,7 +11,7 @@ import {
 } from './collapsedLayout.ts'
 import {
   buildLaidOutChainMap,
-  chainConnectingLinesWithout,
+  chainConnectingLinesAround,
   chainLayoutMaxY,
 } from './computeChainLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
@@ -36,6 +36,7 @@ import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
 import type { GroupId } from './groupedDataMaps.ts'
+import type { Span } from './spanOverlaps.ts'
 
 // Per group key: region index → laid-out data (Y arrays filled), colors not yet
 // baked. `applyReadColorsByGroup` turns one of these into a `ColoredByGroup`,
@@ -260,23 +261,28 @@ export function applyChainStrandFrames(
   return out
 }
 
-// The chains, by region, that a connector-mark curve joins within that region.
-function chainsJoinedByMark({ overlayPairs }: GroupConnectors) {
-  const byRegion = new Map<number, Set<number>>()
-  for (const { e1, e2 } of overlayPairs) {
+// Each chain's connector-mark curve spans, by region, for the curves joining
+// two reads within that region.
+function curvesByChain({ overlayPairs }: GroupConnectors) {
+  const byRegion = new Map<number, Map<number, Span[]>>()
+  for (const { e1, e2, c } of overlayPairs) {
     const chain = e1.data.readChainIndices?.[e1.readIdx]
     if (
       chain !== undefined &&
       e1.displayedRegionIndex === e2.displayedRegionIndex
     ) {
-      getOrCreate(byRegion, e1.displayedRegionIndex, () => new Set()).add(chain)
+      getOrCreate(
+        getOrCreate(byRegion, e1.displayedRegionIndex, () => new Map()),
+        chain,
+        () => [],
+      ).push({ start: Math.min(c.bp1, c.bp2), end: Math.max(c.bp1, c.bp2) })
     }
   }
   return byRegion
 }
 
 // The straight-line pass's records spread onto the regions holding a line,
-// and the chain hairline dropped wherever a connector curve joins that chain.
+// and each chain hairline cut wherever a connector curve joins that chain.
 // After the color bake, so a recolor leaves the line arrays the GPU holds
 // alone and a curved-connector toggle leaves the colors.
 export function attachLinkedReadLinesByGroup(
@@ -290,16 +296,16 @@ export function attachLinkedReadLinesByGroup(
   for (const [key, map] of byGroup) {
     const group = connectors.get(key)
     const lines = group?.lines
-    const joined = group ? chainsJoinedByMark(group) : undefined
+    const curves = group ? curvesByChain(group) : undefined
     out.set(
       key,
-      lines?.size || joined?.size
+      lines?.size || curves?.size
         ? new Map(
             [...map].map(([idx, data]) => {
               const own = lines?.get(idx)
-              const skip = joined?.get(idx)
-              const hairlines = skip
-                ? chainConnectingLinesWithout(data, skip)
+              const regionCurves = curves?.get(idx)
+              const hairlines = regionCurves
+                ? chainConnectingLinesAround(data, regionCurves)
                 : undefined
               return [
                 idx,

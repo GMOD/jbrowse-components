@@ -42,6 +42,8 @@ interface ReadSpan extends Span {
   read: number
 }
 
+const byStart = (a: Span, b: Span) => a.start - b.start
+
 // Total order over chains: packing distance first, then span, then chain name.
 // The tiebreaks matter for the same reason `compareReadsCanonically`
 // (sortLayout.ts) needs them — first-fit-lowest-row placement is arrival-order
@@ -407,7 +409,6 @@ function chainOverlapsByKind(spans: ReadSpan[], readFlags: ArrayLike<number>) {
       }
     }
   }
-  const byStart = (a: Span, b: Span) => a.start - b.start
   const mergedSegments = mergeSortedSpans(segments.sort(byStart))
   return {
     segments: mergedSegments,
@@ -472,57 +473,72 @@ export function buildChainConnectingData(
   chainFlatbush?.finish()
 
   return {
-    ...connectingLines(data, readYs, multiReadChains, NO_CHAINS),
+    ...connectingLines(data, readYs, multiReadChains, NO_CURVES),
     ...buildChainOverlaps(data, readYs, multiReadChains),
     chainFlatbush,
   }
 }
 
-const NO_CHAINS: ReadonlySet<number> = new Set()
+const NO_CURVES: ReadonlyMap<number, readonly Span[]> = new Map()
 
 function connectingLines(
   {
+    readPositions,
     chainFirstReadIndices,
     chainAbsMinStarts,
     chainAbsMaxEnds,
-  }: Pick<
-    ChainFields,
-    'chainFirstReadIndices' | 'chainAbsMinStarts' | 'chainAbsMaxEnds'
-  >,
+  }: Pick<ChainPileupData, 'readPositions'> &
+    Pick<
+      ChainFields,
+      'chainFirstReadIndices' | 'chainAbsMinStarts' | 'chainAbsMaxEnds'
+    >,
   readYs: Uint16Array,
-  multiReadChains: ReadonlyMap<number, unknown>,
-  skip: ReadonlySet<number>,
+  multiReadChains: ReadonlyMap<number, readonly number[]>,
+  curves: ReadonlyMap<number, readonly Span[]>,
 ) {
-  const numChains = chainFirstReadIndices.length
-  const drawn = (i: number) => multiReadChains.has(i) && !skip.has(i)
-  let numLines = 0
-  for (let i = 0; i < numChains; i++) {
-    if (drawn(i)) {
-      numLines++
+  const positions: number[] = []
+  const ys: number[] = []
+  for (let i = 0; i < chainFirstReadIndices.length; i++) {
+    const reads = multiReadChains.get(i)
+    if (reads) {
+      const span = { start: chainAbsMinStarts[i]!, end: chainAbsMaxEnds[i]! }
+      const chainCurves = curves.get(i)
+      const y = readYs[chainFirstReadIndices[i]!]!
+      const pieces = chainCurves
+        ? subtractSortedSpans(
+            [span],
+            mergeSortedSpans(
+              [
+                ...chainCurves,
+                ...reads.map(r => ({
+                  start: readPositions[r * 2]!,
+                  end: readPositions[r * 2 + 1]!,
+                })),
+              ].sort(byStart),
+            ),
+          )
+        : [span]
+      for (const { start, end } of pieces) {
+        positions.push(start, end)
+        ys.push(y)
+      }
     }
   }
-  const connectingLinePositions = new Uint32Array(numLines * 2)
-  const connectingLineYs = new Uint16Array(numLines)
-  let lineIdx = 0
-  for (let i = 0; i < numChains; i++) {
-    if (drawn(i)) {
-      connectingLinePositions[lineIdx * 2] = chainAbsMinStarts[i]!
-      connectingLinePositions[lineIdx * 2 + 1] = chainAbsMaxEnds[i]!
-      connectingLineYs[lineIdx] = readYs[chainFirstReadIndices[i]!]!
-      lineIdx++
-    }
+  return {
+    connectingLinePositions: new Uint32Array(positions),
+    connectingLineYs: new Uint16Array(ys),
   }
-  return { connectingLinePositions, connectingLineYs }
 }
 
 /**
- * A laid-out chain region's connecting lines without the chains in `skip`,
- * the ones a read connector already joins: the connector is that chain's line,
- * and a hairline under a dipping curve reads as a second connection.
+ * A laid-out chain region's connecting lines with the stretches under its
+ * connector curves left out, `curves` holding each chain's curve spans: the
+ * curve is that link's line, and a hairline under a dipping curve reads as a
+ * second connection. The chain's other links keep their hairline.
  */
-export function chainConnectingLinesWithout(
+export function chainConnectingLinesAround(
   data: LaidOutPileupData,
-  skip: ReadonlySet<number>,
+  curves: ReadonlyMap<number, readonly Span[]>,
 ) {
   return isChainData(data)
     ? connectingLines(
@@ -532,7 +548,7 @@ export function chainConnectingLinesWithout(
           data.readChainIndices,
           data.chainFirstReadIndices.length,
         ),
-        skip,
+        curves,
       )
     : undefined
 }
