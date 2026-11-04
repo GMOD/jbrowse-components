@@ -421,3 +421,16 @@ export function pruneEmptyTab(root: LayoutTree, tabId: string): LayoutTree {
   const found = findTab(root, tabId)
   return found?.tab.viewIds.length === 0 ? removeTab(root, tabId) : root
 }
+
+/**
+ * A view closed from its own chrome: it leaves its tab, and a tab or cell that
+ * leaves empty goes too, as closing that tab or cell would. The workspace's
+ * last tab stays, since a tabless last cell shows no launcher.
+ */
+export function closeView(root: LayoutTree, viewId: string): LayoutTree {
+  const home = tabContainingView(root, viewId)
+  const removed = removeView(root, viewId)
+  return home && (home.panel.tabs.length > 1 || panels(root).length > 1)
+    ? pruneEmptyPanel(pruneEmptyTab(removed, home.tab.id), home.panel.id)
+    : removed
+}

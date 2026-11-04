@@ -6,6 +6,8 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { closeViewFromChrome } from '../../WorkspaceLayout/model.ts'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
@@ -46,7 +48,7 @@ const ViewButtons = observer(function ViewButtons({
         aria-label="Close view"
         data-testid="close_view"
         onClick={() => {
-          session.removeView(view)
+          closeViewFromChrome(session, view)
         }}
       >
         <CloseIcon className={classes.icon} fontSize="small" />

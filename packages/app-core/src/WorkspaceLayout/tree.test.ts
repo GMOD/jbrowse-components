@@ -1,6 +1,7 @@
 import {
   addTab,
   addViewToTab,
+  closeView,
   homeViews,
   isBranch,
   moveTabToPanel,
@@ -394,6 +395,58 @@ describe('views and tabs', () => {
   })
 })
 
+describe('closeView', () => {
+  test('a tab it empties goes, and its cell stays for the other tab', () => {
+    const base = addTab(panel('p1', ['v1']), 'p1', {
+      id: 't2',
+      viewIds: ['v2'],
+    })
+    const result = closeView(base, 'v2') as PanelNode
+    expect(result.tabs.map(t => t.viewIds)).toEqual([['v1']])
+    expect(result.activeTabId).toBe(result.tabs[0]!.id)
+  })
+
+  test('a cell it empties goes, and its sibling takes the space', () => {
+    const base = splitPanel(
+      panel('p1', ['v1']),
+      'p1',
+      'row',
+      panel('p2', ['v2']),
+    )
+    const result = closeView(base, 'v2')
+    expect(panels(result).map(p => p.id)).toEqual(['p1'])
+    expect(result.size).toBe(1)
+  })
+
+  test('a tab still holding another view stays', () => {
+    const base = splitPanel(
+      panel('p1', ['v1', 'v2']),
+      'p1',
+      'row',
+      panel('p2', ['v3']),
+    )
+    const result = closeView(base, 'v2')
+    expect(tabs(result).map(t => t.viewIds)).toEqual([['v1'], ['v3']])
+  })
+
+  test("the workspace's last tab stays, to show the launcher", () => {
+    const result = closeView(panel('p1', ['v1']), 'v1') as PanelNode
+    expect(result.tabs).toHaveLength(1)
+    expect(result.tabs[0]!.viewIds).toEqual([])
+    expect(result.activeTabId).toBe(result.tabs[0]!.id)
+  })
+
+  test('an empty tab it did not empty stays', () => {
+    const base = addTab(
+      splitPanel(panel('p1', ['v1']), 'p1', 'row', panel('p2', ['v2'])),
+      'p1',
+      { id: 'launcher', viewIds: [] },
+    )
+    const result = closeView(base, 'v2')
+    expect(tabs(result).map(t => t.id)).toContain('launcher')
+  })
+})
+
 // every operation the tree has belongs in this mix
 test('any sequence of operations leaves a canonical tree', () => {
   let tree: LayoutTree = panel('p0', ['v0'])
@@ -460,6 +513,10 @@ test('any sequence of operations leaves a canonical tree', () => {
       tree = pruneEmptyPanel(tree, target)
     } else if (roll < 0.96 && someTab) {
       tree = pruneEmptyTab(tree, someTab.id)
+    } else if (roll < 0.98) {
+      const hadTabs = tabs(tree).length > 0
+      tree = closeView(tree, pick(tabs(tree).flatMap(t => t.viewIds)) ?? 'nope')
+      expect(tabs(tree).length > 0).toBe(hadTabs)
     } else {
       // any branch, so nested rescaling is exercised
       const branch = pick(branchesIn(tree))
@@ -525,5 +582,6 @@ describe('operations are total on bad arguments', () => {
     expect(setSizes(base, 'nope', [0.5, 0.5])).toEqual(base)
     expect(addViewToTab(base, 'nope', 'v9')).toEqual(base)
     expect(removeView(base, 'nope')).toEqual(base)
+    expect(closeView(base, 'nope')).toEqual(base)
   })
 })

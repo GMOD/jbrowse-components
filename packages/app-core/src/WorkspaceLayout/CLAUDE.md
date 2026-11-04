@@ -50,4 +50,7 @@ deleting one compiles. Add arguments optional, never required.
 ## Closing
 
 Closing a tab or panel removes its views through `WorkspaceContainer`'s one
-`closeViews`; the strip components take a callback and know nothing of views.
+`closeViews`; the strip components take a callback and know nothing of views. A
+view's own close control goes through `closeViewFromChrome` → `closeView`, which
+prunes the tab and cell it empties; `session.removeView` leaves them, so a
+caller can put another view in the same place.

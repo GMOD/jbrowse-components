@@ -761,3 +761,130 @@ test('moveViewToNewTab with one argument keeps the other views homed', () => {
   expect(session.panels).toHaveLength(1)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
 })
+
+const ClosingSession = types
+  .compose(
+    'ClosingSession',
+    types.model({
+      views: types.array(types.model({ id: types.identifier })),
+    }),
+    WorkspaceLayoutMixin(),
+  )
+  .actions(self => ({
+    addView(id: string) {
+      self.views.push({ id })
+    },
+    removeView(view: { id: string }) {
+      self.views.replace(self.views.filter(v => v.id !== view.id))
+    },
+  }))
+
+function createClosingSession() {
+  const session = ClosingSession.create({
+    views: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }],
+  })
+  session.homeUnassignedViews(['v1', 'v2', 'v3'])
+  return session
+}
+
+describe('closeView', () => {
+  test('takes the view out of the session and the cell it empties', () => {
+    const session = createClosingSession()
+    session.moveViewToSplit('v2', 'row')
+    const [left] = session.panels
+
+    session.closeView('v2')
+
+    expect(session.views.map(v => v.id)).toEqual(['v1', 'v3'])
+    expect(session.panels.map(p => p.id)).toEqual([left!.id])
+    expect(session.activePanelId).toBe(left!.id)
+  })
+
+  test('a launch after it lands in a cell that is still there', () => {
+    const session = createClosingSession()
+    session.moveViewToSplit('v2', 'row')
+
+    session.closeView('v2')
+    session.addView('v4')
+    session.homeUnassignedViews(['v1', 'v3', 'v4'])
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3', 'v4']])
+  })
+
+  test('takes an emptied tab, and leaves its cell to the other tabs', () => {
+    const session = createClosingSession()
+    session.moveViewToNewTab('v2')
+
+    session.closeView('v2')
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3']])
+  })
+
+  test('closing every view leaves one empty tab showing the launcher', () => {
+    const session = createClosingSession()
+    session.moveViewToSplit('v2', 'row')
+    session.moveViewToNewTab('v3')
+
+    for (const id of ['v1', 'v2', 'v3']) {
+      session.closeView(id)
+    }
+
+    expect(session.views).toHaveLength(0)
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([[]])
+  })
+
+  test('closing the last view of the maximized cell restores', () => {
+    const session = createClosingSession()
+    const right = session.moveViewToSplit('v2', 'row')!
+    session.toggleMaximizedPanel(right)
+
+    session.closeView('v2')
+
+    expect(session.maximizedPanelId).toBeUndefined()
+    expect(session.panels).toHaveLength(1)
+  })
+
+  test('undo brings back the view and its cell together', () => {
+    const session = createClosingSession()
+    session.moveViewToSplit('v2', 'row')
+    const before = getSnapshot(session)
+
+    session.closeView('v2')
+    applySnapshot(session, before)
+
+    expect(session.views.map(v => v.id)).toEqual(['v1', 'v2', 'v3'])
+    expect(session.panels).toHaveLength(2)
+    expect(session.panelContainingView('v2')?.id).toBe(session.panels[1]!.id)
+  })
+
+  test('session.removeView keeps the emptied cell for a view put in its place', () => {
+    const session = createClosingSession()
+    session.moveViewToSplit('v2', 'row')
+
+    session.removeView({ id: 'v2' })
+    session.homeUnassignedViews(['v1', 'v3'])
+
+    expect(session.panels).toHaveLength(2)
+  })
+
+  test('a view that is not in the session changes nothing', () => {
+    const session = createClosingSession()
+    const before = getSnapshot(session)
+
+    session.closeView('no-such-view')
+
+    expect(getSnapshot(session)).toEqual(before)
+  })
+
+  test('a host that cannot remove views keeps its layout', () => {
+    const session = createViewsSession()
+    const before = getSnapshot(session)
+
+    session.closeView('v1')
+
+    expect(getSnapshot(session)).toEqual(before)
+  })
+})

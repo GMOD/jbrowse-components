@@ -11,6 +11,7 @@ import {
 import {
   addTab,
   addViewToTab,
+  closeView,
   findTab,
   homeViews,
   moveTabToPanel,
@@ -47,6 +48,7 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 interface LayoutHostSelf extends IStateTreeNode {
   views?: { id: string }[]
   orderViews?: (ids: string[]) => void
+  removeView?: (view: { id: string }) => void
 }
 function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
@@ -327,6 +329,22 @@ export function WorkspaceLayoutMixin() {
           },
           // NO `removeView` here: composed into the session it would replace
           // `session.removeView`, and homing already drops a removed view
+          /**
+           * A view's own close button: the view leaves the session, and the
+           * tab or cell it empties goes with it. `session.removeView` keeps
+           * them, for callers that put another view in the same place.
+           */
+          closeView(viewId: string) {
+            const host: LayoutHostSelf = self
+            if (host.views && host.removeView) {
+              const view = host.views.find(v => v.id === viewId)
+              if (view) {
+                const ids = host.views.map(v => v.id)
+                apply(closeView(home(self.tree, ids), viewId))
+                host.removeView(view)
+              }
+            }
+          },
           /** Drop a dragged tab into an existing panel, as a tab. */
           dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
             const source = dropSource(tabId, targetPanelId)
@@ -534,6 +552,27 @@ export function WorkspaceLayoutMixin() {
         return rest
       })
   )
+}
+
+function closesViewsInLayout(
+  session: object,
+): session is Pick<WorkspaceLayout, 'closeView'> {
+  return 'closeView' in session && typeof session.closeView === 'function'
+}
+
+/**
+ * What a view's own close control calls: through the layout where the session
+ * has one, so the tab or cell the view empties goes too.
+ */
+export function closeViewFromChrome<V extends { id: string }>(
+  session: { removeView: (view: V) => void },
+  view: V,
+) {
+  if (closesViewsInLayout(session)) {
+    session.closeView(view.id)
+  } else {
+    session.removeView(view)
+  }
 }
 
 export type WorkspaceLayoutMixinType = ReturnType<typeof WorkspaceLayoutMixin>

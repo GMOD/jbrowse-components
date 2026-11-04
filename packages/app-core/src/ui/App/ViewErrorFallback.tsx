@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { closeViewFromChrome } from '../../WorkspaceLayout/model.ts'
 import { viewTitle } from './viewTitle.ts'
 
 import type {
@@ -41,7 +42,7 @@ function safeViewTitle(
  * because a good share of these are transient (a lazy chunk that failed to
  * fetch, a GPU context lost). Close goes through the session's `removeView`,
  * which detaches before it destroys; nothing here may destroy the node itself
- * (ADR-069).
+ * (ADR-069). Like the header's close, it takes an emptied tab or cell along.
  */
 const ViewErrorFallback = observer(function ViewErrorFallback({
   view,
@@ -67,7 +68,7 @@ const ViewErrorFallback = observer(function ViewErrorFallback({
           <Button
             data-testid="close_crashed_view"
             onClick={() => {
-              session.removeView(view)
+              closeViewFromChrome(session, view)
             }}
           >
             Close view
