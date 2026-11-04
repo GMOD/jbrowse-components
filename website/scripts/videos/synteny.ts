@@ -878,11 +878,6 @@ export const syntenyVideos: VideoSpec[] = [
         ms: 2500,
         say: 'K-12, with one alignment lane per other strain',
       },
-      // Loci rather than pixels on both ends. The composite's own drag is a
-      // measured pair (`launchFromSelectionParts`), which is correct only at the
-      // width it was measured at; `allVsAllSpan` names the same span in bases,
-      // and `band` takes the y off the scalebar strip while the x stays on the
-      // locus.
       {
         type: 'drag',
         fromAnchor: { loc: allVsAllSpan.start, band: RUBBERBAND },

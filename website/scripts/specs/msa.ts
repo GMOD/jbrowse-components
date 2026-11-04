@@ -16,8 +16,6 @@ import type {
 // NLRP1 because its pyrin domain is present in human and absent in mouse.
 const NLRP1_WINDOW = 'chr17:5,495,000-5,591,000'
 
-// The fixed height and representative mode keep the right-click coordinate
-// stable when RefSeq's isoform count changes.
 const NLRP1_LGV = {
   type: 'LinearGenomeView',
   assembly: 'hg38',
@@ -35,13 +33,7 @@ const NLRP1_SESSION = sessionSpec(UCSC_HG38_CONFIG, { views: [NLRP1_LGV] })
 
 const RIGHT_CLICK_NLRP1: ScreenshotAction = {
   type: 'rightclick',
-  anchor: {
-    trackId: 'hg38-ncbiRefSeqCurated',
-    loc: 'chr17:5,543,000',
-    // The lower part of the 60px track is empty canvas, where a right-click
-    // opens a menu with no feature items.
-    fracY: 0.2,
-  },
+  anchor: { trackId: 'hg38-ncbiRefSeqCurated', feature: 'NLRP1' },
 }
 
 // Submit stays disabled until the transcript's protein sequence arrives.

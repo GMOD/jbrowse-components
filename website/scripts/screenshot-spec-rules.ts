@@ -237,9 +237,11 @@ export function shadowedSessionTracks(
 //   arrow off the pill it leaves. Both or neither.
 // - a backdrop click, which hits nothing on purpose, since a menu's backdrop
 //   covers the viewport.
+// - `synteny_from_dotplot_view`'s drag over one block, until its corners are
+//   written as `hLoc`/`vLoc` loci.
 //
 // Anything else is a callout that names a thing without saying which one.
-export const CALLOUT_BASELINE = 21
+export const CALLOUT_BASELINE = 22
 
 export function countRawCallouts(list: ScreenshotSpec[]) {
   const found: string[] = []
@@ -257,22 +259,25 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
   }
   const actions = (name: string, list: ScreenshotAction[] | undefined) => {
     for (const action of list ?? []) {
-      // a rubberband drag genuinely is two viewport points
-      if (
-        action.type !== 'drag' &&
-        'from' in action &&
-        action.from &&
-        !action.anchor
-      ) {
+      // a drag names its two loci through `band` anchors
+      const raw =
+        action.type === 'drag'
+          ? (action.from && !action.fromAnchor) ||
+            (action.to && !action.toAnchor)
+          : 'from' in action && action.from && !action.anchor
+      if (raw) {
         found.push(`${name}: ${action.type} from`)
       }
     }
   }
   for (const spec of list) {
-    if (spec.mode === 'cli' || spec.mode === 'compose') {
+    if (spec.mode === 'cli') {
       continue
     }
     annotations(spec.name, spec.annotations)
+    if (spec.mode === 'compose') {
+      continue
+    }
     actions(spec.name, spec.mode === 'url' ? spec.actions : undefined)
     for (const [i, stage] of (spec.stages ?? []).entries()) {
       annotations(`${spec.name} stage ${i}`, stage.annotations)
@@ -339,23 +344,20 @@ export function countLongDelays(list: ScreenshotSpec[]) {
 // A ratchet for the same reason the one above is: converting a pair moves
 // pixels, so each conversion wants its figure regenerated and they land as
 // figures are touched. Lower LEADER_BASELINE when one does.
-export const LEADER_BASELINE = 21
+export const LEADER_BASELINE = 20
 
-// Only the fields that place the anchor — dx/dy are the offsets that differ
-// BETWEEN the pill and its tail, which is the whole point.
+// What the anchor names, without the offsets that differ BETWEEN a pill and
+// its tail, which is the whole point. Keys sorted, so a new anchor kind joins
+// the comparison without being listed here.
+const PLACEMENT_KEYS = new Set(['dx', 'dy', 'alignX', 'alignY', 'fracX'])
+
 function anchorSite(anchor: Annotation['anchor']) {
   return anchor
-    ? JSON.stringify([
-        anchor.trackId,
-        anchor.loc,
-        anchor.selector,
-        anchor.text,
-        anchor.graphNode,
-        anchor.hLoc,
-        anchor.vLoc,
-        anchor.view,
-        anchor.fracY,
-      ])
+    ? JSON.stringify(
+        Object.entries(anchor)
+          .filter(([key]) => !PLACEMENT_KEYS.has(key))
+          .toSorted(([a], [b]) => a.localeCompare(b, 'en')),
+      )
     : undefined
 }
 

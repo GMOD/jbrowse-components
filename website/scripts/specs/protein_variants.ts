@@ -44,7 +44,7 @@ export function readSession(file: string): SessionJson {
   )
 }
 
-export interface SessionOptions {
+interface SessionOptions {
   loc: string
   tracks: object[]
   sessionTracks?: object[]
@@ -60,7 +60,7 @@ export interface SessionOptions {
   msaReference?: string
 }
 
-export function linkedSession(
+function linkedSession(
   base: SessionJson,
   config: string,
   msaName: string,
@@ -140,7 +140,7 @@ export function linkedSession(
   ).toString('base64url')}`
 }
 
-export const READY = {
+const READY = {
   readySelector:
     'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
   readyTimeout: 300000,
@@ -150,7 +150,7 @@ export const READY = {
   viewportHeight: 1050,
 } satisfies Partial<SessionUrlSpec>
 
-export const RESET_ZOOM = [
+const RESET_ZOOM = [
   { type: 'click' as const, selector: 'button[title="Reset Zoom"]' },
   PARK_CURSOR,
   { type: 'delay' as const, ms: 1500 },
@@ -330,24 +330,24 @@ const GRAPE_GENES = 'GCF_030704535.1-ncbiRefSeqCurated'
 const AGL11_R197 = 'chr18:32,255,718'
 
 const HG38_GENES = 'hg38-ncbiRefSeqSelect'
-export const HG38_GENE_TRACK = { trackId: HG38_GENES, height: 60 }
-export const CLINVAR_TRACK = { trackId: 'hg38-clinvarMain', height: 300 }
+const HG38_GENE_TRACK = { trackId: HG38_GENES, height: 60 }
+const CLINVAR_TRACK = { trackId: 'hg38-clinvarMain', height: 300 }
 const HOTSPOT_FONT_SIZE = 23
 
-export interface Hotspot {
+interface Hotspot {
   label: string
   refName: string
   start: number
   end: number
 }
 
-export interface HotspotGene {
+interface HotspotGene {
   session: SessionJson
   gene: string
   hotspots: Hotspot[]
 }
 
-export function hotspotSession(
+function hotspotSession(
   { session: base, gene, hotspots }: HotspotGene,
   region: { start: number; end: number },
   options: Omit<SessionOptions, 'highlights'>,
@@ -374,7 +374,7 @@ export function hotspotSession(
   )
 }
 
-export function hoverCodon(loc: string) {
+function hoverCodon(loc: string) {
   return [
     ...RESET_ZOOM,
     { type: 'hover' as const, anchor: { trackId: HG38_GENES, loc } },
@@ -415,7 +415,7 @@ const pairedStructures = (viewId: string, extraReady = '') => {
   }
 }
 
-export function domainFigure(
+function domainFigure(
   gene: string,
   codon: string,
   grow = 0,
@@ -460,7 +460,7 @@ export function domainFigure(
   }
 }
 
-export function residueCallout(
+function residueCallout(
   text: string,
   residue: string,
   dx: number,

@@ -32,11 +32,7 @@ const CD34_SLUG = 'common-myeloid-progenitor-cd34-positive'
 const JURKAT_INSERTION = 'chr1:47239296 C>CCGTTTCCTAACC'
 const VARIANT_TOKEN = 'demo-tal1-variant-cd34'
 
-// The enhancer 1/2 pair packs into two rows with nothing else near; `TOP_ROW`
-// picks the first. A miss opens the display's own menu, which lacks the
-// plugin's row, so the wait on `PREDICT_VARIANT_EFFECT` fails loudly.
-const ENHANCER_1_LOCUS = 'chr1:47,212,072'
-const TOP_ROW = 0.1
+const ENHANCER_1 = { trackId: 'tal1_variants', feature: "new 3' enhancer 1" }
 const PREDICT_VARIANT_EFFECT =
   '[data-testid="cascading-menuitem-predict_variant_effect_with_alphagenome"]'
 
@@ -258,11 +254,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       ...readIsoformNotice(),
       {
         type: 'rightclick',
-        anchor: {
-          loc: ENHANCER_1_LOCUS,
-          trackId: 'tal1_variants',
-          fracY: TOP_ROW,
-        },
+        anchor: ENHANCER_1,
       },
       {
         type: 'waitForSelector',

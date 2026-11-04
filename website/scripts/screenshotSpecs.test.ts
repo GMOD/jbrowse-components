@@ -14,6 +14,7 @@
 import {
   countDetachableLabels,
   countLongDelays,
+  countRawCallouts,
   pageActions,
   validateSpecs,
 } from './screenshot-spec-rules.ts'
@@ -320,4 +321,61 @@ test('a delay of a second or more counts, in a stage too', () => {
     },
   ])
   expect(found).toEqual(['a: delay 1000', 'a stage 0: delay 5000'])
+})
+
+test('a pill and an arrow on two different features are not a pair', () => {
+  const feature = (name: string) => ({ trackId: 'genes', feature: name })
+  expect(
+    labels([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        annotations: [
+          { type: 'text', text: 'BRCA1', anchor: feature('BRCA1') },
+          {
+            type: 'arrow',
+            anchor: feature('NBR2'),
+            fromAnchor: { ...feature('NBR2'), alignX: 'left' },
+          },
+        ],
+      },
+    ]),
+  ).toEqual([])
+})
+
+const raw = (list: ScreenshotSpec[]) => countRawCallouts(list).found
+
+test('a drag between two pixels counts; one between two loci does not', () => {
+  const band = (loc: string) => ({ loc, band: '[data-testid="ruler"]' })
+  expect(
+    raw([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        actions: [
+          { type: 'drag', from: { x: 1, y: 2 }, to: { x: 3, y: 4 } },
+          {
+            type: 'drag',
+            fromAnchor: band('ctgA:100'),
+            toAnchor: band('ctgA:900'),
+          },
+        ],
+      },
+    ]),
+  ).toEqual(['a: drag from'])
+})
+
+test('a compose callout placed by pixel counts', () => {
+  expect(
+    raw([
+      {
+        mode: 'compose',
+        name: 'c',
+        parts: [],
+        annotations: [{ type: 'text', text: 'A', x: 10, y: 10 }],
+      },
+    ]),
+  ).toEqual(['c: text x/y'])
 })

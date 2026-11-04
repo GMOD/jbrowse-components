@@ -36,25 +36,18 @@ export const PTEN_RNASEQ_ADAPTER = {
 // change these figures with no commit here.
 export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 
-// `dy` is the row the Apple3 mRNA packs into, from the track's top edge.
-const APPLE3_MRNA = {
-  trackId: 'gff3tabix_genes',
-  loc: 'ctgA:17,400-23,000',
-  fracY: 0,
-  dy: 121,
-}
+const APPLE3_MRNA = { trackId: 'gff3tabix_genes', feature: 'Apple3' }
+
+const COLLAPSE_INTRONS = '[data-testid="cascading-menuitem-collapse_introns"]'
 
 const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 
 const NES_MOTIF =
   '[data-testid="protein-feature-Motif"][data-feature-start="339"]'
 
-// `representative` draws one gene row near the top, so a centered right-click
-// misses TP53 and opens the view's menu.
 const PROTEIN_LAUNCH_ANCHOR = {
   trackId: PROTEIN_LAUNCH_GENE_TRACK,
-  loc: 'chr17:7,676,000',
-  fracY: 0.2,
+  feature: 'TP53',
 }
 
 // Uses the hosted hg38 config: against PROTEIN3D_CONFIG the gene menu has no
@@ -66,7 +59,6 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
       assembly: 'hg38',
       loc: 'chr17:7,668,000-7,688,000',
       tracks: [
-        // PROTEIN_LAUNCH_ANCHOR's fracY depends on both settings
         {
           trackId: PROTEIN_LAUNCH_GENE_TRACK,
           geneGlyphMode: 'representative',
@@ -322,14 +314,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
             type: 'rightclick',
             anchor: { trackId: 'ncbi_refseq_109_hg38_latest', feature: 'PTEN' },
           },
-          { type: 'waitForText', text: 'Collapse introns' },
+          { type: 'waitForSelector', selector: COLLAPSE_INTRONS },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],
+        annotations: [{ type: 'box', anchor: { selector: COLLAPSE_INTRONS } }],
       },
       {
         // `button::-p-text` keeps the click off dialog prose repeating the label
         actions: [
-          { type: 'click', text: 'Collapse introns' },
+          { type: 'click', selector: COLLAPSE_INTRONS },
           { type: 'waitForText', text: 'Replace current view' },
           { type: 'click', selector: 'button::-p-text(Replace current view)' },
           { type: 'waitForText', text: 'Replace current view', hidden: true },
@@ -362,7 +354,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', text: 'HBB' },
+      {
+        type: 'click',
+        anchor: { trackId: 'ncbi_refseq_109_hg38_latest', feature: 'HBB' },
+      },
       ...openFeatureSequence(),
       {
         type: 'click',
@@ -391,7 +386,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', text: 'SELENOP' },
+      {
+        type: 'click',
+        anchor: { trackId: 'ncbi_refseq_109_hg38_latest', feature: 'SELENOP' },
+      },
       ...openFeatureSequence(),
       { type: 'click', text: 'Protein' },
     ],

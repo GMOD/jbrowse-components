@@ -8,6 +8,7 @@ import {
   sessionSpec,
   CGIAB_CONFIG,
   HPYLORI_CONFIG,
+  RUBBERBAND,
 } from '../screenshot-spec-helpers.ts'
 import { junctionScaffold, scaffoldOverview } from './cgiab-junction.ts'
 import {
@@ -22,7 +23,6 @@ import {
 } from './genomes_pangenome.ts'
 import {
   GRAPH_VIEW_DRAWN,
-  PAA_ISLAND_HIGHLIGHT,
   PAA_RAMP_DOMAIN,
   referencePositionColor,
 } from './graph-fixtures.ts'
@@ -561,13 +561,32 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
   },
 )
 
+// s502 from the segs index: 21,809 bp, the `21.8 kb` label on its node. Any
+// heavier alpha tints the bars, and darker salmon already means overlap depth.
+const PAA_ISLAND_HIGHLIGHT = {
+  refName: 'chr',
+  start: 1446100,
+  end: 1467909,
+  color: 'rgba(214,137,16,0.13)',
+}
+
+const STX2B = { view: [0, 1], trackId: 'Sakai_genes', feature: 'stx2B' }
+
+// The launch figures' drag span; every strain aligns across it, so the dialog
+// opens on all five rows.
+const ALL_VS_ALL_SPAN = { start: 'chr:800,000', end: 'chr:808,000' }
+
 // Each frame replays the actions before it, since a capture is one page load.
 function launchFromSelectionParts(): ScreenshotSpec[] {
   const url = ECOLI_ONE_VS_ALL_LANES
   // Menu rows go by testid: the track's name is also its label in the view, and
   // a text match resolves to that label first.
   const select = [
-    { type: 'drag' as const, from: { x: 375, y: 150 }, to: { x: 975, y: 150 } },
+    {
+      type: 'drag' as const,
+      fromAnchor: { loc: ALL_VS_ALL_SPAN.start, band: RUBBERBAND },
+      toAnchor: { loc: ALL_VS_ALL_SPAN.end, band: RUBBERBAND },
+    },
     {
       type: 'waitForSelector' as const,
       selector: '[data-testid="cascading-submenu-launch"]',
@@ -1623,28 +1642,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: 'LYZ, the only pair above 1. Every neighbour is blue',
         fontSize: 18,
         maxWidth: 300,
-        // right of LYZ; centred, the pill covers the ribbon it names
-        anchor: {
-          view: [0, 0],
-          trackId: 'human_genes',
-          loc: '12:69,351,000',
-          fracY: 1,
-          dy: 45,
-          alignX: 'right',
-          dx: 95,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          view: [0, 0],
-          trackId: 'human_genes',
-          loc: '12:69,351,000',
-          fracY: 1,
-          dy: 52,
-          alignX: 'right',
-          dx: 88,
-        },
+        leader: true,
+        // the top of LYZ's ribbon, just under the human genes; the pill sits
+        // right of it, since centred it covers the ribbon it names
         anchor: {
           view: [0, 0],
           trackId: 'human_genes',
@@ -1653,6 +1653,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           dy: 52,
           dx: 3,
         },
+        dx: 92,
+        dy: -7,
       },
     ],
   },
@@ -2132,18 +2134,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         from: { x: 1085, y: 365 },
-        // stops short of the label, which the box marks
-        anchor: { text: 'stx2B' },
-        dx: 45,
-        dy: -28,
+        anchor: { ...STX2B, alignX: 'right', dx: 10 },
       },
-      {
-        // a label-sized box clips the glyph above the label
-        type: 'box',
-        anchor: { text: 'stx2B' },
-        dy: -14,
-        height: 36,
-      },
+      { type: 'box', anchor: STX2B },
     ],
   },
 
@@ -3362,9 +3355,7 @@ export const syntenyVideoFixtures = {
   // Sakai's alignments on both sides of its prophage must fall within the
   // launch's outlier reach (1.5 selections from the median)
   roundTripSpan: { start: 'chr:787,000', end: 'chr:828,000' },
-  // The composite's drag span; every strain aligns across it, so the dialog
-  // opens on all five rows.
-  allVsAllSpan: { start: 'chr:800,000', end: 'chr:808,000' },
+  allVsAllSpan: ALL_VS_ALL_SPAN,
   // The dialog lists mates in the track's `assemblyNames` order, so IAI39
   // opens last. Each move renames its button: MoveButton's aria-label carries
   // the panel's position.

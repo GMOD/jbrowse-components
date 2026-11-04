@@ -80,9 +80,6 @@ import { proteinSncaE46kSpecs } from './specs/protein_figure_snca_e46k.ts'
 import { proteinTp53Y220cSpecs } from './specs/protein_figure_tp53_y220c.ts'
 import { proteinStructuresSpecs } from './specs/protein_structures.ts'
 import { proteinVariantSpecs } from './specs/protein_variants.ts'
-import { proteinGeneticsSpecs } from './specs/protein_variants_genetics.ts'
-import { proteinKinaseSpecs } from './specs/protein_variants_kinases.ts'
-import { proteinMoreSpecs } from './specs/protein_variants_more.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { readMarksSpecs } from './specs/read_marks.ts'
@@ -112,9 +109,6 @@ export const specs: ScreenshotSpec[] = [
   ...featuresSpecs,
   ...proteinStructuresSpecs,
   ...proteinVariantSpecs,
-  ...proteinKinaseSpecs,
-  ...proteinGeneticsSpecs,
-  ...proteinMoreSpecs,
   ...proteinScanVsAlphaMissenseSpecs,
   ...proteinTp53Y220cSpecs,
   ...proteinKrasG12cSpecs,

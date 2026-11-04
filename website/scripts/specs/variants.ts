@@ -213,6 +213,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
               trackId: 'potato_missingness_1',
               variantLayout: 'columns',
               height: 300,
+              // its key covers ~13% of the top lane's matrix
+              legend: { show: false },
             },
             {
               trackId: 'potato_missingness_01',
@@ -226,11 +228,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('variant-matrix-display'),
     readyTimeout: 120000,
-    // Hides the top lane's legend, which covers ~13% of its matrix.
-    // `showLegend` is volatile on this display, so only a click can set it. The
-    // first match is the top lane: FloatingLegend portals into its own
-    // TrackContainer.
-    actions: [{ type: 'click', selector: '[aria-label="Hide legend"]' }],
     // Narrower than the 1500 default; the matrix reads as a texture.
     viewportWidth: 1100,
     viewportHeight: 856,

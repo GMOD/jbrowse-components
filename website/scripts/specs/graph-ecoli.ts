@@ -16,7 +16,6 @@ import {
   graphTrackMenu,
   cutNear,
   local,
-  PAA_ISLAND_HIGHLIGHT,
   PAA_RAMP_DOMAIN,
   referencePositionColor,
 } from './graph-fixtures.ts'
@@ -858,12 +857,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         color: SAME_SEGMENT_COLOR,
         strokeWidth: 3,
         pad: 11,
-        anchor: {
-          view: 0,
-          trackId: ECOLI_SEGMENTS_TRACK,
-          loc: 'chr:4,063,561-4,069,329',
-          fracY: 0.1,
-        },
+        anchor: { view: 0, trackId: ECOLI_SEGMENTS_TRACK, feature: 's1278' },
       },
       {
         type: 'box',
@@ -970,7 +964,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         anchor: {
           view: [0, 1],
           trackId: ECOLI_SEGMENTS_TRACK,
-          loc: `chr:${PAA_ISLAND_HIGHLIGHT.start}-${PAA_ISLAND_HIGHLIGHT.end}`,
+          feature: 's502',
         },
         // a ring sized to the whole ~150px block swallows its neighbours
         radius: 34,

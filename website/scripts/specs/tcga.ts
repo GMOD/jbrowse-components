@@ -145,11 +145,15 @@ const LINE_ZONE_HEIGHT = 130
 
 const MATRIX_CHROME_HEIGHT = 330
 
+const COLLAPSE_INTRONS = '[data-testid="cascading-menuitem-collapse_introns"]'
+
 const collapseIntrons = (gene: string) => [
-  { type: 'waitForText' as const, text: gene },
-  { type: 'rightclick' as const, text: gene },
-  { type: 'waitForText' as const, text: 'Collapse introns' },
-  { type: 'click' as const, text: 'Collapse introns' },
+  { type: 'waitForAppSettled' as const },
+  {
+    type: 'rightclick' as const,
+    anchor: { trackId: MANE_TRACK.trackId, feature: gene },
+  },
+  { type: 'click' as const, selector: COLLAPSE_INTRONS },
   { type: 'waitForText' as const, text: 'Replace current view' },
   {
     type: 'click' as const,

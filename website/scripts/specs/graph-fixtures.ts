@@ -22,15 +22,6 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // span stated or it spans the whole file.
 export const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
 
-// s502 from the segs index: 21,809 bp, the `21.8 kb` label on its node. Any
-// heavier alpha tints the bars, and darker salmon already means overlap depth.
-export const PAA_ISLAND_HIGHLIGHT = {
-  refName: 'chr',
-  start: 1446100,
-  end: 1467909,
-  color: 'rgba(214,137,16,0.13)',
-}
-
 // Every fixture names the plugin's unversioned npm url, so a plugin publish
 // moves these figures at the next regen. Regenerate unfiltered after one:
 // `--filter` implies `--force`, which skips the 0.5% gate and churns them all.

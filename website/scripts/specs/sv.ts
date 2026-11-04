@@ -2,7 +2,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
-  HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
   VOLVOX,
@@ -10,11 +9,24 @@ import {
   sessionSpec,
   CGIAB_CONFIG,
   KG_CONFIG,
+  HG00151_ONT_1000G_BAM,
 } from '../screenshot-spec-helpers.ts'
 import { junctionReads } from './cgiab-junction.ts'
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+const HG00151_ONT_1000G_ADAPTER = {
+  type: 'BamAdapter',
+  bamLocation: { uri: HG00151_ONT_1000G_BAM, locationType: 'UriLocation' },
+  index: {
+    location: {
+      uri: `${HG00151_ONT_1000G_BAM}.bai`,
+      locationType: 'UriLocation',
+    },
+    indexType: 'BAI',
+  },
+}
 
 // A track as the C-GIAB SV page (or its copy-number part 2) prints it, with its
 // bare filenames read from where the demo hosts them.
@@ -192,6 +204,11 @@ const SMAD4_MANE = maneGeneLane({
 // SV_85's span as the SV inspector's location column prints it, so one string
 // finds the spreadsheet cell and (parseAnnotationLocus accepts `..`) the glyph.
 const SV_85_DEL = 'chr10:122,835,344..122,837,142'
+const SV_85_RECORD = {
+  view: 1,
+  trackId: 'hg008t_benchmark_sv',
+  feature: 'SV_85',
+}
 
 const CLINVAR_CNV_TRACK = cgiabPageTrack('hg38_clinvar_cnv_ucsc')
 
@@ -1034,25 +1051,17 @@ export const svSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: { text: SV_85_DEL, dy: 30 },
-        anchor: {
-          view: 1,
-          trackId: 'hg008t_benchmark_sv',
-          loc: SV_85_DEL,
-          fracY: 0,
-          dy: 14,
-        },
+        anchor: { ...SV_85_RECORD, alignY: 'top' },
       },
       {
         type: 'text',
         text: 'opens here',
         anchor: {
-          view: 1,
-          trackId: 'hg008t_benchmark_sv',
-          loc: SV_85_DEL,
-          fracY: 0,
+          ...SV_85_RECORD,
           alignX: 'right',
+          alignY: 'top',
           dx: 50,
-          dy: 28,
+          dy: 14,
         },
         fontSize: 18,
         maxWidth: 360,
@@ -1745,8 +1754,7 @@ export const svSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         anchor: {
           trackId: 'mane_hg38',
-          loc: 'chr18:51,030,212',
-          fracY: 0.1,
+          feature: 'SMAD4',
           alignX: 'left',
           dx: -16,
         },

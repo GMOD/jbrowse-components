@@ -8,7 +8,6 @@ import { FIT_TO_TRACK_LABEL } from '../../../plugins/alignments/src/LinearAlignm
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,
-  HG002_NANOPORE_OPAQUE_MISMATCHES,
   PARK_CURSOR,
   VOLVOX,
   lgvSession,
@@ -19,6 +18,10 @@ import {
 import { pageTrack } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// ONTrel2 is 2019-era nanopore: its bases sit near Q12, real SNVs included, so
+// the default quality fade dims the columns a SNV figure is about
+const HG002_NANOPORE_OPAQUE_MISMATCHES = { encoding: { opacity: 1 } }
 
 // Sized for the sweep: the Hi-C specs run contiguously, so the pool renders four
 // SwiftShader contact matrices at once. `hic/whole_genome` answers 300 region

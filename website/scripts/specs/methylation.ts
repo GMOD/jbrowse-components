@@ -2,7 +2,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
-  HG38_GENCODE_PROMOTER_TRACK,
   cascadeBoxes,
   lgvSession,
   menuCascade,
@@ -12,6 +11,30 @@ import {
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// GENCODE v48 promoter windows (UCSC hub build, jbrowse.org/ucsc/hg38) as a
+// session track, for figures that want promoter context without the full
+// ENCODE cCRE/chromatin-state tracks.
+const HG38_GENCODE_PROMOTER_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'gencode_promoter_hg38_ucsc',
+  name: 'GENCODE v48 promoter windows (UCSC)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz.csi',
+        locationType: 'UriLocation',
+      },
+      indexType: 'CSI',
+    },
+  },
+}
 
 const HG38_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',

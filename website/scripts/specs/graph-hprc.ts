@@ -33,6 +33,10 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // the cut's ids.
 const HPRC_ALLELE = 's348700+'
 
+// A tandem-repeat record's 6px bar at the top of its 40px track. Its label
+// lists every allele, so `{ feature }` has no name to match.
+const RECORD_BAR = { fracY: 0, dy: 3 }
+
 // The block between FLNA and EMD's inverted repeats, which
 // `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags as an inversion.
 const INV_BLOCK = { refName: 'chrX', start: 154347246, end: 154384867 }
@@ -756,7 +760,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         anchor: {
           loc: 'chr6:160,631,000',
           trackId: 'hprc_kiv2_copies_all',
-          fracY: 0.2,
+          ...RECORD_BAR,
         },
       },
       {
@@ -811,7 +815,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         anchor: {
           loc: 'chr19:1,049,750',
           trackId: 'hprc_abca7_cnvtr',
-          fracY: 0.2,
+          ...RECORD_BAR,
         },
       },
       {

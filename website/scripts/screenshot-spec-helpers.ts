@@ -49,9 +49,6 @@ export const HG002_NANOPORE_HP_TRACK = {
   assemblyNames: ['hg19'],
   adapter: HG002_NANOPORE_ADAPTER,
 }
-// ONTrel2 is 2019-era nanopore: its bases sit near Q12, real SNVs included, so
-// the default quality fade dims the columns a SNV figure is about
-export const HG002_NANOPORE_OPAQUE_MISMATCHES = { encoding: { opacity: 1 } }
 // HG00151 Oxford Nanopore reads from the 1000 Genomes ONT Sequencing Consortium
 // (s3://1000g-ont), minimap2-aligned to hg38. Deliberately the MINIMAP2_ALIGNED_BAMS
 // file, NOT the NAPU/PMDV_FINAL.haplotagged.bam — the DeepVariant-haplotagged
@@ -67,17 +64,6 @@ export const HG002_NANOPORE_OPAQUE_MISMATCHES = { encoding: { opacity: 1 } }
 // 87 SA-tag split alignments across the inversion, and the MM/ML calls.
 export const HG00151_ONT_1000G_BAM =
   'https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam'
-export const HG00151_ONT_1000G_ADAPTER = {
-  type: 'BamAdapter',
-  bamLocation: { uri: HG00151_ONT_1000G_BAM, locationType: 'UriLocation' },
-  index: {
-    location: {
-      uri: `${HG00151_ONT_1000G_BAM}.bai`,
-      locationType: 'UriLocation',
-    },
-    indexType: 'BAI',
-  },
-}
 // hg38 vs T2T-CHM13 (hs1) from the hosted UCSC hg38->hs1 liftOver PIF, plus
 // NCBI RefSeq genes on both. Backs the TNNT3 figure that reproduces the
 // genomes.jbrowse.org/demos/ session.
@@ -122,30 +108,6 @@ export const HG38_RMSK_TRACK = {
         uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
         locationType: 'UriLocation',
       },
-    },
-  },
-}
-
-// GENCODE v48 promoter windows (UCSC hub build, jbrowse.org/ucsc/hg38) as a
-// session track, for figures that want promoter context without the full
-// ENCODE cCRE/chromatin-state tracks.
-export const HG38_GENCODE_PROMOTER_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'gencode_promoter_hg38_ucsc',
-  name: 'GENCODE v48 promoter windows (UCSC)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'Gff3TabixAdapter',
-    gffGzLocation: {
-      uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      location: {
-        uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz.csi',
-        locationType: 'UriLocation',
-      },
-      indexType: 'CSI',
     },
   },
 }
@@ -276,6 +238,11 @@ export const readIsoformNotice = (): ScreenshotAction[] => [
 ]
 
 export const TRACK_SELECTOR = '[data-testid="hierarchical_track_selector"]'
+
+// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts a
+// drag's y here while its x still comes from the locus, so the drag says which
+// bases it selects instead of which pixels.
+export const RUBBERBAND = '[data-testid="rubberband_controls"]'
 
 // The view menu's "Open track selector", the route a tutorial walks a reader
 // through. A figure that only needs the selector open sets the view's

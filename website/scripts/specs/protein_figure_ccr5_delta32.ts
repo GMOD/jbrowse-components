@@ -107,7 +107,7 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
         fontSize: 30,
         maxWidth: 760,
         leader: true,
-        anchor: { trackId: 'ccr5-frameshift', loc: 'chr3:46373581' },
+        anchor: { trackId: 'ccr5-frameshift', feature: 'STOP' },
         dx: -120,
         dy: -150,
       },

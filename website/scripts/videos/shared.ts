@@ -13,10 +13,9 @@ export const DENDROGRAM = '[data-testid="tree_sidebar_dendrogram"]'
 // would rather than by reloading a session at the next locus.
 export const LOCATION_BOX = 'input[placeholder="Search for location"]'
 
-// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts the
-// drag's y here while its x still comes from the locus, so the tour says which
-// bases it selects instead of which pixels.
-export const RUBBERBAND = '[data-testid="rubberband_controls"]'
+import { RUBBERBAND } from '../screenshot-spec-helpers.ts'
+
+export { RUBBERBAND }
 
 // A selection on the scale bar and Zoom to region, for a tour narrowing a
 // linear view on a span no gene name reaches: the viewer watches the span being

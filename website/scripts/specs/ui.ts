@@ -4,6 +4,7 @@ import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeat
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
+  RUBBERBAND,
   TRACK_SELECTOR,
   VOLVOX,
   cascadeBoxes,
@@ -60,6 +61,12 @@ function toolbarCallout(opts: {
 // `data-field`.
 const LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 const INSTALL_MSAVIEW = '[data-testid="installPlugin-MsaView"]'
+
+const rubberband = (start: string, end: string): ScreenshotAction => ({
+  type: 'drag',
+  fromAnchor: { loc: start, band: RUBBERBAND },
+  toAnchor: { loc: end, band: RUBBERBAND },
+})
 
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
 
@@ -192,12 +199,7 @@ export const uiVideoFixtures = {
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
   ].join('\n'),
   // Where upstream_downstream_details clicks to select the mRNA.
-  sequencePanelGene: {
-    trackId: 'gff3tabix_genes',
-    loc: 'ctgA:17,400-23,000',
-    fracY: 0,
-    dy: 121,
-  },
+  sequencePanelGene: { trackId: 'gff3tabix_genes', feature: 'Apple3' },
 }
 
 const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
@@ -441,7 +443,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 550,
     readyText: 'ctgA',
     actions: [
-      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      rubberband('ctgA:6,000', 'ctgA:12,000'),
       { type: 'waitForText', text: 'Zoom to region' },
     ],
     annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
@@ -1248,7 +1250,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     viewportHeight: 440,
     actions: [
-      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      rubberband('chr10:89,640,000', 'chr10:89,665,000'),
       { type: 'waitForText', text: 'Highlight region' },
     ],
     stages: [
@@ -1273,7 +1275,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     viewportHeight: 520,
     actions: [
-      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      rubberband('chr1:4,000', 'chr1:8,000'),
       { type: 'waitForText', text: 'Highlight region' },
       { type: 'click', text: 'Highlight region' },
       { type: 'delay', ms: 500 },
