@@ -49,15 +49,22 @@ test('facet, color and filter read back as the box shows them', () => {
   })
 })
 
-// A plot's `filter` is the whole list, as Vega-Lite's is, and an entry the
-// bare-string form says prints as that string
-test("a plot's filter list is written whole", () => {
+// A plot's `filter` merges with the written list by field, as a settings bag
+// does (ADR-240's 2026-11-04 amendment): a draft's entries replace the
+// entries on their fields and the rest stay, a bare string keying as the
+// field it names. `null` resets the list, and an entry the bare-string form
+// says prints as that string
+test("a plot's filter list merges by field", () => {
   const d = display()
   d.setGenesFilter('only')
   expect(d.plot).toEqual({ filter: ['geneLike'] })
   d.applyPlot({ filter: ['jexl:feature.score > 5', 'geneLike'] })
-  expect(d.plot).toEqual({ filter: ['jexl:feature.score > 5', 'geneLike'] })
-  d.applyPlot({ filter: ['jexl:feature.score > 5'] })
+  expect(d.plot).toEqual({ filter: ['geneLike', 'jexl:feature.score > 5'] })
+  d.applyPlot({ filter: [{ field: 'score', gte: 5 }] })
+  expect(d.plot).toEqual({
+    filter: ['geneLike', 'jexl:feature.score > 5', { field: 'score', gte: 5 }],
+  })
+  d.applyPlot({ filter: null })
   expect(d.genesFilter).toBeUndefined()
   d.applyPlot({ filter: [{ field: 'score', gte: 5 }] })
   expect(d.plot).toEqual({ filter: [{ field: 'score', gte: 5 }] })

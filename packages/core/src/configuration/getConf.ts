@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import { isPlainObject } from '../util/objectUtils.ts'
+import { mergeListBy, mergedListMember } from './mergedList.ts'
 import { readConfObject } from './readConfObject.ts'
 import { refusalProblems } from './requirements.ts'
 import {
@@ -297,6 +298,7 @@ export function mergeConfSettings(
     const namespace = namespaceMetadata(member)
     const prior = namespace ? liftShorthand(namespace, out[key]) : out[key]
     const next = namespace ? liftShorthand(namespace, value) : value
+    const listMember = isType(member) ? mergedListMember(member) : undefined
     out[key] =
       namespace && isPlainObject(prior) && isPlainObject(next)
         ? mergeConfSettings(
@@ -306,7 +308,11 @@ export function mergeConfSettings(
               : prior,
             next,
           )
-        : value
+        : listMember !== undefined &&
+            Array.isArray(prior) &&
+            Array.isArray(next)
+          ? mergeListBy(prior, next, listMember)
+          : value
   }
   return out
 }
@@ -344,7 +350,18 @@ function writeConfMember(
       writeConfMember(member, k, v)
     }
   } else {
-    writeConfPath(conf, [key], value)
+    const node: unknown = member
+    const listMember = isStateTreeNode(node)
+      ? mergedListMember(getType(node))
+      : undefined
+    const written: unknown = isStateTreeNode(node) ? getSnapshot(node) : []
+    writeConfPath(
+      conf,
+      [key],
+      listMember !== undefined && Array.isArray(written) && Array.isArray(value)
+        ? mergeListBy(written, value, listMember)
+        : value,
+    )
   }
 }
 
@@ -354,7 +371,8 @@ function writeConfMember(
  * call — onto a config. Each key names a member: a slot or a channel is written
  * whole, as `setConf` writes it, so `null` resets it (ADR-146); a namespace's
  * object names members inside it, at any depth, and the ones it leaves out
- * keep their values. The config's own lift and checks run over the bag first,
+ * keep their values; a list declared `listMergedBy` (a `filter`) replaces the
+ * entries on each field it names and keeps the rest. The config's own lift and checks run over the bag first,
  * and each namespace's over its part, so a shorthand or a legacy key reads the
  * same here as in `config.json`. A key the config does not declare is reported
  * for the caller to route or refuse, and a declared key whose write throws

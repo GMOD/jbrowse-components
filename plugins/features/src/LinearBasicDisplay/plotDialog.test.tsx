@@ -25,16 +25,17 @@ function open(seed?: Record<string, unknown>) {
   }
 }
 
-// a filter list is written whole, as Vega-Lite's is
-it('a seed writes the filter list whole', () => {
+// a seed's filter merges with the written list by field, as a bag's does, so
+// the text shows the filters it leaves beside the one it adds
+it('a seed adds its filter fields to the written ones', () => {
   const { field, display, apply } = open({
     filter: ['jexl:feature.score > 100'],
   })
   expect(JSON.parse(field.value)).toEqual({
-    filter: ['jexl:feature.score > 100'],
+    filter: ['geneLike', 'jexl:feature.score > 100'],
   })
   apply()
-  expect(display.genesFilter).toBeUndefined()
+  expect(display.genesFilter).toBe('only')
   expect(display.configuredFilters()).toEqual(['jexl:feature.score > 100'])
 })
 

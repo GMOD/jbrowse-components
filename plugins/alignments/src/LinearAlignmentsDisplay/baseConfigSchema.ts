@@ -87,7 +87,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `equal: false`), and `junction.reads` and `breakpoint.reads` at least
      * 2. An entry replaces its own field's defaults, and an entry naming a
      * field with no test, such as `{ field: "flags.DUP" }`, only removes
-     * them.
+     * them. A session spec, a share link or a plot draft merges with the
+     * written list the same way: its entries replace the written entries on
+     * their fields, and the other fields keep theirs.
      */
     filter: fieldPredicateList({ defaults: ALIGNMENTS_FILTER_DEFAULTS }),
     /**
