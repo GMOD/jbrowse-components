@@ -404,7 +404,8 @@
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
       "description": "Account to access Dropbox files",
-      "clientId": "50knr6xrjfc39sk"
+      "clientId": "suazeideow0nxor",
+      "chooser": true
     },
     {
       "type": "GoogleDriveOAuthInternetAccount",
