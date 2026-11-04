@@ -8,8 +8,8 @@ summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category
 ## Status
 
 Accepted (2026-10-12), from Colin's decisions on the
-`sv-signal-filter-and-coverage` proposal (now
-[`ideas/ready/category-filters-leave-coverage-whole.md`](../ideas/ready/category-filters-leave-coverage-whole.md)).
+`sv-signal-filter-and-coverage` proposal, whose Idea 2 became
+[ADR-259](adr-259-category-filters-pick-drawn-reads-and-leave-coverage-whole.md).
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort
 lifted split reads and SV-size deletions, and its consequence about
 `properPairs: 'exclude'` with `split: 'only'` no longer applies.

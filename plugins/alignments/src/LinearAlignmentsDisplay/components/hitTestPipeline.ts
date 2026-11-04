@@ -18,6 +18,7 @@ import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { modificationsEnabled } from '../../features/modification/mark.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
+import { countedEventsOf } from '../../shared/drawnReads.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
@@ -468,8 +469,9 @@ export function performHitTest(
   // The band's reserved height is 0 when the band is off, so an off band
   // answers nothing without a flag to consult beside it.
   if (coverage.height > 0 && coverageY >= 0 && coverageY <= coverage.height) {
+    const { rpcData } = resolved
     const position = coverageBinAt(
-      resolved.rpcData,
+      { ...rpcData, ...countedEventsOf(rpcData) },
       basePos,
       bpPerPx,
       resolved.reversed,

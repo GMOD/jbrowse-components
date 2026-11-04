@@ -444,7 +444,34 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
       >
         <DialogContent>
           <FilterForm>
-            <FormHeading>Reads</FormHeading>
+            <FormHeading>Which reads count</FormHeading>
+            <NumberRow
+              label="Min mapping quality"
+              value={form.minMapq}
+              min={0}
+              max={254}
+              placeholder="Any"
+              onChange={minMapq => {
+                patchForm({ minMapq })
+              }}
+            />
+            <TagFilterRows
+              rows={form.tagRows}
+              setRows={tagRows => {
+                patchForm({ tagRows })
+              }}
+            />
+            <FlagFilterSection
+              flagInclude={form.flagInclude}
+              flagExclude={form.flagExclude}
+              setFlagInclude={flagInclude => {
+                patchForm({ flagInclude })
+              }}
+              setFlagExclude={flagExclude => {
+                patchForm({ flagExclude })
+              }}
+            />
+            <FormHeading>Which reads are drawn</FormHeading>
             <FormRow label="Read name">
               <TextField
                 variant="outlined"
@@ -458,16 +485,6 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
                 }}
               />
             </FormRow>
-            <NumberRow
-              label="Min mapping quality"
-              value={form.minMapq}
-              min={0}
-              max={254}
-              placeholder="Any"
-              onChange={minMapq => {
-                patchForm({ minMapq })
-              }}
-            />
             <CategoryRow
               label="Reads with no mate in view"
               all="All reads"
@@ -478,23 +495,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
                 setLayers({ ...layers, alone })
               }}
             />
-            <TagFilterRows
-              rows={form.tagRows}
-              setRows={tagRows => {
-                patchForm({ tagRows })
-              }}
-            />
             <LayerFilterSections state={layers} setState={setLayers} />
-            <FlagFilterSection
-              flagInclude={form.flagInclude}
-              flagExclude={form.flagExclude}
-              setFlagInclude={flagInclude => {
-                patchForm({ flagInclude })
-              }}
-              setFlagExclude={flagExclude => {
-                patchForm({ flagExclude })
-              }}
-            />
           </FilterForm>
         </DialogContent>
         <DialogActions>

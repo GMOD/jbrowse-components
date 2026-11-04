@@ -305,12 +305,19 @@ draw, so its clip indicator appears black.
 
 ## Filtering reads
 
-The track menu's **Filter by** hides reads by SAM flag (drop duplicates and
-secondaries, or keep only properly-paired reads), by read name, or by tag value
-(`HP:1` for one haplotype, `HP:*` for any read with the tag). The splicing
-radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
-unspliced ones, and **Mapping quality** hides reads under a minimum MAPQ, as
-`samtools view -q` does. The coverage histogram follows the filter.
+The track menu's **Filter by** has two kinds of filter.
+
+- **Which reads count**: SAM flags (drop duplicates and secondaries, or keep
+  only properly-paired reads), a tag value (`HP:1` for one haplotype, `HP:*` for
+  any read with the tag), and **Mapping quality**, which hides reads under a
+  minimum MAPQ as `samtools view -q` does. The coverage histogram, the sashimi
+  arcs and the insert-size colors count only the reads these keep.
+- **Which reads are drawn**: the read name, the splicing radios (only spliced
+  reads, with a reference skip `N` in the CIGAR, or only unspliced ones), split
+  reads, SV evidence, and reads with no mate in view. These hide rows and leave
+  the coverage counting every read. To see one category's depth, group by it.
+
+**Filter by → More filters...** lists them under those two headings.
 
 <Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read with the tag." src="/img/alignments/filter_dialog.png" />
 

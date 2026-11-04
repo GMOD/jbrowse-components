@@ -47,6 +47,15 @@ const MULTIHOP_GENE_HEIGHT = 70
 // sees.
 const SPLIT_READS = { mark: { height: 4 } }
 
+// Split reads drawn, and a coverage band that counts them alone: the filter
+// picks the reads drawn and leaves coverage counting every read, so the
+// unsplit chains take a section of their own, hidden.
+const SPLIT_READS_ONLY = {
+  filter: [{ field: 'split', equal: true }],
+  facet: { field: 'split', hidden: ['unsplit'] },
+  unit: 'chain',
+} as const
+
 // Every COLO829 window sits inside an intron. With all isoforms stacked, the
 // gene name's floating label falls below the fixed track height and clips.
 const GENE_TRACK = {
@@ -379,8 +388,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  filter: [{ field: 'split', equal: true }],
-                  unit: 'chain',
+                  ...SPLIT_READS_ONLY,
                   pileup: { mark: { height: 3 } },
                   coverage: { height: 30 },
                   readConnections: { show: true, height: 110 },
@@ -479,12 +487,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  filter: [{ field: 'split', equal: true }],
-                  unit: 'chain',
+                  ...SPLIT_READS_ONLY,
                   pileup: { mark: { height: 5 } },
                   coverage: {
-                    // The filter runs before coverage, so this band counts the
-                    // split subset, not tumour depth; the caption says so.
+                    // The split section's band counts the split subset, not
+                    // tumour depth; the caption says so.
                     show: true,
                     height: 40,
                   },
@@ -802,11 +809,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             show: true,
             height: 90,
           },
+          ...SPLIT_READS_ONLY,
           filter: [
-            { field: 'split', equal: true },
+            ...SPLIT_READS_ONLY.filter,
             { field: 'connection.offscreen', equal: false },
           ],
-          unit: 'chain',
           encoding: { color: 'insertSizeAndOrientation' },
           legend: { show: true },
         },
@@ -879,8 +886,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             // At 35 the two arcs read as one mark.
             height: 90,
           },
-          filter: [{ field: 'split', equal: true }],
-          unit: 'chain',
+          ...SPLIT_READS_ONLY,
           legend: { show: true },
         },
       ],

@@ -8,6 +8,7 @@ import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
 } from '../CramAdapter/CramTestAdapters.fixture.ts'
+import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
@@ -208,8 +209,9 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
   expect(f.get('mismatches')).toMatchSnapshot()
 })
 
-// 1740 of the 2464 reads in spliced.bam carry an N; the two settings partition
-// the fetch, so the sum is the unfiltered count.
+// 1740 of the 2464 reads in spliced.bam carry an N. The adapter leaves
+// `spliced` to the worker, whose two settings partition the fetch, so the sum
+// is the unfiltered count.
 test('the spliced filter partitions reads by a CIGAR skip', async () => {
   const adapter = new Adapter(
     configSchema.create({
@@ -235,22 +237,19 @@ test('the spliced filter partitions reads by a CIGAR skip', async () => {
     start: 0,
     end: 50000,
   }
-  const count = async (spliced?: 'only' | 'exclude') =>
-    (
-      await firstValueFrom(
-        adapter
-          .getFeatures(query, {
-            filter:
-              spliced === undefined
-                ? []
-                : [{ field: 'spliced', equal: spliced === 'only' }],
-          })
-          .pipe(toArray()),
-      )
+  const spliced = [{ field: 'spliced', equal: true }]
+  const records = await firstValueFrom(
+    adapter.getFeatures(query, { filter: spliced }).pipe(toArray()),
+  )
+  const count = (equal?: boolean) =>
+    filterChainFeatures(
+      records,
+      equal === undefined ? [] : [{ field: 'spliced', equal }],
     ).length
-  const all = await count()
-  const only = await count('only')
-  const exclude = await count('exclude')
+  const all = count()
+  expect(records).toHaveLength(2464)
+  const only = count(true)
+  const exclude = count(false)
   expect(only).toBeGreaterThan(0)
   expect(exclude).toBeGreaterThan(0)
   expect(only + exclude).toBe(all)

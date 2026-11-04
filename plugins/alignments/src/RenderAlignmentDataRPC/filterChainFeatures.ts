@@ -1,27 +1,27 @@
-import { readKeyOf, svSignalTier } from '@jbrowse/alignments-core'
+import {
+  READ_SPLICED,
+  READ_SPLIT,
+  readKeyOf,
+  svSignalTier,
+} from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
-import { groupBy } from '@jbrowse/core/util'
 import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
 
 import {
-  chainPredicatesOf,
   compileMapqFilter,
+  drawnPredicatesOf,
 } from '../shared/alignmentsFilter.ts'
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
-import { chainIsSplit, readCategoryBitsOf } from '../shared/splitAlignment.ts'
+import { CHAIN_FIELDS, DRAWN_RECORD_FIELDS } from '../shared/filterFields.ts'
+import { readCategoryBitsOf } from '../shared/splitAlignment.ts'
 import { getFlags, getMappingQuality } from '../shared/util.ts'
 
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
-
-// A chain is SV evidence when any of its records has an `svSignalTier`
-// (ADR-229), so the concordant mate of a split read stays with it. The split test reads
-// the SA tag: the filter runs per region, so in a view of chr1 beside chr4 the
-// chr1 call never sees a split read's chr4 supplementary.
-function isSvSignalChain(chain: Feature[]) {
-  return chain.some(f => svSignalTier(readCategoryBitsOf(f)) > 0)
-}
+import type {
+  FieldPredicate,
+  PredicateLane,
+} from '@jbrowse/core/util/fieldPredicate'
 
 // Guard against the same physical record being emitted twice — a dup would
 // double-count coverage depth and double-draw.
@@ -71,7 +71,7 @@ function dedupeById(features: Feature[]) {
 // alignment keys a chain of its own (`chainGroupingKey`), but aligners emit a
 // paired read's secondary alignments as pairs whose two records name each
 // other's position, and a secondary pair on screen is not two reads alone.
-function mateKey(f: Feature) {
+export function mateKey(f: Feature) {
   const name = f.get('name')
   const nextPos = f.get('next_pos') as number | undefined
   if (!name || !(getFlags(f) & SAM_FLAG_SECONDARY) || nextPos === undefined) {
@@ -79,11 +79,6 @@ function mateKey(f: Feature) {
   }
   const start = f.get('start')
   return `${name}\0${Math.min(start, nextPos)}\0${Math.max(start, nextPos)}`
-}
-
-function isAloneChain(mateCounts: Map<string, number>) {
-  return (chain: Feature[]) =>
-    chain.length === 1 && mateCounts.get(mateKey(chain[0]!)) === 1
 }
 
 // Applied here, not in the adapters, so a synteny block answers `mapq` too.
@@ -96,7 +91,8 @@ function passingMapq(
   return keeps ? features.filter(keeps) : features
 }
 
-// Both read-filter steps, for a caller with no use for the sample between them.
+// Both read-filter steps: the reads drawn, for a caller with no use for the
+// sample, which coverage counts, between them.
 export function filterChainFeatures(
   features: Feature[],
   filter?: readonly FieldPredicate[],
@@ -105,8 +101,9 @@ export function filterChainFeatures(
 }
 
 // The reads the sample filters keep: one per record, passing `mapq`.
-// These define what the track measures, so the insert-size band reads them
-// (executeRenderAlignmentData) before `selectChains` picks what to show.
+// These define what the track measures, so the insert-size band and the
+// coverage read them (executeRenderAlignmentData), and `drawnReadMask` picks
+// which of them are drawn.
 export function sampleFeatures(
   features: Feature[],
   filter?: readonly FieldPredicate[],
@@ -114,10 +111,100 @@ export function sampleFeatures(
   return passingMapq(dedupeById(features), filter)
 }
 
-// The three read-category filters that need a whole chain to answer, applied
-// to `sampleFeatures`' output after grouping reads by name. `spliced` is the
-// fourth and is not here: it is per-record, so the adapters answer it as they
-// parse.
+/**
+ * A fetch's reads as the drawn-read fields test them, by index: the render
+ * hands over what its extract already holds for every read, and any other
+ * caller reads them off the records (`featureSource`).
+ */
+export interface DrawnReadSource {
+  length: number
+  // the read's `readCategoryBits`
+  categoryBits: (i: number) => number
+  name: (i: number) => string | undefined
+  chainKey: (i: number) => string
+  mateKey: (i: number) => string
+}
+
+export function featureSource(features: Feature[]): DrawnReadSource {
+  return {
+    length: features.length,
+    categoryBits: i => readCategoryBitsOf(features[i]!),
+    name: i => features[i]!.get('name'),
+    chainKey: i => featureChainKey(features[i]!),
+    mateKey: i => mateKey(features[i]!),
+  }
+}
+
+// A record's answer to `svSignal` (ADR-229), `split` and `spliced`. `split`
+// reads the SA tag: the filter runs per region, so in a view of chr1 beside
+// chr4 the chr1 call never sees a split read's chr4 supplementary.
+function categoryAnswer(field: string) {
+  return field === 'svSignal'
+    ? (bits: number) => svSignalTier(bits) > 0
+    : field === 'split'
+      ? (bits: number) => (bits & READ_SPLIT) !== 0
+      : (bits: number) => (bits & READ_SPLICED) !== 0
+}
+
+function recordLane(source: DrawnReadSource) {
+  return (field: string): PredicateLane | undefined => {
+    if (field === 'name') {
+      return { kind: 'get', get: source.name }
+    } else if (field === 'spliced') {
+      const answer = categoryAnswer(field)
+      return { kind: 'get', get: i => answer(source.categoryBits(i)) }
+    } else {
+      return undefined
+    }
+  }
+}
+
+function tally(keys: readonly string[]) {
+  const counts = new Map<string, number>()
+  for (const key of keys) {
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  return counts
+}
+
+// A chain field's answer for the read at an index, as its whole chain gives
+// it: `svSignal` and `split` when any of its records answers yes, so the
+// concordant mate of a split read stays with it, and `alone` by its mates'
+// count over the fetch.
+function chainLane(source: DrawnReadSource) {
+  const chainKeys = Array.from({ length: source.length }, (_, i) =>
+    source.chainKey(i),
+  )
+  return (field: string): PredicateLane | undefined => {
+    if (field === 'svSignal' || field === 'split') {
+      const answer = categoryAnswer(field)
+      const yes = new Set<string>()
+      for (let i = 0; i < source.length; i++) {
+        if (answer(source.categoryBits(i))) {
+          yes.add(chainKeys[i]!)
+        }
+      }
+      return { kind: 'get', get: i => yes.has(chainKeys[i]!) }
+    } else if (field === 'alone') {
+      const chainSizes = tally(chainKeys)
+      const mateKeys = Array.from({ length: source.length }, (_, i) =>
+        source.mateKey(i),
+      )
+      const mateCounts = tally(mateKeys)
+      return {
+        kind: 'get',
+        get: i =>
+          chainSizes.get(chainKeys[i]!) === 1 &&
+          mateCounts.get(mateKeys[i]!) === 1,
+      }
+    } else {
+      return undefined
+    }
+  }
+}
+
+// The drawn-read test over the whole fetch, before any facet partitions it,
+// so a strand facet cannot split a chain's verdict.
 //
 // PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
 // "chain of one" means "one alignment in THIS window", and in a multi-region
@@ -125,50 +212,48 @@ export function sampleFeatures(
 // `alone` is absent by default, so this only bites a user who sets
 // it; the menu's help text names the scope for that reason. `split` is the one
 // that routes around it, by reading the SA tag rather than counting what this
-// call happened to fetch (`chainIsSplit`) — the same move is not available for
-// the other two, which are about what is on screen. Making them view-wide means
-// moving the filter to the main thread, where the coverage histogram these also
-// thin is no longer being computed.
+// call happened to fetch — the same move is not available for `alone`, which
+// is about what is on screen.
+function maskPassing(source: DrawnReadSource, predicates: FieldPredicate[]) {
+  const chainPredicates = predicates.filter(p => CHAIN_FIELDS.has(p.field))
+  const keepsRecord = compilePredicates(
+    predicates.filter(p => DRAWN_RECORD_FIELDS.has(p.field)),
+    recordLane(source),
+  )
+  const keepsChain =
+    chainPredicates.length === 0
+      ? undefined
+      : compilePredicates(chainPredicates, chainLane(source))
+  const drawn = new Uint8Array(source.length)
+  let count = 0
+  for (let i = 0; i < source.length; i++) {
+    if ((!keepsChain || keepsChain(i)) && (!keepsRecord || keepsRecord(i))) {
+      drawn[i] = 1
+      count++
+    }
+  }
+  return count === source.length ? undefined : drawn
+}
+
+/**
+ * Which reads of a fetch the filter draws, 1 each, or undefined while it
+ * draws every one: `name` and `spliced` per record, `svSignal`, `split` and
+ * `alone` per chain grouped by name. Coverage still counts the reads it
+ * leaves out.
+ */
+export function drawnReadMask(
+  source: DrawnReadSource,
+  filter?: readonly FieldPredicate[],
+) {
+  const predicates = drawnPredicatesOf(filter)
+  return predicates.length === 0 ? undefined : maskPassing(source, predicates)
+}
+
+/** The sample's reads the filter draws. */
 export function selectChains(
   sample: Feature[],
   filter?: readonly FieldPredicate[],
 ) {
-  const predicates = chainPredicatesOf(filter)
-  if (predicates.length === 0) {
-    return sample
-  }
-  // a chain is alone by its mate's count over the sample, built only when an
-  // entry asks
-  let alone: ((chain: Feature[]) => boolean) | undefined
-  const aloneOf = () => {
-    if (!alone) {
-      const mateCounts = new Map<string, number>()
-      for (const f of sample) {
-        const key = mateKey(f)
-        mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
-      }
-      alone = isAloneChain(mateCounts)
-    }
-    return alone
-  }
-  const keeps = compilePredicates<Feature[]>(predicates, field =>
-    field === 'svSignal'
-      ? { kind: 'get', get: isSvSignalChain }
-      : field === 'split'
-        ? { kind: 'get', get: chainIsSplit }
-        : field === 'alone'
-          ? { kind: 'get', get: chain => aloneOf()(chain) }
-          : undefined,
-  )
-  const rawChains = Object.values(groupBy(sample, featureChainKey))
-  const kept = keeps ? rawChains.filter(keeps) : rawChains
-  // same key as the dedupe above, for the same reason: this is identity within
-  // one fetch, which is the thing `readKeyOf` is cheap at
-  const keptIds = new Set<ReadKey>()
-  for (const chain of kept) {
-    for (const f of chain) {
-      keptIds.add(readKeyOf(f))
-    }
-  }
-  return sample.filter(f => keptIds.has(readKeyOf(f)))
+  const drawn = drawnReadMask(featureSource(sample), filter)
+  return drawn ? sample.filter((_, i) => drawn[i] === 1) : sample
 }

@@ -213,6 +213,7 @@ import {
   colorFieldKindOf,
   paintsModifications,
 } from './shared/colorFieldDefs.ts'
+import { countedEventsOf } from './shared/drawnReads.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import {
   facetForUnit,
@@ -387,14 +388,16 @@ function pairs(a: ArrayLike<number>) {
  * threshold, so it is not this.
  */
 function alleleFrequencies(d: WorkerPileupData) {
-  const key = (i: number) => d.mismatchPositions[i]! * 256 + d.mismatchBases[i]!
+  const counted = countedEventsOf(d)
   const counts = new Map<number, number>()
-  for (let i = 0; i < d.mismatchPositions.length; i++) {
-    counts.set(key(i), (counts.get(key(i)) ?? 0) + 1)
+  for (let i = 0; i < counted.mismatchPositions.length; i++) {
+    const key = counted.mismatchPositions[i]! * 256 + counted.mismatchBases[i]!
+    counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   return Array.from(d.mismatchPositions, (position, i) => {
     const depth = d.coverageDepths[position - d.coverageStartPos] ?? 0
-    return depth > 0 ? Math.min(1, counts.get(key(i))! / depth) : 0
+    const count = counts.get(position * 256 + d.mismatchBases[i]!) ?? 0
+    return depth > 0 ? Math.min(1, count / depth) : 0
   })
 }
 

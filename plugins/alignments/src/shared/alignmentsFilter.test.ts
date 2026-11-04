@@ -298,13 +298,9 @@ describe('the record test', () => {
   const read = (
     flags: number,
     tags: Record<string, unknown> = {},
-    skip = false,
-    name = 'r1',
   ): FilterableRead => ({
     flags,
-    name,
     getTag: tag => tags[tag],
-    cigarCategoryBits: skip ? 2 : 0,
   })
   const reads = [
     read(0),
@@ -315,24 +311,16 @@ describe('the record test', () => {
     read(0, { HP: 1 }),
     read(0, { HP: '2' }),
     read(0, { RG: 'a' }),
-    read(0, {}, true),
-    read(0, {}, false, 'r2'),
   ]
   const T = true
   const F = false
 
   test.each([
-    [{}, [T, F, F, T, T, T, T, T, T, T]],
-    [
-      { flagInclude: 2, flagExclude: 1540 | 256 },
-      [F, F, F, T, F, F, F, F, F, F],
-    ],
-    [{ flagInclude: 0, flagExclude: 0 }, [T, T, T, T, T, T, T, T, T, T]],
-    [{ tags: [{ tag: 'HP', value: '1' }] }, [F, F, F, F, F, T, F, F, F, F]],
-    [{ tags: [{ tag: 'HP' }] }, [F, F, F, F, F, T, T, F, F, F]],
-    [{ readName: 'r2' }, [F, F, F, F, F, F, F, F, F, T]],
-    [{ spliced: 'only' as const }, [F, F, F, F, F, F, F, F, T, F]],
-    [{ spliced: 'exclude' as const }, [T, F, F, T, T, T, T, T, F, T]],
+    [{}, [T, F, F, T, T, T, T, T]],
+    [{ flagInclude: 2, flagExclude: 1540 | 256 }, [F, F, F, T, F, F, F, F]],
+    [{ flagInclude: 0, flagExclude: 0 }, [T, T, T, T, T, T, T, T]],
+    [{ tags: [{ tag: 'HP', value: '1' }] }, [F, F, F, F, F, T, F, F]],
+    [{ tags: [{ tag: 'HP' }] }, [F, F, F, F, F, T, T, F]],
   ])('%j', (object, kept) => {
     const keeps = compileRecordFilter(
       mergeFilter(predicatesOfFilterObject(object)),
@@ -348,6 +336,17 @@ describe('the record test', () => {
     expect(keeps(read(0, { HP: 1, RG: 'lib1' }))).toBe(true)
     expect(keeps(read(0, { HP: 2, RG: 'lib1' }))).toBe(false)
     expect(keeps(read(0, { HP: 1 }))).toBe(false)
+  })
+
+  // they pick which counted reads are drawn, so the worker applies them after
+  // coverage has counted every read (filterChainFeatures.ts)
+  test('the read name and the spliced category are not the adapters’', () => {
+    expect(
+      compileRecordFilter([
+        { field: 'name', equal: 'r2' },
+        { field: 'spliced', equal: true },
+      ]),
+    ).toBeUndefined()
   })
 
   test('a tag row naming no tag tests nothing', () => {
@@ -380,6 +379,9 @@ describe('problems', () => {
         { field: 'junction.class', oneOf: ['splice', 'duplication'] },
         { field: 'junction.class', equal: 'backsplice' },
         { field: 'junction.source', gte: 1 },
+        { field: 'svSignal', equal: true },
+        { field: 'svSignal', equal: 'only' },
+        { field: 'spliced', oneOf: [true] },
       ]).map(p => p.split(',')[0]),
     ).toEqual([
       'no field "flags.NOPE" on an alignment',
@@ -387,6 +389,8 @@ describe('problems', () => {
       'connection.interchrom takes equal: true or false',
       'junction.class takes equal or oneOf of splice',
       'junction.source takes equal or oneOf of gap',
+      'svSignal takes equal: true or false',
+      'spliced takes equal: true or false',
     ])
   })
 })

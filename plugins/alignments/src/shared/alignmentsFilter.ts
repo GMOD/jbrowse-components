@@ -1,4 +1,3 @@
-import { CIGAR_HAS_SKIP } from '@jbrowse/cigar-utils'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   withField as coreWithField,
@@ -21,7 +20,6 @@ import {
 } from '../features/sashimi/junctionClass.ts'
 import {
   BREAKPOINT_READS,
-  CHAIN_FIELDS,
   CONNECTION_INTERCHROM,
   CONNECTION_OFFSCREEN,
   FLAG_FIELDS,
@@ -33,8 +31,9 @@ import {
   MAPQ_FIELD,
   TAG_FIELD_PREFIX,
   fieldTag,
+  isAdapterField,
+  isDrawnField,
   isReadField,
-  isRecordField,
 } from './filterFields.ts'
 
 import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
@@ -519,9 +518,7 @@ export function readFieldsEntries(
 /** What the adapters read off a record they parse. */
 export interface FilterableRead {
   flags: number
-  name: string | undefined
   getTag(tag: string): unknown
-  cigarCategoryBits: number
 }
 
 const flagsOf = (read: FilterableRead) => read.flags
@@ -532,31 +529,30 @@ function recordLane(field: string): PredicateLane<FilterableRead> | undefined {
     return i === -1 ? undefined : { kind: 'bits', word: flagsOf, mask: 1 << i }
   }
   const tag = fieldTag(field)
-  if (tag !== undefined) {
-    return { kind: 'get', get: read => read.getTag(tag) }
-  }
-  return field === 'name'
-    ? { kind: 'get', get: read => read.name }
-    : field === 'spliced'
-      ? {
-          kind: 'get',
-          get: read => (read.cigarCategoryBits & CIGAR_HAS_SKIP) !== 0,
-        }
-      : undefined
+  return tag === undefined
+    ? undefined
+    : { kind: 'get', get: read => read.getTag(tag) }
 }
 
 /**
- * The adapters' test, over the fields a record answers as it is parsed: its
- * flag bits, name, tags and whether its CIGAR skips. Undefined when the list
- * tests none of them.
+ * The adapters' test, over the fields that decide which reads count and a
+ * record answers as it is parsed: its flag bits and tags. Undefined when the
+ * list tests none of them.
  */
 export function compileRecordFilter(
   predicates: readonly FieldPredicate[] | undefined,
 ) {
   return compilePredicates<FilterableRead>(
-    (predicates ?? []).filter(p => isRecordField(p.field)),
+    (predicates ?? []).filter(p => isAdapterField(p.field)),
     recordLane,
   )
+}
+
+/** The entries on the fields that pick which counted reads are drawn. */
+export function drawnPredicatesOf(
+  predicates: readonly FieldPredicate[] | undefined,
+) {
+  return (predicates ?? []).filter(p => isDrawnField(p.field))
 }
 
 /** The worker's sample test: the entries on `mapq`, over `mapqOf`. */
@@ -568,13 +564,6 @@ export function compileMapqFilter<T>(
     kind: 'get',
     get: mapqOf,
   }))
-}
-
-/** The entries on the read categories the worker answers per chain. */
-export function chainPredicatesOf(
-  predicates: readonly FieldPredicate[] | undefined,
-) {
-  return (predicates ?? []).filter(p => CHAIN_FIELDS.has(p.field))
 }
 
 // ---- problems ----

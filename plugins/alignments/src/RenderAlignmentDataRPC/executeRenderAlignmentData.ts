@@ -1,4 +1,9 @@
-import { readIdPrefixOf, buildReadNameBlock } from '@jbrowse/alignments-core'
+import {
+  buildReadNameBlock,
+  readIdPrefixOf,
+  readKeyOf,
+  readNameAt,
+} from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
@@ -15,9 +20,16 @@ import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays
 import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
+import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationField } from '../shared/colorFieldDefs.ts'
 import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
+import {
+  drawnInstanceArrays,
+  drawnReadLists,
+  readCompaction,
+  sampleEventsOf,
+} from '../shared/drawnReads.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
@@ -27,7 +39,12 @@ import {
   buildReadNextRefs,
 } from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
-import { sampleFeatures, selectChains } from './filterChainFeatures.ts'
+import { getFlags } from '../shared/util.ts'
+import {
+  drawnReadMask,
+  mateKey,
+  sampleFeatures,
+} from './filterChainFeatures.ts'
 
 import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { FetchedSegments } from '../features/sashimi/splitJunctions.ts'
@@ -35,6 +52,7 @@ import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'
 import type { ModificationEntry } from '../shared/webglRpcTypes.ts'
+import type { DrawnReadSource } from './filterChainFeatures.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type {
   InterbaseIndicatorRule,
@@ -90,15 +108,69 @@ function modifiedPositions(modifications: ModificationEntry[]) {
   return positions
 }
 
+interface Section {
+  features: Feature[]
+  categoryBits: Uint8Array
+  names: ReadNames
+}
+
+// Every section's reads in order, as the drawn-read fields test them
+function sectionsSource(sections: Section[]): DrawnReadSource {
+  const features = sections.flatMap(s => s.features)
+  const sectionOf = new Uint32Array(features.length)
+  const starts = new Uint32Array(sections.length)
+  let at = 0
+  for (const [j, s] of sections.entries()) {
+    starts[j] = at
+    sectionOf.fill(j, at, at + s.features.length)
+    at += s.features.length
+  }
+  const name = (i: number) => {
+    const j = sectionOf[i]!
+    return readNameAt(sections[j]!.names, i - starts[j]!)
+  }
+  return {
+    length: features.length,
+    categoryBits: i => {
+      const j = sectionOf[i]!
+      return sections[j]!.categoryBits[i - starts[j]!]!
+    },
+    name,
+    chainKey: i =>
+      chainGroupingKey(
+        name(i),
+        readKeyOf(features[i]!),
+        getFlags(features[i]!),
+      ),
+    mateKey: i => mateKey(features[i]!),
+  }
+}
+
+// One fetch-wide mask cut back into its sections
+function sectionMasks(sections: Section[], mask: Uint8Array | undefined) {
+  let at = 0
+  return sections.map(s => {
+    const start = at
+    at += s.features.length
+    return mask?.subarray(start, at)
+  })
+}
+
 // The shared spine for one group's reads: per-read/gap/mismatch arrays,
 // coverage pipeline, result assembly. Identical for grouped and ungrouped
 // fetches — ungrouped is just the one-group case.
+//
+// Every read of the sample runs through the detail arrays and the coverage
+// pipeline, so the band, the fade and the junctions count the reads a filter
+// leaves out of the pileup; the drawn reads are compacted out after.
 async function buildGroupResult(
   extraction: ReturnType<typeof extractFeatureArrays>,
   // Raw reads for this group, needed to tally per-strand read bases at modified
   // positions (the reference-free mod-coverage denominator).
   rawFeatures: Feature[],
   readNames: ReadNames,
+  // 1 for each read the filter draws, undefined while it draws every one
+  drawnMask: Uint8Array | undefined,
   ctx: GroupContext,
 ): Promise<WorkerPileupData> {
   const {
@@ -112,11 +184,7 @@ async function buildGroupResult(
     bisulfiteCallCounts,
     perBaseQualities,
     perBaseLetters,
-    tagColorValues,
-    sortTagValues,
-    nextPositions,
     suppAlignments,
-    categoryBits,
     clipAtStart,
     detectedModifications,
   } = extraction
@@ -135,15 +203,6 @@ async function buildGroupResult(
     statusCallback,
     signal,
   } = ctx
-
-  // Layout (readYs/gapYs/mismatchYs/etc.) and chain identity are the main
-  // thread's — see `PileupLayoutArrays` and `ChainFields`.
-  const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
-
-  // Both modes, off the raw features, for the same reason the name block is:
-  // the mate's reference is a NUMBER on the record and only becomes a string
-  // through `refIdToName`. See shared/readNextRefs.ts.
-  const nextRefs = buildReadNextRefs(rawFeatures)
 
   const {
     gapArrays,
@@ -213,21 +272,7 @@ async function buildGroupResult(
     signal,
   })
 
-  // Derived here where the mate-reference table and the region refName are both
-  // in scope, rather than threaded through the array builders. Resolved per
-  // distinct contig rather than per read.
-  const readInterchrom = buildReadInterchrom(
-    nextRefs,
-    region.refName,
-    features.length,
-  )
-
-  return {
-    ...readArrays,
-    ...readNames,
-    ...nextRefs,
-    readInterchrom,
-    ...segmentArrays,
+  const instances = {
     ...gapArrays,
     gapFrequencies: pipeline.gapFrequencies,
     ...mismatchArrays,
@@ -238,25 +283,74 @@ async function buildGroupResult(
     ...modificationArrays,
     ...perBaseQualityArrays,
     ...perBaseLetterArrays,
+    ...segmentArrays,
+  }
+  const lists = {
+    features,
+    rawFeatures,
+    tagColorValues: extraction.tagColorValues,
+    sortTagValues: extraction.sortTagValues,
+    nextPositions: extraction.nextPositions,
+    suppAlignments,
+    categoryBits: extraction.categoryBits,
+    clipAtStart,
+  }
+  const compaction = drawnMask && readCompaction(drawnMask)
+  const drawnLists = compaction ? drawnReadLists(lists, compaction) : lists
+  const drawn = compaction
+    ? {
+        instances: drawnInstanceArrays(instances, compaction),
+        lists: drawnLists,
+        readNames: buildReadNameBlock(drawnLists.rawFeatures),
+        sampleEvents: sampleEventsOf(instances),
+      }
+    : { instances, lists, readNames, sampleEvents: undefined }
+
+  // Layout (readYs/gapYs/mismatchYs/etc.) and chain identity are the main
+  // thread's — see `PileupLayoutArrays` and `ChainFields`.
+  const { readArrays } = buildBaseReadArrays(drawn.lists.features, readIdPrefix)
+
+  // Both modes, off the raw features, for the same reason the name block is:
+  // the mate's reference is a NUMBER on the record and only becomes a string
+  // through `refIdToName`. See shared/readNextRefs.ts.
+  const nextRefs = buildReadNextRefs(drawn.lists.rawFeatures)
+
+  // Derived here where the mate-reference table and the region refName are both
+  // in scope, rather than threaded through the array builders. Resolved per
+  // distinct contig rather than per read.
+  const readInterchrom = buildReadInterchrom(
+    nextRefs,
+    region.refName,
+    drawn.lists.features.length,
+  )
+
+  return {
+    ...readArrays,
+    ...drawn.readNames,
+    ...nextRefs,
+    readInterchrom,
+    ...drawn.instances,
 
     // The raw per-read strings the main thread bakes `readFillColors` from
     // (`overlayReadFillColors`), so no color table crosses this boundary. The
     // baked arrays themselves are not this tier's to state — see
     // `WorkerPileupData`.
-    readTagValues: tagColorValues,
+    readTagValues: drawn.lists.tagColorValues,
 
     ...buildCoverageResultFields(pipeline),
 
     detectedModifications: Array.from(detectedModifications),
 
-    readNextPositions: new Uint32Array(nextPositions),
-    readSuppAlignments: suppAlignments,
-    readCategoryBits: categoryBits,
-    readClipAtStart: new Uint32Array(clipAtStart),
+    readNextPositions: new Uint32Array(drawn.lists.nextPositions),
+    readSuppAlignments: drawn.lists.suppAlignments,
+    readCategoryBits: drawn.lists.categoryBits,
+    readClipAtStart: new Uint32Array(drawn.lists.clipAtStart),
 
     insertSizeStats,
 
-    sortTagValues,
+    sortTagValues: drawn.lists.sortTagValues,
+
+    sampleEvents: drawn.sampleEvents,
   }
 }
 
@@ -276,17 +370,8 @@ export async function executeRenderAlignmentData({
     sequenceAdapter,
     regions,
     filter,
-    colorField,
-    baseLayer,
-    sortTag,
-    facet,
     lodTier,
-    showSoftClips = false,
-    showCoverage = true,
-    interbaseIndicators,
-    junctions = true,
     byteLimit,
-    perBaseBinBp = 1,
     statusCallback,
     signal,
   } = args
@@ -318,35 +403,67 @@ export async function executeRenderAlignmentData({
     statusCallback,
     signal,
   })
+  const groups = await groupsOfFetch({ pluginManager, args, featuresArray })
+  return rpcResult(
+    { groups, bytes, lodTier },
+    collectGroupedTransferables(groups),
+  )
+}
+
+/**
+ * The sections of one fetch: the sample filters, the facet's partition, and
+ * each section's arrays.
+ */
+export async function groupsOfFetch({
+  pluginManager,
+  args,
+  featuresArray,
+}: {
+  pluginManager: PluginManager
+  args: RpcExecuteArgs<'RenderAlignmentData'>
+  featuresArray: Feature[]
+}) {
+  const {
+    sessionId,
+    sequenceAdapter,
+    regions,
+    filter,
+    colorField,
+    baseLayer,
+    sortTag,
+    facet,
+    showSoftClips = false,
+    showCoverage = true,
+    interbaseIndicators,
+    junctions = true,
+    perBaseBinBp = 1,
+    statusCallback,
+    signal,
+  } = args
+  const region = regions[0]!
   const sample = sampleFeatures(featuresArray, filter)
   const insertSizeStats = computePairedInsertSizeStats(sample)
 
-  // The category filters group reads by name (they short-circuit to the sample
-  // when none is set, the default). Only bisulfite needs the reference
-  // sequence (its methylation is read-vs-reference C->T). modBAM modifications/methylation
-  // derive everything from the reads, including the mod-coverage denominator
+  // Only bisulfite needs the reference sequence (its methylation is
+  // read-vs-reference C->T). modBAM modifications/methylation derive
+  // everything from the reads, including the mod-coverage denominator
   // (computeReadBaseCounts), so they fetch nothing.
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
-  const inputFeatures = selectChains(sample, filter)
   if (baseLayer?.field === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
       sequenceAdapter,
       region,
-      featuresArray: inputFeatures,
+      featuresArray: sample,
       signal,
     })
     regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const featureGroups = partitionFeatures(
-    inputFeatures,
-    facet,
-    pluginManager.jexl,
-  )
+  const featureGroups = partitionFeatures(sample, facet, pluginManager.jexl)
   // One prefix for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
   const readIdPrefix = readIdPrefixOf(featuresArray)
@@ -371,7 +488,7 @@ export async function executeRenderAlignmentData({
   // read (deep pileups are O(reads)-heavy in extractFeatureArrays).
   const extractReport = createProgressReporter({
     label: 'Processing alignments',
-    total: inputFeatures.length,
+    total: sample.length,
     statusCallback,
     signal,
   })
@@ -416,7 +533,7 @@ export async function executeRenderAlignmentData({
       sessionId,
       sequenceAdapter,
       region,
-      featuresArray: inputFeatures,
+      featuresArray: sample,
       signal,
     })
     regionSequence = result.regionSequence
@@ -433,6 +550,17 @@ export async function executeRenderAlignmentData({
   // same read in both.
   const readNamesByGroup = featureGroups.map(g =>
     buildReadNameBlock(g.features),
+  )
+  // Judged over every section's reads at once, so a strand facet cannot split
+  // a chain's verdict, off the category bits and names already in hand
+  const sections = featureGroups.map((g, i) => ({
+    features: g.features,
+    categoryBits: extractions[i]!.categoryBits,
+    names: readNamesByGroup[i]!,
+  }))
+  const drawnMasks = sectionMasks(
+    sections,
+    drawnReadMask(sectionsSource(sections), filter),
   )
   const fetchedSegments = junctions
     ? fetchedSplitSegments(
@@ -463,6 +591,7 @@ export async function executeRenderAlignmentData({
       extractions[i]!,
       fg.features,
       readNamesByGroup[i]!,
+      drawnMasks[i],
       ctx,
     )
     groups.push({
@@ -473,8 +602,5 @@ export async function executeRenderAlignmentData({
     })
   }
 
-  return rpcResult(
-    { groups, bytes, lodTier },
-    collectGroupedTransferables(groups),
-  )
+  return groups
 }

@@ -65,11 +65,16 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot
      * The alignments drawn, a list of [](/docs/config/fieldpredicate) entries
-     * every one of which must hold. The read fields run before every band,
-     * so coverage counts only the reads they pass: `flags.UNMAP` and the
-     * other samtools flag names, `mapq` (MAPQ 255, none reported, passes a
-     * floor), `name`, `tags.HP` and any other tag, and the read categories
-     * `spliced`, `svSignal`, `alone` and `split`. `junction.reads`,
+     * every one of which must hold. The flags, `mapq` and tags decide which
+     * reads count, so coverage, the sashimi junctions and the insert-size
+     * colors count only the reads they pass: `flags.UNMAP` and the other
+     * samtools flag names, `mapq` (MAPQ 255, none reported, passes a floor),
+     * and `tags.HP` and any other tag. `name` and the read categories pick
+     * which of those reads the pileup, the arcs, the consensus and an export
+     * draw, and leave coverage whole: `spliced` per alignment, and
+     * `svSignal`, `alone` and `split` over a read, its mate and its split
+     * segments together, each taking `equal: true` or `false`. A facet on a
+     * category gives its own coverage. `junction.reads`,
      * `junction.canonical` (a split junction reads no motif and counts as
      * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
      * split read's `deletion`, `duplication` or `inversion`) and

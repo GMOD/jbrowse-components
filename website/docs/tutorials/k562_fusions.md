@@ -235,8 +235,10 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 
 - **Read connections → View as pairs/link supplementary alignments** puts the
   two on one row and joins them across the region divider.
-- **Filter by → Split reads → Only split reads** drops every read that stays on
-  one chromosome.
+- **Filter by → Split reads → Only split reads** draws only the reads that leave
+  the chromosome. The coverage still counts every read; **Group by → Split
+  reads**, with the "Not split" band hidden, gives the split reads' coverage, as
+  the figure shows.
 - **Read connections → Read arcs** adds a band under the coverage with one arc
   per junction, thicker where more reads support it. An arc needs both ends in
   view: the right-hand window gets one arc and the intron 1 window two, one at
@@ -245,7 +247,7 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment falls
 in neither window.
 
-<Figure caption="BCR beside two ABL1 windows, showing split reads only." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR beside two ABL1 windows, showing split reads only, with coverage counting the split reads alone." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 

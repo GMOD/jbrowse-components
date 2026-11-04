@@ -5,6 +5,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import Adapter from './SamAdapter.ts'
 import configSchema from './configSchema.ts'
 
@@ -155,7 +156,7 @@ test('uses an MD tag instead of the reference when one is present', async () => 
   ])
 })
 
-test('filters by flag, read name and tag', async () => {
+test('filters by flag and tag, and leaves the read name to the worker', async () => {
   const adapter = makeAdapter(SAM)
   const reverseOnly = await firstValueFrom(
     adapter
@@ -175,7 +176,12 @@ test('filters by flag, read name and tag', async () => {
       )
       .pipe(toArray()),
   )
-  expect(named.map(f => f.get('name'))).toEqual(['snp'])
+  expect(named.map(f => f.get('name'))).toEqual(['exact', 'snp', 'indel'])
+  expect(
+    filterChainFeatures(named, [{ field: 'name', equal: 'snp' }]).map(f =>
+      f.get('name'),
+    ),
+  ).toEqual(['snp'])
 })
 
 // an unmapped record has no placement to draw, and RNAME '*' is not a reference

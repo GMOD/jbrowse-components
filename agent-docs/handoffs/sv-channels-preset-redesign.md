@@ -1,6 +1,6 @@
 ---
 name: sv-channels-preset-redesign
-description: "Track menu → Presets → SV channels (landed 2ac114015f) hides every band's reads, which Colin called judgemental. Three review rounds converged on a filter spelling: build category-filters-leave-coverage-whole Idea 2, key svChannel per chain in read mode, make a filter-list write merge by field, then the preset writes facet svChannel + filter svSignal + pileup.show true + arcs + ordinaryPairs off + sashimi off. Open: a grammar-spelling review (svChannel vs svSignal as one field, the boolean predicate shape) was stopped before it reported; Grow-the-track is settled from captures."
+description: "Track menu → Presets → SV channels (landed 2ac114015f) hides every band's reads, which Colin called judgemental. Being built in worktree sv-filter-preset (claimed 2026-11-04): step 1 landed as ADR-259 (category filters pick drawn reads and leave coverage whole); next svChannel keyed as svSignal's own verdict, a filter-list write merging by field, then the preset writes facet svChannel + filter svSignal + pileup.show true + arcs + ordinaryPairs off + sashimi off. The grammar-spelling review reported: keep both fields, `equal: true`, the roles and the words."
 ---
 
 # SV channels: from hiding the reads to a filter
@@ -40,20 +40,15 @@ description: "Track menu → Presets → SV channels (landed 2ac114015f) hides e
 
 ## The converged plan (rounds 1–3)
 
-1. **Build `ideas/ready/category-filters-leave-coverage-whole.md` Idea 2.**
-   Category fields (`svSignal`, `split`, `spliced`, `alone`, `name`) pick drawn
-   reads only; flags, MAPQ and tags also thin coverage. One `filter` word, the
-   reach stated in the slot doc (today's doc says the opposite). The idea
-   doc's line numbers are stale: `sampleFeatures` ~321, `selectChains` ~331,
-   `partitionFeatures` ~345 in `executeRenderAlignmentData.ts`; `dropsRead`
-   is `dropsRecord`; worker change 2 already holds on main. Move `name` and
-   `spliced` into `filterChainFeatures` so pileup, consensus, `exportedReads.ts`
-   and `GetGlobalValueForTag` share one drawn-read definition. Compact once
-   after the detail arrays. Bench gate: a filtered render within 1.1x of the
-   unfiltered render at the same locus (no bench drives
-   `executeRenderAlignmentData` today; `readPath.profile.ts` no longer runs).
-   Five `cancer_sv` figures relying on `split` thinning (incl.
-   `realigned_reads`) get a `split` facet.
+1. **Built: ADR-259.** Category filters pick drawn reads and leave coverage
+   whole; `name` and `spliced` moved out of the adapters; one drawn-read rule
+   (`drawnReadMask`) for the pileup, consensus, exports and tag dialog; the
+   four `cancer_sv` coverage figures take a hidden-unsplit `split` facet.
+   Bench (`benches/drawnReadFilter.bench.ts`): 1.02x/1.15x/1.23x on deep
+   short reads, the remainder chain grouping by name. Not reshot yet:
+   `derivative_inserts`, `derivative_synteny`, `k562_fusion_inspector_reads`,
+   `k562_bcr_abl_split`, `realigned_reads` (its coverage now counts every
+   read) and `alignments/filter_dialog` (new headings).
 2. **`svChannel` keys per chain in read mode too** (`chainSvChannelKey`):
    `svSignal` keeps whole chains, so today a split read's concordant mate
    passes the filter and files as `none` (38 of 40 split primaries in
@@ -84,18 +79,21 @@ description: "Track menu → Presets → SV channels (landed 2ac114015f) hides e
 
 ## Next
 
-- **Grammar-spelling review, not yet run to a result.** Questions: should
-  `svSignal` and `svChannel` be one field (filter `svChannel ≠ none` beside the
-  facet), is `{ field, equal: true }` the right boolean-category predicate,
-  are `readConnections` / `ordinaryPairs` / `mark: 'link'` in the right roles,
-  should the sample-vs-drawn reach be spelled in config rather than the slot
-  doc, and are "Presets" / "SV channels" the right words.
-- Then build steps 1–4 in a worktree, Idea 2 first.
+- **Grammar-spelling review, reported (2026-11-04, one Opus reader).** Keep
+  `svSignal` and `svChannel` as two fields (a yes/no test and its refinement;
+  one field needs `not` or a five-level `oneOf`), `{ field, equal: true }`,
+  `readConnections.ordinaryPairs.show` and `mark: 'link'`, the reach in the
+  slot doc, and "Presets" / "SV channels". Its must-changes: step 3 merges a
+  draft's entries per field in both `mergeConfSettings` and `writeConfMember`,
+  and a bare `{ field }` keeps its stored meaning (drop that field's
+  defaults), not "remove the written entries"; step 2 keys `none` as
+  `svSignal`'s own chain verdict instead of making two classifiers agree, and
+  moves ADR-258's adjacency rule into `withSvTier`; `filterProblems` checks
+  the read categories take a boolean (done in ADR-259). Cut
+  `SV_SIGNAL_LEVELS` / `SV_SIGNAL_OF_TIER`. Flag for Colin: "channel" means
+  an encoding channel elsewhere in the grammar, so `svChannel` could be
+  `svKind` while it is beta-only.
+- Then steps 2–4 in the same worktree.
 - Capture before/after at the 1000 Genomes INVdup locus and HG008-T CDKN2A
   long reads for Colin; decide from them whether the preset also writes
   `heightMode: 'grow'` (not a plot key, so through the display's setter).
-- Another session had uncommitted work on `tables.ts`' coverage band and the
-  hit test in the primary checkout; rebase over it.
-- Unrelated red on main: `pnpm verify --full` esm build TS2883
-  `HairlinesByGroup` (`plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts:70`),
-  from `14c8581a0f`.

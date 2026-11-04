@@ -8,8 +8,8 @@ summary: "Alignments reads paint in the colors of the arcs and read cloud drawn 
 ## Status
 
 Accepted (2026-10-16), Colin's call after reviewing a built version.
-Declines Idea 3 of
-[`ideas/ready/category-filters-leave-coverage-whole.md`](../ideas/ready/category-filters-leave-coverage-whole.md),
+Declines Idea 3 of the category-filters proposal (its Idea 2 became
+[ADR-259](adr-259-category-filters-pick-drawn-reads-and-leave-coverage-whole.md)),
 which his 2026-10-12 decisions had kept as a color field.
 
 ## Context

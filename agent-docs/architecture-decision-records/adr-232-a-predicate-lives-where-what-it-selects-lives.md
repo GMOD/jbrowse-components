@@ -134,8 +134,8 @@ readConnections: { show, mark, height, placement, lineWidth, color, showOrdinary
 - `readFilterOf` (`readFilterConfigSchema.ts:124`) hands the worker the read
   members by name, so an edit to `junctions` or `connections` redraws without
   a refetch.
-- The comments mark the line ideas/ready/category-filters-leave-coverage-whole
-  draws: flags, MAPQ and tags thin coverage, the categories pick drawn reads.
+- The comments mark the line ADR-259 built: flags, MAPQ and tags thin
+  coverage, the categories pick drawn reads.
   The line stays in the slot docs and the Filter dialog's headings; each
   member's reach is fixed, so nesting would only add depth.
 - The connectors paint by `readConnectionsColorField`, as the arcs do, under

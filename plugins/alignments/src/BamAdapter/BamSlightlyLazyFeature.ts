@@ -386,11 +386,18 @@ export default class BamSlightlyLazyFeature
  *   - `toJSON` is only reached off the render path, so it forwards.
  */
 class RegionBoundBamFeature implements MismatchFeature {
-  constructor(
-    private base: BamSlightlyLazyFeature,
-    // carries its own `start`, which is what locates the read in it
-    public readonly ref: PackedReference,
-  ) {}
+  private base: BamSlightlyLazyFeature
+  private bound: PackedReference
+
+  constructor(base: BamSlightlyLazyFeature, ref: PackedReference) {
+    this.base = base
+    this.bound = ref
+  }
+
+  // carries its own `start`, which is what locates the read in it
+  get ref() {
+    return this.bound
+  }
 
   id() {
     return this.base.id()

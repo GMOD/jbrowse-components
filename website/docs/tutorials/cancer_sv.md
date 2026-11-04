@@ -341,7 +341,9 @@ track. The view shows:
   exon of _RARB_, a short stretch of _TRHDE_ coding sequence in reverse, then
   _RARB_ again, inverted
 - the tumor's split reads under the reference row, one row per molecule, with
-  the truth set's validated calls above them
+  the truth set's validated calls above them; the reads are grouped by **Split
+  reads** with the unsplit section hidden, so the coverage counts the split
+  reads alone
 - each junction drawn once as an arc, with a tick at each end over the sequence
   retained there. Ticks pointing apart mark a deletion-type join, ticks pointing
   toward each other a duplication-type join, and parallel ticks an inversion.
@@ -359,9 +361,10 @@ inserts have separate ribbons:
 - **Against the derivative**, most of the same reads cross all three junctions
   in one alignment. The consensus was polished from these reads, so this shows
   that they agree with each other.
-- The read track shows split alignments only, and each hg38 window is wider than
-  the piece the allele uses, so its coverage counts reads that cross a junction
-  and steps down as each arm ends.
+- The read track shows split alignments only, grouped by **Split reads** with
+  the unsplit section hidden, so its coverage counts only reads that cross a
+  junction. Each hg38 window is wider than the piece the allele uses, so that
+  coverage steps down as each arm ends.
 
 <Figure caption="The derivative at base scale: reads against hg38 above, realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
 

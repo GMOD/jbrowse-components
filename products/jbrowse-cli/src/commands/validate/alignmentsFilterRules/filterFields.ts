@@ -30,9 +30,15 @@ export const FLAG_FIELDS: readonly string[] = samFlagNames.map(
   name => `${FLAG_FIELD_PREFIX}${name}`,
 )
 
-const RECORD_FIELDS = new Set(['name', 'spliced', ...FLAG_FIELDS])
-export const CHAIN_FIELDS = new Set(['svSignal', 'alone', 'split'])
+// Which reads count: the adapters drop by flag and tag as they parse, the
+// worker by `mapq` once the fetch is deduped, and coverage counts the rest.
+const ADAPTER_FLAG_FIELDS = new Set(FLAG_FIELDS)
 export const MAPQ_FIELD = 'mapq'
+
+// Which counted reads are drawn, leaving coverage whole: `name` and `spliced`
+// test each record, the rest its chain.
+export const DRAWN_RECORD_FIELDS = new Set(['name', 'spliced'])
+export const CHAIN_FIELDS = new Set(['svSignal', 'alone', 'split'])
 
 export const JUNCTION_READS = 'junction.reads'
 export const JUNCTION_CANONICAL = 'junction.canonical'
@@ -43,12 +49,15 @@ export const CONNECTION_OFFSCREEN = 'connection.offscreen'
 export const BREAKPOINT_READS = 'breakpoint.reads'
 
 // The fields lowered onto the junction and connection tests, each with the
-// tests it takes: a count takes a floor, a category a boolean `equal`.
+// tests it takes: a count takes a floor, a category a boolean `equal`, as
+// the read categories do.
 const COUNT_FIELDS = new Set([JUNCTION_READS, BREAKPOINT_READS])
-const ROW_CATEGORY_FIELDS = new Set([
+const CATEGORY_FIELDS = new Set([
   JUNCTION_CANONICAL,
   CONNECTION_INTERCHROM,
   CONNECTION_OFFSCREEN,
+  'spliced',
+  ...CHAIN_FIELDS,
 ])
 // and a closed vocabulary its values, by `equal` or `oneOf`
 const ROW_VALUE_FIELDS = new Map<string, readonly string[]>([
@@ -56,13 +65,18 @@ const ROW_VALUE_FIELDS = new Map<string, readonly string[]>([
   [JUNCTION_SOURCE, JUNCTION_SOURCES],
 ])
 
-export function isRecordField(field: string) {
-  return RECORD_FIELDS.has(field) || fieldTag(field) !== undefined
+export function isAdapterField(field: string) {
+  return ADAPTER_FLAG_FIELDS.has(field) || fieldTag(field) !== undefined
+}
+
+/** Whether `field` picks which counted reads are drawn. */
+export function isDrawnField(field: string) {
+  return DRAWN_RECORD_FIELDS.has(field) || CHAIN_FIELDS.has(field)
 }
 
 /** Whether the worker reads `field`, so a read filter edit refetches. */
 export function isReadField(field: string) {
-  return isRecordField(field) || field === MAPQ_FIELD || CHAIN_FIELDS.has(field)
+  return isAdapterField(field) || field === MAPQ_FIELD || isDrawnField(field)
 }
 
 /**
@@ -81,7 +95,7 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
         ? [`${field} takes a floor (gte or gt), not ${JSON.stringify(p)}`]
         : []
     }
-    if (ROW_CATEGORY_FIELDS.has(field)) {
+    if (CATEGORY_FIELDS.has(field)) {
       return testsSomething(p) && typeof p.equal !== 'boolean'
         ? [`${field} takes equal: true or false, not ${JSON.stringify(p)}`]
         : []

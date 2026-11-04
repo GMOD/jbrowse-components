@@ -676,8 +676,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                 // No mate-pair band: the RHD deletion is NAHR between the
                 // Rhesus boxes and leaves no read-pair signal, so the arcs
                 // would only show RHD/RHCE paralogy
-                // (scripts/count_rhd_mate_pairs.py). `svSignal: 'only'` or a
-                // jexl insert-size filter also removes the coverage.
+                // (scripts/count_rhd_mate_pairs.py).
                 show: false,
               },
               height: 200,

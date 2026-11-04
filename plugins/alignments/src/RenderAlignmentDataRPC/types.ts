@@ -99,6 +99,28 @@ export interface ModTooltipEntry {
 // not on any of these. Fields group into row-instanced features (carry `*Ys`,
 // packed main-thread post-layout) and position-aggregate features (no `*Ys`,
 // pre-packed in the worker as a `*PackedBuffer`).
+/**
+ * The sample's position events, which the coverage band counts: what the
+ * tooltip, the coverage hit test and the allele table read in place of the
+ * drawn reads' while a filter leaves reads out of the pileup.
+ */
+export type SampleEvents = Pick<
+  WorkerPileupData,
+  | 'gapPositions'
+  | 'gapTypes'
+  | 'mismatchPositions'
+  | 'mismatchBases'
+  | 'mismatchStrands'
+  | 'interbasePositions'
+  | 'interbaseLengths'
+  | 'interbaseTypes'
+  | 'interbaseReadIndices'
+  | 'interbaseSequences'
+  | 'numInsertions'
+  | 'numSoftclips'
+  | 'numHardclips'
+>
+
 export interface WorkerPileupData {
   // Read data - positions are absolute genomic uint32
   // [start, end] pairs — the read's true alignment span, never clipped to the
@@ -329,6 +351,10 @@ export interface WorkerPileupData {
   // coordinates (getClip, strand-aware). Read-order sort key so split segments
   // chain in true read order rather than genomic order (see readGroupConnections).
   readClipAtStart?: Uint32Array
+
+  // The sample's position events, shipped only while the filter leaves some of
+  // the section's reads out of the pileup
+  sampleEvents?: SampleEvents
 }
 
 // Which policy set the row cap a layout pass ran under. Not a severity ranking —

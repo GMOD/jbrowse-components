@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
+import { countedEventsOf } from '../../shared/drawnReads.ts'
 import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -14,7 +15,7 @@ import { getOrCreate } from '../../shared/util.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type {
-  PileupDataResult,
+  SampleEvents,
   WorkerPileupData,
 } from '../../RenderAlignmentDataRPC/types'
 import type { LengthAccumulator } from './lengthStats.ts'
@@ -56,7 +57,7 @@ function mostCommon(counts: Map<string, number>) {
 
 // Per-type (insertion / softclip / hardclip) length stats for the interbase
 // events at exactly `position`, plus the commonest sequence of each type.
-function collectInterbaseStats(position: number, data: WorkerPileupData) {
+function collectInterbaseStats(position: number, data: SampleEvents) {
   const {
     interbasePositions,
     interbaseLengths,
@@ -175,7 +176,7 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
 // accumulator, so the two can't compute it differently.
 function collectDeletionStats(
   position: number,
-  data: WorkerPileupData,
+  data: SampleEvents,
   minLength = 0,
 ) {
   const { gapPositions, gapTypes } = data
@@ -201,9 +202,12 @@ function collectDeletionStats(
 // neither should appear.
 export function getInterbaseBin(
   position: number,
-  blockRpcData: PileupDataResult,
+  blockRpcData: WorkerPileupData,
 ): InterbaseBin | undefined {
-  const interbase = collectInterbaseStats(position, blockRpcData)
+  const interbase = collectInterbaseStats(
+    position,
+    countedEventsOf(blockRpcData),
+  )
   if (Object.keys(interbase).length === 0) {
     return undefined
   }
@@ -222,7 +226,7 @@ export function getInterbaseBin(
 
 export function getCoverageBin(
   position: number,
-  blockRpcData: PileupDataResult,
+  blockRpcData: WorkerPileupData,
 ): CoverageBin | undefined {
   const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
   const depth = blockRpcData.coverageDepths[binIdx] ?? 0
@@ -234,8 +238,9 @@ export function getCoverageBin(
     ? (blockRpcData.coverageRevDepths[binIdx] ?? 0)
     : undefined
 
-  const snps = countSnpsAtPosition(position, blockRpcData)
-  const deletions = collectDeletionStats(position, blockRpcData)
+  const events = countedEventsOf(blockRpcData)
+  const snps = countSnpsAtPosition(position, events)
+  const deletions = collectDeletionStats(position, events)
   const modifications = modTooltipEntriesAt(blockRpcData, position)
 
   const hasData =
@@ -262,7 +267,7 @@ export function getCoverageBin(
 // bases of `pos`, each read once
 function insertionReadsNear(
   pos: number,
-  data: WorkerPileupData,
+  data: SampleEvents,
   minInsertion: number,
   within: number,
 ) {
@@ -294,6 +299,7 @@ export function nonReferenceAt(
   allele?: VariantAllele,
 ) {
   const { coverageDepths, coverageStartPos } = data
+  const events = countedEventsOf(data)
   const idx = pos - coverageStartPos
   if (idx < 0 || idx >= coverageDepths.length) {
     return undefined
@@ -304,20 +310,20 @@ export function nonReferenceAt(
     return {
       count:
         minInsertion !== undefined || within > 0
-          ? insertionReadsNear(pos, data, minInsertion ?? 1, within)
-          : (collectInterbaseStats(pos, data).insertion?.count ?? 0),
+          ? insertionReadsNear(pos, events, minInsertion ?? 1, within)
+          : (collectInterbaseStats(pos, events).insertion?.count ?? 0),
       depth: interbaseDepthAt(coverageDepths, coverageStartPos, pos),
     }
   }
   // a read deleted at the base is in neither the depth nor the mismatches
-  const deleted = collectDeletionStats(pos, data)?.count ?? 0
-  const snps = countSnpsAtPosition(pos, data)
+  const deleted = collectDeletionStats(pos, events)?.count ?? 0
+  const snps = countSnpsAtPosition(pos, events)
   let count = deleted
   if (allele && 'base' in allele) {
     count =
       allele.base === '*'
         ? allele.minDeletion
-          ? (collectDeletionStats(pos, data, allele.minDeletion)?.count ?? 0)
+          ? (collectDeletionStats(pos, events, allele.minDeletion)?.count ?? 0)
           : deleted
         : (snps[allele.base]?.count ?? 0)
   } else {

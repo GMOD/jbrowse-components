@@ -27,10 +27,15 @@ function addTransferables(buffers: Set<ArrayBuffer>, result: object) {
 // mismatches and was detached by the first one (fixed there, in
 // alignments-core); a per-call allocation on every path is what keeps this
 // helper safe to point at anything.
-export function collectGroupedTransferables(groups: { data: object }[]) {
+export function collectGroupedTransferables(
+  groups: { data: { sampleEvents?: object } }[],
+) {
   const buffers = new Set<ArrayBuffer>()
-  for (const group of groups) {
-    addTransferables(buffers, group.data)
+  for (const { data } of groups) {
+    addTransferables(buffers, data)
+    if (data.sampleEvents) {
+      addTransferables(buffers, data.sampleEvents)
+    }
   }
   return [...buffers]
 }
