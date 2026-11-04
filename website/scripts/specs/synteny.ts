@@ -2285,7 +2285,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
-    viewportHeight: 356,
+    viewportHeight: 290,
     clicksChange: "open a Linear synteny view's import form from the Add menu",
     actions: [
       { type: 'click', text: 'Add' },
@@ -2297,20 +2297,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
         selector: '[data-testid="quick-start-rows"]',
       },
     ],
-    // Pills and arrow tails stay raw together in the form's empty right half;
-    // anchoring a tail alone pulls the arrow off its pill.
     annotations: [
       {
         type: 'text',
         text: 'Quick start launches straight from a synteny track',
-        x: 780,
-        y: 95,
+        anchor: { text: 'Quick start', alignX: 'right' },
+        leader: true,
+        dx: 390,
         maxWidth: 320,
-      },
-      {
-        type: 'arrow',
-        from: { x: 770, y: 110 },
-        anchor: { text: 'Quick start' },
       },
       {
         type: 'box',
@@ -2319,14 +2313,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         text: 'Every assembly in the track becomes a row',
-        x: 780,
-        y: 205,
+        anchor: {
+          selector: '[data-testid="quick-start-rows"]',
+          alignX: 'right',
+        },
+        leader: true,
+        dx: 130,
         maxWidth: 340,
-      },
-      {
-        type: 'arrow',
-        from: { x: 770, y: 220 },
-        anchor: { selector: '[data-testid="quick-start-rows"]' },
       },
     ],
   },
