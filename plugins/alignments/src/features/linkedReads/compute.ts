@@ -194,6 +194,12 @@ export interface LinkedPair {
 // (`hiddenSegmentsBetween`) in the view's own refName spelling. Both emitters
 // pass one: the overlay dashes such a junction, and the straight-line pass
 // leaves it to the overlay.
+// A read past its section's row cap sits on the overflow row (`maxY`), out of
+// view, so a connector to it would hang off a read nobody can see.
+function onDrawnRow({ data, readIdx }: ReadEntry) {
+  return data.readYs[readIdx]! < data.maxY
+}
+
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   canonicalRefName?: CanonicalRefName,
@@ -214,17 +220,19 @@ export function* iterLinkedPairs(
         isSplit,
         hiddenSegmentsBetween,
       } of readGroupConnections(entries, canonicalRefName)) {
-        yield {
-          e1,
-          e2,
-          c: classifyPair(
+        if (onDrawnRow(e1) && onDrawnRow(e2)) {
+          yield {
             e1,
             e2,
-            isSplit,
-            !!refNameAt && crossesChromosomes(e1, e2, refNameAt),
-          ),
-          hiddenSegmentsBetween,
-          segments: entries,
+            c: classifyPair(
+              e1,
+              e2,
+              isSplit,
+              !!refNameAt && crossesChromosomes(e1, e2, refNameAt),
+            ),
+            hiddenSegmentsBetween,
+            segments: entries,
+          }
         }
       }
     }

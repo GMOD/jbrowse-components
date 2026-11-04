@@ -856,7 +856,8 @@ describe('curved connectors', () => {
     display.setShowLegend(true)
     display.toggleGroupCollapsed('')
     expect(display.connectorsByGroup.get('')?.lines.size).toBe(0)
-    expect(connectionCategories(display)).toEqual(['pairRL'])
+    expect(display.connectorsByGroup.get('')?.overlayPairs).toEqual([])
+    expect(connectionCategories(display)).toEqual([])
   })
 
   // `del` jumps forward across a deletion and `dup` back over a duplication

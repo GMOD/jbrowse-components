@@ -1,6 +1,8 @@
 import {
+  PAIR_DIRECTION_NUM,
   connectionEndpoints,
   readGroupConnections,
+  readNameAt,
   namesToBlock,
 } from '@jbrowse/alignments-core'
 import {
@@ -12,6 +14,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { max } from '@jbrowse/core/util'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
@@ -72,6 +75,7 @@ function makeData(opts: {
     readPositions,
     readPairOrientations: new Uint8Array(opts.orientations),
     readYs: new Uint16Array(opts.ys),
+    maxY: max(opts.ys, -1) + 1,
     readClipAtStart: Uint32Array.from(opts.clips ?? opts.names.map(() => 0)),
     readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
   })
@@ -628,6 +632,47 @@ describe('readGroupConnections', () => {
       2,
       false,
     ])
+  })
+})
+
+describe('reads past the row cap', () => {
+  // A capped layout parks every read it could not fit on the overflow row,
+  // `maxY`, which nothing draws; a connector there hangs off no visible read.
+  it('connect nothing, curved or straight', () => {
+    const pair = (name: string) => [name, name]
+    const data = makeData({
+      names: [...pair('shown'), ...pair('capped'), ...pair('normal')],
+      flags: [0, 1, 2].flatMap(() => [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ]),
+      strands: [-1, -1, -1, -1, 1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+        [500, 600],
+        [700, 800],
+        [900, 1000],
+        [1100, 1200],
+      ],
+      orientations: [
+        PAIR_DIRECTION_NUM.RR,
+        PAIR_DIRECTION_NUM.RR,
+        PAIR_DIRECTION_NUM.RR,
+        PAIR_DIRECTION_NUM.RR,
+        PAIR_DIRECTION_NUM.LR,
+        PAIR_DIRECTION_NUM.LR,
+      ],
+      ys: [0, 0, 1, 1, 1, 1],
+    })
+    const { lines, overlayPairs } = resolveConnectors(
+      new Map([[0, { ...data, maxY: 1 }]]),
+      { lines: true, scope: 'all' },
+    )
+    expect(overlayPairs.map(p => readNameAt(p.e1.data, p.e1.readIdx))).toEqual([
+      'shown',
+    ])
+    expect(lines.size).toBe(0)
   })
 })
 
