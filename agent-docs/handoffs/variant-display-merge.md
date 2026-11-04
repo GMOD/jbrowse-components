@@ -54,7 +54,8 @@ rule over rows are marked provisional there (the default is settled: on).
   `LinearVariantDisplay` in `plugins/variants/src/LinearVariantDisplay/`,
   the feature-based one deleted; `retired.ts` declares
   `LinearMultiSampleVariantDisplay` (deprecated alias),
-  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`, and re-roots
+  `LinearMultiSampleVariantMatrixDisplay`, `MultiLinearVariantDisplay` and
+  `LinearVariantMatrixDisplay` (the two matrix names in columns), and re-roots
   v4's feature-display keys under `records`; no plugin gate; a right-clicked
   record gets plugin-features's zoom to, get sequence and copy rows and the
   read sort and Highlight; search hits box records on the band and the
@@ -79,8 +80,10 @@ rule over rows are marked provisional there (the default is settled: on).
   `d4635f657a51`, JBrowseR's bundle from v5.0.0-beta.20, graphgenomeviewer
   8.7.0, ggjbrowse, and the hosted `arg`, `ecoli_pangenome` and `hprc` demo
   configs, curled 2026-11-03). Done. The `LinearMultiSampleVariantDisplay`
-  alias stays in `retired.ts` so beta sessions naming it load (Colin,
-  2026-11-03), though no release before the betas declared it.
+  and `LinearMultiSampleVariantMatrixDisplay` entries stay in `retired.ts` so
+  beta sessions naming them load (Colin, 2026-11-03; ADR-168,
+  `legacySessions.test.ts`), though no release before the betas declared
+  them.
 - **E. Height.** Records-only height settled (ADR-255's amendments): the
   first layout with a record on screen holds `height` once at the stack, up
   to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`), on the
@@ -128,8 +131,8 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   or compositing every canvas in the ring host, was declined: rows in a
   ring drew only by accident, with `records.show` off or in columns, and
   a whole chromosome trips the byte gate on any real cohort.
-- **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 14
-  `drawsGenotypeRows` checks each name their own rule), the `recordsRole` table
+- **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 15
+  `drawsGenotypeRows` checks on 2026-11-03 each name their own rule), the `recordsRole` table
   (the "Before C" bullet), and one `'none' | 'hidden' | 'drawn'` getter
   in place of `recordsOnly`, `drawsGenotypeRows` and `rowsHidden` (2026-11-02):
   each is derived from the other two inputs, so no state is impossible
