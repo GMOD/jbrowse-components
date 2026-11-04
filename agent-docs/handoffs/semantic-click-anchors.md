@@ -53,13 +53,10 @@ on a record or a row; the rest sit on score axes, triangles, ribbons, empty
 lane space or whole pileups, where a fraction is the right word. Reshoot each
 converted figure and check it against the published one.
 
-- **Rows** (`row:`): `dog10k.ts` (wolfdog, NHEJ1, AMY2B, RNASE1, CYP1A2
-  carriers, the most row fractions in one file), `tcga.ts` (`subtypeCallout`'s
-  `SUBTYPE_ROW_PITCH`, the CDH1 lobular facet band), `ld.ts`
-  (`ld/lct_population_af`), `maf.ts` (the caePb3 hover), `pangenome_cactus.ts`
-  (depth by builder), `protein_variants.ts` (sickle-cell and SOD1 top rows),
-  `ui.ts` (chromhmm B-cell rows), and `trio.ts`'s painting step box, a
-  `paintingTopRow * TRIO_PAINT_ROW_H` depth from the top.
+- **Rows** (`row:`), still to convert: `dog10k.ts`'s CYP1A2 carriers,
+  `ld.ts` (`ld/lct_population_af`) and `protein_variants.ts` (sickle-cell and
+  SOD1 top rows). `node website/scripts/probe-rows.ts <spec> <trackId>` lists
+  the names a row anchor takes.
 - **Records** (`feature:`), still to convert: gene glyphs in `alignments.ts`
   (SURF1/SURF2), `protein_*.ts` codon callouts; records in `cancer_sv.ts`
   (truth set), `grant_callout_sizes.ts` and `ld.ts` (GWAS and ClinVar),
