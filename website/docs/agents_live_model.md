@@ -394,21 +394,81 @@ avoids two mistakes that raw adapter code makes and that raise no error:
 - It reads on the worker the track's display uses, so the index that display
   parsed is reused. A main-thread adapter for the same file is a second copy.
 
-**An action's argument shape, when the docs have no page for it** (a view from a
-plugin outside this tree): open a throwaway view, call the action with `{}` so
-the model materializes its defaults, inspect what it created, remove the view:
-
-```js
-const probe = session.addView('ProteinView', {})
-probe.addStructure({})
-const shape = jb.inspect(probe.structures[0])
-session.removeView(probe)
-return shape
-```
-
 **Saving.** Desktop writes the session to its `.jbrowse` file about a second
 after every change; `rootModel.flushSession()` forces it. Web has no save from
 `jb`: the spec you loaded is the record.
+
+## Plugin views
+
+A view a plugin registers is documented by its plugin, not by `docs`. Two that
+the hosted configs load, `ProteinView` (jbrowse-plugin-protein3d) and `MsaView`
+(jbrowse-plugin-msaview), publish what their launch resolved as plain data; read
+it before trusting a screenshot of either:
+
+- `view.report` is JSON: `loading`, `error` (the view cannot draw at all),
+  `notices`, and what the launch chose. A ProteinView names each structure's
+  source, transcript and `mapping` (chains, identity, coverage, and
+  `lowSimilarity`, the verdict behind its warning chip); an MsaView names the
+  alignment's `source`, `rows`, `columns`, `queryRow` and genome `connection`.
+- `notices` are steps that failed and left the view working: a superposition, a
+  recolor, a domain fetch. `jb.waitReady` lists them under `notReady`, beside a
+  view still loading as `phase: 'loading'`.
+- A ProteinView structure's `locateResidues(target)` answers each residue in
+  every numbering (author, transcript, 0-based position) with its codon on the
+  genome. `locateGenomeRegion({ refName, start, end })`, 0-based half-open, goes
+  the other way, and `view.locateGenomeRegion(region)` asks every structure.
+  Both are undefined while the structure loads.
+- `view.applyFigure(change)` sets a ProteinView's `camera`, `marks`,
+  `distances`, `surface`, `silhouettes` and `occlusion`, refusing a change that
+  does not read whole, and `view.currentCamera()` reads the camera back.
+
+On a config whose assembly indexes gene names, such as the hosted hg38, a gene
+and a variant are the whole launch:
+
+```js
+const { viewId, notReady } = await jb.addView(
+  {
+    type: 'ProteinView',
+    gene: 'TP53',
+    pdbId: '1TUP',
+    variant: 'chr17:7674220 C>T',
+  },
+  60000,
+)
+const view = jb.view(viewId)
+return {
+  notReady,
+  mapping: view.report.structures[0].mapping,
+  r248: view.structures[0].locateResidues({
+    residues: { start: 248, end: 248 },
+  }),
+}
+```
+
+The launch opens a genome view on the gene beside the structure, highlights the
+base labelled `R248Q` and selects residue 248. `residues` is author numbering,
+the way a paper cites a site; `transcriptResidues` counts on the transcript's
+translation. The plugins' pages are the reference:
+[reading a ProteinView](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/reading-the-view.md),
+its
+[launch parameters](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launch-parameters.md)
+and
+[figure properties](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/figure-sessions.md),
+and
+[reading an MsaView](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/docs/reading-the-view.md).
+
+**An action's argument shape, for a plugin view whose docs leave it out:** take
+the type from `pluginManager.getViewElements().map(v => v.name)`, open a
+throwaway view, call the action with `{}` so the model materializes its
+defaults, inspect what it created, remove the view:
+
+```js
+const probe = session.addView(type, {})
+probe[action]({})
+const shape = jb.inspect(probe)
+session.removeView(probe)
+return shape
+```
 
 ## Showing something you derived
 

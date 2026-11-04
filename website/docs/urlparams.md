@@ -1050,12 +1050,16 @@ loaded, through the config's `plugins`, a hosted config, or a session's
 
 - `ProteinView` from
   [`jbrowse-plugin-protein3d`](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launch-parameters.md)
-  (`uniprotId`, `pdbId`, `url`, `structures`, `transcriptId`, `connectedView`).
-  Every link in the [TP53 structures tutorial](/docs/tutorials/tp53_structures)
-  is one of these specs.
+  (`gene`, `variant`, `uniprotId`, `pdbId`, `url`, `structures`, `transcriptId`,
+  `connectedView`, and figure keys such as `marks` and `camera`). Every link in
+  the [TP53 structures tutorial](/docs/tutorials/tp53_structures) is one of
+  these specs.
 - `MsaView` from
   [`jbrowse-plugin-msaview`](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/docs/launch-parameters.md)
   (`msa`, `tree`, `msaFileLocation`, `connectedViewId`, `connectedTranscript`).
+
+Both publish what a launch resolved as `view.report`, which the live-model
+guide's [plugin views](/docs/agents_live_model#plugin-views) section reads.
 
 ### Tiled views / Workspaces
 
