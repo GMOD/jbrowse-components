@@ -33,6 +33,10 @@ import {
 } from './shared/variantConsequence.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Signature } from '@jbrowse/core/util/jexl'
+
+const OF_VARIANT_TEXT: Signature = { params: ['record'], returns: 'string' }
+const OF_VARIANT_NUMBER: Signature = { params: ['record'], returns: 'number' }
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -68,37 +72,49 @@ export default class VariantsPlugin extends Plugin {
     const { jexl } = pluginManager
 
     /** #jexlFunction Variant functions | maf(feature) | minor allele frequency over the called alleles */
-    jexl.addFunction('maf', featureMinorAlleleFrequency)
+    jexl.addFunction('maf', featureMinorAlleleFrequency, {
+      params: ['record'],
+      returns: { kind: 'number', domain: [0, 0.5] },
+    })
     /** #jexlFunction Variant functions | missingness(feature) | fraction of alleles with no call, so ./1 counts half */
-    jexl.addFunction('missingness', featureMissingness)
+    jexl.addFunction('missingness', featureMissingness, {
+      params: ['record'],
+      returns: { kind: 'number', domain: [0, 1] },
+    })
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and
     // `consequence` return strings for custom color-by-attribute expressions
     // (e.g. jexl:randomColor(consequence(feature))); `impactColor` is the
     // impact preset's color as a callback.
     /** #jexlFunction Variant functions | impact(feature) | HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ */
-    jexl.addFunction('impact', getVariantImpact)
+    jexl.addFunction('impact', getVariantImpact, OF_VARIANT_TEXT)
     /** #jexlFunction Variant functions | consequence(feature) | e.g. missense_variant, from the same annotation — the MOST SEVERE one alone */
-    jexl.addFunction('consequence', getVariantConsequence)
+    jexl.addFunction('consequence', getVariantConsequence, OF_VARIANT_TEXT)
     /** #jexlFunction Variant functions | 'missense_variant' in consequences(feature) | every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant") */
-    jexl.addFunction('consequences', getVariantConsequences)
+    jexl.addFunction('consequences', getVariantConsequences, {
+      params: ['record'],
+      returns: { kind: 'list', of: { kind: 'string' }, cardinality: 'many' },
+    })
     /** #jexlFunction Variant functions | impactColor(feature) | the color `encoding: { color: 'impact' }` paints the variant's most severe tier */
-    jexl.addFunction('impactColor', getVariantImpactColor)
+    jexl.addFunction('impactColor', getVariantImpactColor, OF_VARIANT_TEXT)
     // Longest allele in bp, so a filter can select the SV tier of a decomposed
     // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing
     // insertions, which consume no reference and so have a span of 1.
     /** #jexlFunction Variant functions | alleleLength(feature) >= 50 | longest allele in bp, so an insertion is not measured by its reference span */
-    jexl.addFunction('alleleLength', getAlleleLength)
+    jexl.addFunction('alleleLength', getAlleleLength, OF_VARIANT_NUMBER)
     // The three below round out the bcftools filtering vocabulary a VCF track
     // is expected to speak (#939): its INFO/QUAL/FILTER expressions already
     // transliterate through plain member access, and these are the derived
     // quantities that have no field to read.
     /** #jexlFunction Variant functions | svType(feature) == 'DEL' | SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE) */
-    jexl.addFunction('svType', svClassOf)
+    jexl.addFunction('svType', svClassOf, OF_VARIANT_TEXT)
     /** #jexlFunction Variant functions | nAlt(feature) == 1 | ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT) */
-    jexl.addFunction('nAlt', getAltAlleleCount)
+    jexl.addFunction('nAlt', getAltAlleleCount, OF_VARIANT_NUMBER)
     /** #jexlFunction Variant functions | genotypeCount(feature, 'het') > 0 | samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het")) */
-    jexl.addFunction('genotypeCount', getGenotypeClassCount)
+    jexl.addFunction('genotypeCount', getGenotypeClassCount, {
+      params: ['record', 'string'],
+      returns: 'number',
+    })
   }
 }
 

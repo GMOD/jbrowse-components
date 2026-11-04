@@ -73,10 +73,12 @@ export const PROXY_NAMES: ReadonlySet<string> = new Set([
 
 /**
  * Wrap a feature so jexl callbacks can read attributes as plain properties
- * (`feature.score`) instead of `get(feature,'score')`. Since jexl has no
- * member-call syntax, attributes resolve to values: any property (including
- * `id`, i.e. a data field such as a GFF3 `ID=`) is forwarded to
- * `feature.get(name)` where a SimpleFeature keeps its data. Exceptions:
+ * (`feature.score`) instead of `get(feature,'score')`. jexl never calls a
+ * feature's methods: `feature.id()` calls the registered function `id`, and
+ * reading a method gives undefined. So attributes resolve to values: any
+ * property (including `id`, i.e. a data field such as a GFF3 `ID=`) is
+ * forwarded to `feature.get(name)` where a SimpleFeature keeps its data.
+ * Exceptions:
  * `parent` resolves to the parent feature (re-wrapped so `feature.parent.type`
  * works), `uniqueId` to the feature's identity (`id()`) so it reads the same
  * whether or not the feature happens to keep a uniqueId in its data, and

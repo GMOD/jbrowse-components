@@ -10,13 +10,14 @@ import { filterFieldSchema } from './jexlFilterFields.ts'
 const jexl = createJexlInstance()
 
 test('a function without a declared signature takes any arguments', () => {
-  const functions = registeredFunctions(jexl)
-  expect(functions.get).toEqual({
+  const withPlugin = createJexlInstance()
+  withPlugin.addFunction('customColor', () => 'red')
+  expect(registeredFunctions(withPlugin).customColor).toEqual({
     params: ['any'],
     variadic: true,
     optional: 1,
   })
-  expect(functions.startsWith).toBeDefined()
+  expect(jexlProblems('customColor(feature, 1, 2)', withPlugin)).toEqual([])
 })
 
 test("jexl's own functions are checked against their signatures", () => {

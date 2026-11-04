@@ -6,6 +6,19 @@ import { colord } from './colord.ts'
 import { jexlFeatureProxy, unwrapFeature } from './simpleFeature.ts'
 
 import type { Feature } from './simpleFeature.ts'
+import type { Signature, Type } from '@jbrowse/jexl'
+
+export type { Signature } from '@jbrowse/jexl'
+
+const UNKNOWN: Type = { kind: 'unknown' }
+const TEXT: Type = { kind: 'string' }
+
+const NUMBER_TO_NUMBER: Signature = { params: ['number'], returns: 'number' }
+const STRING_TO_STRING: Signature = { params: ['string'], returns: 'string' }
+const FEATURE_FIELD: Signature = {
+  params: ['record', 'string'],
+  returns: UNKNOWN,
+}
 
 export default function JexlF() {
   const j = new Jexl()
@@ -14,34 +27,53 @@ export default function JexlF() {
   // ones passed in
 
   // below are core functions
-  j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
+  j.addFunction(
+    'get',
+    (feature: Feature, data: string) => feature.get(data),
+    FEATURE_FIELD,
+  )
 
-  // on a jexlFeatureProxy `feature.parent`/`feature.id` are data values (jexl
-  // has no member-call syntax, and `id` is a real data field e.g. GFF3 `ID=`),
-  // so unwrap to the underlying feature to reach its methods. The parent comes
+  // on a jexlFeatureProxy `feature.parent`/`feature.id` are data values (a
+  // jexl `feature.id()` calls the registered function `id`, never the
+  // feature's method, and `id` is a real data field e.g. GFF3 `ID=`), so
+  // unwrap to the underlying feature to reach its methods. The parent comes
   // back wrapped so `parent(feature).type` reads like `feature.parent.type`
-  j.addFunction('parent', (feature: Feature) => {
-    const p = unwrapFeature(feature).parent?.()
-    return p ? jexlFeatureProxy(p) : undefined
+  j.addFunction(
+    'parent',
+    (feature: Feature) => {
+      const p = unwrapFeature(feature).parent?.()
+      return p ? jexlFeatureProxy(p) : undefined
+    },
+    { params: ['record'], returns: UNKNOWN },
+  )
+  j.addFunction('id', (feature: Feature) => unwrapFeature(feature).id(), {
+    params: ['record'],
+    returns: 'string',
   })
-  j.addFunction('id', (feature: Feature) => unwrapFeature(feature).id())
   /**
    * #jexlFunction Feature operations - getInherited | getInherited(feature, 'gene_biotype') | the attribute from the feature, or from its nearest ancestor that has it, so a CDS reads its gene's value
    */
-  j.addFunction('getInherited', (feature: Feature, name: string) => {
-    let cur: Feature | undefined = unwrapFeature(feature)
-    while (cur !== undefined) {
-      const value: unknown = cur.get(name)
-      if (value !== undefined) {
-        return value
+  j.addFunction(
+    'getInherited',
+    (feature: Feature, name: string) => {
+      let cur: Feature | undefined = unwrapFeature(feature)
+      while (cur !== undefined) {
+        const value: unknown = cur.get(name)
+        if (value !== undefined) {
+          return value
+        }
+        cur = cur.parent?.()
       }
-      cur = cur.parent?.()
-    }
-    return undefined
-  })
+      return undefined
+    },
+    FEATURE_FIELD,
+  )
 
   // let user cast a jexl type into a javascript type
-  j.addFunction('cast', (arg: unknown) => arg)
+  j.addFunction('cast', (arg: unknown) => arg, {
+    params: ['any'],
+    returns: UNKNOWN,
+  })
 
   // jexl's own list-aware min and max take varargs too; a Math.min
   // registration would replace them, as an addBinaryOp('&') would jexl's &
@@ -52,71 +84,111 @@ export default function JexlF() {
    * #jexlFunction Binary operators | feature.flags & 2 | bitwise and to check if BAM or CRAM feature flags has 2 set
    * #jexlFunction Binary operators | (feature.flags & 16) == 0 | true on the forward strand
    */
-  j.addFunction('sqrt', Math.sqrt)
+  j.addFunction('sqrt', Math.sqrt, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | ceil(0.5) */
-  j.addFunction('ceil', Math.ceil)
+  j.addFunction('ceil', Math.ceil, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | floor(0.5) */
-  j.addFunction('floor', Math.floor)
+  j.addFunction('floor', Math.floor, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | round(0.5) */
-  j.addFunction('round', Math.round)
+  j.addFunction('round', Math.round, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | abs(-0.5) */
-  j.addFunction('abs', Math.abs)
+  j.addFunction('abs', Math.abs, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | log10(50000) */
-  j.addFunction('log10', Math.log10)
+  j.addFunction('log10', Math.log10, NUMBER_TO_NUMBER)
   /** #jexlFunction Math functions | parseInt('2') */
-  j.addFunction('parseInt', Number.parseInt)
+  j.addFunction('parseInt', Number.parseInt, {
+    params: ['any', 'number'],
+    optional: 1,
+    returns: 'number',
+  })
   /** #jexlFunction Math functions | parseFloat('2.054') */
-  j.addFunction('parseFloat', Number.parseFloat)
+  j.addFunction('parseFloat', Number.parseFloat, {
+    params: ['any'],
+    returns: 'number',
+  })
 
   // string
   /** #jexlFunction String functions | charAt('abc', 2) | c */
-  j.addFunction('charAt', (s: string, index: number) => s.charAt(index))
+  j.addFunction('charAt', (s: string, index: number) => s.charAt(index), {
+    params: ['string', 'number'],
+    returns: 'string',
+  })
   /** #jexlFunction String functions | charCodeAt(' ', 0) | 32 */
-  j.addFunction('charCodeAt', (s: string, index: number) => s.charCodeAt(index))
+  j.addFunction(
+    'charCodeAt',
+    (s: string, index: number) => s.charCodeAt(index),
+    { params: ['string', 'number'], returns: 'number' },
+  )
   /** #jexlFunction String functions | codePointAt(' ', 0) | 32 */
-  j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos))
+  j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos), {
+    params: ['string', 'number'],
+    returns: 'number',
+  })
   /** #jexlFunction String functions | startsWith('kittycat', 'kit') | true */
-  j.addFunction('startsWith', (s: string, search: string, len?: number) =>
-    s.startsWith(search, len),
+  j.addFunction(
+    'startsWith',
+    (s: string, search: string, len?: number) => s.startsWith(search, len),
+    { params: ['string', 'string', 'number'], optional: 1, returns: 'boolean' },
   )
   /** #jexlFunction String functions | endsWith('kittycat', 'cat') | true */
-  j.addFunction('endsWith', (s: string, search: string, len?: number) =>
-    s.endsWith(search, len),
+  j.addFunction(
+    'endsWith',
+    (s: string, search: string, len?: number) => s.endsWith(search, len),
+    { params: ['string', 'string', 'number'], optional: 1, returns: 'boolean' },
   )
   /** #jexlFunction String functions | padStart('cat', 8, 'kitty') | kittycat */
-  j.addFunction('padStart', (s: string, len: number, fill?: string) =>
-    s.padStart(len, fill),
+  j.addFunction(
+    'padStart',
+    (s: string, len: number, fill?: string) => s.padStart(len, fill),
+    { params: ['string', 'number', 'string'], optional: 1, returns: 'string' },
   )
   /** #jexlFunction String functions | padEnd('kitty', 8, 'cat') | kittycat */
-  j.addFunction('padEnd', (s: string, len: number, pad?: string) =>
-    s.padEnd(len, pad),
+  j.addFunction(
+    'padEnd',
+    (s: string, len: number, pad?: string) => s.padEnd(len, pad),
+    { params: ['string', 'number', 'string'], optional: 1, returns: 'string' },
   )
   /** #jexlFunction String functions | replace('kittycat', 'cat', '') | kitty */
-  j.addFunction('replace', (s: string, match: string, sub: string) =>
-    s.replace(match, sub),
+  j.addFunction(
+    'replace',
+    (s: string, match: string, sub: string) => s.replace(match, sub),
+    { params: ['string', 'string', 'string'], returns: 'string' },
   )
   /** #jexlFunction String functions | replaceAll('kittycatcat', 'cat', '') | kitty */
-  j.addFunction('replaceAll', (s: string, match: string, sub: string) =>
-    s.replaceAll(match, sub),
+  j.addFunction(
+    'replaceAll',
+    (s: string, match: string, sub: string) => s.replaceAll(match, sub),
+    { params: ['string', 'string', 'string'], returns: 'string' },
   )
   /** #jexlFunction String functions | slice('kittycat', 5) | cat */
-  j.addFunction('slice', (s: string, start: number, end?: number) =>
-    s.slice(start, end),
+  j.addFunction(
+    'slice',
+    (s: string, start: number, end?: number) => s.slice(start, end),
+    {
+      params: [['string', 'list'], 'number', 'number'],
+      optional: 1,
+      returns: ([s]) =>
+        s?.kind === 'list'
+          ? { kind: 'list', of: s.of, cardinality: 'many' }
+          : TEXT,
+    },
   )
   /** #jexlFunction String functions | substring('kittycat', 0, 5) | kitty */
-  j.addFunction('substring', (s: string, start: number, end?: number) =>
-    s.substring(start, end),
+  j.addFunction(
+    'substring',
+    (s: string, start: number, end?: number) => s.substring(start, end),
+    { params: ['string', 'number', 'number'], optional: 1, returns: 'string' },
   )
   /** #jexlFunction String functions | trim('  kitty ') | kitty, whitespace trimmed */
-  j.addFunction('trim', (s: string) => s.trim())
+  j.addFunction('trim', (s: string) => s.trim(), STRING_TO_STRING)
   /** #jexlFunction String functions | trimStart('  kitty ') | kitty, starting whitespace trimmed */
-  j.addFunction('trimStart', (s: string) => s.trimStart())
+  j.addFunction('trimStart', (s: string) => s.trimStart(), STRING_TO_STRING)
   /** #jexlFunction String functions | trimEnd('  kitty ') | kitty, ending whitespace trimmed */
-  j.addFunction('trimEnd', (s: string) => s.trimEnd())
+  j.addFunction('trimEnd', (s: string) => s.trimEnd(), STRING_TO_STRING)
   /** #jexlFunction String functions | toUpperCase('kitty') | KITTY */
-  j.addFunction('toUpperCase', (s: string) => s.toUpperCase())
+  j.addFunction('toUpperCase', (s: string) => s.toUpperCase(), STRING_TO_STRING)
   /** #jexlFunction String functions | toLowerCase('KITTY') | kitty */
-  j.addFunction('toLowerCase', (s: string) => s.toLowerCase())
+  j.addFunction('toLowerCase', (s: string) => s.toLowerCase(), STRING_TO_STRING)
   /**
    * #jexlFunction String functions | split('KITTY KITTY', ' ') | ['KITTY', 'KITTY']
    * #jexlFunction String functions | split(feature.notThere, ' ') | [''], an absent value is read as the empty string rather than throwing
@@ -142,71 +214,113 @@ export default function JexlF() {
   // said otherwise: jexl is untyped at the call site, so every one of these
   // takes whatever the expression evaluated to. Declaring it honestly is what
   // makes the coercion below type-check rather than read as dead defensiveness.
-  j.addFunction('split', (s: unknown, char: string) =>
-    String(s ?? '').split(char),
+  j.addFunction(
+    'split',
+    (s: unknown, char: string) => String(s ?? '').split(char),
+    {
+      params: ['any', 'string'],
+      returns: { kind: 'list', of: TEXT, cardinality: 'many' },
+    },
   )
   /** #jexlFunction String functions | join(' - ', feature.notThere, 'a', '', 0) | a - 0, joins the args with the separator, skipping absent and empty ones */
-  j.addFunction('join', (separator: string, ...args: unknown[]) =>
-    args
-      .filter(arg => arg !== undefined && arg !== null && arg !== '')
-      .join(separator),
+  j.addFunction(
+    'join',
+    (separator: string, ...args: unknown[]) =>
+      args
+        .filter(arg => arg !== undefined && arg !== null && arg !== '')
+        .join(separator),
+    { params: ['string', 'any'], variadic: true, returns: 'string' },
   )
   /** #jexlFunction String functions | includes('kittycat', 'cat') | true */
-  j.addFunction('includes', (s: string, search: string) => s.includes(search))
+  j.addFunction('includes', (s: string, search: string) => s.includes(search), {
+    params: [['string', 'list'], 'member'],
+    returns: 'boolean',
+  })
   /** #jexlFunction String functions | repeat('ab', 3) | ababab */
-  j.addFunction('repeat', (s: string, count: number) => s.repeat(count))
+  j.addFunction('repeat', (s: string, count: number) => s.repeat(count), {
+    params: ['string', 'number'],
+    returns: 'string',
+  })
   /** #jexlFunction String functions | jsonParse('{"a":1}') | parses a JSON string */
-  j.addFunction('jsonParse', (s: string) => JSON.parse(s))
+  j.addFunction('jsonParse', (s: string) => JSON.parse(s), {
+    params: ['string'],
+    returns: UNKNOWN,
+  })
 
   /**
    * #jexlFunction Feature operations - getTag | getTag(feature, 'MD') | fetches MD string from BAM or CRAM feature
    * #jexlFunction Feature operations - getTag | getTag(feature, 'HP') | fetches haplotype tag from BAM or CRAM feature
    */
-  j.addFunction('getTag', (feature: Feature, s: string) => {
-    // BAM features expose a targeted `getTag` that walks the tag block and
-    // decodes only the requested tag; `get('tags')` decodes every tag on the
-    // read (a Record allocation plus NM/AS/ms/de/… — often ~10 per read) to
-    // answer one, and this runs per feature on color/label callbacks like
-    // `jexl:getTag(feature,'HP')`. Same duck-typing as
-    // `@jbrowse/modifications-utils`' getTag(), which core cannot import (that
-    // package depends on core). Unwrap first: on a jexlFeatureProxy every
-    // unknown property forwards to `feature.get()`, so `feature.getTag` would
-    // read a data field rather than the method. CRAM/synteny features have no
-    // accessor and keep the full-tags path, including its fallback to a
-    // top-level field of that name for features carrying no tags at all.
-    const target = unwrapFeature(feature) as Feature & {
-      getTag?: (tag: string) => unknown
-    }
-    if (target.getTag) {
-      return target.getTag(s)
-    }
-    const tags = feature.get('tags') as Record<string, unknown> | undefined
-    return tags ? tags[s] : feature.get(s)
-  })
+  j.addFunction(
+    'getTag',
+    (feature: Feature, s: string) => {
+      // BAM features expose a targeted `getTag` that walks the tag block and
+      // decodes only the requested tag; `get('tags')` decodes every tag on the
+      // read (a Record allocation plus NM/AS/ms/de/… — often ~10 per read) to
+      // answer one, and this runs per feature on color/label callbacks like
+      // `jexl:getTag(feature,'HP')`. Same duck-typing as
+      // `@jbrowse/modifications-utils`' getTag(), which core cannot import (that
+      // package depends on core). Unwrap first: on a jexlFeatureProxy every
+      // unknown property forwards to `feature.get()`, so `feature.getTag` would
+      // read a data field rather than the method. CRAM/synteny features have no
+      // accessor and keep the full-tags path, including its fallback to a
+      // top-level field of that name for features carrying no tags at all.
+      const target = unwrapFeature(feature) as Feature & {
+        getTag?: (tag: string) => unknown
+      }
+      if (target.getTag) {
+        return target.getTag(s)
+      }
+      const tags = feature.get('tags') as Record<string, unknown> | undefined
+      return tags ? tags[s] : feature.get(s)
+    },
+    FEATURE_FIELD,
+  )
 
   // color helpers
   /** #jexlFunction Color functions | randomColor(feature.type) | deterministic color from a string (e.g. a feature type) */
-  j.addFunction('randomColor', randomColor)
+  j.addFunction('randomColor', randomColor, {
+    params: ['any'],
+    returns: 'string',
+  })
   /** #jexlFunction Color functions | categoricalColor(getInherited(feature, 'biotype'), ['protein_coding']) | a palette color per value: the values listed take the palette (an optional third argument) in order, any other value a stable color no listed value paints, a missing one grey */
-  j.addFunction('categoricalColor', categoricalColor)
+  j.addFunction('categoricalColor', categoricalColor, {
+    params: ['any', 'list', 'list'],
+    optional: 2,
+    returns: 'string',
+  })
   // These take and return CSS color *strings*, not Colord objects: a config
   // `jexl:` expression has no way to construct a Colord, and a color slot
   // holding one resolves to the invalid-color sentinel rather than a color. So
   // both ends are strings, which also keeps them composable with each other.
   /** #jexlFunction Color functions | alpha('green', 0.5) | a color at 50% opacity */
-  j.addFunction('alpha', (color: string, n: number) =>
-    colord(color).alpha(n).toRgbString(),
+  j.addFunction(
+    'alpha',
+    (color: string, n: number) => colord(color).alpha(n).toRgbString(),
+    { params: ['string', 'number'], returns: 'string' },
   )
   /** #jexlFunction Color functions | hsl('#ff0000') | converts a color to its HSL form */
-  j.addFunction('hsl', (color: string) => colord(color).toHslString())
+  j.addFunction(
+    'hsl',
+    (color: string) => colord(color).toHslString(),
+    STRING_TO_STRING,
+  )
   /** #jexlFunction Color functions | colorString('green') | normalizes a color name or value to a hex string */
-  j.addFunction('colorString', (color: string) => colord(color).toHex())
+  j.addFunction(
+    'colorString',
+    (color: string) => colord(color).toHex(),
+    STRING_TO_STRING,
+  )
   // logging
   /** #jexlFunction Console logging | log(feature) | console.logs output and returns value */
-  j.addFunction('log', (thing: unknown) => {
-    console.log(thing) // eslint-disable-line no-console
-    return thing
-  })
+  j.addFunction(
+    'log',
+    (thing: unknown) => {
+      console.log(thing) // eslint-disable-line no-console
+      return thing
+    },
+    { params: ['any'], returns: ([thing]) => thing ?? UNKNOWN },
+  )
 
   return j
 }
