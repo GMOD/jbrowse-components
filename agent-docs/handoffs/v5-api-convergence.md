@@ -1,6 +1,6 @@
 ---
 name: v5-api-convergence
-description: "How the v5 API surface settles: no freeze date and no calendar window, a conformance suite and a settling meter, beta-only compat shims deleted, v4.3.0 configs loading where a mapping exists, and `LinearMarkDisplay` allowed to keep evolving. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
+description: "How the v5 API surface settles: no freeze date and no calendar window, a conformance suite and a settling meter, beta-only config shims deleted while a retired display type a beta session names stays, v4.3.0 configs loading where a mapping exists, and `LinearMarkDisplay` allowed to keep evolving. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
 ---
 
 # v5 API convergence
@@ -19,8 +19,11 @@ Claim a step here before starting it.
 - **A respell is a complete sweep.** One change updates every display, the
   docs, the figure specs and each writer. A partial respell leaves the next
   session a divergence to fix.
-- **Beta share links and display state may break.** No migration exists for
-  them.
+- **Beta share links and display state may break**, with no migration, except
+  that a retired display type a beta session names stays declared, so the
+  session still loads (Colin, 2026-11-03, keeping
+  `LinearMultiSampleVariantDisplay`: "we still need to load old snapshots from
+  sessions").
 - **v4.3.0 configs load where a mapping exists.** An edge-case slot may drop
   with a warning naming it.
 - **Built-in display types converge as far as they can.** The shared
@@ -103,7 +106,8 @@ between displays.
 
 - The meter shows no shared-path change since the last respell landed.
 - Every `retired` entry maps a name a v1–v4 release declared, none a
-  beta-only one. No test checks the gate, since v4 shipped no JSON schema and
+  beta-only one, except a display type a beta session names (the rule above).
+  No test checks the gate, since v4 shipped no JSON schema and
   so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
   six missing from v4.3.0 on 2026-10-27, each from an earlier release, so

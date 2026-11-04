@@ -174,8 +174,8 @@ function withHaplotypesFromOne(instance: Record<string, unknown>) {
  */
 export const retiredTypes: RetiredDisplayType[] = [
   /**
-   * @deprecated beta-only, kept while hosted configs (jb2hubs, the demo
-   * configs) still write it; goes once they write `LinearVariantDisplay`
+   * @deprecated beta-only, kept so beta sessions naming it still load; write
+   * `LinearVariantDisplay`
    */
   { type: 'LinearMultiSampleVariantDisplay' },
   { type: 'MultiLinearVariantDisplay' },

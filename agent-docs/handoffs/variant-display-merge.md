@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D is down to dropping that alias; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: dropping the beta-only alias, the trio tour refilm, the scrolled export and split view not yet driven in the app, and whether an SVG export keeps the chips' blank strip."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D (every outside writer) done, the alias kept for beta sessions; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: the trio tour refilm, the scrolled export and split view not yet driven in the app, and whether an SVG export keeps the chips' blank strip."
 ---
 
 # One variant display
@@ -78,10 +78,9 @@ rule over rows are marked provisional there (the default is settled: on).
 - **D. Outside writers**: every one writes `LinearVariantDisplay` (jb2hubs
   `d4635f657a51`, JBrowseR's bundle from v5.0.0-beta.20, graphgenomeviewer
   8.7.0, ggjbrowse, and the hosted `arg`, `ecoli_pangenome` and `hprc` demo
-  configs, curled 2026-11-03). Left: drop the `LinearMultiSampleVariantDisplay`
-  alias from `retired.ts`. It is a beta-only name (v4.3.0 declared
-  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`), so
-  v5-api-convergence's release gate wants it gone.
+  configs, curled 2026-11-03). Done. The `LinearMultiSampleVariantDisplay`
+  alias stays in `retired.ts` so beta sessions naming it load (Colin,
+  2026-11-03), though no release before the betas declared it.
 - **E. Height.** Records-only height settled (ADR-255's amendments): the
   first layout with a record on screen holds `height` once at the stack, up
   to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`), on the
