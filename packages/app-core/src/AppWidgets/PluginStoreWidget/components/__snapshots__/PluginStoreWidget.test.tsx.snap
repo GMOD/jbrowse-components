@@ -238,6 +238,7 @@ exports[`renders with the available plugins 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
+                    data-testid="installPlugin-MsaView"
                     tabindex="0"
                     type="button"
                   >

@@ -256,7 +256,8 @@ export { PARK_CURSOR } from './screenshot-spec-types.ts'
 // Select" chip — to the quiet icon that is always in that corner afterwards.
 // The chip carries no (×): opening its menu is what marks the notice read, so
 // this opens it and closes it again with Escape, which `useTrackControlMenu`
-// handles directly (unlike the MUI menu cascade `dismissMenus` backs out of).
+// handles directly (unlike a MUI menu cascade, which only a backdrop click
+// closes).
 // Every step is asserted, because a chip left up moves the corner of every
 // later frame.
 //
@@ -271,20 +272,6 @@ export const readIsoformNotice = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Representative transcript' },
   { type: 'press', key: 'Escape' },
   { type: 'waitForText', text: 'Representative transcript', hidden: true },
-  { type: 'delay', ms: 300 },
-]
-
-// A stage that ends with its submenu open must be fully dismissed before the
-// next stage clicks a different track's menu, or the lingering menu's backdrop
-// swallows that click and it lands on the wrong track. Escape does NOT close
-// these menus (keyboard focus isn't inside the popover), but the invisible modal
-// backdrop does on click — two clicks on a neutral spot (the view title bar)
-// pop the submenu then the main menu; then wait for the menu text to be gone.
-export const dismissMenus = (): ScreenshotAction[] => [
-  { type: 'click', from: { x: 550, y: 58 } },
-  { type: 'delay', ms: 300 },
-  { type: 'click', from: { x: 550, y: 58 } },
-  { type: 'waitForText', text: 'Read height', hidden: true },
   { type: 'delay', ms: 300 },
 ]
 

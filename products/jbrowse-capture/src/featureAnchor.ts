@@ -106,15 +106,3 @@ export async function featureRect(
     ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
     : box
 }
-
-// A click or hover on the feature: the middle of its box, or the `fracY` line
-// through it, plus the anchor's nudge.
-export async function featurePoint(page: Page, anchor: AnnotationAnchor) {
-  const rect = await featureRect(page, anchor)
-  return rect
-    ? {
-        x: rect.left + rect.width / 2 + (anchor.dx ?? 0),
-        y: rect.top + rect.height / 2 + (anchor.dy ?? 0),
-      }
-    : undefined
-}

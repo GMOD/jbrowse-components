@@ -31,32 +31,58 @@ import type { Page } from 'puppeteer'
 // one-base locus is the same shape of question — the base's own column for a
 // box, the zero-width position between two bases for a pill or an arrow head —
 // which is what parseAnnotationLocus's `wrap` decides.
+//
+// A click asks a third thing: a point ON a bent node or a residue, but the
+// base's own column for a locus or a row, since a click cannot land on the edge
+// between two bases. So `wrapBase` is split from `wantBounds` for it.
 async function withRegion(
   page: Page,
-  anchor: AnnotationAnchor | undefined,
+  anchor: AnnotationAnchor,
   wantBounds: boolean,
-): Promise<ResolvedAnnotationAnchor | undefined> {
-  if (!anchor) {
-    return undefined
-  }
+  wrapBase = wantBounds,
+): Promise<ResolvedAnnotationAnchor> {
   const isDotplot = anchor.hLoc !== undefined || anchor.vLoc !== undefined
   return {
     ...anchor,
-    region: anchor.loc
-      ? parseAnnotationLocus(anchor.loc, wantBounds)
-      : undefined,
+    region: anchor.loc ? parseAnnotationLocus(anchor.loc, wrapBase) : undefined,
     rect: anchor.graphNode
       ? await graphNodeRect(page, anchor, wantBounds)
       : anchor.feature
         ? await featureRect(page, anchor)
         : anchor.row
-          ? await rowRect(page, anchor, wantBounds)
+          ? await rowRect(page, anchor, wrapBase)
           : isDotplot
             ? await dotplotAnchorRect(page, anchor)
             : anchor.residue
               ? await residueRect(page, anchor, wantBounds)
               : undefined,
   }
+}
+
+const optionalRegion = (
+  page: Page,
+  anchor: AnnotationAnchor | undefined,
+  wantBounds: boolean,
+) => (anchor ? withRegion(page, anchor, wantBounds) : undefined)
+
+/**
+ * Where a click or hover on `anchor` lands, in viewport CSS px, and the rect it
+ * resolved to: the same resolution, alignment and nudge a callout on that
+ * anchor draws at, so a figure's click and its arrow cannot part. Undefined
+ * when the anchor names nothing on the page.
+ */
+export async function resolveAnchor(page: Page, anchor: AnnotationAnchor) {
+  const probe: PayloadAnnotation = {
+    type: 'circle',
+    anchor: await withRegion(page, anchor, false, true),
+  }
+  const { unresolved, targets } = await page.evaluate(
+    drawAnnotationOverlay,
+    [probe],
+    ANNOTATION_OVERLAY_ID,
+    false,
+  )
+  return unresolved.length > 0 ? undefined : targets[0]
 }
 
 /** Remove the callout overlay a previous `drawAnnotations` left on the page. */
@@ -84,8 +110,8 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       // only a box wants the drawn bounds — of a graph node, or of the base a
       // one-coordinate locus names; a ring/arrow/label wants a point on it, and
       // an arrow's tail always does
-      anchor: await withRegion(page, a.anchor, a.type === 'box'),
-      fromAnchor: await withRegion(page, a.fromAnchor, false),
+      anchor: await optionalRegion(page, a.anchor, a.type === 'box'),
+      fromAnchor: await optionalRegion(page, a.fromAnchor, false),
     })),
   )
   const { unresolved, offFrame } = await page.evaluate(

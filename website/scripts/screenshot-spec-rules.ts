@@ -235,11 +235,10 @@ export function shadowedSessionTracks(
 // - the tail of an arrow leaving one of those captions. The caption and its
 //   tail are one unit in page coordinates; anchoring only the tail pulls the
 //   arrow off the pill it leaves. Both or neither.
-// - `dismissMenus`, and the one other backdrop click: they hit nothing on
-//   purpose, since a menu's backdrop covers the viewport.
+// - a backdrop click, which hits nothing on purpose, since a menu's backdrop
+//   covers the viewport.
 //
-// Anything else is a callout that names a thing without saying which one, and
-// `scripts/locusAnchor.ts` explains what that has cost.
+// Anything else is a callout that names a thing without saying which one.
 export const CALLOUT_BASELINE = 21
 
 export function countRawCallouts(list: ScreenshotSpec[]) {

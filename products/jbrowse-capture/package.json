@@ -19,8 +19,7 @@
     ".": "./src/index.ts",
     "./annotationOverlay": "./src/annotationOverlay.ts",
     "./graphAnchor": "./src/graphAnchor.ts",
-    "./featureAnchor": "./src/featureAnchor.ts",
-    "./rowAnchor": "./src/rowAnchor.ts"
+    "./featureAnchor": "./src/featureAnchor.ts"
   },
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -55,8 +54,7 @@
       ".": "./esm/index.js",
       "./annotationOverlay": "./esm/annotationOverlay.js",
       "./graphAnchor": "./esm/graphAnchor.js",
-      "./featureAnchor": "./esm/featureAnchor.js",
-      "./rowAnchor": "./esm/rowAnchor.js"
+      "./featureAnchor": "./esm/featureAnchor.js"
     }
   }
 }

@@ -10,8 +10,8 @@ import type { Annotation, AnnotationAnchor } from '@jbrowse/browser-test-utils'
 
 // An action's anchor: everything a callout's resolves, plus the kinds only a
 // click or a drag needs. The generator resolves these itself (chordAnchor.ts,
-// locusAnchor.ts), and @jbrowse/capture, which draws callouts and clicks
-// nothing, does not.
+// actions.ts) and hands every other anchor to @jbrowse/capture's
+// `resolveAnchor`, the resolver its callouts use.
 export interface ActionAnchor extends AnnotationAnchor {
   // Part of a circular view chord's own `<title>` -- the record's name and both
   // of its loci, e.g. 'SV_20'. Hit-tested along the curve rather than measured:

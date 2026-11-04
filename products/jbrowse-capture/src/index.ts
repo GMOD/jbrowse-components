@@ -1,5 +1,9 @@
 export { captureBatch, captureJBrowse, openJBrowse } from './capture.ts'
-export { clearAnnotations, drawAnnotations } from './annotations.ts'
+export {
+  clearAnnotations,
+  drawAnnotations,
+  resolveAnchor,
+} from './annotations.ts'
 export { delay } from './poll.ts'
 export { waitForFrame, waitForJBrowseReady } from './ready.ts'
 export {

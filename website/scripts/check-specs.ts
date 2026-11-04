@@ -66,9 +66,9 @@ const ratchets: Ratchet[] = [
     what: 'hand-placed viewport coordinates',
     baselineName: 'CALLOUT_BASELINE',
     advice: [
-      'Anchor the new one instead: `anchor: {trackId, loc, fracY}` for data,',
-      '`{selector}`/`{text}` for chrome. See website/scripts/locusAnchor.ts',
-      'for what a stale coordinate has cost.',
+      'Anchor the new one instead: `{trackId, feature}` or `{trackId, row}` for',
+      'a record or a row, `{trackId, loc}` for a position, `{selector}`/`{text}`',
+      'for chrome.',
     ],
     count: countRawCallouts(specs),
   },

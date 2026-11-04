@@ -13,6 +13,7 @@ export {
   encodeSessionSpec,
   findChromeExecutable,
   isBrowserConsoleNoise,
+  resolveAnchor,
   sessionSpecQuery,
   trackIdsFromSession,
   waitForAppSettled,
@@ -26,9 +27,7 @@ export {
   drawAnnotationOverlay,
   parseAnnotationLocus,
 } from '@jbrowse/capture/annotationOverlay'
-export { featurePoint } from '@jbrowse/capture/featureAnchor'
 export { graphNodePoint, locateGraphPane } from '@jbrowse/capture/graphAnchor'
-export { rowPoint } from '@jbrowse/capture/rowAnchor'
 
 export {
   delay,

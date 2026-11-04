@@ -1,14 +1,10 @@
 import {
   delay,
-  featurePoint,
-  graphNodePoint,
-  rowPoint,
+  resolveAnchor,
   waitForAppSettled,
 } from '@jbrowse/browser-test-utils'
 
 import { chordPoint, ideogramPoint } from './chordAnchor.ts'
-import { locusPoint } from './locusAnchor.ts'
-import { selectorPoint } from './selectorAnchor.ts'
 
 import type {
   ActionAnchor,
@@ -370,12 +366,33 @@ function assertInViewport(
   }
 }
 
-// The viewport point a click/hover acts on when it isn't targeting an element:
-// a model-resolved position where the spec gives an anchor — a chord, an
-// ideogram band, a graph node, or a genomic locus in a linear view — an element's own rect where it
-// gives a selector, else the literal `from`. An anchor that resolves to nothing
-// throws, so a moved node or a locus scrolled out of view fails the spec by
-// name instead of clicking the top-left corner of the page.
+// `{ loc, band: RUBBERBAND }`: the locus's x, at `fracY` (default the middle)
+// down the strip `band` matches inside the view, so a rubberband drag names two
+// loci rather than four measured pixels. The strip shares the tracks' x-range,
+// so only the y comes from it.
+async function bandPoint(
+  page: Page,
+  { band, fracY, dx, dy, ...locus }: ActionAnchor,
+) {
+  const view = locus.view ?? 0
+  const at = await resolveAnchor(page, { ...locus, view })
+  const strip = await resolveAnchor(page, { selector: band, view })
+  return at && strip
+    ? {
+        x: at.x + (dx ?? 0),
+        y: strip.rect.top + (fracY ?? 0.5) * strip.rect.height + (dy ?? 0),
+      }
+    : undefined
+}
+
+// The viewport point a click/hover acts on when it isn't targeting an element.
+// Every anchor a callout takes resolves through @jbrowse/capture's own
+// `resolveAnchor`, so a click lands where an arrow on the same anchor points,
+// alignment and nudge included. The kinds only an action needs resolve here: a
+// chord, an ideogram band, and a `band`, which keeps the anchor's x and takes
+// its y from a strip of the view. An anchor that resolves to nothing throws, so
+// a moved node or a locus scrolled out of view fails the spec by name instead
+// of clicking the top-left corner of the page.
 async function anchorPoint(
   page: Page,
   action: { type: string },
@@ -385,15 +402,9 @@ async function anchorPoint(
     ? await chordPoint(page, anchor)
     : anchor.ideogram
       ? await ideogramPoint(page, anchor)
-      : anchor.graphNode
-        ? await graphNodePoint(page, anchor)
-        : anchor.feature
-          ? await featurePoint(page, anchor)
-          : anchor.row
-            ? await rowPoint(page, anchor)
-            : anchor.selector
-              ? await selectorPoint(page, anchor)
-              : await locusPoint(page, anchor)
+      : anchor.band
+        ? await bandPoint(page, anchor)
+        : await resolveAnchor(page, anchor)
   if (!point) {
     throw new Error(
       `${action.type} anchor did not resolve: ${JSON.stringify(anchor)}`,

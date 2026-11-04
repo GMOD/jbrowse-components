@@ -551,9 +551,8 @@ const GLOBAL_TRIGGERS = [
   'website/scripts/screenshot-',
   'website/scripts/actions.ts',
   'website/scripts/tooltips.ts',
-  // where a click or a callout lands, for the anchor kinds that ask the model
-  // instead of trusting a written-down coordinate
-  'website/scripts/locusAnchor.ts',
+  // where a click on a chord or an ideogram band lands
+  'website/scripts/chordAnchor.ts',
   'website/scripts/image-pipeline.ts',
   'packages/browser-test-utils/',
   // the readiness gates every capture waits on, and the callout overlay with

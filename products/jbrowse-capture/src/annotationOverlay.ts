@@ -273,8 +273,7 @@ export function parseAnnotationLocus(
   // the column ends up in one half of the frame with the stroke drawn over it,
   // which is what "the boxes cover up the variant they are trying to show"
   // looked like at one base per ~6 css px. `wrap` asks for the base's own
-  // column instead. (`locusAnchor.ts`'s click parser always wants the base, for
-  // the neighbouring reason: a click cannot land on an edge.)
+  // column instead, which a click always wants: it cannot land on an edge.
   wrap = false,
 ): AnnotationRegion {
   const { refName, start, end } = parseAnchorLocus(locus, wrap)
@@ -310,6 +309,16 @@ export function parseAnchorLocus(locus: string, wrap = false): AnchorLocus {
 export interface AnnotationOverlayProblems {
   unresolved: string[]
   offFrame: string[]
+  // per item, the point its anchor names (aligned, nudged by the anchor's own
+  // dx/dy) and the rect it resolved to: what a click on the same anchor acts on
+  targets: ({ x: number; y: number; rect: AnnotationRect } | undefined)[]
+}
+
+export interface AnnotationRect {
+  left: number
+  top: number
+  width: number
+  height: number
 }
 
 // Draw the annotations as a fixed SVG overlay covering the viewport so the
@@ -324,6 +333,7 @@ export interface AnnotationOverlayProblems {
 export function drawAnnotationOverlay(
   items: PayloadAnnotation[],
   overlayId: string,
+  draw = true,
 ): AnnotationOverlayProblems {
   const NS = 'http://www.w3.org/2000/svg'
   const svg = document.createElementNS(NS, 'svg')
@@ -610,551 +620,568 @@ export function drawAnnotationOverlay(
     }
   })
 
-  // arrowhead length in marker units (path spans x:0..ARROW_LEN); the line
-  // is shortened by this much (scaled by strokeWidth, since markerUnits
-  // defaults to strokeWidth) so it ends at the arrowhead's base
-  const ARROW_LEN = 8
-  const defs = document.createElementNS(NS, 'defs')
-  svg.append(defs)
-
-  // A box framing data passes under the app's floating color keys, as the data
-  // itself does; otherwise its stroke runs through a key's entries. A box on a
-  // selector or text anchor names chrome, maybe the key itself, so it stays on
-  // top.
-  const keyRects = [
-    ...document.querySelectorAll('[data-testid="floating-legend"]'),
-  ]
-    .map(el => el.getBoundingClientRect())
-    .filter(r => r.width > 0 && r.height > 0)
-  const keyMaskId = `${overlayId}-under-keys`
-  if (keyRects.length > 0) {
-    const mask = document.createElementNS(NS, 'mask')
-    mask.setAttribute('id', keyMaskId)
-    mask.setAttribute('maskUnits', 'userSpaceOnUse')
-    const hole = (r: Rect, fill: string) => {
-      const el = document.createElementNS(NS, 'rect')
-      el.setAttribute('x', String(r.left))
-      el.setAttribute('y', String(r.top))
-      el.setAttribute('width', String(r.width))
-      el.setAttribute('height', String(r.height))
-      el.setAttribute('fill', fill)
-      mask.append(el)
-    }
-    hole(
-      { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight },
-      '#fff',
-    )
-    for (const r of keyRects) {
-      hole(r, '#000')
-    }
-    defs.append(mask)
-  }
-  const onChrome = (anchor: Anchor) =>
-    anchor?.selector !== undefined || anchor?.text !== undefined
-  const passesUnderKeys = (a: (typeof resolved)[number]) =>
-    keyRects.length > 0 &&
-    a.anchor !== undefined &&
-    !onChrome(a.anchor) &&
-    !onChrome(a.fromAnchor)
-  // One marker per distinct arrow color. A single shared marker recolored
-  // per arrow would paint every head in whichever color was drawn last.
-  const markerIds = new Map<string, string>()
-  function arrowMarker(color: string) {
-    const existing = markerIds.get(color)
-    if (existing) {
-      return existing
-    }
-    const id = `arrowhead-${markerIds.size}`
-    const marker = document.createElementNS(NS, 'marker')
-    marker.setAttribute('id', id)
-    marker.setAttribute('markerWidth', '10')
-    marker.setAttribute('markerHeight', '10')
-    // anchor the marker at its BASE (refX=0) so the line stops at the base
-    // and the triangle extends forward to the target, covering the line end
-    // — this avoids the butt-capped line poking past the sharp tip as a "nub"
-    marker.setAttribute('refX', '0')
-    marker.setAttribute('refY', '3')
-    marker.setAttribute('orient', 'auto')
-    const arrowPath = document.createElementNS(NS, 'path')
-    arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
-    arrowPath.setAttribute('fill', color)
-    marker.append(arrowPath)
-    defs.append(marker)
-    markerIds.set(color, id)
-    return id
-  }
-  // One line with a head on it, shared by the `arrow` annotation and by the
-  // arrow a `leader` pill draws for itself, so the two cannot end up different
-  // marks in the same figure.
-  function drawArrowLine(
-    from: { x: number; y: number },
-    to: { x: number; y: number },
-    color: string,
-    strokeWidth: number,
-  ) {
-    // pull the line endpoint back to the arrowhead's base so the triangle
-    // (placed base-first at the endpoint) extends forward to the true target;
-    // the line end is then hidden under the filled head
-    const ddx = to.x - from.x
-    const ddy = to.y - from.y
-    const dist = Math.hypot(ddx, ddy) || 1
-    const headLen = ARROW_LEN * strokeWidth
-    const line = document.createElementNS(NS, 'line')
-    line.setAttribute('x1', String(from.x))
-    line.setAttribute('y1', String(from.y))
-    line.setAttribute('x2', String(to.x - (ddx / dist) * headLen))
-    line.setAttribute('y2', String(to.y - (ddy / dist) * headLen))
-    line.setAttribute('stroke', color)
-    // the arrowhead marker uses markerUnits=strokeWidth, so a thinner line also
-    // shrinks the head proportionally
-    line.setAttribute('stroke-width', String(strokeWidth))
-    line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
-    return line
-  }
-
-  // How much air a leader leaves at each end: clear of the pill's border so the
-  // tail is not drawn on it, and short of the target so the head names a point
-  // without covering it.
-  const LEADER_TAIL_GAP = 5
-  const LEADER_HEAD_GAP = 14
-
-  // The arrow a `leader` pill draws back to what it names. The tail is the point
-  // where the target's direction leaves the MEASURED pill, so it is the pill's
-  // own edge at any label length and at any angle; nothing here is a written
-  // offset. Undefined when the pill covers the target, which the caller reports
-  // rather than drawing a backwards arrow.
-  function leaderArrow(
-    pill: Rect,
-    target: { x: number; y: number },
-    color: string,
-    strokeWidth: number,
-  ) {
-    const midX = pill.left + pill.width / 2
-    const midY = pill.top + pill.height / 2
-    const dx = target.x - midX
-    const dy = target.y - midY
-    const dist = Math.hypot(dx, dy)
-    if (dist === 0) {
-      return undefined
-    }
-    // the pill boundary along that direction: whichever of the two half-extents
-    // the ray reaches first
-    const edge = Math.min(
-      Math.abs(dx) > 0 ? pill.width / 2 / Math.abs(dx) : Infinity,
-      Math.abs(dy) > 0 ? pill.height / 2 / Math.abs(dy) : Infinity,
-    )
-    const start = edge * dist + LEADER_TAIL_GAP
-    const end = dist - LEADER_HEAD_GAP
-    if (!(end > start)) {
-      return undefined
-    }
-    const at = (d: number) => ({
-      x: midX + (dx / dist) * d,
-      y: midY + (dy / dist) * d,
-    })
-    return drawArrowLine(at(start), at(end), color, strokeWidth)
-  }
-
-  // append the overlay now (before drawing) so text getBBox() resolves for
-  // the optional background pill below
-  document.body.append(svg)
-  // Text pills paint last, over every arrow and box, whatever order the spec
-  // listed them in. An arrow that names a pill has to start inside it: the
-  // pill's width is only known once the text is measured in the page, so a
-  // spec can place the tail near the pill but never exactly at its edge, and
-  // the leftover line drawn across the white callout reads as a mistake.
-  // Sorting here rather than asking every spec to list its pills last, which
-  // is a rule nothing would check.
-  const isPill = (t: string) => t === 'text' || t === 'legend'
-  const drawOrder = [
-    ...resolved.filter(a => !isPill(a.type)),
-    ...resolved.filter(a => isPill(a.type)),
-  ]
-
-  // An anchor that resolves and THEN draws outside the capture is the other
-  // half of the miss above, and the half nothing caught: the callout is correct,
-  // the spec is correct, and the figure ships without it. Measured from what was
-  // actually drawn rather than from the intended geometry, because a pill's own
-  // size is only known once its text is measured in the page.
-  //
-  // Reported only when the item lands ENTIRELY outside. A partial clip is left
-  // alone deliberately — a box already clamps its pad inward at the frame edge,
-  // so the shapes that reach the edge do so on purpose, and a threshold on
-  // "mostly visible" would fire on those without a measurement to set it from.
+  const targets = resolved.map(a =>
+    a.target && a.toRect ? { ...a.target, rect: a.toRect } : undefined,
+  )
   const offFrame: string[] = []
-  // jsdom, where this file's unit tests run, measures every element as a zero
-  // rect; taken at face value that calls every callout off-frame. A zero-sized
-  // overlay root is how "no layout here" reads from inside page context.
-  const canMeasure = svg.getBoundingClientRect().width > 0
-  function reportIfOffFrame(a: (typeof drawOrder)[number], from: number) {
-    const drawn = [...svg.children].slice(from)
-    if (!canMeasure || drawn.length === 0) {
-      return
-    }
-    let left = Infinity
-    let top = Infinity
-    let right = -Infinity
-    let bottom = -Infinity
-    for (const el of drawn) {
-      const r = el.getBoundingClientRect()
-      left = Math.min(left, r.left)
-      top = Math.min(top, r.top)
-      right = Math.max(right, r.right)
-      bottom = Math.max(bottom, r.bottom)
-    }
-    // Does the drawn box INTERSECT the viewport — not does the intersection
-    // have area. A perfectly vertical arrow (both ends on one x, which two
-    // anchors sharing a locus give you) has a zero-width box, and measured as
-    // an area it has none wherever it sits: an arrow in the middle of the frame
-    // reported as invisible and failed its whole figure.
-    //
-    // A pill is the exception to leaving partial clips alone: nothing clamps
-    // it, so any part past the edge is cut text.
-    const inside = isPill(a.type)
-      ? left >= -1 &&
-        right <= window.innerWidth + 1 &&
-        top >= -1 &&
-        bottom <= window.innerHeight + 1
-      : right >= 0 &&
-        left <= window.innerWidth &&
-        bottom >= 0 &&
-        top <= window.innerHeight
-    if (inside) {
-      return
-    }
-    offFrame.push(
-      JSON.stringify({
-        type: a.type,
-        text: a.text,
-        anchor: a.anchor,
-        drawn: { left, top, right, bottom },
-        viewport: { width: window.innerWidth, height: window.innerHeight },
-      }),
-    )
+  if (draw) {
+    renderOverlay()
   }
+  return { unresolved: misses, offFrame, targets }
 
-  for (const a of drawOrder) {
-    const drawnFrom = svg.childElementCount
-    const color = a.color ?? '#e3242b'
-    const cx = a.x
-    const cy = a.y
-    if (a.type === 'arrow' && a.from) {
-      // anchored arrow: head points at the resolved element center
-      svg.append(
-        drawArrowLine(
-          a.from,
-          {
-            x: a.anchor ? cx : (a.to?.x ?? 0),
-            y: a.anchor ? cy : (a.to?.y ?? 0),
-          },
-          color,
-          a.strokeWidth ?? 4,
-        ),
-      )
-    } else if (a.type === 'trapezoid' && a.fromRect && a.toRect) {
-      // The lineage wedge: `fromAnchor` is the span the zoom came FROM,
-      // `anchor` the panel it opened into, and the two horizontal edges are
-      // those two elements' own facing edges. Which pair of edges face each
-      // other is read off the rects rather than declared, so the same
-      // annotation works whichever way round the composition stacks its parts.
-      const A = a.fromRect
-      const B = a.toRect
-      const span = (
-        r: Rect,
-        anchor?: { fracX?: [number, number] },
-      ): [number, number] => {
-        const [f0, f1] = anchor?.fracX ?? [0, 1]
-        return [r.left + r.width * f0, r.left + r.width * f1]
+  function renderOverlay() {
+    // arrowhead length in marker units (path spans x:0..ARROW_LEN); the line
+    // is shortened by this much (scaled by strokeWidth, since markerUnits
+    // defaults to strokeWidth) so it ends at the arrowhead's base
+    const ARROW_LEN = 8
+    const defs = document.createElementNS(NS, 'defs')
+    svg.append(defs)
+
+    // A box framing data passes under the app's floating color keys, as the data
+    // itself does; otherwise its stroke runs through a key's entries. A box on a
+    // selector or text anchor names chrome, maybe the key itself, so it stays on
+    // top.
+    const keyRects = [
+      ...document.querySelectorAll('[data-testid="floating-legend"]'),
+    ]
+      .map(el => el.getBoundingClientRect())
+      .filter(r => r.width > 0 && r.height > 0)
+    const keyMaskId = `${overlayId}-under-keys`
+    if (keyRects.length > 0) {
+      const mask = document.createElementNS(NS, 'mask')
+      mask.setAttribute('id', keyMaskId)
+      mask.setAttribute('maskUnits', 'userSpaceOnUse')
+      const hole = (r: Rect, fill: string) => {
+        const el = document.createElementNS(NS, 'rect')
+        el.setAttribute('x', String(r.left))
+        el.setAttribute('y', String(r.top))
+        el.setAttribute('width', String(r.width))
+        el.setAttribute('height', String(r.height))
+        el.setAttribute('fill', fill)
+        mask.append(el)
       }
-      const [aLeft, aRight] = span(A, a.fromAnchor)
-      const [bLeft, bRight] = span(B, a.anchor)
-      const aAbove = A.top + A.height / 2 < B.top + B.height / 2
-      const aY = aAbove ? A.top + A.height : A.top
-      const bY = aAbove ? B.top : B.top + B.height
-      const poly = document.createElementNS(NS, 'polygon')
-      poly.setAttribute(
-        'points',
-        `${aLeft},${aY} ${aRight},${aY} ${bRight},${bY} ${bLeft},${bY}`,
+      hole(
+        {
+          left: 0,
+          top: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        '#fff',
       )
-      poly.setAttribute('fill', color)
-      poly.setAttribute('fill-opacity', String(a.fillOpacity ?? 0.14))
-      poly.setAttribute('stroke', 'none')
-      svg.append(poly)
-      // Only the SLANTED sides are stroked. The other two are the panels' own
-      // edges, and a line drawn along one of them reads as a border the figure
-      // grew rather than as part of the wedge.
-      for (const [x1, x2] of [
-        [aLeft, bLeft],
-        [aRight, bRight],
-      ]) {
-        const side = document.createElementNS(NS, 'line')
-        side.setAttribute('x1', String(x1))
-        side.setAttribute('y1', String(aY))
-        side.setAttribute('x2', String(x2))
-        side.setAttribute('y2', String(bY))
-        side.setAttribute('stroke', color)
-        side.setAttribute('stroke-width', String(a.strokeWidth ?? 3))
-        svg.append(side)
+      for (const r of keyRects) {
+        hole(r, '#000')
       }
-    } else if (a.type === 'trapezoid') {
-      // A trapezoid with only one end is not a shape. Reported rather than
-      // skipped, because the caller turns misses into a thrown error and a
-      // silently-undrawn lineage wedge is exactly the kind of thing that gets
-      // committed.
-      misses.push(
+      defs.append(mask)
+    }
+    const onChrome = (anchor: Anchor) =>
+      anchor?.selector !== undefined || anchor?.text !== undefined
+    const passesUnderKeys = (a: (typeof resolved)[number]) =>
+      keyRects.length > 0 &&
+      a.anchor !== undefined &&
+      !onChrome(a.anchor) &&
+      !onChrome(a.fromAnchor)
+    // One marker per distinct arrow color. A single shared marker recolored
+    // per arrow would paint every head in whichever color was drawn last.
+    const markerIds = new Map<string, string>()
+    function arrowMarker(color: string) {
+      const existing = markerIds.get(color)
+      if (existing) {
+        return existing
+      }
+      const id = `arrowhead-${markerIds.size}`
+      const marker = document.createElementNS(NS, 'marker')
+      marker.setAttribute('id', id)
+      marker.setAttribute('markerWidth', '10')
+      marker.setAttribute('markerHeight', '10')
+      // anchor the marker at its BASE (refX=0) so the line stops at the base
+      // and the triangle extends forward to the target, covering the line end
+      // — this avoids the butt-capped line poking past the sharp tip as a "nub"
+      marker.setAttribute('refX', '0')
+      marker.setAttribute('refY', '3')
+      marker.setAttribute('orient', 'auto')
+      const arrowPath = document.createElementNS(NS, 'path')
+      arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
+      arrowPath.setAttribute('fill', color)
+      marker.append(arrowPath)
+      defs.append(marker)
+      markerIds.set(color, id)
+      return id
+    }
+    // One line with a head on it, shared by the `arrow` annotation and by the
+    // arrow a `leader` pill draws for itself, so the two cannot end up different
+    // marks in the same figure.
+    function drawArrowLine(
+      from: { x: number; y: number },
+      to: { x: number; y: number },
+      color: string,
+      strokeWidth: number,
+    ) {
+      // pull the line endpoint back to the arrowhead's base so the triangle
+      // (placed base-first at the endpoint) extends forward to the true target;
+      // the line end is then hidden under the filled head
+      const ddx = to.x - from.x
+      const ddy = to.y - from.y
+      const dist = Math.hypot(ddx, ddy) || 1
+      const headLen = ARROW_LEN * strokeWidth
+      const line = document.createElementNS(NS, 'line')
+      line.setAttribute('x1', String(from.x))
+      line.setAttribute('y1', String(from.y))
+      line.setAttribute('x2', String(to.x - (ddx / dist) * headLen))
+      line.setAttribute('y2', String(to.y - (ddy / dist) * headLen))
+      line.setAttribute('stroke', color)
+      // the arrowhead marker uses markerUnits=strokeWidth, so a thinner line also
+      // shrinks the head proportionally
+      line.setAttribute('stroke-width', String(strokeWidth))
+      line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
+      return line
+    }
+
+    // How much air a leader leaves at each end: clear of the pill's border so the
+    // tail is not drawn on it, and short of the target so the head names a point
+    // without covering it.
+    const LEADER_TAIL_GAP = 5
+    const LEADER_HEAD_GAP = 14
+
+    // The arrow a `leader` pill draws back to what it names. The tail is the point
+    // where the target's direction leaves the MEASURED pill, so it is the pill's
+    // own edge at any label length and at any angle; nothing here is a written
+    // offset. Undefined when the pill covers the target, which the caller reports
+    // rather than drawing a backwards arrow.
+    function leaderArrow(
+      pill: Rect,
+      target: { x: number; y: number },
+      color: string,
+      strokeWidth: number,
+    ) {
+      const midX = pill.left + pill.width / 2
+      const midY = pill.top + pill.height / 2
+      const dx = target.x - midX
+      const dy = target.y - midY
+      const dist = Math.hypot(dx, dy)
+      if (dist === 0) {
+        return undefined
+      }
+      // the pill boundary along that direction: whichever of the two half-extents
+      // the ray reaches first
+      const edge = Math.min(
+        Math.abs(dx) > 0 ? pill.width / 2 / Math.abs(dx) : Infinity,
+        Math.abs(dy) > 0 ? pill.height / 2 / Math.abs(dy) : Infinity,
+      )
+      const start = edge * dist + LEADER_TAIL_GAP
+      const end = dist - LEADER_HEAD_GAP
+      if (!(end > start)) {
+        return undefined
+      }
+      const at = (d: number) => ({
+        x: midX + (dx / dist) * d,
+        y: midY + (dy / dist) * d,
+      })
+      return drawArrowLine(at(start), at(end), color, strokeWidth)
+    }
+
+    // append the overlay now (before drawing) so text getBBox() resolves for
+    // the optional background pill below
+    document.body.append(svg)
+    // Text pills paint last, over every arrow and box, whatever order the spec
+    // listed them in. An arrow that names a pill has to start inside it: the
+    // pill's width is only known once the text is measured in the page, so a
+    // spec can place the tail near the pill but never exactly at its edge, and
+    // the leftover line drawn across the white callout reads as a mistake.
+    // Sorting here rather than asking every spec to list its pills last, which
+    // is a rule nothing would check.
+    const isPill = (t: string) => t === 'text' || t === 'legend'
+    const drawOrder = [
+      ...resolved.filter(a => !isPill(a.type)),
+      ...resolved.filter(a => isPill(a.type)),
+    ]
+
+    // An anchor that resolves and THEN draws outside the capture is the other
+    // half of the miss above, and the half nothing caught: the callout is correct,
+    // the spec is correct, and the figure ships without it. Measured from what was
+    // actually drawn rather than from the intended geometry, because a pill's own
+    // size is only known once its text is measured in the page.
+    //
+    // Reported only when the item lands ENTIRELY outside. A partial clip is left
+    // alone deliberately — a box already clamps its pad inward at the frame edge,
+    // so the shapes that reach the edge do so on purpose, and a threshold on
+    // "mostly visible" would fire on those without a measurement to set it from.
+    // jsdom, where this file's unit tests run, measures every element as a zero
+    // rect; taken at face value that calls every callout off-frame. A zero-sized
+    // overlay root is how "no layout here" reads from inside page context.
+    const canMeasure = svg.getBoundingClientRect().width > 0
+    function reportIfOffFrame(a: (typeof drawOrder)[number], from: number) {
+      const drawn = [...svg.children].slice(from)
+      if (!canMeasure || drawn.length === 0) {
+        return
+      }
+      let left = Infinity
+      let top = Infinity
+      let right = -Infinity
+      let bottom = -Infinity
+      for (const el of drawn) {
+        const r = el.getBoundingClientRect()
+        left = Math.min(left, r.left)
+        top = Math.min(top, r.top)
+        right = Math.max(right, r.right)
+        bottom = Math.max(bottom, r.bottom)
+      }
+      // Does the drawn box INTERSECT the viewport — not does the intersection
+      // have area. A perfectly vertical arrow (both ends on one x, which two
+      // anchors sharing a locus give you) has a zero-width box, and measured as
+      // an area it has none wherever it sits: an arrow in the middle of the frame
+      // reported as invisible and failed its whole figure.
+      //
+      // A pill is the exception to leaving partial clips alone: nothing clamps
+      // it, so any part past the edge is cut text.
+      const inside = isPill(a.type)
+        ? left >= -1 &&
+          right <= window.innerWidth + 1 &&
+          top >= -1 &&
+          bottom <= window.innerHeight + 1
+        : right >= 0 &&
+          left <= window.innerWidth &&
+          bottom >= 0 &&
+          top <= window.innerHeight
+      if (inside) {
+        return
+      }
+      offFrame.push(
         JSON.stringify({
-          trapezoid: 'needs both anchor and fromAnchor to resolve',
+          type: a.type,
+          text: a.text,
           anchor: a.anchor,
-          fromAnchor: a.fromAnchor,
+          drawn: { left, top, right, bottom },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
         }),
       )
-    } else if (a.type === 'box') {
-      const rect = document.createElementNS(NS, 'rect')
-      rect.setAttribute('x', String(cx))
-      rect.setAttribute('y', String(cy))
-      rect.setAttribute('width', String(a.width ?? 0))
-      rect.setAttribute('height', String(a.height ?? 0))
-      rect.setAttribute('rx', '4')
-      // a positive fillOpacity tints the box with a translucent wash of its
-      // own color (a "light green/orange" highlight); otherwise hollow
-      rect.setAttribute('fill', a.fillOpacity ? color : 'none')
-      if (a.fillOpacity) {
-        rect.setAttribute('fill-opacity', String(a.fillOpacity))
-      }
-      rect.setAttribute('stroke', color)
-      rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
-      if (passesUnderKeys(a)) {
-        rect.setAttribute('mask', `url(#${keyMaskId})`)
-      }
-      svg.append(rect)
-    } else if (a.type === 'circle') {
-      const radius = a.radius ?? 16
-      const circle = document.createElementNS(NS, 'circle')
-      circle.setAttribute('cx', String(cx))
-      circle.setAttribute('cy', String(cy))
-      circle.setAttribute('r', String(radius))
-      circle.setAttribute('stroke', color)
-      circle.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
-      // filled badge when it carries a label, hollow ring otherwise
-      circle.setAttribute('fill', a.text ? color : 'none')
-      svg.append(circle)
-      if (a.text) {
+    }
+
+    for (const a of drawOrder) {
+      const drawnFrom = svg.childElementCount
+      const color = a.color ?? '#e3242b'
+      const cx = a.x
+      const cy = a.y
+      if (a.type === 'arrow' && a.from) {
+        // anchored arrow: head points at the resolved element center
+        svg.append(
+          drawArrowLine(
+            a.from,
+            {
+              x: a.anchor ? cx : (a.to?.x ?? 0),
+              y: a.anchor ? cy : (a.to?.y ?? 0),
+            },
+            color,
+            a.strokeWidth ?? 4,
+          ),
+        )
+      } else if (a.type === 'trapezoid' && a.fromRect && a.toRect) {
+        // The lineage wedge: `fromAnchor` is the span the zoom came FROM,
+        // `anchor` the panel it opened into, and the two horizontal edges are
+        // those two elements' own facing edges. Which pair of edges face each
+        // other is read off the rects rather than declared, so the same
+        // annotation works whichever way round the composition stacks its parts.
+        const A = a.fromRect
+        const B = a.toRect
+        const span = (
+          r: Rect,
+          anchor?: { fracX?: [number, number] },
+        ): [number, number] => {
+          const [f0, f1] = anchor?.fracX ?? [0, 1]
+          return [r.left + r.width * f0, r.left + r.width * f1]
+        }
+        const [aLeft, aRight] = span(A, a.fromAnchor)
+        const [bLeft, bRight] = span(B, a.anchor)
+        const aAbove = A.top + A.height / 2 < B.top + B.height / 2
+        const aY = aAbove ? A.top + A.height : A.top
+        const bY = aAbove ? B.top : B.top + B.height
+        const poly = document.createElementNS(NS, 'polygon')
+        poly.setAttribute(
+          'points',
+          `${aLeft},${aY} ${aRight},${aY} ${bRight},${bY} ${bLeft},${bY}`,
+        )
+        poly.setAttribute('fill', color)
+        poly.setAttribute('fill-opacity', String(a.fillOpacity ?? 0.14))
+        poly.setAttribute('stroke', 'none')
+        svg.append(poly)
+        // Only the SLANTED sides are stroked. The other two are the panels' own
+        // edges, and a line drawn along one of them reads as a border the figure
+        // grew rather than as part of the wedge.
+        for (const [x1, x2] of [
+          [aLeft, bLeft],
+          [aRight, bRight],
+        ]) {
+          const side = document.createElementNS(NS, 'line')
+          side.setAttribute('x1', String(x1))
+          side.setAttribute('y1', String(aY))
+          side.setAttribute('x2', String(x2))
+          side.setAttribute('y2', String(bY))
+          side.setAttribute('stroke', color)
+          side.setAttribute('stroke-width', String(a.strokeWidth ?? 3))
+          svg.append(side)
+        }
+      } else if (a.type === 'trapezoid') {
+        // A trapezoid with only one end is not a shape. Reported rather than
+        // skipped, because the caller turns misses into a thrown error and a
+        // silently-undrawn lineage wedge is exactly the kind of thing that gets
+        // committed.
+        misses.push(
+          JSON.stringify({
+            trapezoid: 'needs both anchor and fromAnchor to resolve',
+            anchor: a.anchor,
+            fromAnchor: a.fromAnchor,
+          }),
+        )
+      } else if (a.type === 'box') {
+        const rect = document.createElementNS(NS, 'rect')
+        rect.setAttribute('x', String(cx))
+        rect.setAttribute('y', String(cy))
+        rect.setAttribute('width', String(a.width ?? 0))
+        rect.setAttribute('height', String(a.height ?? 0))
+        rect.setAttribute('rx', '4')
+        // a positive fillOpacity tints the box with a translucent wash of its
+        // own color (a "light green/orange" highlight); otherwise hollow
+        rect.setAttribute('fill', a.fillOpacity ? color : 'none')
+        if (a.fillOpacity) {
+          rect.setAttribute('fill-opacity', String(a.fillOpacity))
+        }
+        rect.setAttribute('stroke', color)
+        rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
+        if (passesUnderKeys(a)) {
+          rect.setAttribute('mask', `url(#${keyMaskId})`)
+        }
+        svg.append(rect)
+      } else if (a.type === 'circle') {
+        const radius = a.radius ?? 16
+        const circle = document.createElementNS(NS, 'circle')
+        circle.setAttribute('cx', String(cx))
+        circle.setAttribute('cy', String(cy))
+        circle.setAttribute('r', String(radius))
+        circle.setAttribute('stroke', color)
+        circle.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
+        // filled badge when it carries a label, hollow ring otherwise
+        circle.setAttribute('fill', a.text ? color : 'none')
+        svg.append(circle)
+        if (a.text) {
+          const text = document.createElementNS(NS, 'text')
+          text.setAttribute('x', String(cx))
+          text.setAttribute('y', String(cy))
+          text.setAttribute('fill', a.textColor ?? '#fff')
+          text.setAttribute('text-anchor', 'middle')
+          text.setAttribute('dominant-baseline', 'central')
+          text.setAttribute('font-family', 'system-ui, sans-serif')
+          text.setAttribute('font-size', String(a.fontSize ?? 18))
+          text.setAttribute('font-weight', '700')
+          text.textContent = a.text
+          svg.append(text)
+        }
+      } else if (a.type === 'legend' && a.entries?.length) {
+        // A color key: swatch + label per row, in one white pill styled like the
+        // text callout so the two read as the same annotation vocabulary. The
+        // pill's width comes from the measured labels, so nothing here is a
+        // hand-tuned box that goes stale when an entry is renamed.
+        const fontFamily = 'system-ui, sans-serif'
+        const fontSize = Math.max(a.fontSize ?? 20, 13)
+        const swatch = fontSize
+        const gap = Math.round(fontSize * 0.5)
+        const rowHeight = Math.round(fontSize * 1.5)
+        const padX = 12
+        const padY = 10
+        const group = document.createElementNS(NS, 'g')
+        svg.append(group)
+        const labels = document.createElementNS(NS, 'text')
+        labels.setAttribute('fill', '#000')
+        labels.setAttribute('font-family', fontFamily)
+        labels.setAttribute('font-size', String(fontSize))
+        labels.setAttribute('font-weight', '600')
+        labels.setAttribute('dominant-baseline', 'central')
+        group.append(labels)
+        for (const [i, entry] of a.entries.entries()) {
+          const tspan = document.createElementNS(NS, 'tspan')
+          tspan.setAttribute('x', '0')
+          tspan.setAttribute('y', String(i * rowHeight + rowHeight / 2))
+          tspan.textContent = entry.label
+          labels.append(tspan)
+        }
+        const labelWidth = labels.getBBox().width
+        // right-align the whole pill on x when asked, which is what a key placed
+        // against the frame's right edge needs: its width is only known here
+        const width = padX * 2 + swatch + gap + labelWidth
+        const height = padY * 2 + a.entries.length * rowHeight
+        const left = a.textAlign === 'end' ? cx - width : cx
+        const top = cy
+        const rect = document.createElementNS(NS, 'rect')
+        rect.setAttribute('x', String(left))
+        rect.setAttribute('y', String(top))
+        rect.setAttribute('width', String(width))
+        rect.setAttribute('height', String(height))
+        rect.setAttribute('rx', '6')
+        rect.setAttribute('fill', '#fff')
+        rect.setAttribute('stroke', color)
+        rect.setAttribute('stroke-width', '3')
+        group.prepend(rect)
+        for (const [i, entry] of a.entries.entries()) {
+          const sw = document.createElementNS(NS, 'rect')
+          sw.setAttribute('x', String(left + padX))
+          sw.setAttribute(
+            'y',
+            String(top + padY + i * rowHeight + (rowHeight - swatch) / 2),
+          )
+          sw.setAttribute('width', String(swatch))
+          sw.setAttribute('height', String(swatch))
+          sw.setAttribute('rx', '3')
+          sw.setAttribute('fill', entry.color)
+          sw.setAttribute('stroke', '#0006')
+          sw.setAttribute('stroke-width', '1')
+          group.append(sw)
+        }
+        labels.setAttribute(
+          'transform',
+          `translate(${left + padX + swatch + gap},${top + padY})`,
+        )
+        // the labels were appended before the swatches so getBBox measured them
+        // in isolation; move them back on top so nothing overlaps a swatch
+        group.append(labels)
+      } else if (a.type === 'text' && a.text) {
+        // Callout style: white pill, red border, black text, larger default
+        // font, with word-wrapping once a line exceeds maxWidth. `background`
+        // and `textColor` override the first and third; see their doc comments
+        // for when that is worth doing.
+        const fontFamily = 'system-ui, sans-serif'
+        const fontWeight = '600'
+        const fontSize = Math.max(a.fontSize ?? 22, 13)
+        const maxWidth = a.maxWidth ?? 420
+        const measure = (s: string) => {
+          const t = document.createElementNS(NS, 'text')
+          t.setAttribute('font-family', fontFamily)
+          t.setAttribute('font-size', String(fontSize))
+          t.setAttribute('font-weight', fontWeight)
+          t.textContent = s
+          svg.append(t)
+          const w = t.getBBox().width
+          t.remove()
+          return w
+        }
+        // A newline in the text is a hard break, so a callout can author a
+        // list; each resulting paragraph then word-wraps on its own within
+        // maxWidth. (Splitting the whole string on /\s+/ instead silently
+        // flattened an authored list into one run-on paragraph.) An empty
+        // paragraph — from a blank line — becomes a '' entry, drawn below as
+        // a gap rather than a tspan.
+        const lines: string[] = []
+        for (const paragraph of a.text.split('\n')) {
+          const words = paragraph.trim()
+          if (words === '') {
+            lines.push('')
+          } else {
+            let cur = ''
+            for (const word of words.split(/\s+/)) {
+              const test = cur ? `${cur} ${word}` : word
+              if (cur && measure(test) > maxWidth) {
+                lines.push(cur)
+                cur = word
+              } else {
+                cur = test
+              }
+            }
+            lines.push(cur)
+          }
+        }
+        const lineHeight = fontSize * 1.25
         const text = document.createElementNS(NS, 'text')
         text.setAttribute('x', String(cx))
         text.setAttribute('y', String(cy))
-        text.setAttribute('fill', a.textColor ?? '#fff')
-        text.setAttribute('text-anchor', 'middle')
-        text.setAttribute('dominant-baseline', 'central')
-        text.setAttribute('font-family', 'system-ui, sans-serif')
-        text.setAttribute('font-size', String(a.fontSize ?? 18))
-        text.setAttribute('font-weight', '700')
-        text.textContent = a.text
-        svg.append(text)
-      }
-    } else if (a.type === 'legend' && a.entries?.length) {
-      // A color key: swatch + label per row, in one white pill styled like the
-      // text callout so the two read as the same annotation vocabulary. The
-      // pill's width comes from the measured labels, so nothing here is a
-      // hand-tuned box that goes stale when an entry is renamed.
-      const fontFamily = 'system-ui, sans-serif'
-      const fontSize = Math.max(a.fontSize ?? 20, 13)
-      const swatch = fontSize
-      const gap = Math.round(fontSize * 0.5)
-      const rowHeight = Math.round(fontSize * 1.5)
-      const padX = 12
-      const padY = 10
-      const group = document.createElementNS(NS, 'g')
-      svg.append(group)
-      const labels = document.createElementNS(NS, 'text')
-      labels.setAttribute('fill', '#000')
-      labels.setAttribute('font-family', fontFamily)
-      labels.setAttribute('font-size', String(fontSize))
-      labels.setAttribute('font-weight', '600')
-      labels.setAttribute('dominant-baseline', 'central')
-      group.append(labels)
-      for (const [i, entry] of a.entries.entries()) {
-        const tspan = document.createElementNS(NS, 'tspan')
-        tspan.setAttribute('x', '0')
-        tspan.setAttribute('y', String(i * rowHeight + rowHeight / 2))
-        tspan.textContent = entry.label
-        labels.append(tspan)
-      }
-      const labelWidth = labels.getBBox().width
-      // right-align the whole pill on x when asked, which is what a key placed
-      // against the frame's right edge needs: its width is only known here
-      const width = padX * 2 + swatch + gap + labelWidth
-      const height = padY * 2 + a.entries.length * rowHeight
-      const left = a.textAlign === 'end' ? cx - width : cx
-      const top = cy
-      const rect = document.createElementNS(NS, 'rect')
-      rect.setAttribute('x', String(left))
-      rect.setAttribute('y', String(top))
-      rect.setAttribute('width', String(width))
-      rect.setAttribute('height', String(height))
-      rect.setAttribute('rx', '6')
-      rect.setAttribute('fill', '#fff')
-      rect.setAttribute('stroke', color)
-      rect.setAttribute('stroke-width', '3')
-      group.prepend(rect)
-      for (const [i, entry] of a.entries.entries()) {
-        const sw = document.createElementNS(NS, 'rect')
-        sw.setAttribute('x', String(left + padX))
-        sw.setAttribute(
-          'y',
-          String(top + padY + i * rowHeight + (rowHeight - swatch) / 2),
-        )
-        sw.setAttribute('width', String(swatch))
-        sw.setAttribute('height', String(swatch))
-        sw.setAttribute('rx', '3')
-        sw.setAttribute('fill', entry.color)
-        sw.setAttribute('stroke', '#0006')
-        sw.setAttribute('stroke-width', '1')
-        group.append(sw)
-      }
-      labels.setAttribute(
-        'transform',
-        `translate(${left + padX + swatch + gap},${top + padY})`,
-      )
-      // the labels were appended before the swatches so getBBox measured them
-      // in isolation; move them back on top so nothing overlaps a swatch
-      group.append(labels)
-    } else if (a.type === 'text' && a.text) {
-      // Callout style: white pill, red border, black text, larger default
-      // font, with word-wrapping once a line exceeds maxWidth. `background`
-      // and `textColor` override the first and third; see their doc comments
-      // for when that is worth doing.
-      const fontFamily = 'system-ui, sans-serif'
-      const fontWeight = '600'
-      const fontSize = Math.max(a.fontSize ?? 22, 13)
-      const maxWidth = a.maxWidth ?? 420
-      const measure = (s: string) => {
-        const t = document.createElementNS(NS, 'text')
-        t.setAttribute('font-family', fontFamily)
-        t.setAttribute('font-size', String(fontSize))
-        t.setAttribute('font-weight', fontWeight)
-        t.textContent = s
-        svg.append(t)
-        const w = t.getBBox().width
-        t.remove()
-        return w
-      }
-      // A newline in the text is a hard break, so a callout can author a
-      // list; each resulting paragraph then word-wraps on its own within
-      // maxWidth. (Splitting the whole string on /\s+/ instead silently
-      // flattened an authored list into one run-on paragraph.) An empty
-      // paragraph — from a blank line — becomes a '' entry, drawn below as
-      // a gap rather than a tspan.
-      const lines: string[] = []
-      for (const paragraph of a.text.split('\n')) {
-        const words = paragraph.trim()
-        if (words === '') {
-          lines.push('')
-        } else {
-          let cur = ''
-          for (const word of words.split(/\s+/)) {
-            const test = cur ? `${cur} ${word}` : word
-            if (cur && measure(test) > maxWidth) {
-              lines.push(cur)
-              cur = word
-            } else {
-              cur = test
-            }
-          }
-          lines.push(cur)
-        }
-      }
-      const lineHeight = fontSize * 1.25
-      const text = document.createElementNS(NS, 'text')
-      text.setAttribute('x', String(cx))
-      text.setAttribute('y', String(cy))
-      text.setAttribute('fill', a.textColor ?? '#000')
-      text.setAttribute('font-family', fontFamily)
-      text.setAttribute('font-size', String(fontSize))
-      text.setAttribute('font-weight', fontWeight)
-      text.setAttribute('text-anchor', a.textAlign === 'end' ? 'end' : 'start')
-      // An empty tspan gets no layout, so a blank line can't be drawn as
-      // one: carry its half-line gap into the next real line's dy instead.
-      let gap = 0
-      let isFirst = true
-      for (const ln of lines) {
-        if (ln === '') {
-          gap += lineHeight * 0.5
-        } else {
-          const tspan = document.createElementNS(NS, 'tspan')
-          tspan.setAttribute('x', String(cx))
-          tspan.setAttribute('dy', isFirst ? '0' : String(lineHeight + gap))
-          tspan.textContent = ln
-          text.append(tspan)
-          gap = 0
-          isFirst = false
-        }
-      }
-      svg.append(text)
-      const bbox = text.getBBox()
-      const padX = 10
-      const padY = 7
-      const width = bbox.width + padX * 2
-      const height = bbox.height + padY * 2
-      let left = bbox.x - padX
-      let top = bbox.y - padY
-      // A leader pill is placed by its PILL rather than by its text baseline:
-      // the facing edge lands on (cx, cy) and the other side of it follows from
-      // whatever the label measured. That is what lets `dx` mean the same gap
-      // for every callout in a figure, and it is the same measurement the arrow
-      // below leaves from — so the two cannot part company.
-      //
-      // Moved by a transform rather than by rewriting every tspan's x: getBBox
-      // reports the element's own user space, so the numbers above stay the ones
-      // that were measured.
-      if (a.leader && a.target) {
-        const wantLeft = a.target.x > cx ? cx - width : cx
-        const wantTop = cy - height / 2
+        text.setAttribute('fill', a.textColor ?? '#000')
+        text.setAttribute('font-family', fontFamily)
+        text.setAttribute('font-size', String(fontSize))
+        text.setAttribute('font-weight', fontWeight)
         text.setAttribute(
-          'transform',
-          `translate(${wantLeft - left},${wantTop - top})`,
+          'text-anchor',
+          a.textAlign === 'end' ? 'end' : 'start',
         )
-        left = wantLeft
-        top = wantTop
-      }
-      const rect = document.createElementNS(NS, 'rect')
-      rect.setAttribute('x', String(left))
-      rect.setAttribute('y', String(top))
-      rect.setAttribute('width', String(width))
-      rect.setAttribute('height', String(height))
-      rect.setAttribute('rx', '6')
-      rect.setAttribute('fill', a.background ?? '#fff')
-      rect.setAttribute('stroke', a.color ?? '#e3242b')
-      rect.setAttribute('stroke-width', '3')
-      text.before(rect)
-      if (a.leader) {
-        // Both failures are silent otherwise — the pill draws, the arrow does
-        // not, and only a committed PNG says so.
-        const line = a.target
-          ? leaderArrow(
-              { left, top, width, height },
-              a.target,
-              color,
-              a.strokeWidth ?? 4,
-            )
-          : undefined
-        if (line) {
-          // under its own pill, so a label that ends up closer than planned
-          // reads as a short arrow rather than as a line drawn over white
-          rect.before(line)
-        } else {
-          misses.push(
-            JSON.stringify({
-              leader: a.target
-                ? 'the label sits on what it names — raise dx'
-                : 'a leader needs an anchor to point back at',
-              text: a.text,
-              anchor: a.anchor,
-            }),
+        // An empty tspan gets no layout, so a blank line can't be drawn as
+        // one: carry its half-line gap into the next real line's dy instead.
+        let gap = 0
+        let isFirst = true
+        for (const ln of lines) {
+          if (ln === '') {
+            gap += lineHeight * 0.5
+          } else {
+            const tspan = document.createElementNS(NS, 'tspan')
+            tspan.setAttribute('x', String(cx))
+            tspan.setAttribute('dy', isFirst ? '0' : String(lineHeight + gap))
+            tspan.textContent = ln
+            text.append(tspan)
+            gap = 0
+            isFirst = false
+          }
+        }
+        svg.append(text)
+        const bbox = text.getBBox()
+        const padX = 10
+        const padY = 7
+        const width = bbox.width + padX * 2
+        const height = bbox.height + padY * 2
+        let left = bbox.x - padX
+        let top = bbox.y - padY
+        // A leader pill is placed by its PILL rather than by its text baseline:
+        // the facing edge lands on (cx, cy) and the other side of it follows from
+        // whatever the label measured. That is what lets `dx` mean the same gap
+        // for every callout in a figure, and it is the same measurement the arrow
+        // below leaves from — so the two cannot part company.
+        //
+        // Moved by a transform rather than by rewriting every tspan's x: getBBox
+        // reports the element's own user space, so the numbers above stay the ones
+        // that were measured.
+        if (a.leader && a.target) {
+          const wantLeft = a.target.x > cx ? cx - width : cx
+          const wantTop = cy - height / 2
+          text.setAttribute(
+            'transform',
+            `translate(${wantLeft - left},${wantTop - top})`,
           )
+          left = wantLeft
+          top = wantTop
+        }
+        const rect = document.createElementNS(NS, 'rect')
+        rect.setAttribute('x', String(left))
+        rect.setAttribute('y', String(top))
+        rect.setAttribute('width', String(width))
+        rect.setAttribute('height', String(height))
+        rect.setAttribute('rx', '6')
+        rect.setAttribute('fill', a.background ?? '#fff')
+        rect.setAttribute('stroke', a.color ?? '#e3242b')
+        rect.setAttribute('stroke-width', '3')
+        text.before(rect)
+        if (a.leader) {
+          // Both failures are silent otherwise — the pill draws, the arrow does
+          // not, and only a committed PNG says so.
+          const line = a.target
+            ? leaderArrow(
+                { left, top, width, height },
+                a.target,
+                color,
+                a.strokeWidth ?? 4,
+              )
+            : undefined
+          if (line) {
+            // under its own pill, so a label that ends up closer than planned
+            // reads as a short arrow rather than as a line drawn over white
+            rect.before(line)
+          } else {
+            misses.push(
+              JSON.stringify({
+                leader: a.target
+                  ? 'the label sits on what it names — raise dx'
+                  : 'a leader needs an anchor to point back at',
+                text: a.text,
+                anchor: a.anchor,
+              }),
+            )
+          }
         }
       }
+      reportIfOffFrame(a, drawnFrom)
     }
-    reportIfOffFrame(a, drawnFrom)
   }
-  return { unresolved: misses, offFrame }
 }

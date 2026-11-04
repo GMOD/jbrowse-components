@@ -61,3 +61,23 @@ test('alignY reaches the tail too', () => {
 test("the anchor's dx shifts the rect the align is read from", () => {
   expect(arrow({ alignX: 'right', dx: -50 }, { alignX: 'left' }).x1).toBe(950)
 })
+
+// A click resolves through the same pass with `draw` off, so it lands where a
+// callout on the same anchor points: aligned, then nudged, and nothing drawn.
+test('a resolve-only pass draws nothing and reports the aligned target', () => {
+  document.body.replaceChildren()
+  const { targets } = drawAnnotationOverlay(
+    [
+      {
+        type: 'circle',
+        anchor: { graphNode: 'n', rect: TRACK, alignX: 'left', dx: 40 },
+      },
+      { type: 'circle', anchor: { graphNode: 'missing' } },
+    ],
+    ANNOTATION_OVERLAY_ID,
+    false,
+  )
+  expect(document.getElementById(ANNOTATION_OVERLAY_ID)).toBeNull()
+  expect(targets[0]).toMatchObject({ x: 40, y: 200 })
+  expect(targets[1]).toBeUndefined()
+})

@@ -168,15 +168,3 @@ export async function rowRect(
     ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
     : box
 }
-
-// A click or hover on the row: the middle of its strip at `loc`, or the
-// `fracY` line through it, plus the anchor's nudge.
-export async function rowPoint(page: Page, anchor: AnnotationAnchor) {
-  const rect = await rowRect(page, anchor, true)
-  return rect
-    ? {
-        x: rect.left + rect.width / 2 + (anchor.dx ?? 0),
-        y: rect.top + rect.height / 2 + (anchor.dy ?? 0),
-      }
-    : undefined
-}
