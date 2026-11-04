@@ -147,12 +147,18 @@ describe('readColorCategory', () => {
     }
   })
 
-  test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {
-    // Short insert overrides abnormal orientation (stays pink)
+  test('insertSizeAndOrientation: abnormal orientation wins, else insert', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ pairOrientation: 2, insertSize: 50 }, stats),
+        makeData({ pairOrientation: 3, insertSize: 50 }, stats),
+        'insertSizeAndOrientation',
+      ),
+    ).toBe('pairRR')
+    expect(
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: 1, insertSize: 50 }, stats),
         'insertSizeAndOrientation',
       ),
     ).toBe('shortInsert')

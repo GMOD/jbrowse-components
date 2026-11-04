@@ -50,6 +50,6 @@ digraph read_color {
   insert    [label="long, short, or normal insert"]
   firstpair [label="the first mate's strand"]
   orient    [label="one fill per orientation class,\nor none"]
-  both      [label="short insert wins, then\norientation, then insert size"]
+  both      [label="abnormal orientation wins,\nthen insert size"]
   value     [label="the value's color, or\nno value"]
 }

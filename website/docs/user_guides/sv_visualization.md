@@ -151,10 +151,10 @@ abnormal orientation takes its orientation's color instead.
 
 <!-- END GENERATED COLOR_TABLE alignments-insert-size -->
 
-**Color by → Insert size and orientation** combines both. A short insert paints
-pink whatever its orientation, an abnormal orientation wins over a normal
-insert, and a large insert with normal orientation paints red, the classic
-deletion. It combines both signals, so it is the usual first setting to try.
+**Color by → Insert size and orientation** combines both. A pair of abnormal
+orientation takes its orientation's color whatever its insert, and a pair of
+normal orientation takes its insert's: red for the classic deletion, pink for an
+insertion. It combines both signals, so it is the usual first setting to try.
 
 ### Read arcs
 
