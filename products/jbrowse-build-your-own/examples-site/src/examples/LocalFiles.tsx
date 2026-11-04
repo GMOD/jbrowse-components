@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
+import { getSession } from '@jbrowse/core/util'
 import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -15,15 +16,15 @@ const notice: React.CSSProperties = {
 }
 
 async function fetchDemoBam() {
-  const base =
-    'https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam'
+  const dir = 'https://jbrowse.org/demos/cgiab'
+  const name = 'HG008-T_chr10_CUZD1_deletion.bam'
   return Promise.all(
-    [base, `${base}.bai`].map(async url => {
-      const response = await fetch(url)
+    [name, `${name}.bai`].map(async file => {
+      const response = await fetch(`${dir}/${file}`)
       if (!response.ok) {
-        throw new Error(`could not fetch ${url}: ${response.status}`)
+        throw new Error(`could not fetch ${file}: ${response.status}`)
       }
-      return new File([await response.arrayBuffer()], url.split('/').pop()!)
+      return new File([await response.arrayBuffer()], file)
     }),
   )
 }
@@ -40,12 +41,13 @@ const FilePicker = observer(function FilePicker({
 }: {
   view: LinearGenomeViewModel
 }) {
-  const [error, setError] = useState<unknown>()
   const [busy, setBusy] = useState(false)
-  const open = (files: File[]) => {
-    setError(undefined)
-    view.showFiles(files).catch(setError)
-  }
+  const open = (files: File[] | Promise<File[]>) =>
+    Promise.resolve(files)
+      .then(f => view.showFiles(f))
+      .catch((e: unknown) => {
+        getSession(view).notifyError(`${e}`, e)
+      })
   const mismatches = view.tracks.flatMap(t =>
     t.refNameMismatch
       ? [{ id: t.id, message: refNameMismatchMessage(t.refNameMismatch) }]
@@ -59,7 +61,7 @@ const FilePicker = observer(function FilePicker({
           multiple
           aria-label="Open files"
           onChange={event => {
-            open([...(event.target.files ?? [])])
+            void open([...(event.target.files ?? [])])
           }}
         />
         <button
@@ -67,30 +69,22 @@ const FilePicker = observer(function FilePicker({
           disabled={busy}
           onClick={() => {
             setBusy(true)
-            fetchDemoBam()
-              .then(open)
-              .catch(setError)
-              .finally(() => {
-                setBusy(false)
-              })
+            void open(fetchDemoBam()).finally(() => {
+              setBusy(false)
+            })
           }}
         >
-          {busy ? 'Fetching…' : 'Open a BAM for me'}
+          {busy ? 'Opening…' : 'Open a BAM for me'}
         </button>
         <button
           type="button"
           onClick={() => {
-            open([otherGenomeBed()])
+            void open([otherGenomeBed()])
           }}
         >
           Open a file from another genome
         </button>
       </div>
-      {error ? (
-        <div role="alert" style={notice}>
-          {error instanceof Error ? error.message : String(error)}
-        </div>
-      ) : null}
       {mismatches.map(({ id, message }) => (
         <div key={id} style={notice}>
           {message}

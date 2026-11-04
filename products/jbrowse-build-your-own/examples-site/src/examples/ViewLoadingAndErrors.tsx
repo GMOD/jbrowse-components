@@ -9,8 +9,6 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
-
 const brca1 = 'chr17:43,044,295..43,125,364'
 
 const scenarios = {
@@ -53,38 +51,6 @@ const scenarios = {
 
 type Scenario = keyof typeof scenarios
 
-const LatestMessage = observer(function LatestMessage({
-  session,
-}: {
-  session: ViewModel['session']
-}) {
-  const latest = session.snackbarMessages.at(-1)
-  return latest ? (
-    <div
-      role={latest.level === 'error' ? 'alert' : 'status'}
-      style={{
-        display: 'flex',
-        gap: 8,
-        marginTop: 8,
-        padding: '4px 8px',
-        fontSize: '0.8rem',
-        background: 'color-mix(in srgb, CanvasText 8%, Canvas)',
-      }}
-    >
-      <span style={{ flex: 1 }}>{latest.message}</span>
-      <button
-        type="button"
-        aria-label="Dismiss"
-        onClick={() => {
-          session.popSnackbarMessage()
-        }}
-      >
-        ✕
-      </button>
-    </div>
-  ) : null
-})
-
 const Browser = observer(function Browser({
   scenario,
 }: {
@@ -113,7 +79,7 @@ const Browser = observer(function Browser({
   const { session } = state
   const { view } = session
   return (
-    <EmbedProvider session={session} notifications={false}>
+    <EmbedProvider session={session}>
       <button
         type="button"
         style={{ marginBottom: 8 }}
@@ -138,7 +104,6 @@ const Browser = observer(function Browser({
       ) : (
         <TrackStack view={view} />
       )}
-      <LatestMessage session={session} />
     </EmbedProvider>
   )
 })
