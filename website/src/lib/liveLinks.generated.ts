@@ -1014,7 +1014,7 @@ export const figureFrames: Record<
   },
   "multiway_synteny/ecoli_import_form": {
     "width": 1500,
-    "height": 356
+    "height": 290
   },
   "mcscan_anchors": {
     "width": 1500,
@@ -3050,7 +3050,7 @@ export const figureCallouts: Record<string, object[]> = {
   "orthofinder_synteny/wheat_4a": [{"type":"text","text":"4AL/5AL","fontSize":20,"anchor":{"selector":"[data-testid=\"refLabel-5\"]","alignX":"left"},"dy":54},{"type":"text","text":"4AL/7BS","fontSize":20,"anchor":{"selector":"[data-testid=\"refLabel-7\"]","alignX":"right"},"dx":-30,"dy":150}],
   "multiway_synteny/ecoli_stx_island": [{"type":"text","text":"stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12","x":1470,"y":335,"textAlign":"end","maxWidth":380},{"type":"arrow","from":{"x":1085,"y":365},"anchor":{"view":[0,1],"trackId":"Sakai_genes","feature":"stx2B","alignX":"right","alignY":"top","dx":22,"dy":-22}},{"type":"box","anchor":{"view":[0,1],"trackId":"Sakai_genes","feature":"stx2B"},"pad":18}],
   "multiway_synteny/ecoli_one_vs_all": [{"type":"text","fontSize":18,"maxWidth":560,"anchor":{"trackId":"ecoli_ava","loc":"chr:1,444,500","alignY":"bottom","dy":-40},"text":"paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three"},{"type":"circle","anchor":{"view":1,"graphNode":"s502"},"radius":40}],
-  "multiway_synteny/ecoli_import_form": [{"type":"text","text":"Quick start launches straight from a synteny track","x":780,"y":95,"maxWidth":320},{"type":"arrow","from":{"x":770,"y":110},"anchor":{"text":"Quick start"}},{"type":"box","anchor":{"selector":"[data-testid=\"quick-start-rows\"]"}},{"type":"text","text":"Every assembly in the track becomes a row","x":780,"y":205,"maxWidth":340},{"type":"arrow","from":{"x":770,"y":220},"anchor":{"selector":"[data-testid=\"quick-start-rows\"]"}}],
+  "multiway_synteny/ecoli_import_form": [{"type":"text","text":"Quick start launches straight from a synteny track","anchor":{"text":"Quick start","alignX":"right"},"leader":true,"dx":390,"maxWidth":320},{"type":"box","anchor":{"selector":"[data-testid=\"quick-start-rows\"]"}},{"type":"text","text":"Every assembly in the track becomes a row","anchor":{"selector":"[data-testid=\"quick-start-rows\"]","alignX":"right"},"leader":true,"dx":130,"maxWidth":340}],
   "mcscan_synteny/anchors": [{"type":"text","x":24,"y":56,"fontSize":22,"maxWidth":700,"text":".anchors open; one ribbon per gene pair"}],
   "mcscan_synteny/anchors_simple": [{"type":"text","x":24,"y":56,"fontSize":22,"maxWidth":700,"text":".anchors and .anchors.simple open; one ribbon per gene\nrendered on top of chained synteny blocks"}],
   "genomes_synteny/ribbons_default": [{"type":"text","x":24,"y":56,"fontSize":22,"text":"Straight ribbons, colored indels"},{"type":"box","anchor":{"text":"CIGAR indels"}},{"type":"box","anchor":{"text":"Curved lines"}}],

@@ -2644,6 +2644,7 @@
       "names": [
         "addRelativeUris",
         "stripBaseUris",
+        "withAbsoluteLocations",
         "withPageBaseUri"
       ],
       "worker": "real"
