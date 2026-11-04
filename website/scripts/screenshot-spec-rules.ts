@@ -241,7 +241,7 @@ export function shadowedSessionTracks(
 //   written as `hLoc`/`vLoc` loci.
 //
 // Anything else is a callout that names a thing without saying which one.
-export const CALLOUT_BASELINE = 22
+export const CALLOUT_BASELINE = 18
 
 export function countRawCallouts(list: ScreenshotSpec[]) {
   const found: string[] = []
