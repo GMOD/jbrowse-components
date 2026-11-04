@@ -26,6 +26,7 @@ import type {
   PileupLayoutArrays,
   RowCap,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { ConnectingLinesUploadData } from '../features/connectingLines/types.ts'
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type {
   ColorFieldKind,
@@ -281,36 +282,61 @@ function curvesByChain({ overlayPairs }: GroupConnectors) {
   return byRegion
 }
 
-// The straight-line pass's records spread onto the regions holding a line,
-// and each chain hairline cut wherever a connector curve joins that chain.
-// After the color bake, so a recolor leaves the line arrays the GPU holds
-// alone and a curved-connector toggle leaves the colors.
+export type HairlinesByGroup = Map<
+  string,
+  Map<number, ConnectingLinesUploadData>
+>
+
+// Each chain hairline cut wherever a connector curve joins that chain, from
+// the layout rather than the colored data, so a recolor reuses it.
+export function chainHairlinesByGroup(
+  byGroup: LaidOutByGroup,
+  connectors: ReadonlyMap<string, GroupConnectors>,
+) {
+  const out: HairlinesByGroup = new Map()
+  for (const [key, group] of connectors) {
+    const map = byGroup.get(key)
+    const curves = curvesByChain(group)
+    if (map && curves.size) {
+      const byRegion = new Map<number, ConnectingLinesUploadData>()
+      for (const [idx, regionCurves] of curves) {
+        const data = map.get(idx)
+        const hairlines = data
+          ? chainConnectingLinesAround(data, regionCurves)
+          : undefined
+        if (hairlines) {
+          byRegion.set(idx, hairlines)
+        }
+      }
+      out.set(key, byRegion)
+    }
+  }
+  return out
+}
+
+// The straight-line pass's records and the cut chain hairlines spread onto
+// their regions. After the color bake, so a recolor leaves the line arrays the
+// GPU holds alone and a curved-connector toggle leaves the colors.
 export function attachLinkedReadLinesByGroup(
   byGroup: ColoredByGroup,
   connectors: ReadonlyMap<string, GroupConnectors>,
+  hairlinesByGroup: HairlinesByGroup,
 ): ColoredByGroup {
   if (connectors.size === 0) {
     return byGroup
   }
   const out: ColoredByGroup = new Map()
   for (const [key, map] of byGroup) {
-    const group = connectors.get(key)
-    const lines = group?.lines
-    const curves = group ? curvesByChain(group) : undefined
+    const lines = connectors.get(key)?.lines
+    const hairlines = hairlinesByGroup.get(key)
     out.set(
       key,
-      lines?.size || curves?.size
+      lines?.size || hairlines?.size
         ? new Map(
             [...map].map(([idx, data]) => {
               const own = lines?.get(idx)
-              const regionCurves = curves?.get(idx)
-              const hairlines = regionCurves
-                ? chainConnectingLinesAround(data, regionCurves)
-                : undefined
-              return [
-                idx,
-                own || hairlines ? { ...data, ...own, ...hairlines } : data,
-              ]
+              const cut = hairlines?.get(idx)
+              return [idx, own || cut ? { ...data, ...own, ...cut } : data]
             }),
           )
         : map,

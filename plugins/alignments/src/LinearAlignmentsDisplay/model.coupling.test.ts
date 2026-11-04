@@ -851,6 +851,19 @@ describe('curved connectors', () => {
     expect(hairlines()).toEqual([100, 500, 1000, 1500])
   })
 
+  test('a recolor keeps the cut chain hairlines the GPU holds', () => {
+    const display = connectorDisplay()
+    display.setUnit('chain')
+    const dispose = autorun(() => display.laidOutByGroup)
+    const positions = () =>
+      display.laidOutByGroup.get('')!.get(0)!.connectingLinePositions
+    const before = positions()
+
+    display.colorByField('strand')
+    expect(positions()).toBe(before)
+    dispose()
+  })
+
   test('a lane collapsed to its coverage draws no straight lines and keys none', () => {
     const display = connectorDisplay()
     display.setShowLegend(true)

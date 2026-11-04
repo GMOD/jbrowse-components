@@ -154,6 +154,7 @@ import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
   attachLinkedReadLinesByGroup,
+  chainHairlinesByGroup,
   fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
@@ -1374,6 +1375,19 @@ export default function stateModelFactory(
           get laidOutByGroup() {
             return attachLinkedReadLinesByGroup(
               this.laidOutByGroupColored,
+              this.connectorsByGroup,
+              this.chainHairlinesByGroup,
+            )
+          },
+
+          /**
+           * #getter
+           * Chain hairlines cut under connector curves, from the layout tier,
+           * so a recolor reuses them and the GPU keeps their upload.
+           */
+          get chainHairlinesByGroup() {
+            return chainHairlinesByGroup(
+              this.laidOutByGroupFramed,
               this.connectorsByGroup,
             )
           },
