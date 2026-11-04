@@ -28,6 +28,7 @@ import type {
   RegionBounds,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
+  ChainFields,
   ChainPileupData,
   ChainedPileupData,
   LaidOutPileupData,
@@ -461,32 +462,79 @@ export function buildChainConnectingData(
   } = data
   const numChains = chainFirstReadIndices.length
   const multiReadChains = groupMultiReadChains(readChainIndices, numChains)
-  const numLines = multiReadChains.size
-
-  const connectingLinePositions = new Uint32Array(numLines * 2)
-  const connectingLineYs = new Uint16Array(numLines)
   const chainFlatbush = numChains > 0 ? new Flatbush(numChains) : undefined
-  let lineIdx = 0
   for (let i = 0; i < numChains; i++) {
     const minStart = chainAbsMinStarts[i]!
     const maxEnd = chainAbsMaxEnds[i]!
     const y = readYs[chainFirstReadIndices[i]!]!
-    if (multiReadChains.has(i)) {
-      connectingLinePositions[lineIdx * 2] = minStart
-      connectingLinePositions[lineIdx * 2 + 1] = maxEnd
-      connectingLineYs[lineIdx] = y
-      lineIdx++
-    }
     chainFlatbush?.add(minStart, y, maxEnd, y)
   }
   chainFlatbush?.finish()
 
   return {
-    connectingLinePositions,
-    connectingLineYs,
+    ...connectingLines(data, readYs, multiReadChains, NO_CHAINS),
     ...buildChainOverlaps(data, readYs, multiReadChains),
     chainFlatbush,
   }
+}
+
+const NO_CHAINS: ReadonlySet<number> = new Set()
+
+function connectingLines(
+  {
+    chainFirstReadIndices,
+    chainAbsMinStarts,
+    chainAbsMaxEnds,
+  }: Pick<
+    ChainFields,
+    'chainFirstReadIndices' | 'chainAbsMinStarts' | 'chainAbsMaxEnds'
+  >,
+  readYs: Uint16Array,
+  multiReadChains: ReadonlyMap<number, unknown>,
+  skip: ReadonlySet<number>,
+) {
+  const numChains = chainFirstReadIndices.length
+  const drawn = (i: number) => multiReadChains.has(i) && !skip.has(i)
+  let numLines = 0
+  for (let i = 0; i < numChains; i++) {
+    if (drawn(i)) {
+      numLines++
+    }
+  }
+  const connectingLinePositions = new Uint32Array(numLines * 2)
+  const connectingLineYs = new Uint16Array(numLines)
+  let lineIdx = 0
+  for (let i = 0; i < numChains; i++) {
+    if (drawn(i)) {
+      connectingLinePositions[lineIdx * 2] = chainAbsMinStarts[i]!
+      connectingLinePositions[lineIdx * 2 + 1] = chainAbsMaxEnds[i]!
+      connectingLineYs[lineIdx] = readYs[chainFirstReadIndices[i]!]!
+      lineIdx++
+    }
+  }
+  return { connectingLinePositions, connectingLineYs }
+}
+
+/**
+ * A laid-out chain region's connecting lines without the chains in `skip`,
+ * the ones a read connector already joins: the connector is that chain's line,
+ * and a hairline under a dipping curve reads as a second connection.
+ */
+export function chainConnectingLinesWithout(
+  data: LaidOutPileupData,
+  skip: ReadonlySet<number>,
+) {
+  return isChainData(data)
+    ? connectingLines(
+        data,
+        data.readYs,
+        groupMultiReadChains(
+          data.readChainIndices,
+          data.chainFirstReadIndices.length,
+        ),
+        skip,
+      )
+    : undefined
 }
 
 // Pileup clone + chain connecting-line / Flatbush data layered on top.

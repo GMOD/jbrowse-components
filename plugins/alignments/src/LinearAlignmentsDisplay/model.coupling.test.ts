@@ -839,6 +839,18 @@ describe('curved connectors', () => {
     dispose()
   })
 
+  test('chain layout drops the hairline of a chain a connector curve joins', () => {
+    const display = connectorDisplay()
+    display.setUnit('chain')
+    const hairlines = () => [
+      ...display.laidOutByGroup.get('')!.get(0)!.connectingLinePositions,
+    ]
+    expect(hairlines()).toEqual([100, 500])
+
+    display.setShowConnectors(false)
+    expect(hairlines()).toEqual([100, 500, 1000, 1500])
+  })
+
   test('a lane collapsed to its coverage draws no straight lines and keys none', () => {
     const display = connectorDisplay()
     display.setShowLegend(true)

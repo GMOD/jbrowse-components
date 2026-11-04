@@ -3,12 +3,17 @@ import {
   pileupLayoutMaxY,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { getOrCreate } from '../shared/util.ts'
 import { consensusChainStrandFrames } from './chainStrandConsensus.ts'
 import {
   buildCollapsedPileupMap,
   collapsedLayoutMaxY,
 } from './collapsedLayout.ts'
-import { buildLaidOutChainMap, chainLayoutMaxY } from './computeChainLayout.ts'
+import {
+  buildLaidOutChainMap,
+  chainConnectingLinesWithout,
+  chainLayoutMaxY,
+} from './computeChainLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 import { overlayReadColorCategories } from './readColorCategories.ts'
 import { overlayReadFillColors } from './readFillColors.ts'
@@ -255,7 +260,23 @@ export function applyChainStrandFrames(
   return out
 }
 
-// The straight-line pass's records spread onto the regions holding a line.
+// The chains, by region, that a connector-mark curve joins within that region.
+function chainsJoinedByMark({ overlayPairs }: GroupConnectors) {
+  const byRegion = new Map<number, Set<number>>()
+  for (const { e1, e2 } of overlayPairs) {
+    const chain = e1.data.readChainIndices?.[e1.readIdx]
+    if (
+      chain !== undefined &&
+      e1.displayedRegionIndex === e2.displayedRegionIndex
+    ) {
+      getOrCreate(byRegion, e1.displayedRegionIndex, () => new Set()).add(chain)
+    }
+  }
+  return byRegion
+}
+
+// The straight-line pass's records spread onto the regions holding a line,
+// and the chain hairline dropped wherever a connector curve joins that chain.
 // After the color bake, so a recolor leaves the line arrays the GPU holds
 // alone and a curved-connector toggle leaves the colors.
 export function attachLinkedReadLinesByGroup(
@@ -267,14 +288,23 @@ export function attachLinkedReadLinesByGroup(
   }
   const out: ColoredByGroup = new Map()
   for (const [key, map] of byGroup) {
-    const lines = connectors.get(key)?.lines
+    const group = connectors.get(key)
+    const lines = group?.lines
+    const joined = group ? chainsJoinedByMark(group) : undefined
     out.set(
       key,
-      lines?.size
+      lines?.size || joined?.size
         ? new Map(
             [...map].map(([idx, data]) => {
-              const own = lines.get(idx)
-              return [idx, own ? { ...data, ...own } : data]
+              const own = lines?.get(idx)
+              const skip = joined?.get(idx)
+              const hairlines = skip
+                ? chainConnectingLinesWithout(data, skip)
+                : undefined
+              return [
+                idx,
+                own || hairlines ? { ...data, ...own, ...hairlines } : data,
+              ]
             }),
           )
         : map,
