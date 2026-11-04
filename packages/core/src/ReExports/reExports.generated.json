@@ -764,7 +764,8 @@
       "names": [
         "buildRefNameMaps",
         "checkRefName",
-        "groupNamesByCanonicalRefName"
+        "groupNamesByCanonicalRefName",
+        "isChromosome"
       ],
       "worker": "real"
     },
@@ -927,7 +928,6 @@
         "keyedWritesAt",
         "liftPlot",
         "liftRetiredSpellings",
-        "listMergedBy",
         "makeSlotFacade",
         "mergeConfSettings",
         "mergeFormatCallbacks",
@@ -2969,7 +2969,8 @@
       "package": "@jbrowse/core",
       "names": [
         "convertCodingSequenceToPeptides",
-        "translExceptProteinPositions"
+        "translExceptProteinPositions",
+        "translateStitchedCDS"
       ],
       "worker": "real"
     },
