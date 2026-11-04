@@ -20,12 +20,14 @@ import {
   portalHaplotypeLanes,
   portalLaunch,
 } from './genomes_pangenome.ts'
-import { GRAPH_VIEW_DRAWN, referencePositionColor } from './graph-fixtures.ts'
+import {
+  GRAPH_VIEW_DRAWN,
+  PAA_ISLAND_HIGHLIGHT,
+  PAA_RAMP_DOMAIN,
+  referencePositionColor,
+} from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
-
-// The paa island's graph slice and the segments lane over it share one ramp.
-const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 
 // Down the tree from human, so breaks and flips grow top to bottom.
 const HG38_VERTEBRATES_TREE_ORDER = [
@@ -2156,16 +2158,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: 'chr:1,440,000-1,473,000',
-          // Any heavier alpha tints the bars, and darker salmon already means
-          // overlap depth.
-          highlight: [
-            {
-              refName: 'chr',
-              start: 1446100,
-              end: 1467921,
-              color: 'rgba(214,137,16,0.13)',
-            },
-          ],
+          highlight: [PAA_ISLAND_HIGHLIGHT],
           tracks: [
             {
               trackId: 'K12_genes',
@@ -2177,7 +2170,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_minigraph_segments',
               type: 'LinearBasicDisplay',
               encoding: {
-                color: { value: referencePositionColor(PAA_COLOR_DOMAIN) },
+                color: { value: referencePositionColor(PAA_RAMP_DOMAIN) },
               },
               height: 70,
             },
@@ -2200,8 +2193,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           layoutMode: 'force',
           color: {
             field: 'position',
-            domainMin: PAA_COLOR_DOMAIN.start,
-            domainMax: PAA_COLOR_DOMAIN.end,
+            domainMin: PAA_RAMP_DOMAIN.start,
+            domainMax: PAA_RAMP_DOMAIN.end,
           },
         },
       ],

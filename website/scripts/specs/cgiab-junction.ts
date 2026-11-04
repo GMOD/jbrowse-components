@@ -120,17 +120,28 @@ export const junctionReads = (
       },
     ],
   }),
-  // an arrow aimed at the call's label would land on the breakend bar
   annotations: [
     callout(
       'chr3 breakend',
-      { text: 'SV_20', alignX: 'left', dx: -30 },
+      {
+        view: [0, 0],
+        trackId: CALLS,
+        feature: 'SV_20',
+        alignX: 'left',
+        dx: -30,
+      },
       -150,
       0,
     ),
     callout(
       'chr13 breakend',
-      { text: 'SV_190', alignX: 'left', dx: -30 },
+      {
+        view: [0, 1],
+        trackId: CALLS,
+        feature: 'SV_190',
+        alignX: 'left',
+        dx: -30,
+      },
       -150,
       0,
     ),

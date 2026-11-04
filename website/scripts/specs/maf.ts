@@ -110,14 +110,12 @@ const CE11_GENE_TRACK = {
   },
 }
 
-// The first sixteen samples in callset order, both haplotypes each, plus
+// The first fifteen samples in callset order, both haplotypes each, plus
 // the reference. parseAssemblyAndRefName keeps the numeric second field of
 // `HG00235.2.CM094400.1` with the genome, so a row is
 // `<sample>.<haplotype>`.
 const HPRC_MAF_ROWS = [
   'GRCh38',
-  'CHM13.1',
-  'CHM13.2',
   'HG00097.1',
   'HG00097.2',
   'HG00099.1',
@@ -478,8 +476,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'hprc_v2_1_mc_grch38',
               // A row label needs 6 px (SvgRowLabels' MIN_TEXT_ROW_HEIGHT), so
               // the figure draws a named subset. The focus drops every row it
-              // does not name, the reference included. No CHM13 row exists
-              // under that name in this file.
+              // does not name, the reference included.
               // Most distances here are zero, so a phylogram collapses the
               // branches against the rows.
               rows: { kept: HPRC_MAF_ROWS, axis: { branchLength: false } },

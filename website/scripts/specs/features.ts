@@ -314,14 +314,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 590,
     tooltip: 'hide',
-    actions: [
-      // readyText matches the track name, which renders before the GFF loads
-      { type: 'waitForText', text: 'PTEN' },
-    ],
+    actions: [{ type: 'waitForAppSettled' }],
     stages: [
       {
         actions: [
-          { type: 'rightclick', text: 'PTEN' },
+          {
+            type: 'rightclick',
+            anchor: { trackId: 'ncbi_refseq_109_hg38_latest', feature: 'PTEN' },
+          },
           { type: 'waitForText', text: 'Collapse introns' },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],

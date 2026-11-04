@@ -258,7 +258,7 @@ const benchmarkCnvLane = (trackId = 'hg008t_somatic_cnv') => ({
 
 // The file user_guides/sv_inspector_view.md tells the reader to paste.
 const SKBR3_SNIFFLES_VCF =
-  'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz'
+  'https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf'
 
 export const svVideoFixtures = {
   emptySession: sessionSpec(DEMO_CONFIG, { views: [] }),
@@ -1768,8 +1768,7 @@ export const svSpecs: ScreenshotSpec[] = [
       {
         type: 'type',
         selector: '[data-testid="urlInput"]',
-        value:
-          'https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf',
+        value: SKBR3_SNIFFLES_VCF,
       },
       { type: 'delay', ms: 1500 },
     ],

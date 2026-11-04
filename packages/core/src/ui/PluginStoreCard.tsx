@@ -95,6 +95,7 @@ const PluginStoreCard = observer(function PluginStoreCard({
       <CardActions>
         <Button
           variant="contained"
+          data-testid={`installPlugin-${plugin.name}`}
           disabled={installed || disabled || !installable}
           startIcon={installed ? <CheckIcon /> : <AddIcon />}
           onClick={() => {

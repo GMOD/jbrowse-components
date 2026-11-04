@@ -273,7 +273,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         maxWidth: 260,
         leader: true,
-        anchor: { selector: '[data-testid="feature-name-r_12_1"]' },
+        anchor: { trackId: SV, feature: 'r_12_1' },
         dx: -30,
         dy: 95,
       },
@@ -616,12 +616,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     stages: [
       {
-        // A viewport coordinate landed on the overview ruler, which navigates.
         actions: [
-          {
-            type: 'rightclick',
-            selector: '[data-testid="feature-name-r_12_1"]',
-          },
+          { type: 'rightclick', anchor: { trackId: SV, feature: 'r_12_1' } },
           { type: 'waitForText', text: SPLIT_VIEW_MENU_LABEL },
         ],
         annotations: [

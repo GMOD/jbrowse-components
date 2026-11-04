@@ -59,6 +59,7 @@ function toolbarCallout(opts: {
 // `.MuiDataGrid-cell` excludes the column header, which has the same
 // `data-field`.
 const LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
+const INSTALL_MSAVIEW = '[data-testid="installPlugin-MsaView"]'
 
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
 
@@ -1453,11 +1454,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Plugin store' },
       { type: 'waitForText', text: 'Available plugins' },
       { type: 'type', text: 'Filter plugins', value: 'MsaView' },
-      { type: 'waitForText', text: 'Install' },
-      { type: 'delay', ms: 800 },
+      { type: 'waitForSelector', selector: INSTALL_MSAVIEW },
     ],
     clicksOpen: 'the plugin store, filtered to MsaView',
-    annotations: [{ type: 'box', anchor: { text: 'Install' } }],
+    annotations: [{ type: 'box', anchor: { selector: INSTALL_MSAVIEW } }],
   },
   {
     mode: 'url',
@@ -1472,10 +1472,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Plugin store' },
       { type: 'waitForText', text: 'Available plugins' },
       { type: 'type', text: 'Filter plugins', value: 'MsaView' },
-      {
-        type: 'click',
-        selector: "::-p-xpath(//button[normalize-space(.)='Install'])",
-      },
+      { type: 'click', selector: INSTALL_MSAVIEW },
       {
         type: 'waitForSelector',
         selector: '[data-testid="keepPlugin-MsaView"]',

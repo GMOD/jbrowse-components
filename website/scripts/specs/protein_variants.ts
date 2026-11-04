@@ -383,13 +383,45 @@ export function hoverCodon(loc: string) {
 }
 
 // `grow` adds px to the domain track so every site's row shows.
+const domainTrackTestid = (gene: string) =>
+  `trackRenderingContainer-lgv-${gene}-msaview-domains-msa-${gene}`
+
+const domainTrackReady = (gene: string) =>
+  `:has([data-testid="${domainTrackTestid(gene)}"])`
+
+// A hotspot with a second structure beside the first: both are gated, since a
+// Reset Zoom on a structure still loading leaves its camera unfitted.
+const pairedStructures = (viewId: string, extraReady = '') => {
+  const container = (id: string) => `[data-testid="view-container-${id}"]`
+  const resetZoom = (id: string) => ({
+    type: 'click' as const,
+    selector: `${container(id)} button[title="Reset Zoom"]`,
+  })
+  const ready = (id: string) =>
+    `:has(${container(id)} [data-testid="protein-view-ready"])`
+  const pairId = `${viewId}-pair`
+  return {
+    ...READY,
+    readySelector: `${READY.readySelector}${ready(viewId)}${ready(pairId)}${extraReady}`,
+    viewportWidth: 2600,
+    viewportHeight: 1150,
+    actions: [
+      { type: 'waitForAppSettled' as const },
+      resetZoom(viewId),
+      resetZoom(pairId),
+      PARK_CURSOR,
+      { type: 'delay' as const, ms: 1500 },
+    ],
+  }
+}
+
 export function domainFigure(
   gene: string,
   codon: string,
   grow = 0,
   keepLegend = false,
 ) {
-  const testid = `trackRenderingContainer-lgv-${gene}-msaview-domains-msa-${gene}`
+  const testid = domainTrackTestid(gene)
   const handle = {
     selector: `[data-testid="${testid}"]`,
     alignY: 'bottom' as const,
@@ -402,7 +434,7 @@ export function domainFigure(
   }
   return {
     ...READY,
-    readySelector: `${READY.readySelector}:has([data-testid="${testid}"])`,
+    readySelector: `${READY.readySelector}${domainTrackReady(gene)}`,
     viewportWidth: 2300,
     ...(keepLegend
       ? {}
@@ -465,8 +497,6 @@ const KRAS_G12_WINDOW = 'chr12:25245320-25245380[rev]'
 const KRAS_DOMAIN_WINDOWS =
   'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
 const KRAS_G12 = 'chr12:25,245,350'
-
-const TP53_R248 = 'chr17:7,674,220'
 
 const BRAF: HotspotGene = {
   session: readSession('protein_browser_braf.session.json'),
@@ -880,24 +910,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         pairColor: { field: 'plddt' },
       },
     ),
-    ...READY,
-    viewportWidth: 2600,
-    viewportHeight: 1150,
-    actions: [
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-APOE-1b68"] button[title="Reset Zoom"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-APOE-1b68-pair"] button[title="Reset Zoom"]',
-      },
-      PARK_CURSOR,
-      { type: 'delay', ms: 1500 },
-    ],
+    ...pairedStructures('protein-APOE-1b68'),
   },
   {
     mode: 'url',
@@ -914,24 +927,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         pairStructure: { pdbId: '9mov' },
       },
     ),
-    ...READY,
-    viewportWidth: 2600,
-    viewportHeight: 1150,
-    actions: [
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-F5-9mot"] button[title="Reset Zoom"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-F5-9mot-pair"] button[title="Reset Zoom"]',
-      },
-      PARK_CURSOR,
-      { type: 'delay', ms: 1500 },
-    ],
+    ...pairedStructures('protein-F5-9mot'),
     annotations: [
       {
         ...residueCallout('APC cuts here', 'A:506', 120, 200),
@@ -956,23 +952,6 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         pairStructure: { pdbId: '7b49' },
       },
     ),
-    ...domainFigure('TP53', TP53_R248, 0, true),
-    viewportWidth: 2600,
-    viewportHeight: 1150,
-    actions: [
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-TP53-5mg7"] button[title="Reset Zoom"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-TP53-5mg7-pair"] button[title="Reset Zoom"]',
-      },
-      PARK_CURSOR,
-      { type: 'delay', ms: 1500 },
-    ],
+    ...pairedStructures('protein-TP53-5mg7', domainTrackReady('TP53')),
   },
 ]

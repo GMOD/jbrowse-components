@@ -26,6 +26,8 @@ export const HPYLORI_26695_SEQ_ADAPTER = {
   },
 }
 
+const WIGGLE_URLS_FIELD = 'textarea[placeholder$="/sample1.bw"]'
+
 const MICROARRAY_BW_ADAPTER = {
   type: 'BigWigAdapter',
   bigWigLocation: {
@@ -405,23 +407,15 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Add multi-row track' },
-          { type: 'waitForText', text: 'Add' },
+          { type: 'waitForSelector', selector: WIGGLE_URLS_FIELD },
         ],
         annotations: [
-          {
-            type: 'box',
-            anchor: {
-              selector: 'textarea[placeholder$="/sample1.bw"]',
-            },
-          },
+          { type: 'box', anchor: { selector: WIGGLE_URLS_FIELD } },
           {
             type: 'text',
             text: 'Paste wiggle file URLs here',
             leader: true,
-            anchor: {
-              selector: 'textarea[placeholder$="/sample1.bw"]',
-              alignX: 'left',
-            },
+            anchor: { selector: WIGGLE_URLS_FIELD, alignX: 'left' },
             dx: -60,
           },
         ],

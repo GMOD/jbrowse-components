@@ -16,6 +16,8 @@ import {
   graphTrackMenu,
   cutNear,
   local,
+  PAA_ISLAND_HIGHLIGHT,
+  PAA_RAMP_DOMAIN,
   referencePositionColor,
 } from './graph-fixtures.ts'
 import { pageFenceText } from './pageTrack.ts'
@@ -206,23 +208,10 @@ const SEGMENT_REGION = {
 }
 const SEGMENT_WINDOW = 'chr:4,053,156-4,067,028'
 
-// The paa island of multiway_synteny/ecoli_one_vs_all; only NCTC86's path
-// walks s502. A file-loaded graph has no `loadedRegion`, so its ramp needs this
-// span stated or it spans the whole file.
-const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
-
 const PAA_REGION = {
   refName: 'chr',
   assemblyName: 'K12',
   ...PAA_RAMP_DOMAIN,
-}
-
-// s502 from the segs index: 21,809 bp, the `21.8 kb` label on its node.
-const PAA_ISLAND_HIGHLIGHT = {
-  refName: 'chr',
-  start: 1446100,
-  end: 1467909,
-  color: 'rgba(214,137,16,0.13)',
 }
 
 // Each strain's whole island, from where Sakai's chain to K12 breaks
