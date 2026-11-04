@@ -1120,7 +1120,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'human',
-            loc: '2:176,090,000-176,290,000',
+            loc: '2:176,060,000-176,320,000',
             tracks: [
               {
                 trackId: 'vertebrates_orthogroups',
