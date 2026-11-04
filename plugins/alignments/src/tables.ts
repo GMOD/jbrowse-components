@@ -150,7 +150,10 @@ import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { iterLinkedPairs } from './features/linkedReads/compute.ts'
-import { connectorFilterOf } from './features/linkedReads/computeOverlay.ts'
+import {
+  connectorDipReservePx,
+  connectorFilterOf,
+} from './features/linkedReads/computeOverlay.ts'
 import {
   connectorArrowPx,
   connectorInstance,
@@ -1090,8 +1093,7 @@ function sectionConnectors(
   const refNameAt = (i: number) => regionInfos[i]?.refName
   return new Map(
     [...laidByGroup].map(([key, laid]) => {
-      const pileupHeight =
-        Math.max(0, ...[...laid.values()].map(d => d.maxY)) * readPitch
+      const pileupHeight = sectionMaxY(laid) * readPitch
       const byRegion = new Map<number, PlacedConnector[]>()
       for (const pair of iterLinkedPairs(laid, r => r, refNameAt)) {
         const placed = admits(pair)
@@ -1110,6 +1112,11 @@ function sectionConnectors(
       return [key, byRegion]
     }),
   )
+}
+
+// A section's rows across its regions, which share one set of rows
+function sectionMaxY(laid?: ReadonlyMap<number, LaidOutPileupData>) {
+  return Math.max(0, ...[...(laid?.values() ?? [])].map(d => d.maxY))
 }
 
 interface PlacedConnector {
@@ -1703,6 +1710,17 @@ export async function alignmentTables(
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
+      dipReserve: order.map(({ key }) =>
+        connectorDipReservePx({
+          pairs: [...(connectorsBySection?.get(key)?.values() ?? [])].flatMap(
+            list => list.map(({ pair }) => pair),
+          ),
+          displayedRegions: regionInfos,
+          featureHeight,
+          featureSpacing: featureSpacingForHeight(featureHeight),
+          pileupHeight: sectionMaxY(laidByGroup.get(key)) * readPitch,
+        }),
+      ),
     },
     // apart where the display's one legend box merges them: a host drawing
     // reads and arcs as separate layers keys each, so merging here was reverted

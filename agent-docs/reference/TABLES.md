@@ -157,6 +157,9 @@ a quiet region.
   the mark's own placement (render-core's `connectorPlacement`), returning
   each cubic's two control points in bp and rows and the arrowhead's arms, so
   a dip flattens as the figure zooms out, as the display's does.
+- `sections` has `dipReserve`, the px the display keeps under a section's
+  last row for its deepest dipping connector (`connectorDipReservePx`), 0
+  where nothing dips past the rows; a host adds it to the pileup's height.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where

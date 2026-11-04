@@ -1027,6 +1027,11 @@ test('a chainâ€™s connectors carry what places each curve, and place at a hostâ€
   expect([...c.strand, ...c.endStrand].every(s => Math.abs(s) === 1)).toBe(true)
   expect(c.dip.every(d => d >= 0)).toBe(true)
   expect(c.dip.some(d => d > 0)).toBe(true)
+  expect(t.sections.dipReserve).toHaveLength(1)
+  expect(t.sections.dipReserve[0]).toBeGreaterThan(0)
+  expect(
+    (await engine.alignments(PAIRED_INVERSION)).sections.dipReserve,
+  ).toEqual([0])
   expect(c.width.every(w => w > 0)).toBe(true)
   expect(c.opacity.every(o => o > 0 && o <= 1)).toBe(true)
   expect(c.color.every(color => t.arcLegend.color.includes(color))).toBe(true)
