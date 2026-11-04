@@ -59,7 +59,6 @@ export {
   READ_SV_INSERTION,
   discordantBit,
   readCategoryBits,
-  saIsPlaced,
   splitBit,
   svSignalTier,
   withSvTier,

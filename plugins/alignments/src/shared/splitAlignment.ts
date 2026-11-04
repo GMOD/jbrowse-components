@@ -5,6 +5,7 @@ import {
   pairOrientationToNum,
   readCategoryBits,
   splitBit,
+  svSignalTier,
   withSvTier,
 } from '@jbrowse/alignments-core'
 import {
@@ -17,6 +18,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { makesJunction } from './splitReadJunctions.ts'
 import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
@@ -83,7 +85,7 @@ export function categoryBitsOf(
   return withSvTier(
     mateMapq === 0 ? bits | READ_MATE_UNPLACED : bits,
     getMappingQuality(feature),
-    sa,
+    (bits & READ_SPLIT) !== 0 && makesJunction(feature, sa),
     mateMapq,
   )
 }
@@ -99,6 +101,11 @@ export function readCategoryBitsOf(feature: Feature) {
     saTagOf(feature),
     pairOrientationToNum(feature.get('pair_orientation') as string | undefined),
   )
+}
+
+/** Whether a record is SV evidence (ADR-229), as the filter and sort read it. */
+export function isSvEvidence(feature: Feature) {
+  return svSignalTier(readCategoryBitsOf(feature)) > 0
 }
 
 /**

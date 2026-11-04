@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category. A record is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read that fails `isConcordantPairRead`, and both ends are placed: the record above MAPQ 0, some other SA piece above 0 for a split read, the mate above 0 where an MQ tag says for a discordant one. The extract stores `READ_SV_INSERTION` and `READ_DISCORDANT` beside the split and SV-deletion bits, and `withSvTier` stores the tier the filter, the sort and the breakpoint split view read. The filter keeps a chain when any record is evidence, the sort lifts split reads, then SV-size indels, then discordant reads, and jb2export refuses `properPairs:`. Amends ADR-226's `svSignal` and supersedes its `properPairs` consequence"
+summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category. A record is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read that fails `isConcordantPairRead`, and both ends are placed: the record above MAPQ 0, two read-adjacent pieces placed and joined for a split read (amended 2026-11-04; it was any other SA piece above 0), the mate above 0 where an MQ tag says for a discordant one. The extract stores `READ_SV_INSERTION` and `READ_DISCORDANT` beside the split and SV-deletion bits, and `withSvTier` stores the tier the filter, the sort and the breakpoint split view read. The filter keeps a chain when any record is evidence, the sort lifts split reads, then SV-size indels, then discordant reads, and jb2export refuses `properPairs:`. Amends ADR-226's `svSignal` and supersedes its `properPairs` consequence"
 ---
 
 # ADR-229: SV evidence is one read category
@@ -10,6 +10,15 @@ summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category
 Accepted (2026-10-12), from Colin's decisions on the
 `sv-signal-filter-and-coverage` proposal, whose Idea 2 became
 [ADR-259](adr-259-category-filters-pick-drawn-reads-and-leave-coverage-whole.md).
+Amended 2026-11-04: a split read is evidence when two of its read-adjacent
+pieces are placed and join (`makesJunction`, `shared/splitReadJunctions.ts`),
+the junction its arcs draw and its SV channel files by (ADR-258), not when any
+other piece is placed. A read whose placed pieces sit on either side of an
+unplaced one, and a supplementary whose source dropped its SA tag, are no
+longer split evidence, so the filter, the sort, the split view and the
+`svChannel` band agree on every read. The test costs 1 to 4 µs a record
+carrying SA (volvox long-read fixtures, in jest, under load).
+
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort
 lifted split reads and SV-size deletions, and its consequence about
 `properPairs: 'exclude'` with `split: 'only'` no longer applies.

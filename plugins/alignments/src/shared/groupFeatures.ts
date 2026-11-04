@@ -40,8 +40,13 @@ import {
   SV_CHANNEL_LEVELS,
   levelOrder,
 } from './readFieldLevels.ts'
-import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
-import { SV_CHANNEL_PRECEDENCE, svChannelOf } from './svChannel.ts'
+import {
+  chainIsSplit,
+  isSplitAlignment,
+  isSvEvidence,
+} from './splitAlignment.ts'
+import { SV_CHANNEL_PRECEDENCE } from './splitReadJunctions.ts'
+import { svChannelOf } from './svChannel.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -233,9 +238,13 @@ const SV_CHANNEL_GROUPS = Object.fromEntries(
   ]),
 ) as Record<SvChannel, GroupKey>
 
-// A chain files where its most specific member files.
+// A chain with SV evidence, as the filter judges it, files where its most
+// specific record files; any other chain is `none`, so that band holds exactly
+// the reads Only SV evidence hides.
 function chainSvChannelKey(chain: Feature[]) {
-  const channels = new Set(chain.map(svChannelOf))
+  const channels = new Set(
+    chain.some(isSvEvidence) ? chain.map(svChannelOf) : ['none'],
+  )
   return SV_CHANNEL_GROUPS[SV_CHANNEL_PRECEDENCE.find(c => channels.has(c))!]
 }
 
@@ -325,8 +334,9 @@ function appendFeature(
 }
 
 // Partition the fetched reads into ordered sections. A read unit keys each read
-// by itself; a chain unit keys each chain as a whole, so no chain splits across
-// sections and breaks its connecting lines.
+// by itself; a chain unit, or a dimension keyed by whole chains, keys each
+// chain as a whole, so no chain splits across sections and breaks its
+// connecting lines.
 export function partitionFeatures(
   features: Feature[],
   facet: WorkerFacet | undefined,
@@ -337,7 +347,7 @@ export function partitionFeatures(
   }
   const keyer = groupKeyer(facet.field, jexl)
   const groups = new Map<string, FeatureGroup>()
-  if (facet.unit === 'chain') {
+  if (facet.unit === 'chain' || keyer.wholeChain) {
     const chains = new Map<string, Feature[]>()
     for (const feature of features) {
       getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
@@ -400,6 +410,9 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
   // fragment". Supplying one is also what makes a per-read dimension groupable in
   // chain mode (`isChainFacetable`).
   chainKey?: (chain: Feature[]) => GroupKey
+  // Whether a read unit keys each read by its whole chain too, as the filter
+  // judging the dimension's evidence does
+  wholeChain?: boolean
 }
 
 // The one registry of read dimensions. Keyed by ReadDimension, so a new member
@@ -456,6 +469,7 @@ export const FACET_DIMENSIONS: {
     fragmentLevel: false,
     key: feature => SV_CHANNEL_GROUPS[svChannelOf(feature)],
     chainKey: chainSvChannelKey,
+    wholeChain: true,
   },
   mapq: {
     field: 'mapq',
@@ -511,7 +525,7 @@ function valueKeyer(
 function groupKeyer(
   field: string,
   jexl?: JexlInstance,
-): Pick<FacetDimension, 'key' | 'chainKey'> {
+): Pick<FacetDimension, 'key' | 'chainKey' | 'wholeChain'> {
   return readDimension(field) ?? { key: valueKeyer(field, jexl) }
 }
 

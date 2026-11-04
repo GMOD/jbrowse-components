@@ -73,8 +73,13 @@ arrangement by its menu path.
   filter hides and is the depth every other band is read against. Filing every
   pair by its orientation, the first version, kept concordant pairs in the LR
   band, where "No SV evidence" read as if it held them.
-- **Chain mode** files a fragment where its highest-ranked record files; a
-  concordant mate files as `none`, last.
+- **A chain files where its highest-ranked record files**; a concordant
+  mate files as `none`, last. Amended 2026-11-04: in read mode too
+  (`wholeChain`), and only while the chain is SV evidence as the filter judges
+  it (any record with an `svSignalTier`); any other chain files as `none`. So
+  "No SV evidence" holds exactly what Only SV evidence hides by construction:
+  a split read's concordant mate files with it, and a MAPQ-0 split record
+  whose placed siblings are out of view files as `none`.
 - **A band exists only where a fetched read keys to it**, as for every facet.
 - **The preset turns sashimi off** (`sashimi.show: false`).
   Sashimi counts split junctions per cut point over the coverage, and each
@@ -128,15 +133,12 @@ arrangement by its menu path.
 - The SV channels figure (`sv_channels`) and the user guide's band diagram show
   one inversion band; LL and RR stay apart by arc color, and Group by → Pair
   orientation still gives four bands.
-- Not exactly `svSignal` split by type at the edges: a read whose placed pieces
-  are not read-adjacent counts as split evidence under `svSignal` and files in
-  `none` here, or by its orientation when its pair is discordant. A MAPQ-0
-  record of a split read takes its siblings' band when their placed pieces
-  make a junction; when its only partner is the placed primary, no junction
-  counts, the record files as `none` and the primary by its pair (2 reads of
-  about 300,000 on HG008-T Illumina).
-  A supplementary whose source dropped its SA tag, or a secondary, files by its
-  own evidence and may land apart from its siblings.
+- `svSignal` split by type exactly (amended 2026-11-04): the edges where the
+  two disagreed, a read whose placed pieces are not read-adjacent and a
+  supplementary whose source dropped its SA tag, are no longer split evidence
+  (ADR-229's amendment), and the band keys whole chains off the filter's
+  verdict. Pinned on the four volvox SV fixtures (`svChannel.test.ts`). A
+  secondary keys a chain of its own and files by its own evidence.
 - `svInsertion` from a split needs the feet on one base exactly; a one- or
   two-base overlap files as duplication-type.
 - The keyer runs only under `facet: svChannel`. It reads the start clip off the

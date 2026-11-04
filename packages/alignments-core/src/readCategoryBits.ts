@@ -83,43 +83,28 @@ function isPlaced(mapq: number) {
 }
 
 /**
- * Whether some other piece of a split read is placed, read off the MAPQ field
- * of each SA record. A supplementary whose SA the source dropped counts as
- * placed: nothing says otherwise.
- */
-export function saIsPlaced(sa: string) {
-  if (sa === '') {
-    return true
-  }
-  for (const entry of sa.split(';')) {
-    if (entry !== '' && isPlaced(Number(entry.split(',')[4]))) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
  * How far the `svSignal` sort lifts a read, and whether the filter and the
  * breakpoint split view count it as evidence (ADR-229): 3 for a split read, 2
  * for an SV-size indel, 1 for a discordant pair, 0 for the rest, so discordant
  * short reads do not bury the split reads.
  *
  * Evidence needs both ends placed. A record at MAPQ 0 carries none; a split
- * read counts only when some other piece is placed, and a discordant read only
- * when its mate is, where the MQ tag says (`mateMapq`, undefined when the file
- * has no MQ). Without that, an Alu's poly-A tail, whose clipped reads land on
- * Alus genome-wide at MAPQ 0, fills an ordinary window with split reads.
+ * read counts only when two of its read-adjacent pieces are placed and join
+ * (`makesJunction`, the junction its arcs draw and its SV channel files by,
+ * ADR-258), and a discordant read only when its mate is placed, where the MQ
+ * tag says (`mateMapq`, undefined when the file has no MQ). Without that, an
+ * Alu's poly-A tail, whose clipped reads land on Alus genome-wide at MAPQ 0,
+ * fills an ordinary window with split reads.
  */
 export function withSvTier(
   bits: number,
   mapq: number,
-  sa: string,
+  makesJunction: boolean,
   mateMapq: number | undefined,
 ) {
   const tier = !isPlaced(mapq)
     ? 0
-    : bits & READ_SPLIT && saIsPlaced(sa)
+    : bits & READ_SPLIT && makesJunction
       ? 3
       : bits & READ_SV_INDEL
         ? 2

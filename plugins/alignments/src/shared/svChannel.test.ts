@@ -2,6 +2,7 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -11,11 +12,13 @@ import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
 } from '../CramAdapter/CramTestAdapters.fixture.ts'
-import { FACET_DIMENSIONS } from './groupFeatures.ts'
-import { splitReadChannel, svChannelOf } from './svChannel.ts'
+import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
+import { FACET_DIMENSIONS, partitionFeatures } from './groupFeatures.ts'
+import { splitReadChannel } from './splitReadJunctions.ts'
+import { svChannelOf } from './svChannel.ts'
 import { getFlags } from './util.ts'
 
-import type { ReadPiece } from './svChannel.ts'
+import type { ReadPiece } from './splitReadJunctions.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function piece(
@@ -180,4 +183,64 @@ test('a pair whose read2 splits across an inversion files as inversion in chain 
   )
   expect(chain).toHaveLength(3)
   expect(FACET_DIMENSIONS.svChannel.chainKey!(chain).key).toBe('inversion')
+})
+
+const SV_FIXTURES = [
+  'volvox-simple-inv.bam',
+  'volvox-long-reads-sv.bam',
+  'volvox-sv.bam',
+  'volvox-simple-inv-paired.bam',
+]
+
+// The band and the filter judge each chain alike, so a split read's
+// concordant mate files with it, and every read the filter keeps has a kind
+test.each(SV_FIXTURES)(
+  '%s: "No SV evidence" holds exactly the reads Only SV evidence hides',
+  async file => {
+    const reads = await records(file)
+    const kept = new Set(
+      filterChainFeatures(reads, [{ field: 'svSignal', equal: true }]),
+    )
+    const none = partitionFeatures(reads, { field: 'svChannel' }).find(
+      g => g.key === 'none',
+    )
+    expect(kept.size).toBeGreaterThan(0)
+    expect(new Set(none?.features)).toEqual(
+      new Set(reads.filter(f => !kept.has(f))),
+    )
+  },
+)
+
+test('a split read and its concordant mate share a band in read mode', async () => {
+  const chain = (await records('volvox-sv.bam')).filter(
+    f => f.get('name') === 'ctgA_1041_1553_0:0:0_1:0:0_255',
+  )
+  const groups = partitionFeatures(chain, { field: 'svChannel' })
+  expect(groups.map(g => [g.key, g.features.length])).toEqual([
+    ['inversion', 3],
+  ])
+})
+
+// Its two placed siblings make a junction, but its own placement is a guess,
+// so neither the filter nor the band counts it while they are out of view
+test('a MAPQ-0 split record alone files as no SV evidence', () => {
+  const read = new SimpleFeature({
+    uniqueId: 'mq0',
+    refName: 'ctgA',
+    start: 1000,
+    end: 1030,
+    strand: 1,
+    name: 'mq0',
+    flags: 0,
+    score: 0,
+    CIGAR: '30M70S',
+    tags: { SA: 'ctgA,3000,+,30S40M30S,60,0;ctgA,6000,+,70S30M,60,0;' },
+  })
+  expect(svChannelOf(read)).toBe('LR')
+  expect(
+    filterChainFeatures([read], [{ field: 'svSignal', equal: true }]),
+  ).toEqual([])
+  expect(
+    partitionFeatures([read], { field: 'svChannel' }).map(g => g.key),
+  ).toEqual(['none'])
 })

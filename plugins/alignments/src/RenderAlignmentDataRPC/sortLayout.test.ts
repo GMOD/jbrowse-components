@@ -66,7 +66,7 @@ function categoryBitsOf(r: Read) {
       (r.insertions?.some(n => n >= SV_INDEL_MIN_BP) ? READ_SV_INSERTION : 0) |
       (r.discordant ? READ_DISCORDANT : 0),
     60,
-    '',
+    true,
     undefined,
   )
 }

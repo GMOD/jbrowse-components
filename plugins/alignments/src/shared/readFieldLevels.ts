@@ -43,29 +43,6 @@ export const PAIRING_LEVELS = [
 export type Pairing = (typeof PAIRING_LEVELS)[number]
 
 /**
- * A read's strongest SV evidence, by the tier `svSignalTier` stores: a split
- * read, an indel of 50 bp or more, a discordant pair, or none. Each needs both
- * ends placed (ADR-229), so `splitRead` is narrower than `split: 'split'`
- * and `discordantPair` than `pairing: 'discordant'`, and the names differ.
- */
-export const SV_SIGNAL_LEVELS = [
-  'splitRead',
-  'svIndel',
-  'discordantPair',
-  'none',
-] as const
-
-export type SvSignal = (typeof SV_SIGNAL_LEVELS)[number]
-
-/** The level `svSignalTier`'s tier names, 0 for none. */
-export const SV_SIGNAL_OF_TIER: readonly SvSignal[] = [
-  'none',
-  'discordantPair',
-  'svIndel',
-  'splitRead',
-]
-
-/**
  * `svSignal`'s evidence split by the kind of SV it points at, one band per
  * kind: a discordant pair by its orientation, a split read by its junctions'
  * class filed with the pairs across the same junction, a partner on another

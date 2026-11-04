@@ -19,17 +19,23 @@ import type { Feature } from '@jbrowse/core/util'
 // This holds the READ filter's real answer against the predicate rather than
 // against a restatement of it: a pair kept as evidence whose arc is hidden as
 // ordinary is the bug, and it is silent.
+// A supplementary names its other piece (SAM requires the SA tag on one), so
+// it is split evidence.
 function feature(
   id: string,
   flags: number,
   pairOrientation: string | undefined,
 ): Feature {
   const fields: Record<string, unknown> = {
+    refName: 'chr1',
     start: 100,
     end: 200,
     flags,
     name: id,
     pair_orientation: pairOrientation,
+    ...(flags & SAM_FLAG_SUPPLEMENTARY
+      ? { CIGAR: '100M50H', tags: { SA: 'chr4,5000,+,100H50M,60,0;' } }
+      : {}),
   }
   return {
     id: () => id,

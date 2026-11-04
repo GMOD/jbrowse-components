@@ -53,7 +53,7 @@ function arrays(reads: Read[]): OverlayReadArrays {
           r.orientation ? PAIR_DIRECTION_NUM[r.orientation] : 0,
         ),
         r.mapq ?? 60,
-        r.sa ?? '',
+        true,
         undefined,
       ),
     ),

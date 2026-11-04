@@ -35,7 +35,24 @@ const CASES = [
     flags: PROPER | SAM_FLAG_SUPPLEMENTARY,
     orientation: 'F1R2',
     CIGAR: '60M40H',
+    SA: 'chr4,5000,+,60H40M,60,0;',
     tier: 3,
+  },
+  // it names no junction, so nothing places its other piece
+  {
+    name: 'supplementary whose SA the source dropped',
+    flags: PROPER | SAM_FLAG_SUPPLEMENTARY,
+    orientation: 'F1R2',
+    CIGAR: '60M40H',
+    tier: 0,
+  },
+  {
+    name: 'split read whose only other piece sits at MAPQ 0',
+    flags: PROPER,
+    orientation: 'F1R2',
+    CIGAR: '40S60M',
+    SA: 'chr4,5000,+,60S40M,0,0;',
+    tier: 0,
   },
   {
     name: '60 bp deletion in a concordant pair',
