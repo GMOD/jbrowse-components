@@ -253,6 +253,29 @@ describe('waitReady', () => {
     })
   })
 
+  // A plugin view that reports a failed step on its own banner, such as a
+  // protein view's superposition, raises no toast and keeps working; its
+  // notices are the only place the failure is said.
+  it('names a view that drew around a problem', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const session = {
+      views: [
+        {
+          id: 'v1',
+          type: 'ProteinView',
+          notices: [new Error('superposition failed')],
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await drained(waitReady(5000, session))).toMatchObject({
+      settled: true,
+      notReady: [{ viewId: 'v1', notices: ['Error: superposition failed'] }],
+    })
+  })
+
   // AppReadyMarker holds the app `loading` while a view is still applying its
   // launch blob — `initialized` goes true the moment a linear view's regions
   // land, with the spec's tracks still to attach. This is the half that says so

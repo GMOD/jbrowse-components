@@ -128,6 +128,9 @@ interface ViewSelf {
   pendingLaunch?: unknown
   showImportForm?: boolean
   error?: unknown
+  // what failed and left the view working, as a display's notices are: a
+  // plugin view's banner raises no snackbar either
+  notices?: readonly unknown[]
   visibleRegions?: {
     refName: string
     start: number
@@ -277,7 +280,7 @@ export function sessionOf(pluginManager: PluginManager | undefined) {
  * it: a comparative view reads uninitialized for as long as its form is up, and
  * the form is waiting on a person.
  */
-function viewState(v: ViewSelf) {
+function viewPhase(v: ViewSelf) {
   if (v.error !== undefined) {
     return { error: String(v.error) }
   }
@@ -291,6 +294,13 @@ function viewState(v: ViewSelf) {
         reason:
           'the view is still applying what it was launched with (navigation, tracks)',
       }
+}
+
+function viewState(v: ViewSelf) {
+  return {
+    ...viewPhase(v),
+    ...(v.notices?.length ? { notices: v.notices.map(String) } : {}),
+  }
 }
 
 function viewSummary(view: AbstractViewModel): Record<string, unknown> {
@@ -542,7 +552,7 @@ export async function waitReady(
             type: v.type,
             ...viewState(viewSelf(v)),
           }))
-          .filter(v => 'phase' in v || 'error' in v),
+          .filter(v => 'phase' in v || 'error' in v || 'notices' in v),
         ...allTracks(session)
           .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
           .filter(t => 'phase' in t || 'error' in t || 'notices' in t),
