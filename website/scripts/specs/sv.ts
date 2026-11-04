@@ -585,7 +585,11 @@ export const svSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'click',
-        selector: '[data-testid="feature-name-HGSV_2721"]',
+        // the label over genotype rows carries its carrier share
+        anchor: {
+          trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+          feature: 'HGSV_2721 <CPX> 1.29Kbp <1%',
+        },
       },
       { type: 'waitForText', text: 'CPX_TYPE' },
       PARK_CURSOR,
