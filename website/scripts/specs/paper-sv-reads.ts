@@ -93,16 +93,12 @@ const readEvidence = ({
   name,
   loc,
   arcsHeight,
-  connectorCurves,
   coverageMax,
   viewportHeight,
 }: {
   name: string
   loc: string
   arcsHeight: number
-  // the loop of a read that maps back over itself; off where the curves of
-  // inverted splits would cover the reads
-  connectorCurves: boolean
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
@@ -160,15 +156,12 @@ const readEvidence = ({
             trackId: HIFI,
             coverage: { ...connections.coverage, show: false },
             readConnections: { show: true, height: 60 },
-            pileup: {
-              // rows tall enough to show each maps-back loop
-              mark: { height: connectorCurves ? 6 : 3 },
-              connectors: { show: connectorCurves },
-            },
+            // rows tall enough to show each maps-back loop and inversion hook
+            pileup: { mark: { height: 6 } },
             unit: 'chain',
             // paints each split segment by its strand against its molecule
             encoding: { color: 'insertSizeAndOrientation' },
-            height: connectorCurves ? 345 : 195,
+            height: 345,
             facet: 'split',
             legend: { show: true },
           },
@@ -216,7 +209,7 @@ const readEvidence = ({
     bandLabel('PacBio: coverage', HIFI_COV_NAME, 36),
     bandLabel('PacBio: split-read arcs', HIFI_NAME, 38),
     bandLabel('PacBio: split reads', HIFI_NAME, 82),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, connectorCurves ? 268 : 158),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 268),
     bandLabel('Illumina: coverage', ARCS_NAME, 44),
     bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100),
     bandLabel('Illumina: read cloud', PAIRS_NAME, 40),
@@ -234,14 +227,12 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     loc: 'chr17:31,937,000-32,030,000',
     coverageMax: 200,
     arcsHeight: 80,
-    connectorCurves: true,
     viewportHeight: 1386,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
-    connectorCurves: false,
-    viewportHeight: 1266,
+    viewportHeight: 1416,
   }),
 ]
