@@ -249,13 +249,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   sv_visualization_cgiab: {
-    // the five SV callsets over one breakend, framed on the track labels and the
-    // breakend. This figure has no callout paint, which every other figure of
-    // the page carries.
-    src: 'sv_cgiab/sv_callset_comparison.png',
-    band: [0.16, 0.62],
-    xband: [0, 0.45],
-    position: 'left',
+    // The split reads at both breakends with the arcs joining them, over the
+    // ribbons crossing into the fused scaffold. The frame clears every callout,
+    // which sit along the left edge, the top and the bottom.
+    src: 'sv_cgiab/junction_synteny.png',
+    band: [0.3, 0.92],
+    xband: [0.14, 0.86],
+    position: 'center',
   },
   cnv_cgiab: {
     // depth over BAF genome-wide
