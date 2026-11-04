@@ -550,7 +550,11 @@ export const svSpecs: ScreenshotSpec[] = [
           // No highlight: the 228 bp dup half is what the read orientations say
           // nothing about. The tutorial points at INFO.CPX_INTERVALS for it.
           tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              // one carrier in the cohort: the rows would be a grey block
+              genotypes: { show: false },
+            },
             {
               trackId: 'HG02768.final',
               unit: 'chain',
@@ -585,10 +589,9 @@ export const svSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'click',
-        // the label over genotype rows carries its carrier share
         anchor: {
           trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-          feature: 'HGSV_2721 <CPX> 1.29Kbp <1%',
+          feature: 'HGSV_2721 <CPX> 1.29Kbp',
         },
       },
       { type: 'waitForText', text: 'CPX_TYPE' },
