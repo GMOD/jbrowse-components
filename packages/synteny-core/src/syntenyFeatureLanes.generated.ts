@@ -58,8 +58,8 @@ export interface SyntenyFeatureLanes {
   assemblyNameIds: Uint32Array
   /**
    * Mate start in the mate contig's own bp, uint32 like `starts`. There is no
-   * mate name lane: `mate.name` was always undefined (no adapter sets it), so
-   * it was dropped.
+   * mate name lane: the MCScan adapters set `mate.name`, but nothing drawn from
+   * these lanes reads it.
    */
   mateStarts: Uint32Array
   /**

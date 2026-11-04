@@ -67,13 +67,16 @@ export function flipSyntenyFeature(f: Feature): Feature | undefined {
     CIGAR,
     cs,
     coarseCigar,
-    // the four fields a mate is: `name`/`id` are optional and no adapter sets
-    // them (see SyntenyFeatureData), so there is nothing to carry across
+    // the names trade places with the ends, an MCScan gene pair's two genes;
+    // written even when undefined, so a nameless mate cannot leave the target's
+    // own name on the query axis
+    name: mate.name,
     mate: {
       refName: f.get('refName'),
       start: f.get('start'),
       end: f.get('end'),
       assemblyName: f.get('assemblyName') as string,
+      name: f.get('name'),
     },
   })
 }

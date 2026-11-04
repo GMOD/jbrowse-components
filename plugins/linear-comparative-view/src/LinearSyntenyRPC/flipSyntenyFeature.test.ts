@@ -35,6 +35,31 @@ test('the ends change places, and so do their assemblies', () => {
   })
 })
 
+// An MCScan gene pair names a gene on each side; the flipped ribbon on the
+// query axis is the query's gene, with the target's as its mate
+test('the gene names change places with the ends', () => {
+  const f = flipSyntenyFeature(
+    alignment({
+      name: 'Fgfr2',
+      mate: {
+        name: 'FGFR2',
+        refName: 'q1',
+        start: 100,
+        end: 300,
+        assemblyName: 'query',
+      },
+    }),
+  )!
+  expect(f.get('name')).toBe('FGFR2')
+  expect(f.get('mate')).toMatchObject({ name: 'Fgfr2', refName: 't1' })
+})
+
+test('a named row with a nameless mate drops its own name on the query axis', () => {
+  const f = flipSyntenyFeature(alignment({ name: 'geneT' }))!
+  expect(f.get('name')).toBeUndefined()
+  expect(f.get('mate')).toMatchObject({ name: 'geneT' })
+})
+
 // The half that would look plausible if it were wrong: an insertion in one
 // perspective is a deletion in the other, so a CIGAR carried across unchanged
 // paints every indel wedge on the wrong side of its block.

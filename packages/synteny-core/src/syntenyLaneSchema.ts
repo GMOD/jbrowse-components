@@ -118,7 +118,7 @@ export const SYNTENY_LANES = [
     kind: 'u32',
     name: 'mateStarts',
     axis: 'mate',
-    doc: "Mate start in the mate contig's own bp, uint32 like `starts`. There is no mate name lane: `mate.name` was always undefined (no adapter sets it), so it was dropped.",
+    doc: "Mate start in the mate contig's own bp, uint32 like `starts`. There is no mate name lane: the MCScan adapters set `mate.name`, but nothing drawn from these lanes reads it.",
   },
   {
     kind: 'u32',
