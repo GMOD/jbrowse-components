@@ -108,15 +108,15 @@
         "contigOsc": 0,
         "drawnFlipChanges": 5,
         "drawnFlipOsc": 0,
-        "fallbackFlipChanges": 10,
-        "fallbackFlipOsc": 2,
+        "fallbackFlipChanges": 8,
+        "fallbackFlipOsc": 1,
         "empty": 33,
-        "crossedSteps": 9,
+        "crossedSteps": 7,
         "rungChanges": 6,
         "rungOsc": 0,
         "slipSteps": 19,
-        "medianSlipPx": 313,
-        "maxSlipPx": 4655
+        "medianSlipPx": 330,
+        "maxSlipPx": 4645
       }
     },
     {
@@ -128,14 +128,14 @@
         "drawnFlipChanges": 10,
         "drawnFlipOsc": 1,
         "fallbackFlipChanges": 17,
-        "fallbackFlipOsc": 2,
+        "fallbackFlipOsc": 3,
         "empty": 33,
         "crossedSteps": 28,
         "rungChanges": 16,
         "rungOsc": 1,
-        "slipSteps": 18,
-        "medianSlipPx": 281,
-        "maxSlipPx": 1993
+        "slipSteps": 16,
+        "medianSlipPx": 238,
+        "maxSlipPx": 2003
       }
     },
     {
@@ -152,9 +152,9 @@
         "crossedSteps": 11,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 17,
-        "medianSlipPx": 283,
-        "maxSlipPx": 678
+        "slipSteps": 19,
+        "medianSlipPx": 205,
+        "maxSlipPx": 672
       }
     },
     {
@@ -165,15 +165,15 @@
         "contigOsc": 0,
         "drawnFlipChanges": 9,
         "drawnFlipOsc": 2,
-        "fallbackFlipChanges": 14,
-        "fallbackFlipOsc": 3,
+        "fallbackFlipChanges": 10,
+        "fallbackFlipOsc": 1,
         "empty": 33,
         "crossedSteps": 5,
         "rungChanges": 4,
         "rungOsc": 0,
-        "slipSteps": 21,
-        "medianSlipPx": 290,
-        "maxSlipPx": 7163
+        "slipSteps": 23,
+        "medianSlipPx": 284,
+        "maxSlipPx": 7156
       }
     },
     {
@@ -182,17 +182,17 @@
         "contigs": 4,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 9,
+        "drawnFlipChanges": 8,
         "drawnFlipOsc": 1,
-        "fallbackFlipChanges": 12,
-        "fallbackFlipOsc": 3,
+        "fallbackFlipChanges": 11,
+        "fallbackFlipOsc": 2,
         "empty": 33,
         "crossedSteps": 34,
         "rungChanges": 6,
         "rungOsc": 0,
-        "slipSteps": 16,
-        "medianSlipPx": 284,
-        "maxSlipPx": 2639
+        "slipSteps": 13,
+        "medianSlipPx": 306,
+        "maxSlipPx": 3014
       }
     },
     {
@@ -203,15 +203,15 @@
         "contigOsc": 0,
         "drawnFlipChanges": 8,
         "drawnFlipOsc": 0,
-        "fallbackFlipChanges": 15,
-        "fallbackFlipOsc": 5,
+        "fallbackFlipChanges": 16,
+        "fallbackFlipOsc": 7,
         "empty": 34,
-        "crossedSteps": 36,
+        "crossedSteps": 35,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 24,
-        "medianSlipPx": 200,
-        "maxSlipPx": 12445
+        "slipSteps": 25,
+        "medianSlipPx": 214,
+        "maxSlipPx": 12441
       }
     }
   ]

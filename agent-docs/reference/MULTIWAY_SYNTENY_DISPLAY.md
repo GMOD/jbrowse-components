@@ -101,6 +101,10 @@ cost is linear in lanes.
   zero while the header, ticks and gene fetch stop there. The anchor seed
   `anchorAbsX` is the centre of what the viewport shows of each group, not of the
   whole record, which slides long-record lanes toward their overhang.
+- **The alignment median weighs as the contig vote does** (`voteEvidence`): one
+  per gene on a gene table, bp on an alignment. Weighed by bp, one long gene
+  decided a gene-table lane, so a BED's gene span (UTR isoforms) or one long
+  neighbor slid the HOX lanes off their cluster.
 - **A gutter stacks its ribbons' alpha**, as the pairwise band does. A
   strongest-ribbon `min` blend was removed: it flattened overlap shading.
 - **Nothing hands an adapter its sequence**: no RPC passes one, and renaming keeps

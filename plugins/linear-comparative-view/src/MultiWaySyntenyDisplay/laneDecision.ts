@@ -4,7 +4,12 @@ import {
   pickBlock,
   rungCovers,
 } from '../alignmentBlocks.ts'
-import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
+import {
+  NEARLY_ALL,
+  preferIncumbent,
+  voteEvidence,
+} from '../syntenyHysteresis.ts'
+import { isNamedRecord } from '../syntenyMate.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
@@ -307,6 +312,10 @@ interface LanePlacement {
   group: MultiWayGroup
   key: string
   center: number
+  bp: number
+  // the run's say in where the lane sits: one per gene on a gene table, its bp
+  // on an alignment, as in the contig vote, so a lane aligns on its many short
+  // orthologs and not on one long gene
   weight: number
 }
 
@@ -318,11 +327,13 @@ function lanePlacements(
   const out: LanePlacement[] = []
   for (const group of groups) {
     for (const run of groupRunsOnRow(group, assemblyName, frame)) {
+      const bp = Math.max(run.max - run.min, 1)
       out.push({
         group,
         key: group.key,
         center: (run.min + run.max) / 2,
-        weight: Math.max(run.max - run.min, 1),
+        bp,
+        weight: voteEvidence(isNamedRecord(group.feature), bp),
       })
     }
   }
@@ -337,7 +348,7 @@ function lanePlacementXs(
   const heaviest = new Map<string, LanePlacement>()
   for (const p of placements) {
     const held = heaviest.get(p.key)
-    if (!held || p.weight > held.weight) {
+    if (!held || p.bp > held.bp) {
       heaviest.set(p.key, p)
     }
   }
@@ -424,8 +435,8 @@ function decideOrientation(
 }
 
 /**
- * The value at the halfway point of the summed weights — the median an item's
- * length gets a vote in, rather than one where every item counts once.
+ * The value at the halfway point of the summed weights: each sample counts its
+ * weight, one per gene on a gene table and its bp on an alignment.
  */
 export function weightedMedian(samples: { value: number; weight: number }[]) {
   const sorted = [...samples].sort((a, b) => a.value - b.value)

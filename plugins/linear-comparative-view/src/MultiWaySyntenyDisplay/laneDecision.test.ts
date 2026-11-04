@@ -865,6 +865,63 @@ describe('a lane aligned past its fit', () => {
   })
 })
 
+describe('the alignment weighs evidence as the contig vote does', () => {
+  const shortStarts = [100, 200, 300, 400, 500, 600]
+  // six short orthologs in place, and one long one whose mate sits 100 bp off
+  const withLongGene = (longBp: number) =>
+    groupFeatures([
+      ...shortStarts.map((start, i) =>
+        pair(`${i}`, `g${i}`, start, { start: 500_000 + start }),
+      ),
+      pair('long', 'long', 800, {
+        start: 500_930 - longBp / 2,
+        end: 500_930 + longBp / 2,
+      }),
+    ])
+
+  test('a gene table aligns on its many short orthologs, not one long one', () => {
+    const frame = frameOf(settle(withLongGene(400)))
+    for (const start of shortStarts) {
+      expect(rowFrameX(frame, 500_030 + start, WIDTH)).toBeCloseTo(
+        px(start + 30),
+      )
+    }
+  })
+
+  test("a gene's span does not move the lane, only where it sits", () => {
+    const short = frameOf(settle(withLongGene(200)))
+    const long = frameOf(settle(withLongGene(400)))
+    expect(long.min).toBeCloseTo(short.min)
+  })
+
+  // nameless records: one long block in place, three short hits 100 bp off
+  test('an alignment aligns on its long block, not its short hits', () => {
+    const record = (id: number, start: number, end: number, shift: number) =>
+      new SimpleFeature({
+        uniqueId: `r${id}`,
+        refName: 'chr1',
+        start,
+        end,
+        strand: 1,
+        syntenyId: id,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500_000 + start + shift,
+          end: 500_000 + end + shift,
+        },
+      })
+    const groups = groupFeatures([
+      record(1, 100, 700, 0),
+      record(2, 750, 780, 100),
+      record(3, 800, 830, 100),
+      record(4, 850, 880, 100),
+    ])
+    const frame = frameOf(settle(groups))
+    expect(rowFrameX(frame, 500_400, WIDTH)).toBeCloseTo(px(400))
+  })
+})
+
 describe('a group placed twice on a lane', () => {
   const twoCopies = groupFeatures([
     ...[100, 300, 500, 700].map((start, i) =>
