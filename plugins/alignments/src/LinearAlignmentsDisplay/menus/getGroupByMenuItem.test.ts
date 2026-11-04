@@ -30,7 +30,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
     'Pair status',
     'Split reads',
     'Spliced reads',
-    'SV channel',
+    'SV kind',
     'Mapping quality',
     'Tag...',
   ])
@@ -44,7 +44,7 @@ test('chain mode offers only the fragment-level dimensions', () => {
     'Pair status',
     'Split reads',
     'Spliced reads',
-    'SV channel',
+    'SV kind',
     'Tag...',
   ])
 })

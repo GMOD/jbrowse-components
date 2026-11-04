@@ -145,8 +145,8 @@ The track menu's **Group by** splits the pileup into one coverage+pileup section
 per value of a dimension. It is a radio list, one dimension at a time:
 **Strand**, **First-of-pair strand**, **Pair orientation**, **Pair status**,
 **Split reads** (separating reads crossing a breakpoint from those spanning it
-intact), **Spliced reads**, **SV channel** (one section per kind of SV the
-read's evidence points at, as
+intact), **Spliced reads**, **SV kind** (one section per kind of SV the read's
+evidence points at, as
 [SV channels](/docs/user_guides/sv_visualization#sv-channels) draws it),
 **Mapping quality**, and **Tag...**, which opens a dialog for the tag name (`HP`
 for haplotype, `RG` for read group, or any other). Groups share one coverage

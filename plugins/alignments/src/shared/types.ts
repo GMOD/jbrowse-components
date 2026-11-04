@@ -203,7 +203,7 @@ export const READ_DIMENSIONS = [
   'pairing',
   'split',
   'spliced',
-  'svChannel',
+  'svKind',
   'mapq',
   'mateRefName',
   'mateAssembly',
@@ -217,7 +217,7 @@ export const FACET_ONLY_DIMENSIONS = [
   'pairing',
   'split',
   'spliced',
-  'svChannel',
+  'svKind',
 ] as const satisfies readonly ReadDimension[]
 export type FacetOnlyDimension = (typeof FACET_ONLY_DIMENSIONS)[number]
 

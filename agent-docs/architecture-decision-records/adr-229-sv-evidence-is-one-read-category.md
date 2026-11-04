@@ -12,11 +12,11 @@ Accepted (2026-10-12), from Colin's decisions on the
 [ADR-259](adr-259-category-filters-pick-drawn-reads-and-leave-coverage-whole.md).
 Amended 2026-11-04: a split read is evidence when two of its read-adjacent
 pieces are placed and join (`makesJunction`, `shared/splitReadJunctions.ts`),
-the junction its arcs draw and its SV channel files by (ADR-258), not when any
+the junction its arcs draw and its SV kind files by (ADR-258), not when any
 other piece is placed. A read whose placed pieces sit on either side of an
 unplaced one, and a supplementary whose source dropped its SA tag, are no
 longer split evidence, so the filter, the sort, the split view and the
-`svChannel` band agree on every read. The test costs 1 to 4 µs a record
+`svKind` band agree on every read. The test costs 1 to 4 µs a record
 carrying SA (volvox long-read fixtures, in jest, under load).
 
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort

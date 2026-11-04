@@ -56,7 +56,7 @@ for (const r of records) {
 const firstName = records[Math.floor(records.length / 2)]!.get('name')
 
 const SV_EVIDENCE: FieldPredicate[] = [{ field: 'svSignal', equal: true }]
-const SV_CHANNEL: WorkerFacet = { field: 'svChannel' }
+const SV_CHANNEL: WorkerFacet = { field: 'svKind' }
 
 // The SV channels preset is the last two: the facet, then the facet under
 // its filter
@@ -66,7 +66,7 @@ const arms: Record<string, { filter: FieldPredicate[]; facet?: WorkerFacet }> =
     'this read': { filter: [{ field: 'name', equal: firstName }] },
     'SV evidence': { filter: SV_EVIDENCE },
     'not split': { filter: [{ field: 'split', equal: false }] },
-    'SV channel facet': { filter: [], facet: SV_CHANNEL },
+    'SV kind facet': { filter: [], facet: SV_CHANNEL },
     'SV channels': { filter: SV_EVIDENCE, facet: SV_CHANNEL },
   }
 

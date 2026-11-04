@@ -90,7 +90,7 @@ function isPlaced(mapq: number) {
  *
  * Evidence needs both ends placed. A record at MAPQ 0 carries none; a split
  * read counts only when two of its read-adjacent pieces are placed and join
- * (`makesJunction`, the junction its arcs draw and its SV channel files by,
+ * (`makesJunction`, the junction its arcs draw and its `svKind` band follows,
  * ADR-258), and a discordant read only when its mate is placed, where the MQ
  * tag says (`mateMapq`, undefined when the file has no MQ). Without that, an
  * Alu's poly-A tail, whose clipped reads land on Alus genome-wide at MAPQ 0,

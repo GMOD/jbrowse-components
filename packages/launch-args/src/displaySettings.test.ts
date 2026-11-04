@@ -670,17 +670,17 @@ describe('color routing', () => {
   })
 
   test('a read category on color: names the facet that groups by it', () => {
-    for (const field of ['pairing', 'split', 'spliced', 'svChannel']) {
+    for (const field of ['pairing', 'split', 'spliced', 'svKind']) {
       expect(() =>
         buildDisplaySnapshot('LinearAlignmentsDisplay', [`color:${field}`]),
       ).toThrow(`facet=${field}`)
     }
   })
 
-  test('svSignal on color: names the filter and the SV channel facet', () => {
+  test('svSignal on color: names the filter and the SV kind facet', () => {
     expect(() =>
       buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:svSignal']),
-    ).toThrow(/svSignal:only keeps the SV evidence, and facet=svChannel/)
+    ).toThrow(/svSignal:only keeps the SV evidence, and facet=svKind/)
   })
 
   test('a whole-setting slot write joins the snapshot and a member write waits for the display', () => {

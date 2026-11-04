@@ -14,8 +14,8 @@ import {
 } from '../CramAdapter/CramTestAdapters.fixture.ts'
 import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import { FACET_DIMENSIONS, partitionFeatures } from './groupFeatures.ts'
-import { splitReadChannel } from './splitReadJunctions.ts'
-import { svChannelOf } from './svChannel.ts'
+import { splitReadKind } from './splitReadJunctions.ts'
+import { svKindOf } from './svKind.ts'
 import { getFlags } from './util.ts'
 
 import type { ReadPiece } from './splitReadJunctions.ts'
@@ -32,26 +32,26 @@ function piece(
 }
 
 test('a forward read jumping ahead is a deletion-type junction, filed with LR pairs', () => {
-  expect(
-    splitReadChannel([piece(100, 200, 1, 0), piece(500, 600, 1, 100)]),
-  ).toBe('LR')
+  expect(splitReadKind([piece(100, 200, 1, 0), piece(500, 600, 1, 100)])).toBe(
+    'LR',
+  )
 })
 
 test('a forward read jumping back is a duplication-type junction, filed with RL pairs', () => {
-  expect(
-    splitReadChannel([piece(500, 600, 1, 0), piece(100, 200, 1, 100)]),
-  ).toBe('RL')
+  expect(splitReadKind([piece(500, 600, 1, 0), piece(100, 200, 1, 100)])).toBe(
+    'RL',
+  )
 })
 
 test('either end of an inversion, or both, files as inversion', () => {
+  expect(splitReadKind([piece(100, 200, 1, 0), piece(300, 400, -1, 100)])).toBe(
+    'inversion',
+  )
+  expect(splitReadKind([piece(300, 400, -1, 0), piece(500, 600, 1, 100)])).toBe(
+    'inversion',
+  )
   expect(
-    splitReadChannel([piece(100, 200, 1, 0), piece(300, 400, -1, 100)]),
-  ).toBe('inversion')
-  expect(
-    splitReadChannel([piece(300, 400, -1, 0), piece(500, 600, 1, 100)]),
-  ).toBe('inversion')
-  expect(
-    splitReadChannel([
+    splitReadKind([
       piece(100, 200, 1, 0),
       piece(300, 400, -1, 100),
       piece(500, 600, 1, 200),
@@ -60,14 +60,14 @@ test('either end of an inversion, or both, files as inversion', () => {
 })
 
 test('pieces are ordered along the read, not as listed', () => {
-  expect(
-    splitReadChannel([piece(500, 600, 1, 100), piece(100, 200, 1, 0)]),
-  ).toBe('LR')
+  expect(splitReadKind([piece(500, 600, 1, 100), piece(100, 200, 1, 0)])).toBe(
+    'LR',
+  )
 })
 
 test('a same-reference junction outranks a stray piece on another reference', () => {
   expect(
-    splitReadChannel([
+    splitReadKind([
       piece(100, 200, 1, 0),
       piece(300, 400, -1, 100),
       piece(900, 1000, 1, 300, { refName: 'ctgB' }),
@@ -77,7 +77,7 @@ test('a same-reference junction outranks a stray piece on another reference', ()
 
 test('a read whose only junctions leave its reference files as a partner elsewhere', () => {
   expect(
-    splitReadChannel([
+    splitReadKind([
       piece(100, 200, 1, 0),
       piece(500, 600, 1, 100, { refName: 'ctgB' }),
     ]),
@@ -85,14 +85,14 @@ test('a read whose only junctions leave its reference files as a partner elsewhe
 })
 
 test('a read leaving and re-entering at one base files as an insertion', () => {
-  expect(
-    splitReadChannel([piece(100, 200, 1, 0), piece(200, 300, 1, 150)]),
-  ).toBe('svInsertion')
+  expect(splitReadKind([piece(100, 200, 1, 0), piece(200, 300, 1, 150)])).toBe(
+    'svInsertion',
+  )
 })
 
 test('an unplaced piece joins nothing, and its neighbours are not joined across it', () => {
   expect(
-    splitReadChannel([
+    splitReadKind([
       piece(100, 200, 1, 0),
       piece(150, 180, 1, 100, { placed: false }),
       piece(500, 600, 1, 130),
@@ -141,7 +141,7 @@ function channelsByRead(features: Feature[]) {
   const byRead = new Map<string, Set<string>>()
   for (const f of features) {
     const set = byRead.get(readKey(f)) ?? new Set<string>()
-    set.add(svChannelOf(f))
+    set.add(svKindOf(f))
     byRead.set(readKey(f), set)
   }
   return byRead
@@ -182,7 +182,7 @@ test('a pair whose read2 splits across an inversion files as inversion in chain 
     f => f.get('name') === 'ctgA_1041_1553_0:0:0_1:0:0_255',
   )
   expect(chain).toHaveLength(3)
-  expect(FACET_DIMENSIONS.svChannel.chainKey!(chain).key).toBe('inversion')
+  expect(FACET_DIMENSIONS.svKind.chainKey!(chain).key).toBe('inversion')
 })
 
 const SV_FIXTURES = [
@@ -201,7 +201,7 @@ test.each(SV_FIXTURES)(
     const kept = new Set(
       filterChainFeatures(reads, [{ field: 'svSignal', equal: true }]),
     )
-    const none = partitionFeatures(reads, { field: 'svChannel' }).find(
+    const none = partitionFeatures(reads, { field: 'svKind' }).find(
       g => g.key === 'none',
     )
     expect(kept.size).toBeGreaterThan(0)
@@ -215,7 +215,7 @@ test('a split read and its concordant mate share a band in read mode', async () 
   const chain = (await records('volvox-sv.bam')).filter(
     f => f.get('name') === 'ctgA_1041_1553_0:0:0_1:0:0_255',
   )
-  const groups = partitionFeatures(chain, { field: 'svChannel' })
+  const groups = partitionFeatures(chain, { field: 'svKind' })
   expect(groups.map(g => [g.key, g.features.length])).toEqual([
     ['inversion', 3],
   ])
@@ -236,11 +236,11 @@ test('a MAPQ-0 split record alone files as no SV evidence', () => {
     CIGAR: '30M70S',
     tags: { SA: 'ctgA,3000,+,30S40M30S,60,0;ctgA,6000,+,70S30M,60,0;' },
   })
-  expect(svChannelOf(read)).toBe('LR')
+  expect(svKindOf(read)).toBe('LR')
   expect(
     filterChainFeatures([read], [{ field: 'svSignal', equal: true }]),
   ).toEqual([])
   expect(
-    partitionFeatures([read], { field: 'svChannel' }).map(g => g.key),
+    partitionFeatures([read], { field: 'svKind' }).map(g => g.key),
   ).toEqual(['none'])
 })

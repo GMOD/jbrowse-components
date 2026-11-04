@@ -6241,7 +6241,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svChannel and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence.",
+              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svKind and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence.",
               "default": "",
               "if": {
                 "type": "null"
@@ -8438,7 +8438,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svChannel and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence.",
+              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svKind and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence.",
               "default": "",
               "if": {
                 "type": "null"

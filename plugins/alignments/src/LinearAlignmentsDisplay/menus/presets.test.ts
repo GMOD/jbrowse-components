@@ -81,7 +81,7 @@ test('the preset writes all six settings, not a subset', () => {
   const display = createDisplay({ pileup: { show: false } })
   applySvChannels(display)
   expect(display.showPileup).toBe(true)
-  expect(display.facet).toMatchObject({ field: 'svChannel' })
+  expect(display.facet).toMatchObject({ field: 'svKind' })
   expect(getConf(display, 'filter')).toEqual([
     { field: 'svSignal', equal: true },
   ])
@@ -114,7 +114,7 @@ test('the click saves the track config at once, so it is one undo step', () => {
     return next(call)
   })
   applySvChannels(display)
-  expect(facetAtSave).toEqual(['svChannel'])
+  expect(facetAtSave).toEqual(['svKind'])
 })
 
 test('applying it again changes nothing', () => {
@@ -135,13 +135,13 @@ test('it leaves the read color and the arc placement alone', () => {
   expect(display.readConnectionsPlacement).toBe('up')
 })
 
-test('a regrouping keeps the order already set on the SV channel sections', () => {
+test('a regrouping keeps the order already set on the SV kind sections', () => {
   const display = createDisplay({
-    facet: { field: 'svChannel', sort: ['inversion'] },
+    facet: { field: 'svKind', sort: ['inversion'] },
   })
   applySvChannels(display)
   expect(getSnapshot(display.configuration.facet)).toEqual({
-    field: 'svChannel',
+    field: 'svKind',
     sort: ['inversion'],
   })
 })
@@ -152,13 +152,13 @@ test("a tag grouping's section order and hidden sections do not carry over", () 
   })
   applySvChannels(display)
   expect(getSnapshot(display.configuration.facet)).toEqual({
-    field: 'svChannel',
+    field: 'svKind',
   })
 })
 
 const SETTINGS = {
   pileup: { show: true },
-  facet: { field: 'svChannel' },
+  facet: { field: 'svKind' },
   filter: [{ field: 'svSignal', equal: true }],
   readConnections: {
     show: true,
@@ -209,7 +209,7 @@ test.each([
 })
 
 test('a spec spelling the facet or the filter in shorthand still matches', () => {
-  expect(matchesSvChannels({ ...SETTINGS, facet: 'svChannel' })).toBe(true)
+  expect(matchesSvChannels({ ...SETTINGS, facet: 'svKind' })).toBe(true)
   expect(matchesSvChannels({ ...SETTINGS, filter: ['svSignal'] })).toBe(true)
 })
 

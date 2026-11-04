@@ -97,4 +97,4 @@ band must keep their depth.
   would hold one legal value per field, and arcs, consensus and exports read
   the drawn reads too (ADR-232's Rejected row on `filter.sample`).
 - **A `dim` filter value or an `opacity` channel**: the SV evidence filter
-  with the `svChannel` facet separates the evidence instead (ADR-258).
+  with the `svKind` facet separates the evidence instead (ADR-258).

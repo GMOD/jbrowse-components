@@ -159,7 +159,7 @@ export const FACET_ONLY_FIELDS = [
   'pairing',
   'split',
   'spliced',
-  'svChannel',
+  'svKind',
 ] as const
 // The read categories a color: cannot paint, each with what answers it.
 const COLORLESS_FIELDS: ReadonlyMap<string, string> = new Map([
@@ -168,7 +168,7 @@ const COLORLESS_FIELDS: ReadonlyMap<string, string> = new Map([
   ),
   [
     'svSignal',
-    'svSignal:only keeps the SV evidence, and facet=svChannel groups it by the kind of SV',
+    'svSignal:only keeps the SV evidence, and facet=svKind groups it by the kind of SV',
   ],
 ])
 

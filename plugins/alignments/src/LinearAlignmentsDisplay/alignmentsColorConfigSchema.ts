@@ -31,7 +31,7 @@ import {
  * tag or attribute with no `scale.domain`, `range` or `unknown` colors each
  * value by its text alone, so the value keeps its color in every region and
  * session.
- * `split`, `spliced`, `pairing`, `svChannel` and `svSignal` color nothing:
+ * `split`, `spliced`, `pairing`, `svKind` and `svSignal` color nothing:
  * reads keep their arcs' colors. A facet sections them by the first four, and
  * the `svSignal` filter keeps or hides SV evidence.
  * The per-base layer over the reads is `pileup.bases`.
@@ -92,7 +92,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     ...colorFieldSlot({
       fieldType: 'string',
       field:
-        'field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svChannel and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence',
+        'field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svKind and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence',
     }),
     /**
      * #slot scale

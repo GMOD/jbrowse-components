@@ -10,7 +10,7 @@ import type { InsertSizeBand } from './insertSizeStats.ts'
  * it the pair's orientation (`pairOrientationToNum`: 1 LR, 2 RL, 3 RR, 4 LL,
  * 0 none) and its TLEN with the region's insert-size band. An abnormal
  * orientation wins, as SV channels files the pair by it
- * (`discordantPairChannel`), and an LR pair, or one with no orientation, takes
+ * (`discordantPairKind`), and an LR pair, or one with no orientation, takes
  * its insert class. LR is the normal orientation, as an `fr` library has it; a
  * library of another orientation would want that as an input here, not a
  * second field.

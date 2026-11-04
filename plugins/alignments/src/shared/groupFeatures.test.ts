@@ -223,7 +223,7 @@ function pair(id: string, flags: number, orientation: string | undefined) {
   })
 }
 
-test('the SV channel facet files a discordant pair by its orientation and every read without evidence as none', () => {
+test('the SV kind facet files a discordant pair by its orientation and every read without evidence as none', () => {
   const split = {
     strand: 1,
     end: 50,
@@ -242,7 +242,7 @@ test('the SV channel facet files a discordant pair by its orientation and every 
     pair('secondary-inverted', 1 | 256, 'F1F2'),
     pair('mate-unmapped', 1 | 8, undefined),
   ]
-  const groups = partitionFeatures(features, { field: 'svChannel' })
+  const groups = partitionFeatures(features, { field: 'svKind' })
   expect(groups.map(g => [g.label, g.features.map(f => f.id())])).toEqual([
     ['LR pair or deletion-type split', ['split', 'discordant-lr']],
     ['RL pair or duplication-type split', ['proper-rl']],
@@ -263,7 +263,7 @@ test('a chain files where its most specific record files', () => {
       svFeat('r2', { name: 'r' }),
       svFeat('s', { name: 's' }),
     ],
-    { field: 'svChannel', unit: 'chain' },
+    { field: 'svKind', unit: 'chain' },
   )
   expect(groups.map(g => [g.key, g.features.map(f => f.id())])).toEqual([
     ['svInsertion', ['r1', 'r2']],

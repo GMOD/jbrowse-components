@@ -234,7 +234,7 @@ describe('a domain that names no level says so', () => {
     expect(notices({ field: 'baseQuality' })).toHaveLength(1)
   })
 
-  test.each(['split', 'spliced', 'pairing', 'svChannel', 'pairOrientation'])(
+  test.each(['split', 'spliced', 'pairing', 'svKind', 'pairOrientation'])(
     '%s colors nothing and names the facet',
     field => {
       expect(notices({ field })).toEqual([
@@ -246,9 +246,9 @@ describe('a domain that names no level says so', () => {
     },
   )
 
-  test('svSignal colors nothing and names the filter and the SV channel facet', () => {
+  test('svSignal colors nothing and names the filter and the SV kind facet', () => {
     expect(notices({ field: 'svSignal' })).toEqual([
-      `encoding.color.field: svSignal colors nothing, since reads keep their arcs' colors; filter svSignal keeps or hides it, and facet: "svChannel" sections it by the kind of SV`,
+      `encoding.color.field: svSignal colors nothing, since reads keep their arcs' colors; filter svSignal keeps or hides it, and facet: "svKind" sections it by the kind of SV`,
     ])
     expect(
       readColorFieldOf(

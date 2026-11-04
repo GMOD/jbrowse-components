@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone"
+summary: "SV channels facets by `svKind` (renamed from `svChannel` on 2026-11-04), `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -9,7 +9,18 @@ summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into si
 
 Accepted (2026-11-02). Colin asked for the long-read gap to be closed and for
 the reviews to settle the open calls; built in
-`plugins/alignments/src/shared/svChannel.ts`.
+`plugins/alignments/src/shared/svKind.ts`.
+
+Renamed 2026-11-04: the field was `svChannel`, and Colin left the call to
+the session after two reviews flagged it. A channel is an encoding channel
+everywhere else in the config grammar (ADR-131, 173, 236), so `facet: { field:
+'svChannel' }` read as faceting by a channel. `svKind` names what the levels
+are, the kind of SV the evidence points at, as the labels and docs already
+said; `svClass` would have put this level set under the word `junction.class`
+uses for another, and `svType` reads as a VCF's `SVTYPE`, a typed call. The
+field was beta-only, so nothing migrates. The preset keeps its name, SV
+channels: an arrangement of bands, a label rather than a config word. The
+Group by row reads "SV kind".
 
 Amended 2026-11-04: the row moves from a checkbox in Read connections to an
 action under **Track menu → Presets** (`menus/presets.ts`). Colin found the
@@ -50,7 +61,7 @@ reader already filters stay.
 
 ## Decision
 
-- **`svChannel`, a facet-only read dimension**, six levels:
+- **`svKind`, a facet-only read dimension**, six levels:
 
   | Key | Label |
   | --- | --- |
@@ -69,7 +80,7 @@ reader already filters stay.
   its band agrees with its arc.
 - **A junction counts only between two read-adjacent pieces both placed**
   (MAPQ above 0, ADR-229), and never across an unplaced piece.
-- **One ranking** (`SV_CHANNEL_PRECEDENCE`) settles a read whose junctions,
+- **One ranking** (`SV_KIND_PRECEDENCE`) settles a read whose junctions,
   or a chain whose records, name several: inversion, duplication-type,
   deletion-type, insertion, a partner elsewhere, none. A local event outranks a
   partner elsewhere: on HG00151 ONT, the other order pulled 4 of 83 inversion
@@ -101,10 +112,10 @@ reader already filters stay.
   (the 2026-10-23 decision that both draw split reads stands).
 - **Group by → SV evidence (the `svSignal` facet) is cut.** Its levels repeat
   Split reads and Pair status, and the one thing it did, separating evidence
-  from the rest, Filter by → Only SV evidence does with SV channel banding the
+  from the rest, Filter by → Only SV evidence does with SV kind banding the
   evidence by kind. `svSignal` stays the read category: the filter, the sort
   ("SV evidence first") and the split view's gate (ADR-229). `color: svSignal`
-  still colors nothing, and its notice names the filter and the `svChannel`
+  still colors nothing, and its notice names the filter and the `svKind`
   facet. The facet was beta-only (v5.0.0-beta.14 on), so a saved `facet:
   svSignal` is not migrated; it reads as a field no read carries and draws one
   section.
@@ -149,17 +160,17 @@ reader already filters stay.
   two disagreed, a read whose placed pieces are not read-adjacent and a
   supplementary whose source dropped its SA tag, are no longer split evidence
   (ADR-229's amendment), and the band keys whole chains off the filter's
-  verdict. Pinned on the four volvox SV fixtures (`svChannel.test.ts`). A
+  verdict. Pinned on the four volvox SV fixtures (`svKind.test.ts`). A
   secondary keys a chain of its own and files by its own evidence.
 - `svInsertion` from a split needs the feet on one base exactly; a one- or
   two-base overlap files as duplication-type.
-- The keyer runs only under `facet: svChannel`. It reads the start clip off the
+- The keyer runs only under `facet: svKind`. It reads the start clip off the
   record, since rebuilding the CIGAR string cost 15 to 25 times the rest of the
   classifier, and walks the SA tag in place. It costs what the `svSignal`
   keyer costs, timed in jest on a first pass over freshly fetched records
   (2026-11-02, load ~2.5, median of 8):
 
-  | fixture | records | with SA | `svChannel` | `svSignal` |
+  | fixture | records | with SA | `svKind` | `svSignal` |
   | --- | --- | --- | --- | --- |
   | HG00151 ONT, chr1:197,785,500-197,791,000 | 126 | 87 | 6.6 µs | 6.6 µs |
   | `benches/pacbio_hg002.bam`, chr9 | 2,296 | 13 | 1.0 µs | 0.8 µs |
@@ -169,7 +180,7 @@ reader already filters stay.
   record would save a couple of milliseconds a fetch.
 
   Amended 2026-11-04: the facet keys the whole fetch at once (`keyAll`,
-  `svChannelKeys` in `groupFeatures.ts`): one chain key per read and a
+  `svKindKeys` in `groupFeatures.ts`): one chain key per read and a
   channel for each evidence record only, with no array built per chain. On
   `1000x.shortread.bam`, 81,417 records (`benches/drawnReadFilter.bench.ts`,
   load ~18, min of 11, interleaved), the facet costs 1.33x the unfiltered

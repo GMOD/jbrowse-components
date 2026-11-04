@@ -194,7 +194,7 @@ carries gets no band.
 
 **SV evidence** decides which reads are evidence: a split read whose placed
 pieces join, an insertion or deletion of 50 bp or more, or a discordant pair,
-with both ends placed. **Filter by** and **Sort by** use it, and **SV channel**,
+with both ends placed. **Filter by** and **Sort by** use it, and **SV kind**,
 the Group by row this arrangement sets, bands a read, its mate and its split
 pieces together by the kind of SV they point at, so the last band holds exactly
 the reads the filter hides.
@@ -202,7 +202,7 @@ the reads the filter hides.
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 314" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which SV channel band each SV type fills">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 314" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which SV channels band each SV type fills">
 <text x="280.0" y="32" text-anchor="middle" font-weight="600">Deletion</text>
 <text x="530.0" y="32" text-anchor="middle" font-weight="600">Tandem duplication</text>
 <text x="780.0" y="32" text-anchor="middle" font-weight="600">Inversion</text>

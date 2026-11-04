@@ -50,7 +50,7 @@ export type Pairing = (typeof PAIRING_LEVELS)[number]
  * as `none`. LL and RR, the two ends of one inversion, share a band; their arcs
  * keep them apart.
  */
-export const SV_CHANNEL_LEVELS = [
+export const SV_KIND_LEVELS = [
   'LR',
   'RL',
   'inversion',
@@ -59,7 +59,7 @@ export const SV_CHANNEL_LEVELS = [
   'none',
 ] as const
 
-export type SvChannel = (typeof SV_CHANNEL_LEVELS)[number]
+export type SvKind = (typeof SV_KIND_LEVELS)[number]
 
 type Labelled<L extends readonly string[]> = Readonly<Record<L[number], string>>
 
@@ -68,7 +68,7 @@ export const READ_LEVEL_LABELS: {
   split: Labelled<typeof SPLIT_LEVELS>
   spliced: Labelled<typeof SPLICED_LEVELS>
   pairing: Labelled<typeof PAIRING_LEVELS>
-  svChannel: Labelled<typeof SV_CHANNEL_LEVELS>
+  svKind: Labelled<typeof SV_KIND_LEVELS>
 } = {
   split: { split: 'Split (SA)', unsplit: 'Not split' },
   spliced: { spliced: 'Spliced', unspliced: 'Not spliced' },
@@ -78,7 +78,7 @@ export const READ_LEVEL_LABELS: {
     unpaired: 'Unpaired',
     nonPrimary: 'Secondary or supplementary',
   },
-  svChannel: {
+  svKind: {
     LR: 'LR pair or deletion-type split',
     RL: 'RL pair or duplication-type split',
     inversion: 'LL or RR pair, or inversion split',
@@ -94,7 +94,7 @@ const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
   mapq: [...MAPQ_BINS.map(b => b.key), MAPQ_UNAVAILABLE_LEVEL],
   split: SPLIT_LEVELS,
   spliced: SPLICED_LEVELS,
-  svChannel: SV_CHANNEL_LEVELS,
+  svKind: SV_KIND_LEVELS,
 }
 
 /** A read field's own value order, after the values `domain` lists. */

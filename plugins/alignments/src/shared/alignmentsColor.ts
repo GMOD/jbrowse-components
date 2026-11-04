@@ -109,7 +109,7 @@ const COLORLESS_FIELDS = new Map<string, string>([
   ),
   [
     'svSignal',
-    'filter svSignal keeps or hides it, and facet: "svChannel" sections it by the kind of SV',
+    'filter svSignal keeps or hides it, and facet: "svKind" sections it by the kind of SV',
   ],
 ])
 

@@ -8,14 +8,14 @@ import { isMismatchFeature } from './extractCigarFeatures.ts'
 import { getMappingQuality, getStrand } from './util.ts'
 
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
-import type { SvChannel } from './readFieldLevels.ts'
+import type { SvKind } from './readFieldLevels.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // A split class files with the pairs across the same junction, as
 // `ARC_SPLIT_SWATCH` pairs them: duplication-type with RL, either inversion
 // type with LL and RR pairs, and deletion-type with the stretched LR pairs of a
 // deletion.
-const CHANNEL_OF_SPLIT: Record<ArcSplitCategory, SvChannel> = {
+const KIND_OF_SPLIT: Record<ArcSplitCategory, SvKind> = {
   splitForward: 'LR',
   splitBack: 'RL',
   splitInvLL: 'inversion',
@@ -28,7 +28,7 @@ const CHANNEL_OF_SPLIT: Record<ArcSplitCategory, SvChannel> = {
  * local event often carries a stray supplementary on a repeat elsewhere, which
  * would otherwise pull it out of the band its event fills.
  */
-export const SV_CHANNEL_PRECEDENCE: readonly SvChannel[] = [
+export const SV_KIND_PRECEDENCE: readonly SvKind[] = [
   'inversion',
   'RL',
   'LR',
@@ -48,19 +48,17 @@ export interface ReadPiece {
 
 // Feet on one base: the read leaves the reference and comes back where it
 // left, the bases between them inserted.
-function sameReferenceChannel(a: ReadPiece, b: ReadPiece) {
+function sameReferenceKind(a: ReadPiece, b: ReadPiece) {
   const join = splitJoin(a.strand, a.start, a.end, b.strand, b.start, b.end)
   return join === undefined
     ? undefined
     : join.category === undefined
       ? 'svInsertion'
-      : CHANNEL_OF_SPLIT[join.category]
+      : KIND_OF_SPLIT[join.category]
 }
 
-function junctionChannel(a: ReadPiece, b: ReadPiece) {
-  return a.refName === b.refName
-    ? sameReferenceChannel(a, b)
-    : 'partnerElsewhere'
+function junctionKind(a: ReadPiece, b: ReadPiece) {
+  return a.refName === b.refName ? sameReferenceKind(a, b) : 'partnerElsewhere'
 }
 
 /**
@@ -71,18 +69,18 @@ function junctionChannel(a: ReadPiece, b: ReadPiece) {
  * lists the others with their MAPQ, so each record of the read reaches the
  * same answer.
  */
-export function splitReadChannel(pieces: ReadPiece[]) {
+export function splitReadKind(pieces: ReadPiece[]) {
   const ordered = pieces.toSorted((a, b) => a.clip - b.clip)
-  const seen = new Set<SvChannel>()
+  const seen = new Set<SvKind>()
   for (let i = 1; i < ordered.length; i++) {
     const a = ordered[i - 1]!
     const b = ordered[i]!
-    const channel = a.placed && b.placed ? junctionChannel(a, b) : undefined
+    const channel = a.placed && b.placed ? junctionKind(a, b) : undefined
     if (channel !== undefined) {
       seen.add(channel)
     }
   }
-  return SV_CHANNEL_PRECEDENCE.find(c => seen.has(c))
+  return SV_KIND_PRECEDENCE.find(c => seen.has(c))
 }
 
 function ownPiece(feature: Feature): ReadPiece {
@@ -116,8 +114,8 @@ export function piecesOf(feature: Feature, sa: string) {
 
 /**
  * Whether a split read joins two read-adjacent placed pieces, the junction its
- * arcs draw and its SV channel files by: what makes it SV evidence (ADR-229).
+ * arcs draw and its `svKind` band follows: what makes it SV evidence (ADR-229).
  */
 export function makesJunction(feature: Feature, sa: string) {
-  return sa !== '' && splitReadChannel(piecesOf(feature, sa)) !== undefined
+  return sa !== '' && splitReadKind(piecesOf(feature, sa)) !== undefined
 }

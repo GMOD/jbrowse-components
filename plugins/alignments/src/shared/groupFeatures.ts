@@ -37,7 +37,7 @@ import {
   READ_LEVEL_LABELS,
   SPLICED_LEVELS,
   SPLIT_LEVELS,
-  SV_CHANNEL_LEVELS,
+  SV_KIND_LEVELS,
   levelOrder,
 } from './readFieldLevels.ts'
 import {
@@ -45,8 +45,8 @@ import {
   isSplitAlignment,
   isSvEvidence,
 } from './splitAlignment.ts'
-import { SV_CHANNEL_PRECEDENCE } from './splitReadJunctions.ts'
-import { svChannelOf } from './svChannel.ts'
+import { SV_KIND_PRECEDENCE } from './splitReadJunctions.ts'
+import { svKindOf } from './svKind.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -58,7 +58,7 @@ import {
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
-import type { Pairing, SvChannel } from './readFieldLevels.ts'
+import type { Pairing, SvKind } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -231,16 +231,16 @@ function pairingKey(feature: Feature): GroupKey {
   ]
 }
 
-const SV_CHANNEL_GROUPS = Object.fromEntries(
-  SV_CHANNEL_LEVELS.map(key => [
+const SV_KIND_GROUPS = Object.fromEntries(
+  SV_KIND_LEVELS.map(key => [
     key,
-    { key, label: READ_LEVEL_LABELS.svChannel[key] },
+    { key, label: READ_LEVEL_LABELS.svKind[key] },
   ]),
-) as Record<SvChannel, GroupKey>
+) as Record<SvKind, GroupKey>
 
-function higherRanked(a: SvChannel | undefined, b: SvChannel) {
+function higherRanked(a: SvKind | undefined, b: SvKind) {
   return a !== undefined &&
-    SV_CHANNEL_PRECEDENCE.indexOf(a) <= SV_CHANNEL_PRECEDENCE.indexOf(b)
+    SV_KIND_PRECEDENCE.indexOf(a) <= SV_KIND_PRECEDENCE.indexOf(b)
     ? a
     : b
 }
@@ -249,17 +249,17 @@ function higherRanked(a: SvChannel | undefined, b: SvChannel) {
 // evidence records, as the filter judges evidence, or `none`, so that band
 // holds exactly the reads Only SV evidence hides. Over the whole fetch at once
 // and with no chain built, so only an evidence record is classified.
-function svChannelKeys(features: Feature[]) {
+function svKindKeys(features: Feature[]) {
   const chainKeys = features.map(featureChainKey)
-  const best = new Map<string, SvChannel>()
+  const best = new Map<string, SvKind>()
   for (let i = 0; i < features.length; i++) {
     const feature = features[i]!
     if (isSvEvidence(feature)) {
       const key = chainKeys[i]!
-      best.set(key, higherRanked(best.get(key), svChannelOf(feature)))
+      best.set(key, higherRanked(best.get(key), svKindOf(feature)))
     }
   }
-  return chainKeys.map(key => SV_CHANNEL_GROUPS[best.get(key) ?? 'none'])
+  return chainKeys.map(key => SV_KIND_GROUPS[best.get(key) ?? 'none'])
 }
 
 // A read's mate reference, or a synteny block's query contig.
@@ -484,12 +484,12 @@ export const FACET_DIMENSIONS: {
     chainKey: chain =>
       chain.some(isSpliced) ? SPLICED_GROUP : UNSPLICED_GROUP,
   },
-  svChannel: {
-    field: 'svChannel',
+  svKind: {
+    field: 'svKind',
     fragmentLevel: false,
-    key: feature => SV_CHANNEL_GROUPS[svChannelOf(feature)],
-    chainKey: chain => svChannelKeys(chain)[0]!,
-    keyAll: svChannelKeys,
+    key: feature => SV_KIND_GROUPS[svKindOf(feature)],
+    chainKey: chain => svKindKeys(chain)[0]!,
+    keyAll: svKindKeys,
   },
   mapq: {
     field: 'mapq',

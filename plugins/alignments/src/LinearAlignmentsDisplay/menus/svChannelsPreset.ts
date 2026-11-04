@@ -18,7 +18,7 @@ export const PRESETS_LABEL = 'Presets'
 
 export const SV_CHANNELS_LABEL = 'SV channels'
 
-// One band per SV channel, each with its own coverage, its evidence reads and
+// One band per SV kind, each with its own coverage, its evidence reads and
 // their arcs, concordant pairs' arcs left out. The filter draws only SV
 // evidence and leaves every band's coverage counting all its reads (ADR-259),
 // so "No SV evidence" draws its depth alone. Every setting is reachable from
@@ -35,7 +35,7 @@ export const SV_CHANNELS_LABEL = 'SV channels'
 // applying the preset leaves it as it was and `matchesSvChannels` ignores it.
 export const SV_CHANNELS_SETTINGS = {
   pileup: { show: true },
-  facet: { field: 'svChannel' },
+  facet: { field: 'svKind' },
   filter: [{ field: 'svSignal', equal: true }],
   readConnections: {
     show: true,
