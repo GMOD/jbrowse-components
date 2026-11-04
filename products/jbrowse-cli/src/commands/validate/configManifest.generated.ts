@@ -7303,6 +7303,7 @@ export const configManifest: ConfigManifest = {
       },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
+        "LinearMultiSampleVariantMatrixDisplay",
         "MultiLinearVariantDisplay",
         "LinearVariantMatrixDisplay"
       ],

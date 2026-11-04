@@ -7531,7 +7531,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"Link mates and supplementary alignments\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs/link supplementary alignments\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -8688,7 +8688,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"Link mates and supplementary alignments\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs/link supplementary alignments\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -13239,6 +13239,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "enum": [
             "LinearVariantDisplay",
             "LinearMultiSampleVariantDisplay",
+            "LinearMultiSampleVariantMatrixDisplay",
             "MultiLinearVariantDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -23192,6 +23193,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -24913,6 +24915,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "enum": [
             "LinearVariantDisplay",
             "LinearMultiSampleVariantDisplay",
+            "LinearMultiSampleVariantMatrixDisplay",
             "MultiLinearVariantDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -26102,6 +26105,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -27004,6 +27008,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -28113,6 +28118,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -28489,6 +28495,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -28856,6 +28863,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",

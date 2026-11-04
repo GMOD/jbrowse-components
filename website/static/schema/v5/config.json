@@ -7316,7 +7316,7 @@
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \"Link mates and supplementary alignments\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \"View as pairs/link supplementary alignments\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -8449,7 +8449,7 @@
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \"Link mates and supplementary alignments\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \"View as pairs/link supplementary alignments\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -12838,6 +12838,7 @@
           "enum": [
             "LinearVariantDisplay",
             "LinearMultiSampleVariantDisplay",
+            "LinearMultiSampleVariantMatrixDisplay",
             "MultiLinearVariantDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -22374,6 +22375,7 @@
                 "enum": [
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -23985,6 +23987,7 @@
           "enum": [
             "LinearVariantDisplay",
             "LinearMultiSampleVariantDisplay",
+            "LinearMultiSampleVariantMatrixDisplay",
             "MultiLinearVariantDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -25111,6 +25114,7 @@
                 "enum": [
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -25944,6 +25948,7 @@
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -26999,6 +27004,7 @@
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -27368,6 +27374,7 @@
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",
@@ -27728,6 +27735,7 @@
                   "LinearReferenceSequenceDisplay",
                   "LinearVariantDisplay",
                   "LinearMultiSampleVariantDisplay",
+                  "LinearMultiSampleVariantMatrixDisplay",
                   "MultiLinearVariantDisplay",
                   "LinearVariantMatrixDisplay",
                   "LDTrackDisplay",

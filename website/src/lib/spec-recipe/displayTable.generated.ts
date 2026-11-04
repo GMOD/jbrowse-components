@@ -231,6 +231,7 @@ export const displayTable: DisplayTable = {
     "LinearReadArcsDisplay": "LinearAlignmentsDisplay",
     "LinearReadCloudDisplay": "LinearAlignmentsDisplay",
     "LinearMultiSampleVariantDisplay": "LinearVariantDisplay",
+    "LinearMultiSampleVariantMatrixDisplay": "LinearVariantDisplay",
     "MultiLinearVariantDisplay": "LinearVariantDisplay",
     "LinearVariantMatrixDisplay": "LinearVariantDisplay",
     "MultiLinearWiggleDisplay": "LinearWiggleDisplay",

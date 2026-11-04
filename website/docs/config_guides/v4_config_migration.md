@@ -146,7 +146,7 @@ a file, and fails on a key it does not know.
 |  | `showSidebarLabels` | `rows.axis.labels` |
 |  | `showTree` | `rows.axis.tree` |
 |  | type `LinearMultiSampleVariantDisplay`, type `MultiLinearVariantDisplay` | `LinearVariantDisplay` |
-|  | type `LinearVariantMatrixDisplay` | `LinearVariantDisplay` with `variantLayout: "columns"` |
+|  | type `LinearMultiSampleVariantMatrixDisplay`, type `LinearVariantMatrixDisplay` | `LinearVariantDisplay` with `variantLayout: "columns"` |
 |  | `autoscale`, `maxScore`, `minScore`, `scaleType` | dropped |
 |  | `jexlFilters` (session) | `filter` |
 |  | `layout` (session) | `rows.sort` |
