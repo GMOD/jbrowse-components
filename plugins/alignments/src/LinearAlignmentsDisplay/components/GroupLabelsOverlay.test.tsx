@@ -52,6 +52,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
       // Clipped by the lane's viewport slice, which is the cap the chip's expand
       // can raise.
       clippedBy: 'budget',
+      rawPileupMap: new Map([[0, { readPositions: new Uint32Array(2) }]]),
     })),
     toggleGroupCollapsed: jest.fn(),
     toggleGroupExpanded: jest.fn(),
@@ -140,4 +141,33 @@ test('the pileup hidden leaves plain labels', () => {
     screen.getAllByRole('button').map(b => b.getAttribute('title')),
   ).toEqual(['Hide "HP: 1"', 'Hide "HP: 2"'])
   expect(screen.getByText('HP: 1').tagName).toBe('SPAN')
+})
+
+// A section the filter left with its coverage alone ("No SV evidence" under
+// the SV channels preset) has no pileup to collapse; one collapsed already
+// keeps its chevron, the way back
+test('a group drawing no reads offers no collapse', () => {
+  const noReads = (collapsed: boolean) => ({
+    groupKey: 'none',
+    label: 'No SV evidence',
+    coverageTop: 0,
+    coverageHeight: 40,
+    pileupTop: 40,
+    pileupHeight: 0,
+    height: 40,
+    collapsed,
+    heightOverridePx: undefined,
+    expanded: false,
+    clippedBy: undefined,
+    rawPileupMap: new Map([[0, { readPositions: new Uint32Array(0) }]]),
+  })
+  renderOverlay({
+    renderSections: [noReads(false)],
+  } as unknown as Partial<LinearAlignmentsDisplayModel>)
+  expect(screen.queryByTitle('Collapse this group to coverage only')).toBeNull()
+  cleanup()
+  renderOverlay({
+    renderSections: [noReads(true)],
+  } as unknown as Partial<LinearAlignmentsDisplayModel>)
+  expect(screen.queryByTitle('Show this group’s pileup')).not.toBeNull()
 })

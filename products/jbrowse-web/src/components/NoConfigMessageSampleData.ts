@@ -128,8 +128,9 @@ const volvoxView = (loc: string, track: Record<string, unknown>) =>
 
 export const volvoxSvChannelsTrack = {
   trackId: 'volvox_sv_cram',
-  pileup: { show: false },
+  pileup: { show: true },
   facet: { field: 'svChannel' },
+  filter: [{ field: 'svSignal', equal: true }],
   readConnections: {
     show: true,
     mark: 'link',

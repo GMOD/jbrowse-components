@@ -48,6 +48,12 @@ export interface AlignmentLane {
   ceilingClipped: boolean
 }
 
+// Whether a region of the lane has a read to draw. A section the filter left
+// with its coverage alone has none, so its chip has no pileup to collapse.
+export function laneDrawsReads(lane: AlignmentLane) {
+  return [...lane.rawPileupMap.values()].some(d => d.readPositions.length > 0)
+}
+
 // Whether the label chip's expand can do anything for this lane: two of the
 // caps can be raised out of, and an absent lane has nothing to raise. One
 // function so every caller answers it the same way.

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections"
+summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -21,6 +21,18 @@ menu shows the result, so there is no checked state and no "off";
 (`persistTrackConfigNow`), so session Undo returns the track to what it was
 as one step. `matchesSvChannels` stays for the figure recipes, which name an
 arrangement by its menu path.
+
+Amended again 2026-11-04: the preset no longer hides the pileup. Colin found
+hiding every band's reads judgemental: an arc's right-click resolved to no
+read, the guide's routes out of the evidence need a read, and the noise was
+only ever the `none` band. It writes `pileup.show: true` and
+`filter: [{ field: 'svSignal', equal: true }]` beside the facet, the arcs and
+sashimi off. Under ADR-259 the filter hides rows and leaves coverage whole,
+and under this ADR's 2026-11-04 keying `none` holds exactly what the filter
+hides, so each band draws its evidence reads over its own coverage and "No SV
+evidence" draws its coverage alone, with no collapse chevron on its chip. The
+draft's filter joins the fields the reader already filters
+(ADR-240's amendment).
 
 ## Context
 
@@ -194,3 +206,8 @@ arrangement by its menu path.
   preset's hidden ordinary pairs surviving the next), so a further preset
   goes in only if every preset in the submenu writes the same members. An
   automatic pick between them is still ADR-037's case.
+- **Presets a lab configures**, a `presets` list on the display config merged
+  by label (raised by Colin, 2026-11-04): a lab's own arrangement is
+  `displayDefaults`, and `plotExamples` are plugin code rather than something
+  people make their own. The config-side spelling above is the one to build
+  when asked.

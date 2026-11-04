@@ -631,9 +631,11 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
-              pileup: { show: false },
+              pileup: { show: true },
+              filter: [{ field: 'svSignal', equal: true }],
               readConnections: {
                 show: true,
+                mark: 'link',
                 placement: 'down',
                 ordinaryPairs: { show: false },
                 height: 90,
@@ -716,7 +718,8 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008_t_hifi_sv_channels',
-              pileup: { show: false },
+              pileup: { show: true },
+              filter: [{ field: 'svSignal', equal: true }],
               readConnections: {
                 show: true,
                 mark: 'link',
@@ -729,7 +732,8 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_t_illumina_sv_channels',
-              pileup: { show: false },
+              pileup: { show: true },
+              filter: [{ field: 'svSignal', equal: true }],
               readConnections: {
                 show: true,
                 mark: 'link',

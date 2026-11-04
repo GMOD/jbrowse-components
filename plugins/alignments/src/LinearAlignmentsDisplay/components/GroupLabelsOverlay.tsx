@@ -5,7 +5,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
-import { laneExpandable } from '../lanes.ts'
+import { laneDrawsReads, laneExpandable } from '../lanes.ts'
 import { sectionOrderOf } from '../menus/groupByMenu.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
@@ -61,7 +61,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     return null
   }
   // With the pileup hidden every group's pileup height is 0, so collapse and
-  // "show all"/"fit to view" have nothing to act on — render plain labels.
+  // "show all"/"fit to view" have nothing to act on — render plain labels. A
+  // group drawing no reads has no pileup to collapse either, unless it is
+  // collapsed already.
   const {
     scrollModel: scroll,
     showPileup,
@@ -97,17 +99,18 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
           label: model.groupChipLabel(label),
           top: bandScreenTop(section.coverageTop, scroll),
           height: section.height,
-          toggle: showPileup
-            ? {
-                collapsed,
-                title: collapsed
-                  ? 'Show this group’s pileup'
-                  : 'Collapse this group to coverage only',
-                onClick: () => {
-                  model.toggleGroupCollapsed(groupKey)
-                },
-              }
-            : undefined,
+          toggle:
+            showPileup && (collapsed || laneDrawsReads(section))
+              ? {
+                  collapsed,
+                  title: collapsed
+                    ? 'Show this group’s pileup'
+                    : 'Collapse this group to coverage only',
+                  onClick: () => {
+                    model.toggleGroupCollapsed(groupKey)
+                  },
+                }
+              : undefined,
           // Restore a manually-sized group to the fit budget; otherwise a
           // "show all" affordance only when reads were actually clipped by a
           // cap this button can raise, so its presence signals reachable

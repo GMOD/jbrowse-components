@@ -18,22 +18,25 @@ export const PRESETS_LABEL = 'Presets'
 
 export const SV_CHANNELS_LABEL = 'SV channels'
 
-// One band per SV channel, each with its own coverage and its own arcs,
-// concordant pairs' arcs left out. Every setting is reachable from the other menus;
-// the preset exists because five of them spread across three menus is not an
-// arrangement anyone finds by looking.
+// One band per SV channel, each with its own coverage, its evidence reads and
+// their arcs, concordant pairs' arcs left out. The filter draws only SV
+// evidence and leaves every band's coverage counting all its reads (ADR-259),
+// so "No SV evidence" draws its depth alone. Every setting is reachable from
+// the other menus; the preset exists because six of them spread across four
+// menus is not an arrangement anyone finds by looking. Written as a plot
+// draft, the filter joins the fields already filtered (ADR-240's 2026-11-04
+// amendment), and `pileup.show` undoes the earlier preset's hidden pileup.
 //
-// `encoding.color` is deliberately NOT among them. With the pileup hidden there are no
-// read fills to paint, and the coverage band reads the color only under a
-// modification or bisulfite field (executeRenderAlignmentData's
-// `modCoverage`).
+// `encoding.color` is deliberately NOT among them: the evidence reads keep
+// whatever the reader colors them by.
 //
 // `readConnections.placement` is not among them: which side of the coverage
 // the arcs hang on is a framing choice the arrangement has no opinion about, so
 // applying the preset leaves it as it was and `matchesSvChannels` ignores it.
 export const SV_CHANNELS_SETTINGS = {
-  pileup: { show: false },
+  pileup: { show: true },
   facet: { field: 'svChannel' },
+  filter: [{ field: 'svSignal', equal: true }],
   readConnections: {
     show: true,
     mark: 'link',
@@ -44,18 +47,32 @@ export const SV_CHANNELS_SETTINGS = {
   sashimi: { show: false },
 } as const
 
+// A filter keeping only SV evidence, as an entry or its bare-string shorthand
+function keepsOnlySvEvidence(filter: unknown) {
+  return (
+    Array.isArray(filter) &&
+    filter.some(
+      entry =>
+        entry === 'svSignal' ||
+        (member(entry, 'field') === 'svSignal' &&
+          member(entry, 'equal') === true),
+    )
+  )
+}
+
 /**
  * Whether settings in the config's own shape, the display's resolved values or
  * a figure spec's, are the arrangement. A spec may spell the facet as its field.
  */
 export function matchesSvChannels(settings: Record<string, unknown>) {
   const on = SV_CHANNELS_SETTINGS
-  const { facet, pileup, readConnections, sashimi } = settings
+  const { facet, filter, pileup, readConnections, sashimi } = settings
   return (
     member(pileup, 'show') === on.pileup.show &&
     member(sashimi, 'show') === on.sashimi.show &&
     (typeof facet === 'string' ? facet : member(facet, 'field')) ===
       on.facet.field &&
+    keepsOnlySvEvidence(filter) &&
     member(readConnections, 'show') === on.readConnections.show &&
     markType(member(readConnections, 'mark')) === on.readConnections.mark &&
     member(member(readConnections, 'ordinaryPairs'), 'show') ===

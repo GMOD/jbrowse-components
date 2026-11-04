@@ -40,11 +40,12 @@ export const READ_CATEGORIES = [
       'unmapped or on another chromosome, or a pair not facing ' +
       'forward/reverse). Works on long reads through the first two. Both ' +
       'ends must be placed: a read at mapping quality 0 carries none, a ' +
-      'split read counts only when some other piece of it is above 0, and ' +
-      'a discordant read only when its mate is, where the file records the ' +
-      'mate in an MQ tag. Each window is judged on its own, so in a ' +
-      'multi-region view a mate in another window counts only by what that ' +
-      'window holds.',
+      'split read counts only when two of its pieces next to each other ' +
+      'along the read are above 0 and join, and a discordant read only ' +
+      'when its mate is, where the file records the mate in an MQ tag. ' +
+      'Each window is judged on its own, so in a multi-region view a mate ' +
+      'in another window counts only by what that window holds. It hides ' +
+      'rows only: the coverage still counts every read.',
   },
   {
     key: 'alone',

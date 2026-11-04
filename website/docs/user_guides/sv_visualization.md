@@ -178,21 +178,26 @@ an inversion. That is evidence from one molecule rather than from a pair.
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
 the rows around it. **Presets → SV channels** takes the same reads apart into
-one band per kind of SV evidence, each with a coverage curve and its reads'
-arcs, and the pileup and the sashimi arcs over coverage go away: deletion-type,
+one band per kind of SV evidence, each with a coverage curve, its evidence reads
+and their arcs, and the sashimi arcs over coverage go away: deletion-type,
 duplication-type, inversion, a partner on another chromosome or unmapped, an
 SV-size insertion, and no SV evidence. A discordant pair files by its
 orientation and a split read by its junction, so short and long reads of one
 event fill the same band. Concordant pairs and every other read without SV
-evidence fill the last band, the depth the others are read against. Which band
-fills names the rearrangement, and a band that stays empty under a call is a
-call with no read evidence behind it. A kind of evidence no read in the window
+evidence fill the last band, the depth the others are read against. The preset
+also sets **Filter by → SV evidence → Only SV evidence**, which hides rows and
+leaves every band's coverage counting all its reads, so the last band draws its
+coverage alone and the others draw only the reads that carry evidence. Which
+band fills names the rearrangement, and a band that stays empty under a call is
+a call with no read evidence behind it. A kind of evidence no read in the window
 carries gets no band.
 
-**SV evidence** decides which reads count: a split read, an insertion or
-deletion of 50 bp or more, or a discordant pair, with both ends placed. **Filter
-by** and **Sort by** use it, and **SV channel**, the Group by row this
-arrangement sets, bands those reads by the kind of SV they point at.
+**SV evidence** decides which reads are evidence: a split read whose placed
+pieces join, an insertion or deletion of 50 bp or more, or a discordant pair,
+with both ends placed. **Filter by** and **Sort by** use it, and **SV channel**,
+the Group by row this arrangement sets, bands a read, its mate and its split
+pieces together by the kind of SV they point at, so the last band holds exactly
+the reads the filter hides.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
@@ -259,9 +264,10 @@ event reads the same on both platforms.
 
 <Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
 
-**Tools → Undo** (Ctrl+Z) returns the track to how it was before the preset.
-Each setting the preset changes also stays in its own menu: **Show → Pileup**
-brings the reads back, with the color scheme untouched.
+**Tools → Undo** (Ctrl+Z) returns the track to how it was before the preset, and
+**Filter by → SV evidence → All reads** draws every read in the bands. Each
+setting the preset changes also stays in its own menu: **Show → Pileup** brings
+the reads back, with the color scheme untouched.
 [](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call band by
 band.
 

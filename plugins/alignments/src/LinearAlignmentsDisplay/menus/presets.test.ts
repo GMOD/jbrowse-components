@@ -77,36 +77,52 @@ test('the row is a plain action, with no checked state', () => {
   expect('type' in row).toBe(false)
 })
 
-test('the preset writes all five settings, not a subset', () => {
-  const display = createDisplay()
+test('the preset writes all six settings, not a subset', () => {
+  const display = createDisplay({ pileup: { show: false } })
   applySvChannels(display)
-  expect(display.showPileup).toBe(false)
+  expect(display.showPileup).toBe(true)
   expect(display.facet).toMatchObject({ field: 'svChannel' })
+  expect(getConf(display, 'filter')).toEqual([
+    { field: 'svSignal', equal: true },
+  ])
   expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
   expect(display.showSashimi).toBe(false)
 })
 
+test('the filter joins the reads already filtered out', () => {
+  const display = createDisplay({
+    filter: [
+      { field: 'mapq', gte: 20 },
+      { field: 'svSignal', equal: false },
+    ],
+  })
+  applySvChannels(display)
+  expect(getConf(display, 'filter')).toEqual([
+    { field: 'mapq', gte: 20 },
+    { field: 'svSignal', equal: true },
+  ])
+})
+
 test('the click saves the track config at once, so it is one undo step', () => {
   const display = createDisplay()
-  const pileupShownAtSave: boolean[] = []
+  const facetAtSave: unknown[] = []
   addMiddleware(getContainingTrack(display), (call, next) => {
     if (call.name === 'persistConfigurationNow') {
-      pileupShownAtSave.push(display.showPileup)
+      facetAtSave.push(display.facet?.field)
     }
     return next(call)
   })
   applySvChannels(display)
-  expect(pileupShownAtSave).toEqual([false])
+  expect(facetAtSave).toEqual(['svChannel'])
 })
 
 test('applying it again changes nothing', () => {
   const display = createDisplay()
   applySvChannels(display)
+  const once = getSnapshot(display.configuration)
   applySvChannels(display)
-  expect(display.showPileup).toBe(false)
-  expect(display.facet).toMatchObject({ field: 'svChannel' })
-  expect(display.drawnReadConnections).toBe('link')
+  expect(getSnapshot(display.configuration)).toEqual(once)
 })
 
 test('it leaves the read color and the arc placement alone', () => {
@@ -141,8 +157,9 @@ test("a tag grouping's section order and hidden sections do not carry over", () 
 })
 
 const SETTINGS = {
-  pileup: { show: false },
+  pileup: { show: true },
   facet: { field: 'svChannel' },
+  filter: [{ field: 'svSignal', equal: true }],
   readConnections: {
     show: true,
     mark: 'link',
@@ -159,8 +176,9 @@ test('the preset reads as itself', () => {
 // One case per matched member, so dropping any single comparison from
 // `matchesSvChannels` fails a test rather than passing on the others.
 test.each([
-  ['pileup.show', { ...SETTINGS, pileup: { show: true } }],
+  ['pileup.show', { ...SETTINGS, pileup: { show: false } }],
   ['facet', { ...SETTINGS, facet: { field: 'strand' } }],
+  ['filter', { ...SETTINGS, filter: [{ field: 'svSignal', equal: false }] }],
   [
     'readConnections.show',
     {
@@ -190,6 +208,16 @@ test.each([
   expect(matchesSvChannels(settings)).toBe(false)
 })
 
-test('a spec spelling the facet as its field string still matches', () => {
+test('a spec spelling the facet or the filter in shorthand still matches', () => {
   expect(matchesSvChannels({ ...SETTINGS, facet: 'svChannel' })).toBe(true)
+  expect(matchesSvChannels({ ...SETTINGS, filter: ['svSignal'] })).toBe(true)
+})
+
+test('a filter on other fields beside SV evidence is still the preset', () => {
+  expect(
+    matchesSvChannels({
+      ...SETTINGS,
+      filter: [{ field: 'mapq', gte: 20 }, ...SETTINGS.filter],
+    }),
+  ).toBe(true)
 })
