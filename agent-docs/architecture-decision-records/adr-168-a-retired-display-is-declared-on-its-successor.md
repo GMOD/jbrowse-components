@@ -20,6 +20,13 @@ in its `retired.ts`, with `LinearMultiSampleVariantDisplay` (the betas' name)
 retired into it and v4 `LinearVariantDisplay`'s feature-display spellings
 re-rooted under `records`.
 
+Amended 2026-11-03: a display type only the betas registered stays declared,
+so a beta session naming it still loads (Colin: "we still need to load old
+snapshots from sessions"). `LinearMultiSampleVariantMatrixDisplay` (beta.1 to
+beta.9), dropped on 2026-09-26, is retired into `LinearVariantDisplay` in
+columns again; without it the track left the session. Beta-only config keys
+still get no lift.
+
 ## Context
 
 ADR-143 deleted `MultiLinearWiggleDisplay` and ADR-157 moved the row displays'

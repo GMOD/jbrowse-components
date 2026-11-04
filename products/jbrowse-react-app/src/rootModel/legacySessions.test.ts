@@ -449,6 +449,25 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
   expect(getConf(display, ['rows', 'colors'])).toEqual({})
 })
 
+test.each([
+  ['LinearMultiSampleVariantDisplay', 'genomic'],
+  ['LinearMultiSampleVariantMatrixDisplay', 'columns'],
+])(
+  'a beta session naming %s opens as the variant display, laid out %s',
+  async (type, layout) => {
+    const display = (
+      await load(
+        v4Session('VariantTrack', 'vcf', {
+          type,
+          configuration: `vcf-${type}`,
+        }),
+      )
+    ).display as LinearVariantDisplayModel
+    expect(display.type).toBe('LinearVariantDisplay')
+    expect(getConf(display, 'variantLayout')).toBe(layout)
+  },
+)
+
 function wiggleSlots(display: Parameters<typeof getConf>[0]) {
   return {
     rows: getConf(display, ['rows', 'field']),

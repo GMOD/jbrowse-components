@@ -170,7 +170,7 @@ function withHaplotypesFromOne(instance: Record<string, unknown>) {
 /**
  * The display types this one replaced. v4's two multi-sample displays draw
  * here as they drew, the matrix in columns. `LinearMultiSampleVariantDisplay`
- * was this display's name in the v5 betas.
+ * and `LinearMultiSampleVariantMatrixDisplay` were their names in the v5 betas.
  */
 export const retiredTypes: RetiredDisplayType[] = [
   /**
@@ -178,6 +178,14 @@ export const retiredTypes: RetiredDisplayType[] = [
    * `LinearVariantDisplay`
    */
   { type: 'LinearMultiSampleVariantDisplay' },
+  /**
+   * @deprecated beta-only (beta.1 to beta.9), kept so beta sessions naming it
+   * still load; write `LinearVariantDisplay` with `variantLayout: 'columns'`
+   */
+  {
+    type: 'LinearMultiSampleVariantMatrixDisplay',
+    migrate: entry => ({ ...entry, variantLayout: 'columns' }),
+  },
   { type: 'MultiLinearVariantDisplay' },
   {
     type: 'LinearVariantMatrixDisplay',
