@@ -255,14 +255,16 @@ export interface FeatureMatch {
 }
 
 /**
- * Every laid-out feature whose name, or failing one whose description (a VCF
- * record with no ID reads `C -> T`), is `text`, with the box its body drew on
- * the canvas, or none where it drew off it. The undrawn ones are listed so a
- * caller can tell a name drawn once from one drawn once among several.
+ * Every laid-out feature whose name or description is `text`, either line its
+ * label can show: a MANE transcript is named `NM_004360.5` and described
+ * `CDH1`, and a VCF record with no ID is described `C -> T`. Each comes with
+ * the box its body drew on the canvas, or none where it drew off it. The
+ * undrawn ones are listed so a caller can tell a name drawn once from one
+ * drawn once among several.
  */
 export function featuresNamedInk(self: FeatureInkHost, text: string) {
   const textOf = (item: FeatureDataResult['flatbushItems'][number]) =>
-    (item.name ? item.name : item.description) === text ? text : undefined
+    item.name === text || item.description === text ? text : undefined
   const drawn = new Map(bodyInk(self, textOf).map(f => [f.featureId, f]))
   const matched = new Set<string>()
   for (const data of self.renderDataMap.values()) {

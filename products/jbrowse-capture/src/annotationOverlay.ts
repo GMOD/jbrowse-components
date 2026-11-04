@@ -43,8 +43,9 @@ export interface AnnotationAnchor {
   // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
   graphNode?: string
-  // a feature or record the `trackId` track drew, by the name its label shows
-  // (`rs334`, `CYP1A2`). The resolved rect is the box the display drew it in,
+  // a feature or record the `trackId` track drew, by either line its label
+  // shows, name or description (`rs334`, `CYP1A2`, a MANE transcript's `CDH1`
+  // under its `NM_004360.5`). The resolved rect is the box the display drew it in,
   // so it holds when a band is added above it, where a `fracY` would land on
   // another row. A name labelling more than one laid-out feature, drawn or
   // not, is a miss unless a `loc` picks one drawn copy; so is one drawn

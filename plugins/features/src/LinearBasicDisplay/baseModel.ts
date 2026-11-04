@@ -984,9 +984,9 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The laid-out features this name, or failing one this description,
-       * labels, each with the box its body drew, so a screenshot or a test can
-       * point at a feature by what it is. Built only when called.
+       * The laid-out features this name or description labels, each with the
+       * box its body drew, so a screenshot or a test can point at a feature by
+       * what it is. Built only when called.
        */
       featuresNamed(name: string): FeatureMatch[] {
         return featuresNamedInk(self, name)

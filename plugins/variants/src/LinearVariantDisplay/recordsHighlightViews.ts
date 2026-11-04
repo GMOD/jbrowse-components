@@ -88,9 +88,9 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
     },
     /**
      * #method
-     * The band's laid-out records this name, or failing one this
-     * description, labels, each with the box its body drew, as a feature track
-     * answers it. Built only when called.
+     * The band's laid-out records this name or description labels, each
+     * with the box its body drew, as a feature track answers it. Built only
+     * when called.
      */
     featuresNamed(name: string): FeatureMatch[] {
       return featuresNamedInk(this.recordsInkHost, name)

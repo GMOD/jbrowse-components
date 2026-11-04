@@ -21,7 +21,8 @@ row, and a reviewer had to spot it in the PNG.
   records band), built only when a capture calls it:
   `products/jbrowse-capture/src/featureAnchor.ts`. It matches the text the
   label shows, so over genotype rows a record is its one-line label with the
-  carrier share (`C -> T <1%`), and a record with no ID its description. A
+  carrier share (`C -> T <1%`), and its description line too (a MANE
+  transcript's `CDH1` under `NM_004360.5`, a record with no ID's `C -> T`). A
   name labelling more than one laid-out feature, an undrawn one included,
   misses unless `loc` picks a drawn copy. `variant_panel` and
   `link_to_split_view` use it.

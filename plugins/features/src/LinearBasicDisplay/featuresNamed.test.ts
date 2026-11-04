@@ -97,11 +97,13 @@ test('a name finds the body its feature drew, without its label', () => {
   ])
 })
 
-// The named gene's own description is not what labels it, and the record past
-// the canvas is listed with no box, so a caller sees the name is not unique.
-test('a description labels only an unnamed feature, drawn or not', () => {
+// A description names a feature as its name does, the named gene's included,
+// and the record past the canvas is listed with no box, so a caller sees the
+// text is not unique.
+test('a description labels its feature too, drawn or not', () => {
   const { display } = setUp()
   expect(display.featuresNamed('C -> T')).toEqual([
+    expect.objectContaining({ featureId: 'g1' }),
     expect.objectContaining({
       featureId: 'v1',
       box: expect.objectContaining({ left: 300, width: 20 }),
