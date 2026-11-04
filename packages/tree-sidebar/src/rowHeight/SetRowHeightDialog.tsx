@@ -13,7 +13,8 @@ import type { RowHeightModel } from './rowHeightMenu.ts'
  * `effectiveRowHeight`: in fit mode the resolved getter returns the computed
  * fractional height, so seeding from it and submitting silently pinned that
  * number and left fit mode, which the variants copy of this dialog did. In fit
- * mode the field starts empty.
+ * mode the field starts empty, and left empty keeps fit, so a display with a
+ * proportion can change that alone.
  *
  * `rowProportion` is the per-consumer opt-out: a display whose glyphs occupy
  * part of the row band exposes the pair and gets a second field, and one whose
@@ -31,6 +32,7 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog({
     rowProportion !== undefined && setRowProportion !== undefined
   const pinned = model.rowStep === FIT_ROWS ? undefined : model.rowStep
   const [height, setHeight] = useState(pinned)
+  const [heightEmpty, setHeightEmpty] = useState(pinned === undefined)
   const [proportion, setProportion] = useState<number | undefined>(
     rowProportion,
   )
@@ -41,18 +43,19 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog({
       title="Custom row height"
       onCancel={handleClose}
       submitDisabled={
-        height === undefined ||
-        height <= 0 ||
+        (heightEmpty
+          ? !proportionApplies
+          : height === undefined || height <= 0) ||
         (proportionApplies && proportion === undefined)
       }
       onSubmit={() => {
-        if (height !== undefined && height > 0) {
+        if (height !== undefined) {
           model.setRowHeight(height)
-          if (setRowProportion && proportion !== undefined) {
-            setRowProportion(proportion)
-          }
-          handleClose()
         }
+        if (setRowProportion && proportion !== undefined) {
+          setRowProportion(proportion)
+        }
+        handleClose()
       }}
     >
       {proportionApplies ? (
@@ -63,10 +66,17 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog({
       ) : null}
       <NumberTextField
         defaultValue={pinned}
-        helperText="Enter row height in px"
+        helperText={
+          pinned === undefined
+            ? 'Enter row height in px, or leave it empty to keep fitting the track height'
+            : 'Enter row height in px'
+        }
         min={0}
         autoFocus
-        onValueChange={setHeight}
+        onValueChange={(value, text) => {
+          setHeight(value)
+          setHeightEmpty(text === '')
+        }}
       />
       {proportionApplies ? (
         <NumberTextField

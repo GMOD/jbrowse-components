@@ -224,6 +224,7 @@ import type {
   SizeScaleTable,
   TransformStep,
 } from '@jbrowse/core/util/markEncoding'
+import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
@@ -761,6 +762,15 @@ export function stateModelFactory(
          */
         get drawsRows(): boolean {
           return self.rowsField !== '' && !self.facet
+        },
+        /**
+         * #getter
+         * The `rows.step` the drawn rows take: `rows.step` while the display
+         * draws rows, else fit, since a facet's bands have no scroll to reach
+         * past the plot's foot.
+         */
+        get drawnRowStep(): RowStep {
+          return this.drawsRows ? self.rowStep : FIT_ROWS
         },
         /**
          * #getter
@@ -1338,7 +1348,7 @@ export function stateModelFactory(
           const rowHeight = self.effectiveRowHeight
           const rowsTop = self.rowsTopOffset - self.scrollTop
           const band =
-            rowCount > 1 || (self.drawsRows && self.rowStep !== FIT_ROWS)
+            rowCount > 1 || self.drawnRowStep !== FIT_ROWS
               ? {
                   height: rowHeight,
                   offset: pointInset,
@@ -1898,15 +1908,10 @@ export function stateModelFactory(
         /**
          * #getter
          * The px each row is drawn in, the band every shape gets:
-         * `RowHeightMixin`'s under `rows`, pinned or fit. Elsewhere the bands
-         * fit the plot whatever `rows.step` holds, since a facet's rows
-         * have no scroll to reach past the plot's foot.
+         * `drawnRowStep` resolved, pinned or fit.
          */
         get effectiveRowHeight(): number {
-          return resolveRowHeight(
-            self.drawsRows ? self.rowStep : FIT_ROWS,
-            self.autoRowHeight,
-          )
+          return resolveRowHeight(self.drawnRowStep, self.autoRowHeight)
         },
         /**
          * #getter

@@ -34,7 +34,7 @@ function cellRowYs(svg: string) {
 }
 
 // Regression guard for the fit-to-display-height SVG export. The display
-// defaults to fit mode (rowHeight 0), which is resolved by the
+// defaults to fit mode (`rows.step: 'fit'`), which is resolved by the
 // `effectiveRowHeight` getter. The export path used to read the raw `rowHeight`
 // property instead, so in fit mode every cell drew at y=0 with a 1px height —
 // the whole matrix collapsed into a strip at the top (distinctY 1, yMax 0). The

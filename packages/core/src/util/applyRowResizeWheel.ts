@@ -9,7 +9,7 @@ const MAX_ROW_HEIGHT = 20
 const RESIZE_PX_PER_WHEEL_PX = 1 / 240
 
 export interface RowResizeTarget extends VirtualScrollModel {
-  /** resolved, never the 0/fit sentinel — this is divided by */
+  /** resolved px, never `'fit'` — this is divided by */
   effectiveRowHeight: number
   nrow: number
   setRowHeight: (n: number) => void
@@ -19,8 +19,9 @@ export interface RowResizeTarget extends VirtualScrollModel {
  * shift+wheel over a row stack: resize the rows, pinning the row under the
  * cursor. The floor is the fit height, so rows never shrink past filling the
  * viewport. The cap stops a gesture but never moves rows on its own, so it
- * rises to a current height already above it (a pinned `rowHeight` is
- * unbounded).
+ * rises to a current height already above it (a pinned `rows.step` is
+ * unbounded). A rows viewport of 0px has no height to give a row, so the
+ * gesture writes nothing there.
  */
 export function applyRowResizeWheel(
   e: WheelEvent,
@@ -40,8 +41,10 @@ export function applyRowResizeWheel(
     minRowHeight,
     Math.min(maxRowHeight, model.effectiveRowHeight + delta),
   )
-  const mouseY = e.clientY - el.getBoundingClientRect().top
-  const rowUnderMouse = (mouseY + model.scrollTop) / model.effectiveRowHeight
-  model.setRowHeight(newRowHeight)
-  model.setScrollTop(rowUnderMouse * newRowHeight - mouseY)
+  if (newRowHeight > 0) {
+    const mouseY = e.clientY - el.getBoundingClientRect().top
+    const rowUnderMouse = (mouseY + model.scrollTop) / model.effectiveRowHeight
+    model.setRowHeight(newRowHeight)
+    model.setScrollTop(rowUnderMouse * newRowHeight - mouseY)
+  }
 }

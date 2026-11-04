@@ -4997,7 +4997,6 @@
     "@jbrowse/display-kit/rowsWithStepConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "FIT_ROWS",
         "rowsWithStepConfigSchema"
       ],
       "worker": "real"
@@ -5013,13 +5012,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "rpcArgs"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/sampleRowsConfigSchema": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "sampleRowsConfigSchema"
       ],
       "worker": "real"
     },

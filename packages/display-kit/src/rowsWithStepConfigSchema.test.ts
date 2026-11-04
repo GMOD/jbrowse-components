@@ -4,11 +4,9 @@ import {
   refusingUndeclaredKeys,
   setConf,
 } from '@jbrowse/core/configuration'
+import { FIT_ROWS } from '@jbrowse/core/util/resolveRowHeight'
 
-import {
-  FIT_ROWS,
-  rowsWithStepConfigSchema,
-} from './rowsWithStepConfigSchema.ts'
+import { rowsWithStepConfigSchema } from './rowsWithStepConfigSchema.ts'
 
 const Display = ConfigurationSchema(
   'StepHost',

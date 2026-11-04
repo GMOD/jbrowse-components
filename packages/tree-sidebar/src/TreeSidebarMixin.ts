@@ -73,7 +73,6 @@ import type {
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { RowNarrowing } from './narrowRows.ts'
-import type { TreeSidebarConfigModel } from './rowAxisConfigSchema.ts'
 import type { RowColorEdits, RowColorSnapshot } from './rowColorChoice.ts'
 import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
@@ -84,10 +83,23 @@ import type {
   HoveredTreeNode,
   RowSource,
 } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ConfigModelForFields,
+} from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
+
+/**
+ * The `rows` every display composing `TreeSidebarMixin` declares: MAF's
+ * field-less `RowArrangement`, or a `Rows` adding `field`, `filter` and the
+ * axis `grid` to it.
+ */
+export type TreeSidebarConfigModel = ConfigModelForFields<{
+  rows: typeof rowArrangementConfigSchema
+}>
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
@@ -102,7 +114,9 @@ export interface TreeSidebarHost {
 const host = (self: object) => self as TreeSidebarHost
 
 type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
-type Arrangement = Partial<Record<ArrangementMember | 'filter', unknown>>
+type RowsMembers = Partial<
+  Record<ArrangementMember | 'filter' | 'color', unknown>
+>
 
 // A row's name, label and colors are what a row color is set on, never what
 // one is set by.
@@ -133,17 +147,22 @@ function present(value: unknown) {
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 
-// The base's `rows` in the spelling the live one is stored in, so a
-// `rows.tree` written as its newick compares equal to the object it lifts to,
-// less what names the base field's rows once the live rows are on another
-// field (the keyed rule, ADR-257), so a reset returns no arrangement of the
-// old rows to the new ones
-function baseArrangement(self: object): Arrangement {
+// The one read of the base's `rows`: in the spelling the live one is stored
+// in, so a `rows.tree` written as its newick compares equal to the object it
+// lifts to, less what names the base field's rows once the live rows are on
+// another field (the keyed rule, ADR-257), so a reset returns no arrangement
+// of the old rows to the new ones. A base stating no field names no field, so
+// its arrangement returns on any, as a write from an empty field keeps one.
+// Reading it as naming the field a mark display's default plot picks was
+// tried and dropped: re-derived from the latest scan it was wrong after a
+// reload or a rescan, and a recorded pick is display state a re-shown track
+// loses.
+function baseRows(self: object): RowsMembers {
   const { rows } = baseDisplayConfig(self)
   const live: AnyConfigurationModel = host(self).configuration.rows
   const meta = getConfigurationSchemaMetadata(live)!
   const { writes } = meta.options
-  const base: Arrangement = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
+  const base = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
   return isKeyedWrites(writes)
     ? keyedBase(writes, base, {
         [writes.keyedBy]: readConfObject(live, writes.keyedBy),
@@ -151,14 +170,7 @@ function baseArrangement(self: object): Arrangement {
     : base
 }
 
-// A member of the `rows` this display's base declares, none where it writes
-// the field alone
-function baseRowsMember(self: object, member: string) {
-  const { rows } = baseDisplayConfig(self)
-  return isRecord(rows) ? rows[member] : undefined
-}
-
-function liveArrangement(self: object): Arrangement {
+function liveRows(self: object): RowsMembers {
   return getSnapshot(host(self).configuration.rows)
 }
 
@@ -434,7 +446,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * returns to and "is this the reader's" compares against.
        */
       get baseRowColorChannel(): RowColorSetting {
-        return liftRowColor(baseRowsMember(self, 'color'))
+        return liftRowColor(baseRows(self).color)
       },
     }))
     .views(self => ({
@@ -454,7 +466,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get baseRowColorSetting(): RowColorSetting {
         return withPinnedColors(
           self.baseRowColorChannel,
-          pinnedColorsOf(baseArrangement(self).colors),
+          pinnedColorsOf(baseRows(self).colors),
         )
       },
       /**
@@ -795,7 +807,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * and "Reset row order" return to.
        */
       get baseRowFilter(): FieldPredicate[] {
-        return predicatesOf(baseRowsMember(self, 'filter'))
+        return predicatesOf(baseRows(self).filter)
       },
       /**
        * #method
@@ -968,8 +980,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * "Reset row order" is offered on.
        */
       get rowArrangementIsCustom(): boolean {
-        const live = liveArrangement(self)
-        const base = baseArrangement(self)
+        const live = liveRows(self)
+        const base = baseRows(self)
         return (
           self.rowColorIsCustom ||
           ORDER_MEMBERS.some(
@@ -1293,8 +1305,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return (
           (self.rowFocus?.length ?? 0) > 0 ||
           !compareStructural(
-            present(liveArrangement(self).filter),
-            present(baseArrangement(self).filter),
+            present(liveRows(self).filter),
+            present(baseRows(self).filter),
           )
         )
       },
@@ -1519,7 +1531,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          */
         showAllRows() {
           write('kept', [])
-          writeRowFilter(baseArrangement(self).filter)
+          writeRowFilter(baseRows(self).filter)
           persist()
         },
         /**
@@ -1572,7 +1584,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * config's name the old field's rows.
          */
         resetRowArrangement() {
-          const base = baseArrangement(self)
+          const base = baseRows(self)
           for (const member of ROW_ARRANGEMENT_MEMBERS) {
             write(member, base[member])
           }

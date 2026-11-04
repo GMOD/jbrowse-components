@@ -292,6 +292,27 @@ test("Reset row order on another field than the config's returns none of the con
   expect(getSnapshot(model.conf.rows)).toEqual(rows)
 })
 
+// A config's arrangement stating no field names no field, so it returns on
+// whatever field the rows are on: the plain rule a write from an empty field
+// follows too, not a guess at the field the default plot picked.
+test('Reset row order returns a config arrangement stating no field on any field', () => {
+  const rows = { sort: ['kid'], kept: ['mom'] }
+  const model = display({ rows })
+  const fields = {
+    numeric: [],
+    categorical: ['sample'],
+    attributes: ['name', 'sample'],
+  }
+  model.setPlotFields(fields)
+  model.applyDefaultPlot(model.defaultPlotOf(fields)!)
+  expect(getSnapshot(model.conf.rows)).toEqual({ ...rows, field: 'sample' })
+  model.setRowsField('name')
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
+  expect(model.rowArrangementIsCustom).toBe(true)
+  model.resetRowArrangement()
+  expect(getSnapshot(model.conf.rows)).toEqual({ ...rows, field: 'name' })
+})
+
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
   const model = display({ rows: 'sample', marks: SPLICED_MARKS })
   expect(model.rowCompare?.mark).toBe(1)

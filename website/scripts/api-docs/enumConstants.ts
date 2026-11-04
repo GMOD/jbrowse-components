@@ -92,10 +92,10 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // The same table, one indirection further out: a slot table written as a
 // *function* of its per-display prose.
 //
-//   export function rowHeightConfigSchemaFields({ rowHeight = '…' }) {
-//     return { rowHeight: { type: 'number', description: rowHeight }, ... } as const
+//   export function trackHeightConfigSchemaFields({ height = '…' }) {
+//     return { height: { type: 'number', description: height }, ... } as const
 //   }
-//   ConfigurationSchema('LinearMarkDisplay', { ...rowHeightConfigSchemaFields({ rowHeight: '…' }) })
+//   ConfigurationSchema('LinearHicDisplay', { ...trackHeightConfigSchemaFields({ height: '…' }) })
 //
 // A mixin's slots are shared in their types and defaults while their
 // descriptions genuinely differ per display — a MAF row is a species, a
@@ -118,8 +118,8 @@ interface SlotFieldParam {
   argument: string | number
   /**
    * Source of the parameter's default, where it declares one. A default is a
-   * real answer rather than a fallback: `rowHeightConfigSchemaFields`'s
-   * `rowHeight` sentence is display-independent and most callers omit it, so
+   * real answer rather than a fallback: `trackHeightConfigSchemaFields`'s
+   * `height` sentence is display-independent and most callers omit it, so
    * reading the default is the only way that slot's prose reaches their pages.
    */
   fallback: string | undefined
@@ -153,7 +153,7 @@ type SlotCallArgs = Map<string | number, string>
  *
  * No argument at all is one of those shapes, not a rejection: a factory whose
  * every parameter has a default is spread as a bare
- * `...rowHeightConfigSchemaFields()`, and substitution then falls back to those
+ * `...trackHeightConfigSchemaFields()`, and substitution then falls back to those
  * defaults exactly as it does for a parameter one call omits and another
  * passes. Rejecting it dropped the slot from the page of every display taking
  * the defaults, which the manifest gap check then reported as a missing `#slot`
@@ -706,7 +706,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   const slotParts = new Map<string, SlotPart[] | null>()
   for (const sf of sourceFiles) {
     // Cheap prefilter. `function` is in it for the slot-table factories, whose
-    // files hold nothing else — `rowHeightConfigSchemaFields.ts` has no
+    // files hold nothing else — `trackHeightConfigSchemaFields.ts` has no
     // top-level `const` at all, so a const-only guard skipped the file and the
     // factory arm below would never have run. A `:` admits a typed const,
     // `const DEFAULT_BIN_AS: readonly [string, string] = ...`.
@@ -831,7 +831,7 @@ export function slotFieldConstantPairs(name: string) {
 
 /**
  * The same, for a slot table spread as a **call** —
- * `...rowHeightConfigSchemaFields({ rowHeight: '…' })` — with the
+ * `...trackHeightConfigSchemaFields({ height: '…' })` — with the
  * call's own arguments substituted for the factory's parameters, so each slot
  * carries the description this display passed rather than the parameter name.
  *

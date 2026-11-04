@@ -106,9 +106,10 @@ was asked to fit, so the track re-grows and fit mode reports a scroll it never
 has. The floor belongs only in `effectiveRowHeight`, guarding a **non-positive**
 value (consumers divide by it), and in drawing code widening a sub-pixel band
 (`drawnRowHeightPx`, `drawnCellHeightPx`). Nothing caps or warns about rows past the
-pixels. `packages/core/src/util/resolveRowHeight.ts` resolves `"fit"` (it holds
-`FIT_ROWS`, which display-kit re-exports) and applies the floor, called once from `RowHeightMixin`; `RowHeightMixin.test.ts` is
-the one set of assertions.
+pixels. `packages/core/src/util/resolveRowHeight.ts` resolves `"fit"` (it is
+`FIT_ROWS`'s one home) and applies the floor, called from `RowHeightMixin` and
+the mark display's `effectiveRowHeight`; `RowHeightMixin.test.ts` is the one set
+of assertions.
 
 ### Drag-resize leaves a fixed height alone
 

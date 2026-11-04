@@ -114,13 +114,15 @@ tree with no provenance is also the signal it was supplied rather than computed.
 config object (the quantitative, variant, multi-row feature, MAF and mark
 displays; ADR-157) and derives the rows from it.
 
-**`rows` is one `Rows` object on every display, and the mixin reads its
-arrangement.** display-kit's `RowArrangement` is the five arrangement members,
-and `Rows` extends it with `field`: a feature field where the rows are a field's
-values, `source` alone on the quantitative display (`QuantitativeRows`) and
-`sample` alone where the rows are the file's samples (`SampleRows`, ADR-215). The
-host is typed on `RowArrangement`, so the mixin never reaches for `field`, which
-stays the display's own.
+**`rows` is one object on every display, and the mixin reads its
+arrangement.** display-kit's `RowArrangement` is the five arrangement members
+(`sort`, `labels`, `colors`, `tree`, `kept`) with `color` and `axis`, MAF's
+`rows` whole. `Rows` extends it with `field`, `filter` and the axis `grid`: a
+feature field where the rows are a field's values, `source` alone on the
+quantitative display (`QuantitativeRows`), and `sample` or `haplotype` on the
+variant display (`VariantRows`). The host is typed on `RowArrangement`, so the
+mixin reads `field` and `filter` only through the schema's declared keyed
+writes and `Reflect`, where a display has them.
 
 `rows.color` is display-kit's `RowColor` on every row display, one categorical
 channel whose `field` names a row attribute, `name` by default, with

@@ -340,8 +340,9 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    - MAF's `rows` is `RowArrangement`, which declares `axis`, `colors` and
      `color`, and writes member by member; `Rows` extends it with `field`,
      `filter` and the axis `grid` (first built as a `MafRows` restating
-     `Rows`' slots, folded 2026-11-04). `SampleRows` stays as a deprecated
-     subpath no display extends.
+     `Rows`' slots, folded 2026-11-04). `SampleRows`, kept as a deprecated
+     subpath no display extended, went 2026-11-04: beta-only, and it had
+     silently gained `filter` from `Rows`.
    - The CLI's `mergedWrites` keeps a refinement only where every keyed
      declaration states it, not the union with a conflict writing whole: one
      merged slot serves every display a bag reaches, and a VariantTrack's mark

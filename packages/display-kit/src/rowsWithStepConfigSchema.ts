@@ -4,8 +4,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
-export { FIT_ROWS } from '@jbrowse/core/util/resolveRowHeight'
-
 /**
  * #config RowsWithStep
  * #category display

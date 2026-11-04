@@ -19,7 +19,7 @@
  */
 
 export interface RowStack {
-  /** resolved height, never the 0/fit sentinel — this is divided into */
+  /** resolved px height, never `'fit'` — this is divided into */
   rowHeight: number
   /** unrounded, and routinely fractional */
   scrollTop?: number

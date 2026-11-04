@@ -45,6 +45,18 @@ test('in fit mode the field starts empty and submits nothing', () => {
   expect(model.setFitToHeight).not.toHaveBeenCalled()
 })
 
+test('in fit mode an empty height submits the proportion alone and keeps fit', () => {
+  const model = makeModel({ rowProportion: 0.8, setRowProportion: jest.fn() })
+  const { baseElement, getByText } = open(model)
+  fireEvent.change(baseElement.querySelectorAll('input')[1]!, {
+    target: { value: '0.5' },
+  })
+  submit(getByText)
+  expect(model.setRowProportion).toHaveBeenCalledWith(0.5)
+  expect(model.setRowHeight).not.toHaveBeenCalled()
+  expect(model.setFitToHeight).not.toHaveBeenCalled()
+})
+
 test('submitting a positive height pins it', () => {
   const model = makeModel({ rowStep: 12 })
   const { getByText } = open(model)
@@ -53,17 +65,31 @@ test('submitting a positive height pins it', () => {
   expect(model.setFitToHeight).not.toHaveBeenCalled()
 })
 
-test.each(['0', '-5'])('a height of %s cannot be submitted', value => {
-  const model = makeModel({ rowStep: 12 })
-  const { baseElement, getByText } = open(model)
-  typeHeight(baseElement, value)
-  submit(getByText)
-  expect(model.setRowHeight).not.toHaveBeenCalled()
-  expect(model.setFitToHeight).not.toHaveBeenCalled()
-})
+test.each(['0', '-5', 'abc'])(
+  'a height of %s cannot be submitted, with a proportion or without',
+  value => {
+    const plain = makeModel({ rowStep: 12 })
+    const { baseElement, getByText } = open(plain)
+    typeHeight(baseElement, value)
+    submit(getByText)
+    expect(plain.setRowHeight).not.toHaveBeenCalled()
+
+    cleanup()
+
+    const withProportion = makeModel({
+      rowProportion: 0.8,
+      setRowProportion: jest.fn(),
+    })
+    const opened = open(withProportion)
+    typeHeight(opened.baseElement, value)
+    submit(opened.getByText)
+    expect(withProportion.setRowHeight).not.toHaveBeenCalled()
+    expect(withProportion.setRowProportion).not.toHaveBeenCalled()
+  },
+)
 
 // The per-consumer opt-out: only a display exposing both halves gets the second
-// field. maf has one, multi-row features and the variant displays do not.
+// field. The mark displays have one, the variant display does not.
 test('the proportion field appears only where the display has that axis', () => {
   const { baseElement: without } = open(makeModel({ rowStep: 12 }))
   expect(without.querySelectorAll('input')).toHaveLength(1)

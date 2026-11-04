@@ -113,8 +113,6 @@ export {
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from './treeMenuItems.ts'
-export { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
-export { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
 export {
   rowArrangementMenuItem,
   rowOrderMenuItems,

@@ -10,10 +10,11 @@ interface OwnProps {
   defaultValue?: number
   /**
    * Fires on every keystroke with the parsed number, or undefined when
-   * the input is empty or invalid (NaN / out of bounds). The parent
-   * decides whether to gate submission on undefined.
+   * the input is empty or invalid (NaN / out of bounds), and the text, so a
+   * parent can tell an empty input from an invalid one. The parent decides
+   * whether to gate submission on undefined.
    */
-  onValueChange: (value: number | undefined) => void
+  onValueChange: (value: number | undefined, text: string) => void
   /** Optional inclusive lower bound. */
   min?: number
   /** Optional inclusive upper bound. */
@@ -61,7 +62,7 @@ const NumberTextField = observer(function NumberTextField(props: Props) {
       onChange={event => {
         const next = event.target.value
         setText(next)
-        onValueChange(parseInBounds(next, min, max))
+        onValueChange(parseInBounds(next, min, max), next)
       }}
     />
   )

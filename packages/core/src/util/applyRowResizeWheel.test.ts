@@ -26,7 +26,12 @@ function el(top: number) {
   return { getBoundingClientRect: () => ({ top }) } as unknown as HTMLElement
 }
 
-function harness(init: { rowHeight: number; scrollTop: number; nrow: number }) {
+function harness(init: {
+  rowHeight: number
+  scrollTop: number
+  nrow: number
+  viewport?: number
+}) {
   const state = { ...init }
   return {
     target: {
@@ -37,7 +42,7 @@ function harness(init: { rowHeight: number; scrollTop: number; nrow: number }) {
         return state.scrollTop
       },
       nrow: state.nrow,
-      scrollViewportHeight: 100,
+      scrollViewportHeight: init.viewport ?? 100,
       scrollableHeight: 0,
       setRowHeight: (n: number) => {
         state.rowHeight = n
@@ -90,7 +95,16 @@ test('few samples: auto-fit floor above MAX_ROW_HEIGHT is not collapsed to the c
   expect(shrink.state.rowHeight).toBeCloseTo(100 / 3)
 })
 
-// The other way to already sit above the cap: a pinned `rowHeight`. Both the
+// A 0px rows viewport (the variant matrix at its floor) leaves the resolved
+// height at its 1px floor, from which a shrink reaches 0, which `rows.step`
+// refuses: the gesture writes nothing.
+test('a 0px viewport takes no row height from a shrink', () => {
+  const zero = harness({ rowHeight: 1, scrollTop: 0, nrow: 10, viewport: 0 })
+  applyRowResizeWheel(wheel(PX_PER_ROW_PX * 2, 0).event, el(0), zero.target)
+  expect(zero.state.rowHeight).toBe(1)
+})
+
+// The other way to already sit above the cap: a pinned `rows.step`. Both the
 // config slot and the "Custom..." dialog are unbounded, and this is the case
 // where the rows overflow — i.e. the only case where the gesture is reachable
 // at all. The cap has to stop the gesture, never move the rows on its own.
