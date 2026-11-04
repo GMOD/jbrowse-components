@@ -1,3 +1,5 @@
+import { getRecordName } from '@jbrowse/synteny-core'
+
 import type { Feature } from '@jbrowse/core/util'
 import type { SyntenyMate } from '@jbrowse/synteny-core'
 
@@ -9,6 +11,7 @@ export {
   getCigar,
   getCoarseCigar,
   getMate,
+  getRecordName,
   hasAlignmentString,
 } from '@jbrowse/synteny-core'
 export type { SyntenyMate } from '@jbrowse/synteny-core'
@@ -19,7 +22,7 @@ export type { SyntenyMate } from '@jbrowse/synteny-core'
 // one Feature-side spelling — the packed-lane side is synteny-core's
 // `unnamedNameId`, since the packers turn the missing name into `UNNAMED`.
 export function isNamedRecord(feature: Feature) {
-  return feature.get('name') !== undefined
+  return getRecordName(feature) !== undefined
 }
 
 // One entry of a grouped feature's `mates`: a mate placement plus the

@@ -5,7 +5,12 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { getCigar, getCoarseCigar, getMate } from '../syntenyMate.ts'
+import {
+  getCigar,
+  getCoarseCigar,
+  getMate,
+  getRecordName,
+} from '../syntenyMate.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -76,7 +81,7 @@ export function flipSyntenyFeature(f: Feature): Feature | undefined {
       start: f.get('start'),
       end: f.get('end'),
       assemblyName: f.get('assemblyName') as string,
-      name: f.get('name'),
+      name: getRecordName(f),
     },
   })
 }

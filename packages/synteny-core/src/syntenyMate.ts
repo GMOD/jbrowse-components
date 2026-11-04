@@ -28,3 +28,17 @@ export type SyntenyMate = {
 export function getMate(feature: Feature) {
   return feature.get('mate') as SyntenyMate | undefined
 }
+
+/**
+ * The name the source gave a record: an MCScan row's gene, nothing for a PAF
+ * block. A synteny feature's `get('name')` answers the alignments pipeline's
+ * read name instead, the contig its block belongs to (its mate's refName), so
+ * a comparative view reading it there counted every PAF block as named.
+ */
+export function getRecordName(feature: Feature) {
+  const name =
+    'recordName' in feature && typeof feature.recordName === 'function'
+      ? feature.recordName()
+      : feature.get('name')
+  return typeof name === 'string' ? name : undefined
+}

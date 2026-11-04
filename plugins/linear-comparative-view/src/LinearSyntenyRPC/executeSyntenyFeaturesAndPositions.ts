@@ -24,7 +24,7 @@ import {
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
 
-import { getMate } from '../syntenyMate.ts'
+import { getMate, getRecordName } from '../syntenyMate.ts'
 import {
   MIN_CIGAR_PX_WIDTH,
   RULER_GRID_ORIGIN,
@@ -636,7 +636,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEndsArray[validCount] = mate.end
 
     featureIds.push(id)
-    nameIds[validCount] = nameDict.idFor(f.get('name') ?? UNNAMED)
+    nameIds[validCount] = nameDict.idFor(getRecordName(f) ?? UNNAMED)
     refNameIds[validCount] = refNameDict.idFor(refName)
     assemblyNameIds[validCount] = assemblyNameDict.idFor(
       (f.get('assemblyName') as string | undefined) ?? '',

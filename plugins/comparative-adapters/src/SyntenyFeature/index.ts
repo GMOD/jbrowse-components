@@ -39,6 +39,13 @@ export default class SyntenyFeature extends SimpleFeature {
     }
   }
 
+  // the name the source gave the row, which `get('name')` answers with the
+  // contig for the alignments pipeline's read name; see synteny-core's
+  // `getRecordName`
+  recordName() {
+    return super.get('name')
+  }
+
   private get mate() {
     return super.get('mate') as { refName?: string; start?: number } | undefined
   }

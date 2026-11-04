@@ -120,3 +120,15 @@ test('a coarse fold is turned round with the row', () => {
   )!
   expect(minus.get('coarseCigar')).toBe('100M5000D80:100M')
 })
+
+// A PAF row's `get('name')` is its contig, the alignments read name; the
+// flipped ribbon's mate carries what the source named the row, which is nothing
+test('a flipped PAF block names no mate', () => {
+  const block = Object.assign(alignment({ name: 'q1' }), {
+    recordName: () => undefined,
+  })
+  expect(flipSyntenyFeature(block)!.get('mate')).toMatchObject({
+    refName: 't1',
+    name: undefined,
+  })
+})

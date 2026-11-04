@@ -12,6 +12,7 @@ import {
   declaredAttributes,
   UNNAMED,
   findRegionEntry,
+  getRecordName,
   makeStringDict,
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
@@ -287,7 +288,7 @@ export async function executeDotplotFeaturesAndPositions({
     // '' rather than a missing-value sentinel: an absent name and an empty one
     // read the same to the only consumer (the tooltip omits its line either
     // way), and it keeps the dictionary a plain string list.
-    nameIds[n] = nameDict.idFor(f.get('name') ?? UNNAMED)
+    nameIds[n] = nameDict.idFor(getRecordName(f) ?? UNNAMED)
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.

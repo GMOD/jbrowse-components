@@ -1,5 +1,6 @@
 import { DELETION_TYPE, INSERTION_TYPE } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { getRecordName } from '@jbrowse/synteny-core'
 
 import SyntenyFeature from './index.ts'
 
@@ -85,4 +86,31 @@ test("a nameless record's mate-contig name stays on this side of the RPC", () =>
   })
   expect(feature.get('name')).toBe('chr11')
   expect(new SimpleFeature(feature.toJSON()).get('name')).toBeUndefined()
+})
+
+// A PAF block reads as its contig to the alignments pipeline, which chains a
+// contig's blocks by that read name; the comparative views ask what the source
+// named it, which is nothing.
+test("a PAF block's record name is its own, not its contig's", () => {
+  const block = new SyntenyFeature({
+    uniqueId: 'p',
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    mate: { refName: 'ctg7', start: 0, end: 1000, assemblyName: 'asm2' },
+  })
+  expect(block.get('name')).toBe('ctg7')
+  expect(getRecordName(block)).toBeUndefined()
+})
+
+test("an ortholog pair's record name is its gene", () => {
+  const pair = new SyntenyFeature({
+    uniqueId: 'm',
+    refName: 'chr10',
+    start: 0,
+    end: 1000,
+    name: 'FGFR2',
+    mate: { refName: 'chr7', start: 0, end: 1000, assemblyName: 'mm39' },
+  })
+  expect(getRecordName(pair)).toBe('FGFR2')
 })

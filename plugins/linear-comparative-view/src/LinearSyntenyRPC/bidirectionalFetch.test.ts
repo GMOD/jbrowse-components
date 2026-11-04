@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { UNNAMED } from '@jbrowse/synteny-core'
 
 import { executeSyntenyFeaturesAndPositions } from './executeSyntenyFeaturesAndPositions.ts'
 
@@ -446,4 +447,26 @@ test('a target-anchored alignment whose query end misses every query slice is ma
   expect(targetOffscreenMates.mateRefNameDict).toEqual(['q1'])
   expect([...targetOffscreenMates.starts]).toEqual([500])
   expect(Array.from(targetOffscreenMates.mateStarts)).toEqual([50000])
+})
+
+// A PAF block's `get('name')` answers the alignments read name, its contig; the
+// name lane, which the follow vote reads as "gene-shaped", takes what the
+// source named the row
+test('the name lane holds the record name, not a PAF contig', async () => {
+  const paf = Object.assign(
+    new SimpleFeature({
+      uniqueId: 'p',
+      refName: 'q1',
+      start: 100,
+      end: 200,
+      strand: 1,
+      name: 't1',
+      mate: { refName: 't1', start: 100, end: 200, assemblyName: TARGET_ASM },
+    }),
+    { recordName: () => undefined },
+  )
+  const { result } = run({ fromQuery: [paf] })
+  const { value } = await result
+  expect(value.nameIds.length).toBe(1)
+  expect(value.nameDict[value.nameIds[0]!]).toBe(UNNAMED)
 })

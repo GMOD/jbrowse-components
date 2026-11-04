@@ -78,7 +78,7 @@ import {
   laneProfiles,
   structureOrder,
 } from './MultiWaySyntenyDisplay/structureOrder.ts'
-import { getMate } from './syntenyMate.ts'
+import { getMate, getRecordName } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import type { LanePin } from './MultiWaySyntenyDisplay/lanePins.ts'
@@ -403,7 +403,7 @@ function alignmentRows(
   return {
     id: features.map(f => f.id()),
     group: groups,
-    name: features.map(f => textOf(f.get('name'))),
+    name: features.map(f => textOf(getRecordName(f))),
     assembly: features.map(f => textOf(f.get('assemblyName'))),
     chrom: features.map((f): string => f.get('refName')),
     start: features.map((f): number => f.get('start')),

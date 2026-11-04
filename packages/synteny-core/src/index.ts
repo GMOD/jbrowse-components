@@ -425,7 +425,7 @@ export type {
   SyntenyImportFormOption,
   SyntenyImportFormOptionProps,
 } from './SelectorTypes.ts'
-export { getMate } from './syntenyMate.ts'
+export { getMate, getRecordName } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'
 export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 export {
