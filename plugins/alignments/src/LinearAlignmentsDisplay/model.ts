@@ -101,6 +101,7 @@ import { fieldTag } from '../shared/facetLabels.ts'
 import {
   facetForUnit,
   facetValueNotices,
+  overflowSplitNotices,
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
@@ -168,6 +169,7 @@ import {
   hasNamedGroups,
   hiddenGroupReadIds,
   orderedGroups,
+  splitOverflowKeys,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
@@ -823,7 +825,7 @@ export default function stateModelFactory(
            * hidden lanes are excluded.
            */
           get statsInView() {
-            const hidden = self.hiddenGroupKeys
+            const hidden = self.hiddenGroups
             return visibleStats({
               active: self.showCoverage,
               view: self.view,
@@ -1098,7 +1100,7 @@ export default function stateModelFactory(
               filter: self.junctionFilter,
               placement: self.effectiveSashimiPlacement,
               refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
-              hidden: self.hiddenGroupKeys,
+              hidden: self.hiddenGroups,
             })
           },
 
@@ -1551,20 +1553,30 @@ export default function stateModelFactory(
             const facet = this.effectiveFacet
             return orderedGroups(
               self.rpcDataMap,
-              self.hiddenGroupKeys,
+              self.hiddenGroups,
               sectionOrder(facet?.field ?? '', facet?.sort),
             )
           },
 
           /**
            * #getter
-           * A facet field no fetched read answers.
+           * A facet field no fetched read answers, and the values whose reads
+           * split between their own section and the overflow one.
            */
           get liveNotices(): string[] {
-            return facetValueNotices(
-              this.effectiveFacet,
-              this.groupOrder.map(g => g.key),
-            )
+            const facet = this.effectiveFacet
+            return [
+              ...facetValueNotices(
+                facet,
+                this.groupOrder.map(g => g.key),
+              ),
+              ...overflowSplitNotices(
+                splitOverflowKeys(
+                  self.rpcDataMap,
+                  sectionOrder(facet?.field ?? '', facet?.sort),
+                ),
+              ),
+            ]
           },
 
           /**
@@ -1612,7 +1624,7 @@ export default function stateModelFactory(
           get rawDataByGroup() {
             return buildRawDataByGroup(
               self.rpcDataMap,
-              self.hiddenGroupKeys,
+              self.hiddenGroups,
               self.pinnedInsertSizeBand,
             )
           },
@@ -1784,7 +1796,7 @@ export default function stateModelFactory(
          * than one displayed region (`buildReadIdIndex`).
          */
         get readIdIndex() {
-          return buildReadIdIndex(self.rpcDataMap, self.hiddenGroupKeys)
+          return buildReadIdIndex(self.rpcDataMap, self.hiddenGroups)
         },
 
         /**
@@ -2787,10 +2799,7 @@ export default function stateModelFactory(
          * worker applies, and outside the lanes the user hid.
          */
         exportedFeatures(features: Feature[]) {
-          const hidden = hiddenGroupReadIds(
-            self.rpcDataMap,
-            self.hiddenGroupKeys,
-          )
+          const hidden = hiddenGroupReadIds(self.rpcDataMap, self.hiddenGroups)
           return exportedReads(features, self.readPredicates).filter(
             f => !hidden.has(f.id()),
           )

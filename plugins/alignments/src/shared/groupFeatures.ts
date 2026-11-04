@@ -16,6 +16,7 @@ import {
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import {
+  MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
   overflowLabel,
@@ -278,17 +279,17 @@ function mapqKey(feature: Feature): GroupKey {
 // region-width depth arrays before uploading a per-bp GPU buffer that alone
 // approaches the device limit at chromosome scale, so `MAX_GROUPS` is what
 // keeps a UMI-style `RX`/`MI` tag from paying that thousands of times over.
-// Every dimension but `tag`, `mateRefName` and `mateAssembly` is a closed set
-// of at most five keys, and GroupByDialog refuses `tag` up front with the
-// distinct values in hand.
+// Every read dimension but `mateRefName` and `mateAssembly` is a closed set of
+// at most five keys; a tag, a field and a `jexl:` facet are open too, and
+// GroupByDialog refuses `tag` up front with the distinct values in hand.
 
 // The tail past `MAX_GROUPS` merges into one overflow section rather than
-// dropping its reads, by the same `capGroupKeys` rule a display reading the
-// sections applies, so which groups survive follows from the key set alone
-// and not from per-region read counts. The cap is region-local, so a
-// cross-region union can exceed MAX_GROUPS when regions expose wildly
-// different value sets; it bounds the per-group region-width cost, which is
-// what actually blows up.
+// dropping its reads, by `capGroupKeys`, so which groups survive follows from
+// the key set alone and not from per-region read counts. The cap is
+// region-local: it bounds the per-group region-width cost, which is what
+// actually blows up, but two regions can cut their key sets at different
+// places. A value one region merged and another kept then splits its reads
+// between its own lane and the overflow lane (`splitOverflowKeys`).
 function orderGroups(groups: FeatureGroup[], field: string) {
   const compare = sectionOrder(field)
   const ordered = groups.sort((a, b) => compare(a.key, b.key))
@@ -566,6 +567,28 @@ export function facetValueNotices(
     keys[0] === ''
     ? [
         `facet: no read here carries a value for ${facet.field}, so every read is in one section`,
+      ]
+    : []
+}
+
+const LISTED_SPLIT_KEYS = 3
+
+/**
+ * The values whose reads split between their own section and the overflow
+ * section, for the corner notice: one displayed region merged them past the
+ * cap and another kept them (`splitOverflowKeys`).
+ */
+export function overflowSplitNotices(keys: readonly string[]): string[] {
+  const listed = keys.slice(0, LISTED_SPLIT_KEYS).join(', ')
+  const rest = keys.length - LISTED_SPLIT_KEYS
+  const named = rest > 0 ? `${listed} and ${rest} more` : listed
+  const split =
+    keys.length > 1
+      ? 'their reads split between their own sections'
+      : 'its reads split between its own section'
+  return keys.length > 0
+    ? [
+        `facet: ${named} passed the ${MAX_GROUPS}-section cap in one region but not another, so ${split} and the merged one`,
       ]
     : []
 }

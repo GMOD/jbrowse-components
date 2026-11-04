@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
+  MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   overflowLabel,
   partitionFeatures,
@@ -14,6 +15,7 @@ import {
   hasNamedGroups,
   hiddenGroupReadIds,
   orderedGroups,
+  splitOverflowKeys,
 } from './groupedDataMaps.ts'
 
 import type {
@@ -128,6 +130,43 @@ test('orderedGroups counts the overflow lane over the cross-region union', () =>
   expect(order.map(g => g.key)).toEqual(['v1', OVERFLOW_GROUP_KEY])
   // v8, v9, v10, v11 — the union, not either region's own count
   expect(order.at(-1)!.label).toBe(overflowLabel(4))
+})
+
+// The cap runs per region, so one value missing from a region moves where that
+// region's cut falls: region 0 keeps v039 as a lane, region 1 merges it.
+test('splitOverflowKeys names a value one region merged and another kept', () => {
+  const values = Array.from(
+    { length: MAX_GROUPS + 5 },
+    (_, i) => `v${String(i).padStart(3, '0')}`,
+  )
+  const facet = { field: 'sample' }
+  const regionOf = (present: string[]) =>
+    grouped(
+      partitionFeatures(
+        present.map(
+          v =>
+            new SimpleFeature({
+              id: v,
+              data: { refName: 'ctgA', start: 0, end: 10, sample: v },
+            }),
+        ),
+        facet,
+      ).map(({ key, label, mergedKeys }) => ({
+        key,
+        label,
+        mergedKeys,
+        data: data([key]),
+      })),
+    )
+  const rpcDataMap = new Map([
+    [0, regionOf(values.filter(v => v !== 'v010'))],
+    [1, regionOf(values)],
+  ])
+  expect(splitOverflowKeys(rpcDataMap, sectionOrder('sample'))).toEqual([
+    'v039',
+  ])
+  const unsplit = new Map([[0, regionOf(values)]])
+  expect(splitOverflowKeys(unsplit, sectionOrder('sample'))).toEqual([])
 })
 
 // Nothing to relabel when the cap never fired, and the union must not invent a
@@ -410,7 +449,7 @@ test('buildRawDataByGroup regroups regions into per-group region maps', () => {
 })
 
 // The source-level filter every cross-group walk of this map then inherits —
-// the arc scale pooling does not re-apply `hiddenGroupKeys` on its own.
+// the arc scale pooling does not re-apply `hiddenGroups` on its own.
 test('buildRawDataByGroup drops hidden group keys entirely', () => {
   const shown = data(['a'])
   const hidden = data(['b'])

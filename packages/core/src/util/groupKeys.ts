@@ -9,9 +9,10 @@
 // pins it dead last so a merged tail never displaces a named group.
 export const OVERFLOW_GROUP_KEY = '\u0000overflow'
 
-// Hard ceiling on the sections one grouping may stack; the tail past it merges
-// into the overflow section. A backstop for the dimensions that are not a
-// closed set, a tag or an attribute, whose value space is the file's.
+// Hard ceiling on the sections an alignments grouping may stack, since each
+// runs its own coverage pipeline; the tail past it merges into the overflow
+// section. The feature and mark facets stack every value. Also the point past
+// which a value scan stops counting a field's distinct values.
 export const MAX_GROUPS = 40
 
 /**

@@ -46,6 +46,7 @@ test('an attribute nothing in view carries, and one past the cap, both warn with
   expect(verdict('name', scan)?.text).toMatch(
     `more than ${MAX_GROUPS} distinct values`,
   )
+  expect(verdict('name', scan)?.text).toMatch(/a labelled section for each/)
 })
 
 test('a long value list is capped, with the count in front of it', () => {

@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, interning readTagValues, the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction), and the pair follow-ups (chain-mode sort, the insert-size band on RNA-seq, mate-supported exon links).
+description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, a value splitting between its lane and the overflow lane across regions, interning readTagValues, the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction), and the pair follow-ups (chain-mode sort, the insert-size band on RNA-seq, mate-supported exon links).
 ---
 
 # Alignments
@@ -128,6 +128,20 @@ policy number instead of a memory ceiling; coalesce the buffers after, if the
 allocation count still shows up. Roughly 150 lines of ceiling machinery come out
 only at the end of that, and `MAX_GROUPS = 40` is still worth keeping as a
 cardinality sanity check on `tag`, which is the one dimension the data decides.
+
+**A value can split between its own lane and the overflow lane.** The cap runs
+per displayed region, so with two regions in view a region missing one value
+cuts its key set one place later, and a value it keeps as a lane another region
+merged. Its reads then draw in both lanes, hiding its lane leaves the merged
+part drawn, and Save track data exports that part. Reachable from the synteny
+display's "Mate assembly" radio over an all-vs-all track in a two-region view.
+The corner notice says so (`splitOverflowKeys`); the fix is not cheap. Folding
+the value into the overflow lane on the main thread means merging two
+`WorkerPileupData`s, about 94 fields with per-group depth arrays and no merge
+function. Sending the worker the cross-region key set puts a fetch result in
+`rpcProps`, which loops. Capping over a key universe the config declares
+collapses a region holding only late-sorting keys into one overflow lane. A
+binned depth sweep that lifts the cap (above) removes the case outright.
 
 **Intern `readTagValues` the way `readNextRefs` was interned.** Both CPU-baked
 color schemes (`tag`, `mateRefName`) ship `readTagValues: string[]` — one string

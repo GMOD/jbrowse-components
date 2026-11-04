@@ -26,7 +26,7 @@ export { NO_HIDDEN_GROUPS }
 // the two loops. Yields in worker emit order, an ungrouped fetch being the
 // single-group ('') case per region.
 //
-// `hidden` is the display's `hiddenGroupKeys`, so a dropped lane stays out of
+// `hidden` is the display's `hiddenGroups`, so a dropped lane stays out of
 // the derivations shared across the visible ones (coverage domain, color legend,
 // sashimi strip).
 export function* eachGroup(
@@ -163,6 +163,30 @@ export function orderedGroups(
     overflow.label = overflowLabel(merged.size)
   }
   return [...order.values()].sort((a, b) => compare(a.key, b.key))
+}
+
+/**
+ * The keys one region merged into its overflow lane while another kept them as
+ * a lane of their own, in stacking order. The cap runs per region, so such a
+ * value's reads draw in both lanes, and hiding its own lane leaves the merged
+ * part drawn. Over hidden lanes too, since that merged part still draws.
+ */
+export function splitOverflowKeys(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  compare: (a: string, b: string) => number,
+) {
+  const merged = new Set<string>()
+  const ownLane = new Set<string>()
+  for (const { key, mergedKeys } of eachGroup(rpcDataMap)) {
+    if (mergedKeys) {
+      for (const k of mergedKeys) {
+        merged.add(k)
+      }
+    } else {
+      ownLane.add(key)
+    }
+  }
+  return [...merged].filter(k => ownLane.has(k)).sort(compare)
 }
 
 // Regroup the fetched `rpcDataMap` (region idx → grouped result) into group key

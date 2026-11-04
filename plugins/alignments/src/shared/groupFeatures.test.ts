@@ -10,6 +10,7 @@ import {
   facetForUnit,
   facetValueNotices,
   facetUnitNotices,
+  overflowSplitNotices,
   isChainFacetable,
   partitionFeatures,
   sectionOrder,
@@ -745,4 +746,14 @@ test('a jexl field keys by what the expression answers', () => {
   )
   expect(keys(groups)).toEqual(['false', 'true'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['a'])
+})
+
+test('the split notice names the values, singular and past the listed few', () => {
+  expect(overflowSplitNotices([])).toEqual([])
+  expect(overflowSplitNotices(['HG002'])).toEqual([
+    `facet: HG002 passed the ${MAX_GROUPS}-section cap in one region but not another, so its reads split between its own section and the merged one`,
+  ])
+  expect(overflowSplitNotices(['a', 'b', 'c', 'd', 'e'])[0]).toMatch(
+    /^facet: a, b, c and 2 more passed .* their reads split between their own sections/,
+  )
 })

@@ -34,7 +34,7 @@ export const GROUPING: AttributeUse = {
   absent: field =>
     `Grouping by it draws a single "${field}: none" section holding every feature, until you navigate somewhere it is set.`,
   overflow:
-    'so the values sorting last merge into one section. Color by it instead, or group by an attribute with fewer values.',
+    'so grouping by it stacks a labelled section for each one. Group by an attribute with fewer values instead.',
 }
 
 export const COLORING: AttributeUse = {
