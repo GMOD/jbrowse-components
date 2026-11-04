@@ -69,7 +69,8 @@ export default function HiddenGroupsMixin() {
     .views(self => ({
       /**
        * #getter
-       * @deprecated read `hiddenGroups`, which this returns
+       * Read `hiddenGroups`, which this returns
+       * @deprecated
        */
       get hiddenGroupKeys(): ReadonlySet<string> {
         return self.hiddenGroups
