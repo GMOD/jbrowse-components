@@ -21824,6 +21824,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "chooser": {
+          "description": "offer the Dropbox Chooser in the file selector.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -21962,6 +21972,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "responseType": {
           "description": "the type of response from the authorization endpoint.",
           "default": "token",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "apiKey": {
+          "description": "API key for the Google Picker.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "appId": {
+          "description": "Cloud project number for the Google Picker.",
+          "default": "",
           "if": {
             "type": "null"
           },

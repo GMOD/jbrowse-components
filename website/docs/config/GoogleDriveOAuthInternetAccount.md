@@ -12,8 +12,9 @@ Google endpoints, read-only Drive scope and domain filled in.
 
 ## Example usage
 
-The Google endpoints and scopes are pre-filled, so an entry needs only your
-own OAuth app's `clientId`.
+The Google endpoints are pre-filled. With the Picker's `apiKey` and `appId`
+set, the `drive.file` scope reads the files a user picks and needs no
+restricted-scope review from Google; see the authentication guide.
 
 ```js
 {
@@ -21,6 +22,9 @@ own OAuth app's `clientId`.
   internetAccountId: 'googleDriveOAuth',
   name: 'Google Drive',
   clientId: 'your-client-id.apps.googleusercontent.com',
+  scopes: 'https://www.googleapis.com/auth/drive.file',
+  apiKey: 'your-browser-api-key',
+  appId: 'your-cloud-project-number',
 }
 ```
 
@@ -40,6 +44,8 @@ Account slots are top-level fields of the account's entry in `internetAccounts`.
 | <span id="slot-scopes">**scopes**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'https://www.googleapis.com/auth/drive.readonly'</code> | optional scopes for the authorization call |
 | <span id="slot-domains">**domains**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['drive.google.com']</code> | array of valid domains the url can contain to use this account |
 | <span id="slot-responsetype">**responseType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'token'</code> | the type of response from the authorization endpoint |
+| <span id="slot-apikey">**apiKey**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Browser API key of the Cloud project that owns `clientId`, with the Google Picker API enabled. Set it with `appId` to offer a "Browse Google Drive" button, which lets the account work with the non-restricted `https://www.googleapis.com/auth/drive.file` scope |
+| <span id="slot-appid">**appId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The Cloud project number, which ties a picked file's `drive.file` grant to this app |
 | <span class="slot-group">Inherited from [OAuthInternetAccount](../oauthinternetaccount)</span> | <span class="slot-group-count">4 slots</span> |
 | <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Bearer'</code> | a custom name for a token to include in the header |
 | <span id="slot-tokenendpoint">**tokenEndpoint**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the token endpoint of the internet account |

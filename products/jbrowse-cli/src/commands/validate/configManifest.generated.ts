@@ -12142,6 +12142,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "responseType",
           "type": "string"
+        },
+        {
+          "name": "chooser",
+          "type": "boolean"
         }
       ]
     },
@@ -12197,6 +12201,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "responseType",
+          "type": "string"
+        },
+        {
+          "name": "apiKey",
+          "type": "string"
+        },
+        {
+          "name": "appId",
           "type": "string"
         }
       ]

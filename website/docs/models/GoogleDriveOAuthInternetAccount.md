@@ -27,6 +27,10 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-googledriveconf">**googleDriveConf**</span><br><code><a href="../../config/googledriveoauthinternetaccount">GoogleDriveOAuthInternetAccountConfig</a></code> |  |
+| <span id="getter-apikey">**apiKey**</span><br><code>string</code> |  |
+| <span id="getter-appid">**appId**</span><br><code>string</code> |  |
+| <span id="getter-browselabel">**browseLabel**</span><br><code>"Browse Google Drive" &#124; undefined</code> | Offered on the web only, and only once the Picker's API key and project number are configured |
 | <span id="getter-togglecontents">**toggleContents**</span><br><code>Element</code> | The FileSelector icon for Google drive |
 | <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string</code> |  |
 
@@ -58,6 +62,7 @@ From [OAuthInternetAccount](../oauthinternetaccount): <span id="method-retriever
 | Member | Description |
 | --- | --- |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  |
+| <span id="action-chooselocation">**chooseLocation**</span><br><code>() =&gt; Promise&lt;UriLocation &#124; undefined&gt;</code> | The Drive link carries the file's name as its last segment so the add-track form can guess the adapter from the extension; the fetcher reads only the id |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited actions from one model</summary>

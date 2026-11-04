@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1259)
+# model members with no description (1263)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -402,6 +402,7 @@ DrawerWidgetSessionMixin.showWidgetDrawer
 DrawerWidgetSessionMixin.updateDrawerWidth
 DrawerWidgetSessionMixin.visibleWidget
 DrawerWidgetSessionMixin.widgets
+DropboxOAuthInternetAccount.dropboxConf
 DropboxOAuthInternetAccount.getFetcher
 DropboxOAuthInternetAccount.selectorLabel
 DropboxOAuthInternetAccount.validateToken
@@ -423,7 +424,10 @@ FeatureGateMixin.densityTooLarge
 FeatureGateMixin.observedMaxDensity
 FeatureGateMixin.setDensityStats
 FetchMixin.setError
+GoogleDriveOAuthInternetAccount.apiKey
+GoogleDriveOAuthInternetAccount.appId
 GoogleDriveOAuthInternetAccount.getFetcher
+GoogleDriveOAuthInternetAccount.googleDriveConf
 GoogleDriveOAuthInternetAccount.openLocation
 GoogleDriveOAuthInternetAccount.selectorLabel
 GoogleDriveOAuthInternetAccount.validateToken

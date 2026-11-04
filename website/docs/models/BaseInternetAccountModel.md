@@ -34,6 +34,7 @@ builds on this model.
 | <span id="getter-togglecontents">**toggleContents**</span><br><code>ReactNode</code> | Can use this to customize what is displayed in fileSelector's toggle box |
 | <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string &#124; undefined</code> | Can use this to add a label to the UrlChooser |
 | <span id="getter-showinfileselector">**showInFileSelector**</span><br><code>boolean</code> | Whether the fileSelector offers this account as a source to pick. Turn it off for an account that only ever matches by domain and has nothing for the user to enter — HTTP Basic, whose ephemeral per-origin accounts would otherwise pile up as toggles nobody asked for. |
+| <span id="getter-browselabel">**browseLabel**</span><br><code>string &#124; undefined</code> | The fileSelector's label for a button that opens the provider's own file picker, for an account that has one; see `chooseLocation` |
 | <span id="getter-tokenkey">**tokenKey**</span><br><code>string</code> | The sessionStorage key that holds this internetAccount's token |
 
 ## Methods
@@ -48,6 +49,7 @@ builds on this model.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-chooselocation">**chooseLocation**</span><br><code>() =&gt; Promise&lt;UriLocation &#124; undefined&gt;</code> | Open the provider's file picker and resolve to the chosen file's location, or undefined if the user cancels |
 | <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_resolve: (token: string) =&gt; void, _reject: (error: Error) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_resolve: (token: string) =&gt; void, _reject: (error: Error) =&gt; void) =&gt; void</code></pre></dialog></span> | Must be implemented by a model extending or composing this one. Pass the user's token to `resolve`. |
 | <span id="action-storetoken">**storeToken**</span><br><code>(token: string) =&gt; void</code> |  |
 | <span id="action-retrievetoken">**retrieveToken**</span><br><code>() =&gt; string &#124; undefined</code> |  |

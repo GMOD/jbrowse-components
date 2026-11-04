@@ -27,6 +27,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-dropboxconf">**dropboxConf**</span><br><code><a href="../../config/dropboxoauthinternetaccount">DropboxOAuthInternetAccountConfig</a></code> |  |
+| <span id="getter-browselabel">**browseLabel**</span><br><code>"Browse Dropbox" &#124; undefined</code> | Offered on the web only, once `chooser` is on: the Chooser runs in a popup, which the desktop navigation guard would send to the system browser |
 | <span id="getter-togglecontents">**toggleContents**</span><br><code>Element</code> | The FileSelector icon for Dropbox |
 | <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string</code> |  |
 | <span id="getter-authflowparams">**authFlowParams**</span><br><code>{ token_access_type: string; }</code> | Dropbox issues a refresh token only when the authorization request asks for offline access, and spells that `token_access_type` where other providers use `access_type` — so it belongs here rather than on every OAuth account. |
@@ -57,6 +59,7 @@ From [OAuthInternetAccount](../oauthinternetaccount): <span id="method-retriever
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-chooselocation">**chooseLocation**</span><br><code>() =&gt; Promise&lt;UriLocation &#124; undefined&gt;</code> | The Chooser needs only the app key, which is the OAuth `clientId`. Its preview link is a shared link, which the fetcher below reads with the user's token |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
