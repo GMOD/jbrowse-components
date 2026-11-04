@@ -1,5 +1,4 @@
 import { CopyToClipboardButton } from '@jbrowse/core/ui'
-import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -44,13 +43,12 @@ const HeaderButtons = observer(function HeaderButtons({
         </Button>
         {/* Copy config dumps the full config JSON including URIs, so it stays
             hidden when hideUris is set — but Show ref names exposes no URIs and
-            remains available */}
+            remains available. Its baseUris stay: they are what lets a relative
+            uri still resolve wherever the copy is pasted */}
         {hideUris ? null : (
           <CopyToClipboardButton
             variant="contained"
-            value={() =>
-              JSON.stringify(stripBaseUris(structuredClone(conf)), null, 2)
-            }
+            value={() => JSON.stringify(conf, null, 2)}
           >
             Copy config
           </CopyToClipboardButton>

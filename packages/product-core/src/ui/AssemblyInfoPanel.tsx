@@ -4,7 +4,6 @@ import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attrib
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { CopyToClipboardButton } from '@jbrowse/core/ui'
-import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
@@ -85,9 +84,7 @@ const AssemblyCard = observer(function AssemblyCard({
         {hideUris ? null : (
           <CopyToClipboardButton
             variant="contained"
-            value={() =>
-              JSON.stringify(stripBaseUris(structuredClone(conf)), null, 2)
-            }
+            value={() => JSON.stringify(conf, null, 2)}
           >
             Copy assembly config
           </CopyToClipboardButton>

@@ -7,13 +7,12 @@ import {
   setQueryParams,
 } from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
-import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { clearCrashedSession } from '../crashedSession.ts'
-import { configBaseUri, resolveConfigPath } from '../resolveConfigPath.ts'
+import { configForAdminSave } from '../resolveConfigPath.ts'
 import FileHandleRestoreBanner from './FileHandleRestoreBanner.tsx'
 import ShareButton from './ShareButton.tsx'
 import { adminServerErrorMessage } from './adminServerError.ts'
@@ -77,10 +76,7 @@ const JBrowse = observer(function JBrowse({
               body: JSON.stringify({
                 adminKey,
                 configPath,
-                config: stripBaseUris(
-                  structuredClone(snapshot),
-                  configBaseUri(resolveConfigPath(configPath)).href,
-                ),
+                config: configForAdminSave(snapshot, configPath),
               }),
             })
             if (!response.ok) {

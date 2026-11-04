@@ -1,18 +1,29 @@
+import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
+
 // Where a jbrowse-web page's config lives, resolved one way for everyone: the
 // explicit ?config= param, else the build-time global, else config.json.
 //
-// Two callers, and they have to agree. SessionLoader resolves it to fetch the
-// config, and fetchRemoteConfig stamps the resulting URL onto every relative
-// uri in it (addRelativeUris) so "volvox.2bit" in data/config.json means
-// data/volvox.2bit. The plugin-reload path then has to re-stamp against the
-// same URL, because the snapshot it hands the replacement app has had those
-// keys stripped on the way out. A second, drifting copy of this resolution
-// would give the replacement a different base than the original fetch used,
-// which is silent: the tracks just 404.
+// Two callers, and they have to agree. fetchRemoteConfig stamps the resolved
+// URL onto every relative uri in the config (addRelativeUris), so "volvox.2bit"
+// in data/config.json means data/volvox.2bit, and the admin save strips exactly
+// that URL back off. A second, drifting copy of this resolution would strip
+// nothing, and every synthetic baseUri would land in the admin's config.json.
 export function resolveConfigPath(configPath?: string) {
   return configPath || window.__jbrowseConfigPath || 'config.json'
 }
 
 export function configBaseUri(configPath: string) {
   return new URL(configPath, window.location.href)
+}
+
+/**
+ * The config as the admin server should write it back: without the baseUris
+ * fetchRemoteConfig stamped, but keeping any its author wrote, or that came in
+ * with something added from elsewhere.
+ */
+export function configForAdminSave<T>(config: T, configPath?: string) {
+  return stripBaseUris(
+    structuredClone(config),
+    configBaseUri(resolveConfigPath(configPath)).href,
+  )
 }

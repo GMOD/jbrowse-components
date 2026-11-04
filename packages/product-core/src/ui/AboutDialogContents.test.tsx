@@ -68,6 +68,34 @@ test('hideUris hides local paths, Copy config and the file header', () => {
   expect(getByText('Show ref names')).toBeTruthy()
 })
 
+test('Copy config keeps the baseUri a relative uri resolves against', () => {
+  const writeText = jest.fn<Promise<void>, [string]>(async () => {})
+  Object.defineProperty(window, 'isSecureContext', {
+    value: true,
+    configurable: true,
+  })
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText },
+    configurable: true,
+  })
+  const bamLocation = {
+    uri: 'x.bam',
+    baseUri: 'https://example.org/hub/config.json',
+    locationType: 'UriLocation',
+  }
+  const { getByText } = renderContents(
+    makeTrackConf({
+      trackId: 'relative',
+      name: 'Relative',
+      adapter: { type: 'BamAdapter', bamLocation },
+    }),
+  )
+  fireEvent.click(getByText('Copy config'))
+  expect(JSON.parse(writeText.mock.calls[0]![0]).adapter.bamLocation).toEqual(
+    expect.objectContaining(bamLocation),
+  )
+})
+
 // regression: the metadata card reused the *config* card's omit list, so a
 // metadata key named after one of those config fields vanished
 test('renders a metadata field named after an omitted config field', () => {
