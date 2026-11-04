@@ -259,8 +259,8 @@ const ConnectionBandResizeHandles = observer(
 )
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a
-// non-collapsed section's pileup bottom, below any room it reserves for a
-// dipping connector, and resizes just that group's band, so
+// non-collapsed section's bottom edge, below any room it reserves for a
+// dipping connector or its label chip, and resizes just that group's band, so
 // a dense section can be shrunk without touching the others.
 const GroupResizeHandles = observer(function GroupResizeHandles({
   model,
@@ -281,16 +281,14 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         if (section.collapsed) {
           return null
         }
-        const bottom = contentScreenY(
-          section.pileupTop + section.pileupHeight + section.dipReserve,
-          scroll,
-        )
+        const sectionBottom = section.coverageTop + section.height
+        const bottom = contentScreenY(sectionBottom, scroll)
         // from the height the lane was given, which can sit between two row
         // boundaries or past its rows, rather than the row-snapped band it
         // shows, so a drag inside one row does not snap back to it. An unsized
-        // lane starts from the seam's own height: a sized lane reserves no dip
-        // room past its size, so starting from the band alone dropped the
-        // reserve on the first frame.
+        // lane starts from the seam's own height, dip room and label floor
+        // included: a sized lane is the height it was given, so starting from
+        // the band alone dropped those on the first frame.
         const given = model.groupSizes.get(section.groupKey)
         return (
           <PileupResizeHandle
@@ -304,7 +302,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
             value={
               typeof given === 'number'
                 ? given
-                : section.pileupHeight + section.dipReserve
+                : sectionBottom - section.pileupTop
             }
             onChange={h => {
               model.setGroupHeight(section.groupKey, h)

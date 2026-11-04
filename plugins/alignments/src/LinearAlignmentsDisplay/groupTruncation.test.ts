@@ -74,11 +74,14 @@ function stackedReads(n: number): WorkerPileupData {
 // afterwards re-partitions the fetch and clears what was just seeded.
 function seed(
   groups: { key: string; label: string; n: number }[],
-  opts: { grouped?: boolean; collapseRows?: boolean } = {},
+  opts: { grouped?: boolean; collapseRows?: boolean; coverage?: boolean } = {},
 ) {
   const display = createEnv()
   if (opts.grouped || opts.collapseRows) {
     display.facetByField('strand')
+  }
+  if (opts.coverage === false) {
+    display.setShowCoverage(false)
   }
   if (opts.collapseRows) {
     display.setCollapseSections(true)
@@ -439,4 +442,21 @@ test.each(['1', '2', '3'])('sizing lane %s moves no other lane', key => {
   expect(heights()).toEqual(before)
   display.setGroupHeight(key, sized.pileupHeight - 20)
   expect(heights()).toEqual(before)
+})
+
+// With coverage hidden a section can be shorter than the band its label chip
+// floors it at, and the divider below it stops there. A handle at the pileup
+// bottom went on up into the lane, off the line it was dragging.
+test('a lane height floors at its label chip with coverage hidden', () => {
+  const display = seed(
+    [
+      { key: '1', label: 'HP: 1', n: 400 },
+      { key: '2', label: 'HP: 2', n: 400 },
+    ],
+    { coverage: false },
+  )
+  display.setGroupHeight('1', 1)
+  const section = display.renderSections[0]!
+  expect(display.groupSizes.get('1')).toBe(display.minSectionHeight)
+  expect(section.pileupHeight).toBe(section.height)
 })

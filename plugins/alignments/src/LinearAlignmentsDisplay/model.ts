@@ -1857,6 +1857,14 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The least height a section takes, so its label chip has room.
+         */
+        get minSectionHeight() {
+          return self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0
+        },
+
+        /**
+         * #getter
          * All vertical band geometry, one entry per lane; ungrouped is the
          * one-lane call. Runs over `drawnLanes` so a display with no data still
          * has a section. The sticky-coverage-vs-scroll distinction lives
@@ -1868,7 +1876,7 @@ export default function stateModelFactory(
             self.belowCoverageBandsSettings,
             {
               rowHeight: self.rowHeight,
-              minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+              minSectionHeight: this.minSectionHeight,
               dipReservePx: (lane, pileupHeight) => {
                 const pairs = self.fitHeightToDisplay
                   ? undefined
@@ -3171,16 +3179,24 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * A stacked group's pileup band height, floored at one row and whole.
+           * A stacked group's pileup band height, whole, and floored at one row
+           * and at what keeps the section as tall as its label chip: below
+           * that the section's bottom edge, where its drag handle sits, stops.
            * It caps the group's rows (`maxRowsFor`) and pads the band where the
            * rows fall short (`minPileupHeight`), so the band follows a drag in
            * both directions, past its content too.
            */
           setGroupHeight(key: string, height: number) {
-            if (self.renderSections.some(s => s.groupKey === key)) {
+            const section = self.renderSections.find(s => s.groupKey === key)
+            if (section) {
+              const bandsAbove = section.pileupTop - section.coverageTop
               self.groupSizes.set(
                 key,
-                Math.max(self.rowHeight, Math.round(height)),
+                Math.max(
+                  self.rowHeight,
+                  self.minSectionHeight - bandsAbove,
+                  Math.round(height),
+                ),
               )
             }
           },
