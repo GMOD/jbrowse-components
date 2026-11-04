@@ -234,6 +234,7 @@ async function applyInit(
     )
     // a list matching nothing in this assembly draws it whole, and warns;
     // `?.length` because `[]` is truthy
+    const whole = assembly.wholeGenomeRegions
     const named = names?.length
       ? resolveNamedRegions({
           regions,
@@ -241,12 +242,13 @@ async function applyInit(
           assemblyName,
           getCanonicalRefName: assembly.getCanonicalRefName2,
           allRefNames: assembly.allRefNames,
+          chromosomes: assembly.chromosomes,
           notify: message => {
             session.notify(message, 'warning')
           },
         })
-      : regions
-    drawn.push(...(named ?? regions))
+      : whole
+    drawn.push(...(named ?? whole))
   }
   if (!drawn.length) {
     throw new Error(
@@ -1480,13 +1482,17 @@ function stateModelFactory(pluginManager: PluginManager) {
           const names = self.displayedRegions
             .filter(r => r.assemblyName === assembly)
             .map(r => r.refName)
-          const whole = session.assemblyManager.get(assembly)?.regions?.length
+          const whole = new Set(
+            session.assemblyManager
+              .get(assembly)
+              ?.wholeGenomeRegions.map(r => r.refName),
+          )
+          const isWholeGenome =
+            names.length === whole.size && names.every(n => whole.has(n))
           return {
             assembly,
             tracks: self.linearTracksFor(assembly),
-            ...(whole !== undefined && names.length < whole
-              ? { displayedRegionNames: names }
-              : {}),
+            ...(isWholeGenome ? {} : { displayedRegionNames: names }),
           }
         }
         void session.launchView('LinearSyntenyView', {

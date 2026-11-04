@@ -31,10 +31,27 @@ export function checkRefName(refName: string) {
   }
 }
 
+export type SequenceRole = Pick<Alias, 'role' | 'molecule'>
+
 export interface RefNameMaps {
   refNameAliases: RefNameAliases
   lowerCaseRefNameAliases: RefNameAliases
   canonicalToSeqAdapterRefNames: Record<string, string>
+  // canonical refName -> what the alias source says the sequence is
+  sequenceRoles: Map<string, SequenceRole>
+}
+
+/**
+ * A nuclear chromosome as NCBI states it: an assembled molecule whose type is a
+ * chromosome or a linkage group. Unlocalized and unplaced scaffolds, alts,
+ * patches and organelles are not.
+ */
+export function isChromosome(sequence: SequenceRole | undefined) {
+  return (
+    sequence?.role === 'assembled-molecule' &&
+    (sequence.molecule === 'Chromosome' ||
+      sequence.molecule === 'Linkage Group')
+  )
 }
 
 // Build the alias/name lookups used throughout the model from the sequence
@@ -46,7 +63,14 @@ export function buildRefNameMaps(
   const fastaRefNames = new Set(regions.map(r => r.refName))
   // no prototype, so a query like "constructor" finds no inherited member
   const refNameAliases: RefNameAliases = Object.create(null)
-  for (const { refName, aliases, override } of refNameAliasCollection) {
+  const sequenceRoles = new Map<string, SequenceRole>()
+  for (const {
+    refName,
+    aliases,
+    override,
+    role,
+    molecule,
+  } of refNameAliasCollection) {
     // override:true (the default), or unset as with chromAlias files whose
     // refName column already matches the FASTA, makes the adapter's refName the
     // canonical name. override:false instead keeps the sequence adapter's own
@@ -60,6 +84,9 @@ export function buildRefNameMaps(
       refNameAliases[alias] = canonical
     }
     refNameAliases[canonical] = canonical
+    if (role || molecule) {
+      sequenceRoles.set(canonical, { role, molecule })
+    }
   }
 
   // identity-map each region's refName (??= so an override alias wins) and
@@ -83,6 +110,7 @@ export function buildRefNameMaps(
     refNameAliases,
     lowerCaseRefNameAliases,
     canonicalToSeqAdapterRefNames,
+    sequenceRoles,
   }
 }
 

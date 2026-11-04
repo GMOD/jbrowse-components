@@ -1,6 +1,11 @@
 import type { Region } from './types/data.ts'
 
 /**
+ * The `displayedRegionNames` entry naming an assembly's nuclear chromosomes
+ */
+export const CHROMOSOMES = 'chromosomes'
+
+/**
  * `*` is the only metacharacter; everything else in a name is matched literally,
  * so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
  * into an accidental pattern. Anchored, so a pattern names whole refNames.
@@ -48,6 +53,11 @@ function globToRegExp(pattern: string) {
  * that IS a contig always resolves to that contig; only a name matching nothing
  * is reinterpreted as a pattern.
  *
+ * The entry `chromosomes` names the assembly's nuclear chromosomes, in assembly
+ * order: what `Assembly.chromosomes` holds where the alias source states each
+ * sequence's role, and nothing where it does not. It is read after the exact
+ * refName, like a glob, so a contig really named `chromosomes` still wins.
+ *
  * Selecting from the assembly's own region objects (rather than synthesizing
  * them) keeps coordinates and lengths correct.
  *
@@ -83,6 +93,7 @@ export function selectNamedRegions(
   names: readonly string[],
   getCanonicalRefName: (name: string) => string | undefined,
   allRefNames?: readonly string[],
+  chromosomes: readonly Region[] = [],
 ): Region[] {
   const byRefName = new Map(regions.map(r => [r.refName, r]))
   // every name a glob may match on — see above for why the absent case is a
@@ -102,6 +113,10 @@ export function selectNamedRegions(
     const exact = byRefName.get(getCanonicalRefName(name) ?? name)
     if (exact) {
       take(exact)
+    } else if (name.toLowerCase() === CHROMOSOMES) {
+      for (const r of chromosomes) {
+        take(byRefName.get(r.refName))
+      }
     } else if (name.includes('*')) {
       const re = globToRegExp(name)
       // Resolve every matching NAME to the region it names, then walk `regions`
@@ -167,6 +182,7 @@ export function resolveNamedRegions({
   assemblyName,
   getCanonicalRefName,
   allRefNames,
+  chromosomes = [],
   notify,
 }: {
   regions: readonly Region[]
@@ -176,6 +192,8 @@ export function resolveNamedRegions({
   // the assembly's aliases as well as its canonical names, so a glob sees what
   // a literal sees — see selectNamedRegions
   allRefNames?: readonly string[]
+  // what the entry `chromosomes` names — see selectNamedRegions
+  chromosomes?: readonly Region[]
   notify: (message: string) => void
 }): Region[] | undefined {
   const picked = selectNamedRegions(
@@ -183,7 +201,13 @@ export function resolveNamedRegions({
     names,
     getCanonicalRefName,
     allRefNames,
+    chromosomes,
   )
+  if (!chromosomes.length && names.some(n => n.toLowerCase() === CHROMOSOMES)) {
+    notify(
+      `${assemblyName} does not say which of its sequences are chromosomes: its refNameAliases states no sequence roles, as an NCBI sequence report does`,
+    )
+  }
   if (picked.length) {
     return picked
   }

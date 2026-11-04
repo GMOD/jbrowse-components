@@ -2932,6 +2932,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * the assembly's whole genome: its chromosomes where it knows them, else
+       * every region (`Assembly.wholeGenomeRegions`)
        */
       showAllRegionsInAssembly(assemblyName?: string) {
         const session = getSession(self)
@@ -2944,9 +2946,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         } else {
           const resolvedName = assemblyName ?? assemblyNames[0]
           const regions = resolvedName
-            ? assemblyManager.get(resolvedName)?.regions
+            ? assemblyManager.get(resolvedName)?.wholeGenomeRegions
             : undefined
-          if (regions) {
+          if (regions?.length) {
             self.setDisplayedRegions(regions)
             self.showAllRegions()
           }

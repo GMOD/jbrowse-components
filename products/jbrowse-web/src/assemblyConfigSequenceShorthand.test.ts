@@ -155,12 +155,17 @@ test('a typed sequence without a trackId gets the derived one', () => {
   expect(model.sequence.trackId).toBe('volvox-ReferenceSequenceTrack')
 })
 
-test('a sequence_report.tsv alias file reads as NCBI, anything else as chromAlias', () => {
+test('an NCBI sequence or assembly report reads as NCBI, anything else as chromAlias', () => {
   const schema = getAssemblyConfigSchema()
   const ncbi = schema.create({
     name: 'a',
     uri: 'a.fa.gz',
     refNameAliases: 'GCF_000001405.40_sequence_report.tsv',
+  })
+  const genark = schema.create({
+    name: 'c',
+    uri: 'c.2bit',
+    refNameAliases: 'GCF_016699485.2_assembly_report.txt',
   })
   const ucsc = schema.create({
     name: 'b',
@@ -169,6 +174,9 @@ test('a sequence_report.tsv alias file reads as NCBI, anything else as chromAlia
   })
 
   expect(ncbi.refNameAliases.adapter.type).toBe(
+    'NcbiSequenceReportAliasAdapter',
+  )
+  expect(genark.refNameAliases.adapter.type).toBe(
     'NcbiSequenceReportAliasAdapter',
   )
   expect(ucsc.refNameAliases.adapter.type).toBe('RefNameAliasAdapter')

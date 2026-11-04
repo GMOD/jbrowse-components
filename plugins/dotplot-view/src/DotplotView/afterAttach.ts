@@ -241,6 +241,7 @@ function applyInitDisplayedRegions(
         assemblyName,
         getCanonicalRefName: all.getCanonicalRefName2,
         allRefNames: all.allRefNames,
+        chromosomes: all.chromosomes,
         notify: message => {
           session.notify(message, 'warning')
         },

@@ -43,6 +43,8 @@ type SyntenyLaunch = LaunchInput<LinearSyntenyViewCommands> & {
 function rowRegions(
   asm: {
     regions?: Region[]
+    chromosomes: Region[]
+    wholeGenomeRegions: Region[]
     allRefNames?: string[]
     getCanonicalRefName2: (n: string) => string
   },
@@ -50,7 +52,7 @@ function rowRegions(
   names: string[] | undefined,
   notify: (message: string) => void,
 ) {
-  const all = asm.regions ?? []
+  const all = asm.wholeGenomeRegions
   if (!names?.length) {
     return all
   }
@@ -60,11 +62,12 @@ function rowRegions(
   // something a spec author does.
   return (
     resolveNamedRegions({
-      regions: all,
+      regions: asm.regions ?? [],
       names,
       assemblyName,
       getCanonicalRefName: asm.getCanonicalRefName2,
       allRefNames: asm.allRefNames,
+      chromosomes: asm.chromosomes,
       notify,
     }) ?? all
   )

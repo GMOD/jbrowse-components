@@ -16,7 +16,7 @@ Every setting goes directly on the view object, on every door below.
   assembly: string          // required
   loc?: string              // 'chr1:1,000-2,000'; omit for a whole-genome view
   grow?: number             // pad around loc for context — 0.2 adds 20% each side
-  displayedRegionNames?: string[]  // with no loc, restrict + order the chromosomes
+  displayedRegionNames?: string[]  // with no loc, restrict + order the chromosomes; 'chromosomes', '*_hap1' allowed
   tracks?: TrackInit[]      // tracks to open
   tracklist?: boolean       // open the track selector drawer (default false)
   nav?: boolean             // show the navigation header (default true)

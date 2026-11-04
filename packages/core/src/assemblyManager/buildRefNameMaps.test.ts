@@ -1,4 +1,4 @@
-import { buildRefNameMaps } from './refNameMaps.ts'
+import { buildRefNameMaps, isChromosome } from './refNameMaps.ts'
 
 // chromAlias-style: refName column matches the FASTA, no override flag
 test('chromAlias-style aliases map every alias to the refName column', () => {
@@ -61,4 +61,50 @@ test('prototype member names are ordinary names', () => {
   expect(refNameAliases.constructor).toBe('constructor')
   expect(refNameAliases.toString).toBeUndefined()
   expect(lowerCaseRefNameAliases.hasOwnProperty).toBeUndefined()
+})
+
+test('roles are keyed by the canonical name, whichever name the row gives', () => {
+  const { sequenceRoles } = buildRefNameMaps(
+    [{ refName: 'NC_000001.11' }, { refName: 'NC_012920.1' }],
+    [
+      {
+        ...ncbiAlias,
+        override: false,
+        role: 'assembled-molecule',
+        molecule: 'Chromosome',
+      },
+      {
+        refName: 'chrM',
+        aliases: ['NC_012920.1', 'chrM'],
+        override: false,
+        role: 'assembled-molecule',
+        molecule: 'Mitochondrion',
+      },
+    ],
+  )
+  expect(Object.fromEntries(sequenceRoles)).toEqual({
+    'NC_000001.11': { role: 'assembled-molecule', molecule: 'Chromosome' },
+    'NC_012920.1': { role: 'assembled-molecule', molecule: 'Mitochondrion' },
+  })
+})
+
+test('a chromAlias row states no role', () => {
+  const { sequenceRoles } = buildRefNameMaps(
+    [{ refName: 'chr1' }],
+    [{ refName: 'chr1', aliases: ['chr1', '1'] }],
+  )
+  expect(Object.fromEntries(sequenceRoles)).toEqual({})
+})
+
+test.each([
+  [{ role: 'assembled-molecule', molecule: 'Chromosome' }, true],
+  [{ role: 'assembled-molecule', molecule: 'Linkage Group' }, true],
+  [{ role: 'assembled-molecule', molecule: 'Mitochondrion' }, false],
+  [{ role: 'unlocalized-scaffold', molecule: 'Chromosome' }, false],
+  [{ role: 'unplaced-scaffold', molecule: 'Chromosome' }, false],
+  [{ role: 'alt-scaffold', molecule: 'Chromosome' }, false],
+  [{ role: 'assembled-molecule' }, false],
+  [undefined, false],
+])('isChromosome(%o) is %s', (sequence, expected) => {
+  expect(isChromosome(sequence)).toBe(expected)
 })

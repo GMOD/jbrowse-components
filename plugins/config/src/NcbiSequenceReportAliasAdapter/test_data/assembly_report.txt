@@ -1,0 +1,9 @@
+# Assembly name:  GRCh38.p14
+# Description:    Genome Reference Consortium Human Build 38 patch release 14 (GRCh38.p14)
+# Organism name:  Homo sapiens (human)
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+1	assembled-molecule	1	Chromosome	CM000663.2	=	NC_000001.11	Primary Assembly	248956422	chr1
+MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM
+HSCHRUN_RANDOM_CTG1	unplaced-scaffold	na	na	GL000195.1	=	NT_113901.1	Primary Assembly	182896	chrUn_GL000195v1
+HSCHR1_3_CTG3	novel-patch	1	Chromosome	KQ458382.1	=	NW_014040925.1	PATCHES	141019	chr1_KQ458382v1_alt

@@ -69,7 +69,7 @@ export function expandSidecarShorthand(
 
 /** The alias adapter an assembly's `refNameAliases` file is read with. */
 export function refNameAliasAdapterType(uri: string) {
-  return /sequence_report\.tsv(\.gz)?$/i.test(uri)
+  return /(sequence_report\.tsv|_assembly_report\.txt)(\.gz)?$/i.test(uri)
     ? 'NcbiSequenceReportAliasAdapter'
     : 'RefNameAliasAdapter'
 }

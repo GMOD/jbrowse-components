@@ -56,8 +56,9 @@ function fileAdapterShorthand(typeFor: (uri: string) => string) {
  * jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
  * extension, derives the `.fai`/`.gzi` siblings, and fills in the
  * `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` are each just their
- * file, as a path or `{ uri }`; an alias file named `…sequence_report.tsv` is
- * read as NCBI's sequence report, anything else as a chromAlias-style table.
+ * file, as a path or `{ uri }`; an alias file named `…sequence_report.tsv` or
+ * `…_assembly_report.txt` is read as NCBI's sequence report, anything else as a
+ * chromAlias-style table.
  * ```js
  * {
  *   name: 'hg38',

@@ -68,10 +68,10 @@ mismatch: the file names its chromosomes `chr1` or `NC_000001.11` where the
 assembly uses `1`, and JBrowse matches by exact name. `refNameAliases` points at
 a tab-separated file, one row per sequence, primary name first. UCSC
 [chromAlias files](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
-are that format; an NCBI `sequence_report.tsv` goes through
-`NcbiSequenceReportAliasAdapter`. [](/docs/developer_guides/refname_aliasing)
-has the adapters and how to see, in the reference track's About dialog, which
-names resolved.
+are that format; an NCBI `sequence_report.tsv` or `_assembly_report.txt` goes
+through `NcbiSequenceReportAliasAdapter`.
+[](/docs/developer_guides/refname_aliasing) has the adapters and how to see, in
+the reference track's About dialog, which names resolved.
 
 ## Configuring alternative genetic codes (translation tables)
 

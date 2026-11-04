@@ -160,6 +160,14 @@ function initialize() {
       getRegionForRefName(refName: string) {
         return self.regions.find(r => r.refName === refName)
       },
+      // volvox's aliases state no sequence roles, so its whole genome is every
+      // region
+      get chromosomes() {
+        return []
+      },
+      get wholeGenomeRegions() {
+        return self.regions
+      },
     }))
     .actions(self => ({
       async load() {},

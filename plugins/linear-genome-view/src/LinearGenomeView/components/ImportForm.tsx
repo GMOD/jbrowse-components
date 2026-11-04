@@ -21,6 +21,7 @@ import {
   navigateToSelectedOption,
   notifySearchFailure,
 } from '../../searchUtils.ts'
+import { showWholeGenomeLabel } from '../showWholeGenomeLabel.ts'
 import { recentLocationOf, recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -210,7 +211,11 @@ const LinearGenomeViewImportForm = observer(
               variant="contained"
               color="secondary"
             >
-              Show all regions in assembly
+              {showWholeGenomeLabel(
+                selectedAsm
+                  ? session.assemblyManager.get(selectedAsm)
+                  : undefined,
+              )}
             </Button>
           </Grid>
         </form>

@@ -8,16 +8,42 @@ import type {
   BaseRefNameAliasAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-// locate a column by its header name, throwing a column-specific error if a
-// required one is absent
-function requireColumn(header: string[], name: string) {
-  const idx = header.indexOf(name)
+// NCBI publishes the same table in two spellings: the Datasets
+// `sequence_report.tsv` and the older `<accession>_assembly_report.txt`, whose
+// header is the last of its `#` comment lines and which UCSC GenArk hubs ship.
+// Each column is listed by both names, Datasets' first.
+const columnNames = {
+  genBank: ['GenBank seq accession', 'GenBank-Accn'],
+  refSeq: ['RefSeq seq accession', 'RefSeq-Accn'],
+  ucsc: ['UCSC style name', 'UCSC-style-name'],
+  sequenceName: ['Sequence name', 'Sequence-Name'],
+  role: ['Role', 'Sequence role', 'Sequence-Role'],
+  molecule: ['Molecule type', 'Assigned-Molecule-Location/Type'],
+}
+
+function findColumn(header: string[], names: string[]) {
+  return header.findIndex(h => names.includes(h))
+}
+
+function requireColumn(header: string[], names: string[]) {
+  const idx = findColumn(header, names)
   if (idx === -1) {
     throw new Error(
-      `sequence_report.tsv header is missing required column "${name}"`,
+      `sequence report header is missing required column "${names[0]}"`,
     )
   }
   return idx
+}
+
+function splitHeader(rows: string[][]) {
+  const comments = rows.filter(cols => cols[0]!.startsWith('#'))
+  const last = comments.at(-1)
+  return last
+    ? {
+        header: [last[0]!.replace(/^#\s*/, ''), ...last.slice(1)],
+        dataRows: rows.filter(cols => !cols[0]!.startsWith('#')),
+      }
+    : { header: rows[0]!, dataRows: rows.slice(1) }
 }
 
 export default class NcbiSequenceReportAliasAdapter
@@ -34,29 +60,39 @@ export default class NcbiSequenceReportAliasAdapter
       return []
     }
     const override = this.getConf('useNameOverride')
-    const header = rows[0]!
-    const dataRows = rows.slice(1)
-    const genBankIdx = requireColumn(header, 'GenBank seq accession')
-    const refSeqIdx = requireColumn(header, 'RefSeq seq accession')
-    const ucscIdx = requireColumn(header, 'UCSC style name')
-    // Sequence name is optional; -1 means absent
-    const seqNameIdx = header.indexOf('Sequence name')
-    const seqName = (cols: string[]) =>
-      seqNameIdx === -1 ? undefined : cols[seqNameIdx]
+    const { header, dataRows } = splitHeader(rows)
+    const genBankIdx = requireColumn(header, columnNames.genBank)
+    const refSeqIdx = requireColumn(header, columnNames.refSeq)
+    const ucscIdx = requireColumn(header, columnNames.ucsc)
+    const seqNameIdx = findColumn(header, columnNames.sequenceName)
+    const roleIdx = findColumn(header, columnNames.role)
+    const moleculeIdx = findColumn(header, columnNames.molecule)
+    // an assembly report writes `na` where the Datasets file leaves a cell empty
+    const cell = (cols: string[], idx: number) => {
+      const value = idx === -1 ? undefined : cols[idx]
+      return value && value !== 'na' ? value : undefined
+    }
 
-    // refName comes from the UCSC name, falling back to the Sequence name; the
-    // filter guarantees one is present, so every mapped row has a truthy refName
-    return dataRows
-      .filter(cols => !!cols[ucscIdx] || !!seqName(cols))
-      .map(cols => ({
-        refName: (cols[ucscIdx] || seqName(cols))!,
-        aliases: [
-          cols[genBankIdx],
-          cols[refSeqIdx],
-          cols[ucscIdx],
-          seqName(cols),
-        ].filter((f): f is string => !!f),
-        override,
-      }))
+    return dataRows.flatMap(cols => {
+      const refName = cell(cols, ucscIdx) ?? cell(cols, seqNameIdx)
+      const role = cell(cols, roleIdx)
+      const molecule = cell(cols, moleculeIdx)
+      return refName
+        ? [
+            {
+              refName,
+              aliases: [
+                cell(cols, genBankIdx),
+                cell(cols, refSeqIdx),
+                cell(cols, ucscIdx),
+                cell(cols, seqNameIdx),
+              ].filter(f => f !== undefined),
+              override,
+              ...(role ? { role } : {}),
+              ...(molecule ? { molecule } : {}),
+            },
+          ]
+        : []
+    })
   }
 }

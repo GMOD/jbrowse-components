@@ -1249,7 +1249,8 @@ export default function stateModelFactory(pm: PluginManager) {
           for (const [i, axis] of self.views.entries()) {
             if (axis.displayedRegions.length === 0) {
               axis.setDisplayedRegions(
-                assemblyManager.get(assemblyNames[i]!)?.regions ?? [],
+                assemblyManager.get(assemblyNames[i]!)?.wholeGenomeRegions ??
+                  [],
               )
               changed = true
             }

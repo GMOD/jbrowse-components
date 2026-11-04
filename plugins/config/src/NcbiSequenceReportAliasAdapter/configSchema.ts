@@ -12,7 +12,10 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config NcbiSequenceReportAliasAdapter
  * Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
- * file.
+ * file, or the older `<accession>_assembly_report.txt` that UCSC GenArk hubs
+ * ship, along with each sequence's role (`assembled-molecule`,
+ * `unplaced-scaffold`, `alt-scaffold`, ...) and molecule type (`Chromosome`,
+ * `Mitochondrion`, ...).
  *
  * #example
  * Goes on an ASSEMBLY, under `refNameAliases` — not on a track. The file ships
@@ -70,9 +73,10 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
-     * location of the `sequence_report.tsv` NCBI publishes with an assembly. It
-     * lists the RefSeq, GenBank and UCSC-style name of every sequence, so one
-     * file aliases them all without hand-writing a chromAlias table.
+     * location of the `sequence_report.tsv` (or `_assembly_report.txt`) NCBI
+     * publishes with an assembly. It lists the RefSeq, GenBank and UCSC-style
+     * name of every sequence, so one file aliases them all without
+     * hand-writing a chromAlias table.
      */
     location: {
       type: 'maybeFileLocation',

@@ -1,4 +1,7 @@
-Sequence name	Sequence role	GenBank seq accession	RefSeq seq accession	UCSC style name
-1	assembled-molecule	CM000663.2	NC_000001.11	chr1
-2	assembled-molecule	CM000664.2	NC_000002.12	chr2
-MT	assembled-molecule	J01415.2	NC_012920.1	chrM
+Assembly Accession	Assembly Unplaced Count	Assembly-unit name	Chromosome name	GC Count	GC Percent	GenBank seq accession	Molecule type	Ordering	RefSeq seq accession	Role	Seq length	Sequence name	UCSC style name	Unlocalized Count
+GCF_000001405.40		Primary Assembly	1	103674491	41.5	CM000663.2	Chromosome	1	NC_000001.11	assembled-molecule	248956422	1	chr1	9
+GCF_000001405.40		Primary Assembly	2	101284083	40.5	CM000664.2	Chromosome	2	NC_000002.12	assembled-molecule	242193529	2	chr2	2
+GCF_000001405.40		non-nuclear	MT	7350	44.5	J01415.2	Mitochondrion		NC_012920.1	assembled-molecule	16569	MT	chrM	
+GCF_000001405.40		Primary Assembly	1			KI270706.1	Chromosome	1	NT_187361.1	unlocalized-scaffold	175055	HSCHR1_CTG1_UNLOCALIZED	chr1_KI270706v1_random	9
+GCF_000001405.40		Primary Assembly	Un			GL000195.1	Chromosome	9999	NT_113901.1	unplaced-scaffold	182896	HSCHRUN_RANDOM_CTG1	chrUn_GL000195v1	
+GCF_000001405.40		ALT_REF_LOCI_1	1			GL383518.1	Chromosome	1	NW_003315905.1	alt-scaffold	182439	HSCHR1_1_CTG31	chr1_GL383518v1_alt	9

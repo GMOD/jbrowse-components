@@ -26,6 +26,7 @@ import { defaultRefNameColors } from './refNameColors.ts'
 import { refNameMapKey } from './refNameMapKey.ts'
 import {
   buildRefNameMaps,
+  isChromosome,
   checkRefName,
   groupNamesByCanonicalRefName,
 } from './refNameMaps.ts'
@@ -38,7 +39,11 @@ import type { Feature, Region } from '../util/index.ts'
 import type { RpcStatus } from '../util/progress.ts'
 import type { BaseAssemblyConfigSchema } from './assemblyConfigSchema.ts'
 import type { ContigLengthMismatch } from './contigLengthMismatch.ts'
-import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
+import type {
+  RefNameAliases,
+  RefNameMaps,
+  SequenceRole,
+} from './refNameMaps.ts'
 import type { RefNameMismatch } from './refNameMismatch.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -114,6 +119,12 @@ export default function assemblyFactory(
          * #volatile
          */
         refNameAliases: undefined as RefNameAliases | undefined,
+        /**
+         * #volatile
+         * canonical refName -> the sequence's role and molecule type, from an
+         * alias source that states them (an NCBI sequence report)
+         */
+        sequenceRoles: undefined as Map<string, SequenceRole> | undefined,
 
         /**
          * #volatile
@@ -287,6 +298,7 @@ export default function assemblyFactory(
         refNameAliases,
         lowerCaseRefNameAliases,
         canonicalToSeqAdapterRefNames,
+        sequenceRoles,
         cytobands,
         geneticCodes,
       }: RefNameMaps & {
@@ -298,6 +310,7 @@ export default function assemblyFactory(
         self.refNameAliases = refNameAliases
         self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
         self.canonicalToSeqAdapterRefNames = canonicalToSeqAdapterRefNames
+        self.sequenceRoles = sequenceRoles
         self.cytobands = cytobands
         self.loadedGeneticCodes = geneticCodes
       },
@@ -524,6 +537,28 @@ export default function assemblyFactory(
        */
       get refNames() {
         return self.regions?.map(region => region.refName)
+      },
+      /**
+       * #getter
+       * the nuclear chromosomes, in assembly order: the regions whose alias
+       * source states them assembled chromosomes or linkage groups. Empty when
+       * it states no roles, and before the regions load.
+       */
+      get chromosomes() {
+        const roles = self.sequenceRoles
+        return roles
+          ? (self.regions ?? []).filter(r => isChromosome(roles.get(r.refName)))
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * what a view of the whole genome shows: the chromosomes where the
+       * assembly knows them, else every region. Empty before the regions load.
+       */
+      get wholeGenomeRegions() {
+        return self.chromosomes.length ? self.chromosomes : (self.regions ?? [])
       },
     }))
     .views(self => ({
