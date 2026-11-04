@@ -764,7 +764,8 @@
       "names": [
         "buildRefNameMaps",
         "checkRefName",
-        "groupNamesByCanonicalRefName"
+        "groupNamesByCanonicalRefName",
+        "isChromosome"
       ],
       "worker": "real"
     },
@@ -2969,7 +2970,8 @@
       "package": "@jbrowse/core",
       "names": [
         "convertCodingSequenceToPeptides",
-        "translExceptProteinPositions"
+        "translExceptProteinPositions",
+        "translateStitchedCDS"
       ],
       "worker": "real"
     },

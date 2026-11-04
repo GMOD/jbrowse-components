@@ -113,9 +113,9 @@ export interface InitState {
   showHitTrack?: boolean
   assembly: string
   // restrict a whole-genome view to these assembly refNames (whole
-  // chromosomes), in the order given — e.g. the main chromosomes without the
-  // unplaced/alt contigs. Names resolve through the assembly's aliases. Ignored
-  // when `loc` is set (which navigates to a single region instead).
+  // chromosomes), in the order given. Names resolve through the assembly's
+  // aliases, and may be globs or `chromosomes` (see selectNamedRegions).
+  // Ignored when `loc` is set (which navigates to a single region instead).
   displayedRegionNames?: string[]
   tracks?: TrackInit[]
   tracklist?: boolean
