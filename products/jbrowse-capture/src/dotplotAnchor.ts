@@ -34,7 +34,7 @@ import type { Page } from 'puppeteer'
 export async function dotplotAnchorRect(
   page: Page,
   anchor: AnnotationAnchor,
-  wantBounds: boolean,
+  wantBounds = false,
 ): Promise<ViewportRect | undefined> {
   return page.evaluate(
     (viewPath: number[], h: AnchorLocus | null, v: AnchorLocus | null) => {
