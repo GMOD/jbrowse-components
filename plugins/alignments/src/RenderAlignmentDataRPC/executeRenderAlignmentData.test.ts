@@ -59,6 +59,7 @@ function run(
     baseLayer?: BaseLayer
     facet?: WorkerFacet
     filter?: FieldPredicate[]
+    tooltipField?: string
   },
   featuresArray: Feature[] = spliced,
 ) {
@@ -214,4 +215,47 @@ test('a mapq floor shapes the band', async () => {
   )
   expect(band).toEqual(passing)
   expect(band).not.toEqual(await bandOf([...concordant, ...repeats]))
+})
+
+// an MCScan gene pair: the queried side's gene, and the ortholog as `mate`
+const anchors = [
+  new SimpleFeature({
+    uniqueId: 'a0',
+    refName: 'ctgA',
+    start: 20,
+    end: 120,
+    strand: 1,
+    name: 'geneA',
+    mate: {
+      name: 'orthoA',
+      refName: 'ctgB',
+      start: 500,
+      end: 600,
+      assemblyName: 'mouse',
+    },
+  }),
+]
+
+test("a synteny block's hover lines come from its mate", async () => {
+  const result = await run(
+    {
+      showCoverage: false,
+      tooltipField: "jexl:get(feature,'mate').name",
+    },
+    anchors,
+  )
+  if ('regionTooLarge' in result) {
+    throw new Error('the mocked adapter measured no bytes')
+  }
+  const [group] = result.value.groups
+  expect(group?.data.readTooltipValues).toEqual(['orthoA'])
+  expect(group?.data.readMateLines).toEqual(['orthoA mouse ctgB:501-600'])
+})
+
+test('reads with no mate ship no mate lines', async () => {
+  const result = await run({ showCoverage: false })
+  if ('regionTooLarge' in result) {
+    throw new Error('the mocked adapter measured no bytes')
+  }
+  expect(result.value.groups[0]?.data.readMateLines).toBeUndefined()
 })

@@ -28,6 +28,9 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // `encoding.color.field`, which ships a value per read under a tag, an
   // attribute or `mateRefName` and is read by no other field
   colorField?: string
+  // `tooltip.field`, the read hover's first line, read per drawn read; unset
+  // or '' ships no column
+  tooltipField?: string
   // the per-base layer, which extracts beside whatever fills the reads
   baseLayer?: BaseLayer
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
@@ -341,6 +344,14 @@ export interface WorkerPileupData {
   // see `extractFeatureArrays` for why that is the whole of the optimization
   // here and why the walk itself is unconditional.
   readSuppAlignments?: string[]
+
+  // Per-read `tooltip.field` values, the read hover's first line, '' where the
+  // field read nothing. Absent when the field is unset or nothing answered it.
+  readTooltipValues?: string[]
+
+  // Per-read `Mate:` hover line, a synteny block's other side. Absent when no
+  // read carries a `mate`, which no BAM or CRAM record does.
+  readMateLines?: string[]
 
   // Per-read category bits (`@jbrowse/alignments-core`'s readCategoryBits.ts),
   // answered over the whole record rather than the gap arrays, which hold only

@@ -2823,6 +2823,7 @@ export default function stateModelFactory(
             // shader-decided fields leaves these props identical and repaints
             // without a refetch.
             colorField: workerColorField(self.colorField),
+            tooltipField: self.tooltipField,
             baseLayer: self.baseLayer,
             // Chain layout reads neither the sort tag nor soft-clipped bases,
             // so chain mode sends neither and "Show soft clipping" stays live

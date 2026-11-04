@@ -46,7 +46,7 @@ a file, and fails on a key it does not know.
 | `ReferenceSequenceTrack` | `rendering` | dropped |
 |  | type `LinearGCContentDisplay`, type `LinearGCContentTrackDisplay`, type `MultiLinearWiggleDisplay` | dropped |
 | `SyntenyTrack` | `trackIds` | dropped |
-| Every display but `ChordSyntenyDisplay`, `ChordVariantDisplay`, `DotplotDisplay`, `LinearBasicDisplay`, `LinearReferenceSequenceDisplay`, `LinearSyntenyDisplay`, `LinearVariantDisplay` | `maxFeatureScreenDensity`, `mouseover` | dropped |
+| Every display but `ChordSyntenyDisplay`, `ChordVariantDisplay`, `DotplotDisplay`, `LinearBasicDisplay`, `LinearReferenceSequenceDisplay`, `LinearSyntenyDisplay`, `LinearVariantDisplay` | `maxFeatureScreenDensity` | dropped |
 | Every display but `ChordSyntenyDisplay`, `ChordVariantDisplay`, `DotplotDisplay`, `LinearReferenceSequenceDisplay`, `LinearSyntenyDisplay` | `maxDisplayedBpPerPx` | dropped |
 | Every display but `ChordSyntenyDisplay`, `ChordVariantDisplay`, `DotplotDisplay`, `LinearSyntenyDisplay` | `heightPreConfig` (session) | `height` |
 | `ChordSyntenyDisplay`, `ChordVariantDisplay`, `DotplotDisplay`, `LinearSyntenyDisplay` | `heightPreConfig` (session) | dropped |
@@ -67,6 +67,7 @@ a file, and fails on a key it does not know.
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearMafDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `jexlFilters` | dropped |
 | `LDTrackDisplay`, `LinearBasicDisplay` | `showLabels` | `labels.name.show` |
 | `LDTrackDisplay`, `LinearBasicDisplay`, `LinearVariantDisplay` | `maxHeight` | dropped |
+| `LDTrackDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `mouseover` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
 |  | `featureHeight` | `pileup.mark.height` |
@@ -81,6 +82,7 @@ a file, and fails on a key it does not know.
 |  | `scaleType` | `coverage.encoding.y.scale.type` |
 |  | `snpCoverageDisplay` | `coverage.encoding.y.scale.domainMin`, `coverage.height` |
 |  | `defaultRendering`, `hideLargeIndels`, `hideSmallIndels`, `jitter`, `minSubfeatureWidth`, `multiTicks` | dropped |
+| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearBasicDisplay` | `mouseover` | `tooltip.field` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
 | `LinearAlignmentsDisplay` | `colorBy` | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
 |  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `sashimi.show: false` |
@@ -107,7 +109,6 @@ a file, and fails on a key it does not know.
 |  | `displayMode: "collapse"`, `displayMode: "reducedRepresentation"` | `displayMode: "normal"` |
 |  | `featureHeight` | `mark.height` |
 |  | `geneGlyphMode: "longest"`, `geneGlyphMode: "longestCoding"` | `geneGlyphMode: "representative"` |
-|  | `mouseover` | `tooltip.field` |
 |  | `renderer` | `encoding.color.value`, `utrs.encoding.color.value` |
 |  | `showDescriptions` | `labels.description.show` |
 |  | `subfeatureLabels` | `labels.subfeatures.placement`, `labels.subfeatures.show` |
@@ -130,6 +131,7 @@ a file, and fails on a key it does not know.
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
 |  | type `LinearPairedArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link","transform":[{"type":"mate"}],"encoding":{"x2":{"refName":"mate.refName","pos":"mate.start"}}}]` |
 | `LinearPairedArcDisplay` | `color`, `renderer` | dropped |
+| `LinearSNPCoverageDisplay` | `mouseover` | dropped |
 | `LinearSyntenyDisplay` | `middle` | dropped |
 |  | `alpha` (session) | `encoding.opacity` on `LinearSyntenyView` |
 |  | `colorBy` (session) | `encoding.color.field` on `LinearSyntenyView` |

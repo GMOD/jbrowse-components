@@ -261,8 +261,9 @@ against the code, checked the spelling twice.
   no config, figure spec or menu wrote them, and `labels.<part>.show` is the
   one label control.
 - **`tooltip: { show, field }`** replaces `mouseover`, as the multi-sample
-  display's `tooltip` is a part. `mouseover` lifts until the hosted hub
-  configs regenerate with `tooltip`.
+  display's `tooltip` is a part. `mouseover` lifts permanently: hosts outside
+  the hub configs write it too (amended 2026-11-04, #5641, where the
+  alignments displays took a field-only `tooltip` and the same lift, ADR-240).
 - **`geneGlyphMode: 'representative'`** replaces `longestCoding`, which
   lifts for v4 configs. The mode draws the first isoform by `transcripts.sort`.
 - **Cut:** `subParts` (the coding-transcript glyph draws its CDS and UTR

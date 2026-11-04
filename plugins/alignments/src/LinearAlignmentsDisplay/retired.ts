@@ -54,8 +54,9 @@ export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'LinearSNPCoverageDisplay',
     // coverage.height with height, else the band keeps its 45px default under a
-    // 250px display and leaves 200px blank
-    migrate: entry =>
+    // 250px display and leaves 200px blank; its `mouseover` named a coverage
+    // bin's hover, not a read's
+    migrate: ({ mouseover: _mouseover, ...entry }) =>
       underEntry(
         { pileup: { show: false }, coverage: { height: 100 }, height: 100 },
         entry,
@@ -191,14 +192,16 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
 
 // v1.2-v4.3's container held the pileup display's config and the coverage
 // display's as sub-configs; each lifts onto this display, the coverage one's
-// height as the band's.
+// height as the band's. The coverage display's `mouseover` named a bin's hover,
+// which no read hover reads.
 function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
   if (!isObject(block)) {
     return {}
   }
   const { type: _type, displayId: _displayId, height, ...rest } = block
+  const { mouseover: _binHover, ...coverageRest } = rest
   return applyRetiredSpellings(retiredConfigSpellings, {
-    ...rest,
+    ...(band === 'pileup' ? rest : coverageRest),
     ...(band === 'coverage' && height !== undefined
       ? { coverage: { height } }
       : {}),
@@ -238,6 +241,8 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   mismatchAlpha: v => ({ pileup: { mismatches: mismatchFadeOf(v) } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
+  // permanent: hosts still write v4's spelling; v4's pileup read none of it
+  mouseover: field => ({ tooltip: { field } }),
   // last: where two lifts land on one member the first declared wins, and a
   // display's own featureHeight or mismatchAlpha beats its renderer's
   renderers: rendererSlotsOf,

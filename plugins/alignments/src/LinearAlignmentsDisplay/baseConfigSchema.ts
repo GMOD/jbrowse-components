@@ -16,6 +16,7 @@ import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
 import { pileupConfigSchema } from './pileupConfigSchema.ts'
 import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
+import { readTooltipConfigSchema } from './readTooltipConfigSchema.ts'
 import { liftV4Filter, retiredConfigSpellings } from './retired.ts'
 
 import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
@@ -143,6 +144,12 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `breakpoint` filter fields filter the connections drawn.
      */
     readConnections: readConnectionsConfigSchema,
+    /**
+     * #slot tooltip
+     * The read hover's first line, a [](/docs/config/readtooltip) object:
+     * the `field` it reads off each read. A bare string is the field.
+     */
+    tooltip: readTooltipConfigSchema,
   },
   {
     /**

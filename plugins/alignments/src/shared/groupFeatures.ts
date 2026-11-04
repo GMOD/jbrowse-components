@@ -500,20 +500,31 @@ function readDimension(field: string) {
   return isReadDimension(field) ? FACET_DIMENSIONS[field] : undefined
 }
 
+/**
+ * A field's value off one read: a tag through the tag block's targeted decode
+ * (`extractFeatureTagValue`), since this runs per read and `get('tags')`
+ * decodes every tag on it to answer one; any other field, path or `jexl:`
+ * expression through `fieldReader`, which throws here on one that does not
+ * compile.
+ */
+export function readFieldReader(
+  field: string,
+  jexl: JexlInstance | undefined,
+): (feature: Feature) => unknown {
+  const tag = fieldTag(field)
+  return tag === undefined
+    ? fieldReader(field, jexl)
+    : (feature: Feature) => extractFeatureTagValue(feature, tag)
+}
+
 // A field no read dimension names keys by its value, labelled the way the
-// feature displays label a section. A tag reads through the tag block's
-// targeted decode (`extractFeatureTagValue`), since this runs per read and
-// `get('tags')` decodes every tag on it to answer one.
+// feature displays label a section.
 function valueKeyer(
   field: string,
   jexl: JexlInstance | undefined,
 ): FacetDimension['key'] {
-  const tag = fieldTag(field)
-  const { key, sectionLabel } = categoricalField(tag ?? field)
-  const read =
-    tag === undefined
-      ? fieldReader(field, jexl)
-      : (feature: Feature) => extractFeatureTagValue(feature, tag)
+  const { key, sectionLabel } = categoricalField(fieldTag(field) ?? field)
+  const read = readFieldReader(field, jexl)
   return feature => {
     const value = key(read(feature))
     return { key: value, label: sectionLabel(value) }

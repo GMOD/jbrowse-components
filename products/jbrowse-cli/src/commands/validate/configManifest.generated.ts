@@ -4427,6 +4427,21 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
+          "name": "tooltip",
+          "type": "ReadTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "ReadTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
           "name": "sashimi",
           "type": "SashimiConfigurationSchema",
           "subSlots": [
@@ -4507,7 +4522,6 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
         "jexlFilters",
         "defaultRendering",
         "colorScheme",
@@ -4517,7 +4531,8 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth"
+        "minSubfeatureWidth",
+        "mouseover"
       ],
       "aliases": [
         "LinearPileupDisplay",
@@ -5531,6 +5546,21 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
+          "name": "tooltip",
+          "type": "ReadTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "ReadTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
           "name": "data",
           "type": "SyntenyDataConfigurationSchema",
           "subSlots": [
@@ -5575,7 +5605,6 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
         "jexlFilters",
         "defaultRendering",
         "colorScheme",

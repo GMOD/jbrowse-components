@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { waitFor } from '@testing-library/react'
 
@@ -675,6 +675,31 @@ describe('FetchVisibleRegions autorun', () => {
 
     await waitFor(() => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  // the worker reads `tooltip.field` per drawn read, so the column it ships is
+  // stale until a refetch
+  it('refetches when the tooltip field changes', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    setConf(display, ['tooltip', 'field'], 'tags.HP')
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+    expect(mockRpcCall.mock.calls.at(-1)?.[2]).toMatchObject({
+      tooltipField: 'tags.HP',
     })
   })
 

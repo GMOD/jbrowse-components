@@ -1,4 +1,4 @@
-import { readIdAt, svSignalTier } from '@jbrowse/alignments-core'
+import { readIdAt, readNameAt, svSignalTier } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -65,6 +65,7 @@ async function groupsOf(
   featuresArray: Feature[],
   filter: FieldPredicate[] = [],
   facet?: WorkerFacet,
+  tooltipField?: string,
 ) {
   jest
     .mocked(fetchFeaturesFromAdapter)
@@ -81,6 +82,7 @@ async function groupsOf(
       showCoverage: true,
       filter,
       facet,
+      tooltipField,
     },
   })
   if ('regionTooLarge' in result) {
@@ -89,8 +91,12 @@ async function groupsOf(
   return result.value.groups.map(g => g.data)
 }
 
-async function dataOf(featuresArray: Feature[], filter?: FieldPredicate[]) {
-  return (await groupsOf(featuresArray, filter))[0]!
+async function dataOf(
+  featuresArray: Feature[],
+  filter?: FieldPredicate[],
+  tooltipField?: string,
+) {
+  return (await groupsOf(featuresArray, filter, undefined, tooltipField))[0]!
 }
 
 function bytes(buffer: ArrayBuffer) {
@@ -259,4 +265,38 @@ test('a strand facet keeps both mates of an SV-evidence chain', async () => {
     { field: 'strand' },
   )
   expect(sections.map(readKeys)).toEqual([['split/1'], ['split/2']])
+})
+
+// the filters that draw some of the fixture's reads and leave others out
+const PARTIAL_FILTERS = DRAWN_FILTERS.filter(([name]) =>
+  ['svSignal', 'split', 'not split', 'name'].includes(name),
+)
+
+test.each(PARTIAL_FILTERS)(
+  "under a %s filter each tooltip value is its own read's",
+  async (_, filter) => {
+    const d = await dataOf(reads, filter, 'name')
+    const names = Array.from({ length: d.readPositions.length / 2 }, (_, i) =>
+      readNameAt(d, i),
+    )
+    expect(names.length).toBeGreaterThan(0)
+    expect(names.length).toBeLessThan(reads.length)
+    expect(d.readTooltipValues).toEqual(names)
+  },
+)
+
+test('an unset tooltip field ships no column', async () => {
+  const d = await dataOf(reads)
+  expect(d.readTooltipValues).toBeUndefined()
+  expect(d.readMateLines).toBeUndefined()
+})
+
+test('a tag tooltip reads the one tag, never the decoded tag block', async () => {
+  const get = jest.spyOn(Object.getPrototypeOf(reads[0]), 'get')
+  const d = await dataOf(reads, [], 'tags.NM')
+  const askedTags = get.mock.calls.some(([field]) => field === 'tags')
+  get.mockRestore()
+  expect(d.readTooltipValues?.length).toBe(reads.length)
+  expect(d.readTooltipValues?.every(v => /^\d+$/.test(v))).toBe(true)
+  expect(askedTags).toBe(false)
 })

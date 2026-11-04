@@ -285,8 +285,14 @@ export function formatReadTooltip(
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
   const mapq = rpcData.readMapqs[idx]
 
+  const name = readNameAt(rpcData, idx)
+  const title = rpcData.readTooltipValues?.[idx] || name
+  const mate = rpcData.readMateLines?.[idx]
+
   const lines = [
+    ...(title === name || name === '' ? [] : [`Name: ${name}`]),
     `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
+    ...(mate ? [`Mate: ${mate}`] : []),
   ]
 
   if (mapq !== undefined) {
@@ -332,7 +338,7 @@ export function formatReadTooltip(
     lines.push(`Color: ${category}`)
   }
 
-  return { type: 'text', title: readNameAt(rpcData, idx), lines }
+  return { type: 'text', title, lines }
 }
 
 export function formatCigarTooltip(

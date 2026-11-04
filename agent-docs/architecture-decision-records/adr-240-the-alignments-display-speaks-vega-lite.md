@@ -41,6 +41,17 @@ Rejected table has them.
 `insertSizeAndOrientation` is ordinal over its levels, and the band between
 `short` and `long` is the display's `normalInsertSize: { min, max }`
 ([ADR-153](adr-153-every-display-resolves-its-color-through-one-function.md)).
+Amended 2026-11-04 (#5641): the display takes `tooltip`, a field-only
+object, `field` being the read hover's first line, read per drawn read in the
+worker. Unset, the hover is unchanged and nothing ships; a value that reads
+nothing or throws falls back to the read's name, as the feature displays'
+`tooltip.field` does. v4's `mouseover`, top level or under `pileupDisplay`,
+lifts into it permanently, since hosts still write it (AGR's ortholog name on
+LGVSyntenyDisplay); the coverage display's `mouseover`, a bin's hover, drops.
+No `show`: no request turns the alignments hover off, and the closed object
+reports one written. A read carrying a `mate`, a synteny block, adds a `Mate:`
+line to its hover, the other side's name, assembly and span, rather than
+LGVSyntenyDisplay defaulting `tooltip.field` to `mate.name`.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -225,6 +236,7 @@ them in its own stage:
 | `readConnections.lineWidth` | `encoding.strokeWidth`, field-mapped over `reads` as it draws today |
 | `readConnections.color.field` | `encoding.color.field` |
 | `readConnections.showOrdinaryPairs` | `ordinaryPairs.show` |
+| `mouseover` | `tooltip.field` (the read hover's first line) |
 
 ## Rejected
 

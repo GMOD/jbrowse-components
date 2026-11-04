@@ -11,7 +11,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * base declares it, and a display standing apart from the base (wiggle, Hi-C,
  * LD, the mark display) spreads it; a name a display still declares is left
  * alone, so `fetchSizeLimit` lifts nowhere a slot takes it, and `mouseover`
- * stays on the feature displays, the ones whose hover reads it.
+ * stays on the feature displays, the ones whose hover reads it. A display
+ * whose `retired` lifts `mouseover` (the alignments displays', into
+ * `tooltip.field`) wins over the drop here.
  */
 export const retiredBaseDisplaySpellings = {
   maxFeatureScreenDensity: () => ({}),

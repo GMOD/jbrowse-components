@@ -35,6 +35,10 @@ import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
+  buildReadMateLines,
+  buildReadTooltipValues,
+} from '../shared/readHoverLines.ts'
+import {
   buildReadInterchrom,
   buildReadNextRefs,
 } from '../shared/readNextRefs.ts'
@@ -61,6 +65,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Per-group context shared across every section of one fetch. The region
 // sequence, simplex-modification set, and color/softclip flags are global to
@@ -90,6 +95,9 @@ interface GroupContext {
   // One insert-size color scale for every section, from the sample before the
   // category filters (see computePairedInsertSizeStats).
   insertSizeStats: InsertSizeBand | undefined
+  // `tooltip.field`, '' when unset
+  tooltipField: string
+  jexl: JexlInstance
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
 }
@@ -200,6 +208,8 @@ async function buildGroupResult(
     fetchedSegments,
     detectedSimplexModifications,
     insertSizeStats,
+    tooltipField,
+    jexl,
     statusCallback,
     signal,
   } = ctx
@@ -343,6 +353,12 @@ async function buildGroupResult(
 
     readNextPositions: new Uint32Array(drawn.lists.nextPositions),
     readSuppAlignments: drawn.lists.suppAlignments,
+    // off the drawn reads, as the name block is, so index i titles read i
+    // after a filter leaves reads out
+    readTooltipValues: tooltipField
+      ? buildReadTooltipValues(drawn.lists.rawFeatures, tooltipField, jexl)
+      : undefined,
+    readMateLines: buildReadMateLines(drawn.lists.rawFeatures),
     readCategoryBits: drawn.lists.categoryBits,
     readClipAtStart: new Uint32Array(drawn.lists.clipAtStart),
 
@@ -429,6 +445,7 @@ export async function groupsOfFetch({
     regions,
     filter,
     colorField,
+    tooltipField = '',
     baseLayer,
     sortTag,
     facet,
@@ -580,6 +597,8 @@ export async function groupsOfFetch({
     fetchedSegments,
     detectedSimplexModifications,
     insertSizeStats,
+    tooltipField,
+    jexl: pluginManager.jexl,
     statusCallback,
     signal,
   }

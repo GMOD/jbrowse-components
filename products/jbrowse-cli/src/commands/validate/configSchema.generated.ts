@@ -7371,6 +7371,38 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "ReadTooltip": {
+      "title": "ReadTooltip",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "ReadTooltip",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the field the read hover's first line reads, such as \`tags.HP\` or \`mate.name\`, or a \`jexl:\` expression over \`feature\`; unset, the read's name.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "SashimiLabels": {
       "title": "SashimiLabels",
       "type": "object",
@@ -7608,6 +7640,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/ReadConnections"
+          }
+        },
+        "tooltip": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ReadTooltip"
           }
         },
         "sashimi": {
@@ -8767,6 +8807,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/ReadConnections"
           }
         },
+        "tooltip": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ReadTooltip"
+          }
+        },
         "data": {
           "if": {
             "type": "null"
@@ -8785,7 +8833,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -17890,6 +17938,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "readConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
             },
+            "tooltip": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/tooltip"
+            },
             "sashimi": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
             },
@@ -20707,6 +20758,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "readConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
+            },
+            "tooltip": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/tooltip"
             },
             "data": {
               "anyOf": [

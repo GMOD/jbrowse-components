@@ -470,6 +470,7 @@ exports[`every registered schema slot default 1`] = `
     "sort.pos": "maybeNumber = undefined",
     "sort.refName": "maybeString = undefined",
     "sort.within": "maybeNumber = undefined",
+    "tooltip.field": "featureField = """,
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearAlignmentsDisplay": {
@@ -548,6 +549,7 @@ exports[`every registered schema slot default 1`] = `
     "sort.pos": "maybeNumber = undefined",
     "sort.refName": "maybeString = undefined",
     "sort.within": "maybeNumber = undefined",
+    "tooltip.field": "featureField = """,
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearBasicDisplay": {

@@ -212,6 +212,13 @@ export function configSlotViews(
       },
     })
   return {
+    /**
+     * #getter
+     * `tooltip.field`, read raw: '' while unset
+     */
+    get tooltipField(): string {
+      return getConf(self, ['tooltip', 'field'])
+    },
     /** #getter */
     get unit(): AlignmentsUnit {
       return getConf(self, 'unit')
