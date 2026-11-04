@@ -311,14 +311,8 @@ blinded ideator given only a capability sheet, a landscape survey):
   protein it is. CCR5's panel B was turned until the kept and lost halves sat
   side by side, which is what the residue counts say (182 kept, 129 lost in
   6MEO chain B; 184 and 168 over the whole 352).
-- **`products/jbrowse-web/build` in the primary is stale** (2026-10-20 01:38,
-  before the alignments sort took `field`), so the generator with `--port`
-  rejected a session current main accepts. The scratch `shoot.mjs` hid it by
-  loading the hosted build. Capture without `--port` to build the worktree's
-  own, or rebuild the primary's.
 - A 3 Å distance line's label lands on the residue labels; the wild-type
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
-- A commit message containing "update docs" deploys the site.
 - Screen outputs are machine-local scratch, deleted after 30 days untouched: `/var/tmp/hero2/`, `/var/tmp/hero-figures/`,
   `/var/tmp/proto-shots/`, `/var/tmp/sge-screen/`, `/var/tmp/r01-*/`.

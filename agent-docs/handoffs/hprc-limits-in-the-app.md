@@ -62,7 +62,3 @@ differences under 50 bp inside a structural form.
   `docs/handoff/2026-10-31-departures.md`. Step 1 of that handoff, dropping the
   word "deletion" from jumps, needs no format change; the lane header
   (`laneHeader.ts`) and the plugin's `walkLanes.ts` record type are done.
-- **jb2hubs still writes `LinearMultiSampleVariantDisplay`**, so
-  `checkPangenomeLaunches.mjs` fails every Graph and Variants launch on main
-  while the launches work through the alias: item D of
-  [variant-display-merge](variant-display-merge.md).

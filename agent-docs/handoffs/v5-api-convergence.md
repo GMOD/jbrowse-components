@@ -64,10 +64,10 @@ between displays.
    - ggjbrowse's closed-schema bundle drops an old key silently, so every
      rename, and every new key, needs an engine re-pin, an R respell and a
      tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The pin
-     is `5e6d117f55`; `dog10k_lof` keeps its `557791197f` knit until the
+     is v5.0.0-beta.20 (`82a76d8be6`, ggjbrowse `77b4b0a`); `dog10k_lof` keeps its `557791197f` knit until the
      callset host's certificate is renewed.
-   - jb2hubs targets `main` and, once hosted, v5.0.0-beta.18 (its ADR 0002
-     amendment, todo `beta18-joins-host-versions`). The Trix adapter's
+   - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
+     (`HOST_VERSIONS`, `scripts/checkConfigCompat.mjs`). The Trix adapter's
      `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
      dedupes on `ixFilePath`.
    - In-tree writers fail loudly on a dead key: `pnpm check-specs` (in
@@ -94,19 +94,7 @@ between displays.
    plugin's own CI to run the generator without a jbrowse-components
    checkout, and the manifests themselves for the graph, ARG and Apollo
    plugins.
-4. **The row axis owns its settings
-   ([ADR-257](../architecture-decision-records/adr-257-the-row-axis-owns-its-settings.md)).**
-   Its order of work is the plan: the keyed write rule first, then `facet`,
-   then the `rows` fold on wiggle, MAF and the mark family (after the
-   `multirow-spliced-band` session lands), the variant display last with its
-   `unit`, now `rows.field` with haplotype refining sample (built on the
-   worktree), then the writers. Claimed
-   2026-11-02 (worktree `rows-axis`). On main at c7e74e1eef: the
-   keyed write rule, `facet`, and the fold's `rows.axis`, `rows.step`,
-   `rows.colors` and `rows.color`; `rows.groups` and `rows.tree` on the
-   worktree. `pileup.collapsed` (2026-11-01)
-   reaches ggjbrowse only through its engine re-pin.
-5. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
+4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
    direction).
