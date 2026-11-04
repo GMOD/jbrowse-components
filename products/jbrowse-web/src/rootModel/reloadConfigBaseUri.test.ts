@@ -78,13 +78,9 @@ afterEach(() => {
 
 // Installing/updating/removing a plugin flips pluginsUpdated, which makes the
 // autosave autorun hand a config snapshot to reloadPluginManagerCallback for
-// the replacement app to boot from. That snapshot goes through jbrowseModel's
-// snapshotProcessor, whose postProcessor runs stripBaseUris — written for the
-// admin "Save config" flow (JBrowse.tsx POSTs onSnapshot(jbrowse) straight to
-// /updateConfig, so it must not carry synthetic keys). The reload gets caught
-// by it too, and the replacement boots on a config whose relative uris now
-// resolve against the page instead of the config's directory: every such track
-// 404s after any plugin install.
+// the replacement app to boot from. A config snapshot without its baseUris
+// boots a replacement whose relative uris resolve against the page instead of
+// the config's directory: every such track 404s after any plugin install.
 test('the plugin reload hands over a config whose relative uris still resolve', async () => {
   const root = makeRoot()
   const configs: Record<string, unknown>[] = []

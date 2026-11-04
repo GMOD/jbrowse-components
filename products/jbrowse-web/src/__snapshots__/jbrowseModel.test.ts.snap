@@ -23,10 +23,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "ixFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ix",
       },
       "ixxFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
@@ -37,10 +41,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox-rev-del",
       ],
       "ixFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ix",
       },
       "ixxFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ixx",
       },
@@ -80,6 +88,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "twoBitLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -106,6 +116,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "twoBitLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -153,6 +165,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "twoBitLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit_404",
           },
@@ -173,10 +187,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "misc.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "misc.fa",
           },
@@ -197,10 +215,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_del.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_del.fa",
           },
@@ -221,10 +243,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa",
           },
@@ -245,10 +271,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa",
           },
@@ -269,10 +299,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa",
           },
@@ -293,10 +327,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa.fai",
           },
           "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa",
           },
@@ -3745,7 +3783,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "placement": "below",
             },
           },
-          "tooltip": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
+          "tooltip": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
           "type": "LinearBasicDisplay",
         },
       ],

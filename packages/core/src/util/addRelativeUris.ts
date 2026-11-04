@@ -66,18 +66,21 @@ export function withPageBaseUri<T>(config: T): T {
 }
 
 /**
- * Inverse of {@link addRelativeUris}: recursively delete every synthetic
- * `baseUri` key (mutates in place), e.g. before serializing a config snapshot
- * back out in the admin "Save config" flow or a "Copy config" button.
+ * Inverse of {@link addRelativeUris}: recursively delete `baseUri` keys
+ * (mutates in place), e.g. before a "Copy config" button. Given the `base`
+ * addRelativeUris stamped, only the keys equal to it go, so a `baseUri` the
+ * config's author wrote survives the admin "Save config" round trip.
  */
-export function stripBaseUris<T>(config: T): T {
+export function stripBaseUris<T>(config: T, base?: string): T {
   if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
       const obj = config as Record<string, unknown>
       if (key === 'baseUri') {
-        delete obj[key]
+        if (base === undefined || obj[key] === base) {
+          delete obj[key]
+        }
       } else {
-        stripBaseUris(obj[key])
+        stripBaseUris(obj[key], base)
       }
     }
   }

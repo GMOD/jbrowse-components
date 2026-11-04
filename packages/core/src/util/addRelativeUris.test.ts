@@ -115,6 +115,19 @@ test('stripBaseUris round-trips addRelativeUris', () => {
   expect(stripBaseUris(config)).toEqual(original)
 })
 
+test('stripBaseUris given the stamped base keeps a baseUri the author wrote', () => {
+  const base = 'https://example.com/config.json'
+  const config: Record<string, unknown> = {
+    tracks: [
+      { uri: 'a.bam' },
+      { uri: 'b.bam', baseUri: 'https://elsewhere.org/data/' },
+    ],
+  }
+  const original = structuredClone(config)
+  addRelativeUris(config, new URL(base))
+  expect(stripBaseUris(config, base)).toEqual(original)
+})
+
 test('stripBaseUris leaves null values intact and returns the input', () => {
   const obj = { a: null, baseUri: 'x' }
   expect(stripBaseUris(obj)).toBe(obj)

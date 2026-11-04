@@ -3,10 +3,8 @@ import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
-import { configBaseUri, resolveConfigPath } from '../resolveConfigPath.ts'
 import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
 import { claimSessionId, releaseSessionIdsExcept } from '../sessionLock.ts'
-import { addRelativeUris } from '../util.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
@@ -317,28 +315,6 @@ function setupUnloadFlush(self: WebRootModel) {
   })
 }
 
-// The config the replacement app boots from when a plugin is installed.
-//
-// getSnapshot(jbrowse) runs jbrowseModel's snapshotProcessor, whose
-// postProcessor calls stripBaseUris. That is right for the flow it was written
-// for — JBrowse.tsx POSTs onSnapshot(jbrowse) straight to /updateConfig, and an
-// admin's config.json must not grow synthetic keys — and wrong here, because
-// this snapshot is not being serialized out, it is being booted from. Stripped
-// of its baseUris, every relative uri in it resolves against the page instead
-// of the config's directory, so each such track 404s after any plugin install.
-//
-// Re-stamp against the config's own URL, which is what fetchRemoteConfig did to
-// it in the first place. addRelativeUris only fills a baseUri that is absent, so
-// anything carrying its own (a track added from elsewhere) keeps it.
-function configSnapshotForReload(self: WebRootModel) {
-  const snap = structuredClone(getSnapshot(self.jbrowse)) as Record<
-    string,
-    unknown
-  >
-  addRelativeUris(snap, configBaseUri(resolveConfigPath(self.configPath)))
-  return snap
-}
-
 // Mirrors the current session into sessionStorage on every change so a tab
 // reload restores it. Also triggers reloadPluginManager when pluginsUpdated
 // flips.
@@ -398,7 +374,7 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
           if (self.pluginsUpdated && !reloadRequested) {
             reloadRequested = true
             self.reloadPluginManagerCallback(
-              configSnapshotForReload(self),
+              structuredClone(getSnapshot(self.jbrowse)),
               structuredClone(sessionSnap),
             )
           }
