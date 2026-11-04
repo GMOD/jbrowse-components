@@ -36,9 +36,17 @@ export function getMate(feature: Feature) {
  * a comparative view reading it there counted every PAF block as named.
  */
 export function getRecordName(feature: Feature) {
-  const name =
-    'recordName' in feature && typeof feature.recordName === 'function'
-      ? feature.recordName()
-      : feature.get('name')
+  const name = namesItsRecord(feature)
+    ? feature.recordName()
+    : feature.get('name')
   return typeof name === 'string' ? name : undefined
+}
+
+// a SyntenyFeature, whose `get('name')` answers the alignments read name
+interface NamesItsRecord {
+  recordName(): unknown
+}
+
+function namesItsRecord(feature: Feature): feature is Feature & NamesItsRecord {
+  return 'recordName' in feature && typeof feature.recordName === 'function'
 }
