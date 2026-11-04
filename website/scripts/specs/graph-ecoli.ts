@@ -573,8 +573,10 @@ export const pggbVideoFixtures = {
   genesTrack: K12_GENES_SESSION_TRACK,
   locusWindow: PGGB_LOCUS_WINDOW,
   tourWindow: PGGB_TOUR_WINDOW,
-  // The CFT073 allele pangenome/pggb_out_to_strain opens on its own strain.
-  strainLaunchNode: '118465-',
+  // The CFT073 allele pangenome/pggb_out_to_strain opens on its own strain: the
+  // node joining K12 997,574 to 1,004,498. A rebuilt graph renumbers it;
+  // `probe-graph-nodes.ts` prints the cut's ids.
+  strainLaunchNode: '123512+',
   strainLaunchSession: PGGB_STRAIN_LAUNCH,
 }
 
