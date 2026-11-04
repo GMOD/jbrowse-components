@@ -343,8 +343,9 @@ export function connectorShape(
 
 // How far a maps-back loop dips under its row: four rows, so it clears the
 // read's own bar, within bounds that keep it visible on thin rows and local on
-// tall ones. A fixed depth, where a discordant dip grows with the distance
-// spanned and would carry a long duplication's loop across every row below.
+// tall ones. A set depth, where a discordant dip grows with the distance
+// spanned and would carry a long duplication's loop across every row below;
+// zoomed out, the mark shrinks it with its ends like any other dip.
 export const LOOP_MIN_DIP_PX = 10
 export const LOOP_MAX_DIP_PX = 28
 export const LOOP_STROKE_WIDTH_PX = 2

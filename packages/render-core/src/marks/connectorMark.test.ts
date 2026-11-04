@@ -2,7 +2,6 @@ import {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
   CONNECTOR_DASHED,
-  CONNECTOR_FIXED_DIP,
   CONNECTOR_LEADING_2,
   CONNECTOR_MINUS_2,
   CONNECTOR_STRAIGHT,
@@ -117,15 +116,6 @@ test('a dip drops both controls by 4/3 of its depth, and a leading end flips its
   )
   expect(p.y1 - p.y0).toBeCloseTo(40)
   expect(p.x2).toBeLessThan(p.x3)
-})
-
-test('a dip between close ends is no deeper than they are apart, unless its depth is fixed', () => {
-  const capped = cubicOf(channels([{ x: 100, x2: 103, bend: 20 }]))
-  const fixed = cubicOf(
-    channels([{ x: 100, x2: 103, bend: 20, bits: CONNECTOR_FIXED_DIP }]),
-  )
-  expect(capped.y1 - capped.y0).toBeCloseTo(4 / 0.75)
-  expect(fixed.y1 - fixed.y0).toBeCloseTo(20 / 0.75)
 })
 
 test('a reverse strand and a reversed region each flip the far handle, and together cancel', () => {

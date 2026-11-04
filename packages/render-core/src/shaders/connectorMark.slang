@@ -15,7 +15,7 @@
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! coverage: analytic
-//! export-consts: CONNECTOR_CURVE_SEGMENTS, CONNECTOR_BOW, CONNECTOR_MAX_REACH_PX, CONNECTOR_APEX_RATIO, CONNECTOR_MAX_HANDLE_PX, CONNECTOR_MINUS_1, CONNECTOR_MINUS_2, CONNECTOR_LEADING_2, CONNECTOR_STRAIGHT, CONNECTOR_DASHED, CONNECTOR_ARROW, CONNECTOR_FIXED_DIP
+//! export-consts: CONNECTOR_CURVE_SEGMENTS, CONNECTOR_BOW, CONNECTOR_MAX_REACH_PX, CONNECTOR_APEX_RATIO, CONNECTOR_MAX_HANDLE_PX, CONNECTOR_MINUS_1, CONNECTOR_MINUS_2, CONNECTOR_LEADING_2, CONNECTOR_STRAIGHT, CONNECTOR_DASHED, CONNECTOR_ARROW
 //! js-export: connectorBudgetPx, connectorHandlePx, connectorLiftPx, connectorTangent, connectorStrokePx
 
 import antialias;
@@ -46,11 +46,9 @@ public static const float CONNECTOR_APEX_RATIO = 0.75;
 static const float CONNECTOR_MAX_BOW_PX = 30.0;
 // The deepest a dip may reach below its ends, a ceiling on `bend`.
 public static const float CONNECTOR_MAX_REACH_PX = 110.0;
-// A dip reaches no deeper than its ends are apart on screen, so a zoomed-out
-// pair a few px wide draws a shallow trough rather than a tall spike; the floor
-// keeps it reading as a dip.
+// A dip reaches no deeper than its ends are apart on screen, so zoomed out it
+// flattens toward a line rather than drawing a tall spike.
 static const float CONNECTOR_DIP_PER_WIDTH = 1.0;
-static const float CONNECTOR_MIN_DIP_PX = 4.0;
 
 // The `bits` lane.
 public static const uint CONNECTOR_MINUS_1 = 1u;
@@ -59,8 +57,6 @@ public static const uint CONNECTOR_LEADING_2 = 4u;
 public static const uint CONNECTOR_STRAIGHT = 8u;
 public static const uint CONNECTOR_DASHED = 16u;
 public static const uint CONNECTOR_ARROW = 32u;
-// A loop's `bend` is its depth as given, not held to the width between its ends.
-public static const uint CONNECTOR_FIXED_DIP = 64u;
 
 struct ConnectorInstance {
   uint  x        : ATTR0;
@@ -117,12 +113,9 @@ public float connectorHandlePx(float budget, float maxHandlePx) {
 // How far both controls rise above their ends, negative for a dip. A bow fades
 // as the rows separate, since a cross-row curve already has height; a dip is
 // not held to the budget, because a vertical offset cannot fold the curve, but
-// to the width between its ends unless `fixedDip`.
-public float connectorLiftPx(float budget, float dx, float dy, float bend,
-                             float fixedDip) {
-  float widthCap = fixedDip != 0.0
-    ? CONNECTOR_MAX_REACH_PX
-    : max(CONNECTOR_MIN_DIP_PX, abs(dx) * CONNECTOR_DIP_PER_WIDTH);
+// to the width between its ends.
+public float connectorLiftPx(float budget, float dx, float dy, float bend) {
+  float widthCap = abs(dx) * CONNECTOR_DIP_PER_WIDTH;
   return bend < -1.0e29
     ? min(budget, max(0.0, CONNECTOR_MAX_BOW_PX - abs(dy)))
     : -min(min(bend, widthCap), CONNECTOR_MAX_REACH_PX) / CONNECTOR_APEX_RATIO;
@@ -182,8 +175,7 @@ Cubic placeCubic(ConnectorInstance inst, float4 entry2) {
   float2 d = c.p3 - c.p0;
   float budget = connectorBudgetPx(d.x, d.y);
   float handle = connectorHandlePx(budget, u.maxHandlePx);
-  float lift = connectorLiftPx(budget, d.x, d.y, inst.bend,
-                               bitSet(inst.bits, CONNECTOR_FIXED_DIP));
+  float lift = connectorLiftPx(budget, d.x, d.y, inst.bend);
   float t1 = connectorTangent(1.0 - 2.0 * bitSet(inst.bits, CONNECTOR_MINUS_1),
                               0.0, u.ownEntry.w < 0.0 ? 1.0 : 0.0);
   float t2 = connectorTangent(1.0 - 2.0 * bitSet(inst.bits, CONNECTOR_MINUS_2),

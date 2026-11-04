@@ -44,7 +44,6 @@ import {
 import {
   connectorCategories,
   connectorDipReservePx,
-  LOOP_MIN_DIP_PX,
   connectorFilterOf,
   enumerateConnectorPairs,
   resolveConnectors,
@@ -400,7 +399,7 @@ describe('connectors — paired tangent direction', () => {
 })
 
 describe('connectors — discordant curves dip', () => {
-  it('keeps a maps-back loop at its own depth however close its ends sit', () => {
+  it('flattens a maps-back loop with its ends when zoomed out', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -419,9 +418,7 @@ describe('connectors — discordant curves dip', () => {
     })
     const { sx1, sy1, cp1y, sx2 } = controlPoints(loop!.d)
     expect(Math.abs(sx2 - sx1)).toBeCloseTo(2)
-    expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeGreaterThanOrEqual(
-      LOOP_MIN_DIP_PX,
-    )
+    expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeCloseTo(2)
   })
 
   // The shape language is shared with BreakpointSplitView: a plain line is a

@@ -209,8 +209,9 @@ test('a dip reaches the depth it was asked for when its ends are wide enough apa
 test('a dip between ends close together on screen is no deeper than they are apart', () => {
   // zoomed out, a pair a few px wide would otherwise draw as a tall spike
   expect(dipDepth(80, 20)).toBeCloseTo(20)
-  expect(dipDepth(80, 1)).toBeCloseTo(4)
-  expect(dipDepth(2, 1)).toBeCloseTo(2)
+  expect(dipDepth(80, 1)).toBeCloseTo(1)
+  expect(dipDepth(80, 0)).toBeCloseTo(0)
+  expect(dipDepth(2, 5)).toBeCloseTo(2)
 })
 
 test('a dip is bounded by the curve reach the cull pads by', () => {
