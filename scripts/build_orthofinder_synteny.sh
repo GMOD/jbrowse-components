@@ -323,6 +323,13 @@ with zipfile.ZipFile(src) as z:
     with z.open(f'{data}/sequence_report.jsonl') as raw:
         report = [json.loads(b) for b in raw if b.strip()]
     report = [r for r in report if r.get(seqid_key) not in (None, 'na')]
+    # An alt locus or patch repeats primary genes with the same protein ids,
+    # and the protein FASTA lists each id once, so its CDS was the last to
+    # claim the protein: 2,384 human genes reached OrthoFinder only as their
+    # alt-scaffold copy, leaving the chromosome copy linkless.
+    copies = ('alt-scaffold', 'fix-patch', 'novel-patch')
+    dropped = {r[seqid_key] for r in report if r.get('role') in copies}
+    report = [r for r in report if r[seqid_key] not in dropped]
     report.sort(key=lambda r: r.get('sortOrder', 1 << 30))
     chr_names = [
         r.get('chrName') for r in report if r.get('role') == 'assembled-molecule'
@@ -342,8 +349,9 @@ with zipfile.ZipFile(src) as z:
         for line in (b.decode() for b in raw):
             if line.startswith('##sequence-region '):
                 parts = line.split(' ')
-                parts[1] = rename.get(parts[1], parts[1])
-                gff.write(' '.join(parts))
+                if parts[1] not in dropped:
+                    parts[1] = rename.get(parts[1], parts[1])
+                    gff.write(' '.join(parts))
                 continue
             fields = line.rstrip('\n').split('\t')
             if len(fields) != 9:
@@ -351,7 +359,11 @@ with zipfile.ZipFile(src) as z:
                 continue
             # a trans-spliced organelle transcript (maize's mitochondrial nad1)
             # is written with its end before its start, which tabix refuses
-            if fields[2] == 'region' or int(fields[4]) < int(fields[3]):
+            if (
+                fields[0] in dropped
+                or fields[2] == 'region'
+                or int(fields[4]) < int(fields[3])
+            ):
                 continue
             fields[0] = rename.get(fields[0], fields[0])
             gff.write('\t'.join(fields) + '\n')
@@ -626,6 +638,77 @@ with open(f"{dest}.part", "w") as out:
         out.write(f">{name}\n{protein}\n")
 os.replace(f"{dest}.part", dest)
 print(f"{dest}: {len(best)} genes", file=sys.stderr)
+PY
+
+  # BED columns 7-8 (thickStart/thickEnd) are the coding span of the isoform
+  # kept above, which is the one OrthoFinder compared, so a ribbon spans the
+  # protein rather than a gene whose long UTR isoforms reach over a neighbor
+  # (human HOXD3 is 20.6 kb as a gene, 3.2 kb coding). The gene span stays in
+  # columns 2-3, so the rows and every reader of them are unchanged. A gene
+  # with no protein writes thickStart = thickEnd, BED's "no coding span".
+  #
+  # The CDS is found by its protein_id (NCBI) or its parent transcript
+  # (gffread, whose protein ids are transcript ids). A row already carrying the
+  # columns is left alone, so a re-run does not append them twice.
+  python3 - "$name.pep.fa.gz" "$name.gff3.gz" "$name.bed" <<'PY'
+import gzip
+import os
+import re
+import sys
+
+pep, gff, bed = sys.argv[1:]
+best = {}
+gene = protein = None
+length = 0
+
+
+def keep():
+    if gene and length > best.get(gene, ("", 0))[1]:
+        best[gene] = (protein, length)
+
+
+with gzip.open(pep, "rt") as fh:
+    for line in fh:
+        if line.startswith(">"):
+            keep()
+            match = re.search(r"gene:(\S+)", line)
+            gene = match.group(1) if match else None
+            protein = line[1:].split()[0]
+            length = 0
+        else:
+            length += len(line.strip())
+keep()
+
+kept = {p: g for g, (p, _) in best.items()}
+span = {}
+with gzip.open(gff, "rt") as fh:
+    for line in fh:
+        fields = line.rstrip("\n").split("\t")
+        if len(fields) == 9 and fields[2] == "CDS":
+            attrs = dict(kv.split("=", 1) for kv in fields[8].split(";") if "=" in kv)
+            ids = [attrs.get("protein_id"), *attrs.get("Parent", "").split(",")]
+            for owner in (kept.get(i) for i in ids if i):
+                if owner:
+                    lo, hi = int(fields[3]) - 1, int(fields[4])
+                    old = span.get(owner, (lo, hi))
+                    span[owner] = (min(lo, old[0]), max(hi, old[1]))
+                    break
+
+coding = rows = 0
+with open(bed) as fh, open(f"{bed}.part", "w") as out:
+    for line in fh:
+        cols = line.rstrip("\n").split("\t")
+        rows += 1
+        if len(cols) == 6:
+            lo, hi = span.get(cols[3], (int(cols[1]), int(cols[1])))
+            inside = int(cols[1]) <= lo < hi <= int(cols[2])
+            coding += inside
+            cols += [str(lo), str(hi)] if inside else [cols[1], cols[1]]
+        else:
+            coding += len(cols) > 7 and cols[6] != cols[7]
+        out.write("\t".join(cols) + "\n")
+os.replace(f"{bed}.part", bed)
+print(f"{bed}: {coding} of {rows} genes carry a coding span", file=sys.stderr)
 PY
 done
 
