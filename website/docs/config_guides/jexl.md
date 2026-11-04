@@ -55,7 +55,7 @@ An expression reads as JavaScript reads it: `+`, `-`, `*`, `/`, `%`, `==`, `!=`,
 `<`, `&&`, `||`, `!`, `? :`, `.` and `[]` group the same way, and `` `${…}` ``
 template strings work. Beyond JavaScript:
 
-```js
+```text
 jexl: feature.type in ['gene', 'mRNA'] // a member of a list, a substring of a string, or a key of an object
 jexl: feature.type !in ['gene', 'mRNA'] // the negation of in
 jexl: feature.name ~ '^BRCA' // a regular expression match; a leading (?i) ignores case, and !~ negates
