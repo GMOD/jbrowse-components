@@ -204,6 +204,17 @@ describe('collectRenderData peptide overlay', () => {
     expect(result.aminoAcidOverlay).toHaveLength(3)
     expect(result.rectYs).toHaveLength(3)
   })
+
+  it('keeps only the residues its codon rects keep, a straddler included', () => {
+    const cds = mockFeature({ type: 'CDS', id: 'cds1', start: 100, end: 112 })
+    const result = collect(boxLayout(cds), {
+      regionStart: 104,
+      regionEnd: 107,
+      peptideDataMap: new Map([['cds1', { protein: 'MFKL' }]]),
+    })
+    expect(result.aminoAcidOverlay!.map(a => a.aminoAcid)).toEqual(['F', 'K'])
+    expect(result.rectYs).toHaveLength(2)
+  })
 })
 
 // Viral polyprotein: gene → one CDS (the whole ORF) → mature_protein_region

@@ -42,7 +42,7 @@ export interface ArrowData extends PrimitiveBase {
 // Half-open for a real span, but CLOSED at both ends for a degenerate one: a
 // CRISPR cut site or motif tick is a point, and a half-open test drops one
 // sitting exactly on a displayed-region seam.
-function spanInWindow(
+export function spanInWindow(
   start: number,
   end: number,
   regionStart: number,

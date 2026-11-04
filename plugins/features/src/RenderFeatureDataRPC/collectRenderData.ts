@@ -6,7 +6,7 @@ import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
 import { geneTypeTest } from './featureAdmission.ts'
 import { labelKindsOf } from './floatingLabels.ts'
-import { packRenderArrays } from './packRenderArrays.ts'
+import { packRenderArrays, spanInWindow } from './packRenderArrays.ts'
 
 import type { RenderContext } from './collect/renderContext.ts'
 import type { FeatureLayout } from './types.ts'
@@ -46,6 +46,11 @@ export function collectRenderData(
     regionEnd,
     collector.flatbushItems,
   )
+  // The rects' window: a translation places every residue of its CDS, and a
+  // titin isoform would otherwise ship 30k letters to a 2kb view.
+  const aminoAcidOverlay = collector.aminoAcidOverlay.filter(aa =>
+    spanInWindow(aa.startBp, aa.endBp, regionStart, regionEnd),
+  )
 
   return {
     ...packed,
@@ -60,8 +65,6 @@ export function collectRenderData(
       rows: collector.colorKey.rows,
     },
     aminoAcidOverlay:
-      collector.aminoAcidOverlay.length > 0
-        ? collector.aminoAcidOverlay
-        : undefined,
+      aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
   }
 }
