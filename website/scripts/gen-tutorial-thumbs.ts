@@ -53,29 +53,36 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   agent_synteny: {
-    // The X region: two reverse blocks crossing, forward alignment red on both
-    // sides. The 2R figure of the same event is a fan of short blocks, which at
-    // card size reads as noise.
+    // The X region: two reverse blocks crossing, below the location bar. Left
+    // anchored so the forward flank stays beside the start of the inversion.
     src: 'agent_synteny/inversion_x.png',
-    band: [0.1, 1],
-    position: 'center',
-  },
-  alphagenome: {
-    // The claim the page is built on, and the only figure on it that reads at
-    // card size: two predicted RNA-seq rows on one axis with the gene model
-    // above them. Anchored left rather than centered so the row labels — which
-    // are what say the two traces are different cell lines — survive the crop.
-    src: 'alphagenome/expression_two_cell_lines.png',
-    band: [0.24, 0.86],
+    band: [0.255, 0.955],
+    xband: [0.15, 1],
     position: 'left',
   },
+  alphagenome: {
+    // The four predicted accessibility rows on one axis: K562 dense, GM12878
+    // nearly flat over the same TAL1 window.
+    src: 'alphagenome/accessibility_shared_axis.png',
+    band: [0.585, 0.894],
+    xband: [0.2, 0.85],
+    position: 'center',
+  },
   display_settings: {
+    // The left end of the pileup, where colored read pairs and their arcs
+    // cluster beside the plain grey reads.
     src: 'display_settings_url_snapshot.png',
-    band: [0.3, 1],
+    band: [0.43, 0.99],
+    xband: [0.005, 0.3],
+    position: 'left',
   },
   embed_linear_genome_view: {
+    // The colored reference sequence over a gene and the exome reads, without
+    // the track labels.
     src: 'embed_linear_genome_view/final.png',
-    band: [0.06, 0.56],
+    band: [0.12, 0.575],
+    xband: [0.2, 0.8],
+    position: 'center',
   },
   analyze_trio: {
     // the haplotype rows and their labels, starting at the connector zone,
@@ -169,11 +176,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   scrna_pseudobulk: {
-    // the marker panel from the track header down, so the card carries the nine
-    // cell-type labels beside the diagonal the peaks walk down
-    src: 'scrna/marker_panel.png',
-    band: [0.35, 1],
-    position: 'left',
+    // The per-cell LYZ rows: the solid monocyte block under the faint
+    // lymphocyte rows. The marker panel is too wide to keep its diagonal at 5:3.
+    src: 'scrna/percell_lyz.png',
+    band: [0.6, 0.99],
+    xband: [0.3, 0.83],
+    position: 'center',
   },
   ld_human: {
     // The single-panel triangle, which is the lower of the two lanes: the page
@@ -187,15 +195,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   ld_mosquitoes: {
-    // Both lanes over the same span, one filled and one not, which is the whole
-    // figure. This one keeps its callouts rather than framing past them: they sit
-    // at x 0.62-0.9, so every crop that clears them also drops the filled
-    // triangle and leaves a white card. Centered, so the cover-crop takes the
-    // trim off both edges and neither callout ends up half a sentence.
+    // Cameroon's LD block filling the 2La span, with the pale low-LD wedge
+    // beside it and the inversion bar below. xband starts past the callout.
     src: 'ld/anopheles_2la.png',
-    band: [0.05, 1],
-    xband: [0.08, 1],
-    position: 'center',
+    band: [0.196, 0.494],
+    xband: [0.415, 0.89],
+    position: 'top',
   },
   bxd_qtl: {
     // the red/blue haplotype painting under the QTL scan, framed below the
@@ -303,11 +308,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.62, 0.97],
   },
   tp53_structures: {
-    // The canvas with the two crystal fragments on the model, the part of the
-    // frame that says "three structures" without reading a panel.
+    // The 1TUP canvas below its callout: p53 on the DNA with R248 and its
+    // contacts in magenta.
     src: 'protein/tp53_hotspot.png',
-    band: [0.75, 0.97],
-    xband: [0.58, 0.96],
+    band: [0.26, 0.75],
+    xband: [0.6, 0.975],
+    position: 'center',
   },
   protein_variants_sickle_cell: {
     src: 'protein/hbb_codon_hover.png',
@@ -364,17 +370,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   hg002_haplotypes: {
-    // The ribbon band with a chain track above and below it, which is the whole
-    // shape of this card: one sweep crossing between two haplotypes of the same
-    // chromosome, and the same block as a long reverse-strand bar on each side
-    // of it. Still a left frame, but no longer to dodge the "No tracks active"
-    // chip (the panels carry tracks now) — a 2:1 card cannot hold the full
-    // width of a 3:1 capture, and a centered crop lands entirely inside the
-    // inversion, dropping the collinear flanks that are what make it read as
-    // one. The left edge keeps a flank against the start of the inverted block.
+    // The 8p23 inversion: the reverse chain bar on both haplotypes, landmark
+    // genes in opposite order, and the ribbons crossing between them, with the
+    // collinear right flank beside it. xband drops the track labels.
     src: 'hg002_haplotypes_8p23_inversion.png',
-    band: [0.36, 0.93],
-    position: 'left',
+    band: [0.205, 0.835],
+    xband: [0.25, 0.895],
+    position: 'center',
   },
   homoeolog_synteny: {
     // The dotplot itself, past the app chrome and the coordinate readout. A
@@ -426,11 +428,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   syri_synteny: {
-    // The ribbon band alone: the crossed inversion between grey syntenic
-    // regions is the whole shape, and the two empty track panels above and
-    // below it add nothing at card size.
+    // The Col-0/Ler chr4 inversion's crossed ribbon between the grey syntenic
+    // ribbons, with the translocation lines across it.
     src: 'syri/col_ler_chr4.png',
-    band: [0.1, 0.95],
+    band: [0.33, 0.92],
+    xband: [0.24, 0.57],
+    position: 'center',
   },
   odp_linkage_groups_synteny: {
     // the stack's lower bands, where the groups run as bundles; the dotplots
@@ -500,13 +503,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   pangenome_hprc_haplotypes: {
-    // The CFH lanes where the commonest form gives way to the deletion's, with
-    // their own contig names and coordinates in the row labels, which is the
-    // whole of what this page is about. Cropped from the left so those labels
-    // survive the 5:3 cover-crop -- a centre crop keeps ribbons and loses the
-    // names.
+    // The CFH lanes where the commonest form gives way to the deletion's, framed
+    // on the switch: ribbons with CFHR3 above, ribbons ending after CFH below,
+    // with the contig names kept in the row labels.
     src: 'pangenome/hprc_cfhr_lanes.png',
-    band: [0.6, 0.97],
+    band: [0.62, 0.86],
+    xband: [0, 0.62],
     position: 'left',
   },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
@@ -519,19 +521,20 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // half the card, and the alignment rows the card is about were a thin strip at
   // the bottom.
   pangenome_cattle: {
-    // The HSPA1A window from the gene lane down: the genotype matrix is the one
-    // row on the page that names which assembly carries an allele rather than
-    // just where the graph varies, and it reads as a matrix only with the
-    // breed labels beside it. The band drops the app chrome above the tracks
-    // and stops at the graph track.
-    src: 'pangenome/bovine_bola.png',
-    band: [0.108, 0.6],
+    // The KIT window from the variants track down: the breed-labelled genotype
+    // matrix with its solid alt-allele block, over the graph's deletion arc and
+    // its insertion loops. The xband drops both legends.
+    src: 'pangenome/bovine_kit.png',
+    band: [0.3, 0.97],
+    xband: [0, 0.8],
     position: 'left',
   },
   pangenome_cactus: {
-    src: 'pangenome_cactus/maf.png',
-    band: [0.62, 0.96],
-    xband: [0, 0.47],
+    // Four rows of strain-to-strain synteny ribbons, ending on NCTC86's blue
+    // inversions. xband drops the row names and the panel controls.
+    src: 'pangenome_cactus/synteny.png',
+    band: [0.215, 0.93],
+    xband: [0.066, 0.9],
     position: 'left',
   },
   // The genome-wide TCGA-BRCA CNV cohort matrix. The lower half carries
@@ -542,13 +545,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   tcga_cohort_mutations: {
-    // the histology-grouped CDH1 matrix: everything under the navigation row,
-    // so the card carries the exons, the connector fan and the whole row stack
-    // with its dense lobular band at the bottom. A tighter band on the bands
-    // themselves is much wider than 5:3, so the cover-crop would keep a sixth
-    // of the width and the card would be mostly empty gray.
-    src: 'tcga/mutations_cdh1_histology.png',
-    band: [0.175, 1],
+    // PIK3CA's exons, the connector fan and the subtype-grouped matrix with its
+    // hotspot column; it clears the legend and the CDH1 figure's callout.
+    src: 'tcga/mutations_pik3ca_grouped.png',
+    band: [0.2, 0.99],
+    xband: [0.25, 0.89],
     position: 'center',
   },
   // The 2504-row cohort heatmap rather than the page's hero, left of the
@@ -601,12 +602,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 0.98],
   },
   read_marks: {
-    // The highlighted deletion in the depth and insert-size lanes: the depth
-    // dip over it and the pairs spanning it lifted out of the cloud. Not the
-    // chromosome frame, whose two sentence callouts every crop cut through.
+    // The highlighted deletion in the depth and insert-size lanes, tight on the
+    // highlight: the depth dip, the lifted pairs at both edges, the cloud below.
     src: 'read_marks/insert_size.png',
-    band: [0.38, 1],
-    xband: [0.2, 0.8],
+    band: [0.4, 0.99],
+    xband: [0.3, 0.7],
     position: 'center',
   },
 }
