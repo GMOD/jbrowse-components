@@ -30,7 +30,8 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   which waits for its target.
 - **Every annotation `anchor`s** by locus, cell, graph node, element, chord
   label (`{ chord: 'SV_20' }`), ideogram band, drawn feature
-  (`{ trackId, feature: 'rs334' }`, the text its label shows) or drawn row
+  (`{ trackId, feature: 'rs334' }`, the text its label shows; with a `loc`, the
+  part of it there, such as a codon of a gene) or drawn row
   (`{ trackId, row: 'Gaur' }`, a row's name or label, or a band's label), never
   by a measured pixel. A callout or click on a feature, record or row names it
   rather than a `fracY`, which lands on another row once a band is added above

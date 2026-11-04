@@ -446,12 +446,8 @@ export const ldSpecs: ScreenshotSpec[] = [
         text: 'LCT/MCM6',
         fontSize: 20,
         leader: true,
-        anchor: {
-          trackId: 'hg38-clinvarMain',
-          loc: 'chr2:135,787,850',
-          fracY: 0.5,
-          alignX: 'left',
-        },
+        // the middle record of the lactase-persistence stack
+        anchor: { trackId: 'hg38-clinvarMain', feature: 'T>C', alignX: 'left' },
         dx: -60,
       },
       {
@@ -529,11 +525,11 @@ export const ldSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           trackId: 'kgp_lct_population_af',
+          row: 'CEU',
           loc: 'chr2:135,851,076',
-          fracY: 0.04,
         },
         dx: 150,
-        dy: -30,
+        dy: -40,
       },
     ],
   },

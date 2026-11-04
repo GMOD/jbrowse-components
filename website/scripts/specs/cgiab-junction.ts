@@ -224,6 +224,8 @@ export const junctionScaffold = (
   ...chrome(1172, opts),
 })
 
+export const OVERVIEW_LEVEL_HEIGHT = 200
+
 // The scaffold's two chr3 segments end one pixel apart, so the chr3 breakend
 // line sits between two ribbons; the junction marker says which one it is.
 export const scaffoldOverview = (
@@ -237,7 +239,7 @@ export const scaffoldOverview = (
       {
         type: 'LinearSyntenyView',
         mark: { interpolate: 'bump' },
-        levelHeights: [200, 200],
+        levelHeights: [OVERVIEW_LEVEL_HEIGHT, OVERVIEW_LEVEL_HEIGHT],
         // a cutoff above 155 kb drops the last chr13 block before the junction
         filter: [{ field: 'length', gte: 100000 }],
         encoding: { opacity: 0.35 },

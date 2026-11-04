@@ -832,33 +832,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 971,
     annotations: [
+      // Points at the reference codon; the label hangs right of the genotype
+      // column, over homozygous-reference grey.
       {
         type: 'text',
         text: 'CGA → TGA (Arg373 → stop)\nhomozygotes make no CYP1A2:\npoor drug metabolizers',
         fontSize: 22,
-        anchor: {
-          trackId: 'dog10k_cyp1a2_snvs',
-          loc: 'chr30:38,261,637',
-          fracY: 0,
-          // Right of the genotype column, over homozygous-reference grey.
-          dx: 24,
-          dy: 26,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          trackId: 'dog10k_cyp1a2_snvs',
-          loc: 'chr30:38,261,637',
-          fracY: 0,
-          dx: 24,
-          dy: 14,
-        },
+        leader: true,
         anchor: {
           trackId: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
           loc: 'chr30:38,261,636',
           fracY: 1,
         },
+        dx: 29,
+        dy: 182,
       },
     ],
   },

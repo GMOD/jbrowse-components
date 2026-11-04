@@ -191,6 +191,7 @@ function structureCallout(text: string, fontSize = 18): Annotation {
 function codonCallout(
   text: string,
   trackId: string,
+  gene: string,
   loc: string,
   fontSize = 18,
 ): Annotation {
@@ -199,7 +200,7 @@ function codonCallout(
     text,
     fontSize,
     leader: true,
-    anchor: { trackId, loc, fracY: 0.4 },
+    anchor: { trackId, feature: gene, loc },
     dx: 150,
     dy: 30,
   }
@@ -214,6 +215,10 @@ const KG_TRACK = pageTrack(SICKLE_CELL_PAGE, KG)
 export const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
 export const GWAS_SUBSET_TRACK = pageTrack(SICKLE_CELL_PAGE, GWAS_SUBSET)
 const RS334 = 'chr11:5,227,002'
+// Inside the run of rs334 heterozygotes the sort puts under the four
+// homozygotes.
+const SICKLE_CARRIER = { trackId: KG, row: 'HG03445', loc: RS334 }
+const MALARIA_GWAS_HIT = { trackId: GWAS_SUBSET, feature: 'Malaria' }
 const RS713040 = 'chr11:5,227,013'
 const KG_SORTED = {
   trackId: KG,
@@ -282,9 +287,9 @@ function kgCallouts(controlDx: number): Annotation[] {
       fontSize: HBB_FONT_SIZE,
       maxWidth: 340,
       leader: true,
-      anchor: { trackId: KG, loc: RS334, fracY: 0.03 },
+      anchor: SICKLE_CARRIER,
       dx: 50,
-      dy: 90,
+      dy: 40,
     },
     {
       type: 'text',
@@ -309,6 +314,8 @@ const DOG10K_TRACK = pageTrack(
 const SOD1_CODON = 'chr31:27123013-27123103'
 const SOD1_E40K = 'chr31:27,123,058'
 const SOD1_CONTROL = 'chr31:27,122,819'
+// A gray wolf amid the wolves and coyotes at the top of the rows
+const SOD1_WILD_CANID = 'CLUPPT000002'
 const SOD1_GENE_TRACK = { trackId: SOD1_GENES, height: 60 }
 
 function sod1Session(options: SessionOptions) {
@@ -624,7 +631,9 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     url: hbbSession({ tracks: [HBB_GENE_TRACK] }),
     ...READY,
     actions: hoverAlignment({ dx: 193, dy: 232 }),
-    annotations: [codonCallout(SICKLE_CODON, HBB_GENES, RS334, HBB_FONT_SIZE)],
+    annotations: [
+      codonCallout(SICKLE_CODON, HBB_GENES, 'HBB', RS334, HBB_FONT_SIZE),
+    ],
   },
   {
     mode: 'url',
@@ -707,7 +716,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         fontSize: HBB_FONT_SIZE,
         maxWidth: 300,
         leader: true,
-        anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.5 },
+        anchor: MALARIA_GWAS_HIT,
         dx: 400,
         dy: 0,
       },
@@ -717,9 +726,9 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         fontSize: HBB_FONT_SIZE,
         maxWidth: 300,
         leader: true,
-        anchor: { trackId: KG, loc: RS334, fracY: 0.03 },
+        anchor: SICKLE_CARRIER,
         dx: 200,
-        dy: 90,
+        dy: 40,
       },
       {
         type: 'text',
@@ -756,7 +765,12 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     ...READY,
     actions: hoverAlignment({ dy: 88 }),
     annotations: [
-      codonCallout('Codon 40, GAA on the transcript', SOD1_GENES, SOD1_E40K),
+      codonCallout(
+        'Codon 40, GAA on the transcript',
+        SOD1_GENES,
+        'SOD1',
+        SOD1_E40K,
+      ),
       structureCallout(
         'Lys40 outlined in pink: 7WX0 is the E40K protein itself',
       ),
@@ -788,9 +802,9 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         text: 'E40K: no wolf or coyote carries it',
         fontSize: 18,
         leader: true,
-        anchor: { trackId: DOG10K, loc: SOD1_E40K, fracY: 0.02 },
+        anchor: { trackId: DOG10K, row: SOD1_WILD_CANID, loc: SOD1_E40K },
         dx: -80,
-        dy: 170,
+        dy: 120,
       },
       {
         type: 'text',
@@ -819,7 +833,12 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     ...READY,
     actions: hoverAlignment({ dy: 24 }),
     annotations: [
-      codonCallout('Codon 197, CGC in Pinot Noir', GRAPE_GENES, AGL11_R197),
+      codonCallout(
+        'Codon 197, CGC in Pinot Noir',
+        GRAPE_GENES,
+        'MADS5',
+        AGL11_R197,
+      ),
       structureCallout(
         'Leu197 outlined in pink, where the model turns from blue to yellow and orange',
       ),

@@ -77,6 +77,16 @@ const CTX_MENU_READ = {
   dy: 57,
 }
 
+// A point on a gene, in the strip its `heightMode: 'fixed'` track reserves
+// under the gene rows.
+const strandArrowEnd = (gene: string, position: number) => ({
+  trackId: 'ncbi_gff_hg19',
+  feature: gene,
+  loc: `chr9:${position}`,
+  alignY: 'top' as const,
+  dy: 129,
+})
+
 // The surfeit locus: abutting genes on alternating strands (RPL7A +, SURF1 -,
 // SURF2 +).
 function strandSpecificSpec(): ScreenshotSpec {
@@ -132,8 +142,8 @@ function strandSpecificSpec(): ScreenshotSpec {
           fracY: 0.6,
         },
       },
-      // Interior coordinates, so an annotation release that moves a gene
-      // boundary leaves each arrow inside its gene.
+      // Each arrow runs along its gene, in the strip under the gene rows. A
+      // locus outside its gene's glyph clamps to the glyph's end.
       ...(
         [
           ['RPL7A', 136_215_300, 136_218_000],
@@ -141,19 +151,11 @@ function strandSpecificSpec(): ScreenshotSpec {
           ['SURF1', 136_222_900, 136_219_000],
           ['SURF2', 136_223_800, 136_227_500],
         ] as const
-      ).map(([, from, to]) => ({
+      ).map(([gene, from, to]) => ({
         type: 'arrow' as const,
         strokeWidth: 9,
-        fromAnchor: {
-          trackId: 'ncbi_gff_hg19',
-          loc: `chr9:${from}`,
-          fracY: 0.86,
-        },
-        anchor: {
-          trackId: 'ncbi_gff_hg19',
-          loc: `chr9:${to}`,
-          fracY: 0.86,
-        },
+        fromAnchor: strandArrowEnd(gene, from),
+        anchor: strandArrowEnd(gene, to),
       })),
     ],
   })

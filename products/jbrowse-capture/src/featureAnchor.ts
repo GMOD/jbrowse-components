@@ -13,8 +13,10 @@ import type { Page } from 'puppeteer'
 // The display lists every laid-out feature the name labels, drawn or not, so a
 // copy scrolled or packed out of sight still counts: a name is a miss unless
 // it labels one feature and that one drew. `region` narrows the drawn copies to
-// the one overlapping that locus, for a label as common as `C -> T <1%`. A
-// miss is undefined, so the caller fails the spec by name.
+// the one overlapping that locus, for a label as common as `C -> T <1%`, and
+// narrows the box to the part of it the locus covers, so a codon of a gene is
+// that gene's row at that codon. A miss is undefined, so the caller fails the
+// spec by name.
 //
 // Puppeteer serializes this into the page, so it closes over nothing.
 export function featureRectInPage(
@@ -74,15 +76,24 @@ export function featureRectInPage(
     return undefined
   }
   const r = container.getBoundingClientRect()
+  const covered = span
+    ? {
+        left: span.left,
+        right: span.left + (region.end > region.start ? span.width : 0),
+      }
+    : { left: box.left, right: box.left + box.width }
+  const clamp = (x: number) =>
+    Math.min(Math.max(x, box.left), box.left + box.width)
+  const left = clamp(covered.left)
   return {
-    left: r.left + box.left,
+    left: r.left + left,
     top: r.top + box.top,
-    width: box.width,
+    width: clamp(covered.right) - left,
     height: box.height,
   }
 }
 
-async function featureBox(page: Page, anchor: AnnotationAnchor) {
+async function featureBox(page: Page, anchor: AnnotationAnchor, wrap: boolean) {
   return anchor.feature === undefined || anchor.trackId === undefined
     ? undefined
     : page.evaluate(
@@ -90,18 +101,19 @@ async function featureBox(page: Page, anchor: AnnotationAnchor) {
         viewPathOf(anchor),
         anchor.trackId,
         anchor.feature,
-        anchor.loc ? parseAnnotationLocus(anchor.loc, true) : undefined,
+        anchor.loc ? parseAnnotationLocus(anchor.loc, wrap) : undefined,
       )
 }
 
 // The feature's box, or with `fracY` the line through it at that fraction of
 // its height (0 its top edge), which is what an arrow head on a tall glyph
-// wants.
+// wants. `wrap` is what a one-base `loc` means, as for a row.
 export async function featureRect(
   page: Page,
   anchor: AnnotationAnchor,
+  wrap: boolean,
 ): Promise<ViewportRect | undefined> {
-  const box = await featureBox(page, anchor)
+  const box = await featureBox(page, anchor, wrap)
   return box && anchor.fracY !== undefined
     ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
     : box

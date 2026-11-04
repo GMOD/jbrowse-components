@@ -4,17 +4,27 @@
 // renewal's captions name panels by position, so the panel letters go.
 import { deflateSync, inflateSync } from 'node:zlib'
 
-import { junctionReads, scaffoldOverview } from './cgiab-junction.ts'
+import {
+  OVERVIEW_LEVEL_HEIGHT,
+  junctionReads,
+  scaffoldOverview,
+} from './cgiab-junction.ts'
 import { paperSvReadsSpecs } from './paper-sv-reads.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 import { proteinVariantSpecs } from './protein_variants.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  AnnotationAnchor,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
 import type { SessionJson, ViewJson } from './protein_variants.ts'
 
 const SIZES = [6, 8]
 
-type Edit = Partial<Pick<Annotation, 'text' | 'dx' | 'dy' | 'maxWidth'>>
+type Edit = Partial<Pick<Annotation, 'text' | 'dx' | 'dy' | 'maxWidth'>> & {
+  alignY?: AnnotationAnchor['alignY']
+}
 // keyed by the callout's text, or by its type for every callout of that type
 type Edits = Record<string, Edit | 'drop'>
 type Annotated = ScreenshotSpec & { annotations?: Annotation[] }
@@ -36,7 +46,11 @@ const DEFAULT_FONT: Record<string, number> = {
   legend: 20,
 }
 
-function sized(a: Annotation, font: number, edit: Edit = {}): Annotation {
+function sized(
+  a: Annotation,
+  font: number,
+  { alignY, ...edit }: Edit = {},
+): Annotation {
   const k = font / (a.fontSize ?? DEFAULT_FONT[a.type] ?? 22)
   return {
     ...a,
@@ -45,6 +59,7 @@ function sized(a: Annotation, font: number, edit: Edit = {}): Annotation {
     ...(a.leader
       ? { strokeWidth: Math.max(4, Math.round(4 * Math.sqrt(k))) }
       : {}),
+    ...(alignY && a.anchor ? { anchor: { ...a.anchor, alignY } } : {}),
     ...edit,
   }
 }
@@ -94,7 +109,6 @@ function editSession(url: string, edit: (session: SessionJson) => void) {
 
 const KG = 'kgp3202_chr11_snv'
 const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
-const RS334 = 'chr11:5,227,002'
 
 // The renewal's figure: the tutorial's 1000 Genomes figure without the 1000
 // Genomes track, its alignment colored by domain and given the freed height.
@@ -122,7 +136,7 @@ const sickleSpec = {
       type: 'text',
       text: 'Malaria\nGWAS hit',
       leader: true,
-      anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.44 },
+      anchor: { trackId: GWAS_SUBSET, feature: 'Malaria' },
       dx: 180,
       dy: 0,
     },
@@ -417,20 +431,24 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     HIDE_APP_BAR,
   ) as Annotated
   const css = (font ?? 0) / 2
+  // Each breakpoint pill is centered on the ribbon level beside its band's row,
+  // chr3 above and chr13 below, so it grows into the level at any size. chr13
+  // hangs left of its band: on its right the junction pill takes the level.
   const edits: Edits = {
     hap2: 'drop',
     GRCh38: 'drop',
     hap1: 'drop',
     'chr13 breakend': {
       text: 'chr13\nbreakpoint',
-      dx: 100,
-      dy: 40 + 0.6 * css,
+      alignY: 'bottom',
+      dx: -60,
+      dy: OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
     'chr3 breakend': {
       text: 'chr3\nbreakpoint',
       dx: -140,
-      dy: 40 - 3.2 * css,
+      dy: -OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
     junction: { dy: -css },

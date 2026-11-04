@@ -49,7 +49,9 @@ export interface AnnotationAnchor {
   // so it holds when a band is added above it, where a `fracY` would land on
   // another row. A name labelling more than one laid-out feature, drawn or
   // not, is a miss unless a `loc` picks one drawn copy; so is one drawn
-  // nowhere. A common label (`C -> T <1%`) wants its `loc`. Resolved by the caller
+  // nowhere. A common label (`C -> T <1%`) wants its `loc`. A `loc` also
+  // narrows the box to the part of the feature it covers, so a codon is
+  // `{ trackId, feature: 'TP53', loc: <codon> }`. Resolved by the caller
   // (`featureAnchor.ts`) through the display's own `featuresNamed`.
   feature?: string
   // a row the `trackId` row display drew, by its name or the label its

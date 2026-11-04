@@ -48,7 +48,7 @@ async function withRegion(
     rect: anchor.graphNode
       ? await graphNodeRect(page, anchor, wantBounds)
       : anchor.feature
-        ? await featureRect(page, anchor)
+        ? await featureRect(page, anchor, wrapBase)
         : anchor.row
           ? await rowRect(page, anchor, wrapBase)
           : isDotplot
