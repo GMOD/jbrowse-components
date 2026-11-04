@@ -58,8 +58,16 @@ const FEATURE_FILTER_EXAMPLES: JexlFilterExample[] = [
       'show only gene type features in a GFF that has many other feature types',
   },
   {
+    code: "jexl:get(feature,'type') !in ['repeat_region', 'pseudogene']",
+    description: 'hide features of the types listed',
+  },
+  {
     code: "jexl:get(feature,'score') > 400",
     description: 'show only features that have a score greater than 400',
+  },
+  {
+    code: "jexl:between(get(feature,'score'), 100, 400)",
+    description: 'show only features with a score from 100 to 400',
   },
   {
     code: "jexl:get(feature,'end') - get(feature,'start') < 1000000",

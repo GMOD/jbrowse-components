@@ -3,13 +3,7 @@ import { JexlSyntaxError, check } from '@jbrowse/jexl'
 import { stripJexlPrefix } from './jexlFilterFields.ts'
 import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 
-import type {
-  FieldSchema,
-  Jexl,
-  Severity,
-  Signature,
-  Type,
-} from '@jbrowse/jexl'
+import type { FieldSchema, Jexl, Severity, Type } from '@jbrowse/jexl'
 
 export interface JexlProblem {
   severity: Severity
@@ -18,22 +12,15 @@ export interface JexlProblem {
   column?: number
 }
 
-export type JexlChecker = Pick<Jexl, 'parse' | 'functionNames'>
-
-const ANY_ARGUMENTS: Signature = {
-  params: ['any'],
-  variadic: true,
-  optional: 1,
-}
+export type JexlChecker = Pick<Jexl, 'parse' | 'signatures'>
 
 /**
- * Every function `jexl` registers, each taking any arguments, so `check`
- * reports a misspelt name without judging a registered one's arity.
+ * Every function `jexl` registers, with the signature it declared: jexl's
+ * built-ins declare theirs, and one registered without a signature takes any
+ * arguments, so `check` reports only a misspelt name for it.
  */
-export function registeredFunctions(jexl: Pick<Jexl, 'functionNames'>) {
-  return Object.fromEntries(
-    jexl.functionNames().map(name => [name, ANY_ARGUMENTS]),
-  )
+export function registeredFunctions(jexl: Pick<Jexl, 'signatures'>) {
+  return jexl.signatures()
 }
 
 /**

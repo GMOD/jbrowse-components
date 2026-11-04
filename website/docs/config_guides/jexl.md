@@ -8,8 +8,8 @@ A config callback is a string prefixed with `jexl:`. Read feature attributes as
 plain properties (`feature.strand`). When an expression outgrows one line,
 register your own function from a small plugin and call it like a built-in.
 
-A callback is a [Jexl](https://github.com/TomFrost/Jexl) expression in a slot
-that takes one, such as `encoding.color`'s
+A callback is a [jexl](https://github.com/GMOD/jexl#language-reference)
+expression in a slot that takes one, such as `encoding.color`'s
 `"value": "jexl:feature.strand==-1?'red':'blue'"`. The
 [config pages](/docs/config_guide) list _callback args_ under each such slot,
 and a config writing a callback anywhere else fails to load, naming the slot. A
@@ -48,6 +48,37 @@ older JBrowse releases. What `feature` is depends on the callback:
 
 In JavaScript plugin code a `SimpleFeature` handed to your own function is the
 real object, read with `feature.get('start')`.
+
+## The language
+
+An expression reads as JavaScript reads it: `+`, `-`, `*`, `/`, `%`, `==`, `!=`,
+`<`, `&&`, `||`, `!`, `? :`, `.` and `[]` group the same way, and `` `${…}` ``
+template strings work. Beyond JavaScript:
+
+```js
+jexl: feature.type in ['gene', 'mRNA'] // a member of a list, a substring of a string, or a key of an object
+jexl: feature.type !in ['gene', 'mRNA'] // the negation of in
+jexl: feature.name ~ '^BRCA' // a regular expression match; a leading (?i) ignores case, and !~ negates
+jexl: feature.score ?? 0 // 0 only where score is missing, keeping a real 0
+jexl: between(feature.score, 10, 20) // a range, both ends included
+jexl: feature.INFO.AF > 0.05 // a list field holds when any value does, as in bcftools
+jexl: count(feature.samples, s => s.GQ > 90) // lambdas, with any, all, map, filter, find, sort, sum, mean, median
+jexl: len = feature.end - feature.start; len > 1000 ? 'long' : 'short' // a variable, then the result
+```
+
+- **A missing value stays missing.** `feature.DV / feature.DP` is undefined
+  where `DV` is missing, and any comparison with it is false, rather than
+  JavaScript's reading of `null` as 0.
+- **`^` is a power**, as `**` is in JavaScript, and `&` binds tighter than `==`,
+  so `feature.flags & 16 == 0` tests the bit.
+- **jexl refuses what a reader would have to guess.** `0.1 < x < 0.5` and
+  `-x ^ 2` are syntax errors naming the fix: `between(x, 0.1, 0.5)`, and
+  `-(x ^ 2)` or `(-x) ^ 2`.
+
+On a list field, `between(feature.INFO.AF, 0.1, 0.5)` holds when one frequency
+lies in the range, where `feature.INFO.AF >= 0.1 && feature.INFO.AF <= 0.5` also
+holds when one frequency is above 0.1 and a different one below 0.5. The
+[jexl reference](https://github.com/GMOD/jexl#language-reference) has the rest.
 
 ## Functions
 
@@ -174,10 +205,10 @@ plugins that ship with JBrowse:
 
 ## Adding your own jexl function
 
-Jexl has no variables or branchy helpers, so past a certain point an expression
-stops being readable. A small plugin file with no build step adds a function to
-the language, called like any built-in: `"color": "jexl:customColor(feature)"`.
-The [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) is the
+Past a certain length, even with variables and lambdas, an expression stops
+being readable. A small plugin file with no build step adds a function to the
+language, called like any built-in: `"color": "jexl:customColor(feature)"`. The
+[no-build plugin tutorial](/docs/developer_guides/no_build_plugin) is the
 plugin;
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) and
 [customizing feature details](/docs/config_guides/customizing_feature_details)

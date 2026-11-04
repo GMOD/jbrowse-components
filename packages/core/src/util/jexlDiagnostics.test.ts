@@ -9,7 +9,7 @@ import { filterFieldSchema } from './jexlFilterFields.ts'
 
 const jexl = createJexlInstance()
 
-test('every registered function takes any arguments', () => {
+test('a function without a declared signature takes any arguments', () => {
   const functions = registeredFunctions(jexl)
   expect(functions.get).toEqual({
     params: ['any'],
@@ -17,7 +17,16 @@ test('every registered function takes any arguments', () => {
     optional: 1,
   })
   expect(functions.startsWith).toBeDefined()
-  expect(functions.map).toBeDefined()
+})
+
+test("jexl's own functions are checked against their signatures", () => {
+  expect(registeredFunctions(jexl).map?.params).toEqual(['list', 'lambda'])
+  expect(
+    jexlProblems('any(feature.INFO.AF, af => af > 0.05, 1)', jexl),
+  ).toEqual([
+    { severity: 'error', message: 'any takes 1 to 2 arguments, not 3' },
+  ])
+  expect(jexlProblems('between(feature.score, 1, 5)', jexl)).toEqual([])
 })
 
 test('a well-formed expression has no problems', () => {
