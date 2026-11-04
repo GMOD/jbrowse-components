@@ -20,7 +20,8 @@
   "author": "JBrowse Team",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./syntenyBlockLines": "./src/syntenyBlockLines.ts"
   },
   "files": [
     "esm"
@@ -54,7 +55,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./syntenyBlockLines": "./esm/syntenyBlockLines.js"
     }
   },
   "sideEffects": false

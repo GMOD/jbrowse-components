@@ -1,7 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { buildReadMateLines, buildReadTooltipValues } from './readHoverLines.ts'
+import {
+  buildReadBlockLines,
+  buildReadTooltipValues,
+} from './readHoverLines.ts'
 
 const { jexl } = new PluginManager()
 
@@ -13,6 +16,9 @@ const anchor = new SimpleFeature({
   start: 121_478_000,
   end: 121_598_000,
   name: 'FGFR2',
+  assemblyName: 'hg38',
+  strand: -1,
+  syntenicDepth: 2,
   mate: {
     name: 'Fgfr2',
     refName: 'chr7',
@@ -28,6 +34,10 @@ const pafBlock = new SimpleFeature({
   refName: 'chr1',
   start: 0,
   end: 1000,
+  assemblyName: 'hg38',
+  strand: 1,
+  identity: 0.9823,
+  mappingQual: 60,
   mate: { refName: 'chr2', start: 5000, end: 6000, assemblyName: 'mm39' },
 })
 
@@ -95,13 +105,24 @@ test("a numeric 0 is the read's value, not an empty one", () => {
   expect(buildReadTooltipValues([read], 'hp', jexl)).toEqual(['0'])
 })
 
-test('the mate line names the ortholog, its assembly and its span', () => {
-  expect(buildReadMateLines([anchor, pafBlock])).toEqual([
-    'Fgfr2 mm39 chr7:129,764,001-129,868,000',
-    'mm39 chr2:5,001-6,000',
+test('an ortholog pair names the other gene, both spans and its depth', () => {
+  expect(buildReadBlockLines([anchor])?.[0]?.split('\n')).toEqual([
+    'hg38 chr10:121,478,001-121,598,000 (120,000 bp)',
+    'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
+    'Inverted',
+    'Syntenic depth: 2',
   ])
 })
 
-test('reads with no mate ship no mate lines', () => {
-  expect(buildReadMateLines([plain])).toBeUndefined()
+test('a PAF block names both spans, its identity and its mapping quality', () => {
+  expect(buildReadBlockLines([pafBlock])?.[0]?.split('\n')).toEqual([
+    'hg38 chr1:1-1,000 (1,000 bp)',
+    'mm39 chr2:5,001-6,000 (1,000 bp)',
+    'Identity: 98.2%',
+    'Mapping quality: 60',
+  ])
+})
+
+test('reads with no mate ship no block lines', () => {
+  expect(buildReadBlockLines([plain])).toBeUndefined()
 })

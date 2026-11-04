@@ -10,6 +10,7 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
+import { isChainData } from '../../RenderAlignmentDataRPC/types.ts'
 import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
@@ -253,12 +254,50 @@ function chainSpan(rpcData: PileupDataResult, idx: number) {
       }
 }
 
+// A read's own lines: where it sits, its MAPQ and its pair. A synteny block
+// shows its description instead (`readBlockLines`).
+function readLines(rpcData: PileupDataResult, idx: number, refName: string) {
+  const { start, end } = chainSpan(rpcData, idx)
+  const flags = rpcData.readFlags[idx] ?? 0
+  const insertSize = rpcData.readInsertSizes[idx] ?? 0
+  const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
+  const mapq = rpcData.readMapqs[idx]
+  const orientName = PAIR_ORIENTATION_NAMES[pairOrientation]
+  return [
+    `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
+    // 255 is the SAM spec's "not available", which the color field, the
+    // legend and the group-by dimension all name rather than plot — so the row
+    // says it too instead of reporting the sentinel as a very good alignment.
+    ...(mapq === undefined
+      ? []
+      : [mapq === MAPQ_UNAVAILABLE ? 'MAPQ unavailable' : `MAPQ: ${mapq}`]),
+    // readInsertSizes is |TLEN| already (buildBaseFeatureData abs's it).
+    ...(insertSize === 0 ? [] : [`Template length: ${toLocale(insertSize)}`]),
+    ...(orientName ? [`Pair orientation: ${orientName}`] : []),
+    ...getPairTypeDescriptions({
+      flags,
+      pairOrientation,
+      insertSize,
+      interchrom: rpcData.readInterchrom[idx] ?? 0,
+      insertSizeStats: rpcData.insertSizeStats,
+      nextRef: nextRefAt(rpcData, idx),
+    }),
+    ...(flags & SAM_FLAG_SUPPLEMENTARY ? ['Supplementary alignment'] : []),
+  ]
+}
+
 /**
  * The pileup hover, in every mode, and the one place that names a read's COLOR.
  *
  * One formatter for both modes: `chainSpan` is the chain's extent where there is
  * a chain and the read's own where there isn't, every other row reads a field
  * the worker fills either way, and a row with nothing to say appends nothing.
+ *
+ * A synteny block shows its description (`readBlockLines`: each side's
+ * assembly, name and span, whether it is inverted, its identity and the like)
+ * in place of the read's lines, and names its color only in chain mode: the
+ * description already states the strand and the other side's contig that the
+ * other color fields paint.
  *
  * Chain mode is the only mode where the fill cannot be derived from the read's
  * own record: `consensusChainStrandFrames` settles which way "same strand"
@@ -279,53 +318,9 @@ export function formatReadTooltip(
   refName: string,
   categoryLabel?: (c: ReadColorCategory) => string | undefined,
 ): TextTooltipPayload {
-  const { start, end } = chainSpan(rpcData, idx)
-  const flags = rpcData.readFlags[idx] ?? 0
-  const insertSize = rpcData.readInsertSizes[idx] ?? 0
-  const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
-  const mapq = rpcData.readMapqs[idx]
-
   const name = readNameAt(rpcData, idx)
   const title = rpcData.readTooltipValues?.[idx] || name
-  const mate = rpcData.readMateLines?.[idx]
-
-  const lines = [
-    ...(title === name || name === '' ? [] : [`Name: ${name}`]),
-    `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
-    ...(mate ? [`Mate: ${mate}`] : []),
-  ]
-
-  if (mapq !== undefined) {
-    // 255 is the SAM spec's "not available", which the color field, the legend
-    // and the group-by dimension all name rather than plot — so the row says it
-    // too instead of reporting the sentinel as a very good alignment.
-    lines.push(mapq === MAPQ_UNAVAILABLE ? 'MAPQ unavailable' : `MAPQ: ${mapq}`)
-  }
-
-  // readInsertSizes is |TLEN| already (buildBaseFeatureData abs's it).
-  if (insertSize !== 0) {
-    lines.push(`Template length: ${toLocale(insertSize)}`)
-  }
-
-  const orientName = PAIR_ORIENTATION_NAMES[pairOrientation]
-  if (orientName) {
-    lines.push(`Pair orientation: ${orientName}`)
-  }
-
-  lines.push(
-    ...getPairTypeDescriptions({
-      flags,
-      pairOrientation,
-      insertSize,
-      interchrom: rpcData.readInterchrom[idx] ?? 0,
-      insertSizeStats: rpcData.insertSizeStats,
-      nextRef: nextRefAt(rpcData, idx),
-    }),
-  )
-
-  if (flags & SAM_FLAG_SUPPLEMENTARY) {
-    lines.push('Supplementary alignment')
-  }
+  const block = rpcData.readBlockLines?.[idx]
 
   // `readColorCategories` is EMPTY until the main thread bakes it — the worker
   // ships it that way — so this is a real absence on a hover that beats the
@@ -334,11 +329,17 @@ export function formatReadTooltip(
   const bucket =
     READ_COLOR_CATEGORY_BY_INDEX[rpcData.readColorCategories[idx] ?? -1]
   const category = bucket && categoryLabel?.(bucket)
-  if (category) {
-    lines.push(`Color: ${category}`)
-  }
+  const namesColor = category && (!block || isChainData(rpcData))
 
-  return { type: 'text', title, lines }
+  return {
+    type: 'text',
+    title,
+    lines: [
+      ...(title === name || name === '' ? [] : [`Name: ${name}`]),
+      ...(block ? block.split('\n') : readLines(rpcData, idx, refName)),
+      ...(namesColor ? [`Color: ${category}`] : []),
+    ],
+  }
 }
 
 export function formatCigarTooltip(

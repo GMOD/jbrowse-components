@@ -1,6 +1,7 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { formatReadTooltip } from './tooltipUtils.ts'
 
 function block(overrides: Partial<ReturnType<typeof basePileupDataResult>>) {
@@ -44,12 +45,36 @@ test('a nameless block keeps no empty Name line', () => {
   expect(tip.lines.some(l => l.startsWith('Name:'))).toBe(false)
 })
 
-test('a synteny block names its other side', () => {
+const DESCRIPTION = [
+  'hg38 chr10:121,478,001-121,598,000 (120,000 bp)',
+  'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
+  'Inverted',
+]
+
+// the read lines (location with strand, MAPQ, the color) would restate the
+// description, or for an anchor score misread as MAPQ, contradict it
+test("a synteny block's hover is its description", () => {
   const tip = formatReadTooltip(
-    block({ readMateLines: ['Fgfr2 mm39 chr7:129,764,001-129,868,000'] }),
+    block({
+      readBlockLines: [DESCRIPTION.join('\n')],
+      readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.plain]),
+    }),
     0,
     'chr10',
+    () => 'Reverse strand',
   )
   expect(tip.title).toBe('FGFR2')
-  expect(tip.lines).toContain('Mate: Fgfr2 mm39 chr7:129,764,001-129,868,000')
+  expect(tip.lines).toEqual(DESCRIPTION)
+})
+
+test('a read names its color', () => {
+  const tip = formatReadTooltip(
+    block({
+      readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.plain]),
+    }),
+    0,
+    'chr10',
+    () => 'Reverse strand',
+  )
+  expect(tip.lines).toContain('Color: Reverse strand')
 })

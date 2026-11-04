@@ -349,9 +349,10 @@ export interface WorkerPileupData {
   // field read nothing. Absent when the field is unset or nothing answered it.
   readTooltipValues?: string[]
 
-  // Per-read `Mate:` hover line, a synteny block's other side. Absent when no
-  // read carries a `mate`, which no BAM or CRAM record does.
-  readMateLines?: string[]
+  // Per-read synteny block description, its hover lines joined by newlines,
+  // shown in place of a read's own. Absent when no read carries a `mate`,
+  // which no BAM or CRAM record does.
+  readBlockLines?: string[]
 
   // Per-read category bits (`@jbrowse/alignments-core`'s readCategoryBits.ts),
   // answered over the whole record rather than the gap arrays, which hold only

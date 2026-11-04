@@ -31,12 +31,12 @@ test('an index past the end carries nothing', () => {
 // its author gave it.
 test('labels the presets and leaves a declared column alone', () => {
   expect(attributeTooltipLines(featureAttributes(attributes, 0))).toEqual([
-    'Identity: 0.988',
+    'Identity: 98.8%',
     'Mapping quality: 60',
     'ka_ks: 1.5',
   ])
   expect(attributeTooltipLines(featureAttributes(attributes, 1))).toEqual([
-    'Mean query identity: 0.5',
+    'Mean query identity: 50%',
     'Mapping quality: 60',
   ])
 })

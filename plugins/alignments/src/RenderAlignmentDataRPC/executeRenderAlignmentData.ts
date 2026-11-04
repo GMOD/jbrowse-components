@@ -35,7 +35,7 @@ import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
-  buildReadMateLines,
+  buildReadBlockLines,
   buildReadTooltipValues,
 } from '../shared/readHoverLines.ts'
 import {
@@ -358,7 +358,7 @@ async function buildGroupResult(
     readTooltipValues: tooltipField
       ? buildReadTooltipValues(drawn.lists.rawFeatures, tooltipField, jexl)
       : undefined,
-    readMateLines: buildReadMateLines(drawn.lists.rawFeatures),
+    readBlockLines: buildReadBlockLines(drawn.lists.rawFeatures),
     readCategoryBits: drawn.lists.categoryBits,
     readClipAtStart: new Uint32Array(drawn.lists.clipAtStart),
 

@@ -48,6 +48,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
+    "@jbrowse/synteny-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",

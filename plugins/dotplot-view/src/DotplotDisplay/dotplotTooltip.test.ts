@@ -211,7 +211,7 @@ describe('attributes', () => {
   // Labelled the way the legend labels the mode that paints each channel, not
   // by the wire name — `mappingQual: 60` was the tooltip reading out a buffer.
   test('lists every channel that has a value', () => {
-    expect(lines().slice(5)).toEqual(['Identity: 0.988', 'Mapping quality: 60'])
+    expect(lines().slice(5)).toEqual(['Identity: 98.8%', 'Mapping quality: 60'])
   })
 
   // NaN is the worker's missing sentinel, so meanIdentity and dnds above are

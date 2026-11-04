@@ -14,12 +14,17 @@ const CHANNEL_LABELS = new Map([
   ['meanIdentity', 'Mean query identity'] as const,
 ])
 
+// the fractions of aligned bases that match, which read as a percent
+const PERCENT_CHANNELS = new Set(['identity', 'meanIdentity'])
+
 // Integers (mapping quality, a declared count) read better unabbreviated;
-// ratios (identity, dn/ds) need their significant digits and not 17 of them.
-function formatAttribute(value: number) {
-  return Number.isInteger(value)
-    ? toLocale(value)
-    : String(Number(value.toPrecision(3)))
+// ratios (dn/ds) need their significant digits and not 17 of them.
+function formatAttribute(name: string, value: number) {
+  return PERCENT_CHANNELS.has(name)
+    ? `${Number((value * 100).toFixed(1))}%`
+    : Number.isInteger(value)
+      ? toLocale(value)
+      : String(Number(value.toPrecision(3)))
 }
 
 /**
@@ -52,6 +57,6 @@ export function featureAttributes(
 export function attributeTooltipLines(values: Record<string, number>) {
   return Object.entries(values).map(
     ([name, value]) =>
-      `${CHANNEL_LABELS.get(name) ?? name}: ${formatAttribute(value)}`,
+      `${CHANNEL_LABELS.get(name) ?? name}: ${formatAttribute(name, value)}`,
   )
 }

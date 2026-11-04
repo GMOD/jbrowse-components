@@ -24,7 +24,7 @@ test('locations, inverted, lengths, then the channels', () => {
     'Inverted: false',
     'x len: 100',
     'y len: 150',
-    'Identity: 0.988',
+    'Identity: 98.8%',
   ])
 })
 

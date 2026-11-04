@@ -288,7 +288,7 @@ test.each(PARTIAL_FILTERS)(
 test('an unset tooltip field ships no column', async () => {
   const d = await dataOf(reads)
   expect(d.readTooltipValues).toBeUndefined()
-  expect(d.readMateLines).toBeUndefined()
+  expect(d.readBlockLines).toBeUndefined()
 })
 
 test('a tag tooltip reads the one tag, never the decoded tag block', async () => {

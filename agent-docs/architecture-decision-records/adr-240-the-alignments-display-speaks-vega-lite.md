@@ -49,9 +49,11 @@ nothing or throws falls back to the read's name, as the feature displays'
 lifts into it permanently, since hosts still write it (AGR's ortholog name on
 LGVSyntenyDisplay); the coverage display's `mouseover`, a bin's hover, drops.
 No `show`: no request turns the alignments hover off, and the closed object
-reports one written. A read carrying a `mate`, a synteny block, adds a `Mate:`
-line to its hover, the other side's name, assembly and span, rather than
-LGVSyntenyDisplay defaulting `tooltip.field` to `mate.name`.
+reports one written. A read carrying a `mate`, a synteny block, shows synteny-core's
+block description in place of a read's lines (each side's assembly and span,
+the other side's name, `Inverted`, the block's identity, mapping quality and
+syntenic depth), rather than LGVSyntenyDisplay defaulting `tooltip.field` to
+`mate.name`; its color line stays only in chain mode.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers

@@ -121,7 +121,7 @@ test('getTooltipLines lists every numeric channel the feature carries', () => {
     attributes: { identity: 0.987, mappingQual: 60, ka_ks: 1.5 },
   }
   const lines = getTooltipLines(feat)
-  expect(lines).toContain('Identity: 0.987')
+  expect(lines).toContain('Identity: 98.7%')
   expect(lines).toContain('Mapping quality: 60')
   expect(lines).toContain('ka_ks: 1.5')
   // still last, after the channels

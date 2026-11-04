@@ -249,7 +249,9 @@ test("a synteny block's hover lines come from its mate", async () => {
   }
   const [group] = result.value.groups
   expect(group?.data.readTooltipValues).toEqual(['orthoA'])
-  expect(group?.data.readMateLines).toEqual(['orthoA mouse ctgB:501-600'])
+  expect(group?.data.readBlockLines).toEqual([
+    'ctgA:21-120 (100 bp)\nmouse orthoA ctgB:501-600 (100 bp)',
+  ])
 })
 
 test('reads with no mate ship no mate lines', async () => {
@@ -257,5 +259,5 @@ test('reads with no mate ship no mate lines', async () => {
   if ('regionTooLarge' in result) {
     throw new Error('the mocked adapter measured no bytes')
   }
-  expect(result.value.groups[0]?.data.readMateLines).toBeUndefined()
+  expect(result.value.groups[0]?.data.readBlockLines).toBeUndefined()
 })

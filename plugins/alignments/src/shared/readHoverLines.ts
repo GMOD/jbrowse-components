@@ -1,5 +1,8 @@
-import { formatLocationRange } from '@jbrowse/alignments-core'
 import { valueText } from '@jbrowse/core/util/groupKeys'
+import {
+  blockAttributes,
+  syntenyBlockLines,
+} from '@jbrowse/synteny-core/syntenyBlockLines'
 
 import { readFieldReader } from './groupFeatures.ts'
 
@@ -70,27 +73,47 @@ function isBlockMate(value: unknown): value is BlockMate {
   )
 }
 
-function mateLineOf(mate: unknown) {
+function textOrUndefined(value: unknown) {
+  return typeof value === 'string' && value !== '' ? value : undefined
+}
+
+// The block's description, its lines joined by newlines. The block's own side
+// carries no name: the hover's title already names it.
+function blockDescriptionOf(feature: Feature) {
+  const mate = feature.get('mate')
   return isBlockMate(mate)
-    ? [
-        mate.name,
-        mate.assemblyName,
-        formatLocationRange(mate.refName, mate.start, mate.end),
-      ]
-        .filter(part => typeof part === 'string' && part !== '')
-        .join(' ')
+    ? syntenyBlockLines({
+        sides: [
+          {
+            assemblyName: textOrUndefined(feature.get('assemblyName')),
+            refName: feature.get('refName'),
+            start: feature.get('start'),
+            end: feature.get('end'),
+          },
+          {
+            assemblyName: textOrUndefined(mate.assemblyName),
+            name: textOrUndefined(mate.name),
+            refName: mate.refName,
+            start: mate.start,
+            end: mate.end,
+          },
+        ],
+        inverted: feature.get('strand') === -1,
+        attributes: blockAttributes(feature),
+      }).join('\n')
     : ''
 }
 
 /**
- * Each synteny block's other side, as the hover's `Mate:` line: its name
- * where the source gives one (an ortholog in an MCScan anchors file), its
- * assembly and its span. Undefined when no read carries a mate, which no BAM
- * or CRAM record does: their `get('mate')` falls through to `undefined`
- * without decoding anything.
+ * Each synteny block's description, which its hover shows in place of a
+ * read's lines: each side's assembly and span, the other side's name where the
+ * source gives one (an ortholog in an MCScan anchors file), whether it is
+ * inverted, and its identity, mapping quality and the like. Undefined when no
+ * read carries a mate, which no BAM or CRAM record does: their `get('mate')`
+ * falls through to `undefined` without decoding anything.
  */
-export function buildReadMateLines(features: Feature[]) {
+export function buildReadBlockLines(features: Feature[]) {
   return features.some(f => isBlockMate(f.get('mate')))
-    ? features.map(f => mateLineOf(f.get('mate')))
+    ? features.map(f => blockDescriptionOf(f))
     : undefined
 }

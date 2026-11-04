@@ -936,6 +936,9 @@ importers:
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../../packages/wiggle-core
