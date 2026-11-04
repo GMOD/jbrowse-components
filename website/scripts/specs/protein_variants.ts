@@ -763,7 +763,8 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     name: 'protein/sod1_codon_hover',
     url: sod1Session({ loc: SOD1_CODON, tracks: [SOD1_GENE_TRACK] }),
     ...READY,
-    actions: hoverAlignment({ dy: 88 }),
+    // on dog_query's row, under four other mammals
+    actions: hoverAlignment({ dy: 72 }),
     annotations: [
       codonCallout(
         'Codon 40, GAA on the transcript',

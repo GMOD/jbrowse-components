@@ -558,7 +558,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         leader: true,
         dx: 80,
-        anchor: { view: [0, 0], trackId: TRUTH_SET, feature: 'truthset_8_1' },
+        anchor: {
+          view: [0, 0],
+          trackId: TRUTH_SET,
+          loc: 'chr3:25,359,568',
+          fracY: 0.5,
+        },
       },
       {
         type: 'text',

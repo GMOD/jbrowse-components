@@ -431,9 +431,10 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     HIDE_APP_BAR,
   ) as Annotated
   const css = (font ?? 0) / 2
-  // Each breakpoint pill is centered on the ribbon level beside its band's row,
-  // chr3 above and chr13 below, so it grows into the level at any size. chr13
-  // hangs left of its band: on its right the junction pill takes the level.
+  // Each pill is centered half a ribbon level off what it names, so it grows
+  // into that level at any size: chr3's above its row, chr13's below its row
+  // and to the right, and the junction's above hap1 and to the left, clear of
+  // chr13's.
   const edits: Edits = {
     hap2: 'drop',
     GRCh38: 'drop',
@@ -441,7 +442,7 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     'chr13 breakend': {
       text: 'chr13\nbreakpoint',
       alignY: 'bottom',
-      dx: -60,
+      dx: 140,
       dy: OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
@@ -451,7 +452,7 @@ const overviewPart = (suffix: string, font: number | undefined) => {
       dy: -OVERVIEW_LEVEL_HEIGHT / 2,
       maxWidth: css * 6,
     },
-    junction: { dy: -css },
+    junction: { dx: -170, dy: -OVERVIEW_LEVEL_HEIGHT / 2 },
   }
   return {
     ...spec,
