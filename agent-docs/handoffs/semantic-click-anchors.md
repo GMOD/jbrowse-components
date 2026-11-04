@@ -1,6 +1,6 @@
 ---
 name: semantic-click-anchors
-description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height, so a screenshot spec survives a band added above its target. Built: the feature anchor (`{ trackId, feature }`, through `featuresNamed`) and the row anchor (`{ trackId, row }`, through the tree sidebar's row geometry), with the stopgaps that waited on them converted. Open: the sweep of the ~79 fractional anchors still on a record or a row, and an anchor kind for reads, arcs and synteny blocks."
+description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height, so a screenshot spec survives a band added above its target. Built: the feature anchor (`{ trackId, feature }`, through `featuresNamed`) and the row anchor (`{ trackId, row }`, through the tree sidebar's row geometry), with the stopgaps that waited on them converted. Clicks and callouts resolve through one function, capture's `resolveAnchor`. Open: the row half of the sweep, the records whose label is no usable name, and an anchor kind for reads, arcs, synteny blocks, MSA cells and wiggle values."
 ---
 
 # Click anchors that name the thing
@@ -39,6 +39,12 @@ row, and a reviewer had to spot it in the PNG.
   their arrow heads to the middle of the row or band, a few px, and their new
   bytes are not yet in the figure store.
 
+- **One resolver.** A click resolves its anchor through
+  `@jbrowse/capture`'s `resolveAnchor`, the overlay's own pass run without
+  drawing, so a click lands where an arrow on the same anchor points
+  (`alignX`/`alignY` included). `website/scripts/actions.ts` keeps only
+  `chord`, `ideogram` and `band`.
+
 ## Next: the sweep
 
 A survey of the 187 `fracY` anchors in specs and tours on 2026-11-02 found 79
@@ -53,13 +59,19 @@ converted figure and check it against the published one.
   (depth by builder), `protein_variants.ts` (sickle-cell and SOD1 top rows),
   `ui.ts` (chromhmm B-cell rows), and `trio.ts`'s painting step box, a
   `paintingTopRow * TRIO_PAINT_ROW_H` depth from the top.
-- **Records** (`feature:`): gene glyphs in `alignments.ts` (SURF1/SURF2),
-  `features.ts` and `ui.ts` (Apple3, TP53), `msa.ts` (NLRP1), `sv.ts` (SV_85,
-  SMAD4), `protein_*.ts` codon callouts, `videos/proteins.ts`; records in
-  `cancer_sv.ts` (truth set), `graph-hprc.ts` (KIV-2 and ABCA7 TRs),
-  `grant_callout_sizes.ts` and `ld.ts` (GWAS and ClinVar), `alphagenome.ts`
-  (the enhancer variant), `videos/sv.ts` (HGSV_1821).
-- **No anchor kind yet**: an alignments read (`alignments.ts`, `ui.ts`,
+- **Records** (`feature:`), still to convert: gene glyphs in `alignments.ts`
+  (SURF1/SURF2), `protein_*.ts` codon callouts; records in `cancer_sv.ts`
+  (truth set), `grant_callout_sizes.ts` and `ld.ts` (GWAS and ClinVar),
+  `protein_variants.ts` (rs334, SOD1 E40K: read the 1000 Genomes label off the
+  band first), `videos/sv.ts` (HGSV_1821).
+- **A record with no usable name**: `graph-hprc.ts`'s KIV-2 and ABCA7
+  tandem-repeat clicks (`RECORD_BAR`). With no ID, or an ID followed by every
+  allele, the label is the whole allele list, so `featuresNamed` has nothing
+  short to match. Matching a record's VCF ID alone would cover them.
+- **No anchor kind yet**: an MSA cell (`msa.ts`, `hoverAlignment`'s pixel
+  offsets on `msa_canvas`), a wiggle value (`dog10k.ts` `fstY` copies the plot
+  inset), the dotplot drag in `synteny_from_dotplot_view` (wants
+  `hLoc`/`vLoc` corners, which clicks now accept), an alignments read (`alignments.ts`, `ui.ts`,
   `cancer_sv.ts`, `bovine_bola`), a sashimi arc or `link` mark
   (`alignments.ts`, `cancer_sv.ts` K562, `protein_figure_met_ex14.ts`), a
   synteny chain block or multi-way lane record (`synteny.ts`,
