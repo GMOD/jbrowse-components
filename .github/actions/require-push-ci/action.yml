@@ -1,7 +1,7 @@
 name: Require Push CI
 description:
-  Block until the Push workflow's run for this tag concludes, and fail on
-  anything but success
+  Block until a Push run on this tag's commit succeeds, and fail if the tag's
+  own run concludes anything else
 
 inputs:
   token:
@@ -39,18 +39,22 @@ runs:
         set -euo pipefail
         deadline=$(( $(date +%s) + TIMEOUT_MINUTES * 60 ))
         while :; do
-          # --commit alone would also match the run main got for this same sha
-          # before the tag existed; headBranch is the tag on a tag run.
+          # main's run counts: pnpm release only tags a commit once Push is
+          # green on it there, and the same sha is the same code. The tag's own
+          # run still deploys code/jb2/<tag>, so it keeps running, but nothing
+          # waits ten more minutes for it to re-test what main already passed.
           info=$(gh run list --workflow push.yml --commit "$SHA" \
             --json status,conclusion,headBranch \
-            --jq '[.[] | select(.headBranch == env.TAG)][0] // {}
-                  | "\(.status // "not-started") \(.conclusion // "none")"')
-          read -r status conclusion <<<"$info"
+            --jq '[.[] | select(.headBranch == env.TAG or .headBranch == "main")] as $runs
+                  | ($runs | map(select(.conclusion == "success")) | length > 0) as $green
+                  | ($runs | map(select(.headBranch == env.TAG))[0] // {}) as $tag
+                  | "\($green) \($tag.status // "not-started") \($tag.conclusion // "none")"')
+          read -r green status conclusion <<<"$info"
+          if [ "$green" = true ]; then
+            echo "Push CI succeeded on $SHA."
+            exit 0
+          fi
           if [ "$status" = completed ]; then
-            if [ "$conclusion" = success ]; then
-              echo "Push CI succeeded for $TAG."
-              exit 0
-            fi
             echo "::error::Push CI concluded '$conclusion' for $TAG ($SHA). Not releasing."
             exit 1
           fi

@@ -23,7 +23,6 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/trix",
-    "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",

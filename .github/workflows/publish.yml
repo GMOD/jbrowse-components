@@ -60,3 +60,25 @@ jobs:
           "$NPM_TAG"
         env:
           NPM_TAG: ${{ contains(github.ref_name, '-') && 'next' || 'latest' }}
+
+  # Runs after a failed publish too, and names what npm lacks: a partial
+  # `pnpm publish -r` is otherwise silent.
+  verifynpm:
+    name: Verify every package is on npm
+    needs: [gate, publish]
+    if: ${{ !cancelled() && needs.gate.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Check every public package is published at the tag's version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/check-npm-published.ts "$RELEASE_TAG"

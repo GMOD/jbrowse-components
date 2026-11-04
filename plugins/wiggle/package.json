@@ -28,7 +28,6 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/wiggle",
-    "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",

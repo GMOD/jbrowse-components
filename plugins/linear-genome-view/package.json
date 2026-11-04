@@ -26,7 +26,6 @@
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
     "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/linear-genome-view",
-    "prepublishOnly": "pnpm test",
     "prepack": "pnpm build"
   },
   "dependencies": {
