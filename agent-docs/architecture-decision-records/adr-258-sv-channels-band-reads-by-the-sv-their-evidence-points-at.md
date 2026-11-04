@@ -162,5 +162,7 @@ the reviews to settle the open calls; built in
   every pan.
 - **A second preset row keeping `pairOrientation`**: nothing reads separate LL
   and RR bands, Group by → Pair orientation remains, and named presets were
-  declined (`handoffs/alignments-defaults.md` §"Declined in review"). An
-  automatic pick between two facets is ADR-037's case.
+  declined. An automatic pick between two facets is ADR-037's case.
+- **Named view presets** (Default / SV / RNA-seq / Long-read) at the top of the
+  menu: this preset already cannot restore what it displaced, N presets
+  multiply that, and switching between them automatically is ADR-037's case.

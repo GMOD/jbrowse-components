@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, interning readTagValues, and the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction).
+description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, interning readTagValues, the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction), and the pair follow-ups (chain-mode sort, the insert-size band on RNA-seq, mate-supported exon links).
 ---
 
 # Alignments
@@ -196,3 +196,42 @@ fetch one. **First-of-pair auto-detect** already reads the aligner's
 `XS`/`TS`/`ts` through `getEffectiveStrand`; what is open is a read with none of
 them, which wants a comparison against annotated gene strand that a display
 cannot assume is loaded.
+
+## Pair follow-ups
+
+Left over when a data-resolved `auto` unit was declined (the reasons sit at
+`ALIGNMENTS_UNITS`). Chain stays an opt-in, so none of these is a defaults
+question any more.
+
+**Chain-mode sort.** `sortReadsBlockedReason` (`LinearAlignmentsDisplay/model.ts`)
+refuses every read sort in chain mode, and nothing declines it. Sorting chains
+by the member under the clicked base is a `computeChainLayout.ts` change (layout
+is main-thread, ADR-053); a tag sort also reopens ADR-188's "chain mode sends no
+sort tag". The case for it: chain mode shows two reads at a variant are one
+fragment's mates, which is when sort-by-base is wanted.
+
+**The insert-size band on RNA-seq.** A defect of the opt-in
+`insertSizeAndOrientation` color today, default or not.
+`computePairedInsertSizeStats` samples every primary proper pair per fetched
+region and `classifyInsertSize` has no splice exception, so on
+`test_data/volvox/paired_end_stranded_rnaseq.bam` 185 of 485 proper pairs (38%)
+paint long and the band follows whichever mode holds the median: one pair is
+grey in one window and red in an overlapping one. Only 49 of the 185 carry an N,
+so a per-read skip filter misses most. The band also feeds the read connections
+and the hover. "A sample holding a spliced read computes no band" is per-region
+detection, the unit `waiting-on-a-call/a-mate-pair-library-flips-which-orientation-is-normal.md`
+rejects, and it still flips between a window with a junction and one without.
+The candidate is per pair: a proper pair whose span contains a junction seen in
+the fetch leaves the sample and paints normal. That depends on which junctions
+the fetch saw, so measure it against the volvox case first. Making this color
+the default is a later step and also needs a softer unmapped-mate color than
+`#000000` (`colorUnmappedMate`), the strand tint under modification calls
+(`bodyColorKind` applies it only with no color field), a "Normal" row that
+ticks for a spelled plain grey (`menus/colorBy.ts`), and `showChevron`
+(`read.slang`) hiding arrows on normal-insert reads as it does on `RC_PLAIN`.
+
+**Mate-supported exon links.** In paired RNA-seq, a pair whose mates land in
+two exons is evidence those exons share a molecule even when neither read
+crosses a junction. Assemblers (StringTie) and fusion callers (STAR-Fusion,
+Arriba) use it; sashimi arcs, ours and IGV's, count split reads only. The shape
+would be junction arcs that also count such pairs. Waits on a user.

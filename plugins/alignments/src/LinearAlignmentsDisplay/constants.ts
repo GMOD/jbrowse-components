@@ -17,6 +17,16 @@ export type { InsertionType } from '@jbrowse/alignments-core'
 // What one pileup row stands for: a read, or a chain of a read's mate and
 // split segments joined by QNAME. The pileup connectors are the orthogonal
 // `pileup.connectors` and draw over either unit.
+//
+// Read is the default and chain an opt-in. A data-resolved `auto` unit (chain,
+// dropping to read on spliced reads) was declined: it is library
+// detection, a spliced read in view is not a reliable RNA-seq signal, and a unit
+// resolved from data either jumps the track or lies to the settings-alone
+// getters (`prefersOffset`, `canSortReads`, `facetForUnit`). Chain reads best on
+// WGS and long reads, adds rows on paired RNA-seq (a chain spans its intron) and
+// little on exome (mates overlap). It earns its place on any data for split
+// reads and SV evidence, for showing two "supporting reads" at a variant are one
+// fragment's mates, and for exon linkage by mates.
 export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
 export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
