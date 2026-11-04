@@ -27,6 +27,7 @@ export {
   LINK_NO_REGION,
 } from './linkMark.ts'
 export { connectorEnds, connectorMark } from './connectorMark.ts'
+export { connectorPlacement } from './connectorPlacement.ts'
 export {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
@@ -108,6 +109,7 @@ export type {
   LinkSizeScale,
 } from './linkMark.ts'
 export type { ConnectorChannels, ConnectorParams } from './connectorMark.ts'
+export type { ConnectorPlacement } from './connectorPlacement.ts'
 export type { RowTable } from './rowTable.ts'
 export type { RowSpanIndex } from './rowSpanIndex.ts'
 export type { ColorChannel } from './markRamp.ts'

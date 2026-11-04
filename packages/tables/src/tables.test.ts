@@ -1016,6 +1016,34 @@ test('a chain over split reads paints a read by its strand against its chain’s
   expect(new Set(chained.reads.color).size).toBeGreaterThan(1)
 })
 
+test('a chain’s connectors carry what places each curve, and place at a host’s px per bp', async () => {
+  const t = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { unit: 'chain' },
+  })
+  const c = t.connectors
+  expect(c.start.length).toBeGreaterThan(0)
+  expect(c.endRegion.every(r => r === 0)).toBe(true)
+  expect([...c.strand, ...c.endStrand].every(s => Math.abs(s) === 1)).toBe(true)
+  expect(c.dip.every(d => d >= 0)).toBe(true)
+  expect(c.dip.some(d => d > 0)).toBe(true)
+  expect(c.width.every(w => w > 0)).toBe(true)
+  expect(c.opacity.every(o => o > 0 && o <= 1)).toBe(true)
+  expect(c.color.every(color => t.arcLegend.color.includes(color))).toBe(true)
+  const curves = engine.alignmentConnectorCurves({
+    pxPerBp: 1200 / 14000,
+    featureHeight: t.readPitch.featureHeight,
+    featureSpacing: t.readPitch.featureSpacing,
+    connectors: c,
+  })
+  for (let i = 0; i < c.start.length; i++) {
+    const below = c.kind[i] !== 'straight' && c.dip[i]! > 0
+    expect(Number.isFinite(curves.handle[i])).toBe(true)
+    expect(Number.isFinite(curves.endHandle[i])).toBe(true)
+    expect(curves.handleRow[i]! > c.row[i]!).toBe(below)
+  }
+})
+
 test('the glyph hands R the splice line’s fade at the read height, and the size labels’ rules', async () => {
   const tall = await engine.alignments(SPLICED)
   const compact = await engine.alignments({

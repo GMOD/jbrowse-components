@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
+  alignmentConnectorCurves,
   alignmentMarkAlpha,
   alignmentTables,
   referenceSequence,
@@ -476,6 +477,7 @@ export function createTablesEngine() {
     ),
     variantDensityAlpha,
     alignmentMarkAlpha,
+    alignmentConnectorCurves,
     synteny: call('synteny', SYNTENY_ARGS, async (args: SyntenyTablesArgs) => {
       const tables = await syntenyTables(pluginManager, args)
       const [query, target] = tables.assemblyNames

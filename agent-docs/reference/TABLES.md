@@ -145,11 +145,18 @@ a quiet region.
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser squeezes the
   pitch to the track's height, which is the host's.
 - `connectors` holds each connector the pileup draws (always under
-  `unit: 'chain'`, else under `pileup.connectors.show`): both ends' positions,
-  rows and regions, the connection's arc color, its `kind` (`straight`, `curve`
-  or `loop`), `dashed` for a junction over segments not in view, the `dip` in
-  px a curve asks for (the display flattens it toward a line where its ends sit
-  close on screen), and `key`/`mateKey` naming the two reads in `reads`.
+  `unit: 'chain'`, else under `pileup.connectors.show`), each placed by the
+  feed the connector mark draws from (`connectorInstance`): both ends'
+  positions, rows and regions, the connection's arc color at its `opacity`,
+  the stroke `width` in px, its `kind` (`straight`, `curve` or `loop`),
+  `dashed` for a junction over segments not in view, the `dip` in px a curve
+  or loop asks for (0 for one that bows up), `strand`, `endStrand` and
+  `leading`, which set the way each end's curve leaves its read, `arrow` for a
+  loop's arrowhead, and `key`/`mateKey` naming the two reads in `reads`.
+  `alignmentConnectorCurves` places the curves at a host's `pxPerBp` through
+  the mark's own placement (render-core's `connectorPlacement`), returning
+  each cubic's two control points in bp and rows and the arrowhead's arms, so
+  a dip flattens as the figure zooms out, as the display's does.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where

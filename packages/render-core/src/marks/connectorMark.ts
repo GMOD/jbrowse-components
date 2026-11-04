@@ -1,31 +1,20 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import {
-  CONNECTOR_ARROW,
   CONNECTOR_CURVE_SEGMENTS,
   CONNECTOR_DASHED,
-  CONNECTOR_LEADING_2,
   CONNECTOR_MAX_HANDLE_PX,
   CONNECTOR_MAX_REACH_PX,
-  CONNECTOR_MINUS_1,
-  CONNECTOR_MINUS_2,
-  CONNECTOR_STRAIGHT,
 } from '../shaders/connectorMark.consts.generated.ts'
 import * as shader from '../shaders/connectorMark.generated.ts'
-import {
-  connectorArrowFits,
-  connectorBudgetPx,
-  connectorHandlePx,
-  connectorLiftPx,
-  connectorStrokePx,
-  connectorTangent,
-} from '../shaders/connectorMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
-import { regionPx, viewRegionUniforms } from './linkMark.ts'
+import { newPlaced, placeConnector } from './connectorPlacement.ts'
+import { viewRegionUniforms } from './linkMark.ts'
 import { nearestInk } from './markHit.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
-import type { LinkRegion } from './linkMark.ts'
+import type { ConnectorPlacement } from './connectorPlacement.ts'
+import type { LinkRegion } from './linkRegion.ts'
 import type { InkRect, MarkFrame, MarkShape } from './types.ts'
 
 /**
@@ -64,103 +53,12 @@ export interface ConnectorParams {
   maxHandlePx?: number
 }
 
-/** One placed connector: its cubic's four points and how it is stroked. */
-interface Placed {
-  x0: number
-  y0: number
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-  x3: number
-  y3: number
-  strokePx: number
-  arrow: boolean
-  /** The arrowhead arms' screen-x reach back from the tip. */
-  back: number
-}
-
-function newPlaced(): Placed {
-  return {
-    x0: 0,
-    y0: 0,
-    x1: 0,
-    y1: 0,
-    x2: 0,
-    y2: 0,
-    x3: 0,
-    y3: 0,
-    strokePx: 0,
-    arrow: false,
-    back: 0,
-  }
-}
-
-const strandOf = (bits: number, bit: number) => ((bits & bit) !== 0 ? -1 : 1)
-
-// Places instance `i` into `p` as the shader does, or answers false where its
-// far end lies on no displayed region the table holds.
-function place(
-  c: ConnectorChannels,
-  params: ConnectorParams,
-  own: number,
-  i: number,
-  p: Placed,
-  dpr: number,
-) {
-  const { regions } = params
-  const far = c.x2Region[i]!
-  const ownRegion = regions[own]
-  const farRegion = regions[far]
-  if (!ownRegion || !farRegion) {
-    return false
-  }
-  const bits = c.bits[i]!
-  p.x0 = regionPx(regions, own, c.x[i]!)
-  p.y0 = params.rowOffsetPx + c.row[i]! * params.rowPitchPx
-  p.x3 = regionPx(regions, far, c.x2[i]!)
-  p.y3 = params.rowOffsetPx + c.row2[i]! * params.rowPitchPx
-  p.strokePx = connectorStrokePx(c.width[i]!, dpr)
-  const reversed2 = farRegion.signedPxPerBp < 0
-  const strand2 = strandOf(bits, CONNECTOR_MINUS_2)
-  p.arrow =
-    (bits & CONNECTOR_ARROW) !== 0 &&
-    connectorArrowFits(p.x3 - p.x0, params.arrowPx) !== 0
-  p.back = (reversed2 ? -strand2 : strand2) * -params.arrowPx
-  if ((bits & CONNECTOR_STRAIGHT) !== 0) {
-    p.x1 = p.x0
-    p.y1 = p.y0
-    p.x2 = p.x3
-    p.y2 = p.y3
-    return true
-  }
-  const dx = p.x3 - p.x0
-  const dy = p.y3 - p.y0
-  const budget = connectorBudgetPx(dx, dy)
-  const handle = connectorHandlePx(
-    budget,
-    params.maxHandlePx ?? CONNECTOR_MAX_HANDLE_PX,
-  )
-  const lift = connectorLiftPx(budget, dx, dy, c.bend[i]!)
-  const t1 = connectorTangent(
-    strandOf(bits, CONNECTOR_MINUS_1),
-    0,
-    ownRegion.signedPxPerBp < 0 ? 1 : 0,
-  )
-  const t2 = connectorTangent(
-    strand2,
-    (bits & CONNECTOR_LEADING_2) !== 0 ? 1 : 0,
-    reversed2 ? 1 : 0,
-  )
-  p.x1 = p.x0 + handle * t1
-  p.y1 = p.y0 - lift
-  p.x2 = p.x3 + handle * t2
-  p.y2 = p.y3 - lift
-  return true
-}
-
 // The curve's point at `t`, written into `out`.
-function cubicAt(p: Placed, t: number, out: { x: number; y: number }) {
+function cubicAt(
+  p: ConnectorPlacement,
+  t: number,
+  out: { x: number; y: number },
+) {
   const s = 1 - t
   const a = s * s * s
   const b = 3 * s * s * t
@@ -172,7 +70,7 @@ function cubicAt(p: Placed, t: number, out: { x: number; y: number }) {
 
 // A connector whose ends both lie further off the canvas than any curve can
 // reach back onto it draws nothing there.
-function offCanvas(p: Placed, frame: MarkFrame) {
+function offCanvas(p: ConnectorPlacement, frame: MarkFrame) {
   const reach = CONNECTOR_MAX_REACH_PX + p.strokePx
   return (
     Math.max(p.y0, p.y3) + reach < 0 ||
@@ -193,12 +91,12 @@ interface PathSink {
   ): void
 }
 
-function traceCurve(ctx: PathSink, p: Placed) {
+function traceCurve(ctx: PathSink, p: ConnectorPlacement) {
   ctx.moveTo(p.x0, p.y0)
   ctx.bezierCurveTo(p.x1, p.y1, p.x2, p.y2, p.x3, p.y3)
 }
 
-function traceArrow(ctx: PathSink, p: Placed, arrowPx: number) {
+function traceArrow(ctx: PathSink, p: ConnectorPlacement, arrowPx: number) {
   ctx.moveTo(p.x3 + p.back, p.y3 - arrowPx)
   ctx.lineTo(p.x3, p.y3)
   ctx.moveTo(p.x3 + p.back, p.y3 + arrowPx)
@@ -207,7 +105,7 @@ function traceArrow(ctx: PathSink, p: Placed, arrowPx: number) {
 
 const svgNumber = (n: number) => Math.round(n * 100) / 100
 
-function svgPathOf(p: Placed, arrowPx: number) {
+function svgPathOf(p: ConnectorPlacement, arrowPx: number) {
   const parts: string[] = []
   const pt = (x: number, y: number) => `${svgNumber(x)} ${svgNumber(y)}`
   const sink: PathSink = {
@@ -227,7 +125,7 @@ const POINT = { x: 0, y: 0 }
 
 // The box the stroke lies in: the hull of the curve's chords, its arrow, and
 // half the stroke.
-function inkBox(p: Placed, arrowPx: number): InkRect {
+function inkBox(p: ConnectorPlacement, arrowPx: number): InkRect {
   let left = Math.min(p.x0, p.x3)
   let right = Math.max(p.x0, p.x3)
   let top = Math.min(p.y0, p.y3)
@@ -285,7 +183,7 @@ function nearSegment(
 // The nearest point of the drawn ink's centreline, over the chords the GPU
 // strip is built from.
 function nearestOnConnector(
-  p: Placed,
+  p: ConnectorPlacement,
   arrowPx: number,
   px: number,
   py: number,
@@ -326,7 +224,7 @@ export function connectorEnds(
   i: number,
 ) {
   const p = newPlaced()
-  return place(c, params, block.displayedRegionIndex, i, p, getDpr())
+  return placeConnector(c, params, block.displayedRegionIndex, i, p, getDpr())
     ? { x: p.x0, y: p.y0, x2: p.x3, y2: p.y3 }
     : undefined
 }
@@ -381,7 +279,10 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
     const dash = params.strokeDash ? [...params.strokeDash] : []
     ctx.lineCap = 'butt'
     for (let i = 0; i < c.count; i++) {
-      if (!place(c, params, own, i, PLACED, dpr) || offCanvas(PLACED, frame)) {
+      if (
+        !placeConnector(c, params, own, i, PLACED, dpr) ||
+        offCanvas(PLACED, frame)
+      ) {
         continue
       }
       ctx.lineWidth = PLACED.strokePx
@@ -402,7 +303,9 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
 
   ink(c, block, _frame, params, i) {
     const p = newPlaced()
-    if (!place(c, params, block.displayedRegionIndex, i, p, getDpr())) {
+    if (
+      !placeConnector(c, params, block.displayedRegionIndex, i, p, getDpr())
+    ) {
       return undefined
     }
     return {
@@ -421,7 +324,7 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
     const dpr = getDpr()
     const reach = Math.sqrt(maxDistSq)
     return nearestInk(candidates, maxDistSq, i => {
-      if (!place(c, params, own, i, PLACED, dpr)) {
+      if (!placeConnector(c, params, own, i, PLACED, dpr)) {
         return undefined
       }
       const box = inkBox(PLACED, params.arrowPx)

@@ -11,7 +11,7 @@ import {
   CONNECTOR_MINUS_1,
   CONNECTOR_MINUS_2,
   CONNECTOR_STRAIGHT,
-} from '@jbrowse/render-core/marks'
+} from '@jbrowse/render-core/shaders/connectorMarkConsts'
 
 import {
   arcSlotCategory,
@@ -52,8 +52,6 @@ export interface ConnectorFeed {
   channels: ConnectorChannels
   hits: ConnectorHit[]
 }
-
-const LINE_ALPHA_BYTE = Math.round(LINKED_READ_LINE_ALPHA * 255)
 
 class Lanes {
   x: number[] = []
@@ -125,6 +123,68 @@ function placeEnd(
     : { region: holding, bp }
 }
 
+/** How deep a maps-back loop dips under its row: four rows, within bounds. */
+export function loopDipPx(rowPitch: number) {
+  return Math.min(LOOP_MAX_DIP_PX, Math.max(LOOP_MIN_DIP_PX, 4 * rowPitch))
+}
+
+/**
+ * One pair as the connector mark draws it: each end placed on the region
+ * holding it (`x`, `x2` and `x2Region`, the first end's region `region`), the
+ * rows, the `bend` (a loop's set depth, a discordant dip, or `CONNECTOR_BOW`),
+ * the stroke `width`, the palette `slot` its color comes from at `alpha`, and
+ * the `CONNECTOR_*` bits. Undefined where an end's region is not displayed.
+ */
+export function connectorInstance(
+  pair: LinkedPair,
+  displayedRegions: readonly DisplayedRegion[],
+  pileupHeight: number,
+  rowPitch: number,
+  arrows: boolean,
+) {
+  const { e1, e2, c } = pair
+  const r1 = displayedRegions[e1.displayedRegionIndex]
+  const r2 = displayedRegions[e2.displayedRegionIndex]
+  if (r1 && r2) {
+    const own = placeEnd(displayedRegions, e1.displayedRegionIndex, r1, c.bp1)
+    const far = placeEnd(displayedRegions, e2.displayedRegionIndex, r2, c.bp2)
+    const { straight, hidden, loop, dipPx } = connectorShape(
+      pair,
+      r1,
+      r2,
+      displayedRegions,
+      pileupHeight,
+    )
+    return {
+      region: own.region,
+      x: own.bp,
+      x2: far.bp,
+      x2Region: far.region,
+      row: e1.data.readYs[e1.readIdx]!,
+      row2: e2.data.readYs[e2.readIdx]!,
+      bend: loop ? loopDipPx(rowPitch) : (dipPx ?? CONNECTOR_BOW),
+      width: straight
+        ? LINKED_READ_LINE_WIDTH_PX
+        : loop
+          ? LOOP_STROKE_WIDTH_PX
+          : CURVE_STROKE_WIDTH_PX,
+      slot: linkedReadColorSlot(c.colorType),
+      alpha: loop ? 1 : LINKED_READ_LINE_ALPHA,
+      straight,
+      loop,
+      hidden,
+      bits:
+        (c.s1 < 0 ? CONNECTOR_MINUS_1 : 0) |
+        (c.s2 < 0 ? CONNECTOR_MINUS_2 : 0) |
+        (c.isSplit ? CONNECTOR_LEADING_2 : 0) |
+        (straight ? CONNECTOR_STRAIGHT : 0) |
+        (hidden ? CONNECTOR_DASHED : 0) |
+        (loop && arrows ? CONNECTOR_ARROW : 0),
+    }
+  }
+  return undefined
+}
+
 export interface ConnectorFeedInput {
   pairs: readonly LinkedPair[]
   displayedRegions: readonly DisplayedRegion[]
@@ -156,66 +216,45 @@ export function buildConnectorFeeds({
   labels,
 }: ConnectorFeedInput): Map<number, ConnectorFeed> {
   const palette = buildArcColorPalette(colors)
-  const rowH = featureHeight + featureSpacing
-  const loopDipPx = Math.min(
-    LOOP_MAX_DIP_PX,
-    Math.max(LOOP_MIN_DIP_PX, 4 * rowH),
-  )
+  const rowPitch = featureHeight + featureSpacing
   const arrows = connectorArrowPx(featureHeight) > 0
   const byRegion = new Map<number, Lanes>()
   for (const pair of pairs) {
-    const { e1, e2, c, hiddenSegmentsBetween } = pair
-    const r1 = displayedRegions[e1.displayedRegionIndex]
-    const r2 = displayedRegions[e2.displayedRegionIndex]
-    if (!r1 || !r2) {
-      continue
-    }
-    const own = placeEnd(displayedRegions, e1.displayedRegionIndex, r1, c.bp1)
-    const far = placeEnd(displayedRegions, e2.displayedRegionIndex, r2, c.bp2)
-    const { straight, hidden, loop, dipPx } = connectorShape(
+    const placed = connectorInstance(
       pair,
-      r1,
-      r2,
       displayedRegions,
       pileupHeight,
+      rowPitch,
+      arrows,
     )
-    let lanes = byRegion.get(own.region)
-    if (!lanes) {
-      lanes = new Lanes()
-      byRegion.set(own.region, lanes)
+    if (placed) {
+      let lanes = byRegion.get(placed.region)
+      if (!lanes) {
+        lanes = new Lanes()
+        byRegion.set(placed.region, lanes)
+      }
+      const opaque = normalizedRgbToABGR(...palette[placed.slot]!)
+      lanes.x.push(placed.x)
+      lanes.x2.push(placed.x2)
+      lanes.x2Region.push(placed.x2Region)
+      lanes.row.push(placed.row)
+      lanes.row2.push(placed.row2)
+      lanes.bend.push(placed.bend)
+      lanes.width.push(placed.width)
+      lanes.color.push(
+        placed.alpha === 1
+          ? opaque
+          : withAbgrAlpha(opaque, Math.round(placed.alpha * 255)),
+      )
+      lanes.bits.push(placed.bits)
+      lanes.hits.push({
+        id1: readIdAt(pair.e1.data, pair.e1.readIdx)!,
+        id2: readIdAt(pair.e2.data, pair.e2.readIdx)!,
+        readName: readNameAt(pair.e1.data, pair.e1.readIdx),
+        label: arcColorCategoryLabel(arcSlotCategory(placed.slot), labels),
+        hiddenSegmentsBetween: pair.hiddenSegmentsBetween,
+      })
     }
-    const slot = linkedReadColorSlot(c.colorType)
-    const rgb = palette[slot]!
-    lanes.x.push(own.bp)
-    lanes.x2.push(far.bp)
-    lanes.x2Region.push(far.region)
-    lanes.row.push(e1.data.readYs[e1.readIdx]!)
-    lanes.row2.push(e2.data.readYs[e2.readIdx]!)
-    lanes.bend.push(loop ? loopDipPx : (dipPx ?? CONNECTOR_BOW))
-    lanes.width.push(
-      straight
-        ? LINKED_READ_LINE_WIDTH_PX
-        : loop
-          ? LOOP_STROKE_WIDTH_PX
-          : CURVE_STROKE_WIDTH_PX,
-    )
-    const opaque = normalizedRgbToABGR(...rgb)
-    lanes.color.push(loop ? opaque : withAbgrAlpha(opaque, LINE_ALPHA_BYTE))
-    lanes.bits.push(
-      (c.s1 < 0 ? CONNECTOR_MINUS_1 : 0) |
-        (c.s2 < 0 ? CONNECTOR_MINUS_2 : 0) |
-        (c.isSplit ? CONNECTOR_LEADING_2 : 0) |
-        (straight ? CONNECTOR_STRAIGHT : 0) |
-        (hidden ? CONNECTOR_DASHED : 0) |
-        (loop && arrows ? CONNECTOR_ARROW : 0),
-    )
-    lanes.hits.push({
-      id1: readIdAt(e1.data, e1.readIdx)!,
-      id2: readIdAt(e2.data, e2.readIdx)!,
-      readName: readNameAt(e1.data, e1.readIdx),
-      label: arcColorCategoryLabel(arcSlotCategory(slot), labels),
-      hiddenSegmentsBetween,
-    })
   }
   return new Map([...byRegion].map(([region, lanes]) => [region, lanes.feed()]))
 }

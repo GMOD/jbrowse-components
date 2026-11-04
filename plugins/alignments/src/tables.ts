@@ -52,10 +52,19 @@ import { withPreset } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
+import { connectorPlacement } from '@jbrowse/render-core/marks/connectorPlacement'
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
 } from '@jbrowse/render-core/scoreScale'
+import {
+  CONNECTOR_ARROW,
+  CONNECTOR_BOW,
+  CONNECTOR_LEADING_2,
+  CONNECTOR_MINUS_1,
+  CONNECTOR_MINUS_2,
+  CONNECTOR_STRAIGHT,
+} from '@jbrowse/render-core/shaders/connectorMarkConsts'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 import {
@@ -141,10 +150,11 @@ import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { iterLinkedPairs } from './features/linkedReads/compute.ts'
+import { connectorFilterOf } from './features/linkedReads/computeOverlay.ts'
 import {
-  connectorFilterOf,
-  connectorShape,
-} from './features/linkedReads/computeOverlay.ts'
+  connectorArrowPx,
+  connectorInstance,
+} from './features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
 import {
   qualityOpacityOf,
@@ -174,7 +184,6 @@ import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import {
   frequencyFadeGate,
-  linkedReadColorSlot,
   sizeAlpha,
 } from './shaders/slang/alignmentsUniforms.js.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
@@ -939,6 +948,7 @@ function readConnectionTables(
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
   regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
+  connectorSlots: ReadonlySet<number>,
 ) {
   const band = conf.readConnections
   const connectionFilter = connectionFilterOf(filter)
@@ -998,17 +1008,16 @@ function readConnectionTables(
       ),
     ]),
   )
-  const legend = result
-    ? getArcLegendItems(
-        new Set(
-          [...arcSlotsInWindows(result, keyWindowsOf(regionInfos))].map(slot =>
-            arcSlotCategory(slot),
-          ),
-        ),
-        colors.palette,
-        colors.keyLabels.categories,
-      ).filter(item => item.color !== undefined)
-    : []
+  const legend = getArcLegendItems(
+    new Set(
+      [
+        ...(result ? arcSlotsInWindows(result, keyWindowsOf(regionInfos)) : []),
+        ...connectorSlots,
+      ].map(slot => arcSlotCategory(slot)),
+    ),
+    colors.palette,
+    colors.keyLabels.categories,
+  ).filter(item => item.color !== undefined)
   return {
     bySection,
     arcLegend: {
@@ -1064,23 +1073,35 @@ function overlapTables(
 
 /**
  * Each section's connectors as the pileup draws them (always under a chain
- * unit, else under `pileup.connectors.show`), filed by the region holding each
- * one's first end, after the display's connection filter.
+ * unit, else under `pileup.connectors.show`), after the display's connection
+ * filter, each placed as the connector mark places it (`connectorInstance`)
+ * and filed by the region holding its first end.
  */
 function sectionConnectors(
   laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   regionInfos: RegionInfo[],
   admits: (pair: LinkedPair) => boolean,
+  readPitch: number,
+  arrows: boolean,
 ) {
   const refNameAt = (i: number) => regionInfos[i]?.refName
   return new Map(
     [...laidByGroup].map(([key, laid]) => {
-      const byRegion = new Map<number, LinkedPair[]>()
+      const pileupHeight =
+        Math.max(0, ...[...laid.values()].map(d => d.maxY)) * readPitch
+      const byRegion = new Map<number, PlacedConnector[]>()
       for (const pair of iterLinkedPairs(laid, r => r, refNameAt)) {
-        if (admits(pair)) {
-          getOrCreate(byRegion, pair.e1.displayedRegionIndex, () => []).push(
-            pair,
-          )
+        const placed = admits(pair)
+          ? connectorInstance(
+              pair,
+              regionInfos,
+              pileupHeight,
+              readPitch,
+              arrows,
+            )
+          : undefined
+        if (placed) {
+          getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
         }
       }
       return [key, byRegion]
@@ -1088,46 +1109,56 @@ function sectionConnectors(
   )
 }
 
+interface PlacedConnector {
+  pair: LinkedPair
+  placed: NonNullable<ReturnType<typeof connectorInstance>>
+}
+
 /**
- * One region's connectors: each end's position, row and region, the color of
- * the connection's arc, and how the display draws it: `straight`, a `curve`
- * dipping `dip` px below its rows (the display flattens it toward a line
- * where its ends sit close on screen), or a `loop` where a read maps back
- * over itself; `dashed` where the junction steps over segments not in view.
- * `key` and `mateKey` are the two reads' `key` in `reads`; the second end may
- * sit in another region.
+ * One region's connectors as the connector mark draws them: each end's
+ * position, row and region (the second end may sit in another), the color of
+ * the connection's arc at `opacity`, the stroke `width` in px, and the shape:
+ * `straight`, a `curve` dipping `dip` px below its rows, or bowing up over
+ * them where `dip` is 0, or a `loop` where a read maps back over itself,
+ * ending in an `arrow`; `dashed` where the junction steps over segments not
+ * in view. `strand` and `endStrand` (1 or -1) and `leading`, the second end
+ * being a split junction's leading edge, set which way each end's curve
+ * leaves its read: `alignmentConnectorCurves` places the curve at a host's
+ * scale. `key` and `mateKey` are the two reads' `key` in `reads`.
  */
 function connectorColumns(
-  connected: readonly LinkedPair[],
-  regionInfos: RegionInfo[],
-  pileupHeight: number,
+  connected: readonly PlacedConnector[],
   slotColor: readonly string[],
   keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
 ) {
-  const shapes = connected.map(pair =>
-    connectorShape(
-      pair,
-      regionInfos[pair.e1.displayedRegionIndex]!,
-      regionInfos[pair.e2.displayedRegionIndex]!,
-      regionInfos,
-      pileupHeight,
-    ),
-  )
+  const bits = connected.map(({ placed }) => placed.bits)
   return {
     connectors: {
-      start: connected.map(p => p.c.bp1),
-      end: connected.map(p => p.c.bp2),
-      endRegion: connected.map(p => p.e2.displayedRegionIndex),
-      row: connected.map(p => p.e1.data.readYs[p.e1.readIdx]!),
-      endRow: connected.map(p => p.e2.data.readYs[p.e2.readIdx]!),
-      color: connected.map(p => slotColor[linkedReadColorSlot(p.c.colorType)]!),
-      kind: shapes.map(({ straight, loop }) =>
-        straight ? 'straight' : loop ? 'loop' : 'curve',
+      start: connected.map(({ placed }) => placed.x),
+      end: connected.map(({ placed }) => placed.x2),
+      endRegion: connected.map(({ placed }) => placed.x2Region),
+      row: connected.map(({ placed }) => placed.row),
+      endRow: connected.map(({ placed }) => placed.row2),
+      color: connected.map(({ placed }) => slotColor[placed.slot]!),
+      opacity: connected.map(({ placed }) => placed.alpha),
+      width: connected.map(({ placed }) => placed.width),
+      kind: connected.map(({ placed }) =>
+        placed.straight ? 'straight' : placed.loop ? 'loop' : 'curve',
       ),
-      dashed: shapes.map(({ hidden }) => hidden),
-      dip: shapes.map(({ dipPx }) => dipPx ?? 0),
-      key: connected.map(p => keyOf(p.e1.data.readKeys[p.e1.readIdx]!)),
-      mateKey: connected.map(p => keyOf(p.e2.data.readKeys[p.e2.readIdx]!)),
+      dashed: connected.map(({ placed }) => placed.hidden),
+      dip: connected.map(({ placed }) =>
+        placed.straight || placed.bend === CONNECTOR_BOW ? 0 : placed.bend,
+      ),
+      strand: bits.map(b => ((b & CONNECTOR_MINUS_1) !== 0 ? -1 : 1)),
+      endStrand: bits.map(b => ((b & CONNECTOR_MINUS_2) !== 0 ? -1 : 1)),
+      leading: bits.map(b => (b & CONNECTOR_LEADING_2) !== 0),
+      arrow: bits.map(b => (b & CONNECTOR_ARROW) !== 0),
+      key: connected.map(({ pair: p }) =>
+        keyOf(p.e1.data.readKeys[p.e1.readIdx]!),
+      ),
+      mateKey: connected.map(({ pair: p }) =>
+        keyOf(p.e2.data.readKeys[p.e2.readIdx]!),
+      ),
     },
   }
 }
@@ -1549,14 +1580,8 @@ export async function alignmentTables(
     minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
     junctions: junctionFilterOf(filter),
   }
-  const connections = readConnectionTables(
-    conf,
-    filter,
-    sectionData,
-    regionInfos,
-    colors,
-  )
   const connectionFilter = connectionFilterOf(filter)
+  const readPitch = featureHeight + featureSpacingForHeight(featureHeight)
   let belowFloor: ReadonlySet<string> | undefined
   const connectorsBySection =
     chain || readConfObject(conf.pileup, ['connectors', 'show'])
@@ -1575,12 +1600,27 @@ export async function alignmentTables(
               return belowFloor
             },
           ),
+          readPitch,
+          connectorArrowPx(featureHeight) > 0,
         )
       : undefined
+  const connections = readConnectionTables(
+    conf,
+    filter,
+    sectionData,
+    regionInfos,
+    colors,
+    new Set(
+      [...(connectorsBySection?.values() ?? [])].flatMap(byRegion =>
+        [...byRegion.values()].flatMap(list =>
+          list.map(({ placed }) => placed.slot),
+        ),
+      ),
+    ),
+  )
   const connectorSlotColor = buildArcColorPalette(colors.palette).map(
     normalizedRgbToHex,
   )
-  const readPitch = featureHeight + featureSpacingForHeight(featureHeight)
   const keys = new Map<WorkerPileupData['readKeys'][number], number>()
   const keyOf = (readKey: WorkerPileupData['readKeys'][number]) => {
     let key = keys.get(readKey)
@@ -1601,8 +1641,6 @@ export async function alignmentTables(
               tables: {
                 ...connectorColumns(
                   connectorsBySection?.get(key)?.get(i) ?? [],
-                  regionInfos,
-                  laid.maxY * readPitch,
                   connectorSlotColor,
                   keyOf,
                 ),
@@ -1998,6 +2036,94 @@ function markColumns<N extends string>(
       return [name, column]
     }),
   ) as Record<N, readonly number[]>
+}
+
+/**
+ * #api
+ * Each connector of a `connectors` table as the pileup places its cubic at
+ * `pxPerBp`, through the connector mark's own placement, for a host drawing
+ * the table at its figure's scale. Both ends lie in one region, `reversed`
+ * where it is flipped; `featureHeight` and `featureSpacing` are `readPitch`'s.
+ * Returns each curve's two control points, `handle` and `endHandle` in bp
+ * with `handleRow` and `endHandleRow` in rows as `row` counts them, a
+ * straight connector's at its ends; and, where an arrowhead fits at this
+ * scale, `arrow` true and `arrowBack`, the bp its arms reach back to, which
+ * stand `arrowRows` rows off the row.
+ */
+export function alignmentConnectorCurves({
+  pxPerBp,
+  reversed = false,
+  featureHeight,
+  featureSpacing,
+  connectors,
+}: {
+  pxPerBp: number
+  reversed?: boolean
+  featureHeight: number
+  featureSpacing: number
+  connectors: {
+    start: readonly number[]
+    end: readonly number[]
+    row: readonly number[]
+    endRow: readonly number[]
+    kind: readonly ('straight' | 'curve' | 'loop')[]
+    dip: readonly number[]
+    strand: readonly number[]
+    endStrand: readonly number[]
+    leading: readonly boolean[]
+    arrow: readonly boolean[]
+  }
+}) {
+  if (!Number.isFinite(pxPerBp) || pxPerBp <= 0) {
+    throw new Error(`pxPerBp is ${pxPerBp}; it takes a finite number > 0`)
+  }
+  const { start, end, row, endRow, kind, dip, strand, endStrand } = connectors
+  const count = start.length
+  const signedPxPerBp = reversed ? -pxPerBp : pxPerBp
+  const rowPitchPx = featureHeight + featureSpacing
+  const arrowPx = connectorArrowPx(featureHeight)
+  const channels = {
+    x: Uint32Array.from(start),
+    x2: Uint32Array.from(end),
+    x2Region: new Uint32Array(count),
+    row: Uint32Array.from(row),
+    row2: Uint32Array.from(endRow),
+    bend: Float32Array.from(kind, (k, i) =>
+      k !== 'straight' && dip[i] === 0 ? CONNECTOR_BOW : dip[i]!,
+    ),
+    width: new Float32Array(count).fill(1),
+    color: new Uint32Array(count),
+    bits: Uint8Array.from(
+      kind,
+      (k, i) =>
+        (strand[i]! < 0 ? CONNECTOR_MINUS_1 : 0) |
+        (endStrand[i]! < 0 ? CONNECTOR_MINUS_2 : 0) |
+        (connectors.leading[i] ? CONNECTOR_LEADING_2 : 0) |
+        (k === 'straight' ? CONNECTOR_STRAIGHT : 0) |
+        (connectors.arrow[i] ? CONNECTOR_ARROW : 0),
+    ),
+    count,
+  }
+  const params = {
+    regions: [{ anchorPx: 0, anchorBp: 0, signedPxPerBp }],
+    rowOffsetPx: 0,
+    rowPitchPx,
+    arrowPx,
+  }
+  const placed = Array.from({ length: count }, (_, i) =>
+    connectorPlacement(channels, params, 0, i),
+  )
+  const bp = (px: number) => px / signedPxPerBp
+  const rows = (px: number) => px / rowPitchPx
+  return {
+    handle: placed.map(p => bp(p!.x1)),
+    handleRow: placed.map(p => rows(p!.y1)),
+    endHandle: placed.map(p => bp(p!.x2)),
+    endHandleRow: placed.map(p => rows(p!.y2)),
+    arrow: placed.map(p => p!.arrow),
+    arrowBack: placed.map(p => bp(p!.x3 + p!.back)),
+    arrowRows: rows(arrowPx),
+  }
 }
 
 let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined

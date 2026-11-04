@@ -31,6 +31,7 @@ import {
   DOG_VCF,
   GFF3,
   METHYLATED,
+  PAIRED_INVERSION,
   SIGNED_BIGWIG,
 } from './volvox.fixture.ts'
 import { fromWire } from './wire.ts'
@@ -66,6 +67,7 @@ let jbrowse: {
   wiggle: (args: string) => Promise<string>
   variants: (args: string) => Promise<string>
   alignmentMarkAlpha: (args: string) => Promise<string>
+  alignmentConnectorCurves: (args: string) => Promise<string>
   synteny: (args: string) => Promise<string>
   dotplot: (args: string) => Promise<string>
   contigs: (args: string) => Promise<string>
@@ -315,6 +317,24 @@ test('the bundle fades a region’s marks as the engine does, at a host’s px p
   expect(read(await jbrowse.alignmentMarkAlpha(JSON.stringify(args)))).toEqual(
     engine.alignmentMarkAlpha(args),
   )
+})
+
+test('the bundle places a chain’s connectors as the engine does, at a host’s px per bp', async () => {
+  const engine = createTablesEngine()
+  const t = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { unit: 'chain' },
+  })
+  const args = {
+    pxPerBp: 1200 / 14000,
+    featureHeight: t.readPitch.featureHeight,
+    featureSpacing: t.readPitch.featureSpacing,
+    connectors: t.connectors,
+  }
+  expect(t.connectors.start.length).toBeGreaterThan(0)
+  expect(
+    read(await jbrowse.alignmentConnectorCurves(JSON.stringify(args))),
+  ).toEqual(engine.alignmentConnectorCurves(args))
 })
 
 test('the bundle answers a PAF as the engine does, in a bare host', async () => {

@@ -35,6 +35,7 @@ import {
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
+import { regionPx } from './linkRegion.ts'
 import { nearestInk } from './markHit.ts'
 import {
   colorBits,
@@ -53,6 +54,7 @@ import {
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
+import type { LinkRegion } from './linkRegion.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
 import type { RowTable } from './rowTable.ts'
@@ -96,21 +98,6 @@ export function linkInstance(c: LinkChannels, i: number): LinkChannels {
     color: instanceColor(c.color, i),
     count: 1,
   }
-}
-
-/**
- * One displayed region as a foot places through it: the canvas px of an
- * anchor bp chosen near the view, so a foot's offset from it stays inside
- * float32 on the GPU, and the signed px per bp, negative on a reversed
- * region.
- */
-export interface LinkRegion {
-  anchorPx: number
-  anchorBp: number
-  signedPxPerBp: number
-  /** The region's screen extent, which a foot stops at; unbounded when absent. */
-  leftPx?: number
-  rightPx?: number
 }
 
 export interface LinkSizeScale {
@@ -280,15 +267,6 @@ function linkShapeCode(shape: LinkShape) {
     : shape === 'line'
       ? LINK_SHAPE_LINE
       : LINK_SHAPE_DOME
-}
-
-export function regionPx(
-  regions: readonly LinkRegion[],
-  index: number,
-  bp: number,
-) {
-  const r = regions[index]!
-  return r.anchorPx + (bp - r.anchorBp) * r.signedPxPerBp
 }
 
 // Whether instance `i`'s ink can reach [lo, hi] horizontally, off its two feet
@@ -1078,3 +1056,6 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
 }
 
 export { LINK_ELSEWHERE, LINK_NO_REGION }
+
+export { regionPx }
+export type { LinkRegion }
