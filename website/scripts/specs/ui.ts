@@ -1444,6 +1444,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'plugin_store_install',
+    viewportHeight: 560,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
@@ -1462,6 +1463,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'plugin_store_keep',
+    viewportHeight: 560,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',

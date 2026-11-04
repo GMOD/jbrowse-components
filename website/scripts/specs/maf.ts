@@ -495,7 +495,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    viewportHeight: 2000,
+    viewportHeight: 2047,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 360000,
     // One wait per display: a body-level `:has` cannot say which lane drew

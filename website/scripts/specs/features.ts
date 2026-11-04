@@ -312,7 +312,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
-    viewportHeight: 590,
+    viewportHeight: 602,
     tooltip: 'hide',
     actions: [{ type: 'waitForAppSettled' }],
     stages: [
