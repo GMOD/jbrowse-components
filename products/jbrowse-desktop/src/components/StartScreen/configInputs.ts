@@ -1,35 +1,18 @@
 import { dedupe, notEmpty } from '@jbrowse/core/util'
 import { deepMerge } from '@jbrowse/core/util/deepMerge'
 
-import type {
-  InternetAccount,
-  JBrowseConfig,
-  JBrowseConfigInput,
-} from './types.ts'
+import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
 
-// Offered in every desktop session, so they belong to what completes a config
-// rather than to what a config has to declare. Last in the list on purpose: a
-// config naming its own account with one of these ids wins, because `dedupe`
-// keeps the first occurrence.
-//
-// No Google Drive account: the drive.file scope needs the Google Picker, which
-// runs only on a web origin, and Google caps an unverified app's restricted
-// drive.readonly at 100 users. Desktop users open Drive files from the folder
-// Google's Drive for desktop syncs.
-const builtinInternetAccounts: InternetAccount[] = [
-  {
-    type: 'DropboxOAuthInternetAccount',
-    internetAccountId: 'dropboxOAuth',
-    name: 'Dropbox',
-    description: 'Account to access Dropbox files',
-    clientId: 'ykjqg1kr23pl1i7',
-  },
-]
+// No built-in cloud accounts: the Google Drive and Dropbox desktop apps sync
+// files to a local folder, which desktop opens directly. Google Drive's
+// drive.file scope also needs the Google Picker, which runs only on a web
+// origin, and Google caps an unverified app's restricted drive.readonly scope
+// at 100 users.
 
 /**
  * Turn a config as it arrived into one the root model can be created from: the
- * list fields an input need not carry are supplied, the built-in internet
- * accounts are added, and each list is deduped by its identity field.
+ * list fields an input need not carry are supplied, and each list is deduped
+ * by its identity field.
  */
 export function completeConfig(input: JBrowseConfigInput): JBrowseConfig {
   return {
@@ -37,7 +20,7 @@ export function completeConfig(input: JBrowseConfigInput): JBrowseConfig {
     assemblies: dedupe(input.assemblies ?? [], asm => asm.name),
     tracks: dedupe(input.tracks ?? [], track => track.trackId),
     internetAccounts: dedupe(
-      [...(input.internetAccounts ?? []), ...builtinInternetAccounts],
+      input.internetAccounts ?? [],
       account => account.internetAccountId,
     ),
     connections: dedupe(

@@ -4,27 +4,23 @@ test('completeConfig supplies the list fields an input need not carry', () => {
   const config = completeConfig({})
   expect(config.assemblies).toEqual([])
   expect(config.tracks).toEqual([])
-  expect(config.internetAccounts.map(a => a.internetAccountId)).toEqual([
-    'dropboxOAuth',
-  ])
+  expect(config.internetAccounts).toEqual([])
 })
 
-test('a config declaring one of the built-in account ids wins', () => {
+test('completeConfig dedupes internet accounts by id, keeping the first', () => {
+  const account = {
+    type: 'DropboxOAuthInternetAccount',
+    internetAccountId: 'dropboxOAuth',
+    name: 'Our Dropbox',
+    description: '',
+  }
   const { internetAccounts } = completeConfig({
     internetAccounts: [
-      {
-        type: 'DropboxOAuthInternetAccount',
-        internetAccountId: 'dropboxOAuth',
-        name: 'Our Dropbox',
-        description: '',
-        clientId: 'site-specific',
-      },
+      { ...account, clientId: 'first' },
+      { ...account, clientId: 'second' },
     ],
   })
-  expect(
-    internetAccounts.filter(a => a.internetAccountId === 'dropboxOAuth'),
-  ).toHaveLength(1)
-  expect(internetAccounts[0]?.clientId).toBe('site-specific')
+  expect(internetAccounts.map(a => a.clientId)).toEqual(['first'])
 })
 
 test('completeConfig dedupes assemblies by name and tracks by trackId', () => {
