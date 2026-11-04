@@ -372,7 +372,7 @@ export function laneLayoutOf(
 // just each lane's stack depth to size reads, so it skips the dominant
 // `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
 // It matches `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly. No
-// per-lane sizes here: the caller (fit) asks before any override is in effect.
+// per-lane sizes here: it counts the lane as it lays out unsized.
 function laneRowCount(ctx: GroupLayoutContext, key: string, maxRows: number) {
   const dataMap = regionsOf(ctx, key)
   return laneLayoutOf(ctx, key, NO_OVERRIDES, NO_KEYS) === 'oneRow'
@@ -545,26 +545,31 @@ export function layoutGroupsToViewport(
   if (!sharesBudget) {
     return pass
   }
-  // Only fit-budget groups take part in reclaim — collapsed groups draw no
-  // pileup, overridden groups opt out, and a single-row group's height is fixed
-  // at one row whatever cap it is handed.
+  // Only stacked groups take part in reclaim — collapsed groups draw no pileup,
+  // and a single-row group's height is fixed at one row whatever cap it is
+  // handed.
+  //
+  // A sized group takes part as it would unsized, and only its bonus is
+  // dropped: sizing one lane must not move another, and the first frame of a
+  // height drag, which sizes the lane, re-split the spare across the rest and
+  // moved the lanes above the handle a row out from under the pointer.
   //
   // Walking `pass` rather than `ctx.order` and looking each key back up: it was
   // just built one entry per `ctx.order` key, in that order, so the map already
   // pairs each key with the layout this reads.
   const outcomes: FitGroupOutcome[] = []
   for (const [key, map] of pass) {
-    if (
-      overrideCaps.has(key) ||
-      laneLayoutOf(ctx, key, overrideCaps, collapsedKeys) !== 'stacked'
-    ) {
-      continue
+    if (laneLayoutOf(ctx, key, NO_OVERRIDES, collapsedKeys) === 'stacked') {
+      outcomes.push(
+        overrideCaps.has(key)
+          ? unsizedOutcome(ctx, key, defaultCap.rows)
+          : {
+              key,
+              usedRows: groupMaxY(map),
+              truncated: anyRegionTruncated(map),
+            },
+      )
     }
-    outcomes.push({
-      key,
-      usedRows: groupMaxY(map),
-      truncated: anyRegionTruncated(map),
-    })
   }
   const bonusCaps = reclaimFitRows({
     outcomes,
@@ -577,10 +582,27 @@ export function layoutGroupsToViewport(
   if (bonusCaps) {
     result = new Map(pass)
     for (const [key, cap] of bonusCaps) {
-      result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
+      if (!overrideCaps.has(key)) {
+        result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
+      }
     }
   }
   return result
+}
+
+// A sized lane's outcome under the shared cap, counted rather than laid out: one
+// row past the cap is enough to say it would have been truncated.
+function unsizedOutcome(
+  ctx: GroupLayoutContext,
+  key: string,
+  defaultMaxRows: number,
+): FitGroupOutcome {
+  const rows = laneRowCount(ctx, key, defaultMaxRows + 1)
+  return {
+    key,
+    usedRows: Math.min(rows, defaultMaxRows),
+    truncated: rows > defaultMaxRows,
+  }
 }
 
 // Equal-split row budget per group when grouping fits to the viewport: subtract
@@ -675,8 +697,8 @@ export interface FitGroupOutcome {
 // cap may end up with a little slack again, but re-reclaiming that would mean
 // laying out repeatedly. The new caps never push the participants past their
 // original combined budget (`bonus * recipients <= spare`), so the stack still
-// fits the viewport. Collapsed and height-overridden groups are excluded by the
-// caller — they don't share the fit budget.
+// fits the viewport. Collapsed groups are excluded by the caller; a sized group
+// is passed as it would lay out unsized, and the caller drops its bonus.
 export function reclaimFitRows({
   outcomes,
   defaultMaxRows,

@@ -246,7 +246,9 @@ export interface SectionStackOpts<L> {
   // padded; `pileupHeight` stays the drawn row extent.
   minSectionHeight: number
   // How far below a lane's pileup band its deepest dipping connector reaches,
-  // given that band's height (`connectorDipReservePx`). Pads only the advance.
+  // given that band's height (`connectorDipReservePx`). Pads only the advance,
+  // and never a lane sized by a drag: that lane is the height dragged to, so
+  // its seam follows the pointer, and its curves draw inside it.
   dipReservePx: (lane: L, pileupHeight: number) => number
 }
 
@@ -269,7 +271,9 @@ export function computeStackedSections<L extends SectionLaneInput>(
         ? Math.max(rowsHeight, lane.heightOverridePx)
         : rowsHeight
     const dipReserve =
-      pileupHeight > 0 ? opts.dipReservePx(lane, pileupHeight) : 0
+      pileupHeight > 0 && lane.heightOverridePx === undefined
+        ? opts.dipReservePx(lane, pileupHeight)
+        : 0
     top = Math.max(
       pileupTop + pileupHeight + dipReserve,
       coverageTop + opts.minSectionHeight,

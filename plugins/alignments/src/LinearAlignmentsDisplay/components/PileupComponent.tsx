@@ -287,7 +287,10 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         )
         // from the height the lane was given, which can sit between two row
         // boundaries or past its rows, rather than the row-snapped band it
-        // shows, so a drag inside one row does not snap back to it
+        // shows, so a drag inside one row does not snap back to it. An unsized
+        // lane starts from the seam's own height: a sized lane reserves no dip
+        // room past its size, so starting from the band alone dropped the
+        // reserve on the first frame.
         const given = model.groupSizes.get(section.groupKey)
         return (
           <PileupResizeHandle
@@ -298,7 +301,11 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
             // pointer got no answer.
             seam={bottom}
             canvasHeight={height}
-            value={typeof given === 'number' ? given : section.pileupHeight}
+            value={
+              typeof given === 'number'
+                ? given
+                : section.pileupHeight + section.dipReserve
+            }
             onChange={h => {
               model.setGroupHeight(section.groupKey, h)
             }}

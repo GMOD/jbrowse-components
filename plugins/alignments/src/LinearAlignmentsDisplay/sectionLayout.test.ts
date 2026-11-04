@@ -791,6 +791,27 @@ test('a dip reserve pushes the next section down and leaves the pileup band alon
   ])
 })
 
+// The drag handle sits at the section's bottom and sets the size, so a reserve
+// past the size kept the seam at the deepest dip until the drag passed it.
+test('a sized lane reserves no dip room past its size', () => {
+  const { sections } = stack(
+    [
+      lane({ key: 'sized', maxY: 4, heightOverridePx: 40 }),
+      lane({ key: 'unsized', maxY: 4 }),
+    ],
+    {
+      coverageHeight: 0,
+      showCoverage: false,
+      rowHeight: 8,
+      dipReservePx: () => 20,
+    },
+  )
+  expect(sections.map(s => [s.pileupHeight, s.dipReserve, s.height])).toEqual([
+    [40, 0, 40],
+    [32, 20, 52],
+  ])
+})
+
 test('no dip reserve callback reserves nothing', () => {
   const { sections, contentHeight } = stack([lane({ key: '', maxY: 4 })], {
     coverageHeight: 45,

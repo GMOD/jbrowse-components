@@ -417,3 +417,26 @@ test('a lane height floors at one row', () => {
   display.setGroupHeight('1', -500)
   expect(display.groupSizes.get('1')).toBe(display.rowHeight)
 })
+
+// A sparse lane between two dense ones donates its spare rows to both. Sizing
+// any of the three, as the first frame of a height drag does, used to re-split
+// that spare across the rest, moving the lanes above the handle a row out from
+// under the pointer.
+test.each(['1', '2', '3'])('sizing lane %s moves no other lane', key => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 2 },
+    { key: '3', label: 'HP: 3', n: 400 },
+  ])
+  const heights = () =>
+    display.renderSections
+      .filter(s => s.groupKey !== key)
+      .map(s => s.pileupHeight)
+  const before = heights()
+  const sized = display.renderSections.find(s => s.groupKey === key)!
+
+  display.setGroupHeight(key, sized.pileupHeight + 1)
+  expect(heights()).toEqual(before)
+  display.setGroupHeight(key, sized.pileupHeight - 20)
+  expect(heights()).toEqual(before)
+})
