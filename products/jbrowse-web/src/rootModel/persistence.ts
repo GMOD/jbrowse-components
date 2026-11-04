@@ -374,7 +374,9 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
           if (self.pluginsUpdated && !reloadRequested) {
             reloadRequested = true
             self.reloadPluginManagerCallback(
-              structuredClone(getSnapshot(self.jbrowse)),
+              structuredClone(
+                getSnapshot<Record<string, unknown>>(self.jbrowse),
+              ),
               structuredClone(sessionSnap),
             )
           }
