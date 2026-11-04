@@ -9,7 +9,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { CUBIC_APEX_RATIO } from '@jbrowse/core/util'
+import { CUBIC_APEX_RATIO, max } from '@jbrowse/core/util'
 import {
   CONNECTOR_DASHED,
   CONNECTOR_STRAIGHT,
@@ -174,6 +174,7 @@ function makeData(opts: {
       opts.orientations ?? new Array(n).fill(0),
     ),
     readYs: new Uint16Array(opts.ys),
+    maxY: max(opts.ys, -1) + 1,
     readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
     ...(opts.clipAtStart
       ? { readClipAtStart: Uint32Array.from(opts.clipAtStart) }
@@ -453,8 +454,10 @@ describe('connectors — discordant curves dip', () => {
   // The depth is the mark's one free channel, so it has to say how big the event
   // is and not how much screen it happens to cover. Keyed on the endpoints' pixel
   // separation, as it was, this same event drew 55 px deep zoomed in and 7.5 px
-  // deep zoomed out.
-  it('dips the same depth for one event at every zoom', () => {
+  // deep zoomed out. Zoomed out far enough that its ends sit closer together
+  // than that depth, the dip shrinks to their separation instead of drawing a
+  // spike.
+  it('dips the same depth for one event at every zoom its ends are wider than that depth', () => {
     const data = makeData({
       names: ['p', 'p'],
       flags: [
@@ -469,18 +472,28 @@ describe('connectors — discordant curves dip', () => {
       ],
       ys: [0, 0],
     })
-    const depthAt = (bpPerPx: number) => {
+    const curveAt = (bpPerPx: number) => {
       const arcs = drawnConnectors({
         colors: PALETTE,
         ...baseOpts,
         bpToScreenX: (_refName: string, bp: number) => bp / bpPerPx,
         pairs: enumerateConnectorPairs(new Map([[0, data]])),
       })
-      const { sy1, cp1y } = controlPoints(arcs[0]!.d)
-      return cp1y - sy1
+      const { sx1, sy1, cp1y, sx2 } = controlPoints(arcs[0]!.d)
+      return {
+        depth: cp1y - sy1,
+        apex: (cp1y - sy1) * CUBIC_APEX_RATIO,
+        width: Math.abs(sx2 - sx1),
+      }
     }
-    expect(depthAt(20)).toBeCloseTo(depthAt(1))
-    expect(depthAt(400)).toBeCloseTo(depthAt(1))
+    const zoomedIn = curveAt(1).depth
+    expect(curveAt(20).depth).toBeCloseTo(zoomedIn)
+    expect(curveAt(100).depth).toBeCloseTo(zoomedIn)
+    for (const bpPerPx of [400, 2000]) {
+      const { apex, width } = curveAt(bpPerPx)
+      expect(apex).toBeCloseTo(width)
+      expect(apex).toBeLessThan(zoomedIn * CUBIC_APEX_RATIO)
+    }
   })
 
   it('scales the dip to the band, overshooting the clip by at most a row', () => {

@@ -138,7 +138,7 @@ function place(
     budget,
     params.maxHandlePx ?? CONNECTOR_MAX_HANDLE_PX,
   )
-  const lift = connectorLiftPx(budget, dy, c.bend[i]!)
+  const lift = connectorLiftPx(budget, dx, dy, c.bend[i]!)
   const t1 = connectorTangent(
     strandOf(bits, CONNECTOR_MINUS_1),
     0,

@@ -198,12 +198,19 @@ const dipDepth = (dipPx: number, x2 = 300) =>
     0.5,
   ) - 100
 
-test('a dip reaches the depth it was asked for, whatever the span', () => {
+test('a dip reaches the depth it was asked for when its ends are wide enough apart', () => {
   // the renderer bounds the depth by the band its ink has to survive in, so the
   // number it passes has to be the apex and not the control-point drop
   expect(dipDepth(40)).toBeCloseTo(40)
-  expect(dipDepth(40, 20)).toBeCloseTo(40)
+  expect(dipDepth(40, 40)).toBeCloseTo(40)
   expect(dipDepth(40, 2000)).toBeCloseTo(40)
+})
+
+test('a dip between ends close together on screen is no deeper than they are apart', () => {
+  // zoomed out, a pair a few px wide would otherwise draw as a tall spike
+  expect(dipDepth(80, 20)).toBeCloseTo(20)
+  expect(dipDepth(80, 1)).toBeCloseTo(4)
+  expect(dipDepth(2, 1)).toBeCloseTo(2)
 })
 
 test('a dip is bounded by the curve reach the cull pads by', () => {
