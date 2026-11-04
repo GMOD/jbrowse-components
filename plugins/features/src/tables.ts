@@ -52,6 +52,7 @@ import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { subfeatureLabelsOf } from './RenderFeatureDataRPC/displayModes.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { createPeptideCache } from './RenderFeatureDataRPC/peptides/peptideCache.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
 import {
@@ -387,10 +388,12 @@ export async function featureTables(
       ? {}
       : { facetField: facet.field }),
   }
+  const peptideCache = createPeptideCache()
   const raws = await Promise.all(
     regions.map(async r => {
       const result = await executeRenderFeatureData({
         pluginManager,
+        peptideCache,
         args: {
           sessionId: 'tables',
           adapterConfig,

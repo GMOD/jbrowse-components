@@ -15,6 +15,7 @@ import { buildFeatureAdmission } from './featureAdmission.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { GENE_LIKE_FIELD } from './renderConfig.ts'
 
+import type { PeptideCache } from './peptides/peptideCache.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
 import type { PeptideData } from './types.ts'
@@ -24,9 +25,11 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 export async function executeRenderFeatureData({
   pluginManager,
   args,
+  peptideCache,
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'RenderFeatureData'>
+  peptideCache: PeptideCache
 }) {
   const {
     sessionId,
@@ -135,6 +138,7 @@ export async function executeRenderFeatureData({
           },
           features,
           config,
+          peptideCache,
           geneticCodeId,
         ),
     )

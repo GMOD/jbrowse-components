@@ -2,8 +2,10 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { of } from 'rxjs'
 
 import { mockDisplayConfig } from '../testUtils.ts'
+import { createPeptideCache } from './peptideCache.ts'
 import { fetchPeptideData, processTranscriptFromSeq } from './peptideUtils.ts'
 
+import type { PeptideCache } from './peptideCache.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -171,7 +173,10 @@ describe('fetchPeptideData', () => {
     })
   }
 
-  async function translate(transcript: Feature) {
+  async function translate(
+    transcript: Feature,
+    cache: PeptideCache = createPeptideCache(),
+  ) {
     const map = await fetchPeptideData(
       {} as PluginManager,
       {
@@ -188,6 +193,7 @@ describe('fetchPeptideData', () => {
       },
       new Map([['t1', transcript]]),
       mockDisplayConfig(),
+      cache,
     )
     return map.get(transcript.id())?.protein
   }
@@ -260,5 +266,52 @@ describe('fetchPeptideData', () => {
     expect(await translate(transcriptWithCDS([{ start: 100, end: 106 }]))).toBe(
       undefined,
     )
+  })
+
+  it('reuses a translation on the next fetch without reading sequence', async () => {
+    const genome = makeGenome(new Map([[100, 'ATGAAA']]))
+    const cache = createPeptideCache()
+    const exons = [{ start: 100, end: 106 }]
+    installSequenceAdapter(genome)
+    await translate(transcriptWithCDS(exons), cache)
+
+    const requested = installSequenceAdapter(genome)
+    expect(await translate(transcriptWithCDS(exons), cache)).toBe('MK')
+    expect(requested.sorted).toEqual([])
+  })
+
+  it('translates afresh when the same id comes back with other coordinates', async () => {
+    const genome = makeGenome(
+      new Map([
+        [100, 'ATGAAA'],
+        [200, 'TTTGGG'],
+      ]),
+    )
+    // the transcript keeps its bounds, so only the CDS can tell the two apart
+    const withCDS = (start: number) =>
+      createCoordFeature({
+        type: 'mRNA',
+        start: 100,
+        end: 206,
+        strand: 1,
+        subfeatures: [
+          createCoordFeature({ type: 'CDS', start, end: start + 6 }),
+        ],
+      })
+    const cache = createPeptideCache()
+    installSequenceAdapter(genome)
+    await translate(withCDS(100), cache)
+    expect(await translate(withCDS(200), cache)).toBe('FG')
+  })
+
+  it('retries a translation whose sequence read failed', async () => {
+    const genome = makeGenome(new Map([[100, 'ATGAAA']]))
+    const cache = createPeptideCache()
+    const exons = [{ start: 100, end: 106 }]
+    installSequenceAdapter(genome, { fail: true })
+    await translate(transcriptWithCDS(exons), cache)
+
+    installSequenceAdapter(genome)
+    expect(await translate(transcriptWithCDS(exons), cache)).toBe('MK')
   })
 })

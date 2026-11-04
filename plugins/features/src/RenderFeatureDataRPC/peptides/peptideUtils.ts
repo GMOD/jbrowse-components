@@ -1,8 +1,11 @@
+import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { mergeIntervals } from '@jbrowse/core/util'
 import { translExceptProteinPositions } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import {
   transcriptCDS,
+  transcriptGeneticCodeId,
+  transcriptTranslExcept,
   translateTranscript,
 } from '@jbrowse/core/util/translateTranscript'
 import { firstValueFrom, toArray } from 'rxjs'
@@ -11,6 +14,7 @@ import { peptideTargets } from '../glyphs/findGlyph.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { PeptideData } from '../types.ts'
+import type { PeptideCache } from './peptideCache.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -143,32 +147,40 @@ export function processTranscriptFromSeq(
   }
 }
 
-export async function fetchPeptideData(
+// Everything the protein depends on, so a hit cannot be stale, rather than the
+// feature id, which a reloaded file can give other coordinates. The transcript's
+// bounds ride along because `transcriptTranslExcept` is relative to them.
+function translationKey(
+  scope: string,
+  transcript: Feature,
+  assemblyGeneticCodeId?: number,
+) {
+  return JSON.stringify([
+    scope,
+    transcript.get('start'),
+    transcript.get('end'),
+    transcript.get('strand'),
+    transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
+    transcriptTranslExcept(transcript),
+    transcriptCDS(transcript),
+  ])
+}
+
+// Every transcript came from the single region this RPC call runs over, so
+// they share one coordinate frame and one buffer spanning all of them replaces
+// N round trips. Only CDS bases translate, so the buffer is filled from the
+// coding stretches — DMD spans 2.2Mb around 11kb of CDS.
+async function translate(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
-  features: Map<string, Feature>,
-  config: DisplayConfig,
+  transcripts: Feature[],
   assemblyGeneticCodeId?: number,
-): Promise<Map<string, PeptideData>> {
-  const peptideDataMap = new Map<string, PeptideData>()
-
-  const transcripts = [...features.values()].flatMap(f =>
-    peptideTargets(f, config),
-  )
-  if (transcripts.length === 0) {
-    return peptideDataMap
-  }
-
-  // Every transcript came from the single region this RPC call runs over, so
-  // they share one coordinate frame and one buffer spanning all of them replaces
-  // N round trips. Only CDS bases translate, so the buffer is filled from the
-  // coding stretches — DMD spans 2.2Mb around 11kb of CDS.
+) {
   const bulkStart = Math.max(
     0,
     Math.min(...transcripts.map(t => t.get('start'))),
   )
   const bulkEnd = Math.max(...transcripts.map(t => t.get('end')))
-
   const wholeSeq = await fetchCodingSequenceBuffer(
     pluginManager,
     props,
@@ -176,23 +188,72 @@ export async function fetchPeptideData(
     bulkStart,
     bulkEnd,
   )
-  if (!wholeSeq) {
-    return peptideDataMap
+  return transcripts.map(transcript =>
+    wholeSeq === undefined
+      ? undefined
+      : processTranscriptFromSeq(
+          wholeSeq.slice(
+            transcript.get('start') - bulkStart,
+            transcript.get('end') - bulkStart,
+          ),
+          transcript,
+          assemblyGeneticCodeId,
+        ),
+  )
+}
+
+export async function fetchPeptideData(
+  pluginManager: PluginManager,
+  props: PeptideFetchProps,
+  features: Map<string, Feature>,
+  config: DisplayConfig,
+  cache: PeptideCache,
+  assemblyGeneticCodeId?: number,
+): Promise<Map<string, PeptideData>> {
+  const scope = [
+    props.sessionId,
+    adapterConfigCacheKey(props.sequenceAdapter),
+    props.regions[0]!.refName,
+  ].join('|')
+  const keyed = [...features.values()]
+    .flatMap(f => peptideTargets(f, config))
+    .map(transcript => ({
+      transcript,
+      key: translationKey(scope, transcript, assemblyGeneticCodeId),
+    }))
+  // Hits are read before anything is written, so a call translating more than
+  // the cache holds cannot evict its own hits.
+  const byKey = new Map<string, PeptideData>()
+  for (const { key } of keyed) {
+    const hit = cache.get(key)
+    if (hit) {
+      byKey.set(key, hit)
+    }
+  }
+  const missing = keyed.filter(({ key }) => !byKey.has(key))
+  const translated =
+    missing.length > 0
+      ? await translate(
+          pluginManager,
+          props,
+          missing.map(m => m.transcript),
+          assemblyGeneticCodeId,
+        )
+      : []
+  for (const [i, { key }] of missing.entries()) {
+    const peptideData = translated[i]
+    if (peptideData) {
+      byKey.set(key, peptideData)
+      cache.set(key, peptideData)
+    }
   }
 
-  for (const transcript of transcripts) {
-    const tStart = transcript.get('start')
-    const tEnd = transcript.get('end')
-    const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
-    const peptideData = processTranscriptFromSeq(
-      seq,
-      transcript,
-      assemblyGeneticCodeId,
-    )
+  const peptideDataMap = new Map<string, PeptideData>()
+  for (const { transcript, key } of keyed) {
+    const peptideData = byKey.get(key)
     if (peptideData) {
       peptideDataMap.set(transcript.id(), peptideData)
     }
   }
-
   return peptideDataMap
 }

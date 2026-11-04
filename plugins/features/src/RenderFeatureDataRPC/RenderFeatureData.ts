@@ -1,9 +1,13 @@
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
+import { createPeptideCache } from './peptides/peptideCache.ts'
+
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<'RenderFeatureData'> {
   name = 'RenderFeatureData' as const
+
+  peptideCache = createPeptideCache()
 
   override preload() {
     return import('./executeRenderFeatureData.ts')
@@ -14,6 +18,7 @@ export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<'Re
     return executeRenderFeatureData({
       pluginManager: this.pluginManager,
       args,
+      peptideCache: this.peptideCache,
     })
   }
 }
