@@ -202,7 +202,7 @@ If they could, it is a user guide wearing a tutorial's clothes."
   before them, built from session-only settings (cameras, `color.values`,
   structure filters) no menu reaches, where a protein figure should be a state a
   reader reaches through menus
-  ([protein figures handoff](../../handoffs/protein-figures-and-viz-features.md)).
+  ([reference/PROTEIN_FIGURES.md](../../reference/PROTEIN_FIGURES.md)).
   Move it to a showcase page or cut it to the states a reader can reach.
 - **`dog10k_svs.md`** — the opening paragraph states the anti-pattern in its own words
   ("Five loci, one recipe, a different class of variant each time"; the page has

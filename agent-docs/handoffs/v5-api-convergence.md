@@ -67,7 +67,7 @@ between displays.
      is v5.0.0-beta.20 (`82a76d8be6`, ggjbrowse `77b4b0a`); `dog10k_lof` keeps its `557791197f` knit until the
      callset host's certificate is renewed.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
-     (`HOST_VERSIONS`, `scripts/checkConfigCompat.mjs`). The Trix adapter's
+     (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). The Trix adapter's
      `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
      dedupes on `ixFilePath`.
    - In-tree writers fail loudly on a dead key: `pnpm check-specs` (in
