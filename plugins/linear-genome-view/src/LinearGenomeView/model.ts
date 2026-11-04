@@ -125,6 +125,7 @@ import type {
 import type { RegionEdit } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -2932,12 +2933,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * the assembly's whole genome: its chromosomes where it knows them, else
-       * every region (`Assembly.wholeGenomeRegions`)
+       * the regions `pick` takes from the assembly, all in view
        */
-      showAllRegionsInAssembly(assemblyName?: string) {
+      showRegionsOfAssembly(
+        assemblyName: string | undefined,
+        pick: (assembly: Assembly) => readonly Region[],
+      ) {
         const session = getSession(self)
-        const { assemblyManager } = session
         const { assemblyNames } = self
         if (!assemblyName && assemblyNames.length > 1) {
           session.notify(
@@ -2945,14 +2947,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
         } else {
           const resolvedName = assemblyName ?? assemblyNames[0]
-          const regions = resolvedName
-            ? assemblyManager.get(resolvedName)?.wholeGenomeRegions
+          const assembly = resolvedName
+            ? session.assemblyManager.get(resolvedName)
             : undefined
-          if (regions?.length) {
-            self.setDisplayedRegions(regions)
+          const regions = assembly ? pick(assembly) : []
+          if (regions.length) {
+            self.setDisplayedRegions([...regions])
             self.showAllRegions()
           }
         }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * the assembly's whole genome: its chromosomes where it knows them, else
+       * every region (`Assembly.wholeGenomeRegions`)
+       */
+      showAllRegionsInAssembly(assemblyName?: string) {
+        self.showRegionsOfAssembly(assemblyName, a => a.wholeGenomeRegions)
+      },
+      /**
+       * #action
+       * every region of the assembly, the alt and unplaced contigs a
+       * chromosome-only whole genome leaves out included
+       */
+      showEveryRegionInAssembly(assemblyName?: string) {
+        self.showRegionsOfAssembly(assemblyName, a => a.regions ?? [])
       },
 
       /**

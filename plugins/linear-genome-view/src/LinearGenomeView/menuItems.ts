@@ -44,7 +44,10 @@ import {
   ReturnToImportFormDialog,
   SequenceSearchDialog,
 } from './lazyDialogs.ts'
-import { showWholeGenomeLabel } from './showWholeGenomeLabel.ts'
+import {
+  everyRegionMenuItems,
+  showWholeGenomeLabel,
+} from './showWholeGenome.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { BpOffset } from './types.ts'
@@ -58,16 +61,26 @@ const TRACK_LABEL_OPTIONS = [
 
 function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   const [assemblyName, ...others] = self.assemblyNames
-  return {
-    label: showWholeGenomeLabel(
-      assemblyName !== undefined && others.length === 0
-        ? getSession(self).assemblyManager.get(assemblyName)
-        : undefined,
-    ),
+  const assembly =
+    assemblyName !== undefined && others.length === 0
+      ? getSession(self).assemblyManager.get(assemblyName)
+      : undefined
+  const showWholeGenome = {
+    label: showWholeGenomeLabel(assembly),
     onClick: () => {
       self.showAllRegionsInAssembly()
     },
   }
+  const everyRegion = everyRegionMenuItems(assembly, () => {
+    self.showEveryRegionInAssembly()
+  })
+  return everyRegion.length
+    ? {
+        label: 'Show whole genome',
+        type: 'subMenu',
+        subMenu: [showWholeGenome, ...everyRegion],
+      }
+    : showWholeGenome
 }
 
 export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {

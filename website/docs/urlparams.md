@@ -400,7 +400,8 @@ unplaced scaffolds, alts, patches and organelles are left out, so
 `["chromosomes", "chrM"]` adds the mitochondrion.
 
 - A whole-genome view given no names opens the same set, and `["*"]` opens every
-  sequence.
+  sequence. In the linear genome view, the view menu's **Show whole genome** and
+  the dropdown on the import form's button open every sequence too.
 - On an assembly whose aliases state no roles, `chromosomes` names nothing and
   says so.
 - A contig really named `chromosomes` wins, as an exact name beats a glob.

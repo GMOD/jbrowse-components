@@ -21,7 +21,7 @@ import {
   navigateToSelectedOption,
   notifySearchFailure,
 } from '../../searchUtils.ts'
-import { showWholeGenomeLabel } from '../showWholeGenomeLabel.ts'
+import ShowWholeGenomeButton from './ShowWholeGenomeButton.tsx'
 import { recentLocationOf, recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -201,22 +201,12 @@ const LinearGenomeViewImportForm = observer(
             >
               Open
             </Button>
-            <Button
+            <ShowWholeGenomeButton
+              model={model}
+              assemblyName={selectedAsm}
               disabled={!!assemblyError || !regions}
               className={classes.button}
-              onClick={() => {
-                model.setError(undefined)
-                model.showAllRegionsInAssembly(selectedAsm)
-              }}
-              variant="contained"
-              color="secondary"
-            >
-              {showWholeGenomeLabel(
-                selectedAsm
-                  ? session.assemblyManager.get(selectedAsm)
-                  : undefined,
-              )}
-            </Button>
+            />
           </Grid>
         </form>
       </Container>
