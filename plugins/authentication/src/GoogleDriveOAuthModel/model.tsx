@@ -1,13 +1,21 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import { isElectron } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { configSchema as OAuthConfigSchema } from '../OAuthModel/index.ts'
 import baseModel from '../OAuthModel/model.tsx'
 import { GoogleDriveFile } from './GoogleDriveFilehandle.ts'
 import GoogleDriveIcon from './GoogleDriveIcon.tsx'
+import { pickDriveFile } from './picker.ts'
 import { getDescriptiveErrorMessage } from './util.ts'
 
-import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema.ts'
+import type {
+  GoogleDriveOAuthInternetAccountConfig,
+  GoogleDriveOAuthInternetAccountConfigModel,
+} from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -45,7 +53,39 @@ export default function stateModelFactory(
        */
       configuration: ConfigurationReference(configSchema),
     })
-    .views(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get googleDriveConf(): GoogleDriveOAuthInternetAccountConfig {
+        return self.configuration
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get apiKey() {
+        return readConfObject(self.googleDriveConf, 'apiKey')
+      },
+      /**
+       * #getter
+       */
+      get appId() {
+        return readConfObject(self.googleDriveConf, 'appId')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Offered on the web only, and only once the Picker's API key and project
+       * number are configured
+       */
+      get browseLabel() {
+        return !isElectron && self.apiKey && self.appId
+          ? 'Browse Google Drive'
+          : undefined
+      },
       /**
        * #getter
        * The FileSelector icon for Google drive
@@ -81,7 +121,14 @@ export default function stateModelFactory(
             ),
           )
           if (!response.ok) {
-            throw new Error(await getDescriptiveErrorMessage(response))
+            throw new Error(
+              await getDescriptiveErrorMessage(
+                response,
+                response.status === 404 && self.browseLabel
+                  ? `Google Drive only shares files with JBrowse once they are picked with "${self.browseLabel}"`
+                  : undefined,
+              ),
+            )
           }
           return response
         }
@@ -99,6 +146,26 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * The Drive link carries the file's name as its last segment so the
+       * add-track form can guess the adapter from the extension; the fetcher
+       * reads only the id
+       */
+      async chooseLocation() {
+        const doc = await pickDriveFile({
+          token: await self.getToken(),
+          apiKey: self.apiKey,
+          appId: self.appId,
+        })
+        const location: UriLocation | undefined = doc
+          ? {
+              locationType: 'UriLocation',
+              uri: `https://drive.google.com/file/d/${doc.id}/${encodeURIComponent(doc.name)}`,
+            }
+          : undefined
+        return location
+      },
       /**
        * #method
        */

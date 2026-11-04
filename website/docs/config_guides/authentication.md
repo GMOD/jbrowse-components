@@ -251,6 +251,64 @@ designed for public clients, and register your JBrowse instance's URL as a
 redirect URI with the provider. [](/docs/config/oauthinternetaccount) lists
 `scopes`, `responseType` and the rest.
 
+### Google Drive and Dropbox file pickers
+
+On the web, both accounts can add a button under the share-link box in the Add
+Track form that opens the provider's own file picker.
+
+**Google Drive** shows **Browse Google Drive** once
+[`apiKey`](/docs/config/googledriveoauthinternetaccount/#slot-apikey) and
+[`appId`](/docs/config/googledriveoauthinternetaccount/#slot-appid) are set.
+With the picker, the account can ask for the `drive.file` scope, which reads
+only the files a user picks. Google classes `drive.file` as non-sensitive, so
+the app can be published without the review and security assessment Google
+requires for the restricted `drive.readonly` scope. In exchange, a pasted share
+link or a shared session opens a file only after that reader has picked it
+themselves.
+
+```json
+{
+  "internetAccounts": [
+    {
+      "type": "GoogleDriveOAuthInternetAccount",
+      "internetAccountId": "googleDriveOAuth",
+      "name": "Google Drive",
+      "clientId": "your-client-id.apps.googleusercontent.com",
+      "scopes": "https://www.googleapis.com/auth/drive.file",
+      "apiKey": "your-browser-api-key",
+      "appId": "your-cloud-project-number"
+    }
+  ]
+}
+```
+
+In the Google Cloud project that owns the client:
+
+- Enable the Google Picker API.
+- Make the OAuth client a web application, and list as a redirect URI every page
+  address JBrowse is opened at, origin and path: `https://example.org/jb/` and
+  `https://example.org/jb/index.html` are two entries.
+- Create a browser API key restricted to your site and to the Picker API. Google
+  designs a browser key to sit in page source, so it is the one key that belongs
+  in config.json.
+- On the consent screen, add the `drive.file` scope and publish the app. While
+  it is in testing, only listed test users can sign in, and their grants expire
+  after seven days.
+- `appId` is the project number, the digits that start the client ID.
+
+Google deletes an OAuth client that has gone six months without a sign-in, and
+emails the project owner 30 days before.
+
+**Dropbox** shows **Browse Dropbox** once
+[`chooser`](/docs/config/dropboxoauthinternetaccount/#slot-chooser) is on. It
+opens the Dropbox Chooser with the account's `clientId` as its app key, and
+works only for a site listed under "Chooser / Saver / Embedder domains" in the
+Dropbox app console. For a file with no shared link, the Chooser makes one with
+the user's default link settings.
+
+JBrowse Desktop shows neither button. There, open the files from the folder the
+Google Drive or Dropbox desktop app keeps in sync.
+
 ## External token
 
 When a portal already holds a token, or the user can paste one in,

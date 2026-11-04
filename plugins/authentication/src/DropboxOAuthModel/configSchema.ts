@@ -67,6 +67,18 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
         'getdropbox.com',
       ],
     },
+    /**
+     * #slot
+     * Offer a "Browse Dropbox" button that opens the Dropbox Chooser. Turn it
+     * on once the site's domain is listed under "Chooser / Saver / Embedder
+     * domains" in the Dropbox app console; until then the Chooser reports the
+     * app as misconfigured
+     */
+    chooser: {
+      description: 'offer the Dropbox Chooser in the file selector',
+      type: 'boolean',
+      defaultValue: false,
+    },
   },
   {
     /**

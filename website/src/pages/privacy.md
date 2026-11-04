@@ -29,6 +29,15 @@ jbrowse-desktop also asks GitHub for the newest release so it can offer an
 update. That request reaches GitHub, which handles it under the
 [GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
+When you sign in to Google Drive or Dropbox to open a file kept there, the
+provider gives JBrowse an access token that stays in your browser. JBrowse sends
+it only to that provider, uses it only to read the files you open, and never
+stores the token or your files on a JBrowse server. With the Google Drive file
+picker, JBrowse can read only the files you pick. JBrowse's use of information
+received from Google APIs adheres to the
+[Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy),
+including the Limited Use requirements.
+
 We use this data only to understand how people use JBrowse, and we do not sell
 or share it. Google handles its copy under the
 [Google privacy policy](https://policies.google.com/privacy).

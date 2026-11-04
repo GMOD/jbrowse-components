@@ -10,14 +10,18 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Google endpoints, read-only Drive scope and domain filled in.
  *
  * #example
- * The Google endpoints and scopes are pre-filled, so an entry needs only your
- * own OAuth app's `clientId`.
+ * The Google endpoints are pre-filled. With the Picker's `apiKey` and `appId`
+ * set, the `drive.file` scope reads the files a user picks and needs no
+ * restricted-scope review from Google; see the authentication guide.
  * ```js
  * {
  *   type: 'GoogleDriveOAuthInternetAccount',
  *   internetAccountId: 'googleDriveOAuth',
  *   name: 'Google Drive',
  *   clientId: 'your-client-id.apps.googleusercontent.com',
+ *   scopes: 'https://www.googleapis.com/auth/drive.file',
+ *   apiKey: 'your-browser-api-key',
+ *   appId: 'your-cloud-project-number',
  * }
  * ```
  */
@@ -57,6 +61,28 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
       description: 'the type of response from the authorization endpoint',
       type: 'string',
       defaultValue: 'token',
+    },
+    /**
+     * #slot
+     * Browser API key of the Cloud project that owns `clientId`, with the
+     * Google Picker API enabled. Set it with `appId` to offer a "Browse Google
+     * Drive" button, which lets the account work with the non-restricted
+     * `https://www.googleapis.com/auth/drive.file` scope
+     */
+    apiKey: {
+      description: 'API key for the Google Picker',
+      type: 'string',
+      defaultValue: '',
+    },
+    /**
+     * #slot
+     * The Cloud project number, which ties a picked file's `drive.file` grant
+     * to this app
+     */
+    appId: {
+      description: 'Cloud project number for the Google Picker',
+      type: 'string',
+      defaultValue: '',
     },
   },
   {

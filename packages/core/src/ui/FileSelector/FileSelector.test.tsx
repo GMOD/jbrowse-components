@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { useState } from 'react'
 
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import FileSelector from './FileSelector.tsx'
 
@@ -245,4 +245,41 @@ test('an unnamed selector claims no name rather than an empty one', () => {
   const [group] = getAllByRole('group')
   expect(group).not.toHaveAttribute('aria-labelledby')
   expect(group).not.toHaveAttribute('aria-describedby')
+})
+
+test("an account's file picker fills in the location, stamped with that account", async () => {
+  const browsable = {
+    ...account,
+    browseLabel: 'Browse DBX',
+    chooseLocation: () =>
+      Promise.resolve({
+        uri: 'https://example.com/picked.bam',
+        locationType: 'UriLocation',
+      }),
+  } as BaseInternetAccountModel
+  const onChange = jest.fn()
+  const { getByRole } = render(
+    <FileSelector
+      rootModel={
+        {
+          findAppropriateInternetAccount: () => undefined,
+          internetAccounts: [browsable],
+        } as unknown as AbstractRootModel
+      }
+      location={{
+        uri: '',
+        locationType: 'UriLocation',
+        internetAccountId: 'dropbox',
+      }}
+      setLocation={onChange}
+    />,
+  )
+  fireEvent.click(getByRole('button', { name: 'Browse DBX' }))
+  await waitFor(() => {
+    expect(onChange).toHaveBeenLastCalledWith({
+      uri: 'https://example.com/picked.bam',
+      locationType: 'UriLocation',
+      internetAccountId: 'dropbox',
+    })
+  })
 })

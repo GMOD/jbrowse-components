@@ -100,6 +100,24 @@ export const InternetAccount = types
     get showInFileSelector(): boolean {
       return true
     },
+    /**
+     * #getter
+     * The fileSelector's label for a button that opens the provider's own file
+     * picker, for an account that has one; see `chooseLocation`
+     */
+    get browseLabel(): string | undefined {
+      return undefined
+    },
+  }))
+  .actions(() => ({
+    /**
+     * #action
+     * Open the provider's file picker and resolve to the chosen file's
+     * location, or undefined if the user cancels
+     */
+    async chooseLocation(): Promise<UriLocation | undefined> {
+      return undefined
+    },
   }))
   .views(self => ({
     /**

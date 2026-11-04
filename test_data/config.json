@@ -411,7 +411,10 @@
       "internetAccountId": "googleOAuth",
       "name": "Google Drive",
       "description": "Account to access Google Drive files",
-      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com"
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
+      "scopes": "https://www.googleapis.com/auth/drive.file",
+      "apiKey": "AIzaSyA_2T5U34yz7_ZROQ8KTii9SNlxDyoqZak",
+      "appId": "109518325434"
     }
   ],
   "aggregateTextSearchAdapters": [

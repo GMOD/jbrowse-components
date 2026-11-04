@@ -1,12 +1,20 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import { isElectron } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { configSchema as OAuthConfigSchema } from '../OAuthModel/index.ts'
 import baseModel from '../OAuthModel/model.tsx'
 import DropboxIcon from './DropboxIcon.tsx'
+import { chooseDropboxFile } from './chooser.ts'
 import { getDescriptiveErrorMessage } from './util.ts'
 
-import type { DropboxOAuthInternetAccountConfigModel } from './configSchema.ts'
+import type {
+  DropboxOAuthInternetAccountConfig,
+  DropboxOAuthInternetAccountConfigModel,
+} from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -30,7 +38,26 @@ const stateModelFactory = (
        */
       configuration: ConfigurationReference(configSchema),
     })
-    .views(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get dropboxConf(): DropboxOAuthInternetAccountConfig {
+        return self.configuration
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Offered on the web only, once `chooser` is on: the Chooser runs in a
+       * popup, which the desktop navigation guard would send to the system
+       * browser
+       */
+      get browseLabel() {
+        return !isElectron && readConfObject(self.dropboxConf, 'chooser')
+          ? 'Browse Dropbox'
+          : undefined
+      },
       /**
        * #getter
        * The FileSelector icon for Dropbox
@@ -56,6 +83,19 @@ const stateModelFactory = (
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * The Chooser needs only the app key, which is the OAuth `clientId`. Its
+       * preview link is a shared link, which the fetcher below reads with the
+       * user's token
+       */
+      async chooseLocation() {
+        const file = await chooseDropboxFile(self.clientId)
+        const location: UriLocation | undefined = file
+          ? { locationType: 'UriLocation', uri: file.link }
+          : undefined
+        return location
+      },
       /**
        * #method
        */
