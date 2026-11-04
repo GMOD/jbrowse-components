@@ -113,7 +113,7 @@ function assertLinesLaidOut(
 ) {
   const lines = tooltip.text.split('\n')
   assert(
-    lines.length >= 5,
+    lines.length >= 3,
     `${where}: expected several lines, got ${JSON.stringify(tooltip.text)}`,
   )
   assert(
@@ -169,7 +169,14 @@ const suite: TestSuite = {
         )
         assertLinesLaidOut(tooltip, 'synteny')
         assertNoMarkup(tooltip, 'synteny')
-        for (const line of ['Loc1:', 'Loc2:', 'Inverted:', 'Identity:']) {
+        // synteny-core's block description: each side by assembly, span and
+        // length, then the channels
+        for (const line of [
+          'volvox_snp ctgA:',
+          'volvox ctgA:',
+          ' bp)',
+          'Identity:',
+        ]) {
           assert(
             tooltip.text.includes(line),
             `synteny tooltip has no ${line} line: ${JSON.stringify(tooltip.text)}`,
@@ -219,13 +226,79 @@ const suite: TestSuite = {
         )
         assertLinesLaidOut(tooltip, 'dotplot')
         assertNoMarkup(tooltip, 'dotplot')
-        // The dotplot names its two axes rather than Loc1/Loc2 — it has axes,
-        // where a stacked view has rows — but the channels below are the same
-        // builder as synteny's, and the labels have to match.
-        for (const line of ['x: ', 'y: ', 'Identity:', 'Mapping quality:']) {
+        // the same block description as the synteny view's, sides and channels
+        // alike
+        for (const line of [
+          'volvox_snp ctgA:',
+          'volvox ctgA:',
+          'Identity:',
+          'Mapping quality:',
+        ]) {
           assert(
             tooltip.text.includes(line),
             `dotplot tooltip has no ${line} line: ${JSON.stringify(tooltip.text)}`,
+          )
+        }
+      },
+    },
+    {
+      // the same block in a plain linear view, through the alignments hover:
+      // its description in place of a read's lines, so no MAPQ and no pair
+      // wording on an alignment of two assemblies
+      name: 'linear synteny block tooltip: the block description, not a read',
+      fn: async page => {
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-5,000',
+                tracks: ['volvox_snp_synteny'],
+              },
+            ],
+          },
+          CONFIG,
+        )
+        await page.waitForSelector(displayPainted('pileup-display'), {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page, 60000)
+        await delay(1000)
+
+        const box = await boxOf(page, 'pileup-display')
+        let text = ''
+        // the display collapses to one row of blocks at the top, a few px
+        // tall, so the sweep steps down in px rather than track fractions
+        for (const dy of [3, 5, 8, 12, 18, 26]) {
+          for (const fx of [0.5, 0.3, 0.7]) {
+            if (!text) {
+              await page.mouse.move(box.x + box.width * fx - 20, box.y + dy)
+              await page.mouse.move(box.x + box.width * fx, box.y + dy, {
+                steps: 3,
+              })
+              await delay(150)
+              text = await page.evaluate(
+                () =>
+                  document.querySelector<HTMLElement>(
+                    '[data-testid="pileup-tooltip"]',
+                  )?.innerText ?? '',
+              )
+            }
+          }
+        }
+        assert(!!text, 'no synteny block hovered in the linear view')
+        for (const line of ['volvox ctgA:', 'volvox_snp ctgA:', ' bp)']) {
+          assert(
+            text.includes(line),
+            `linear synteny tooltip has no ${line} line: ${JSON.stringify(text)}`,
+          )
+        }
+        for (const readLine of ['MAPQ', 'Mate:', 'Pair orientation']) {
+          assert(
+            !text.includes(readLine),
+            `linear synteny tooltip printed a read's ${readLine} line: ${JSON.stringify(text)}`,
           )
         }
       },
