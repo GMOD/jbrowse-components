@@ -289,7 +289,7 @@ export const pages: ExamplePage[] = [
     slug: 'locus-zoom-ld',
     title: 'LocusZoom-style LD',
     description:
-      'GWAS summary statistics colored by LD to the lead SNP, over an LD triangle in the same bins.',
+      'GWAS statistics colored by LD to the lead SNP, over an LD triangle.',
     group: 'Real-world demos',
   },
   {
