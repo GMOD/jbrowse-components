@@ -814,12 +814,12 @@ export const figureFrames: Record<
   },
   "multiway_synteny/blocks_one_vs_all": {
     "width": 1500,
-    "height": 478,
+    "height": 494,
     "timeout": 120000
   },
   "multiway_synteny/lgv_track_lanes": {
     "width": 1500,
-    "height": 680,
+    "height": 694,
     "timeout": 120000
   },
   "multiway_synteny/lgv_track_lanes_colored": {
@@ -829,7 +829,7 @@ export const figureFrames: Record<
   },
   "multiway_synteny/lgv_track_clicked": {
     "width": 1500,
-    "height": 680,
+    "height": 694,
     "timeout": 120000
   },
   "pangenome/hprc_cfhr_lanes": {
