@@ -37,6 +37,7 @@ import type { StepSnapshot } from '../markProblems.ts'
 import type { MarkType } from '../markVocabulary.ts'
 import type { JoinedPlotFields, PlotFields } from '../scanPlotFields.ts'
 import type { PlotWriteOptions } from '@jbrowse/core/configuration'
+import type { Signature } from '@jbrowse/core/util/jexl'
 
 const NO_FIELDS: PlotFields = { numeric: [], categorical: [] }
 
@@ -51,6 +52,8 @@ export interface MarkPlotDialogModel {
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
   applyPlot: (draft: MarkPlot, options?: PlotWriteOptions) => void
   openPlotDialog: (seed?: MarkPlot, seedOptions?: PlotWriteOptions) => void
+  /** What each function a formula may call returns, to type its field. */
+  jexlFunctions?: Readonly<Record<string, Signature>>
 }
 
 /**
@@ -131,10 +134,11 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
     setMarks(marks.with(at, next))
   }
   const shared = sharedSteps(plot)
-  const fields = stepFields(scanned, [
-    ...shared,
-    ...(mark ? stepsOfMark(mark) : []),
-  ])
+  const fields = stepFields(
+    scanned,
+    [...shared, ...(mark ? stepsOfMark(mark) : [])],
+    model.jexlFunctions,
+  )
   const plotOptions = [...scanned.categorical, ...scanned.numeric]
 
   return (

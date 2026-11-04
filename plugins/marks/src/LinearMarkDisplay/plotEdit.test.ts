@@ -1,4 +1,5 @@
 import { plotOf, plotWrites, setConf } from '@jbrowse/core/configuration'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { configSchemaFactory } from './configSchema.ts'
@@ -12,6 +13,7 @@ import {
 } from './plotEdit.ts'
 
 import type { MarkPlot } from './markPlot.ts'
+import type { Signature } from '@jbrowse/core/util/jexl'
 
 test('a text field a step writes is picked as a category, a number as a ramp', () => {
   const fields = stepFields({ numeric: ['state'], categorical: [] }, [
@@ -68,6 +70,37 @@ test("a formula's field is offered as what its expression answers", () => {
     { type: 'aggregate', ops: [{ op: 'count' }] },
   ])
   expect(overwritten.numeric).toContain('count')
+})
+
+test('a formula calling a function is offered as what the function returns', () => {
+  const scanned = { numeric: ['score'], categorical: ['type'] }
+  const functions = createJexlInstance().signatures()
+  const kinds = (
+    expr: string,
+    given: Readonly<Record<string, Signature>> | undefined,
+  ) => {
+    const fields = stepFields(
+      scanned,
+      [{ type: 'formula', expr, as: 'out' }],
+      given,
+    )
+    return [fields.numeric.includes('out'), fields.categorical.includes('out')]
+  }
+  expect(kinds('jexl:toUpperCase(feature.type)', functions)).toEqual([
+    false,
+    true,
+  ])
+  expect(kinds("jexl:split(feature.name, '.')[0]", functions)).toEqual([
+    false,
+    true,
+  ])
+  expect(kinds('jexl:-log10(feature.score)', functions)).toEqual([true, false])
+  // without the signatures a call answers nothing known, and a formula's
+  // field stays the number it is by default
+  expect(kinds('jexl:toUpperCase(feature.type)', undefined)).toEqual([
+    true,
+    false,
+  ])
 })
 
 describe('the split field, typed a keystroke at a time', () => {

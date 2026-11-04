@@ -3,7 +3,13 @@ import { JexlSyntaxError, check } from '@jbrowse/jexl'
 import { stripJexlPrefix } from './jexlFilterFields.ts'
 import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 
-import type { FieldSchema, Jexl, Severity, Type } from '@jbrowse/jexl'
+import type {
+  FieldSchema,
+  Jexl,
+  Severity,
+  Signature,
+  Type,
+} from '@jbrowse/jexl'
 
 export interface JexlProblem {
   severity: Severity
@@ -79,12 +85,19 @@ function kindOf(type: Type): 'numeric' | 'categorical' | 'unknown' {
 
 /**
  * Whether a jexl expression over `feature` answers a number, text or a truth
- * value, as `check` infers it from the expression alone: `feature.score * 2`
- * is numeric, `` `${feature.type}!` `` categorical, `feature.score` unknown.
+ * value, as `check` infers it: `feature.score * 2` is numeric,
+ * `` `${feature.type}!` `` categorical, `feature.score` unknown. Given the
+ * signatures of the functions a jexl registers, a call answers what its
+ * function returns, so `impact(feature)` is categorical; without them, unknown.
  */
-export function expressionKind(text: string) {
+export function expressionKind(
+  text: string,
+  functions?: Readonly<Record<string, Signature>>,
+) {
   const ast = parseJexl(text)
-  return ast ? kindOf(check(ast, FEATURE_ROW).type) : 'unknown'
+  return ast
+    ? kindOf(check(ast, { ...FEATURE_ROW, functions }).type)
+    : 'unknown'
 }
 
 /** A problem as one line, `where` naming the line or setting it is in. */

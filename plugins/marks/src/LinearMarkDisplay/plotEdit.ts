@@ -26,6 +26,7 @@ import type { MarkPlot } from './markPlot.ts'
 import type { StepSnapshot } from './markProblems.ts'
 import type { AggregateOpName, LineInterpolation } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
+import type { Signature } from '@jbrowse/core/util/jexl'
 import type { FieldKind } from '@jbrowse/core/util/stepOutputs'
 import type { YMember, YScalePaths } from '@jbrowse/wiggle-core'
 
@@ -373,10 +374,11 @@ const POSITIONS = new Set<string>(POSITION_FIELDS)
 export function stepFields(
   scanned: PlotFields,
   steps: readonly StepSnapshot[],
+  functions?: Readonly<Record<string, Signature>>,
 ): PlotFields {
   const { written, surviving } = stepsOutput(steps)
   const survives = (field: string) => !surviving || surviving.has(field)
-  const computed = formulaKinds(steps)
+  const computed = formulaKinds(steps, functions)
   const kindOf = new Map(
     written
       .map(w => ({ ...w, kind: computed.get(w.field) ?? w.kind }))
@@ -400,12 +402,17 @@ export function stepFields(
 
 // What each field a formula wrote last holds, where its expression makes that
 // plain; a later step's write of the field takes over, as in stepsOutput.
-function formulaKinds(steps: readonly StepSnapshot[]) {
+function formulaKinds(
+  steps: readonly StepSnapshot[],
+  functions: Readonly<Record<string, Signature>> | undefined,
+) {
   const kinds = new Map<string, FieldKind>()
   for (const step of steps) {
     for (const { field, kind } of stepWrites(step)) {
       if (step.type === 'formula') {
-        const inferred = step.expr ? expressionKind(step.expr) : 'unknown'
+        const inferred = step.expr
+          ? expressionKind(step.expr, functions)
+          : 'unknown'
         if (inferred === 'unknown') {
           kinds.delete(field)
         } else {

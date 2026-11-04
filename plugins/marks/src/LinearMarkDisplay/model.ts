@@ -442,6 +442,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * What each function a formula may call returns, so Edit plot offers
+         * a formula's field as numeric or categorical by what it answers.
+         */
+        get jexlFunctions() {
+          return getEnv(self).pluginManager.jexl.signatures()
+        },
+        /**
+         * #getter
          * The declared marks' types, in draw order.
          */
         get markTypes(): MarkType[] {
