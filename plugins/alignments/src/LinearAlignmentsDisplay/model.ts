@@ -154,7 +154,6 @@ import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
   attachLinkedReadLinesByGroup,
-  chainHairlinesByGroup,
   fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
@@ -1380,19 +1379,6 @@ export default function stateModelFactory(
             return attachLinkedReadLinesByGroup(
               this.laidOutByGroupColored,
               this.connectorsByGroup,
-              this.chainHairlinesByGroup,
-            )
-          },
-
-          /**
-           * #getter
-           * Chain hairlines cut under connector curves, from the layout tier,
-           * so a recolor reuses them and the GPU keeps their upload.
-           */
-          get chainHairlinesByGroup() {
-            return chainHairlinesByGroup(
-              this.laidOutByGroupFramed,
-              this.connectorsByGroup,
             )
           },
 
@@ -1427,9 +1413,7 @@ export default function stateModelFactory(
            * #getter
            * Which pairs the connectors draw under `connectionFilter`. The
            * inter-chromosomal floor comes from the arc band's collection
-           * stage, which runs only once a connector crosses chromosomes. The
-           * chain layout's own cross-region links read no filter, as its
-           * connecting lines do not.
+           * stage, which runs only once a connector crosses chromosomes.
            */
           get connectorFilter() {
             return connectorFilterOf(

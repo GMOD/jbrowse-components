@@ -399,11 +399,6 @@ export interface PileupLayoutArrays {
   // afterwards from a row count.
   clippedBy?: RowCapSource
 
-  // Connecting line data for chain modes (cloud/linkedRead).
-  // One line per chain, drawn at chain Y between min(start) and max(end).
-  connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
-  connectingLineYs: Uint16Array // row for each line
-
   // Chain-mode read overlaps: genomic intervals where two reads in the same
   // chain (and thus the same row) overlap, each with its kind (two mates, or a
   // split segment), which overlap.slang paints. Absolute genomic uint32 like all
@@ -412,8 +407,7 @@ export interface PileupLayoutArrays {
   overlapYs: Uint16Array // shared chain row for each overlap
   overlapKinds: Uint8Array // OVERLAP_SEGMENTS or OVERLAP_MATES
 
-  // Linked-read straight-line connections. Sibling pass to `connectingLine*`
-  // with a per-endpoint Y (mates can sit on different rows when `sortColumn`
+  // Linked-read straight-line connections, with a per-endpoint Y (mates can sit on different rows when `sortColumn`
   // is in effect) and a per-line palette index. Cross-region pairs are
   // excluded — the connector mark draws those (ADR-225), since this pass is one
   // region per buffer. Absolute genomic uint32 like all worker output (per

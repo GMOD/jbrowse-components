@@ -12,7 +12,6 @@ import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
-import { CONNECTING_LINE_MARK } from '../../features/connectingLines/mark.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
 import { EMPTY_SASHIMI_BAND_FEED } from '../../features/sashimi/bandFeed.ts'
@@ -74,9 +73,6 @@ interface UploadedRegion {
   // after the color bake (`attachLinkedReadLinesByGroup`), so a
   // curved-connector toggle changes them within one layout run.
   lines: Uint32Array | undefined
-  // The chain hairlines, which the same step thins wherever a connector curve
-  // joins the chain.
-  chainLines: Uint32Array | undefined
   arcs: ArcBandFeed | undefined
   sashimi: SashimiBandFeed | undefined
   connectors: ConnectorFeed | undefined
@@ -218,7 +214,6 @@ export class GpuAlignmentsRenderer
       fillColors: data?.readFillColors,
       colorCategories: data?.readColorCategories,
       lines: data?.linkedReadLinePositions,
-      chainLines: data?.connectingLinePositions,
       arcs,
       sashimi,
       connectors,
@@ -236,9 +231,6 @@ export class GpuAlignmentsRenderer
       }
       if (data && prev.lines !== data.linkedReadLinePositions) {
         uploadPass(this.hal, idx, LINKED_READ_LINE_MARK.pass, data)
-      }
-      if (data && prev.chainLines !== data.connectingLinePositions) {
-        uploadPass(this.hal, idx, CONNECTING_LINE_MARK.pass, data)
       }
       if (prev.arcs !== arcs) {
         // An empty feed rather than a skip: a zero-instance upload IS the

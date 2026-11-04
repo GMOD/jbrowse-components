@@ -190,9 +190,8 @@ function hitTestChain(
   // is the one under the cursor) rather than the distance rule the other
   // index-backed test uses: these boxes all CONTAIN the point, so every
   // candidate is at distance 0 and picking by distance is undefined.
-  // `buildChainConnectingData` adds to the Flatbush and emits the connecting
-  // lines in one ascending pass over chain index, so a higher index is a later
-  // line.
+  // `buildChainOverlapsAndIndex` adds to the Flatbush in one ascending pass over chain
+  // index, so a higher index is a later chain.
   //
   // A real row holds non-overlapping chain extents by construction, so a point
   // query there returns one box. Only the `placeRectCapped` overflow row piles

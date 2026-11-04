@@ -151,8 +151,6 @@ const EMPTY_PILEUP_STUBS = {
   modCovColors: new Uint32Array(),
   modCovRelDepths: new Float32Array(),
   modCovPackedBuffer: new ArrayBuffer(0),
-  connectingLinePositions: new Uint32Array(),
-  connectingLineYs: new Uint16Array(),
   linkedReadLinePositions: new Uint32Array(),
   linkedReadLineYs: new Uint16Array(),
   linkedReadLineColorTypes: new Uint16Array(),

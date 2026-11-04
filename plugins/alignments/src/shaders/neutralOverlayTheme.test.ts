@@ -9,7 +9,7 @@ import type { ColorPalette } from './colors.ts'
 // The plugin's neutral overlays: marks that deliberately carry no category, so
 // "neutral" is the theme's foreground and not a color of their own.
 // `flatConnectorTheme.test.ts` made this argument for the read cloud's flat
-// connector; these two were the marks it did not reach, and both were still
+// connector; the overlap tint was a mark it did not reach, and it was still
 // spelling neutral as a literal black in BOTH renderers — invisible in review
 // because every figure is captured in light mode.
 //
@@ -18,7 +18,6 @@ import type { ColorPalette } from './colors.ts'
 // tint STACKS and depth reads as weight, and a tint composing toward the ground
 // it sits on stacks to nothing.
 const KEYS = [
-  'colorConnectingLine',
   'colorOverlapTint',
 ] as const satisfies readonly (keyof ColorPalette)[]
 
@@ -40,7 +39,7 @@ describe.each(KEYS)('%s follows the theme', key => {
 
   // Every existing figure is safe: light `text.primary` is `rgba(0,0,0,0.87)`,
   // whose RGB is the black that was hard-coded, and `toRgb` drops the alpha in
-  // favour of each mark's own (CONNECTING_LINE_ALPHA, OVERLAP_ALPHA). So this
+  // favour of each mark's own (OVERLAP_ALPHA). So this
   // changes dark mode and nothing else.
   it('leaves light mode on the exact color it already painted', () => {
     expect(light[key]).toEqual([0, 0, 0])

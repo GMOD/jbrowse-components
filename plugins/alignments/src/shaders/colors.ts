@@ -53,10 +53,6 @@ export interface PaletteColors {
   // short-fragment library does on nearly every pair: one step from the read
   // fill rather than the far end of the scale (`palette.readMateOverlap`).
   colorMateOverlap: RGBColor
-  // The hairline joining a chain's two mates across the pileup: `text.primary`,
-  // the theme's foreground, so "neutral" against a dark track background is
-  // light rather than the hard black both renderers once spelled.
-  colorConnectingLine: RGBColor
   // The collapsed-group-row overlap tint, which STACKS: several unrelated reads
   // share a row on purpose there and depth is meant to read as weight. So it is
   // the foreground rather than `colorOverlap` (the chain-mode fill, an opaque

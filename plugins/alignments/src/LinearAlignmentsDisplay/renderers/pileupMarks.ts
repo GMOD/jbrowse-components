@@ -1,5 +1,4 @@
 import { CLIP_MARK } from '../../features/clip/mark.ts'
-import { CONNECTING_LINE_MARK } from '../../features/connectingLines/mark.ts'
 import { DELETION_MARK, SKIP_MARK } from '../../features/gap/mark.ts'
 import { INSERTION_MARK } from '../../features/insertion/mark.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
@@ -11,7 +10,6 @@ import { PER_BASE_QUALITY_MARK } from '../../features/perBaseQuality/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 
-import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
 import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
@@ -31,7 +29,6 @@ import type { Mark } from '@jbrowse/render-core/marks'
  * Canvas2D region map's entry — each mark reads its own slice of it.
  */
 export type PileupRegion = ReadMarkRegion &
-  ConnectingLinesUploadData &
   LinkedReadLinesUploadData &
   OverlapsUploadData &
   ModificationUploadData &
@@ -58,7 +55,6 @@ export type PileupMark = Mark<PileupRegion, RenderState>
  * renderer scaffold and nothing else.
  */
 export const PILEUP_MARKS: readonly PileupMark[] = [
-  CONNECTING_LINE_MARK,
   LINKED_READ_LINE_MARK,
   READ_MARK,
   OVERLAP_MARK,

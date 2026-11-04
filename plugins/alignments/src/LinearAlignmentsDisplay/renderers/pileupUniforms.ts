@@ -54,7 +54,6 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorSkip: 'colorSkip',
   colorSoftclip: 'colorSoftclip',
   colorHardclip: 'colorHardclip',
-  colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
   colorMateOverlap: 'colorMateOverlap',
   colorOverlapTint: 'colorOverlapTint',

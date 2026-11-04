@@ -718,7 +718,7 @@ describe('chain mode is a main-thread tier', () => {
     expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
     expect(display.rpcDataMap.size).toBe(1)
     expect(rows(display)).toEqual([0, 0])
-    expect([...laidOut(display).connectingLinePositions]).toEqual([100, 250])
+    expect([...laidOut(display).linkedReadLinePositions]).toHaveLength(2)
     expect(display.readIdsByChainName.get('frag')).toEqual(['id0', 'id1'])
 
     display.setUnit('read')
@@ -836,15 +836,6 @@ describe('curved connectors', () => {
     dispose()
   })
 
-  test('chain layout drops the hairline of a chain a connector curve joins', () => {
-    const display = connectorDisplay()
-    display.setUnit('chain')
-    const hairlines = () => [
-      ...display.laidOutByGroup.get('')!.get(0)!.connectingLinePositions,
-    ]
-    expect(hairlines()).toEqual([100, 500])
-  })
-
   test('chain layout draws its connectors whatever the pileup connectors setting says', () => {
     const display = connectorDisplay()
     display.setShowConnectors(false)
@@ -854,19 +845,6 @@ describe('curved connectors', () => {
     expect(display.connectorScope).toBe('all')
     expect(display.connectorsByGroup.get('')?.overlayPairs).toHaveLength(1)
     expect(display.laidOutByGroup.get('')!.get(0)!.numLinkedReadLines).toBe(1)
-  })
-
-  test('a recolor keeps the cut chain hairlines the GPU holds', () => {
-    const display = connectorDisplay()
-    display.setUnit('chain')
-    const dispose = autorun(() => display.laidOutByGroup)
-    const positions = () =>
-      display.laidOutByGroup.get('')!.get(0)!.connectingLinePositions
-    const before = positions()
-
-    display.colorByField('strand')
-    expect(positions()).toBe(before)
-    dispose()
   })
 
   test('a lane collapsed to its coverage draws no straight lines and keys none', () => {

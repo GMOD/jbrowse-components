@@ -144,8 +144,14 @@ a quiet region.
 - `readPitch` gives the read height (`pileup.mark.height`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser squeezes the
   pitch to the track's height, which is the host's.
-- Under `unit: 'chain'`, `chains` holds each chain's line and `overlaps` the spans
-  where two of its reads both align, each in its kind's color: the strong neutral
+- `connectors` holds each connector the pileup draws (always under
+  `unit: 'chain'`, else under `pileup.connectors.show`): both ends' positions,
+  rows and regions, the connection's arc color, its `kind` (`straight`, `curve`
+  or `loop`), `dashed` for a junction over segments not in view, the `dip` in
+  px a curve asks for (the display flattens it toward a line where its ends sit
+  close on screen), and `key`/`mateKey` naming the two reads in `reads`.
+- Under `unit: 'chain'`, `overlaps` holds the spans
+  where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where
   only two mates are. The display draws no overlap below a 3 px read
   (`shouldDrawOverlaps`), so there `overlaps` comes back empty. Where the tables

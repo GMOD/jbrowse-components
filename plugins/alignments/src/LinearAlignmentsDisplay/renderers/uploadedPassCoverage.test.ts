@@ -93,9 +93,6 @@ function fullyPopulated() {
     perBaseLetterYs: new Uint16Array([0]),
     perBaseLetterBases: new Uint8Array([2]),
 
-    connectingLinePositions: new Uint32Array([START + 90, START + 95]),
-    connectingLineYs: new Uint16Array([0]),
-
     overlapPositions: new Uint32Array([START + 96, START + 98]),
     overlapYs: new Uint16Array([0]),
     overlapKinds: new Uint8Array([0]),

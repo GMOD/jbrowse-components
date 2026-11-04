@@ -28,7 +28,6 @@ import type {
   RegionBounds,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
-  ChainFields,
   ChainPileupData,
   ChainedPileupData,
   LaidOutPileupData,
@@ -419,40 +418,28 @@ function chainOverlapsByKind(spans: ReadSpan[], readFlags: ArrayLike<number>) {
   }
 }
 
-interface ChainConnectingData extends OverlapsUploadData {
-  connectingLinePositions: Uint32Array
-  connectingLineYs: Uint16Array
+interface ChainOverlapsAndIndex extends OverlapsUploadData {
   chainFlatbush: Flatbush | undefined
 }
 
-function emptyChainConnectingData(): ChainConnectingData {
+function emptyChainOverlapsAndIndex(): ChainOverlapsAndIndex {
   return {
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
     ...emptyOverlapsUploadData(),
     chainFlatbush: undefined,
   }
 }
 
 /**
- * Build chain-specific derived arrays from a read Y layout: connecting
- * lines between mates in each chain, intra-chain overlap intervals, plus a
- * Flatbush spatial index for hit testing. Returns empty-arrays/undefined when
- * the input has no chain metadata.
- *
- * Per REGION, which bounds what the line can join. A chain draws a line when
- * two or more of its reads sit in this region, so a chain holding one alignment in each
- * of two displayed regions emits no line here — and could not usefully, since
- * each block clips to its own bp range and would project the far end off its
- * edge as a hairline. The SVG overlay resolves each end through its own region
- * index and draws that case instead (`connectorScope`).
+ * A chain region's intra-chain overlap intervals and the Flatbush index of
+ * each chain's span on its row, for hit testing. Empty when the input has no
+ * chain metadata. The pileup connectors join a chain's reads.
  */
-export function buildChainConnectingData(
+export function buildChainOverlapsAndIndex(
   data: ChainedPileupData,
   readYs: Uint16Array,
 ) {
   if (!isChainData(data)) {
-    return emptyChainConnectingData()
+    return emptyChainOverlapsAndIndex()
   }
 
   const {
@@ -473,87 +460,12 @@ export function buildChainConnectingData(
   chainFlatbush?.finish()
 
   return {
-    ...connectingLines(data, readYs, multiReadChains, NO_CURVES),
     ...buildChainOverlaps(data, readYs, multiReadChains),
     chainFlatbush,
   }
 }
 
-const NO_CURVES: ReadonlyMap<number, readonly Span[]> = new Map()
-
-function connectingLines(
-  {
-    readPositions,
-    chainFirstReadIndices,
-    chainAbsMinStarts,
-    chainAbsMaxEnds,
-  }: Pick<ChainPileupData, 'readPositions'> &
-    Pick<
-      ChainFields,
-      'chainFirstReadIndices' | 'chainAbsMinStarts' | 'chainAbsMaxEnds'
-    >,
-  readYs: Uint16Array,
-  multiReadChains: ReadonlyMap<number, readonly number[]>,
-  curves: ReadonlyMap<number, readonly Span[]>,
-) {
-  const positions: number[] = []
-  const ys: number[] = []
-  for (let i = 0; i < chainFirstReadIndices.length; i++) {
-    const reads = multiReadChains.get(i)
-    if (reads) {
-      const span = { start: chainAbsMinStarts[i]!, end: chainAbsMaxEnds[i]! }
-      const chainCurves = curves.get(i)
-      const y = readYs[chainFirstReadIndices[i]!]!
-      const pieces = chainCurves
-        ? subtractSortedSpans(
-            [span],
-            mergeSortedSpans(
-              [
-                ...chainCurves,
-                ...reads.map(r => ({
-                  start: readPositions[r * 2]!,
-                  end: readPositions[r * 2 + 1]!,
-                })),
-              ].sort(byStart),
-            ),
-          )
-        : [span]
-      for (const { start, end } of pieces) {
-        positions.push(start, end)
-        ys.push(y)
-      }
-    }
-  }
-  return {
-    connectingLinePositions: new Uint32Array(positions),
-    connectingLineYs: new Uint16Array(ys),
-  }
-}
-
-/**
- * A laid-out chain region's connecting lines with the stretches under its
- * connector curves left out, `curves` holding each chain's curve spans: the
- * curve is that link's line, and a hairline under a dipping curve reads as a
- * second connection. The chain's other links keep their hairline.
- */
-export function chainConnectingLinesAround(
-  data: LaidOutPileupData,
-  curves: ReadonlyMap<number, readonly Span[]>,
-) {
-  return isChainData(data)
-    ? connectingLines(
-        data,
-        data.readYs,
-        groupMultiReadChains(
-          data.readChainIndices,
-          data.chainFirstReadIndices.length,
-        ),
-        curves,
-      )
-    : undefined
-}
-
-// Pileup clone + chain connecting-line / Flatbush data layered on top.
+// Pileup clone + chain overlap / Flatbush data layered on top.
 function cloneWithChainLayout(
   data: ChainedPileupData,
   readYs: Uint16Array,
@@ -562,7 +474,7 @@ function cloneWithChainLayout(
 ): LaidOutPileupData {
   return {
     ...cloneWithLayout(data, readYs, maxY, clippedBy),
-    ...buildChainConnectingData(data, readYs),
+    ...buildChainOverlapsAndIndex(data, readYs),
   }
 }
 

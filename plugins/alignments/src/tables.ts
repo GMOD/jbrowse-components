@@ -138,8 +138,13 @@ import {
 } from './features/arcs/arcSplitCategory.ts'
 import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
-import { computeArcsByGroup } from './features/arcs/compute.ts'
+import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
+import { iterLinkedPairs } from './features/linkedReads/compute.ts'
+import {
+  connectorFilterOf,
+  connectorShape,
+} from './features/linkedReads/computeOverlay.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
 import {
   qualityOpacityOf,
@@ -169,9 +174,9 @@ import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import {
   frequencyFadeGate,
+  linkedReadColorSlot,
   sizeAlpha,
 } from './shaders/slang/alignmentsUniforms.js.generated.ts'
-import { CONNECTING_LINE_ALPHA } from './shaders/slang/connectingLine.consts.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from './shaders/slang/mismatch.consts.generated.ts'
 import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
@@ -229,6 +234,7 @@ import {
   interbaseTypeName,
   isLayoutOrder,
 } from './shared/types.ts'
+import { getOrCreate } from './shared/util.ts'
 import { getColorForModification } from './util.ts'
 
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
@@ -247,6 +253,7 @@ import type {
 } from './RenderAlignmentDataRPC/types.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
+import type { LinkedPair } from './features/linkedReads/compute.ts'
 import type {
   MergedJunction,
   RegionJunctions,
@@ -1030,40 +1037,97 @@ function qualities(d: WorkerPileupData, plainRead: string) {
 }
 
 /**
- * The chains that join more than one read: the span of each, on the row its
- * reads share, with the hairline's color and opacity; and the spans where two
- * of a chain's reads both align, in the neutral the display fills each kind
- * with — the strong one for a split segment, the faint one for two mates.
- * Both are empty unless the display's unit is a chain, and the overlaps also
- * where `drawsOverlaps` is false, as the display draws none below a 3 px read.
+ * The spans where two of a chain's reads both align, in the neutral the
+ * display fills each kind with: the strong one for a split segment, the faint
+ * one for two mates. Empty unless the display's unit is a chain, and where
+ * `drawsOverlaps` is false, as the display draws none below a 3 px read.
  */
-function chainTables(
+function overlapTables(
   laid: LaidOutPileupData | undefined,
   drawsOverlaps: boolean,
-  color: string,
   overlapColors: readonly string[],
 ) {
-  const [start, end] = pairs(laid?.connectingLinePositions ?? new Uint32Array())
   const overlapped = drawsOverlaps ? laid : undefined
-  const [overlapStart, overlapEnd] = pairs(
-    overlapped?.overlapPositions ?? new Uint32Array(),
-  )
+  const [start, end] = pairs(overlapped?.overlapPositions ?? new Uint32Array())
   return {
-    chains: {
+    overlaps: {
       start,
       end,
-      row: Array.from(laid?.connectingLineYs ?? []),
-      color: Array.from(start, () => color),
-      opacity: Array.from(start, () => CONNECTING_LINE_ALPHA),
-    },
-    overlaps: {
-      start: overlapStart,
-      end: overlapEnd,
       row: Array.from(overlapped?.overlapYs ?? []),
       color: Array.from(
         overlapped?.overlapKinds ?? [],
         kind => overlapColors[kind]!,
       ),
+    },
+  }
+}
+
+/**
+ * Each section's connectors as the pileup draws them (always under a chain
+ * unit, else under `pileup.connectors.show`), filed by the region holding each
+ * one's first end, after the display's connection filter.
+ */
+function sectionConnectors(
+  laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
+  regionInfos: RegionInfo[],
+  admits: (pair: LinkedPair) => boolean,
+) {
+  const refNameAt = (i: number) => regionInfos[i]?.refName
+  return new Map(
+    [...laidByGroup].map(([key, laid]) => {
+      const byRegion = new Map<number, LinkedPair[]>()
+      for (const pair of iterLinkedPairs(laid, r => r, refNameAt)) {
+        if (admits(pair)) {
+          getOrCreate(byRegion, pair.e1.displayedRegionIndex, () => []).push(
+            pair,
+          )
+        }
+      }
+      return [key, byRegion]
+    }),
+  )
+}
+
+/**
+ * One region's connectors: each end's position, row and region, the color of
+ * the connection's arc, and how the display draws it: `straight`, a `curve`
+ * dipping `dip` px below its rows (the display flattens it toward a line
+ * where its ends sit close on screen), or a `loop` where a read maps back
+ * over itself; `dashed` where the junction steps over segments not in view.
+ * `key` and `mateKey` are the two reads' `key` in `reads`; the second end may
+ * sit in another region.
+ */
+function connectorColumns(
+  connected: readonly LinkedPair[],
+  regionInfos: RegionInfo[],
+  pileupHeight: number,
+  slotColor: readonly string[],
+  keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
+) {
+  const shapes = connected.map(pair =>
+    connectorShape(
+      pair,
+      regionInfos[pair.e1.displayedRegionIndex]!,
+      regionInfos[pair.e2.displayedRegionIndex]!,
+      regionInfos,
+      pileupHeight,
+    ),
+  )
+  return {
+    connectors: {
+      start: connected.map(p => p.c.bp1),
+      end: connected.map(p => p.c.bp2),
+      endRegion: connected.map(p => p.e2.displayedRegionIndex),
+      row: connected.map(p => p.e1.data.readYs[p.e1.readIdx]!),
+      endRow: connected.map(p => p.e2.data.readYs[p.e2.readIdx]!),
+      color: connected.map(p => slotColor[linkedReadColorSlot(p.c.colorType)]!),
+      kind: shapes.map(({ straight, loop }) =>
+        straight ? 'straight' : loop ? 'loop' : 'curve',
+      ),
+      dashed: shapes.map(({ hidden }) => hidden),
+      dip: shapes.map(({ dipPx }) => dipPx ?? 0),
+      key: connected.map(p => keyOf(p.e1.data.readKeys[p.e1.readIdx]!)),
+      mateKey: connected.map(p => keyOf(p.e2.data.readKeys[p.e2.readIdx]!)),
     },
   }
 }
@@ -1492,6 +1556,31 @@ export async function alignmentTables(
     regionInfos,
     colors,
   )
+  const connectionFilter = connectionFilterOf(filter)
+  let belowFloor: ReadonlySet<string> | undefined
+  const connectorsBySection =
+    chain || readConfObject(conf.pileup, ['connectors', 'show'])
+      ? sectionConnectors(
+          laidByGroup,
+          regionInfos,
+          connectorFilterOf(
+            connectionFilter,
+            i => regionInfos[i]?.refName,
+            () => {
+              belowFloor ??= collectArcs(
+                new Map([...sectionData].map(([k, m]) => [k, new Map(m)])),
+                regionInfos,
+                { filter: connectionFilter },
+              ).belowFloor
+              return belowFloor
+            },
+          ),
+        )
+      : undefined
+  const connectorSlotColor = buildArcColorPalette(colors.palette).map(
+    normalizedRgbToHex,
+  )
+  const readPitch = featureHeight + featureSpacingForHeight(featureHeight)
   const keys = new Map<WorkerPileupData['readKeys'][number], number>()
   const keyOf = (readKey: WorkerPileupData['readKeys'][number]) => {
     let key = keys.get(readKey)
@@ -1510,10 +1599,16 @@ export async function alignmentTables(
             {
               columns: { section: label, region: i },
               tables: {
-                ...chainTables(
+                ...connectorColumns(
+                  connectorsBySection?.get(key)?.get(i) ?? [],
+                  regionInfos,
+                  laid.maxY * readPitch,
+                  connectorSlotColor,
+                  keyOf,
+                ),
+                ...overlapTables(
                   chain ? laid : undefined,
                   drawsOverlaps,
-                  normalizedRgbToHex(colors.palette.colorConnectingLine),
                   byOverlapKind(
                     normalizedRgbToHex(colors.palette.colorOverlap),
                     normalizedRgbToHex(colors.palette.colorMateOverlap),
@@ -1789,7 +1884,7 @@ const BAND_TABLES: readonly {
       'clips',
       'modifications',
       'qualities',
-      'chains',
+      'connectors',
       'overlaps',
     ],
   },

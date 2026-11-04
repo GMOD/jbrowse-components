@@ -872,15 +872,16 @@ test('a per-read facet under unit chain is one section, with a warning', async (
   )
 })
 
-test('a chain puts a read, its mate and its split segments on one row, joined by a line', async () => {
+test('a chain puts a read, its mate and its split segments on one row, joined by connectors', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const chained = await engine.alignments({
     ...PAIRED_INVERSION,
     display: { unit: 'chain' },
   })
-  expect(plain.chains.start).toHaveLength(0)
-  expect(chained.chains.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
-  expect(chained.chains.opacity[0]).toBeGreaterThan(0)
+  expect(plain.connectors.start).toHaveLength(0)
+  expect(chained.connectors.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(
+    true,
+  )
   expect(chained.reads.start).toEqual(plain.reads.start)
   const rows = new Map<string, Set<number>>()
   for (let i = 0; i < chained.reads.name.length; i++) {
@@ -897,12 +898,23 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
   }
   const mates = [...paired.values()].filter(at => at.length > 1)
   expect(mates.length).toBeGreaterThan(10)
-  expect(chained.chains.start).toHaveLength(mates.length)
-  for (let i = 0; i < chained.chains.start.length; i++) {
-    const on = mates.find(
-      at => chained.reads.row[at[0]!] === chained.chains.row[i],
-    )
-    expect(on).toBeDefined()
+  const rowOfKey = new Map(
+    chained.reads.key.map((key, i) => [key, chained.reads.row[i]!]),
+  )
+  const nameOfKey = new Map(
+    chained.reads.key.map((key, i) => [key, chained.reads.name[i]!]),
+  )
+  const joined = new Set<string>()
+  for (let i = 0; i < chained.connectors.start.length; i++) {
+    const key = chained.connectors.key[i]!
+    const mateKey = chained.connectors.mateKey[i]!
+    expect(chained.connectors.row[i]).toBe(rowOfKey.get(key))
+    expect(chained.connectors.endRow[i]).toBe(chained.connectors.row[i])
+    expect(nameOfKey.get(mateKey)).toBe(nameOfKey.get(key))
+    joined.add(nameOfKey.get(key)!)
+  }
+  for (const at of mates) {
+    expect(joined.has(chained.reads.name[at[0]!]!)).toBe(true)
   }
   const spans = new Map<number, [number, number][]>()
   for (let i = 0; i < chained.reads.name.length; i++) {
@@ -935,7 +947,9 @@ test("a chain's overlapping segments come back as spans on its row, in a neutral
   expect(plain.overlaps.start).toHaveLength(0)
   expect(chained.overlaps.start).toEqual([1100, 2150])
   expect(chained.overlaps.end).toEqual([1200, 2300])
-  expect(chained.overlaps.row).toEqual(chained.chains.row)
+  expect(
+    chained.overlaps.row.every(r => chained.connectors.row.includes(r)),
+  ).toBe(true)
   expect(chained.overlaps.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
 })
 
@@ -981,7 +995,7 @@ test('a chain’s overlaps and their key rows come back only where the display d
   expect(new Set(keyed).size).toBe(2)
   expect(new Set(chained.overlaps.color)).toEqual(new Set(keyed))
   expect(thin.overlaps.start).toHaveLength(0)
-  expect(thin.chains.start).toEqual(chained.chains.start)
+  expect(thin.connectors.start).toEqual(chained.connectors.start)
 })
 
 test('a chain over split reads paints a read by its strand against its chain’s', async () => {
@@ -997,7 +1011,7 @@ test('a chain over split reads paints a read by its strand against its chain’s
     ...both,
     display: { encoding: { color: { field: 'strand' } } },
   })
-  expect(chained.chains.start.length).toBeGreaterThan(0)
+  expect(chained.connectors.start.length).toBeGreaterThan(0)
   expect(chained.reads.start).toEqual(split.reads.start)
   expect(new Set(chained.reads.color).size).toBeGreaterThan(1)
 })

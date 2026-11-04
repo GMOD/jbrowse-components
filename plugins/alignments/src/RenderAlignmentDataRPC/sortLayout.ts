@@ -6,7 +6,6 @@ import {
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
-import { emptyConnectingLinesUploadData } from '../features/connectingLines/types.ts'
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
@@ -1025,11 +1024,10 @@ export function cloneWithLayout(
 
   return {
     ...data,
-    // The three row-derived line/tint passes a plain row placement produces
+    // The two row-derived line/tint passes a plain row placement produces
     // none of. Their own directories own the empty form; chain layout
     // (`cloneWithChainLayout`), the collapsed layout and
     // `attachLinkedReadLinesByGroup` each spread their real records over it.
-    ...emptyConnectingLinesUploadData(),
     ...emptyOverlapsUploadData(),
     ...emptyLinkedReadLinesUploadData(),
     readYs,
@@ -1061,7 +1059,6 @@ export function cloneWithLayout(
 export function withoutLayout(data: WorkerPileupData): LaidOutPileupData {
   return {
     ...data,
-    ...emptyConnectingLinesUploadData(),
     ...emptyOverlapsUploadData(),
     ...emptyLinkedReadLinesUploadData(),
     readYs: new Uint16Array(data.readKeys.length),

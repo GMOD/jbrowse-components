@@ -28,7 +28,7 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
  * Runs over two configs because layer gating decides what's reachable at all: a
  * plain pileup (reads, deletion gaps, the four 1bp-cell layers, soft-clip bases,
  * insertions) and a linked-reads layout, which is the only way to reach overlaps
- * and the connecting / linked-read line layers. Between them this is every
+ * and the linked-read line layer. Between them this is every
  * pileup-band layer.
  *
  * Two traps the fixture guards against, both of which made an earlier draft
@@ -205,10 +205,8 @@ function pileupData(): PileupDataResult {
     overlapYs: new Uint16Array([0]),
     overlapKinds: new Uint8Array([0]),
 
-    // Connecting line between the two reads, and a linked-read line spanning
-    // rows. Both paint as paths (moveTo/lineTo), and both are linked-reads-only.
-    connectingLinePositions: new Uint32Array([1020, 1030]),
-    connectingLineYs: new Uint16Array([0]),
+    // A linked-read line spanning rows, which paints as a path
+    // (moveTo/lineTo) and only with connectors drawn.
     linkedReadLinePositions: new Uint32Array([1005, 1044]),
     linkedReadLineYs: new Uint16Array([0, 1]),
     linkedReadLineColorTypes: new Uint16Array([0]),

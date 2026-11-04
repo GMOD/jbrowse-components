@@ -7,8 +7,8 @@
 // `readYs`, so they cannot exist before rows are placed. Always present, so
 // consumers can treat the fields as required.
 //
-// Populated with pileup connectors on (`showConnectors`), in chain layout
-// too, where each line lies along its chain's `connectingLine`.
+// Populated wherever the pileup connectors draw (`drawsConnectors`): always in
+// chain layout, else under `pileup.connectors.show`.
 export interface LinkedReadLinesUploadData {
   linkedReadLinePositions: Uint32Array
   linkedReadLineYs: Uint16Array

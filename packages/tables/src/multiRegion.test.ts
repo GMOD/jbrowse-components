@@ -239,7 +239,7 @@ test('a chain across two regions keeps one row, and a sort under it warns', asyn
   })
   expect([...rows.values()].every(r => r.size === 1)).toBe(true)
   expect(new Set(t.reads.region)).toEqual(new Set([0, 1]))
-  expect(new Set(t.chains.region)).toEqual(new Set([0, 1]))
+  expect(new Set(t.connectors.region)).toEqual(new Set([0, 1]))
   expect(t.warnings).toEqual([
     "under unit 'chain' the reads lay out by chain, so the sort by length is dropped",
   ])

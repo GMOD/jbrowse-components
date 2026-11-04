@@ -82,7 +82,6 @@ export function makeTestPalette({
     colorSplitInversion: z,
     colorUnmappedMate: z,
     colorInterchrom: z,
-    colorConnectingLine: z,
     colorOverlap: z,
     colorMateOverlap: z,
     colorOverlapTint: z,

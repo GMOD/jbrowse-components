@@ -13,8 +13,7 @@ import {
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
-  buildChainConnectingData,
-  chainConnectingLinesAround,
+  buildChainOverlapsAndIndex,
   computeMultiRegionChainLayout,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
@@ -151,8 +150,6 @@ function makeChainData(opts: {
     numSoftclips: 0,
     numHardclips: 0,
     detectedModifications: [],
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
     overlapPositions: new Uint32Array(0),
     overlapYs: new Uint16Array(0),
     overlapKinds: new Uint8Array(0),
@@ -607,67 +604,16 @@ describe('computeMultiRegionChainLayout — placement axis is per refName', () =
   })
 })
 
-describe('buildChainConnectingData', () => {
-  test('no connecting line for single-read chain', () => {
-    const data = makeChainData({
-      regionStart: 1000,
-      chains: [{ name: 'readA', minStart: 1000, maxEnd: 1100, distance: 100 }],
-    })
-    const readYs = new Uint16Array([3])
-    const out = buildChainConnectingData(data, readYs)
-    expect(out.connectingLinePositions.length).toBe(0)
-    expect(out.connectingLineYs.length).toBe(0)
-  })
-
-  test('connecting line emitted for chain with multiple reads', () => {
-    const data = makeChainData({
-      regionStart: 1000,
-      chains: [
-        {
-          name: 'readA',
-          minStart: 1000,
-          maxEnd: 1400,
-          distance: 400,
-          numReads: 2,
-        },
-      ],
-    })
-    const readYs = new Uint16Array([2, 2])
-    const out = buildChainConnectingData(data, readYs)
-    expect(out.connectingLineYs.length).toBe(1)
-    expect(out.connectingLineYs[0]).toBe(2)
-    expect(out.connectingLinePositions[0]).toBe(1000) // absolute minStart
-    expect(out.connectingLinePositions[1]).toBe(1400) // absolute maxEnd
-  })
-
+describe('buildChainOverlapsAndIndex', () => {
   test('flatbush spatial index is built for non-empty chains', () => {
     const data = makeChainData({
       regionStart: 1000,
       chains: [{ name: 'readA', minStart: 1000, maxEnd: 1200, distance: 200 }],
     })
     const readYs = new Uint16Array([0])
-    const out = buildChainConnectingData(data, readYs)
+    const out = buildChainOverlapsAndIndex(data, readYs)
     expect(out.chainFlatbush).toBeDefined()
     expect(out.chainFlatbush!.numItems).toBeGreaterThan(0)
-  })
-
-  test('line uses absolute chain extents, GPU scissor handles off-screen clipping', () => {
-    const data = makeChainData({
-      regionStart: 1000,
-      chains: [
-        {
-          name: 'readA',
-          minStart: 900,
-          maxEnd: 1200,
-          distance: 300,
-          numReads: 2,
-        },
-      ],
-    })
-    const readYs = new Uint16Array([0, 0])
-    const out = buildChainConnectingData(data, readYs)
-    expect(out.connectingLinePositions[0]).toBe(900) // absolute minStart
-    expect(out.connectingLinePositions[1]).toBe(1200) // absolute maxEnd
   })
 
   // The tint marks where a chain's reads paint over each other on their shared
@@ -716,7 +662,7 @@ describe('buildChainConnectingData', () => {
       segments: [number, number, number][],
       readFlags: number[],
     ) {
-      const out = buildChainConnectingData(
+      const out = buildChainOverlapsAndIndex(
         withSegments(chainOf(readFlags.length), segments, readFlags),
         new Uint16Array(readFlags.length).fill(4),
       )
@@ -807,59 +753,5 @@ describe('buildChainConnectingData', () => {
         ).spans,
       ).toEqual([])
     })
-  })
-})
-
-describe('chainConnectingLinesAround', () => {
-  function trio() {
-    const data = makeChainData({
-      regionStart: 0,
-      chains: [
-        {
-          name: 'trio',
-          minStart: 100,
-          maxEnd: 1500,
-          distance: 1400,
-          numReads: 3,
-        },
-        {
-          name: 'pair',
-          minStart: 2000,
-          maxEnd: 2600,
-          distance: 600,
-          numReads: 2,
-        },
-      ],
-    })
-    return {
-      ...data,
-      readPositions: new Uint32Array([
-        100, 200, 400, 500, 1400, 1500, 2000, 2100, 2500, 2600,
-      ]),
-    }
-  }
-
-  test('a curve on one link of a three-read chain keeps the other link', () => {
-    const out = chainConnectingLinesAround(
-      trio(),
-      new Map([[0, [{ start: 500, end: 1400 }]]]),
-    )
-    expect([...out!.connectingLinePositions]).toEqual([200, 400, 2000, 2600])
-  })
-
-  test('curves on every link leave the chain no hairline', () => {
-    const out = chainConnectingLinesAround(
-      trio(),
-      new Map([
-        [
-          0,
-          [
-            { start: 500, end: 1400 },
-            { start: 200, end: 400 },
-          ],
-        ],
-      ]),
-    )
-    expect([...out!.connectingLinePositions]).toEqual([2000, 2600])
   })
 })

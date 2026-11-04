@@ -95,16 +95,13 @@ public struct Uniforms {
   public uint colorSkip;
   public uint colorSoftclip;
   public uint colorHardclip;
-  // The chain's mate-joining hairline (connectingLine.slang) and the
-  // collapsed-row overlap tint (overlap.slang). colors.ts says which neutral
-  // each takes and why.
-  public uint colorConnectingLine;
+  // The collapsed-row overlap tint (overlap.slang). colors.ts says which
+  // neutral it takes and why.
   public uint colorOverlapTint;
   // The chain-layout overlap span (overlap.slang), which two segments of one
   // molecule cover, so no read color fits it. The span is an opaque fill
   // between two read fills, so colors.ts gives it its own theme slot
-  // (`readOverlap`) where the hairline above, over the track background, takes
-  // the foreground.
+  // (`readOverlap`).
   public uint colorOverlap;
   // The same span where only the two mates of a pair overlap
   // (`readMateOverlap`), one step from the read fill.

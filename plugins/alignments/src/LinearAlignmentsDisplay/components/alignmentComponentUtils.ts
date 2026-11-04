@@ -111,7 +111,6 @@ export function buildColorPaletteFromPalette(
     // this theme and not about the marks —
     // `colorInsertionIndicator` and friends are equal to their base colors in
     // light mode and differ in dark for exactly the same kind of reason.
-    colorConnectingLine: toRgb(palette.text.primary),
     colorOverlapTint: toRgb(palette.text.primary),
   }
   return {
