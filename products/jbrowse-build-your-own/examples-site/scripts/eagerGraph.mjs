@@ -25,18 +25,21 @@
 //   post-treeshake eager set so it only reports edges that are actually paid
 //   for.
 //
-// If a run fails on a missing dist/_astro, or a page has no chunks, rebuild
-// first — the site is rebuilt by other things while you measure.
+// If a run says the graph and dist/ are out of step, rebuild first — the site
+// is rebuilt by other things while you measure.
 import { execFileSync } from 'child_process'
-import { existsSync, readFileSync, readdirSync } from 'fs'
+import { existsSync } from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
-import { eagerGraphFile as dumpFile } from './eagerGraphDump.mjs'
-
-const here = path.dirname(fileURLToPath(import.meta.url))
-const site = path.join(here, '..')
-const dist = path.join(site, 'dist')
+import { pages } from '../src/examples.ts'
+import {
+  chunkFor,
+  eagerChunks as eagerChunksOf,
+  htmlFor,
+  npmPackageOf,
+  readEagerGraph,
+  site,
+} from './eagerSet.mjs'
 
 const argv = process.argv.slice(2)
 const flag = name => {
@@ -50,71 +53,20 @@ if (!argv.includes('--no-build')) {
   execFileSync('npx', ['astro', 'build'], { cwd: site, stdio: 'inherit' })
 }
 
-if (!existsSync(dumpFile)) {
-  console.error(`no probe dump at ${dumpFile} — run without --no-build`)
-  process.exit(1)
-}
-const graph = JSON.parse(readFileSync(dumpFile, 'utf8'))
-
-// the landing page is dist/index.html; every other page is a directory
-const htmlFor = p =>
-  p === 'index'
-    ? path.join(dist, 'index.html')
-    : path.join(dist, p, 'index.html')
-
 if (!existsSync(htmlFor(page))) {
-  const pages = readdirSync(dist, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name !== '_astro')
-    .map(d => d.name)
-  console.error(`no page "${page}" — have: index, ${pages.join(', ')}`)
-  process.exit(1)
-}
-
-// The eager set: the closure over **static** chunk imports from the chunks a
-// page's HTML names. Same definition as measureEagerBundle.mjs, over the probe's
-// chunk records rather than over a re-lex of the output.
-const chunkFor = file => graph.chunks[`_astro/${file}`] ?? graph.chunks[file]
-
-const html = readFileSync(htmlFor(page), 'utf8')
-const entries = [...html.matchAll(/_astro\/([\w.$-]+\.js)/g)].map(m => m[1])
-
-// A plain `pnpm build` between the probe run and now rewrites dist/ with fresh
-// content hashes, and the ones that happen to be unchanged (react, astro's
-// runtime) still resolve — so a stale dump does not fail, it silently reports a
-// five-chunk eager set for a page with 191. Check the entries the HTML names
-// before walking anything.
-const missing = entries.filter(f => !chunkFor(f))
-if (missing.length) {
   console.error(
-    `the probe dump and dist/ are out of step: ${missing.length} of ` +
-      `${entries.length} entry chunk(s) for "${page}" are not in the dump ` +
-      `(e.g. ${missing[0]}).\nSomething rebuilt dist/ since — rerun without ` +
-      '--no-build.',
+    `no page "${page}" — have: index, ${pages.map(p => p.slug).join(', ')}`,
   )
   process.exit(1)
 }
 
-const eagerChunks = new Set()
-const queue = [...entries]
-while (queue.length) {
-  const file = queue.pop()
-  const chunk = chunkFor(file)
-  if (eagerChunks.has(file) || !chunk) {
-    continue
-  }
-  eagerChunks.add(file)
-  queue.push(...chunk.imports.map(i => path.basename(i)))
-}
-
-if (eagerChunks.size === 0) {
-  console.error(`no chunks matched for "${page}" — rerun without --no-build.`)
-  process.exit(1)
-}
+const graph = readEagerGraph()
+const eagerChunks = eagerChunksOf(graph, page)
 
 // module id -> bytes it rendered to, for every module in an eager chunk
 const eagerModules = new Map()
 for (const file of eagerChunks) {
-  for (const [id, bytes] of Object.entries(chunkFor(file).modules)) {
+  for (const [id, bytes] of Object.entries(chunkFor(graph, file).modules)) {
     eagerModules.set(id, (eagerModules.get(id) ?? 0) + bytes)
   }
 }
@@ -142,7 +94,7 @@ const firstParty = id => !id.includes('node_modules')
 // deliberately do not sum to the site total.
 function attributed() {
   const roots = [...eagerChunks]
-    .map(f => chunkFor(f).facadeModuleId)
+    .map(f => chunkFor(graph, f).facadeModuleId)
     .filter(Boolean)
   if (roots.length === 0) {
     console.error(
@@ -262,11 +214,7 @@ console.log(
 )
 const byPackage = new Map()
 for (const [id, bytes] of eagerModules) {
-  const m =
-    /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)/.exec(
-      id,
-    )
-  const key = m ? m[1] : 'first-party'
+  const key = npmPackageOf(id) ?? 'first-party'
   byPackage.set(key, (byPackage.get(key) ?? 0) + bytes)
 }
 console.log('by package:')

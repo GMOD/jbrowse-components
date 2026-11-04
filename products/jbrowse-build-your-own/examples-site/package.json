@@ -36,7 +36,6 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "es-module-lexer": "^3.0.4",
     "typescript": "^6.0.3"
   }
 }
