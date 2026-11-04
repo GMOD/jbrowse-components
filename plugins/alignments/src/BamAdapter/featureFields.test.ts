@@ -40,9 +40,9 @@ function readsOf(name: string, end = 50000) {
 }
 
 // STAR writes MAPQ 255 on every unique read, which @gmod/bam reports as no
-// score, so getMappingQuality asks for `mappingQual` on nearly every read of
-// an RNA-seq BAM. A name no getter answers used to build the whole serialized
-// feature, decoding every tag and caching them on a record the chunk LRU keeps.
+// score, and the synteny hover asks every read for its `mate`. A name no getter
+// answers used to build the whole serialized feature, decoding every tag and
+// caching them on a record the chunk LRU keeps.
 test('a field no getter answers decodes no tags', async () => {
   const reads = await readsOf('volvox-rnasim.bam')
   expect(

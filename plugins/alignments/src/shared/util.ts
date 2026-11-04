@@ -112,17 +112,17 @@ export function nextSegmentPosition(
 // than feeding 255 to the MAPQ ramp.
 export const MAPQ_UNAVAILABLE = 255
 
-// A feature's mapping quality, or MAPQ_UNAVAILABLE when it has none.
-// BAM/CRAM spell it `score`; PAF/MashMap synteny features, which
-// LGVSyntenyDisplay pushes through this same pipeline, spell it `mappingQual`
-// and leave `score` unset.
+// A feature's mapping quality, or MAPQ_UNAVAILABLE when it has none. A SAM
+// record, the one kind carrying `flags`, spells it `score`; the synteny blocks
+// LGVSyntenyDisplay pushes through this same pipeline spell it `mappingQual`
+// (PAF, PIF, MashMap), and an MCScan or BLAST row's `score` is its own score,
+// which read as MAPQ titled an anchor scoring over 255 "MAPQ unavailable".
 export function getMappingQuality(feature: Feature) {
-  const score = feature.get('score')
   const mappingQual =
-    score === undefined
-      ? (feature.get('mappingQual') as number | undefined)
-      : score
-  return mappingQual ?? MAPQ_UNAVAILABLE
+    feature.get('flags') === undefined
+      ? feature.get('mappingQual')
+      : feature.get('score')
+  return typeof mappingQual === 'number' ? mappingQual : MAPQ_UNAVAILABLE
 }
 
 // Get `key`'s entry, lazily creating + inserting it on first miss. The shared

@@ -357,6 +357,7 @@ describe('filterChainFeatures dedup guard', () => {
 })
 
 describe('filterChainFeatures minMapq', () => {
+  // a SAM record, whose `score` is its MAPQ
   const read = (name: string, fields: Record<string, unknown>) =>
     new SimpleFeature({
       uniqueId: name,
@@ -364,6 +365,7 @@ describe('filterChainFeatures minMapq', () => {
       start: 0,
       end: 100,
       name,
+      flags: 0,
       ...fields,
     })
 
@@ -383,8 +385,8 @@ describe('filterChainFeatures minMapq', () => {
   test('an unavailable mapping quality passes any minimum, and a synteny block is read by mappingQual', () => {
     const features = [
       read('unavailable', {}),
-      read('block', { mappingQual: 40 }),
-      read('weakBlock', { mappingQual: 5 }),
+      read('block', { flags: undefined, mappingQual: 40 }),
+      read('weakBlock', { flags: undefined, mappingQual: 5 }),
     ]
     expect(names(filterChainFeatures(features, filt({ minMapq: 1 })))).toEqual([
       'block',

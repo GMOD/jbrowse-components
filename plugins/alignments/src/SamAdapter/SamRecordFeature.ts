@@ -111,7 +111,8 @@ export default class SamRecordFeature implements MismatchFeature {
     return this.flags & SAM_FLAG_REVERSE ? -1 : 1
   }
 
-  // BAM/CRAM spell MAPQ `score`, and getMappingQuality reads that first
+  // BAM/CRAM spell MAPQ `score`, which getMappingQuality reads off a record
+  // carrying `flags`
   get score() {
     return this.record.mapq
   }

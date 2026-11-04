@@ -133,11 +133,11 @@ test('numeric tag values order by magnitude, not code point', () => {
 // heads the stack, "unavailable" pins last.
 test('mapq buckets by confidence, best first, unavailable last', () => {
   const features = [
-    feat('a', { score: 0 }),
-    feat('b', { score: 5 }),
-    feat('c', { score: 255 }),
-    feat('d', { score: 60 }),
-    feat('e', { score: 20 }),
+    feat('a', { flags: 0, score: 0 }),
+    feat('b', { flags: 0, score: 5 }),
+    feat('c', { flags: 0, score: 255 }),
+    feat('d', { flags: 0, score: 60 }),
+    feat('e', { flags: 0, score: 20 }),
   ]
   const groups = partitionFeatures(features, { field: 'mapq' })
   expect(groups.map(g => g.label)).toEqual([
@@ -154,7 +154,7 @@ test('mapq buckets by confidence, best first, unavailable last', () => {
 // however wide the MAPQ distribution is.
 test('mapq never produces more than its five buckets', () => {
   const features = Array.from({ length: 256 }, (_, score) =>
-    feat(`f${score}`, { score }),
+    feat(`f${score}`, { flags: 0, score }),
   )
   expect(partitionFeatures(features, { field: 'mapq' })).toHaveLength(5)
 })
