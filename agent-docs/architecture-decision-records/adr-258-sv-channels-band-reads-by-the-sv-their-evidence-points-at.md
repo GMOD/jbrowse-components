@@ -160,6 +160,15 @@ the reviews to settle the open calls; built in
 - **Drawing every level, or only levels with reads in the visible window**: the
   first spends height on nothing, the second makes bands appear and vanish on
   every pan.
+- **Bands and their heights that follow the window after a zoom-in.** A zoom
+  in keeps the reads already loaded (`reference/FETCH_KEYS.md`), so zoomed in
+  from the whole of volvox-sv's ctgA to a deletion breakpoint, bands with no
+  read on screen stay and keep their share of the height, which "No SV
+  evidence" then lacks; opened at that locus directly, the view loads half a
+  window either side and lays out only that. Fitting the heights to the reads
+  in view, or re-laying out to the new window on a zoom-in, moves the bands
+  under the reader on a zoom or a pan, which no multi-row display does. The ×
+  on a band's chip gives its height back.
 - **A second preset row keeping `pairOrientation`**: nothing reads separate LL
   and RR bands, Group by → Pair orientation remains, and named presets were
   declined. An automatic pick between two facets is ADR-037's case.
