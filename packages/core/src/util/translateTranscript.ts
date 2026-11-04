@@ -1,11 +1,11 @@
-import { convertCodingSequenceToPeptides } from './convertCodingSequenceToPeptides.ts'
+import { translateStitchedCDS } from './convertCodingSequenceToPeptides.ts'
 import {
   getGeneticCode,
   parseTranslTable,
   relativizeTranslExcept,
 } from './geneticCodes.ts'
 import { revlist } from './revlist.ts'
-import { revcom } from './seqUtils.ts'
+import { revcom, stitch } from './seqUtils.ts'
 
 import type { TranslExcept } from './geneticCodes.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -126,10 +126,13 @@ export function translateTranscript({
   const { codonTable, starts } = getGeneticCode(
     transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
   )
+  // Reverse-complementing the span instead costs its length per isoform: DMD's
+  // 2.2Mb, thirty times over, to read 11kb of CDS.
+  const forward = stitch(relative, seq)
   return {
-    protein: convertCodingSequenceToPeptides({
+    protein: translateStitchedCDS({
       cds,
-      sequence: minus ? revcom(seq) : seq,
+      stitched: minus ? revcom(forward) : forward,
       codonTable,
       starts,
       translExcept,

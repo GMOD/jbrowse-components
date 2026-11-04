@@ -125,6 +125,29 @@ describe('translateTranscript', () => {
     expect(minus('(pos:complement(4..6),aa:Sec)')).toBe('M*KU*')
   })
 
+  test('reads a minus-strand CDS across exons, a split codon included', () => {
+    // ATG A|AA TGA TTT|CCC TAA in transcription order, from the highest exon down
+    const seq = 'GGTTAGGGGGGGAAATCATTGGGGTCATGG'
+    const minus = (cdsAttributes: Record<string, unknown>) =>
+      translateTranscript({
+        transcript: transcript({
+          strand: -1,
+          attributes: { end: 30 },
+          cds: [
+            { start: 2, end: 8 },
+            { start: 12, end: 20 },
+            { start: 24, end: 28 },
+          ],
+          cdsAttributes,
+        }),
+        seq,
+      })?.protein
+    expect(minus({})).toBe('MK*FP*')
+    expect(minus({ transl_except: '(pos:complement(16..18),aa:Sec)' })).toBe(
+      'MKUFP*',
+    )
+  })
+
   test('is undefined for a transcript with no CDS', () => {
     expect(
       translateTranscript({ transcript: transcript({ cds: [] }), seq: 'ATG' }),

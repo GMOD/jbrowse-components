@@ -66,15 +66,8 @@ export function translExceptProteinPositions({
   return new Set([...codonIndexes].map(idx => idx + shift))
 }
 
-export function convertCodingSequenceToPeptides({
-  cds,
-  sequence,
-  codonTable,
-  starts,
-  translExcept = [],
-}: {
+interface TranslationArgs {
   cds: { start: number; end: number; phase?: number }[]
-  sequence: string
   codonTable: Record<string, string>
   // Valid initiator codons for the active genetic code. When provided, a
   // complete CDS (phase 0) whose first codon is an alternative initiator (e.g.
@@ -85,9 +78,29 @@ export function convertCodingSequenceToPeptides({
   // Optional transl_except overrides in the same coordinate system as `cds`.
   // Each entry replaces the normal codon translation at that position with `aa`.
   translExcept?: TranslExcept[]
-}) {
+}
+
+export function convertCodingSequenceToPeptides({
+  sequence,
+  ...args
+}: TranslationArgs & { sequence: string }) {
+  return translateStitchedCDS({ ...args, stitched: stitch(args.cds, sequence) })
+}
+
+/**
+ * `stitched` is the coding bases already joined in transcription order, which
+ * `cds` still describes for the phase and the transl_except positions. A
+ * minus-strand caller can reverse-complement just those bases rather than the
+ * whole transcript span.
+ */
+export function translateStitchedCDS({
+  cds,
+  stitched: str,
+  codonTable,
+  starts,
+  translExcept = [],
+}: TranslationArgs & { stitched: string }) {
   const phase = cds[0]?.phase ?? 0
-  const str = stitch(cds, sequence)
   const overrides = translExceptCodonOverrides(cds, translExcept, phase)
 
   let protein = phase > 0 ? '&' : ''
