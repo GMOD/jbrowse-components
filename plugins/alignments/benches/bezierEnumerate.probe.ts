@@ -78,6 +78,7 @@ function makeFixture(n: number, pairedFraction: number) {
     readPositions: Uint32Array.from(positions),
     readPairOrientations: Uint8Array.from(orientations),
     readYs: new Uint16Array(count),
+    maxY: 1,
     readInterchrom: new Uint8Array(count),
   })
 }
