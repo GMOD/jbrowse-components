@@ -54,21 +54,20 @@ export async function waitForFrame(
 ): Promise<ReadyReport> {
   const unsettled: string[] = []
   const blocker = await appSettledBlocker(page, { timeout })
-  if (blocker) {
+  const timedOut = blocker !== undefined
+  if (timedOut) {
     unsettled.push(
       `the app never held itself ready (last blocked by ${blocker})`,
     )
   }
-  const timedOut = unsettled.length > 0
 
   const { pending, tooLarge } = await page.evaluate(displayCensusInPage)
-  const failed = pending.filter(
-    d => d.phase === 'error' || d.phase === 'renderError',
-  )
-  const canceled = pending.filter(d => d.phase === 'canceled')
-  const unpainted = pending.filter(
-    d => !failed.includes(d) && !canceled.includes(d),
-  )
+  const isFailed = (d: DisplayState) =>
+    d.phase === 'error' || d.phase === 'renderError'
+  const isCanceled = (d: DisplayState) => d.phase === 'canceled'
+  const failed = pending.filter(isFailed)
+  const canceled = pending.filter(isCanceled)
+  const unpainted = pending.filter(d => !isFailed(d) && !isCanceled(d))
   if (failed.length > 0) {
     unsettled.push(`display(s) showing an error: ${describeDisplays(failed)}`)
   }

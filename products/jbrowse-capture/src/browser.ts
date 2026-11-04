@@ -19,18 +19,21 @@ const UA_PLATFORMS: Partial<Record<NodeJS.Platform, string>> = {
   win32: 'Windows NT 10.0; Win64; x64',
 }
 
-// Chrome's user agent without "Headless", which EBI's Proteins API answers
-// with a reset stream. A launch flag reaches the RPC workers' fetches, which
-// page.setUserAgent does not.
-function userAgentArgs() {
-  const executable = findChromeExecutable() ?? puppeteer.executablePath()
-  if (typeof executable !== 'string') {
-    return []
-  }
+/**
+ * Chrome's user agent without "Headless", which EBI's Proteins API answers
+ * with a reset stream, read off the binary that will run. A launch flag
+ * reaches the RPC workers' fetches, which page.setUserAgent does not.
+ */
+export function userAgentArgs(
+  executable = findChromeExecutable() ?? puppeteer.executablePath(),
+) {
   try {
-    const version = /\d+\.\d+\.\d+\.\d+/.exec(
-      execFileSync(executable, ['--version']).toString(),
-    )?.[0]
+    const version =
+      typeof executable === 'string'
+        ? /\d+\.\d+\.\d+\.\d+/.exec(
+            execFileSync(executable, ['--version']).toString(),
+          )?.[0]
+        : undefined
     const platform = UA_PLATFORMS[process.platform] ?? 'X11; Linux x86_64'
     return version
       ? [
@@ -42,11 +45,7 @@ function userAgentArgs() {
   }
 }
 
-export const BASE_CHROME_ARGS = [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  ...userAgentArgs(),
-]
+export const BASE_CHROME_ARGS = ['--no-sandbox', '--disable-setuid-sandbox']
 
 export interface LaunchOptions {
   headless?: boolean
@@ -69,7 +68,7 @@ export function launchBrowser({
   return puppeteer.launch({
     headless,
     executablePath,
-    args: [...BASE_CHROME_ARGS, ...args],
+    args: [...BASE_CHROME_ARGS, ...userAgentArgs(executablePath), ...args],
   })
 }
 

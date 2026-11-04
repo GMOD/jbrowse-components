@@ -19,18 +19,19 @@ import type { Page } from 'puppeteer'
 
 // Attach the parsed region so page context never parses strings, plus the
 // viewport rect of the anchor kinds that resolve out here rather than in the
-// overlay: a graph node, a dotplot's pair of axes and a structure's residue.
-// Each draws into a single canvas, so there is no element in the page for the overlay to measure
-// and the view's own layout is the only thing that knows where they went.
+// overlay: a graph node, a named feature, a dotplot's pair of axes and a
+// structure's residue. Each draws into a single canvas, so there is no element
+// in the page for the overlay to measure and the view's own layout is the only
+// thing that knows where they went.
 //
 // `wantBounds` is the same question for every kind of anchor: does this callout
 // WRAP the thing it names, or point at it? A force-directed graph node bends, so
 // the centre of its bounding box can sit off the node and everything but a box
-// wants a point ON it (a dotplot block's cell is a rectangle either way). A
-// one-base locus is the same shape of question — the base's own column for a
-// box, the zero-width position between two bases for a pill or an arrow head —
-// which is what parseAnnotationLocus's `wrap` decides.
-async function withRegion(
+// wants a point ON it. A one-base locus, on a linear view or a dotplot axis, is
+// the same shape of question — the base's own column for a box, the zero-width
+// position between two bases for a pill or an arrow head — which is what
+// parseAnchorLocus's `wrap` decides.
+async function resolveAnchor(
   page: Page,
   anchor: AnnotationAnchor | undefined,
   wantBounds: boolean,
@@ -49,7 +50,7 @@ async function withRegion(
       : anchor.feature
         ? await featureRect(page, anchor)
         : isDotplot
-          ? await dotplotAnchorRect(page, anchor)
+          ? await dotplotAnchorRect(page, anchor, wantBounds)
           : anchor.residue
             ? await residueRect(page, anchor, wantBounds)
             : undefined,
@@ -81,8 +82,8 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       // only a box wants the drawn bounds — of a graph node, or of the base a
       // one-coordinate locus names; a ring/arrow/label wants a point on it, and
       // an arrow's tail always does
-      anchor: await withRegion(page, a.anchor, a.type === 'box'),
-      fromAnchor: await withRegion(page, a.fromAnchor, false),
+      anchor: await resolveAnchor(page, a.anchor, a.type === 'box'),
+      fromAnchor: await resolveAnchor(page, a.fromAnchor, false),
     })),
   )
   const { unresolved, offFrame } = await page.evaluate(

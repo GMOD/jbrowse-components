@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 import type { Annotation } from './annotationOverlay.ts'
+import type { CaptureOptions } from './capture.ts'
 import type { SpecTrack } from './url.ts'
 
 // inline JSON, `-` for stdin, or a path
@@ -100,4 +101,60 @@ export function readBatch(value: string): BatchEntry[] {
     }
   }
   return parsed as BatchEntry[]
+}
+
+// Options that say the same thing two ways, of which a capture takes one:
+// where the config comes from, and what the session opens.
+const RIVALS = [
+  [['genome'], ['config'], ['comparative']],
+  [
+    ['spec'],
+    ['session'],
+    ['assembly', 'loc', 'tracks', 'view'],
+    ['comparative'],
+  ],
+]
+
+const rivalsOf = (key: string) =>
+  RIVALS.flatMap(groups =>
+    groups.some(group => group.includes(key))
+      ? groups.filter(group => !group.includes(key)).flat()
+      : [],
+  )
+
+/**
+ * One batch entry over the command line's defaults. An entry key replaces its
+ * default and every default that says the same thing another way, so an entry
+ * naming a `config` drops the line's `--genome`, and one naming a `loc` drops
+ * its `--spec`.
+ */
+export function batchCapture(
+  defaults: CaptureOptions,
+  { spec, session, annotations, ...entry }: BatchEntry,
+): CaptureOptions {
+  const own: CaptureOptions = {
+    ...entry,
+    ...(spec ? { spec: typeof spec === 'string' ? readSpec(spec) : spec } : {}),
+    ...(session
+      ? {
+          session:
+            typeof session === 'string'
+              ? readJson('session', session)
+              : session,
+        }
+      : {}),
+    ...(annotations
+      ? {
+          annotations:
+            typeof annotations === 'string'
+              ? readAnnotations(annotations)
+              : annotations,
+        }
+      : {}),
+  }
+  const replaced: Record<string, undefined> = {}
+  for (const key of Object.keys(own).flatMap(rivalsOf)) {
+    replaced[key] = undefined
+  }
+  return { ...defaults, ...replaced, ...own }
 }

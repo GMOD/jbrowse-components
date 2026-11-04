@@ -1,17 +1,8 @@
-import type { AnnotationAnchor } from './annotationOverlay.ts'
+import { parseAnchorLocus, viewPathOf } from './annotationOverlay.ts'
+
+import type { AnchorLocus, AnnotationAnchor } from './annotationOverlay.ts'
 import type { ViewportRect } from './graphAnchor.ts'
 import type { Page } from 'puppeteer'
-
-// A dotplot anchor's locus, with the bounds optional: a bare refName is the
-// whole chromosome, resolved in page context against that axis's own
-// displayedRegions. That is the unit a dotplot callout wants — an off-diagonal
-// block is "this chromosome against that one", and the grid cell those two names
-// make is exactly the box to draw around it.
-interface AxisLocus {
-  refName: string
-  start?: number
-  end?: number
-}
 
 // Where a DotplotView drew a pair of loci, in viewport CSS px.
 //
@@ -27,7 +18,9 @@ interface AxisLocus {
 // (`hview`) axis and `vLoc` the vertical one; either may be omitted, and the
 // omitted axis spans the whole plot — which is what a callout on "this
 // chromosome, whatever it pairs with" wants. Naming neither is not a dotplot
-// anchor at all, and `annotations.ts` never routes one here.
+// anchor at all, and `annotations.ts` never routes one here. A bare refName
+// (`4A`) is the whole chromosome, so the cell two bare names make is the box
+// an off-diagonal block sits in, with no chromosome length in the spec.
 //
 // The vertical axis is INVERTED against the layout: a dotplot's origin is the
 // bottom-left, so a base's screen y is `viewHeight - alongPx`, the same flip the
@@ -41,10 +34,10 @@ interface AxisLocus {
 export async function dotplotAnchorRect(
   page: Page,
   anchor: AnnotationAnchor,
+  wantBounds: boolean,
 ): Promise<ViewportRect | undefined> {
-  const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
   return page.evaluate(
-    (viewPath: number[], h: AxisLocus | null, v: AxisLocus | null) => {
+    (viewPath: number[], h: AnchorLocus | null, v: AnchorLocus | null) => {
       // The structural slice of the live model this needs. Declared here rather
       // than imported because it is serialized into the page, and
       // `window.JBrowseSession` is untyped from a harness script.
@@ -92,7 +85,7 @@ export async function dotplotAnchorRect(
       // A locus as screen px along one axis, low first. A bare refName takes the
       // whole displayed region of that name; a reversed axis puts `end` left of
       // `start`, so neither this nor its caller can assume an order.
-      function span(axis: Axis, locus: AxisLocus) {
+      function span(axis: Axis, locus: AnchorLocus) {
         const whole = axis.displayedRegions.find(
           reg => reg.refName === locus.refName,
         )
@@ -123,33 +116,8 @@ export async function dotplotAnchorRect(
         height: vs.hi - vs.lo,
       }
     },
-    path,
-    anchor.hLoc ? parseAxisLocus(anchor.hLoc) : null,
-    anchor.vLoc ? parseAxisLocus(anchor.vLoc) : null,
+    viewPathOf(anchor),
+    anchor.hLoc ? parseAnchorLocus(anchor.hLoc, wantBounds) : null,
+    anchor.vLoc ? parseAnchorLocus(anchor.vLoc, wantBounds) : null,
   )
-}
-
-// `4A`, `4A:1-5,000,000` or `4A:2,500,000`. Deliberately not
-// `parseAnnotationLocus`, which requires the coordinates: on a dotplot the
-// common case is a whole chromosome, and spelling that as `4A:1-830000000`
-// would put an assembly's chromosome lengths into a spec, where they would be
-// wrong the next time the assembly moved.
-function parseAxisLocus(locus: string): AxisLocus {
-  const cleaned = locus.replaceAll(/[\s,]/g, '')
-  const idx = cleaned.lastIndexOf(':')
-  if (idx === -1) {
-    return { refName: cleaned }
-  }
-  const match = /^(\d+)(?:\.\.|-)?(\d+)?$/.exec(cleaned.slice(idx + 1))
-  if (!match) {
-    throw new Error(
-      `dotplot anchor loc "${locus}" is not <refName>[:<start>[-<end>]]`,
-    )
-  }
-  const start = Number(match[1]) - 1
-  return {
-    refName: cleaned.slice(0, idx),
-    start,
-    end: match[2] ? Number(match[2]) : start,
-  }
 }

@@ -205,7 +205,7 @@ export interface Annotation {
   // and the pill's facing edge (so a column of callouts lines up whatever each
   // one says), and `dy` centres the pill on that line.
   leader?: boolean
-  fontSize?: number // text/circle label, default 22 for text (min 18)
+  fontSize?: number // label size: text default 22, legend 20, circle 18; text and legend floor at 13
   strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)
   fillOpacity?: number // box: tint the interior with a translucent wash of color
   anchor?: AnnotationAnchor
@@ -223,6 +223,12 @@ export interface AnnotationRegion {
   start: number
   end: number
 }
+
+export type AnchorLocus = Partial<AnnotationRegion> & { refName: string }
+
+/** The view an anchor addresses, as a path down nested `.views`. */
+export const viewPathOf = (anchor: Pick<AnnotationAnchor, 'view'>) =>
+  Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
 
 // An anchor as it crosses into page context: a locus already parsed out here
 // (page context stays a pure lookup), plus the viewport rect of a graphNode
@@ -262,19 +268,29 @@ export function parseAnnotationLocus(
   // the neighbouring reason: a click cannot land on an edge.)
   wrap = false,
 ): AnnotationRegion {
-  const cleaned = locus.replaceAll(/[\s,]/g, '')
-  const idx = cleaned.lastIndexOf(':')
-  const refName = cleaned.slice(0, idx)
-  const coords = cleaned.slice(idx + 1)
-  const match = /^(\d+)(?:\.\.|-)?(\d+)?$/.exec(coords)
-  if (idx === -1 || !match) {
+  const { refName, start, end } = parseAnchorLocus(locus, wrap)
+  if (start === undefined || end === undefined) {
     throw new Error(
       `annotation anchor loc "${locus}" is not <refName>:<start>[-<end>]`,
     )
   }
-  const start = Number(match[1]) - 1
-  const end = match[2] ? Number(match[2]) : wrap ? start + 1 : start
   return { refName, start, end }
+}
+
+/**
+ * `refName`, `refName:start` or `refName:start-end`, the coordinates optional:
+ * a dotplot axis takes a bare refName as the whole chromosome.
+ */
+export function parseAnchorLocus(locus: string, wrap = false): AnchorLocus {
+  const cleaned = locus.replaceAll(/[\s,]/g, '')
+  const match = /^(.+):(\d+)(?:(?:\.\.|-)(\d+))?$/.exec(cleaned)
+  const span = (start: number, end: string | undefined) => ({
+    start,
+    end: end ? Number(end) : wrap ? start + 1 : start,
+  })
+  return match
+    ? { refName: match[1]!, ...span(Number(match[2]) - 1, match[3]) }
+    : { refName: cleaned }
 }
 
 // The two ways a callout fails to say what its spec asked it to, each entry a
@@ -486,13 +502,6 @@ export function drawAnnotationOverlay(
     }
   }
 
-  // Which point of a resolved rect an anchor names. Both ends of an arrow read
-  // it, so a tail can sit at an element's edge the same way a head can. It used
-  // to be inlined for the head only, and a tail carrying an `alignX` was
-  // silently the rect's centre instead: tcga/mutations_cdh1_histology asked for
-  // a short vertical arrow at a track's left edge + 400 and drew a diagonal
-  // across the whole panel, because a track's rect is the full view width and
-  // half of that is what the tail was off by.
   function unionRect(a: Rect, b: Rect) {
     const left = Math.min(a.left, b.left)
     const top = Math.min(a.top, b.top)
@@ -504,6 +513,8 @@ export function drawAnnotationOverlay(
     }
   }
 
+  // Which point of a resolved rect an anchor names. Both ends of an arrow read
+  // it, so a tail can sit at an element's edge the same way a head can.
   function anchorPoint(rect: Rect, anchor: Anchor) {
     const alignX = anchor?.alignX ?? 'center'
     const alignY = anchor?.alignY ?? 'center'

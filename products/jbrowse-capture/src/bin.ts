@@ -5,11 +5,18 @@ import { parseArgs } from './args.ts'
 import { captureBatch, captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { listHubAssemblies, listHubTracks } from './genome.ts'
-import { readAnnotations, readBatch, readJson, readSpec } from './jsonArgs.ts'
+import {
+  batchCapture,
+  readAnnotations,
+  readBatch,
+  readJson,
+  readSpec,
+} from './jsonArgs.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
 
 import type { ParsedArgs } from './args.ts'
+import type { CaptureOptions } from './capture.ts'
 
 const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finished drawing
 
@@ -113,14 +120,9 @@ function urlOptions(args: ParsedArgs) {
   }
 }
 
-async function runBatch(args: ParsedArgs) {
-  const [manifest, ...extra] = args.positionals
-  if (!manifest || extra.length) {
-    throw new Error(
-      '`jb2capture batch` takes one manifest, right after the word: JSON, a path or -',
-    )
-  }
-  const defaults = {
+// what a capture and every image of a batch take from the command line
+function captureOptions(args: ParsedArgs): CaptureOptions {
+  return {
     ...urlOptions(args),
     width: args.width,
     height: args.height,
@@ -132,37 +134,23 @@ async function runBatch(args: ParsedArgs) {
     timeout: args.timeout,
     allowUnsettled: args.allowUnsettled,
     onConsole: args.verbose
-      ? (text: string) => {
+      ? text => {
           console.error(`  [page] ${text}`)
         }
       : undefined,
   }
-  const captures = readBatch(manifest).map(
-    ({ spec, session, annotations, ...entry }) => ({
-      ...defaults,
-      // an entry that says what to open replaces the default session whole
-      ...(spec || session ? { spec: undefined, session: undefined } : {}),
-      ...entry,
-      ...(spec
-        ? { spec: typeof spec === 'string' ? readSpec(spec) : spec }
-        : {}),
-      ...(session
-        ? {
-            session:
-              typeof session === 'string'
-                ? readJson('session', session)
-                : session,
-          }
-        : {}),
-      ...(annotations
-        ? {
-            annotations:
-              typeof annotations === 'string'
-                ? readAnnotations(annotations)
-                : annotations,
-          }
-        : {}),
-    }),
+}
+
+async function runBatch(args: ParsedArgs) {
+  const [manifest, ...extra] = args.positionals
+  if (!manifest || extra.length) {
+    throw new Error(
+      '`jb2capture batch` takes one manifest, right after the word: JSON, a path or -',
+    )
+  }
+  const defaults = captureOptions(args)
+  const captures = readBatch(manifest).map(entry =>
+    batchCapture(defaults, entry),
   )
   const start = performance.now()
   const results = await captureBatch(captures, {
@@ -245,23 +233,9 @@ async function main() {
     throw new Error('--out <file.png> is required (or use `jb2capture url`)')
   }
   const { url, tooLarge, unsettled } = await captureJBrowse({
-    ...urlOptions(args),
+    ...captureOptions(args),
     out: args.out,
-    width: args.width,
-    height: args.height,
-    dpr: args.dpr,
-    fullPage: args.fullPage,
-    annotations: args.annotations
-      ? readAnnotations(args.annotations)
-      : undefined,
     headless: !args.headed,
-    timeout: args.timeout,
-    allowUnsettled: args.allowUnsettled,
-    onConsole: args.verbose
-      ? text => {
-          console.error(`  [page] ${text}`)
-        }
-      : undefined,
   })
   console.log(`wrote ${args.out}`)
   console.log(`from  ${url}`)

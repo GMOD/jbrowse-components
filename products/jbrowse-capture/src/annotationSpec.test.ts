@@ -64,3 +64,36 @@ test('an anchor key the overlay does not read is refused, not ignored', () => {
     ])
   }).toThrow('anchor key(s) track, locus not recognized')
 })
+
+test.each<[string, Annotation, string]>([
+  [
+    'a locus with no coordinates',
+    { type: 'box', anchor: { loc: 'chr1' } },
+    'is not <refName>:<start>',
+  ],
+  [
+    'a malformed tail locus',
+    { type: 'arrow', anchor, fromAnchor: { loc: 'chr1:a-b' } },
+    'is not <refName>:<start>',
+  ],
+  [
+    'a residue with no chain',
+    { type: 'circle', anchor: { residue: '6' } },
+    'is not <chain>:<number>',
+  ],
+  [
+    'a feature with no track',
+    { type: 'box', anchor: { feature: 'BRCA1' } },
+    'needs the trackId of the track that drew "BRCA1"',
+  ],
+])('%s fails before a browser launches', (_name, annotation, why) => {
+  expect(() => {
+    assertValidAnnotations([annotation])
+  }).toThrow(why)
+})
+
+test('a dotplot axis takes a bare refName', () => {
+  expect(() => {
+    assertValidAnnotations([{ type: 'box', anchor: { hLoc: 'chr4' } }])
+  }).not.toThrow()
+})

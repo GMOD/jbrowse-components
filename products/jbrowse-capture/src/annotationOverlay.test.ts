@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { parseAnnotationLocus } from './annotationOverlay.ts'
+import { parseAnchorLocus, parseAnnotationLocus } from './annotationOverlay.ts'
 
 // 1-based inclusive in, interbase out.
 test('a range keeps both of its ends', () => {
@@ -46,4 +46,13 @@ test('a locus with no coordinates is an error, not a silent zero', () => {
   expect(() => parseAnnotationLocus('ctgA:start-end')).toThrow(
     /is not <refName>/,
   )
+})
+
+test('a dotplot axis may name a whole refName, and a box wraps its one base', () => {
+  expect(parseAnchorLocus('4A')).toEqual({ refName: '4A' })
+  expect(parseAnchorLocus('4A:2,500,000', true)).toEqual({
+    refName: '4A',
+    start: 2499999,
+    end: 2500000,
+  })
 })

@@ -26,6 +26,7 @@ export {
   findChromeExecutable,
   isBrowserConsoleNoise,
   launchBrowser,
+  userAgentArgs,
 } from './browser.ts'
 
 export type { Annotation, AnnotationAnchor } from './annotationOverlay.ts'

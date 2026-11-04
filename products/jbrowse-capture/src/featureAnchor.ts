@@ -1,4 +1,4 @@
-import { parseAnnotationLocus } from './annotationOverlay.ts'
+import { parseAnnotationLocus, viewPathOf } from './annotationOverlay.ts'
 
 import type { AnnotationAnchor, AnnotationRegion } from './annotationOverlay.ts'
 import type { ViewportRect } from './graphAnchor.ts'
@@ -87,7 +87,7 @@ async function featureBox(page: Page, anchor: AnnotationAnchor) {
     ? undefined
     : page.evaluate(
         featureRectInPage,
-        Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0],
+        viewPathOf(anchor),
         anchor.trackId,
         anchor.feature,
         anchor.loc ? parseAnnotationLocus(anchor.loc, true) : undefined,

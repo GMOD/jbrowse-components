@@ -1,4 +1,5 @@
-import { ANNOTATION_TYPES } from './annotationOverlay.ts'
+import { ANNOTATION_TYPES, parseAnnotationLocus } from './annotationOverlay.ts'
+import { parseResidue } from './structureAnchor.ts'
 
 import type { Annotation, AnnotationAnchor } from './annotationOverlay.ts'
 
@@ -28,6 +29,33 @@ function unknownAnchorKeys(a: Annotation) {
     Object.keys(anchor ?? {}).filter(k => !ANCHOR_KEYS.has(k)),
   )
 }
+
+function thrown(check: () => unknown) {
+  try {
+    check()
+    return undefined
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error)
+  }
+}
+
+// what parses only once the page has drawn, checked here instead
+function anchorProblem({ loc, residue, feature, trackId }: AnnotationAnchor) {
+  return feature !== undefined && trackId === undefined
+    ? `a feature anchor needs the trackId of the track that drew "${feature}"`
+    : ((loc === undefined
+        ? undefined
+        : thrown(() => parseAnnotationLocus(loc))) ??
+        (residue === undefined
+          ? undefined
+          : thrown(() => parseResidue(residue))))
+}
+
+const anchorProblems = (a: Annotation) =>
+  [a.anchor, a.fromAnchor].flatMap(anchor => {
+    const problem = anchor && anchorProblem(anchor)
+    return problem ? [problem] : []
+  })
 
 const isNumber = (n: unknown) => typeof n === 'number' && Number.isFinite(n)
 
@@ -70,12 +98,15 @@ function missing(a: Annotation) {
 export function assertValidAnnotations(annotations: Annotation[]) {
   const problems = (annotations as (Annotation | null)[]).flatMap((a, i) => {
     const unknown = a ? unknownAnchorKeys(a) : []
+    const malformed = a ? anchorProblems(a) : []
     const why =
       unknown.length > 0
         ? `anchor key(s) ${unknown.join(', ')} not recognized; the keys are ${[...ANCHOR_KEYS].join(', ')}`
-        : a
-          ? missing(a)
-          : 'a callout must be an object'
+        : malformed.length > 0
+          ? malformed.join('; ')
+          : a
+            ? missing(a)
+            : 'a callout must be an object'
     return why ? [`annotation ${i}: ${why}`] : []
   })
   if (problems.length > 0) {
