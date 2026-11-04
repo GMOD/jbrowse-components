@@ -28,7 +28,14 @@ export const GUIDE_THUMB_OVERRIDES: Record<string, ThumbSpec> = {
     position: 'center',
   },
   basic_usage: { src: 'lgv_usage_guide.png', band: DEFAULT_BAND },
-  blat: { src: 'desktop-ispcr-results.png', band: DEFAULT_BAND },
+  // the result window: the hit list beside both hits, HBG2's clean and its
+  // paralog HBG1's ticked with mismatches
+  blat: {
+    src: 'desktop-blat-steps.png',
+    band: [0.03, 0.97],
+    xband: [0.505, 0.99],
+    position: 'left',
+  },
   circular_view: {
     src: 'circular_view/tumor_normal_rings.png',
     band: DEFAULT_BAND,
@@ -43,7 +50,6 @@ export const GUIDE_THUMB_OVERRIDES: Record<string, ThumbSpec> = {
     xband: [0.36, 0.995],
     position: 'center',
   },
-  highlights: { src: 'highlight_list_edit_label.png', band: DEFAULT_BAND },
   linear_synteny_view: {
     src: 'synteny_human_chimp_cigar_modes.png',
     band: DEFAULT_BAND,

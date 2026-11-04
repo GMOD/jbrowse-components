@@ -55,7 +55,7 @@ BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the
 best hit's row.
 
-<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit opened from the Search results list."/>
+<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a stretch of HBG2 pasted (1), and its hits on HBG2 and on the paralog HBG1, whose ticks mark the bases that differ."/>
 
 Pasting FASTA searches each record separately, up to 25 records, 25 kb in any
 one record and 50 kb across the submission. Each record keeps its name, so hits

@@ -109,14 +109,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   dog10k_svs: {
-    // the FGF4 retrocopy stack: two pink synteny ribbons with the parent gene's
-    // genotype blocks between them. The amylase and NHEJ1 panels both carry a
-    // callout arrow across the middle of the frame, so no crop of either clears
-    // the paint without also cutting the blocks; this figure keeps its callouts
-    // in the left margin, which xband drops.
+    // the whole three-level stack: both retrocopies' ribbons onto the parent
+    // gene, the deletion genotypes between, and the callouts naming each level
     src: 'dog10k-fgf4-retrogene-synteny.png',
-    band: [0.16, 0.95],
-    xband: [0.22, 1],
+    band: [0.04, 1],
   },
   local_ancestry: {
     // the haplotype rows and their breed labels, past the app header
@@ -125,12 +121,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   gene_prediction_review: {
-    // Both annotation lanes past the app header: the Tiberius model running
-    // unbroken over the two GENCODE genes is the whole card, and it only reads
-    // with the reference lane under it.
+    // both annotation tracks, with the Tiberius model running unbroken over the
+    // two GENCODE genes the pills name
     src: 'gene_prediction_merge.png',
-    band: [0.3, 0.85],
-    // Keeps the two track names, which are what say which lane is which.
+    band: [0.07, 1],
     position: 'left',
   },
   rnaseq: {
@@ -534,14 +528,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   tcga_cohort_mutations: {
-    // the histology-grouped CDH1 matrix: everything under the navigation row,
-    // so the card carries the exons, the connector fan and the whole row stack
-    // with its dense lobular band at the bottom. A tighter band on the bands
-    // themselves is much wider than 5:3, so the cover-crop would keep a sixth
-    // of the width and the card would be mostly empty gray.
-    src: 'tcga/mutations_cdh1_histology.png',
-    band: [0.175, 1],
-    position: 'center',
+    // the genome-wide recurrence rows, a different gene tallest in each subtype,
+    // from the row names to chr19
+    src: 'tcga/mutation_recurrence_genome.png',
+    band: [0.07, 1],
+    position: 'left',
   },
   // The 2504-row cohort heatmap rather than the page's hero, left of the
   // CCL3L1 / CCL4L1 pill.

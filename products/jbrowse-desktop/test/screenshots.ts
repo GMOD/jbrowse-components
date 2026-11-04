@@ -11,7 +11,7 @@ import { tmpdir } from 'os'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
-import { By, WebDriver, until } from 'selenium-webdriver'
+import { By, Key, WebDriver, until } from 'selenium-webdriver'
 
 import { clearAnnotations, drawAnnotations } from './annotations.ts'
 import {
@@ -248,16 +248,18 @@ async function blurActiveElement(driver: WebDriver): Promise<void> {
   await driver.executeScript(`document.activeElement?.blur()`)
 }
 
-// The query the BLAT dialog submits, which MOCK_BLAT_RESPONSE then claims to
-// have placed — so it has to be the sequence that claim describes, not an
-// arbitrary string. It is hg19 chr17:7,579,839-7,579,985 (the mock's own primary
-// hit) with two substitutions, giving the 147 bases and 145/2 match/mismatch
-// split the mock reports. The results track carries this text as its SAM SEQ and
-// the pileup compares it against the real reference base by base, so a query of
-// the wrong length or the wrong bases renders as a wall of mismatches under a
-// hit labelled "98.7% identity".
+// The query the BLAT dialog submits, which MOCK_BLAT_RESPONSE answers: hg19
+// chr11:5,274,961-5,275,495, a stretch of HBG2. Its paralog HBG1 sits 5 kb
+// away, so one view holds both hits and the reader can tell the query's own
+// locus (no mismatches) from the copy that only scores well (ticks and an
+// insertion). The results track carries this text as its SAM SEQ and the pileup
+// compares it against the real reference base by base, so a query of the wrong
+// length or bases renders as a wall of mismatches.
 const SAMPLE_SEQ =
-  'AGTTTCCATAGGTCTGAAAATGTTTCCTGACTCAGAGTGGGCTCGACGCTAGGATCTGACTGCGGCTCCTCCATGGCAGTGACCCGGAAGGCAGTCTGGCTGCTACAAGAGGAAAAGTGGGGATCCAGCATGAGACACTTCCAACCC'
+  'TCAAAATCTACTCCAGCCCAAATGTTTCAATTGTTCCTCACCCCTGGACATACTTTGCCCCCATCTGGAATTAAAGGATATAAGTTTGTAATGAAGCATTAGCAGCATTTTATATGTGTCCAGCTGATATAGGAATAGCCTTAGCAATGTATGTTTGGCCACCAAAGTTCCCCACTTTGACTGAGCCAATATATGCCTTCTGCCTGCATCTTTTTAATGACCATACTTGTCCTGCCTCCAGATAGATGTTTTAAAACGAATAACAAAAATAGGGGAAAGGTGAAAGTTCTTTCTACCGAAATCTAATAAAGAAAAGTCATTTTCCTCATTTCCACCTCTCTTTTCTCAAAGTCAAAGTTGTCCATCTAGATTTTCAGAGGCACTCCTTAGGCCCTAAAACATTGCCACTGGGTCTCAGCCCAGTTAGTCCTCTGCAGTTTCTTCACTCCCAACCCCAGTATCTTCAAACAGCTCACACCCTGCTGTGCTCAGATCAATACTCAGTTGTCTAAGTTGCCTCGAGACTAAAGGCAAC'
+
+// Both hits with their genes above, the HBG1 hit on the left.
+const BLAT_RESULT_LOC = 'chr11:5,269,700-5,275,800'
 
 // Track menu of the first track in the view (hg19's RefSeq lane) -> Gene glyph
 // -> Representative transcript. At the 205 bp the BLAT hit frames, "All
@@ -336,11 +338,10 @@ async function submitUcscQuery(driver: WebDriver): Promise<void> {
 // needs an account apiKey, so a result figure can't be captured against it;
 // pointing the dialog's "BLAT server URL" field here instead exercises the real
 // request → parse → on-the-fly track → navigate path with only UCSC's server
-// substituted. The body is a genuine hgBlat output=json response shape: a
-// strong 147bp hit over hg19 TP53 and a weaker partial hit on chr6. Both rows'
-// qSize is SAMPLE_SEQ's length, and their block coordinates have to add up to it
-// — the results track turns these into SAM, where a CIGAR that spans a different
-// number of query bases than SEQ carries is malformed.
+// substituted. The rows are standalone blat's answer for SAMPLE_SEQ against
+// hg19.2bit with the BLAT FAQ's web-matching settings (-stepSize=5
+// -repMatch=2253 -minScore=20 -minIdentity=0), in hgBlat's output=json shape,
+// the query renamed YourSeq as hgBlat names a headerless one.
 const MOCK_BLAT_RESPONSE = JSON.stringify({
   track: 'blat',
   genome: 'hg19',
@@ -369,9 +370,27 @@ const MOCK_BLAT_RESPONSE = JSON.stringify({
   ],
   blat: [
     // prettier-ignore
-    [145, 2, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 147, 0, 147, 'chr17', 81195210, 7579838, 7579985, 1, '147', '0', '7579838'],
+    [535, 0, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 535, 0, 535, 'chr11', 135006516, 5274960, 5275495, 1, '535', '0', '5274960'],
     // prettier-ignore
-    [61, 9, 0, 0, 1, 3, 1, 12, '-', 'YourSeq', 147, 20, 90, 'chr6', 171115067, 36646200, 36646282, 2, '40,30', '20,63', '36646200,36646252'],
+    [520, 11, 0, 0, 1, 4, 0, 0, '+', 'YourSeq', 535, 0, 535, 'chr11', 135006516, 5270040, 5270571, 2, '257,274', '0,261', '5270040,5270297'],
+    // prettier-ignore
+    [27, 0, 0, 0, 1, 13, 1, 5, '+', 'YourSeq', 535, 274, 314, 'chr2', 243199373, 18229005, 18229037, 2, '16,11', '274,303', '18229005,18229026'],
+    // prettier-ignore
+    [26, 1, 0, 0, 0, 0, 1, 9, '+', 'YourSeq', 535, 97, 124, 'chr7', 159138663, 7120656, 7120692, 2, '10,17', '97,107', '7120656,7120675'],
+    // prettier-ignore
+    [25, 0, 0, 0, 0, 0, 1, 11, '-', 'YourSeq', 535, 193, 218, 'chr5', 180915260, 68066556, 68066592, 2, '7,18', '317,324', '68066556,68066574'],
+    // prettier-ignore
+    [24, 0, 0, 0, 0, 0, 1, 10, '-', 'YourSeq', 535, 427, 451, 'chr9', 141213431, 72951475, 72951509, 2, '17,7', '84,101', '72951475,72951502'],
+    // prettier-ignore
+    [22, 0, 0, 0, 0, 0, 1, 1, '-', 'YourSeq', 535, 338, 360, 'chr8', 146364022, 107593668, 107593691, 2, '4,18', '175,179', '107593668,107593673'],
+    // prettier-ignore
+    [21, 1, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 535, 187, 209, 'chr2', 243199373, 145418850, 145418872, 1, '22', '187', '145418850'],
+    // prettier-ignore
+    [21, 1, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 535, 215, 237, 'chr1', 249250621, 57118314, 57118336, 1, '22', '215', '57118314'],
+    // prettier-ignore
+    [21, 1, 0, 0, 0, 0, 0, 0, '-', 'YourSeq', 535, 252, 274, 'chr15', 102531392, 94829565, 94829587, 1, '22', '261', '94829565'],
+    // prettier-ignore
+    [20, 0, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 535, 183, 203, 'chr13', 115169878, 61100535, 61100555, 1, '20', '183', '61100535'],
   ],
 })
 
@@ -521,6 +540,32 @@ async function openFirstResult(
   await driver.executeScript('arguments[0].click();', link)
 }
 
+// Types a locus into the view's location box, as a reader widens or moves the
+// view, and blocks until the view is there. visibleLocStrings reads
+// `chr11:5,269,700..5,275,800` with its ends snapped to whole pixels, so the
+// start is matched to within a few hundred bases.
+async function typeLocation(driver: WebDriver, loc: string): Promise<void> {
+  const searchInput = await driver.wait(
+    until.elementLocated(By.css('input[placeholder="Search for location"]')),
+    10000,
+  )
+  await clearInput(driver, searchInput)
+  await searchInput.sendKeys(loc, Key.ENTER)
+  const [refName, range] = loc.split(':') as [string, string]
+  const start = Number(range.split('-')[0]!.replaceAll(',', ''))
+  const startOf = (visible: string) =>
+    Number(/:([\d,]+)\.\./.exec(visible)?.[1]?.replaceAll(',', ''))
+  const arrived = (visible: string) =>
+    visible.startsWith(`${refName}:`) &&
+    Math.abs(startOf(visible) - start) < 300
+  const moved = await waitForSession(driver, s => s.locStrings.some(arrived))
+  if (!moved?.locStrings.some(arrived)) {
+    throw new Error(
+      `typing ${loc} left the view at ${moved?.locStrings.join('; ')}`,
+    )
+  }
+}
+
 // In-silico PCR gets its own hg19 visit: the result state has a track and a moved
 // view, so the pristine dialog and the BLAT figures cannot share a session with
 // it.
@@ -654,16 +699,20 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   if (!probe.widgetTypes.includes('UcscResultsWidget')) {
     throw new Error(`BLAT opened no results widget: ${probe.widgetTypes}`)
   }
-  await openFirstResult(driver, 'chr17:7579839')
+  await openFirstResult(driver, 'chr11:5274961')
   const navigated = await waitForSession(driver, s =>
-    s.locStrings.some(loc => loc.includes('chr17')),
+    s.locStrings.some(loc => loc.includes('chr11')),
   )
-  if (!navigated?.locStrings.some(loc => loc.includes('chr17'))) {
+  if (!navigated?.locStrings.some(loc => loc.includes('chr11'))) {
     throw new Error(
       `clicking the hit left the view at ${navigated?.locStrings.join('; ')}`,
     )
   }
   await waitForAppReady(driver) // the new track fetches and paints
+  // the reader widens from the best hit to take in the paralog's hit too
+  await typeLocation(driver, BLAT_RESULT_LOC)
+  await blurActiveElement(driver)
+  await waitForAppReady(driver)
   await collapseGeneGlyph(driver)
   await waitForAppReady(driver)
   // last, because collapsing the glyph is itself a height change: the span has

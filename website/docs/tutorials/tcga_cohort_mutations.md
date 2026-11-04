@@ -310,6 +310,10 @@ per group.
 }
 ```
 
+Across the genome, each row's spikes are the genes that subtype mutates most.
+
+<Figure caption="Mutation rate per gene across the genome, one row per receptor subtype." src="/img/tcga/mutation_recurrence_genome.png" />
+
 Open the track above the matrix to read each band's rate over it.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers

@@ -739,6 +739,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr18',
     readyTimeout: 90000,
+    // 5:3 below the app bar, so the tutorial card shows all three levels
+    viewportWidth: 1800,
     viewportHeight: 1128,
     annotations: [
       {

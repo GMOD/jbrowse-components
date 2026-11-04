@@ -1263,6 +1263,54 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The beta-globin cluster in developmental order: the LCR's enhancers, the
+  // fetal pair, the adult pair. The cCRE lane is what shows the LCR is there.
+  {
+    mode: 'url',
+    name: 'highlights_beta_globin',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr11:5,208,000-5,300,000',
+      tracks: [
+        { trackId: 'mane_hg38', height: 80 },
+        // the accessions crowd the bands' labels; the colors carry the class
+        {
+          trackId: 'encodeCcreCombined',
+          height: 50,
+          labels: { name: { show: false } },
+        },
+        { trackId: 'hg38.100way.phyloP100way', height: 100 },
+      ],
+      highlight: [
+        {
+          refName: 'chr11',
+          start: 5_225_000,
+          end: 5_234_600,
+          color: 'rgba(214, 39, 40, 0.18)',
+          label: 'adult: HBB, HBD',
+        },
+        {
+          refName: 'chr11',
+          start: 5_248_000,
+          end: 5_255_000,
+          color: 'rgba(31, 119, 180, 0.18)',
+          label: 'fetal: HBG1, HBG2',
+        },
+        {
+          refName: 'chr11',
+          start: 5_275_500,
+          end: 5_292_000,
+          color: 'rgba(44, 160, 44, 0.18)',
+          label: 'LCR',
+        },
+      ],
+    }),
+    readyText: 'MANE',
+    readyTimeout: 90000,
+    viewportWidth: 920,
+    viewportHeight: 520,
+  },
+
   {
     mode: 'url',
     name: 'highlight_list_edit_label',

@@ -27,6 +27,7 @@ const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 4
 // A label pointing at `fracY` of one subtype's row at `locus`, its near edge
 // `labelDx` off it and its middle `labelRows` of a row's height off it.
 function subtypeCallout({
+  trackId,
   text,
   locus,
   row,
@@ -34,6 +35,7 @@ function subtypeCallout({
   labelRows,
   labelDx,
 }: {
+  trackId: string
   text: string
   locus: string
   row: string
@@ -48,7 +50,7 @@ function subtypeCallout({
     maxWidth: 240,
     leader: true,
     anchor: {
-      trackId: 'tcga_brca_cnv_recurrence_by_subtype',
+      trackId,
       row,
       loc: locus,
       fracY,
@@ -122,6 +124,13 @@ const COHORT_TRACK_ID = 'tcga_brca_cnv'
 const MUTATIONS_DOC = 'tutorials/tcga_cohort_mutations.md'
 const HISTOLOGY_SECTION = 'Facet the rows by clinical annotation'
 const SUBTYPE_SECTION = 'Facet rows by receptor subtype'
+
+const MUTATION_RECURRENCE_TRACK_ID = 'tcga_brca_mutation_recurrence_by_subtype'
+
+const MUTATION_RECURRENCE_BY_SUBTYPE_TRACK = pageTrack(
+  MUTATIONS_DOC,
+  MUTATION_RECURRENCE_TRACK_ID,
+)
 
 const MATRIX_DONE = displayPainted('variant-matrix-display')
 
@@ -375,6 +384,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     annotations: [
       // right of the locus, over chr18-22 where the HER2+ row is flat
       subtypeCallout({
+        trackId: 'tcga_brca_cnv_recurrence_by_subtype',
         text: 'ERBB2 (17q12)',
         locus: '17:39,688,094',
         row: 'HER2+',
@@ -383,6 +393,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         labelDx: 60,
       }),
       subtypeCallout({
+        trackId: 'tcga_brca_cnv_recurrence_by_subtype',
         text: '16q loss (CDH1 arm)',
         locus: '16:70,000,000',
         row: 'HR+/HER2-',
@@ -458,4 +469,53 @@ export const tcgaSpecs: ScreenshotSpec[] = [
 
   // TP53 by subtype at half a pixel per row draws its density difference as a
   // wash; mutations_cdh1_histology carries the grouping.
+
+  // The recurrence rows genome-wide, where one interval per gene draws as a
+  // spike per mutated gene and each subtype's tallest spike is a different one.
+  {
+    mode: 'url',
+    name: 'tcga/mutation_recurrence_genome',
+    url: sessionSpec(KG_CONFIG, {
+      sessionTracks: [MUTATION_RECURRENCE_BY_SUBTYPE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          displayedRegionNames: HG38_MAIN_CHROMS,
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: MUTATION_RECURRENCE_TRACK_ID,
+              height: SUBTYPE_ROWS_HEIGHT,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('wiggle-display'),
+    readyTimeout: 180000,
+    viewportWidth: 1300,
+    viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
+    annotations: [
+      subtypeCallout({
+        trackId: MUTATION_RECURRENCE_TRACK_ID,
+        text: 'TP53',
+        locus: '17:7,670,683',
+        row: 'triple-negative',
+        fracY: 0.2,
+        labelRows: 0,
+        // left of the spike, so the card's crop at chr19 keeps it
+        labelDx: -150,
+      }),
+      subtypeCallout({
+        trackId: MUTATION_RECURRENCE_TRACK_ID,
+        text: 'PIK3CA',
+        locus: '3:179,199,065',
+        row: 'HR+/HER2-',
+        fracY: 0.5,
+        labelRows: 0,
+        labelDx: 60,
+      }),
+    ],
+  },
 ]

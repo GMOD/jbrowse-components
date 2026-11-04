@@ -13,18 +13,20 @@ export const annotationSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'tiberius_grch38',
-          height: 110,
+          height: 90,
         },
         {
           trackId: 'gencode_47',
           filter: ['geneLike'],
-          height: 170,
+          height: 150,
         },
       ],
     }),
     readyText: 'Tiberius gene predictions',
     readyTimeout: 90000,
-    viewportHeight: 536,
+    // narrow, so the tutorial card's 5:3 crop keeps both models whole
+    viewportWidth: 1000,
+    viewportHeight: 520,
     // GENCODE labels its genes by accession, so the names the caption uses
     // are pills under them
     annotations: (
