@@ -58,12 +58,10 @@ function lines(
 }
 
 test('names both axes and their spans', () => {
-  expect(lines().slice(0, 5)).toEqual([
-    'x: {hg38}chr1:101..200',
-    'y: {mm10}chr5:301..450',
-    'Inverted: false',
-    'x len: 100',
-    'y len: 150',
+  expect(lines().slice(0, 3)).toEqual([
+    'hg38 chr1:101-200 (100 bp)',
+    'mm10 chr5:301-450 (150 bp)',
+    'Identity: 98.8%',
   ])
 })
 
@@ -75,11 +73,10 @@ test('reports reverse strand as inverted', () => {
     p11: new Float64Array([200]),
     p12: new Float64Array([100]),
   })
-  expect(lines(data).slice(0, 4)).toEqual([
-    'x: {hg38}chr1:101..200',
-    'y: {mm10}chr5:301..450',
-    'Inverted: true',
-    'x len: 100',
+  expect(lines(data).slice(0, 3)).toEqual([
+    'hg38 chr1:101-200 (100 bp)',
+    'mm10 chr5:301-450 (150 bp)',
+    'Inverted',
   ])
 })
 
@@ -89,7 +86,7 @@ test('reports reverse strand as inverted', () => {
 // track.
 test('the refName comes off the axis, not the fetch dictionary', () => {
   expect(lines()[0]).toContain('chr1')
-  expect(lines()[0]).not.toContain('{hg38}1:')
+  expect(lines()[0]).not.toContain('hg38 1:')
 })
 
 // pxToBp applies the reflection; both dotplot axes routinely carry reversed
@@ -103,14 +100,14 @@ test('a reversed region reports the mirrored coordinates', () => {
   // cumBp 300..450 measured leftward from the right-hand edge of a 0..1000
   // region
   expect(lines(fakeRpcData(), undefined, vview)[1]).toBe(
-    'y: {mm10}chr5:551..700',
+    'mm10 chr5:551-700 (150 bp)',
   )
 })
 
 // The span is where it is on the axis, not where the axis is scrolled to.
 test('a pan does not move the reported span', () => {
   const hview = axis({ assemblyName: 'hg38', refName: 'chr1', offsetPx: 137 })
-  expect(lines(fakeRpcData(), hview)[0]).toBe('x: {hg38}chr1:101..200')
+  expect(lines(fakeRpcData(), hview)[0]).toBe('hg38 chr1:101-200 (100 bp)')
 })
 
 // An alignment reaching its chromosome's end has an endpoint exactly on the
@@ -138,9 +135,8 @@ test.each([false, true])(
       p12: new Float64Array([1000]),
     })
     expect(lines(data, hview)[0]).toBe(
-      reversed ? 'x: {hg38}chr1:1..100' : 'x: {hg38}chr1:901..1,000',
+      reversed ? 'hg38 chr1:1-100 (100 bp)' : 'hg38 chr1:901-1,000 (100 bp)',
     )
-    expect(lines(data, hview)[3]).toBe('x len: 100')
   },
 )
 
@@ -172,8 +168,7 @@ test.each([
     p11: new Float64Array([10_182_444]),
     p12: new Float64Array([10_182_970]),
   })
-  expect(lines(data, hview)[0]).toBe('x: {hg38}chr1:10,182,445..10,182,970')
-  expect(lines(data, hview)[3]).toBe('x len: 526')
+  expect(lines(data, hview)[0]).toBe('hg38 chr1:10,182,445-10,182,970 (526 bp)')
 })
 
 describe('the lines a track may not have', () => {
@@ -182,13 +177,13 @@ describe('the lines a track may not have', () => {
       nameDict: ['BRCA1'],
       nameIds: new Uint32Array([0]),
     })
-    expect(lines(data)).toContain('Name: BRCA1')
+    expect(lines(data)[0]).toBe('hg38 BRCA1 chr1:101-200 (100 bp)')
   })
 
   // A PAF sets no name on any feature, so the dictionary the worker ships holds
   // one empty string — which is not a name and gets no line.
   test('says nothing when the name is empty', () => {
-    expect(lines().join(',')).not.toContain('Name:')
+    expect(lines()[0]).toBe('hg38 chr1:101-200 (100 bp)')
   })
 
   test('names the CIGAR operator under the cursor', () => {
@@ -211,7 +206,7 @@ describe('attributes', () => {
   // Labelled the way the legend labels the mode that paints each channel, not
   // by the wire name — `mappingQual: 60` was the tooltip reading out a buffer.
   test('lists every channel that has a value', () => {
-    expect(lines().slice(5)).toEqual(['Identity: 98.8%', 'Mapping quality: 60'])
+    expect(lines().slice(2)).toEqual(['Identity: 98.8%', 'Mapping quality: 60'])
   })
 
   // NaN is the worker's missing sentinel, so meanIdentity and dnds above are

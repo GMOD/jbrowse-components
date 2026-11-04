@@ -248,8 +248,8 @@ export {
   attributeTooltipLines,
   featureAttributes,
 } from './attributeTooltipLines.ts'
-export { comparativeTooltipLines } from './comparativeTooltipLines.ts'
-export type { ComparativeTooltipSide } from './comparativeTooltipLines.ts'
+export { blockAttributes, syntenyBlockLines } from './syntenyBlockLines.ts'
+export type { SyntenyBlockSide } from './syntenyBlockLines.ts'
 export {
   SYNTENY_FIELD_PRESETS,
   attributeOf,

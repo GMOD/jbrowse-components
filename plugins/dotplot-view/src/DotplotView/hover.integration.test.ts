@@ -154,7 +154,9 @@ test('the view resolves the tooltip and the highlight off the hovered track', as
   view.setHoveredFeature(pickAtBp(view, 1500, 1500))
 
   expect(view.hoveredTooltipLines).toEqual(a.tooltipLines)
-  expect(view.hoveredTooltipLines?.[0]).toBe('x: {volvox}ctgA:1,001..2,000')
+  expect(view.hoveredTooltipLines?.[0]).toBe(
+    'volvox ctgA:1,001-2,000 (1,000 bp)',
+  )
 
   const highlight = view.hoveredHighlight
   // one segment (no CIGAR detail), drawn between the feature's two corners

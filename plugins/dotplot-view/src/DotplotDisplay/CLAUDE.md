@@ -41,7 +41,7 @@
   `pxToBp`'s `offset`, never `coord0`**, which floors to an off-by-one that
   depends on zoom. Test it with a non-zero `offsetPx`.
 - **Every printed coordinate is 1-based.** `coord0` is for arithmetic only.
-- The tooltip's shape is `comparativeTooltipLines` in synteny-core, shared with
-  the synteny view; change it there.
+- The tooltip's shape is `syntenyBlockLines` in synteny-core, shared with the
+  synteny views; change it there.
 - Geometry stays absolute Float64 cumBp; the Float32 window-relative conversion
   happens at GPU upload only (`reference/BP_PRECISION.md`).

@@ -170,6 +170,7 @@ export function packSyntenyFeatureData(
         refName: b => b.refName ?? 'chr1',
         assemblyName: b => b.assembly ?? 'hg002mat',
         mateRefName: b => b.mateRefName ?? b.refName ?? 'chr1',
+        mateName: () => undefined,
         mateAssemblyName: b => b.mateAssembly ?? 'hg002pat',
       },
       list: {

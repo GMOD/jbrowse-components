@@ -93,10 +93,10 @@ export const SYNTENY_LANES = [
   {
     kind: 'string-dict',
     name: 'name',
-    axis: 'neither',
+    axis: 'query',
     sentinel: UNNAMED,
     rename: 'none',
-    doc: 'A gene symbol (an MCScan or ortholog-table row) or nothing at all — a PAF names no features, and the packers write `UNNAMED` so "is this record named" resolves through `unnamedNameId` rather than restating the convention.',
+    doc: 'The query side\'s gene symbol (an MCScan or ortholog-table row) or nothing at all — a PAF names no features, and the packers write `UNNAMED` so "is this record named" resolves through `unnamedNameId` rather than restating the convention.',
   },
   {
     kind: 'string-dict',
@@ -118,7 +118,7 @@ export const SYNTENY_LANES = [
     kind: 'u32',
     name: 'mateStarts',
     axis: 'mate',
-    doc: "Mate start in the mate contig's own bp, uint32 like `starts`. There is no mate name lane: the MCScan adapters set `mate.name`, but nothing drawn from these lanes reads it.",
+    doc: "Mate start in the mate contig's own bp, uint32 like `starts`.",
   },
   {
     kind: 'u32',
@@ -133,6 +133,14 @@ export const SYNTENY_LANES = [
     sentinel: undefined,
     rename: 'target',
     doc: "The contig on the target axis — the new information a synteny feature carries, about a region nobody requested. It arrives in the file's spelling and is rewritten into the TARGET assembly's canonical namespace.",
+  },
+  {
+    kind: 'string-dict',
+    name: 'mateName',
+    axis: 'mate',
+    sentinel: UNNAMED,
+    rename: 'none',
+    doc: "The mate side's gene symbol, the ortholog an MCScan or ortholog-table row pairs `name` with, which the hover names; `UNNAMED` for a PAF, as `name` is.",
   },
   {
     kind: 'string-dict',

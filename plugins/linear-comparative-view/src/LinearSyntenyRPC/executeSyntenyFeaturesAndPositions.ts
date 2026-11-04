@@ -376,11 +376,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const refNameIds = new Uint32Array(count)
   const assemblyNameIds = new Uint32Array(count)
   const mateRefNameIds = new Uint32Array(count)
+  const mateNameIds = new Uint32Array(count)
   const mateAssemblyNameIds = new Uint32Array(count)
   const nameDict = makeStringDict()
   const refNameDict = makeStringDict()
   const assemblyNameDict = makeStringDict()
   const mateRefNameDict = makeStringDict()
+  const mateNameDict = makeStringDict()
   const mateAssemblyNameDict = makeStringDict()
   const parsedCigars: Uint32Array[] = []
   let hasCigar = false
@@ -642,6 +644,7 @@ export async function executeSyntenyFeaturesAndPositions({
       (f.get('assemblyName') as string | undefined) ?? '',
     )
     mateRefNameIds[validCount] = mateRefNameDict.idFor(mateRefName)
+    mateNameIds[validCount] = mateNameDict.idFor(mate.name ?? UNNAMED)
     mateAssemblyNameIds[validCount] = mateAssemblyNameDict.idFor(
       mate.assemblyName,
     )
@@ -694,6 +697,8 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEnds: mateEndsArray.subarray(0, validCount),
     mateRefNameDict: mateRefNameDict.dict,
     mateRefNameIds: mateRefNameIds.subarray(0, validCount),
+    mateNameDict: mateNameDict.dict,
+    mateNameIds: mateNameIds.subarray(0, validCount),
     mateAssemblyNameDict: mateAssemblyNameDict.dict,
     mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),
     hasCigar,

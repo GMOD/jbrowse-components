@@ -1,5 +1,5 @@
-import { assembleLocString } from '@jbrowse/core/util'
-import { comparativeTooltipLines } from '@jbrowse/synteny-core'
+import { toLocale } from '@jbrowse/core/util'
+import { syntenyBlockLines } from '@jbrowse/synteny-core'
 
 import {
   KIND_CIGAR_D,
@@ -52,39 +52,34 @@ export function getCigarOpAtInstance(
 }
 
 // The hovered ribbon's tooltip, as LINES rather than a `<br/>`-joined HTML
-// string. This used to be one string, which bought a `SanitizedHTML` on the
-// render path to undo the join. The shape is `comparativeTooltipLines`, shared
-// with the dotplot's `getDotplotTooltipLines`; all this side decides is that
-// its two sides are the two rows, named for which assembly each one is.
+// string, which `ComparativeTooltip` renders as text nodes. The block's
+// description is synteny-core's, which the linear view's synteny hover shows
+// too, so one block reads the same in both; this view adds the CIGAR operator
+// under the cursor.
 export function getTooltipLines(feat: FeatPos, cigarOp?: CigarOpInfo) {
-  return comparativeTooltipLines({
-    sides: [
-      {
-        label: 'Loc1',
-        lengthLabel: 'Query len',
-        loc: assembleLocString({
+  return [
+    ...syntenyBlockLines({
+      sides: [
+        {
+          assemblyName: feat.assemblyName,
+          name: feat.name,
           refName: feat.refName,
           start: feat.start,
           end: feat.end,
-          assemblyName: feat.assemblyName,
-        }),
-        length: feat.end - feat.start,
-      },
-      {
-        label: 'Loc2',
-        lengthLabel: 'Target len',
-        loc: assembleLocString({
+        },
+        {
+          assemblyName: feat.mate.assemblyName,
+          name: feat.mate.name,
           refName: feat.mate.refName,
           start: feat.mate.start,
           end: feat.mate.end,
-          assemblyName: feat.mate.assemblyName,
-        }),
-        length: feat.mate.end - feat.mate.start,
-      },
-    ],
-    inverted: feat.strand === -1,
-    attributes: feat.attributes,
-    cigarOp,
-    name: feat.name,
-  })
+        },
+      ],
+      inverted: feat.strand === -1,
+      attributes: feat.attributes,
+    }),
+    ...(cigarOp
+      ? [`CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}`]
+      : []),
+  ]
 }

@@ -1,12 +1,9 @@
-import { assembleLocString, minmax } from '@jbrowse/core/util'
-import {
-  comparativeTooltipLines,
-  featureAttributes,
-} from '@jbrowse/synteny-core'
+import { minmax, toLocale } from '@jbrowse/core/util'
+import { featureAttributes, syntenyBlockLines } from '@jbrowse/synteny-core'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { ComparativeTooltipSide } from '@jbrowse/synteny-core'
+import type { SyntenyBlockSide } from '@jbrowse/synteny-core'
 
 // One axis' span of a feature, from the two absolute cumBp endpoints the
 // geometry was built from.
@@ -41,19 +38,14 @@ import type { ComparativeTooltipSide } from '@jbrowse/synteny-core'
 // including pixels off the end of the region — and wrong for reading back a
 // coordinate that was exact on the way in.
 //
-// `assembleLocString`, the same 1-based spelling the synteny tooltip and every
-// other coordinate in the app use — not a hand-rolled `refName:start-end`,
-// which printed the interbase start and so read one lower than both the axis
-// ruler beside it and the nav box a user pastes it into. Its fields are named
-// explicitly rather than spread from the `pxToBp` result, which carries the
-// region's `reversed` and would append a `[rev]` describing the axis rather
+// The side's fields are named explicitly rather than spread from the `pxToBp`
+// result, which carries the region's `reversed`, a fact about the axis rather
 // than the alignment.
 function axisSpan(
-  label: string,
   cumBpA: number,
   cumBpB: number,
   view: Dotplot1DViewModel,
-): ComparativeTooltipSide {
+): SyntenyBlockSide {
   const { bpPerPx, offsetPx } = view
   const midCumBp = (cumBpA + cumBpB) / 2
   const r = view.pxToBp(midCumBp / bpPerPx - offsetPx)
@@ -63,25 +55,14 @@ function axisSpan(
     return Math.round(r.reversed ? r.end - offset : r.start + offset)
   }
   const [start, end] = minmax(coord(cumBpA), coord(cumBpB))
-  return {
-    label,
-    loc: assembleLocString({
-      assemblyName: r.assemblyName,
-      refName: r.refName,
-      start,
-      end,
-    }),
-    length: end - start,
-  }
+  return { assemblyName: r.assemblyName, refName: r.refName, start, end }
 }
 
 /**
- * The hover tooltip for one dotplot feature, as lines.
- *
- * The shape — two locations, inverted, two lengths, the numeric channels, the
- * CIGAR operator, the name — comes off `comparativeTooltipLines`, shared with
- * the synteny display so the pair cannot drift again. All this side decides is
- * that its two sides are called x and y.
+ * The hover tooltip for one dotplot feature, as lines: synteny-core's block
+ * description, which the synteny views show too, so one block reads the same
+ * in every view, and the CIGAR operator under the cursor. The x side carries
+ * the record's name; the dotplot packs no mate name.
  *
  * The two spans are the DRAWN ones (the trimmed cumBp endpoints), not
  * `alignmentLengths` — that is the feature's full reference span, which on a
@@ -105,16 +86,21 @@ export function getDotplotTooltipLines({
   cigarOp?: { op: string; length: number }
 }) {
   const { p11, p12, p21, p22, strands, attributes, nameDict, nameIds } = rpcData
-  return comparativeTooltipLines({
-    sides: [
-      axisSpan('x', p11[featureIdx]!, p12[featureIdx]!, hview),
-      axisSpan('y', p21[featureIdx]!, p22[featureIdx]!, vview),
-    ],
-    inverted: strands[featureIdx] === -1,
-    attributes: featureAttributes(attributes, featureIdx),
-    cigarOp,
-    // A PAF names no feature, so the dictionary holds one empty string and the
-    // Name line never appears.
-    name: nameDict[nameIds[featureIdx]!],
-  })
+  return [
+    ...syntenyBlockLines({
+      sides: [
+        {
+          ...axisSpan(p11[featureIdx]!, p12[featureIdx]!, hview),
+          // a PAF names no feature, so this is the empty `UNNAMED`
+          name: nameDict[nameIds[featureIdx]!],
+        },
+        axisSpan(p21[featureIdx]!, p22[featureIdx]!, vview),
+      ],
+      inverted: strands[featureIdx] === -1,
+      attributes: featureAttributes(attributes, featureIdx),
+    }),
+    ...(cigarOp
+      ? [`CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}`]
+      : []),
+  ]
 }

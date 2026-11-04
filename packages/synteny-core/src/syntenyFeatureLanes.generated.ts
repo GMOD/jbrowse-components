@@ -33,10 +33,10 @@ export interface SyntenyFeatureLanes {
    */
   featureIds: string[]
   /**
-   * A gene symbol (an MCScan or ortholog-table row) or nothing at all — a PAF
-   * names no features, and the packers write `UNNAMED` so "is this record
-   * named" resolves through `unnamedNameId` rather than restating the
-   * convention.
+   * The query side's gene symbol (an MCScan or ortholog-table row) or nothing
+   * at all — a PAF names no features, and the packers write `UNNAMED` so "is
+   * this record named" resolves through `unnamedNameId` rather than restating
+   * the convention.
    */
   nameDict: string[]
   nameIds: Uint32Array
@@ -57,9 +57,7 @@ export interface SyntenyFeatureLanes {
   assemblyNameDict: string[]
   assemblyNameIds: Uint32Array
   /**
-   * Mate start in the mate contig's own bp, uint32 like `starts`. There is no
-   * mate name lane: the MCScan adapters set `mate.name`, but nothing drawn from
-   * these lanes reads it.
+   * Mate start in the mate contig's own bp, uint32 like `starts`.
    */
   mateStarts: Uint32Array
   /**
@@ -73,6 +71,13 @@ export interface SyntenyFeatureLanes {
    */
   mateRefNameDict: string[]
   mateRefNameIds: Uint32Array
+  /**
+   * The mate side's gene symbol, the ortholog an MCScan or ortholog-table row
+   * pairs `name` with, which the hover names; `UNNAMED` for a PAF, as `name`
+   * is.
+   */
+  mateNameDict: string[]
+  mateNameIds: Uint32Array
   /**
    * The mate's assembly: the adapter's `assemblyNames[]` config text, verbatim.
    * Canonicalized through `getCanonicalAssemblyName` because

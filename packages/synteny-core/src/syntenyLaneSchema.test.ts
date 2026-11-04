@@ -34,6 +34,7 @@ function pack(rows: Row[]) {
       refName: r => r.refName,
       assemblyName: r => r.asm,
       mateRefName: r => r.mateRefName,
+      mateName: () => undefined,
       mateAssemblyName: r => r.mateAsm,
     },
     list: {
@@ -140,6 +141,8 @@ test('every dict lane names its payload field pair', () => {
     'assemblyNameIds',
     'mateRefNameDict',
     'mateRefNameIds',
+    'mateNameDict',
+    'mateNameIds',
     'mateAssemblyNameDict',
     'mateAssemblyNameIds',
   ])

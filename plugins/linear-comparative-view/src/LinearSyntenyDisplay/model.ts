@@ -107,6 +107,9 @@ export interface FeatPos {
     end: number
     refName: string
     assemblyName: string
+    // the ortholog an MCScan or ortholog-table row pairs `name` with; '' (the
+    // packed `UNNAMED`) or absent where the source names none
+    name?: string
   }
   // Every numeric channel this feature carried a value for, keyed by channel
   // name — not `identity` alone, which is what the tooltip and the feature
@@ -152,6 +155,7 @@ export function getFeatureAtIndex(
       end: data.mateEnds[i]!,
       refName: data.mateRefNameDict[data.mateRefNameIds[i]!]!,
       assemblyName: data.mateAssemblyNameDict[data.mateAssemblyNameIds[i]!]!,
+      name: data.mateNameDict[data.mateNameIds[i]!]!,
     },
     attributes: featureAttributes(data.attributes, i),
   }

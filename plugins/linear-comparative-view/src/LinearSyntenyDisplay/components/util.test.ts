@@ -69,7 +69,13 @@ test('getTooltipLines appends the CIGAR operator line only when given one', () =
     start: 100,
     end: 200,
     assemblyName: 'hg38',
-    mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    mate: {
+      start: 300,
+      end: 380,
+      refName: 'chr2',
+      assemblyName: 'mm10',
+      name: '',
+    },
     attributes: {},
   }
   expect(getTooltipLines(feat)).not.toContain('CIGAR operator: 50D')
@@ -91,17 +97,22 @@ test('getTooltipLines emits no markup, and drops the lines it has no value for',
     start: 100,
     end: 200,
     assemblyName: 'hg38',
-    mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    mate: {
+      start: 300,
+      end: 380,
+      refName: 'chr2',
+      assemblyName: 'mm10',
+      name: '',
+    },
     attributes: {},
   }
   const lines = getTooltipLines(feat)
   expect(lines.some(l => l.includes('<br'))).toBe(false)
   // the hostile refName rides through verbatim, as text
   expect(lines[0]).toContain('<img src=x onerror=alert(1)>')
-  // no identity and no name on this feature, so neither line is emitted
+  // no identity on this feature, so no line is emitted for it
   expect(lines.some(l => l.startsWith('Identity:'))).toBe(false)
-  expect(lines.some(l => l.startsWith('Name:'))).toBe(false)
-  expect(lines).toContain('Inverted: true')
+  expect(lines).toContain('Inverted')
 })
 
 // It listed identity and nothing else, while the fetch carried mapping quality,
@@ -117,13 +128,47 @@ test('getTooltipLines lists every numeric channel the feature carries', () => {
     start: 100,
     end: 200,
     assemblyName: 'hg38',
-    mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    mate: {
+      start: 300,
+      end: 380,
+      refName: 'chr2',
+      assemblyName: 'mm10',
+      name: '',
+    },
     attributes: { identity: 0.987, mappingQual: 60, ka_ks: 1.5 },
   }
   const lines = getTooltipLines(feat)
   expect(lines).toContain('Identity: 98.7%')
   expect(lines).toContain('Mapping quality: 60')
   expect(lines).toContain('ka_ks: 1.5')
-  // still last, after the channels
-  expect(lines.at(-1)).toBe('Name: gene1')
+})
+
+// one block reads the same here as in the linear view's synteny hover: each
+// side's assembly, gene and span, with no arrow between two genes that have no
+// direction
+test('getTooltipLines names each side of an ortholog pair on its own line', () => {
+  const feat: FeatPos = {
+    id: 'f1',
+    lodTier: 'fine',
+    strand: -1,
+    name: 'FGFR2',
+    refName: 'chr10',
+    start: 121_478_000,
+    end: 121_598_000,
+    assemblyName: 'hg38',
+    mate: {
+      start: 129_764_000,
+      end: 129_868_000,
+      refName: 'chr7',
+      assemblyName: 'mm39',
+      name: 'Fgfr2',
+    },
+    attributes: { syntenicDepth: 2 },
+  }
+  expect(getTooltipLines(feat)).toEqual([
+    'hg38 FGFR2 chr10:121,478,001-121,598,000 (120,000 bp)',
+    'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
+    'Inverted',
+    'Syntenic depth: 2',
+  ])
 })

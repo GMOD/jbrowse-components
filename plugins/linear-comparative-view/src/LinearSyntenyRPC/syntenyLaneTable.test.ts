@@ -31,7 +31,13 @@ const features = [
     strand: -1,
     name: 'genA',
     assemblyName: 'queryAsm',
-    mate: { refName: 't1', start: 300, end: 400, assemblyName: 'targetAsm' },
+    mate: {
+      refName: 't1',
+      start: 300,
+      end: 400,
+      assemblyName: 'targetAsm',
+      name: 'genB',
+    },
   }),
   // no name, no assemblyName: the record the sentinel checks read
   new SimpleFeature({
@@ -139,7 +145,13 @@ it('getFeatureAtIndex reads a packed record back whole', () => {
     start: 100,
     end: 200,
     assemblyName: 'queryAsm',
-    mate: { start: 300, end: 400, refName: 't1', assemblyName: 'targetAsm' },
+    mate: {
+      start: 300,
+      end: 400,
+      refName: 't1',
+      assemblyName: 'targetAsm',
+      name: 'genB',
+    },
     attributes: {},
   })
 })
