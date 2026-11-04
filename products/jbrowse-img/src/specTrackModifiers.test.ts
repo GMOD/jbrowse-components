@@ -135,6 +135,8 @@ test('modifiers write over the entry, and sort at the navigated center', async (
   expect(Math.abs(pos - 3500)).toBeLessThan(10)
 }, 60000)
 
+// The entry's filter merges with the track's by field, as every bag's does
+// (ADR-240's 2026-11-04 amendment), so the track's HP entry stays
 test("a modifier writes the fields it names over the entry's own", async () => {
   const { display } = await launched({
     trackId: 'reads',
@@ -145,6 +147,7 @@ test("a modifier writes the fields it names over the entry's own", async () => {
     modifiers: ['mapq:20', 'filterTag:RG:lane3'],
   })
   expect(display().filter).toEqual([
+    { field: 'tags.HP', equal: '1' },
     { field: 'flags.SECONDARY', equal: false },
     { field: 'tags.SA', equal: '1' },
     { field: 'mapq', gte: 20 },
