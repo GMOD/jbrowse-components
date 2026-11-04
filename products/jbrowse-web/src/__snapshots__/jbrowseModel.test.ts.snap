@@ -3745,7 +3745,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "placement": "below",
             },
           },
-          "tooltip": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
+          "tooltip": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
           "type": "LinearBasicDisplay",
         },
       ],
