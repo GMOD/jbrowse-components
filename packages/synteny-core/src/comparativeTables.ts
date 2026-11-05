@@ -15,7 +15,7 @@ import {
   colorByShortLabel,
   getColorBySwatch,
 } from './colorLegend.ts'
-import { colorPaintOf, isAttributeLabels } from './colorRamps.ts'
+import { colorPaintOf, hasColorKey, isAttributeLabels } from './colorRamps.ts'
 import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
@@ -259,12 +259,15 @@ export function comparativeLegend(
     filter,
     pointBased = false,
     cigarOps,
+    trackName,
   }: {
     filter: readonly FieldPredicate[]
     pointBased?: boolean
     cigarOps?: number
+    trackName?: string
   },
 ) {
+  const keyed = hasColorKey(settings.field)
   const opts = {
     ...colorKeyOptions({
       field: settings.field,
@@ -276,8 +279,12 @@ export function comparativeLegend(
     }),
     pointBased,
     cigarOps,
+    trackChips:
+      trackName === undefined
+        ? undefined
+        : [{ label: trackName, color: settings.trackColor }],
   }
-  const swatch = getColorBySwatch(settings.field, opts)
+  const swatch = keyed ? getColorBySwatch(settings.field, opts) : undefined
   const title = settings.title ?? colorByShortLabel(settings.field)
   const chips =
     swatch?.kind === 'chips'
@@ -295,8 +302,10 @@ export function comparativeLegend(
       color: chips.map(c => c.color),
     },
     legendTitle: title,
-    ramps: colorByScales(settings.field, { ...opts, title })
-      .filter(scale => scale.kind === 'ramp')
-      .map(rampKeyOf),
+    ramps: keyed
+      ? colorByScales(settings.field, { ...opts, title })
+          .filter(scale => scale.kind === 'ramp')
+          .map(rampKeyOf)
+      : [],
   }
 }

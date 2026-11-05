@@ -12,11 +12,6 @@ disagree today.
 
 ## Can disagree now
 
-- **Contig palette order.** The tables order a color by contig naturally or
-  by the file, the view by the assembly; they agree for a naturally ordered
-  FASTA. Steps to close it:
-  [tables-order-contig-colors-by-the-assembly](tables-order-contig-colors-by-the-assembly.md).
-
 The parity suites in `packages/tables/src/parity/` (TEST_INFRASTRUCTURE.md)
 hold a known disagreement as a drift pinned to the export's value today; the
 wiggle and variants suites hold none. Their last ones closed by running the
@@ -25,18 +20,10 @@ display's own views on the tables' static hosts
 the `rows.tree` order, wiggle's categorical key (`legend`, `legendTitle`) and
 its rules on a heatmap (`scoreRulesDrawn`), and the variants records-band
 key, `genotypes: { show: false }` (`drawsGenotypeRows`) and an identity color
-callback's names (`variantDataColorScales`). Still open:
-
-- **Synteny and dotplot tables key the default color.** With no
-  `encoding.color` field (unset, a `value` constant, or only an opacity or
-  filter), the view keys nothing (`hasLegendKey`); the synteny tables key
-  `Default` with a `match` chip and a chip per CIGAR op drawn, the dotplot
-  tables an `alignment` chip in black. Under `{ value: '#008000' }` that is a
-  red `match` chip over green ribbons.
-- **Synteny and dotplot tables key no track chip.** Under `encoding.color:
-  'track'` the view keys `Track` with the track's name in its palette color
-  (`colorLegendChips`); the tables key nothing, since `comparativeLegend`
-  passes no `trackChips`.
+callback's names (`variantDataColorScales`). The synteny and dotplot suites
+hold none either: their key asks the view's `hasColorKey`, so the default
+color keys nothing as on screen, and a `trackName` argument gives a key by
+`track` the chip the view labels with the track's name.
 
 ## Equivalent today, by hand
 

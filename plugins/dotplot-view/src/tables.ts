@@ -36,6 +36,8 @@ export { registerComparativeAdapters }
 
 export interface DotplotTablesArgs {
   adapterConfig: Record<string, unknown>
+  /** the track's name, which a key by `track` labels its chip with */
+  trackName?: string
   /** the horizontal axis, the adapter's query side unless it names an assembly */
   x: AxisArgs
   /** the vertical axis, the adapter's target side unless it names an assembly */
@@ -78,7 +80,7 @@ const OP_NAMES: Record<number, string> = {
  */
 export async function dotplotTables(
   pluginManager: PluginManager,
-  { adapterConfig, x, y, view: written = {} }: DotplotTablesArgs,
+  { adapterConfig, trackName, x, y, view: written = {} }: DotplotTablesArgs,
 ) {
   const view = liftSyntenyViewSettings(written) as typeof written
   const indels = resolvedIndels(view.indels)
@@ -227,6 +229,7 @@ export async function dotplotTables(
     ...comparativeLegend(settings, {
       filter: config.filter,
       pointBased: true,
+      trackName,
     }),
     config: { ...config, ...settings.config },
     alpha: level,

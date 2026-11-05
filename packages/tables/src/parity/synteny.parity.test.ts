@@ -9,7 +9,7 @@ import {
   INVERSIONS_ZOOMED,
   OFFSCREEN,
 } from './comparative.fixture.ts'
-import { standUpSynteny } from './comparative/testEnv.ts'
+import { TRACK_NAME, standUpSynteny } from './comparative/testEnv.ts'
 import {
   COMPARATIVE_DECISIONS,
   drawnColors,
@@ -62,6 +62,7 @@ function syntenyParity(
     buildExport: view =>
       engine.synteny({
         adapterConfig: fixture.adapterConfig,
+        trackName: TRACK_NAME,
         query: hostAxis(fixture.query),
         target: hostAxis(fixture.target),
         view: { height: LEVEL_HEIGHT, ...view },
@@ -128,34 +129,11 @@ function syntenyParity(
   }
 }
 
-const DEFAULT_KEY =
-  'unowned, synteny tables key the default color, which the view leaves unkeyed'
-const MATCH = { label: 'match', color: '#ff8c8c' }
-const INSERTION = { label: 'insertion', color: '#ffff8c' }
-const DELETION = { label: 'deletion', color: '#8c8cff' }
-
-const defaultKey = (...chips: { label: string; color: string }[]) => ({
-  title: 'Default',
-  chips,
-  ramps: [],
-})
-
-const NO_KEY = { title: '', chips: [], ramps: [] }
-
-const TRACK_KEY =
-  'unowned, synteny tables key no track chip: the view keys the track by name'
-
 describe('a PAF of seven blocks, two reverse, with text and numeric columns', () => {
   parityCases(syntenyParity(INVERSIONS), [
     {
       name: 'defaults',
       config: {},
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH, INSERTION),
-        },
-      },
     },
     { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
     {
@@ -205,17 +183,10 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
     {
       name: 'track',
       config: { encoding: { color: { field: 'track' } } },
-      drifts: { key: { owner: TRACK_KEY, exported: NO_KEY } },
     },
     {
       name: 'a constant',
       config: { encoding: { color: { value: '#008000' } } },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH, INSERTION),
-        },
-      },
     },
     {
       name: 'a text column, partly labelled',
@@ -280,25 +251,10 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
     {
       name: 'opacity by identity',
       config: { encoding: { opacity: { field: 'identity' } } },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(
-            { label: 'match', color: '#ff0000' },
-            { label: 'insertion', color: '#ffff00' },
-          ),
-        },
-      },
     },
     {
       name: 'filter by length',
       config: { filter: [{ field: 'length', gte: 2000 }] },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH, INSERTION),
-        },
-      },
     },
     {
       name: 'filter by identity, colored by strand',
@@ -310,12 +266,6 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
     {
       name: 'filter by a text column',
       config: { filter: [{ field: 'gr', oneOf: ['a'] }] },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH, INSERTION),
-        },
-      },
     },
   ])
 })
@@ -325,12 +275,6 @@ describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
     {
       name: 'defaults',
       config: {},
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH, INSERTION, DELETION),
-        },
-      },
     },
     { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
     {
@@ -373,34 +317,16 @@ describe('each block mated to a contig the other row does not show', () => {
     {
       name: 'defaults',
       config: {},
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH),
-        },
-      },
     },
     { name: 'query', config: { encoding: { color: { field: 'query' } } } },
     { name: 'target', config: { encoding: { color: { field: 'target' } } } },
     {
       name: 'filter by length',
       config: { filter: [{ field: 'length', gte: 10000 }] },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH),
-        },
-      },
     },
     {
       name: 'filter by query contig',
       config: { filter: [{ field: 'query', oneOf: ['ctgA'] }] },
-      drifts: {
-        key: {
-          owner: DEFAULT_KEY,
-          exported: defaultKey(MATCH),
-        },
-      },
     },
   ])
 })

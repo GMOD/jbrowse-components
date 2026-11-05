@@ -175,6 +175,7 @@ const VARIANTS_ARGS = {
 
 const SYNTENY_ARGS = {
   adapterConfig: true,
+  trackName: true,
   query: true,
   target: true,
   view: true,
@@ -182,6 +183,7 @@ const SYNTENY_ARGS = {
 
 const DOTPLOT_ARGS = {
   adapterConfig: true,
+  trackName: true,
   x: true,
   y: true,
   view: true,

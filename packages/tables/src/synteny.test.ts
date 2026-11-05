@@ -51,7 +51,16 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   })
   expect(new Set(zoomed.ribbons.kind)).toContain('deletion')
   expect(zoomed.ribbons.kind.length).toBeGreaterThan(t.ribbons.kind.length)
-  expect(zoomed.legend.label).toEqual(['match', 'insertion', 'deletion'])
+  expect(zoomed.legend.label).toEqual([])
+  const zoomedStrand = await engine.synteny({
+    ...INV_INDELS,
+    query: { ...INV_INDELS.query, width: 4000 },
+    target: { ...INV_INDELS.target, width: 4000 },
+    view: { encoding: { color: { field: 'strand' } } },
+  })
+  expect(zoomedStrand.legend.label).toEqual(
+    expect.arrayContaining(['insertion', 'deletion']),
+  )
   const matches = t.ribbons.kind
     .map((k, i) => (k === 'match' ? i : -1))
     .filter(i => i >= 0)
@@ -74,7 +83,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
       6,
     )
   }
-  expect(t.legend.label).toEqual(['match', 'insertion'])
+  expect(t.legend.label).toEqual([])
   expect(t.offscreen.axis).toHaveLength(0)
 
   const two = await engine.synteny({
@@ -115,7 +124,14 @@ test('the indels part draws the ops colored, the matches alone, or the block alo
   })
   expect(new Set(matches.ribbons.kind)).toEqual(new Set(['match']))
   expect(matches.ribbons.kind.length).toBeGreaterThan(7)
-  expect(matches.legend.label).toEqual(['match'])
+  const strandMatches = await engine.synteny({
+    ...INV_INDELS,
+    view: {
+      encoding: { color: { field: 'strand' } },
+      indels: { encoding: { opacity: 0 } },
+    },
+  })
+  expect(strandMatches.legend.label).toEqual(['forward', 'reverse'])
 })
 
 test("a v4.3.0 dotplot's drawCigar still draws as the indels part", async () => {

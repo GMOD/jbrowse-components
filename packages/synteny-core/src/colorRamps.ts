@@ -54,6 +54,29 @@ export function isMeasureField(
   return field !== undefined && Object.hasOwn(SYNTENY_FIELD_PRESETS, field)
 }
 
+/** Whether `field` names a column of the data rather than a built-in field. */
+export function isColumnField(field: string | undefined): field is string {
+  return (
+    field !== undefined &&
+    !STRUCTURAL_FIELDS.has(field) &&
+    !isMeasureField(field)
+  )
+}
+
+/**
+ * Whether painting by `field` has a key worth a box: a track palette, strand
+ * with the indel wedges it recolors, a ramp, or a reader-named column. The
+ * view's legend and a static export both ask this.
+ */
+export function hasColorKey(field: string | undefined) {
+  return (
+    field === 'track' ||
+    field === 'strand' ||
+    isMeasureField(field) ||
+    isColumnField(field)
+  )
+}
+
 /**
  * #api
  * The per-feature attribute a field reads: `mapq` is the comparative

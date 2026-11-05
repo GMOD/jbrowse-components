@@ -1,6 +1,6 @@
 import { createTablesEngine } from '../index.ts'
 import { CONTIGS, INVERSIONS, INVERSIONS_WIDE } from './comparative.fixture.ts'
-import { standUpDotplot } from './comparative/testEnv.ts'
+import { TRACK_NAME, standUpDotplot } from './comparative/testEnv.ts'
 import {
   COMPARATIVE_DECISIONS,
   drawnColors,
@@ -44,6 +44,7 @@ function dotplotParity(
     buildExport: view =>
       engine.dotplot({
         adapterConfig: fixture.adapterConfig,
+        trackName: TRACK_NAME,
         x: hostAxis(fixture.query),
         y: hostAxis(fixture.target),
         view,
@@ -68,25 +69,11 @@ function dotplotParity(
   }
 }
 
-const DEFAULT_KEY =
-  'unowned, dotplot tables key the default color, which the view leaves unkeyed'
-const ALIGNMENT_KEY = {
-  title: 'Default',
-  chips: [{ label: 'alignment', color: '#000000' }],
-  ramps: [],
-}
-
-const NO_KEY = { title: '', chips: [], ramps: [] }
-
-const TRACK_KEY =
-  'unowned, dotplot tables key no track chip: the view keys the track by name'
-
 describe('a PAF of seven blocks, two reverse, with text and numeric columns', () => {
   parityCases(dotplotParity(INVERSIONS), [
     {
       name: 'defaults',
       config: {},
-      drifts: { key: { owner: DEFAULT_KEY, exported: ALIGNMENT_KEY } },
     },
     { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
     {
@@ -110,12 +97,10 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
     {
       name: 'track',
       config: { encoding: { color: { field: 'track' } } },
-      drifts: { key: { owner: TRACK_KEY, exported: NO_KEY } },
     },
     {
       name: 'a constant',
       config: { encoding: { color: { value: '#008000' } } },
-      drifts: { key: { owner: DEFAULT_KEY, exported: ALIGNMENT_KEY } },
     },
     {
       name: 'a text column, partly labelled',
@@ -160,17 +145,14 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
     {
       name: 'opacity by identity',
       config: { encoding: { opacity: { field: 'identity' } } },
-      drifts: { key: { owner: DEFAULT_KEY, exported: ALIGNMENT_KEY } },
     },
     {
       name: 'filter by length',
       config: { filter: [{ field: 'length', gte: 2000 }] },
-      drifts: { key: { owner: DEFAULT_KEY, exported: ALIGNMENT_KEY } },
     },
     {
       name: 'filter by a text column',
       config: { filter: [{ field: 'gr', oneOf: ['a'] }] },
-      drifts: { key: { owner: DEFAULT_KEY, exported: ALIGNMENT_KEY } },
     },
   ])
 })

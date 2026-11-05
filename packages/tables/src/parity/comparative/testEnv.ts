@@ -10,6 +10,7 @@ import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 
 const TRACK_ID = 'parity_synteny'
+export const TRACK_NAME = 'parity synteny'
 const SYNTENY_DISPLAY_ID = `${TRACK_ID}-LinearSyntenyDisplay`
 const DOTPLOT_DISPLAY_ID = `${TRACK_ID}-DotplotDisplay`
 
@@ -75,7 +76,7 @@ function comparativeSession({ adapterConfig, axes }: ComparativeViewSpec) {
         {
           type: 'SyntenyTrack',
           trackId: TRACK_ID,
-          name: 'parity synteny',
+          name: TRACK_NAME,
           assemblyNames: axes.map(a => a.assembly.name),
           adapter: adapterConfig,
           displays: [

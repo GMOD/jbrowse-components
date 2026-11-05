@@ -21,13 +21,13 @@ import { colorByScales, colorKeyOptions } from './colorLegend.ts'
 import {
   colorPaintOf,
   isAttributeLabels,
-  isMeasureField,
+  hasColorKey,
+  isColumnField,
   labelsOf,
   resolveCategoricalMode,
 } from './colorRamps.ts'
 import { hidesUnlabelled, withHideUnlabelled } from './hideUnlabelledFilter.ts'
 import { paintedField } from './syntenyColorBy.ts'
-import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 import { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
@@ -39,16 +39,6 @@ import type { ColorableTrack } from './trackColors.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
-
-const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
-
-function isColumnField(field: string | undefined): field is string {
-  return (
-    field !== undefined &&
-    !STRUCTURAL_FIELDS.has(field) &&
-    !isMeasureField(field)
-  )
-}
 
 // A label list only ever gains labels, in the order they were first seen, and
 // a label's file color is whichever was seen first; a row with no value, once
@@ -448,13 +438,7 @@ export function TrackColorsMixin({
        * the indel wedges it recolors, a ramp, or a reader-named column.
        */
       get hasLegendKey(): boolean {
-        const field = this.colorField
-        return (
-          field === 'track' ||
-          field === 'strand' ||
-          isMeasureField(field) ||
-          isColumnField(field)
-        )
+        return hasColorKey(this.colorField)
       },
     }))
     .views(self => ({

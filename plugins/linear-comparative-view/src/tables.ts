@@ -73,6 +73,8 @@ export type { MultiWayTables, MultiWayTablesArgs } from './multiwayTables.ts'
 
 export interface SyntenyTablesArgs {
   adapterConfig: Record<string, unknown>
+  /** the track's name, which a key by `track` labels its chip with */
+  trackName?: string
   /** the upper row, the adapter's query side unless it names an assembly */
   query: AxisArgs
   /** the lower row, the adapter's target side unless it names an assembly */
@@ -351,7 +353,13 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  */
 export async function syntenyTables(
   pluginManager: PluginManager,
-  { adapterConfig, query, target, view: written = {} }: SyntenyTablesArgs,
+  {
+    adapterConfig,
+    trackName,
+    query,
+    target,
+    view: written = {},
+  }: SyntenyTablesArgs,
 ) {
   const view = liftSyntenyViewSettings(written) as typeof written
   const q = comparativeAxis(query, adapterConfig, 0)
@@ -564,7 +572,11 @@ export async function syntenyTables(
     offscreen,
     offscreenContigs,
     offscreenStrip: offscreenStrip(lanes, { width: query.width, height }),
-    ...comparativeLegend(settings, { filter: config.filter, cigarOps }),
+    ...comparativeLegend(settings, {
+      filter: config.filter,
+      cigarOps,
+      trackName,
+    }),
     config: { ...config, ...settings.config },
     alpha: level,
     assemblyNames: [q.assemblyName, t.assemblyName],
