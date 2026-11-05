@@ -582,30 +582,7 @@ describe("SyRI's calls for five accessions under Col-0", () => {
           },
         },
       },
-      drifts: {
-        ...pastContigEnd(syriSegments(CVI_CHR1)),
-        lanes: {
-          owner: 'multiway lane labels',
-          exported: [
-            ['Col-0', 12, 22],
-            ['Ler', 52.4, 62.4],
-            ['Cvi', 92.8, 102.8],
-            ['Eri', 133.2, 143.2],
-            ['Kyo', 173.6, 183.6],
-            ['Sha', 214, 224],
-          ].map(([assembly, yTop, yBottom], i) => ({
-            assembly,
-            label: assembly,
-            anchor: i === 0,
-            chrom: 'Chr1',
-            flipped: false,
-            bpPerPx: 38034.5888,
-            alsoOn: '',
-            yTop,
-            yBottom,
-          })),
-        },
-      },
+      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
   ])
 })
@@ -616,28 +593,6 @@ describe('volvox ctgB, which no lane aligns to', () => {
     {
       name: 'rows.kept',
       config: { display: { rows: { kept: ['volvox_del'] } } },
-      drifts: {
-        lanes: {
-          owner: 'multiway unaligned chosen lanes',
-          exported: [
-            {
-              assembly: 'volvox',
-              label: 'volvox',
-              anchor: true,
-              chrom: 'ctgB',
-              flipped: false,
-              bpPerPx: 7.5988,
-              alsoOn: '',
-              yTop: 12,
-              yBottom: 34,
-            },
-          ],
-        },
-        segments: {
-          owner: 'multiway unaligned chosen lanes',
-          exported: [[[0, 800]]],
-        },
-      },
     },
   ])
 })

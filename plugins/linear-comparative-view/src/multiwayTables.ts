@@ -39,8 +39,11 @@ import {
 } from './MultiWaySyntenyDisplay/laneFetch.ts'
 import { pinsInForceOf } from './MultiWaySyntenyDisplay/lanePins.ts'
 import {
+  answeredLaneTest,
+  laneLabelOf,
   laneRowsOf,
   lanesInForce,
+  unalignedChosenLanesOf,
 } from './MultiWaySyntenyDisplay/laneSelection.ts'
 import {
   geneLabelRowPx,
@@ -221,6 +224,10 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
   })
   const color = conf.ribbons.encoding.color
   const setting = colorSnapshotOf(color)
+  const rowLabels: Record<string, string> = readConfObject(conf, [
+    'rows',
+    'labels',
+  ])
   return {
     ...paintedRibbonColor(setting),
     paint: colorPaintOf(color),
@@ -231,6 +238,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     descending: setting.legend.descending,
     rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
+    rowLabels: new Map(Object.entries(rowLabels)),
     opacity: opacitySnapshotOf(conf.ribbons.encoding.opacity),
     filter: predicatesOf(conf.ribbons.filter),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
@@ -539,9 +547,19 @@ export async function multiwayTables(
     ],
     dataAdapter,
   )
+  const unaligned = unalignedChosenLanesOf(
+    settings.kept,
+    groups,
+    answeredLaneTest(
+      true,
+      declaresLanes && selection ? [...selection] : undefined,
+      keyOf,
+    ),
+    keyOf,
+  )
   const rows = laneRowsOf({
     groups,
-    placeless,
+    placeless: [...placeless, ...unaligned],
     anchor,
     preferred: stacksByStructure(capabilities, fetches)
       ? [
@@ -621,7 +639,11 @@ export async function multiwayTables(
       )
     : []
 
-  const labels = new Map(declared.map(lane => [lane.name, lane.label]))
+  const declaredLabels = new Map(
+    declared.flatMap(({ name, label }) =>
+      label === undefined ? [] : [[name, label] as const],
+    ),
+  )
   const laneGeom = laneGeometry(
     settings.height,
     1 + rows.length,
@@ -638,7 +660,13 @@ export async function multiwayTables(
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,
     geometry: laneGeom,
-    labelOf: name => labels.get(name) ?? name,
+    labelOf: name =>
+      laneLabelOf(name, {
+        written: settings.rowLabels,
+        heldName: () => undefined,
+        declared: declaredLabels,
+        keyOf,
+      }),
   })
 
   const channelNames = [

@@ -61,6 +61,44 @@ export function answeredLaneTest(
 }
 
 /**
+ * The `rows.kept` lanes the held fetch answered for and placed nothing in,
+ * each drawn as a row with no alignment in the window
+ */
+export function unalignedChosenLanesOf(
+  choice: readonly string[],
+  groups: readonly MultiWayGroup[],
+  answered: (name: string) => boolean,
+  keyOf: KeyOf,
+) {
+  const placed = new Set(
+    groups.flatMap(group => [...group.mates.keys()].map(keyOf)),
+  )
+  return choice.filter(name => answered(name) && !placed.has(keyOf(name)))
+}
+
+/**
+ * A lane's label: its `rows.labels` entry, else the name the session holds
+ * its genome under, else the label its source declares, else its name
+ */
+export function laneLabelOf(
+  name: string,
+  {
+    written,
+    heldName,
+    declared,
+    keyOf,
+  }: {
+    written: ReadonlyMap<string, string>
+    heldName: (name: string) => string | undefined
+    declared: ReadonlyMap<string, string>
+    keyOf: KeyOf
+  },
+) {
+  const key = keyOf(name)
+  return written.get(key) ?? heldName(name) ?? declared.get(key) ?? name
+}
+
+/**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
  * group places

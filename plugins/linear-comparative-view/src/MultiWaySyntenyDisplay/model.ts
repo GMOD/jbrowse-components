@@ -153,10 +153,12 @@ import {
 } from './lanePins.ts'
 import {
   answeredLaneTest,
+  laneLabelOf,
   laneRowsOf,
   laneUniverseOf,
   lanesInForce,
   pickedLanes,
+  unalignedChosenLanesOf,
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
@@ -1072,13 +1074,15 @@ export function stateModelFactory(
       },
       /** #method */
       laneLabel(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        return (
-          this.rowLabels.get(key) ??
-          (this.holdsAssembly(assemblyName)
-            ? getSession(self).assemblyManager.getDisplayName(assemblyName)
-            : (this.declaredLaneLabels.get(key) ?? assemblyName))
-        )
+        return laneLabelOf(assemblyName, {
+          written: this.rowLabels,
+          heldName: name =>
+            this.holdsAssembly(name)
+              ? getSession(self).assemblyManager.getDisplayName(name)
+              : undefined,
+          declared: this.declaredLaneLabels,
+          keyOf: self.laneKey,
+        })
       },
       /**
        * #getter
@@ -1107,18 +1111,15 @@ export function stateModelFactory(
        * placed nothing in; an unchosen lane placing nothing draws no row
        */
       get unalignedChosenLanes(): string[] {
-        const answered = answeredLaneTest(
-          self.features !== undefined,
-          self.features && self.fetchedFeatures?.lanes,
-          self.laneKey,
-        )
-        const placed = new Set(
-          self.groups.flatMap(group =>
-            [...group.mates.keys()].map(self.laneKey),
+        return unalignedChosenLanesOf(
+          self.laneChoice ?? [],
+          self.groups,
+          answeredLaneTest(
+            self.features !== undefined,
+            self.features && self.fetchedFeatures?.lanes,
+            self.laneKey,
           ),
-        )
-        return (self.laneChoice ?? []).filter(
-          name => answered(name) && !placed.has(self.laneKey(name)),
+          self.laneKey,
         )
       },
       /**
