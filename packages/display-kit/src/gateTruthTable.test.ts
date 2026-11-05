@@ -1,10 +1,21 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { runInAction } from 'mobx'
 
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
+import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
 import { AUTO_FORCE_LOAD_BP } from './regionTooLargeUtils.ts'
+import {
+  regionTooLargeActiveViews,
+  regionTooLargeBudgetViews,
+  regionTooLargeConfigViews,
+  regionTooLargeFloorViews,
+  regionTooLargeStatusViews,
+  regionTooLargeVerdictViews,
+} from './regionTooLargeViews.ts'
 
 import type { ByteEstimate } from './regionTooLargeUtils.ts'
 
@@ -457,5 +468,117 @@ describe('gate invariants', () => {
       }
     }
     expect(bad).toEqual([])
+  })
+})
+
+// A static export's host: the display's config as a child, what the frame and
+// the in-process fetch supply as volatiles, and the views the mixin installs.
+// The config slots are read through the config here, not overridden, so the
+// `forceLoad` axis takes one host per value.
+
+interface StaticGateInputs {
+  gateEnabled: boolean
+  densityTooLarge: boolean
+  forceLoadTrack: boolean
+  adapterFetchSizeLimit: number | undefined
+  gateViewportSpanBp: number | undefined
+  byteEstimate: ByteEstimate | undefined
+}
+
+const StaticGateHost = types
+  .model('StaticGateHost', {
+    configuration: ConfigurationSchema(
+      'StaticGateDisplay',
+      regionTooLargeConfigSchemaFields,
+    ),
+  })
+  .volatile((): StaticGateInputs => ({
+    gateEnabled: false,
+    densityTooLarge: false,
+    forceLoadTrack: false,
+    adapterFetchSizeLimit: undefined,
+    gateViewportSpanBp: undefined,
+    byteEstimate: undefined,
+  }))
+  .actions(self => ({
+    setGateInputs(inputs: StaticGateInputs) {
+      Object.assign(self, inputs)
+    },
+  }))
+  .views(self => regionTooLargeConfigViews(self))
+  .views(self => regionTooLargeFloorViews(self))
+  .views(self => regionTooLargeBudgetViews(self))
+  .views(self => regionTooLargeActiveViews(self))
+  .views(self => regionTooLargeStatusViews(self))
+  .views(self => regionTooLargeVerdictViews(self))
+
+const staticHosts = {
+  configForceLoad: StaticGateHost.create({
+    configuration: { fetchSizeLimit: CONFIG_LIMIT, forceLoad: true },
+  }),
+  configDefault: StaticGateHost.create({
+    configuration: { fetchSizeLimit: CONFIG_LIMIT },
+  }),
+}
+
+type Verdict = Omit<Out, 'measurementStale' | 'skipsMeasured'>
+
+function evaluateStatic(row: Row): Verdict {
+  const host = row.configForceLoad
+    ? staticHosts.configForceLoad
+    : staticHosts.configDefault
+  host.setGateInputs({
+    gateEnabled: row.gateEnabled,
+    densityTooLarge: row.densityTooLarge,
+    forceLoadTrack: row.forceLoadTrack,
+    adapterFetchSizeLimit: row.adapterLimit,
+    gateViewportSpanBp: row.spanBp,
+    byteEstimate:
+      row.bytes === undefined
+        ? undefined
+        : {
+            bytes: row.bytes,
+            measuredSpanBp: row.spanBp ?? 0,
+            zoomIneffective: row.zoomIneffective,
+          },
+  })
+  return runInAction(() => ({
+    gateEnabled: host.gateEnabled,
+    gateExempt: host.gateExempt,
+    aboveFloor: host.aboveForceLoadFloor,
+    gateActive: host.gateActive,
+    densityGateActive: host.densityGateActive,
+    byteLimit: host.resolvedByteLimit(),
+    tooLarge: host.regionTooLarge,
+    axis: host.tooLargeStatus.axis ?? '-',
+    reason: host.regionTooLargeReason,
+    zoomCanRelease: host.zoomCanReleaseGate,
+  }))
+}
+
+function verdictKey(out: Verdict) {
+  return [
+    `gateEnabled=${out.gateEnabled}`,
+    `gateExempt=${out.gateExempt}`,
+    `aboveFloor=${out.aboveFloor}`,
+    `gateActive=${out.gateActive}`,
+    `densityGateActive=${out.densityGateActive}`,
+    `byteLimit=${out.byteLimit}`,
+    `tooLarge=${out.tooLarge}`,
+    `axis=${out.axis}`,
+    `reason=${out.reason}`,
+    `zoomCanRelease=${out.zoomCanRelease}`,
+  ].join(' ')
+}
+
+describe('a static host', () => {
+  it('gates every row as the live mixin does', () => {
+    expect(
+      table
+        .filter(
+          ({ row, out }) => verdictKey(evaluateStatic(row)) !== verdictKey(out),
+        )
+        .map(({ row }) => rowKey(row)),
+    ).toEqual([])
   })
 })
