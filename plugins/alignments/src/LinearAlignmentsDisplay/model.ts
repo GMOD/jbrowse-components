@@ -3006,7 +3006,7 @@ export default function stateModelFactory(
 export type { ArcCategory } from '../shaders/palettes.ts'
 export type { OverlapLegendRow } from '../shared/legendUtils.ts'
 export type { DeclaredFilters } from './dialogs/layerFilters.ts'
-export type { GroupSize } from './groupLayout.ts'
+export type { GroupLayoutContext, GroupSize } from './groupLayout.ts'
 
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory
