@@ -5,7 +5,7 @@ description: "Draws quantitative signal as bars, points, a line or a color strip
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
 
 Draws quantitative signal as bars, points, a line or a color strip (`rect`),
 for one source or many; `rows: 'source'` draws each source in a separate row.

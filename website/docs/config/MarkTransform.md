@@ -5,7 +5,7 @@ description: "One step of a transform list, which runs over the region's feature
 sidebar_label: Display setting -> MarkTransform
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
 
 One step of a `transform` list, which runs over the region's features in
 order, each step reading what the one before it produced. A step names its

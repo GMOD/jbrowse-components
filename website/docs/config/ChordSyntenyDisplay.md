@@ -5,7 +5,7 @@ description: "Draws a SyntenyTrack in a CircularView, with a ribbon joining the 
 sidebar_label: Display -> ChordSyntenyDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordSyntenyDisplay/models/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordSyntenyDisplay/models/configSchema.ts).
 
 Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
 spans of each alignment.

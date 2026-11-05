@@ -5,7 +5,7 @@ description: "Shows a file of structural variants as a table beside a circular v
 sidebar_label: View -> SvInspectorView
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sv-inspector` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sv-inspector` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
 
 Shows a file of structural variants as a table beside a circular view that
 draws them as chords. The model holds a

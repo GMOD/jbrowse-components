@@ -5,7 +5,7 @@ description: "Adds the UI theme to a session: the selected theme, light or dark 
 sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
 
 Adds the UI theme to a session: the selected theme, light or dark mode or
 following the OS, and the themes an admin adds through `extraThemes`.

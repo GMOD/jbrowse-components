@@ -5,7 +5,7 @@ description: "The foundation for a display holding a single global (non-regional
 sidebar_label: Mixin -> GlobalFetchMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
 
 **The** foundation for a display holding a single global (non-regional)
 dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes.

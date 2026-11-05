@@ -5,7 +5,7 @@ description: "Owns the GPU draw lifecycle for any display that paints to a canva
 sidebar_label: Mixin -> RenderLifecycleMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts).
 
 Owns the GPU draw lifecycle for any display that paints to a canvas.
 

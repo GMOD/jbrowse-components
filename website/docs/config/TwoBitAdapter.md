@@ -5,7 +5,7 @@ description: "Reads a UCSC .2bit reference sequence, optionally with a chrom.siz
 sidebar_label: Adapter -> TwoBitAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts).
 
 Reads a UCSC `.2bit` reference sequence, optionally with a `chrom.sizes`
 file to speed up loading.

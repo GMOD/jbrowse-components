@@ -5,7 +5,7 @@ description: "The mark display with the LD join: an index SNP each fetch joins r
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
 
 The mark display with the LD join: an index SNP each fetch joins r² to,
 picked once from the top hit, and the menus that color the points by it.

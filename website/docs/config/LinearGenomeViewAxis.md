@@ -5,7 +5,7 @@ description: "The linear genome view's axis: the ruler along its top, whose tick
 sidebar_label: View -> LinearGenomeViewAxis
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/axisConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/axisConfigSchema.ts).
 
 The linear genome view's `axis`: the ruler along its top, whose ticks
 `grid` carries down through the tracks.

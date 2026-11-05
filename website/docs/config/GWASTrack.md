@@ -5,7 +5,7 @@ description: "Holds Genome-Wide Association Study (GWAS) results, drawn as a Man
 sidebar_label: Track -> GWASTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASTrack/configSchema.ts).
 
 Holds Genome-Wide Association Study (GWAS) results, drawn as a Manhattan
 plot.

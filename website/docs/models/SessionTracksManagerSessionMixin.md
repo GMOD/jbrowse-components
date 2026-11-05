@@ -5,7 +5,7 @@ description: "Adds session tracks to a session, and stores the user's edits to a
 sidebar_label: Mixin -> SessionTracksManagerSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts).
 
 Adds session tracks to a session, and stores the user's edits to any track
 as a delta against its base config.

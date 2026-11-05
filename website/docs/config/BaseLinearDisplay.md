@@ -5,7 +5,7 @@ description: "Shared base config for linear displays — its slots (height, fetc
 sidebar_label: Display -> BaseLinearDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
 
 Shared base config for linear displays — its slots (`height`,
 `fetchSizeLimit`) are common to all of them. The GPU stack's

@@ -5,7 +5,7 @@ description: "The mark displays' rows: a RowsWithStep, the field, arrangement, a
 sidebar_label: Display setting -> MarkRows
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markRowsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markRowsConfigSchema.ts).
 
 The mark displays' `rows`: a [RowsWithStep](../rowswithstep), the field,
 arrangement, axis and row height, and `groups`, the `group` row attribute

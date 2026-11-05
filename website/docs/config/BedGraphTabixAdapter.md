@@ -5,7 +5,7 @@ description: "Reads bgzip-compressed, tabix-indexed bedGraph signal files."
 sidebar_label: Adapter -> BedGraphTabixAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphTabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphTabixAdapter/configSchema.ts).
 
 Reads bgzip-compressed, tabix-indexed bedGraph signal files.
 

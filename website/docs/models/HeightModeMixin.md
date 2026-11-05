@@ -5,7 +5,7 @@ description: "Track-height strategy over TrackHeightMixin(), which it composes a
 sidebar_label: Mixin -> HeightModeMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HeightModeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HeightModeMixin.ts).
 
 Track-height strategy over `TrackHeightMixin()`, which it composes and whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
 

@@ -5,7 +5,7 @@ description: "A bgzip-compressed MAF with a Taffy .tai index — the form whole-
 sidebar_label: Adapter -> BgzipMafAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
 
 A bgzip-compressed MAF with a Taffy `.tai` index — the form whole-genome
 multiple alignments are actually distributed in. HPRC release 2 publishes

@@ -5,7 +5,7 @@ description: "Sends a token that the user pastes in, or that an embedding portal
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/configSchema.ts).
 
 Sends a token that the user pastes in, or that an embedding portal supplies,
 with every request to a matching domain.

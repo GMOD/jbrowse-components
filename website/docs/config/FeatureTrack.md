@@ -5,7 +5,7 @@ description: "Holds gene and other feature annotations, such as a GFF3 or BED fi
 sidebar_label: Track -> FeatureTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/FeatureTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/FeatureTrack/configSchema.ts).
 
 Holds gene and other feature annotations, such as a GFF3 or BED file, which
 `LinearBasicDisplay` usually draws.

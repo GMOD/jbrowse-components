@@ -5,7 +5,7 @@ description: "Gets an OAuth 2.0 access token from the provider's login window, a
 sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx).
 
 Gets an OAuth 2.0 access token from the provider's login window, and renews
 it with a refresh token kept in `localStorage`.

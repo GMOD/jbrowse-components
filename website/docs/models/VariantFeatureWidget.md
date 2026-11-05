@@ -5,7 +5,7 @@ description: "Feature-details widget for a VCF variant, extending the base featu
 sidebar_label: Widget -> VariantFeatureWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts).
 
 Feature-details widget for a VCF variant, extending the base feature widget
 with variant-specific fields such as genotypes and INFO.

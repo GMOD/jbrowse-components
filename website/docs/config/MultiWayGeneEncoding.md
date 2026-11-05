@@ -5,7 +5,7 @@ description: "The multi-way synteny display's encoding, the channels its gene gl
 sidebar_label: Display setting -> MultiWayGeneEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneEncodingConfigSchema.ts).
 
 The multi-way synteny display's `encoding`, the channels its gene glyphs
 paint through.

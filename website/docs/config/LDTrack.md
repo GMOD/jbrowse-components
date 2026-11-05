@@ -5,7 +5,7 @@ description: "Track type for displaying pre-computed linkage disequilibrium data
 sidebar_label: Track -> LDTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
 
 Track type for displaying pre-computed linkage disequilibrium data
 (e.g., from PLINK --r2 output)

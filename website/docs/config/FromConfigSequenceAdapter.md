@@ -5,7 +5,7 @@ description: "Supplies a reference sequence inline in the config, as features wh
 sidebar_label: Adapter -> FromConfigSequenceAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigSequenceAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigSequenceAdapter/configSchema.ts).
 
 Supplies a reference sequence inline in the config, as features whose `seq`
 holds the bases for each region.

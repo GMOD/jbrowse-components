@@ -5,7 +5,7 @@ description: "Reads a JBrowse 1 NCList feature store, the per-reference trackDat
 sidebar_label: Adapter -> NCListAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
 Reads a JBrowse 1 NCList feature store, the per-reference `trackData.json`
 files that the JBrowse 1 formatting scripts write.

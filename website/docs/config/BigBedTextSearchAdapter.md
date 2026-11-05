@@ -5,7 +5,7 @@ description: "Finds features by the names a BigBed was built to look up, its bed
 sidebar_label: Adapter -> BigBedTextSearchAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BigBedTextSearchAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BigBedTextSearchAdapter/configSchema.ts).
 
 Finds features by the names a BigBed was built to look up, its
 `bedToBigBed -extraIndex` columns, which a UCSC hub declares with

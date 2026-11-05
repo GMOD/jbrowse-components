@@ -5,7 +5,7 @@ description: "The shared EmbeddedSessionMixin plus this product's tracks mixin a
 sidebar_label: Session -> JBrowseReactCircularGenomeViewSessionModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts).
 
 The shared EmbeddedSessionMixin plus this product's tracks mixin and
 its single CircularView. Both are spelled out here rather than passed to a

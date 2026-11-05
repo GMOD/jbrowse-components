@@ -5,7 +5,7 @@ description: "A display's encoding holding the y channel alone, whose marks each
 sidebar_label: Display setting -> YEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yEncodingConfigSchema.ts).
 
 A display's `encoding` holding the y channel alone, whose marks each name
 the field their `encoding.y` reads through it.

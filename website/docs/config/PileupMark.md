@@ -5,7 +5,7 @@ description: "The pileup's mark, the bar each read draws as: its height."
 sidebar_label: Display setting -> PileupMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMarkConfigSchema.ts).
 
 The pileup's `mark`, the bar each read draws as: its `height`.
 

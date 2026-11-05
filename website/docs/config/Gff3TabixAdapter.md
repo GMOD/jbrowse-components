@@ -5,7 +5,7 @@ description: "Reads bgzip-compressed, tabix-indexed GFF3 files."
 sidebar_label: Adapter -> Gff3TabixAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts).
 
 Reads bgzip-compressed, tabix-indexed GFF3 files.
 

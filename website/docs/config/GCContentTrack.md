@@ -5,7 +5,7 @@ description: "GC content, or GC skew, of the assembly's sequence, computed as th
 sidebar_label: Track -> GCContentTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentTrack/configSchema.ts).
 
 GC content, or GC skew, of the assembly's sequence, computed as the view
 moves by a `GCContentAdapter` and drawn by the wiggle display. The adapter

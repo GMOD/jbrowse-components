@@ -5,7 +5,7 @@ description: "The read connections' mark, Vega-Lite's mark object."
 sidebar_label: Display setting -> ReadConnectionsMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsMarkConfigSchema.ts).
 
 The read connections' `mark`, Vega-Lite's mark object. A `link` joins the
 two ends of each pair or split read with a dome that rises with the span

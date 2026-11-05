@@ -5,7 +5,7 @@ description: "Chooses whether data fetching runs on the main thread or in web wo
 sidebar_label: Root -> RpcOptions
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/rpc/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/rpc/configSchema.ts).
 
 Chooses whether data fetching runs on the main thread or in web workers, and
 how many workers to start. Found on the root config as `configuration.rpc`.

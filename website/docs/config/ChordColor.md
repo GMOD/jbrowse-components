@@ -5,7 +5,7 @@ description: "A variant chord's encoding.color: a CSS color or jexl: callback in
 sidebar_label: Display setting -> ChordColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).
 
 A variant chord's `encoding.color`: a CSS color or `jexl:` callback in
 `value` for every chord, or a `field` of the record whose values each take

@@ -5,7 +5,7 @@ description: "Adds track configs to a session: looking one up by trackId among t
 sidebar_label: Mixin -> TracksManagerSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts).
 
 Adds track configs to a session: looking one up by trackId among the
 config's tracks, assembly sequences and connection tracks, and adding or

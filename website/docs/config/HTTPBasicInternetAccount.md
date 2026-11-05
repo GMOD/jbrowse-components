@@ -5,7 +5,7 @@ description: "Prompts for a username and password, and sends them in an HTTP Bas
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
 
 Prompts for a username and password, and sends them in an HTTP Basic
 `Authorization` header on requests to a matching domain.

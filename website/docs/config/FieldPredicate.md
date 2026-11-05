@@ -5,7 +5,7 @@ description: "One entry of a filter list, Vega-Lite's field predicate: the field
 sidebar_label: Display setting -> FieldPredicate
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/fieldPredicateConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/fieldPredicateConfigSchema.ts).
 
 One entry of a `filter` list, Vega-Lite's field predicate: the `field` of
 each record and the tests its value must pass, every one given. A `filter`

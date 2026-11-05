@@ -5,7 +5,7 @@ description: "Adds connections to a session: the connection instances it has mad
 sidebar_label: Mixin -> ConnectionManagementSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Connections.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Connections.ts).
 
 Adds connections to a session: the connection instances it has made, and
 the configs of the connection tracks the user opened, so those tracks load

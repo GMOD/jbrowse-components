@@ -5,7 +5,7 @@ description: "Reads a set of tabix-indexed VCF files, one per chromosome and key
 sidebar_label: Adapter -> SplitVcfTabixAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
 
 Reads a set of tabix-indexed VCF files, one per chromosome and keyed by
 refName, for a large call set split by chromosome.

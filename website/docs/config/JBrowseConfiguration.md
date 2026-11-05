@@ -5,7 +5,7 @@ description: "Holds the app-wide settings in the configuration key of a config f
 sidebar_label: Root -> JBrowseConfiguration
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/RootConfiguration.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/RootConfiguration.ts).
 
 Holds the app-wide settings in the `configuration` key of a config file,
 beside `assemblies` and `tracks`.

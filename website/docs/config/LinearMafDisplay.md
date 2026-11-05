@@ -5,7 +5,7 @@ description: "The display for a MafTrack: one row per aligned species, with a co
 sidebar_label: Display -> LinearMafDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/configSchema.ts).
 
 The display for a `MafTrack`: one row per aligned species, with a
 conservation summary above them. The slots are show/hide defaults and band

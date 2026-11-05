@@ -5,7 +5,7 @@ description: "The quantitative display: one plot per rendering, drawn over one s
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
 
 The quantitative display: one plot per rendering, drawn over one source or
 over many. `rows: 'source'` puts each source in a separate row, with the

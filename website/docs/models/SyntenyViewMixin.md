@@ -5,7 +5,7 @@ description: "What the linear synteny and dotplot views share beyond SyntenyColo
 sidebar_label: Mixin -> SyntenyViewMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyViewMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyViewMixin.ts).
 
 What the linear synteny and dotplot views share beyond `SyntenyColorsMixin`:
 the level-of-detail tier every track draws at, and a color key the reader

@@ -5,7 +5,7 @@ description: "Adds a list of views to a session, with actions to add, remove, re
 sidebar_label: Mixin -> MultipleViewsSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts).
 
 Adds a list of views to a session, with actions to add, remove, replace and
 reorder them.

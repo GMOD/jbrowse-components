@@ -5,7 +5,7 @@ description: "The multi-way synteny display's gene encoding.color: a CSS color o
 sidebar_label: Display setting -> MultiWayGeneColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColorConfigSchema.ts).
 
 The multi-way synteny display's gene `encoding.color`: a CSS color or
 `jexl:` callback in `value`, or a field whose values each take a range

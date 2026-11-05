@@ -5,7 +5,7 @@ description: "Reads plain-text GTF files, optionally gzipped. The adapter loads 
 sidebar_label: Adapter -> GtfAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
 
 Reads plain-text GTF files, optionally gzipped. The adapter loads the whole
 file into memory, so use `GtfTabixAdapter` for large files.

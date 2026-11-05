@@ -5,7 +5,7 @@ description: "Fetches a file from a Google Drive share link through the Drive AP
 sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx).
 
 Fetches a file from a Google Drive share link through the Drive API, with an
 OAuth 2.0 token from the Google login.

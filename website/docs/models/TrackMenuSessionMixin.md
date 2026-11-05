@@ -5,7 +5,7 @@ description: "The minimal track menus used by the embedded react views, which ha
 sidebar_label: Mixin -> TrackMenuSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenuSessionMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenuSessionMixin.ts).
 
 The minimal track menus used by the embedded react views, which have no
 track-editing actions to offer: just "About track" plus any plugin-contributed

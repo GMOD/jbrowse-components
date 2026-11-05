@@ -5,7 +5,7 @@ description: "The rows setting of the displays that draw one row per value of a 
 sidebar_label: Display setting -> Rows
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowsConfigSchema.ts).
 
 The `rows` setting of the displays that draw one row per value of a field,
 with the dendrogram sidebar beside them: a [RowArrangement](../rowarrangement)

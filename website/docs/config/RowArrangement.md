@@ -5,7 +5,7 @@ description: "The rows setting of a display whose rows are not the values of a f
 sidebar_label: Display setting -> RowArrangement
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).
 
 The `rows` setting of a display whose rows are not the values of a field:
 the MAF display's species rows. It holds the arrangement a reader gives the

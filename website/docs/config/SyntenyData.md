@@ -5,7 +5,7 @@ description: "What a comparative fetch reads of a tiered file (a PIF built with 
 sidebar_label: Display setting -> SyntenyData
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyDataConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyDataConfigSchema.ts).
 
 What a comparative fetch reads of a tiered file (a PIF built with a coarse
 tier), on the linear synteny, dotplot and circular views and the

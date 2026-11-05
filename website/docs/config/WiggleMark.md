@@ -5,7 +5,7 @@ description: "A wiggle display's mark, Vega-Lite's mark object: the type each sc
 sidebar_label: Display setting -> WiggleMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleMarkConfigSchema.ts).
 
 A wiggle display's `mark`, Vega-Lite's mark object: the `type` each score
 draws as, a line's `interpolate`, and the `extent` drawn around each bin. A

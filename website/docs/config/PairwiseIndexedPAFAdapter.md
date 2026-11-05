@@ -5,7 +5,7 @@ description: "Reads a tabix-indexed PAF (PIF) file, fetching only the alignments
 sidebar_label: Adapter -> PairwiseIndexedPAFAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PairwiseIndexedPAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PairwiseIndexedPAFAdapter/configSchema.ts).
 
 Reads a tabix-indexed PAF (PIF) file, fetching only the alignments in view,
 for large synteny datasets. The `uri` shorthand auto-resolves the `.tbi`

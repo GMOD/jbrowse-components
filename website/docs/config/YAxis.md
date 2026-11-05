@@ -5,7 +5,7 @@ description: "A YChannel's axis, the guide it draws: whether it draws at all, it
 sidebar_label: Display setting -> YAxis
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yAxisConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yAxisConfigSchema.ts).
 
 A [YChannel](../ychannel)'s `axis`, the guide it draws: whether it draws
 at all, its `title` and `grid`.

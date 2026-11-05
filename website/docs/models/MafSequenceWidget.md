@@ -5,7 +5,7 @@ description: "Widget showing multiple-alignment (MAF) sequence for a set of samp
 sidebar_label: Widget -> MafSequenceWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
 
 Widget showing multiple-alignment (MAF) sequence for a set of samples over the
 connected view's regions, with per-row hover highlight state.

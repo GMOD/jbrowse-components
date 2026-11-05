@@ -5,7 +5,7 @@ description: "The Hi-C display's encoding, the channels its bins paint through."
 sidebar_label: Display setting -> HicEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicEncodingConfigSchema.ts).
 
 The Hi-C display's `encoding`, the channels its bins paint through.
 

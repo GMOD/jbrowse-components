@@ -5,7 +5,7 @@ description: "The synteny track each row pair of a view's import form has picked
 sidebar_label: Mixin -> ImportFormSyntenyMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ImportFormSyntenyMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ImportFormSyntenyMixin.ts).
 
 The synteny track each row pair of a view's import form has picked, held on
 the model so it outlives the form's per-pair remounts. Composed by the linear

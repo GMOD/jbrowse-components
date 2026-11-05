@@ -5,7 +5,7 @@ description: "Adds the tracks of a JBrowse 1 data directory to the session, tran
 sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
 Adds the tracks of a JBrowse 1 data directory to the session, translated to
 their JBrowse 2 equivalents.

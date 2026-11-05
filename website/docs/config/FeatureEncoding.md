@@ -5,7 +5,7 @@ description: "The feature displays' encoding, the channels the features paint th
 sidebar_label: Display setting -> FeatureEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureEncodingConfigSchema.ts).
 
 The feature displays' `encoding`, the channels the features paint
 through.

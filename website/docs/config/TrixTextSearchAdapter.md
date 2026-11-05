@@ -5,7 +5,7 @@ description: "Looks up search-box terms in a Trix index (.ix and .ixx) built by 
 sidebar_label: Adapter -> TrixTextSearchAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
 
 Looks up search-box terms in a Trix index (`.ix` and `.ixx`) built by
 `jbrowse text-index`.

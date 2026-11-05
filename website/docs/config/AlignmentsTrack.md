@@ -5,7 +5,7 @@ description: "Holds read alignments, such as a BAM or CRAM file, which LinearAli
 sidebar_label: Track -> AlignmentsTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
 
 Holds read alignments, such as a BAM or CRAM file, which
 `LinearAlignmentsDisplay` draws. The track has few settings, and the display

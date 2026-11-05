@@ -5,7 +5,7 @@ description: "A display declared in config: a list of marks, each with an encodi
 sidebar_label: Display -> LinearMarkDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/model.ts).
 
 A display declared in config: a list of marks, each with an encoding from
 feature fields to channels, drawn in order over one score axis from one

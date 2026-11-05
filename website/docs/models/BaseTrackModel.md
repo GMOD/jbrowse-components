@@ -5,7 +5,7 @@ description: "Holds the UI state of a track that is shown in a view, with a refe
 sidebar_label: Track -> BaseTrackModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
 
 Holds the UI state of a track that is *shown* in a view, with a reference to
 its track configuration and the displays drawing it. Only shown tracks have

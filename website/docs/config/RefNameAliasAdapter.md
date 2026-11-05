@@ -5,7 +5,7 @@ description: "Reads refName aliases for an assembly from a UCSC chromAlias file 
 sidebar_label: Adapter -> RefNameAliasAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts).
 
 Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
 other tab-separated table of aliases.

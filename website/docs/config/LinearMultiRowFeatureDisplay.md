@@ -5,7 +5,7 @@ description: "Colored features in stacked rows, one row per value of a feature a
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/configSchema.ts).
 
 Colored features in stacked rows, one row per value of a feature
 attribute: a chromosome painting, an ancestry painting, a chromatin-state

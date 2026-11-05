@@ -5,7 +5,7 @@ description: "The multi-way synteny display's ribbons.encoding.color: one color 
 sidebar_label: Display setting -> RibbonColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
 
 The multi-way synteny display's `ribbons.encoding.color`: one color for
 every ribbon, or a field each ribbon carries: the record's strand (the

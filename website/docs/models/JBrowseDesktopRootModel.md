@@ -5,7 +5,7 @@ description: "Holds JBrowse Desktop's top-level state: the loaded config, the se
 sidebar_label: Root -> JBrowseDesktopRootModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts).
 
 Holds JBrowse Desktop's top-level state: the loaded config, the session,
 internet accounts, undo history, the app menus and the text-indexing jobs.

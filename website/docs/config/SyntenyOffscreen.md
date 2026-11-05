@@ -5,7 +5,7 @@ description: "The linear synteny view's offscreen part: a mark along each edge o
 sidebar_label: View -> SyntenyOffscreen
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/offscreenConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/offscreenConfigSchema.ts).
 
 The linear synteny view's `offscreen` part: a mark along each edge of a
 band for every alignment whose other end lies where the facing row is not

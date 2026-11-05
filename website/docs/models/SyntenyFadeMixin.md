@@ -5,7 +5,7 @@ description: "The fade a view drawing synteny ribbons offers whatever the color 
 sidebar_label: Mixin -> SyntenyFadeMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFadeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFadeMixin.ts).
 
 The fade a view drawing synteny ribbons offers whatever the color mode: a
 sub-pixel alignment by its on-screen width, so a dense whole-genome picture

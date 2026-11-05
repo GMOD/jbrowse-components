@@ -5,7 +5,7 @@ description: "WiggleScoreConfigMixin plus encoding.y.field, for a display that p
 sidebar_label: Mixin -> YFieldConfigMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/YFieldConfigMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/YFieldConfigMixin.ts).
 
 `WiggleScoreConfigMixin` plus `encoding.y.field`, for a display that plots
 one configured feature field through a `yFieldChannelSchema`: the wiggle

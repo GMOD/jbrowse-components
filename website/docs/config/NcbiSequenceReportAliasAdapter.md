@@ -5,7 +5,7 @@ description: "Reads refName aliases for an assembly from an NCBI sequencereport.
 sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
 Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
 file, or the older `<accession>_assembly_report.txt` that UCSC GenArk hubs

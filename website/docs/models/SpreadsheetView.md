@@ -5,7 +5,7 @@ description: "Shows a VCF, BED, BEDPE or STAR-Fusion file as a filterable table 
 sidebar_label: View -> SpreadsheetView
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `spreadsheet-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `spreadsheet-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
 
 Shows a VCF, BED, BEDPE or STAR-Fusion file as a filterable table whose
 rows open their genomic location in a new view.

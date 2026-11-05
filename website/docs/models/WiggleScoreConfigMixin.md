@@ -5,7 +5,7 @@ description: "The score-plot config every display with a score axis shares: the 
 sidebar_label: Mixin -> WiggleScoreConfigMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/WiggleScoreConfigMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/WiggleScoreConfigMixin.ts).
 
 The score-plot config every display with a score axis shares: the axis
 and its guides (`ScoreScaleMixin`) at the display's `paths`. A display

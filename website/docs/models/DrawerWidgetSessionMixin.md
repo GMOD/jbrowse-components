@@ -5,7 +5,7 @@ description: "Adds the widget drawer to a session: the open widgets, which one i
 sidebar_label: Mixin -> DrawerWidgetSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts).
 
 Adds the widget drawer to a session: the open widgets, which one is
 showing, and the drawer's side, width and minimized state.

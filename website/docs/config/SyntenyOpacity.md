@@ -5,7 +5,7 @@ description: "The synteny views' encoding.opacity, as encoding.color is their co
 sidebar_label: View -> SyntenyOpacity
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyOpacityConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyOpacityConfigSchema.ts).
 
 The synteny views' `encoding.opacity`, as `encoding.color` is their color:
 one opacity for every alignment, or a field of each alignment read into

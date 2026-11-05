@@ -5,7 +5,7 @@ description: "The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the
 sidebar_label: Display -> BaseLinearAlignmentsDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/baseConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/baseConfigSchema.ts).
 
 The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
 pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`,

@@ -5,7 +5,7 @@ description: "The mark display drawing a row per value of a feature attribute, w
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/model.ts).
 
 The mark display drawing a row per value of a feature attribute, with the
 menus a painting is read through: One row per..., Group by and Color by.

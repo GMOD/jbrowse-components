@@ -5,7 +5,7 @@ description: "The dotplot's axis: both genome axes, whose ticks grid carries acr
 sidebar_label: View -> DotplotAxis
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/axisConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/axisConfigSchema.ts).
 
 The dotplot's `axis`: both genome axes, whose ticks `grid` carries across
 the plot and `labels` numbers.

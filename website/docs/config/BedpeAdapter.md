@@ -5,7 +5,7 @@ description: "Reads BEDPE files of paired breakends, such as structural variant 
 sidebar_label: Adapter -> BedpeAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts).
 
 Reads BEDPE files of paired breakends, such as structural variant calls
 within a single assembly.

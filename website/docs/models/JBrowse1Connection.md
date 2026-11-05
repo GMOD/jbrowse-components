@@ -5,7 +5,7 @@ description: "Connection that imports tracks from a legacy JBrowse 1 data direct
 sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts).
 
 Connection that imports tracks from a legacy JBrowse 1 data directory,
 composed on the base connection model.

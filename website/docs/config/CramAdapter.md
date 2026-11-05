@@ -5,7 +5,7 @@ description: "Reads CRAM alignments, fetching only the containers overlapping th
 sidebar_label: Adapter -> CramAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
 
 Reads CRAM alignments, fetching only the containers overlapping the visible
 region through the `.crai` index. Decoding happens against the enclosing

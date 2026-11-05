@@ -5,7 +5,7 @@ description: "The zoomed-out tier a display draws in place of its detail past a 
 sidebar_label: Mixin -> CoarseTierMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/CoarseTierMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/CoarseTierMixin.ts).
 
 The zoomed-out tier a display draws in place of its detail past a threshold
 the display sets: MAF's summary bars. This mixin adds the swap decision, the

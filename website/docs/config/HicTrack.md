@@ -5,7 +5,7 @@ description: "Holds a Hi-C contact matrix, usually a .hic file read by HicAdapte
 sidebar_label: Track -> HicTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicTrack/configSchema.ts).
 
 Holds a Hi-C contact matrix, usually a `.hic` file read by `HicAdapter`,
 which `LinearHicDisplay` draws as a triangular heatmap.

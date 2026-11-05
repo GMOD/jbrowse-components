@@ -5,7 +5,7 @@ description: "The LGVSyntenyDisplay's pileup setting: the Pileup object with col
 sidebar_label: Display setting -> LGVSyntenyPileup
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyPileupConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyPileupConfigSchema.ts).
 
 The LGVSyntenyDisplay's `pileup` setting: the [Pileup](../pileup) object
 with `collapsed` defaulting to on, so an all-vs-all track faceted by mate

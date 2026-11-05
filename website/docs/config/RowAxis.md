@@ -5,7 +5,7 @@ description: "rows.axis: the guide down the left of a row display, which draws t
 sidebar_label: Display setting -> RowAxis
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowAxisConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowAxisConfigSchema.ts).
 
 `rows.axis`: the guide down the left of a row display, which draws the
 clustering tree and the row names. A guide nests under its channel

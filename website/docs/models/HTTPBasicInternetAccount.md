@@ -5,7 +5,7 @@ description: "Internet account that authenticates requests with an HTTP Basic us
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/model.tsx).
 
 Internet account that authenticates requests with an HTTP Basic
 username/password the user enters through a dialog, optionally validated with

@@ -5,7 +5,7 @@ description: "The MAF display's conservation setting: the band of identity to th
 sidebar_label: Display setting -> MafConservation
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafConservationConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafConservationConfigSchema.ts).
 
 The MAF display's `conservation` setting: the band of identity to the
 reference drawn above the rows, its height, and the unit one bar stands

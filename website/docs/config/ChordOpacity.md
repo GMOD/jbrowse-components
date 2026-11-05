@@ -5,7 +5,7 @@ description: "A variant chord display's encoding.opacity: one alpha for every re
 sidebar_label: Display setting -> ChordOpacity
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordOpacityConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordOpacityConfigSchema.ts).
 
 A variant chord display's `encoding.opacity`: one alpha for every resting
 chord, over its color's own. A number is written to `value`.

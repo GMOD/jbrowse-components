@@ -5,7 +5,7 @@ description: "Lists a view's available tracks as a tree of categories, with a fi
 sidebar_label: Widget -> HierarchicalTrackSelectorWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
 
 Lists a view's available tracks as a tree of categories, with a filter box,
 favorites and recently used tracks, and a group for each connection.

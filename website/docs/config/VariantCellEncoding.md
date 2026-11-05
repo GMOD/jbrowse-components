@@ -5,7 +5,7 @@ description: "The variant display's encoding, the channels its records and genot
 sidebar_label: Display setting -> VariantCellEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellEncodingConfigSchema.ts).
 
 The variant display's `encoding`, the channels its records and genotype
 cells paint through.

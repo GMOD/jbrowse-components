@@ -5,7 +5,7 @@ description: "The alignments displays' encoding.color: one color for every read 
 sidebar_label: Display setting -> AlignmentsColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts).
 
 The alignments displays' `encoding.color`: one color for every read in
 `value`, or a field of each read. A preset field, listed below, colors by

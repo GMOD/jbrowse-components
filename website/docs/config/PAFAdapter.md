@@ -5,7 +5,7 @@ description: "Reads PAF pairwise alignment files, as written by minimap2 or wfma
 sidebar_label: Adapter -> PAFAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PAFAdapter/configSchema.ts).
 
 Reads PAF pairwise alignment files, as written by minimap2 or wfmash, into
 memory.

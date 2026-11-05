@@ -5,7 +5,7 @@ description: "The MAF display's alignments.reference part: the reference species
 sidebar_label: Display setting -> MafReferenceRow
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafReferenceRowConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafReferenceRowConfigSchema.ts).
 
 The MAF display's `alignments.reference` part: the reference species' own
 row, which every other row is scored against. Under mismatch coloring it

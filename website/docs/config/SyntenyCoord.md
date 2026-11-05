@@ -5,7 +5,7 @@ description: "The coordinate system of the linear synteny and dotplot views, ggp
 sidebar_label: View -> SyntenyCoord
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyCoordConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyCoordConfigSchema.ts).
 
 The coordinate system of the linear synteny and dotplot views, ggplot2's
 `coord_fixed`: `ratio: 1` holds every position axis at one bp per pixel,

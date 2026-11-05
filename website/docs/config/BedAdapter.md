@@ -5,7 +5,7 @@ description: "Reads plain-text BED files. The adapter loads the whole file into 
 sidebar_label: Adapter -> BedAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
 
 Reads plain-text BED files. The adapter loads the whole file into memory, so
 use `BedTabixAdapter` for large files.

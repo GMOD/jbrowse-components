@@ -5,7 +5,7 @@ description: "The filter every view drawing synteny tracks applies to the alignm
 sidebar_label: Mixin -> SyntenyFilterMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFilterMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFilterMixin.ts).
 
 The `filter` every view drawing synteny tracks applies to the alignments:
 the linear synteny view's ribbons, the dotplot's segments and the circular

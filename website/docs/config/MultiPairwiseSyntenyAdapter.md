@@ -5,7 +5,7 @@ description: "Composes pairwise synteny adapters that all name one assembly — 
 sidebar_label: Adapter -> MultiPairwiseSyntenyAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/configSchema.ts).
 
 Composes pairwise synteny adapters that all name one assembly — the anchor —
 into the star an N-genome view draws from one track: hg38 against each UCSC

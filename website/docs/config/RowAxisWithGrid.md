@@ -5,7 +5,7 @@ description: "A RowAxis with grid, Vega-Lite's word for the lines an axis carrie
 sidebar_label: Display setting -> RowAxisWithGrid
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowAxisWithGridConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowAxisWithGridConfigSchema.ts).
 
 A [RowAxis](../rowaxis) with `grid`, Vega-Lite's word for the lines an axis
 carries across the plot: here a hairline between adjacent rows.

@@ -5,7 +5,7 @@ description: "Fetches a UCSC track hub's hub.txt on connect and adds its tracks 
 sidebar_label: Connection -> UCSCTrackHubConnection
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/model.ts).
 
 Fetches a UCSC track hub's `hub.txt` on connect and adds its tracks to the
 session.

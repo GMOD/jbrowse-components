@@ -5,7 +5,7 @@ description: "The alignments display's pileup setting: the band of stacked reads
 sidebar_label: Display setting -> Pileup
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupConfigSchema.ts).
 
 The alignments display's `pileup` setting: the band of stacked reads, the
 `mark` each read draws as, the layout cap, and the parts drawn on each read.

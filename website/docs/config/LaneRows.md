@@ -5,7 +5,7 @@ description: "The multi-way synteny display's rows: one lane per assembly below 
 sidebar_label: Display setting -> LaneRows
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts).
 
 The multi-way synteny display's `rows`: one lane per assembly below the
 anchor, so a lane is always an assembly and the object takes no `field`. It

@@ -5,7 +5,7 @@ description: "The MAF display's alignments.mismatches layer: how each species di
 sidebar_label: Display setting -> MafMismatches
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafMismatchesConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafMismatchesConfigSchema.ts).
 
 The MAF display's `alignments.mismatches` layer: how each species differs
 from the reference, as each differing base in its own color with its

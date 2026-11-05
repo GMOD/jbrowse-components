@@ -5,7 +5,7 @@ description: "Holds jexl callbacks that add, rewrite or hide fields in a track's
 sidebar_label: Root -> FormatAbout
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatAboutConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatAboutConfigSchema.ts).
 
 Holds jexl callbacks that add, rewrite or hide fields in a track's About
 dialog. Every track has this schema, and so does the root config as

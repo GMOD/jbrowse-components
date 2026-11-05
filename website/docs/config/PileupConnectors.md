@@ -5,7 +5,7 @@ description: "The pileup's connectors layer: lines over the pileup rows joining 
 sidebar_label: Display setting -> PileupConnectors
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupConnectorsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupConnectorsConfigSchema.ts).
 
 The pileup's `connectors` layer: lines over the pileup rows joining each
 read to its mate or split segment, colored by

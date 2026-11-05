@@ -5,7 +5,7 @@ description: "A grammar of graphics over a feature, alignments or variant track,
 sidebar_label: Display -> LinearMarkDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/configSchema.ts).
 
 A grammar of graphics over a feature, alignments or variant track,
 experimental in v5: its own settings may still grow. A list of marks —

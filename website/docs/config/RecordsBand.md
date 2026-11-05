@@ -5,7 +5,7 @@ description: "The variant display's records band: the VCF's records, stacked as 
 sidebar_label: Display setting -> RecordsBand
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/recordsBandConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/recordsBandConfigSchema.ts).
 
 The variant display's `records` band: the VCF's records, stacked as a
 feature track stacks them, so a nested SV sits under the one holding it.

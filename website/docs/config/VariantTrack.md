@@ -5,7 +5,7 @@ description: "A feature track that also has ChordVariantDisplay registered to it
 sidebar_label: Track -> VariantTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantTrack/configSchema.ts).
 
 A feature track that also has `ChordVariantDisplay` registered to it and custom
 feature details in `LinearVariantDisplay`

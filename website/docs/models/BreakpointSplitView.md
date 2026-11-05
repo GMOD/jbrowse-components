@@ -5,7 +5,7 @@ description: "Stacks linear genome views of the regions on each side of a struct
 sidebar_label: View -> BreakpointSplitView
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `breakpoint-split-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `breakpoint-split-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts).
 
 Stacks linear genome views of the regions on each side of a
 structural-variant breakpoint, and draws the reads and variant calls that

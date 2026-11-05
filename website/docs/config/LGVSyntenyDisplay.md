@@ -5,7 +5,7 @@ description: "Draws a SyntenyTrack's alignments in a linear genome view, stacked
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts).
 
 Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
 colored the way an alignments display draws reads. It has the alignments

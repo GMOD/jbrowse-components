@@ -5,7 +5,7 @@ description: "The rows of a LinearWiggleDisplay on a MultiQuantitativeTrack: a Q
 sidebar_label: Display setting -> WiggleRows
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/wiggleRowsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/wiggleRowsConfigSchema.ts).
 
 The `rows` of a `LinearWiggleDisplay` on a `MultiQuantitativeTrack`: a
 [QuantitativeRows](../quantitativerows) whose `field` defaults to `source`,

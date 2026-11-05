@@ -5,7 +5,7 @@ description: "Reads a bgzip-compressed TAF (Taffy) multiple alignment file throu
 sidebar_label: Adapter -> BgzipTaffyAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipTaffyAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipTaffyAdapter/configSchema.ts).
 
 Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
 `.tai` index.

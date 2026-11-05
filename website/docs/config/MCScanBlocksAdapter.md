@@ -5,7 +5,7 @@ description: "Loads a multi-genome MCScan (jcvi) .blocks file: a reference-ancho
 sidebar_label: Adapter -> MCScanBlocksAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts).
 
 Loads a multi-genome MCScan (jcvi) `.blocks` file: a reference-anchored,
 tab-delimited table where column 0 is a reference gene and each further

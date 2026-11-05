@@ -5,7 +5,7 @@ description: "The root's \"the plugin set changed\" flag. It latches: a plugin s
 sidebar_label: Mixin -> PluginsUpdatedMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/PluginsUpdated/index.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/PluginsUpdated/index.ts).
 
 The root's "the plugin set changed" flag. It latches: a plugin set only
 changes by rebuilding the plugin manager, which replaces this root.

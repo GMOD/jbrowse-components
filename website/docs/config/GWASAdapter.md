@@ -5,7 +5,7 @@ description: "Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like
 sidebar_label: Adapter -> GWASAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
 
 Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like file. The
 adapter is a `BedTabixAdapter` whose `scoreColumn` defaults to

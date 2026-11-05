@@ -5,7 +5,7 @@ description: "The region-too-large gate: a display opts in by overriding gateEna
 sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
 
 The region-too-large gate: a display opts in by overriding `gateEnabled` and
 passing `byteLimit: self.resolvedByteLimit()` to its fetch RPC. The RPC

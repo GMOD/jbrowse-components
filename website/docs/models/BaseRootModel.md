@@ -5,7 +5,7 @@ description: "Holds the loaded config, the session, the assembly manager and the
 sidebar_label: Root -> BaseRootModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
 
 Holds the loaded config, the session, the assembly manager and the RPC
 manager. Every JBrowse product's root model composes this one.

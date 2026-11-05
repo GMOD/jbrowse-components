@@ -5,7 +5,7 @@ description: "Shared base for internet accounts whose token the user supplies th
 sidebar_label: Internet Account -> TokenEntryInternetAccount
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/tokenEntryModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/tokenEntryModelFactory.ts).
 
 Shared base for internet accounts whose token the user supplies through a
 dialog (HTTP Basic, external token). Such accounts differ in their `type`,

@@ -5,7 +5,7 @@ description: "Supplies an assembly's reference names and sizes inline in the con
 sidebar_label: Adapter -> FromConfigRegionsAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigRegionsAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigRegionsAdapter/configSchema.ts).
 
 Supplies an assembly's reference names and sizes inline in the config, with
 no sequence.

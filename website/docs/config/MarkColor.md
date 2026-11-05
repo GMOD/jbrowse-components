@@ -5,7 +5,7 @@ description: "A mark's encoding.color: one CSS color or jexl: callback for every
 sidebar_label: Display setting -> MarkColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).
 
 A mark's `encoding.color`: one CSS color or `jexl:` callback for every
 instance in `value`, or a `field` through `scale`, Vega-Lite's scale

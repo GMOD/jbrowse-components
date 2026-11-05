@@ -5,7 +5,7 @@ description: "Undo/redo history for a target state-tree node: records snapshots 
 sidebar_label: General -> TimeTraveller
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
 
 Undo/redo history for a target state-tree node: records snapshots as it
 changes and exposes canUndo/canRedo with undo/redo actions.

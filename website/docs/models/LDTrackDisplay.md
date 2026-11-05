@@ -5,7 +5,7 @@ description: "A linkage disequilibrium matrix read from a pre-computed file, dra
 sidebar_label: Display -> LDTrackDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/model.ts).
 
 A linkage disequilibrium matrix read from a pre-computed file, drawn as a
 triangle over the view.

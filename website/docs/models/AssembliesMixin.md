@@ -5,7 +5,7 @@ description: "Adds sessionAssemblies (admin-aware, persisted-with-session assemb
 sidebar_label: Mixin -> AssembliesMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/Assemblies/AssembliesMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/Assemblies/AssembliesMixin.ts).
 
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).

@@ -5,7 +5,7 @@ description: "Adds a token header to each request for a file on one of the accou
 sidebar_label: Internet Account -> BaseInternetAccountModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts).
 
 Adds a token header to each request for a file on one of the account's
 domains, keeping the token in `sessionStorage`. Every internet account type

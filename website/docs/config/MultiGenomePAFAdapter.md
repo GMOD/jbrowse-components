@@ -5,7 +5,7 @@ description: "Loads a single PAF holding alignments among several genomes, where
 sidebar_label: Adapter -> MultiGenomePAFAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomePAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomePAFAdapter/configSchema.ts).
 
 Loads a single PAF holding alignments among several genomes, where every
 sequence name is PanSN-prefixed with its assembly (`sample#haplotype#contig`).

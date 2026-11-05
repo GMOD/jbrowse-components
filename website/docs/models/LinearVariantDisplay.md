@@ -5,7 +5,7 @@ description: "The variant display: a VCF's records stacked as a feature track st
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts).
 
 The variant display: a VCF's records stacked as a feature track stacks
 them, over one genotype row per sample, with the feature widget on a click

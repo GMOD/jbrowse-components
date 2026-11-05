@@ -5,7 +5,7 @@ description: "FetchMixin plus the one freshness compare a single-payload fetch r
 sidebar_label: Mixin -> KeyedFetchMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/KeyedFetchMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/KeyedFetchMixin.ts).
 
 `FetchMixin` plus the one freshness compare a single-payload fetch runs: the
 key of what the view, settings and adapter call for (`currentFetchKey`)

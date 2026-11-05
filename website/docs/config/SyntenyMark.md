@@ -5,7 +5,7 @@ description: "How each synteny ribbon draws between its two rows: the linear syn
 sidebar_label: View -> SyntenyMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyMarkConfigSchema.ts).
 
 How each synteny ribbon draws between its two rows: the linear synteny
 view's `mark` and the multi-way display's `ribbons.mark`. Straight sides read a ribbon's slant as the offset between the rows;

@@ -5,7 +5,7 @@ description: "The alignments displays' sort setting: the pileup's row order, by 
 sidebar_label: Display setting -> AlignmentsSort
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts).
 
 The alignments displays' `sort` setting: the pileup's row order, by the
 `field` it ranks the reads on. A whole-window order is a string —

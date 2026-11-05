@@ -5,7 +5,7 @@ description: "Reads plain-text SAM alignments, from a file or an inline string."
 sidebar_label: Adapter -> SamAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/SamAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/SamAdapter/configSchema.ts).
 
 Reads plain-text SAM alignments, from a file or an inline string.
 

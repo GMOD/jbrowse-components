@@ -5,7 +5,7 @@ description: "The mark display's encoding: the channels every mark reads unless 
 sidebar_label: Display setting -> MarkDisplayEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markDisplayEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markDisplayEncodingConfigSchema.ts).
 
 The mark display's `encoding`: the channels every mark reads unless it
 says otherwise, as ggplot2's plot-level aesthetics are each layer's. `y`

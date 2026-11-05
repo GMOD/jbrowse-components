@@ -5,7 +5,7 @@ description: "The read connections' encoding.strokeWidth, the width each arc or 
 sidebar_label: Display setting -> ReadConnectionsStrokeWidth
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsStrokeWidthConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsStrokeWidthConfigSchema.ts).
 
 The read connections' `encoding.strokeWidth`, the width each arc or line
 strokes at. By default each connection's `reads`, the reads that agree on

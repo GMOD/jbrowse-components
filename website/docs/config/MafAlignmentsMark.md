@@ -5,7 +5,7 @@ description: "The MAF rows' mark, the glyph each aligned base draws as: its heig
 sidebar_label: Display setting -> MafAlignmentsMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafAlignmentsMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafAlignmentsMarkConfigSchema.ts).
 
 The MAF rows' `mark`, the glyph each aligned base draws as: its `height`,
 spelled as the mark display's `rect`.

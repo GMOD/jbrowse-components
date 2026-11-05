@@ -5,7 +5,7 @@ description: "One entry of a mark display's rows.groups: a row joins the group o
 sidebar_label: Display setting -> RowGroup
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowGroupConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowGroupConfigSchema.ts).
 
 One entry of a mark display's `rows.groups`: a row joins the `group` of the
 first entry whose `match` regex its name matches, `facet: 'group'` stacks

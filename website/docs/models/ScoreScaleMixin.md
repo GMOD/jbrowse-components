@@ -5,7 +5,7 @@ description: "Value scale, read and written at a YScalePaths map's paths (encodi
 sidebar_label: Mixin -> ScoreScaleMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
 Value scale, read and written at a `YScalePaths` map's paths (`encoding.y`, the coverage band's `coverage.encoding.y`). `yChannelSchema` / `yFieldChannelSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `fenceQuantile` / `clipFenceQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
 

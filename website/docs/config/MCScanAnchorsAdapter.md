@@ -5,7 +5,7 @@ description: "Reads gene-level synteny from an MCScan (jcvi) .anchors file and t
 sidebar_label: Adapter -> MCScanAnchorsAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/configSchema.ts).
 
 Reads gene-level synteny from an MCScan (jcvi) `.anchors` file and the two
 BED files that place its genes.

@@ -5,7 +5,7 @@ description: "The alignments displays' tooltip: the field the read hover's first
 sidebar_label: Display setting -> ReadTooltip
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readTooltipConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readTooltipConfigSchema.ts).
 
 The alignments displays' `tooltip`: the `field` the read hover's first line
 reads, spelt as `encoding.color` and `facet` spell one — a field, a path

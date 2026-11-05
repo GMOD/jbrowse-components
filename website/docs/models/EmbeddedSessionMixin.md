@@ -5,7 +5,7 @@ description: "Everything the two single-view embedded products' sessions (react-
 sidebar_label: Mixin -> EmbeddedSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/embedded/EmbeddedSessionMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/embedded/EmbeddedSessionMixin.ts).
 
 Everything the two single-view embedded products' sessions
 (react-linear-genome-view, react-circular-genome-view) share: the mixin set

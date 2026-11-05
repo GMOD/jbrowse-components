@@ -5,7 +5,7 @@ description: "The color settings every view drawing synteny tracks shares — th
 sidebar_label: Mixin -> SyntenyColorsMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts).
 
 The color settings every view drawing synteny tracks shares — the linear
 synteny view, the dotplot and the circular view: `TrackColorsMixin`'s

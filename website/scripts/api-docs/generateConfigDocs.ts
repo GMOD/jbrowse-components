@@ -721,7 +721,7 @@ export function renderConfig(
       stripNameTautology(header.docs, header.name),
       `Configuration slots of ${header.name}.`,
     ),
-    notes: `Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts.`,
+    notes: `Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
     body: section(
       lead,

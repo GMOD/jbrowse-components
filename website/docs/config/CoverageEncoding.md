@@ -5,7 +5,7 @@ description: "The coverage band's encoding: y, its depth axis, a YChannel. scale
 sidebar_label: Display setting -> CoverageEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageEncodingConfigSchema.ts).
 
 The coverage band's `encoding`: `y`, its depth axis, a
 [YChannel](../ychannel). `scale.constant` starts at 1, which makes symlog

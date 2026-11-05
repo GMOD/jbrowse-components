@@ -5,7 +5,7 @@ description: "What the circular view's chord and ribbon displays share: the feat
 sidebar_label: Display -> BaseChordDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/BaseChordDisplay.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/BaseChordDisplay.ts).
 
 What the circular view's chord and ribbon displays share: the features, the
 slice index a feature end is looked up in, and the lifecycle getters

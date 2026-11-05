@@ -5,7 +5,7 @@ description: "The Manhattan plot: the default display of a GWAS track, and one a
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
 
 The Manhattan plot: the default display of a GWAS track, and one a
 FeatureTrack can switch to. It is the mark display with a point per feature

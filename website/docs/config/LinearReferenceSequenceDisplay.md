@@ -5,7 +5,7 @@ description: "Draws a ReferenceSequenceTrack as rows of bases: the forward stran
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts).
 
 Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
 reverse complement and the translation frames.

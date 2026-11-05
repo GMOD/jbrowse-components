@@ -447,7 +447,7 @@ function renderModel(
       header.docs,
       `Properties, getters and actions of the ${header.name} state model.`,
     ),
-    notes: `Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts.`,
+    notes: `Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts.`,
     sourcePath: filename,
     body,
   })

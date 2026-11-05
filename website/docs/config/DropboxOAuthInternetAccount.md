@@ -5,7 +5,7 @@ description: "Signs requests for Dropbox files with an OAuth 2.0 token, with the
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
 
 Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
 endpoints and domains filled in.

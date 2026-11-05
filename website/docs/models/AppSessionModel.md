@@ -5,7 +5,7 @@ description: "The session every full app (desktop, web, react-app) is built on: 
 sidebar_label: Session -> AppSessionModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppSession/AppSessionModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppSession/AppSessionModel.ts).
 
 The session every full app (desktop, web, react-app) is built on: views in
 a workspace layout, session tracks and assemblies, theme and preferences.

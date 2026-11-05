@@ -5,7 +5,7 @@ description: "Internet account that authenticates requests with a user-supplied 
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx).
 
 Internet account that authenticates requests with a user-supplied external
 token, prompting for the token via a dialog and optionally validating it with

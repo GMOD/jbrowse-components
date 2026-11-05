@@ -5,7 +5,7 @@ description: "The alignments display's readConnections setting: the band of conn
 sidebar_label: Display setting -> ReadConnections
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsConfigSchema.ts).
 
 The alignments display's `readConnections` setting: the band of
 connections between mates and split segments, drawn as arcs or as the read

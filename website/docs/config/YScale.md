@@ -5,7 +5,7 @@ description: "A YChannel's scale: its type, its pinned ends, the outlier fence a
 sidebar_label: Display setting -> YScale
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yScaleConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yScaleConfigSchema.ts).
 
 A [YChannel](../ychannel)'s `scale`: its type, its pinned ends, the outlier
 fence an unpinned end follows, and the group it autoscales with. An end

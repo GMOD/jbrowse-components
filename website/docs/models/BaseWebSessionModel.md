@@ -5,7 +5,7 @@ description: "Composable web session shared by jbrowse-web and react-app, before
 sidebar_label: Session -> BaseWebSessionModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WebSession/BaseWebSession.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WebSession/BaseWebSession.ts).
 
 Composable web session shared by jbrowse-web and react-app, before
 `finalizeSession` (the snapshotProcessor can't be `compose`d).

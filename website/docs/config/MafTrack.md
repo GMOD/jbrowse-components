@@ -5,7 +5,7 @@ description: "Holds a multiple alignment from a MAF or TAF file, which LinearMaf
 sidebar_label: Track -> MafTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTrack/configSchema.ts).
 
 Holds a multiple alignment from a MAF or TAF file, which `LinearMafDisplay`
 draws as one row per aligned species with a conservation summary above them.

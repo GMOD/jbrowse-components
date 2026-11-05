@@ -5,7 +5,7 @@ description: "The linear synteny view's navigation: how a move on one genome row
 sidebar_label: View -> SyntenyNavigation
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/navigationConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/navigationConfigSchema.ts).
 
 The linear synteny view's `navigation`: how a move on one genome row
 carries to the others. With `follow` on, the rows follow the `anchor` row

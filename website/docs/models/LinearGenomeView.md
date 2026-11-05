@@ -5,7 +5,7 @@ description: "Stacks tracks under a horizontal axis of one or more genomic regio
 sidebar_label: View -> LinearGenomeView
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
 
 Stacks tracks under a horizontal axis of one or more genomic regions laid
 end to end, which the user scrolls, zooms and searches.

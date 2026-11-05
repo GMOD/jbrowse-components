@@ -5,7 +5,7 @@ description: "A chord display's mark: how far each chord or ribbon curves in tow
 sidebar_label: Display setting -> ChordMark
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/chordMarkConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/chordMarkConfigSchema.ts).
 
 A chord display's `mark`: how far each chord or ribbon curves in toward the
 center. A chord's curve scales with its length, so two ends at one locus

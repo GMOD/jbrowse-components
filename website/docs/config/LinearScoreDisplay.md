@@ -5,7 +5,7 @@ description: "Config for the worked-example score display. Attaches to any Featu
 sidebar_label: Display -> LinearScoreDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/configSchema.ts).
 
 Config for the worked-example score display. Attaches to any `FeatureTrack`.
 

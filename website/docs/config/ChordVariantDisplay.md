@@ -5,7 +5,7 @@ description: "Draws the structural variants of a VariantTrack in a CircularView,
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/configSchema.ts).
 
 Draws the structural variants of a `VariantTrack` in a `CircularView`, each
 translocation as a chord across the circle.

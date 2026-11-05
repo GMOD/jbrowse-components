@@ -5,7 +5,7 @@ description: "Draws a VariantTrack: its records, stacked as a feature track stac
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
 
 Draws a `VariantTrack`: its records, stacked as a feature track stacks
 them (`records`), over one genotype row per sample or per phased haplotype

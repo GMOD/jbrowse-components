@@ -5,7 +5,7 @@ description: "The alignments displays' encoding, the channels the reads paint th
 sidebar_label: Display setting -> AlignmentsEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsEncodingConfigSchema.ts).
 
 The alignments displays' `encoding`, the channels the reads paint through.
 

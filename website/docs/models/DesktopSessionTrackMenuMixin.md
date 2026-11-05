@@ -5,7 +5,7 @@ description: "Adds the desktop track menu to a session: Settings, Copy and Delet
 sidebar_label: Mixin -> DesktopSessionTrackMenuMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
 
 Adds the desktop track menu to a session: Settings, Copy and Delete, plus
 Index track for a track whose adapter supports text indexing.

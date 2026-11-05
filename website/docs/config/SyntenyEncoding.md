@@ -5,7 +5,7 @@ description: "The linear synteny, dotplot and circular views' encoding: the chan
 sidebar_label: View -> SyntenyEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyEncodingConfigSchema.ts).
 
 The linear synteny, dotplot and circular views' `encoding`: the channels
 every track in the view paints its alignments through.

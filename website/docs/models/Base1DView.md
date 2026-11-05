@@ -5,7 +5,7 @@ description: "Holds a one-dimensional axis of displayed regions, with its zoom a
 sidebar_label: General -> Base1DView
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
 
 Holds a one-dimensional axis of displayed regions, with its zoom and scroll
 offset, for views other than the linear genome view, such as the two axes of

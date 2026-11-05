@@ -5,7 +5,7 @@ description: "What a Hi-C display's fetch reads of the file: resolution steps th
 sidebar_label: Display setting -> HicData
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicDataConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicDataConfigSchema.ts).
 
 What a Hi-C display's fetch reads of the file: `resolution` steps the
 binsize from the one the zoom picks, and `normalization` is the matrix

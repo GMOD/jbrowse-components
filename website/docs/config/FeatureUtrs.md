@@ -5,7 +5,7 @@ description: "The gene glyphs' utrs, the thinner boxes a coding transcript draws
 sidebar_label: Display setting -> FeatureUtrs
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureUtrsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureUtrsConfigSchema.ts).
 
 The gene glyphs' `utrs`, the thinner boxes a coding transcript draws past
 its CDS, which `encoding.color` paints. Unset, a UTR takes its transcript's

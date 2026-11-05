@@ -5,7 +5,7 @@ description: "User preferences for the sequence readout under a feature's detail
 sidebar_label: Widget -> SequenceFeatureDetails
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts).
 
 User preferences for the sequence readout under a feature's details, seeded
 from and written straight back to localStorage. The model is not snapshotted

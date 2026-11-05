@@ -5,7 +5,7 @@ description: "The tabix-indexed (PIF) form of the MultiGenomePAFAdapter."
 sidebar_label: Adapter -> MultiGenomeIndexedPAFAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomeIndexedPAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomeIndexedPAFAdapter/configSchema.ts).
 
 The tabix-indexed (PIF) form of the `MultiGenomePAFAdapter`. Run
 `jbrowse make-pif all_vs_all.paf` on a multi-genome PAF whose sequence names

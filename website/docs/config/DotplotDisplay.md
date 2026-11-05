@@ -5,7 +5,7 @@ description: "Draws a SyntenyTrack as a dot plot inside a DotplotView."
 sidebar_label: Display -> DotplotDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
 
 Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
 

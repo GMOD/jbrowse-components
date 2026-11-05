@@ -5,7 +5,7 @@ description: "Scans the reference for a list of named motifs, e.g. restriction e
 sidebar_label: Adapter -> MotifListAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/MotifListAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/MotifListAdapter/configSchema.ts).
 
 Scans the reference for a list of named motifs, e.g. restriction enzyme
 recognition sites.

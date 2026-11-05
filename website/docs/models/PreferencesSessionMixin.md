@@ -5,7 +5,7 @@ description: "Loads and saves a user's preference overrides (the BaseSession pre
 sidebar_label: Mixin -> PreferencesSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts).
 
 Loads and saves a user's preference overrides (the BaseSession
 `preferencesOverrides` volatile) in localStorage. Products that let users

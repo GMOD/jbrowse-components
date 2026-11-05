@@ -5,7 +5,7 @@ description: "Adds the tracks of another JBrowse 2 config.json to the session, a
 sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
 
 Adds the tracks of another JBrowse 2 `config.json` to the session, along
 with any assemblies it declares that the session lacks.

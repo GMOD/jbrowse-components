@@ -5,7 +5,7 @@ description: "Holds a session's name, focused view, highlights and notifications
 sidebar_label: Session -> BaseSessionModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts).
 
 Holds a session's name, focused view, highlights and notifications. Every
 product's session composes this model, so add to it with care.

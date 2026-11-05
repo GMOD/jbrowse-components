@@ -5,7 +5,7 @@ description: "The variant display's encoding.color: the hue of every record and 
 sidebar_label: Display setting -> VariantCellColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellColorConfigSchema.ts).
 
 The variant display's `encoding.color`: the hue of every record and of
 every genotype cell with an alt allele, which a heterozygote paints

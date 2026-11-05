@@ -5,7 +5,7 @@ description: "Fetches another JBrowse 2 config.json on connect and adds its trac
 sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/model.ts).
 
 Fetches another JBrowse 2 `config.json` on connect and adds its tracks to
 the session.

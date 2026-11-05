@@ -5,7 +5,7 @@ description: "Reads synteny blocks from an MCScan (jcvi) .anchors.simple file an
 sidebar_label: Adapter -> MCScanSimpleAnchorsAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts).
 
 Reads synteny blocks from an MCScan (jcvi) `.anchors.simple` file and the
 two BED files that place its genes.

@@ -5,7 +5,7 @@ description: "The alignments display's normalInsertSize setting: the insert size
 sidebar_label: Display setting -> NormalInsertSize
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts).
 
 The alignments display's `normalInsertSize` setting: the insert sizes a
 proper pair counts as `normal`, which every reader of

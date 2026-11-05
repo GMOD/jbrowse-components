@@ -5,7 +5,7 @@ description: "The linear synteny view's axis: each row's ruler, whose ticks grid
 sidebar_label: View -> LinearSyntenyAxis
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/axisConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/axisConfigSchema.ts).
 
 The linear synteny view's `axis`: each row's ruler, whose ticks `grid`
 carries down through the ribbons to the coordinates they pair with on the

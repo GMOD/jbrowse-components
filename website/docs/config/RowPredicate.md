@@ -5,7 +5,7 @@ description: "One entry of rows.filter: a FieldPredicate over a row attribute, a
 sidebar_label: Display setting -> RowPredicate
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowPredicateConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowPredicateConfigSchema.ts).
 
 One entry of `rows.filter`: a [FieldPredicate](../fieldpredicate) over a
 row attribute, a samplesTsv column on the variant display, a subtrack field

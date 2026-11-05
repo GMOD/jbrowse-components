@@ -5,7 +5,7 @@ description: "Holds the Add track widget's form: the data file and its index, th
 sidebar_label: Widget -> AddTrackModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/AddTrackWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/AddTrackWidget/model.ts).
 
 Holds the Add track widget's form: the data file and its index, the adapter
 and track type guessed from them, the track name and assembly, and the URL

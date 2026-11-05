@@ -5,7 +5,7 @@ description: "What the tiered adapter said about its file, held by every display
 sidebar_label: Mixin -> LodTierInfoMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/LodTierInfoMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/LodTierInfoMixin.ts).
 
 What the tiered adapter said about its file, held by every display that
 resolves a level-of-detail tier (LinearSyntenyDisplay, DotplotDisplay,

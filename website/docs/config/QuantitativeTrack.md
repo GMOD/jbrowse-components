@@ -5,7 +5,7 @@ description: "Holds a numeric signal such as coverage or conservation, usually f
 sidebar_label: Track -> QuantitativeTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
 
 Holds a numeric signal such as coverage or conservation, usually from a
 BigWig file, which `LinearWiggleDisplay` draws as a bar plot or density.

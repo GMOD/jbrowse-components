@@ -5,7 +5,7 @@ description: "Session getters shared by the \"app\" products (desktop + web) tha
 sidebar_label: Mixin -> AppSessionMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppSession/AppSessionMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppSession/AppSessionMixin.ts).
 
 Session getters shared by the "app" products (desktop + web) that simply
 delegate to the root model — `version`, `history`, `menus`,

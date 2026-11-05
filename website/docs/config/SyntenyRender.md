@@ -5,7 +5,7 @@ description: "How the linear synteny and circular views rasterize their ribbons,
 sidebar_label: View -> SyntenyRender
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyRenderConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyRenderConfigSchema.ts).
 
 How the linear synteny and circular views rasterize their ribbons, apart
 from what the data says: `antialias` gives a ribbon thinner than a pixel

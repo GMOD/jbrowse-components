@@ -5,7 +5,7 @@ description: "A Rows whose rows can scroll: step, the row height, beside the fie
 sidebar_label: Display setting -> RowsWithStep
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowsWithStepConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowsWithStepConfigSchema.ts).
 
 A [Rows](../rows) whose rows can scroll: `step`, the row height, beside
 the field, the arrangement and the axis. The mark displays' `rows`, and the

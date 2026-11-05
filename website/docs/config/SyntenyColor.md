@@ -5,7 +5,7 @@ description: "The linear synteny, dotplot and circular views' encoding.color, wh
 sidebar_label: View -> SyntenyColor
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorConfigSchema.ts).
 
 The linear synteny, dotplot and circular views' `encoding.color`, which
 every track in the view paints with: one color for every alignment, or a

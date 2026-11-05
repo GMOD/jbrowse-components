@@ -5,7 +5,7 @@ description: "Holds a connection's name and the assemblies its tracks belong to.
 sidebar_label: Connection -> BaseConnection
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts).
 
 Holds a connection's name and the assemblies its tracks belong to. Every
 connection type has these slots.

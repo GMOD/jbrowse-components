@@ -5,7 +5,7 @@ description: "The pileup's mismatches.encoding.opacity. Unset, each mismatched b
 sidebar_label: Display setting -> PileupMismatchesOpacity
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts).
 
 The pileup's `mismatches.encoding.opacity`. Unset, each mismatched base
 fades by its Phred base quality through a linear scale, by default from 0.1

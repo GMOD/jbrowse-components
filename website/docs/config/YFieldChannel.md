@@ -5,7 +5,7 @@ description: "A YChannel that also names the field it plots, the wiggle display'
 sidebar_label: Display setting -> YFieldChannel
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yFieldChannelConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yFieldChannelConfigSchema.ts).
 
 A [YChannel](../ychannel) that also names the field it plots, the wiggle
 display's `encoding.y`. A bare string is the `field`.

@@ -5,7 +5,7 @@ description: "The alignments display's sashimi setting: the junction arcs, over 
 sidebar_label: Display setting -> Sashimi
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/sashimiConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/sashimiConfigSchema.ts).
 
 The alignments display's `sashimi` setting: the junction arcs, over the
 coverage band or in a strip below it, and in that strip alone while

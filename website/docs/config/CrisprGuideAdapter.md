@@ -5,7 +5,7 @@ description: "Note: don't set sequenceAdapter — JBrowse supplies it from the a
 sidebar_label: Adapter -> CrisprGuideAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
 
 Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
 track is displayed against. Setting it by hand pins the scan to one sequence

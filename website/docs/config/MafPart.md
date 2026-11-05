@@ -5,7 +5,7 @@ description: "One part drawn over the MAF display's rows, alignments.inversions 
 sidebar_label: Display setting -> MafPart
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafPartConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafPartConfigSchema.ts).
 
 One part drawn over the MAF display's rows, `alignments.inversions` or
 `.frames`, which `show` turns on.

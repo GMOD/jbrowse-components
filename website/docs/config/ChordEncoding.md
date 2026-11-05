@@ -5,7 +5,7 @@ description: "A variant chord display's encoding, the channels its chords paint 
 sidebar_label: Display setting -> ChordEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordEncodingConfigSchema.ts).
 
 A variant chord display's `encoding`, the channels its chords paint
 through.

@@ -5,7 +5,7 @@ description: "rows.tree, the dendrogram beside the rows: its newick, and where a
 sidebar_label: Display setting -> RowTree
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowTreeConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowTreeConfigSchema.ts).
 
 `rows.tree`, the dendrogram beside the rows: its newick, and where a
 clustering run computed it, the locus and settings it ran with. A string is

@@ -5,7 +5,7 @@ description: "Per-region fetch lifecycle for LGV-based GPU displays."
 sidebar_label: Mixin -> MultiRegionDisplayMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/MultiRegionDisplayMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/MultiRegionDisplayMixin.ts).
 
 Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
 autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,

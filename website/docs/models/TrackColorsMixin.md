@@ -5,7 +5,7 @@ description: "The color-by state shared by every view that can draw more than on
 sidebar_label: Mixin -> TrackColorsMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
 
 The color-by state shared by every view that can draw more than one synteny
 track at once: the view-wide color object and the palette that tells overlaid tracks

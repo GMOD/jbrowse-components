@@ -5,7 +5,7 @@ description: "Reads an uncompressed FASTA reference sequence through its samtool
 sidebar_label: Adapter -> IndexedFastaAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/IndexedFastaAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/IndexedFastaAdapter/configSchema.ts).
 
 Reads an uncompressed FASTA reference sequence through its `samtools faidx`
 index, fetching the bases in view as byte ranges.

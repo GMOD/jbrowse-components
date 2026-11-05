@@ -5,7 +5,7 @@ description: "Multiple alignment format converted to a bgzipped, tabix-indexed B
 sidebar_label: Adapter -> MafTabixAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
 
 Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
 `nhLocation` newick tree orders and labels the species rows; `refAssemblyName`

@@ -5,7 +5,7 @@ description: "The variant display's rows: one per sample, or with field: 'haplot
 sidebar_label: Display setting -> VariantRows
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/variantRowsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/variantRowsConfigSchema.ts).
 
 The variant display's `rows`: one per sample, or with `field:
 'haplotype'` one per phased haplotype, with the

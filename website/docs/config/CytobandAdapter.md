@@ -5,7 +5,7 @@ description: "Reads an assembly's cytoband file, which the linear genome view dr
 sidebar_label: Adapter -> CytobandAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
 
 Reads an assembly's cytoband file, which the linear genome view draws as
 ideogram banding in its overview bar.

@@ -5,7 +5,7 @@ description: "Reads plain-text bedGraph signal files. The adapter loads the whol
 sidebar_label: Adapter -> BedGraphAdapter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
 
 Reads plain-text bedGraph signal files. The adapter loads the whole file into
 memory, so use `BedGraphTabixAdapter` for large files.

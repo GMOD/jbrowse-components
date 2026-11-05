@@ -5,7 +5,7 @@ description: "The fetch foundation of the two comparative displays (LinearSynten
 sidebar_label: Mixin -> ComparativeFetchMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ComparativeFetchMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ComparativeFetchMixin.ts).
 
 The fetch foundation of the two comparative displays (LinearSyntenyDisplay,
 DotplotDisplay): `KeyedFetchMixin` — `FetchMixin`'s rotation, loading flag,

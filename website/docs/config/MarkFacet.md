@@ -5,7 +5,7 @@ description: "The mark display's facet: the Facet the feature and alignments dis
 sidebar_label: Display setting -> MarkFacet
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markFacetConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markFacetConfigSchema.ts).
 
 The mark display's `facet`: the [Facet](../facet) the feature and alignments
 displays take, one labelled section of the track per value of a field, plus

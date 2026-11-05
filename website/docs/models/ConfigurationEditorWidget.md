@@ -5,7 +5,7 @@ description: "Widget for a config's settings: a short form over the common ones 
 sidebar_label: Widget -> ConfigurationEditorWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
 Widget for a config's settings: a short form over the common ones and a JSON
 editor over all of them. Holds the target configuration and debounce-saves

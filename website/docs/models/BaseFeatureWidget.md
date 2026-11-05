@@ -5,7 +5,7 @@ description: "The feature-details panel. featureData is the clicked feature with
 sidebar_label: Widget -> BaseFeatureWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts).
 
 The feature-details panel. `featureData` is the clicked feature with the
 track's and the session's `formatDetails` callbacks applied, derived on read

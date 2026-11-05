@@ -5,7 +5,7 @@ description: "The pileup's bases layer, a cell per base over the reads: show tur
 sidebar_label: Display setting -> PileupBases
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupBasesConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupBasesConfigSchema.ts).
 
 The pileup's `bases` layer, a cell per base over the reads: `show` turns it
 on and `encoding.color` names what it paints. It draws while `show` is on

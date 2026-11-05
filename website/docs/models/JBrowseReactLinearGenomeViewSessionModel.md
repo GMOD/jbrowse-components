@@ -5,7 +5,7 @@ description: "The shared EmbeddedSessionMixin plus this product's tracks mixin, 
 sidebar_label: Session -> JBrowseReactLinearGenomeViewSessionModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createSessionModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createSessionModel.ts).
 
 The shared EmbeddedSessionMixin plus this product's tracks mixin, its
 single LinearGenomeView, and `disableAddTracks`, which is a root prop rather

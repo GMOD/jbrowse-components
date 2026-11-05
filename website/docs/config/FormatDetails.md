@@ -5,7 +5,7 @@ description: "Holds jexl callbacks that add, rewrite or hide fields in the featu
 sidebar_label: Root -> FormatDetails
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
 
 Holds jexl callbacks that add, rewrite or hide fields in the feature-details
 panel. Every track has this schema, and so does the root config as

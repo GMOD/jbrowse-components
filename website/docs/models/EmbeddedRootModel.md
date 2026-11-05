@@ -5,7 +5,7 @@ description: "Root model shared by the single-view embedded products (react-line
 sidebar_label: Root -> EmbeddedRootModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/embedded/createEmbeddedRootModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/embedded/createEmbeddedRootModel.ts).
 
 Root model shared by the single-view embedded products
 (react-linear-genome-view, react-circular-genome-view). Each product supplies

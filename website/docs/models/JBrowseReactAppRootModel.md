@@ -5,7 +5,7 @@ description: "Holds the top-level state of the embeddable JBrowse React app: the
 sidebar_label: Root -> JBrowseReactAppRootModel
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/rootModel/rootModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/rootModel/rootModel.ts).
 
 Holds the top-level state of the embeddable JBrowse React app: the loaded
 config, the session, internet accounts and the app menus.

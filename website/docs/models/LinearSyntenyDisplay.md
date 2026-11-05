@@ -5,7 +5,7 @@ description: "Pure-data model. The containing LinearSyntenyView owns the shared 
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
 
 Pure-data model. The containing LinearSyntenyView owns the shared GPU
 backend, the upload autorun (which watches every display's `instanceData`

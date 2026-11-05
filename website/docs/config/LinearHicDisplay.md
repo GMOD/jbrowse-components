@@ -5,7 +5,7 @@ description: "Draws a HicTrack's contact matrix as a triangular heatmap in the l
 sidebar_label: Display -> LinearHicDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/configSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/configSchema.ts).
 
 Draws a `HicTrack`'s contact matrix as a triangular heatmap in the linear
 genome view, at a bin size that follows the zoom.

@@ -5,7 +5,7 @@ description: "Draws where a SyntenyTrack's alignments fall in a plain linear gen
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
 
 Draws where a `SyntenyTrack`'s alignments fall in a plain linear genome
 view, with menu items that open them in a synteny view.

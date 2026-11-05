@@ -5,7 +5,7 @@ description: "Holds a whole JBrowse config file: the config.json of jbrowse-web,
 sidebar_label: Root -> JBrowseRootConfig
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
 
 Holds a whole JBrowse config file: the `config.json` of jbrowse-web, or a
 file with the `.jbrowse` extension in jbrowse-desktop.

@@ -5,7 +5,7 @@ description: "Sets an admin's or embedder's defaults for user-facing preferences
 sidebar_label: Root -> PreferencesConfigSchema
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/PreferencesConfig.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/PreferencesConfig.ts).
 
 Sets an admin's or embedder's defaults for user-facing preferences, found on
 the root config as `configuration.preferences`. Each user's runtime

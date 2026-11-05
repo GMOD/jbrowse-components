@@ -5,7 +5,7 @@ description: "The LGVSyntenyDisplay's coverage setting: the CoverageBand object 
 sidebar_label: Display setting -> LGVSyntenyCoverage
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyCoverageConfigSchema.ts).
+Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyCoverageConfigSchema.ts).
 
 The LGVSyntenyDisplay's `coverage` setting: the
 [CoverageBand](../coverageband) object with `show` defaulting to off.

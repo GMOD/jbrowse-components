@@ -5,7 +5,7 @@ description: "Draws a ReferenceSequenceTrack as rows of bases: the forward stran
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts).
 
 Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
 reverse complement and the translation frames.

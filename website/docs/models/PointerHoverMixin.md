@@ -5,7 +5,7 @@ description: "A hover derived from the pointer. The hit type, as the type parame
 sidebar_label: Mixin -> PointerHoverMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/PointerHoverMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/PointerHoverMixin.ts).
 
 A hover derived from the pointer. The hit type, as the type parameter. Brings the `pointer` volatile, `setPointer` for the chrome's `onPointerPosition`, the `hoverHitAt` hook a display overrides, and the `hoveredFeature` getter `BaseDisplay` declares as a hook
 
