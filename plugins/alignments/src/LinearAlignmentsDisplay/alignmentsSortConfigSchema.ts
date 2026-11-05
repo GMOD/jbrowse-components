@@ -111,7 +111,7 @@ export function sortOf(
   canonical: (refName: string) => string,
   fallbackRefName?: string,
 ): { layoutOrder: LayoutOrder; sortColumn: SortColumn | undefined } {
-  const field: string = readConfObject(sort, 'field')
+  const field = readConfObject(sort, 'field')
   const pos = readConfObject(sort, 'pos')
   const refName = readConfObject(sort, 'refName') ?? fallbackRefName
   return isLayoutOrder(field)
@@ -139,7 +139,7 @@ export function sortOf(
 export function sortProblems(
   sort: Instance<typeof alignmentsSortConfigSchema>,
 ) {
-  const field: string = readConfObject(sort, 'field')
+  const field = readConfObject(sort, 'field')
   return isColumnSortField(field) && readConfObject(sort, 'pos') === undefined
     ? [
         `sort: ${field} ranks the reads over one column, and with no pos they keep position order`,

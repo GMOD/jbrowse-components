@@ -5,11 +5,11 @@ import RpcClient from './RpcClient.ts'
 import { deserializeError } from './serializeError/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { PluginDefinition } from '../pluginDefinitions.ts'
 import type { RpcStatus, StatusCallback } from '../util/progress.ts'
 import type { RpcHandles } from './RpcRegistry.ts'
+import type { RpcConfigModel } from './configSchema.ts'
 
 export interface WorkerHandle {
   destroy(): void
@@ -258,7 +258,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
 
   constructor(
     pluginManager: PluginManager,
-    config: AnyConfigurationModel,
+    config: RpcConfigModel,
     private options: WebWorkerRpcDriverOptions,
   ) {
     super(pluginManager, config)

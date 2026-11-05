@@ -50,7 +50,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * `rows.kept` as a choice: undefined while it names no lane
      */
     get laneChoice(): readonly string[] | undefined {
-      const kept: readonly string[] = getConf(self, ['rows', 'kept'])
+      const kept = getConf(self, ['rows', 'kept'])
       return kept.length ? kept : undefined
     },
     /** #getter */

@@ -196,7 +196,7 @@ export function variantDrawnRowViews(self: VariantDrawnRowHost) {
      * `TreeSidebarMixin.rowFocus`.
      */
     get rowFocus(): readonly string[] | undefined {
-      const kept: string[] = getConf(self, ['rows', 'kept'])
+      const kept = getConf(self, ['rows', 'kept'])
       return self.drawsGenotypeRows && kept.length ? kept : undefined
     },
     /**

@@ -4,6 +4,9 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import HiddenGroupsMixin from './HiddenGroupsMixin.ts'
 import { sectionFacetConfigSchema } from './sectionFacetConfigSchema.ts'
 
+import type { GroupKeySpaceHost } from './HiddenGroupsMixin.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+
 const HostConfig = ConfigurationSchema('HiddenGroupsHost', {
   facet: sectionFacetConfigSchema,
 })
@@ -87,4 +90,10 @@ test("a key-space move drops the display's own state and keeps the facet's", () 
   expect(getSnapshot(host.configuration.facet)).toMatchObject({
     hidden: ['1'],
   })
+})
+
+const hiddenGroupsPin: HostChecksSlotNames<GroupKeySpaceHost> = true
+
+test('the host type checks facet slot names', () => {
+  expect(hiddenGroupsPin).toBe(true)
 })

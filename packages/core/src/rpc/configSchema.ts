@@ -1,12 +1,14 @@
 import { ConfigurationSchema } from '../configuration/index.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config RpcOptions
  * #category root
  * Chooses whether data fetching runs on the main thread or in web workers, and
  * how many workers to start. Found on the root config as `configuration.rpc`.
  */
-export default ConfigurationSchema(
+const rpcConfigSchema = ConfigurationSchema(
   'RpcOptions',
   {
     /**
@@ -57,3 +59,7 @@ export default ConfigurationSchema(
     },
   },
 )
+
+export interface RpcConfigModel extends Instance<typeof rpcConfigSchema> {}
+
+export default rpcConfigSchema

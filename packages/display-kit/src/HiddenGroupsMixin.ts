@@ -2,14 +2,17 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { sectionFacetConfigSchema } from './sectionFacetConfigSchema.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const NO_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
 
 /** The whole of what `HiddenGroupsMixin` needs a composing display to be. */
 export interface GroupKeySpaceHost {
   groupKeySpace: string
-  configuration: AnyConfigurationModel
+  configuration: ConfigModelForFields<{
+    facet: typeof sectionFacetConfigSchema
+  }>
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
@@ -37,7 +40,7 @@ export function hiddenGroupsViews(self: GroupKeySpaceHost) {
       ) {
         return NO_HIDDEN_GROUPS
       }
-      const hidden: readonly string[] = getConf(self, ['facet', 'hidden'])
+      const hidden = getConf(self, ['facet', 'hidden'])
       return hidden.length > 0 ? new Set(hidden) : NO_HIDDEN_GROUPS
     },
   }

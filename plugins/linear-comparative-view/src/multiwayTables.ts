@@ -236,10 +236,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
   })
   const color = conf.ribbons.encoding.color
   const setting = colorSnapshotOf(color)
-  const rowLabels: Record<string, string> = readConfObject(conf, [
-    'rows',
-    'labels',
-  ])
+  const rowLabels = readConfObject(conf, ['rows', 'labels'])
   return {
     ...paintedRibbonColor(setting),
     paint: colorPaintOf(color),

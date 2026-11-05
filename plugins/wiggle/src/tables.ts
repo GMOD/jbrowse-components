@@ -21,7 +21,6 @@ import {
   wiggleTrackTypeOf,
 } from './shared/wiggleStaticHost.ts'
 
-import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
 import type { WiggleTrackType } from './shared/wiggleStaticHost.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
@@ -173,11 +172,8 @@ export async function wiggleTables(
     domain[1],
     rawConstant,
   )
-  const mark: WiggleMark = readConfObject(conf, ['mark', 'type'])
-  const interpolate: LineInterpolation = readConfObject(conf, [
-    'mark',
-    'interpolate',
-  ])
+  const mark = readConfObject(conf, ['mark', 'type'])
+  const interpolate = readConfObject(conf, ['mark', 'interpolate'])
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, gpuProps).map(layer => ({
       layer,

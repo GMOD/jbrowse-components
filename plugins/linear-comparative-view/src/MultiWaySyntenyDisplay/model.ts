@@ -964,7 +964,7 @@ export function stateModelFactory(
             }
           }
         }
-        const written: string[] = getConf(self, ['rows', 'sort'])
+        const written = getConf(self, ['rows', 'sort'])
         return [
           ...new Set(
             written.map(name => spelled.get(self.laneKey(name)) ?? name),
@@ -1064,7 +1064,7 @@ export function stateModelFactory(
        * `rows.labels`, keyed by `laneKey`
        */
       get rowLabels() {
-        const labels: Record<string, string> = getConf(self, ['rows', 'labels'])
+        const labels = getConf(self, ['rows', 'labels'])
         return new Map(
           Object.entries(labels).map(([name, label]) => [
             self.laneKey(name),
@@ -1422,7 +1422,7 @@ export function stateModelFactory(
        * keyed by each lane's own spelling, not by `laneKey`
        */
       get laneGeneTracks() {
-        const entries: string[] = getConf(self, 'laneGeneTracks')
+        const entries = getConf(self, 'laneGeneTracks')
         return laneGeneTracksOf({
           lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
           keyOf: self.laneKey,
@@ -2538,12 +2538,7 @@ export function stateModelFactory(
        * the picker the ribbon Color by's Solid color... opens
        */
       openRibbonSolidColorDialog() {
-        const written: string | undefined = getConf(self, [
-          'ribbons',
-          'encoding',
-          'color',
-          'value',
-        ])
+        const written = getConf(self, ['ribbons', 'encoding', 'color', 'value'])
         getSession(self).queueDialog(handleClose => [
           SolidColorDialog,
           {

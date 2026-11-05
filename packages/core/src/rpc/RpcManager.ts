@@ -6,9 +6,9 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type { RpcCallArgs, RpcCallReturn } from './RpcRegistry.ts'
+import type { RpcConfigModel } from './configSchema.ts'
 
 export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
@@ -23,7 +23,7 @@ export default class RpcManager {
   static configSchema = rpcConfigSchema
 
   private pluginManager: PluginManager
-  private mainConfiguration: AnyConfigurationModel
+  private mainConfiguration: RpcConfigModel
   private hostDriverName: string
   private makeWorkerInstance?: () => Worker
   private driver?: BaseRpcDriver
@@ -31,7 +31,7 @@ export default class RpcManager {
 
   constructor(
     pluginManager: PluginManager,
-    mainConfiguration: AnyConfigurationModel,
+    mainConfiguration: RpcConfigModel,
     {
       makeWorkerInstance,
       defaultDriverName = 'MainThreadRpcDriver',

@@ -1,9 +1,9 @@
 import { checkAbortSignal, withAbortCheck } from '../util/aborting.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { RpcHandles } from './RpcRegistry.ts'
+import type { RpcConfigModel } from './configSchema.ts'
 
 /**
  * The method that drops a session's cached adapters, named once because
@@ -21,7 +21,7 @@ export default abstract class BaseRpcDriver {
   // where a worker boots rather than on the dispatch path. ADR-086.
   constructor(
     protected pluginManager: PluginManager,
-    public config: AnyConfigurationModel,
+    public config: RpcConfigModel,
   ) {}
 
   /**

@@ -114,7 +114,7 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
      * answers undefined while they are hidden.
      */
     get rowFocus(): readonly string[] | undefined {
-      const kept: string[] = getConf(self, ['rows', 'kept'])
+      const kept = getConf(self, ['rows', 'kept'])
       return kept.length ? kept : undefined
     },
     /**

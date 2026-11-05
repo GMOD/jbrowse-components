@@ -254,10 +254,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * no rows `normal`, a feature track's default.
      */
     get recordsDisplayMode(): DisplayMode {
-      const written: DisplayMode | undefined = getConf(self, [
-        'records',
-        'displayMode',
-      ])
+      const written = getConf(self, ['records', 'displayMode'])
       return written ?? (self.recordsOnly ? 'normal' : 'compact')
     },
     /**
