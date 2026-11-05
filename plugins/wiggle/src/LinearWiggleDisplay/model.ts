@@ -13,9 +13,7 @@ import {
   getEnv,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -59,7 +57,6 @@ import {
   wiggleSidebarViews,
 } from '../shared/wiggleAxisViews.ts'
 import {
-  declaredCuts,
   wiggleColorProblems,
   wiggleColorSettingOf,
 } from '../shared/wiggleColor.ts'
@@ -69,6 +66,10 @@ import {
 } from '../shared/wiggleConfigViews.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import { wiggleFeatureWidgetData } from '../shared/wiggleHitTest.ts'
+import {
+  wiggleColorScaleViews,
+  wiggleScoreKeyViews,
+} from '../shared/wiggleKeyViews.ts'
 import {
   makeMarkSizeMenuItems,
   makeRenderingTypeSubMenu,
@@ -99,7 +100,6 @@ import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -372,6 +372,7 @@ export default function stateModelFactory(
     .views(self => wiggleRowsBoxViews(self))
     .views(self => wiggleRowHeightViews(self))
     .views(self => wigglePlotViews(self))
+    .views(self => wiggleScoreKeyViews(self))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
       /**
@@ -413,44 +414,6 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The key a threshold with declared cuts draws: one row per interval,
-       * labelled by the span it covers. A threshold cutting at the `origin`
-       * draws none, because the axis already shows where the origin is and a
-       * `< 0` / `≥ 0` key on every bigWig adds nothing a reader asked
-       * for. A heatmap has no axis, so its threshold keys the origin's cut
-       * too.
-       */
-      get thresholdColorScale(): ColorScale | undefined {
-        const encoding = self.colorEncoding
-        const threshold =
-          typeof encoding === 'object' && encoding.scale === 'threshold'
-        const declared = declaredCuts(encoding)
-        const cuts =
-          declared.length > 0 || !self.isDensityMode || !threshold
-            ? declared
-            : self.wiggleColor.cuts
-        if (cuts.length === 0) {
-          return undefined
-        }
-        const { posColor, negColor, innerColors } = self.wiggleColor
-        const colors = [negColor, ...innerColors, posColor]
-        const { scale } = self.colorSetting
-        const spans = thresholdLabels(cuts)
-        const names = keyNames(spans, scale.names ?? [])
-        return {
-          kind: 'categorical',
-          id: 'threshold',
-          title: self.colorKeyTitle,
-          entries: spans.map((span, i) => ({
-            value: span,
-            label: names.get(span) ?? span,
-            color: colors[i]!,
-          })),
-        }
-      },
-
-      /**
-       * #getter
        * Offset the track label above the plot so the left y-axis stays pinned
        * to the content edge instead of dodging right of the label, and so a
        * stack of rows is not hidden behind it. One density plot draws no left
@@ -459,39 +422,8 @@ export default function stateModelFactory(
       get prefersOffset() {
         return !self.isDensityMode || self.isRowLayout
       },
-
-      /**
-       * #getter
-       * `LegendMixin`'s hook: the score ramp or threshold key, then the row
-       * color key, except in a shared panel painting the score gradient,
-       * where no row color shows.
-       */
-      get colorScales(): ColorScale[] {
-        const scales: ColorScale[] = []
-        if (self.scoreColorScale) {
-          scales.push(self.scoreColorScale)
-        }
-        if (this.thresholdColorScale) {
-          scales.push(this.thresholdColorScale)
-        }
-        if (self.isRowLayout || self.rowColorPaintsMarks) {
-          scales.push(...self.rowColorScales)
-        }
-        return scales
-      },
-
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: off in overlay, which collapses every
-       * source onto one row, so a tree spreading its leaves over the full
-       * height would align to nothing. A subtree filter
-       * set in a row mode still applies and is still clearable from the track
-       * menu and WiggleHint.
-       */
-      get drawsTree(): boolean {
-        return self.isRowLayout
-      },
     }))
+    .views(self => wiggleColorScaleViews(self))
     .views(self => {
       const superConfigProblemsOf = self.configProblemsOf
       return {

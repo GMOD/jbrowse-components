@@ -1,6 +1,5 @@
 import {
   canonicalSpelling,
-  getConf,
   getConfigurationSchemaMetadata,
   isKeyedWrites,
   keyedBase,
@@ -18,9 +17,7 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
 import {
-  treeOfLeaves,
   buildTree,
-  computeClusterHierarchy,
   getLeafNames,
   keptRows,
   matchBandClades,
@@ -30,8 +27,6 @@ import { maxNodeHeight } from './hierarchy.ts'
 import {
   filteredRows,
   listedNames,
-  narrowRows,
-  narrows,
   rowFilterText,
   unmatchedKeptNames,
   unreadRowFields,
@@ -60,17 +55,22 @@ import {
   clusterableRowViews,
   editableRowViews,
   expandedRowViews,
+  hierarchyViews,
   listsInOrder,
   resolvedRowColorViews,
   rowAliasViews,
   rowFocusLineViews,
   rowNarrowingShowsViews,
   rowOrderViews,
+  rowTreeRootViews,
   rowTreeViews,
+  rowsContentHeightViews,
   rowsTopOffsetViews,
   sourceViews,
+  treeSidebarAxisConfigViews,
   treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
+  treeSidebarTreeHookDefaults,
 } from './treeSidebarRowViews.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
@@ -80,11 +80,7 @@ import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-  RowSource,
-} from './types.ts'
+import type { HoveredTreeNode, RowSource } from './types.ts'
 import type {
   AnyConfigurationModel,
   KeyedWrites,
@@ -105,6 +101,9 @@ export interface TreeSidebarHost {
 }
 
 const host = (self: object) => self as TreeSidebarHost
+
+const withRowHeight = <T extends object>(self: T) =>
+  self as T & Pick<TreeSidebarHost, 'effectiveRowHeight'>
 
 type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
 type RowsMembers = Partial<
@@ -239,8 +238,9 @@ export interface ClusterRun {
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and each with its resolved color as `rowColor`, then
  * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
- * in the bands `rowBanding` names. The stages, the row colors and where
- * the rows start (`rowsTopOffset`) are written in `treeSidebarRowViews.ts`,
+ * in the bands `rowBanding` names. The stages, the row colors, where
+ * the rows start (`rowsTopOffset`) and the dendrogram positioned against them
+ * (`hierarchy`) are written in `treeSidebarRowViews.ts`,
  * which a tables export installs on a model of its own beside its display's
  * row hooks, so it arranges and colors the rows as the view does.
  *
@@ -297,39 +297,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       treeCanvas: null as HTMLCanvasElement | null,
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
+    .views(self => treeSidebarAxisConfigViews(host(self)))
     .views(self => ({
-      /**
-       * #getter
-       * Whether the dendrogram sidebar is drawn.
-       */
-      get showTree(): boolean {
-        return getConf(host(self), ['rows', 'axis', 'tree'])
-      },
-      /**
-       * #getter
-       * Whether the tree draws nodes at their branch length (dendrogram) or
-       * evenly by topology (cladogram).
-       */
-      get showBranchLength(): boolean {
-        return getConf(host(self), ['rows', 'axis', 'branchLength'])
-      },
-      /**
-       * #getter
-       * Whether each row's name is drawn over the left of the plot.
-       */
-      get showRowLabels(): boolean {
-        return getConf(host(self), ['rows', 'axis', 'labels'])
-      },
-      /**
-       * #getter
-       * Width in px of the sidebar the dendrogram draws in. On the config
-       * rather than the display snapshot for the same reason `height` is: the
-       * config node outlives the display instance, so a dragged width survives
-       * unticking and reticking the track.
-       */
-      get treeAreaWidth(): number {
-        return getConf(host(self), ['rows', 'axis', 'width'])
-      },
       /**
        * #getter
        * Overridable hook: whether the track lists its rows before any region
@@ -575,35 +544,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           ? !rotationLists(rotatable, order)
           : orderDropsTree(self.rowTree, self.rowSort, order)
       },
-      /**
-       * #getter
-       * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
-       * reading as a row with no attributes; none where it keeps no leaf.
-       */
-      get root() {
-        const tree = self.parsedTree
-        const narrowing = self.rowNarrowing
-        // the rows' attributes, read only where a filter tests them, so a
-        // region arrival re-prunes no tree `kept` alone narrows
-        const rows = new Map<string, { name: string }>(
-          narrowing.filter.length > 0
-            ? self.expandedRows.map(row => [row.name, row])
-            : [],
-        )
-        const leaves =
-          tree && narrows(narrowing)
-            ? narrowRows(
-                getLeafNames(tree).map(name => rows.get(name) ?? { name }),
-                narrowing,
-              ).map(leaf => leaf.name)
-            : undefined
-        return tree && leaves
-          ? leaves.length > 0
-            ? treeOfLeaves(tree, leaves)
-            : undefined
-          : tree
-      },
     }))
+    .views(self => rowTreeRootViews<S>(self))
     .views(self => ({
       /**
        * #method
@@ -624,29 +566,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get autoClusterReady(): boolean {
         return self.clusterableSources.length > 1
       },
-      /**
-       * #getter
-       * Overridable hook: the tree `hierarchy` positions, `root` by default.
-       * `computeClusterHierarchy` declines to position a tree whose leaves are
-       * no longer the rows drawn, so a display that hides a row prunes it from
-       * the tree here too, or the whole dendrogram goes with the row.
-       */
-      get treeRoot() {
-        return self.root
-      },
-      /**
-       * #getter
-       * Overridable hook: whether the dendrogram draws at all, true by
-       * default; off wherever the rows it would lay against are not drawn.
-       * This is the single gate: the on-screen sidebar, the SVG export,
-       * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
-       * reserves all read `hierarchy`, so nothing keeps drawing or reserving
-       * space when the tree is off.
-       */
-      get drawsTree(): boolean {
-        return true
-      },
     }))
+    .views(self => treeSidebarTreeHookDefaults(self))
+    .views(self => rowsContentHeightViews(withRowHeight(self)))
+    .views(self => hierarchyViews(self))
     .views(self => ({
       /**
        * #getter
@@ -659,41 +582,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The px the rows stack to, `sources` × `effectiveRowHeight`, which the
-       * dendrogram's leaves spread over: the content the rows scroll through,
-       * never the viewport they scroll inside.
-       */
-      get rowsContentHeight(): number {
-        return self.sources.length * host(self).effectiveRowHeight
-      },
-      /**
-       * #getter
-       * The dendrogram positioned against the rows drawn, or undefined while
-       * there is no tree or `drawsTree` is off. `computeClusterHierarchy`
-       * checks the tree's leaves against the drawn row names, the backstop
-       * against anything reordering `sources` downstream of the arrangement:
-       * such a reorder drops the dendrogram rather than drawing it against
-       * rows it does not name.
-       */
-      get hierarchy(): ClusterHierarchyNode | undefined {
-        return self.drawsTree
-          ? computeClusterHierarchy(
-              self.treeRoot,
-              self.sources,
-              this.rowsContentHeight,
-              self.treeAreaWidth,
-              self.showBranchLength,
-              self.rowBands,
-            )
-          : undefined
-      },
-      /**
-       * #getter
        * The hit index the sidebar's subtree hover reads, built from
        * `hierarchy`.
        */
       get spatialIndex(): TreeSpatialIndex | undefined {
-        const { hierarchy } = this
+        const { hierarchy } = self
         return hierarchy && buildSpatialIndex(hierarchy)
       },
     }))

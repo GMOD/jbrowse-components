@@ -1,5 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
-import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
+import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import {
   abgrToHex,
   cssColorToHex,
@@ -15,16 +15,21 @@ import {
   clusterableRowViews,
   editableRowViews,
   expandedRowViews,
+  hierarchyViews,
   resolvedRowColorViews,
   rowAliasViews,
   rowFocusLineViews,
   rowNarrowingShowsViews,
   rowOrderViews,
+  rowTreeRootViews,
   rowTreeViews,
+  rowsContentHeightViews,
   rowsTopOffsetViews,
   sourceViews,
+  treeSidebarAxisConfigViews,
   treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
+  treeSidebarTreeHookDefaults,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import {
   YFieldConfigMixin,
@@ -39,12 +44,21 @@ import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/di
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
-import { scoreRampFill, scoreRampScale } from './shared/scoreRampScale.ts'
+import { scoreRampFill } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
+import {
+  wiggleAxisViews,
+  wiggleRowLabelViews,
+  wiggleSidebarViews,
+} from './shared/wiggleAxisViews.ts'
 import {
   wiggleConfigViews,
   wiggleModeViews,
 } from './shared/wiggleConfigViews.ts'
+import {
+  wiggleColorScaleViews,
+  wiggleScoreKeyViews,
+} from './shared/wiggleKeyViews.ts'
 import {
   wiggleAutoscaleViews,
   wiggleDomainViews,
@@ -119,6 +133,9 @@ function wiggleTablesHost(
     .views(self => rowNarrowingShowsViews<Source>(self))
     .views(self => rowFocusLineViews(self))
     .views(self => rowsTopOffsetViews(self))
+    .views(self => treeSidebarAxisConfigViews(self))
+    .views(self => rowTreeRootViews<Source>(self))
+    .views(self => treeSidebarTreeHookDefaults(self))
     .views(self => wiggleRowHookViews(self))
     .views(self => wiggleDomainViews(self))
     .views(self => wiggleResolveViews(self))
@@ -127,6 +144,13 @@ function wiggleTablesHost(
     .views(self => wiggleRowsBoxViews(self))
     .views(self => wiggleRowHeightViews(self))
     .views(self => wigglePlotViews(self))
+    .views(self => rowsContentHeightViews(self))
+    .views(self => hierarchyViews(self))
+    .views(self => wiggleRowLabelViews(self))
+    .views(self => wiggleSidebarViews(self))
+    .views(self => wiggleAxisViews(self))
+    .views(self => wiggleScoreKeyViews(self))
+    .views(self => wiggleColorScaleViews(self))
 }
 
 const QuantitativeTablesHost = wiggleTablesHost(linearWiggleDisplayConfigSchema)
@@ -179,9 +203,12 @@ export interface WiggleTablesArgs {
  * `band`), each mark in the color it paints and reaching down to `low`, the
  * band's min or the origin bars grow from; `scoreScale`, the score axis the
  * display autoscales to under `encoding.y`, its `domain`, `type` and
- * `symlogConstant`; `rules`, the reference lines it draws; `ramps`, the color
- * bar its key shows where one ramp paints every row (`rampKeyOf`); and
- * `warnings`, the samples file's. For a host that draws them itself, such as
+ * `symlogConstant`; `rules`, the reference lines it draws, none where it
+ * rules no band, as a density plot does not; `ramps`, the color bar its key
+ * shows where one ramp paints every row (`rampKeyOf`); `legend` and
+ * `legendTitle`, the categorical key beside it (`colorKeyTables`): the
+ * threshold bands and the row color key, the subtracks of an overlay or a
+ * `rows.color` field's values; and `warnings`, the samples file's. For a host that draws them itself, such as
  * R through V8. The adapters must be registered on `pluginManager`
  * (`registerWiggleAdapters`).
  */
@@ -249,7 +276,7 @@ export async function wiggleTables(
     scaleType,
     rawConstant,
     rules,
-    colorKeyTitle,
+    key,
     origin,
     summaryField,
     rowLayout,
@@ -266,12 +293,14 @@ export async function wiggleTables(
       domain: resolveRenderState(model.domain, d => d),
       scaleType: model.scaleType,
       rawConstant: model.symlogConstant,
-      rules: model.scoreRules.map(rule => ({
-        value: rule.value,
-        color: cssColorToHex(rule.color ?? DEFAULT_RULE_COLOR),
-        label: rule.label ?? '',
-      })),
-      colorKeyTitle: model.colorKeyTitle,
+      rules: model.scoreRulesDrawn
+        ? model.scoreRules.map(rule => ({
+            value: rule.value,
+            color: cssColorToHex(rule.color ?? DEFAULT_RULE_COLOR),
+            label: rule.label ?? '',
+          }))
+        : [],
+      key: colorKeyTables(model.colorScales),
       origin: model.origin,
       summaryField: model.summaryField,
       rowLayout: model.isRowLayout,
@@ -409,19 +438,9 @@ export async function wiggleTables(
       color: rules.map(r => r.color),
       label: rules.map(r => r.label),
     },
-    ramps: scoreRamp
-      ? [
-          rampKeyOf(
-            scoreRampScale(
-              domain,
-              scaleType,
-              rawConstant,
-              scoreRamp,
-              colorKeyTitle,
-            ),
-          ),
-        ]
-      : [],
+    ramps: key.ramps,
+    legend: key.legend,
+    legendTitle: key.legendTitle,
     scoreScale: { domain, type: scaleType, symlogConstant },
     summaryField,
     mark,

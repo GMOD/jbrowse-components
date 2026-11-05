@@ -160,8 +160,10 @@ only the stages downstream of it:
 - `sources`, the display's: palette, MAF's reference row.
 
 The stages, the hook defaults, the `rows` reads they start from, the row
-colors and key, and where the rows start (`rowNarrowingShows`,
-`rowFocusLineHeight`, `rowsTopOffset`) are written once, in
+colors and key, where the rows start (`rowNarrowingShows`,
+`rowFocusLineHeight`, `rowsTopOffset`), and the tree beside them (the
+`rows.axis` reads, `root`, the `treeRoot` and `drawsTree` hooks,
+`rowsContentHeight`, `hierarchy`) are written once, in
 `treeSidebarRowViews.ts`, as one views function per stage, each reading only
 through `self` what an earlier stage or a hook gives. The mixin installs them as
 `.views()` layers, so each getter stays its own computed and a display's

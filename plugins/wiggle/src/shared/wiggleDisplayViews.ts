@@ -1,9 +1,7 @@
-import { scoreRampScale } from './scoreRampScale.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
-import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
 /**
  * Where a wiggle-family display puts its plot inside its own height: one plot
@@ -45,27 +43,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
  */
 export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
   return {
-    /**
-     * #getter
-     * The score ramp as a color scale, or undefined when there is no single
-     * ramp to describe or no domain yet. `LegendMixin`'s `colorScales` lists
-     * it, so the on-screen key and the export draw one bar. The bar is drawn
-     * from the resolved color — the same cached LUT bytes both renderers
-     * color through — so a declared ramp's key is what the track paints.
-     */
-    get scoreColorScale(): RampScale | undefined {
-      const { rampLut, rampMid } = self.wiggleColor
-      return self.domain && rampLut
-        ? scoreRampScale(
-            self.domain,
-            self.scaleType,
-            self.symlogConstant,
-            { rampLut, rampMid },
-            self.colorKeyTitle,
-          )
-        : undefined
-    },
-
     /**
      * #getter
      */

@@ -53,5 +53,16 @@ export function wiggleRowHookViews(self: WiggleRowHookHost) {
     get rowNoun(): string {
       return 'Subtrack'
     },
+    /**
+     * #getter
+     * `TreeSidebarMixin`'s hook: off in overlay, which collapses every
+     * source onto one row, so a tree spreading its leaves over the full
+     * height would align to nothing. A subtree filter
+     * set in a row mode still applies and is still clearable from the track
+     * menu and WiggleHint.
+     */
+    get drawsTree(): boolean {
+      return self.isRowLayout
+    },
   }
 }

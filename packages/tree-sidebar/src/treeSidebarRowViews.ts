@@ -4,7 +4,12 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
-import { buildTree, getLeafNames } from './clusterUtils.ts'
+import {
+  buildTree,
+  computeClusterHierarchy,
+  getLeafNames,
+  treeOfLeaves,
+} from './clusterUtils.ts'
 import { narrowRows, narrows } from './narrowRows.ts'
 import {
   liftRowColor,
@@ -34,7 +39,11 @@ import type { HierarchyNode } from './hierarchy.ts'
 import type { RowNarrowing } from './narrowRows.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
 import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
-import type { ClusterNodeData, RowSource } from './types.ts'
+import type {
+  ClusterHierarchyNode,
+  ClusterNodeData,
+  RowSource,
+} from './types.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -726,6 +735,164 @@ export function rowsTopOffsetViews(self: {
      */
     get rowsTopOffset(): number {
       return self.rowsHeaderHeight + self.rowFocusLineHeight
+    },
+  }
+}
+
+/** The `rows.axis` toggles the sidebar draws its tree and labels by. */
+export function treeSidebarAxisConfigViews(self: TreeSidebarRowsConfigHost) {
+  return {
+    /**
+     * #getter
+     * Whether the dendrogram sidebar is drawn.
+     */
+    get showTree(): boolean {
+      return getConf(self, ['rows', 'axis', 'tree'])
+    },
+    /**
+     * #getter
+     * Whether the tree draws nodes at their branch length (dendrogram) or
+     * evenly by topology (cladogram).
+     */
+    get showBranchLength(): boolean {
+      return getConf(self, ['rows', 'axis', 'branchLength'])
+    },
+    /**
+     * #getter
+     * Whether each row's name is drawn over the left of the plot.
+     */
+    get showRowLabels(): boolean {
+      return getConf(self, ['rows', 'axis', 'labels'])
+    },
+    /**
+     * #getter
+     * Width in px of the sidebar the dendrogram draws in. On the config
+     * rather than the display snapshot for the same reason `height` is: the
+     * config node outlives the display instance, so a dragged width survives
+     * unticking and reticking the track.
+     */
+    get treeAreaWidth(): number {
+      return getConf(self, ['rows', 'axis', 'width'])
+    },
+  }
+}
+
+/** The tree narrowed to the rows shown. */
+export function rowTreeRootViews<S extends RowSource>(self: SourcesHost<S>) {
+  return {
+    /**
+     * #getter
+     * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
+     * reading as a row with no attributes; none where it keeps no leaf.
+     */
+    get root(): HierarchyNode<ClusterNodeData> | undefined {
+      const tree = self.parsedTree
+      const narrowing = self.rowNarrowing
+      // the rows' attributes, read only where a filter tests them, so a
+      // region arrival re-prunes no tree `kept` alone narrows
+      const rows = new Map<string, { name: string }>(
+        narrowing.filter.length > 0
+          ? self.expandedRows.map(row => [row.name, row])
+          : [],
+      )
+      const leaves =
+        tree && narrows(narrowing)
+          ? narrowRows(
+              getLeafNames(tree).map(name => rows.get(name) ?? { name }),
+              narrowing,
+            ).map(leaf => leaf.name)
+          : undefined
+      return tree && leaves
+        ? leaves.length > 0
+          ? treeOfLeaves(tree, leaves)
+          : undefined
+        : tree
+    },
+  }
+}
+
+/** The hooks the dendrogram reads, at what a display that overrides none answers. */
+export function treeSidebarTreeHookDefaults(self: {
+  root: HierarchyNode<ClusterNodeData> | undefined
+}) {
+  return {
+    /**
+     * #getter
+     * Overridable hook: the tree `hierarchy` positions, `root` by default.
+     * `computeClusterHierarchy` declines to position a tree whose leaves are
+     * no longer the rows drawn, so a display that hides a row prunes it from
+     * the tree here too, or the whole dendrogram goes with the row.
+     */
+    get treeRoot(): HierarchyNode<ClusterNodeData> | undefined {
+      return self.root
+    },
+    /**
+     * #getter
+     * Overridable hook: whether the dendrogram draws at all, true by
+     * default; off wherever the rows it would lay against are not drawn.
+     * This is the single gate: the on-screen sidebar, the SVG export,
+     * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
+     * reserves all read `hierarchy`, so nothing keeps drawing or reserving
+     * space when the tree is off.
+     */
+    get drawsTree(): boolean {
+      return true
+    },
+  }
+}
+
+/** The height the rows stack to. */
+export function rowsContentHeightViews(self: {
+  sources: readonly unknown[]
+  effectiveRowHeight: number
+}) {
+  return {
+    /**
+     * #getter
+     * The px the rows stack to, `sources` × `effectiveRowHeight`, which the
+     * dendrogram's leaves spread over: the content the rows scroll through,
+     * never the viewport they scroll inside.
+     */
+    get rowsContentHeight(): number {
+      return self.sources.length * self.effectiveRowHeight
+    },
+  }
+}
+
+/** What {@link hierarchyViews} reads: the tree, the rows and the axis. */
+export interface HierarchyHost {
+  drawsTree: boolean
+  treeRoot: HierarchyNode<ClusterNodeData> | undefined
+  sources: readonly { name: string }[]
+  rowsContentHeight: number
+  treeAreaWidth: number
+  showBranchLength: boolean
+  rowBands: readonly RowBand[]
+}
+
+/** The dendrogram positioned against the rows drawn. */
+export function hierarchyViews(self: HierarchyHost) {
+  return {
+    /**
+     * #getter
+     * The dendrogram positioned against the rows drawn, or undefined while
+     * there is no tree or `drawsTree` is off. `computeClusterHierarchy`
+     * checks the tree's leaves against the drawn row names, the backstop
+     * against anything reordering `sources` downstream of the arrangement:
+     * such a reorder drops the dendrogram rather than drawing it against
+     * rows it does not name.
+     */
+    get hierarchy(): ClusterHierarchyNode | undefined {
+      return self.drawsTree
+        ? computeClusterHierarchy(
+            self.treeRoot,
+            self.sources,
+            self.rowsContentHeight,
+            self.treeAreaWidth,
+            self.showBranchLength,
+            self.rowBands,
+          )
+        : undefined
     },
   }
 }

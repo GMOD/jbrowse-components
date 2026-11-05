@@ -1,9 +1,14 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import {
+  FEATURE_FIELD_PRESETS,
+  withPreset,
+} from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
+import { identityKeyEntries } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALT_HUE, HET_DOSAGE, shadeByDosage } from '../shared/cellFill.ts'
 import {
@@ -28,6 +33,7 @@ import type {
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 
 // Pure scale builders, split out of the display model so they can be
@@ -293,4 +299,41 @@ export function getVariantColorScales({
     colorSlots,
   )
   return cellScale ? [cellScale] : []
+}
+
+/**
+ * What a variant display keys of its data: the records band's SV classes,
+ * then, while `cellColorKeyed`, the cell coloring (`getVariantColorScales`)
+ * over `cells`, read only then, titled and named by the `encoding.color`
+ * object as written. The display lists its row color key after them, and a
+ * tables export ships the same scales.
+ */
+export function variantDataColorScales({
+  recordsColorScales,
+  cellColorKeyed,
+  drawsGenotypeRows,
+  colorSetting,
+  cells,
+}: {
+  recordsColorScales: readonly ColorScale[]
+  cellColorKeyed: boolean
+  drawsGenotypeRows: boolean
+  colorSetting: ColorSetting
+  cells: () => Omit<
+    Parameters<typeof getVariantColorScales>[0],
+    'recordsAlone' | 'colorTitle' | 'identityEntries'
+  >
+}): ColorScale[] {
+  return [
+    ...recordsColorScales,
+    ...(cellColorKeyed
+      ? getVariantColorScales({
+          ...cells(),
+          recordsAlone: !drawsGenotypeRows,
+          colorTitle: withPreset(colorSetting, FEATURE_FIELD_PRESETS).legend
+            .title,
+          identityEntries: identityKeyEntries(colorSetting),
+        })
+      : []),
+  ]
 }

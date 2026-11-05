@@ -18,24 +18,15 @@ disagree today.
   [tables-order-contig-colors-by-the-assembly](tables-order-contig-colors-by-the-assembly.md).
 
 The parity suites in `packages/tables/src/parity/` (TEST_INFRASTRUCTURE.md)
-hold each of these as a drift pinned to the export's value today:
+hold a known disagreement as a drift pinned to the export's value today; the
+wiggle and variants suites hold none. Their last ones closed by running the
+display's own views on the tables' static hosts
+([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)):
+the `rows.tree` order, wiggle's categorical key (`legend`, `legendTitle`) and
+its rules on a heatmap (`scoreRulesDrawn`), and the variants records-band
+key, `genotypes: { show: false }` (`drawsGenotypeRows`) and an identity color
+callback's names (`variantDataColorScales`). Still open:
 
-- **`rows.tree` order**, wiggle and variants: the view orders rows by the
-  tree's leaves, the tables by `rows.sort` and the file. The tree-sidebar row
-  chain.
-- **Wiggle keys no categorical scale.** The view keys the subtracks over a
-  shared plot, a `rows.color` attribute and a threshold's bands (`< -20`,
-  `-20 – 20`, `≥ 20`); the tables ship `ramps` alone. Minimal:
-  `{ rows: { field: '' } }` on a MultiWiggleAdapter.
-- **Wiggle rules on a heatmap.** `{ mark: 'rect', encoding: { y: { rules:
-  [{ value: 10 }] } } }`: the view draws no rule, the tables list one.
-- **Variants key no records-band scale.** An SV VCF's view keys `SV type`
-  (Duplication) above the genotype key; the tables do not.
-- **Variants under `genotypes: { show: false }`** ship every row, their colors
-  and the genotype key; the view draws no row and keys nothing.
-- **Variants under an identity color callback** (`value: 'jexl:…'`,
-  `scale: { type: 'identity', domain, names }`) key nothing; the view keys
-  the named colors (`identityKeyEntries`).
 - **Synteny and dotplot tables key the default color.** With no
   `encoding.color` field (unset, a `value` constant, or only an opacity or
   filter), the view keys nothing (`hasLegendKey`); the synteny tables key

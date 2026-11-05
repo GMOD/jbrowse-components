@@ -30,73 +30,6 @@ type VariantDecision = (typeof VARIANT_DECISIONS)[number]
 
 const ROW_KEY = 'rows.color'
 
-const NO_RECORDS_KEY =
-  'unowned, variants tables key no records-band scale: SV type'
-const HIDDEN_GENOTYPES =
-  'unowned, variants tables ship rows and a genotype key genotypes.show hides'
-const IDENTITY_KEY =
-  'unowned, variants tables key no identity-scale names of a color callback'
-
-const DOGS = [
-  'GHND000001',
-  'GHND000002',
-  'GHND000003',
-  'GHND000004',
-  'GHND000005',
-  'GHND000006',
-  'BHSP000001',
-  'BHSP000002',
-  'BHSP000003',
-  'BHSP000004',
-  'BHSP000005',
-  'BHSP000006',
-  'SSHP000001',
-  'SSHP000002',
-  'SSHP000003',
-  'SSHP000004',
-  'BRTR000001',
-  'BRTR000002',
-  'BRTR000003',
-  'BRTR000004',
-  'BRTR000005',
-  'KEES000002',
-  'KEES000003',
-  'KEES000004',
-  'KEES000005',
-  'KEES000006',
-  'LABR000001',
-  'LABR000002',
-  'LABR000003',
-  'LABR000004',
-  'LABR000005',
-  'BOXR000001',
-  'BOXR000002',
-  'BOXR000003',
-  'BOXR000004',
-  'CLUPGR000001',
-  'CLUPGR000002',
-  'CLUPGR000003',
-  'CLUPGR000004',
-]
-
-const FILE_ORDER_ROWS = DOGS.map(name => ({
-  name,
-  label: name,
-  sample: name,
-  haplotype: 0,
-}))
-
-const GENOTYPE_KEY = {
-  label: [
-    'Homozygous reference',
-    'Alt, half dosage (het)',
-    'Alt, full dosage (hom)',
-  ],
-  color: ['#cccccc', '#539fc6', '#006084'],
-  section: ['Genotypes', 'Genotypes', 'Genotypes'],
-  title: 'Genotypes',
-}
-
 const engine = createTablesEngine()
 
 /**
@@ -240,22 +173,6 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
     {
       name: 'genotypes hidden',
       config: { genotypes: { show: false } },
-      drifts: {
-        rows: { owner: HIDDEN_GENOTYPES, exported: FILE_ORDER_ROWS },
-        rowColors: {
-          owner: HIDDEN_GENOTYPES,
-          exported: DOGS.map(() => ''),
-        },
-        legend: {
-          owner: HIDDEN_GENOTYPES,
-          exported: {
-            label: [...GENOTYPE_KEY.label, 'No call'],
-            color: [...GENOTYPE_KEY.color, '#bfaa40'],
-            section: [...GENOTYPE_KEY.section, 'Genotypes'],
-            title: 'Genotypes',
-          },
-        },
-      },
     },
     {
       name: 'encoding.color a callback through an identity scale',
@@ -270,12 +187,6 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
               names: ['late', 'early'],
             },
           },
-        },
-      },
-      drifts: {
-        legend: {
-          owner: IDENTITY_KEY,
-          exported: { label: [], color: [], section: [], title: '' },
         },
       },
     },
@@ -301,12 +212,10 @@ describe('dog SVs with a samples file of groups and breeds', () => {
     {
       name: 'defaults',
       config: {},
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'rows.color by group',
       config: { rows: { color: { field: 'group' } } },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'rows.color by group under a pinned color and label',
@@ -317,12 +226,10 @@ describe('dog SVs with a samples file of groups and breeds', () => {
           labels: { LABR000001: 'Pinned dog' },
         },
       },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'rows.filter',
       config: { rows: { filter: [{ field: 'group', equal: 'Gray wolf' }] } },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'rows.filter and rows.kept',
@@ -332,22 +239,18 @@ describe('dog SVs with a samples file of groups and breeds', () => {
           kept: ['VILLAK000002', 'LABR000001'],
         },
       },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'facet',
       config: { facet: { field: 'group', sort: ['Gray wolf'] } },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'facet and rows.color by group',
       config: { facet: 'group', rows: { color: { field: 'group' } } },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
     {
       name: 'rows.color by breed',
       config: { rows: { color: { field: 'breed' } } },
-      drifts: { legend: { owner: NO_RECORDS_KEY, exported: GENOTYPE_KEY } },
     },
   ])
 })

@@ -273,9 +273,10 @@ block's override; what differs is what TypeScript can see:
   reaches same-block siblings and nothing else.
 
 Prefer `self.X`, and reach for `this.X` only for a sibling defined in the same
-block. `LinearVariantDisplay`'s records band reads both in one expression:
+block. `LinearVariantDisplay`'s `variantGenotypeRowViews` reads both in one
+expression:
 
-<!-- include: plugins/variants/src/LinearVariantDisplay/model.ts#sameBlockThis -->
+<!-- include: plugins/variants/src/LinearVariantDisplay/variantRowViews.ts#sameBlockThis -->
 
 ```ts
 /**

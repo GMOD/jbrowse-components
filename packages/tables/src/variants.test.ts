@@ -440,6 +440,7 @@ test('a samples file leaving out a VCF sample warns, as the display does', async
       samplesTsvLocation: { uri: pathToFileURL(tsv).href },
     },
     region: { refName: 'ctgA', start: 0, end: 1000 },
+    display: { genotypes: { show: true } },
   })
   expect(t.rows.name).toEqual(['s1'])
   expect(t.warnings).toHaveLength(1)

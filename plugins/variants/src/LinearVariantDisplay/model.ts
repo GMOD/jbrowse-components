@@ -15,10 +15,6 @@ import {
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
-import {
-  FEATURE_FIELD_PRESETS,
-  withPreset,
-} from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   lowerBoundOf,
@@ -44,11 +40,7 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
-import {
-  colorSnapshotOf,
-  identityKeyEntries,
-  paintedColorEncoding,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { paintedColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import {
@@ -79,12 +71,7 @@ import {
   narrowRows,
 } from '@jbrowse/tree-sidebar'
 
-import {
-  cellColorEncodingOf,
-  cellHueField,
-  cellHueOf,
-  sameHueRead,
-} from '../shared/cellHue.ts'
+import { cellHueField, cellHueOf, sameHueRead } from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -130,6 +117,8 @@ import { placeVariantRows } from './placeVariantRows.ts'
 import {
   installRecordsOpeningHeight,
   recordsBandActions,
+  recordsColorScaleViews,
+  recordsKeyViews,
   recordsLayoutActions,
   recordsLayoutViews,
   recordsOpeningHeightActions,
@@ -142,8 +131,12 @@ import {
   variantContextMenuItems,
   variantTrackMenuItems,
 } from './variantDisplayMenuItems.ts'
-import { getVariantColorScales } from './variantLegend.ts'
+import { variantDataColorScales } from './variantLegend.ts'
 import {
+  variantColorSettingViews,
+  variantDrawnRowViews,
+  variantGenotypeRowViews,
+  variantGenotypesShowViews,
   variantRowConfigViews,
   variantRowHookViews,
 } from './variantRowViews.ts'
@@ -176,7 +169,6 @@ import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
   HighlightRect,
@@ -669,22 +661,9 @@ export function stateModelFactory(
         }
       })
       .views(self => variantRowConfigViews(self))
+      .views(self => variantGenotypesShowViews(self))
+      .views(self => variantColorSettingViews(self))
       .views(self => ({
-        /**
-         * #getter
-         * Whether `genotypes.show` is written, by config or by the menu.
-         */
-        get genotypesShowWritten(): boolean {
-          return getConf(self, ['genotypes', 'show']) !== undefined
-        },
-        /**
-         * #getter
-         * What an unset `genotypes.show` resolves to: every VCF but a
-         * one-sample one draws its rows.
-         */
-        get genotypesShowDefault(): boolean {
-          return self.adapterSamples?.length !== 1
-        },
         /**
          * #getter
          * Whether `genotypesShowDefault` is the answer rather than a guess
@@ -706,16 +685,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `genotypes.show`: whether the display reads genotypes and draws a
-         * row per sample. Unset, `genotypesShowDefault`.
-         */
-        get showGenotypes(): boolean {
-          return (
-            getConf(self, ['genotypes', 'show']) ?? this.genotypesShowDefault
-          )
-        },
-        /**
-         * #getter
          */
         get showRowSeparators(): boolean {
           return getConf(self, ['rows', 'axis', 'grid'])
@@ -729,14 +698,6 @@ export function stateModelFactory(
           return getConf(self, ['tooltip', 'show'])
         },
 
-        /**
-         * #getter
-         * `encoding.color` as written, `value` raw: a `jexl:` callback is the
-         * worker's to evaluate per variant.
-         */
-        get colorSetting(): ColorSetting {
-          return colorSnapshotOf(self.configuration.encoding.color)
-        },
         /**
          * #getter
          * `rowBandingNotices`, `rowNarrowingNotices`, and each `filter` field
@@ -754,20 +715,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * What the alt cells' hue paints: undefined for the genotype colors,
-         * a CSS color or `jexl:` callback, or a field through its ordinal or
-         * threshold scale (`shared/cellHue.ts`).
-         */
-        get colorEncoding() {
-          return cellColorEncodingOf(this.colorSetting)
-        },
-        /**
-         * #getter
          * The field the alt cells paint by, '' while they paint the genotype
          * colors or a constant.
          */
         get colorField(): string {
-          return cellHueField(this.colorEncoding) ?? ''
+          return cellHueField(self.colorEncoding) ?? ''
         },
 
         get featureWidgetType() {
@@ -823,60 +775,9 @@ export function stateModelFactory(
               }
         },
       }))
+      .views(self => variantGenotypeRowViews(self))
+      .views(self => variantDrawnRowViews(self))
       .views(self => ({
-        // #region sameBlockThis
-        /**
-         * #getter
-         * Whether a circular view's ring hosts the display (`hostHeight`).
-         * The ring samples one canvas of its strip, the records band's.
-         */
-        get inRing(): boolean {
-          return self.hostHeight !== undefined
-        },
-        /**
-         * #getter
-         * Whether the records band is the display, every record the filter
-         * admits, sized by `heightMode` and lettered as a feature track: a VCF
-         * with no samples, a one-sample call set whose row nobody asked for,
-         * or a ring, which draws one canvas and so the records alone.
-         */
-        get recordsOnly(): boolean {
-          const sampleCount = self.adapterSamples?.length
-          return (
-            sampleCount === 0 ||
-            (sampleCount === 1 && !self.genotypesShowWritten) ||
-            this.inRing
-          )
-        },
-        /**
-         * #getter
-         * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
-         * Hidden, the rows take no height and the records band is the track.
-         */
-        get drawsGenotypeRows(): boolean {
-          return self.showGenotypes && !this.recordsOnly
-        },
-        // #endregion
-        /**
-         * #getter
-         * Whether each variant draws at its genomic span, or as one of a row
-         * of equal-width columns tied to its position by a connector line:
-         * the `variantLayout` slot while genotype rows draw. Columns lay out
-         * rows, so with none (no samples, or `genotypes.show` off) the
-         * records band draws at genomic positions, and the slot's columns
-         * come back with the rows.
-         */
-        get variantLayout(): 'genomic' | 'columns' {
-          return this.drawsGenotypeRows
-            ? getConf(self, 'variantLayout')
-            : 'genomic'
-        },
-        /**
-         * #getter
-         */
-        get atGenomicPositions(): boolean {
-          return this.variantLayout === 'genomic'
-        },
         /**
          * #getter
          * The `connectors` band's height above the columns, taken from the
@@ -886,30 +787,9 @@ export function stateModelFactory(
         get connectorsHeight(): number {
           return connectorsBandStack(self.fitTargetHeight, {
             active:
-              !this.atGenomicPositions && getConf(self, ['connectors', 'show']),
+              !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
             height: getConf(self, ['connectors', 'height']),
           }).reserved.connectors
-        },
-        /**
-         * #getter
-         * `rows.kept` while genotype rows draw; with none no focus applies,
-         * so no "Showing N of M rows" chip takes a line over the records band.
-         * The focus comes back with the rows. Overrides
-         * `TreeSidebarMixin.rowFocus`.
-         */
-        get rowFocus(): readonly string[] | undefined {
-          const kept: string[] = getConf(self, ['rows', 'kept'])
-          return this.drawsGenotypeRows && kept.length ? kept : undefined
-        },
-        /**
-         * #getter
-         * `rows.filter` while genotype rows draw, as `rowFocus` reads
-         * `rows.kept`. Overrides `TreeSidebarMixin.rowFilter`.
-         */
-        get rowFilter(): readonly FieldPredicate[] {
-          return this.drawsGenotypeRows
-            ? predicatesOf(self.configuration.rows.filter)
-            : []
         },
         /**
          * #getter
@@ -920,6 +800,7 @@ export function stateModelFactory(
           return true
         },
       }))
+      .views(recordsKeyViews)
       .views(recordsSettingsViews)
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
@@ -1258,21 +1139,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
-         * answering to its sample name, a samplesTsv `color` column the row's
-         * own color. None while no row draws.
-         */
-        get discoveredRows(): ProcessedSource[] {
-          const samples = self.drawsGenotypeRows
-            ? self.adapterSamples
-            : undefined
-          return (samples ?? []).map(source => ({
-            ...source,
-            sampleName: resolveSampleName(source),
-          }))
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: a tree clustered per haplotype hides in
          * sample mode, and says so.
          */
@@ -1516,6 +1382,7 @@ export function stateModelFactory(
         }
       })
       .views(recordsRenderViews)
+      .views(recordsColorScaleViews)
       .views(self => {
         // the last placement handed out, so a change that moves no row (a
         // relabel, a tint) returns the same array and re-places nothing
@@ -2262,26 +2129,23 @@ export function stateModelFactory(
          */
         get colorScales(): ColorScale[] {
           return [
-            ...self.recordsColorScales,
-            ...(self.cellColorKeyed
-              ? getVariantColorScales({
-                  rowsField: self.rowsField,
-                  hasSecondaryAlt: self.hasSecondaryAlt,
-                  hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
-                  hasUnphased: self.hasUnphased,
-                  hasNoCall: self.hasNoCall,
-                  paintedDomain: self.paintedDomain,
-                  recordsAlone: !self.drawsGenotypeRows,
-                  color: self.colorEncoding,
-                  colorSlots: heldColorSlots(self, self.colorEncoding),
-                  ramp: self.cellHue.ramp,
-                  colorTitle: withPreset(
-                    self.colorSetting,
-                    FEATURE_FIELD_PRESETS,
-                  ).legend.title,
-                  identityEntries: identityKeyEntries(self.colorSetting),
-                })
-              : []),
+            ...variantDataColorScales({
+              recordsColorScales: self.recordsColorScales,
+              cellColorKeyed: self.cellColorKeyed,
+              drawsGenotypeRows: self.drawsGenotypeRows,
+              colorSetting: self.colorSetting,
+              cells: () => ({
+                rowsField: self.rowsField,
+                hasSecondaryAlt: self.hasSecondaryAlt,
+                hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
+                hasUnphased: self.hasUnphased,
+                hasNoCall: self.hasNoCall,
+                paintedDomain: self.paintedDomain,
+                color: self.colorEncoding,
+                colorSlots: heldColorSlots(self, self.colorEncoding),
+                ramp: self.cellHue.ramp,
+              }),
+            }),
             ...self.rowColorScales,
           ]
         },

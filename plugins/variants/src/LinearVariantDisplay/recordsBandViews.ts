@@ -91,7 +91,17 @@ export interface RecordsSettingsHost {
   openingRecordsHeight: number | undefined
 }
 
-export function recordsSettingsViews(self: RecordsSettingsHost) {
+/** What {@link recordsKeyViews} reads: the layout, the rows and the coloring. */
+export type RecordsKeyHost = Pick<
+  RecordsSettingsHost,
+  'configuration' | 'atGenomicPositions' | 'drawsGenotypeRows' | 'colorEncoding'
+>
+
+/**
+ * Whether the records band draws and what its key and the cells' key list,
+ * which the display and a static export install alike.
+ */
+export function recordsKeyViews(self: RecordsKeyHost) {
   return {
     /**
      * #getter
@@ -105,6 +115,39 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
         (!self.drawsGenotypeRows || getConf(self, ['records', 'show']))
       )
     },
+    /**
+     * #getter
+     * Whether the records band colors by SV class, the rest
+     * `featureDefaultColor`: while no `encoding.color` is picked, with
+     * rows or without, and under `phaseSet`, a genotype's value that no
+     * record holds. Any other picked color paints the records as it
+     * paints the cells.
+     */
+    get recordsColorBySvClass() {
+      const encoding = self.colorEncoding
+      return (
+        encoding === undefined || cellHueField(encoding) === PHASE_SET_FIELD
+      )
+    },
+    /**
+     * #getter
+     * Whether the cells' coloring is keyed: always while rows draw; with
+     * none only under a picked `encoding.color` field whose values the
+     * records paint. A constant paints every record alike, and `phaseSet`
+     * paints them by SV class, so neither keys a cell nothing draws.
+     */
+    get cellColorKeyed() {
+      const field = cellHueField(self.colorEncoding)
+      return (
+        self.drawsGenotypeRows ||
+        (field !== undefined && field !== PHASE_SET_FIELD)
+      )
+    },
+  }
+}
+
+export function recordsSettingsViews(self: RecordsSettingsHost) {
+  return {
     /**
      * #getter
      * Whether a drag, `+N hidden` or a config wrote `records.height`.
@@ -206,34 +249,6 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * Whether the records band colors by SV class, the rest
-     * `featureDefaultColor`: while no `encoding.color` is picked, with
-     * rows or without, and under `phaseSet`, a genotype's value that no
-     * record holds. Any other picked color paints the records as it
-     * paints the cells.
-     */
-    get recordsColorBySvClass() {
-      const encoding = self.colorEncoding
-      return (
-        encoding === undefined || cellHueField(encoding) === PHASE_SET_FIELD
-      )
-    },
-    /**
-     * #getter
-     * Whether the cells' coloring is keyed: always while rows draw; with
-     * none only under a picked `encoding.color` field whose values the
-     * records paint. A constant paints every record alike, and `phaseSet`
-     * paints them by SV class, so neither keys a cell nothing draws.
-     */
-    get cellColorKeyed() {
-      const field = cellHueField(self.colorEncoding)
-      return (
-        self.drawsGenotypeRows ||
-        (field !== undefined && field !== PHASE_SET_FIELD)
-      )
-    },
-    /**
-     * #getter
      * `records.displayMode`, and unset the one rule its default
      * follows: `compact` over rows, tight with its one label line; with
      * no rows `normal`, a feature track's default.
@@ -287,7 +302,8 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
   }
 }
 
-export type RecordsSettings = ReturnType<typeof recordsSettingsViews>
+export type RecordsSettings = ReturnType<typeof recordsKeyViews> &
+  ReturnType<typeof recordsSettingsViews>
 
 type RecordsActionsHost = RecordsSettingsHost & RecordsSettings
 
@@ -604,6 +620,21 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       }
       return out
     },
+  }
+}
+
+export type RecordsRender = ReturnType<typeof recordsRenderViews>
+
+/** What {@link recordsColorScaleViews} reads: the band and its records. */
+export interface RecordsColorScaleHost {
+  showRecords: boolean
+  recordsColorBySvClass: boolean
+  keyedVariants: KeyedVariants
+}
+
+/** The records band's key, which the display and a static export install alike. */
+export function recordsColorScaleViews(self: RecordsColorScaleHost) {
+  return {
     /**
      * #getter
      * The key to the records band's SV classes, the ones its records on
@@ -618,8 +649,6 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
   }
 }
-
-export type RecordsRender = ReturnType<typeof recordsRenderViews>
 
 interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   height: number

@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables run. Parked on static-wiggle-render: staticWiggleSvg, staticLgvFrame and renderDisplaySvgInFrame, whose parity test must compare the whole display node. Left: the sidebar on the static host, every other display, the non-linear view frames, the chrome, and the CLI switch."
+description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables run. Parked on static-wiggle-render: staticWiggleSvg, staticLgvFrame and renderDisplaySvgInFrame, whose parity test must compare the whole display node. Built too: the sidebar and the key on the static host. Left: every other display, the non-linear view frames, the chrome, and the CLI switch."
 ---
 
 # A display's render inputs run on a plain host
@@ -104,6 +104,18 @@ display keeps its model, and the static path runs that model's views.
   exports ordered by `rows.sort` alone, so a supplied `rows.tree` drew its leaf
   order on screen and the file's order in the export (the parity harness's
   `rows.tree` cases, and `variants.test.ts` and `wiggle.test.ts`).
+- **The sidebar and the key on the static host**: the tree beside the rows is
+  tree-sidebar stages too (`treeSidebarAxisConfigViews`, `rowTreeRootViews`,
+  `treeSidebarTreeHookDefaults`, `rowsContentHeightViews`, `hierarchyViews`),
+  so the wiggle host runs `wiggleRowLabelViews`, `wiggleSidebarViews` and
+  `wiggleAxisViews` and lists the rules `scoreRulesDrawn` says the axis
+  draws, and `wiggleScoreKeyViews` and `wiggleColorScaleViews`, so its
+  `ramps`, `legend` and `legendTitle` are `colorKeyTables(colorScales)`. The
+  variants host runs whether the rows draw (`variantGenotypesShowViews`,
+  `variantGenotypeRowViews`, `variantDrawnRowViews`), the cell coloring
+  (`variantColorSettingViews`) and the records band's key (`recordsKeyViews`,
+  `recordsColorScaleViews`), and keys through `variantDataColorScales`, the
+  display's `colorScales` less the row key.
 
 ## Parked on `static-wiggle-render`
 
@@ -121,11 +133,6 @@ close, and compare the two nodes whole.
 
 ## Left
 
-- **The sidebar on the static host**: `wiggleAxisViews` reads `hierarchy`,
-  `showTree`, `showRowLabels` and `treeAreaWidth`, which `TreeSidebarMixin`
-  derives inline (`root`, `treeRoot`, `drawsTree`, `rowsContentHeight`). As
-  views functions they would let the static host run the axis views and draw
-  `scoreRulesDrawn`, which closes the tables' density-rules drift.
 - **`renderState`** (`wiggleDisplayViews`) on the static host, then the body.
 - **RefNames**: the frame must carry the adapter's refNames; the static path
   has no assembly manager. `packages/tables`' `assemblyResolver` is the piece to
