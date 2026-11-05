@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A scale is declared on the channel it scales and resolved wherever it is cheapest, and both halves of that rule now hold: `encoding.y` carries `{ field, scale, domain }` and `ScoreScaleMixin` resolves it rather than owning a second copy, so the score menu edits the declaration; and a quantitative color ramp resolves on the main thread against a domain unioned over the loaded regions, read by the shapes as a uniform plus the shared LUT, so an unpinned ramp agrees across regions and a pan uploads no instance bytes. The ramp rides the existing color lane reinterpreted, not a new one; `span` keeps the worker-resolved color, and a bin width that follows the zoom stays declined here (taken in ADR-117)"
+summary: "A scale is declared on the channel it scales; a quantitative color ramp resolves on the main thread against a domain unioned over loaded regions, so an unpinned ramp agrees across regions. The `encoding.y` half is superseded by ADR-141"
 ---
 
 # ADR-113: One scale rule, in one place

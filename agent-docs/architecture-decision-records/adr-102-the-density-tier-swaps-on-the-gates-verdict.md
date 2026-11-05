@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "Removed 2026-10-11: a density sidecar on the adapter that displays drew in the banner's place cost a slot on ten adapters, four renderings and a menu for what a QuantitativeTrack over the same bigWig shows; `make-density` stays as a plain bigWig maker. The index-estimate measurements below still stand"
+summary: "Rejected: a `densityAdapter` sidecar drawn in the region-too-large banner's place, because a QuantitativeTrack over the same `make-density` bigWig shows the same picture without a slot on ten adapters"
 ---
 
 # ADR-102: The density tier swaps on the gate's verdict

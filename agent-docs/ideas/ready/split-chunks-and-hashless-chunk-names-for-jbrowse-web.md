@@ -1,6 +1,6 @@
 ---
 name: split-chunks-and-hashless-chunk-names-for-jbrowse-web
-description: jbrowse-web's worker downloads its own copy of the vendor modules (chunk 62604, 53 KB gz, 96% already inside main.js). `splitChunks: { chunks: 'all' }` saves 39-41 KB gz on every page with no change to worker parse, and chunk filenames without per-chunk hashes save another 11-12 KB. Measured 2026-10-08 on a stale build; re-measure first.
+description: "jbrowse-web's worker downloads its own copy of the vendor modules; `splitChunks: { chunks: 'all' }` and chunk filenames without hashes would shrink every page. The numbers come from a stale build, so re-measure first."
 ---
 
 # `splitChunks` and hashless chunk names for jbrowse-web

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The MAF display stays its own display type, and shares the grammar's concepts and kernels wherever the two compute the same thing. What it draws past the cells and the identity - the codon view, the summary tier, source-chromosome color, the conservation band, the insertion and inversion glyphs, its hit tests and menus - is MAF's own and stays in it; its layers are already render-core marks and its config already speaks the mark vocabulary. Where the MAF display and the mark pipeline compute one statistic they converge on one implementation, the faster one: one parser per format (getFeatures rebuilt over readBlocks), one packed arena (MafWirePacker, shared since ADR-193), and one identity walk. The mark display keeps drawing MAF for a declared plot, and the capabilities it lacks against the MAF display are built when some track declares a need for them, not to replace it"
+summary: "The MAF display stays its own display type, keeping its codon view, summary tier and glyphs, and shares one implementation with the mark pipeline wherever both compute the same thing: one parser, one packed arena, one identity walk"
 ---
 
 # ADR-199: The MAF display stays its own, and shares the grammar's kernels

@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "The pangenome tutorials keep each genome in its own coordinates and add no union ('pangenome coordinates') axis. odgi flatten over a K12-anchored order gives the E. coli graph a working 8.3 Mb union axis, but the synteny stack and haplotype lanes already give non-reference sequence width at citable positions, and the axis needs a house ordering script"
+summary: "Rejected: a union ('pangenome coordinates') axis for the pangenome tutorials, since the synteny stack and haplotype lanes already give non-reference sequence width at citable per-genome positions"
 ---
 
 # ADR-228: The pangenome tutorials keep per-genome coordinates

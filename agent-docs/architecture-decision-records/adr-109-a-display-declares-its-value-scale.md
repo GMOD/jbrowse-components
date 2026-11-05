@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display declares the value scales it places its y through — `valueScales` on `ScoreScaleMixin`, each a domain, a scale type, the band it rules and the bands it repeats over — and the axes derive from them: the mixin resolves each to ticks, `DisplayChrome` places an axis per band in its gutter with the cross-hatches, `renderDisplaySvg` does the same in the export, and a scale with no room for an axis is captioned. Every axis in the tree goes through it; no display places one"
+summary: "A display declares its `valueScales` on `ScoreScaleMixin` and every axis derives from them: `DisplayChrome` places one per band on screen, `renderDisplaySvg` in the export, and no display places its own."
 ---
 
 # ADR-109: A display declares its value scale

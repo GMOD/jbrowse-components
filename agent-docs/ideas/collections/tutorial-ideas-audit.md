@@ -1,6 +1,6 @@
 ---
 name: tutorial-ideas-audit
-description: Tutorial ideas left from the 2026-07 audit and the 2026-08 re-inventory of the hosted tracks no page names — sequence tools, GWAS fine-mapping, long-read isoforms, a GenArk page, mobile elements, UniProt on the genome, HGSVC 2024, session review, somatic review, changes to the tutorials index, the genomes.jbrowse.org gating trap, and two parked topics. The four priority tutorials have their own files in ready/.
+description: Unwritten tutorial ideas, many built on hosted tracks no page names yet, from sequence tools and GWAS fine-mapping to somatic review. The four priority tutorials have their own files in ready/.
 ---
 
 # Tutorial ideas

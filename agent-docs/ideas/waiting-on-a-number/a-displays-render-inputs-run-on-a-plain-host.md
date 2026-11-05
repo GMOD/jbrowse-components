@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "Parked 2026-11-05 until a measurement says jb2export's app boot is worth replacing: the per-display static SVG port (wiggle, features, marks and the LGV chrome built, sixteen displays and four view frames left) stopped, since the tables, not jb2export, are the priority. The static hosts the tables run stay. If jb2export is ever made deterministic, run the real display models under the tables' parity harness root rather than porting each display."
+description: "jb2export boots the whole interactive app to draw a static SVG; replacing that waits on measuring the boot's share of a run, and would reuse the tables' parity harness rather than port each display."
 ---
 
 # A display's render inputs run on a plain host

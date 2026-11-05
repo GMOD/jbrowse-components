@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three moves at the layer stage. Layout becomes a transform — `pileup` is the seventh TransformStep kind, a greedy first-fit row per feature, measured at 5.07x the bare encode, so a `span` reading the row it writes is a declared pileup. One mark's `encoding.y` may declare `resolve: 'independent'`, folding its own domain and taking a second axis on the right through the `side` member `ValueScale` already had; a second such mark is refused where the config is read. And the mark display attaches to `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so both of those are config over a BAM or a VCF. An independent color scale and a layout the main thread can re-pack are declined"
+summary: "Layout is a transform: `pileup` is a TransformStep writing a greedy first-fit row per feature, and the mark display attaches to `AlignmentsTrack` and `VariantTrack`. Its per-mark `encoding.y.resolve: 'independent'` is superseded by ADR-141"
 ---
 
 # ADR-115: One mark may read its own axis, and layout is a transform

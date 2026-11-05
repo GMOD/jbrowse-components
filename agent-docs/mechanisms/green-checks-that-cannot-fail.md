@@ -1,6 +1,6 @@
 ---
 name: green-checks-that-cannot-fail
-description: Eight checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, a geometry invariant held against a polygon the shader does not emit, an oracle cited by directory that never asserted its subject, a parity test sampling the one region where both spellings agree, and a whole test run that could not report the exception its framework caught on every pass. The catch for each, and why the class is worth naming outside genomics.
+description: Eight checks in this repo passed for structural reasons rather than real ones, each caught by sabotaging the code it names, and why the class is worth naming outside genomics.
 ---
 
 # Green checks that could not have failed

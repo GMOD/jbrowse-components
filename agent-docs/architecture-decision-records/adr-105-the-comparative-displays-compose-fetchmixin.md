@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The comparative displays compose `FetchMixin` through `KeyedFetchMixin`, the keyed half of the global family split out so both keyed families run one freshness pair, one rotation, one cancel and one retry; `SyntenyFetchStateMixin` is gone, and the one difference that survives — a cancel durable until Retry — is a declared absence in the installer, not a second foundation"
+summary: "The comparative displays compose `FetchMixin` through `KeyedFetchMixin` and `ComparativeFetchMixin`, replacing `SyntenyFetchStateMixin`; the one surviving difference, a cancel that holds until Retry, is declared in the installer. Supersedes ADR-054"
 ---
 
 # ADR-105: The comparative displays compose `FetchMixin`

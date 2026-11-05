@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The variant display's `cell` and `matrixCell` passes go back to the 4x MSAA target and draw rows at fractional y. Snapped to the device grid at one sample, a cohort with more rows than device px, or rows under the cell pass's 2 CSS px floor, showed one row per pixel, the last one drawn, and a different one after every resize, so rows blinked as the track height changed. x stays snapped. Canvas2D, the SVG export and the hit tests keep `rowSnap`, having no samples to blend. The cost is the MSAA target, about 16 bytes per device px of canvas. Amended the same day: `spanMark` (MAF, the multi-row mark display) drew at four samples with snapped rows, which blinked the same way under a fit-to-height MAF, and now places its rows at fractional y too"
+summary: "The variant display's `cell` and `matrixCell` passes, and `spanMark`, draw rows at fractional y on the 4x MSAA target so rows stop blinking on resize; Canvas2D, SVG export and hit tests keep `rowSnap`."
 ---
 
 # ADR-256: Variant rows draw at fractional y on four samples

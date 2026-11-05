@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "RemoteFileWithRangeCache sweeps on idle rather than never, at fifteen minutes rather than the parsed caches' three, because it is the cheap layer and the one that still helps after they have expired; its 256 MB stays, because the workload that made it look oversized never pushed the layer above it past its own budget"
+summary: "`RemoteFileWithRangeCache` sweeps on idle at fifteen minutes, longer than the parsed caches' three, as the cheap long-tail layer that still helps after they expire; its 256 MB bound stays"
 ---
 
 # ADR-059: The raw chunk cache is the long-tail layer

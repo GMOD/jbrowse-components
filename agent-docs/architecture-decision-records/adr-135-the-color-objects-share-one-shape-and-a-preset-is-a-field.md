@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every color object is `{ value, field, scale, domain, palette, ramp }` built from one display-kit factory, `scale` drawn from `none | categorical | linear | log` with each display declaring the members it paints. A preset with a ramp or vocabulary of its own is a `field` — Manhattan's `ld`, the ribbon's `strand`, `identity`, `mappingQual` and `dnds` — not a scale. FeatureColor gains `scale`, so Solid color and Default keep the field under `none` for the way back. MarkColor, MarkGlyph and MarkValue are `closed`. Supersedes ADR-133's \"FeatureColor has no scale\" and ADR-134's rejection of one color vocabulary. Superseded by ADR-151 for the `palette` and `ramp` members, which are `range` and `scheme`"
+summary: "Every color object shares one shape from one display-kit factory, `scale` drawn from `none | categorical | linear | log`, and a preset with its own ramp (`ld`, `strand`, `identity`) is a `field`. ADR-151 respells `palette` and `ramp` as `range` and `scheme`"
 ---
 
 # ADR-135: The color objects share one shape, and a preset is a field

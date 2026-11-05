@@ -1,6 +1,6 @@
 ---
 name: every-color-object-takes-breaks-and-a-missing-label
-description: The mark display's color object has `legend.values` (the values a categorical key lists, in order) and `legend.missingLabel` (the key's row for a feature with no value); the other displays' color objects do not. Adding them is additive and can follow 5.0.0, so the call is which keys would read them.
+description: Only the mark display's color object takes `legend.values` and `legend.missingLabel`. Adding them to the other color objects is additive and can follow 5.0.0, once someone says which keys want them.
 ---
 
 # Every color object takes `legend.values` and a missing label

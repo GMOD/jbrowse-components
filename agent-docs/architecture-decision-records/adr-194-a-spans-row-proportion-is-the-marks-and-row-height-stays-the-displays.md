@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "On the mark display, `rowProportion` moves from a display slot onto the mark, `marks[].rowProportion`, since a span alone reads it: Vega-Lite spells it `height: {band}` on a rect mark and ggplot2 `geom_tile(height)`, it applies to a span in any band (a pileup's, a facet's or a row's) rather than to the rows, and two spans can now differ. The Row height presets and dialog write every span's through `setRowProportion`, as Point size writes every point's, and a display with no span answers no `rowProportion`, so the dialog asks for none. `rowHeight` stays a flat display slot on all four row displays, beside `height`: it is Vega-Lite's `height: {step}`, a property of the view rather than of the encoding or the scale, and inside `rows`, a channel a settings bag replaces whole, pinning a height through a session spec or an agent call would erase the arrangement on three displays. The `0` fit sentinel stays, since leaving the slot out already fits and 0 px has no other reading. MAF and the multi-row feature display keep a display-level `rowProportion`: each draws one glyph family, so the display is its one mark"
+summary: "On the mark display a span's row proportion moves onto the mark (now `marks[].mark.height.band`), since only a span reads it, while `rowHeight` stays a flat display slot on the row displays, a property of the view"
 ---
 
 # ADR-194: A span's row proportion is the mark's, and row height stays the display's

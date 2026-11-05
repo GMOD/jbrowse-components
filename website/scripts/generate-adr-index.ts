@@ -12,7 +12,8 @@
 // `summary` is the index's Decision column. It is deliberately hand-written
 // rather than derived from the `# ADR-NNN: …` title: for a superseded or
 // rejected ADR the useful one-liner names the successor or the thing that was
-// rejected, which the title doesn't say.
+// rejected, which the title doesn't say. A superseded ADR's history stays in
+// its body; the row names the successor.
 //
 // Only the table between the BEGIN/END markers is generated; the prose above it
 // is hand-maintained. Runs in `website/scripts/api-docs/markers.ts`.
@@ -20,6 +21,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { markdownTableLines, parseFrontmatter } from './check-utils.ts'
+import { MAX_DESCRIPTION_WORDS } from './generate-doc-indexes.ts'
 import { rewriteMarkerBlock } from './markerDocs.ts'
 import { repoRoot } from './paths.ts'
 
@@ -78,6 +80,10 @@ function collectAdrs() {
     } else if (!STATUSES.includes(status as (typeof STATUSES)[number])) {
       problems.push(
         `${file}: status "${status}" is not one of ${STATUSES.join(', ')}`,
+      )
+    } else if (summary.trim().split(/\s+/).length > MAX_DESCRIPTION_WORDS) {
+      problems.push(
+        `${file}: summary is ${summary.trim().split(/\s+/).length} words, over ${MAX_DESCRIPTION_WORDS}. The index is read whole, so keep the row to what was decided and move the rest into the ADR`,
       )
     } else {
       adrs.push({

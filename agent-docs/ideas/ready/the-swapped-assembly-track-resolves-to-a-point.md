@@ -1,6 +1,6 @@
 ---
 name: the-swapped-assembly-track-resolves-to-a-point
-description: the follow's hang is fixed, but on a PAF whose rows and adapter disagree about which assembly is the target, the walk clamps the anchor window to a block whose axes are not what the plan thought and brings both ends back on one coordinate — safe on such a track and useless on one, and the two fixtures still differ in orientation AND in column order
+description: On a PAF whose rows and adapter disagree about which assembly is the target, the synteny follow brings both ends back on one coordinate, so it is safe but useless on such a track.
 ---
 
 # The swapped-assembly track resolves to a point

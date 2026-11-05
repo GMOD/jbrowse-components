@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `transform` step is one of seven schemas, a `ConfigurationSchemaUnion` keyed by `type`: each step takes only its own slots with the defaults the worker reads, `type` is required, and a key of another step is refused at load. The helper dispatches on `type` in every build and refuses a member that is not explicitly typed, closed and named by its key. The display writes every step slot onto the wire, so a slot left at its default and one written at it are one fetch. The JSON schema dispatches on a strict `type` enum, and the config editor offers a type picker, add, remove and reorder on a union list only"
+summary: "A `transform` step is one of seven schemas in a `ConfigurationSchemaUnion` keyed by `type`: `type` is required, each step takes only its own slots and defaults, and another step's key is refused at load"
 ---
 
 # ADR-150: A transform step is one schema per type

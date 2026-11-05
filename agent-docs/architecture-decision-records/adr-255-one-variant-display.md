@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "One variant display: the multi-sample display, its records band included, is registered as `LinearVariantDisplay` and the plugin-features-based `LinearVariantDisplay` is retired. `retiredTypes` holds `LinearMultiSampleVariantDisplay` (beta-only, a deprecated alias while hosted configs write it), v4's `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (in columns). A v4 `LinearVariantDisplay` config's record settings re-root under `records` through LinearBasicDisplay's own lifts (`renderer.displayMode`, `renderer.height`/`featureHeight`, `showLabels`/`showDescriptions`, `mouseover`, `maxFeatureScreenDensity`; `color1` to `encoding.color.value`; `maxHeight` drops); the betas' top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` do not lift. The display registers with no `FeaturesPlugin` gate, a right-clicked record offers the feature track's zoom to, get sequence, highlight and copy rows and the read sort, and the band answers search-hit highlights and the breakpoint split view's searchFeatureByID. With no rows the first layout sets the height once to the records' stack, up to 200 (amendment). Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
+summary: "The multi-sample display, records band included, is registered as `LinearVariantDisplay`; the feature-based one is retired and v4 configs re-root under `records`. Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
 ---
 
 # ADR-255: One variant display

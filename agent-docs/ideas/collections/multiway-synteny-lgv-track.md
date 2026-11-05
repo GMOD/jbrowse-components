@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-lgv-track
-description: Follow-ups to the multi-way synteny LGV track — per-base alignment lanes, the selection-scan pairing demo, multi-copy and self-comparison lanes, HPRC-scale lane selection and the cohort hand-off, the graph data path, the synced per-lane view, the remaining LOD and byte work, and what the tests do not pin. Read before extending MultiWaySyntenyDisplay or proposing a demo on it; how the display works today is reference/MULTIWAY_SYNTENY_DISPLAY.md.
+description: Unbuilt follow-ups to `MultiWaySyntenyDisplay`, such as per-base lanes, the selection-scan demo, multi-copy lanes, HPRC-scale lane selection, the graph data path and the remaining LOD work; read before extending it or proposing a demo on it.
 ---
 
 # Multi-way synteny LGV track follow-ups

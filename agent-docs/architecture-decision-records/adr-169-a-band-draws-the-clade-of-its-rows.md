@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Bands of rows on the multi-sample variant displays (`facet`, a samples TSV column) and the multi-row feature display (`facet: 'group'`, from `rowGroups`) stack through one `TreeSidebarMixin` stage, `bandedSources`, and win over a cluster tree: a band draws the clade of `rows.tree` whose leaves are exactly its rows in order, and a band with none draws nothing, which the stale-tree hint counts. `rows.tree` holds one forest, a band tree per band under a root joining them at the tallest band's height, written by a clustering run under bands beside `rows.domain` in one `setRowOrder`; the config gains no member. The band trees share one depth scale, and each band is labelled up a strip in the margin beside the tree, cut short with an ellipsis where the band is too short and whole on hover, on screen and in the SVG export alike. Retires \"a band yields while a tree describes the rows\", `maybeApplyFacet` and `rowGroups`' partition"
+summary: "Row bands on the multi-sample variant and multi-row feature displays stack through one `TreeSidebarMixin` stage, `bandedSources`, and win over a cluster tree: each band draws its own clade, and `rows.tree` holds one forest of band trees"
 ---
 
 # ADR-169: A band draws the clade of its rows, and `rows.tree` holds one forest

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The `flatten` step fans out a record keyed by name as it fans out an array: one feature per entry, spread over the container's span where it states none, its key written to the field `key` names. A VCF record answers one feature per sample off `samples`, and a MAF block one per species off `alignments`, so the mark display attaches to a MafTrack with no per-species feature class. MAF's per-species record renames its species-coordinate `start` to `srcStart`, beside `srcSize`, so the fanned feature keeps the block's reference `start`"
+summary: "The `flatten` step fans out a record keyed by name as it does an array, one feature per entry, so a VCF's `samples` and a MAF block's `alignments` reach the mark display; MAF's species `start` becomes `srcStart`"
 ---
 
 # ADR-186: `flatten` fans out a record keyed by name

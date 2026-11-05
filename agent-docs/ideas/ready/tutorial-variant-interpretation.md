@@ -1,6 +1,6 @@
 ---
 name: tutorial-variant-interpretation
-description: A variant-interpretation tutorial off the hosted hg38 hub (ClinVar, ClinGen, MANE, cCREs, dbVar, gnomAD v4.1) — every track already resolves, so the work is picking one uncontroversial variant readable off the tracks, with a benign or unconstrained negative control. Zero support demand, so judge it on the figure.
+description: A variant-interpretation tutorial off the hosted hg38 hub (ClinVar, ClinGen, MANE, cCREs, dbVar, gnomAD v4.1), where every track already resolves and the hard part is one uncontroversial variant with a negative control.
 ---
 
 # Tutorial: variant interpretation

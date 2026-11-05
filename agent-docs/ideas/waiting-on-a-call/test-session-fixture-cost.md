@@ -1,6 +1,6 @@
 ---
 name: test-session-fixture-cost
-description: 65 test suites pay ~5s each to import `createTestSession`, and the cost is module load rather than the call — but the fast fixture is also a second way to build a session, which is the thing `createTestSession` exists to prevent. The measurement is done; what is parked is whether the fix is worth its own risk.
+description: Dozens of test suites pay seconds each to import `createTestSession`, but a faster fixture would be a second way to build a session, which `createTestSession` exists to prevent.
 ---
 
 # The cost of importing createTestSession

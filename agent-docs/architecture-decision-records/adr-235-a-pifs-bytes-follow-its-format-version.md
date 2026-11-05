@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A PIF's bytes are a function of its format version, not of the CLI that wrote it. make-pif's `#pif` header drops `writer:Z:jbrowse-cli/<version>` and states only format facts; `make-pif --format-version` prints PIF_FORMAT_VERSION so a pipeline stamps its PIFs `pif v<N>` and rebuilds only when N changes; golden files pin the uncompressed bytes for a fixed PAF, and a byte change ships only with a version bump or a deliberate golden update. bgzip and tabix output stay outside the contract. Amends ADR-104's header"
+summary: "A PIF's bytes depend only on its format version: the `#pif` header drops its `writer` key, `make-pif --format-version` prints `PIF_FORMAT_VERSION` for pipelines to stamp, and golden files pin the uncompressed bytes. Amends ADR-104"
 ---
 
 # ADR-235: A PIF's bytes are a function of its format version, not of the CLI that wrote it

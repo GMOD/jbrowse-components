@@ -1,6 +1,6 @@
 ---
 name: a-displaydefaults-member-fails-the-track-where-a-displays-entry-warns
-description: An undeclared member inside a `displayDefaults` value fails the track's load, where the same object in a `displays` entry names the key on the console and draws (ADR-221). The router uses the refusal to pick which displays take a value, so dropping it outright would warn on valid configs; making the two doors agree means warning and dropping the member only when every candidate display refuses for an undeclared member alone, which amends ADR-134. Left open by the 2026-10-07 review of the closed-schema rule.
+description: An undeclared member inside a `displayDefaults` value fails the track's load, while the same object in a `displays` entry warns and draws (ADR-221); making the two agree means amending ADR-134's routing.
 ---
 
 # A displayDefaults member fails the track where a displays entry warns

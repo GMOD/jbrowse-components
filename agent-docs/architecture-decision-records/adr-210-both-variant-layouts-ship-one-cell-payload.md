@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant worker ships one payload shape for both layouts: a `VariantCellData` per block, under each displayed region's index at genomic positions and under 0 for the columns, built by one cell loop. A fact every cell of a record shares - its span, its glyph, its inserted bp, the record itself - ships once per record, in `featureInfo` and the per-feature arrays, and the `cell` mark's per-instance span and glyph are dealt from them on the main thread (`cellGlyphs`), off the payload alone. The RPC takes the display's `layout`, not a wire `mode`, and columns send `referenceDrawingMode: 'draw'`. Rejected: shipping the span and glyph per cell for both layouts, an ordinal x so the matrix draws through the `cell` mark, and a per-record table the shader reads through a texture, which the HAL's one RGBA8 texture per pass does not yet carry"
+summary: "The multi-sample variant worker ships one `VariantCellData` payload for both layouts, with per-record facts sent once and each cell's span and glyph dealt on the main thread (`cellGlyphs`); the RPC takes `layout`, not `mode`"
 ---
 
 # ADR-210: Both variant layouts ship one cell payload

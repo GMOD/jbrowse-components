@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-way synteny display's lane order and lane choice are its `rows`, `LaneRows`: the shared `Rows` object with `assembly` as its one field, `domain` the lanes that stack first and `kept` the lanes drawn, where a top-level `domain` slot and a `laneFilter` session property held them. A lane the menu hides stays the session's (`hiddenLaneNames`), as the multi-row display's hidden legend categories do. The lane choice now reaches a share link, Edit plot and `displayDefaults` as every row display's does; `domain` and `laneFilter` were beta spellings and get no lift"
+summary: "The multi-way synteny display's lane order and choice are its `rows` (`LaneRows`, `rows.domain` and `rows.kept`), replacing the `domain` slot and `laneFilter`; a menu-hidden lane stays session state in `hiddenLaneNames`"
 ---
 
 # ADR-219: A multi-way lane order and choice are its `rows`

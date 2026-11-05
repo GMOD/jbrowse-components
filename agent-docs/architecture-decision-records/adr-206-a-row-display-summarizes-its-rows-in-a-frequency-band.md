@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "A genotype frequency band above the multi-sample variant display's rows, stacking each variant's share of the drawn rows by genotype class in the cells' own colors, was built, landed and removed on 2026-10-03. Over every drawn row it restates the VCF's own `AF` and what the matrix's columns already show; the reading that tells a biological story is a frequency per group (population, case and control), which bcftools computes per sample-sheet group and a multi-wiggle track draws a row each, with no code in the variant display"
+summary: "Rejected a genotype frequency band above the multi-sample variant display's rows: over all rows it restates the VCF's `AF`, and per-group frequency is better drawn as a multi-wiggle track"
 ---
 
 # ADR-206: A row display summarizes its rows in a frequency band

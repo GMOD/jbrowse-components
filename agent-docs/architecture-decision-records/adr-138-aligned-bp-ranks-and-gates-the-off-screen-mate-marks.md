@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Aligned bp is the one measure the off-screen mate strip decides by, because a mark's ink says nothing about its alignment: every mark is at least 1.5px wide however small the alignment under it. Label rows go to the stretches holding the most sequence, a pointer answers with the longest alignment under it, colors paint weakest-first, a name may overhang its stretch by half its width, and a contig draws no marks at all where the sequence it holds is worth under 4px of the band — a level-of-detail rule that lifts as the window widens. A pixel floor per ALIGNMENT was rejected on measurement: it drops 100% of the marks and 98% of the sequence on the demo the feature was built for"
+summary: "The off-screen mate strip ranks and gates by aligned bp, not ink: labels go to the contigs holding most sequence, a pointer picks the longest alignment, and a contig worth under 4px draws no marks. A per-alignment pixel floor was rejected"
 ---
 
 # ADR-138: Aligned bp ranks and gates the off-screen mate marks

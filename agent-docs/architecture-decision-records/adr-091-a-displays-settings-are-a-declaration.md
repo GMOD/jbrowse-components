@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "A track type is not a spec and a display's settings are not a declared table: porting an in-tree display onto defineDisplay fit only through six override hooks, the data-only table left behind eliminated no getters and gave every shared setting a second owner, and a spec that holds a display's wiring and nothing else is not worth keeping for third parties either, so ADR-089 and ADR-090 are rejected with it and the factory, the mark system and the example plugin's spec form are removed"
+summary: "Rejected, with ADR-089 and ADR-090: `defineDisplay` track-type specs and declared settings tables, since porting needed six override hooks and the table removed no getters; the factory and mark system are removed"
 ---
 
 # ADR-091: A track type is not a spec, and a display's settings are not a declaration

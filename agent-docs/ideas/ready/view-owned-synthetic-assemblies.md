@@ -1,6 +1,6 @@
 ---
 name: view-owned-synthetic-assemblies
-description: A comparative view's synthetic assembly (read-vs-ref, multi-way lanes) lives in session.temporaryAssemblies, a session list that outlives its one owner, and most of the temporary-assembly machinery exists to compensate; the assembly should ride on the view or display that owns it, as ADR-084 did for view-local track configs.
+description: A comparative view's synthetic assembly (read-vs-ref, multi-way lanes) lives in `session.temporaryAssemblies`, a list that outlives its one owner, and most of the temporary-assembly machinery exists to compensate.
 ---
 
 # View-owned synthetic assemblies

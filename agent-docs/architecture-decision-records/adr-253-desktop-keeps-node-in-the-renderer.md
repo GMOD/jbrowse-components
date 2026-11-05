@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "Desktop's renderer keeps `nodeIntegration`; the contextIsolation flip was built and dropped, since the RPC workers' `nodeIntegrationInWorker` hands any page script Node through a worker of its own, so the flip closes nothing while costing plugins their page-side Node. MCP agents run programs and write files with their own tools, never through `window.require`."
+summary: "Rejected: the contextIsolation flip removing `nodeIntegration` from Desktop's renderer, since the RPC workers' `nodeIntegrationInWorker` still hands page scripts Node, so it closes nothing and costs plugins their page-side Node"
 ---
 
 # ADR-253: Desktop keeps Node in the renderer

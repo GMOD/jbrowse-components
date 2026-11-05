@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`bin` keeps its meaning, a row placed in one bin by the one field where it starts, and gains the interval case as its own spelling: `fields: [start, end]` cuts each row at the bin edges into one piece per bin it overlaps, each the row with the bin's edges and `overlap`, its bases inside the bin, beside it. An `aggregate` op takes a `weight`, so `count` is the weights' sum, `sum` the products' and `mean` their ratio; min and max read none, and the rule list says so. An interval `bin` directly ahead of an `aggregate` grouped by its edges runs as one kernel with no piece table, answering the two steps' rows, ids and doubles. The MAF identity is then declared - `cells`, `bin` over `fields`, the mean of `match` weighted by `overlap` - and matches bases matched over bases compared exactly, where ADR-190's start-bin mean was off by up to 0.984. Fused, the declared identity takes 0.77-0.87x the unfused steps' time; a BigWig tier's mean weighted this way sits closer to the raw section's than the start-bin mean, 0.23% of the score range where that is 1.75% at volvox's 256 bp tier"
+summary: "`bin` keeps placing a row by its start and gains an interval form, `fields: [start, end]`, that cuts each row at bin edges with an `overlap`; an `aggregate` op takes a `weight`, so the MAF identity is a declared, base-exact mean"
 ---
 
 # ADR-197: A bin cuts an interval at its edges

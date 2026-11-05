@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The quantitative class of track — a feature file's field plotted on a score axis, colored by another field — is authored in config: a display type may attach to several track types, every score-axis display takes one `scoreField`, Manhattan colors by a field with a worker-shipped category table, and `LinearMarkDisplay` draws `marks: [{ shape, encoding }]` over any feature adapter through one core RPC that evaluates a declared encoding once in the worker. Reopens ADR-095's authoring rung for this class only; field access stays native, jexl is the per-channel escape, measured"
+summary: "A feature field plotted on a score axis is authored in config: displays attach to several track types, score-axis displays take `scoreField`, and `LinearMarkDisplay` draws `marks: [{ shape, encoding }]` evaluated in the worker. Reopens ADR-095's authoring rung for this class only"
 ---
 
 # ADR-107: The quantitative class is authored in config

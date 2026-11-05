@@ -1,6 +1,6 @@
 ---
 name: vertical-real-estate
-description: The "scrolls within scrolls" problem: a goodness hierarchy for the fixes, what the wheel/scroll machinery already does that you should not reinvent, a view-level height allocator, reclaiming non-data chrome, the publisher's own filter as a footprint lever, and an honest floor on what any of it buys.
+description: Nested scroll surfaces (page, per-track, genome pan) fight the expectation of an easily scrollable page, and the lever that pays most is shrinking vertical footprint rather than making nested scroll nicer.
 ---
 
 # Vertical real estate & the "scrolls within scrolls" problem

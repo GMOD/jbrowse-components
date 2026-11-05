@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "On the mark display a facet section is a band: under `rows`, a facet on a row attribute stacks the rows in labelled bands on the main thread, through `TreeSidebarMixin`'s `rowBanding`, where a facet on a feature field still splits the features in the worker and draws in the rows' place. A row attribute is the `group` a new `rowGroups` slot writes, so whether a facet bands or splits is config, known before a feature loads. The bands order by `facet.sort`, then the groups as `rowGroups` declares them; a clustering run clusters each band apart; `rowColor` can color by `group`. `rowGroups` and its helpers move from the multi-row display into tree-sidebar. The last gap of the multi-row-on-marks handoff before the swap; amends ADR-169"
+summary: "On the mark display, a facet on a row attribute (the `group` a `rowGroups` slot writes) stacks the rows in labelled bands through `TreeSidebarMixin`'s `rowBanding`, while a facet on a feature field still splits in the worker. Amends ADR-169"
 ---
 
 # ADR-247: A facet on a row attribute bands the rows

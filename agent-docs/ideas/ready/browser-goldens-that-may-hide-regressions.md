@@ -1,6 +1,6 @@
 ---
 name: browser-goldens-that-may-hide-regressions
-description: Thirteen canvas2d browser tests that fail at 9e24a41973 and at main alike, whose new capture looks like a regression rather than a stale golden, so they were left unrefreshed on 2026-10-25 while 20 benign ones were reshot. Each needs its owner to say whether the new picture is intended before anyone runs -u on it. Four more are failing asserts, not pictures (cross-region arcs draw nothing across, a squeezed fit draws a label, SVG peptide text).
+description: Thirteen failing canvas2d browser tests whose new capture looks like a regression rather than a stale golden, plus four failing asserts. Each needs its owner to rule on the new picture before anyone runs -u.
 ---
 
 # Browser goldens that may hide regressions

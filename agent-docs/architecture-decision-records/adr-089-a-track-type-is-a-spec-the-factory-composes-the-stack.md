@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "A third-party display is a spec of plain values and functions handed to defineDisplay, which composes the in-tree display stack once, inside display-kit; the author never composes a mixin, names a hook, or writes an RPC class, a config schema, a backend class or a component"
+summary: "Rejected: `defineDisplay`, a display written as a spec that display-kit composes into the display stack, because porting an in-tree display showed the spec holds only its wiring (ADR-091)."
 ---
 
 # ADR-089: A track type is a spec, and the factory composes the stack

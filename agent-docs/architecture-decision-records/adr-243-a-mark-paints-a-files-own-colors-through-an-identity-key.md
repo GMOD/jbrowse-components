@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's `color` takes `scale: 'identity'`, ADR-166's scale: with `value` unset, each feature paints the BED color it carries, one carrying none the mark's default, and the key lists `domain` named by `names` once anything is drawn. The worker keys each feature by the `r,g,b` its color parses to under UCSC's `itemRgb on`, parsing each distinct raw value once, and the main thread paints the keys (`ColorSource` `identity`), so `domain` and `names` refetch nothing. The Edit plot scale picker leaves identity out, since it reads no field. First of the gaps between the mark display and the multi-row display it is to replace. Amends ADR-166 and ADR-202"
+summary: "The mark display's `color` takes `scale: 'identity'`, painting each feature's own BED color from a worker-side key, so `domain` and `names` edits refetch nothing. Amends ADR-166 and ADR-202"
 ---
 
 # ADR-243: A mark paints a file's own colors through an identity key

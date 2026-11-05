@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays' pileup row order is one `sort` slot, `AlignmentsSort`: a string names a whole-window order (`position`, `length`, `spliced`, `split`, `svSignal`) and an object a column sort (`{ type, pos, refName, tag }`, with `type` one of `strand`, `basePair`, `tag`, `insertion`, `softclip`, `hardclip`). It replaces `sortedBy` and `layoutOrder`, whose setters cleared each other because the menu is one radio group. `setSort` is the one writer and `sortAtCenterLine` the track menu's; `setSortedBy`, `setSortedByAtPosition` and `setLayoutOrder` go, and the `sortedBy` getter is `sortColumn`. `type` is a closed enum where `sortedBy.type` was a bare string. A v4 session's instance `sortedBy` lifts into `sort`; the v5-beta config keys are not migrated. Amended 2026-10-20: the member is `field`, spelt as `color` and `facet` spell one, so a tag sort is `tags.HP` and `basePair` is `base`"
+summary: "The alignments pileup row order is one `sort` slot, `AlignmentsSort`, replacing `sortedBy` and `layoutOrder`: a string names a whole-window order, an object a column sort by `field` (e.g. `tags.HP`). `setSort` is the one writer"
 ---
 
 # ADR-224: The alignments row order is one `sort` slot

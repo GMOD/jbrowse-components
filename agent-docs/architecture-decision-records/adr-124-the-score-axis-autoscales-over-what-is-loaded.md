@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The wiggle family's `global` and `globalsd` autoscale modes were retired on 2026-06-19 and this records it: they scoped their statistics to the loaded regions, not the file, so they barely differed from `local` and `localsd`, and the domain has since been derived on the main thread from the rendered arrays with no stats round trip left to scope. An old config's `global` remaps to `local` in `preProcessSnapshot`. A domain that grows as the user pans is the design, not a seam, and an axis a figure needs still is pinned: the Score menu's \"Pin current min/max\" copies the drawn domain into the slots, and the mark display's onto `encoding.y.domain`"
+summary: "The wiggle `global` and `globalsd` autoscale modes are retired and remap to `local` in `preProcessSnapshot`; the axis autoscales over loaded data by design, and \"Pin current min/max\" holds it still for a figure"
 ---
 
 # ADR-124: The score axis autoscales over what is loaded

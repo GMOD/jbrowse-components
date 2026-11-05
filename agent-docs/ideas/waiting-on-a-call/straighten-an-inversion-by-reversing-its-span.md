@@ -1,6 +1,6 @@
 ---
 name: straighten-an-inversion-by-reversing-its-span
-description: In a linear synteny view, read an inversion straight by splitting the mate row's region at the breakpoints and reversing only the middle piece, instead of flipping the whole row into an X. Every piece exists but a region split helper. Colin deferred it on 2026-09-24.
+description: In a linear synteny view, flipping a whole row turns an inversion's flanking ribbons into an X; splitting the row at the breakpoints and reversing only the inverted span would keep them straight.
 ---
 
 # Straighten an inversion by reversing its span

@@ -1,6 +1,6 @@
 ---
 name: a-link-places-a-foot-in-its-own-region-at-any-index
-description: The link shader's region table holds 256 entries and a far foot is placed through it even when it lies in the instance's own region, so in a view of more than 256 displayed regions a sashimi junction or a read-connection arc inside region 256 or later draws a stem.
+description: In a view of more than 256 displayed regions, a sashimi junction or read-connection arc in region 256 or later draws a stem, since `linkMark.slang` places even an own-region far foot through its 256-entry table.
 ---
 
 # A link places a foot in its own region at any index

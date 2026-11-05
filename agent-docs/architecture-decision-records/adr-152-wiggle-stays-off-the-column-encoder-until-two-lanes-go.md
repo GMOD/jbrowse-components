@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "No column encoder for wiggle yet: an `encodeColumns` over typed columns matches wiggle's hand packer in time (0.59-0.99x) and a row cursor runs `jexl:` channels at 0.26-0.40x the SimpleFeature path, but `EncodedChannels` retains 20 bytes a feature against wiggle's 12 — an identity `featureIndex` and a per-instance color lane wiggle carries per source. It reopens once `EncodedChannels` can decline `featureIndex` and a constant color rides as a scalar"
+summary: "Rejected moving wiggle onto an `encodeColumns` column encoder: it matched the hand packer's speed but `EncodedChannels` retains more bytes per feature. Reopens once `EncodedChannels` can decline `featureIndex` and a constant color rides as a scalar"
 ---
 
 # ADR-152: Wiggle stays off the column encoder until two lanes go

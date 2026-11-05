@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A mark leaving a channel unwritten reads what its steps wrote, as a ggplot2 stat names what its geom draws (`after_stat`): `y` is a `coverage`'s depth or a single-op `aggregate`'s summary, `x2` left at `end` is the other end a `mate` found, and `row` the last surviving `pileup`'s rows. One function, `stepChannels`, reads it over the display's, the facet's and the mark's steps; the model resolves it before the request, so the worker's own pileup fallback is gone, and the `mark-without-value` rule moves from the mark schema's `requires` to the rule list, which can see the steps. A written channel wins; an aggregate writing two summaries fills nothing"
+summary: "A mark leaving a channel unwritten reads what its steps wrote (`y` from `coverage` or a single-op `aggregate`, `x2` from `mate`, `row` from `pileup`), resolved by `stepChannels` on the main thread before the request; a written channel wins"
 ---
 
 # ADR-173: A step names the channel its output feeds

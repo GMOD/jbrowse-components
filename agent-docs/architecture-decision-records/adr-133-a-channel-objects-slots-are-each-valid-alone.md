@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "No combination of a channel object's slots is refused: a `domain` with no `field`, or a `field` under a scale that reads none, loads and waits unread. `scale` on the Manhattan, multi-way and mark color objects is unset by default and reads as the scale its field implies (`paintedScale`), so an explicit `none` survives a reload, and a scale switch in a menu keeps the field, order and palette for the way back. Supersedes ADR-131's refusals of a `domain` or `palette` naming no `field` and of a `field` under a non-categorical scale. ADR-151 spells `palette` and `ramp` as `range` and `scheme` and drops MarkColor's `linear` beside a ramp"
+summary: "A channel object refuses keys and types, never a combination of slots, and `scale` is unset by default so an explicit `none` survives a reload. Supersedes ADR-131's combination refusals"
 ---
 
 # ADR-133: A channel object's slots are each valid alone

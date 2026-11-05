@@ -1,6 +1,6 @@
 ---
 name: tutorial-notebooks-python-and-r
-description: A notebook tutorial covering jbrowse-anywidget and JBrowseR together — compute in the kernel, put the bytes behind a track with add_local_file, set location, read it back after the user pans. Unblocked since resolveAssemblies moved to product-core; a narrative over the existing example notebooks rather than new material.
+description: No tutorial teaches the notebook loop in jbrowse-anywidget and JBrowseR, computing in the kernel, showing the bytes as a track with `add_local_file` and reading back where the user panned.
 ---
 
 # Tutorial: notebooks, Python and R

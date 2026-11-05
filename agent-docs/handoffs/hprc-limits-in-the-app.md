@@ -1,6 +1,6 @@
 ---
 name: hprc-limits-in-the-app
-description: "Turning the HPRC tutorials' limits sections into things the app shows (Colin, 2026-11-01: \"in case we are able to fix or at least improve on them\"). Landed: lane labels with form counts and one-structure launch notes on the genomes.jbrowse.org HPRC page (jb2hubs b7522325fec3, on staging), and a named foot row for a chosen lane the window places nothing in (90a8a64091). Open: an end marker where a lane stops, the VCF parents vcfbub dropped, an antibody-locus caveat, and one unverified sentence in part 2's limits. Format 6 departures and the 'deletion' rename belong to gfa-to-tabix's departures thread."
+description: "Turning the HPRC tutorials' limits sections into things the app shows. Open: an end marker where a lane stops, the VCF parents vcfbub dropped, an antibody-locus caveat, and an unverified sentence in part 2."
 ---
 
 # The HPRC limits, shown in the app

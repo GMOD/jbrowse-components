@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The circular view's chords and ribbons are marks on the GPU ladder, drawn through the circle's polar stage. A chord is a link from `x` to `x2`; a ribbon is the dotplot's alignment segment, a span `x1`..`x2` against its mate's `y1`..`y2` with the strand saying which ends pair. Each foot is a position on the unrolled genome axis and a count of slice gaps, so its angle is affine in the two and the scale and the rotation are uniforms: a zoom or a rotation redraws and uploads nothing. One `defineMark` list gives WebGPU, WebGL2 and a Canvas2D rung that traces the same angles; the hit test is geometric, a ribbon's nonzero winding and a chord's distance from its curve, with no pick canvas. Measured in headed Chrome on an Intel UHD 630: the 66,994-ribbon oat circle rotates at 43 ms a frame and recolors in about 120 ms, where a Canvas2D layer took 3-6 s per repaint. Replaces the Canvas2D layer this ADR first recorded the same day"
+summary: "The circular view's chords and ribbons are `defineMark` marks on the GPU ladder under the circle's polar stage, with scale and rotation as uniforms and a geometric hit test, replacing per-ribbon SVG paths"
 ---
 
 # ADR-177: A chord is a mark under the circle's polar stage

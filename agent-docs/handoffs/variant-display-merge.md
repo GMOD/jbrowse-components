@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D (every outside writer) done, the alias kept for beta sessions; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: the trio tour refilm, the scrolled export and split view not yet driven in the app, and whether an SVG export keeps the chips' blank strip."
+description: "Merging `LinearMultiSampleVariantDisplay` into one `LinearVariantDisplay` with a records band over genotype rows; slices A through E landed (ADR-254, ADR-255). Open: the trio tour refilm, the scrolled export and split view in the app, and the SVG export's chip strip."
 ---
 
 # One variant display

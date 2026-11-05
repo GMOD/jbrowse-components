@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An adapter with zoom levels declares the bp/px range its answer serves — `BigWigAdapter` from its header's zoom levels under bbi's own selection rule, `MultiWiggleAdapter` as the intersection of its sources' — and the payload carries it. `MultiRegionDisplayMixin.regionHasData` reads the view's `bpPerPx` against it, so a zoom inside a tier refetches nothing on the wiggle displays and the mark display alike, and no display-side rule can pick a finer tier than the view would. Supersedes ADR-008's strict equality and closes the per-step refetch ADR-123 accepted"
+summary: "An adapter with zoom levels (`BigWigAdapter`, `MultiWiggleAdapter`) declares the bp/px range its answer serves, and `MultiRegionDisplayMixin.regionHasData` checks the view's `bpPerPx` against it, so a zoom within a tier refetches nothing. Supersedes ADR-008"
 ---
 
 # ADR-125: The adapter declares the zoom range its answer serves

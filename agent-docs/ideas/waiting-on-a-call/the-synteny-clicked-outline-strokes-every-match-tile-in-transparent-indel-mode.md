@@ -1,6 +1,6 @@
 ---
 name: the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode
-description: in transparent-indel mode a clicked feature gets the side edges of every match tile stroked — ~600 black hairlines on a ribbon with 300 visible indels — and skipping the tiles leaves it no outline at all, because pass 1 lays down no full-span base in that mode
+description: In transparent-indel synteny mode a clicked feature strokes the side edges of every match tile instead of one silhouette, and skipping the tiles leaves it no outline at all.
 ---
 
 # The synteny clicked outline strokes every match tile in transparent-indel mode

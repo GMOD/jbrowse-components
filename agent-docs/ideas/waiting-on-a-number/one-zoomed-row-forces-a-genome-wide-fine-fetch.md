@@ -1,6 +1,6 @@
 ---
 name: one-zoomed-row-forces-a-genome-wide-fine-fetch
-description: A synteny view's tier resolves off the min bpPerPx of both rows, so a whole-genome row against a zoomed-in one fetches the fine PIF tier across the genome. Waste, not wrong output; measure how often real views straddle the threshold before building the per-axis tier, which wants the bidirectional fetch.
+description: A synteny view's tier resolves off the min `bpPerPx` of both rows, so a whole-genome row against a zoomed-in one fetches the fine PIF tier across the genome; measure how often real views straddle the threshold first.
 ---
 
 # One zoomed-in row forces a genome-wide fine fetch

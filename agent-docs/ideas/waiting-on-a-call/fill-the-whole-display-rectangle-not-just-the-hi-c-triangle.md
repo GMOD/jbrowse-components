@@ -1,6 +1,6 @@
 ---
 name: fill-the-whole-display-rectangle-not-just-the-hi-c-triangle
-description: The hi-C display's two bottom corners want contacts half a visible span past the edge, so filling the box means a 2x fetch window against today's 1.5x — and the cost is already measured at 609,913 vertices against the visible span's 318,024, i.e. 60 fps to ~37 while panning on WebGL2. That makes it the direct opposite of agent-docs/architecture-decision-records/' parked *smaller* fetch quantum: whichever is built kills the other. The call underneath is what y means once the apex stops bounding it.
+description: Filling the Hi-C display's empty bottom corners needs a 2x fetch window against today's 1.5x, slowing panning and ruling out the parked smaller fetch quantum; the call underneath is what y means without the apex.
 ---
 
 # Fill the whole display rectangle, not just the hi-C triangle

@@ -1,6 +1,6 @@
 ---
 name: sv-review-portal
-description: A static review page over a whole SV callset in the shape of gene-review-portal — one card per record of `jb2export batch --manifest`, tumor and normal in one image, grouped by the caller's VCF `EVENT`, sorted by read support, with a verdict and a live link. Where a caller or an assembler wrote a contig BAM, the card's allele row draws that contig against the reference through "Linear read vs ref", which no spec, URL or `jb2export` mode reaches yet. ADR-140 deleted the chain finder the first plan stood on, so every grouping here is the caller's.
+description: A static review page over a whole SV callset, shaped like gene-review-portal, with one `jb2export batch --manifest` card per record (tumor and normal in one image), grouped by the caller's VCF `EVENT`, with a verdict and a live link.
 ---
 
 # SV review portal

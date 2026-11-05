@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: 'One phase at a time is summable and the rest are charged as unmeasured — that half stands. Which phase is no longer the one holding the most slots: ADR-080 takes the earliest the batch is still in, because a majority changes hands as regions cross and the label went back and forth with it'
+summary: 'Superseded by ADR-080: the summed phase is now the earliest the batch is still in, not the majority; summing only one phase at a time still stands'
 ---
 
 # ADR-072: Only operations in the same phase are summable

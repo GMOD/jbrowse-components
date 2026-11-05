@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The canvas feature and variant displays' Color by radios pick what paints, the track's own `color.value` (Default) or a field, and Solid color is an action that writes that value. Picking a field keeps `value`, so Default returns to a track author's color, as multi-way's Genes Default already did. A per-display color override and a per-slot reset over `trackConfigDeltas` were both declined"
+summary: "The canvas feature and variant displays' Color by radios pick what paints, the track's own `color.value` (Default) or a field, and Solid color is an action that writes `value`."
 ---
 
 # ADR-154: The color menu's Default is the track's own color

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "On the mark display, clustering and \"Sort rows by ... here\" compare rows on one mark, `rowCompare`: the first drawing bar, point or line by its `y`, else the first drawing rect by its color. A categorical or identity color compares as its category, one-hot per column with a gap channel, the last covering span winning, and presence past 64 categories; a ramped number compares as each column's mean; a constant compares on presence. A column sort orders a span's categories in blocks, the category most rows show first, then in the categories' own order, so the palette decides nothing. The cover and one-hot helpers live in tree-sidebar's binColumns, which multi-row's matrix now reads too. Second gap of the multi-row-on-marks handoff"
+summary: "On the mark display, clustering and row sorting compare rows on one mark (`rowCompare`): a bar, point or line by its `y`, else a rect by its color, a categorical color compared one-hot per column."
 ---
 
 # ADR-244: Span rows compare on their color

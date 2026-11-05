@@ -1,6 +1,6 @@
 ---
 name: lightweight-toolkit
-description: Bring-your-own is a docs site, not a package, so there is nothing to install when someone wants the engine without the app. The four rungs an escape parachute actually has, the six silent failures a newcomer hits on the way to one track, and the 81-member session interface that makes a small host impossible.
+description: Someone who wants the JBrowse engine without the app has nothing to install, since bring-your-own is a docs site. Covers the silent failures on the way to one track and the session interface that blocks a small host.
 ---
 
 # JBrowse as a lightweight toolkit

@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for the data behind them — the junction BED the RNA-seq tutorial section names and nothing hosts, three parked on a cost or a call Colin has not made (wheat Compara, a per-level dotplot scale, the wolf-ancestry sweep), and the cancer SV datasets worth shooting plus the three dead ends recorded so nobody re-checks them, and the tutorial pages removed for good.
+description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them the RNA-seq tutorial's junction BED, wheat Compara and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
 ---
 
 # Figures blocked on data, a cost or a call

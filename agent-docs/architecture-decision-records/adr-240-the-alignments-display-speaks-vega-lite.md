@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay, slot by slot: one `filter` predicate list that merges with its defaults by field (`flags.*`, `mapq`, `tags.XX`, the read categories, and the derived rows `junction.reads`, `connection.*` and `breakpoint.reads`); `encoding.color` with `scale.{type, domain, range, names, group, ...}` and a per-channel `legend.{title, descending}` under the one display-wide `legend.show`; `coverage.encoding.y`; a `show` on every band and layer (`pileup.mismatches`, `softClips`, `connectors`, `bases`, `coverage.interbase`, `alleles`, `sashimi.labels`, `readConnections.ordinaryPairs`); `pileup.mark.height`; `readConnections.mark` as `{ type: 'link' }` (a dome) or `{ type: 'rule' }` with `encoding.strokeWidth`. Amends ADR-238: a written filter list merges by field, a link's width is `strokeWidth`, `autosize` is not borrowed, `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes `scale.group`, per-value names are `scale.names`. Keeps `collapseSections`, `heightMode`, `fadeLowFrequency` and `maxLayoutHeight`; cuts `pileup.showOutline`"
+summary: "ADR-238's end state for `LinearAlignmentsDisplay` and `LGVSyntenyDisplay`: one `filter` predicate list, `encoding.color` with a `scale` object, a `show` on every band and layer, and `readConnections.mark` as `link` or `rule`"
 ---
 
 # ADR-240: The alignments display speaks Vega-Lite

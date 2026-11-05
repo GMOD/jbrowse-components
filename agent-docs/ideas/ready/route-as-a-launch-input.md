@@ -1,6 +1,6 @@
 ---
 name: route-as-a-launch-input
-description: Make the rearrangement a declarative launch input (`route`, an ordered oriented list of reference intervals with provenance) that any external caller, assembler or karyotype tool can target, so JBrowse renders the evidence around a route it did not compute. A route serialises to PAF, so the synteny view draws it as reference over derived allele with no new renderer; a simple `<DEL>`/`<DUP>`/`<INV>` record, a GATK-SV `<CPX>` record, a hifiasm contig, a LINX derivative chromosome and a gGnome walk all become producers of one object. Since ADR-137 removed the in-app picker, this is the only way JBrowse draws an allele.
+description: With the in-app allele picker gone (ADR-137), JBrowse has no way to draw a derived allele; a declarative `route` launch input would let SV callers, assemblers and karyotype tools show one through the synteny view.
 ---
 
 # A route as a launch input

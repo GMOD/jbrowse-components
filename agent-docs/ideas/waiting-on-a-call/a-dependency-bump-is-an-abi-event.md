@@ -1,6 +1,6 @@
 ---
 name: a-dependency-bump-is-an-abi-event
-description: Moving the `@jbrowse/mobx-state-tree` or `@mui/material` range broke an out-of-tree plugin worse than every renamed export combined — ~500 errors, none naming their cause — because a module augmentation cannot reach a second copy of the module it augments. Nothing in the tree sees this, and the fix is a decision about which packages cross the boundary at all.
+description: Moving the `@jbrowse/mobx-state-tree` or `@mui/material` range breaks an out-of-tree plugin with hundreds of errors naming no cause, since a module augmentation cannot reach a second copy of its module, and no checker sees it.
 ---
 
 # A dependency bump is an ABI event, and no checker sees it

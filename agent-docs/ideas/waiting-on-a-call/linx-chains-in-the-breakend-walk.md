@@ -1,6 +1,6 @@
 ---
 name: linx-chains-in-the-breakend-walk
-description: What the GRIDSS/Esvee/LINX/PURPLE stack already knows about which breakends share a derivative chromosome, and how the breakpoint split view's chain walk could take it — LINX's links.tsv as a ready-made chain, junction copy number as the tiebreak the walk refuses to invent, and what the walk now reads from an assembly id.
+description: The GRIDSS/Esvee/LINX/PURPLE stack already records which breakends share a derivative chromosome, so the breakpoint split view's chain walk could take LINX's links.tsv as a chain and junction copy number as its tiebreak.
 ---
 
 # LINX chains in the breakend walk

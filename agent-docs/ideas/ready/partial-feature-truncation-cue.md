@@ -1,6 +1,6 @@
 ---
 name: partial-feature-truncation-cue
-description: NCBI eukaryote GFFs mark truncated annotations with partial=true and start_range/end_range, and JBrowse draws them with an ordinary square cap. A ragged cap on the open end is a full vertical slice — a worker-derived open-end flag, a packed byte, a slang cap and its Canvas2D twin.
+description: NCBI eukaryote GFFs mark truncated annotations with `partial=true` and `start_range`/`end_range`, but JBrowse draws them with an ordinary square cap, so a truncated feature looks complete.
 ---
 
 # A cue for a partial feature's open end

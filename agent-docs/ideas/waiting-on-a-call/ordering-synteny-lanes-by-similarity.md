@@ -1,6 +1,6 @@
 ---
 name: ordering-synteny-lanes-by-similarity
-description: Reordering MultiWaySyntenyDisplay's lanes so similar genomes sit adjacent. The display side is already built — `rows.sort` is a slot with a densest-first default — and what is missing is the N x N similarity. Two things decide whether it can be had: a ribbon only ever joins ADJACENT lanes, so the objective is seriation and a dendrogram's leaf order is a heuristic for a different problem; and the similarity's fetch cost depends entirely on the source, free from per-lane gene groups and O(N^2) adapter calls from an all-vs-all PAF. A star denies the matrix but not an order — `diagonalizeRegions` is the in-tree proof that star-shaped data sorts by projection, and the lane counterpart is a profile ordering. Read before wiring TreeSidebarMixin into this display, or before reaching for diagonalization as the seriation it is not.
+description: Ordering `MultiWaySyntenyDisplay`'s lanes so similar genomes sit adjacent needs an N x N similarity whose cost depends on the source, and the objective is seriation, not a dendrogram order. Read before wiring `TreeSidebarMixin` into this display.
 ---
 
 # Ordering synteny lanes by similarity

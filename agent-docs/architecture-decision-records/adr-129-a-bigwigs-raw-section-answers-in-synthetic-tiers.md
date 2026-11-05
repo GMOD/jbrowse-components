@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`BigWigAdapter` serves up to two synthetic zoom tiers between a file's raw section and its first zoom level: power-of-two bins 4x apart, the coarsest the smallest at or above a quarter of the first level, so each declared range holds at most two bins a pixel and tiles with the file's own under `tierSpanRange`. The file keeps a bin only when it is at least twice the raw section's mean record span, sampled once from four windows spread through its records, so whether a zoom bins is the file's call and never the region's. A synthetic fetch reads the raw section over bin-aligned extents and bins each region: span-weighted mean over covered bases, min and max, each row spanning only the bases its bin covers, identical neighbours merged, rows wholly outside the region dropped. No zoom levels, no synthetic tiers. The FST scan at 319 bp/px goes from 13,966 rows a source to 1,783, and fill at 1000 sources from 266 MiB to 34"
+summary: "`BigWigAdapter` serves up to two synthetic power-of-two zoom tiers between a file's raw section and its first zoom level, kept only where coarser than the raw records, so a raw-section zoom draws at most two bins a pixel"
 ---
 
 # ADR-129: A BigWig's raw section answers in synthetic tiers

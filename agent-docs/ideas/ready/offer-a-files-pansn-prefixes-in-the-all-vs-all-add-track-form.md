@@ -1,6 +1,6 @@
 ---
 name: offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form
-description: the error half shipped — both adapters throw naming the file's samples and the slot that fixes them — and what is left is discovery: nothing in the UI ever lists a file's PanSN prefixes, so the mapping can still only be written from `tabix -l`
+description: Nothing in the UI lists a file's PanSN prefixes, so an all-vs-all track's `assemblyNameToPanSN` mapping can only be written by reading `tabix -l`.
 ---
 
 # Offer a file's PanSN prefixes in the all-vs-all add-track form

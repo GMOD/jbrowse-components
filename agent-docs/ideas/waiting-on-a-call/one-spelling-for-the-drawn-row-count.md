@@ -1,6 +1,6 @@
 ---
 name: one-spelling-for-the-drawn-row-count
-description: The count of drawn rows is spelled `nrow`, `numRows` and `rowCount` across the row displays, and the mark display carries two getters for it. Separately, alignments' `rowHeight` is a pitch (feature height plus spacing), where every other `rowHeight` is a row's height. The call is which spelling wins.
+description: The drawn-row count is spelled `nrow`, `numRows` and `rowCount` across the row displays, and alignments' `rowHeight` is a pitch where every other `rowHeight` is a row's height. The call is which spelling wins.
 ---
 
 # One spelling for the drawn-row count

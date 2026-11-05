@@ -1,6 +1,6 @@
 ---
 name: a-zoomed-out-gc-track-reads-the-whole-chromosome
-description: A GC content track over a whole human chromosome downloads and scans every base of it (chr1 is 77 MB over the wire and 1.3 GB in the worker), and a whole-genome view would ask for about 12 times that, because the wiggle display never gates on bytes. The call is whether to put the wiggle display behind the region-too-large gate with `GCContentAdapter` answering `getRegionByteSize`, or to accept the cost.
+description: A GC content track over a whole chromosome downloads and scans every base, because the wiggle display never gates on bytes; the call is whether to gate it with `GCContentAdapter` answering `getRegionByteSize`, or accept the cost.
 ---
 
 # A zoomed-out GC track reads the whole chromosome

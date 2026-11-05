@@ -1,6 +1,6 @@
 ---
 name: block-level-synteny-from-external-tools
-description: Import or generate block-level synteny (chained collinear runs) as a zoom tier of the pif, not a replacement for the raw minimap2 rows — the tool landscape, three routes to a block-level pif, and why chaining (Route B) is what the coarse tier's strip-and-split pass does not do.
+description: Whole-genome synteny overviews draw thousands of raw minimap2 ribbons as a hairball; chained block-level synteny as a zoom tier of the pif would declutter what the coarse tier's strip-and-split cannot.
 ---
 
 # Block-level synteny data from external tools

@@ -1,6 +1,6 @@
 ---
 name: a-window-frame-reaches-past-the-fetch
-description: A `window` step counts its frame in rows, and the worker runs it over the region the display fetched, the visible span plus the buffer. A frame wider than the rows the buffer holds is cut at the fetch edge, so near the view's edges a 1,001-CpG average covers fewer CpGs and redraws differently on each refetch while panning. Padding the fetch needs bases for a frame counted in rows, so it needs an estimate of row spacing before the data arrives.
+description: A `window` step's frame, counted in rows, is cut at the fetch edge, so near the view's edges a wide average covers fewer rows and redraws differently on each refetch while panning.
 ---
 
 # A window frame reaches past the fetch

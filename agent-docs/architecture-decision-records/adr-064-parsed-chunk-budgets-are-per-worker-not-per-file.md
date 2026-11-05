@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "@gmod/bam, @gmod/tabix and @gmod/cram each bound their parsed-chunk cache per file, and dataAdapterCache holds one file per open track, so the ceilings multiplied by track count with nothing bounding the sum — three deep alignments tracks browsing eight windows retained 1109 MB with every cache still well under its own 1 GB ceiling; the adapters now share one SharedBudget per JS context (originally two, because cram weighed records until 14)"
+summary: "The `@gmod/bam`, `@gmod/tabix` and `@gmod/cram` parsed-chunk caches share one `SharedBudget` per JS context instead of a ceiling per file, so the memory bound no longer multiplies with open track count"
 ---
 
 # ADR-064: Parsed-chunk budgets are per worker, not per file

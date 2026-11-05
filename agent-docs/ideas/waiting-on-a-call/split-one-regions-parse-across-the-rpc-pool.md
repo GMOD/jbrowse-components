@@ -1,6 +1,6 @@
 ---
 name: split-one-regions-parse-across-the-rpc-pool
-description: "A deep alignments window (100x over 1 Mb, BAM) draws at 3.96 s with one render worker busy 2.6 s of it. Each line item is a 3-7% cut; only splitting one region's parse across the RPC pool gives 2x or more, and that is a design call against ADR-053 and the CRAM slice-decode finding."
+description: "A deep alignments window spends most of its draw in one render worker's parse, and trimming any line item returns a few percent; splitting one region's parse across the RPC pool could halve it, a design call against ADR-053."
 ---
 
 # Split one region's parse across the RPC pool

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Below a `scales.y.domainQuantile` of 1 an open end follows the extremes and stops only at a fence, twice the span the quantile ends draw (0 included where the axis reaches it), through `fenceOutliers` in `@jbrowse/core/util/quantileExtent`; the wiggle plot, the mark display and the coverage band read it, color ramps still clip at the quantile, and a plot with no spike draws no red strip. The Score submenu, its three dialogs (Set min/max score, Autoscale with other tracks, Reference lines) and Show cross hatches become one track-menu row, Y axis..., opening a drawer widget that writes `scales.y` as each control changes: Scale, Min/Max (debounced), Include 0, Clip extreme outliers, Share axis with, Grid lines, Reference lines and Reset to defaults. The coverage band's row is Coverage axis..., a density plot's Score range..., and Summary score mode moves into Resolution. Amends ADR-179, ADR-182 and ADR-183"
+summary: "Clip extreme outliers stops an open axis end only at a fence (`fenceOutliers`), and the Score submenu and its dialogs become one Y axis... drawer that writes `scales.y` live. Amends ADR-179, ADR-182 and ADR-183."
 ---
 
 # ADR-208: Clip outliers fences a spike, and one Y axis drawer holds the scale

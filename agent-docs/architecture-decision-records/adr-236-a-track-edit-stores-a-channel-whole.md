@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A track-config delta stores an object its display's schema writes whole (`writes: 'whole'`: a color object, `rows`, `facet`) as a unit: a user's pick replaces the base's object, a reset is one `null`, and the changes list names each member that moved. `diffTrackConfig`, `mergeTrackConfig` and `flattenTrackConfigDelta` take a `wholeAt` test, which the session and the desktop web export build from the display schemas (`displayWholeAt`, `writesWholeAt`). A later admin member inside a channel the user picked no longer reaches that user; a namespace, a slot and everything outside displays still merge member by member. Beta deltas need no lift: a `null` inside a whole object is dropped on merge"
+summary: "A track-config delta stores a channel its schema marks `writes: 'whole'` (color, `rows`, `facet`) as a unit, so a user's pick replaces the base's object and a later admin member inside it no longer reaches that user. `diffTrackConfig` and `mergeTrackConfig` take a `wholeAt` test"
 ---
 
 # ADR-236: A track edit stores a channel whole

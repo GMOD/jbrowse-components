@@ -1,6 +1,6 @@
 ---
 name: frozen-docs-per-major-live-under-jb2-versions
-description: Live /jb2/docs/ deploys from main, so a user on v4.x reads v5-beta docs for config keys and plugin APIs their version lacks. Freeze each outgoing major's last tag under /jb2/versions/vN.x/, shield it from the deploy's rclone sync-delete with a filter, and link it from /jb2/versions/. Waits on the URL spelling and a few defaults.
+description: Live /jb2/docs/ deploys from main, so a user on v4.x reads v5-beta docs for config keys and plugin APIs their version lacks; each outgoing major could freeze under /jb2/versions/vN.x/.
 ---
 
 # Frozen docs per major live under /jb2/versions/

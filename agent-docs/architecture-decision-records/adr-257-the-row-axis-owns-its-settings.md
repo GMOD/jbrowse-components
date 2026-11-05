@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Everything about a row display's row axis lives under `rows`, as a Vega-Lite channel owns its scale, guide and sort: `rowHeight` is `rows.step: number | 'fit'` (`'fit'`, the default, divides `height` between the rows, as `heightMode: 'fit'` does), the sidebar `axis` is `rows.axis`, per-row colors are `rows.colors`, an override map beside `labels` that wins over the row-attribute color channel `rows.color`, `rowGroups` is `rows.groups`, `rows.kept` stays (row names, keyed) beside a new `rows.filter` (attribute predicates, not keyed), and `rows.tree` holds `{ newick, provenance }`. The variant display's `unit` becomes `rows.field: 'sample' | 'haplotype'`, haplotype a refinement of sample. A new declared write rule makes this safe: on `rows` and `facet`, a write that changes `field` unsets what names a row by its value (sort, labels, colors, tree, kept), so the layer below shows through, and merges the rest; what names an attribute stays. Amends ADR-238 and ADR-231; reverses ADR-194's row-height placement"
+summary: "A row display's row axis lives under `rows`: `rowHeight` becomes `rows.step`, beside `rows.axis`, `rows.colors`, `rows.groups`, `rows.filter`, `rows.tree` and `rows.field` (the variant `unit`); a write changing `field` unsets what names a row by value"
 ---
 
 # ADR-257: The row axis owns its settings

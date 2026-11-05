@@ -1,6 +1,6 @@
 ---
 name: compact-parsed-indexes-in-bam-js-and-tabix-js
-description: A parsed BAI, CSI or TBI holds up to about 4.2x its uncompressed bytes as JS objects, and a CRAI about 4.3x, so the embedded engine can only estimate an adapter's weight. A `retainedBytes` getter would still be an estimate and `maxMemoizedRefs` would not shrink the HPRC TBI; the fix is compact index storage in bam-js, tabix-js and cram-js, justified by browser worker memory.
+description: A parsed BAI, CSI, TBI or CRAI holds several times its bytes as JS objects, so the embedded engine can only estimate an adapter's weight and workers spend memory. Compact index storage in bam-js, tabix-js and cram-js would fix it.
 ---
 
 # Compact parsed indexes in bam-js and tabix-js

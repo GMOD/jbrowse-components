@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "The multi-sample variant display keeps the screen row in every cell instance, re-placed by `placeVariantRows` and re-uploaded whole on a sort, regroup or clustering run, rather than reading rows through render-core's `rowTable` as the multi-row display and the insertion mark do. Measured on the 1000 Genomes matrix at 1,000 records: a reorder costs 25 ms at 2,504 sample rows and 75 ms at 5,008 haplotype rows, 115 ms with reference cells drawn at genomic positions, against under 0.3 ms through the table — once per gesture, behind a clustering run that takes seconds, so nobody would notice the port. Rejected with it: a per-record table for the x axis, whose gain is per fetch and which waits on a second sampler the HAL does not bind"
+summary: "Rejected: porting multi-sample variant cells to read rows through render-core's `rowTable`, since the whole re-upload by `placeVariantRows` costs tens of ms once per gesture; a per-record x-axis table is rejected with it"
 ---
 
 # ADR-211: Variant cells keep their screen row per instance

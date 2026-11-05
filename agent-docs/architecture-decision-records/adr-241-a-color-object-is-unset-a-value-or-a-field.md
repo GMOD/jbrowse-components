@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every color object is in one of three states: unset (the display's default, its `impliedField` where its schema declares one), a constant `value`, or a `field`, which always paints. `scale: 'none'` goes. The field a write leaves is display state (`ParkedColorMixin`), parked by each writer before it writes, so Default and back restores its domain, range and names and refetches nothing. Every Color by block offers Solid color...; the radio that unset paints is ticked by unset, the implied field's own radio where there is one, so LGVSynteny's Normal and the ribbons' Default go. LGVSyntenyColor's `field: 'strand'` default and the circular view's `query` default become implied fields. Builds ADR-240 amendment 4"
+summary: "A color object is unset (the display's default or its `impliedField`), a constant `value`, or a `field` that always paints; `scale: 'none'` goes, and the field a write leaves is parked in display state (`ParkedColorMixin`)"
 ---
 
 # ADR-241: A color object is unset, a value or a field

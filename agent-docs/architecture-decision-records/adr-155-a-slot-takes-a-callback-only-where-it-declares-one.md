@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A slot takes a `jexl:` callback only where it declares `contextVariable`, the names the callback reads; every other slot refuses one at load, on `setSlot`, in the config editor, in the JSON Schema and in `jbrowse validate`, naming the slot. A slot naming what a display reads per feature is a `featureField`, which the reader hands over as written, so a `jexl:` expression there is a derived field the display evaluates per feature rather than a callback. The snapshot preprocessor repeats the refusal for builds with MST's type check off. No migration"
+summary: "A slot takes a `jexl:` callback only where it declares `contextVariable`; every other slot refuses one, naming the slot. A `featureField` slot holds a `jexl:` expression as a derived field the display evaluates per feature"
 ---
 
 # ADR-155: A slot takes a callback only where it declares one

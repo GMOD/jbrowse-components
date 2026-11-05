@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A track's `displayDefaults` sends each key to the displays whose slot of that name takes the value — the display's own lift, then the slot's type or the sub-schema's checks (`slotValueRefusal`) — rather than to every display declaring the name. A value no declaring display takes fails the track's load with each display's reason. The generated JSON schema gives each key an `anyOf` of the declaring displays' slots instead of intersecting their slot tables"
+summary: "A track's `displayDefaults` sends each key only to the displays whose same-named slot takes the value (`slotValueRefusal`); a value no display takes fails the track's load with each display's reason."
 ---
 
 # ADR-134: displayDefaults routes a value to the displays that take it

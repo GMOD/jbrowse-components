@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Constant, per-instance value, per-instance palette index, and per-instance scalar through a scale are cardinalities of one color channel, not four shapes — stated over the five live shaders that already implement them. Replaces ADR-090's inert per-instance-color ruling on the color axis; ADR-090's admission clause, ADR-040 and ADR-051 all stand. Describes what the tree does and proposes nothing"
+summary: "Constant, per-instance value, palette index and scalar through a scale are cardinalities of one color channel, not four shapes. Replaces ADR-090's per-instance-color ruling; ADR-040 and ADR-051 stand"
 ---
 
 # ADR-094: Color cardinality is one channel, not four shapes

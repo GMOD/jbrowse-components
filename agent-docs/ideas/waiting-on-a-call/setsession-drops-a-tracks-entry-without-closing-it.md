@@ -1,6 +1,6 @@
 ---
 name: setsession-drops-a-tracks-entry-without-closing-it
-description: jb.setSession closes a view dropped from views[] but leaves a track dropped from a view's tracks[] open, even when the array is emptied. The guide says a dropped entry is closed without saying it is views only. Either closing tracks or saying so keeps an agent from reading an edited document as a full rewrite.
+description: jb.setSession closes a view dropped from views[] but leaves a track dropped from a view's tracks[] open, while the agent guide says any dropped entry is closed.
 ---
 
 # `jb.setSession` drops a track entry without closing the track

@@ -1,6 +1,6 @@
 ---
 name: maf-on-the-mark-display
-description: What the mark display lacks against the MAF display — a band stack, a coarse per-row tier, per-base text, the insertion mark type, a second-adapter join, cross-region fields, SNP coverage and per-mark seams — each built when a declared track over a MafTrack needs it, since ADR-199 keeps the MAF display its own.
+description: What the mark display lacks against the MAF display (a band stack, a coarse per-row tier, per-base text, insertion marks, SNP coverage), each built only when a declared track over a MafTrack needs it.
 ---
 
 # The mark display over a MafTrack

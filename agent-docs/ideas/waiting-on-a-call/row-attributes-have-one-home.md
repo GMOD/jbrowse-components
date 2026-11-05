@@ -1,6 +1,6 @@
 ---
 name: row-attributes-have-one-home
-description: A row display's per-row attributes come from three places — the variant display's samples TSV, a wiggle subadapter's `group`, the mark display's `rows.groups` regexes, which write only `group` — so `facet`, `rows.filter`, `rows.color` and `rows.labels` read them by three rules. A `rows.data` table keyed by row name on every row display, `{ match, value }` one way to fill a column, would give them one. Also where picking every `HP1` row across samples, and one wiggle row per subtrack attribute, would land. Read before adding a row attribute source, `groups` on the variant display, or labels from an attribute.
+description: Row displays get per-row attributes three ways (samples TSV, a wiggle subadapter's `group`, `rows.groups` regexes), so `facet`, `rows.filter`, `rows.color` and `rows.labels` mean different things per display. Read before adding a row attribute source.
 ---
 
 # Row attributes have one home

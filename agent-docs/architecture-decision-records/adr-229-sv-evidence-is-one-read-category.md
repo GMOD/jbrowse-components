@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category. A record is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read that fails `isConcordantPairRead`, and both ends are placed: the record above MAPQ 0, two read-adjacent pieces placed and joined for a split read (amended 2026-11-04; it was any other SA piece above 0), the mate above 0 where an MQ tag says for a discordant one. The extract stores `READ_SV_INSERTION` and `READ_DISCORDANT` beside the split and SV-deletion bits, and `withSvTier` stores the tier the filter, the sort and the breakpoint split view read. The filter keeps a chain when any record is evidence, the sort lifts split reads, then SV-size indels, then discordant reads, and jb2export refuses `properPairs:`. Amends ADR-226's `svSignal` and supersedes its `properPairs` consequence"
+summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category (a split read, an indel of 50 bp or more, or a discordant pair, with both ends placed), read by the filter, the sort and the breakpoint split view"
 ---
 
 # ADR-229: SV evidence is one read category

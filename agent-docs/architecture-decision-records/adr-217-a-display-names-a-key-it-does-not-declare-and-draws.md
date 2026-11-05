@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display given a config key it does not declare draws without it and names the key on the console, once per message (`closed: 'warn'`), and `DisplayType` registers a display whatever its schema says. Supersedes ADR-214's refusal: a refused key cost the whole track in a config written for another version, and the registration check stopped the app on any plugin display that had not opted in. `closed: true` still refuses, on the channel objects ADR-133 closed"
+summary: "A display given a config key it does not declare draws without it and names the key on the console, and `DisplayType` registers any schema. Supersedes ADR-214's refusal; ADR-221 replaces `closed: 'warn'` with a boolean"
 ---
 
 # ADR-217: A display names a key it does not declare, and draws

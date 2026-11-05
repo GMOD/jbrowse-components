@@ -1,6 +1,6 @@
 ---
 name: feature-band-consumers
-description: A panel showing what another panel already draws has two seams available — the other one's shell (model, config, fetch, lifecycle) or its pipeline (payload → layout → fit → paint → pick) — and only the pipeline composes. The nested-child-display attempt that proved it, the four cheapest answers now in tree, the purity precondition that decides whether the seam exists, and the rules a band consumer owes with the failure behind each, plus what "lane" means in each plugin that says it. Read before adding a band to a display, before hosting one display inside another, and before packaging a band's pipeline for a second caller.
+description: A band showing what another display draws composes that display's pipeline (layout, fit, paint, pick), never its shell (model, config, fetch), and owes the rules listed here. Read before adding a band or hosting one display inside another.
 ---
 
 # A band consumes the pipeline, not the display

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A threshold color resolves in the shader as `markColor`'s fourth mode: up to `MAX_COLOR_CUTS` (8) cut points and a color per interval ride the valued shapes' uniform block, so a cut moved by an edit uploads no instance bytes, and the Canvas2D bake follows the same `thresholdBand` rule. A quantitative color over the field `y` plots — a ramp or a threshold — is the `y` lane itself: the encoder aliases `colorValue` to `y`, the mark display resolves the scale table off the plotted values (`valueColor.ts`) instead of sending the color to the worker, and an edit to its cuts, ends or colors re-stamps the regions and refetches none. A line reads the threshold per fragment along the value's unclamped y (`lineColorYPx`), so a rise across a cut changes color at the cut; Canvas2D strokes the polyline once per band. The valued shapes take `colorScale` where they took `ramp`, and the display's `paintScales` replaces `colorRamps`"
+summary: "A threshold color is `markColor`'s fourth mode, resolved in the shader from uniforms, and a quantitative color over the plotted `y` reads the `y` lane itself, so editing its cuts refetches nothing and a line changes color at the cut"
 ---
 
 # ADR-185: A color over the plotted value reads the y lane

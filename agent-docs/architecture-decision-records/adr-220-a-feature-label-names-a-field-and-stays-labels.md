@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The feature display's `labels.name` and `labels.description` are `featureField` slots: a plain string names the field a label line reads (`gene_name`), as it does on the multi-way display's `text` and a mark's `encoding.text`, where it was a constant and a field needed `jexl:get(feature,…)`. The worker reads both through `fieldReader`, built once per render; an empty value still switches a line off, and the two defaults stay the visible jexl expressions, which a `featureField` may now default to. The object keeps its name: renaming `labels.name` to `text` needed a new word for the description, which a session spec would otherwise write to the track's own `description`, a second meaning for `showLabels`' `name`, and a permanent second spelling for the hosted configs that write `labels`"
+summary: "The feature display's `labels.name` and `labels.description` are `featureField` slots, so a plain string names the field a label reads (`gene_name`); the object keeps the name `labels` rather than becoming `text`."
 ---
 
 # ADR-220: A feature label names a field, and stays `labels`

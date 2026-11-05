@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display has one y scale and the display owns it: `scales.y` — a closed sub-schema of `type`, `domainMin` and `domainMax` — replaces `encoding.y`'s `scale`, `domain` and `resolve`, the \"first drawing mark owns the axis\" rule, and the inherited wiggle score slots. A mark's `y` is a field name, as `x`, `x2` and `row` already were: a positional channel is a field, and `color` and `glyph` are a constant or a scale object. The `resolve: 'independent'` second axis is withdrawn — ggplot2 has one scale per aesthetic and a reader of the two-axes picture cannot tell which bars belong to which numbers; two quantities are two plots, or a multiscale pair. `ScoreScaleMixin` splits into the axis contract (`ScoreAxisMixin`) and the slot-backed default, so composing the contract no longer means inheriting `autoscale` and `numStdDev`, which read nothing here"
+summary: "The mark display has one y scale, owned by the display (`scales.y`, now `encoding.y` per ADR-238); a mark's `y` is a field name, the `resolve: 'independent'` second axis is withdrawn, and `ScoreAxisMixin` splits out of `ScoreScaleMixin`"
 ---
 
 # ADR-141: One y scale, the display's

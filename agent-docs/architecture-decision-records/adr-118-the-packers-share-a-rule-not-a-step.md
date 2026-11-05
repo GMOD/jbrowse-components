@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Audited every place a format-typed display assigns rows, counts per bin or computes depth, against the seven transform steps. Exactly one runs a rule a step reproduces — a plain uncapped single-region pileup is `pileup` with `padding: 2`, pinned by a test — and porting it measured 4.23x, all of which is the `Feature[]` the step reads and answers rather than the packing. Every other packer's extra inputs are the display's meaning: label widths, isoform caps, row caps, per-refName grouping across regions, a layout seeded from the previous frame. No display calls a step; the grammar's transform stage stays the mark display's, and the mark display stops widening"
+summary: "No format-typed display packer calls a transform step: only the plain alignments pileup matches `pileup` with `padding: 2`, and every other packer's extra inputs are display meaning, so the transform stage stays the mark display's"
 ---
 
 # ADR-118: The display packers share a rule with `pileup`, not a step

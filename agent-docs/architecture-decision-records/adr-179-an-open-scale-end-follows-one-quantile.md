@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An unpinned end of a value scale or a color ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of the values on each end's side of 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C color at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too, and on 2026-09-27 returns to 1, since the quantile cut plain coverage in most views and missed any pile-up wider than 1% of them. The Score menu's Autoscale type radio is a Clip outliers checkbox. Amended 2026-09-27: below 1 each end clips its own tail, and 0 is the axis's to add"
+summary: "An unpinned end of a value scale or color ramp follows one number, `domainQuantile` (1 means the loaded extremes), replacing `autoscale`, `numStdDev`, `numQuantile` and `localsd`; the Score menu's Autoscale radio becomes a Clip outliers checkbox"
 ---
 
 # ADR-179: An open scale end follows one quantile

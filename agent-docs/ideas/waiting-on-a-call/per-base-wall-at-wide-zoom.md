@@ -1,6 +1,6 @@
 ---
 name: per-base-wall-at-wide-zoom
-description: The sub-pixel bin that bounded the per-base wall changed what `perBaseLetter` looks like — vivid stripes where the pre-bin blend was muddy olive — and left the 1bp cell exactly one octave of headroom, so a fast multi-octave zoom-in stripes the wall until the refetch lands. The per-window histogram was measured and declined, because the honest aggregate over a 16-512 bp window is one mud color; a zoom threshold is the answer to the first, and a per-instance span the bin wide is the answer to the second and the enabling step for run-merged cells. Read before changing `subPixelBinBp`, `pileupCellX` or `pileupCellWidth`.
+description: The sub-pixel bin turned `perBaseLetter` into vivid stripes at wide zoom and left one octave of headroom, so a fast zoom-in stripes the wall until the refetch lands. Read before changing `subPixelBinBp`, `pileupCellX` or `pileupCellWidth`.
 audience: internal
 ---
 

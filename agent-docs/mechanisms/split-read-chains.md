@@ -1,6 +1,6 @@
 ---
 name: split-read-chains
-description: How a split read is put back together from the SA tags of the segments that were fetched — the read-order axis every consumer sorts on, the dedup key that separates two passes over one locus, what happens to a segment no view fetched, and why a per-region answer about a chain is an answer about the region. Read before joining alignment records into a chain, before deriving a field from what one fetch saw, or before dropping a segment nothing returned.
+description: How a split read is rebuilt from the SA tags of fetched segments, covering the read-order axis, the dedup key and unfetched segments; read before joining alignment records into a chain or dropping a segment nothing returned.
 ---
 
 # Putting a split read back together

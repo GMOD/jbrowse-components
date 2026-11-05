@@ -4,11 +4,12 @@ Data is fetched in RPC workers, rendered on the main thread (WebGPU → WebGL �
 Canvas2D). Worker output is **absolute genomic uint32**.
 
 Background: `agent-docs/` — `ARCHITECTURE.md` (the map), then the doc its "Where
-to read next" table names for the task, then the ADRs. Skim the generated
-`README.md` indexes (`reference/`, `ideas/`, `handoffs/`, and the ADRs, whose
-Rejected rows are the declined ideas) before proposing or re-reviewing: a parked
-proposal often kills the obvious version already, and an open handoff often has
-the bug.
+to read next" table names for the task, then the ADRs. Before proposing or
+re-reviewing, grep `ideas/`, `handoffs/` and `architecture-decision-records/`
+for the subsystem's names, then skim the generated `README.md` index in each
+(one capped row per doc; the ADRs' Rejected rows are the declined ideas): a
+parked proposal often kills the obvious version already, and an open handoff
+often has the bug.
 
 Rules live here only while nothing in the tree enforces them. Once a check
 exists, the rule leaves this file — lint (`no-restricted-syntax` in

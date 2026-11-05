@@ -1,6 +1,6 @@
 ---
 name: read-the-callers-own-fields
-description: INFO fields that state what the app guesses or ignores, none costing an inference. VCF 4.4's `SVCLAIM` marks a `<DEL>` or `<DUP>` as a depth claim or a junction claim, so a depth-only deletion should draw as a copy-number bar; `EVENTTYPE` names an `EVENT`'s class, which the event dropdown can print beside the id; and Severus spells `EVENT` and `MATEID` as `CLUSTERID` and `MATE_ID`, which the two readers of the standard keys can accept, retiring the sed recipe the SV inspector guide carries. And `CIPOS`/`CIEND`/`IMPRECISE`/`HOMSEQ`, unread anywhere, say where a breakend may lie, which every drawing places at `POS` exactly.
+description: VCF INFO fields that state what the app guesses or ignores (`SVCLAIM`, `EVENTTYPE`, Severus's `CLUSTERID` and `MATE_ID`, `CIPOS`/`CIEND`), so SV drawings show less than the file says.
 ---
 
 # Read the caller's own fields

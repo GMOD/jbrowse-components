@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A bar, rule and line answer a hover by the row they stand in, as a span does since ADR-192: their layers ask the worker for no Flatbush, and findMarkHit keeps the instances rowSpanIndex finds in the rows near the cursor whose value the mark's value window holds - the Flatbush's candidates exactly. Over a BigWig at 441k rows the bar's table encode goes from 3.26x wiggle to 1.11x, and the index the first hover builds on the main thread takes 2 ms where the Flatbush took 42 in the worker on every fetch. A point keeps the Flatbush, whose value pruning a scatter needs, and a link, which spans rows. Candidates now go back to front, so a tie goes to the instance drawn on top; a bar's value window reaches its clip strips and its baseline, and a rule's reaches its thickness"
+summary: "A bar, rule and line answer a hover by their row, through `rowSpanIndex` in `findMarkHit`, so their layers ask the worker for no Flatbush; a point and a link keep the Flatbush."
 ---
 
 # ADR-196: A bar answers a hover by its row

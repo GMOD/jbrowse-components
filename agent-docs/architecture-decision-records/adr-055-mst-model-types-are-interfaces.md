@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Export MST model instance types as `interface X extends Instance<…> {}`, not `type X = Instance<…>` — the interface form is what lets a view and its display name each other. Amended 2026-08-31: it does not reach a four-node cycle, where a duck on the display's `view` getter is the link instead"
+summary: "Export MST model instance types as `interface X extends Instance<…> {}`, not `type X = Instance<…>`, so a view and its display can name each other. A four-node cycle needs a duck-typed `view` getter instead"
 ---
 
 # ADR-055: MST model instance types are interfaces, not aliases

@@ -1,6 +1,6 @@
 ---
 name: the-comparative-context-menu-sits-behind-no-bring-your-own-seam
-description: `SyntenyContextMenu` reaches `@jbrowse/core/ui`'s `ContextMenu` and so `@mui/material` behind no seam, so an embedder who mounted `DisplayUIProvider` to keep Material off the page still gets it from a synteny or dotplot right-click. The fetch status shipped through the seam and needed no new contract; the tooltip was refused on the record. Read before designing a fourth context — and read why a rendered-element census reports 0 Material elements on a page with 105 eager Material imports.
+description: "`SyntenyContextMenu` reaches `@mui/material` behind no seam, so an embedder who mounted `DisplayUIProvider` to keep Material off the page still gets it from a synteny or dotplot right-click; the tooltip was refused."
 ---
 
 # The comparative context menu sits behind no bring-your-own seam

@@ -1,6 +1,6 @@
 ---
 name: jb2export-modifier-tables
-description: The jb2export track-modifier tables are the last big hand-maintained surface list in the docs, and the registry behind them already knows the names and the track types. What it does not know is the description, so generating them is an 18-entry tagging pass first. Read before adding a modifier, or before writing a checker for these tables.
+description: The jb2export track-modifier tables are the last big hand-maintained list in the docs; generating them from the modifiers registry needs a description tag on each entry first. Read before adding a modifier or a checker.
 ---
 
 # The jb2export modifier tables

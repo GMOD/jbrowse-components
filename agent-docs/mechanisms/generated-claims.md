@@ -1,6 +1,6 @@
 ---
 name: generated-claims
-description: A doc's claims about the code are rendered from the code, and the ones that cannot be are checked instead — the marker-pair mechanic, the one-value-one-home chain behind a published number, self-declaring scope, and the ratchet that lets a convention start with debt. Read before hand-writing a table, a count or a figure into any doc, or when deciding whether a claim wants a generator or a checker.
+description: A doc's claims about the code are generated from the code, and those that cannot be are checked or ratcheted instead. Read before hand-writing a table, count or figure into a doc.
 ---
 
 # A claim about the code is generated from the code

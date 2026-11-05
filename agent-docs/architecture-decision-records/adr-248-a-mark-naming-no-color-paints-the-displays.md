@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's `encoding` gains `color`, a MarkColor beside `y` (`MarkDisplayEncoding`): a mark whose own `encoding.color` names no value, field or scale paints through it, as a ggplot2 layer takes the plot's aesthetics it leaves unset. One helper, `paintedColorNode`, answers which color a mark paints through, and every reader takes it: the worker request, the main-thread paint, the key and the text labels. The rule list checks the display's color once, at the display, and each mark's own where it names one. It lets the multi-row display keep its display-level `encoding.color` when it becomes the mark display with a default rect"
+summary: "The mark display's `encoding` gains a display-level `color`; a mark naming no value, field or scale of its own paints through it, decided by one helper, `paintedColorNode`, so the multi-row display keeps its `encoding.color`"
 ---
 
 # ADR-248: A mark naming no color paints the display's

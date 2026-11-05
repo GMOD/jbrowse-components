@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearMultiRowFeatureDisplay` keeps its name and becomes a mark display subtype in `plugins/marks`, as ADR-178 rebuilt Manhattan: its schema takes `LinearMarkDisplay`'s with a 5 MB fetch limit, and its model composes the mark model and `ColorWritesMixin`. With nothing declared, the mark display's one-time field scan picks the plot through an overridable `defaultPlotOf`: a row per adapter source, else per `repClass`, else per `name`; a `rect` per feature, or a 0-height `rect` over each span under a `rect` over a keepEmpty `flatten` where the features are spliced; and an identity `encoding.color` where the file states BED colors. One row per..., Group by and Color by offer the scanned attributes. The mark display gains what the painting needed: rows listed from the window, a row's color painting marks that name none, `axis.grid` separators, Copy location, rows comparing on the span drawn on top, and an identity scale reading a field's CSS colors. Deletes the display's own worker, encoder, hit testing, component, SVG export and clustering RPC, about 13,900 lines. Amends ADR-165 and ADR-169"
+summary: "`LinearMultiRowFeatureDisplay` keeps its name but becomes a mark display subtype in `plugins/marks`, whose `defaultPlotOf` picks rows, rects and identity color from a field scan; its own engine is deleted. Amends ADR-165 and ADR-169"
 ---
 
 # ADR-249: The multi-row display is the mark display with a painting's default plot

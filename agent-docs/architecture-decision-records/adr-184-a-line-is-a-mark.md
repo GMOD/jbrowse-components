@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "render-core gains a `line` shape in two modules, `lineStepMark` (28 bytes an instance: the previous and next values) and `lineCenterMark` (32 bytes: the previous span and value), over `lineCommon`'s one uniform block; the mark display draws `mark: 'line'` through them, `interpolate: 'step' | 'linear'` choosing the module and `encoding.size` the width. ADR-127 declined the same shape because wiggle was not its second consumer; Colin's 2026-09-27 decision to move wiggle onto the mark display makes it one, and the shape lands ahead of the port because the port is what it is for. Color is per instance for now: the pos/neg split along a rise is the shader-side threshold over the value lane, which the port's next stage adds. Amended 2026-09-28: ADR-185 lands that stage"
+summary: "render-core gains a `line` shape (`lineStepMark` and `lineCenterMark` over `lineCommon`), and the mark display draws `mark: 'line'` through it, `interpolate: 'step' | 'linear'` choosing the module. Supersedes ADR-127."
 ---
 
 # ADR-184: A line is a mark

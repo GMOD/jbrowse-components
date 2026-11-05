@@ -1,6 +1,6 @@
 ---
 name: synteny-ribbons-default-to-four-colors
-description: An uncolored synteny alignment paints red on the linear synteny view, grey on multi-way, steel blue on the chord display and black on the dotplot; one default read by all four would make the same PIF look the same in each view. Waits on the color, judged on captures.
+description: An uncolored synteny alignment paints red, grey, steel blue or black depending on the view, so the same PIF changes color when moved between linear synteny, multi-way, chord and dotplot.
 ---
 
 # Synteny ribbons default to four colors

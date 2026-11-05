@@ -1,6 +1,6 @@
 ---
 name: evaluate-jexl-channels-a-column-at-a-time
-description: a jexl channel or filter evaluated over whole columns runs 2-10x faster than per feature, but only once the data already is columns — gathering the fields off feature objects first gives most of the gain back — and a column table over feature objects was withdrawn, so it waits on a source whose parser already answers columns (bbi, hic, CRAM), or on a window transform (lag, cumsum, score - mean(score)) that needs a column to exist
+description: A jexl channel or filter evaluated over whole columns runs several times faster than per feature, but only when the data is already columnar, so it waits on a columnar source or a window transform.
 ---
 
 # Evaluate jexl channels a column at a time

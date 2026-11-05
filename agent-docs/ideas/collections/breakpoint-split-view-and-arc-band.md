@@ -1,6 +1,6 @@
 ---
 name: breakpoint-split-view-and-arc-band
-description: The alignments read-connections band and the breakpoint split view each do their half of SV evidence well and neither hands the reader to the other. Five proposals from the 2026-09-26 survey, triaged separately. An arc click opens the split view at its junction; the stacked launch flips the panel an inversion lands on; the launch dialog offers the session's evidence tracks as a remembered checklist; a junction's hover names the callset record within a few bases of it, and a record's hover names the band's support; and a list of small split-view defects, two with a known fix and two that need driving in the app first.
+description: The alignments read-connections band and the breakpoint split view each show half of the SV evidence, and neither hands the reader to the other. Five proposals to join them, triaged separately.
 ---
 
 # Breakpoint split view and arc band

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's facet and its categorical color are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. The GWAS and multi-way colors are one object too, with a `scale` naming each display's own schemes. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a key the object does not declare is refused when the snapshot is read (ADR-133 dropped this record's refusals of slot combinations). `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots. The color object's `palette` is `range` since ADR-151"
+summary: "A display's facet and categorical color are one config object each, `facet: { field, domain }` and `color: { field, domain, palette }`, replacing the flat `facetField`/`colorField` slots and the alignments `groupBy`; a string lifts into the object. `palette` is `range` since ADR-151"
 ---
 
 # ADR-131: A categorical channel is one config object

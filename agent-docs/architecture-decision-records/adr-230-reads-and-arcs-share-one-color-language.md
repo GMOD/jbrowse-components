@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Alignments reads paint in the colors of the arcs and read cloud drawn over them, so the read categories `svSignal`, `pairing`, `split` and `spliced` color nothing. Color by → Insert size and orientation and Pair orientation already paint an SV pair's reads in its arc's color and leave concordant pairs grey. `svSignal` is a facet dimension instead: Group by → SV evidence sections the reads and leaves their colors alone. Declines Idea 3 of the category-filters proposal, an `svSignal` color field"
+summary: "Alignments reads paint only in the arcs' colors, so the read categories (`svSignal`, `pairing`, `split`, `spliced`) color nothing and SV evidence is a Group by facet (now `svKind`, ADR-258). Declines an `svSignal` color field"
 ---
 
 # ADR-230: Reads and arcs share one color language

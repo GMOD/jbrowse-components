@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An adapter answers the mark pipeline a table: getFeatureTable, a table over getFeaturesArray by default, and a ColumnTable over the arrays it already holds where it has them - the MAF adapters over the MAF display's packed arena, the BigWig adapter over bbi's arrays. The encoder fills a lane at a time: one pass admits rows over x, x2 and y alone, none where all three are whole-number lanes, and every other lane is its own loop over the admitted rows, a categorical over a category column resolved per label. featureIndex is absent where it is the identity. At 470 MAF species a span request takes a quarter of main's time; over a BigWig with no hit index the table encode is 1.05x wiggle where a BigWigFeature per row was 1.80x"
+summary: "An adapter answers the mark pipeline a table through `getFeatureTable`, a `ColumnTable` over its typed arrays where it holds them (the MAF and BigWig adapters), and the encoder fills one lane at a time"
 ---
 
 # ADR-193: An adapter answers the mark pipeline its typed arrays

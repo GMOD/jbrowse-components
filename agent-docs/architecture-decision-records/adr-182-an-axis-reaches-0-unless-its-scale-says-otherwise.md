@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A linear or symlog value axis reaches 0 whatever the loaded values span, and `scales.y.zero`, Vega-Lite's, on by default, is where that is written: off, the axis spans the values. The rule leaves the hidden line in `getNiceDomain` for a slot, a Score-menu checkbox (Start axis at 0) and the config docs. A density plot, which maps score to color and rules no band, spans its values either way, and a flat window widens by its value. ggplot2's rule, bars reach 0 and the rest span their data, was put to Colin and declined"
+summary: "A linear or symlog value axis reaches 0 by default, written as `scales.y.zero` (Vega-Lite's) instead of hidden in `getNiceDomain`; turned off, the axis spans the values. ggplot2's bars-only rule was declined"
 ---
 
 # ADR-182: An axis reaches 0 unless its scale says otherwise

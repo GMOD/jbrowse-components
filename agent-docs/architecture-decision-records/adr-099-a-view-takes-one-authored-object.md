@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A view carried two authoring shapes, flat on a spec and nested under `init` in a `defaultSession`, and MST dropped the wrong choice in silence; v5 keeps the flat one, deprecates and unwraps the nested one, and resolves the command-vs-property split in the view's own preprocessor instead of asking the author to draw it"
+summary: "A view takes its settings flat on every surface; a nested `init` in a `defaultSession` is deprecated and unwrapped with a warning, and the view's own preprocessor sorts launch commands from properties"
 ---
 
 # ADR-099: A view takes one authored object

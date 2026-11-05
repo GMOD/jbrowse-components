@@ -1,6 +1,6 @@
 ---
 name: screenshot-anchors-for-reads-arcs-blocks-and-cells
-description: Screenshot callouts and clicks that still guess a fraction of a track because nothing names what they point at - an alignments read, a sashimi arc or link mark, a synteny chain block or multi-way lane record, an MSA cell, a wiggle value, an alignments group band - plus VCF records labelled only by their allele list or drawn with no label. Each new anchor kind asks the display, as `featuresNamed` and the tree sidebar's row geometry already answer `feature` and `row`.
+description: Screenshot callouts and clicks still guess a fraction of a track for reads, arcs, synteny blocks, MSA cells, wiggle values and unlabelled VCF records, because no anchor beyond `feature` and `row` names them.
 ---
 
 # Anchors for what `feature` and `row` cannot name

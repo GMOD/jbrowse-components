@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "scripts/sv_multihop.py is deleted. ADR-137 moved allele inference out of the app and named this script as the offline tool that may still do it; the script is ours too, and none of its three subcommands does anything an established tool does not do better — chains against LINX/Severus/gGnome, derive against a local assembly, bedpe against our own jb2export batch --vcf. JBrowse ships converters and views; the analysis belongs to the tool that specialises in it"
+summary: "`scripts/sv_multihop.py` is deleted: SV analysis belongs to established tools such as LINX, Severus and local assemblers, and JBrowse ships converters and views. Extends ADR-137."
 ---
 
 # ADR-140: SV analysis is not ours to ship

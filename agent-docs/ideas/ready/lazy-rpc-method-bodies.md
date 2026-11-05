@@ -1,6 +1,6 @@
 ---
 name: lazy-rpc-method-bodies
-description: The RPC registry namespace-imports featureTransforms, markEncoding and flatbush, so five method bodies cost 20 KB gz on an empty page and 13 KB with four tracks. Giving each a preload() body like RenderAlignmentData removes it, provided the displays name the method in rpcMethods so the first fetch pays no extra round trip. Measured 2026-10-08 on a stale build.
+description: The RPC registry eagerly imports featureTransforms, markEncoding and flatbush for five method bodies, costing 20 KB gz on an empty page; lazy preload() bodies like RenderAlignmentData's would remove it.
 ---
 
 # Lazy RPC method bodies

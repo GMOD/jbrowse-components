@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `cells` step directly ahead of an interval `bin` at a whole-base step and an `aggregate` grouped by the bin's edges, whose every op is the sum or mean of `match` weighted by `overlap`, runs as one walk over the rows' bytes (`binnedCellMatches`): each bin's bases matched and compared, counted as the walk passes them, with no run table and no piece table. The groups, ids, hover JSON, row order and sums are the three steps' to the bit. A `cells` ending the shared or facet steps runs inside each layer whose own steps open with that bin and aggregate, so the declared MAF identity takes the walk across the step lists a display writes. It is the one identity walk ADR-199 asked for, and takes the declared identity from 2.4x the MAF display's time to 1.4x at 470 species"
+summary: "A `cells` step followed by a whole-base `bin` and a match-weighted `aggregate` fuses into one walk over the rows' bytes (`binnedCellMatches`), bit-identical to the three steps, even across a display's step lists"
 ---
 
 # ADR-201: A cells step bins as it walks

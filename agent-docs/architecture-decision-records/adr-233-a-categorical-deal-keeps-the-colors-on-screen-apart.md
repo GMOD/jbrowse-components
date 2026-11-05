@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A categorical color's deal (ADR-205) keeps the values on screen together apart by perceptual difference: two palette entries are twins under a CIEDE2000 difference of 15 (`DEAL_COLOR_DIFFERENCE`, `colorDifference`) rather than OKLab 0.05, and a value with no free entry takes the entry farthest from the ones it avoids, not its raw hash. A display that deals everything it shows at once (`dealShownKeyColors`, `CategoricalScale.among`) avoids only those values' colors, so a session's earlier values do not use up the palette; the multi-way display deals every lane's genes and named boxes so. `dealKeyColors`, which the canvas, mark and variant displays call per region, still avoids every held color. Held colors still never move, and the map is still shared per session and never persisted. Amends ADR-205"
+summary: "A categorical color's deal keeps on-screen values apart by CIEDE2000 difference (`DEAL_COLOR_DIFFERENCE`), and a display dealing all its shown values at once (`dealShownKeyColors`) avoids only those, so earlier session values do not use up the palette. Amends ADR-205"
 ---
 
 # ADR-233: A categorical deal keeps the colors on screen apart

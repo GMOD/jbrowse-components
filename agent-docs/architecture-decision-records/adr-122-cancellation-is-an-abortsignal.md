@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Cancellation is a plain `AbortSignal` from the caller to the reader. The stop token — a revocable blob URL probed by synchronous XHR in a worker loop, with a SharedArrayBuffer arm for a page that never ran isolated — goes, and with it its registry, its broadcast, its throttled checker and every name that spelled it. The worker learns of an abort through an `{abort: uid}` frame keyed to the call, and a loop that never awaits yields a task every 50 ms instead of probing. Measured in a real Chrome worker: a probe cost about a millisecond, not the ten the tree believed, and the yield cancels a loop at the latency the probe did — then within one interval once the backoff the probe needed is gone"
+summary: "Cancellation is a plain `AbortSignal` from caller to reader. The stop token and its helpers go; the worker hears an abort through an `{abort: uid}` frame, and an await-free loop yields a task periodically."
 ---
 
 # ADR-122: Cancellation is an AbortSignal

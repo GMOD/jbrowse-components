@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments display's settings group by band: `coverage`, `pileup`, `sashimi` and `readConnections` are closed config objects holding `show`, `height`, `placement` where the band has one, and a `filter` of their own, beside the display-wide `filter`, `unit`, `facet`, `sort` and `color`. A predicate on a band's rows leaves `show*` for that band's `filter`, spelt as the read filter is (`min<Measure>` floors, `only | exclude | unset` categories), so `show` only toggles a drawn thing: a band, a layer or part of a mark, or the arcs' context pairs. MAF takes the shared `coverage` object and a `conservation` one. Overturns GRAMMAR_OF_GRAPHICS.md's 'no filter object per alignments layer' (2026-10-16 morning) and the flat band convention for these two displays"
+summary: "The alignments display's settings group by band: `coverage`, `pileup`, `sashimi` and `readConnections` are closed config objects holding `show`, `height` and `placement`, and `show` only toggles a drawn thing while a row predicate is a `filter`"
 ---
 
 # ADR-231: An alignments band is one config object

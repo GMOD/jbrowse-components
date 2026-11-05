@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "colorBaseA/C/G/T/N stay five named uniforms read under two index spaces rather than becoming one slot-indexed float4[N] palette: the naive conversion adds a second representation of a runtime-mutated color, and the full version moves the mismatch instance base field's meaning through the worker payload to delete two switches that are correct and tested"
+summary: "Rejected: folding `colorBaseA/C/G/T/N` into one slot-indexed `float4[N]` palette, since the mismatch shader reads them by ASCII code and a runtime swap mutates them, so a palette adds a second representation"
 ---
 
 # ADR-062: Per-base colors stay named uniforms, not a slot-indexed palette

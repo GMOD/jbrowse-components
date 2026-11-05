@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The runtime plugin ABI is generated from the exports maps of @jbrowse/core and the display toolkit (display-kit, display-ui, render-core): a runtime plugin externalizes every subpath those four publish and bundles any other @jbrowse package it uses, no plugin's code is served, the worker's stub-or-real split is derived from each module's own graph, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
+summary: "The runtime plugin ABI is generated from the exports maps of `@jbrowse/core`, display-kit, display-ui and render-core: a runtime plugin externalizes their subpaths and bundles any other `@jbrowse` package. Supersedes ADR-030 §3."
 ---
 
 # ADR-128: The runtime ABI is the exports maps

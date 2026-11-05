@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's vertical band stack is declared as data — Band {active, height, bounds?} folded by stackBands into tops and a bottom (core/util/bandLayout.ts) — while the allocators stay per-display functions. Two of feature-band-consumers' seven prose rules became structural: 'off spends 0 px' has one spelling (reservedPx), and the reserver and the painter read one fold. The paint/pick payloads carry reserved heights, never a flag beside a raw height. Closes the retired defineDisplay plan's last level; no band registry, no generalized allocators"
+summary: "A display's band stack is data, `Band {active, height, bounds?}` folded by `stackBands` in `core/util/bandLayout.ts`, while allocators stay per-display functions; paint and pick payloads carry reserved heights, never a flag beside a raw height"
 ---
 
 # ADR-096: A band's contract is a type; its allocator is a function

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments worker knows no chains: `attachChainFields` numbers and joins chain identity on the main thread, so \"View as pairs\" relayouts the reads in hand instead of refetching every region. Pileup mode pays nothing; chain mode pays the per-region numbering the worker used to, once per fetched region and on the main thread. The RPC's facet carries the one thing chain mode changes about a fetch, `unit: 'read' | 'chain'`"
+summary: "The alignments worker knows no chains: `attachChainFields` joins chain identity on the main thread, so \"View as pairs\" relayouts without refetching. Chain mode changes a fetch only through the facet's `unit: 'read' | 'chain'`"
 ---
 
 # ADR-188: The worker knows no chains

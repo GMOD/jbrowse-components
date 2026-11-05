@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The PIF coarse tier is one row per alignment carrying a coarse CIGAR (`cr:Z:`) — the CIGAR folded to the indels at least `--coarse` long and one run between each pair, a run being a match that advances its two axes by different lengths — instead of CIGAR-less rows split into pieces. The renderer walks it where it walks a CIGAR, so a visible indel draws the same in both tiers and the switch changes nothing on screen"
+summary: "The PIF coarse tier is one row per alignment with a coarse CIGAR (`cr:Z:`) keeping the indels at least `--coarse` long, not CIGAR-less rows split into pieces, so the tier switch changes nothing on screen"
 ---
 
 # ADR-104: The coarse tier is a coarsened alignment, not a CIGAR-less split

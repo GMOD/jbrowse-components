@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display works out every color but a `jexl:` callback on the main thread, so an edit that changes only how data maps to color refetches nothing. The worker reads only the raw data a color needs: a categorical field's keys, as `colorKey`, each instance's index into the categorical table's entries (ADR-167's index, on the encoder); a number field other than `y` as raw `colorValue`, asked for as a threshold with no cuts so the worker builds no ramp table; and nothing for a constant, which the main thread writes whole (ADR-198's scalar). `markColorOf` names where a mark's color comes from (`ColorSource`: constant, categories, numbers, expression), and `withMarkColors` replaces `withValueColors`. A text mark's ramp moves off the worker onto the scale the display unions, so `unpinned-text-ramp` and `MarkSpec.ramp` go. Multi-way synteny's lane layers color their bars the same way, a ramp through one scale across their lanes. Extends ADR-185 from a color over `y` to every color"
+summary: "The mark display resolves every color but a `jexl:` callback on the main thread, so a color-only edit refetches nothing; `markColorOf` names a mark's `ColorSource`, and `withMarkColors` replaces `withValueColors`. Extends ADR-185."
 ---
 
 # ADR-202: Every mark color resolves on the main thread

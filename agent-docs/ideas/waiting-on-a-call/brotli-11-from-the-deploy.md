@@ -1,6 +1,6 @@
 ---
 name: brotli-11-from-the-deploy
-description: Pre-compressing jbrowse-web at Brotli quality 11 in the S3 deploy saves 65 KB gz (empty page) to 97 KB (four tracks) over the roughly quality-5 Brotli CloudFront applies. It needs a CloudFront Function and a distribution update, which are production config and want a call first; the CloudFront side is untested.
+description: Pre-compressing jbrowse-web at Brotli quality 11 in the S3 deploy would beat the lower-quality Brotli CloudFront applies, but needs a CloudFront Function and distribution update, which is production config wanting a call.
 ---
 
 # Brotli-11 from the deploy

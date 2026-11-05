@@ -1,6 +1,6 @@
 ---
 name: an-embedded-component-opts-into-the-worker
-description: An embedded component cannot switch itself to the RPC worker because its plugins are registered in the main realm, not because of bundling. A conditional default is decidable at createViewState time and the failure path is mostly built; the call is whether demoting to the main thread is silent.
+description: Embedded components parse on the UI thread unless the host supplies a worker factory, because their plugins register in the main realm, not because of bundling; the open call is whether a fallback to the main thread is silent.
 ---
 
 # An embedded component opts into the worker by itself

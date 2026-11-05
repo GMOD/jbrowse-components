@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display type retired into another, and the display-instance props an old session carries that are config slots now, are declared on the successor's DisplayType — `retiredTypes` (each with a `migrate` for the settings its picture needs), `retiredConfig` (a legacy slot value on any entry) and `retiredState` (`keys` and a `lift` into config) — and one pass per surface reads them: the track config's preprocessor before any `Core-preProcessTrackConfig` handler, `JBrowseModel` over the frozen `tracks`, and the session migration over display instances, whose lifted settings land in the track's `sessionTracks` entry or `trackConfigDeltas`. `aliases` derives from `retiredTypes`. This replaces `addDisplayConfigMigration`, `foldRetiredMatrixDisplay`, product-core's `displayTypeMap` and `migrateConfigSnapshot`, and reverses the \"no migration\" consequence of ADR-143 and ADR-157 for share-link state: a v4 multi-wiggle, a clustered multi-sample VCF and a jb2hubs overlaid multiWig load as they drew"
+summary: "A retired display type and its old instance props are declared on the successor's DisplayType (`retiredTypes`, `retiredConfig`, `retiredState`) and read by one pass per surface, so old sessions and share links load as they drew"
 ---
 
 # ADR-168: A retired display is declared on its successor

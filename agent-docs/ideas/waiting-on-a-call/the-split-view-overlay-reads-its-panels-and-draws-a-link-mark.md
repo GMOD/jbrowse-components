@@ -1,6 +1,6 @@
 ---
 name: the-split-view-overlay-reads-its-panels-and-draws-a-link-mark
-description: The breakpoint split view refetches every variant track's records through its own RPC while it reads alignments straight off the display, and it draws its curves as hand-built SVG paths, the last connector ADR-225 left outside render-core's mark. Two convergences, each multi-day; the first retires an RPC and the overlay's whole fetch skeleton.
+description: The breakpoint split view refetches variant records through its own RPC (`BreakpointGetFeatures`) and draws curves as hand-built SVG, the last connector outside render-core's mark (ADR-225); converging retires an RPC and a fetch skeleton.
 ---
 
 # The split view overlay reads its panels and draws a link mark

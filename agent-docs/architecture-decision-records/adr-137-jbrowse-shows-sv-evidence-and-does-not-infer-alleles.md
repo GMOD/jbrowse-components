@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The in-app \"Reconstruct derivative allele\" workflow is removed: it proposed routes at 28–40% of ordinary ONT loci, its segment map took copy counts from where the longest read stopped, and it carried no mapping quality. JBrowse shows SV evidence (arcs, SV channels, split view, the breakend walk, read vs ref) and views an allele an offline tool, an assembly or a paper built; tutorials carry the interpretation and name its source"
+summary: "The in-app \"Reconstruct derivative allele\" workflow is removed because its routes and copy counts misled on ordinary loci; JBrowse shows SV evidence and views alleles that an offline tool, an assembly or a paper built"
 ---
 
 # ADR-137: JBrowse shows SV evidence and does not infer alleles

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's facet moves off `marks[].facet` onto the display as the setting the feature display already had (spelled as two flat slots here, one `facet` object since ADR-131), with a display-level `transform` running before it. The worker splits the features by the facet key and runs each mark's own steps over each section alone, so a faceted display is the unfaceted one drawn once per section; the main thread caps over every region's keys, orders by the domain, and derives the drawn layers, the key and the value axis from the sections left visible, and `pileup.groupby` goes"
+summary: "The facet is a display setting, not `marks[].facet`, with a display-level `transform` before it; the worker splits features by facet key and runs each mark's steps per section, and `pileup.groupby` is removed. Spelling superseded by ADR-131"
 ---
 
 # ADR-130: A facet is the display's, and splits before each layer's steps

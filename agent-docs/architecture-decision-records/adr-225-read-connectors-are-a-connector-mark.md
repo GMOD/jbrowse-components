@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments display's curved and cross-region read connectors draw through render-core's `connector` mark, a view-spanning cubic whose two ends place through the view's region table at their rows' centres. `buildConnectorFeeds` turns each section's pairs into channels once per relayout, in bp and rows, so a pan rebuilds no feed; both renderers and the SVG export draw it per section, clipped to the pileup band plus its dip reserve. Hover, click and the selection outline go through the mark's hit test and `ArcHoverOverlay`. The control-point rule is the shader's, js-exported, and core's `bezierConnectorPath`, which the breakpoint split view still draws as SVG, computes through it. `PileupBezierOverlay`, its SVG twin and the per-frame projection go"
+summary: "The alignments display's curved and cross-region read connectors draw through render-core's `connector` mark, fed once per relayout by `buildConnectorFeeds`, replacing the `PileupBezierOverlay` SVG layer and its per-frame projection"
 ---
 
 # ADR-225: Read connectors are a connector mark

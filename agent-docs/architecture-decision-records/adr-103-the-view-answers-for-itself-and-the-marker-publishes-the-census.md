@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: 'Enumerating "what is open" was a duck-typed walk of the view nesting copied into four consumers, two of which had drifted onto different container spellings; now each view DECLARES what it holds as ownTracks/ownViews, openViews/openTracks reduce over that, AppReadyMarker publishes the reduction as data-app-* census attributes, and capture''s session gate reads that one element — the walk survives only as capture''s legacy fallback'
+summary: 'Each view declares what it holds as `ownTracks`/`ownViews`, `openViews`/`openTracks` reduce over that, `AppReadyMarker` publishes the result as `data-app-*` census attributes, and the capture session gate reads that element.'
 ---
 
 # ADR-103: The view answers for itself, and the marker publishes the census

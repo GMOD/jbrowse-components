@@ -1,6 +1,6 @@
 ---
 name: a-dense-arc-band-blanks-canvas2d-under-swiftshader
-description: A headless capture pinned to Canvas2D under `--use-angle=swiftshader` loses the coverage and the pileup of an alignments display once its arc band strokes several thousand arcs. The painter draws them and the browser's accelerated canvas drops them; software canvas and real GPUs keep them. The call is whether to work around it in the painter or in the capture harness.
+description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The call is whether to work around it in the painter or the capture harness.
 ---
 
 # A dense arc band blanks Canvas2D under SwiftShader

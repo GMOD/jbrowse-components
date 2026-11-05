@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A MAF adapter reads a region's blocks into a sink, readBlocks, which MafTabixAdapter and BigMafAdapter parse straight into: every sequence a range of the line they parsed, no record, dictionary or MafFeature per block. The MAF display's worker RPC packs through MafRegionSink and getFeatureTable through MafTableSink, and RecordSlots keeps the rows in the order a MafFeature's alignments record lists them, so the packed wire and the table's ids and hover JSON are unchanged. Over 20,000 blocks of 8 columns, the shape real files have, the MAF display's worker takes 0.80x its time from a MAF-tabix file and the mark display's span 0.78x; over wide blocks and 470 species, where coverage and the cells walk dominate, both are level"
+summary: "A MAF adapter parses a region's blocks straight into a sink through `readBlocks`, with no `MafFeature` per block; the worker RPC packs through `MafRegionSink` and `getFeatureTable` through `MafTableSink`, output unchanged"
 ---
 
 # ADR-195: A MAF adapter parses its blocks into the packer

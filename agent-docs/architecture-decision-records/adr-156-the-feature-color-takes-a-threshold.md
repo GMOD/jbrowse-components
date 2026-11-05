@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "FeatureColor's scales are `none | categorical | threshold`, so a feature's number paints the range color of the interval between cut points it falls in. `thresholdField` gives a threshold the interface `categoricalField` answers — a value files under its bin's label, a value-less feature under `''` in the no-value grey, text that is no number under its own key in the misconfiguration grey — so the canvas worker's walk, parent inheritance and the derived key take it unchanged. The field's domain is `closed`, and a key lists every bin of a closed domain once anything painted. `colorFieldOf` answers either field; `categoricalColorField` and the canvas display's `colorField` stay categorical for the facet and Group by. Not `linear` or `log`: an unpinned ramp needs a domain unioned across regions, which a display packing a color per box in the worker has no place for"
+summary: "FeatureColor's scales are `none | categorical | threshold`; `thresholdField` bins a feature's number into a categorical field by cut points, so the canvas worker, parent inheritance and the derived key take it unchanged"
 ---
 
 # ADR-156: The feature color takes a threshold

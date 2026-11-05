@@ -1,6 +1,6 @@
 ---
 name: url-params-consumed-but-not-applied
-description: `hubURL` beside `extendSession` is stripped from the address bar by a loader branch that never used it — the precedence between the two is a product call, not a bug with an obvious fix. (The second half this doc carried, `regions`/`tracklist`/`highlight` beside a hub gated on `loc||assembly`, has landed: the init is handed on and loadHubSpec names what it could not launch.)
+description: A `hubURL` beside `extendSession` is stripped from the address bar by a loader branch that never used it, and which of the two should win is a product call.
 ---
 
 # Params consumed and then discarded

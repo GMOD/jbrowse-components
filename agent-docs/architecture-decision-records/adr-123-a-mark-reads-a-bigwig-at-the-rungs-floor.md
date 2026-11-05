@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fetch tells an adapter with zoom levels the zoom to read at, the view's own `bpPerPx` as the wiggle display sends it, so a BigWig under a `marks` entry answers from the summary tier wiggle would read. The term goes through `zoomFetchArgs()`, the zoom tier, and only for an adapter declaring `hasResolution`, so a BAM or a VCF under the same display keeps refetching only when its bin width moves. The auto-bin rung's floor was the first value and was measured wrong the same day: below the first tier it reads the raw section. What a tier returns is what wiggle draws: `score` is the tier's mean, `minScore` and `maxScore` its extremes, and a config names the field it wants. QuantitativeTrack joins the display's track types on that"
+summary: "The mark display's fetch sends the view's `bpPerPx`, so a BigWig under a `marks` entry reads the summary tier wiggle would; a tier's `score` is its mean, `minScore` and `maxScore` its extremes, and `QuantitativeTrack` joins the display's track types"
 ---
 
 # ADR-123: A mark reads a BigWig at the zoom the view has

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fourth mark is `text`, spelt as Vega-Lite and GenomeSpy spell it (`mark: 'text'`, `encoding.text`), and it is a layer and not a shape: the worker fills a `text` lane of strings beside the lanes it already fills, one pure rule (`placeTextMarks`) places every label over the middle of its span, just above its `y` or in the middle of its band, culls left to right and keeps the plot's edges, and the screen emits DOM text where the export emits `<text>`, both through display-ui's `FloatingText` and `SvgHaloText`, which the canvas feature labels and the arc labels' export now emit through as well. The GPU mark list skips the entry and every shape carries its `markIndex`, so the list may be shorter than `marks`. A text mark declares no ink and answers no hover; its color is the theme's text color where the config leaves it at the mark default; it folds its `y` into the one axis and asks for no `y` lane when it names none; it moves no point inset. Amends ADR-106's Text bullet and ADR-110's label clause. No migration"
+summary: "The mark display's `text` mark (`encoding.text`) is a DOM layer, not a GPU shape: the worker fills a text lane, `placeTextMarks` places and culls every label, and `FloatingText` and `SvgHaloText` draw screen and export"
 ---
 
 # ADR-162: A text mark is a DOM layer placed by one rule

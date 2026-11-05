@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display spells a mark's kind `mark` and the point symbol `encoding.shape`, as Vega-Lite and GenomeSpy do, where it said `shape` and `encoding.glyph`; the symbols are `circle`, `triangle-down` and `diamond`, Vega-Lite's names for what the painter draws. The keys a Vega-Lite or GenomeSpy author reaches for are the ones this schema declares, and `jbrowse validate`'s table translating the two is gone. The grammar's side says `shape` throughout — `ShapeEncoding`, `ShapeName`, `SHAPE_CODES`, the `MarkShape` config object and the legend's `shapeScale` — while the worker lane the point painter reads keeps render-core's word, `glyph`, beside `GLYPH_DISC` and `appendGlyph`. render-core's `MarkShape` interface, the painter/shader/hit triple, keeps its name. No migration"
+summary: "The mark display spells a mark's kind `mark` and the point symbol `encoding.shape` (`circle`, `triangle-down`, `diamond`), as Vega-Lite does, replacing `shape` and `encoding.glyph`; the painter's worker lane keeps `glyph`"
 ---
 
 # ADR-159: A mark is spelt as Vega-Lite spells one

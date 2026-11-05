@@ -1,6 +1,6 @@
 ---
 name: refname-mismatch-warning-visibility
-description: The refName-mismatch warning is the only signal that a track's file and its assembly share no names, and it mounts from the track label — so hiding labels, or exporting SVG, puts the commonest data mistake back to looking like an empty track. Where else it could live, and why the display chrome was rejected once already.
+description: The refName-mismatch warning mounts only from the track label, so hiding labels or exporting SVG makes a track whose file and assembly share no names look merely empty.
 ---
 
 # Where the refName-mismatch warning lives when there is no label

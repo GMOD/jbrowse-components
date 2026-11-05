@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display's settings take Vega-Lite's words and shapes, and each display keeps its hand-written pipeline: one predicate list (`{ field, gte | oneOf | valid | ... }`) replaces every filter family and every min/max/only/exclude/threshold setting; one channel object (`{ value | datum | field, scale: { type, domain, range, ... }, legend | axis }`) under `encoding` replaces the color-object variants, `scales.y`, `opacity` and the size settings; `link` with `interpolate` draws curves, ribbons and segments; `axis`, `legend`, `coord.ratio`, `data.resolution` and `render.antialias` replace the guide, scale-lock, level-of-detail and fade flags; a part or guide turns off through ADR-231's `show` member, every top-level `show*` and `hide*` going. Amended 2026-10-20: not with `null`, which resets a slot to its default. Composition (`layer`, `transform`) is written only where a display already composes: the mark display and the multi-way lanes. Reverses GRAMMAR_OF_GRAPHICS.md's decline of field predicates; keeps ADR-110 (no `condition`) and ADR-118 (no `dodge` or band chains on typed-row-less displays)"
+summary: "Every display's settings take Vega-Lite's words and shapes over its own hand-written pipeline: one predicate list replaces the filter families, one `encoding` channel object replaces the color variants and `scales.y`, and a part turns off through `show`."
 ---
 
 # ADR-238: Every display speaks Vega-Lite

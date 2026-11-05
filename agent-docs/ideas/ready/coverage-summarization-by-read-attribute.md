@@ -1,6 +1,6 @@
 ---
 name: coverage-summarization-by-read-attribute
-description: The coverage band already decomposes depth by base, modification and interbase event; the same compute-pack-draw step could partition it by MAPQ-0, discordancy or HP tag, or add a continuous lane (mean base quality, insert size, fraction clipped). A lane is affordable because it accumulates rather than emits; do not bound one with subPixelBinBp.
+description: The coverage band could partition depth by MAPQ-0, discordancy or HP tag, or add a continuous lane (mean base quality, insert size, fraction clipped), reusing the compute-pack-draw steps it already runs for bases and modifications.
 ---
 
 # Coverage summarization by read attribute

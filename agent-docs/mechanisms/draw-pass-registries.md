@@ -1,6 +1,6 @@
 ---
 name: draw-pass-registries
-description: The layer-registry technique alignments uses for its draw passes — a shared ordered id list plus an exhaustive Record per consumer — decomposed into the four mechanisms it is really made of, with the precondition that decides whether a display wants one and a scorecard of every display against it. Read before adding a mark to a multi-mark display, before proposing a registry for one, and before declining a registry on the grounds that the backends are "not 1:1".
+description: The alignments draw-pass registry split into the four mechanisms it is made of, with the precondition that decides whether a display wants one. Read before adding a mark to a multi-mark display, or proposing or declining a registry.
 audience: internal
 ---
 

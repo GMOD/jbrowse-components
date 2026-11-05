@@ -1,6 +1,6 @@
 ---
 name: ablate-the-jb-spellings-agents-stumbled-on
-description: jb accepts two extra spellings because sonnet runs stumbled on the documented one — addTrack's location doubling as a catalog trackId, and getFeatures' positional form. Each overloads a slot for an agent that guessed, so the eval should say whether a plain refusal costs sonnet or opus anything before either stays.
+description: jb accepts two forgiving spellings, `addTrack`'s `location` as a catalog trackId and `getFeatures`' positional form, each overloading a slot for a guessing agent; an eval should show whether refusing them costs sonnet or opus anything.
 ---
 
 # Ablate the `jb` spellings agents stumbled on

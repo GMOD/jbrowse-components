@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's worker pipeline runs over tables rather than one Feature per piece: a column resolved once per step by its kind (a typed lane, codes into labels, a field read off the parser's features, a value computed per row), a derived table reading what it lacks through its parent's rows, every step one kernel answering the rows, ids and hover JSON the Feature step did, the facet a partition split as early as the steps allow (`layerTables`), and a row a Feature only for a jexl expression, a channel reader or the hover. Over a million features the steps that make rows run in a third to three quarters of main's time and the marks_maf_cells declaration over a 470-species region in about a third, while coverage and pileup run a tenth over and the facet over plain features 0.2 s slower, which the row lookup that follows more than repays by taking the hit index off that same request. runTransforms and facetLayers answer tables, a plugin ABI break taken before v5 ships"
+summary: "The mark display's worker pipeline runs over tables (`featureTable.ts`), a column per field resolved once by kind, with a row a `Feature` only for jexl, a channel reader or the hover; `runTransforms` and `facetLayers` answer tables, a plugin ABI break"
 ---
 
 # ADR-191: The mark pipeline runs over tables

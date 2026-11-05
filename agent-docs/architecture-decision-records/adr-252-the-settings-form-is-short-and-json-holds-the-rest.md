@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The Settings widget (`ConfigurationEditor`) is a short form: the config's own non-advanced slots, the slots of its adapter and of each sub-schema's adapter (with the adapter's own sub-schemas, such as a BAM's `index`), and the non-plot slots of the display the view draws. \"Edit as JSON...\" edits the whole config snapshot, checked as a write (`refusingUndeclaredKeys`) and refusing a new `trackId`, and applies it with `applySnapshot`. A field's reset returns to the track's base config (`makeSlotFacade`'s `base`), not the schema default. The recursive accordion tree, its filter box, the per-level advanced toggles, and the union list's type picker, add, remove and reorder go; the last amends ADR-150"
+summary: "The Settings widget (`ConfigurationEditor`) is a short form of the config's, its adapters' and the drawn display's non-plot slots, and \"Edit as JSON...\" edits the whole snapshot; the recursive accordion tree goes. Amends ADR-150"
 ---
 
 # ADR-252: The settings form is short, and JSON holds the rest

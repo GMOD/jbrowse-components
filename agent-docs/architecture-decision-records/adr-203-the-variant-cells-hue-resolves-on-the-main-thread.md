@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display's worker reads what the alt cells' hue needs off each variant, and the main thread paints the cells and the lane from it, as ADR-202 has the mark display do. `cellHueOf` says where the hue comes from, the fetch's share (`read`: a field without its scale, a `jexl:` callback whole, the field a setting keeps for the way back under a constant) and how the main thread paints what it read. Each region ships `colorValues`, the distinct values as text, `featureColorValues`, each variant's index into them, and `paintedColorValues`, those a variant with an alt cell carried; the matrix ships them too, with `cellAltDosage`. `paintCellColors` repaints only alt cells through `fill = shade(hue, dosage)`, and hands back the worker's array under the default; cell colors, lane colors and row placement are three computeds, so a recolor re-places nothing and a key label repaints nothing. `shadeByDosage` stops being a fetch input, so the dosage is `altDosageByte` in the cells and the key's het swatch alike. A phase-set hue stays the worker's, since it is per cell"
+summary: "The multi-sample variant display's worker reads what the alt cells' hue needs and the main thread paints cells and lane through `cellHueOf` and `paintCellColors`, so a recolor refetches nothing; a phase-set hue stays the worker's"
 ---
 
 # ADR-203: The variant cells' hue resolves on the main thread

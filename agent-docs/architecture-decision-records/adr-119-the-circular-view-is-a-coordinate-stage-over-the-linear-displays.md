@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The circular view is a coordinate stage: every linear display draws on it as a ring, unchanged. The view lays its regions along a strip the width of the circumference (a `RegionHost` it publishes as `regionHost`, which `containingHost` answers before the view), the display renders into that strip exactly as into a linear track, and one ring pass resamples the strip's canvas into an annulus in polar coordinates — one Slang module, one Canvas2D twin, and the SVG export warps the display's own export. A pointer over a ring is unwarped to the strip and handed to the display's chrome, so hover, click and the tooltip are the display's own. Measured against a polar twin per shape: the warp draws a 1000 px ring in 4.3 ms on an Intel iGPU where the wedge takes 5.4 ms with straight edges and 6.8 ms with the eight segments a wide bin needs, it is exact at every bin width where the straight wedge misses 14% of the ring at ten bins, and it touches no display"
+summary: "The circular view is a coordinate stage: a linear display renders unchanged into a circumference-wide strip (`regionHost`) that one ring pass warps into an annulus, and a pointer unwarps to the strip so hover and click stay the display's own"
 ---
 
 # ADR-119: The circular view is a coordinate stage over the linear displays

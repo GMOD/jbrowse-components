@@ -1,6 +1,6 @@
 ---
 name: pick-a-data-file-and-its-index-together
-description: "The Add Track form makes a user pick a BAM and then its .bai in a second file selector whenever the index cannot be found by name: a browser-local file, a Google Drive or Dropbox pick, any URL behind an internet account. Every picker we use can select several files at once; pairing them with BulkAddTracksWorkflow's pairLocations fills both selectors from one pick."
+description: "The Add Track form makes a user pick a BAM and then its .bai separately whenever the index cannot be found by name (local, Google Drive, Dropbox or authenticated files), though every picker we use can select both at once."
 ---
 
 # Pick a data file and its index together

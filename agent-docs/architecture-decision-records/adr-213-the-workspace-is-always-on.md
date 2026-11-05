@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The workspace is the only views container and the \"Use workspaces\" switch is gone. One cell with one tab draws exactly the classic stack, with no tab strip; the strip appears once the layout has a second tab or cell. The session property, the user preference, the admin config slot, the share-link stamp and the classic container went with it. A session saved with workspaces off opens as the stack it showed; `setUseWorkspaces` stays as a no-op for published plugins"
+summary: "The workspace is the only views container and the `useWorkspaces` switch is gone; one cell with one tab draws the classic stack with no tab strip. `setUseWorkspaces` stays as a no-op"
 ---
 
 # ADR-213: the workspace is always on

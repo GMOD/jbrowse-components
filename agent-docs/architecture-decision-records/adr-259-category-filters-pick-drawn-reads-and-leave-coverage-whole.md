@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments `filter`'s read fields have two reaches. The flags, `mapq` and tags decide which reads count, as `samtools depth` and IGV's load filters do: coverage, the sashimi junctions and the insert-size colors count only what they keep. `name` and the read categories (`spliced`, `svSignal`, `split`, `alone`) pick which counted reads the pileup, arcs, consensus and exports draw, and leave coverage whole. The worker runs every counted read through the extract, the detail arrays and the coverage pipeline, judges the drawn reads over every facet section at once, and compacts the drawn ones out after; while a filter leaves reads out it ships the sample's mismatch, gap and interbase arrays (`sampleEvents`), which the coverage tooltip, the coverage hit test and the allele table read. Replaces ideas/ready/category-filters-leave-coverage-whole (Idea 2)"
+summary: "The alignments `filter`'s flags, `mapq` and tags decide which reads count toward coverage; `name` and the read categories (`spliced`, `svSignal`, `split`, `alone`) only pick which counted reads are drawn, leaving coverage whole"
 ---
 
 # ADR-259: Category filters pick drawn reads and leave coverage whole

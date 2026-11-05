@@ -1,6 +1,6 @@
 ---
 name: mcscan-config-derives-its-assembly-lists
-description: An MCScan track config states the same assembly list twice (track assemblyNames, blockAssemblies) plus a positional bedLocations array — at 44 genomes the tutorial gives up printing it, and every table tutorial carries an ordering warning. Default blockAssemblies from the track's list, or take a per-column {assembly, bed} object, so the order exists once.
+description: An MCScan track config states its assembly list twice (`assemblyNames`, `blockAssemblies`) plus a positional `bedLocations` array, so a many-genome config outgrows hand-authoring and every table tutorial carries an ordering warning.
 ---
 
 # The MCScan config derives its assembly lists

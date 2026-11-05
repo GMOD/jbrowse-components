@@ -1,6 +1,6 @@
 ---
 name: follow-partial-report-parity
-description: The follow's refused-spread report is a tooltip sentence on the header toggle while the multiway lane puts the same fact in a visible label with an action ("also on 5" / "Show 5 in this lane") — put the follow's `partial.elsewhere` text where multiway puts it, without the navigating control SyntenyFollow/CLAUDE.md correctly refuses.
+description: The synteny follow reports a refused spread (`partial.elsewhere`) only in a header tooltip, while the multiway lane shows the same fact as a visible label, so the reader misses it in one display.
 ---
 
 # The follow's partial report reads like multiway's

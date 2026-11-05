@@ -1,6 +1,6 @@
 ---
 name: plugin-aware-re-export-registry
-description: A page naming a runtime plugin pays 322 KB gz over a bare one because the host serves the whole re-export registry. A UMD bundle carries literal JBrowseExports["@jbrowse/core/util"] strings, so the host could scan the plugin's text and load only the named modules, falling back to the whole registry on a non-literal access or jbrequire. A prototype has to measure the saving (up to about 307 KB) first; ADR-128 rejected a lazy registry on the premise the bundle does not carry what it reads.
+description: A page naming a runtime plugin loads the whole re-export registry, though a UMD bundle names the `JBrowseExports` modules it reads, which undercuts ADR-128's premise for rejecting a lazy registry. Waits on a prototype measuring the saving.
 ---
 
 # A plugin-aware re-export registry

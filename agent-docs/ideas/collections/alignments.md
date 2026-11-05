@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, a value splitting between its lane and the overflow lane across regions, interning readTagValues, the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction), and the pair follow-ups (chain-mode sort, the insert-size band on RNA-seq, mate-supported exon links).
+description: Pileup and coverage-band ideas, among them a read-count floor for the low-frequency threshold, strand-split allele bars, variant navigation, bedGraph export, read downsampling, lifting `MAX_GROUPS`, interning `readTagValues`, and RNA-seq splice and pair follow-ups.
 ---
 
 # Alignments

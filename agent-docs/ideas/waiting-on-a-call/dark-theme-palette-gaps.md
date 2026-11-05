@@ -1,6 +1,6 @@
 ---
 name: dark-theme-palette-gaps
-description: Several data color sets resolve to one light value in both themes — the alignments modification fills and tag laps, the variant matrix's reference and unphased cells, the wiggle heatmap's white midpoint, synteny's CIGAR colors — so a dark track paints light-theme color under them. Each is a palette decision rather than a defect, and the same decision asked per set.
+description: Several data color sets (alignments modification fills and tag laps, variant matrix reference cells, the wiggle heatmap midpoint, synteny CIGAR colors) resolve to one light value in both themes, so dark tracks paint light-theme color.
 ---
 
 # The palette's dark-theme gaps

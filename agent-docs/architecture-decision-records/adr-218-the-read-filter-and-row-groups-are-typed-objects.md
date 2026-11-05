@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments display's read filter is its `filter` slot, `ReadFilter`: a closed object of the flag masks, a read name, a `TagFilter` list and the four read categories as `only | exclude | unset`, with v4's `filterBy` and `tagFilter` lifting into it, so `filter` is the grammar's one word for a predicate on every display, an expression list on the feature displays and a predicate object here, as Vega-Lite spells both; `showOutline` is a `maybeBoolean`; the multi-row display's `rowGroups` is a list of closed `RowGroup` entries. The JSON schema, the editor and `jbrowse validate` see the members, a misspelt member is refused rather than dropped, and `normalizeFilterBy`'s backfill and sanitising go. `modifications` is typed by a commit of its own, where an empty `shownModifications` draws every type, and `sortedBy` stays `maybeFrozen` as menu-written state whose unset is its no-sort"
+summary: "The alignments read filter becomes the typed `filter` slot (`ReadFilter`), replacing `filterBy` and `tagFilter`, and `rowGroups` becomes closed `RowGroup` entries, so the schema refuses a misspelt member. Amended by ADR-232"
 ---
 
 # ADR-218: The read filter and the row groups are typed objects

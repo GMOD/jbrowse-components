@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "Configs stay MST nodes: a config as plain JSON read against the slot table was built for adapters, tracks and displays, and declined — every gap a review found was closed by rebuilding something MST already provides, and the non-track kinds lose persistence, undo and references by leaving the tree"
+summary: "Rejected: configs as plain JSON read against the slot table, because closing each gap rebuilt something MST already provides, and non-track kinds would lose persistence, undo and references"
 ---
 
 # ADR-147: Configs stay MST nodes; a plain-document substrate was built and declined

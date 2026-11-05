@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A two-genome circle reorders its second genome with the same `diagonalizeRegions` the synteny row and the dotplot use, then lays that answer out MIRRORED — regions in reverse order, each region reversed — because both arcs of a circle run the same way round and the linear answer therefore sends every matching pair to a pair of antipodal points. Chords between two arcs never cross when one side's coordinate rises with the angle and the other's falls, so the mirror is what turns the hairball into a band. `reversed` becomes real on the circle for the first time: `bpToRadians` reads it, `ribbonEndRadians` answers its two angles in GENOMIC order rather than sorted, and a ring's strip block carries it into the projection every linear display already honours. Two things landed with it, both visible on the same figure: an alignment reached from both genomes now draws one ribbon instead of two, and the ribbon default is one flat translucent fill, since the strand is already in the twist"
+summary: "A two-genome circle reorders its second genome with `diagonalizeRegions`, then lays it out mirrored so chords form a band instead of a hairball. `reversed` becomes real on the circle, and each alignment draws one flat-filled ribbon"
 ---
 
 # ADR-121: The second genome on a circle is laid out mirrored

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display declares a mark list — a shape (one hand-written shader, one packer, one Canvas2D painter that is also the SVG export, one hit test) bound to its payload by two lenses — and `createMarkBackend` derives both backends from it. Thirteen in-tree displays draw that way and the third-party gauge now does too, which un-rejects the render half of ADR-090 that ADR-091 removed with the factory; the factory stays rejected. Records the ladder with four rungs, what the mark layer deliberately does not hold, and that `defineMark`'s option set is third-party ABI"
+summary: "A display declares a mark list (a shape bound to its payload by two lenses) and `createMarkBackend` derives both backends from it; `defineMark`'s option set is third-party ABI. Restores ADR-090's render half; ADR-091's factory rejection stands"
 ---
 
 # ADR-106: A display declares its marks

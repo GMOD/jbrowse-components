@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A track the session owns edits the way a config.json track does: its `sessionTracks` entry is the base, and an edit is a `trackConfigDeltas` delta over it. `tracks` hands out each entry as a snapshot merged with its delta, so a shown session track resolves to a working copy, and one base lookup (the session entry, else the config.json entry) feeds `getTrackById`, `baseTrackConfig`, the changes list, `updateTrackConfiguration` and the reset. The edited badge, the changes table, Reset track settings and a row display's Reset row order reach a session track with no display code, in every product that composes the session-tracks mixin. A working copy is stamped with the resolved config it mirrors rather than the delta, since a session entry can be replaced under an unchanged delta. An edit re-resolves one track and rebuilds no index over the catalog, so a persist of either kind costs less than main's and a search-box keystroke no more. A working copy is per track type, so an id re-added as another type resolves. Promote writes only the edits over a config.json entry, into the last entry of a repeated trackId"
+summary: "A session-owned track edits like a config.json track: its `sessionTracks` entry is the base and an edit is a `trackConfigDeltas` delta over it, so `baseTrackConfig`, the changes table and Reset track settings reach session tracks"
 ---
 
 # ADR-158: A session track's entry is the base its edits diff against

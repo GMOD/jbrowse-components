@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fifth mark is `link`, spelt as GenomeSpy spells it: a stroked curve from `x` to `x2`, where `x2` may be a locus on another sequence, `size` a channel through a linear or log scale, and a `mate` transform step reading a paired record's other end. Both feet place through a uniform table of the view's displayed regions and the link draws over the whole canvas rather than per block, each curve once, so it crosses regions holding neither foot and a pan writes one uniform. `@jbrowse/plugin-arc` and its two displays are deleted; their configs are rewritten in the mark spelling. Amended 2026-09-27: a constant size is `encoding.size` too, a bare number lifting into its `value`, which a point, a rule and a link read; the mark-level `size` is gone"
+summary: "The mark display gains a `link` mark, a stroked curve from `x` to `x2` (possibly on another sequence) with a `mate` transform, drawn once over the whole canvas; `@jbrowse/plugin-arc` and its two displays are deleted"
 ---
 
 # ADR-163: A link is a mark, and the arc plugin is gone

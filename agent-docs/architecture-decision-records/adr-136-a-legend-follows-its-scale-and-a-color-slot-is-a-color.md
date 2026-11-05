@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three legend and color-slot rules brought level with ggplot2. A derived key row is a color naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels. Two marks coloring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key. Amended 2026-09-24: the synteny views' text-column keys merge a color's labels the same way, and the mark, multi-row and multi-sample variant keys run `derivedColorScale` rather than spelling the rule by hand. Amended 2026-10-03 (ADR-205): an unlisted value is dealt a color of its own, so a shared swatch comes from a range or domain the config wrote, and Pin distinct colors is gone"
+summary: "A legend key row names every value painted in its color (`CategoricalEntry.values`), marks sharing one field, domain and palette share one key section, and a `color` slot refuses a non-color string at load (`CssColor`)"
 ---
 
 # ADR-136: A legend follows its scale, and a color slot is a color

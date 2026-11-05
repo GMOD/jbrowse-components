@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display hides a color key row's categories through a Categories menu of checkboxes, as multi-row does: `hiddenCategories`, session state of `{ field, value }` records (`field` `''` under an identity color, `value` the color its `domain` lists), folds into the categorical and identity `ColorSource`, and painting the keys drops the hidden instances from every lane (`keptInstances`), rebuilding the hit index, so the plot, the hover, export, the column sort and the cluster matrix lose them at once and nothing refetches. The key keeps a hidden row struck through, under a row focus too; \"Show all categories\" joins Filter by.... A hide keys on data, so two palettes hide the same features, and a field change leaves it latent until the field returns. Third gap of the multi-row-on-marks handoff"
+summary: "The mark display hides a color key row's categories for the session through a Categories menu (`hiddenCategories`), dropping them from paint, hover, export, sort and clustering with no refetch"
 ---
 
 # ADR-246: A mark key row hides its categories for the session

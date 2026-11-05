@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments roles that ask the same question of a read answer it once. A read is split when it carries an SA tag (the primary included) or flag 0x800, spliced when its whole CIGAR carries a skip, and an SV-size deletion when its whole CIGAR carries a deletion of 50 bp or more; each record class answers the CIGAR's two in `cigarCategoryBits`, the worker stores all three in `readCategoryBits`, and the filter, facet and sort read them. The `split` order lifts split reads alone and `svSignal` lifts both. The facet gains `pairing`, `spliced` and `mateRefName`, renames `splitRead` to `split`, and names a field no read answers; the filter gains `minMapq`; the column sort gains `mapq` and `pairOrientation`"
+summary: "The alignments filter, facet and sort share one read categorization: `cigarCategoryBits` and `readCategoryBits` answer split, spliced and SV-size deletion once per read. The facet's `splitRead` becomes `split`."
 ---
 
 # ADR-226: Reads are categorized once

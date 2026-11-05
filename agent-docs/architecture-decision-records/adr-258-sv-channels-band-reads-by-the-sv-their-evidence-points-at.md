@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svKind` (renamed from `svChannel` on 2026-11-04), `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: deletion-type, duplication-type, inversion, partner on another chromosome, insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone; amended 2026-11-05: the keys name the kind (`deletionType`, `duplicationType`, `elsewhere`, `insertion`), and an LR pair the insert-size band calls short files as an insertion, so a short-read insertion fills the insertion band"
+summary: "The SV channels preset facets reads by `svKind`, the kind of SV their evidence points at, into six bands, so short and long reads of one event share a band; it replaces the `pairOrientation` facet"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at

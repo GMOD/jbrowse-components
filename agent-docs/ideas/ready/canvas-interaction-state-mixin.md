@@ -1,6 +1,6 @@
 ---
 name: canvas-interaction-state-mixin
-description: Hover, clicked and selection state as one mixin for the canvas-rendered displays, instead of channels each display hand-wires — the multiway display shipped with the clicked channel pinned to 0 and the selection channel ungated because its author wired the two it remembered (both since fixed; it is now the fullest of the three implementations). What the mixin owns (the ids, the render-state fields, the keys-not-indices lifecycle), the three existing implementations it would be extracted from, and why the pick side stays per-display.
+description: Each canvas display hand-wires its hover, clicked and selection channels, so an author wires only the ones they remember; one mixin would own the ids, the render-state fields and the keys-not-indices lifecycle.
 ---
 
 # A canvas interaction-state mixin

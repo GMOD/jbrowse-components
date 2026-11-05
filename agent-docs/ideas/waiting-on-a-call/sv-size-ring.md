@@ -1,6 +1,6 @@
 ---
 name: sv-size-ring
-description: The SV inspector's circle can only encode a record's two endpoints, so a deletion and a duplication of any size both land on one point; a ring placing local events at a radius set by log10(span) would give the 80% of a callset that a chord cannot draw somewhere to be.
+description: The SV inspector's circle encodes only a record's two endpoints, so the local deletions and duplications that make up most of a callset have nowhere to be drawn.
 ---
 
 # A size ring for the SV inspector's local events

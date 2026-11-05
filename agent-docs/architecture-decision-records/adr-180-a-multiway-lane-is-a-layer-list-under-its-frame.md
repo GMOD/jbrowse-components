@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A MultiWaySyntenyDisplay lane becomes a list of grammar layers drawn through its frame as a coordinate stage, the way ADR-119 draws the circle's rings, not a host of nested tracks. This reverses the collection's 'let a lane host tracks — leave it alone' call: that call priced a per-lane track container rebuilding the deleted MultiLGVSyntenyDisplay, and a layer list rebuilds none of it, since a lane keeps its one fetch lifecycle and gains marks rather than displays. Stage 1 is built: every lane prints its gene names under its glyphs, on by default behind `showGeneLabels`, decimated by the feature track's `keepFeatureLabel`, and a name another name blocks slides along its own gene to the first free slot. Stage 2, gene glyphs and named-record placement boxes through `encodeFeatures`, now has its 40-lane measurement, which puts the encoder's floor at a third of the hand packer's cost, since that packer also projects every gene through its lane's frame"
+summary: "A `MultiWaySyntenyDisplay` lane is a list of grammar layers drawn through its frame, not a host of nested tracks; stage 1 prints gene names behind `showGeneLabels`, and stage 2 moves gene glyphs onto `encodeFeatures`"
 ---
 
 # ADR-180: A multi-way lane is a layer list under its frame

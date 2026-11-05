@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A settings bag, a session spec, a share link and jb2export write `rows` and every color object whole on every display, where the multi-sample variant and MAF displays merged `rows` member by member and LD and Hi-C merged `color`, so one share link kept a clustering tree beside an order it no longer listed on one display and dropped it on another. The two displays' `rows` is `SampleRows`, the shared `Rows` object with `sample` as its one field, and LD and Hi-C color take the bare-string field shorthand every color object with no constant of its own takes. `scales` is the one namespace left, and the write mode stays derived from the shorthand rather than declared"
+summary: "A settings bag, session spec, share link and jb2export write `rows` and every color object whole on every display; the variant and MAF displays' `rows` becomes `SampleRows`, and `scales` is the one namespace that merges by member"
 ---
 
 # ADR-215: `rows` and color write whole on every display

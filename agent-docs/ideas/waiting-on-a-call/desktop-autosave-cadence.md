@@ -1,6 +1,6 @@
 ---
 name: desktop-autosave-cadence
-description: Desktop's 1s autosave is an `autorun` throttle, so it fires for as long as anything keeps changing — panning included — and the data-loss window it was sized against is much smaller now that four paths flush explicitly. Scaling the interval with the serialized size is the version worth proposing, and it is a call about someone's unsaved work.
+description: Desktop's 1s autosave is an `autorun` throttle, so it reserializes the whole session throughout a pan, though explicit flushes have shrunk the data-loss window it guards; loosening it is a call about unsaved work.
 ---
 
 # Desktop's autosave cadence

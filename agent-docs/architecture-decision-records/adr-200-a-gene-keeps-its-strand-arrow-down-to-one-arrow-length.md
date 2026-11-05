@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The strand arrow's width gate has two values: 14 px for any feature, 7 px — one arrow length — for a gene. The worker ships the choice as an `arrowGene` lane copied from the feature's `flatbushItems` gene bit (`isGeneType`), so the shader, the Canvas2D/SVG arrow mark, layout's room reservation and hit-testing read one bit and cannot disagree. Every multi-way synteny lane is a gene, so its arrows take the gene gate. Rejected: a glyph-kind test, a per-track uniform, a sentinel in `arrowWidthsBp`, and no floor"
+summary: "The strand arrow's width gate is 7 px for a gene and 14 px otherwise, shipped as an `arrowGene` lane from `isGeneType` so the shader, Canvas2D/SVG, layout and hit-testing read one bit"
 ---
 
 # ADR-200: A gene keeps its strand arrow down to one arrow length

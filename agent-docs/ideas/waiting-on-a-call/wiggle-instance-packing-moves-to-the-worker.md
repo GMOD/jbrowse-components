@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-packing-moves-to-the-worker
-description: wiggleInstanceBuffer.pack runs ~98ms synchronously in the RPC handler, and a worker-side pack would ride along free on a tier refetch — but the encoder cannot leave the main thread, only be duplicated, and the packed buffer would become resident at up to 82MB for a 1000-source multiwiggle. The call is whether that retention and two encoders that must agree are worth a frame.
+description: "`wiggleInstanceBuffer.pack` runs synchronously mid-frame on the main thread; moving it to the worker saves a frame but duplicates the encoder and keeps a large packed buffer resident."
 ---
 
 # Wiggle instance packing could move to the worker

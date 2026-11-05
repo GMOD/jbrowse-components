@@ -1,6 +1,6 @@
 ---
 name: one-generated-description-of-the-jb-surface
-description: The jb helper library is described in three hand-kept prose copies (the live model guide, run_javascript's tool description, jb.help) that have already drifted on getFeatures' options; docsRoster.test.ts pins only that the names exist. Parked until the roster changes again — a per-member signature-and-purpose table generated from one source would end the drift, at the cost of losing the prose each copy tunes for its reader.
+description: The `jb` helper library is described in three hand-kept prose copies (the live model guide, `run_javascript`'s description, `jb.help`) that have already drifted, and `docsRoster.test.ts` checks only that names exist.
 ---
 
 # One generated description of the `jb` surface

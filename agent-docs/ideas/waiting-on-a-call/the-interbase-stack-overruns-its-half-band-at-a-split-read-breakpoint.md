@@ -1,6 +1,6 @@
 ---
 name: the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint
-description: at a clean breakend the interbase stack is scaled by the region's peak read depth while the events at one boundary can sum to twice it, so the bar runs into the coverage bars at exactly the locus someone navigates to — measured at 2.0x, both backends identical so the gate is blind to it, and three fixes each lose something the current form chose; a visual call, not a release blocker
+description: At a clean breakend the interbase stack, scaled by the region's peak read depth, can reach twice that peak and run into the coverage bars at exactly the locus someone navigates to; a visual call, not a release blocker
 ---
 
 # The interbase stack overruns its half-band at a split-read breakpoint

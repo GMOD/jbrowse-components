@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A SyntenyTrack draws on the circular view as ChordSyntenyDisplay, and an alignment is a RIBBON rather than a chord: a record has a span on both sides where a translocation has a point on both sides, and the span is what the figure is read for. The display lives beside ChordVariantDisplay in circular-view and takes @jbrowse/synteny-core behind the lazy state model, so a product with no synteny plugins pays for a config schema and nothing else. Both ends resolve against their own assembly through a slice index keyed by assembly AND refName, which is what let the view's `assembly` become a list — each assembly lays its contigs out in turn. Amended 2026-09-16: the import form opens a two-assembly circle, dotplot-style"
+summary: "A SyntenyTrack draws on the circular view as `ChordSyntenyDisplay`, each alignment a ribbon; both ends resolve through a slice index keyed by assembly and refName, so the view's `assembly` is a list."
 ---
 
 # ADR-116: A synteny alignment is a ribbon on the circle

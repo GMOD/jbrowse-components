@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A color or glyph object spells its scale the way `scales.y` and Vega-Lite do: `range` is the output for every kind (a palette, a threshold's colors, a ramp's stops, the glyph names), `scheme` a named ramp from one table every baker reads, `domain` a list only (category order or threshold cuts), `domainMin`/`domainMax` a continuous scale's ends, each pinned or following the data, and `reverse` its direction. `range` is a `colorArray` on a color object and a `stringEnumArray` on the glyph object. The kind is `scale`, or the display's default for the field (`paintedScale`), never inferred from which output member is written. One bridge, `colorEncodingOf`, builds the encoder's `ColorEncoding` off the live node for the mark and Manhattan displays. Supersedes the `palette`/`ramp` members of ADR-135 and ADR-144, and the mark and alignments colors' `linear` beside a ramp. No migration"
+summary: "A color or glyph object spells its scale like `scales.y`: `range` is the output, `scheme` a named ramp, `domain` a list, `domainMin`/`domainMax` continuous ends, `reverse` direction, and `scale` names the kind. Supersedes the `palette`/`ramp` members of ADR-135 and ADR-144"
 ---
 
 # ADR-151: A channel's scale is spelt as `scales.y` spells one

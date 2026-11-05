@@ -1,6 +1,6 @@
 ---
 name: internet-accounts
-description: The internet account model does six jobs across a boundary that only needs three, and Apollo3 is the downstream consumer that decides what can be broken and when. None of it is release-blocking; read before proposing the split, a sign-out menu, or a cache over the per-RPC token probe.
+description: The internet account model does six jobs across an RPC boundary that needs only three, and Apollo3 decides what can break. Read before proposing the split, a sign-out menu, or a cache over the token probe.
 ---
 
 # Internet accounts: the split the RPC boundary already draws

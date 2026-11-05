@@ -1,6 +1,6 @@
 ---
 name: complex-sv-tutorials-from-published-results
-description: Two public complex-SV datasets to build tutorials on now that JBrowse infers no alleles (ADR-137) — a MECP2 DUP-TRP/INV-DUP with ONT reads, arrays and a published structure, and a 1KGP GATK-SV complex record carrying the caller's own interpretation. Each teaches reading the evidence against a structure someone else resolved, which is the shape the removed picker could not take.
+description: Two public complex-SV datasets for tutorials now that JBrowse infers no alleles (ADR-137), a MECP2 DUP-TRP/INV-DUP with ONT reads and a 1KGP GATK-SV complex record, each teaching evidence read against a published structure.
 ---
 
 # Complex-SV tutorials from published results

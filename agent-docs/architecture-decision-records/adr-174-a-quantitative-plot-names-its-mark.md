@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearWiggleDisplay`'s `defaultRendering` becomes `mark` (`bar`, `point`, `line`, `heatmap`) and `interpolate` (`step`, `linear`, a line's alone), the mark display's and Vega-Lite's words for the same pictures. `density` was a heat strip under a name the density tier and a mark's `source: 'density'` use for a feature count, so it is `heatmap`, as MAF's menu already called the geom. The five renderings stay the shaders' internal names; `renderingOf` and `markOf` are the one translation, the menu's labels are unchanged, and the display declares `defaultRendering` retired"
+summary: "`LinearWiggleDisplay`'s `defaultRendering` becomes `mark` (`bar`, `point`, `line`, `heatmap`) and `interpolate` (`step`, `linear`), the mark display's words; `renderingOf` and `markOf` translate to the shaders' rendering names"
 ---
 
 # ADR-174: A quantitative plot names its mark

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's palette deals `rowColor` over the rows in the order their source lists them (`rowColorDealRows` is `expandedRows`): a VCF's samples, a multi-BigWig's subtracks. Values of an attribute the config declares deal first, in its order, loaded or not (`rowColorDeclaredValues`: the multi-row display's `rowGroups` groups). No `rows.domain`, the config's or a reorder's, moves a color, and neither does a region loading later, so the variants and wiggle tables exports, which read the session's `rows.domain`, deal the same colors the screen shows. A config declaring `rows.domain` and leaning on the palette can draw different colors than before."
+summary: "A row display's palette deals `rowColor` over rows in source order (`rowColorDealRows` is `expandedRows`), declared attribute values first, so no `rows.domain` reorder or late region moves a color and the tables exports match the screen"
 ---
 
 # ADR-239: A row palette deals in source order

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `cells` transform step replaces each aligned row with its runs of columns against the reference, one feature per run in one `state` (`match`, `mismatch`, `gap`) on the row's reference span, a mismatch run carrying its `base` and a match or mismatch run `match` as 1 or 0, and one interbase `insertion` per run of inserted bases at the reference base it precedes, with `base` and `length`. The reference is the same field on the feature the row was fanned out of, so the step stands behind `flatten` and names no second field. It walks every column and merges match and gap runs by state, while each mismatched base stays a feature of its own; a reference gap is no cell, and a gap run reaching either end of the row is no cell, as the MAF display's painters already rule. Sub-pixel sampling and an identity through `bin` stay outside it"
+summary: "A `cells` transform step replaces each aligned row with runs of columns read against its parent block's reference: one feature per `match` or `gap` run and per mismatched base, plus interbase `insertion` features"
 ---
 
 # ADR-187: A `cells` step reads a row against the block it came from

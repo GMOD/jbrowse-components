@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The worker ships every isoform with a per-child ordinal and a stack table; the fit ladder gains an `isoforms` rung between `labels` and `decimated` that bisects the transcripts-per-gene the track can hold with its names intact, which takes track height out of the RPC cache key and supersedes ADR-075"
+summary: "The worker ships every isoform; a fit-ladder `isoforms` rung between `labels` and `decimated` trims transcripts per gene so names stay drawn, taking track height out of the RPC cache key. Supersedes ADR-075"
 ---
 
 # ADR-092: Isoform trimming is a rung of the fit ladder

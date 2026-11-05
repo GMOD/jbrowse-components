@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The arrangement dialog colors rows one way: \"Color rows by\" None, Each row or an attribute, each choice holding its own picks and an Other swatch of Auto, None or a color. Each row is offered on every row display, and its picks are the row list's swatches; None colors no row and edits nothing. A choice starts from `startingRowColor` (the mixin's `rowColorFor`): the current object where it shows that choice, else the config's, else nothing, which the variant menu, the dialog and the reset all read, so picking the config's attribute back after None is the config again, and a reset never changes the choice. `applyRowEdits` takes color only from the object it is handed; the rows carry order and labels (`labelEdits`), and \"Start from\" and the row-diff color rule go. Amends ADR-164 and ADR-207, and states the row color rules those two built up"
+summary: "The arrangement dialog's \"Color rows by\" offers None, Each row or an attribute on every row display, each choice holding its own picks and an Other swatch; a choice starts from `startingRowColor`, and \"Start from\" goes"
 ---
 
 # ADR-209: Each row is a choice like an attribute

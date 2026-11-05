@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "CSS px in, device px out, and the conversion is one number every antialiased shader owes. It was spelled four ways — `2.0 * aaHalfPx(dpr)`, `STROKE_AA_PX / max(dpr, 1)`, and two bit-identical wrappers named `capsuleCoverage` and `strokeCoverage` — while two shaders skipped it entirely and were wrong by a factor of dpr, invisibly on the dpr-1 machines people develop on. One `edgeCoverage`, one `devicePixelRatio` field name, and `assertDprDeclared` in `pnpm gen:shaders` fails a shader that reaches the conversion without declaring the ratio. Tightening the pads that stated CSS px cuts 29-61% of shaded fragments off connectors and scatter discs"
+summary: "Antialiased shaders convert CSS px to device px through one `edgeCoverage` and one `devicePixelRatio` uniform name; `assertDprDeclared` in `pnpm gen:shaders` fails a shader that reaches the conversion without declaring the ratio"
 ---
 
 # ADR-098: one ramp, one unit, and the build checks it

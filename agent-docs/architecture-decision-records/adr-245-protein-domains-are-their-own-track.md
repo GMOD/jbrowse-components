@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Protein domains draw as their own track in the multi-row display, a row per transcript: domains2genome --gff3 writes each coding transcript as an mRNA with its exons, CDS and its domains as protein_match children, and the display's default plot draws the transcript in greys with the domains over it, colored by family. A gene track draws no other track's rows and no domain children: transcriptFeatures (ADR-242) and the proteinFeatures key join before it are deleted. The projection from protein residues onto exons is domains2genome's, which the tutorial runs itself; the JBrowse CLI wraps none of it. Supersedes ADR-242"
+summary: "Protein domains draw as their own multi-row track, a row per transcript, from `domains2genome --gff3` output; a gene track draws no domain children, and `transcriptFeatures` and `proteinFeatures` are deleted. Supersedes ADR-242"
 ---
 
 # ADR-245: Protein domains are their own track

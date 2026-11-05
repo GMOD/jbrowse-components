@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments read-connections band's four private shapes are the grammar's marks: the dome is `link` under `linkShape: 'dome'`, the read cloud's flat connector is `linkShape: 'line'` — GenomeSpy's fourth value, which ADR-163 skipped — the endpoint square is a `point` glyph, and the interchromosomal tick is the link's own stem. The view-scope region table lifts out of the mark display so any mark places a foot through it, which retires `CrossRegionArcsOverlay` and its SVG twin outright. `cloud` stops being a boolean: arc mode and the read cloud differ in mark shape, y scale and one filter. The connector takes its category color, the feet stay on interchromosomal arcs by choice, and `readConnectionsDown` becomes the y scale's direction"
+summary: "The alignments read-connections band's private shapes become grammar marks: `link` with `linkShape: 'dome'` or `'line'`, a `point` endpoint, and a stem tick. A view-scope region table places feet across regions, retiring `CrossRegionArcsOverlay`"
 ---
 
 # ADR-170: The read-connections band is a marks list

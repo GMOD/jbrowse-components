@@ -1,6 +1,6 @@
 ---
 name: one-pileup-layout-for-one-region-and-many
-description: computePileupRowLayout sends one region to computeLayout or computeSortedLayout and several to computeMultiRegionLayout, two packers for one rule. With one entry the multi-region path computes the same extents, order, sort gate and first fit, so the one-region branch could become a call to it, once rows match row for row and the Map-keyed extent measures free against the typed-array path.
+description: Pileup layout runs two packers for one rule, `computeLayout` for one region and `computeMultiRegionLayout` for several; the one-region branch could call the latter once rows match row for row and its Map-keyed extent measures free.
 ---
 
 # One pileup layout for one region and many

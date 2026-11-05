@@ -1,6 +1,6 @@
 ---
 name: ui-state-holds-keys-not-indices
-description: UI state that outlives a data commit — a click, a pin, a per-row incumbent — must hold a semantic key that re-resolves against the rebuilt data, never an index into the arrays a refetch replaces. The failure that named it clears the very state a click created, because the click's own side effect triggers the refetch; the fallback for genuinely nameless records is clear-on-commit, stated at the commit. Read before storing anything the pointer produced.
+description: UI state that outlives a data commit (a click, a pin, a per-row incumbent) holds a semantic key that re-resolves against the rebuilt data, never an index into arrays a refetch replaces. Read before storing anything the pointer produced.
 ---
 
 # UI state holds keys, not indices

@@ -1,6 +1,6 @@
 ---
 name: mobx-state-patterns
-description: Two state-management patterns built and validated here that need nothing from genomics — splitting an autorun into a pure plan and an installer, and answering a lifecycle with one discriminated getter instead of N booleans every caller re-subtracts. Both have a failure story sharp enough to carry the idea, and neither has a name outside this repo.
+description: Two genomics-free MobX patterns built here, splitting an autorun into a pure plan and an installer, and answering a lifecycle with one discriminated getter instead of N booleans; neither has a name outside this repo.
 ---
 
 # MobX patterns worth publishing

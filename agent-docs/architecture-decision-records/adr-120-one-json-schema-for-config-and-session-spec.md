@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The manifest generator walks the live ConfigurationSchema objects and state models a second time into one draft 2020-12 JSON Schema, published at https://jbrowse.org/jb2/schema/v5/config.json and bundled in the CLI beside the manifest. Every registered type is a $defs entry dispatched on `type` by an if/then chain, so a plugin's type passes unchecked; a slot carries its description, default and enum members and admits jexl:; a frozen slot stays open with the reason in its description; an enum value a migration still rewrites is a deprecated branch. jbrowse validate runs ajv first (a 50 ms command became 430 ms; ajv is 2.8 MB on disk) and keeps the six cross-reference checks and six migration warnings a schema cannot express. Fourteen error checks left validateConfig.ts, and the schema found four things the manifest never saw"
+summary: "The manifest generator also emits one JSON Schema for `config.json` and the session spec, published at jbrowse.org and bundled in the CLI. `jbrowse validate` runs ajv against it first and keeps only the cross-reference checks a schema cannot express"
 ---
 
 # ADR-120: One JSON Schema for config.json and the session spec

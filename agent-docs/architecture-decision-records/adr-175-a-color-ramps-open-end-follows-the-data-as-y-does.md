@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A linear or log color ramp's open ends follow the loaded values by the rule `scales.y.autoscale` names: `autoscale: 'local'` spans their extremes and `'localpercentile'` clips each sign's magnitudes at `numQuantile`, anchored at 0 (`rampExtent`, `@jbrowse/core/util/rampExtent`). The mark, feature, alignments and Hi-C colors take both members; Hi-C's `useColorPercentile` checkbox is `color.autoscale` defaulting to `localpercentile` at 0.95, declared retired. Each region's worker or the display computes the percentile over what it paints — per feature, per box, per read, per contact — and a display unions per-region extents as before"
+summary: "A linear or log color ramp's open ends follow the loaded values by `scales.y`'s autoscale rule through `rampExtent`, and Hi-C's `useColorPercentile` becomes `color.autoscale`. Amended by ADR-179: the two members are one `domainQuantile`"
 ---
 
 # ADR-175: A color ramp's open end follows the data as y does

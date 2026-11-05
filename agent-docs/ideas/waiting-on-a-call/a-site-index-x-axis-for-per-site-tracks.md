@@ -1,6 +1,6 @@
 ---
 name: a-site-index-x-axis-for-per-site-tracks
-description: methylartist draws its smoothed methylation on an x axis of CpG index, one equal-width column per site or per equal-CpG window, tied back to the genome by connector lines, so a CpG island widens to the sites it holds. The `window` step already smooths over sites at genomic x (issue 5510's figures), with the gene track above the line. An index axis is a new ordinal x scale that every shape, hit test, SVG export and guide reads, and the variant matrix computes its columns inside its own display (ADR-210 declined an ordinal x there). Build it as one ordinal x the matrix moves onto too, once someone names the island-widening view as the target.
+description: methylartist plots methylation on a CpG-index x axis so a CpG island widens to the sites it holds. JBrowse has no ordinal x scale, and one would touch every shape, hit test, export and guide.
 ---
 
 # A site-index x axis for per-site tracks

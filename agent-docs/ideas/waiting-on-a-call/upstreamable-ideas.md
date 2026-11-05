@@ -1,6 +1,6 @@
 ---
 name: upstreamable-ideas
-description: The extraction work is aimed at other libraries copying the patterns, not at more people installing JBrowse — so an extraction is only finished when the idea has a name outside its JBrowse spelling. The inventory of what travels, split by whether it needs genomics, and why 45,264 lines of design writing currently reach nobody.
+description: Extraction aims at other libraries copying JBrowse's patterns, so an extraction is finished only when the idea has a name outside its JBrowse spelling; an inventory of what travels, split by whether it needs genomics.
 ---
 
 # Ideas worth upstreaming

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments display's sashimi arcs draw through render-core's `link` mark, two marks per section (`up` over the coverage histogram, `down` in the strip below it): a dome from donor to acceptor whose `y` is the junction's span as a fraction of its band and whose `size` is its stroke from the read count. The feed is in bp, so a pan or zoom rebuilds no feed, where each arc was an SVG `<path>` patched one `d` per frame: a 120-frame pan over 76 junctions went from about 8,700 DOM mutations to 823. Hover, click and the selection outline go through the marks' own hit test, the SVG export through the shared painter, and the count labels stay a DOM layer placed at the apex the mark reports"
+summary: "The alignments display's sashimi arcs draw through render-core's `link` mark (`up` over the coverage, `down` below it) from a bp feed, so hover, click and SVG export go through the marks; count labels stay DOM"
 ---
 
 # ADR-222: Sashimi arcs are link marks

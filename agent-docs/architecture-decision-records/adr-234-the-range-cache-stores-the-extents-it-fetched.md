@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "@gmod/range-cache-filehandle 2.0 stores the exact byte extents it fetched per file, instead of rounding every read onto a 256 KiB grid: reads issued in one microtask turn plan together, a gap under 64 KiB grows to 64 KiB, gaps within 64 KiB share a request, and memory is 256 MiB of bytes in pieces of at most 1 MiB. 32 HPRC gene lanes went from 10.7 MB to 3.4 MB in the same 32 requests, .hic from 18 requests to 8. Range-supporting servers only: a 200 to a range request is an error. Amends ADR-059, whose fifteen-minute sweep and 256 MiB stand"
+summary: "`@gmod/range-cache-filehandle` 2.0 stores the exact byte extents it fetched instead of a 256 KiB grid, coalescing nearby reads into shared requests; range-supporting servers only. Amends ADR-059"
 ---
 
 # ADR-234: The range cache stores the extents it fetched

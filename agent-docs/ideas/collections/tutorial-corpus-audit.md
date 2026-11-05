@@ -1,6 +1,6 @@
 ---
 name: tutorial-corpus-audit
-description: Two passes over website/docs/tutorials/ — three measurements taken 2026-08-31 (nothing starts from scratch, prose per figure, claims that do not survive checking) and the 2026-08-21 structural read (which pages are user guides wearing a tutorial's clothes, and the two that want splitting at a named line). Population genomics ranks last on every measurement. Read before restructuring a tutorial, proposing to dedupe the corpus, or quoting one of its censuses.
+description: Measurements and a structural read of website/docs/tutorials/, naming the pages that are user guides in tutorial form and two that want splitting. Read before restructuring a tutorial or quoting one of its censuses.
 ---
 
 # The tutorial corpus, audited

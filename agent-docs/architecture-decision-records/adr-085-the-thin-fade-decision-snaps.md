@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The thin-fade is a view-wide boolean, so the decision changing moves every sub-pixel ribbon at once; swept over both shipped files no flip repaints 50 ribbons at twice the ink, a strength ramp cannot reach zero on a mean bounded by its own cap, an eased uniform costs a clock against the readiness gate, and a deadband on the block-count bar was built and reverted because all 11,247 of its divergences leave a near-empty view faded"
+summary: "`fadeThinAlignments` stays a view-wide boolean and its transition stays a snap: no measured flip repaints enough ribbons to matter, and a strength ramp, eased uniform or block-count deadband each cost more than they fix"
 ---
 
 # ADR-085: The thin-fade decision snaps, and that is the shipped answer

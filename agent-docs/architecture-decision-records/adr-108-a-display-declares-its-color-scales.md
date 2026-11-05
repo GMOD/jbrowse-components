@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display declares the color scales it paints with — `colorScales`, a list of categorical entries or ramp stops on `LegendMixin` — and the legend derives from that list: `DisplayChrome` places it on screen and the exporting view beside the plot, so a display places no legend and writes no legend component. Every display with a key is on it, and the two synteny views host the same shells off the same members"
+summary: "A display declares its color scales as `colorScales` on `LegendMixin`, categorical entries or ramp stops, and the legend derives from that list; the chrome places it on screen and the exporting view in exports"
 ---
 
 # ADR-108: A display declares its color scales

@@ -1,6 +1,6 @@
 ---
 name: sbx-duplex-yc-detail-decode
-description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. The default quality fade already draws the three classes; what is left is decoding YC in the feature detail panel, so a click shows what each strand read.
+description: Roche SBX duplex reads carry a YC tag recording what each strand read at a discordant base; the feature detail panel does not decode it, so a click cannot tell a mutation from a single-strand artifact.
 ---
 
 # SBX duplex reads: decode `YC` in the feature detail panel

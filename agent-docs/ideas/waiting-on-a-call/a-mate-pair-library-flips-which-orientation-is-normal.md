@@ -1,6 +1,6 @@
 ---
 name: a-mate-pair-library-flips-which-orientation-is-normal
-description: An RF mate-pair library's true pairs point outward, and the alignments display calls LR normal everywhere, so every true pair paints as abnormal RL and the read cloud keeps all of them as SV evidence. Detection belongs per library, as IGV does it; the cost is that LR-is-normal is spelled into the color levels, labels, export and every concordance predicate. A cheaper honest design resolves only the levels and labels against the library. Waits on someone using RF data; GIAB HG002's 6 kb mate-pair BAM is the test case.
+description: An RF mate-pair library's true pairs point outward, but the alignments display calls LR normal everywhere, so every true pair paints as abnormal RL and the read cloud keeps them as SV evidence.
 ---
 
 # A mate-pair library flips which orientation is normal

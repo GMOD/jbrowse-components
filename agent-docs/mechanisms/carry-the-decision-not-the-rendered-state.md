@@ -1,6 +1,6 @@
 ---
 name: carry-the-decision-not-the-rendered-state
-description: A chain where each step derives its input from the previous step's rendered state promotes the medium's padding to signal, once per hop, and it compounds — the three-hop failure that named it, the two preconditions that make a chain vulnerable, why the carried value must be the decision rather than a re-reading of it, and why it needs no filtering against what the medium can hold. Read before deriving one placement from another that a screen, a grid or a rounding has already been applied to.
+description: A chain where each step derives its input from the previous step's rendered state promotes the medium's padding to signal, compounding per hop; read before deriving one placement from another that was already clamped or rounded.
 ---
 
 # Carry the decision, not the state it was rendered into

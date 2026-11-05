@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Level-of-detail decisions key off what is DRAWN, not off the fetch buffer or off which side of the RPC boundary hid something: the isoform badge becomes a width-gated presentation rule (MIN_ISOFORM_BADGE_GENE_PX), `showLabels: 'auto'` gates on the exact on-screen density (labelDensityPerPx) instead of a fetched-span average, and fixed height measures its ladder over the on-screen set and declines a trim that cannot achieve a fit — amends ADR-092"
+summary: "Level-of-detail decisions key off what is on screen, not the fetch buffer: the isoform badge is width-gated (`MIN_ISOFORM_BADGE_GENE_PX`), `showLabels: 'auto'` gates on `labelDensityPerPx`, and fixed height fits the on-screen set. Amends ADR-092"
 ---
 
 # ADR-093: Level of detail keys off what is on screen

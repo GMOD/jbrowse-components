@@ -1,6 +1,6 @@
 ---
 name: a-variant-haplotype-is-a-lane
-description: Drawing what a variant does to a gene by building the haplotype sequence it describes and giving it a multiway lane, rather than annotating a consequence onto reference coordinates. The renderer already cuts a lane gene's exons at a deletion; the one new step is re-deriving the CDS on the alt sequence, which is also what makes a two-hit locus come out right.
+description: A frameshift's codons drawn on reference coordinates sit where they do not exist; building the variant's haplotype sequence as a multiway lane draws the gene on it, needing only a CDS re-derived on the alt sequence.
 ---
 
 # A variant haplotype is a lane

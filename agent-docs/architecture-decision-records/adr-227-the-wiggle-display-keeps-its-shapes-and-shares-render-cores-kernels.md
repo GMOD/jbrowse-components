@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "Moving LinearWiggleDisplay's bars, points, lines and density off its own five shaders and Canvas2D painters onto render-core's bar, point, line and span marks is declined, in full and as a bars-and-points first step. The color reasons it first gave are gone (amended 2026-10-20 and 2026-10-27: a heatmap reads its color scale and a subtrack's color paints both sides of the cut); what stands is that wiggle draws per-source layers whose order nests the min-max bars, where a mark takes one flat channel set a region, and that no plan reached 1.00x of wiggle's painters. The port would delete about 1,500 lines for no user-visible change. The display keeps its shapes and converges on render-core's kernels wherever the two compute the same thing, as ADR-199 has MAF do. It can be reconsidered when a second display needs color from the row and the value, when render-core's painters reach 1.00x of wiggle's, or when wiggle's payload becomes the flat worker table anyway"
+summary: "Rejected moving `LinearWiggleDisplay` onto render-core's bar, point, line and span marks: its per-source layers nest min-max bars a flat mark cannot, and no plan matched its painters' speed; it shares render-core's kernels instead"
 ---
 
 # ADR-227: The wiggle display keeps its shapes and shares render-core's kernels

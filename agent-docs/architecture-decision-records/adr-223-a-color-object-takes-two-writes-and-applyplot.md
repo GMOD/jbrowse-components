@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display whose menus pick a color field or a constant composes display-kit's `ColorWritesMixin`, whose `colorByField(field)` and `setColorValue(value)` rewrite the object as written through `colorForField` and `colorForValue`, and write nothing where the pick already paints. A dialog with an Apply button writes the whole object through `applyPlot({ color })`. The per-display setters go: alignments' `setColorBy`, `setColorByTag` and `setColor`, canvas's `setFeatureColor` and `setColorScale`, MAF's and multi-sample variants' `setColorField`, and the multi-sample and wiggle `setColor`; Hi-C's log toggle is `setLogScale`. Alignments' Color by menu speaks fields, so `colorFieldOptions` replaces `pickColorOptions`"
+summary: "Displays whose menus pick a color field or constant compose display-kit's `ColorWritesMixin` (`colorByField`, `setColorValue`), and an Apply dialog writes `applyPlot({ color })`; per-display setters like `setColorBy` and `setColorScale` are removed"
 ---
 
 # ADR-223: A color object takes two writes, and an Apply button `applyPlot`

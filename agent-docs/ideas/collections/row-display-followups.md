@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — MAF row separators, a metadata filter dialog, a multi-row product call and the row-model loose ends — with what each one costs and what already exists to build it from.
+description: Unbuilt row-display follow-ups (multi-row features, multi-wiggle, MAF, multi-sample variants), among them MAF row separators, a metadata filter dialog and row-model loose ends, each with its cost and the parts that already exist.
 ---
 
 # Row display follow-ups

@@ -1,6 +1,6 @@
 ---
 name: protein-figures-unbuilt
-description: "Protein-browser figures the data supports and nobody has built: genome evidence driving the structure (constraint on an interface, KRAS tumor reads, a long read phasing two variants, a skip removing a folded domain), the painted fold as a supporting layer, and VHL, SOD1, DCLRE1C, PTPN11, PTEN. Read before proposing one."
+description: "Protein-browser figures the data supports and nobody has built: genome evidence driving the structure, the painted fold as support, and VHL, SOD1, DCLRE1C, PTPN11, PTEN. Read before proposing one."
 ---
 
 # Protein figures not yet built

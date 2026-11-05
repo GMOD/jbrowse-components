@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display's grammar settings are one object, its `plot`: the slots from one vocabulary (`PLOT_VOCABULARY`: marks, transform, facet, rows, rowColor, color, baseColor, arcColor, ribbonColor, laneLayers, scales, filter, filterBy) that its config declares, read off the config snapshot with defaults left off and a shorthand folded back. `BaseDisplay` carries `plotKeys`, `plot`, `liftPlot`, `plotProblems`, `plotWrites` and `applyPlot`, which writes each setting whose lifted value moved, whole; the config schema is the only parser and refuses a key outside the plot before anything is written. display-kit's `PlotDialog` is the one text box, under Advanced → \"Edit plot...\" in every display's track menu and behind the color and grouping dialogs' buttons, with the display type's `plotExamples` as buttons and links to its config reference and the guide. `ChannelSpec`, its parser and dialog, and the mark display's `MarkPlot` box go. The runtime `filterSetting` override goes too: the `filter` slot is the one filter, \"Clear all filters\" writes back what the track's config declares, and a v4 `jexlFiltersSetting` is retired state lifted into it"
+summary: "Every display's grammar settings are one `plot` object, edited in display-kit's `PlotDialog` (Advanced, \"Edit plot...\") with the config schema as the only parser; `ChannelSpec`, `MarkPlot` and the runtime `filterSetting` override are removed"
 ---
 
 # ADR-204: Every display edits its grammar settings as one plot

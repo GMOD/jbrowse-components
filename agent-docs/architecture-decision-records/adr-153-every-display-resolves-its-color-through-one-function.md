@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display turns its color object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colors and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a color per source hands out its `range`, then the default palette, to the subtrack groups first and then to the ungrouped subtracks, those its `domain` lists ahead (ADR-159's row dealer). The alignments displays' `insertSizeAndOrientation` is ordinal over its levels like every other level field, and the insert sizes it calls normal are the display's `normalInsertSize` (amended 2026-11-01)"
+summary: "Every display resolves its color object through display-kit's `colorEncodingOf` into a `ColorEncoding`, read by its `colorEncoding` getter, and keeps only its own painting and a default scale per field"
 ---
 
 # ADR-153: Every display resolves its color through one function

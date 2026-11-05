@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "A display declares a mark, a shape plus the channels that feed it, and the GPU pass, the Canvas2D painter and the SVG export derive from that one declaration; shapes live in render-core as one hand-written shader, one painter and one pack each, and the worked example needs no shader of its own"
+summary: "Rejected a mark spec, a shape plus its channels from which the GPU pass, Canvas2D painter and SVG export derive, since it held only a display's wiring; the render half returned as `defineMark` (ADR-106)"
 ---
 
 # ADR-090: A mark is a shape plus its channels

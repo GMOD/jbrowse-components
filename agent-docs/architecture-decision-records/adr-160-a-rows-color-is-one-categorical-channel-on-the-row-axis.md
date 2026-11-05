@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's `rowColor` is one categorical color channel on the row axis, display-kit's `RowColor`: `field | { field, scale, domain, range }` on the quantitative, multi-row feature, multi-sample variant, MAF and mark displays, `field` naming a row attribute and defaulting to `name`, the row itself, and `domain`/`range` pairing that field's values with colors, one keyspace per object. `VariantRowColor` folds into it. One dealer, `dealRowColors`, hands a listed value its `range` color and every other value the next color of one cursor over the spare `range` then the palette, which wraps; no hash. `TreeSidebarMixin` deals once per change to the rows (`rowColorDeal`, `rowColorScale`), by default over the base arrangement so no reorder, focus or relabel recolors a row. In this step each display hands in the order and palette it dealt before, so every pixel stays; each display still paints the palette in its own `sources`. A dialog recolor where `rowColor` paints by an attribute turned every row's color into a `name` pair, until ADR-164 made the dialog edit the attribute's values. A capture can replace the dealt palette through `window.jbrowseRowPalette`"
+summary: "A row display's `rowColor` is display-kit's `RowColor`, one categorical channel on the row axis (`field | { field, scale, domain, range }`); `VariantRowColor` folds into it and one dealer, `dealRowColors`, assigns the colors."
 ---
 
 # ADR-160: A row's color is one categorical channel on the row axis

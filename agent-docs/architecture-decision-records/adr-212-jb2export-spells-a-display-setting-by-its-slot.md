@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "jb2export names a display setting by the slot the display declares (`showLegend=true`, `scales.y.type=log`, `mark=point`, `facet=tags.HP`), and keeps a colon modifier only where it translates: a preset, a multi-slot write, a parsed value or a post-open action. Eighteen modifiers that restated one slot under a house name are gone, as are the per-track-type `tag:` and `attribute:` field spellings. The display validates a slot write and lists its valid names on a typo, where a modifier typo warned and left a wrong figure"
+summary: "jb2export names a display setting by its declared slot (`scales.y.type=log`, `facet=tags.HP`); a colon modifier stays only for presets, multi-slot writes, parsed values or post-open actions, and a misspelt slot fails with the valid names"
 ---
 
 # ADR-212: jb2export spells a display setting by its slot

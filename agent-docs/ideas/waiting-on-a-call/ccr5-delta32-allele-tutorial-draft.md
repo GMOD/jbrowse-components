@@ -1,6 +1,6 @@
 ---
 name: ccr5-delta32-allele-tutorial-draft
-description: Draft of a CCR5 Δ32 tutorial whose reader builds the deletion allele from a 1000 Genomes sample with bcftools consensus and minimap2, then opens it as a synteny track under hg38. The route is verified end to end; what waits is whether the site wants the page and where the allele's gene model comes from.
+description: Draft CCR5 Δ32 tutorial whose reader builds the deletion allele from a 1000 Genomes sample and opens it as a synteny track under hg38, verified end to end; it waits on whether the site wants the page.
 ---
 
 # CCR5 Δ32 allele tutorial (draft, not on the site)

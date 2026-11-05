@@ -1,6 +1,6 @@
 ---
 name: gpu-limits-in-bug-reports
-description: A report from unseen GPU hardware names the adapter and omits every number that would explain the failure — the three limits are already being logged to a console nobody reads, so the change is to carry them on the capability object the stack-trace dialog copies.
+description: A bug report from unseen GPU hardware names the adapter but omits the limits that would explain the failure, which are logged only to a console nobody reads.
 ---
 
 # Put the GPU's limits in the report, not just its name

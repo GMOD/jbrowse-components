@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearGCContentDisplay` is retired onto `LinearWiggleDisplay`, which registers for `GCContentTrack` beside the two quantitative tracks. The window, the step and the mode are the `GCContentAdapter`'s alone, where the display used to write its own over them; the track model's menu carries GC parameters and GC skew and writes the adapter, and the fetch key already holds the adapter config. The adapter declares the domain its values lie in (`getValueDomain`, [0, 1] for content, none for skew), which the wiggle display's unpinned ends stand at. A v4 config's settings on the display or `displayDefaults` land on the adapter, a bare sequence adapter is wrapped, and a reference sequence track's GC display is dropped: GC is a track of its own"
+summary: "`LinearGCContentDisplay` retires onto `LinearWiggleDisplay` drawing a `GCContentTrack`; window, step and mode live on `GCContentAdapter`, which declares its value domain via `getValueDomain`. GC is its own track, no longer a reference sequence display"
 ---
 
 # ADR-176: GC content is a track the wiggle display draws

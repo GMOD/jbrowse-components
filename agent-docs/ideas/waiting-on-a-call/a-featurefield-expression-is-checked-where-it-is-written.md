@@ -1,6 +1,6 @@
 ---
 name: a-featurefield-expression-is-checked-where-it-is-written
-description: Nothing compiles a featureField's `jexl:` expression at load, in `jbrowse validate`, in the JSON schema or in the editor, so a typo shows only when a worker reader compiles it. A syntax-only compile in the snapshot preprocessor would name the slot, but it cannot see a plugin-registered function and the readers already throw once compiled. Parked on 2026-10-07 by the grammar audit's review; waits on a user asking for it.
+description: Nothing compiles a `featureField`'s `jexl:` expression at load, in `jbrowse validate` or in the editor, so a typo surfaces only when a worker reader compiles it. Waits on a user asking for it.
 ---
 
 # A featureField expression is checked where it is written

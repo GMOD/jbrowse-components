@@ -1,6 +1,6 @@
 ---
 name: mcp-2026-07-28-adoption-points
-description: The MCP 2026-07-28 spec (stateless core, no initialize handshake, official Tasks and Apps extensions) mostly targets HTTP fleets and does not motivate migrating the hand-rolled stdio server off 2025-06-18; the versioning spec's legacy clause keeps that additive rather than a migration. Two points are worth acting on when client support arrives — Tasks for the long-job idiom and an MCP App embedding a live view — and one known limitation is recorded here so it is not re-found.
+description: The MCP 2026-07-28 spec targets HTTP fleets, so the desktop stdio server stays on 2025-06-18; Tasks for long jobs and an MCP App embedding a live view are worth adopting once clients support them.
 ---
 
 # MCP 2026-07-28: what to adopt, what to ignore

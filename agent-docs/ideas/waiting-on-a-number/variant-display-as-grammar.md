@@ -1,6 +1,6 @@
 ---
 name: variant-display-as-grammar
-description: "The variant display as two grammar marks over one tidy VCF table (records over genotypes), so it shrinks toward a spec plus the browser-only parts. Colin (2026-10-31): \"i do want to aim at this clean grammar encoding\". Waits on one number: a LinearMarkDisplay spec of the RHD 1000 Genomes SV picture loading and panning at 3,202 samples as fast as the hand-written display."
+description: "The variant display is about 9,100 lines for what grammar draws as two marks over one tidy VCF table; it waits on a LinearMarkDisplay spec of the RHD SV picture matching its speed at 3,202 samples."
 ---
 
 # The variant display as a grammar spec

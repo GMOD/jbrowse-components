@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A value a categorical color's `domain` does not list is dealt a palette slot once, on first sight, and keeps it: its hashed slot unless a value met before holds it or a near twin, else another slot derived from itself, recorded in a caller-owned `HeldSlots` map (`categoricalScale`'s `held`). protein_coding, snRNA and TEC no longer share #e41a1c, a value nothing collides with keeps exactly its hashed color, and a color once shown never changes while the track is open. `heldColorSlots` keeps one map per field, domain and range under the session, shared by every track coloring by that field, so a gene symbol paints one color down every panel and a color edit deals afresh; nothing is persisted. Each reader deals a region's values in `field.compare` order (`dealKeyColors`) before painting. Synteny deals a text column's labels in the order the view first saw them (`CategoricalMode.seen`). Every color \"Pin distinct colors\" item and its model members go; shapes keep theirs. Not ADR-160's row dealer. Amends ADR-131, ADR-136 and ADR-156"
+summary: "A categorical value missing from `domain` is dealt a palette slot once, on first sight, and keeps it, held per field in the session's `heldColorSlots`; the color \"Pin distinct colors\" items are removed. Amended by ADR-233"
 ---
 
 # ADR-205: A categorical color is dealt once, on first sight

@@ -1,6 +1,6 @@
 ---
 name: multi-file-tracks-take-their-rows-from-their-members
-description: Where the multi-row add-track plan grows once one of its accepted loose edges is reported — files spelling chromosomes differently, a row missing while its file has nothing in view, the per-feature copy, one bad file blanking the stack, the CLI and jbrowse-img staying BigWig-only. The full design behind it, reviewed four times; the simple plan landed on 2026-09-30 instead, and this doc lists the edges it left. One multi-file adapter in core replaces MultiWiggleAdapter and exposes its members, each display's worker loops over them the way wiggle's typed-array path already does, rows come from the adapter's listing through shared code, a region carries its chromosome aliases so files may spell chromosomes differently, and one generated combine table serves the add-track form, the track selector, jb.addTrack, `jbrowse add-track` and jbrowse-img. Read before touching MultiWiggleAdapter, the "Add multi-row track" workflow, "Create multi-row track", `--multiwig`, refName renaming, or a row display's source of rows.
+description: Where the multi-row add-track plan grows when a user reports one of its accepted loose edges, such as files spelling chromosomes differently or one bad file blanking the stack. Read before touching `MultiWiggleAdapter`, "Add multi-row track" or `--multiwig`.
 ---
 
 # Multi-file tracks take their rows from their members

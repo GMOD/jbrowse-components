@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A span answers a hover by the row it stands in: its layer asks the worker for no Flatbush, and the display builds rowSpanIndex the first time a hover asks - the layer's spans grouped by row, each row in start order, with the furthest end reached so far - and queries the rows within the hit radius of the cursor, read back through the row table. At 470 MAF species the index builds in about an eighth of the Flatbush's time, once, on the main thread, where the Flatbush was built in the worker on every fetch and again on the main thread whenever a row was hidden; a request of spans takes half to three fifths of what it did"
+summary: "A span layer answers a hover by row instead of a worker-built Flatbush: the display builds `rowSpanIndex` on first hover, spans grouped by row in start order, and queries the rows near the cursor"
 ---
 
 # ADR-192: A span answers a hover by its row

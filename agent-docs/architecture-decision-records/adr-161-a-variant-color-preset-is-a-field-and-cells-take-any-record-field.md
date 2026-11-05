@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant displays' `featureColor` string becomes `color`, a `VariantCellColor` object built like FeatureColor (`none | categorical | threshold`). Consequence impact, SV type and phase set are the fields `impact`, `svType` and `phaseSet`, not jexl strings and marker words; any other field is read off the record through `fieldReader` and painted through `colorFieldOf`, a record with no value keeping the alt hue. `LinearVariantDisplay` writes the same `impact` and `svType` fields on its FeatureColor and resolves them to the jexl colors that compute them in `colorEncoding` and in what `rpcProps` sends. Color by... on the multi-sample displays gains Field..., a dialog over the VCF header's fields with optional cut points. A config naming `featureColor` fails the load naming `color`"
+summary: "The multi-sample variant displays' `featureColor` string becomes `color`, a `VariantCellColor` object like FeatureColor; impact, SV type and phase set are the fields `impact`, `svType` and `phaseSet`, and cells can color by any record field"
 ---
 
 # ADR-161: A variant color preset is a field, and cells take any record field

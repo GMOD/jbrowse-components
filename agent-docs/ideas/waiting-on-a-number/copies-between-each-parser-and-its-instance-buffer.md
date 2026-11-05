@@ -1,6 +1,6 @@
 ---
 name: copies-between-each-parser-and-its-instance-buffer
-description: A census of the copies between each gmod parser's output and the GPU instance buffer - alignments' per-event objects, the feature display's per-primitive objects and BED's second object, wiggle's interleave, VCF's five objects a variant - ranked by data touched. Rule 1 of the grammar refuses each one the drawing gives no reason for; each waits on its own bench against the path it replaces.
+description: Each gmod parser's output is copied before the GPU instance buffer (alignments' per-event objects, BED's second object, VCF's five objects a variant), and grammar rule 1 refuses any copy the drawing gives no reason for.
 ---
 
 # Copies between each parser and its instance buffer

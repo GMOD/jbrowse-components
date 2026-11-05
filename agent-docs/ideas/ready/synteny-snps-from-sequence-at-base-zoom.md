@@ -1,6 +1,6 @@
 ---
 name: synteny-snps-from-sequence-at-base-zoom
-description: Draw mismatches on a synteny ribbon at base zoom the way the alignments track does — fetch both assemblies' sequence for the visible window and compare through the fine CIGAR at render time — instead of storing cs bases in the PIF. The owner's steer; the worker-side plumbing it needs is listed, and the fold never needs it.
+description: Synteny ribbons draw no mismatches at base zoom; the owner's steer is to compare both assemblies' sequence through the fine CIGAR at render time, as the alignments track does, rather than store bases in the PIF.
 ---
 
 # SNPs on the synteny ribbon from sequence, at base zoom

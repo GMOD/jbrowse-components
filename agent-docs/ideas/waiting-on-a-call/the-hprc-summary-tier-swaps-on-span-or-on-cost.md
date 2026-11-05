@@ -1,6 +1,6 @@
 ---
 name: the-hprc-summary-tier-swaps-on-span-or-on-cost
-description: the tier is built and hosted and worth 3.19 GB refused against 150 kB drawn; what is left is an upstream report to `maf2bed` about the overlap collapse, and the decision that stops it being switched on for `hprc_maf.json` — whether the summary tier swaps on span or on cost
+description: The hosted HPRC summary tier is built but stays off for `hprc_maf.json` until a call on whether it swaps on span or on cost; an overlap-collapse report to `maf2bed` is also owed.
 ---
 
 # The HPRC summary tier swaps on span or on cost

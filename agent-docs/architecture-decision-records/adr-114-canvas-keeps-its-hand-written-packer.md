@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Canvas's packRenderArrays stays hand-written: it emits 29 typed arrays across three primitive families and the encoder has a channel for 12 of them, so the port is 17 new arbitrary-type lanes, and the same primitives through flatten plus encodeFeatures measured 3.11x the packer with only five lanes filled. The fan-out itself does land as a transform — `flatten` is the sixth TransformStep kind, one feature per element of an array-valued field, measured beside the others"
+summary: "Canvas's `packRenderArrays` stays hand-written, since most of its typed arrays have no `encodeFeatures` channel and the port measured slower. The fan-out lands as `flatten`, a sixth `TransformStep` kind emitting one feature per array element"
 ---
 
 # ADR-114: Canvas keeps its hand-written packer, and the fan-out lands as `flatten`

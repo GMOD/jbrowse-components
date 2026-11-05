@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "EncodedChannels.color and render-core's ColorChannel.color are Uint32Array | number, the number being the constant packed ABGR every instance paints. encodeFeatures answers the number wherever the color is a CSS color, the default included, and transfers no buffer for it; categorical, threshold, ramp, jexl and reader colors stay lanes. colorAt reads either spelling beside featureIndexAt. The GPU instance record is unchanged: colorBits fills a lane for the pack alone, and Canvas2D's paintColors expands once and keeps it on the payload as it keeps a ramp's bake. A bar over a BigWig now holds 12 bytes a feature, wiggle's own over raw rows, where it held 16, which meets ADR-152's second condition. Over raw rows the table encode sits on ADR-152's 1.10x line at 1.09x wiggle, and level with it at a summary tier"
+summary: "`EncodedChannels.color` and render-core's `ColorChannel.color` are `Uint32Array | number`: `encodeFeatures` sends a constant CSS color as one packed ABGR number with no buffer, while data-driven colors stay lanes"
 ---
 
 # ADR-198: A constant color rides as a scalar

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A per-instance scalar's vertical position is a shared scale and a per-consumer anchor, stated over the six live shader arms that plot one. The scale half already factored — scoreScale.slang has three importers and its JS twin is the oracle two parity suites sweep against — and the anchor half does not: four candidate unifications each trip a measured kill condition, including a Manhattan degenerate domain that moves a pinned cross-backend value by the full canvas height. Describes what the tree does and proposes nothing; the declined composition step is the agent-docs/architecture-decision-records/ entry this links"
+summary: "A per-instance scalar's y position is a shared scale plus a per-consumer anchor: the scale half is factored into `scoreScale.slang`, and the anchor stays per shader because every unification tried tripped a kill condition"
 ---
 
 # ADR-097: The y channel shares its scale and not its anchor

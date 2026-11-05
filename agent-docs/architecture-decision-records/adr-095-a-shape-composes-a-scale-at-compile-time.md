@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Encoding-level composition is adopted: a display's shader composes a shared shape, a per-consumer scale and one ramp mechanism as hand-written Slang imports inlined by slangc at gen:shaders — zero runtime module edges, so ADR-091's eager-bundle constraint cannot reach it. Records the measured gates the wiggle tests cite (a pan that moves the autoscale domain uploads 0 buffer bytes), the point-shape stop, the capsule, and the grammar-of-graphics position as one ladder: refused at the authoring level, refused on measurement at the display level, adopted at compile time below it"
+summary: "A display's shader composes a shared shape, a per-consumer scale and one ramp mechanism as hand-written Slang imports that slangc inlines at `gen:shaders`, adding no runtime module edges."
 ---
 
 # ADR-095: A shape composes a scale at compile time

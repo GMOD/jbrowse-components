@@ -1,6 +1,6 @@
 ---
 name: hartwig-colo829-outputs-feed-three-parked-items
-description: A GRIDSS VCF with `BEID`, a LINX `links.tsv` and a PURPLE copy-number file for COLO829 would give the breakend walk's assembly-id tiebreak its first real test, the LINX route converter its input and the der(3) figure a copy-number lane, on the cell line the cancer_sv tutorial already uses. Hartwig runs COLO829 through GRIDSS, PURPLE and LINX as its benchmark. Whether those outputs are public is unconfirmed; the smoke-test scripts expect local BAMs and the HMF resources page carries reference data alone.
+description: Hartwig's GRIDSS, LINX and PURPLE outputs for COLO829 would feed three parked SV items (the `BEID` tiebreak, the LINX route converter, a der(3) copy-number lane), but whether they are public is unconfirmed.
 ---
 
 # Hartwig COLO829 outputs feed three parked items

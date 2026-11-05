@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The picture per zoom level works at any scale. A `bin` step's `step` may be `auto`, resolved before the RPC to the 1/2/5 rung above four pixels of bp and keyed into the fetch, so a zoom inside a rung refetches nothing and a 1,600x sweep in 64 steps costs 11 refetches. The mark display opts into the byte gate. Its second half, a mark declaring `source: 'density'` that drew the adapter's sidecar past the budget, was removed with the density tier on 2026-10-11 (ADR-102)"
+summary: "A `bin` step's `step: 'auto'` resolves before the RPC to a 1/2/5 rung keyed into the fetch, and the mark display opts into the byte gate; the `source: 'density'` half was removed with ADR-102's density tier"
 ---
 
 # ADR-117: The density tier is a mark layer

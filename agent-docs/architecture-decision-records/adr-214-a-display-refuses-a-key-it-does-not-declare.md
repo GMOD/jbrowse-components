@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Every display's config schema is `closed`, and `DisplayType` refuses to register one that is not: a key a display does not declare fails the track's load naming the key and the slots it takes, where MST dropped it in silence and only `jbrowse validate` saw it. The check runs after the schema's own `preProcessSnapshot` and only on the schema's own snapshot, so a track's `displayDefaults` and a union's other members pass. Tracks and adapters stay open, since their `uri` and `displayDefaults` shorthands expand outside the schema; the validator's wording says which refuses and which drops"
+summary: "Superseded by ADR-217: a display names a key it does not declare and draws without it, rather than failing the track's load."
 ---
 
 # ADR-214: A display refuses a key it does not declare

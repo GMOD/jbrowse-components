@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The `bar` and `point` shapes take the `row` lane the `span` shape already had: an instance stands in the band of its row, `rowHeight` px each, the shared value scale ruling every band on its own, and a rowless caller is row 0 over the whole canvas with no new branch. `facet: 'source'` over `MultiWiggleAdapter` is then the multi-row xyplot as a `marks` config, `MultiQuantitativeTrack` joins the mark display's track types, and the axis chrome rules each band through `bandTops`, the member the multi-wiggle display already fills"
+summary: "The `bar` and `point` shapes take a `row` lane, each row a `rowHeight` band on the shared value scale, so `facet: 'source'` over `MultiWiggleAdapter` draws the multi-row xyplot as a `marks` config with an axis per band"
 ---
 
 # ADR-126: A `row` lane on `bar` and `point`

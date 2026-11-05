@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A shape declares its ink — the box each instance paints — and render-core derives the hit test from it; a display declares WHICH instances are lit, as `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` walked through its mark list, and `DisplayChrome` lights them as positioned divs, so a display places no highlight and recomputes no rect. Six overlays that re-derived the painted rect from their own payloads are deleted, canvas's last among them; the pinned list is the third exported guide, the other three are live-session UI; the highlight stays a div, not render state, on the Canvas2D measurement; what is not a per-instance box keeps its own cue"
+summary: "A shape declares its ink and render-core derives its hit test; a display declares which instances are lit (`hoverInk`, `selectionInk`, `pinnedInk`, `soloInk`) and `DisplayChrome` draws the highlight as positioned divs"
 ---
 
 # ADR-110: A display declares what is highlighted

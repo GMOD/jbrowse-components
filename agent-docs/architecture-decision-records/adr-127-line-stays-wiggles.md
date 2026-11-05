@@ -1,11 +1,14 @@
 ---
 status: Superseded
-summary: "Superseded by ADR-184, which lands the shape in two modules once wiggle's port made it the second consumer. No render-core `line` shape: a step-and-centre `lineMark` generalising `wiggleLine.slang` over the mark uniforms and the row lane packed at parity with wiggle's hand path (0.96x at a million instances) and painted within 1.1x, but wiggle porting onto it would retain 16 more bytes a feature per region on its stroked renderings, since its payload is interleaved positions with a color and a row per source and the shape's channels are per-instance lanes. The shape needs wiggle as its second consumer (ADR-040), so the step line and the centre line stay wiggle's, and the mark display exposes no `shape: 'line'`"
+summary: "Superseded by ADR-184: the `line` shape lands in two modules once wiggle's port made it the second consumer"
 ---
 
 # ADR-127: The line stays wiggle's
 
 ## Status
+
+Superseded by [ADR-184](adr-184-a-line-is-a-mark.md), which lands the `line` shape in two modules once
+wiggle's port made it the second consumer.
 
 Rejected (2026-09-16). The last step of the 2026-09-16 grammar handoff, which
 named its own kill: the port slower than the hand path, or the neighbour lane

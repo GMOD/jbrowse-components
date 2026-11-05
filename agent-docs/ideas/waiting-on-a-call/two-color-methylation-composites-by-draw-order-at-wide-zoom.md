@@ -1,6 +1,6 @@
 ---
 name: two-color-methylation-composites-by-draw-order-at-wide-zoom
-description: Past ~5 bp/px a read's two-color methylation calls share pixel columns, and the column shows them src-over composited in draw order rather than the read's methylation there — 9% of drawn columns mix red and blue at 20 bp/px, 37% at 100. A per-read mean P(mod) bin, like `perBaseBinBp` for quality, would make the column a measurement; P(mod) is a scalar, so the mean is not the "mud color" that declined the per-base histogram. Read before binning modification calls or changing their alpha.
+description: At wide zoom a read's two-color methylation calls share pixel columns and composite in draw order, so a column shows the last call painted rather than the read's methylation. Read before binning modification calls or changing their alpha.
 audience: internal
 ---
 

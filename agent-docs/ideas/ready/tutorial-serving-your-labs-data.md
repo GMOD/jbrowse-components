@@ -1,6 +1,6 @@
 ---
 name: tutorial-serving-your-labs-data
-description: A tutorial that walks static hosting (S3, GitHub Pages, nginx), CORS and range requests, where jbrowse create output goes, and data behind a login, ending at a URL a collaborator can open. Colin's named priority from the 2026-07 audit; today the material is scattered FAQ entries plus deploying.md and authentication.md.
+description: A tutorial walking static hosting, CORS and range requests, where `jbrowse create` output goes and data behind a login, ending at a URL a collaborator can open; today the material is scattered FAQ entries.
 ---
 
 # Tutorial: serving your lab's data

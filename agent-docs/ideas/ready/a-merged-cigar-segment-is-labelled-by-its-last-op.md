@@ -1,6 +1,6 @@
 ---
 name: a-merged-cigar-segment-is-labelled-by-its-last-op
-description: visitCigarRenderedSegments merges sub-pixel ops into one segment and then names that segment after whichever op closed it, so match bases merged ahead of a rendered indel are painted as indel — invisible in transparent-indels mode, over-colored in colored. Bounded by a pixel per indel, except where match runs are consistently sub-pixel and the indels are not, which paints the feature as nothing at all. The fix is a flush that no capacity bound in buildSyntenyGeometry currently allows for.
+description: A merged sub-pixel CIGAR segment is named after the op that closed it in `visitCigarRenderedSegments`, so match bases ahead of a rendered indel paint as indel, unpainted with transparent indels and over-colored otherwise.
 ---
 
 # A merged CIGAR segment is labelled by its last op

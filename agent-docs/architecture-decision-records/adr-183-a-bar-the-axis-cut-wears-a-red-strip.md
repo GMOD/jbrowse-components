@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A bar whose value the y domain excludes is clamped to the axis edge, and now wears 2 px of red across that edge on wiggle's xyplot, the coverage band and render-core's `bar`, on WebGPU, WebGL, Canvas2D and the SVG export. One `clipStrip` shader module holds the color, the thickness and `clipSide`, whose JS twin every painter reads. Wiggle and `bar` draw it as a second quad per instance; the coverage band as a sixth layer off the depth bars' buffer, after the segments stacked inside them. Colin chose the strip over a fade from captures on 2026-09-27"
+summary: "A bar clamped at the y domain's edge wears a 2 px red strip across that edge on wiggle's xyplot, the coverage band and render-core's `bar`, on every backend and the SVG export, held in one `clipStrip` module"
 ---
 
 # ADR-183: A bar the axis cut wears a red strip

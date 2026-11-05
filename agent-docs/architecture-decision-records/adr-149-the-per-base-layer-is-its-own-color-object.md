@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays hold two color objects: `color` fills the reads and `baseColor: \"modifications\" | { field, scale: 'none' }` names the per-base variable drawn over them (`modifications`, `bisulfite`, `baseQuality`, `base`), so a read colored by `tags.HP` carries its methylation marks. The worker takes both and extracts a tag and the modification calls in one fetch. Under the plain fill a modification layer keeps its pale strand tint (`bodyColorScheme`), and mismatches stay grey under one whatever fills the reads. The Color by menu keeps its rows and paths, with the per-base rows a radio group of their own under a sub-header and a None row. Supersedes ADR-148's \"a per-base variable is a field\" and its rejected row on splitting the layers"
+summary: "The alignments displays hold two color objects: `color` fills the reads and `baseColor` names the per-base layer (`modifications`, `bisulfite`, `baseQuality`, `base`), so reads colored by `tags.HP` keep their methylation marks"
 ---
 
 # ADR-149: The per-base layer is its own color object

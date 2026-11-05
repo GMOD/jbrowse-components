@@ -1,6 +1,6 @@
 ---
 name: site-wide-track-type-defaults-from-config
-description: An admin cannot set a default for every track of a type (every FeatureTrack purple, height 150) in config.json; only per-track `displayDefaults` exists. A static `configuration.trackTypeDefaults` keyed by track type, compiled once at startup into track-scoped display variant schemas (ADR-172's mechanism made general), is feasible and avoids everything that sank ADR-111. A `Core-preProcessTrackConfig` plugin seeding `displayDefaults` is the tempting version and is declined. Waits on whether the need is real, mostly tracks the admin cannot edit (hubs, connections, user-added tracks).
+description: An admin cannot set a config.json default for every track of a type, only per-track `displayDefaults`. A static `configuration.trackTypeDefaults` is feasible and waits on whether the need is real.
 ---
 
 # Site-wide track-type defaults from config

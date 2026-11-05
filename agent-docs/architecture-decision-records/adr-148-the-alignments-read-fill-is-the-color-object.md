@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays' `colorBy: { type, tag, modifications }` mode slot is `color`, the display-kit color object `\"steelblue\" | { value, field, scale, domain, palette, ramp }`, with `scale` drawn from `none | categorical | linear | threshold`. A read dimension is a field under the facet's own name (`strand`, `firstOfPairStrand`, `pairOrientation`, `mapq`) beside the color-only presets (`insertSize`, `insertSizeAndOrientation`, `mateRefName`), `tags.XX` reads a SAM tag and any other name a feature attribute, and a per-base variable is ADR-149's `baseColor`. A declared scale evaluates in the per-read bake, so it recolors with no refetch and no relayout, and the GPU path is unchanged. The modification settings are their own `modifications` slot. The scheme name stays the runtime form (amended 2026-10-20: each scheme a field paints takes the field's name, `mapq`, `baseQuality` and `base`). Supersedes ADR-131's \"alignments' `colorBy` selects a scheme and is outside this decision\". ADR-151 spells `palette` and `ramp` as `range` and `scheme`, pins a ramp with `domainMin`/`domainMax`, and drops the `linear` read off a written ramp"
+summary: "The alignments displays' `colorBy` becomes `color`, the display-kit color object: a read dimension is a field (`strand`, `pairOrientation`, `mapq`, `tags.XX`), a declared scale recolors in the per-read bake, and modifications get their own `modifications` slot."
 ---
 
 # ADR-148: The alignments read fill is the color object

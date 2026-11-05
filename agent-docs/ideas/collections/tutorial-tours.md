@@ -1,6 +1,6 @@
 ---
 name: tutorial-tours
-description: Video tours worth filming — tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it; the thirteen untoured pages that should NOT get one; the tours that open on an app with no genome or no track; and the harness gaps behind both. Read before writing a video spec for a tutorial or proposing a tour for an entry-point page.
+description: Tutorial pages whose route a figure cannot carry, ranked by the prose a video tour would delete against the risk of filming it, plus the pages that should not get one. Read before writing a tutorial video spec.
 audience: internal
 ---
 

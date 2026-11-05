@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Decided four times that dockview stays; superseded by ADR-068, which replaced it. Kept for the part that held — every hard bug at the seam was ours — and for the cost estimate that did not, which was ~4x too high and was the thing deciding it"
+summary: "Superseded by ADR-068: an MST-native workspace layout replaced dockview. Kept for its analysis of the seam, where every hard bug was ours, and for its unmeasured cost estimate."
 ---
 
 # ADR-057: dockview stays external; the seam is ours

@@ -1,6 +1,6 @@
 ---
 name: credential-aware-chunk-cache
-description: The chunk cache keys on URL alone, so two tracks on one URL behind different internet accounts share chunks and one of them plans the fetch — bytes fetched under A's token are served to B, and a credential change is invisible for the 15-minute idle window. Where the identity would have to go; keying it in JBrowse needs no package change.
+description: The chunk cache keys on URL alone, so two tracks on one URL behind different internet accounts are served chunks fetched under either token, and a credential change goes unnoticed. Keying it in JBrowse needs no package change.
 ---
 
 # The chunk cache does not know whose credentials fetched a chunk

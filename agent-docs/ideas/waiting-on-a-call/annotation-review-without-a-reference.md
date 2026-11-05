@@ -1,6 +1,6 @@
 ---
 name: annotation-review-without-a-reference
-description: On the reference genome, a gene prediction disagreeing with GENCODE is nearly always the predictor being wrong — 3 real structure conflicts in 559 models on chr22. The review only becomes interesting on sequence the reference does not describe, and there the sort key has to be evidence (MAKER's AED, or per-junction read support) rather than a reference annotation that no longer applies.
+description: Sorting gene predictions by disagreement with a reference annotation finds almost nothing on the reference genome; review matters on sequence the reference does not describe, where the sort key must be evidence such as AED or junction support.
 ---
 
 # Reviewing an annotation with no reference to review it against

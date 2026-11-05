@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-records-carry-per-row-constants
-description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one were the biggest lever (7.8x fewer features on an FST scan) and landed as ADR-129. Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row color texture shrinks every record by 4-8 bytes and turns a recolor into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
+description: Wiggle's GPU instance records carry each row's color per instance, so every record is bigger than it needs to be and a recolor re-encodes every loaded region; a per-row color texture would fix both.
 ---
 
 # Wiggle instance records carry per-row constants

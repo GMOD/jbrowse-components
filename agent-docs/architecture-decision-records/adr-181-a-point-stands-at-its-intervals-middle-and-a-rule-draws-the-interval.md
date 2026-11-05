@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `point` mark stands at the middle of its `x`..`x2` and never widens; the new `rule` mark is the line across that extent at `y`, `size` px thick, Vega-Lite's `rule` with `x`, `x2` and `y`. `pointMark.slang` drew a point as a dash wherever its extent outran the glyph (`pointDrawsBar`), which every shipped point config over a BED undid with `x2: \"start\"`. render-core gains `ruleMark`, drawn through the point shader under a `rule` uniform, a box shape with `ink` and no `hitNearest`; `pointDrawsBar` and its three readers go. The configs that drew windows as dashes (dog10k's 20 kb Fst lane, the windowed Manhattan fixture) write `rule`, and the SV-GWAS demo layers a thin rule under its points"
+summary: "A `point` mark stands at the middle of its `x`..`x2` and never widens; a new `rule` mark, Vega-Lite's `rule`, draws the line across that extent at `y`. `pointDrawsBar` is removed"
 ---
 
 # ADR-181: A point stands at its interval's middle, and a rule draws the interval

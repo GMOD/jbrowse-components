@@ -1,6 +1,6 @@
 ---
 name: arc-band-open-calls
-description: Four parked calls on the read-connection band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar; a fifth, the clipped parked row, was settled by the band's port onto the link and point marks. Three are marks and geometry, one is a menu. Read alongside reference/ARC_BAND.md, the settled half.
+description: Four parked visual calls on the read-connection band and the read cloud, three on marks and geometry and one on a menu, that the settled reference/ARC_BAND.md leaves open.
 ---
 
 # The arc band's open calls

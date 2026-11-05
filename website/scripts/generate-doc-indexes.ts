@@ -87,8 +87,8 @@ const PARKED_GROUPS = [
 
 // A description is the row a reader picks a doc by, and the index is read
 // whole; past this it is an abstract, and the abstract belongs in the doc's
-// first paragraph.
-const MAX_DESCRIPTION_WORDS = 45
+// first paragraph. The ADR index holds its `summary:` to the same cap.
+export const MAX_DESCRIPTION_WORDS = 45
 
 const INDEXES = [
   {
@@ -96,7 +96,6 @@ const INDEXES = [
     marker: 'REFERENCE_INDEX',
     heading: 'Read when',
     groups: KIND_GROUPS,
-    maxDescriptionWords: MAX_DESCRIPTION_WORDS,
   },
   {
     dir: 'ideas',
@@ -166,7 +165,6 @@ function filesUnder(docsDir: string, subfolders: boolean) {
 function collectDocs(
   dir: string,
   slugFilenames = false,
-  maxDescriptionWords?: number,
   subfolders = false,
 ): Doc[] {
   const docsDir = join(repoRoot, 'agent-docs', dir)
@@ -193,12 +191,9 @@ function collectDocs(
       unindexable.push(
         `${file} (\`name: ${name}\` wants the filename ${name}.md)`,
       )
-    } else if (
-      maxDescriptionWords !== undefined &&
-      description.split(' ').length > maxDescriptionWords
-    ) {
+    } else if (description.split(' ').length > MAX_DESCRIPTION_WORDS) {
       unindexable.push(
-        `${file} (description is ${description.split(' ').length} words, over ${maxDescriptionWords}: keep the row to what a reader picks the doc by and move the rest into its first paragraph)`,
+        `${file} (description is ${description.split(' ').length} words, over ${MAX_DESCRIPTION_WORDS}: keep the row to what a reader picks the doc by and move the rest into its first paragraph)`,
       )
     } else {
       docs.push({
@@ -232,21 +227,8 @@ const tableFor = (docs: Doc[], heading: string) =>
 
 export function writeDocIndexes() {
   return INDEXES.flatMap(
-    ({
-      dir,
-      marker,
-      heading,
-      slugFilenames,
-      groups,
-      maxDescriptionWords,
-      subfolders,
-    }) => {
-      const docs = collectDocs(
-        dir,
-        slugFilenames,
-        maxDescriptionWords,
-        subfolders,
-      )
+    ({ dir, marker, heading, slugFilenames, groups, subfolders }) => {
+      const docs = collectDocs(dir, slugFilenames, subfolders)
       const filled = groups?.filter(g => docs.some(g.match))
       const ungrouped = groups
         ? docs.filter(d => !groups.some(g => g.match(d)))

@@ -1,6 +1,6 @@
 ---
 name: the-doc-config-checker-drops-warnings-and-skips-fragments
-description: The docs' config checker keeps only schema errors and reads only whole-config fences, so a guide taught a display removed a month earlier, and a tutorial's session fence wrote settings the app drops, with every docs gate green. Listed by the 2026-10-07 grammar audit, which fixed the docs and left the checker; filed here because nothing about v5.0.0 turns on it.
+description: The docs' config checker keeps only schema errors and reads only whole-config fences, so docs can teach removed displays or session settings the app drops while every docs gate stays green.
 ---
 
 # The doc config checker drops warnings and skips fragments

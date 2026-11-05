@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Superseded by ADR-245, which deleted it before a release. A gene track's `proteinFeatures` becomes `transcriptFeatures`: a list of tracks whose genome-placed rows draw on each transcript they fit, in one shared color with one key. A row fits when each of its merged blocks lies in one of the transcript's CDS pieces (`on: 'cds'`) or exons (`on: 'exon'`), within a codon, and it skips no exon between its first block and its last; an optional `join` narrows the fit to the transcript the row names. UniProt's genome-mapped bigBeds and UCSC's Pfam-in-GENCODE have no transcript column, so a key join alone could not draw them. Amends GRAMMAR_OF_GRAPHICS.md's 'no lookup join' for the canvas display"
+summary: "Superseded by ADR-245: `transcriptFeatures`, which drew genome-placed rows on each transcript whose CDS or exons they fit by shape, was deleted and protein domains draw as their own track"
 ---
 
 # ADR-242: Transcript features fit by shape

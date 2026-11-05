@@ -1,6 +1,6 @@
 ---
 name: synteny-byte-gate
-description: LGVSyntenyDisplay inherits the byte-gate opt-in from LinearAlignmentsDisplay but no comparative adapter implements getRegionByteSize, so the gate is inert and a fine-tier PIF over a whole chromosome downloads unbounded. The estimate is one bytesForRegions call on the indexed PAF adapters; what parks this is the budget decision, which has to come from SYNTENY_LOD's measured wire sizes rather than the base 1 Mb.
+description: "`LGVSyntenyDisplay` inherits the byte gate, but no comparative adapter implements `getRegionByteSize`, so the gate is inert and a fine-tier PIF over a whole chromosome downloads unbounded. Waits on choosing the byte budget."
 ---
 
 # Make LGVSyntenyDisplay's inherited byte gate live

@@ -1,6 +1,6 @@
 ---
 name: write-uniforms-as-loops-above-sixteen-elements
-description: The writeUniforms emitter unrolls every uniform element into its own assignment, so linkMark.iface.generated.ts holds about 1,650 of them. Emitting a loop above about 16 elements saves roughly 11 KB gz on a page with an alignments track and 9 KB with a plugin named, and a microbench shows the loop no slower. Measured 2026-10-08.
+description: The writeUniforms emitter unrolls every uniform element into its own assignment; emitting a loop above about 16 elements would save roughly 11 KB gz on a page with an alignments track, at no speed cost.
 ---
 
 # Write uniforms as loops above sixteen elements

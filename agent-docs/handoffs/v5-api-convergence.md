@@ -1,6 +1,6 @@
 ---
 name: v5-api-convergence
-description: "How the v5 API surface settles: no freeze date and no calendar window, a conformance suite and a settling meter, beta-only config shims deleted while a retired display type a beta session names stays, v4.3.0 configs loading where a mapping exists, and `LinearMarkDisplay` allowed to keep evolving. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
+description: "How the v5 API surface settles without a freeze date: a conformance suite, a settling meter, and which compat shims stay. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
 ---
 
 # v5 API convergence

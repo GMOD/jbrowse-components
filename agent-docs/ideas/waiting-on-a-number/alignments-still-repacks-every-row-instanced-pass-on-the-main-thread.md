@@ -1,6 +1,6 @@
 ---
 name: alignments-still-repacks-every-row-instanced-pass-on-the-main-thread
-description: a genuine relayout still packs every row-instanced pass on the main thread, and Y is the only layout-dependent field in most of those structs — but nobody has profiled the pack/upload/clone split, and each of the three ways to stop shipping the rest through a main-thread packer reaches the HALs or the shaders
+description: An alignments relayout still repacks every row-instanced pass on the main thread, though Y is mostly the only field that changes. Nobody has profiled the cost, and every fix reaches the HALs or shaders.
 ---
 
 # Alignments still repacks every row-instanced pass on the main thread

@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Superseded by ADR-255, one variant display whose records band (ADR-254) draws the records this ADR sent to a second track. The multi-sample variant display draws no variant lane: the `variants` band (`show`, `height`, `labels`), its overlay, hit test, menu entries, SVG export band and `variantTopBands.ts` are deleted, and `rowsHeaderHeight` is the connector zone alone. The records themselves, with nesting, labels and a layout of their own, are a `LinearVariantDisplay` track over the same VCF above the genotype display, as `multisv_rhd` already composes it. The lane was one 40px row (`flattenRows`, ADR-037) taken out of the genotype rows, so a nested SV could not stack under the one holding it. Amends ADR-232, which named and kept the band, and ADR-037, whose `flattenRows` opt-out leaves plugin-features with it"
+summary: "Superseded by ADR-255: one `LinearVariantDisplay` whose records band (ADR-254) draws the records this ADR moved off the deleted `variants` lane onto a second track."
 ---
 
 # ADR-250: The multi-sample variant display draws no variant lane

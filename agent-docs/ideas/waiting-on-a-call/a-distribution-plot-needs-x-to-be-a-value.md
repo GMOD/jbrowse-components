@@ -1,6 +1,6 @@
 ---
 name: a-distribution-plot-needs-x-to-be-a-value
-description: The read cloud already plots insert size on y and the worker already sorts an Int32Array of every insert on screen, yet nothing draws the distribution — because every x in the tree is genomic bp, the encoder's x lane is a Uint32Array and a view's axis is a region list. The affine projection, the value-scale object and the bin/aggregate steps all exist, so the gap is one coordinate host whose x is a value. What it costs, the three distributions waiting on it, and why a dotplot mode and a spreadsheet plot tab are both the wrong place to put it.
+description: Nothing draws a distribution such as insert size, because every x in the tree is genomic bp; the gap is one coordinate host whose x is a value, and three distributions wait on it.
 ---
 
 # A distribution plot needs x to be a value
