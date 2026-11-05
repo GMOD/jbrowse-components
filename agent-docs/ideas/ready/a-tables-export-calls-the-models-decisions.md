@@ -51,7 +51,10 @@ callback's names (`variantDataColorScales`). Still open:
   `hostFeatureBand`.
 - Alignments' read colors and read key run the model's own getters
   (`alignmentsColorViews`); the read palette is still built by hand from the
-  default theme.
+  default theme. `alignmentsReads.parity.test.ts` holds no drift: the read
+  key, its title, its color bars and each read's color agree across strand,
+  tag, MAPQ, insert size, modifications and base quality, a written title
+  and `descending`.
 
 ## Not a defect
 

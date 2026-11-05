@@ -25,8 +25,7 @@ import {
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
-  alleleFloorOf,
-  interbaseIndicatorRuleOf,
+  coverageBandSlotViews,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   fullConfSnapshot,
@@ -51,10 +50,8 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { withPreset } from '@jbrowse/core/util/colorScale'
-import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
+import { types } from '@jbrowse/mobx-state-tree'
 import { connectorPlacement } from '@jbrowse/render-core/marks/connectorPlacement'
 import {
   SCALE_TYPE_LINEAR,
@@ -78,6 +75,7 @@ import {
   yRuleNodes,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
+import { runInAction } from 'mobx'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
@@ -94,8 +92,8 @@ import {
 } from './LinearAlignmentsDisplay/colorUtils.ts'
 import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
-import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
-import { drawnReadConnectionsOf } from './LinearAlignmentsDisplay/constants.ts'
+import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/configSchema.ts'
+import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
 import { applyChainStrandFrames } from './LinearAlignmentsDisplay/groupLayout.ts'
 import {
   buildRawDataByGroup,
@@ -103,7 +101,6 @@ import {
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
-import { pinnedInsertSizeBandOf } from './LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
@@ -121,10 +118,6 @@ import {
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
 import {
-  strokeWidthScale,
-  strokeWidthSettingOf,
-} from './features/arcs/arcLineWidth.ts'
-import {
   arcsToRegionResult,
   regionIndexOf,
 } from './features/arcs/arcRegions.ts'
@@ -132,7 +125,6 @@ import {
   ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from './features/arcs/arcSplitCategory.ts'
-import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
@@ -180,24 +172,10 @@ import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from './shaders/slang/mismatch.consts.generated.ts'
 import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
 import {
-  ALIGNMENTS_FIELD_PRESETS,
-  alignmentsColorEncoding,
-  alignmentsColorSettingOf,
-  alignmentsColorSnapshotOf,
-  baseLayerOf,
-  bodyColorKind,
   isBakedField,
   paintedLevelOf,
-  readColorFieldOf,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
-import {
-  connectionFilterOf,
-  junctionFilterOf,
-  mergeFilter,
-  readPredicatesOf,
-} from './shared/alignmentsFilter.ts'
-import { basesFilterOf } from './shared/basesFilter.ts'
 import {
   colorFieldKindOf,
   paintsModifications,
@@ -233,10 +211,11 @@ import { getOrCreate } from './shared/util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
-import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
+import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
+  GroupedAlignmentsResult,
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
@@ -250,10 +229,6 @@ import type {
 import type { ColorPalette } from './shaders/colors.ts'
 import type { ArcCategory } from './shaders/palettes.ts'
 import type {
-  AlignmentsColorEncoding,
-  AlignmentsColorSetting,
-} from './shared/alignmentsColor.ts'
-import type {
   BaseLayer,
   InterbaseTypeName,
   LayoutOrder,
@@ -263,6 +238,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -454,23 +430,67 @@ function readLevelOf(colorField: string | undefined) {
           levels.get(category) ?? ''
 }
 
-/**
- * `views` with each getter computed once on first read, as the display's
- * computeds are, over a host that never changes.
- */
-function memoizedViews<T extends object>(views: T) {
-  for (const [key, { get }] of Object.entries(
-    Object.getOwnPropertyDescriptors(views),
-  )) {
-    if (get) {
-      let cached: { value: unknown } | undefined
-      Object.defineProperty(views, key, {
-        get: () => (cached ??= { value: get.call(views) }).value,
-      })
-    }
-  }
-  return views
+/** What `alignmentTables` fetched and laid out, which the display derives. */
+interface AlignmentsTablesInputs {
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
+  laidOutByGroupFramed: LaidOutByGroup
+  keyWindows: readonly KeyWindow[]
+  paintedRefNamePosition: RefNamePosition | undefined
 }
+
+/**
+ * The alignments display reduced to what its tables decide from: its config,
+ * the fetched and laid-out reads, and the read color views the display
+ * installs over its config-slot views. No session, view or autoruns. The
+ * tables lay every section out uncollapsed at the configured read height and
+ * always build the key.
+ */
+const AlignmentsTablesHost = types
+  .model('AlignmentsTablesHost', {
+    type: types.literal('LinearAlignmentsDisplay'),
+    configuration: linearAlignmentsDisplayConfigSchema,
+  })
+  .volatile((): AlignmentsTablesInputs => ({
+    rpcDataMap: new Map(),
+    laidOutByGroupFramed: new Map(),
+    keyWindows: [],
+    paintedRefNamePosition: undefined,
+  }))
+  .actions(self => ({
+    setInputs(inputs: AlignmentsTablesInputs) {
+      self.rpcDataMap = inputs.rpcDataMap
+      self.laidOutByGroupFramed = inputs.laidOutByGroupFramed
+      self.keyWindows = inputs.keyWindows
+      self.paintedRefNamePosition = inputs.paintedRefNamePosition
+    },
+  }))
+  .views(coverageBandSlotViews)
+  .views(configSlotViews)
+  .views(self => ({
+    get effectiveFacet() {
+      return facetForUnit(self.facet, self.unit)
+    },
+    get collapseSections() {
+      return false
+    },
+    get featureHeight() {
+      return self.markHeight
+    },
+    get showLegend() {
+      return true
+    },
+    get framesChainStrand() {
+      return framesUnpairedChainStrand(self.bodyColorKind, self.unit)
+    },
+    get detectedModifications() {
+      return detectedModificationsOf(self.rpcDataMap)
+    },
+  }))
+  .views(self => alignmentsColorViews(self))
+
+interface AlignmentsTablesHostModel extends Instance<
+  typeof AlignmentsTablesHost
+> {}
 
 /**
  * The display's color pipeline over its laid-out sections, run as the display
@@ -478,26 +498,13 @@ function memoizedViews<T extends object>(views: T) {
  * paints it, in the bucket and level it classifies into, and the key the
  * display shows beside them.
  */
-function colorReads(
-  views: ReturnType<typeof alignmentsColorViews>,
-  {
-    setting,
-    encoding,
-    field: colorField,
-    title,
-  }: {
-    setting: AlignmentsColorSetting
-    encoding: AlignmentsColorEncoding
-    field: string | undefined
-    title: string | undefined
-  },
-) {
+function colorReads(host: AlignmentsTablesHostModel) {
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
-    declared: writtenReadCategoryColors(setting, encoding),
+    declared: writtenReadCategoryColors(host.colorSetting, host.colorEncoding),
   })
-  const levelOf = readLevelOf(colorField)
+  const levelOf = readLevelOf(host.colorField)
   const sections = new Map(
-    [...views.laidOutByGroupColored].map(([key, map]) => [
+    [...host.laidOutByGroupColored].map(([key, map]) => [
       key,
       new Map(
         [...map].map(([idx, data]) => {
@@ -521,16 +528,19 @@ function colorReads(
       ),
     ]),
   )
-  const legend = views
+  const legend = host
     .legendItems(palette)
     .filter(item => item.color !== undefined)
-  const { ramps, readTitle } = titledReadColorKey(views.colorRamps, title)
+  const { ramps, readTitle } = titledReadColorKey(
+    host.colorRamps,
+    host.colorKeyTitle,
+  )
   return {
     sections,
     palette,
-    declared: views.declaredReadLabels,
-    keyLabels: views.keyReadLabels,
-    readField: colorField,
+    declared: host.declaredReadLabels,
+    keyLabels: host.keyReadLabels,
+    readField: host.colorField,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
@@ -859,17 +869,14 @@ function sectionConnections(
   }
 }
 
-/** The display's `filter` merged over the defaults, as the display applies it. */
-function filterOf(conf: DisplayConf) {
-  return mergeFilter(predicatesOf(conf.filter))
-}
-
 /** The config a table reports: the display's, its filter as it applied. */
 function resolvedConfig(
-  conf: DisplayConf,
-  filter: ReturnType<typeof filterOf>,
+  host: AlignmentsTablesHostModel,
 ): Record<string, unknown> {
-  return { ...fullConfSnapshot(conf), filter }
+  return {
+    ...fullConfSnapshot(host.configuration),
+    filter: host.filterPredicates,
+  }
 }
 
 /**
@@ -884,20 +891,13 @@ function resolvedConfig(
  * one, else the first its span crosses.
  */
 function readConnectionTables(
-  conf: DisplayConf,
-  filter: ReturnType<typeof filterOf>,
+  host: AlignmentsTablesHostModel,
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
   regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
   connectorSlots: ReadonlySet<number>,
 ) {
-  const band = conf.readConnections
-  const connectionFilter = connectionFilterOf(filter)
-  const mode = drawnReadConnectionsOf(
-    readConfObject(band, 'show'),
-    readConfObject(band, ['mark', 'type']),
-  )
-  const cloud = mode === 'rule'
+  const mode = host.drawnReadConnections
   const result =
     mode === 'off'
       ? undefined
@@ -905,16 +905,13 @@ function readConnectionTables(
           new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
           { loaded: regionInfos, displayed: regionInfos },
           {
-            cloud,
-            filter: connectionFilter,
-            showOrdinaryPairs: ordinaryPairsShown(
-              readConfObject(band, ['ordinaryPairs', 'show']),
-              cloud,
-            ),
+            cloud: mode === 'rule',
+            filter: host.connectionFilter,
+            showOrdinaryPairs: host.showOrdinaryPairs,
           },
         )
   const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
-  const stroke = strokeWidthScale(strokeWidthSettingOf(band))
+  const stroke = host.readConnectionsStrokeScale
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
       support,
@@ -1364,67 +1361,44 @@ export async function alignmentTables(
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)
   }
-  const conf: DisplayConf = displayConfigSchemaFactory(pluginManager).create({
-    ...display,
+  const host = AlignmentsTablesHost.create({
     type: 'LinearAlignmentsDisplay',
-    displayId: 'tables',
+    configuration: {
+      ...display,
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'tables',
+    },
   })
-  const color = {
-    node: conf.encoding.color,
-    encoding: alignmentsColorEncoding(
-      alignmentsColorSettingOf(conf.encoding.color),
-    ),
-  }
-  const colorField = readColorFieldOf(color.encoding)
-  const baseLayer = baseLayerOf(
-    conf.pileup.bases,
-    basesFilterOf(conf.pileup.bases.filter),
-  )
-  const { layoutOrder, sortColumn } = sortOf(
-    conf.sort,
-    refName =>
-      regions.find(r => r.originalRefName === refName)?.refName ?? refName,
-    regions[0]!.refName,
-  )
-  const sortTag = fieldTag(sortColumn?.field)
-  const unit: AlignmentsUnit = readConfObject(conf, 'unit')
-  const chain = unit === 'chain'
-  const featureHeight: number = readConfObject(conf, [
-    'pileup',
-    'mark',
-    'height',
-  ])
-  const softClippingAsked: boolean = readConfObject(conf, [
-    'pileup',
-    'softClips',
-    'show',
-  ])
-  const showSoftClips = !chain && softClippingAsked
-  const facetNode = conf.facet
-  const askedFacet = facetSettingOf({
-    field: readConfObject(facetNode, 'field'),
-    sort: readConfObject(facetNode, 'sort'),
+  const { args, sortColumn } = runInAction(() => {
+    const sorted = sortOf(
+      host.configuration.sort,
+      refName =>
+        regions.find(r => r.originalRefName === refName)?.refName ?? refName,
+      regions[0]!.refName,
+    )
+    const chain = host.unit === 'chain'
+    return {
+      sortColumn: sorted.sortColumn,
+      args: {
+        sessionId: 'tables',
+        adapterConfig,
+        sequenceAdapter,
+        regions: fetchRegions,
+        filter: host.readPredicates,
+        colorField: host.colorField,
+        baseLayer: host.baseLayer,
+        sortTag: chain ? undefined : fieldTag(sorted.sortColumn?.field),
+        facet: workerFacet(
+          host.effectiveFacet,
+          host.unit,
+          host.pinnedInsertSizeBand,
+        ),
+        showSoftClips: !chain && host.showSoftClips,
+        interbaseIndicators: host.interbaseIndicatorRule,
+        statusCallback: () => {},
+      } satisfies RpcExecuteArgs<'RenderAlignmentData'>,
+    }
   })
-  // as the display's `effectiveFacet`: a per-read field under chain groups
-  // nothing
-  const facetSetting = facetForUnit(askedFacet, unit)
-  const filter = filterOf(conf)
-  const args: RpcExecuteArgs<'RenderAlignmentData'> = {
-    sessionId: 'tables',
-    adapterConfig,
-    sequenceAdapter,
-    regions: fetchRegions,
-    filter: readPredicatesOf(filter),
-    colorField,
-    baseLayer,
-    sortTag: chain ? undefined : sortTag,
-    facet: workerFacet(facetSetting, unit),
-    showSoftClips,
-    interbaseIndicators: interbaseIndicatorRuleOf(
-      conf.coverage.interbase.filter,
-    ),
-    statusCallback: () => {},
-  }
   // the worker reads one region a call
   const run = (facet: typeof args.facet) =>
     Promise.all(
@@ -1445,9 +1419,49 @@ export async function alignmentTables(
   const fetched = new Map(
     (noReads ? await run(undefined) : faceted).map((f, i) => [i, f]),
   )
+  const paintedRefNamePosition =
+    args.colorField === 'mateRefName'
+      ? (refNamePosition ??
+        positionIn(refNames ?? (await dataAdapter.getRefNames())))
+      : undefined
+  return runInAction(() =>
+    laidOutTables(host, {
+      regions,
+      fetched,
+      noReads,
+      sortColumn,
+      paintedRefNamePosition,
+    }),
+  )
+}
+
+/**
+ * The tables over what `alignmentTables` fetched, laid out and colored as
+ * the display lays them out and colors them, every read of `host` in the
+ * one batch its computeds are cached for.
+ */
+function laidOutTables(
+  host: AlignmentsTablesHostModel,
+  {
+    regions,
+    fetched,
+    noReads,
+    sortColumn,
+    paintedRefNamePosition,
+  }: {
+    regions: TablesRegion[]
+    fetched: ReadonlyMap<number, GroupedAlignmentsResult>
+    noReads: boolean
+    sortColumn: SortColumn | undefined
+    paintedRefNamePosition: RefNamePosition | undefined
+  },
+) {
+  const conf = host.configuration
+  const { unit, featureHeight, effectiveFacet: facetSetting } = host
+  const chain = unit === 'chain'
   const hidden = noReads
     ? undefined
-    : new Set<string>(readConfObject(facetNode, 'hidden'))
+    : new Set<string>(readConfObject(conf.facet, 'hidden'))
   const order = orderedGroups(
     fetched,
     hidden,
@@ -1461,7 +1475,7 @@ export async function alignmentTables(
   const rawByGroup = buildRawDataByGroup(
     fetched,
     hidden,
-    pinnedInsertSizeBandOf(conf.normalInsertSize),
+    host.pinnedInsertSizeBand,
   )
   const sectionData = new Map(
     order.map(({ key }) => [key, rawByGroup.get(key)!]),
@@ -1477,10 +1491,6 @@ export async function alignmentTables(
   const chained = chain ? attachChainFields(sectionData) : undefined
   const dataFor = (key: string, idx: number) =>
     chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
-  const framesChainStrand = framesUnpairedChainStrand(
-    bodyColorKind(colorField, baseLayer),
-    unit,
-  )
   const laidByGroup = chain
     ? applyChainStrandFrames(
         new Map(
@@ -1493,7 +1503,7 @@ export async function alignmentTables(
           ]),
         ),
         unit,
-        framesChainStrand,
+        host.framesChainStrand,
       )
     : new Map(
         order.map(({ key }) => [
@@ -1501,72 +1511,44 @@ export async function alignmentTables(
           buildLaidOutPileupMap({
             dataMap: sectionData.get(key)!,
             sortColumn,
-            layoutOrder,
-            showSoftClips,
+            layoutOrder: host.layoutOrder,
+            showSoftClips: host.showSoftClips,
             regions: regionBounds,
           }),
         ]),
       )
   const drawsOverlaps = shouldDrawOverlaps({
     unit,
-    collapseSections: false,
+    collapseSections: host.collapseSections,
     featureHeight,
   })
-  const setting = alignmentsColorSnapshotOf(color.node)
-  const presetLegend = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend
-  const colors = colorReads(
-    memoizedViews(
-      alignmentsColorViews({
-        colorEncoding: color.encoding,
-        colorField,
-        colorLabels: setting.scale.names ?? [],
-        colorKeyDescending: presetLegend.descending,
-        bodyColorKind: bodyColorKind(colorField, baseLayer),
-        baseLayer,
-        unit,
-        effectiveFacet: facetSetting,
-        collapseSections: false,
-        featureHeight,
-        showLegend: true,
-        framesChainStrand,
-        laidOutByGroupFramed: laidByGroup,
-        keyWindows: windows,
-        paintedRefNamePosition:
-          colorField === 'mateRefName'
-            ? (refNamePosition ??
-                positionIn(refNames ?? (await dataAdapter.getRefNames())))
-            : undefined,
-        detectedModifications: detectedModificationsOf(fetched),
-      }),
-    ),
-    {
-      setting,
-      encoding: color.encoding,
-      field: colorField,
-      title: presetLegend.title,
-    },
-  )
-  const paint = markColors(colors.palette, baseLayer)
+  host.setInputs({
+    rpcDataMap: fetched,
+    laidOutByGroupFramed: laidByGroup,
+    keyWindows: windows,
+    paintedRefNamePosition,
+  })
+  const colors = colorReads(host)
+  const paint = markColors(colors.palette, host.baseLayer)
   const thresholds: MarkThresholds = {
-    minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
-    junctions: junctionFilterOf(filter),
+    minAlleleFraction: host.coverageMinAlleleFraction,
+    junctions: host.junctionFilter,
   }
-  const connectionFilter = connectionFilterOf(filter)
   const readPitch = featureHeight + featureSpacingForHeight(featureHeight)
   let belowFloor: ReadonlySet<string> | undefined
   const connectorsBySection =
-    chain || readConfObject(conf.pileup, ['connectors', 'show'])
+    chain || host.showConnectors
       ? sectionConnectors(
           laidByGroup,
           regionInfos,
           connectorFilterOf(
-            connectionFilter,
+            host.connectionFilter,
             i => regionInfos[i]?.refName,
             () => {
               belowFloor ??= collectArcs(
                 new Map([...sectionData].map(([k, m]) => [k, new Map(m)])),
                 regionInfos,
-                { filter: connectionFilter },
+                { filter: host.connectionFilter },
               ).belowFloor
               return belowFloor
             },
@@ -1576,8 +1558,7 @@ export async function alignmentTables(
         )
       : undefined
   const connections = readConnectionTables(
-    conf,
-    filter,
+    host,
     sectionData,
     regionInfos,
     colors,
@@ -1719,15 +1700,15 @@ export async function alignmentTables(
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
-    config: resolvedConfig(conf, filter),
+    config: resolvedConfig(host),
     warnings: [
-      ...facetUnitNotices(askedFacet, unit),
+      ...facetUnitNotices(host.facet, unit),
       ...layoutWarnings({
         sortField: readConfObject(conf.sort, 'field'),
         sortColumn,
-        layoutOrder,
+        layoutOrder: host.layoutOrder,
         chain,
-        softClippingAsked,
+        softClippingAsked: host.showSoftClips,
         collapseAsked:
           !chain &&
           facetSetting !== undefined &&

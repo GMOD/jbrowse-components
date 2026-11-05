@@ -140,10 +140,15 @@ key over it (`baseQualitySpan`, the `*InWindows` presence scans,
 `declaredReadLabels`, `keyReadLabels`, `overlapLegendRows`, `keySectionOrder`,
 `colorRamps`, `legendItems`), over a host of the display's resolved settings
 and its framed layout (`laidOutByGroupFramed`). The model installs it between
-its layout block and `laidOutByGroup`; `tables.ts` runs it over a plain host,
-memoizing each getter once (`memoizedViews`) since a plain getter recomputes
-on every read and the scans would re-bake every read. Running it found no
-drift; the tables' hand copy was equivalent. The scans that read no baked
+its layout block and `laidOutByGroup`. `tables.ts` runs it on a static MST
+host (`AlignmentsTablesHost`): the display's config schema as a child, the
+fetched and laid-out reads as volatiles, `coverageBandSlotViews` and
+`configSlotViews` for every setting the export reads, then the same color
+views. The export reads the host in two `runInAction` batches, the fetch args
+before the fetch and everything after it, since MobX caches an unobserved
+computed only inside a batch: unbatched, a review counted
+`laidOutByGroupColored` twice and `bakedColorExtent` three times per call. Running it found no drift; the
+tables' hand copy was equivalent. The scans that read no baked
 color now read the framed layout rather than `laidOutByGroup`, so a recolor or
 a connector toggle no longer re-runs them.
 

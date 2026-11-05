@@ -101,46 +101,47 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
+export const linearAlignmentsDisplayConfigSchema = ConfigurationSchema(
+  'LinearAlignmentsDisplay',
+  {
+    /**
+     * #slot pileup
+     * The stacked reads, with the per-base layer drawn over them,
+     * whatever fills them: `bases: { show: true, encoding: { color:
+     * "modifications" } }`, `"bisulfite"`, `"baseQuality"` or `"base"`.
+     */
+    pileup: readsPileupConfigSchema,
+    /**
+     * #slot sashimi
+     * The splice-junction arcs, drawn in the coverage band: `show`,
+     * `height`, `placement` and `labels`; the `junction` filter fields
+     * filter the junctions drawn.
+     */
+    sashimi: sashimiConfigSchema,
+    /**
+     * #slot normalInsertSize
+     * The insert sizes a proper pair counts as `normal`, from `min` to
+     * `max` bp: shorter is `short`, longer `long`, under
+     * `insertSizeAndOrientation`, on the reads, the connections and the
+     * hover alike. Unset, each region's band is sampled from its pairs.
+     */
+    normalInsertSize: normalInsertSizeConfigSchema,
+  },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
+    explicitlyTyped: true,
+  },
+)
+
 export default function configSchemaFactory(_pluginManager: PluginManager) {
-  return ConfigurationSchema(
-    'LinearAlignmentsDisplay',
-    {
-      /**
-       * #slot pileup
-       * The stacked reads, with the per-base layer drawn over them,
-       * whatever fills them: `bases: { show: true, encoding: { color:
-       * "modifications" } }`, `"bisulfite"`, `"baseQuality"` or `"base"`.
-       */
-      pileup: readsPileupConfigSchema,
-      /**
-       * #slot sashimi
-       * The splice-junction arcs, drawn in the coverage band: `show`,
-       * `height`, `placement` and `labels`; the `junction` filter fields
-       * filter the junctions drawn.
-       */
-      sashimi: sashimiConfigSchema,
-      /**
-       * #slot normalInsertSize
-       * The insert sizes a proper pair counts as `normal`, from `min` to
-       * `max` bp: shorter is `short`, longer `long`, under
-       * `insertSizeAndOrientation`, on the reads, the connections and the
-       * hover alike. Unset, each region's band is sampled from its pairs.
-       */
-      normalInsertSize: normalInsertSizeConfigSchema,
-    },
-    {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
-      explicitlyTyped: true,
-    },
-  )
+  return linearAlignmentsDisplayConfigSchema
 }
 
-export type LinearAlignmentsDisplayConfigSchema = ReturnType<
-  typeof configSchemaFactory
->
+export type LinearAlignmentsDisplayConfigSchema =
+  typeof linearAlignmentsDisplayConfigSchema
 
 export type LinearAlignmentsDisplayConfigModel =
   Instance<LinearAlignmentsDisplayConfigSchema>
