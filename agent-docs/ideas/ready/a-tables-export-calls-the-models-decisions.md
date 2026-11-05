@@ -25,6 +25,14 @@ hold none either: their key asks the view's `hasColorKey`, so the default
 color keys nothing as on screen, and a `trackName` argument gives a key by
 `track` the chip the view labels with the track's name.
 
+The multi-way suite (`multiway.parity.test.ts`, stood up by `standUpMultiway`
+with every lane's genome in the session) holds one: given no `assemblies`, a
+mate lane's `segments` run to the view's edge where the view stops them at the
+contig's end; given the lanes' genomes they stop there too, through the
+display's own `laneStackOn` callbacks. Its labels (`rows.labels`) and a kept
+lane the window aligns nothing to run the display's `laneLabelOf` and
+`unalignedChosenLanesOf`.
+
 ## Equivalent today, by hand
 
 - Wiggle's range, domain, color and mark sources run the model's own
@@ -65,6 +73,13 @@ color keys nothing as on screen, and a `trackName` argument gives a key by
   (pinned in `packages/tables/src/features.test.ts`).
 
 ## Not a defect
+
+A lane pair the file lacks fails the multi-way export, where the view marks
+that one gutter failed with a Retry beside it (749f6c8de6): an export has no
+gutter-level error state, and a table of failed gutters ggjbrowse does not read
+would drop the gutter silently. Positions compare within 1 px, since the view
+places the anchor at whole pixels, and a lane's line is compared within the
+view, since the view draws it a screen either side for panning.
 
 The synteny tables decide the `auto` thin-ribbon fade from one level with no
 latch, where the view latches (`SyntenyFadeMixin.ts`) and takes the narrowest
