@@ -363,6 +363,60 @@ export function checkOrWrite({
   checkOrWriteAll([generated], staleHint)
 }
 
+// A per-doc count list held as a ratchet: `listFile` is `header` then one
+// "<doc> <count>" line per doc with any hits. Under `--check` a doc whose count
+// rose past its committed line fails, naming `describe(hits)` and `advice`;
+// the caller writes `content` with checkOrWrite.
+export function ratchetDocCounts<T>({
+  hits,
+  header,
+  listFile,
+  regression,
+  advice,
+  describe = () => '',
+}: {
+  hits: Map<string, T[]>
+  header: string
+  listFile: string
+  regression: string
+  advice: string
+  describe?: (hits: T[]) => string
+}) {
+  const entries = [...hits]
+    .filter(([, docHits]) => docHits.length > 0)
+    .map(([doc, docHits]): [string, number] => [doc, docHits.length])
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
+  const content = `${header}${entries.map(([doc, n]) => `${doc} ${n}`).join('\n')}\n`
+  if (check) {
+    const committed = new Map(
+      readFileSync(listFile, 'utf8')
+        .split('\n')
+        .filter(line => line && !line.startsWith('#'))
+        .map((line): [string, number] => {
+          const [doc = '', n] = line.split(' ')
+          return [doc, Number(n)]
+        }),
+    )
+    const grew = entries.filter(([doc, n]) => n > (committed.get(doc) ?? 0))
+    if (grew.length > 0) {
+      console.error(
+        `${grew.length} ${regression}:\n${grew
+          .map(
+            ([doc, n]) =>
+              `  ${doc}: ${committed.get(doc) ?? 0} → ${n}${describe(hits.get(doc) ?? [])}`,
+          )
+          .join('\n')}\n\n${advice}`,
+      )
+      process.exit(1)
+    }
+  }
+  return {
+    content,
+    docs: entries.length,
+    total: entries.reduce((sum, [, n]) => sum + n, 0),
+  }
+}
+
 // The base path a built `dist/` actually emitted its links under, read back off
 // the home page as the most common first segment of its root-absolute hrefs.
 function emittedBase(distDir: string): string | undefined {

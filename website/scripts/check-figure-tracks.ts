@@ -7,7 +7,12 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { check, checkOrWriteAll, docFiles, isFile } from './check-utils.ts'
+import {
+  checkOrWriteAll,
+  docFiles,
+  isFile,
+  ratchetDocCounts,
+} from './check-utils.ts'
 import {
   figureTracks,
   prerequisiteTutorials,
@@ -81,21 +86,18 @@ async function fetchNames() {
 
 const names = network ? await fetchNames() : recorded
 
-const detail = new Map<string, UnnamedTrack[]>()
+const hits = new Map<string, UnnamedTrack[]>()
 for (const [doc, text] of texts) {
   const context = prerequisiteTutorials(text).flatMap(slug => {
     const prereq = texts.get(`tutorials/${slug}.md`)
     return prereq ? [prereq] : []
   })
-  const hits = unnamedFigureTracks(text, names, context)
-  if (hits.length > 0) {
-    detail.set(doc, hits)
-  }
+  hits.set(doc, unnamedFigureTracks(text, names, context))
 }
 
 if (list) {
-  for (const [doc, hits] of detail) {
-    for (const h of hits) {
+  for (const [doc, docHits] of hits) {
+    for (const h of docHits) {
       console.log(
         `${doc}:${h.line}: ${h.figure} opens ${h.trackId}${h.name ? ` ("${h.name}")` : ''}`,
       )
@@ -104,47 +106,23 @@ if (list) {
   process.exit(0)
 }
 
-const entries = [...detail]
-  .map(([doc, hits]) => [doc, hits.length] as const)
-  .sort(([a], [b]) => a.localeCompare(b, 'en'))
-const content = `${HEADER}${entries.map(([doc, n]) => `${doc} ${n}`).join('\n')}\n`
+const { content, docs, total } = ratchetDocCounts({
+  hits,
+  header: HEADER,
+  listFile,
+  regression: 'tutorial(s) gained a figure track the page never names',
+  describe: docHits =>
+    ` (${docHits.map(h => `${h.line} ${h.trackId}`).join(', ')})`,
+  advice:
+    'Give the track a fence on the page, or name the menu label that adds it.',
+})
 
-if (check) {
-  const committed = new Map(
-    readFileSync(listFile, 'utf8')
-      .split('\n')
-      .filter(l => l && !l.startsWith('#'))
-      .map(l => {
-        const [doc, n] = l.split(' ')
-        return [doc!, Number(n)] as const
-      }),
-  )
-  const grew = entries.filter(([doc, n]) => n > (committed.get(doc) ?? 0))
-  if (grew.length > 0) {
-    console.error(
-      `${grew.length} tutorial(s) gained a figure track the page never names:\n${grew
-        .map(
-          ([doc, n]) =>
-            `  ${doc}: ${committed.get(doc) ?? 0} → ${n} (${detail
-              .get(doc)!
-              .map(h => `${h.line} ${h.trackId}`)
-              .join(', ')})`,
-        )
-        .join(
-          '\n',
-        )}\n\nGive the track a fence on the page, or name the menu label that adds it.`,
-    )
-    process.exit(1)
-  }
-}
-
-const total = entries.reduce((s, [, n]) => s + n, 0)
 checkOrWriteAll(
   [
     {
       path: listFile,
       content,
-      label: `figure-tracks.txt (${total} across ${entries.length} tutorials)`,
+      label: `figure-tracks.txt (${total} across ${docs} tutorials)`,
     },
     {
       path: namesFile,
