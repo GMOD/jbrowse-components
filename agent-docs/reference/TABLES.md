@@ -236,6 +236,27 @@ A setting the table cannot serve is refused with an error:
 - With no assembly, coloring by the mate's contig takes each contig's name hash,
   where the browser takes the assembly's own contig order.
 
+**One region is a locus, framed as the browser frames one.** The browser shows a
+locus as a window into its whole contig and fetches half a window either side of
+it (`bufferedVisibleRegionsOf`), which decides a feature's or read's row and a
+variant display's rows and key. The engine frames a one-region read the same way
+(`displayedRegionsOf`: the contig's length from the call's assembly, else its
+sequence adapter, else a locus's width past it), and each linear table fetches
+and lays out over the window and its margin (`windowFetchRegions`), then lists
+what touches the window:
+
+- `features`: the features touching it (`onScreenFeatureIds`), each with every
+  mark of its glyph; `truncated` counts only those.
+- `wiggle`: the bins and marks touching it.
+- `variants`: the records in it, with their cells.
+- `alignments`: the reads touching it, with their marks; a connector reaching
+  into it from a read in the margin keeps its row and ends and names a `key` no
+  listed read holds. Connectors and the dip reserve are placed in the contig.
+- `byteLimit` applies to what is fetched.
+
+Several regions are the view's displayed regions themselves, as the browser
+shows several loci, so each fetches itself.
+
 **Several regions read as one view.** `alignmentTables` and `variantTables` take
 `regions`, as the feature and wiggle tables do, and read `region` as
 `regions: [region]`:
@@ -481,6 +502,10 @@ BigWig zoom level that answers. It runs the display's worker
   min-max band as rows with `band` set, at the `opacity` the display paints it.
   `low` is where a mark reaches down to: the band's min, or the `origin` bars grow
   from.
+- `clipSide` flags a bar its domain clips: 1 past the top, -1 past the bottom
+  (`clipSide` from render-core's `clipStrip`, so never under a log scale), 0
+  otherwise and on every mark that is not a bar. The display paints `clipStrip`
+  (`color`, `px` tall) across the row's edge there.
 - Each mark's `color` is the display's. A bar takes its value's color; a line takes
   the color of the band between the cuts its score is in (`thresholdBandOf`); a
   min-max band comes back in pieces split at the cuts, each in its band's color, as
@@ -574,15 +599,24 @@ call, so one value can take two colors across two calls.
 
 **The comparative tables place a block differently on each view.**
 
+- An axis read through its `assembly` with one region is a window into its contig
+  (`comparativeFrame`), fetched with the view's snapped pan buffer
+  (`syntenyFetchRegions`); without an assembly, or with several regions, the
+  regions are the frame.
 - `synteny`'s `alignments` give each block's own coordinates as the file states
-  them, and `ribbons` the part each row shows, with its feet in px as the band draws
-  them (`queryX1`, `queryX2`, `targetX1`, `targetX2`): across the row's `width`, its
-  regions end to end with no gap, each foot clamped to its region.
-- `dotplot`'s `alignments` give the part of each block the two axes show: the worker
-  trims a block crossing a region's edge before it reaches the tables, so
-  `xStart`/`xEnd` and `yStart`/`yEnd` stop at the region, while `length` stays the
-  block's whole query span. A block reaching past the view therefore starts at
-  different coordinates in the two tables.
+  them, for the blocks a listed ribbon draws, and `ribbons` each ribbon crossing
+  the window, with its feet on the frame and in px as the band draws them
+  (`queryX1`, `queryX2`, `targetX1`, `targetX2`) from the window's left edge: below
+  0 or past `width` where the ribbon leaves the window, for the host to clip as
+  the band's canvas does, each foot clamped to its frame region.
+- `dotplot`'s `alignments` give the part of each block the frame shows, for the
+  blocks a listed segment draws: the worker trims a block crossing a frame
+  region's edge before it reaches the tables, so `xStart`/`xEnd` and
+  `yStart`/`yEnd` stop there, while `length` stays the block's whole query span.
+  `segments` are those crossing both axes' windows.
+- The view's off-screen strip also marks a ribbon whose mate scrolled out of the
+  facing row (`culledRibbonMates`); the tables list only mates on a contig the
+  facing row does not show.
 - `multiway` lays the stack out as the display does over `display.height` (240 px
   unless set) and returns where it put things, in px down from the stack's top:
   `height`, each lane's `yTop` and `yBottom`, and each ribbon's `yTop` and `yBottom`.
