@@ -9,8 +9,8 @@ import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { paintedColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
 import {
@@ -29,6 +29,14 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import { runInAction } from 'mobx'
 
+import {
+  cellHueInputViews,
+  cellHueValuesReadViews,
+  cellHueViews,
+  cellKeyViews,
+  regionCellColorViews,
+  variantDataKeyViews,
+} from './LinearVariantDisplay/cellColorViews.ts'
 import configSchemaFactory from './LinearVariantDisplay/configSchema.ts'
 import {
   densityRung,
@@ -38,16 +46,11 @@ import {
   NO_KEYED_VARIANTS,
   keyedVariantsFetched,
 } from './LinearVariantDisplay/keyedVariants.ts'
-import {
-  colorKeysOf,
-  paintCellColors,
-  paintFeatureColors,
-} from './LinearVariantDisplay/paintCells.ts'
+import { paintFeatureColors } from './LinearVariantDisplay/paintCells.ts'
 import {
   recordsColorScaleViews,
   recordsKeyViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
-import { variantDataColorScales } from './LinearVariantDisplay/variantLegend.ts'
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
@@ -66,40 +69,40 @@ import {
 } from './VariantRPC/genotypeMatrixEncoding.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
-import { cellHueOf } from './shared/cellHue.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 import { entryAliasOf, resolveSampleName } from './shared/getSources.ts'
 import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 
 import type { KeyedVariants } from './LinearVariantDisplay/keyedVariants.ts'
+import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
  * The variant display reduced to what its tables read: the display's config,
- * the samples the adapter lists, and the ploidies and keyed variants the
+ * the samples the adapter lists, and the payload and keyed variants the
  * fetch reports, under the row views the display installs, its row hooks,
- * whether it draws its genotype rows and what its records band keys. No
+ * its cell coloring, whether it draws its genotype rows and what it keys. No
  * session, no view.
  */
 const VariantTablesHost = types
   .compose(
     'VariantTablesHost',
     TrackHeightMixin(),
+    ParkedColorMixin(),
     types.model({ configuration: configSchemaFactory() }),
   )
   .volatile(
     (): {
       adapterSamples: Source[] | undefined
-      samplePloidy: Readonly<Record<string, number>> | undefined
+      cellData: CellDataResult | undefined
       keyedVariants: KeyedVariants
     } => ({
       adapterSamples: undefined,
-      samplePloidy: undefined,
+      cellData: undefined,
       keyedVariants: NO_KEYED_VARIANTS,
     }),
   )
@@ -107,17 +110,29 @@ const VariantTablesHost = types
     setAdapterSamples(samples: Source[]) {
       self.adapterSamples = samples
     },
-    setFetched(
-      ploidy: Readonly<Record<string, number>>,
-      keyedVariants: KeyedVariants,
-    ) {
-      self.samplePloidy = ploidy
+    setFetched(cellData: CellDataResult, keyedVariants: KeyedVariants) {
+      self.cellData = cellData
       self.keyedVariants = keyedVariants
+    },
+  }))
+  .views(self => ({
+    get samplePloidy(): Readonly<Record<string, number>> | undefined {
+      return self.cellData?.samplePloidy
+    },
+    /**
+     * No fade: the tables give each record's alpha apart
+     * (`variantDensityAlpha`), for a host drawing at its own scale.
+     */
+    get regionRecordAlpha(): ReadonlyMap<number, Float32Array | undefined> {
+      return new Map()
     },
   }))
   .views(self => variantRowConfigViews(self))
   .views(self => variantGenotypesShowViews(self))
   .views(self => variantColorSettingViews(self))
+  .views(self => cellHueInputViews(self))
+  .views(self => cellHueValuesReadViews(self))
+  .views(self => cellHueViews(self))
   .views(self => variantGenotypeRowViews(self))
   .views(self => treeSidebarRowsConfigViews(self))
   .views(() => treeSidebarRowHookDefaults<ProcessedSource>())
@@ -134,7 +149,10 @@ const VariantTablesHost = types
   .views(self => sourceViews<ProcessedSource>(self))
   .views(self => variantRowHookViews(self))
   .views(self => recordsKeyViews(self))
+  .views(self => cellKeyViews(self))
   .views(self => recordsColorScaleViews(self))
+  .views(self => regionCellColorViews(self))
+  .views(self => variantDataKeyViews(self))
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
 export function registerVariantAdapters(pluginManager: PluginManager) {
@@ -213,19 +231,6 @@ export async function variantTables(
     },
   })
   const conf = host.configuration
-  const { colorSetting, colorEncoding: encoding } = runInAction(() => ({
-    colorSetting: host.colorSetting,
-    colorEncoding: host.colorEncoding,
-  }))
-  const slots: HeldSlots | undefined =
-    typeof encoding === 'object' && encoding.scale === 'ordinal'
-      ? new Map()
-      : undefined
-  const cellHue = cellHueOf(
-    paintedColorEncoding(encoding),
-    colorSetting.field,
-    slots,
-  )
   const predicates = predicatesOf(conf.filter)
   const filters = predicates.filter(p => !isSiteField(p.field))
   const adapter = await tablesFeatureAdapter(
@@ -246,8 +251,9 @@ export async function variantTables(
     sampleName: resolveSampleName(source),
   }))
   host.setAdapterSamples(listing.sources)
-  const { rowsField, narrowing } = runInAction(() => ({
+  const { rowsField, cellHueRead, narrowing } = runInAction(() => ({
     rowsField: host.rowsField,
+    cellHueRead: host.cellHueRead,
     narrowing: {
       kept: host.rowFocus ?? [],
       filter: host.rowFilter,
@@ -260,7 +266,7 @@ export async function variantTables(
     regions: fetchRegions,
     layout: 'genomic',
     rowsField,
-    color: cellHue.read,
+    color: cellHueRead,
     sampleFilter: narrows(narrowing)
       ? narrowRows(sources, narrowing).map(resolveSampleName).sort()
       : undefined,
@@ -287,9 +293,19 @@ export async function variantTables(
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
   const keyed = keyedVariantsFetched(perRegion.map(({ data }) => data))
-  host.setFetched(value.samplePloidy, keyed)
+  host.setFetched(value, keyed)
   const fetched = new Set(value.rowNames)
-  const { drawn, band, color, rowKey, rowBands } = runInAction(() => {
+  const {
+    drawn,
+    band,
+    color,
+    rowKey,
+    rowBands,
+    cellHue,
+    cellHueValuesRead,
+    cellColors,
+    scales,
+  } = runInAction(() => {
     const shown = host.sources.filter(row => fetched.has(row.name))
     const rowColors = host.resolvedRowColors
     return {
@@ -298,6 +314,10 @@ export async function variantTables(
       color: shown.map(row => rowColors.get(row.name) ?? ''),
       rowKey: host.rowColorScales[0],
       rowBands: host.rowBands,
+      cellHue: host.cellHue,
+      cellHueValuesRead: host.cellHueValuesRead,
+      cellColors: host.regionCellColors,
+      scales: host.dataColorScales,
     }
   })
   const rows = {
@@ -332,16 +352,10 @@ export async function variantTables(
     color: [] as string[],
     region: [] as number[],
   }
-  const paintHue = cellHueOf(
-    paintedColorEncoding(encoding),
-    colorSetting.field,
-    slots,
-    perRegion.flatMap(({ data }) => data.colorValues),
-  )
   const keys = new Map<string, number>()
   for (const { region: regionIndex, data } of perRegion) {
     const offset = variants.start.length
-    const featureColors = paintFeatureColors(data, paintHue, true)
+    const featureColors = paintFeatureColors(data, cellHue, cellHueValuesRead)
     data.featureInfo.forEach((info, f) => {
       if (!keys.has(info.featureId)) {
         keys.set(info.featureId, keys.size)
@@ -357,10 +371,7 @@ export async function variantTables(
       variants.region.push(regionIndex)
       variants.key.push(keys.get(info.featureId)!)
     })
-    const colors = paintCellColors(data, paintHue, {
-      phased: rowsField === 'haplotype',
-      valuesRead: true,
-    })
+    const colors = cellColors.get(regionIndex)!
     for (let i = 0; i < data.numCells; i++) {
       const f = data.cellFeatureIndices[i]!
       const name = value.rowNames[data.cellRowIndices[i]!]!
@@ -391,25 +402,6 @@ export async function variantTables(
     }
   }
 
-  const scales = runInAction(() =>
-    variantDataColorScales({
-      recordsColorScales: host.recordsColorScales,
-      cellColorKeyed: host.cellColorKeyed,
-      drawsGenotypeRows: host.drawsGenotypeRows,
-      colorSetting,
-      cells: () => ({
-        rowsField,
-        hasSecondaryAlt: keyed.hasSecondaryAlt,
-        hasAltWithoutPhaseSet: keyed.hasAltWithoutPhaseSet,
-        hasUnphased: keyed.hasUnphased,
-        hasNoCall: keyed.hasNoCall,
-        paintedDomain: colorKeysOf(keyed.altColorValues, paintHue),
-        color: encoding,
-        colorSlots: slots,
-        ramp: paintHue.ramp,
-      }),
-    }),
-  )
   return {
     variants,
     ...infoColumns(records, (await vcfHeaderOf(adapter)).info, 'variant'),

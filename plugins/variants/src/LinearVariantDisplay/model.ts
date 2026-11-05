@@ -40,14 +40,12 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
-import { paintedColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import {
   containingHost,
   onTrackAssembly,
 } from '@jbrowse/display-kit/foundationView'
-import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -71,7 +69,7 @@ import {
   narrowRows,
 } from '@jbrowse/tree-sidebar'
 
-import { cellHueField, cellHueOf, sameHueRead } from '../shared/cellHue.ts'
+import { cellHueField } from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -94,16 +92,20 @@ import {
   sitesBySpan,
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
+import {
+  cellHueInputViews,
+  cellHueValuesReadViews,
+  cellHueViews,
+  cellKeyViews,
+  regionCellColorViews,
+  variantDataKeyViews,
+} from './cellColorViews.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
 import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
-import {
-  densityRung,
-  fadeCellColors,
-  recordDensityAlpha,
-} from './densityFade.ts'
+import { densityRung, recordDensityAlpha } from './densityFade.ts'
 import {
   NO_KEYED_VARIANTS,
   keyedVariantsFetched,
@@ -111,7 +113,6 @@ import {
 } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
-import { colorKeysOf, paintCellColors } from './paintCells.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
@@ -131,7 +132,6 @@ import {
   variantContextMenuItems,
   variantTrackMenuItems,
 } from './variantDisplayMenuItems.ts'
-import { variantDataColorScales } from './variantLegend.ts'
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
@@ -1220,33 +1220,9 @@ export function stateModelFactory(
           return base?.map(resolveSampleName).sort()
         },
       }))
-      .views(self => {
-        // compared by value, so editing the key's title or names repaints
-        // nothing
-        const hueInput = stableIdentityComputed(() => ({
-          encoding: paintedColorEncoding(self.colorEncoding),
-          keptField: self.colorSetting.field || self.parkedColor?.field,
-        }))
-        return {
-          /**
-           * #getter
-           * The painted `encoding.color` and the field kept beside it, which
-           * `cellHue` resolves.
-           */
-          get cellHueInput() {
-            return hueInput.get()
-          },
-          /**
-           * #getter
-           * What the worker reads off each variant for the alt cells' hue,
-           * apart from the loaded values a ramp follows.
-           */
-          get cellHueRead() {
-            const { encoding, keptField } = hueInput.get()
-            return cellHueOf(encoding, keptField).read
-          },
-        }
-      })
+      .views(self => cellHueInputViews(self))
+      .views(self => cellHueValuesReadViews(self))
+      .views(self => cellHueViews(self))
       .views(self => ({
         // Payload for MultiSampleVariantGetCellData; a change refetches. Only
         // what the worker reads, and nothing fetch-derived.
@@ -1263,35 +1239,6 @@ export function stateModelFactory(
             recordFields: self.recordFieldReads,
             showReference: !self.atGenomicPositions || self.showReference,
           }
-        },
-        /**
-         * #getter
-         * Whether the held payload's color values were read for the current
-         * `encoding.color`; one read for another paints as though it read
-         * none.
-         */
-        get cellHueValuesRead() {
-          return sameHueRead(self.cellData?.colorRead, self.cellHueRead)
-        },
-        /**
-         * #getter
-         * Where the alt cells' hue comes from: what the worker reads and how
-         * the main thread paints it (`cellHueOf`), a ramp over the values
-         * every fetched region read.
-         */
-        get cellHue() {
-          const { encoding, keptField } = self.cellHueInput
-          const { cellData } = self
-          return cellHueOf(
-            encoding,
-            keptField,
-            heldColorSlots(self, encoding),
-            cellData && this.cellHueValuesRead
-              ? Object.values(cellData.perRegionCellData).flatMap(
-                  d => d.colorValues,
-                )
-              : [],
-          )
         },
       }))
       .views(self => {
@@ -1329,58 +1276,9 @@ export function stateModelFactory(
                   )
               : NO_KEYED_VARIANTS
           },
-          /**
-           * #getter
-           * Whether a variant on screen painted a secondary-alt cell, which
-           * keys the "Other alt allele" legend entry. Painted, not possible.
-           */
-          get hasSecondaryAlt() {
-            return this.keyedVariants.hasSecondaryAlt
-          },
-          /**
-           * #getter
-           * Whether phase-set coloring painted an alt cell on screen whose
-           * call names no phase set, which keys that cell's plain hue.
-           */
-          get hasAltWithoutPhaseSet() {
-            return this.keyedVariants.hasAltWithoutPhaseSet
-          },
-          /**
-           * #getter
-           * Whether a variant on screen painted a black unphased cell (drives
-           * the "Unphased" legend entry).
-           */
-          get hasUnphased() {
-            return this.keyedVariants.hasUnphased
-          },
-          /**
-           * #getter
-           * Whether a variant on screen painted a no-call cell (drives the "No
-           * call" legend entry).
-           */
-          get hasNoCall() {
-            return this.keyedVariants.hasNoCall
-          },
-          /**
-           * #getter
-           * The cell scale's domain values painted on screen — the impact
-           * tiers or SV classes the legend lists: every record's while the
-           * records band paints them, which covers each alt cell's, else
-           * those an alt cell was painted for.
-           */
-          get paintedDomain(): string[] {
-            const { altColorValues, recordColorValues } = this.keyedVariants
-            return self.cellHueValuesRead
-              ? colorKeysOf(
-                  self.showRecords && !self.recordsColorBySvClass
-                    ? recordColorValues
-                    : altColorValues,
-                  self.cellHue,
-                )
-              : []
-          },
         }
       })
+      .views(self => cellKeyViews(self))
       .views(recordsRenderViews)
       .views(recordsColorScaleViews)
       .views(self => {
@@ -1848,16 +1746,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * How the held payload's alt cells paint (`paintCellColors`).
-         */
-        get cellPaintOptions() {
-          return {
-            phased: self.rowsField === 'haplotype',
-            valuesRead: self.cellHueValuesRead,
-          }
-        },
-        /**
-         * #getter
          * The power-of-two zoom the density fade is computed at, so a zoom
          * inside one rung repaints and re-uploads no cell.
          */
@@ -1879,26 +1767,9 @@ export function stateModelFactory(
               )
             : new Map<number, Float32Array | undefined>()
         },
-        /**
-         * #getter
-         * Each fetched region's cell colors through the current
-         * `encoding.color`, faded where records share pixels. Apart from the
-         * rows, so a reorder repaints nothing, and a recolor re-places nothing
-         * and refetches nothing.
-         */
-        get regionCellColors() {
-          const { cellData, cellHue } = self
-          const options = this.cellPaintOptions
-          const alpha = this.regionRecordAlpha
-          return mapPayloadRegions(cellData, (data, index) =>
-            fadeCellColors(
-              paintCellColors(data, cellHue, options),
-              data.cellFeatureIndices,
-              data.numCells,
-              alpha.get(index),
-            ),
-          )
-        },
+      }))
+      .views(self => regionCellColorViews(self))
+      .views(self => ({
         /**
          * #getter
          * Each fetched region with its rows placed on screen. A computed apart
@@ -2121,6 +1992,7 @@ export function stateModelFactory(
           )
         },
       }))
+      .views(self => variantDataKeyViews(self))
       .views(self => ({
         /**
          * #getter
@@ -2128,26 +2000,7 @@ export function stateModelFactory(
          * coloring while `cellColorKeyed`, and the row color key.
          */
         get colorScales(): ColorScale[] {
-          return [
-            ...variantDataColorScales({
-              recordsColorScales: self.recordsColorScales,
-              cellColorKeyed: self.cellColorKeyed,
-              drawsGenotypeRows: self.drawsGenotypeRows,
-              colorSetting: self.colorSetting,
-              cells: () => ({
-                rowsField: self.rowsField,
-                hasSecondaryAlt: self.hasSecondaryAlt,
-                hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
-                hasUnphased: self.hasUnphased,
-                hasNoCall: self.hasNoCall,
-                paintedDomain: self.paintedDomain,
-                color: self.colorEncoding,
-                colorSlots: heldColorSlots(self, self.colorEncoding),
-                ramp: self.cellHue.ramp,
-              }),
-            }),
-            ...self.rowColorScales,
-          ]
+          return [...self.dataColorScales, ...self.rowColorScales]
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           if (self.atGenomicPositions) {
