@@ -4,7 +4,6 @@ import {
   GAP_SKIP,
 } from '../shaders/slang/gap.consts.generated.ts'
 import {
-  applyDepthDependentThreshold,
   computeFrequenciesAndThresholds,
   computePositionFrequencies,
 } from './computeFrequenciesAndThresholds.ts'
@@ -132,42 +131,6 @@ describe('computeFrequenciesAndThresholds (gap frequencies)', () => {
   })
 })
 
-describe('applyDepthDependentThreshold (interbase mode)', () => {
-  it('zeroes frequencies below threshold for interbase features', () => {
-    const coverageDepths = new Float32Array([10, 20, 30])
-    const positions = new Uint32Array([1, 2])
-    const frequencies = new Uint8Array([
-      Math.round(0.05 * 255),
-      Math.round(0.5 * 255),
-    ])
-    applyDepthDependentThreshold(
-      frequencies,
-      positions,
-      coverageDepths,
-      0,
-      () => 0.1,
-      true,
-    )
-    expect(frequencies[0]).toBe(0)
-    expect(frequencies[1]).toBe(Math.round(0.5 * 255))
-  })
-
-  it('uses interbase depth (max of neighbors) when interbase=true', () => {
-    const coverageDepths = new Float32Array([100, 0])
-    const positions = new Uint32Array([1])
-    const frequencies = new Uint8Array([Math.round(0.01 * 255)])
-    applyDepthDependentThreshold(
-      frequencies,
-      positions,
-      coverageDepths,
-      0,
-      () => 0.005,
-      true,
-    )
-    expect(frequencies[0]).toBe(Math.round(0.01 * 255))
-  })
-})
-
 describe('featureFrequencyThreshold', () => {
   it('returns 0.8 for shallow coverage (depth < 10)', () => {
     expect(featureFrequencyThreshold(0)).toBe(0.8)
@@ -254,4 +217,76 @@ describe('computeFrequenciesAndThresholds (interbase frequencies)', () => {
     expect(freqs[16]).toBe(Math.round((12 / 40) * 255))
     expect(freqs[28]).toBe(Math.round((20 / 40) * 255))
   })
+})
+
+// Long reads every ~25 bp, so about 120 deep, seven in eight of those spanning
+// a deletion carrying it. Each window fetches the reads overlapping it, and its
+// coverage leaves a carrier out across the deletion, as the worker's does.
+describe("a deletion's fade wherever the window starts", () => {
+  const DELETION = { start: 4000, end: 5800 }
+  const READ_LENGTH = 3000
+  const WINDOW = 2000
+  const reads = Array.from({ length: 480 }, (_, i) => {
+    const start = i * 25 + ((i * 7) % 13)
+    const end = start + READ_LENGTH
+    return {
+      start,
+      end,
+      carries: i % 8 !== 0 && start < DELETION.start && end > DELETION.end,
+    }
+  })
+
+  function deletionFade(windowStart: number) {
+    const windowEnd = windowStart + WINDOW
+    const fetched = reads.filter(
+      r => r.start < windowEnd && r.end > windowStart,
+    )
+    const depths = new Float32Array(WINDOW)
+    for (const r of fetched) {
+      for (
+        let p = Math.max(r.start, windowStart);
+        p < Math.min(r.end, windowEnd);
+        p++
+      ) {
+        if (!(r.carries && p >= DELETION.start && p < DELETION.end)) {
+          depths[p - windowStart]!++
+        }
+      }
+    }
+    const carriers = fetched.filter(r => r.carries)
+    const { gapFrequencies } = computeFrequenciesAndThresholds(
+      {
+        mismatchPositions: new Uint32Array(0),
+        mismatchBases: new Uint8Array(0),
+      },
+      {
+        interbasePositions: new Uint32Array(0),
+        interbaseTypes: new Uint8Array(0),
+      },
+      {
+        gapPositions: Uint32Array.from(
+          carriers.flatMap(() => [DELETION.start, DELETION.end]),
+        ),
+        gapTypes: new Uint8Array(carriers.length).fill(GAP_DELETION),
+      },
+      depths,
+      windowStart,
+    )
+    return gapFrequencies[0]! / 255
+  }
+
+  const inWindow = deletionFade(3000)
+
+  it('measures the deletion over a window holding its start', () => {
+    expect(inWindow).toBeGreaterThan(0.3)
+    expect(inWindow).toBeLessThan(0.4)
+  })
+
+  for (const windowStart of [3999, 4000, 4001, 4500, 5000, 5700]) {
+    it(`fades it within 0.02 of that over a window starting at ${windowStart}`, () => {
+      const fade = deletionFade(windowStart)
+      expect(fade).toBeLessThan(1)
+      expect(Math.abs(fade - inWindow)).toBeLessThanOrEqual(0.02)
+    })
+  }
 })

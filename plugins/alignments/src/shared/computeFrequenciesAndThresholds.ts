@@ -115,8 +115,8 @@ function spanOf(
   return { min, length: max < min ? 0 : max - min + 1 }
 }
 
-// A deletion that starts left of the window has no depth where it starts, so it
-// is measured at the window's first base.
+// An event left of the window has no depth where it is, so it is measured at
+// the window's first base.
 function depthNear(
   coverageDepths: Float32Array,
   coverageStartPos: number,
@@ -164,9 +164,37 @@ export function computePositionFrequencies(
   coverageStartPos: number,
   types?: Uint8Array,
 ) {
+  return frequenciesOver(
+    positions,
+    interbaseDepths(positions, coverageDepths, coverageStartPos),
+    coverageStartPos,
+    coverageDepths.length,
+    types,
+  )
+}
+
+// Each position's interbase depth, measured at the window's first base for one
+// left of it.
+function interbaseDepths(
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+) {
+  return Float32Array.from(positions, pos =>
+    depthNear(coverageDepths, coverageStartPos, pos),
+  )
+}
+
+// `computePositionFrequencies` against a depth per position, `pointDepths`.
+function frequenciesOver(
+  positions: Uint32Array,
+  pointDepths: Float32Array,
+  coverageStartPos: number,
+  windowLength: number,
+  types?: Uint8Array,
+) {
   const n = positions.length
   const frequencies = new Uint8Array(n)
-  const windowLength = coverageDepths.length
   const { min: base, length: span } = spanOf(
     positions,
     coverageStartPos,
@@ -190,7 +218,7 @@ export function computePositionFrequencies(
     const pos = positions[i]!
     const offset = pos - coverageStartPos
     const lane = types ? types[i]! : 0
-    const localDepth = depthNear(coverageDepths, coverageStartPos, pos)
+    const localDepth = pointDepths[i]!
     const depth = localDepth > 0 ? localDepth : 1
     const count =
       offset >= 0 && offset < windowLength
@@ -208,13 +236,13 @@ export function applyDepthDependentThreshold(
   coverageDepths: Float32Array,
   coverageStartPos: number,
   thresholdFn: (depth: number) => number,
-  interbase?: boolean,
 ) {
   for (let i = 0; i < frequencies.length; i++) {
-    const pos = positions[i]!
-    const depth = interbase
-      ? depthNear(coverageDepths, coverageStartPos, pos)
-      : getDepthAt(coverageDepths, pos - coverageStartPos, 0)
+    const depth = getDepthAt(
+      coverageDepths,
+      positions[i]! - coverageStartPos,
+      0,
+    )
     const freq = frequencies[i]! / 255
     const threshold = thresholdFn(depth)
     if (freq < threshold) {
@@ -224,29 +252,61 @@ export function applyDepthDependentThreshold(
 }
 
 // Interbase point features (insertions, clips, gap starts) all share one
-// recipe: per-position frequency against the interbase depth, then the
-// depth-dependent threshold zeroing the noise floor.
-function thresholdedPositionFrequencies(
+// recipe: per-position frequency against a depth per position, then the
+// depth-dependent threshold zeroing the noise floor at that depth.
+function thresholdedFrequencies(
   positions: Uint32Array,
-  depths: Float32Array,
+  pointDepths: Float32Array,
   coverageStartPos: number,
+  windowLength: number,
   types?: Uint8Array,
 ) {
-  const frequencies = computePositionFrequencies(
+  const frequencies = frequenciesOver(
     positions,
-    depths,
+    pointDepths,
     coverageStartPos,
+    windowLength,
     types,
   )
-  applyDepthDependentThreshold(
-    frequencies,
-    positions,
-    depths,
-    coverageStartPos,
-    featureFrequencyThreshold,
-    true,
-  )
+  for (let i = 0; i < frequencies.length; i++) {
+    if (frequencies[i]! / 255 < featureFrequencyThreshold(pointDepths[i]!)) {
+      frequencies[i] = 0
+    }
+  }
   return frequencies
+}
+
+/**
+ * The depth each deletion's fade divides by: the interbase depth at its
+ * start, or, for one starting at or left of the window's first base, whose
+ * left flank the window does not hold, the depth there with the deletions of
+ * that start spanning it added back.
+ * Coverage inside a deletion leaves out the reads carrying it, so measured
+ * there alone a deletion's own reads are missing from its depth and it
+ * saturates; the reads deleted at the window's first base are exactly those.
+ * The depth before the window would need reads no fetch of it holds, so this
+ * is an estimate, close where the depth is flat across the deletion's start.
+ */
+function deletionDepths(
+  starts: Uint32Array,
+  ends: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+) {
+  let carried: Map<number, number> | undefined
+  for (let i = 0; i < starts.length; i++) {
+    if (starts[i]! <= coverageStartPos && ends[i]! > coverageStartPos) {
+      carried ??= new Map()
+      carried.set(starts[i]!, (carried.get(starts[i]!) ?? 0) + 1)
+    }
+  }
+  const depths = interbaseDepths(starts, coverageDepths, coverageStartPos)
+  if (carried) {
+    for (let i = 0; i < starts.length; i++) {
+      depths[i]! += carried.get(starts[i]!) ?? 0
+    }
+  }
+  return depths
 }
 
 /**
@@ -277,19 +337,22 @@ function deletionStartFrequencies(
   // gapPositions stores [start, end] pairs; a deletion's frequency is anchored
   // at its start.
   const starts = new Uint32Array(numDeletions)
+  const ends = new Uint32Array(numDeletions)
   const gapIndices = new Uint32Array(numDeletions)
   let w = 0
   for (let i = 0; i < numGaps; i++) {
     if (gapTypes[i] === GAP_DELETION) {
       starts[w] = gapPositions[i * 2]!
+      ends[w] = gapPositions[i * 2 + 1]!
       gapIndices[w] = i
       w++
     }
   }
-  const deletionFrequencies = thresholdedPositionFrequencies(
+  const deletionFrequencies = thresholdedFrequencies(
     starts,
-    depths,
+    deletionDepths(starts, ends, depths, coverageStartPos),
     coverageStartPos,
+    depths.length,
   )
   const frequencies = new Uint8Array(numGaps)
   for (let k = 0; k < numDeletions; k++) {
@@ -323,10 +386,15 @@ export function computeFrequenciesAndThresholds(
   )
   return {
     mismatchFrequencies,
-    interbaseFrequencies: thresholdedPositionFrequencies(
+    interbaseFrequencies: thresholdedFrequencies(
       interbaseArrays.interbasePositions,
-      depths,
+      interbaseDepths(
+        interbaseArrays.interbasePositions,
+        depths,
+        coverageStartPos,
+      ),
       coverageStartPos,
+      depths.length,
       interbaseArrays.interbaseTypes,
     ),
     gapFrequencies: deletionStartFrequencies(
