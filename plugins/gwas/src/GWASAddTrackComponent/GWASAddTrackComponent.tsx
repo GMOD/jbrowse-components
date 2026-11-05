@@ -1,6 +1,5 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { useAddTrackFields } from '@jbrowse/core/util'
-import { getRoot } from '@jbrowse/mobx-state-tree'
+import { getEnv, useAddTrackFields } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -13,10 +12,7 @@ import {
 import { isTabixLocation } from './ldAdapterConfig.ts'
 
 import type { GwasForm } from './gwasTrackMixin.ts'
-import type {
-  AbstractRootModel,
-  AddTrackComponentProps,
-} from '@jbrowse/core/util'
+import type { AddTrackComponentProps } from '@jbrowse/core/util'
 
 function contribute(form: GwasForm) {
   return { trackConfig: gwasTrackMixin(form) }
@@ -25,7 +21,7 @@ function contribute(form: GwasForm) {
 const GWASAddTrackComponent = observer(function ({
   model,
 }: AddTrackComponentProps) {
-  const rootModel = getRoot<AbstractRootModel>(model)
+  const { rootModel } = getEnv(model).pluginManager
   const { form, update: set } = useAddTrackFields(
     model,
     'GWASAdapter',

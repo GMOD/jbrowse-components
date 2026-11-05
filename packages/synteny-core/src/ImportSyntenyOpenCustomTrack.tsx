@@ -111,6 +111,7 @@ const ImportSyntenyOpenCustomTrack = observer(
                 key={radioOption}
                 assembly1={assembly1}
                 assembly2={assembly2}
+                rootModel={pluginManager.rootModel}
                 onAdapterChange={result => {
                   if (result) {
                     const trackId = `${result.name}-${Date.now()}`

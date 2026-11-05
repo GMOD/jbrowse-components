@@ -136,6 +136,7 @@ describe('a selection the toggle group does not offer', () => {
   test('an account this host does not have falls back to URL', () => {
     const { getByRole, getByTestId } = render(
       <FileSelector
+        rootModel={undefined}
         location={{
           uri: 'https://example.com/f.bam',
           locationType: 'UriLocation',
@@ -159,6 +160,7 @@ describe('a selection the toggle group does not offer', () => {
     setUrl('?adminKey=abc')
     const { getByRole, queryByRole, getByTestId } = render(
       <FileSelector
+        rootModel={undefined}
         location={{ uri: '', locationType: 'UriLocation' }}
         setLocation={() => {}}
       />,
@@ -179,6 +181,7 @@ describe('a selection the toggle group does not offer', () => {
 test('the toggle and input are one group carrying the field name', () => {
   const { getByRole } = render(
     <FileSelector
+      rootModel={undefined}
       name="FASTA index (.fai) file"
       description="Sits beside the FASTA."
       location={{ uri: '', locationType: 'UriLocation' }}
@@ -198,6 +201,7 @@ test('the toggle and input are one group carrying the field name', () => {
 test('a location set from outside shows up in the box', () => {
   const { getByTestId, rerender } = render(
     <FileSelector
+      rootModel={undefined}
       location={{
         uri: 'https://x.test/calls.vcf.gz',
         locationType: 'UriLocation',
@@ -207,6 +211,7 @@ test('a location set from outside shows up in the box', () => {
   )
   rerender(
     <FileSelector
+      rootModel={undefined}
       location={{
         uri: 'https://x.test/calls.vcf.gz.csi',
         locationType: 'UriLocation',
@@ -233,9 +238,16 @@ test('a trailing space stays on screen and off the location', () => {
   expect(getByTestId('urlInput')).toHaveValue('https://x/f ')
 })
 
+test('rootModel is required, so leaving out the accounts is a choice', () => {
+  // @ts-expect-error a caller that omits the root silently loses every account
+  const element = <FileSelector setLocation={() => {}} />
+  expect(element.props).not.toHaveProperty('rootModel')
+})
+
 test('an unnamed selector claims no name rather than an empty one', () => {
   const { getAllByRole } = render(
     <FileSelector
+      rootModel={undefined}
       location={{ uri: '', locationType: 'UriLocation' }}
       setLocation={() => {}}
     />,

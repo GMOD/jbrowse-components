@@ -1,11 +1,10 @@
 import { FileSelector } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AddTrackModel } from '../model.ts'
-import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -22,7 +21,7 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
   model: AddTrackModel
 }) {
   const { classes } = useStyles()
-  const rootModel = getRoot<AbstractRootModel>(model)
+  const { rootModel } = getEnv(model).pluginManager
 
   return (
     <Paper className={classes.paper}>

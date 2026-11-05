@@ -5,7 +5,9 @@ import type { AbstractRootModel } from '../../util/types/index.ts'
 
 const NUM_SHOWN = 2
 
-export default function useInternetAccounts(rootModel?: AbstractRootModel) {
+export default function useInternetAccounts(
+  rootModel: AbstractRootModel | undefined,
+) {
   const [recentlyUsed, setRecentlyUsed] = useLocalStorage(
     'fileSelector-recentlyUsedInternetAccounts',
     [] as string[],

@@ -30,7 +30,12 @@ const FileSelector = observer(function FileSelector({
   name?: string
   description?: string
   inline?: boolean
-  rootModel?: AbstractRootModel
+  /**
+   * where the internet accounts come from: required so no caller drops them by
+   * omission. `undefined` only where no app exists yet, like desktop's start
+   * screen
+   */
+  rootModel: AbstractRootModel | undefined
   setLocation: (param: FileLocation) => void
 }) {
   const emptySourceType = useEmptySourceType()

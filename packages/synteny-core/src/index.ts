@@ -420,6 +420,8 @@ export { default as SwapAssemblies } from './SwapAssemblies.tsx'
 export type {
   ImportFormSyntenyModel,
   ImportFormSyntenyTrack,
+  AnchorsSelectorProps,
+  PifGzSelectorProps,
   SelectorProps,
   SyntenyFileFormatOption,
   SyntenyImportFormOption,

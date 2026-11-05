@@ -1,5 +1,5 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
 import type { IStateTreeNode, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
@@ -37,13 +37,20 @@ export interface SelectorProps {
   setSwap: (swap: boolean) => void
   fileLocation?: FileLocation
   setFileLocation: (location: FileLocation) => void
-  indexFileLocation?: FileLocation
-  setIndexFileLocation?: (location: FileLocation) => void
-  bed1Location?: FileLocation
-  setBed1Location?: (location: FileLocation) => void
-  bed2Location?: FileLocation
-  setBed2Location?: (location: FileLocation) => void
   radioOption: string
+  rootModel: AbstractRootModel | undefined
+}
+
+export interface PifGzSelectorProps extends SelectorProps {
+  indexFileLocation?: FileLocation
+  setIndexFileLocation: (location: FileLocation) => void
+}
+
+export interface AnchorsSelectorProps extends SelectorProps {
+  bed1Location?: FileLocation
+  setBed1Location: (location: FileLocation) => void
+  bed2Location?: FileLocation
+  setBed2Location: (location: FileLocation) => void
 }
 
 // #region fileFormatOption
@@ -59,6 +66,8 @@ export interface SyntenyFileFormatOption {
   Component: React.FC<{
     assembly1: string
     assembly2: string
+    /** for the file selectors' internet accounts */
+    rootModel: AbstractRootModel | undefined
     onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
   }>
 }

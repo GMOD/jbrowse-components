@@ -8,7 +8,7 @@ import PifGzSelector from './PifGzSelector.tsx'
 import StandardFormatSelector from './StandardFormatSelector.tsx'
 
 import type { SyntenyFileFormatOption } from './SelectorTypes.ts'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
 
 type OnAdapterChange = (
   r: { adapter: object; name: string } | undefined,
@@ -17,6 +17,7 @@ type OnAdapterChange = (
 interface FormatProps {
   assembly1: string
   assembly2: string
+  rootModel: AbstractRootModel | undefined
   onAdapterChange: OnAdapterChange
 }
 
@@ -37,6 +38,7 @@ function makeSimpleFormat(
   const Component = observer(function SyntenyFormat({
     assembly1,
     assembly2,
+    rootModel,
     onAdapterChange,
   }: FormatProps) {
     const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -51,6 +53,7 @@ function makeSimpleFormat(
 
     return (
       <StandardFormatSelector
+        rootModel={rootModel}
         radioOption={extension}
         fileLocation={fileLocation}
         assembly1={assembly1}
@@ -88,6 +91,7 @@ function makeAnchorsFormat(
   const Component = observer(function AnchorsFormat({
     assembly1,
     assembly2,
+    rootModel,
     onAdapterChange,
   }: FormatProps) {
     const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -121,6 +125,7 @@ function makeAnchorsFormat(
 
     return (
       <AnchorsSelector
+        rootModel={rootModel}
         radioOption={extension}
         fileLocation={fileLocation}
         assembly1={assembly1}
@@ -154,6 +159,7 @@ function makePifGzFormat(): SyntenyFileFormatOption {
   const Component = observer(function PifGzFormat({
     assembly1,
     assembly2,
+    rootModel,
     onAdapterChange,
   }: FormatProps) {
     const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -184,6 +190,7 @@ function makePifGzFormat(): SyntenyFileFormatOption {
 
     return (
       <PifGzSelector
+        rootModel={rootModel}
         radioOption=".pif.gz"
         fileLocation={fileLocation}
         assembly1={assembly1}

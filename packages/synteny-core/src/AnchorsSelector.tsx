@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes.ts'
+import type { AnchorsSelectorProps } from './SelectorTypes.ts'
 
 const AnchorsSelector = observer(function AnchorsSelector({
   assembly1,
@@ -13,11 +13,12 @@ const AnchorsSelector = observer(function AnchorsSelector({
   fileLocation,
   setFileLocation,
   bed1Location,
-  setBed1Location = () => {},
+  setBed1Location,
   bed2Location,
-  setBed2Location = () => {},
+  setBed2Location,
   radioOption,
-}: SelectorProps) {
+  rootModel,
+}: AnchorsSelectorProps) {
   return (
     <div>
       <div style={{ margin: 20 }}>
@@ -30,12 +31,14 @@ const AnchorsSelector = observer(function AnchorsSelector({
       <div>
         <FileSelector
           inline
+          rootModel={rootModel}
           name={radioOption}
           location={fileLocation}
           setLocation={setFileLocation}
         />
         <FileSelector
           inline
+          rootModel={rootModel}
           name="genome 1 .bed (left column of anchors file)"
           description=""
           location={bed1Location}
@@ -43,6 +46,7 @@ const AnchorsSelector = observer(function AnchorsSelector({
         />
         <FileSelector
           inline
+          rootModel={rootModel}
           name="genome 2 .bed (right column of anchors file)"
           description=""
           location={bed2Location}

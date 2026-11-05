@@ -30,7 +30,7 @@ const WidgetStub = types
   }))
 
 test('the score fields reach the track config, take it back on unmount, and come back on remount', () => {
-  const model = WidgetStub.create()
+  const model = WidgetStub.create({}, { pluginManager: {} })
   const first = render(<GWASAddTrackComponent model={model} />)
   expect(model.mixinData).toEqual({ adapter: {} })
 

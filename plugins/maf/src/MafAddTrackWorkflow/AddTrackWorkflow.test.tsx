@@ -10,14 +10,10 @@ const mockAddTrackFromWidget = jest.fn()
 jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual<object>('@jbrowse/core/util'),
   getSession: () => ({}),
+  getEnv: () => ({ pluginManager: {} }),
   addTrackFromWidget: (args: unknown) => {
     mockAddTrackFromWidget(args)
   },
-}))
-
-jest.mock('@jbrowse/mobx-state-tree', () => ({
-  ...jest.requireActual<object>('@jbrowse/mobx-state-tree'),
-  getRoot: () => ({}),
 }))
 
 jest.mock('@jbrowse/core/ui', () => ({

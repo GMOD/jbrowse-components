@@ -31,7 +31,7 @@ import { EmptySourceTypeProvider } from './FileSelector/emptySourceType.ts'
 import SequenceAdapterInputs from './SequenceAdapterInputs.tsx'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
-import type { FileLocation } from '../util/types/index.ts'
+import type { AbstractRootModel, FileLocation } from '../util/types/index.ts'
 
 type Source = 'files' | 'urls'
 
@@ -87,10 +87,12 @@ const useStyles = makeStyles()(theme => ({
 const MoreOptions = observer(function MoreOptions({
   form,
   setForm,
+  rootModel,
   showMore,
   setShowMore,
 }: {
   form: FormState
+  rootModel: AbstractRootModel | undefined
   setForm: (update: (prev: FormState) => FormState) => void
   showMore: boolean
   setShowMore: (arg: boolean) => void
@@ -108,7 +110,9 @@ const MoreOptions = observer(function MoreOptions({
       >
         {showMore ? 'Fewer options' : 'More options'}
       </Button>
-      {showMore ? <AdvancedOptions form={form} setForm={setForm} /> : null}
+      {showMore ? (
+        <AdvancedOptions form={form} setForm={setForm} rootModel={rootModel} />
+      ) : null}
     </div>
   )
 })
@@ -119,9 +123,11 @@ const MoreOptions = observer(function MoreOptions({
 const RequiredIndexInputs = observer(function RequiredIndexInputs({
   form,
   setForm,
+  rootModel,
   onEdit,
 }: {
   form: FormState
+  rootModel: AbstractRootModel | undefined
   setForm: (update: (prev: FormState) => FormState) => void
   onEdit: (field: keyof FormState) => void
 }) {
@@ -137,6 +143,7 @@ const RequiredIndexInputs = observer(function RequiredIndexInputs({
           key={field}
           inline
           name={label}
+          rootModel={rootModel}
           location={form[field]}
           setLocation={(loc: FileLocation) => {
             onEdit(field)
@@ -154,6 +161,7 @@ const RequiredIndexInputs = observer(function RequiredIndexInputs({
 const RecognitionCard = observer(function RecognitionCard({
   form,
   setForm,
+  rootModel,
   onEdit,
   onChangeFile,
   showMore,
@@ -161,6 +169,7 @@ const RecognitionCard = observer(function RecognitionCard({
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
+  rootModel: AbstractRootModel | undefined
   onEdit: (field: keyof FormState) => void
   onChangeFile: () => void
   showMore: boolean
@@ -243,11 +252,17 @@ const RecognitionCard = observer(function RecognitionCard({
         </Typography>
       ) : null}
 
-      <RequiredIndexInputs form={form} setForm={setForm} onEdit={onEdit} />
+      <RequiredIndexInputs
+        form={form}
+        setForm={setForm}
+        rootModel={rootModel}
+        onEdit={onEdit}
+      />
 
       <MoreOptions
         form={form}
         setForm={setForm}
+        rootModel={rootModel}
         showMore={showMore}
         setShowMore={setShowMore}
       />
@@ -260,12 +275,14 @@ const RecognitionCard = observer(function RecognitionCard({
 const ManualEntry = observer(function ManualEntry({
   form,
   setForm,
+  rootModel,
   showMore,
   setShowMore,
   onBack,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
+  rootModel: AbstractRootModel | undefined
   showMore: boolean
   setShowMore: (arg: boolean) => void
   onBack: () => void
@@ -288,6 +305,7 @@ const ManualEntry = observer(function ManualEntry({
       <SequenceAdapterInputs
         form={form}
         setForm={setForm}
+        rootModel={rootModel}
         setPrimaryFile={(loc: FileLocation) => {
           setForm(f => applyPrimaryFile(f, loc))
         }}
@@ -298,6 +316,7 @@ const ManualEntry = observer(function ManualEntry({
       <MoreOptions
         form={form}
         setForm={setForm}
+        rootModel={rootModel}
         showMore={showMore}
         setShowMore={setShowMore}
       />
@@ -473,11 +492,13 @@ const NoSequenceWarning = observer(function NoSequenceWarning() {
 const AddGenomePane = observer(function AddGenomePane({
   form,
   setForm,
+  rootModel,
   loading = false,
   onStageAnother,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
+  rootModel: AbstractRootModel | undefined
   loading?: boolean
   onStageAnother?: () => Promise<boolean>
 }) {
@@ -543,6 +564,7 @@ const AddGenomePane = observer(function AddGenomePane({
         <ManualEntry
           form={form}
           setForm={setForm}
+          rootModel={rootModel}
           showMore={showMore}
           setShowMore={setShowMore}
           onBack={() => {
@@ -583,6 +605,7 @@ const AddGenomePane = observer(function AddGenomePane({
               <RecognitionCard
                 form={form}
                 setForm={setForm}
+                rootModel={rootModel}
                 onEdit={markEdited}
                 onChangeFile={() => {
                   changeFile()

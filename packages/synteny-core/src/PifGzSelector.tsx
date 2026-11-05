@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes.ts'
+import type { PifGzSelectorProps } from './SelectorTypes.ts'
 
 const PifGzSelector = observer(function PifGzSelector({
   assembly1,
@@ -13,9 +13,10 @@ const PifGzSelector = observer(function PifGzSelector({
   fileLocation,
   setFileLocation,
   indexFileLocation,
-  setIndexFileLocation = () => {},
+  setIndexFileLocation,
   radioOption,
-}: SelectorProps) {
+  rootModel,
+}: PifGzSelectorProps) {
   return (
     <div>
       <div style={{ margin: 20 }}>
@@ -27,6 +28,7 @@ const PifGzSelector = observer(function PifGzSelector({
           name={`${radioOption} location`}
           inline
           description=""
+          rootModel={rootModel}
           location={fileLocation}
           setLocation={setFileLocation}
         />
@@ -34,6 +36,7 @@ const PifGzSelector = observer(function PifGzSelector({
           name={`${radioOption} index location (.tbi or .csi)`}
           inline
           description=""
+          rootModel={rootModel}
           location={indexFileLocation}
           setLocation={setIndexFileLocation}
         />

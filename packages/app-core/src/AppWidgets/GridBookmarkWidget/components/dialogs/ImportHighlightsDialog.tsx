@@ -57,6 +57,7 @@ const ImportHighlightsDialog = observer(function ImportHighlightsDialog({
       <FileSelector
         location={location}
         setLocation={setLocation}
+        rootModel={getEnv(model).pluginManager.rootModel}
         name="File"
         description={`Choose a BED or TSV format file to import. A TSV needs a header naming chrom, start, end and assembly_name; label and color are optional.`}
       />

@@ -6,9 +6,8 @@ import {
   FileSelector,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getRoot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   FormControl,
@@ -24,7 +23,6 @@ import { fileTypes } from '../ImportWizard.ts'
 import TrackSelector from './TrackSelector.tsx'
 
 import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
-import type { AbstractRootModel } from '@jbrowse/core/util'
 
 type SelectorType = 'custom' | 'existing'
 
@@ -99,7 +97,7 @@ const ImportWizard = observer(function ImportWizard({
     ? assemblyManager.get(selectedAssembly)?.error
     : undefined
   const err = assemblyError ?? error
-  const rootModel = getRoot<AbstractRootModel>(model)
+  const { rootModel } = getEnv(model).pluginManager
 
   return (
     <div>

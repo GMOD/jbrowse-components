@@ -8,11 +8,18 @@ import userEvent from '@testing-library/user-event'
 import { initialFormState, isBlank } from '../util/assemblyConfigUtils.ts'
 import AddGenomePane from './AddGenomePane.tsx'
 
+import type { BaseInternetAccountModel } from '../pluggableElementTypes/index.ts'
+import type { AbstractRootModel } from '../util/types/index.ts'
+
 // The pane is uncontrolled from its own point of view — the caller owns the
 // FormState — so each test drives a host that owns it and reports the latest.
 function setup({
   onStageAnother,
-}: { onStageAnother?: () => Promise<boolean> } = {}) {
+  rootModel,
+}: {
+  onStageAnother?: () => Promise<boolean>
+  rootModel?: AbstractRootModel
+} = {}) {
   const user = userEvent.setup()
   let latest = initialFormState()
   function Host() {
@@ -22,6 +29,7 @@ function setup({
       <AddGenomePane
         form={form}
         setForm={setForm}
+        rootModel={rootModel}
         onStageAnother={onStageAnother}
       />
     )
@@ -259,4 +267,24 @@ test('a chrom.sizes beside a 2bit warns about nothing', async () => {
   )
   expect(form().adapterSelection).toBe('TwoBitAdapter')
   expect(screen.queryByText(/will have no sequence/i)).not.toBeInTheDocument()
+})
+
+// The genome form's selectors never got the app's accounts, so a sequence or
+// index on Dropbox or Drive could only be pasted, never picked
+test('the index inputs offer the app accounts', async () => {
+  const { user } = setup({
+    rootModel: {
+      findAppropriateInternetAccount: () => undefined,
+      internetAccounts: [
+        {
+          internetAccountId: 'dropbox',
+          name: 'DBX',
+          showInFileSelector: true,
+        } as BaseInternetAccountModel,
+      ],
+    } as unknown as AbstractRootModel,
+  })
+  await pasteUrls(user, 'https://example.com/hg38.fa.gz')
+
+  expect(screen.getAllByRole('button', { name: 'DBX' })).toHaveLength(2)
 })

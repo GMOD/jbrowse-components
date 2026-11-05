@@ -5,6 +5,7 @@ import { makeSetField } from '../util/assemblyConfigUtils.ts'
 import FileSelector from './FileSelector/FileSelector.tsx'
 
 import type { FormState } from '../util/assemblyConfigUtils.ts'
+import type { AbstractRootModel } from '../util/types/index.ts'
 
 // Display name plus the optional refName-aliases and cytobands files. Shared by
 // every add-assembly surface (desktop Open genome dialog, in-app Assembly
@@ -13,9 +14,11 @@ import type { FormState } from '../util/assemblyConfigUtils.ts'
 const AdvancedOptions = observer(function AdvancedOptions({
   form,
   setForm,
+  rootModel,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
+  rootModel: AbstractRootModel | undefined
 }) {
   const setField = makeSetField(setForm)
   return (
@@ -33,6 +36,7 @@ const AdvancedOptions = observer(function AdvancedOptions({
       />
       <FileSelector
         inline
+        rootModel={rootModel}
         name="refName aliases"
         description="Remap equivalent refNames (e.g. chr1 and 1). Tab-separated file such as a UCSC .chromAliases file."
         location={form.refNameAliasesLocation}
@@ -40,6 +44,7 @@ const AdvancedOptions = observer(function AdvancedOptions({
       />
       <FileSelector
         inline
+        rootModel={rootModel}
         name="Cytobands"
         description="UCSC cytoBand.txt / cytoBandIdeo.txt format (.gz allowed)."
         location={form.cytobandsLocation}

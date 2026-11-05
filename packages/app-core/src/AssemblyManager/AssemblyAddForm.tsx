@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
+import { getEnv } from '@jbrowse/core/util'
 import {
   buildAssemblyConf,
   initialFormState,
@@ -44,7 +45,11 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
   return (
     <>
       <DialogContent>
-        <AddGenomePane form={form} setForm={setForm} />
+        <AddGenomePane
+          form={form}
+          setForm={setForm}
+          rootModel={getEnv(session).pluginManager.rootModel}
+        />
       </DialogContent>
       <DialogActions>
         <Button

@@ -1,5 +1,5 @@
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
-import { getSession, useAddTrackFields } from '@jbrowse/core/util'
+import { getEnv, getSession, useAddTrackFields } from '@jbrowse/core/util'
 import { Button, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -88,6 +88,7 @@ const MCScanBlocksAddTrackComponent = observer(
             <FileSelector
               name={`Column ${idx + 1} BED`}
               inline
+              rootModel={getEnv(model).pluginManager.rootModel}
               description="Required: maps this column's gene ids to coordinates"
               location={col.bed}
               setLocation={loc => {

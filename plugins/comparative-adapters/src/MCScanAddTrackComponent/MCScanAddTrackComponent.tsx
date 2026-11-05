@@ -1,5 +1,5 @@
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
-import { getSession, useAddTrackFields } from '@jbrowse/core/util'
+import { getEnv, getSession, useAddTrackFields } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -41,6 +41,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
   model: AddTrackComponentModel
 }) {
   const session = getSession(model)
+  const { rootModel } = getEnv(model).pluginManager
   const defaultAsm = session.assemblies[0]?.name
   const { form, update } = useAddTrackFields<AnchorsForm>(
     model,
@@ -78,6 +79,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
       <FileSelector
         name="BED1"
         inline
+        rootModel={rootModel}
         description=""
         location={form.bed1Location}
         setLocation={loc => {
@@ -87,6 +89,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
       <FileSelector
         name="BED2"
         inline
+        rootModel={rootModel}
         description=""
         location={form.bed2Location}
         setLocation={loc => {

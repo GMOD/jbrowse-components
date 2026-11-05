@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { AssemblySelector, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   addTrackFromWidget,
+  getEnv,
   getSession,
   makeTrackId,
   workflowForm,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -20,11 +20,7 @@ import type {
   AdapterTypeOptions,
   IndexTypeOptions,
 } from './buildAdapterConfig.ts'
-import type {
-  AbstractRootModel,
-  AddTrackWorkflowModel,
-  FileLocation,
-} from '@jbrowse/core/util'
+import type { AddTrackWorkflowModel, FileLocation } from '@jbrowse/core/util'
 
 interface MafForm {
   samples: string
@@ -100,7 +96,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
   } = form
   const [error, setError] = useState<unknown>()
 
-  const rootModel = getRoot<AbstractRootModel>(model)
+  const { rootModel } = getEnv(model).pluginManager
 
   function handleSubmit() {
     try {

@@ -13,6 +13,7 @@ const StandardFormatSelector = observer(function StandardFormatSelector({
   fileLocation,
   setFileLocation,
   radioOption,
+  rootModel,
 }: SelectorProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -20,6 +21,7 @@ const StandardFormatSelector = observer(function StandardFormatSelector({
         name={`${radioOption} location`}
         inline
         description=""
+        rootModel={rootModel}
         location={fileLocation}
         setLocation={setFileLocation}
       />
