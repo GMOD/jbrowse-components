@@ -129,7 +129,7 @@ import {
 } from './legend.ts'
 import { createLinkOwners, withMateRegions } from './linkOwners.ts'
 import { baselineReached, layerSpans } from './markAutoscale.ts'
-import { markColorOf, withMarkColors } from './markColor.ts'
+import { markColorsOf, withMarkColors } from './markColor.ts'
 import {
   MIN_MARK_WIDTH_PX,
   buildMarkList,
@@ -143,8 +143,10 @@ import { markPlotSettingsOf } from './markPlot.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
   lastBinEdges,
+  layerRequestsOf,
+  markChannelsOf,
   markEntryOf,
-  markLayerRequest,
+  markStepListsOf,
   withRootLane,
   positionSource,
   stepsOf,
@@ -173,7 +175,6 @@ import {
   markRowTable,
   sectionRowName,
 } from './rowTable.ts'
-import { stepChannels } from './stepChannels.ts'
 import { TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -615,7 +616,7 @@ export function stateModelFactory(
          * display's, the facet's, then the mark's own.
          */
         get markStepLists(): MarkTransformStepConfig[][] {
-          return self.conf.marks.map(m => [...this.sharedSteps, ...m.transform])
+          return markStepListsOf(self.conf.marks, this.sharedSteps)
         },
         /**
          * #getter
@@ -623,7 +624,7 @@ export function stateModelFactory(
          * unwritten.
          */
         get markChannels(): StepChannels[] {
-          return this.markStepLists.map(steps => stepChannels(steps))
+          return markChannelsOf(self.conf.marks, this.sharedSteps)
         },
         /**
          * #getter
@@ -632,15 +633,12 @@ export function stateModelFactory(
          * rather than fetching them again.
          */
         get markColors(): ColorSource[] {
-          const { markChannels } = this
-          return self.conf.marks.map((m, i) =>
-            markColorOf(
-              m,
-              markChannels[i]!,
-              self,
-              self.hiddenCategories,
-              self.conf.encoding.color,
-            ),
+          return markColorsOf(
+            self.conf.marks,
+            this.markChannels,
+            self,
+            self.hiddenCategories,
+            self.conf.encoding.color,
           )
         },
         /**
@@ -670,19 +668,12 @@ export function stateModelFactory(
          * refetches nothing.
          */
         get layerRequests(): LayerRequest[] {
-          const { bpPerPx } = self.host
-          const binEdges =
-            lastBinEdges(self.conf.facet.transform) ??
-            lastBinEdges(self.conf.transform)
-          const { markChannels } = this
-          return self.conf.marks.map((m, i) =>
-            markLayerRequest(
-              m,
-              markChannels[i]!,
-              bpPerPx,
-              binEdges,
-              self.conf.encoding.color,
-            ),
+          return layerRequestsOf(
+            self.conf.marks,
+            this.markChannels,
+            self.host.bpPerPx,
+            this.sharedSteps,
+            self.conf.encoding.color,
           )
         },
         /**

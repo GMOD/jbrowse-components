@@ -151,6 +151,19 @@ export function markColorOf(
   }
 }
 
+/** {@link markColorOf} for each mark of a list, over its `markChannelsOf`. */
+export function markColorsOf(
+  marks: readonly MarkConfig[],
+  channels: readonly StepChannels[],
+  owner?: object,
+  hidden: readonly HiddenCategory[] = [],
+  inherited?: MarkColorConfig,
+) {
+  return marks.map((m, i) =>
+    markColorOf(m, channels[i]!, owner, hidden, inherited),
+  )
+}
+
 /**
  * What the color asks the worker to read: a `jexl:` expression whole, a
  * scale's field alone, and `DEFAULT_MARK_COLOR` where it reads nothing, which

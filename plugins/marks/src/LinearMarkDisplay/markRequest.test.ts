@@ -1,9 +1,18 @@
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
-import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import {
+  DEFAULT_MARK_COLOR,
+  encodeFeatures,
+} from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { configSchemaFactory } from './configSchema.ts'
-import { markLayerRequest, stepsOf, withRootLane } from './markRequest.ts'
+import {
+  layerRequestsOf,
+  markChannelsOf,
+  markLayerRequest,
+  stepsOf,
+  withRootLane,
+} from './markRequest.ts'
 import { stepChannels } from './stepChannels.ts'
 
 import type {
@@ -158,6 +167,34 @@ test('an emptied step slot leaves the worker its default, which the channel read
   const enc = encodeFeatures(out, { y: channels.y }, ['y'])
   expect(enc.count).toBe(3)
   expect(enc.skipped).toBe(0)
+})
+
+test("a mark list's shared bin groups its aggregate and its color paints a mark naming none", () => {
+  const meanScore = {
+    mark: 'bar',
+    encoding: { y: 'mean_score' },
+    transform: [{ type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] }],
+  }
+  const conf = configSchemaFactory().create({
+    displayId: 'd',
+    encoding: { color: { field: 'strand' } },
+    transform: [{ type: 'bin', step: 1000 }],
+    marks: [meanScore],
+  })
+  const shared = [...conf.transform, ...conf.facet.transform]
+  const [shaped] = layerRequestsOf(
+    conf.marks,
+    markChannelsOf(conf.marks, shared),
+    64,
+    shared,
+    conf.encoding.color,
+  )
+  expect(shaped!.transform![0]).toMatchObject({ groupby: ['start', 'end'] })
+  expect(shaped!.encoding.color).toEqual({ field: 'strand', scale: 'ordinal' })
+
+  const [bare] = layerRequestsOf(conf.marks, markChannelsOf(conf.marks), 64)
+  expect(bare!.transform![0]).toMatchObject({ groupby: [] })
+  expect(bare!.encoding.color).toBe(DEFAULT_MARK_COLOR)
 })
 
 test('every layer asks which feature it draws once any step fans features out', () => {

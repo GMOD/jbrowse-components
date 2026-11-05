@@ -30,6 +30,7 @@ import {
   DEFAULT_X2,
   isWindowFrame,
 } from './markVocabulary.ts'
+import { stepChannels } from './stepChannels.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
 import type { MarkColorConfig } from './inheritedColor.ts'
@@ -336,6 +337,46 @@ export function markLayerRequest(
     ...(transform.length > 0 ? { transform } : {}),
     ...(specOfMark(mark).path ? { path: pathOf(mark, color) } : {}),
   }
+}
+
+/**
+ * The steps that run before each mark's encode, in order: the shared steps
+ * (the display's, then the facet's), then the mark's own.
+ */
+export function markStepListsOf(
+  marks: readonly MarkConfig[],
+  sharedSteps: readonly MarkTransformStepConfig[] = [],
+) {
+  return marks.map(m => [...sharedSteps, ...m.transform])
+}
+
+/**
+ * The channels each mark's steps fill where its encoding leaves them
+ * unwritten.
+ */
+export function markChannelsOf(
+  marks: readonly MarkConfig[],
+  sharedSteps: readonly MarkTransformStepConfig[] = [],
+) {
+  return markStepListsOf(marks, sharedSteps).map(steps => stepChannels(steps))
+}
+
+/**
+ * The worker request for a mark list, one layer per mark: an `aggregate`
+ * naming no groupby groups by the last `bin` of the shared steps, and a mark
+ * naming no color paints `inherited`.
+ */
+export function layerRequestsOf(
+  marks: readonly MarkConfig[],
+  channels: readonly StepChannels[],
+  bpPerPx: number,
+  sharedSteps: readonly MarkTransformStepConfig[] = [],
+  inherited?: MarkColorConfig,
+) {
+  const binEdges = lastBinEdges(sharedSteps)
+  return marks.map((m, i) =>
+    markLayerRequest(m, channels[i]!, bpPerPx, binEdges, inherited),
+  )
 }
 
 function specOfMark(mark: MarkConfig): MarkSpec {
