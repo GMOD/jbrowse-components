@@ -67,7 +67,8 @@ export type {
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 export type { VariantTables } from '@jbrowse/plugin-variants/tables'
 export type { WiggleTables } from '@jbrowse/plugin-wiggle/tables'
-export type { AssemblyConfig } from './assembly.ts'
+export { assemblyResolver, renameRegions } from './assembly.ts'
+export type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
@@ -406,12 +407,10 @@ class TablesPlugin extends Plugin {
 }
 
 /**
- * A plugin manager holding only the adapters the tables read through, and the
- * table functions over it. Each returns columns: one array per field, so a
- * host reads each table as a data frame. Each call leaves the caches, which
- * every engine in the process shares, within their limit (`cache`).
+ * A plugin manager holding only the adapters the tables read through: the
+ * one a static export with no session fetches and resolves assemblies with.
  */
-export function createTablesEngine() {
+export function tablesPluginManager() {
   const pluginManager = new PluginManager([
     new TablesPlugin(),
     new BedPlugin(),
@@ -420,6 +419,17 @@ export function createTablesEngine() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
+  return pluginManager
+}
+
+/**
+ * {@link tablesPluginManager} and the table functions over it. Each returns
+ * columns: one array per field, so a host reads each table as a data frame.
+ * Each call leaves the caches, which every engine in the process shares,
+ * within their limit (`cache`).
+ */
+export function createTablesEngine() {
+  const pluginManager = tablesPluginManager()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
   const positioned = async ({ assembly, ...axis }: HostAxisArgs) => ({

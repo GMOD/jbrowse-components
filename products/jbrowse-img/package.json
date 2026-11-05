@@ -48,7 +48,9 @@
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/react-app2": "workspace:^",
+    "@jbrowse/tables": "workspace:^",
     "@napi-rs/canvas": "^1.1.0",
     "jsdom": "^30.1.3",
     "mobx": "^7.1.4",
@@ -62,7 +64,6 @@
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
-    "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@types/jsdom": "^30.0.0"
   },
