@@ -1,4 +1,3 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render } from '@testing-library/react'
@@ -10,12 +9,11 @@ import type { AppSession, Menu } from './types.ts'
 afterEach(cleanup)
 
 const theme = createJBrowseTheme()
-const configuration = ConfigurationSchema('Root', {}).create()
 
 function renderToolbar(menus: Menu[]) {
   const session = {
     name: 'session',
-    configuration,
+    jbrowse: {},
     menus: () => menus,
     renameCurrentSession: () => {},
     themeMode: 'light',

@@ -13,10 +13,11 @@ import {
 import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
 import type {
-  AnyConfigurationModel,
+  ConfigModelForFields,
   TrackConfigEntry,
 } from '../configuration/index.ts'
 import type { ActivitySession } from './sessionActivity.ts'
+import type { appRootConfigSchemaFields } from './types/jbrowseConfig.ts'
 
 declare global {
   interface Window {
@@ -91,7 +92,11 @@ async function send(stats: AnalyticsObj, init?: RequestInit) {
 
 // only doAnalytics reads the configuration, for the disableAnalytics slot
 type AnalyticsRootModelWithConfig = AnalyticsRootModel & {
-  jbrowse: { configuration: AnyConfigurationModel }
+  jbrowse: {
+    configuration: ConfigModelForFields<
+      Pick<typeof appRootConfigSchemaFields, 'disableAnalytics'>
+    >
+  }
 }
 
 // Both writers are fire-and-forget from several call sites, so they swallow

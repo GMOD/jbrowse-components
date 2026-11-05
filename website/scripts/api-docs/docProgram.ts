@@ -27,6 +27,10 @@ export interface ExtractedNode {
   // For `#slot` nodes only: the dotted path of the sub-schemas the slot sits
   // in (`scale.`), which a tag naming the slot alone leaves out
   slotPrefix?: string
+  // For a `#slot` a spread's JSDoc documents: the row name the spread gives
+  // the slot undocumented, which a dotted tag (`configuration.shareURL`)
+  // replaces
+  spreadSlot?: string
   comment: string
   signature: string
   node: string
@@ -340,8 +344,11 @@ function emitSpreadSlots(
   }
   for (const section of sections) {
     const name = /#slot[ \t]+(\S+)/.exec(section)?.[1]
-    const code = name && produced.get(name)
-    if (!code) {
+    const spreadSlot = name?.includes('.')
+      ? `${prefix}${name.slice(name.lastIndexOf('.') + 1)}`
+      : name
+    const code = spreadSlot && produced.get(spreadSlot)
+    if (!name || !code) {
       throw new Error(
         `${where} documents \`#slot ${name ?? ''}\`, which the spread does not bring in. It brings in: ${[...produced.keys()].join(', ') || 'nothing the generator can read'}.`,
       )
@@ -349,6 +356,7 @@ function emitSpreadSlots(
     cb({
       type: 'slot',
       name,
+      spreadSlot,
       comment: section,
       signature: '',
       node: code,

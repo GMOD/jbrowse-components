@@ -179,7 +179,10 @@ its own prose and `#example`s:
 ...colorChannelSlots({ … }),
 ```
 
-A slot no section names follows the literal slots as before. Naming a slot the
+A slot no section names follows the literal slots as before. A dotted section
+name is the row's whole name, as on a literal slot, and its last segment the
+slot it documents: the root config's `#slot configuration.shareURL` documents
+the `shareURL` that `...appRootConfigSchemaFields` brings in. Naming a slot the
 spread does not bring in, or writing prose above the first `#slot`, fails the
 run with the file named.
 

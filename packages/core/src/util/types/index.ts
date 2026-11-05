@@ -41,10 +41,16 @@ export type {
 } from './util.ts'
 export type { IsAny } from './isAny.ts'
 export type {
+  AppRootConfigModel,
   EditableJBrowseConfigModel,
   JBrowseConfigModel,
 } from './jbrowseConfig.ts'
-export { editableConfig, isEditableJBrowseConfig } from './jbrowseConfig.ts'
+export {
+  DEFAULT_SHARE_URL,
+  appRootConfigSchemaFields,
+  editableConfig,
+  isEditableJBrowseConfig,
+} from './jbrowseConfig.ts'
 export { isProblemHost, isSessionServices } from './services.ts'
 export type {
   DialogComponentType,

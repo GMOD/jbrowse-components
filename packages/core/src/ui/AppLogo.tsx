@@ -4,10 +4,11 @@ import { observer } from 'mobx-react'
 
 import { readConfObject } from '../configuration/index.ts'
 import { isUriLocation } from '../util/types/data.ts'
+import { isEditableJBrowseConfig } from '../util/types/jbrowseConfig.ts'
 import { LogoFull } from './Logo.tsx'
 
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type { FileLocation, UriLocation } from '../util/types/data.ts'
+import type { JBrowseConfigModel } from '../util/types/jbrowseConfig.ts'
 
 function resolvedUri(location: UriLocation) {
   return location.baseUri
@@ -53,9 +54,14 @@ function useLogoSrc(location: FileLocation | undefined) {
 const Logo = observer(function Logo({
   session,
 }: {
-  session: { configuration: AnyConfigurationModel }
+  session: { jbrowse: JBrowseConfigModel }
 }) {
-  const src = useLogoSrc(readConfObject(session.configuration, 'logoPath'))
+  const { jbrowse } = session
+  const src = useLogoSrc(
+    isEditableJBrowseConfig(jbrowse)
+      ? readConfObject(jbrowse.configuration, 'logoPath')
+      : undefined,
+  )
   return src ? (
     <img src={src} alt="Custom logo" />
   ) : (

@@ -25,6 +25,8 @@ export interface Item {
   // the slot's default is a parameter of the factory declaring it, so the
   // column names the arrangement rather than one caller's value
   parameterisedDefault?: boolean
+  // a slot a spread's JSDoc documents: the row the spread gives it undocumented
+  spreadSlot?: string
 }
 export interface ConfigHeader {
   name: string

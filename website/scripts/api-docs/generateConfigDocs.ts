@@ -157,7 +157,7 @@ export function outerSchemaName(configNode: string) {
 // of the same name. Idempotent, so both writers below can call it.
 export function mergeSpreadSlots(byFile: Record<string, Config>) {
   for (const config of Object.values(byFile)) {
-    const declared = new Set(config.slots.map(s => s.name))
+    const declared = new Set(config.slots.map(s => s.spreadSlot ?? s.name))
     config.slots = [
       ...config.slots,
       ...(config.spreadSlots ?? []).filter(s => !declared.has(s.name)),
@@ -236,6 +236,7 @@ export function accumulateConfig(
         schemas: obj.valueSchemas,
         returnedCode: obj.valueReturnedCode,
         parameterisedDefault: obj.parameterisedDefault,
+        spreadSlot: obj.spreadSlot,
       })
     } else if (seen.docs !== item.docs) {
       throw new Error(

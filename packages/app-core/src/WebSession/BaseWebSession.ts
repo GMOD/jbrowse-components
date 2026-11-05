@@ -98,7 +98,7 @@ export function BaseWebSessionModel({
        * #getter
        */
       get shareURL() {
-        return getConf(self.jbrowse, 'shareURL')
+        return getConf(editableConfig(self), 'shareURL')
       },
       /**
        * #getter

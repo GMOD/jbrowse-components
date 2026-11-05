@@ -443,6 +443,18 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
     ])
   })
 
+  test('a dotted section names its row, and the spread adds no second one', () => {
+    const slots = slotsOf(['#slot configuration.alpha', 'Alpha prose.'])
+    expect(slots.map(s => s.name)).toEqual([
+      'first',
+      'configuration.alpha',
+      'last',
+      'beta',
+      'gamma',
+    ])
+    expect(slots[1]!.code).toContain("description: 'passed alpha'")
+  })
+
   test('a section naming a slot the spread does not bring in fails', () => {
     expect(() => slotsOf(['#slot delta', 'No such slot.'])).toThrow(
       /schema\.ts: the JSDoc on `\.\.\.spreadKitPairT1.*#slot delta.*alpha, beta/,

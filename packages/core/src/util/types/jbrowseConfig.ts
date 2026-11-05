@@ -2,11 +2,13 @@ import type { BaseAssemblyConfigModel } from '../../assemblyManager/assemblyConf
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
+  ConfigModelForFields,
   TrackConfigEntry,
 } from '../../configuration/index.ts'
 import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/models/baseConnectionConfig.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
+import type { RpcConfigModel } from '../../rpc/configSchema.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -26,12 +28,46 @@ export interface JBrowseConfigModel extends IStateTreeNode {
   deleteConnectionConf(conf: AnyConfigurationModel): boolean
 }
 
+// also what resolveShareUrl falls back to, reading a raw config snapshot
+export const DEFAULT_SHARE_URL = 'https://share.jbrowse.org/api/v1/'
+
+/**
+ * The root config slots core reads that only jbrowse-web, desktop and
+ * react-app declare, spread into their `RootConfiguration`.
+ */
+export const appRootConfigSchemaFields = {
+  shareURL: {
+    type: 'string',
+    defaultValue: DEFAULT_SHARE_URL,
+    description:
+      'URL of the session-sharing backend used by the Share button, a JBrowse-hosted service by default',
+    advanced: true,
+  },
+  disableAnalytics: {
+    type: 'boolean',
+    defaultValue: false,
+    description: 'disables collection of anonymous usage analytics',
+    advanced: true,
+  },
+  logoPath: {
+    type: 'maybeFileLocation',
+    description:
+      'a custom logo image displayed in the app header; unset, the JBrowse logo',
+    advanced: true,
+  },
+} as const
+
+export type AppRootConfigModel = ConfigModelForFields<
+  typeof appRootConfigSchemaFields
+>
+
 /**
  * The config of jbrowse-web, desktop and react-app, which a session edits in
  * place. The embedded products' config holds no editing actions beyond
  * connections.
  */
 export interface EditableJBrowseConfigModel extends JBrowseConfigModel {
+  configuration: AppRootConfigModel & { rpc: RpcConfigModel }
   plugins: PluginDefinition[]
   defaultSession: { name: string; [key: string]: unknown }
   preConfiguredSessions: { name: string; [key: string]: unknown }[]

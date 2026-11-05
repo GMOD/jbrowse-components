@@ -1,13 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { appRootConfigSchemaFields } from '@jbrowse/core/util/types'
 import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
   PreferencesConfigSchemaFactory,
 } from '@jbrowse/product-core'
-
-import { DEFAULT_SHARE_URL } from './defaultShareUrl.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
@@ -62,23 +61,12 @@ export default function RootConfiguration({
 
     /**
      * #slot configuration.shareURL
-     * URL of the session-sharing backend used by the Share button, a
-     * JBrowse-hosted service by default
-     */
-    shareURL: {
-      type: 'string',
-      defaultValue: DEFAULT_SHARE_URL,
-      advanced: true,
-    },
-    /**
+     *
      * #slot configuration.disableAnalytics
-     * disables collection of anonymous usage analytics
+     *
+     * #slot configuration.logoPath
      */
-    disableAnalytics: {
-      type: 'boolean',
-      defaultValue: false,
-      advanced: true,
-    },
+    ...appRootConfigSchemaFields,
     /**
      * #slot configuration.hierarchical
      * configuration for the hierarchical track selector, controlling sorting
@@ -106,15 +94,6 @@ export default function RootConfiguration({
       type: 'frozen',
       description: 'additional named themes the user can switch between',
       defaultValue: {},
-      advanced: true,
-    },
-    /**
-     * #slot configuration.logoPath
-     */
-    logoPath: {
-      type: 'maybeFileLocation',
-      description:
-        'a custom logo image displayed in the app header; unset, the JBrowse logo',
       advanced: true,
     },
     /**
