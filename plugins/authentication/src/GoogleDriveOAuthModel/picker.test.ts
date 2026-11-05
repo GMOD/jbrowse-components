@@ -1,3 +1,4 @@
+import { FAB_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
 import configSchema from './configSchema.ts'
@@ -142,4 +143,15 @@ test('cancelling the Picker resolves to no location', async () => {
   expect(
     await makeAccount({ apiKey: 'key', appId: '123' }).chooseLocation(),
   ).toBeUndefined()
+})
+
+test('the Picker stacks above the drawer and the dialog that opened it', async () => {
+  stubPicker({ action: 'cancel' })
+  await makeAccount({ apiKey: 'key', appId: '123' }).chooseLocation()
+  await makeAccount({ apiKey: 'key', appId: '123' }).chooseLocation()
+
+  expect(document.head.querySelectorAll('style')).toHaveLength(1)
+  expect(
+    document.querySelector('#jbrowse-google-picker-layer')?.textContent,
+  ).toContain(`.picker-dialog { z-index: ${FAB_Z_INDEX + 2} !important; }`)
 })

@@ -1,3 +1,5 @@
+import { FAB_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
+
 import { loadScript } from '../loadScript.ts'
 
 interface PickedDoc {
@@ -73,6 +75,21 @@ async function loadPickerNamespace() {
   return picker
 }
 
+const PICKER_LAYER_STYLE_ID = 'jbrowse-google-picker-layer'
+
+// The Picker stacks itself at ~1000 with inline styles, under the drawer
+// (1200) and any dialog (1300) that opened it, and takes no z-index option
+function raisePickerAboveApp() {
+  if (!document.getElementById(PICKER_LAYER_STYLE_ID)) {
+    const style = document.createElement('style')
+    style.id = PICKER_LAYER_STYLE_ID
+    style.textContent = `
+.picker-dialog-bg { z-index: ${FAB_Z_INDEX + 1} !important; }
+.picker-dialog { z-index: ${FAB_Z_INDEX + 2} !important; }`
+    document.head.append(style)
+  }
+}
+
 export async function pickDriveFile({
   token,
   apiKey,
@@ -83,6 +100,7 @@ export async function pickDriveFile({
   appId: string
 }) {
   const picker = await loadPickerNamespace()
+  raisePickerAboveApp()
   return new Promise<PickedDoc | undefined>(resolve => {
     new picker.PickerBuilder()
       .addView(
