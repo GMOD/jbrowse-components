@@ -27,19 +27,25 @@ color keys nothing as on screen, and a `trackName` argument gives a key by
 
 ## Equivalent today, by hand
 
-- Autoscale glue in alignments coverage's tables, and the nice-rounding step
-  in wiggle's, which ignore `encoding.y.scale.group`. Wiggle's range, color
+- The nice-rounding step in wiggle's tables. Wiggle's range, color
   and mark sources run the model's own getters, and the wiggle and variants
   rows, row colors and row color key run `TreeSidebarMixin`'s
   ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
-- Alignments' read colors and read key run the model's own getters
-  (`alignmentsColorViews`); the read palette is still built by hand from the
-  default theme. `alignmentsReads.parity.test.ts` holds no drift: the read
+- Alignments' read colors, read key and read palette run the model's own
+  getters (`alignmentsColorViews`, `readPaletteViews`), and the coverage band's
+  autoscale its `coverageScaleViews`, with no autoscale group
+  (`ungroupedAutoscaleViews`). `alignmentsReads.parity.test.ts` holds no drift: the read
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title
   and `descending`.
 
 ## Closed
+
+- Variants' cell colors and the export's `variants.color` run the display's
+  `cellColorViews` and `recordColorViews`. The record color was a drift:
+  under the default and `phaseSet` the export painted the full-dose alt hue
+  where the records band paints the SV class or `featureDefaultColor`
+  (`recordColors` in the parity suite).
 
 - The features carry-overs (collapsed mode's forced `subfeatureLabels`, the
   `resolvedGeneGlyphMode` call, the `labelVisibility` inputs and

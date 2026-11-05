@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables run. Parked on static-wiggle-render: staticWiggleSvg, staticLgvFrame and renderDisplaySvgInFrame, whose parity test must compare the whole display node. Built too: the sidebar and the key on the static host. Left: every other display, the non-linear view frames, the chrome, and the CLI switch."
+description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables and staticWiggleSvg both run, its parity test comparing the display's whole SVG node with jb2export's. Built too: the sidebar and the key, alignments' coverage scale and palette, variants' cell and record colors, and the byte gate as views. Left: every other display, the non-linear view frames, the chrome, and the CLI switch."
 ---
 
 # A display's render inputs run on a plain host
@@ -116,20 +116,42 @@ display keeps its model, and the static path runs that model's views.
   (`variantColorSettingViews`) and the records band's key (`recordsKeyViews`,
   `recordsColorScaleViews`), and keys through `variantDataColorScales`, the
   display's `colorScales` less the row key.
+- **The variant cells' and records' colors**:
+  `LinearVariantDisplay/cellColorViews.ts` holds `cellHueInputViews`
+  (`cellHueInput`, compared by value, and `cellHueRead`),
+  `cellHueValuesReadViews`, `cellHueViews` (`cellHue`, `cellPaintOptions`)
+  and `regionCellColorViews`, and the key over them, `cellKeyViews`
+  (`hasSecondaryAlt` … `paintedDomain`) and `variantDataKeyViews`
+  (`dataColorScales`, the display's `colorScales` less the row key). The
+  records' colors are `recordColorViews` (`regionRecordColors`) in
+  `recordsBandViews.ts`. `VariantTablesHost` installs them over a
+  `ParkedColorMixin`, the fetched `cellData` as a volatile and a no-fade
+  `regionRecordAlpha`; the fade ships apart as `variantDensityAlpha`. The
+  parity harness compares each drawn cell's color (`cellColors`) and each
+  record's (`recordColors`). Running them closed a drift: `variants.color`
+  still painted ADR-203's full-dose lane hue under the default and
+  `phaseSet`, where the records band paints the SV class or
+  `featureDefaultColor`.
 
-## Parked on `static-wiggle-render`
+## Built: the static wiggle SVG
 
-`staticWiggleSvg` (`@jbrowse/plugin-wiggle/staticSvg`), `staticLgvFrame`,
-`renderDisplaySvgInFrame` (`renderDisplaySvg` past its `awaitSvgReady`, with
-the view handed in as an `SvgViewFrame`), `WiggleSvgBody` exported over a
-`WiggleSvgBodyModel`, and `products/jbrowse-img/src/staticWiggle.test.ts`.
-They come back over the wiggle tables' host, with the sidebar below.
+`staticWiggleSvg` (`@jbrowse/plugin-wiggle/staticSvg`) runs on the one wiggle
+static host the tables run, `plugins/wiggle/src/shared/wiggleStaticHost.ts`:
+its frame carries `trackWidthPx`, read through `trackCanvasWidthPx` as a
+display does, and it installs `wiggleScoreKeyViews` and `wiggleDisplayViews`
+(`renderState`) where the display does. The export reads the fetch inputs in
+one `runInAction` and everything the body draws in a second, into a plain
+`WiggleSvgBodyModel`, and hands it to `renderDisplaySvgInFrame`
+(`renderDisplaySvg` past its `awaitSvgReady`) over a `staticLgvFrame`.
 
-Its parity test compares only a prefix of jb2export's output,
-`svg.slice(start, start + body.length)` from where the static body starts, so
-a static body missing a trailing element, the y axis, passes. It must find the
-display's whole node in both outputs, from its opening tag to its matching
-close, and compare the two nodes whole.
+`products/jbrowse-img/src/staticWiggle.test.ts` parses both exports and
+compares every node the display draws, from its clip's `<defs>` to the end of
+its group, less the view's region separators (3px rects, the view's chrome),
+for xyplot in a window and over a whole contig, line, density, and a
+four-source multi-wiggle drawn a row per source. Dropping the y axis from the
+static body fails every case that draws an axis. The one difference found was
+chrome: the LGV export passes its `fontSize: 13` default to every display, so
+a static caller states the view's text style itself.
 
 ## Built: alignments' read colors and read key
 
@@ -151,6 +173,14 @@ computed only inside a batch: unbatched, a review counted
 tables' hand copy was equivalent. The scans that read no baked
 color now read the framed layout rather than `laidOutByGroup`, so a recolor or
 a connector toggle no longer re-runs them.
+
+The coverage band's scale runs there too: `coverageScaleViews.ts` holds
+`bandPlotViews`, `coverageStatsViews`, `coverageAutoscaleViews`,
+`coverageDomainViews` and `coverageTicksViews`, over
+`ScoreScaleMixin(COVERAGE_Y_PATHS)` with the regions as a `view` frame, and
+the read palette is `readPaletteViews` (`colorsIn`) over a `theme` volatile.
+Running them found no drift; a hidden coverage band (`coverage.show: false`)
+now exports no axis, as the display draws none.
 
 The tables still lay out every row where the view lays out under row caps
 (`layoutGroupsToViewport`). That is an export difference, not a drift: a cap
@@ -191,16 +221,42 @@ it.
 display's records band, which is a live display's own band rather than an
 export.
 
+## Built: the byte gate as views
+
+`packages/display-kit/src/regionTooLargeViews.ts` holds the gate's budget and
+verdict over `RegionTooLargeGateHost`: the display's `gateEnabled` and
+`densityTooLarge` hooks, its `fetchSizeLimit` and `forceLoad` slots, the
+adapter's `fetchSizeLimit`, the button's approval, the frame's span and the
+fetch's `byteEstimate`. `RegionTooLargeMixin` installs them and keeps only the
+view and track reads and the re-measure machinery. `gateTruthTable.test.ts`
+runs them on a static MST host over every truth-table row against the live
+mixin. No static consumer gates yet: one reads `resolvedByteLimit()` before
+its fetch, sets `byteEstimate` after it, and reads `regionTooLarge`; for
+features, `FeatureGateMixin`'s density chain (it reads the view's
+`coarseBpPerPx`) moves to views functions first.
+
+## Built: the mark request chain, spelled once
+
+`markStepListsOf`, `markChannelsOf`, `layerRequestsOf` and `markColorsOf`
+(plugin-marks) take a mark list with its shared steps and inherited color.
+The mark display's getters each make one call, and multi-way synteny's lane
+layers make the same calls with neither: a lane layer's closed schema
+declares no `transform`, `facet` or `encoding`, and the multi-way display's
+`encoding.color` is its gene glyphs' color, which ADR-248 keeps off lane
+marks. They are pure calls rather than a views function because multi-way
+runs the chain per lane layer, which has no host; a static mark host wraps
+them in views over `conf`, `bpPerPx` and `hiddenCategories`.
+
 ## Left
 
-- **`renderState`** (`wiggleDisplayViews`) on the static host, then the body.
 - **RefNames**: the frame must carry the adapter's refNames; the static path
   has no assembly manager. `packages/tables`' `assemblyResolver` is the piece to
   run before the frame.
-- **Autoscale groups** across tracks: the static host answers no group, so a
-  figure whose tracks share one needs the union across their static hosts.
-- **What the session did around the body**: the byte gate (`regionTooLarge` is
-  never set), rasterized layers (the parity test is vector), and the chrome —
+- **Autoscale groups** across tracks: a static host answers no group
+  (`ungroupedAutoscaleViews`, on the wiggle and alignments hosts), so a figure
+  whose tracks share one needs the union across their static hosts.
+- **What the session did around the body**: a static consumer of the byte
+  gate (above), rasterized layers (the parity test is vector), and the chrome —
   ruler, track labels, region separators, the legend gutter.
 - **The CLI**: `jb2export` still renders through the session.
 
@@ -219,9 +275,8 @@ parity test against `renderRegion`. By family, cheapest first:
 - **Alignments** and **MAF**: the longest chains (`renderState`,
   `sourceSections`, `renderSections` in `LinearAlignmentsDisplay/model.ts`),
   alignments' pileup layout pure on the main thread, MAF on the rows as well.
-  Alignments' read colors and key already run on the tables' static host; the
-  read palette (`colorsIn`) is still built by hand there from the default
-  theme.
+  Alignments' read colors, key, palette and coverage scale already run on the
+  tables' static host.
 - **Comparative and circular displays** (`MultiWaySyntenyDisplay`,
   `LinearSyntenyDisplay`, the dotplot display, `ChordSyntenyDisplay`,
   `ChordVariantDisplay`): each needs its own view's frame first.
