@@ -23,8 +23,8 @@ which the reset calls.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-owngroupstate">**ownGroupState**</span><br><code>unknown</code> | Overridable hook: the per-group state a display keeps beyond the hidden sections, as a plain value. `undefined` by default; alignments returns its collapses and height overrides, the state its `dropGroupState` clears. |
 | <span id="getter-hiddengroups">**hiddenGroups**</span><br><code>ReadonlySet&lt;string&gt;</code> | The sections the user hid: `facet.hidden`, while the stack groups by the facet's field. A fresh Set per change, so a layout memo comparing its inputs by identity sees a hide. |
+| <span id="getter-owngroupstate">**ownGroupState**</span><br><code>unknown</code> | Overridable hook: the per-group state a display keeps beyond the hidden sections, as a plain value. `undefined` by default; alignments returns its collapses and height overrides, the state its `dropGroupState` clears. |
 | <span id="getter-hiddengroupkeys">**hiddenGroupKeys**</span><br><code>ReadonlySet&lt;string&gt;</code> | Read `hiddenGroups`, which this returns |
 | <span id="getter-groupstatekey">**groupStateKey**</span><br><code>unknown</code> | All the per-group state as a plain, comparable value: the hidden sections, sorted, beside `ownGroupState`. A live figure keys on it, since a display's own state is volatile and in no snapshot; a Set would serialize as `{}`. |
 

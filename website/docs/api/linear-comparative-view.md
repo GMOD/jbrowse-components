@@ -113,7 +113,7 @@ to its region, X1 joining X1 along one edge and X2 joining X2.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, query, target, view: written }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: { x: number[]; y: number[]; width: number[]; height: number[]; color: string[]; alpha: number[]; axis: ("query" | "target")[]; }; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
+(pluginManager: PluginManager, { adapterConfig, trackName, query, target, view: written, }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

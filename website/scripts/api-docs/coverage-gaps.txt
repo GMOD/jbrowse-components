@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1259)
+# model members with no description (1254)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -610,8 +610,6 @@ LinearAlignmentsDisplay.view
 LinearAlignmentsDisplay.visibleLabels
 LinearBasicDisplay.contextMenuItems
 LinearBasicDisplay.dismissGeneGlyphNotice
-LinearBasicDisplay.effectiveGeneGlyphMode
-LinearBasicDisplay.effectiveSubfeatureLabels
 LinearBasicDisplay.filterSubMenuItems
 LinearBasicDisplay.geneGlyphCollapsed
 LinearBasicDisplay.geneGlyphMode
@@ -623,12 +621,9 @@ LinearBasicDisplay.setGenesFilter
 LinearBasicDisplay.setShowChevrons
 LinearBasicDisplay.setSubfeatureLabels
 LinearBasicDisplay.setUtrColor
-LinearBasicDisplay.showChevrons
 LinearBasicDisplay.showGeneGlyphNotice
 LinearBasicDisplay.showSubmenuCheckboxItems
 LinearBasicDisplay.showSubmenuRadioGroups
-LinearBasicDisplay.showsEveryIsoform
-LinearBasicDisplay.subfeatureLabels
 LinearBasicDisplay.trackMenuItems
 LinearBasicDisplay.utrColor
 LinearFeatureBaseDisplay.applySolo

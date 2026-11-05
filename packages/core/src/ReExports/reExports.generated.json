@@ -4741,6 +4741,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
+        "heightModeViews",
         "installGrowExitBake"
       ],
       "worker": "real"
@@ -4756,7 +4757,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "NO_HIDDEN_GROUPS",
-        "default"
+        "default",
+        "hiddenGroupsViews"
       ],
       "worker": "real"
     },
