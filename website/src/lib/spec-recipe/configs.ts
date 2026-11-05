@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { repoRoot } from '../../../scripts/paths.ts'
+import { expandTrackShorthand } from '../infer-track.ts'
 import { specTracks } from './decode.ts'
 import { displayTable } from './displayTable.generated.ts'
 import { defaultDisplayIn } from './displays.ts'
@@ -110,6 +111,18 @@ function sequenceTrack(
     : undefined
 }
 
+// A session track written as `{ type, uri }` names its adapter only through
+// the file the uri points at, as the app's own shorthand does.
+function shorthandAdapterType(track: RawTrack) {
+  const { adapter } = expandTrackShorthand({ ...track })
+  return typeof adapter === 'object' &&
+    adapter !== null &&
+    'type' in adapter &&
+    typeof adapter.type === 'string'
+    ? adapter.type
+    : undefined
+}
+
 export function lookupTrack(
   config: string,
   trackId: string,
@@ -125,7 +138,7 @@ export function lookupTrack(
         trackId,
         name: track.name ?? trackId,
         type: track.type ?? '',
-        adapterType: track.adapter?.type ?? '',
+        adapterType: track.adapter?.type ?? shorthandAdapterType(track) ?? '',
         declaredDisplayTypes: (track.displays ?? [])
           .map(d => d.type)
           .filter(t => typeof t === 'string'),

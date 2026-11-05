@@ -130,3 +130,63 @@ test('only the first row of a synteny view says how a track is added', () => {
   expect(first).toContain('**Add track**')
   expect(second).toMatch(/^Add the next track the same way\./)
 })
+
+test('a breakpoint split view opens from the first panel, and a later panel adds only its own tracks', () => {
+  const recipe = recipeOf({
+    views: [
+      {
+        type: 'BreakpointSplitView',
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            loc: 'ctgA:1-5000',
+            tracks: ['volvox_cram'],
+          },
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            loc: 'ctgB:1-5000',
+            tracks: ['volvox_cram', 'volvox_filtered_vcf'],
+          },
+        ],
+      },
+    ],
+  })
+  const titles = recipe.steps.map(s => s.title)
+  expect(titles.filter(t => t.startsWith('Open your genome'))).toHaveLength(1)
+  expect(titles[1]).toContain('File → Open track...')
+  expect(titles).toContainEqual(
+    expect.stringContaining('**Open breakpoint split view**'),
+  )
+  expect(recipe.steps.at(-1)).toMatchObject({
+    title: 'Panel 2',
+    substeps: [{ example: expect.stringContaining('volvox_filtered_vcf') }],
+  })
+})
+
+test('a session track written as a bare uri names its file type', () => {
+  const recipe = recipeOf({
+    sessionTracks: [
+      {
+        type: 'VariantTrack',
+        trackId: 'my_calls',
+        assemblyNames: ['volvox'],
+        uri: 'https://example.org/calls.vcf.gz',
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-5000',
+        tracks: [{ trackId: 'my_calls', runClustering: true }],
+      },
+    ],
+  })
+  const add = recipe.steps.find(s => s.title.includes('Open track'))
+  expect(add?.title).toContain('VCF')
+  expect(add?.substeps?.map(s => s.title)).toContainEqual(
+    expect.stringContaining('Cluster rows by genotype...'),
+  )
+})

@@ -122,6 +122,16 @@ const IMPORT_FORM_VIEWS: Record<string, ImportFormView> = {
   },
 }
 
+// A view no menu adds: the reader opens it from a feature in a linear view, which
+// it copies the tracks of into every panel.
+const LAUNCHED_VIEWS: Record<string, { opener: string; note: string }> = {
+  BreakpointSplitView: {
+    opener:
+      'Right-click a read that spans the breakpoint, or a breakend variant → **Open breakpoint split view**.',
+    note: 'Each panel opens on one end of the join, with the tracks of the view it was opened from.',
+  },
+}
+
 // Labels that name what a track holds read naturally only if the noun matches
 // the track ('Read height' for a pileup, 'Feature height' otherwise).
 //
@@ -469,8 +479,50 @@ function viewSteps(
     viewFields,
     { noun: 'feature', viewType: view.type },
   )
+  const launched = view.type ? LAUNCHED_VIEWS[view.type] : undefined
+  const [firstPanel, ...otherPanels] = view.views ?? []
+  if (launched && firstPanel) {
+    const first = viewSteps(
+      firstPanel,
+      config,
+      sessionTracks,
+      undefined,
+      viaTrackSelector,
+      firstPanel.type ?? rowViewType(view.type),
+      told,
+    )
+    steps.push(...first.steps, {
+      title: launched.opener,
+      note: launched.note,
+      opensView: true,
+    })
+    unmapped.push(...first.unmapped)
+  }
   steps.push(...viewFieldSteps.steps)
   unmapped.push(...viewFieldSteps.unmapped)
+
+  if (launched && firstPanel) {
+    const copied = new Set(specTracks(firstPanel).map(specTrackId))
+    for (const [index, panel] of otherPanels.entries()) {
+      const added = specTracks(panel).filter(
+        entry => !copied.has(specTrackId(entry)),
+      )
+      const panelSteps = added.map(entry => {
+        const { unmapped: trackUnmapped, ...step } = trackStep(
+          entry,
+          config,
+          panel.type ?? rowViewType(view.type),
+          sessionTracks,
+          undefined,
+          true,
+        )
+        unmapped.push(...trackUnmapped)
+        return step
+      })
+      steps.push(...groupSteps(`Panel ${index + 2}`, panelSteps))
+    }
+    return { steps, unmapped }
+  }
 
   for (const [index, subView] of (view.views ?? []).entries()) {
     const label = form
