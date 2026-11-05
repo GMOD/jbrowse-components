@@ -1,6 +1,8 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config JB2TrackHubConnection
  * Adds the tracks of another JBrowse 2 `config.json` to the session, along
@@ -78,5 +80,9 @@ const JB2TrackHubConnection = ConfigurationSchema(
     },
   },
 )
+
+export interface JB2TrackHubConnectionConfigModel extends Instance<
+  typeof JB2TrackHubConnection
+> {}
 
 export default JB2TrackHubConnection

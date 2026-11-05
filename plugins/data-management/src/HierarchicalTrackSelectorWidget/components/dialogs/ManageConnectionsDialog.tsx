@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
@@ -32,7 +32,7 @@ const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
 }: {
   handleClose: () => void
   session: AbstractSessionModel
-  onDelete: (conf: AnyConfigurationModel) => void
+  onDelete: (conf: BaseConnectionConfigModel) => void
 }) {
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session

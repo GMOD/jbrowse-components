@@ -11,6 +11,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '../../configuration/index.ts'
+import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/models/baseConnectionConfig.ts'
 import type {
   BaseInternetAccountModel,
   BaseTrackConfig,
@@ -233,12 +234,12 @@ export interface AbstractSessionModel
   sessionAssemblies?: BaseAssemblyConfigModel[]
   removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
-  connections: AnyConfigurationModel[]
-  deleteConnection?: (arg: AnyConfigurationModel) => void
+  connections: BaseConnectionConfigModel[]
+  deleteConnection?: (arg: BaseConnectionConfigModel) => void
   temporaryAssemblies?: unknown[]
   addTemporaryAssembly?: (arg: Record<string, unknown>) => void
   removeTemporaryAssembly?: (arg: string) => void
-  sessionConnections?: AnyConfigurationModel[]
+  sessionConnections?: BaseConnectionConfigModel[]
   sessionTracks?: AnyConfigurationModel[]
   trackConfigDeltas?: Record<
     string,
@@ -253,8 +254,8 @@ export interface AbstractSessionModel
     string,
     { connectionId: string; config: Record<string, unknown> }
   >
-  makeConnection?: (arg: AnyConfigurationModel) => void
-  breakConnection?: (arg: AnyConfigurationModel) => void
+  makeConnection?: (arg: BaseConnectionConfigModel) => void
+  breakConnection?: (arg: BaseConnectionConfigModel) => void
   captureConnectionTrack?: (trackId: string) => void
   pruneConnectionTrackConfig?: (trackId: string) => void
   hydrateConnection?: (connectionId: string) => void
@@ -654,16 +655,16 @@ export interface ConnectionInstance {
   name: string
   connectionId: string
   tracks: AnyConfigurationModel[]
-  configuration: AnyConfigurationModel
+  configuration: BaseConnectionConfigModel
   // true while the connection is fetching its tracks
   loading: boolean
 }
 /** a session that can turn connections on and off */
 export interface SessionWithConnections extends AbstractSessionModel {
   connectionInstances: ConnectionInstance[]
-  makeConnection: (arg: AnyConfigurationModel) => void
-  breakConnection: (arg: AnyConfigurationModel) => void
-  deleteConnection: (arg: AnyConfigurationModel) => void
+  makeConnection: (arg: BaseConnectionConfigModel) => void
+  breakConnection: (arg: BaseConnectionConfigModel) => void
+  deleteConnection: (arg: BaseConnectionConfigModel) => void
 }
 export function isSessionModelWithConnections(
   thing: unknown,
@@ -673,7 +674,7 @@ export function isSessionModelWithConnections(
 
 /** a session that can also add new connection configs */
 export interface SessionWithConnectionEditing extends SessionWithConnections {
-  addConnectionConf: (arg: AnyConfigurationModel) => AnyConfigurationModel
+  addConnectionConf: (arg: AnyConfigurationModel) => BaseConnectionConfigModel
 }
 export function isSessionModelWithConnectionEditing(
   thing: unknown,

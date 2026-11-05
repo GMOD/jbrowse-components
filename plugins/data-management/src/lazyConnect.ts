@@ -1,13 +1,15 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /** the subset of a connection model that a `doConnect` implementation needs */
-export interface ConnectionDoConnectArg {
-  configuration: AnyConfigurationModel
+export interface ConnectionDoConnectArg<
+  CONF extends BaseConnectionConfigModel = BaseConnectionConfigModel,
+> {
+  configuration: CONF
   addTrackConfs: (arg: Record<string, unknown>[]) => void
   // true when re-establishing on session load; suppress first-connect side
   // effects (view launch, success snackbar)
@@ -28,7 +30,7 @@ export async function lazyConnect<
 >(
   self: T,
   loadDoConnect: () => Promise<{
-    doConnect: (self: ConnectionDoConnectArg) => unknown
+    doConnect: (self: T) => unknown
   }>,
 ) {
   const { doConnect } = await loadDoConnect()
@@ -38,7 +40,8 @@ export async function lazyConnect<
     } catch (e) {
       console.error(e)
       const session = getSession(self)
-      session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)
+      const conf: BaseConnectionConfigModel = self.configuration
+      session.notifyError(`${readConfObject(conf, 'name')}: "${e}"`, e)
       session.breakConnection?.(self.configuration)
     }
   }

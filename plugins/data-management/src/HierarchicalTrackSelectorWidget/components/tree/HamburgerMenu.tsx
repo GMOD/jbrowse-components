@@ -17,7 +17,7 @@ import {
 } from '../../showAddWidget.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 // lazies
 const FacetedDialog = lazy(
@@ -34,7 +34,7 @@ const ManageConnectionsDialog = lazy(
 
 interface DialogDetails {
   name: string
-  connectionConf: AnyConfigurationModel
+  connectionConf: BaseConnectionConfigModel
 }
 
 const HamburgerMenu = observer(function HamburgerMenu({

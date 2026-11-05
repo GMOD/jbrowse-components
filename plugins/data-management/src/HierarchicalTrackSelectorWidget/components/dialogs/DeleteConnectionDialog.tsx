@@ -2,7 +2,7 @@ import { ConfirmDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { SessionWithConnections } from '@jbrowse/core/util'
 
 const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
@@ -12,7 +12,7 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
 }: {
   deleteDialogDetails: {
     name: string
-    connectionConf: AnyConfigurationModel
+    connectionConf: BaseConnectionConfigModel
   }
   session: SessionWithConnections
   handleClose: () => void

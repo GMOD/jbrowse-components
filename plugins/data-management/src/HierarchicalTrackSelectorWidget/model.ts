@@ -617,7 +617,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               const { connectionId } = conf
               const live = liveByConnectionId.get(connectionId)
               return {
-                group: readConfObject(conf, 'name') as string,
+                group: readConfObject(conf, 'name'),
                 id: connectionCategoryId(connectionId),
                 connectionId,
                 tracks: live ? resolve(filterTracks(live.tracks, self)) : [],

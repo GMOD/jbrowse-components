@@ -19,6 +19,7 @@ import {
 } from './util.ts'
 
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
+import type { UCSCTrackHubConnectionConfigModel } from './configSchema.ts'
 import type { RaStanza } from '@gmod/ucsc-hub'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -68,7 +69,9 @@ function ensureAssembly(
 }
 
 // lazyConnect wraps this in the shared connect-failure handler
-export async function doConnect(self: ConnectionDoConnectArg) {
+export async function doConnect(
+  self: ConnectionDoConnectArg<UCSCTrackHubConnectionConfigModel>,
+) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const hubFileLocation = getConf(self, 'hubTxtLocation')

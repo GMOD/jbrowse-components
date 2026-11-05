@@ -1,6 +1,8 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config UCSCTrackHubConnection
  * Adds the tracks a UCSC track hub's `hub.txt` declares for each matching
@@ -76,5 +78,9 @@ const UCSCTrackHubConnection = ConfigurationSchema(
     },
   },
 )
+
+export interface UCSCTrackHubConnectionConfigModel extends Instance<
+  typeof UCSCTrackHubConnection
+> {}
 
 export default UCSCTrackHubConnection
