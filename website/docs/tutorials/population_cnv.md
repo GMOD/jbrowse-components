@@ -68,10 +68,10 @@ own.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                                                                                                                                   | File                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted unmodified because the lab's download share is offline. Each file sits under its population, so HG00551 and HG00553 are         | [HG00551.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw)<br>[HG00553.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw) |
-| The same values packed into one Zarr store for the [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of chunks that 404s at its root, and the URL is what an adapter takes as `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                                                                                               |
+| What it is                                                                                                                                                                                           | File                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted unmodified because the lab's download share is offline. Each file sits under its population, so HG00551 and HG00553 are | [HG00551.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw)<br>[HG00553.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw) |
+| The same values packed into one Zarr store for the [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of chunks that 404s at its root, and an adapter takes the URL as `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                                                                                               |
 
 </details>
 
@@ -276,7 +276,7 @@ The PUR track lists one population's files. Each BigWig needs several dependent
 reads to find and fetch a region's values, so a track listing every individual
 in the panel slows with each file it adds. A [Zarr](https://zarr.dev/) v3 store
 holds the whole panel as one array of samples by bins, in chunk files on static
-hosting, and fills a window in two metadata requests and one chunk.
+hosting, so a window takes two metadata requests and one chunk.
 
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
 `MultiWiggleZarrAdapter` that reads such a store with the same display settings
@@ -322,15 +322,15 @@ With the plugin loaded, the adapter's `uri` names the store:
 }
 ```
 
-A relative `uri` resolves against the config that holds it, so a store beside
-your `config.json` takes `qm2_cn_1kb.zarr`.
+A relative `uri` resolves against the config that holds it, so for a store
+beside your `config.json`, the `uri` is `qm2_cn_1kb.zarr`.
 
 <Figure caption="Every individual from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
 ## A deletion nested inside another on chr3, sorted by clustering
 
 The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
-114 kb one. Clustering sorts the individuals by which deletion they carry, and
+114 kb one. Clustering sorts the individuals by which deletion they have, and
 the long-read assembly calls of the Human Genome Structural Variation Consortium
 ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
 
@@ -378,8 +378,8 @@ bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
 ```
 
 Host it, then add its URL to a heatmap track's `bigWigs`, or a `name` and `url`
-row to `samples.tsv` for the Zarr build below. An individual the panel already
-covers gives the lab's estimate as a check.
+row to `samples.tsv` for the Zarr build below. For an individual already in the
+panel, compare your result with the lab's estimate.
 
 ## Building a Zarr store from per-sample BigWigs
 

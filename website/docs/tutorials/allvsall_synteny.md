@@ -125,7 +125,7 @@ The `jbrowse add-assembly` step for one strain, as a config or in Desktop:
 }
 ```
 
-An assembly whose refNames still have the PanSN prefix draws empty. The
+An assembly whose refNames still have the PanSN prefix is drawn empty. The
 [assemblies configuration guide](/docs/config_guides/assemblies) has more.
 
 ## Loading the PAF with MultiGenomePAFAdapter
@@ -232,8 +232,8 @@ A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
   rows its `assemblyNames` cover
 - `collapseEmptyRows` gives each trackless row a bare scale bar
 
-Row order is a free choice with an all-vs-all PAF, since the file aligns every
-pair.
+Row order is a free choice with an all-vs-all PAF, since the file contains an
+alignment for every pair.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments filtered out by length." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
@@ -345,7 +345,7 @@ applies edits live.
 
 <Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
-### Redrawing each lane in its own strain's coordinates
+### Redrawing each lane in the coordinates of the strain it shows
 
 A strain with no alignment to the backbone is a white gap on the K-12 axis.
 **Display types → Multi-way synteny display** redraws each lane in the
@@ -357,8 +357,8 @@ coordinates of the strain it shows, one ribbon per PAF record
 Drag-select a region on the scale bar and pick **Launch → Linear synteny view**.
 The dialog lists every assembly aligning to that region as a panel, top to
 bottom, with arrows to reorder them and a checkbox to drop one; **Replace
-current view** or **Open in new view** launches the stack. Ribbons draw between
-neighbouring rows only.
+current view** or **Open in new view** launches the stack. Ribbons are drawn
+between neighbouring rows only.
 
 Right-clicking a single alignment offers three routes under **Launch**:
 

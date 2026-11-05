@@ -68,7 +68,7 @@ everything itself.
 | The sample table, breed and category per animal                                     | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 | The reference sequence the stop codon is derived from, over UCSC's canFam4 REST API | [sequence](https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr30;start=38258000;end=38265000)                                                 |
 | The RefSeq gene structure that same derivation reads exon boundaries from           | [track](https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000)                               |
-| The 15 published CRAMs the copy-number track validates callset depth against        | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
+| The 15 published CRAMs that callset depth is validated against                      | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 
@@ -170,8 +170,8 @@ codon 373 = CGA (R) at chr30:38261635
 C>T at that first base makes TGA, a stop
 ```
 
-The C>T at chr30:38,261,635 truncates the protein at residue 373 of 513.
-Checking the callset at exactly that position finds it, passing every filter:
+The C>T at chr30:38,261,635 truncates the protein at residue 373 of 513. The
+callset has a record at exactly that position, passing every filter:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
@@ -338,7 +338,7 @@ painting is in the config as `dog10k_cyp1a2_cn`.
 The output is a BED with the color in `itemRgb` and the rounded call in
 `copyNumber`. The `identity` color scale uses the file's own colors, and its
 `scale.names` pair each color with a copy number so the key reads as copy
-number. The figure draws one key, from the named-animals track above this one
+number. The figure shows one key, from the named-animals track above this one
 (described below), so this track sets `legend.show` to `false`. Drop that line
 to get a key on this track:
 
@@ -430,7 +430,7 @@ of the gene are deletion polymorphisms.
 The depth-based estimate puts far more of the collection at three or more copies
 than the paper reports. The two counts cover different intervals: the paper ran
 QuicK-mer2 over an element whose extent is unpublished, and the build script
-counts the windows the collection puts above two.
+counts the windows whose depth-based estimate is above two copies.
 
 ## Reproduce it end to end
 

@@ -11,7 +11,7 @@ tutorial_subcategory: Ortholog tables
 ---
 
 Certain sets of genes have stayed on the same chromosome together since before
-animals existed, and those sets have names.
+animals existed; they are called ancestral linkage groups.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
 color for it. A sponge keeps each set on one chromosome; a comb jelly spreads
@@ -82,10 +82,10 @@ The dotplot uses two genomes and the stack at the end adds more:
 | `CLAa` | cladorhizid sponge                     | stack only        |
 
 odp's group database was built from a set of genomes, some of them on this page:
-the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the cladorhizid
-took no part in it. odp compares genomes two at a time, so the deposit holds one
-table per pair, each listing every reciprocal best protein hit between its two
-genomes.
+the jellyfish, _Ephydatia_ and amphioxus. The database was built without the
+comb jellies and the cladorhizid. odp compares genomes two at a time, so the
+deposit holds one table per pair, each listing every reciprocal best protein hit
+between its two genomes.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -162,8 +162,8 @@ Two RefSeq genomes, _Nematostella_ and amphioxus, took about 20 minutes on 16
 cores. odp writes the colored tables under
 `odp/step2-figures/synteny_coloredby_BCnSSimakov2022/`, one per pair. An older
 odp made the deposit, with a database named `BCnS_LGs` and the tables under
-`synteny_analysis/`. The conversion below reads either. The group names are the
-same, and the palette in `color` differs.
+`synteny_analysis/`. The conversion below reads both layouts. The group names
+are the same, and the palette in `color` differs.
 
 ### Converting a table to a `.blocks` file
 
@@ -183,9 +183,9 @@ python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plot
   --attributes gene_group color break_FET
 ```
 
-`rbh_to_blocks.py` prints how many of each genome's gene ids its `.chrom`
-placed. An ortholog from outside the BCnS families gets `.` in the group column,
-which the browser draws in grey.
+`rbh_to_blocks.py` prints how many of each genome's gene ids it found in the
+`.chrom` file. An ortholog from outside the BCnS families gets `.` in the group
+column, which the browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
@@ -223,10 +223,10 @@ each.
 `attributeColumns` exposes the last three columns of the `.blocks` file:
 
 - `gene_group` becomes a color-by mode named after it.
-- `color` holds the palette odp chose for each group, so the menu leaves it out
-  of the modes.
-- `break_FET` is odp's test of the row's chromosome pair, which the stack below
-  reads as opacity.
+- `color` holds the palette odp chose for each group, so JBrowse leaves it out
+  of the color-by modes.
+- `break_FET` is odp's test of the row's chromosome pair, which sets opacity in
+  the stack below.
 
 ```json addtrack
 {
@@ -251,7 +251,7 @@ The build script adds one such track per pair.
 We'll open the jellyfish-against-sponge table as a dotplot, then:
 
 - Pick **gene_group** under **Color by value** on the palette button in the view
-  header. The legend comes up with it.
+  header, which also opens the legend.
 - Choose **Re-order chromosomes** on the view menu to sort the vertical genome's
   chromosomes by where their orthologs land along the horizontal one, which
   turns one block per group into a diagonal.
@@ -286,16 +286,15 @@ session's `encoding.color` is a color scale, a `field` mapped to colors:
 <Figure caption="Jellyfish against sponge as a dotplot, each ortholog colored by its linkage group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
 Inside a block the points fill the square, because gene order along each
-chromosome has shuffled. Each gene stays on its chromosome.
+chromosome has shuffled while each gene has stayed on its chromosome.
 
 ## Two fusions, mixed and unmixed
 
-The jellyfish's RES10 carries both J1 and Qa, and the sponge's EMU23 carries
-both J2 and K. Every other genome on this page keeps each pair on separate
-chromosomes, so each is a fusion in one lineage. A fusion starts with the two
-groups end to end, and rearrangement inside the chromosome then interleaves
-their genes.[^mixing] We'll draw those two chromosomes and the four they pair
-with.
+The jellyfish's RES10 has both J1 and Qa, and the sponge's EMU23 has both J2 and
+K. Every other genome on this page has each pair on separate chromosomes, so
+each is a fusion in one lineage. A fusion starts with the two groups end to end,
+and rearrangement inside the chromosome then interleaves their genes.[^mixing]
+We'll draw those two chromosomes and the four they pair with.
 
 `displayedRegionNames` lists the chromosomes on each axis, in the order drawn,
 and the session leaves `autoDiagonalize` off so that order holds. `filter` keeps
@@ -367,14 +366,13 @@ Each setting in the session has a menu route except `render` and the
   rows** on the palette menu writes.
 - `mark` is **Curved lines** on the sliders button.
 - `render.antialias` turns off the fade a whole-genome view applies to sub-pixel
-  ribbons, since their colors are what the figure shows. It has no menu item.
+  ribbons, since the figure shows the ribbons' colors. It has no menu item.
 - `encoding.opacity` is the scale above. **Opacity** on the sliders button
   scales both opacities together; the mapping itself has no menu item.
 - `levelHeights` is each band's height, which dragging the bar under a band sets
   for every band.
-- `collapseEmptyRows` draws each genome row, which holds no track of its own, as
-  only its scale bar. **Rows → Compact all views** on the view menu does the
-  same.
+- `collapseEmptyRows` draws each genome row that has no track as a bare scale
+  bar. **Rows → Compact all views** on the view menu does the same.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -425,9 +423,9 @@ Each setting in the session has a menu route except `render` and the
 
 <Figure caption="The genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
 
-The second band is the faintest: the comb jellies spread most groups over
-several chromosomes, where the jellyfish keeps each on one. Both comb jellies
-spread them the same way, so the band between the two stays solid.
+The comb jellies spread most groups over several chromosomes, where the
+jellyfish keeps each on one, so the second band is the faintest. Both comb
+jellies spread them the same way, so the band between the two stays solid.
 
 ## Reproduce it end to end
 

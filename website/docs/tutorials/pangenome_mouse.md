@@ -10,10 +10,10 @@ tutorial_subcategory: Mouse and cattle
 
 The mouse strain pangenome aligns eighteen assemblies of seventeen inbred and
 wild-derived strains onto the GRCm39 reference with `minigraph`. GRCm39 is
-itself a strain, C57BL/6J, which inverts the sign of the best-known variant in
-the panel. No locus list has been published for these strains, so we rank the
-graph's bubbles, the regions where the strains' paths split and rejoin, by how
-many segments each holds, and open the densest. We:
+itself a strain, C57BL/6J, so the panel's best-known variant, a C57BL/6J
+deletion, appears as an insertion. No locus list has been published for these
+strains, so we rank the graph's bubbles, the regions where the strains' paths
+split and rejoin, by how many segments each holds, and open the densest. We:
 
 - load the graph and its bubbles as tracks on mm39
 - at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
@@ -154,9 +154,9 @@ in each launch.
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 16.8 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
-The graph holds no path per strain, so it cannot say which strains have the
-exons. mm39's liftOver chains can, one lane per strain assembly. We'll open them
-at the same gene:
+The graph holds no path per strain, so which strains have the exons comes from
+mm39's liftOver chains, one lane per strain assembly. We'll open them at the
+same gene:
 
 - Open
   [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
@@ -171,7 +171,7 @@ at the same gene:
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The bubbles file's fourth column records how many segments each bubble holds.
-Ranking the bubbles that overlap a gene by that count recovers the vomeronasal
+Ranked by that count, the bubbles that overlap a gene include the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
 wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
 intron at `chr11:34,516,045-34,560,497`. Rank the bubbles that fit in a 100 kb

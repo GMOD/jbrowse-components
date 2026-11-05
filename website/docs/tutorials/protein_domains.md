@@ -3,7 +3,7 @@ title: Protein domains on gene models
 sidebar_label: Protein domains (Pfam)
 description:
   Call Pfam domains on a genome's proteins, place each domain on the exons that
-  encode it, and draw each isoform with its domains on a row of its own
+  encode it, and draw each isoform with its domains in a separate row
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -11,15 +11,15 @@ tutorial_category: Genes & annotation
 A gene model shows where the exons are, and Pfam names the protein domains they
 encode, such as a kinase or a DNA-binding fold. Domain callers report each
 domain in residues along the protein, so the domains need placing back on the
-exons before JBrowse can draw them under the genes. Done for every transcript,
-the placement shows which exons encode each domain and which isoforms leave one
-out. We work through the honey bee RefSeq annotation and the _Su(var)3-9_ gene,
-whose isoforms encode two different proteins. We:
+exons before JBrowse can draw them under the genes. The placement for every
+transcript shows which exons encode each domain and which isoforms lack one. We
+work through the honey bee RefSeq annotation and the _Su(var)3-9_ gene, whose
+isoforms encode two different proteins. We:
 
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
 - place each domain on the exons that encode it with `domains2genome`
-- draw each transcript on a row of its own in the multi-row feature display,
-  with its domains over its exons colored by Pfam family
+- draw each transcript in a separate row of the multi-row feature display, with
+  its domains over its exons colored by Pfam family
 
 ## Prerequisites
 
@@ -134,8 +134,8 @@ tabix -f -C -p gff pfam.gff3.gz
   `proteinEnd` are attributes, and JBrowse shows them on click.
 - A domain crossing an intron is one `protein_match` written on a line per exon,
   the lines sharing an ID.
-- The mRNA carries the annotation's ID and `Name`, the name the gene track
-  labels the transcript with, and its `protein_id` and `product`.
+- The mRNA has the annotation's ID and `Name`, the name the gene track labels
+  the transcript with, and its `protein_id` and `product`.
 - Every coding transcript is written, with or without a domain on it.
 - Without `--gff3`, domains2genome writes the domains alone as BED12, one row
   per domain per transcript, which IGV and the UCSC browser draw too.
@@ -174,13 +174,13 @@ For your own data, point `uri` at your `pfam.gff3.gz` and `assemblyNames` at
 your assembly. To follow along on genomes.jbrowse.org, open the honey bee
 genome, add the track above, and go to `NC_037653.1:4,839,300-4,850,050`.
 
-<Figure src="/img/protein_domains/suvar39.png" caption="Honey bee Su(var)3-9: each RefSeq transcript on a row of its own, its UTR and coding exons grey and its Pfam domains over them, colored by family." />
+<Figure src="/img/protein_domains/suvar39.png" caption="Honey bee Su(var)3-9: each RefSeq transcript in a separate row, its UTR and coding exons grey and its Pfam domains over them, colored by family." />
 
 The two curated transcripts (NM_) encode different proteins from the same first
 three exons. NM_001040277.1 goes on into the exon that encodes Chromo, Pre-SET
 and SET, the Su(var)3-9 histone methyltransferase. NM_001171169.1 skips that
 exon and joins the exons of eIF2γ, the GTP-binding subunit of translation
-initiation factor 2, whose GTP_EFTU, GTP_EFTU_D2 and eIF2_C domains it carries.
+initiation factor 2, and so has the GTP_EFTU, GTP_EFTU_D2 and eIF2_C domains.
 XM_006561307.3 and XM_006561308.3, which differ only at their 5′ ends, leave the
 Su(var)3-9 exon partway through SET and continue into the eIF2γ exons, so each
 encodes Chromo and Pre-SET and the eIF2γ domains in one protein. The two genes

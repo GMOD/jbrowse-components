@@ -94,7 +94,7 @@ assemblies are both `hg002v1.2`, since the two haplotypes are contigs of one:
 }
 ```
 
-Two haplotypes of your own follow the same contract:
+Two haplotypes of your own need:
 
 - **One FASTA** holds both, with contig names that tell them apart (`_MATERNAL`
   and `_PATERNAL`, as above), compressed with `bgzip` and indexed with
@@ -143,9 +143,9 @@ directions, and the Q100 chain records it as its largest inverted block. A
 linear synteny view lays the two copies against each other, with each
 haplotype's tracks beside the ribbons.
 
-Open **Add → Linear synteny view**. Its **Quick start** offers the two rows the
-chain implies and the chain between them, so press **Launch**; both panels open
-on the whole assembly.[^from-dotplot]
+Open **Add → Linear synteny view**, whose **Quick start** offers the two rows
+the chain implies and the chain between them. Press **Launch**, and both panels
+open on the whole assembly.[^from-dotplot]
 
 Click the follow button, the arrows icon in the header. With follow on, the view
 places the panel below on the sequence that aligns to the top panel through the
@@ -158,11 +158,11 @@ stretch of `chr8_PATERNAL`. Then:
 - turn the chain track on in each panel's track selector, where it draws as
   blocks on that panel's ruler. The inverted block is the long blue bar in both
 
-The gene annotation shows the inversion too. The JHU Liftoff GFFs are published
+The gene annotation shows the inversion too, from the JHU Liftoff GFFs published
 beside the assembly, one per haplotype, on matching contig names:
 
-- the files annotate v1.1, and on chromosome 8 the gene tracks still land where
-  the v1.2 ribbons do
+- the files annotate v1.1, and on chromosome 8 the gene tracks still line up
+  with the v1.2 ribbons
 - the gene symbol is in `gene_name`, so the label points there
 - the paternal panel takes the same config with `PAT` in the name and URL, under
   a different `trackId`
@@ -207,17 +207,17 @@ At 9 Mb across, a few pixels of offset between the haplotypes are invisible, so
 one window typed into both panels looks lined up. Zoomed in, every upstream
 indel shifts one haplotype against the other and the offset fills the screen.
 
-The figure below types the same 70 kb into both panels with follow off, and the
-follow button fills the paternal panel and closes the ribbon. Turn follow off to
-pan the paternal panel by hand, or right-click a chain block for **Move other
-panel to the matching region**, which does the follow move once.
+In the figure below the same 70 kb is typed into both panels with follow off,
+and the follow button fills the paternal panel and closes the ribbon. Turn
+follow off to pan the paternal panel by hand, or right-click a chain block for
+**Move other panel to the matching region**, which does the follow move once.
 
 <Figure caption="Before and after the follow button, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
 
 **Location markers**, in the header's settings menu, draw a line through each
-ribbon from a point on the top row to where it maps on the bottom. The clip
-types the same coordinates into both panels, 2 Mb into the collinear chain past
-the inversion.
+ribbon from a point on the top row to where it maps on the bottom. In the clip
+the same coordinates are typed into both panels, 2 Mb into the collinear chain
+past the inversion.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="The follow button places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 

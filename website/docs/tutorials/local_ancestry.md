@@ -13,8 +13,8 @@ Two of the Dog10K breeds are wolf hybrids, so some stretches of their genome
 trace back to a gray wolf ancestor and the rest to domestic dogs.
 [FLARE](https://github.com/browning-lab/flare) calls which of the two sources
 each stretch of DNA came from, against a wolf panel and a panel of breed dogs,
-and a converter collapses its per-marker calls into BED blocks. Along chr1 of
-the wolfdogs, held-out wolves and other breeds, we:
+and a converter merges its per-marker calls into BED blocks. Along chr1 of the
+wolfdogs, held-out wolves and other breeds, we:
 
 - load the blocks as a multi-row feature track, one colored row per haplotype
   (one copy of a chromosome)
@@ -131,10 +131,10 @@ for the dog panel, minus the targets and both wolfdog breeds. The dog panel has
 to include the breed of each target, or the ordinary haplotypes of that target
 have no close match there.
 
-No animal is painted against a panel that contains it:
+Each animal is painted against panels that exclude it:
 
 - the script removes the eight gray wolves from the wolf panel, since a target
-  matched against itself paints solid
+  matched against itself is painted solid
 - each target dog comes out of the dog panel while another dog of its breed
   stays in, so a Chow Chow is painted against a different Chow Chow
 
@@ -194,8 +194,8 @@ java -Xmx12g -jar flare.jar ref=chr1.ref.vcf.gz ref-panel=refpanel.txt \
   gt=chr1.gt.vcf.gz map=chr1.map out=wolfdog_chr1 seed=42
 ```
 
-`wolfdog_chr1.global.anc.gz` is the per-sample summary, and chr1 alone already
-ranks the targets:
+`wolfdog_chr1.global.anc.gz` is the per-sample summary, and chr1 alone is enough
+to rank the targets:
 
 ```text
 SAMPLE          Wolf    Dog
@@ -212,12 +212,12 @@ The wolfdogs sit far above the swept breeds, apart from one Czechoslovakian
 Wolfdog (`CZEC000002`) that falls within their range and has no long block
 anywhere.
 
-### Collapsing FLARE's calls into BED blocks
+### Merging FLARE's calls into BED blocks
 
 FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
 `wolfdog_chr1.anc.vcf.gz`.
 [`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
-collapses each haplotype's run of identical calls into one BED9 line, taking row
+merges each haplotype's run of identical calls into one BED9 line, taking row
 labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->

@@ -10,10 +10,10 @@ tutorial_category: Population genomics
 The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
 about 22 Mb and suppresses crossing over between the inverted and standard
 arrangements, so linkage disequilibrium (LD, the correlation between variants)
-runs across it as one block in a population where both arrangements segregate. A
-sweep leaves a block around one gene, while an inversion's block covers most of
-a chromosome arm, so the variants are thinned to a grid before PLINK writes
-every pair. On arm 2L in Cameroon and Gabon, we:
+runs across it as one block in a population where both arrangements segregate.
+An inversion's LD block covers most of a chromosome arm, so the variants are
+thinned to a grid before PLINK writes every pair. On arm 2L in Cameroon and
+Gabon, we:
 
 - load a thinned PLINK r² table for each population as an LD track
 - load the inversion as one structural-variant record, genotyped per mosquito,
@@ -217,8 +217,8 @@ with a `LinearVariantDisplay`:
 one section per `karyotype` value, `facet.sort` orders them by dosage, and
 `rows.color` is a color scale on each row's label bar. With
 [`genotypes.reference.show`](/docs/config/linearvariantdisplay/#slot-genotypes)
-off, the default, the track fills with the reference color and alt cells paint
-on top.
+off, the default, the track fills with the reference color and alt cells are
+painted on top.
 
 The display draws a row for every sample in the file and divides the track
 height among them, so each population goes in a separate track. Gabon's two
@@ -231,7 +231,7 @@ file names:
 
 ### Scoring each mosquito's 2La karyotype from tag SNPs
 
-The build script draws the `<INV>` call at the published 2La extent
+The build script writes the `<INV>` call at the published 2La extent
 ([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103),
 [White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)) and scores each
 mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
@@ -261,9 +261,10 @@ uses the published 2La span only as a test window, and prints the evidence for
 each choice it makes from there:
 
 1. Each panel is one population, since correlation pooled across populations
-   invents linkage none of them has. The script prints, per population, mean D'
-   between variants more than 5 Mb apart inside the test window and outside it,
-   because only a population with both arrangements can show the block.
+   shows linkage that is absent within each one. The script prints, per
+   population, mean D' between variants more than 5 Mb apart inside the test
+   window and outside it, because only a population with both arrangements can
+   show the block.
 2. It keeps common variants, thins them to a grid, and writes each panel's r²
    and D' table.
 3. It bins D' to distant partners along the whole arm. The steps up and down are

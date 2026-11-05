@@ -8,10 +8,10 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Mouse and cattle
 ---
 
-The bovine super-pangenome builds a set of assemblies into one graph on the
-ARS-UCD1.2 cattle reference, a Hereford that is itself one of them: taurine and
-indicine breeds, yak, bison and gaur. Each assembly is a named path through the
-graph, and `vg deconstruct` turns those paths into a VCF, so one locus reads
+The bovine super-pangenome is one graph of a set of assemblies on the ARS-UCD1.2
+cattle reference, a Hereford that is itself one of them: taurine and indicine
+breeds, yak, bison and gaur. Each assembly is a named path through the graph,
+and `vg deconstruct` turns those paths into a VCF, so JBrowse can show one locus
 both as a graph of where sequence is present and absent and as a callset listing
 which assemblies have it. We:
 
@@ -172,7 +172,8 @@ table's `lineage` column through `domain` to `range`. The config also sets:
   writes each breed beside its row
 - `rows.field: "haplotype"` draws one row per assembly, each being one
   haplotype, with a second alternate allele in a separate color. `rows.sort` and
-  `rows.labels` name each assembly's sample, which stands for its rows
+  `rows.labels` use each assembly's sample name, which covers all of that
+  assembly's rows
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -245,7 +246,7 @@ the graph around _HSPA1A_. Then:
 ## Published variants in the callset
 
 Each locus below is a structural variant a paper reported in one of these breeds
-or species. The rows without it are the control.
+or species. The rows of assemblies without it are the control.
 
 ### The Celtic polled allele
 
@@ -254,10 +255,9 @@ form of polledness to a 202 bp duplication and insertion on chromosome 1, which
 OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
 000483-9913.[^friesian]
 
-The portal page's **POLLED** example tells this story: it names the Celtic
-polled allele above the map, and each launch opens a **Known alleles** row and
-OMIA's records under the genes. Every launch up to 150 kb wide on the portal
-carries the OMIA row.
+The portal page's **POLLED** example names the Celtic polled allele above the
+map, and each launch opens a **Known alleles** row and OMIA's records under the
+genes. Every launch up to 150 kb wide on the portal includes the OMIA row.
 
 To add OMIA to your own JBrowse,
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
@@ -303,9 +303,9 @@ holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
-Every other assembly has the record's deletion, in blue. Simmental's row is red,
-the record's second allele, longer than the Hereford reference's, so Simmental
-has more copies of the repeat than the reference.
+Every other assembly has the record's deletion, in blue. Simmental's row is red
+for the record's second allele, which is longer than the Hereford reference's,
+so Simmental has more copies of the repeat than the reference.
 
 ### A deletion of TAS2R46 in gaur
 
@@ -316,7 +316,7 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
 Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
 have an allele slightly longer than the reference's, in blue. The gaur's allele,
-in red, deletes the span.
+in red, lacks the span.
 
 ## Building the bovine graph files
 
@@ -326,9 +326,9 @@ steps beyond it, which
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
 runs:
 
-- Join the autosomes. The archive holds one graph per autosome, each numbering
+- Join the autosomes: the archive holds one graph per autosome, each numbering
   its segments from 1, so the script renumbers and concatenates them.
-- Recover rGFA tags. The graphs state their coordinates in P lines, and
+- Recover rGFA tags: the graphs record their coordinates in P lines, and
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py)
   converts them back into `SN`/`SO`/`SR` tags (each segment's contig, offset and
   rank).

@@ -73,9 +73,9 @@ pair of your own needs.
 
 ## Declaring the human and mouse assemblies
 
-The ribbons name chromosomes, so the circle needs both genomes declared. Each
-alias table is the hub's with the build's genome-prefixed names added, so a
-track naming `1`, `chr1` or `hg38.chr1` finds `chr1`:
+The ribbons join chromosomes of the two genomes, so the circle needs both
+genomes declared. Each alias table is the hub's with the build's genome-prefixed
+names added, so `1`, `chr1` and `hg38.chr1` in a track all resolve to `chr1`:
 
 ```json addassembly
 {
@@ -144,9 +144,9 @@ predicate in `filter`.
 circle once you pick the chain track. As a session, two keys on the view set it
 up:
 
-- **`assembly` takes a list**, and each assembly lays out its chromosomes in
-  turn: hg38 takes the first arc of the circle, mm39 the next, and ribbons cross
-  between them.
+- **`assembly` takes a list**, and the view lays out each assembly's chromosomes
+  in turn: hg38 on the first arc of the circle, mm39 on the next, with ribbons
+  crossing between them.
 - **`displayedRegionNames` matches against each assembly** separately, so one
   list of chromosome names keeps both genomes' unplaced contigs off the circle.
 
@@ -194,12 +194,12 @@ the same labels. To read the circle:
 
 - Human chromosomes run clockwise from the top and mouse chromosomes follow; the
   title bar names the two in that order.
-- Each ribbon takes the ideogram color of the human chromosome it leaves, so a
+- Each ribbon has the ideogram color of the human chromosome it leaves, so a
   human chromosome's pieces can be followed to every mouse chromosome that holds
   one.
 - A reverse alignment twists between its two ends.
-- A row narrower than a pixel draws at the share of the pixel it covers, as in
-  the [linear synteny view](/docs/user_guides/linear_synteny_view), so large
+- A row narrower than a pixel is drawn at the share of the pixel it covers, as
+  in the [linear synteny view](/docs/user_guides/linear_synteny_view), so large
   blocks dominate and short rows stay faint.
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human and mouse chromosomes around the circle, every liftOver row of 100 kb and over as a ribbon in the color of its human chromosome." />
@@ -221,11 +221,11 @@ to the human chromosome it shares the most aligned bases with.
   `"autoDiagonalize": false` on the view keeps each genome in its native contig
   order.
 
-## The mouse genome in human chromosomes
+## Mouse ideograms painted by human chromosome
 
 Each stretch of a mouse chromosome's ideogram is painted the color of the human
-chromosome aligned to it, and grey where nothing is. A mouse chromosome carved
-from one human chromosome is one color, and one assembled from several is
+chromosome aligned to it, and grey where nothing is. A mouse chromosome that
+aligns to one human chromosome is one color, and one that aligns to several is
 striped with them.
 
 Hover the mouse chr11 band on the circle opened above to dim every ribbon that
@@ -366,16 +366,16 @@ before the synteny track:
 
 ## The X chromosome as the control
 
-The X chromosome has stayed whole across the two lineages, so no ribbon at the
-100 kb cut should join it to an autosome. Open the ring session above with
-`displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
+The X chromosome has stayed whole across the two lineages, so at the 100 kb cut
+the X ribbons should stay between human and mouse X. Open the ring session above
+with `displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the
+control.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
 
-Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
-PIF holds short rows between human chrX and mouse autosomes, each a repeat or
-retrocopy a few hundred bases long, and lowering **Min length** brings them
-back.
+Below the 100 kb **Min length** cut, the PIF holds short rows between human chrX
+and mouse autosomes, each a repeat or retrocopy a few hundred bases long, and
+lowering **Min length** brings them back.
 
 ## Hovering a ribbon
 
@@ -404,7 +404,7 @@ The script works in four steps:
 3. Count genes per 100 kb into that bigWig with `jbrowse make-density`, one
    count per gene however many transcripts it has.
 4. Write the config with the chain track pointing at jbrowse.org's indexed copy,
-   which the ribbons and the reorder both read.
+   which the view reads for both the ribbons and the reorder.
 
 The script reads four settings, and the tools it runs are in
 [Prerequisites](#prerequisites):

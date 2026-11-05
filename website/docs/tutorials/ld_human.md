@@ -179,8 +179,8 @@ per variant pair) PLINK wrote:
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale, and
 [`encoding.color.field`](/docs/config/ldcolor/#slot-field) sets its input to r²
-or D' (a second LD measure). This table has both. For your own table, swap `uri`
-for the `.ld.gz` that `tabix` indexed, with its `.csi` beside it.
+or D' (a second LD measure), and this table has both. For your own table, swap
+`uri` for the `.ld.gz` that `tabix` indexed, with its `.csi` beside it.
 
 ## Computing Fst per variant with plink2
 
@@ -209,9 +209,9 @@ printf 'chr2\t242193529\n' > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
 
-The Fst track lowers the adapter's `resolutionMultiplier`. Zoomed out, a bigWig
-serves summary bins, and averaging a bin hides the few differentiated variants
-among the many around them:
+The Fst track config sets a lower `resolutionMultiplier` on the adapter. Zoomed
+out, a bigWig serves summary bins, and averaging a bin hides the few
+differentiated variants among the many around them:
 
 ```json addtrack
 {
@@ -314,9 +314,9 @@ triangles:
   inside the block.
 - The block fills the flat span of the
   [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
-  crossovers in sequenced families, so it checks the triangle independently of
-  LD. The HapMap and 1000 Genomes recombination maps in the UCSC hg38 hub are
-  estimated from LD, so they cannot check a triangle.
+  crossovers in sequenced families, so it is a check on the triangle that is
+  independent of LD. The HapMap and 1000 Genomes recombination maps in the UCSC
+  hg38 hub are estimated from LD, so they are not independent of LD.
 - Pooling the swept European samples with populations the sweep never reached
   lightens the pooled triangle.
 
@@ -378,7 +378,7 @@ together, so a swept haplotype forms one slab.
 ### Subsampling populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 
 Over the whole release each haplotype row falls below a pixel, so the figure
-reads the same number of samples from each population. The script behind it
+uses the same number of samples from each population. The script behind it
 centers on one `bcftools` call over a list of sample IDs, one per line:
 
 <!-- from: scripts/build_lct_haploblock.sh -->

@@ -7,11 +7,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Pooling the reads of each single-cell cluster, called pseudobulking, and placing
-them on the genome shows which cell types express a marker gene, and where in
-the gene their reads land. Single-cell ATAC fragments pooled the same way give
-one chromatin accessibility profile per cell type. With two separate 10x
-releases of peripheral blood cells (PBMC), one RNA and one ATAC, we:
+Pooled per single-cell cluster (pseudobulking) and placed on the genome, the
+reads show which cell types express a marker gene and where in the gene the
+reads fall. Single-cell ATAC fragments pooled the same way give one chromatin
+accessibility profile per cell type. With two separate 10x releases of
+peripheral blood cells (PBMC), one RNA and one ATAC, we:
 
 - pool RNA reads or ATAC fragments into one coverage BigWig per cell type,
   outside JBrowse
@@ -135,8 +135,7 @@ Three decisions determine whether the rows can be compared:
   height tracks expression. Restricting to uniquely mapped reads (`MAPQ` 255,
   what STAR emits inside Cell Ranger) keeps multimappers off paralogs
 - **Normalization.** Cell types differ in cell count and depth, so each pooled
-  track needs scaling (CPM is usual) before one row's height means anything next
-  to another's
+  track needs scaling (CPM is usual) before rows can be compared by height
 - **Splice-aware coverage.** A read spanning an intron has an `N` in its CIGAR,
   and counting that as covered fills in introns no read touched
 
@@ -248,7 +247,7 @@ snap.ex.export_coverage(
 Too many `n_jobs` workers exhaust memory and fail the writer partway through the
 groups. `groupby="leiden"` gives one BigWig per cluster instead.
 
-The other ATAC tools reach the same files:
+The other ATAC tools write the same files:
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
   writes one BigWig per group. `normMethod = "ReadsInTSS"` normalizes by
@@ -452,11 +451,11 @@ where the 3' kit's reads land:
 Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
 that was free in the droplet.
 
-Two settings decide whether the speckle is visible:
+Two settings decide whether those single-UMI cells are visible:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
-  under a pixel each, so a block only reads if its cells are adjacent. The
-  `group` each cell has in the store's attributes seeds that and drives the
+  under a pixel each, so a block is visible only if its cells are adjacent. The
+  `group` each cell has in the store's attributes sets that order and the
   sidebar tree
 - **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
   the color ramp, whereas autoscale takes its maximum from the tallest single
@@ -555,8 +554,9 @@ beside its `cell_type`. The script:
 1. pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
    above
 2. orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
-   written into the script, because the object's own label order scatters each
-   lineage down the stack. To run it on your own experiment, replace that map
+   written into the script, because the label order stored in the object puts
+   the rows of one lineage far apart. To run it on your own experiment, replace
+   that map
 3. gives each row its cluster's color from the same object, so a cell type
    matches its UMAP
 4. loads the set as one track over hg38 and RefSeq genes

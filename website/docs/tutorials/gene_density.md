@@ -114,10 +114,10 @@ Add the bigWig as a track:
 or one, so the min-max band drawn around the mean would fill every zoomed-out
 pixel to the same height.
 
-The three repeat tracks start from a RepeatMasker BED. For a genome of your own,
-RepeatMasker's `.out` writes class and family as one `class/family` field, and
-splitting it under a header that names the columns gives a BED of the same
-shape:
+The Alu, L1 and simple-repeat tracks start from a RepeatMasker BED. For a genome
+of your own, RepeatMasker's `.out` file lists class and family as one
+`class/family` field, and splitting it under a header that names the columns
+gives a BED with the same columns:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 
@@ -154,7 +154,7 @@ gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.b
 tabix -f -C -p bed Alu.bed.gz
 ```
 
-The same `make-density` line, run on `Alu.bed.gz`, writes `Alu.bed.density.bw`:
+The `make-density` line above, run on `Alu.bed.gz`, writes `Alu.bed.density.bw`:
 
 ```json addtrack loc=chr1
 {

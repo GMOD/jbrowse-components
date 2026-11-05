@@ -105,8 +105,8 @@ a read or a chain. The [config schema docs](/docs/config_guide) list the names
 and values each display takes (e.g. [](/docs/config/linearalignmentsdisplay),
 [](/docs/config/linearwiggledisplay)).
 
-Reading the JSON back finds the key for any setting on any track: change it in
-the menu, share, and read the new key.
+To find the key for any setting on any track, change it in the menu, share, and
+read the new key from the JSON.
 
 ## Put the three settings in a track's displayDefaults
 
@@ -160,8 +160,9 @@ brackets. This session sets `encoding.color` on that track and nothing else:
 }
 ```
 
-The session's `encoding.color` replaces the config's, so the features draw grey,
-and their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot]
+The session's `encoding.color` replaces the config's, so the features are drawn
+grey, and their labels still read `seg04 [match]` from
+`displayDefaults`.[^snapshot]
 
 ## Where each route keeps a setting (link, session file or config)
 

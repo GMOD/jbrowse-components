@@ -10,11 +10,11 @@ tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures
 ---
 
-Some variants change no amino acid. They break a splice site, the cell splices
-the exon out of the RNA, and the protein comes out shorter. In lung cancer, many
-different DNA changes around exon 14 of _MET_ all make the RNA join exon 13
-straight to exon 15. Exon 14 encodes tyrosine 1003, which the enzyme CBL binds
-to mark the MET receptor for degradation
+Some variants break a splice site without changing an amino acid; the cell then
+splices the exon out of the RNA, and the protein comes out shorter. In lung
+cancer, many different DNA changes around exon 14 of _MET_ all make the RNA join
+exon 13 straight to exon 15. Exon 14 encodes tyrosine 1003, which the enzyme CBL
+binds to mark the MET receptor for degradation
 ([Kong-Beltran et al. 2006](https://doi.org/10.1158/0008-5472.CAN-05-2749)). We
 look at reads from two lung cancer cell lines in the Cancer Cell Line
 Encyclopedia: NCI-H596, which skips the exon, and EBC-1, which keeps it. We:
@@ -112,13 +112,13 @@ index is found beside it:
 
 ## Following exon 14 onto the structure
 
-A highlight on the genome reaches every linked view:
+A highlight on the genome appears in every linked view:
 
 - drag across exon 14 on the scale bar and pick **Highlight region**
 - click the link chip at the top of the band, pick **Edit label...** and type
   `exon 14`
 
-The residues of 3BUX that exon 14 encodes take the highlight. Rotate the
+The highlight marks the residues of 3BUX that exon 14 encodes. Rotate the
 structure until they face you; they lie in a groove on CBL.
 
 ## The cause at the splice site
@@ -147,8 +147,8 @@ panel C, so CBL marks less of the receptor for degradation
   another is the skip, whatever its cause
 - then open the DNA reads at the exon's two ends; a skip can come from a base
   change at the splice site, as here, or a deletion that removes it
-- any gene the protein browser opens takes the same steps, and **Launch protein
-  view** in a gene's right-click menu picks another structure
+- the same steps work on any gene the protein browser opens, and **Launch
+  protein view** in a gene's right-click menu picks another structure
 
 ## Reproduce it end to end
 

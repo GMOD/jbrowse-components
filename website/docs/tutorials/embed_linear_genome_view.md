@@ -216,7 +216,7 @@ const view = {
 Drop these into the `index.html` from [Quick start](#quick-start) in place of
 the smaller `assembly`/`tracks`/`view`.
 
-- CRAM decodes reads against the enclosing assembly's sequence. See the
+- JBrowse decodes CRAM reads against the enclosing assembly's sequence. See the
   [alignments track config guide](/docs/config_guides/alignments_track).
 - JBrowse looks for the index next to the data file; add `index` or `type`
   beside `uri` to override the guess.

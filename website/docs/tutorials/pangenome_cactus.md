@@ -210,8 +210,8 @@ jbrowse make-pif ecoli_cactus_ava.paf --csi   # -> ecoli_cactus_ava.pif.gz (+ .c
 
 Load it with an
 [`MultiGenomeIndexedPAFAdapter`](/docs/config/multigenomeindexedpafadapter),
-whose PanSN `sample#` prefix on every record is how it maps a record to its
-strain:
+which maps each record to its strain by the PanSN `sample#` prefix on the
+record:
 
 ```json addtrack
 {
@@ -295,10 +295,10 @@ columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.
 
 `vg deconstruct` writes a record per snarl (vg's word for a bubble) at every
-nesting level, so wide records paint over finer ones. `cactus-pangenome` prunes
-that tree with [`vcfbub`](https://github.com/pangenome/vcfbub) by default;
-`--vcfbub 0` turns that off, and `--vcfwave` realigns the remaining records into
-primitive variants.
+nesting level, so wide records are drawn over finer ones. `cactus-pangenome`
+prunes that tree with [`vcfbub`](https://github.com/pangenome/vcfbub) by
+default; `--vcfbub 0` turns that off, and `--vcfwave` realigns the remaining
+records into primitive variants.
 
 ## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
@@ -340,7 +340,7 @@ writes one line per block, which a
 <Figure caption="The HAL projected onto K12 as a MAF, one row per strain, colored where each differs from K12." src="/img/pangenome_cactus/maf.png" />
 
 A row with no colored columns shares its sequence with K12, and a row that stops
-has no alignment to K12 there. The coverage band tells the two apart.
+has no alignment to K12 there; the coverage band shows which case applies.
 
 `samples` names the rows and fixes their order. To order them by shared graph
 content instead, build a tree from
@@ -438,8 +438,9 @@ with a row per strain, where a white column is a stretch that strain lacks:
 ```
 
 Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
-reads above the strain count. seqwish, pggb's graph builder, folds the rrnC and
-rrnB operons onto each other; the reference-first graph keeps them apart.
+has a depth above the strain count. seqwish, pggb's graph builder, folds the
+rrnC and rrnB operons onto each other; the reference-first graph keeps them
+apart.
 
 To compare the two builders, load both depth curves as rows of one track on a
 fixed axis, and type `chr:3,935,000-3,955,000`, the rrnC operon (a ribosomal RNA
@@ -485,8 +486,8 @@ and stays unmapped.
 `--giraffe` wrote the indexes during the build. `vg giraffe` emits a GAM, and
 `vg surject` projects it onto one path as a BAM. The reads are _E. coli_ KTa004
 ([ENA DRR063408](https://www.ebi.ac.uk/ena/browser/view/DRR063408), Illumina
-MiSeq), a strain the graph has never seen. The first 150,000 pairs of each mate
-are enough for the depth to read:
+MiSeq), a strain not in the graph. The first 150,000 pairs of each mate are
+enough to show the depth:
 
 ```bash
 mkdir -p reads
@@ -540,7 +541,7 @@ The result loads as an ordinary alignments track:
 
 Turn on **K12 genes** and type `chr:555,000-595,000`. KTa004's reads cover K12
 on either side of the prophage that begins at _intD_ and nearly vanish across
-it, sequence K12 carries and KTa004 lacks.
+it, because the prophage is sequence K12 has and KTa004 lacks.
 
 <Figure caption="KTa004's short reads, mapped through the graph and surjected onto K12, across the prophage that begins at intD." src="/img/pangenome_cactus/reads.png" />
 
@@ -565,8 +566,8 @@ reference's path lines:
 gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 ```
 
-Without `--snarls` the command writes no bubble file. The index is in the contig
-layout. The `uri` below is our hosted copy.
+Without `--snarls` the command writes no bubble file, and the index is in the
+contig layout; the `uri` below is our hosted copy.
 
 ```json addtrack
 {
@@ -633,7 +634,7 @@ and a feature track over the same files colors each segment by that count:
 ```
 
 Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
-the other four skip. To see it:
+the other four lack. To see it:
 
 - Type `chr:1,978,100-1,979,700`.
 - Turn on the strains-per-segment track.

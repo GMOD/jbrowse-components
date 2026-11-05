@@ -168,7 +168,7 @@ Type both locations into the location box, separated by a space:
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered beside a chr9 one, GM12878 above and K562 below. The wedge between the triangles appears with the second region." />
 
 Two regions on separate chromosomes touch at background rate, so the wedge
-between them stays faint unless the two are fused. K562 carries the Philadelphia
+between them stays faint unless the two are fused. K562 has the Philadelphia
 chromosome, t(9;22)(q34;q11) ([Rowley 1973](https://doi.org/10.1038/243290a0)),
 joining _BCR_ on chr22 to _ABL1_ on chr9.
 
@@ -266,8 +266,8 @@ next to the matrix it was called from.
 
 ## Choosing the control and normalization for the translocation scan
 
-The ranking rests on the choice of control and of normalization, and both carry
-over to a scan of your own files:
+The ranking rests on the choice of control and of normalization, and both apply
+to a scan of your own files:
 
 - **Control depth.** The scan compares the case against a control, ENCODE's deep
   GM12878 in situ file `ENCSR410MDC` by default. The script leaves the much
@@ -305,5 +305,5 @@ over to a scan of your own files:
     expression on one of them matches nothing and reports no error. HiCCUPS
     writes 24 columns and Arrowhead 16, and both leave `name` and `score` at `.`
     and put what they rank by further along: `observed` for HiCCUPS, a second
-    column called `score` for Arrowhead. Values past the tenth column arrive as
-    strings, so compare with `>` and `<`, which coerce.
+    column called `score` for Arrowhead. Values past the tenth column are read
+    as strings, so compare with `>` and `<`, which coerce.

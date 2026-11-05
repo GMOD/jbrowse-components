@@ -111,9 +111,9 @@ jbrowse text-index --out myproject
 
 ## Open the folder on a default view with a session
 
-A config with tracks but no session displays nothing until you launch a view and
-tick tracks in the selector. To open the folder ready to read, write a session
-and hand it to the CLI. In the session:
+Desktop shows nothing for a config with tracks but no session until you launch a
+view and tick tracks in the selector. To open the folder ready to read, write a
+session and hand it to the CLI. In the session:
 
 - **`assembly`** is the `--name` you gave `add-assembly`
 - **`tracks`** takes the `trackId`s the CLI derived from your filenames;
@@ -148,8 +148,8 @@ Desktop (or use the **Open file or link** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's folder and loads the copied files from local disk, with no web server.
 
-You can also hand the config straight to Desktop.[^files] No installer puts it
-on the `PATH`, so call the binary by its path
+You can also hand the config straight to Desktop.[^files] The installers leave
+it off the `PATH`, so call the binary by its path
 ([per platform](/docs/quickstart_desktop#launching-from-the-command-line)):
 
 ```sh
@@ -160,9 +160,9 @@ open -a "JBrowse 2" myproject/config.json                 # macOS
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path. The session name and track labels come from the commands above."/>
 
 Desktop reads `config.json` and never writes back to it. Desktop autosaves your
-work to a separate session in **Recently opened sessions**, with its own copy of
-the config. So after another `add-track`, reopen `config.json` itself to see the
-new track; the autosave still holds the old track list. **Save session as...**
+work to a separate session in **Recently opened sessions**, with a copy of the
+config. So after another `add-track`, reopen `config.json` itself to see the new
+track; the autosave still holds the old track list. **Save session as...**
 writes a `.jbrowse` file, which Desktop saves in place from then on.
 
 ## Serve the config folder on the web

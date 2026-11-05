@@ -9,10 +9,10 @@ tutorial_category: Cancer genomics
 ---
 
 A cancer genome can stitch several distant pieces of the genome into one
-molecule through a chain of junctions. Short reads see each junction alone; a
-long read can cross several, and the reads crossing all of them can be assembled
-into the rearranged chromosome itself. We follow one such chain across chr3,
-chr10 and chr12 in the COLO829 melanoma cell line. We:
+molecule through a chain of junctions. A short read spans one junction at most;
+a long read can cross several, and the reads crossing all of them can be
+assembled into the rearranged chromosome itself. We follow one such chain across
+chr3, chr10 and chr12 in the COLO829 melanoma cell line. We:
 
 - load tumor and normal long reads with the somatic SV calls, and sort split
   reads first at the chr3 breakpoints
@@ -76,10 +76,10 @@ follow _The derivative allele_ to assemble a contig from them.
 
 ## Tumor and normal coverage as bigWigs
 
-The demo config also carries tumor and normal coverage tracks, for a
-chromosome-wide look at where the tumor gained and lost. They are the
-`wf-somatic-variation` run's `mosdepth` output in 50 kb windows, converted to
-bigWig the same way for each sample:
+The demo config also has tumor and normal coverage tracks, for a chromosome-wide
+look at where the tumor gained and lost. They are the `wf-somatic-variation`
+run's `mosdepth` output in 50 kb windows, converted to bigWig the same way for
+each sample:
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -177,8 +177,9 @@ two ways to open one:
   view**. The dialog asks for the layout (two stacked panels, or one row
   spanning both breakends) and the window each panel opens at.
 
-A breakend (BND) record names one partner, so on its own it opens two panels.
-Check **Follow further breakends at each end** to add the rest of the chain:
+A breakend (BND) record names one partner, so opening the view from one record
+gives two panels. Check **Follow further breakends at each end** to add the rest
+of the chain:
 
 - The dialog searches the callset at each end for another junction leaving from
   the same place and adds it when exactly one exists.
@@ -357,7 +358,7 @@ inserts have separate ribbons:
 
 - **Against hg38**, the split reads stop at each junction, and the truth set has
   a validated call at each place they stop. The truth set comes from other
-  platforms, so it checks the contig independently.
+  platforms, so it is an independent check on the contig.
 - **Against the derivative**, most of the same reads cross all three junctions
   in one alignment. The consensus was polished from these reads, so this shows
   that they agree with each other.

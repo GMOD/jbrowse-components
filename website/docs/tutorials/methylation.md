@@ -145,7 +145,7 @@ covers both modes and the probability and cytosine-context filters.
 
 ## Aggregate methylation with modkit bedMethyl
 
-[modkit pileup](https://nanoporetech.github.io/modkit/) collapses the per-read
+[modkit pileup](https://nanoporetech.github.io/modkit/) tallies the per-read
 calls into a bedMethyl file with one row per CpG per modification type, each
 holding the fraction of reads that were modified. The file is much smaller than
 the reads.[^dmr]
@@ -162,7 +162,7 @@ tabix -p bed output.bedmethyl.gz
 
 Two `modkit pileup` options shape the output:
 
-- `--combine-mods` collapses 5mC and 5hmC into a single fraction
+- `--combine-mods` combines 5mC and 5hmC into a single fraction
   (bisulfite-equivalent). Pass `--modified-bases 5mC 5hmC` without it to keep
   separate rows per modification type (`m` for 5mC, `h` for 5hmC)
 - `--phased` writes one file per haplotype from the reads' `HP` tags, and this

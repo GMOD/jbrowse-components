@@ -122,9 +122,9 @@ MethylDackel extract --CHH -r NC_000932.1 -o conversion \
 
 Column 4 of `conversion_CHH.bedGraph` is the methylated percentage at each
 cytosine, which on an unmethylated sequence is the fraction the conversion
-missed. Modern libraries convert above 99%. An organism with no plastid uses the
-library's spike-in, usually unmethylated lambda or pUC19, added to the reference
-as an extra contig.
+missed. Modern libraries convert above 99%. For an organism with no plastid, use
+the library's spike-in, usually unmethylated lambda or pUC19, added to the
+reference as an extra contig.
 
 ## Loading the TAIR10 hub assembly and the WGBS BAM
 
@@ -217,10 +217,11 @@ is a color channel for each base, here set from the `bisulfite` field. The
 ## Aggregate methylation per context with MethylDackel
 
 Beside the reads, a per-position fraction summarizes all the reads at each site,
-and a bigWig of it draws at any zoom. The track is optional, and the reproduce
-script leaves it out. [MethylDackel](https://github.com/dpryan79/MethylDackel)
-calls that fraction in all three plant contexts, one bedGraph each, which
-becomes a bigWig once the header line is dropped and the percentage column kept:
+and a bigWig of it is drawn at any zoom. The track is optional, and the
+reproduce script leaves it out.
+[MethylDackel](https://github.com/dpryan79/MethylDackel) calls that fraction in
+all three plant contexts, one bedGraph each, which becomes a bigWig once the
+header line is dropped and the percentage column kept:
 
 ```bash
 # CpG is emitted always; --CHG --CHH add the two plant contexts.
@@ -295,8 +296,8 @@ cytosines red. Two more rows refine it:
 
 ## Gene body methylation and transposon silencing
 
-Plants run two unrelated methylation programs, and the three contexts
-distinguish them:
+Plants run two unrelated methylation programs, which differ in the contexts they
+methylate:
 
 | Program                         | CpG | CHG | CHH | Effect on the locus                                                  |
 | ------------------------------- | --- | --- | --- | -------------------------------------------------------------------- |

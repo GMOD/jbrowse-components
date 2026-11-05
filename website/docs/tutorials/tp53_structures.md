@@ -12,10 +12,10 @@ tutorial_category: Transcriptomics & proteins
 The p53 protein has a predicted structure covering every residue, and
 experimental structures of the parts that fold: a crystal of the DNA-binding
 core on DNA, a crystal of a short p53 peptide bound to its regulator MDM2, and
-an NMR ensemble of the transactivation domain. A crystal numbers its residues
-from wherever its construct began, and a complex holds chains of more than one
-protein, so reading a residue back to its codon means aligning each structure to
-the transcript first. We:
+an NMR ensemble of the transactivation domain. In a crystal structure, residue
+numbers start wherever the construct began, and a complex holds chains of more
+than one protein, so reading a residue back to its codon means aligning each
+structure to the transcript first. We:
 
 - open an AlphaFold model and two crystal structures in one protein view beside
   the _TP53_ gene track, each mapped to the same transcript

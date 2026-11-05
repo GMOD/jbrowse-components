@@ -20,7 +20,7 @@ on chr15, we:
 - load a windowed Fst scan between toy and giant breeds as a Manhattan track,
   with a reference line at a percentile cutoff
 - load the _IGF1_ peak, sliced out of the SNV callset, as a variant track whose
-  rows a sample sheet colors by size class
+  rows are colored by size class from a sample sheet
 - cluster the rows with **Clustering → Cluster rows by genotype...** to find the
   haplotype each size class has and where the wolves fall
 
@@ -214,8 +214,8 @@ bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
 tabix -C -p vcf dog10k_igf1.vcf.gz
 ```
 
-A site that is reference in every animal draws an empty column, so the second
-`bcftools view` drops it.
+A site that is reference in every animal is drawn as an empty column, so the
+second `bcftools view` drops it.
 
 ## Loading the IGF1 slice with a sample-metadata TSV
 
@@ -231,7 +231,7 @@ CLUPGR000001	Greek gray wolf	Gray wolf
 ```
 
 `rows.color` is a color scale on each row's label bar, and here it names the
-column that paints the swatch:
+column whose values color the swatch:
 
 ```json addtrack
 {
@@ -262,7 +262,7 @@ view on that span with a margin of undifferentiated sequence on each side, as
 `chr15:41,348,000-41,752,000` does, so Fst drops back to near zero at both
 edges.
 
-Rows arrive in the VCF's order, which is the order the sample list was built in,
+Rows start in the VCF's order, which is the order the sample list was built in,
 so they start out grouped by breed. Clustering reads the region on screen, and
 over the whole window the undifferentiated sites dilute the separating columns,
 so we cluster the core first:
@@ -330,8 +330,8 @@ Reading the matrix against the Fst track above it:
 - The Fst track has one point per matrix column. The matrix gives each record
   equal width and the Fst track keeps genomic spacing, so sloped lines tie each
   column to its coordinate.
-- Rows depart from their size-class color in both directions: single orange rows
-  sit within the giant cluster and single blue rows within the small one.
+- Some animals cluster with the other size class: single orange rows sit within
+  the giant cluster and single blue rows within the small one.
 - The wolves form a contiguous band directly below the toy and small block, and
   have part of its haplotype.
 

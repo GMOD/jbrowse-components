@@ -112,7 +112,7 @@ bcftools annotate -r chr31:27118000-27128000 -x INFO,^FORMAT/GT \
 tabix -p vcf dog10k_sod1.vcf.gz
 ```
 
-The sample table files each animal under a category:
+The sample table lists each animal's category:
 
 ```bash
 curl -o sample-table.txt https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
@@ -202,7 +202,7 @@ the hub's search index, and `connectedView.loc` opens the genome view on
 codon 40. The launch translates the record on that transcript, labels the base
 with the protein change and frames residue 40 on the structure.
 
-<Figure src="/img/protein/sod1_e40k_variant.png" caption="SOD1 at codon 40 beside 7WX0, opened on the E40K record. The band on the gene carries the change's label, and the structure labels the residue it has there." />
+<Figure src="/img/protein/sod1_e40k_variant.png" caption="SOD1 at codon 40 beside 7WX0, opened on the E40K record. The band on the gene shows the change's label, and the structure labels the residue it has there." />
 
 ## See also
 

@@ -256,8 +256,8 @@ The scan has a plateau of tied markers on chr4, whose interval contains _Tyrp1_,
 the brown coat-color gene, and a lower peak on chr9. GeneNetwork scores coat
 color on a four-step scale: black is 4, grey 3, brown 2 and DBA/2's dilute
 brown 1. We'll fetch each strain's score and turn the four values into four
-sections of painting rows, so the phenotype orders the rows and the painted
-genotypes can agree with it or not.
+sections of painting rows, so the rows are ordered by phenotype and the painted
+genotypes may or may not agree with it.
 
 The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rows.groups`](/docs/config/markrows/#slot-groups) entry per score, a regex
@@ -351,14 +351,14 @@ With the coat-color sections in place:
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="chr4 with the painting's rows banded by coat color, B in blue and D in red."/>
 
 Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
-dilute brown strains DBA/2's; the rest of chr4 is the control, where nothing
-sets coat color.
+dilute brown strains DBA/2's; the rest of chr4 is the control, with no
+coat-color gene.
 
 ## Myo5a, the dilute locus, under the chr9 peak
 
 The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). Open chr9 with the same grouped painting, and filter the gene track to
-_Myo5a_ the same way. The sections split the other way:
+_Myo5a_ the same way, where the sections split the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way. Under the peak the black and brown bands are blue, the grey and dilute brown bands red."/>
 

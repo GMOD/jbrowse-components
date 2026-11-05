@@ -136,9 +136,9 @@ The segments themselves are a `FeatureTrack` whose
 }
 ```
 
-The rows divide the display's
-[`height`](/docs/config/linearmultirowfeaturedisplay/#slot-height), which at
-this row count makes each tumor under a pixel tall. In
+The display divides its
+[`height`](/docs/config/linearmultirowfeaturedisplay/#slot-height) among the
+rows, which at this row count makes each tumor under a pixel tall. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, two settings draw
 the rows and colors:
 
@@ -313,11 +313,11 @@ Two options adjust the split:
 - `--groups` takes any other column for a different split: `histology` and
   `stage` work for any TCGA project, while `subtype` is breast specific.
 
-Copy number sorts the cohort by amplification, and the 17q amplicon picks out
-the HER2+ row. The point mutations sort a group the segments cannot separate:
-the [mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets the same
-tumors by the same clinical table, and its recurrence track puts _TP53_
-mutations in the triple-negative row.
+In the copy-number rows, the 17q amplicon marks the HER2+ row. The point
+mutations separate a group that the segments cannot: the
+[mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets the same tumors
+by the same clinical table, and its recurrence track shows _TP53_ mutations in
+the triple-negative row.
 
 ## Use your own cohort
 

@@ -110,13 +110,14 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 
 `symbols_to_blocks.py` joins on the case-folded symbol and handles these cases:
 
-- **A gene named with an NCBI `LOC` placeholder** joins nothing. RefSeq names
-  the salivary amylase copies that way in the other primates.
+- **A gene named with an NCBI `LOC` placeholder** is left out of the join.
+  RefSeq names the salivary amylase copies that way in the other primates.
 - **A symbol shared by several genes in one genome** gets a row per copy,
   because a link joins one gene to one gene. The main case is the
   pseudoautosomal genes, annotated on both X and Y.
 - **Open reading frame genes** spell differently in the apes (human _C1orf35_ is
-  chimp _C1H1orf35_), and the helper reads that back.
+  chimp _C1H1orf35_), and the helper maps that spelling back to the human
+  symbol.
 
 The helper prints how much of each column it filled.
 
@@ -125,7 +126,7 @@ The helper prints how much of each column it filled.
 Each genome is also a hub on [genomes.jbrowse.org](https://genomes.jbrowse.org).
 A hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
 alias table that resolves the `NC_` names in the BEDs, and the NCBI RefSeq
-genes. Each lane takes its assembly entry and gene track from its hub, so the
+genes. The assembly entry and gene track of each lane come from its hub, so the
 ortholog table is the one file built here:
 
 ```bash
@@ -175,8 +176,8 @@ GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 }
 ```
 
-Each lane draws gene models from a gene track on its assembly. For your own
-annotation, add one per genome from a bgzipped, tabix-indexed GFF3
+Each lane's gene models come from a gene track on that lane's assembly. For your
+own annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 ([prep](/docs/quickstart_web)) that uses the assembly's refNames:
 
 ```json addtrack
@@ -202,7 +203,7 @@ ortholog group, named by its gene symbol, to a color:
 
 - A conserved gene is one color down the whole stack, and a lane missing it
   breaks the column.
-- A gene no group claims is grey.
+- A gene in no group is grey.
 - A key naming the groups appears in the top right once the window holds few
   enough to list. Untick **Show → Legend** in the track menu to hide it.
 
@@ -287,7 +288,7 @@ orientation. The session below opens the _TP53_ neighbourhood:
 }
 ```
 
-<Figure caption="TP53 on human chr17 over seven primate lanes, each with its own RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="TP53 on human chr17 over seven primate lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.
@@ -302,14 +303,15 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
   `primate_orthologs` between them
 - Navigate the human row to `chr2` and the chimpanzee row to `chr12` and
   `chr13`, the two chromosomes that hold its halves
-- Pick **Target** in the palette button menu, which paints each ribbon by the
+- Pick **Target** in the palette button menu, which colors each ribbon by the
   chimpanzee chromosome it maps to
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-In the multi-lane view, a lane whose genome holds the window's genes on two
-contigs shows the contig with more of them and names the other in its header.
-**Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto it.
+In the multi-lane view, where a genome has the window's genes on two contigs,
+its lane shows the contig with more of them and names the other in the lane
+header. **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto
+it.
 
 ## Joining bacterial annotations (E. coli)
 
@@ -342,11 +344,12 @@ python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]
 PGAP writes on each CDS the protein it annotated the gene from
 (`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
 `--merge-cited` reads that note to join K-12's _gnd_ to the _gndA_ most strains
-carry.
+have.
 
-A lane draws its genes from the BED and the gene track, so a strain's assembly
-is its chromosome's name and length. The build writes `<strain>.chrom.sizes`,
-one tab-separated line, and loads it as a `ChromSizesAdapter`:
+Each lane's genes come from the BED and the gene track, so a strain's assembly
+needs only its chromosome's name and length. The build writes
+`<strain>.chrom.sizes`, one tab-separated line, and loads it as a
+`ChromSizesAdapter`:
 
 ```json addassembly
 { "name": "MG1655", "uri": "MG1655.chrom.sizes" }
@@ -380,18 +383,19 @@ the hosted config, which has every strain, with `height` set to fit the stack:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the E. coli and Shigella lanes, each with its own RefSeq genes." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the E. coli and Shigella lanes, each with that genome's RefSeq genes." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 
-- The K-12 derivatives sort to the top, since lanes stack by how many of the
-  window's genes they place on one contig, and have the cluster gene for gene.
+- The K-12 derivatives sort to the top, since the lanes are ordered by how many
+  of the window's genes each genome has on one contig, and have the cluster gene
+  for gene.
 - Below them the flanks chain down every lane: _galF_ on one side, _gnd_ (_gndA_
   in most lanes), _ugd_ and _wzzB_ on the other.
 - The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
   wherever a strain has them.
 
-`symbols_to_blocks.py` gives a symbol K-12 lacks a row of its own, so _vioB_ is
+`symbols_to_blocks.py` gives each symbol K-12 lacks a separate row, so _vioB_ is
 one color down IAI39 and the BL21 lanes. A gene PGAP left under its locus tag,
 such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of the grey is
 each serotype's sugar genes, which have no K-12 counterpart to join by name;

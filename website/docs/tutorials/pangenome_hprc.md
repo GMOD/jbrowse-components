@@ -13,8 +13,8 @@ tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-The Human Pangenome Reference Consortium's release 2 builds 464 human haplotypes
-into a pangenome graph; the phased VCF used here lists 462 of them. Where the
+The Human Pangenome Reference Consortium's release 2 is a pangenome graph of 464
+human haplotypes; the phased VCF used here lists 462 of them. Where the
 haplotypes differ, the graph forms a bubble, and each route through a bubble is
 an allele. HPRC writes each haplotype's route through every bubble as a phased
 VCF, so a record lists which haplotypes have which allele. We open the graph and
@@ -83,29 +83,30 @@ share of the haplotypes aligned there.
 **Open in JBrowse** opens the window in a JBrowse tab. Clicking a row draws that
 form's largest change as a graph under the map, cut from the graph's haplotype
 walks, and the button then opens that form's haplotype as a lane. **More about
-this window** unfolds a table of each change with its carriers, and every
-launch:
+this window** unfolds a table of each change with the haplotypes that have it,
+and every launch:
 
 - **Graph**: the region drawn as a graph, with the structural variants each
   haplotype has under it
 - **Variants**: the structural variants each haplotype has, over the genes
 - **Haplotypes**: a lane for each structural form, commonest first, and more
-  lanes for the forms more haplotypes carry
+  lanes for the forms more haplotypes have
 - **BandageJS**: the same haplotypes' walks in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
-A window up to 150 kb wide adds two rows under the genes in every launch: the
+Every launch for a window up to 150 kb wide adds two rows under the genes: the
 [known alleles](#a-known-allele-cfhr3-cfhr1) in it, and the
-[GWAS Catalog](https://www.ebi.ac.uk/gwas/)'s hits. A window over 150 kb offers
-the graph alone. The page keeps the window in its address, so a link such as
+[GWAS Catalog](https://www.ebi.ac.uk/gwas/)'s hits. For a window over 150 kb,
+the page offers the graph alone. The page keeps the window in its address, so a
+link such as
 [`?region=chr6:32,510,001-32,600,000`](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000)
 opens the same map.
 
 ## A known allele: CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
 
-Some windows hold an allele with a published story. Click the **CFH / CFHR**
+Some windows hold an allele described in a publication. Click the **CFH / CFHR**
 example. Above the map, the page names the **CFHR3–CFHR1 deletion**, says what
-it does, counts its carriers in the panel and cites
+it does, counts the haplotypes with it in the panel and cites
 [Hughes et al. 2006](https://doi.org/10.1038/ng1890), who tied it to a lower
 risk of age-related macular degeneration. The map calls the change by the same
 name.
@@ -116,10 +117,10 @@ Press **Open in JBrowse**. Under **NCBI RefSeq genes (hg38)**:
 - **GWAS Catalog (NHGRI-EBI)** marks the trait associations in the window. Click
   a hit for its trait, paper and p-value; the two advanced age-related macular
   degeneration hits sit one on either side of the deletion
-- the matrix under **HPRC v2.1 graph (rGFA segments)** marks the deletion in
-  each carrier's row
+- the matrix under **HPRC v2.1 graph (rGFA segments)** marks the deletion in the
+  row of each haplotype with it
 
-<Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix is the deletion's carriers." src="/img/pangenome/hprc_cfh_graph_launch.png" />
+<Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix marks the haplotypes with the deletion." src="/img/pangenome/hprc_cfh_graph_launch.png" />
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
@@ -155,7 +156,7 @@ The graph has four kinds of object:
   position
 - a **bubble** is a place where haplotypes disagree
 - an **allele** is a haplotype's sequence in place of the reference, drawn in
-  charcoal because the reference path does not visit it
+  charcoal because it is off the reference path
 - an **edge** that skips sequence is a deletion, drawn as a dashed arc
 
 ## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
@@ -188,7 +189,7 @@ Zoom out a few steps.
 <Figure caption="MHC class II with an allele's right-click menu open, and the view Open in NA20809.2 opens." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
-allele and no _HLA-DRB5_, the gene it hangs across on hg38.
+allele and no _HLA-DRB5_, the gene it spans on hg38.
 
 ## Listing every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
@@ -225,7 +226,7 @@ the graph launch's session:
 - `rows: "haplotype"` draws one row per haplotype, named `<sample> HP1`,
   `<sample> HP2`.
 - `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
-  and up, the size of the bubbles minigraph draws. `alleleLength` is the length
+  and up, the size of the bubbles minigraph calls. `alleleLength` is the length
   of the record's longest allele, so it counts an insertion's inserted bases.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
@@ -250,8 +251,8 @@ which covers most of _HLA-DRB5_.
 
 The VCF holds the _HLA-DRB5_ allele as several records, one for each of its
 sequences, which differ by a base or two. The blue block under the band is the
-haplotypes with any of the four, plus a smaller block with an 86 kb deletion
-that removes the whole stretch.
+haplotypes with any of its four sequences, plus a smaller block with an 86 kb
+deletion that removes the whole stretch.
 
 ## Reading C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
@@ -295,9 +296,9 @@ The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are haplotypes
 that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
-GRCh38 carries: the difference between a long and a short C4.
+GRCh38 has, the difference between a long and a short C4.
 
-## What the graph and the page do not show {#limits}
+## Limits of the graph and the page {#limits}
 
 The HPRC page's examples are loci where at least one launch draws something
 readable. At a locus of your own, a picture that looks simple or empty can
@@ -329,7 +330,7 @@ mislead in these cases:
   **Graph** and **Variants** launches. A window can still land where the graph
   merges duplicated copies into one thread or the VCF has no record, and the
   page offers the launch anyway.
-- **No single launch shows the whole locus.** The graph shows which sequence
+- **Each launch shows one part of the locus.** The graph shows which sequence
   exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
   are arranged.
 

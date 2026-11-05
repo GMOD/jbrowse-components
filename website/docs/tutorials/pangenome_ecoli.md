@@ -17,8 +17,8 @@ share and which only some have. We:
 
 - load the alignment between the strains as a synteny track, and stack the
   strains in a linear synteny view
-- load the variants the graph calls against K12 as a variant track, one row per
-  strain
+- load the variants pggb calls from the graph against K12 as a variant track,
+  one row per strain
 - load the graph's whole-genome alignment as a MAF track on K12
 - plot depth as a quantitative track and per-strain presence as a heatmap
 - load the graph itself as a graph track you browse by locus
@@ -34,7 +34,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - `docker` or `singularity`, for the pggb image
 - `samtools`, htslib (`bgzip`, `tabix`), `python3` and `unzip`
 - `bedGraphToBigWig` (UCSC kentUtils)
-- `minimap2`, for the reads that check the depth track
+- `minimap2`, for mapping the nanopore reads over the depth trough
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
@@ -228,7 +228,7 @@ jbrowse make-pif ecoli_pggb_untangle.paf --csi
 one track can draw every strain on K12's axis. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
 one row per `strain`, and `encoding.color` is a color scale that here uses
-`scale.type: "identity"` for the colors the file states, red where the strain
+`scale.type: "identity"` for the colors the file lists, red where the strain
 runs inverted:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
@@ -269,12 +269,12 @@ tabix -C -p bed ecoli_pggb_untangle_rows.bed.gz
 }
 ```
 
-<Figure caption="The odgi untangle synteny two ways, each inverted arm boxed in its own color in both. Above, one row per strain over K12. Below, K12 against IAI39 as a dotplot." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
+<Figure caption="The odgi untangle synteny two ways, each inverted arm boxed in a distinct color, the same in both panels. Above, one row per strain over K12. Below, K12 against IAI39 as a dotplot." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
 ## Variants against K12 (pggb -V) {#pangenome-variants-projection}
 
-`pggb -V` wrote a VCF of every variant the graph decomposes against the K12
-path, genotyped in the other four strains. Its `CHROM` is the PanSN path,
+`pggb -V` wrote a VCF of every variant it decomposes from the graph against the
+K12 path, genotyped in the other four strains. Its `CHROM` is the PanSN path,
 `K12#1#chr`, so rename it to the assembly's `chr`:
 
 ```bash
@@ -380,9 +380,9 @@ covers under two submenus:
 ## Pangenome depth: core versus accessory sequence {#pangenome-depth-projection-core-vs-accessory}
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
-counts how many paths cross each K12 window, so core sequence reads the strain
-count and sequence only K12 has reads 1. Make 500 bp windows, count, and write a
-bigWig:
+counts how many paths cross each K12 window, so the depth equals the strain
+count over core sequence and 1 over sequence only K12 has. Make 500 bp windows,
+count, and write a bigWig:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -604,8 +604,8 @@ To set the tier beside the strains:
 - In the tier track's menu, **Display types → Feature display** draws the tier's
   segments as a row at any zoom, marking where the strains differ.
 - Turn on the [MAF track](#whole-genome-alignment-maf-projection) between the
-  tier and the graph. A strain's row breaks across each bubble it skips, so the
-  MAF names the strains.
+  tier and the graph. A strain's MAF row breaks across each bubble the strain
+  skips, so the MAF rows identify the strains at each bubble.
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 

@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-A pileup looks the same whether its reads belong at a locus or merely landed
-there. Where two copies of a sequence are near-identical, an aligner cannot tell
-which copy a read came from, so the reads, the coverage and any call made from
-them are unreliable there. We check a locus for this at the _SMN1_/_SMN2_
-duplication on chromosome 5. We:
+A pileup looks the same whether its reads came from the locus or were placed
+there by the aligner. Where two copies of a sequence are near-identical, an
+aligner cannot tell which copy a read came from, so the reads, the coverage and
+any call made from them are unreliable there. We check a locus for this at the
+_SMN1_/_SMN2_ duplication on chromosome 5. We:
 
 - load hg38's Umap mappability as a quantitative track drawn at its bin minimum,
   beside gnomAD coverage, GIAB's problematic regions and long-read SV calls
@@ -32,10 +32,11 @@ duplication on chromosome 5. We:
 
 ## The data
 
-The hosted tracks are files already wired into the
-[genomes.jbrowse.org](https://genomes.jbrowse.org) hg38 config. The reads come
-from the 1000 Genomes high-coverage short-read release and its ONT long-read
-release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
+The hosted tracks are files that the
+[genomes.jbrowse.org](https://genomes.jbrowse.org) hg38 config already lists.
+The reads come from the 1000 Genomes high-coverage short-read release and its
+ONT long-read release
+([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) streams them to
@@ -68,10 +69,10 @@ runs the same check on your own locus and reads.
 ## SMN1 and SMN2: a near-identical gene duplication
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
-identical across their ~28 kb. Spinal muscular atrophy turns on the copy number
-of _SMN1_, so which copy a read came from is the clinical question. An aligner
-given a 150 bp read from either copy has two equally good places to put it and
-reports mapping quality 0 (MAPQ 0). MAPQ is
+identical across their ~28 kb. Spinal muscular atrophy depends on the copy
+number of _SMN1_, so which copy a read came from is the clinical question. An
+aligner given a 150 bp read from either copy has two equally good places to put
+it and reports mapping quality 0 (MAPQ 0). MAPQ is
 `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
 means the chosen position is about as likely wrong as right.
@@ -155,8 +156,8 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 }
 ```
 
-Then add the NA12878 reads. The CRAM needs its `.crai` beside it and decodes
-against hg38; for your own sample, swap the `uri`. In
+Then add the NA12878 reads. The CRAM needs its `.crai` beside it, and JBrowse
+decodes it against hg38; for your own sample, swap the `uri`. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the track's
 `encoding.color` is a color scale on the `mapq` field:
 
@@ -234,9 +235,9 @@ copy still has two places to go.
 
 ## Applying the mappability check to another locus
 
-The same check runs on any hg38 locus and your own reads, read against a control
-window: depth alone can look the same at a duplicated locus and an ordinary one,
-and the share of reads at MAPQ 0 separates them.
+The check runs on any hg38 locus and your own reads, against a control window.
+Depth alone can look the same at a duplicated locus and an ordinary one, while
+the share of reads at MAPQ 0 separates them.
 
 - Turn on the four tracks above, with the same Umap settings
 - Add your reads with the `uri` in the read track config swapped for your BAM or
@@ -273,8 +274,8 @@ Run both on the control window too, at the same width.
 ## Reproduce it end to end
 
 [`scan_mappability_qc.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_mappability_qc.sh)
-measures the SMN region from the files the figures draw. It asks whether a read
-can be placed at a locus several ways, and reads each answer against a control:
+measures the SMN region from the files the figures draw. It tests whether a read
+can be placed at a locus several ways, and compares each result with a control:
 
 1. Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
    Umap track has a value for, gnomAD's mean depth, and the share of NA12878's

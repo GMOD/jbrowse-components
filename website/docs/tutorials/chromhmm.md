@@ -232,8 +232,8 @@ The nine ENCODE lines are a small sample of tissues. The
 15-state segmentations of the Roadmap epigenomes merge the same way, into one
 track and one fetch, and the merged file is hosted. Their state names are
 mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this track labels its colors with
-`scale.type: "identity"`: the file's `itemRgb` still paints each block, and
-`scale.names` spells out the fifteen `scale.domain` colors in order.
+`scale.type: "identity"`: each block is still painted with the file's `itemRgb`,
+and `scale.names` spells out the fifteen `scale.domain` colors in order.
 
 The config below leaves out three settings the PAX5 figure uses: a `rows.sort`
 naming every epigenome, grouped by tissue, and the `rows.groups` and
@@ -315,7 +315,7 @@ settings:
 - [`rows.color`](/docs/config/markrows/#slot-color) with `field: "group"` is a
   color scale on each row's label bar that pairs each tissue with a color
 
-The file's `itemRgb` still paints the blocks their state colors, so the tissue
+The blocks are still painted in their `itemRgb` state colors, so the tissue
 color appears on the label bar alone. Two of the nineteen tissues look like
 this:
 
@@ -342,9 +342,9 @@ this:
 }
 ```
 
-The `GROUP` and `COLOR` columns of `EID_metadata.tab` supply both
-lists.[^encode2012] One `jq` call writes them from the `STD_NAME` column,
-escaping the regex metacharacters in the names:
+Both lists come from the `GROUP` and `COLOR` columns of
+`EID_metadata.tab`.[^encode2012] One `jq` call writes them from the `STD_NAME`
+column, escaping the regex metacharacters in the names:
 
 ```bash
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
@@ -480,7 +480,7 @@ builds the Roadmap epigenome track by the same merge. Roadmap's segmentations
 are bare BED4, so the script fills in what the ENCODE files had:
 
 1. paints each segment its state's color from `colormap_15_coreMarks.tab`,
-   giving the merged file the `itemRgb` column that draws it
+   giving the merged file the `itemRgb` column JBrowse colors it by
 2. labels each row with the epigenome's name from `EID_metadata.tab`, adding its
    mnemonic where two epigenomes share a name, so the two never merge into one
    row
@@ -527,4 +527,4 @@ gigabytes of scratch.
     ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549,
     HUVEC, NHEK and the rest) into the compendium as one group, which names a
     data source and spans several anatomies. The same file's `ANATOMY` column
-    splits them finer, and `TYPE` sorts them by how the sample was collected.
+    splits them finer, and `TYPE` records how each sample was collected.

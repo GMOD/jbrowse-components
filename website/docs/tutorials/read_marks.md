@@ -132,11 +132,11 @@ Open the track at `chr20:32,925,000-32,955,000`.
 
 ## Plotting insert size as one point per read pair
 
-A mark display draws one y axis. Depth runs in the tens and an insert size in
-the thousands, so the insert goes on a second track over the same file. Its
-`filter` keeps the leftmost mate, where the template length is positive, so each
-pair counts once, and drops the few over 8 kb. On an alignments track `score` is
-the mapping quality, which colors the points.
+A mark display has one y axis, and depth runs in the tens while an insert size
+runs in the thousands, so the insert goes on a second track over the same file.
+Its `filter` keeps the leftmost mate, where the template length is positive, so
+each pair counts once, and drops the few over 8 kb. On an alignments track
+`score` is the mapping quality, which colors the points.
 
 ```json addtrack
 {
@@ -187,9 +187,8 @@ its read.
 
 ## Scanning chromosome 20 for clusters of long-insert pairs
 
-Fetching every read of a chromosome overruns the track's size limit, so we cut
-the long pairs out once, one row per pair, into a BED with a header naming its
-columns.
+A whole chromosome's reads exceed the track's size limit, so we cut the long
+pairs out once, one row per pair, into a BED with a header naming its columns.
 
 <!-- from: scripts/build_read_marks.sh -->
 

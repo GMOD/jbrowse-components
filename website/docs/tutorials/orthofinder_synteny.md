@@ -11,7 +11,7 @@ tutorial_subcategory: Ortholog tables
 
 Genomes too far apart to align base by base still keep their genes in order
 along the chromosomes. OrthoFinder infers orthogroups, sets of genes descended
-from one ancestral gene, from protein similarity alone. An orthogroup keeps
+from one ancestral gene, from protein similarity alone. An orthogroup contains
 every copy of a gene, so where a genome doubled or tripled, one region of a
 relative without that duplication pairs with two or three regions of it: bread
 wheat's three subgenomes, maize, zebrafish and tomato, and the fruit flies as a
@@ -187,10 +187,11 @@ raises a track error naming both lists.
 
 ### Assemblies from a chrom.sizes
 
-A gene-level synteny view reads no sequence, so each assembly is a
-[`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes` file
-(a name and a length per line) built from its NCBI sequence report. We'll load
-wheat; the other genomes repeat the block under each genome's name:
+A gene-level synteny view needs only sequence names and lengths, so each
+assembly is a [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a
+`.chrom.sizes` file (a name and a length per line) built from its NCBI sequence
+report. We'll load wheat; the other genomes repeat the block under each genome's
+name:
 
 ```json addassembly
 { "name": "wheat", "uri": "wheat.chrom.sizes" }
@@ -230,7 +231,7 @@ dialog. Then:
   `1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D`, the seven
   homoeologous groups side by side, with the unplaced `Un` left out.
 - Pick **Query** in the palette button menu. The palette sets the view's
-  `encoding.color`, a color scale from a field to colors, and **Query** paints
+  `encoding.color`, a color scale from a field to colors, and **Query** colors
   each link by its tauschii chromosome.
 
 The same view as a session over the hosted wheat config:
@@ -267,7 +268,7 @@ the three wheat chromosomes of its group.
 
 Navigate the wheat row to `4A` alone, keeping **Query**:
 
-<Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query gives each chromosome its own color." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query colors each chromosome differently." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 Other chromosomes appear on 4A only as single genes. The runs from tauschii 5
 and 7 are the 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et
@@ -291,10 +292,10 @@ Open the `grasses` config and stack sorghum over rice over maize, with
 - Turn on **sorghum genes**, **rice genes** and **maize genes**.
 - Navigate the rows to `1:5,934,000-6,126,000[rev]`, `3:31,590,000-31,775,000`
   and `1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`.
-- Pick **Target** in the palette button menu to paint each link by the
-  chromosome it lands on.
+- Pick **Target** in the palette button menu to color each link by the
+  chromosome of its target gene.
 
-Sorghum is the control: it shares the ancestry and lacks the duplication.
+Sorghum shares the ancestry and lacks the duplication, so it is the control.
 
 <Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
@@ -302,7 +303,8 @@ Sorghum is the control: it shares the ancestry and lacks the duplication.
 
 Open the same five grasses as a
 [multi-way synteny track](/docs/user_guides/multiway_synteny_display) on rice.
-Its top lane draws the rice genes, so no separate gene track is needed:
+The display draws the rice genes in its top lane, so a separate gene track is
+unnecessary:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
 {
@@ -329,7 +331,7 @@ Its top lane draws the rice genes, so no separate gene track is needed:
 }
 ```
 
-<Figure caption="A rice window over four grass lanes from one orthogroups track, each drawing its own gene models." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+<Figure caption="A rice window over four grass lanes from one orthogroups track, each with the gene models annotated in that genome." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
 A stacked view shows both maize copies at once. **Advanced → Launch → Linear
 synteny view (visible region)** in the lane track menu offers a full row per
@@ -345,7 +347,7 @@ config and stack gar over zebrafish, with `vertebrates_orthogroups` in the band.
 Then:
 
 - Navigate the gar row to `LG11` and leave zebrafish whole.
-- Pick **Target** in the palette button menu to paint each link by its zebrafish
+- Pick **Target** in the palette button menu to color each link by its zebrafish
   chromosome.
 - Uncheck **Off-screen mates** in the settings menu, which otherwise labels the
   zebrafish genes whose gar partners sit on other gar chromosomes.
@@ -372,14 +374,14 @@ in both bands. Then:
 - Navigate the rows to `7:66,700,000-70,550,000`, `VII:24,200,000-28,800,000`
   and `10:850,000-2,400,000[rev] 12:4,600,000-6,900,000`: one tomato copy above
   coffee and the other two below.
-- Pick **Reference** in the palette button menu to paint each link by its tomato
+- Pick **Reference** in the palette button menu to color each link by its tomato
   chromosome.
 - Uncheck **Off-screen mates** in the settings menu, which otherwise marks the
   coffee genes whose other partners fall outside the windows.
 
 <Figure caption="One coffee window between three tomato windows from the solanaceae orthogroups track, links colored by tomato chromosome." src="/img/orthofinder_synteny/solanaceae.png" />
 
-Each copy has lost genes since the triplication, so most coffee genes draw to
+Each copy has lost genes since the triplication, so most coffee genes link to
 one of the three.
 
 ## Drosophila: one copy, rearranged {#drosophila}
@@ -401,8 +403,8 @@ one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 - Pick **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec),
   which sorts each row's chromosomes against its neighbour so the links run
   along a diagonal.
-- Pick **Reference** in the palette button menu to paint each ribbon by the
-  melanogaster arm it leaves.
+- Pick **Reference** in the palette button menu to color each ribbon by its
+  melanogaster arm.
 
 <Figure caption="Four flies stacked with melanogaster between each pair, ribbons colored by melanogaster arm." src="/img/orthofinder_synteny/drosophila.png" />
 
@@ -410,13 +412,14 @@ one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 
 Open melanogaster at `3L:5,789,000-5,931,000` with the
 [multi-way synteny display](/docs/user_guides/multiway_synteny_display), which
-draws a lane per fly. Every fly keeps this window's melanogaster genes.
+draws a lane per fly; each fly has an ortholog of every melanogaster gene in
+this window.
 
 <Figure caption="Melanogaster 3L over four Drosophila lanes from one orthogroups track." src="/img/multiway_synteny/drosophila_lanes.png" />
 
 ### Collinear blocks from the same orthogroups {#collinear-blocks}
 
-An orthogroup lists the related genes and holds no gene order.
+An orthogroup is an unordered list of related genes.
 [MCScanX](https://github.com/wyp1125/MCScanX)'s `MCScanX_h` chains ortholog
 pairs that keep their order into collinear blocks. Start by writing every gene
 pair an orthogroup holds between two flies:
@@ -495,9 +498,8 @@ every band:
 
 ## An orthogroup's alignment and gene tree {#orthogroup-alignments}
 
-An orthogroup says which genes are related, not how their proteins line up. Run
-on past the orthogroups, OrthoFinder also aligns each orthogroup and infers a
-gene tree for every one of four or more genes, and the
+Run past the orthogroup step, OrthoFinder also aligns each orthogroup and infers
+a gene tree for every one of four or more genes, and the
 [MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) opens them
 from a gene on the genome. Every set's config loads them, launched from the top
 genome of its stack: melanogaster, rice, human, tomato or tauschii.
@@ -532,10 +534,10 @@ synteny tracks:
 MSA=1 bash build_orthofinder_synteny.sh drosophila
 ```
 
-It changes three things. OrthoFinder runs without `-og`, with `-M msa`, which
-OrthoFinder 2.5 (the `davidemms/orthofinder` container) needs before it aligns
-anything, and with `-z`, which stops it trimming columns, and so residues, out
-of a long alignment:
+`MSA=1` changes three OrthoFinder options: it runs without `-og`, with `-M msa`,
+which OrthoFinder 2.5 (the `davidemms/orthofinder` container) needs before it
+aligns anything, and with `-z`, which stops it trimming columns, and so
+residues, out of a long alignment:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -545,8 +547,8 @@ orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 
 For the five flies that took 15 minutes on 24 threads. The demos ran OrthoFinder
 3.2 for four sets and the 2.5.5 container for wheat: 3.2 split wheat's homoeolog
-families into 70,922 orthogroups where 2.5.5 kept 44,921, which cut the
-tauschii-wheat gene pairs by 40% and the collinear blocks by half. The other
+families into about 71,000 orthogroups where 2.5.5 kept about 45,000, which cut
+the tauschii-wheat gene pairs by 40% and the collinear blocks by half. The other
 sets came out alike under either. The plugin finds the clicked gene's row in the
 alignment by translating its transcript, so the top genome (`MSA_GENOMES` names
 others) is downloaded and cut to the sequences in its chrom.sizes, and becomes
@@ -638,7 +640,7 @@ The sets the script accepts, and what each costs to build:
 
 <!-- END GENERATED ORTHOFINDER_SETS -->
 
-Two cuts are environment variables:
+Two environment variables set the cuts:
 
 <!-- BEGIN GENERATED ORTHOFINDER_CUTS -->
 
@@ -682,7 +684,7 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
   chromosome names, and a file name supplies a two-column alias table.
 - Column 2 also takes a proteome directly, which skips translation; its headers
   then need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
-- Two genomes make a valid manifest.
+- A manifest needs at least two genomes.
 
 ## See also
 

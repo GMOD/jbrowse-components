@@ -196,9 +196,9 @@ Open the [example portal](https://jbrowse.org/demos/tiberius_review/), or
 - **Verdict buttons** record what you decide
 - **Open in JBrowse** opens the same view live
 
-Verdicts stay in your browser. **Export** writes them out as TSV, and **Import**
-reads that TSV back on another browser. Building with `--apollo <url>` adds a
-second link to every card that opens the same window in
+The page keeps verdicts in your browser. **Export** writes them out as TSV, and
+**Import** reads that TSV back on another browser. Building with
+`--apollo <url>` adds a second link to every card that opens the same window in
 [Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and an
 `apollo_url` column to the exported TSV.
 

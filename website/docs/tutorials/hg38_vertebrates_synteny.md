@@ -48,7 +48,8 @@ npm install -g @jbrowse/cli@next
 UCSC's pairwise liftOver chains from hg38 (Kent et al. 2003), each converted to
 an indexed PAF and rehosted beside the hub configs
 [genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
-hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
+hubs, whose assembly entry and NCBI RefSeq gene track are used verbatim for each
+lane.
 
 You don't need these files to follow the page: the track config below reads the
 hosted indexed copies. To index a chain of your own, convert it with `chain2paf`
@@ -78,9 +79,9 @@ and `make-pif`, as _LiftOver chains as one indexed alignment per genome_ shows.
 
 A liftOver chain maps each stretch of one genome to a position in another,
 whether or not a gene lies there, so the track draws each lane from the chain
-alone. Each UCSC chain aligns hg38 to one other genome, so no file aligns
-chimpanzee to mouse, and every ribbon joins a lane to hg38, whichever lane sits
-above it.
+alone. Each UCSC chain aligns hg38 to one other genome, so there is no
+chimpanzee-to-mouse alignment, and every ribbon joins a lane to hg38, whichever
+lane sits above it.
 
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`. To index a chain of your own, convert it to PAF with
@@ -133,7 +134,7 @@ One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
   [Stacking many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
   turns on.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
-  each lane finds its gene models through the session, so this track is the only
+  the session supplies each lane's gene models, so this track is the only
   addition to the hub entries.
 
 A genome of your own loads from its FASTA instead:
@@ -183,9 +184,9 @@ A genome of your own loads from its FASTA instead:
 }
 ```
 
-**Level of detail** in the track menu picks which stored tier a zoom reads, as
-on a pairwise synteny track. The menu offers it once every child has a coarse
-tier, which the `tabix -l` line above checks on each file.
+**Level of detail** in the track menu sets which stored tier is read at each
+zoom, as on a pairwise synteny track. The menu offers it once every child has a
+coarse tier, which the `tabix -l` line above checks on each file.
 
 ## Stacking the genomes at TP53 and at PMP22
 
@@ -232,9 +233,9 @@ stacks the lanes down the tree from human, the apes first and the cow last.
 ```
 
 The ribbons color by strand, the default `ribbons.encoding.color` (**Color by →
-Strand**, under **Ribbons** in the track menu). Each ribbon takes the strand of
-the chain record that placed it, red where the lane runs the same way as hg38
-and blue where it runs reversed.
+Strand**, under **Ribbons** in the track menu). Each ribbon has the strand of
+the chain record it comes from, red where the lane runs the same way as hg38 and
+blue where it runs reversed.
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,
 with the same genes in the same order:
@@ -252,7 +253,7 @@ with the same genes in the same order:
 
 Navigate to `chr17:15,200,000-16,400,000`, toward the centromere, near _PMP22_.
 The region is a hotspot of segmental duplications (long repeated copies of
-sequence): every genome places it as several blocks, and many of those blocks
+sequence): every genome aligns to it in several blocks, and many of those blocks
 run the other way against their neighbours. Three rules decide how a lane draws
 them:
 
@@ -276,13 +277,13 @@ misses some of what the alignment places. The lane header menu sets the frame:
   stretch its header names after `also at`.
 - **Flip lane** turns the lane the other way on the same contig, for a lane
   whose blocks split about evenly between the two orientations.
-- **Let the lane choose its orientation** hands the choice back.
+- **Let the lane choose its orientation** restores the automatic orientation.
 
 <Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, draws its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reproduce it end to end
 
-The script writes one config, with nothing to build or upload, in three steps:
+The script writes one config in three steps:
 
 1. Probe which of the listed genomes have both a hub config and an indexed chain
    with its `.csi` on jbrowse.org, and drop the rest.

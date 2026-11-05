@@ -11,7 +11,7 @@ tutorial_subcategory: Variants on protein structures
 ---
 
 _KRAS_ encodes a small G protein that switches growth signalling on while it
-holds GTP. In tumours its missense mutations pile up on a few codons: glycine
+holds GTP. In tumours its missense mutations cluster at a few codons: glycine
 12, glycine 13 and glutamine 61. A change at any of them keeps the protein in
 its GTP-bound, active state. The drug sotorasib binds KRAS G12C covalently at
 the mutant cysteine. We open the hotspots beside the crystal structure of that
@@ -61,8 +61,8 @@ browser's linked session. Open it on _KRAS_ with structure 6OIM:
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree, so a residue matching human draws as a dot
 
-A highlight on the genome reaches the alignment and the structure too, so label
-the two hotspots there:
+A highlight on the genome appears in the alignment and the structure too, so
+label the two hotspots there:
 
 - drag across the scale bar over codon 12 and pick **Highlight region**, then do
   the same for codon 13
@@ -105,7 +105,7 @@ the first two. Codon 61 sits outside all three, in the Switch II region.
 
 ## Your own gene
 
-- any gene the protein browser opens takes the same steps
+- the same steps work on any gene the protein browser opens
 - add `residue=N` to the link to open on the seed alignment of the Pfam family
   the residue falls in, distant relatives from many species, in place of the
   gene's orthologs

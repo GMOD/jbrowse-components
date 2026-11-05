@@ -114,9 +114,9 @@ Each `manifest.tsv` row describes one image:
 - **`links`** counts the split reads with pieces in more than one window. Sort
   `tumor/manifest.tsv` on it to put the unsupported calls first; re-render one
   with a wider `--flank` before calling it false.
-- **`alt`** holds, for an SNV, indel, `<DEL>` or `<INS>`, the reads carrying the
-  ALT over the reads covering it (`17/41`). A deletion that one alignment holds
-  has its reads here and a `links` of zero.
+- **`alt`** holds, for an SNV, indel, `<DEL>` or `<INS>`, the reads with the ALT
+  over the reads covering it (`17/41`). A deletion within a single alignment has
+  its reads counted here and a `links` of zero.
 - **`spec`** is the view as a [session spec](/docs/urlparams#session-spec) that
   opens the same windows in JBrowse.
 - **`line`** is the record's line in the VCF, to join a row back to the callset.
@@ -126,9 +126,9 @@ mismapped there draws a curve like any other.
 
 ## Rendering a three-chromosome rearrangement
 
-COLO829's der(3) joins pieces of chr3, chr10 and chr12, and its reads visit all
-three. We'll render it with `jb2export breakpoint`, one `--loc` per panel, then
-run the same command with `COLO829BL_normal_ont` as the control:
+COLO829's der(3) joins pieces of chr3, chr10 and chr12, and its reads align to
+all three. We'll render it with `jb2export breakpoint`, one `--loc` per panel,
+then run the same command with `COLO829BL_normal_ont` as the control:
 
 ```bash
 # featureHeight:super-compact draws each read 1 px tall
@@ -170,7 +170,7 @@ breakends or symbolic SVs (such as `<DEL>`) to a VCF:
 
 A caller that groups one rearrangement's junctions under VCF 4.4's `EVENT` key,
 as DRAGEN and the C-GIAB benchmark do, gets the der(3) image from `batch`
-itself, which renders each event visiting more than two loci once more as
+itself, which renders each event spanning more than two loci once more as
 `event_<n>_<label>`. Severus writes the grouping as `CLUSTERID`, which the
 [SV inspector guide](/docs/user_guides/sv_inspector_view#rearrangement-events)
 renames to `EVENT`.

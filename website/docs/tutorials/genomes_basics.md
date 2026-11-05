@@ -51,10 +51,10 @@ instance with a URL you can share:
 
 ## Searching for TP53 and trimming its isoforms
 
-Open hg38. It starts with one track on, the **NCBI RefSeq - RefSeq All** gene
-track, and the track selector open down the right. The location box at the top
-of the view takes a gene symbol, because the hosted config ships a name index,
-or a coordinate range such as `chr17:7,668,400-7,687,550`:
+Open hg38. The view starts with one track on, the **NCBI RefSeq - RefSeq All**
+gene track, and the track selector open down the right. The location box at the
+top of the view takes a gene symbol, because the hosted config ships a name
+index, or a coordinate range such as `chr17:7,668,400-7,687,550`:
 
 - Type `TP53` into the location box and press Enter
 
@@ -169,10 +169,10 @@ The filter works on any column a BigBed has. ClinVar's clinical classification
 is the column `clinSign`, so `feature.clinSign == 'Pathogenic'` filters that
 catalog the same way.
 
-The same menus work on a file of your own, drawn beside the hosted catalog.
-Click **Add track** in the track selector and give it the file's URL, or pick it
-from disk; the [web quickstart](/docs/quickstart_web#adding-tracks) lists the
-index each format needs.
+The **Filter by** menus also work on a file of your own, drawn beside the hosted
+catalog. Click **Add track** in the track selector and give it the file's URL,
+or pick it from disk; the [web quickstart](/docs/quickstart_web#adding-tracks)
+lists the index each format needs.
 
 ## Where the track data is read from
 

@@ -197,8 +197,8 @@ A self-comparison names one assembly twice: in `blockAssemblies`, in the track's
 ```
 
 `attributeColumns` lists the columns after the two gene columns, and each
-becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
-button's **dN/dS**.
+becomes a feature attribute in the detail panel. The palette button's **dN/dS**
+uses `dn` and `ds`.
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.

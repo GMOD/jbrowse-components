@@ -68,8 +68,8 @@ The build takes the ENCODE quantifications to a colorable GFF3 in three steps,
 and one [script](#reproduce-it-end-to-end) runs all three.
 
 **Build the matrices.** The script downloads the eight RSEM tables listed above,
-with the accessions written into it, and writes a count matrix, which feeds the
-model, and a TPM matrix, which feeds the effect size.
+with the accessions written into it, and writes a count matrix for the model and
+a TPM matrix for the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
@@ -215,14 +215,14 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
 ```
 
 The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
-take the transcript value. The gene row has two more keys, which the track's
+have the transcript's value. The gene row has two more keys, which the track's
 `tooltip` reads:
 
 - `dtu_transcripts`, the count of called isoforms
 - `dtu_top_dif`, the largest ΔIF among them
 
-The keys are lowercase because the GFF parser lowercases them, so a color field
-named `dIF` reads nothing and paints every transcript grey.
+The keys are lowercase because the GFF parser lowercases them, so JBrowse finds
+no value for a color field named `dIF` and paints every transcript grey.
 
 `dtu` is `muscle`, `liver` or `ns`, as the script above calls it. `dif_called`
 is `dif` on the called transcripts and absent on the rest, so a transcript the
@@ -250,7 +250,7 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale: its `field`, `dif_called` (a called
 transcript's isoform-fraction change), goes through the `threshold` cuts in
 `scale.domain` to the colors in `scale.range`, liver-preferred below zero and
-muscle-preferred above. A value on a cut takes the interval above it.
+muscle-preferred above. A value on a cut falls in the interval above it.
 
 - The key lists every interval under the `legend.title`, plus a `(no value)` row
   for uncalled transcripts.

@@ -231,10 +231,10 @@ their arcs:
 
 <Figure caption="HG02768's reads at the complex call, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
-The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
-shows. A copy inserted beside its origin leaves pair orientation unchanged, so
-that half of the call rests on coverage, where noise at this size makes bumps as
-wide as the duplication.
+The call also lists a duplicated copy in `INFO.CPX_INTERVALS`. A copy inserted
+beside its origin leaves pair orientation unchanged, so the bands do not show
+it, and that half of the call rests on coverage, where noise at this size makes
+bumps as wide as the duplication.
 
 ## See also
 

@@ -66,7 +66,7 @@ the track:
 - Choose **Display types → Multi-row display** in the track menu.
 
 The display partitions on `repClass` whenever the file has that column, and
-**One row per...** in the same menu lists every column the features carry,
+**One row per...** in the same menu lists every column the features have,
 `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
@@ -150,10 +150,10 @@ packed form as the default and leaves the rows one menu click away.
 ## Serving your own RepeatMasker output
 
 A hub's RepeatMasker BED has the `repClass` column the display partitions on.
-The RepeatMasker `.out` file instead writes a single `class/family` field,
-`LINE/L1` for a repeat with both and a bare `Simple_repeat` for one whose family
-is its class. Splitting that field in two, under a header naming the columns,
-turns the `.out` into a file of the same shape as the one the track above reads:
+RepeatMasker's `.out` file instead has a single `class/family` field, `LINE/L1`
+for a repeat with both and a bare `Simple_repeat` for one whose family is its
+class. Splitting that field in two, under a header naming the columns, turns the
+`.out` into a file of the same shape as the one the track above reads:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 

@@ -84,8 +84,9 @@ color.
 
 ## Launching hg38 against chimp at an FTO intron
 
-The same launch works from any track under **Pairwise alignments** →
-**liftOver**. We'll repeat it against chimp and add tracks to the chimp panel:
+Launching a synteny view from a chain block works from any track under
+**Pairwise alignments** → **liftOver**. We'll repeat it against chimp and add
+tracks to the chimp panel:
 
 - turn on **hg38 to Chimp (panTro6) liftOver**
 - type `chr16:54,036,000-54,054,000`, an intron of _FTO_, into the location box
@@ -148,7 +149,7 @@ builds the same kind of track from chains you choose.
 
 ## Choosing which mouse strains become lanes at Nnt
 
-The same lane choice compares strains within one species. mm39 is C57BL/6J, the
+Choosing lanes also compares strains within one species. mm39 is C57BL/6J, the
 strain that lost _Nnt_ exons 7 to 11 (Freeman et al. 2006), and its multi-way
 liftOver track holds the Mouse Genomes Project strains. We'll open the strain
 lanes at that gene:

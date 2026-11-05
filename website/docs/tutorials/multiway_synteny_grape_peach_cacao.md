@@ -74,8 +74,8 @@ genome of your own. The script fetches everything itself.
 ## What a `.blocks` file is
 
 A `.blocks` file is a tab-delimited table. Each row is an orthologous group and
-each column a genome, with `.` where a genome has no member. The file names none
-of its columns, so `blockAssemblies` does, by position:
+each column a genome, with `.` where a genome has no member. The file has no
+header row, so `blockAssemblies` names its columns by position:
 
 ```text
 grape01	peach01	cacao01
@@ -138,7 +138,7 @@ done
 `--key=ID` writes the GFF3 id of each mRNA into BED column 4, matching the CDS
 name gffread wrote. On an NCBI annotation, `--key=transcript_id` and
 `--key=Name` leave jcvi a key it cannot resolve, and it writes a placeholder id
-like `mrna_494685` that joins nothing.
+like `mrna_494685` that matches no CDS name.
 
 Then catalog orthologs against grape, MCScan each pair, and join. The grape and
 peach catalog step is the one the MCScan anchors page ran, and it writes
@@ -162,10 +162,10 @@ python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
   --noheader | cut -f1,2,4 > grape.blocks
 ```
 
-The commands above run the two mates the stack uses. The build script runs the
-same steps for arabidopsis, poplar, tomato and citrus too, joins all six tables
-and keeps column 1 and every even column after it, which writes the seven-column
-`grape.blocks`.
+The commands above build the two per-pair tables the stack uses, peach and cacao
+against grape. The build script runs the same steps for arabidopsis, poplar,
+tomato and citrus too, joins all six tables and keeps column 1 and every even
+column after it, which writes the seven-column `grape.blocks`.
 
 [Building a table for MCScanBlocksAdapter](/docs/config_guides/synteny_track#building-a-table-for-mcscanblocksadapter)
 converts MCScanX, OrthoFinder, Ensembl Compara and reciprocal-best-hit output to
@@ -176,8 +176,8 @@ gzipped.
 
 Grape, peach and cacao are each a genome hub on
 [genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
-the table was built from. Each row takes its assembly entry and gene track from
-there:
+the table was built from. The assembly entry and gene track of each row come
+from there:
 
 ```bash
 # a GenArk hub path is the accession cut into threes
@@ -291,8 +291,8 @@ table, so the bands of a stack differ in where their ribbons come from:
 
 - A band touching grape draws pairs straight from the table (direct pairs).
 - A peach-cacao band draws a ribbon only through a grape gene both genomes
-  share, so each of its ribbons is transitive, and a row where grape has no
-  member draws nothing there.
+  share, so each of its ribbons is transitive, and no ribbon is drawn for a row
+  where grape has no member.
 - The stack above puts grape at the bottom, so its peach-cacao band is the
   transitive one. A peach, grape, cacao stack makes both bands direct.
 
@@ -333,17 +333,17 @@ In the one-locus view above, every gene sits at its grape coordinate. **Display
 types → Multi-way synteny display** redraws the lanes, each in the coordinates
 of one genome:
 
-- the display fits each lane to the genome it shows, over the orthologs the
-  window brings in
+- the display fits each lane to the genome it shows, over the orthologs in the
+  window
 - one ribbon per ortholog group joins adjacent lanes, bridging past an empty
   one, red where the two lanes run the same way and blue where one is reversed
 - any track whose features have a `mate` per assembly feeds the same lanes,
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
 
-A lane draws gene models from a gene track on the lane's assembly, and outlines
-the gene spans from the table where it has none. We'll add one for grape; the
-other genomes take the same track under their accessions. Swap the `uri` for
+Each lane's gene models come from a gene track on that lane's assembly, and gene
+spans from the table are outlined where there is none. We'll add one for grape;
+each other genome gets the same track under its accession. Swap the `uri` for
 your own GFF3, bgzipped and tabix-indexed ([prep](/docs/quickstart_web)), with
 the same refNames as the assembly:
 
@@ -401,7 +401,7 @@ config, so name your own `trackId` instead):
 }
 ```
 
-<Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane that places nothing." src="/img/multiway_synteny/lgv_track_lanes.png" />
+<Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane with no ortholog in view." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 Each lane header gives the lane's range, with `[rev]` where its gene order runs
 against grape's, and its span as a multiple of the grape window. `rows.sort` in
@@ -427,11 +427,11 @@ Two routes open a stacked synteny view from the lanes:
 - from the lane track, **Advanced → Launch → Linear synteny view (visible
   region)** in its track menu offers a row to every aligning genome
 - from the scale bar, drag-select a locus and pick **Launch → Linear synteny
-  view**. The dialog opens a row per genome, grape already seated between peach
+  view**. The dialog opens a row per genome, grape already placed between peach
   and cacao for the [reference-in-the-middle](#direct-vs-transitive-pairs)
   layout, with arrows to reorder them
 
-<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus: a scale-bar selection raises Launch, and the dialog lists a panel per genome with grape between its two mates." />
+<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus: a selection on the scale bar opens a menu with Launch, and the dialog lists a panel per genome with grape between its two mates." />
 
 ## Reproduce it end to end
 

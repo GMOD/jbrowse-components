@@ -71,10 +71,10 @@ rebuild those results, and the chain steps below take your own chains.
 
 ## Chains between neighbours, from one alignment
 
-Each lane reads two chains from the file. The chain between hg38 and that ape
-places the lane under the human window, and the chain between that ape and the
-one above it draws the ribbons between them. The pairs cover every ape in the
-stack:
+For each lane, the display reads two chains from the file: the chain between
+hg38 and that ape places the lane under the human window, and the chain between
+that ape and the one above it supplies the ribbons between them. The pairs cover
+every ape in the stack:
 
 - hg38 against each ape
 - chimpanzee against bonobo, bonobo against gorilla, gorilla against the
@@ -115,9 +115,9 @@ query from either genome is one tabix lookup:
 jbrowse make-pif apes.paf --out apes.pif.gz
 ```
 
-`make-pif` warns that the file states only some of its pairs. The missing ones
-are the pairs no two neighbouring lanes need, such as chimpanzee against the
-siamang.
+`make-pif` warns that the file contains only some of the genome pairs. The
+missing ones are the pairs no two neighbouring lanes need, such as chimpanzee
+against the siamang.
 
 ## One track over the apes
 

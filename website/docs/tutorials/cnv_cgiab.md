@@ -107,8 +107,8 @@ megadepth HG008-T.cram --bigwig
 
 ## Copy number from the published callsets
 
-C-GIAB publishes copy-number calls on this pair from four groups, each drawing a
-different quantity:
+C-GIAB publishes copy-number calls on this pair from four groups, each reporting
+a different quantity:
 
 | Callset                                                                                                                                  | Called from                           | Each segment has                                                                                 |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -125,7 +125,7 @@ adds, whose copy numbers are absolute, so CN 2 marks a diploid region.
 
 DRAGEN's CNV calls load as an indexed VCF, one record per segment. Record IDs
 read `DRAGEN:CNLOH:chr9:22631070-22939213` (copy-neutral loss of
-heterozygosity), so the label takes the class from the second field:
+heterozygosity), so the label reads the class from the second field:
 
 ```json addtrack
 {
@@ -226,7 +226,7 @@ chr1	0	23750000	2	106.025	1
 chr1	23750001	119650000	0.72	58.025	1
 ```
 
-The `haplotype` column assigns each segment to a row, so we use
+Each segment's row is in its `haplotype` column, so we use
 [`LinearMultiRowFeatureDisplay`](/docs/config/linearmultirowfeaturedisplay) and
 set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
 `haplotype`. The adapter names its columns with
@@ -310,9 +310,9 @@ We'll load the depth as points, the **Scatter** plot type:
 ```
 
 To compare the depth with the callsets, draw it with **Plot type → Bar plot**
-and a fixed axis from **Y axis... → Range**, so a halving reads as a level. Open
-`chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the four CNV
-callsets:
+and a fixed axis from **Y axis... → Range**, so a halving in depth shows as a
+lower level. Open `chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth
+above the four CNV callsets:
 
 <Figure caption="Four published CNV callsets over chr9p21.3, under the HiFiCNV depth." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 

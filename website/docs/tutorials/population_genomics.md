@@ -132,9 +132,10 @@ vcftools --gzvcf dgrp2.vcf.gz --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
 `$4` of the same table is the called-variant count the figure below stacks under
 π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
 
-Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports
-`BIN_START` 0-based, so there is no `-1` shift, and has no `BIN_END`, so the
-`awk` builds the window end before the clamp:
+The vcftools Tajima's D table
+([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports `BIN_START`
+0-based, so there is no `-1` shift, and has no `BIN_END`, so the `awk` builds
+the window end before the clamp:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -157,7 +158,8 @@ genome-wide overviews.
 The bigWigs take contig names from the VCF header (`2L`, `2R`, `X`, FlyBase
 style) while UCSC dm6 writes `chr2L`, and
 [refname aliasing](/docs/developer_guides/refname_aliasing) maps one to the
-other. A mismatch with no alias draws an empty track and raises no error.
+other. With a mismatch and no alias, JBrowse draws an empty track and raises no
+error.
 
 The DGRP VCF holds variant sites only, so `--window-pi` counts every position
 missing from the file as invariant and callable, and a window that lost sites to

@@ -166,7 +166,8 @@ as one row per genome:
 
 rs334 sits under the highlighted codon. Right-click its column and pick **Sort
 rows by genotype here**, which gathers the genomes with the allele into one
-block, nearly all of them with one copy. Two neighbours help read it:
+block, nearly all of them with one copy. Two neighbouring variants sit beside
+it:
 
 - **rs713040**, a synonymous change in the His3 codon four codons upstream, sits
   to its left on screen as the control, a common variant with one copy in some
@@ -197,7 +198,7 @@ domains and sites.
 
 <Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views: the genome's GWAS, 1000 Genomes and domain tracks, the alignment's rows and the 2HBS cartoon, colored by the alignment's domains. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
 
-The callouts follow rs334 from a statistic to a mechanism, one view at a time:
+The figure's callouts cover one view at a time:
 
 - the GWAS records tie the allele to malaria and to haemolytic anaemia and
   kidney disease: one copy protects against severe malaria, and two copies cause
@@ -226,8 +227,8 @@ Each step on this page works on any gene the protein browser opens:
   assemblies.
   [](/docs/tutorials/genomes_proteins#an-alphafold-model-colored-by-plddt) reads
   a grapevine gene on an AlphaFold model
-- **Launch protein view** in a gene's right-click menu picks the structure
-  yourself, and its **File or URL** tab takes a PDB or mmCIF of your own, such
+- **Launch protein view** in a gene's right-click menu lets you pick the
+  structure, and its **File or URL** tab takes a PDB or mmCIF of your own, such
   as a ColabFold or AlphaFold model
 - any multi-sample VCF, bgzipped and tabix-indexed, adds the genotype layer as a
   variant track configured like the 1000 Genomes track above, and **Sort rows by

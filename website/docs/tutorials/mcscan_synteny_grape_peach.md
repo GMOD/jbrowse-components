@@ -96,22 +96,22 @@ rna-XM_002279913.5	rna-XM_002285264.5	rna-XM_007227461.2	rna-XM_007222578.2	370	
 rna-XM_002281938.5	rna-XM_010652331.3	rna-XM_007222787.2	rna-XM_020562574.1	39	+
 ```
 
-`.anchors.simple` draws one ribbon per block where `.anchors` draws one per gene
-pair. The BED files supply the coordinates for both.
+JBrowse draws one ribbon per block from `.anchors.simple` and one per gene pair
+from `.anchors`. The BED files supply the coordinates for both.
 
 ### BED files mapping gene ids to coordinates
 
-One BED per genome, prepared from its GFF3 before the ortholog run. The adapters
-read the first six columns, and column 4 must match the anchor gene ids byte for
-byte:
+Each genome needs one BED, prepared from its GFF3 before the ortholog run. The
+adapters read the first six columns, and column 4 must match the anchor gene ids
+byte for byte:
 
 ```text
 NC_081805.1	37288	41411	rna-XM_019221872.2	0	+
 NC_081805.1	53914	63050	rna-XM_010651756.3	0	+
 ```
 
-Column 1 must name a sequence the JBrowse assembly knows, directly or through
-its alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
+Column 1 must name a sequence in the JBrowse assembly, directly or through its
+alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
 
 A gene id in the anchors file that no BED names breaks the join, and some such
 mismatches load with no error; the
@@ -136,8 +136,8 @@ python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
 python -m jcvi.formats.fasta format grape.cds.fa grape.cds
 ```
 
-Peach goes through the same three commands. One ortholog run then writes the
-gene pairs, and `screen --simple` reduces them to blocks:
+Run the same three commands for peach. One ortholog run then writes the gene
+pairs, and `screen --simple` reduces them to blocks:
 
 <!-- from: scripts/build_grape_peach_anchors.sh -->
 
@@ -213,7 +213,7 @@ grape here):
 }
 ```
 
-The `.anchors.simple` track takes the same shape with the adapter type and file
+The `.anchors.simple` track uses the same config with the adapter type and file
 swapped:
 
 ```json addtrack
@@ -324,24 +324,24 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
 
 The track configs [above](#loading-both-tracks) load the converted files
 unchanged. `--species` order is the anchors column order, so it has to match the
-track's `assemblyNames`. Two options decide whether the result draws:
+track's `assemblyNames`. Two options decide whether JBrowse can draw the result:
 
 - `--chr-prefix peach=chrG` prepends to the refNames, and `--keep-chr-tag` keeps
   MCScanX's tag, stripped by default (`vv1` becomes `1`)
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation, so an
-  inverted `.anchors` pair draws as inverted
+  inverted `.anchors` pair is drawn as inverted
 
 `--fai peach=peach.fa.fai` checks the refNames against the assembly; an unknown
-name draws empty. An anchors score becomes `-log10` of MCScanX's e-value.
+name shows nothing. An anchors score becomes `-log10` of MCScanX's e-value.
 
 The number of `--species` names sets what the run writes:
 
-- A third species writes an ortholog table instead, since one `.collinearity`
-  covers every pair. See
+- With a third species the script writes an ortholog table instead, since one
+  `.collinearity` covers every pair. See
   [ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
-- A single species keeps the blocks duplicated within that genome, which
-  [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one assembly on
-  both axes.
+- With a single species the script keeps the blocks duplicated within that
+  genome, which [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one
+  assembly on both axes.
 
 ## Reproduce it end to end
 

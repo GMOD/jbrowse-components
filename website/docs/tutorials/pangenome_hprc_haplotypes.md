@@ -17,8 +17,8 @@ We look at three loci: CFH, where some haplotypes lack two genes; GSTT1, a gene
 GRCh38's chromosome lacks; and FLNA / EMD, two genes some haplotypes have in the
 opposite order. We:
 
-- configure the haplotype lanes track, and read each lane's genes from that
-  haplotype's own annotation
+- configure the haplotype lanes track, and read each lane's genes from the
+  annotation of that haplotype's assembly
 - at CFH, open the lanes from the HPRC page's **Haplotypes** launch
 - at GSTT1, read how the launch stacks the lanes by structure
 - at FLNA / EMD, add the graph's bubbles track and filter it to inversions
@@ -75,11 +75,11 @@ adds it, and the config below is the one to adapt for your own graph:
 - **A lane** is one haplotype's walk, which lists in order the nodes that
   haplotype passes through.
 - **`assemblyNames`** starts with the anchor, the assembly the walk file's
-  reference is loaded as. A haplotype needs no entry: its lane draws on an
-  assembly whose `sample#haplotype` alias matches it (`HG00097.1` is aliased
+  reference is loaded as. A haplotype needs no entry: JBrowse draws its lane on
+  the assembly whose `sample#haplotype` alias matches it (`HG00097.1` is aliased
   `HG00097#1`), which
   [one assembly entry](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-  declares, and a haplotype with no assembly is still a lane.
+  declares, and draws a lane for a haplotype with no assembly too.
 - **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
   here GRCh38's.
 - The walk files for a graph of your own come from
@@ -106,9 +106,9 @@ adds it, and the config below is the one to adapt for your own graph:
 
 ## Where each haplotype's genes come from {#haplotype-genes}
 
-JBrowse draws each lane, and each bar under **Walk rows**, with the genes of
-that haplotype's own assembly, at its own coordinates. It does not lift GRCh38's
-genes across the graph.
+JBrowse draws each lane, and each bar under **Walk rows**, with the genes
+annotated on that haplotype's assembly, at that assembly's coordinates. It does
+not lift GRCh38's genes across the graph.
 
 - **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
   (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
@@ -133,18 +133,18 @@ genes across the graph.
     onto each haplotype's assembly instead, where its walk crosses them.
   - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
     beside the files gives every rule and what CAT still misses.
-- **How a lane finds them:** each haplotype is an assembly, such as `HG00097.1`
-  aliased `HG00097#1`, holding one track, **CAT genes (HG00097 haplotype 1, HPRC
-  release 2)**, or for HG002 **RefSeq genes via JHU Liftoff v0.6**. JBrowse
-  draws that track in the haplotype's lane, and for each of the first 40
-  walk-row bars reads it over the bar's span on the haplotype's contig and boxes
-  each gene where it falls along the bar.
+- **Where a lane's genes come from:** each haplotype is an assembly, such as
+  `HG00097.1` aliased `HG00097#1`, holding one track, **CAT genes (HG00097
+  haplotype 1, HPRC release 2)**, or for HG002 **RefSeq genes via JHU Liftoff
+  v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
+  first 40 walk-row bars reads it over the bar's span on the haplotype's contig
+  and boxes each gene where it falls along the bar.
 - **Reading them:**
   - A gene missing from a lane is missing from that haplotype's annotation,
     through a deletion, a copy CAT did not project, or a gene the rules above
     dropped.
   - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
-    so a haplotype with extra _AMY1_ copies reads _AMY1C_ several times. The
+    so a haplotype with extra _AMY1_ copies shows _AMY1C_ several times. The
     number of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
 
 ## CFH: haplotypes missing two genes
@@ -156,10 +156,10 @@ genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
 
 - **Each structural form gets lanes**, more for a commoner form, and each lane's
   header counts the haplotypes that share its form.
-- **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) opens a hole
-  across both, under the **Known alleles** row naming the deletion.
+- **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) has a gap across
+  both, under the **Known alleles** row naming the deletion.
 
-<Figure caption="The CFH cluster from the Haplotypes launch. The lanes missing CFHR3 and CFHR1 open a hole across both." src="/img/pangenome/hprc_cfhr_lanes.png" />
+<Figure caption="The CFH cluster from the Haplotypes launch. The lanes missing CFHR3 and CFHR1 have a gap across both." src="/img/pangenome/hprc_cfhr_lanes.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
@@ -170,8 +170,8 @@ HPRC page, then **Haplotypes** under **More about this window**:
 - **The lanes stack by structure**, each beside the one whose deletions and
   insertions against GRCh38 are most alike, so the lanes of one form sit
   together.
-- **The band between two lanes** aligns the two haplotypes on the nodes both
-  walks share, and fans open where the lower lane has sequence the upper lacks.
+- **The band between two lanes** connects the two haplotypes at the nodes both
+  walks share, and widens where the lower lane has sequence the upper lacks.
 
 <Figure caption="GSTT1 from the Haplotypes launch, its lanes stacked by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
@@ -197,13 +197,13 @@ window**. Then:
 
 <Figure caption="FLNA / EMD from the Haplotypes launch, with the bubbles track filtered to inversions. The band crosses in blue where the inverted lanes meet the lanes in GRCh38's orientation." src="/img/pangenome/hprc_inversion.png" />
 
-## What the lanes leave out {#limits}
+## Limits of the lanes {#limits}
 
-Five cases mislead in the lanes:
+Five cases are easy to misread in the lanes:
 
-- **A haplotype the graph does not align has no lane of its own.** Picked by
-  hand under **Lanes → Choose lanes...**, it gets an empty row at the foot
-  headed "no alignment in this window".
+- **A haplotype the graph does not align has no lane.** Picked by hand under
+  **Lanes → Choose lanes...**, it gets an empty row at the foot headed "no
+  alignment in this window".
 - **A stretch the haplotype skips across the window is a row with no ribbons.**
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
@@ -217,18 +217,18 @@ Five cases mislead in the lanes:
   [part 1's limits](/docs/tutorials/pangenome_hprc#limits) explain.
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
-- **One lane stands for many haplotypes.** The page groups haplotypes into
+- **One lane covers many haplotypes.** The page groups haplotypes into
   structural forms by their structural variants of 50 bp or more, so two
   haplotypes in one form can still differ in everything smaller.
 - **Near-identical gene copies share one path**, so where the graph merges the
   copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
 **Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
-not seat. At IGL, from any **Haplotypes** launch, type
+not place in a lane. At IGL, from any **Haplotypes** launch, type
 `chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
 `HG002.2` and `HG01074.1`, which puts two skip rows at the foot.
 
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 
 ## Reproduce it end to end
 

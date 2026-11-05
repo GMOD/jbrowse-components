@@ -70,7 +70,7 @@ CDS FASTA per genome of your own. The script fetches everything itself.
 | Human, GRCh38.p14            | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) |
 | Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_049350105.2/)   |
 
-## What dN/dS says
+## What dN/dS measures
 
 A coding substitution is synonymous (the codon changes, the amino acid does not)
 or non-synonymous.
@@ -122,7 +122,7 @@ Two input mistakes leave jcvi with no orthologs:
   with `A total of 0 anchor was found`
 - NCBI's CDS FASTA is keyed on the **protein** accession (`XP_`, `NP_`) and the
   BED on the transcript (`XM_`, `NM_`), so nothing matches until the two are
-  joined. A CDS row in the GFF3 carries both, and the script joins on it
+  joined. A CDS row in the GFF3 has both, and the script joins on it
 
 ### Measuring dN and dS on each pair {#dn-and-ds}
 
@@ -163,9 +163,9 @@ well above the cluster is a paralog the aligner preferred, and `--max-ds` drops
 every pair whose dS exceeds its value.
 
 The top of a table sorted by dN/dS is the pairs with almost nothing to divide
-by: _COX20_ lands there off a single synonymous difference. `--min-syn-subs` is
-a floor on that count, and drops every pair with fewer synonymous differences
-than its value.
+by: _COX20_ sorts there because it has a single synonymous difference.
+`--min-syn-subs` is a floor on that count, and drops every pair with fewer
+synonymous differences than its value.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
@@ -174,19 +174,19 @@ prescribes for small substitution counts. The track config below exposes both as
 
 ## Loading the human and rhesus genomes and genes
 
-A gene-level synteny view reads no sequence, so each assembly is a
-`.chrom.sizes` file (a name and a length per line) that the script writes from
-the sequence report. We load human here and rhesus the same way under the name
-`rhesus`:
+A gene-level synteny view needs only sequence names and lengths, so each
+assembly is a `.chrom.sizes` file (a name and a length per line) that the script
+writes from the sequence report. We load human here and rhesus the same way
+under the name `rhesus`:
 
 ```json addassembly
 { "name": "human", "uri": "human.chrom.sizes" }
 ```
 
-Each panel draws genes from a track under its assembly. The script writes
-`human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and CSI-indexed
-([prep](/docs/quickstart_web)). For your own annotation the GFF3 needs the same
-refNames as the assembly:
+The view draws each panel's genes from a track on that panel's assembly. The
+script writes `human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and
+CSI-indexed ([prep](/docs/quickstart_web)). For your own annotation the GFF3
+needs the same refNames as the assembly:
 
 ```json addtrack
 {
@@ -235,8 +235,8 @@ the middle and 2 at the top.
 Two view settings matter for a view this sparse:
 
 - **Opacity** on the sliders button in the view header sets `encoding.opacity`,
-  which starts low for whole-genome views where ribbons overlap. 0.95 shows the
-  color as it is.
+  which starts low for whole-genome views where ribbons overlap, and at 0.95 the
+  color shows unfaded.
 - **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
   separates stacked neighbours.
 
@@ -327,4 +327,4 @@ npx --yes serve primate_selection_build/jbrowse2  # then open the printed URL
 - Tang et al. (2024).
   [jcvi: A versatile toolkit for comparative genomics analysis](https://doi.org/10.1002/imt2.211)
 
-[^chimp]: Chimpanzee leaves a denominator near zero on most genes.
+[^chimp]: Against chimpanzee, dS is near zero for most genes.

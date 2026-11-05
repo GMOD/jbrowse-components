@@ -75,7 +75,7 @@ cancer, where the protein contacts DNA. Open the
 
 <Figure caption="The protein browser on the TP53 chip with Advanced ticked: the picked structure and coloring above the launch button, and the protein map below." src="/img/protein/protein_browser_page.png" />
 
-The same page opens a gene of your own:
+The protein browser page also opens a gene of your own:
 
 - type its symbol into the search box and press **Search**, which opens the same
   card with no focus
@@ -92,9 +92,8 @@ transcript:
 - **The gene**, its coding exons back to back with the introns cut out, read 5′
   to 3′, above ClinVar's variants and AlphaMissense's scores
 - **The alignment**, the seed alignment of the Pfam family R248 falls in, P53,
-  opened on the columns around R248 with _TP53_'s own row, linked to the gene,
-  in the middle. The launch button's tooltip names the alignment before you
-  click.
+  opened on the columns around R248 with the _TP53_ row, linked to the gene, in
+  the middle. The launch button's tooltip names the alignment before you click.
 - **The structure**, 3KMD in [Mol\*](https://molstar.org/), with R248 selected
 
 Hover a codon in the gene view and its residue lights up on the structure and
@@ -139,15 +138,15 @@ reopens this launch.
 
 ### An AlphaFold model colored by pLDDT
 
-Most seedless grapes owe it to one missense change in _VviAGL11_, a MADS box
-transcription factor that regulates seed development. Arginine 197 becomes
-leucine (R197L) ([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI
-names the gene _MADS5_, on the minus strand of chr18 in the Pinot Noir
-reference. Its AlphaFold model, UniProt A0A217EJJ0, was predicted from a protein
-sequenced from the seedless cultivar Sultanina, so residue 197 of the model is
-leucine, where the Pinot Noir genome codes arginine. The PDB has no structure of
-the protein, so the session opens on the model. Open the protein browser on
-residue 197:
+Most seedless grapes are seedless because of one missense change in _VviAGL11_,
+a MADS box transcription factor that regulates seed development. Arginine 197
+becomes leucine (R197L)
+([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI names the gene
+_MADS5_, on the minus strand of chr18 in the Pinot Noir reference. Its AlphaFold
+model, UniProt A0A217EJJ0, was predicted from a protein sequenced from the
+seedless cultivar Sultanina, so residue 197 of the model is leucine, where the
+Pinot Noir genome codes arginine. The PDB has no structure of the protein, so
+the session opens on the model. Open the protein browser on residue 197:
 
 - open
   [genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197](https://genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197)
@@ -262,7 +261,7 @@ Press **Submit**. The alignment opens below the genome view at residue zoom on
 the N terminus, with a tree on the left and NCBI's conserved domains drawn over
 the residues once NCBI returns them. Choose **View → Zoom → Fit width** (View is
 the eye icon in the alignment's toolbar) to put the whole alignment on screen,
-the zoom the domain blocks read at.
+the zoom at which the domain blocks are readable.
 
 <Figure src="/img/genomes_msa/launch_sequence.png" caption="NLRP1's right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds." />
 
@@ -280,7 +279,7 @@ calls for:
 - **File → Open annotation file...** reads that file in. The dialog's _How to
   make one_ link opens a
   [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family) that also
-  covers `interpro`, the instant path when the rows are UniProt accessions.
+  covers `interpro`, the route for rows that are UniProt accessions.
 
 ### UniProt domains in genome coordinates for NLRP1
 
@@ -389,9 +388,9 @@ The approach is described in
   [AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences](https://doi.org/10.1093/nar/gkad1011)
 
 [^constructs]:
-    Some of these crystals carry engineered mutations. In the TP53 figure, 2J1X
-    and 9S9O carry the stabilizing M133L, V203A, N239Y and N268D, none of them
-    in the pocket. In the KRAS figure, 6OIM carries C51S, C80L and C118S, which
+    Some of these crystals contain engineered mutations. In the TP53 figure,
+    2J1X and 9S9O have the stabilizing M133L, V203A, N239Y and N268D, none of
+    them in the pocket. In the KRAS figure, 6OIM has C51S, C80L and C118S, which
     remove the construct's other cysteines a covalent drug could react with.
 
 [^session]:

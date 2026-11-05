@@ -62,8 +62,8 @@ Alu rows cut out.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. Your own RepeatMasker BED and genome FASTA go through the
-same steps: the build script takes them as arguments.
+rebuild those results. The build script takes your own RepeatMasker BED and
+genome FASTA as arguments and runs the same steps on them.
 
 | What it is                                                    | File                                                                                         |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -86,9 +86,9 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 ```
 
 The track reads one family's rows of a RepeatMasker BED. For a genome of your
-own, RepeatMasker's `.out` writes class and family as one `class/family` field,
-and splitting it under a header that names the columns gives a BED of the same
-shape:
+own, RepeatMasker's `.out` file lists class and family as one `class/family`
+field, and splitting it under a header that names the columns gives a BED with
+the same columns:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 

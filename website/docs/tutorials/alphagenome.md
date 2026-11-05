@@ -36,9 +36,9 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
-Nothing to download: the plugin reads both stored predictions by URL. Your own
-variants swap `uri` for a VCF or BED, as _Asking AlphaGenome for a prediction_
-shows, and the query panel predicts any hg38 locus you open.
+Nothing to download: the plugin reads both stored predictions by URL. To use
+your own variants, swap `uri` for a VCF or BED, as _Asking AlphaGenome for a
+prediction_ shows, and the query panel predicts any hg38 locus you open.
 
 <details>
 <summary>The files</summary>
@@ -82,10 +82,10 @@ On [JBrowse Desktop](/docs/quickstart_desktop), add that URL as a
 `AlphaGenome`.
 
 The plugin sends requests to a small service that holds the API key, runs the
-prediction and stores the arrays. The public instance is the default. To use
-your own, the page or app that embeds JBrowse calls `setApiRoot`, a function the
-plugin module exports, with the service's root URL; `config.json` has no slot
-for it.[^license]
+prediction and stores the arrays. The plugin uses the public instance by
+default. To use your own, the page or app that embeds JBrowse calls
+`setApiRoot`, a function the plugin module exports, with the service's root URL;
+`config.json` has no slot for it.[^license]
 
 ## Asking AlphaGenome for a prediction
 
@@ -190,7 +190,7 @@ loaded.
 Add four accessibility rows to the prediction:
 
 - Type `DNase` into the track filter and tick K562 and GM12878.
-- Type `ATAC` and tick both again; ticks survive the filter change.
+- Type `ATAC` and tick both again; the ticks stay set when the filter changes.
 - Click **Add 4 selected** to put all four in one track on one axis.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, the rows on one shared y-axis." src="/img/alphagenome/accessibility_shared_axis.png" />
@@ -299,5 +299,5 @@ arrays with fresh URLs.
 [^mapping]:
     AlphaGenome lays out the alternate prediction along the alternate sequence,
     12 bases longer than the reference here. The plugin maps it back onto
-    reference coordinates before subtracting, collapsing the inserted bases onto
+    reference coordinates before subtracting, merging the inserted bases into
     the base they follow, as AlphaGenome's own variant scorers do.

@@ -7,11 +7,11 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-Breast tumors of one subtype tend to carry point mutations in the same genes.
-The [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) sorts the TCGA breast
-tumors by amplification; their point mutations sort the groups the segments
-cannot separate. We turn the project's somatic mutation calls into one matrix,
-each column a distinct mutation and each row a tumor, and read it at _CDH1_ and
+Breast tumors of one subtype tend to have point mutations in the same genes. The
+[copy-number cohort](/docs/tutorials/tcga_cohort_cnv) sorts the TCGA breast
+tumors by amplification; their point mutations separate the groups the segments
+cannot. We turn the project's somatic mutation calls into one matrix, each
+column a distinct mutation and each row a tumor, and read it at _CDH1_ and
 _PIK3CA_. We:
 
 - load the cohort VCF, merged from the GDC's mutation files, as a multi-sample
@@ -310,7 +310,8 @@ per group.
 }
 ```
 
-Across the genome, each row's spikes are the genes that subtype mutates most.
+Across the genome, each row's spikes are the genes mutated most often in that
+subtype.
 
 <Figure caption="Mutation rate per gene across the genome, one row per receptor subtype." src="/img/tcga/mutation_recurrence_genome.png" />
 
@@ -362,7 +363,7 @@ One script builds every file above for any project id,
    merges them into one VCF, a column per tumor. A GDC file query also returns
    metastasis MAFs, so the merge keeps primary tumors (sample-type code `01` in
    each MAF's barcode), the tumors the
-   [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints. It keeps one
+   [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) draws. It keeps one
    aliquot per tumor, names each column by sample barcode as the copy-number
    rows are named, and reads each deletion's anchor base from the MAF's
    `CONTEXT` column, so it needs no reference FASTA.

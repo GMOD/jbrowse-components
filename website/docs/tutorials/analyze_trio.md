@@ -205,7 +205,7 @@ Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
 `LinearMultiRowFeatureDisplay`. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
 one row per value of the `parenthap` field and `rows.sort` orders them, while
-each block takes its BED `itemRgb` color.
+each block is colored by its BED `itemRgb`.
 [`legend.show`](/docs/config/legend/#slot-show) is off because the row labels
 already name the four categories:
 
@@ -246,11 +246,11 @@ marks the father's copy the child inherited there, so each step from one blue
 row to the other is a paternal crossover. Likewise, the red rows are the
 maternal chromosome.
 
-No position should have both blue rows filled, or both red rows, which would
-mean hap-ibd matched one child haplotype to both of a parent's copies. A
-position with neither row filled is one where hap-ibd found no segment long
-enough to report. The blocks run straight through the centromere, because
-hap-ibd joins the markers on either side of it.
+Both blue rows filled at one position, or both red rows, would mean hap-ibd
+matched one child haplotype to both of a parent's copies. A position with
+neither row filled is one where hap-ibd found no segment long enough to report.
+The blocks run straight through the centromere, because hap-ibd joins the
+markers on either side of it.
 
 ## Comparing the painted blocks with the raw genotypes
 

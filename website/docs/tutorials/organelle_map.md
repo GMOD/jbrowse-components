@@ -76,10 +76,10 @@ The annotation comes back as GFF3 from the sequence viewer's export:
 curl -o genes.gff3 "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=$ACC"
 ```
 
-Two lines of `genes.gff3` matter for a circular genome. The `##sequence-region`
-pragma near the top gives the sequence's length, and the D-loop, the control
-region that spans the origin, is written as one record whose end runs past that
-length:
+For a circular genome, check two lines of `genes.gff3`: the `##sequence-region`
+pragma near the top, which gives the sequence's length, and the D-loop, the
+control region that spans the origin, which is written as one record whose end
+runs past that length:
 
 ```bash
 grep -e '^##sequence-region' -e 'D_loop' genes.gff3
@@ -145,9 +145,10 @@ tabix -p gff genes.gff.gz
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the gene
 track's `facet` splits it into a section per `strand`, and its `encoding.color`
-is a color scale mapping the GFF3 `type` field to colors. The name label falls
-back through the GFF3 attributes, so a record with no `gene` or `product`, like
-the D-loop, takes its `gbkey`:
+is a color scale mapping the GFF3 `type` field to colors. The name label is the
+first of the `gene`, `product`, `name`, `gbkey` and `id` attributes that the
+record has, so a record with no `gene` or `product`, like the D-loop, is labeled
+by its `gbkey`:
 
 ```json addtrack
 {
@@ -198,10 +199,10 @@ under the circular view menu's **Tracks** item:
 - **Group by** with `strand` splits the ring into a row per strand
 - **Color by → Attribute...** with `type` colors each feature by its GFF3 type
 
-The track's `height` is how much of the circle it asks for. A ring takes at most
-half the circle's radius, and a track that asks for more lays its rows out in
-the band it gets. A circle of one sequence names its features outside the ruler,
-each joined to its feature by a line.
+The track's `height` sets how much of the circle's radius the track takes. A
+ring takes at most half the radius, and the rows of a taller track are laid out
+in that band. In a circle of one sequence, feature names are drawn outside the
+ruler, each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 

@@ -116,7 +116,7 @@ the order of `assemblyNames` on the track:
 
 In `assemblyNames`, the query (`sim.fa.gz`, the second `minimap2` argument)
 comes first and the target second, the order of the PAF columns. In the other
-order no chromosome name resolves and the synteny band draws empty.
+order no chromosome name resolves, so the synteny band is empty.
 
 <Figure caption="chr3R on both genomes with RefSeq genes on each row and the minimap2 alignment between them, colored by strand." src="/img/agent_synteny/comparison_built.png" />
 
@@ -132,8 +132,8 @@ With the axes restricted to the chromosome arms, the plot shows one diagonal:
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Add one more request to color the dotplot by strand, so a reversed block draws
-in blue and a forward one in red.
+Add one more request to color the dotplot by strand, so a reversed block is
+drawn blue and a forward one red.
 
 <Figure caption="The alignment as a dotplot cut to the chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -169,9 +169,9 @@ END {
 ```
 
 The agent reports 2R and X with far more reverse-strand alignment than the other
-four arms, which serve as the control. Asked to group the reverse-strand blocks
-of 5 kb or more, cutting a group wherever half a megabase passes with none, it
-names one region on 2R and two on X.
+four arms, which are the control. Asked to group the reverse-strand blocks of 5
+kb or more, cutting a group wherever half a megabase passes with none, it names
+one region on 2R and two on X.
 
 ## Ask the agent to open the 2R and X regions
 
@@ -182,7 +182,7 @@ Close the gene tracks and take the synteny view to the 2R region.
 The agent opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
 at `chr2R:500,000-3,800,000`.
 
-<Figure caption="The 2R region, the alignment alone. Reverse-strand blocks draw blue and cross the band." src="/img/agent_synteny/inversion_2r.png" />
+<Figure caption="The 2R region, the alignment alone. Reverse-strand blocks are drawn blue and cross the band." src="/img/agent_synteny/inversion_2r.png" />
 
 Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 `chrX:8,330,000-9,180,000`, where the reverse blocks are fewer and longer:
@@ -205,8 +205,8 @@ Two more are worth asking for:
 
 - **Screenshot what you build and read the image back.** A wrong track id or an
   empty region still renders as a plausible browser.
-- **Ask for the numbers before navigating.** The view you then see is a claim
-  you can check.
+- **Ask for the numbers before navigating.** You can then check the view against
+  those numbers.
 
 ## Running the whole pipeline as a script
 

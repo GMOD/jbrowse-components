@@ -100,7 +100,7 @@ sort -k1,1 -k2,2n K562_cn.bedGraph |
 bedGraphToBigWig K562_cn.sorted.bedGraph hg38.chrom.sizes K562_cn.bw
 ```
 
-The DNA breakpoints arrive on hg19. A breakend record has a second coordinate
+The DNA breakpoints are on hg19, and a breakend record has a second coordinate
 inside its `ALT` string, so a plain `liftOver` of the `POS` column leaves the
 partner coordinates on hg19.
 [`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
@@ -199,7 +199,7 @@ Each table row's caret menu has **Open in linear genome view**, which puts the
 row's two breakpoints side by side as two regions of one view:
 
 - Each region is oriented so the fusion transcript reads left to right across
-  the join. _XKR3_ is on the minus strand, so its region arrives reversed
+  the join. _XKR3_ is on the minus strand, so its region opens reversed
   (`[rev]`).
 - **Read connections → View as pairs/link supplementary alignments** merges each
   molecule's two alignments onto one row.
@@ -256,7 +256,7 @@ assays on the same cells give where the chromosome broke and how much of it is
 amplified:
 
 - **10X Chromium linked reads** from ENCODE (ENCSR053AXS,
-  [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) call the breakends,
+  [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) give the breakends,
   the two ends of each junction.
 - **DepMap WGS segmentation** gives the copy number.
 
@@ -299,10 +299,10 @@ The build script lifts the breakends to hg38 and adds both as tracks:
 Open chr9 from _ABL1_ to past _NUP214_ with the copy-number track under both
 call tracks, and pick **Display types → Marks** from each call track's menu. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, a `mark` is the
-shape drawn per record. A record that names its partner breakend draws as a
+shape drawn per record. A record that names its partner breakend is drawn as a
 `link` with nothing configured
 ([mark display](/docs/config_guides/mark_display#links)), and a call whose
-partner is on another chromosome draws a stem at its breakpoint.
+partner is on another chromosome is drawn as a stem at its breakpoint.
 
 <Figure caption="chr9 from ABL1 past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, the DNA breaks banded." src="/img/cancer_sv/k562_amplicon_dna.png" />
 
@@ -331,7 +331,7 @@ builds everything above from public sources. For K562 it:
    fusion calls ordered by FFPM (fusion fragments per million RNA-seq
    fragments), best-supported first
 3. lifts the 10X breakends to hg38 as above, and drops a junction whole when
-   either end fails to lift or lands reversed in hg38, where its orientation
+   either end fails to lift or maps reversed in hg38, where its orientation
    would come out wrong
 
 The script also builds the COLO829 half of the demo, which

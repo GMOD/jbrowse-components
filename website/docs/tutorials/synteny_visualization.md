@@ -120,8 +120,8 @@ can still say `hpylori_26695`:
 }
 ```
 
-`refNameColumnHeaderName` makes the UCSC name canonical, so the views read
-`NC_018939v1` where the FASTA and the PAF say `NC_018939.1`; the alias table
+`refNameColumnHeaderName` makes the UCSC name canonical, so the views show
+`NC_018939v1` where the FASTA and the PAF have `NC_018939.1`; the alias table
 maps one to the other. CHC155 (`GCF_025998455.1`) and J99 (`GCF_000982695.1`)
 load the same way from their hubs.
 
@@ -169,7 +169,7 @@ each axis and a synteny file by hand.
 
 <Figure caption="26695 (x) against J99 (y). The backbone runs anti-diagonal." src="/img/sv_synteny/dotplot.png" />
 
-To open any of those pieces at base resolution, drag a box across it, then
+To open any part of the dotplot at base resolution, drag a box across it, then
 right-click inside the box and choose **Linear synteny view**.
 
 ## Stacking the strains

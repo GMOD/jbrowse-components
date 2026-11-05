@@ -84,12 +84,13 @@ wget -c $B.gfa.gz
 
 ## The GraphGenomeView plugin
 
-Install GraphGenomeView from the plugin store, at **Tools → Plugin store** in
-JBrowse Web or **Global plugins...** on the JBrowse Desktop start screen
-([](/docs/user_guides/plugin_store)). It needs JBrowse 5. The config the command
-writes names it with the `plugins` entry below, in which `storePlugin` picks the
-build for the JBrowse reading the config, and `esmUrl` is the fallback when the
-store cannot be read ([configuring plugins](/docs/config_guides/plugins)).
+Install GraphGenomeView, which needs JBrowse 5, from the plugin store, at
+**Tools → Plugin store** in JBrowse Web or **Global plugins...** on the JBrowse
+Desktop start screen ([](/docs/user_guides/plugin_store)). The config the
+command writes names it with the `plugins` entry below, in which `storePlugin`
+picks the build for the JBrowse reading the config, and `esmUrl` is the fallback
+when the store cannot be read
+([configuring plugins](/docs/config_guides/plugins)).
 
 <!-- BEGIN GENERATED GRAPH_PLUGIN_CONFIG -->
 
@@ -151,14 +152,14 @@ does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                      | what it holds                                                                                                                                                                    |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates for an rGFA and under each segment's own coordinate for a plain GFA; a link row states both ends in full |
-| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                                              |
-| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz`                             |
-| `.contig.graph.bed.gz`    | an rGFA's segment and link rows under each segment's own coordinate                                                                                                              |
-| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                                                       |
-| `.config.json`            | the tracks below, with the plugin entry                                                                                                                                          |
+| file                      | what it holds                                                                                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates for an rGFA and under the segment's coordinate on its source contig for a plain GFA; a link row states both ends in full |
+| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                                                              |
+| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz`                                             |
+| `.contig.graph.bed.gz`    | an rGFA's segment and link rows under the segment's coordinate on its source contig                                                                                                              |
+| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                                                                       |
+| `.config.json`            | the tracks below, with the plugin entry                                                                                                                                                          |
 
 Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
 tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
@@ -216,9 +217,10 @@ graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
 
 A plain GFA's index and tier are in the contig layout, each segment under its
-own coordinate. The anchored layout an rGFA gets files a segment under every
-reference position its branch spans, which on the _E. coli_ pggb and
-Minigraph-Cactus graphs draws multi-megabase rows across every window.
+coordinate on its source contig. The anchored layout an rGFA gets files a
+segment under every reference position its branch spans, which on the _E. coli_
+pggb and Minigraph-Cactus graphs makes the track draw multi-megabase rows across
+every window.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
@@ -288,8 +290,8 @@ gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
 ```
 
 The file loads as a feature track with one row per haplotype, partitioned on
-`strain`. Its `itemRgb` colors each block by class, so the track needs no color
-config:
+`strain`. The `itemRgb` column sets each block's color by class, so the track
+needs no color config:
 
 ```json addtrack
 {
@@ -317,10 +319,10 @@ under `TAIR10_genes`:
 
 <Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
 
-With a **plain GFA**, the command records the haplotypes whose paths visit each
-segment while it reads the paths, as an `SB:H:` bitmask over the haplotypes the
-file's `#samples` header lists (`SM:Z:` names in format 1). The track below is
-written for a build like the
+With a **plain GFA**, the command records the haplotypes whose paths pass
+through each segment while it reads the paths, as an `SB:H:` bitmask over the
+haplotypes the file's `#samples` header lists (`SM:Z:` names in format 1). The
+track below is written for a build like the
 [pggb graph of five _E. coli_ strains](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track),
 indexed against K12.
 
@@ -445,8 +447,8 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
 }
 ```
 
-The lanes align each walk to the reference's on the nodes both visit, so the
-track needs no sequence beyond the walk file.
+The track aligns each walk to the reference walk at the nodes both pass through,
+so it needs no sequence beyond the walk file.
 
 A graph track with no lanes names the same set through `RgfaTabixAdapter`, here
 T2T-CHM13's:
@@ -495,19 +497,20 @@ them where the reference places those nodes.
 
 Two budgets in the
 [adapter's config](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/src/RgfaTabixAdapter/configSchema.ts)
-refuse a window with a notice to zoom in:
+set when a window is refused with a notice to zoom in:
 
 - **`walkByteBudget`** caps the compressed bytes the three indexes estimate a
   window would fetch. The browser downloads every haplotype's rows and drops the
   unwanted ones by name, so the estimate is the same for any set of haplotypes.
 - **`walkStepBudget`** caps the walk steps a window keeps, counting only the
-  haplotypes the track draws, so fewer haplotypes draw a wider window.
+  haplotypes the track draws, so with fewer haplotypes the track can draw a
+  wider window.
 
 ## Whole-genome synteny from the walks, as PAF {#walks-as-paf}
 
-The walk files serve one window at a time. For a whole-genome synteny view, a
-GFA's walks also convert to PAF against the reference walk, one record per
-stretch of nodes the two walks share. Convert the walks you want:
+The track reads the walk files one window at a time. For a whole-genome synteny
+view, a GFA's walks also convert to PAF against the reference walk, one record
+per stretch of nodes the two walks share. Convert the walks you want:
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
@@ -540,7 +543,7 @@ under [Prerequisites](#prerequisites). It:
 1. places every segment on a genome: an rGFA holds each position in tags on the
    segment, and for a plain GFA the command follows the backbone's paths first,
    then places each remaining segment on the first other haplotype whose path
-   visits it
+   passes through it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
    a plain GFA, and builds the tier from them
 3. writes the manifest and the config that name those files

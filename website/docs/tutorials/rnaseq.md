@@ -138,9 +138,9 @@ them.
 
 ## Read coverage and read height
 
-A deep gene stacks more reads than the track shows at once. The histogram above
-the pileup counts the reads at each position, and **Read height → Compact** in
-the track menu packs the full stack into view:
+A deeply covered gene has more reads than the track shows at once. The histogram
+above the pileup counts the reads at each position, and **Read height →
+Compact** in the track menu packs the full stack into view:
 
 <Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
 
@@ -177,7 +177,7 @@ It finds the strand two ways:
 ## Picking out spliced reads in a deep pileup
 
 In the compact _ACTB_ stack, reads with a skip sit among many more that have
-none. Three track-menu settings pull the splicing evidence out.
+none. Three track-menu settings separate the splicing evidence from the rest.
 
 **Sort by → Spliced reads first** gives every read whose CIGAR has a skip the
 lowest rows, so the junction-spanning reads sit together at the top of the
@@ -200,7 +200,7 @@ support.
 
 ## Long-read splicing: IsoSeq over ACTB
 
-A short read crosses at most one or two junctions, so the arcs alone leave open
+A short read crosses at most one or two junctions, so the arcs alone do not show
 which exons sit together in one transcript. A long read (PacBio IsoSeq,
 Nanopore) often spans a whole transcript, aligning across every exon with one
 `N` skip per intron, and JBrowse draws the same arcs and connectors from those
@@ -250,9 +250,9 @@ the end of an exon back to the start of an upstream one. A short read across
 that joint aligns in two pieces, and the aligner writes the second piece into
 the read's `SA` tag. The sashimi band counts split-read junctions beside the
 N-gap splices, one arc per junction, and colors each by its class. A back-splice
-is a duplication-type split, drawn in the teal of an RL pair. **Split-read
-junctions → Hide split-read junctions** in **Filter by → More filters...** turns
-them off.
+is a duplication-type split, drawn in the teal JBrowse uses for an RL pair
+(mates pointing away from each other). **Split-read junctions → Hide split-read
+junctions** in **Filter by → More filters...** turns them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:
@@ -459,8 +459,8 @@ reads extra columns as text.
 filter on an open track.
 
 Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
-where the file separates what RefSeq annotates from what this library also
-splices:
+where the track colors the junctions RefSeq annotates apart from the ones only
+this library has:
 
 <Figure caption="FOLH1's 5' end: RefSeq transcripts above the library's junctions, blue where an annotated transcript joins the two ends and red where none does." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
