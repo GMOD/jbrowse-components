@@ -350,6 +350,21 @@ describe('the scalebar geometry off the static blocks', () => {
     ])
   })
 
+  test('an elided region too narrow to draw still marks where it sits', () => {
+    const spans = getPaddingSpans(
+      [
+        chunk('a', 0, 100, 800, { isRightEndOfDisplayedRegion: true }),
+        { type: 'ElidedBlock', key: 'e', offsetPx: 900, widthPx: 0.5 },
+        chunk('b', 0, 900.5, 300),
+      ],
+      100,
+    )
+    expect(spans).toEqual([
+      { key: 'a-sep', x: 799, width: 3, kind: 'seam' },
+      { key: 'e', x: 802, width: 3, kind: 'elided' },
+    ])
+  })
+
   test('a view with nothing to mask returns one shared array', () => {
     const first = getPaddingSpans([chunk('a', 0, 0, 800)], 0)
     expect(first).toEqual([])

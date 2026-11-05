@@ -4243,7 +4243,8 @@ describe('padding spans', () => {
     ])
     const elided = model.paddingSpans.filter(s => s.kind === 'elided')
     expect(elided).toHaveLength(1)
-    expect(elided[0]!.width).toBeLessThan(model.minimumBlockWidth)
+    // drawn no narrower than a region may draw, so it still shows
+    expect(elided[0]!.width).toBe(model.minimumBlockWidth)
 
     // one seam, for ctgA -- not two. At the zoom where regions elide, a bar per
     // region is a solid grey wall, so an elided block carries the flag and is
