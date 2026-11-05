@@ -4,12 +4,14 @@ import { bandGroundColor, unpack } from '@jbrowse/synteny-core'
 
 import { ribbonThinFade } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { KIND_MARKER } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyKinds.ts'
+import { recordedOffscreenStrips } from '../../../../plugins/linear-comparative-view/src/tables.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   CONTIGS,
   INVERSIONS,
   INVERSIONS_ZOOMED,
   OFFSCREEN,
+  OFFSCREEN_WINDOW,
 } from './comparative.fixture.ts'
 import { TRACK_NAME, standUpSynteny } from './comparative/testEnv.ts'
 import {
@@ -31,7 +33,11 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 type SyntenyView = NonNullable<SyntenyTablesArgs['view']>
 type SyntenyModel = Awaited<ReturnType<typeof standUpSynteny>>
 
-const SYNTENY_DECISIONS = [...COMPARATIVE_DECISIONS, 'offscreen'] as const
+const SYNTENY_DECISIONS = [
+  ...COMPARATIVE_DECISIONS,
+  'offscreen',
+  'strip',
+] as const
 
 type SyntenyDecision = (typeof SYNTENY_DECISIONS)[number]
 
@@ -40,6 +46,24 @@ const LEVEL_HEIGHT = 100
 const engine = createTablesEngine()
 
 const AXIS_OF_SIDE = { top: 'query', bottom: 'target' } as const
+
+const px = (n: number) => Math.round(n * 1000) / 1000
+
+/** A painted strip's marks and labels, where each lands and in what color. */
+function stripMarks({
+  marks,
+  labels,
+}: Pick<ReturnType<typeof recordedOffscreenStrips>, 'marks' | 'labels'>) {
+  return {
+    marks: marks.x.map(
+      (x, i) =>
+        `${marks.axis[i]} ${px(x)}+${px(marks.width[i]!)} ${px(marks.y[i]!)}+${px(marks.height[i]!)} ${marks.color[i]}`,
+    ),
+    labels: labels.label.map(
+      (label, i) => `${labels.axis[i]} ${label} ${px(labels.x[i]!)}`,
+    ),
+  }
+}
 
 /**
  * The linear synteny view's one level beside `engine.synteny` over one
@@ -104,7 +128,12 @@ function syntenyParity(
         },
       )
       const ink = cssColorToHex(getContrastText(bandGroundColor()))
+      const strip = recordedOffscreenStrips(
+        level.offscreenMateStrips,
+        level.height,
+      )
       return {
+        strip: stripMarks(strip),
         colors: drawn,
         admitted: Object.keys(drawn).sort(),
         key: viewKey(view.colorScales),
@@ -135,6 +164,7 @@ function syntenyParity(
     exportDecisions: t => {
       const { alignments, ribbons, offscreenContigs: o } = t
       return {
+        strip: stripMarks(t.offscreenStrip),
         colors: exportedColors(ribbons, i => alignments.id[i] ?? ''),
         admitted: alignments.id
           .filter((_, i) => alignments.alpha[i]! > 0)
@@ -352,6 +382,13 @@ describe('two contigs aligned to each other, shown out of assembly order', () =>
         filter: [{ field: 'query', oneOf: ['ctgA'] }],
       },
     },
+  ])
+})
+
+describe('4 kb of the upper row inside its contig, each block mated to a contig the lower row does not show', () => {
+  parityCases(syntenyParity(OFFSCREEN_WINDOW), [
+    { name: 'defaults', config: {} },
+    { name: 'target', config: { encoding: { color: { field: 'target' } } } },
   ])
 })
 

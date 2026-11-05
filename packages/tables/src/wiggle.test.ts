@@ -94,6 +94,24 @@ test('a bar past a pinned domain is flagged on the side it leaves, as the displa
   expect(new Set(line.marks.clipSide)).toEqual(new Set([0]))
 })
 
+test('a window inside a contig lists the bars in it and a line to its edges', async () => {
+  const region = { refName: 'ctgA', start: 20_000, end: 30_000 }
+  const bars = await engine.wiggle({ ...SIGNED_BIGWIG, region, bpPerPx: 20 })
+  bars.marks.start.forEach((start, i) => {
+    expect(start).toBeLessThan(region.end)
+    expect(bars.marks.end[i]).toBeGreaterThan(region.start)
+  })
+  const line = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    region,
+    bpPerPx: 20,
+    display: { mark: 'line' },
+  })
+  expect(Math.min(...line.marks.start)).toBeLessThan(region.start)
+  expect(Math.max(...line.marks.end)).toBeGreaterThan(region.end)
+  expect(line.marks.start.length - bars.marks.start.length).toBe(2)
+})
+
 test('summaryField names the bin summary encoding.y plots, and scoreScale its axis', async () => {
   const t = await engine.wiggle({
     ...SIGNED_BIGWIG,

@@ -52,6 +52,45 @@ test('a GFF3 region comes back as the feature display lays it out', async () => 
   expect(t.arrows.position.length).toBeGreaterThan(0)
 })
 
+test('a window inside a contig indexes only the features and transcripts it lists, the margin\u2019s labelled ones included', async () => {
+  const cases = [
+    { start: 20_000, end: 30_000, bpPerPx: 20, display: {} },
+    { start: 2000, end: 4000, bpPerPx: 10, display: { heightMode: 'grow' } },
+    { start: 16_000, end: 18_000, bpPerPx: 2, display: {} },
+  ]
+  for (const { start, end, bpPerPx, display } of cases) {
+    const t = await engine.features({
+      ...GFF3,
+      region: { refName: 'ctgA', start, end },
+      bpPerPx,
+      display,
+    })
+    const marks = [
+      t.rects,
+      t.lines,
+      t.chevrons,
+      t.arrows,
+      t.aminoAcids,
+      t.labels,
+    ]
+    for (const table of [t.subfeatures, ...marks]) {
+      for (const f of table.feature) {
+        expect(Number.isInteger(f) && f >= 0 && f < t.features.id.length).toBe(
+          true,
+        )
+      }
+    }
+    for (const table of marks) {
+      for (const sub of table.subfeature) {
+        expect(
+          Number.isInteger(sub) && sub >= -1 && sub < t.subfeatures.id.length,
+        ).toBe(true)
+      }
+    }
+    expect(t.labels.text.length).toBeGreaterThan(0)
+  }
+})
+
 test("the display filter's gene category splits the features", async () => {
   const all = await engine.features({ ...GFF3, display: GROW })
   const genes = await engine.features({

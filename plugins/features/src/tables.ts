@@ -409,7 +409,6 @@ export async function featureTables(
   const sectionOf = facet ? sectionIdsOf(facet) : undefined
   const isHidden = (item: FlatbushItem) =>
     !!hiddenGroupFeatureIds?.has(item.featureId)
-  const isShown = (item: FlatbushItem) => onScreen.has(item.featureId)
   const palette = resolvePalette()
   const resolved = resolveMapColors(laid, palette, fieldPalette)
   const key = colorKeyTables(scales)
@@ -421,6 +420,7 @@ export async function featureTables(
   const joined = joinRegionTables(
     regions.map((r, i) =>
       laidOutTables(resolved.get(i)!, {
+        isShown: shownIn(onScreen, regionLabels[i]!, resolved.get(i)!),
         region: r,
         widthPx: blocks[i]!.widthPx,
         bpPerPx,
@@ -428,7 +428,6 @@ export async function featureTables(
         labels: regionLabels[i]!,
         sectionOf,
         isHidden,
-        isShown,
       }),
     ),
   )
@@ -464,6 +463,26 @@ export async function featureTables(
     bpPerPx,
     config,
   }
+}
+
+/**
+ * Whether a region's tables list a feature: it touches the window, or the
+ * window shows a label of it or of one of its transcripts, which the display
+ * draws from a feature in the margin whose text reaches in.
+ */
+function shownIn(
+  onScreen: ReadonlySet<string>,
+  labels: readonly TableLabel[],
+  d: FeatureDataResult,
+) {
+  const labelled = new Set(labels.map(l => l.featureId))
+  for (const s of d.subfeatureInfos) {
+    if (labelled.has(s.featureId)) {
+      labelled.add(s.parentFeatureId)
+    }
+  }
+  return (item: FlatbushItem) =>
+    onScreen.has(item.featureId) || labelled.has(item.featureId)
 }
 
 interface TableLabel {

@@ -1010,6 +1010,32 @@ function sectionConnections(
   }
 }
 
+/**
+ * A region's arcs and ticks the window shows, of the ones the arc pass found
+ * over the reads fetched with the view's margin.
+ */
+function connectionsInWindow(
+  { arcs, arcTicks }: ReturnType<typeof sectionConnections>,
+  window: { start: number; end: number },
+) {
+  return {
+    arcs: rowsAt(arcs, i => spanTouches(window, arcs.start[i]!, arcs.end[i]!)),
+    arcTicks: rowsWhere(
+      arcTicks,
+      position => position >= window.start && position < window.end,
+    ),
+  }
+}
+
+/** Whether a span, its ends in either order, reaches into `window`. */
+function spanTouches(
+  window: { start: number; end: number },
+  a: number,
+  b: number,
+) {
+  return Math.max(a, b) > window.start && Math.min(a, b) < window.end
+}
+
 /** The config a table reports: the display's, its filter as it applied. */
 function resolvedConfig(
   host: AlignmentsTablesHostModel,
@@ -1044,7 +1070,15 @@ function readConnectionTables(
       ? undefined
       : computeArcsByGroup(
           new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
-          { loaded: regionInfos, displayed: regionInfos },
+          {
+            loaded: host.fetchedRegions.map((r, i) => ({
+              refName: r.refName,
+              start: r.start,
+              end: r.end,
+              displayedRegionIndex: i,
+            })),
+            displayed: host.frames,
+          },
           {
             cloud: mode === 'rule',
             filter: host.connectionFilter,
@@ -1070,18 +1104,21 @@ function readConnectionTables(
     [...dataByGroup.keys()].map(key => [
       key,
       new Map(
-        regionInfos.map(({ refName }, i) => [
+        regionInfos.map((window, i) => [
           i,
-          sectionConnections(
-            result?.byGroup.get(key)?.get(i) ?? emptyArcsUploadData(),
-            (result?.crossRegionByGroup.get(key) ?? []).filter(
-              arc => arc.p1RegionIndex === i,
+          connectionsInWindow(
+            sectionConnections(
+              result?.byGroup.get(key)?.get(i) ?? emptyArcsUploadData(),
+              (result?.crossRegionByGroup.get(key) ?? []).filter(
+                arc => arc.p1RegionIndex === i,
+              ),
+              (start, end) => [
+                footRegion(regionInfos, window.refName, start),
+                footRegion(regionInfos, window.refName, end),
+              ],
+              paint,
             ),
-            (start, end) => [
-              footRegion(regionInfos, refName, start),
-              footRegion(regionInfos, refName, end),
-            ],
-            paint,
+            window,
           ),
         ]),
       ),
@@ -1147,6 +1184,18 @@ function overlapTables(
         kind => overlapColors[kind]!,
       ),
     },
+  }
+}
+
+/** The overlaps the window shows. */
+function overlapsInWindow(
+  { overlaps }: ReturnType<typeof overlapTables>,
+  window: { start: number; end: number },
+) {
+  return {
+    overlaps: rowsAt(overlaps, i =>
+      spanTouches(window, overlaps.start[i]!, overlaps.end[i]!),
+    ),
   }
 }
 
@@ -1644,13 +1693,16 @@ function laidOutTables(
                 connectorSlotColor,
                 keyOf,
               ),
-              ...overlapTables(
-                laid,
-                drawsOverlaps,
-                byOverlapKind(
-                  normalizedRgbToHex(colors.palette.colorOverlap),
-                  normalizedRgbToHex(colors.palette.colorMateOverlap),
+              ...overlapsInWindow(
+                overlapTables(
+                  laid,
+                  drawsOverlaps,
+                  byOverlapKind(
+                    normalizedRgbToHex(colors.palette.colorOverlap),
+                    normalizedRgbToHex(colors.palette.colorMateOverlap),
+                  ),
                 ),
+                r,
               ),
               ...sectionTables(
                 dataFor(key, i),

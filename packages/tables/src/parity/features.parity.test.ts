@@ -83,9 +83,21 @@ function featureParity(
       const rows = new Map<string, Span>()
       const transcripts = new Map<string, Span>()
       const onScreen = m.onScreenFeatureIds
+      const drawnLabels = m.floatingLabels(resolvePalette())
+      const labelled = new Set(drawnLabels.map(l => l.featureId))
+      for (const data of m.laidOutDataMap.values()) {
+        for (const s of data.subfeatureInfos) {
+          if (labelled.has(s.featureId)) {
+            labelled.add(s.parentFeatureId)
+          }
+        }
+      }
       for (const data of m.laidOutDataMap.values()) {
         for (const item of data.flatbushItems) {
-          if (isPlacedRow(item.topPx) && onScreen?.has(item.featureId)) {
+          if (
+            isPlacedRow(item.topPx) &&
+            (onScreen?.has(item.featureId) || labelled.has(item.featureId))
+          ) {
             rows.set(item.featureId, {
               id: item.featureId,
               top: item.topPx,
@@ -110,8 +122,7 @@ function featureParity(
         rows: [...rows.values()].sort(byId),
         transcripts: [...transcripts.values()].sort(byId),
         truncated: m.truncatedFeatureCount,
-        labels: m
-          .floatingLabels(resolvePalette())
+        labels: drawnLabels
           .map(l => ({ id: l.featureId ?? '', text: l.text, y: l.y }))
           .sort(byIdAndText),
         sections: m.facet

@@ -120,6 +120,9 @@ interface OffscreenLane {
   passes?: (index: number) => boolean
   axis: 'query' | 'target'
   on: ComparativeAxis
+  // where the row's window starts in its frame, and how wide it is
+  offsetPx: number
+  width: number
   // the contig color the strip paints a mark in, absent for the band's grey
   markColorFor?: (refName: string) => string
   colorOf: (refName: string) => { color: string; alpha: number }
@@ -136,10 +139,14 @@ function offscreenLane(
     field,
     namePosition,
     filter,
+    offsetPx,
+    width,
   }: {
     field: string | undefined
     namePosition?: RefNamePosition
     filter: readonly FieldPredicate[]
+    offsetPx: number
+    width: number
   },
 ): OffscreenLane {
   const markColorFor = offscreenMateMarkColorFor(
@@ -153,6 +160,8 @@ function offscreenLane(
     passes: offscreenMateFilter(fetched, filter, { axis }),
     axis,
     on,
+    offsetPx,
+    width,
     markColorFor,
     colorOf: refName => unpack(cssColorToABGR(markColorFor?.(refName) ?? grey)),
   }
@@ -236,12 +245,25 @@ function offscreenStrip(
       datasets: [lane.data],
       mateBand: { lo: -Infinity, hi: Infinity },
       bpPerPx: lane.on.bpPerPx,
-      offsetPx: 0,
+      offsetPx: lane.offsetPx,
       side: lane.axis === 'query' ? 'top' : 'bottom',
       markColorFor: lane.markColorFor,
       width,
       height,
     }))
+  return recordedOffscreenStrips(strips, height)
+}
+
+/**
+ * #api
+ * What `drawOffscreenMates` paints of `strips` over a band `height` px tall:
+ * every mark and every label, in px from the band's top left, each named by
+ * the axis whose edge it hangs off.
+ */
+export function recordedOffscreenStrips(
+  strips: OffscreenMateLane[],
+  height: number,
+) {
   const { ctx, marks, labels } = recordingContext()
   drawOffscreenMates(ctx, strips, {
     ...offscreenMateColors(bandGroundColor()),
@@ -267,34 +289,39 @@ function offscreenRows({
   passes,
   axis,
   on,
+  offsetPx,
+  width,
   colorOf,
 }: OffscreenLane) {
-  const n = data.starts.length
-  const from = Array.from(data.starts, (s, i) => locateCum(on, s, data.ends[i]))
-  const to = Array.from(data.ends, (e, i) => locateCum(on, e, data.starts[i]))
-  const mateChrom = Array.from(
-    data.mateRefNameIds,
-    id => data.mateRefNameDict[id]!,
+  const rows = Array.from(data.starts, (_, i) => i).filter(i => {
+    const a = data.starts[i]! / on.bpPerPx - offsetPx
+    const b = data.ends[i]! / on.bpPerPx - offsetPx
+    return Math.max(a, b) > 0 && Math.min(a, b) < width
+  })
+  const from = rows.map(i => locateCum(on, data.starts[i]!, data.ends[i]))
+  const to = rows.map(i => locateCum(on, data.ends[i]!, data.starts[i]))
+  const mateChrom = rows.map(
+    i => data.mateRefNameDict[data.mateRefNameIds[i]!]!,
   )
   const paint = mateChrom.map(colorOf)
   const contigFloor = MIN_CONTIG_MARK_PX * on.bpPerPx
   return {
-    axis: Array.from({ length: n }, () => axis),
+    axis: rows.map(() => axis),
     region: from.map(p => p.region),
     chrom: from.map(p => on.regions[p.region]!.refName),
-    start: from.map((p, i) => Math.min(p.coord, to[i]!.coord)),
-    end: from.map((p, i) => Math.max(p.coord, to[i]!.coord)),
+    start: from.map((p, k) => Math.min(p.coord, to[k]!.coord)),
+    end: from.map((p, k) => Math.max(p.coord, to[k]!.coord)),
     mateChrom,
-    mateStart: Array.from(data.mateStarts),
-    mateEnd: Array.from(data.mateEnds),
-    length: Array.from(data.lengths),
+    mateStart: rows.map(i => data.mateStarts[i]!),
+    mateEnd: rows.map(i => data.mateEnds[i]!),
+    length: rows.map(i => data.lengths[i]!),
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
-    drawn: Array.from(
-      data.mateRefNameIds,
-      (id, i) =>
+    drawn: rows.map(
+      i =>
         (passes?.(i) ?? true) &&
-        (admitted.alignedBp[id] ?? Infinity) >= contigFloor,
+        (admitted.alignedBp[data.mateRefNameIds[i]!] ?? Infinity) >=
+          contigFloor,
     ),
   }
 }
@@ -319,6 +346,21 @@ function offscreenContigRows({ data, axis, colorOf }: OffscreenLane) {
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
   }
+}
+
+// Whether a ribbon from feet `top` on a row `topWidth` px wide to feet
+// `bottom` on one `bottomWidth` wide crosses the window: it does unless every
+// foot lies left of both rows or right of its own row's edge
+function ribbonInWindow(
+  top: readonly number[],
+  bottom: readonly number[],
+  topWidth: number,
+  bottomWidth: number,
+) {
+  return (
+    Math.max(...top, ...bottom) > 0 &&
+    (Math.min(...top) < topWidth || Math.min(...bottom) < bottomWidth)
+  )
 }
 
 function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
@@ -499,8 +541,14 @@ export async function syntenyTables(
     corners.sx2 = c2 / q.bpPerPx - queryFrame.offsetPx
     corners.sx3 = c3 / t.bpPerPx - targetFrame.offsetPx
     corners.sx4 = c4 / t.bpPerPx - targetFrame.offsetPx
-    const xs = [corners.sx1, corners.sx2, corners.sx3, corners.sx4]
-    if (Math.max(...xs) <= 0 || Math.min(...xs) >= query.width) {
+    if (
+      !ribbonInWindow(
+        [corners.sx1, corners.sx2],
+        [corners.sx3, corners.sx4],
+        query.width,
+        target.width,
+      )
+    ) {
       continue
     }
     drawn.add(instanceFeatureIdx[i]!)
@@ -574,11 +622,15 @@ export async function syntenyTables(
       field: settings.field,
       namePosition: axisNamePosition(t),
       filter: config.filter,
+      offsetPx: queryFrame.offsetPx,
+      width: query.width,
     }),
     offscreenLane(featureData.targetOffscreenMates, 'target', t, {
       field: settings.field,
       namePosition: axisNamePosition(q),
       filter: config.filter,
+      offsetPx: targetFrame.offsetPx,
+      width: target.width,
     }),
   ] as const
   const offscreen = concatColumns(

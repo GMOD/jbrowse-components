@@ -245,14 +245,18 @@ sequence adapter, else a locus's width past it), and each linear table fetches
 and lays out over the window and its margin (`windowFetchRegions`), then lists
 what touches the window:
 
-- `features`: the features touching it (`onScreenFeatureIds`), each with every
-  mark of its glyph; `truncated` counts only those.
-- `wiggle`: the bins and marks touching it.
+- `features`: the features touching it (`onScreenFeatureIds`) and those whose
+  label the window shows, each with every mark of its glyph, so every
+  `feature` and `subfeature` index names a listed row; `truncated` counts only
+  those touching it.
+- `wiggle`: the bins and marks touching it, and on a line the bin either side
+  it joins to, so a line reaches the window's edges.
 - `variants`: the records in it, with their cells.
 - `alignments`: the reads touching it and the reads a listed connector joins
   to them, which the display draws partly off screen, with their marks, so
-  every `key`, `mateKey` and `read` names a listed read. Connectors and the dip
-  reserve are placed in the contig.
+  every `key`, `mateKey` and `read` names a listed read; the connectors,
+  overlaps, arcs and ticks reaching into it. Connectors, arcs and the dip
+  reserve are placed in the contig, the arcs over the reads fetched.
 - A refusal names the regions asked for: `byteLimit` counts the bytes fetched,
   the margin's included, and `spanLimit` the span asked for.
 
@@ -616,6 +620,8 @@ call, so one value can take two colors across two calls.
   region's edge before it reaches the tables, so `xStart`/`xEnd` and
   `yStart`/`yEnd` stop there, while `length` stays the block's whole query span.
   `segments` are those crossing both axes' windows.
+- `offscreen` lists the blocks touching the row's window, and `offscreenStrip`
+  paints from the window's place in its frame.
 - The view's off-screen strip also marks a ribbon whose mate scrolled out of the
   facing row (`culledRibbonMates`); the tables list only mates on a contig the
   facing row does not show.

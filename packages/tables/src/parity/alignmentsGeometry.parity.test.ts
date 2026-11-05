@@ -384,6 +384,13 @@ describe('volvox pairs across an inversion', () => {
       config: { ...TALL, unit: 'chain', readConnections: { show: true } },
     },
     {
+      name: 'read connections as a read cloud',
+      config: {
+        ...TALL,
+        readConnections: { show: true, mark: { type: 'rule' } },
+      },
+    },
+    {
       name: 'pileup connectors',
       config: { ...TALL, pileup: { connectors: { show: true } } },
     },

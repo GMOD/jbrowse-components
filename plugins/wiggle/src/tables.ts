@@ -15,6 +15,8 @@ import {
   CLIP_STRIP_PX,
 } from '@jbrowse/render-core/shaders/clipStripConsts'
 import {
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_XYPLOT,
   resolveRenderState,
   resolveSymlogConstant,
@@ -269,8 +271,17 @@ export async function wiggleTables(
       }
       run++
       const inWindow = binInWindow(regions[regionIndex]!)
+      const joined =
+        layer.renderingType === RENDERING_TYPE_LINE ||
+        layer.renderingType === RENDERING_TYPE_LINE_CENTER
+      const listed = (i: number) =>
+        inWindow(layer.featurePositions, i) ||
+        (joined &&
+          ((i > 0 && inWindow(layer.featurePositions, i - 1)) ||
+            (i + 1 < layer.numFeatures &&
+              inWindow(layer.featurePositions, i + 1))))
       for (let i = 0; i < layer.numFeatures; i++) {
-        if (inWindow(layer.featurePositions, i)) {
+        if (listed(i)) {
           const score = layer.featureScores[i]!
           if (layer.band && bandColors) {
             const min = layer.band.minScores[i]!

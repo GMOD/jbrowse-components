@@ -104,6 +104,16 @@ export const OFFSCREEN: ComparativeFixture = {
   target: { assembly: VOLVOX, regions: [CTGA], width: 800 },
 }
 
+/** 4 kb of ctgA on the upper row, inside the contig, its mates on ctgB. */
+export const OFFSCREEN_WINDOW: ComparativeFixture = {
+  ...OFFSCREEN,
+  query: {
+    assembly: VOLVOX,
+    regions: [{ refName: 'ctgA', start: 4000, end: 8000 }],
+    width: 800,
+  },
+}
+
 /** A multi-way track's adapter, the anchor it shows, and every lane's genome. */
 export interface MultiwayFixture {
   adapterConfig: Record<string, unknown>
