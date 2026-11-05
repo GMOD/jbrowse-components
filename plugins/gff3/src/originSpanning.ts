@@ -86,6 +86,12 @@ export interface Candidate {
  *
  * `whole` answers such a feature uncut, in the file's own coordinates, when
  * either half overlaps the query: the reader of one feature wants all of it.
+ *
+ * Not rejoined: the same feature written as two lines sharing an ID, `a..L`
+ * and `1..b`, which the parser folds to one feature 1..L. Of NCBI, Bakta,
+ * Ensembl, Prokka and BioPerl's bp_genbank2gff3, only the last writes it, and
+ * it also writes that feature's CDS as one `polypeptide` 1..L, which no rejoin
+ * mends (#5643).
  */
 export function* cutAtOrigin(
   candidates: Iterable<Candidate>,
