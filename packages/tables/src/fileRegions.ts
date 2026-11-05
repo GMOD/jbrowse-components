@@ -33,7 +33,8 @@ const NAMES_FROM_RECORDS = new Set([
   'VcfTabixAdapter',
 ])
 
-async function contigsOf(
+/** The contigs a file lists, with the length its header states where it does. */
+export async function fileContigsOf(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
   sequenceAdapter: Record<string, unknown> | undefined,
@@ -72,7 +73,12 @@ export async function contigNamesOf(
   assemblyName?: string,
 ) {
   const names = (
-    await contigsOf(pluginManager, adapterConfig, sequenceAdapter, assemblyName)
+    await fileContigsOf(
+      pluginManager,
+      adapterConfig,
+      sequenceAdapter,
+      assemblyName,
+    )
   ).map(c => c.refName)
   if (!sequenceAdapter || !NAMES_FROM_RECORDS.has(String(adapterConfig.type))) {
     return names
@@ -100,7 +106,7 @@ export async function fileRegions(
   adapterConfig: Record<string, unknown>,
   assembly?: ResolvedAssembly,
 ) {
-  const contigs = await contigsOf(
+  const contigs = await fileContigsOf(
     pluginManager,
     adapterConfig,
     assembly?.sequenceAdapter,

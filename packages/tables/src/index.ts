@@ -40,7 +40,12 @@ import {
 import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
-import { displayedRegionsOf } from './frame.ts'
+import {
+  comparativeFileContig,
+  displayedRegionsOf,
+  framedIn,
+  referenceContig,
+} from './frame.ts'
 
 import type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
@@ -463,13 +468,27 @@ export function createTablesEngine() {
   const pluginManager = tablesPluginManager()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
-  const positioned = async ({ assembly, ...axis }: HostAxisArgs) => {
+  const positioned = async (
+    { assembly, ...axis }: HostAxisArgs,
+    adapterConfig: Record<string, unknown>,
+    side: 0 | 1,
+  ) => {
     const resolved = assembly ? await assemblyOf(assembly) : undefined
+    const [locus] = axis.regions
+    const contig =
+      locus && axis.regions.length === 1
+        ? resolved
+          ? await referenceContig(pluginManager, locus, undefined, resolved)
+          : await comparativeFileContig(pluginManager, {
+              adapterConfig,
+              side,
+              assemblyName: axis.assemblyName,
+              refName: locus.refName,
+            })
+        : undefined
     return {
       ...axis,
-      displayedRegions: resolved
-        ? await displayedRegionsOf(pluginManager, axis, resolved)
-        : undefined,
+      displayedRegions: contig ? framedIn(axis.regions, contig) : undefined,
       refNamePosition: resolved?.refNamePosition,
     }
   }
@@ -581,8 +600,8 @@ export function createTablesEngine() {
     synteny: call('synteny', SYNTENY_ARGS, async (args: SyntenyTablesArgs) => {
       const tables = await syntenyTables(pluginManager, {
         ...args,
-        query: await positioned(args.query),
-        target: await positioned(args.target),
+        query: await positioned(args.query, args.adapterConfig, 0),
+        target: await positioned(args.target, args.adapterConfig, 1),
       })
       const [query, target] = tables.assemblyNames
       return {
@@ -606,8 +625,8 @@ export function createTablesEngine() {
     dotplot: call('dotplot', DOTPLOT_ARGS, async (args: DotplotTablesArgs) => {
       const tables = await dotplotTables(pluginManager, {
         ...args,
-        x: await positioned(args.x),
-        y: await positioned(args.y),
+        x: await positioned(args.x, args.adapterConfig, 0),
+        y: await positioned(args.y, args.adapterConfig, 1),
       })
       const [x, y] = tables.assemblyNames
       return {

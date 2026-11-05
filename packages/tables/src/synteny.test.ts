@@ -168,18 +168,32 @@ test('a row through its assembly is a window into its contig: ribbons reach past
     query.start,
   )
 
-  const trimmed = await engine.synteny({
+  // with no assembly the file's own contig lengths (PAF qlen and tlen) frame
+  // each row the same way
+  const bare = await engine.synteny({
     ...INV_INDELS,
     query: { regions: [query], width },
     target: { regions: [target], width },
   })
-  const trimmedFeet = trimmed.ribbons.queryX1.concat(
-    trimmed.ribbons.queryX2,
-    trimmed.ribbons.targetX1,
-    trimmed.ribbons.targetX2,
+  expect(bare.ribbons).toEqual(framed.ribbons)
+  expect(bare.alignments).toEqual(framed.alignments)
+  const crossing = bare.ribbons.kind.flatMap((kind, i) =>
+    kind === 'match' &&
+    Math.min(bare.ribbons.queryStart[i]!, bare.ribbons.queryEnd[i]!) <
+      query.start &&
+    Math.max(bare.ribbons.queryStart[i]!, bare.ribbons.queryEnd[i]!) > query.end
+      ? [i]
+      : [],
   )
-  expect(Math.min(...trimmedFeet)).toBeGreaterThanOrEqual(0)
-  expect(Math.max(...trimmedFeet)).toBeLessThanOrEqual(width)
+  expect(crossing.length).toBeGreaterThan(0)
+  for (const i of crossing) {
+    const a = bare.ribbons.alignment[i]!
+    expect(
+      [bare.ribbons.queryStart[i]!, bare.ribbons.queryEnd[i]!].sort(
+        (x, y) => x - y,
+      ),
+    ).toEqual([bare.alignments.queryStart[a], bare.alignments.queryEnd[a]])
+  }
 })
 
 test('the indels part draws the ops colored, the matches alone, or the block alone', async () => {
