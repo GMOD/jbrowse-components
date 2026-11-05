@@ -78,6 +78,7 @@ import CramAdapterF from './CramAdapter/index.ts'
 import {
   alignmentsColorViews,
   detectedModificationsOf,
+  readPaletteViews,
 } from './LinearAlignmentsDisplay/alignmentsColorViews.ts'
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
@@ -86,7 +87,6 @@ import {
   framesUnpairedChainStrand,
   readColorFromCategoryIndex,
 } from './LinearAlignmentsDisplay/colorUtils.ts'
-import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/configSchema.ts'
 import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
@@ -174,11 +174,7 @@ import {
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from './shaders/slang/mismatch.consts.generated.ts'
 import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
-import {
-  isBakedField,
-  paintedLevelOf,
-  writtenReadCategoryColors,
-} from './shared/alignmentsColor.ts'
+import { isBakedField, paintedLevelOf } from './shared/alignmentsColor.ts'
 import {
   colorFieldKindOf,
   paintsModifications,
@@ -241,6 +237,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SettledBlocksView } from '@jbrowse/wiggle-core'
@@ -450,8 +447,8 @@ const NO_FRAME: SettledBlocksView = {
 
 /**
  * The alignments display reduced to what its tables decide from: its config,
- * the fetched and laid-out reads with the regions as the frame, and the
- * coverage scale and read color views the display installs
+ * the fetched and laid-out reads with the regions as the frame, the default
+ * theme, and the coverage scale and read color views the display installs
  * over its config-slot views. No session, view or autoruns, and so no
  * autoscale group. The tables lay every section out uncollapsed at the
  * configured read height and always build the key.
@@ -465,12 +462,13 @@ const AlignmentsTablesHost = types
       configuration: linearAlignmentsDisplayConfigSchema,
     }),
   )
-  .volatile((): AlignmentsTablesInputs => ({
+  .volatile((): AlignmentsTablesInputs & { theme: JBrowsePalette } => ({
     rpcDataMap: new Map(),
     laidOutByGroupFramed: new Map(),
     keyWindows: [],
     paintedRefNamePosition: undefined,
     view: NO_FRAME,
+    theme: resolvePalette(),
   }))
   .actions(self => ({
     setInputs(inputs: AlignmentsTablesInputs) {
@@ -526,6 +524,12 @@ const AlignmentsTablesHost = types
   .views(self => coverageDomainViews(self))
   .views(self => coverageTicksViews(self))
   .views(self => alignmentsColorViews(self))
+  .views(self => readPaletteViews(self))
+  .views(self => ({
+    get colors() {
+      return self.colorsIn(self.theme)
+    },
+  }))
 
 interface AlignmentsTablesHostModel extends Instance<
   typeof AlignmentsTablesHost
@@ -538,9 +542,7 @@ interface AlignmentsTablesHostModel extends Instance<
  * display shows beside them.
  */
 function colorReads(host: AlignmentsTablesHostModel) {
-  const palette = buildColorPaletteFromPalette(resolvePalette(), {
-    declared: writtenReadCategoryColors(host.colorSetting, host.colorEncoding),
-  })
+  const palette = host.colors
   const levelOf = readLevelOf(host.colorField)
   const sections = new Map(
     [...host.laidOutByGroupColored].map(([key, map]) => [
@@ -1644,7 +1646,7 @@ function laidOutTables(
   })
   return {
     ...tables,
-    ...markLegends(tables, paint),
+    ...markLegends(tables, paint, host.theme),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1799,6 +1801,7 @@ function markLegends(
     indicators: { type: InterbaseTypeName[] }
   },
   paint: MarkColors,
+  theme: JBrowsePalette,
 ) {
   const shownJunction = (i: number) => tables.junctions.shown[i] === true
   const bases = new Set([
@@ -1815,7 +1818,7 @@ function markLegends(
           (_, i) => shownJunction(i) && tables.junctions.source[i] === 'gap',
         ),
       ),
-      resolvePalette().alignmentFill,
+      theme.alignmentFill,
       {
         classes: new Set(
           SPLIT_JUNCTION_CLASSES.filter(split =>

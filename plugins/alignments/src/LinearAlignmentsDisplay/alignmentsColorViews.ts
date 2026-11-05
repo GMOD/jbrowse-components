@@ -1,4 +1,8 @@
-import { isBakedField, declaredReadLabels } from '../shared/alignmentsColor.ts'
+import {
+  isBakedField,
+  declaredReadLabels,
+  writtenReadCategoryColors,
+} from '../shared/alignmentsColor.ts'
 import { paintsModifications } from '../shared/colorFieldDefs.ts'
 import { keySectionOrder } from '../shared/keySectionOrder.ts'
 import {
@@ -13,6 +17,7 @@ import {
   bakedColorScale,
   linearFieldExtent,
 } from './bakedColorScale.ts'
+import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
 import {
   insertSizeBandInWindows,
@@ -29,6 +34,7 @@ import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts
 import type { ColorPalette } from '../shaders/colors.ts'
 import type {
   AlignmentsColorEncoding,
+  AlignmentsColorSetting,
   DeclaredReadLabels,
 } from '../shared/alignmentsColor.ts'
 import type { OverlapLegendRow } from '../shared/legendUtils.ts'
@@ -39,6 +45,7 @@ import type { ReadColorCategory } from './colorUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
 import type { LaidOutByGroup } from './groupLayout.ts'
 import type { QualitySpan } from './qualitySpans.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 
 /**
@@ -63,6 +70,33 @@ export interface AlignmentsColorHost {
   keyWindows: readonly KeyWindow[]
   paintedRefNamePosition: RefNamePosition | undefined
   detectedModifications: ReadonlyMap<string, string>
+}
+
+/** What {@link readPaletteViews} reads: the `encoding.color` setting. */
+export interface ReadPaletteHost {
+  colorSetting: AlignmentsColorSetting
+  colorEncoding: AlignmentsColorEncoding
+}
+
+/** The read palette in a theme, under the colors `encoding.color` writes. */
+export function readPaletteViews(self: ReadPaletteHost) {
+  return {
+    /**
+     * #method
+     * The read palette over `theme`, with the category colors
+     * `encoding.color` sets: what the display paints its reads, arcs,
+     * connectors and junctions from, in the session theme or the one an
+     * export renders with.
+     */
+    colorsIn(theme: JBrowsePalette) {
+      return buildColorPaletteFromPalette(theme, {
+        declared: writtenReadCategoryColors(
+          self.colorSetting,
+          self.colorEncoding,
+        ),
+      })
+    },
+  }
 }
 
 /**

@@ -154,6 +154,10 @@ describe('volvox reads', () => {
         encoding: { color: { field: 'strand', legend: { descending: true } } },
       },
     },
+    {
+      name: 'a written read color',
+      config: { encoding: { color: { value: '#336699' } } },
+    },
     { name: 'mapq bins', config: { encoding: { color: 'mapq' } } },
     {
       name: 'mapq bins, ascending',
@@ -194,6 +198,14 @@ describe('volvox reads in two read groups', () => {
     [
       { name: 'tag', config: { encoding: { color: { field: 'tags.RG' } } } },
       {
+        name: 'a tag no read carries, a written invalid color',
+        config: {
+          encoding: {
+            color: { field: 'tags.XX', scale: { invalid: '#cc6600' } },
+          },
+        },
+      },
+      {
         name: 'tag, descending',
         config: {
           encoding: {
@@ -218,6 +230,17 @@ describe('volvox pairs across an inversion', () => {
         config: {
           normalInsertSize: { min: 1, max: 2 },
           encoding: { color: 'insertSizeAndOrientation' },
+        },
+      },
+      {
+        name: 'insert size and orientation, written colors',
+        config: {
+          encoding: {
+            color: {
+              field: 'insertSizeAndOrientation',
+              scale: { domain: ['RR', 'LL'], range: ['#d95f02', '#1b9e77'] },
+            },
+          },
         },
       },
       {

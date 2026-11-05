@@ -75,7 +75,6 @@ import {
   sameLaneJunction,
 } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
-import { writtenReadCategoryColors } from '../shared/alignmentsColor.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
 import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
@@ -99,11 +98,11 @@ import {
 import {
   alignmentsColorViews,
   detectedModificationsOf,
+  readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
 import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import { framesUnpairedChainStrand, rgb255 } from './colorUtils.ts'
-import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
@@ -1923,17 +1922,10 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => readPaletteViews(self))
       .views(self => {
-        function colorsIn(theme: JBrowsePalette) {
-          return buildColorPaletteFromPalette(theme, {
-            declared: writtenReadCategoryColors(
-              self.colorSetting,
-              self.colorEncoding,
-            ),
-          })
-        }
         function themedIn(theme: JBrowsePalette): ThemedSources {
-          const colors = computed(() => colorsIn(theme))
+          const colors = computed(() => self.colorsIn(theme))
           const arcFeedsByGroup = computed(() => {
             const { byGroup, crossRegionByGroup } = self.arcsResult
             const displayed = self.displayedRegionInfos
@@ -2042,7 +2034,7 @@ export default function stateModelFactory(
            */
           connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
             return connectorStyler({
-              colors: colorsIn(theme),
+              colors: self.colorsIn(theme),
               labels: self.declaredReadLabels.categories,
             })
           },
@@ -2064,7 +2056,7 @@ export default function stateModelFactory(
            * not be the session's.
            */
           colorScalesIn(theme: JBrowsePalette): ColorScale[] {
-            const palette = colorsIn(theme)
+            const palette = self.colorsIn(theme)
             return getAlignmentsColorScales({
               ramps: self.colorRamps,
               colorTitle: self.colorKeyTitle,
