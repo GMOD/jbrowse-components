@@ -6,9 +6,17 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "rice-ReferenceSequenceTrack",
         "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "rice.chrom.sizes",
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "rice.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "rice.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "rice.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -255,5 +263,27 @@
         "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"]
       }
     }
-  ]
+  ],
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
+  "msa": {
+    "datasets": [
+      {
+        "datasetId": "grasses_orthofinder",
+        "name": "Grasses orthogroups (OrthoFinder)",
+        "description": "An alignment and gene tree per orthogroup",
+        "adapter": {
+          "type": "OrthoFinderMsaAdapter",
+          "resultsLocation": {
+            "uri": "orthofinder/"
+          }
+        }
+      }
+    ]
+  }
 }
