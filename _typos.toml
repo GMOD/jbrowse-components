@@ -63,6 +63,10 @@ chromsome = "chromsome"
 # mcpConformance.ts pass `colorSchem` to assert the reaches-nothing warning
 # names it, and tracks.ts quotes the key in the comment explaining that check
 Schem = "Schem"
+# same fixture shape for a root config key: validateConfig.test.ts writes
+# `assemblys` beside a declared plugin to assert it stays the schema's error,
+# and validateConfig.ts names it in the comment over that check
+assemblys = "assemblys"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
