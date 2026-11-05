@@ -33,13 +33,13 @@ function piece(
 
 test('a forward read jumping ahead is a deletion-type junction, filed with LR pairs', () => {
   expect(splitReadKind([piece(100, 200, 1, 0), piece(500, 600, 1, 100)])).toBe(
-    'LR',
+    'deletionType',
   )
 })
 
 test('a forward read jumping back is a duplication-type junction, filed with RL pairs', () => {
   expect(splitReadKind([piece(500, 600, 1, 0), piece(100, 200, 1, 100)])).toBe(
-    'RL',
+    'duplicationType',
   )
 })
 
@@ -61,7 +61,7 @@ test('either end of an inversion, or both, files as inversion', () => {
 
 test('pieces are ordered along the read, not as listed', () => {
   expect(splitReadKind([piece(500, 600, 1, 100), piece(100, 200, 1, 0)])).toBe(
-    'LR',
+    'deletionType',
   )
 })
 
@@ -81,12 +81,12 @@ test('a read whose only junctions leave its reference files as a partner elsewhe
       piece(100, 200, 1, 0),
       piece(500, 600, 1, 100, { refName: 'ctgB' }),
     ]),
-  ).toBe('partnerElsewhere')
+  ).toBe('elsewhere')
 })
 
 test('a read leaving and re-entering at one base files as an insertion', () => {
   expect(splitReadKind([piece(100, 200, 1, 0), piece(200, 300, 1, 150)])).toBe(
-    'svInsertion',
+    'insertion',
   )
 })
 
@@ -141,7 +141,7 @@ function channelsByRead(features: Feature[]) {
   const byRead = new Map<string, Set<string>>()
   for (const f of features) {
     const set = byRead.get(readKey(f)) ?? new Set<string>()
-    set.add(svKindOf(f))
+    set.add(svKindOf(f, undefined))
     byRead.set(readKey(f), set)
   }
   return byRead
@@ -171,9 +171,9 @@ test.each([
 test('the volvox long-read fixtures fill the channels their SVs name', async () => {
   expect(
     tally(channelsByRead(await records('volvox-long-reads-sv.bam'))),
-  ).toEqual({ LR: 20 })
+  ).toEqual({ deletionType: 20 })
   expect(tally(channelsByRead(await records('volvox-simple-inv.bam')))).toEqual(
-    { LR: 6, inversion: 25, none: 47, svInsertion: 4 },
+    { deletionType: 6, insertion: 4, inversion: 25, none: 47 },
   )
 })
 
@@ -182,7 +182,9 @@ test('a pair whose read2 splits across an inversion files as inversion in chain 
     f => f.get('name') === 'ctgA_1041_1553_0:0:0_1:0:0_255',
   )
   expect(chain).toHaveLength(3)
-  expect(FACET_DIMENSIONS.svKind.chainKey!(chain).key).toBe('inversion')
+  expect(FACET_DIMENSIONS.svKind.chainKey!(chain, undefined).key).toBe(
+    'inversion',
+  )
 })
 
 const SV_FIXTURES = [
@@ -236,7 +238,7 @@ test('a MAPQ-0 split record alone files as no SV evidence', () => {
     CIGAR: '30M70S',
     tags: { SA: 'ctgA,3000,+,30S40M30S,60,0;ctgA,6000,+,70S30M,60,0;' },
   })
-  expect(svKindOf(read)).toBe('LR')
+  expect(svKindOf(read, undefined)).toBe('deletionType')
   expect(
     filterChainFeatures([read], [{ field: 'svSignal', equal: true }]),
   ).toEqual([])

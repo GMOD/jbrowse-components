@@ -244,11 +244,14 @@ test('the SV kind facet files a discordant pair by its orientation and every rea
   ]
   const groups = partitionFeatures(features, { field: 'svKind' })
   expect(groups.map(g => [g.label, g.features.map(f => f.id())])).toEqual([
-    ['LR pair or deletion-type split', ['split', 'discordant-lr']],
-    ['RL pair or duplication-type split', ['proper-rl']],
-    ['LL or RR pair, or inversion split', ['inverted-pair']],
+    [
+      'Deletion-type: LR pair, split or CIGAR deletion',
+      ['split', 'discordant-lr'],
+    ],
+    ['Duplication-type: RL pair or split', ['proper-rl']],
+    ['Inversion: LL or RR pair, or split', ['inverted-pair']],
     ['Partner on another chromosome or unmapped', ['mate-unmapped']],
-    ['SV-size insertion', ['insertion']],
+    ['Insertion: pair too close, or SV-size insertion', ['insertion']],
     [
       'No SV evidence',
       ['concordant-pair', 'plain', 'unplaced-split', 'secondary-inverted'],
@@ -266,8 +269,35 @@ test('a chain files where its most specific record files', () => {
     { field: 'svKind', unit: 'chain' },
   )
   expect(groups.map(g => [g.key, g.features.map(f => f.id())])).toEqual([
-    ['svInsertion', ['r1', 'r2']],
+    ['insertion', ['r1', 'r2']],
     ['none', ['s']],
+  ])
+})
+
+// The band the insert-size colors read: a deletion's pair sits too far apart,
+// an insertion's too close, both LR and neither flagged properly paired
+test('an LR pair the aligner did not pair files by its insert size', () => {
+  const band = { lower: 200, upper: 800 }
+  const lr = (id: string, template_length: number) =>
+    feat(id, {
+      flags: 1,
+      score: 60,
+      tags: {},
+      CIGAR: '100M',
+      pair_orientation: 'F1R2',
+      template_length,
+    })
+  const features = [lr('far', 5000), lr('close', -120), lr('normal', 450)]
+  const keysOf = (groups: ReturnType<typeof partitionFeatures>) =>
+    groups.map(g => [g.key, g.features.map(f => f.id())])
+  expect(
+    keysOf(partitionFeatures(features, { field: 'svKind' }, undefined, band)),
+  ).toEqual([
+    ['deletionType', ['far', 'normal']],
+    ['insertion', ['close']],
+  ])
+  expect(keysOf(partitionFeatures(features, { field: 'svKind' }))).toEqual([
+    ['deletionType', ['far', 'close', 'normal']],
   ])
 })
 
@@ -680,6 +710,18 @@ test('chain mode sends the chain as the unit only when there is a facet', () => 
     unit: 'chain',
   })
   expect(workerFacet(undefined, 'chain')).toBeUndefined()
+})
+
+test('only an svKind facet carries the pinned insert-size band', () => {
+  const band = { lower: 150, upper: 600 }
+  expect(workerFacet({ field: 'svKind' }, 'chain', band)).toEqual({
+    field: 'svKind',
+    unit: 'chain',
+    pinnedInsertSizeBand: band,
+  })
+  expect(workerFacet({ field: 'tags.HP' }, 'read', band)).toEqual({
+    field: 'tags.HP',
+  })
 })
 
 test('facetForUnit degrades a per-read dimension in chain mode only', () => {

@@ -479,7 +479,12 @@ export async function groupsOfFetch({
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const featureGroups = partitionFeatures(sample, facet, pluginManager.jexl)
+  const featureGroups = partitionFeatures(
+    sample,
+    facet,
+    pluginManager.jexl,
+    facet?.pinnedInsertSizeBand ?? insertSizeStats,
+  )
   // One form for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
   const numericKeys = recordIdsAreIds(featuresArray)

@@ -182,7 +182,8 @@ one band per kind of SV evidence, each with a coverage curve, its evidence reads
 and their arcs, and the sashimi arcs over coverage go away: deletion-type,
 duplication-type, inversion, a partner on another chromosome or unmapped, an
 SV-size insertion, and no SV evidence. A discordant pair files by its
-orientation and a split read by its junction, so short and long reads of one
+orientation, an LR pair whose mates sit closer than the library's fragments as
+an insertion, and a split read by its junction, so short and long reads of one
 event fill the same band. Concordant pairs and every other read without SV
 evidence fill the last band, the depth the others are read against. The preset
 also sets **Filter by → SV evidence → Only SV evidence**, which hides rows and
@@ -190,7 +191,9 @@ leaves every band's coverage counting all its reads, so the last band draws its
 coverage alone and the others draw only the reads that carry evidence. Which
 band fills names the rearrangement, and a band that stays empty under a call is
 a call with no read evidence behind it. A kind of evidence no read in the window
-carries gets no band.
+carries gets no band. The partner band is never empty on short reads: at every
+locus some mates land on another chromosome, and an insertion longer than the
+fragment adds mates that do not map.
 
 **SV evidence** decides which reads are evidence: a split read whose placed
 pieces join, an insertion or deletion of 50 bp or more, or a discordant pair,

@@ -58,6 +58,7 @@ import {
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
+import type { InsertSizeBand } from './insertSizeStats.ts'
 import type { Pairing, SvKind } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
@@ -249,14 +250,20 @@ function higherRanked(a: SvKind | undefined, b: SvKind) {
 // evidence records, as the filter judges evidence, or `none`, so that band
 // holds exactly the reads Only SV evidence hides. Over the whole fetch at once
 // and with no chain built, so only an evidence record is classified.
-function svKindKeys(features: Feature[]) {
+function svKindKeys(
+  features: Feature[],
+  insertSizeBand: InsertSizeBand | undefined,
+) {
   const chainKeys = features.map(featureChainKey)
   const best = new Map<string, SvKind>()
   for (let i = 0; i < features.length; i++) {
     const feature = features[i]!
     if (isSvEvidence(feature)) {
       const key = chainKeys[i]!
-      best.set(key, higherRanked(best.get(key), svKindOf(feature)))
+      best.set(
+        key,
+        higherRanked(best.get(key), svKindOf(feature, insertSizeBand)),
+      )
     }
   }
   return chainKeys.map(key => SV_KIND_GROUPS[best.get(key) ?? 'none'])
@@ -350,11 +357,13 @@ function appendFeature(
 // Partition the fetched reads into ordered sections. A read unit keys each read
 // by itself; a chain unit, or a dimension keying the whole fetch (`keyAll`),
 // keys each chain as a whole, so no chain splits across sections and breaks
-// its connecting lines.
+// its connecting lines. `insertSizeBand` is the one the region's insert-size
+// colors read, by which `svKind` files a too-close LR pair as an insertion.
 export function partitionFeatures(
   features: Feature[],
   facet: WorkerFacet | undefined,
   jexl?: JexlInstance,
+  insertSizeBand?: InsertSizeBand,
 ): FeatureGroup[] {
   if (!facet) {
     return [{ key: '', label: '', features }]
@@ -363,7 +372,7 @@ export function partitionFeatures(
   const groups = new Map<string, FeatureGroup>()
   const { keyAll } = keyer
   if (keyAll) {
-    const keys = keyAll(features)
+    const keys = keyAll(features, insertSizeBand)
     for (let i = 0; i < features.length; i++) {
       appendFeature(groups, features[i]!, keys[i]!)
     }
@@ -374,14 +383,15 @@ export function partitionFeatures(
     }
     for (const chain of chains.values()) {
       const groupKey =
-        keyer.chainKey?.(chain) ?? keyer.key(chainRepresentative(chain))
+        keyer.chainKey?.(chain, insertSizeBand) ??
+        keyer.key(chainRepresentative(chain), insertSizeBand)
       for (const feature of chain) {
         appendFeature(groups, feature, groupKey)
       }
     }
   } else {
     for (const feature of features) {
-      appendFeature(groups, feature, keyer.key(feature))
+      appendFeature(groups, feature, keyer.key(feature, insertSizeBand))
     }
   }
   return orderGroups([...groups.values()], facet.field)
@@ -424,15 +434,25 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
   // "Group by" radios and surfaced by the display that supports it —
   // LGVSyntenyDisplay's menus.ts owns mateAssembly.
   hidden?: boolean
-  key: (feature: Feature) => GroupKey
+  // `insertSizeBand` is the region's, which only `svKind` reads
+  key: (
+    feature: Feature,
+    insertSizeBand: InsertSizeBand | undefined,
+  ) => GroupKey
   // Key for a whole chain, for a dimension the representative read cannot answer
   // for — it answers "is the primary read1 like this", not "is any read of this
   // fragment". Supplying one is also what makes a per-read dimension groupable in
   // chain mode (`isChainFacetable`).
-  chainKey?: (chain: Feature[]) => GroupKey
+  chainKey?: (
+    chain: Feature[],
+    insertSizeBand: InsertSizeBand | undefined,
+  ) => GroupKey
   // Keys every read of a fetch at once, each by its whole chain, in either
   // unit: for a dimension the filter judging its evidence reads per chain
-  keyAll?: (features: Feature[]) => GroupKey[]
+  keyAll?: (
+    features: Feature[],
+    insertSizeBand: InsertSizeBand | undefined,
+  ) => GroupKey[]
 }
 
 // The one registry of read dimensions. Keyed by ReadDimension, so a new member
@@ -487,8 +507,9 @@ export const FACET_DIMENSIONS: {
   svKind: {
     field: 'svKind',
     fragmentLevel: false,
-    key: feature => SV_KIND_GROUPS[svKindOf(feature)],
-    chainKey: chain => svKindKeys(chain)[0]!,
+    key: (feature, insertSizeBand) =>
+      SV_KIND_GROUPS[svKindOf(feature, insertSizeBand)],
+    chainKey: (chain, insertSizeBand) => svKindKeys(chain, insertSizeBand)[0]!,
     keyAll: svKindKeys,
   },
   mapq: {
@@ -568,7 +589,7 @@ function groupKeyer(
  */
 export function fieldValueReader(field: string, jexl?: JexlInstance) {
   const { key } = groupKeyer(field, jexl)
-  return (feature: Feature) => key(feature).key
+  return (feature: Feature) => key(feature, undefined).key
 }
 
 // Whether chain mode can honor a facet: the chain has to resolve to one key,
@@ -659,19 +680,25 @@ export function pickFacetOptions(...fields: ReadDimension[]) {
 }
 
 /**
- * What the worker partitions by: the field, and in chain mode the chain as the
- * unit a section keeps whole. The domain only orders the sections, which the
- * main thread does, so a reorder refetches nothing — and ungrouped sends no
- * facet at all, so toggling chain mode over ungrouped data refetches nothing
- * either.
+ * What the worker partitions by: the field, in chain mode the chain as the
+ * unit a section keeps whole, and under `svKind` the band `normalInsertSize`
+ * pins, which the insert-size colors read in place of the sampled one. The
+ * domain only orders the sections, which the main thread does, so a reorder
+ * refetches nothing — and ungrouped sends no facet at all, so toggling chain
+ * mode over ungrouped data refetches nothing either.
  */
 export function workerFacet(
   facet: Facet | undefined,
   unit: AlignmentsUnit,
+  pinnedInsertSizeBand?: InsertSizeBand,
 ): WorkerFacet | undefined {
   return facet === undefined
     ? undefined
-    : unit === 'chain'
-      ? { field: facet.field, unit }
-      : { field: facet.field }
+    : {
+        field: facet.field,
+        ...(unit === 'chain' ? { unit } : {}),
+        ...(facet.field === 'svKind' && pinnedInsertSizeBand
+          ? { pinnedInsertSizeBand }
+          : {}),
+      }
 }

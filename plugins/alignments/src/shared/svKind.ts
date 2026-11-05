@@ -7,26 +7,48 @@ import {
   svSignalTier,
 } from '@jbrowse/alignments-core'
 
+import { classifyInsertSize } from './insertSizeStats.ts'
 import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
 import { piecesOf, splitReadKind } from './splitReadJunctions.ts'
 import { getFlags } from './util.ts'
 
+import type { InsertSizeBand } from './insertSizeStats.ts'
 import type { SvKind } from './readFieldLevels.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 const KIND_OF_PAIR: Record<PairDirection, SvKind> = {
-  LR: 'LR',
-  RL: 'RL',
+  LR: 'deletionType',
+  RL: 'duplicationType',
   LL: 'inversion',
   RR: 'inversion',
 }
 
-// A discordant pair files by its orientation; one with none has its mate
-// unmapped or on another reference, which the arcs draw alike, as a tick.
-function discordantPairKind(orientation: string | undefined) {
+function isTooClose(feature: Feature, band: InsertSizeBand | undefined) {
+  return (
+    classifyInsertSize(
+      Math.abs((feature.get('template_length') as number | undefined) ?? 0),
+      band,
+    ) === 'short'
+  )
+}
+
+// A discordant pair files by its orientation, and an LR pair the insert-size
+// band calls short as an insertion: its mates sit closer than the library's
+// fragments because the reference lacks the bases between them. One with no
+// orientation has its mate unmapped or on another reference, which the arcs
+// draw alike, as a tick.
+function discordantPairKind(
+  feature: Feature,
+  orientation: string | undefined,
+  band: InsertSizeBand | undefined,
+) {
   const direction = pairDirection(orientation)
-  return direction === undefined ? 'partnerElsewhere' : KIND_OF_PAIR[direction]
+  return direction === undefined
+    ? 'elsewhere'
+    : direction === 'LR' && isTooClose(feature, band)
+      ? 'insertion'
+      : KIND_OF_PAIR[direction]
 }
 
 // A read with no split class, by the rest of its `svSignal` evidence, in the
@@ -36,6 +58,7 @@ function evidenceKind(
   feature: Feature,
   sa: string,
   orientation: string | undefined,
+  band: InsertSizeBand | undefined,
 ) {
   const bits = categoryBitsOf(
     feature,
@@ -46,11 +69,11 @@ function evidenceKind(
   return svSignalTier(bits) === 0
     ? 'none'
     : bits & READ_SV_DELETION
-      ? 'LR'
+      ? 'deletionType'
       : bits & READ_SV_INSERTION
-        ? 'svInsertion'
+        ? 'insertion'
         : bits & READ_DISCORDANT
-          ? discordantPairKind(orientation)
+          ? discordantPairKind(feature, orientation, band)
           : 'none'
 }
 
@@ -59,10 +82,14 @@ function evidenceKind(
  * (ADR-229, ADR-258). A split read files by its junctions whether or not it is
  * paired, as its arcs color it: a supplementary's own pair orientation comes
  * from its own strand and would file an inverted piece apart from its primary.
- * Any other evidence files by its indel or its pair, and every read without
- * evidence, concordant pairs included, files as `none`, the depth baseline.
+ * Any other evidence files by its indel or its pair, an LR pair by `band`, the
+ * insert sizes its colors read, and every read without evidence, concordant
+ * pairs included, files as `none`, the depth baseline.
  */
-export function svKindOf(feature: Feature): SvKind {
+export function svKindOf(
+  feature: Feature,
+  band: InsertSizeBand | undefined,
+): SvKind {
   const sa = saTagOf(feature)
   return (
     (sa === '' ? undefined : splitReadKind(piecesOf(feature, sa))) ??
@@ -70,6 +97,7 @@ export function svKindOf(feature: Feature): SvKind {
       feature,
       sa,
       feature.get('pair_orientation') as string | undefined,
+      band,
     )
   )
 }

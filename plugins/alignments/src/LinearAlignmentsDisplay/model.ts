@@ -2818,7 +2818,11 @@ export default function stateModelFactory(
             // so chain mode sends neither and "Show soft clipping" stays live
             // there.
             sortTag: self.unit === 'chain' ? undefined : self.sortTag,
-            facet: workerFacet(self.effectiveFacet, self.unit),
+            facet: workerFacet(
+              self.effectiveFacet,
+              self.unit,
+              self.pinnedInsertSizeBand,
+            ),
             showSoftClips: self.unit === 'chain' ? false : self.showSoftClips,
             // The worker skips the whole coverage-band pipeline, including the
             // per-bp GPU depth buffer that overflows the device limit at

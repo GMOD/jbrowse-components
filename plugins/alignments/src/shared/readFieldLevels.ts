@@ -44,18 +44,18 @@ export type Pairing = (typeof PAIRING_LEVELS)[number]
 
 /**
  * `svSignal`'s evidence split by the kind of SV it points at, one band per
- * kind: a discordant pair by its orientation, a split read by its junctions'
- * class filed with the pairs across the same junction, a partner on another
- * reference or unmapped, an SV-size insertion, and every read without evidence
- * as `none`. LL and RR, the two ends of one inversion, share a band; their arcs
- * keep them apart.
+ * kind: a discordant pair by its orientation and, for an LR pair, its insert
+ * size, a split read by its junctions' class filed with the pairs across the
+ * same junction, a partner on another reference or unmapped, an SV-size
+ * insertion, and every read without evidence as `none`. LL and RR, the two ends
+ * of one inversion, share a band; their arcs keep them apart.
  */
 export const SV_KIND_LEVELS = [
-  'LR',
-  'RL',
+  'deletionType',
+  'duplicationType',
   'inversion',
-  'partnerElsewhere',
-  'svInsertion',
+  'elsewhere',
+  'insertion',
   'none',
 ] as const
 
@@ -79,11 +79,11 @@ export const READ_LEVEL_LABELS: {
     nonPrimary: 'Secondary or supplementary',
   },
   svKind: {
-    LR: 'LR pair or deletion-type split',
-    RL: 'RL pair or duplication-type split',
-    inversion: 'LL or RR pair, or inversion split',
-    partnerElsewhere: 'Partner on another chromosome or unmapped',
-    svInsertion: 'SV-size insertion',
+    deletionType: 'Deletion-type: LR pair, split or CIGAR deletion',
+    duplicationType: 'Duplication-type: RL pair or split',
+    inversion: 'Inversion: LL or RR pair, or split',
+    elsewhere: 'Partner on another chromosome or unmapped',
+    insertion: 'Insertion: pair too close, or SV-size insertion',
     none: 'No SV evidence',
   },
 }

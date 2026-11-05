@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svKind` (renamed from `svChannel` on 2026-11-04), `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone"
+summary: "SV channels facets by `svKind` (renamed from `svChannel` on 2026-11-04), `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: deletion-type, duplication-type, inversion, partner on another chromosome, insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate. Amended 2026-11-04: the preset is a one-shot action under Track menu → Presets, not a checkbox in Read connections; amended again the same day: it draws the reads and filters to SV evidence rather than hiding the pileup, so each band draws its evidence reads and \"No SV evidence\" its coverage alone; amended 2026-11-05: the keys name the kind (`deletionType`, `duplicationType`, `elsewhere`, `insertion`), and an LR pair the insert-size band calls short files as an insertion, so a short-read insertion fills the insertion band"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -45,6 +45,28 @@ evidence" draws its coverage alone, with no collapse chevron on its chip. The
 menu row writes the filter by field (`setFilterFields`), so the fields the
 reader already filters stay.
 
+Amended 2026-11-05, from a design review: a short-read insertion never
+reached the insertion band. Its too-close pairs lack 0x2 and face LR, so they
+filed with deletion-type, and its unmapped mates with the partner band; the
+insertion band filled only from long reads' CIGAR insertions, against the
+guide's claim that one event reads the same on both platforms. A discordant LR
+pair now files as `insertion` where `classifyInsertSize` calls its |TLEN|
+short, against the band the insert-size colors read: the worker's sample
+(`computePairedInsertSizeStats`, whose short bound is at most half the band's
+center, so it follows the library rather than the window's tail) or the band
+`normalInsertSize` pins, which `workerFacet` sends under `svKind` only. Every
+other discordant LR pair stays deletion-type. `svSignal` is untouched, so
+"No SV evidence" still holds exactly what the filter hides. ADR-229 rejected
+the insert-size band as the test for *whether* a read is evidence; this uses
+it only for *which kind* an already-counted read points at, and the cost is a
+borderline pair moving between the two bands when a refetch moves the band.
+The keys were renamed with it, beta-only so nothing migrates: `LR` and `RL`
+named the pair orientation, not the kind, so `deletionType` and
+`duplicationType` (not `deletion`: a pair's flags say only that the aligner
+did not pair it), `partnerElsewhere` to `elsewhere`, and `svInsertion` to
+`insertion`. Labels lead with the kind, and the deletion-type label names the
+CIGAR deletions it holds.
+
 ## Context
 
 - **SV channels was a short-read arrangement.** The preset faceted by
@@ -65,11 +87,11 @@ reader already filters stay.
 
   | Key | Label |
   | --- | --- |
-  | `LR` | LR pair or deletion-type split |
-  | `RL` | RL pair or duplication-type split |
-  | `inversion` | LL or RR pair, or inversion split |
-  | `partnerElsewhere` | Partner on another chromosome or unmapped |
-  | `svInsertion` | SV-size insertion |
+  | `deletionType` | Deletion-type: LR pair, split or CIGAR deletion |
+  | `duplicationType` | Duplication-type: RL pair or split |
+  | `inversion` | Inversion: LL or RR pair, or split |
+  | `elsewhere` | Partner on another chromosome or unmapped |
+  | `insertion` | Insertion: pair too close, or SV-size insertion |
   | `none` | No SV evidence |
 
   The SV channels preset facets by it and its menu label drops "(pairs by
@@ -86,10 +108,10 @@ reader already filters stay.
   partner elsewhere: on HG00151 ONT, the other order pulled 4 of 83 inversion
   reads out of their band for a stray supplementary on chr4, chr9 or chrX.
 - **A read with no split class** files by the rest of its `svSignal`
-  evidence: an SV-size deletion to `LR`, insertion to `svInsertion`, a
+  evidence: an SV-size deletion to `deletionType`, insertion to `insertion`, a
   discordant pair by its orientation (LL and RR to `inversion`) or, with no
   orientation because its mate is unmapped or on another reference, to
-  `partnerElsewhere`. ADR-229 counts an unmapped mate as evidence, and the arcs
+  `elsewhere`. ADR-229 counts an unmapped mate as evidence, and the arcs
   draw it as they draw a mate elsewhere, as a tick.
 - **Every read `svSignal` does not count files as `none`**, concordant pairs
   included, so "No SV evidence" holds exactly the reads the Only SV evidence
@@ -149,7 +171,7 @@ reader already filters stay.
   | HG002 ONT, 1:62.96-63.02 Mb | 20 | | | | | 26 |
 
   Both platforms draw CDKN2A's homozygous deletion as one deletion-type arc in
-  the LR band. Every `svInsertion` read carries a CIGAR insertion of 50 bp or
+  the LR band. Every `insertion` read carries a CIGAR insertion of 50 bp or
   more. Illumina's "elsewhere" band is mostly mates on another chromosome in a
   file with no MQ tags, which `svSignal` counts as placed: about 1.5% of the
   depth at every Illumina locus, the population Only SV evidence keeps.
@@ -162,7 +184,7 @@ reader already filters stay.
   (ADR-229's amendment), and the band keys whole chains off the filter's
   verdict. Pinned on the four volvox SV fixtures (`svKind.test.ts`). A
   secondary keys a chain of its own and files by its own evidence.
-- `svInsertion` from a split needs the feet on one base exactly; a one- or
+- `insertion` from a split needs the feet on one base exactly; a one- or
   two-base overlap files as duplication-type.
 - The keyer runs only under `facet: svKind`. It reads the start clip off the
   record, since rebuilding the CIGAR string cost 15 to 25 times the rest of the

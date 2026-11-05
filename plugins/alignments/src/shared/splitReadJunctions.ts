@@ -13,27 +13,27 @@ import type { Feature } from '@jbrowse/core/util'
 
 // A split class files with the pairs across the same junction, as
 // `ARC_SPLIT_SWATCH` pairs them: duplication-type with RL, either inversion
-// type with LL and RR pairs, and deletion-type with the stretched LR pairs of a
-// deletion.
+// type with LL and RR pairs, and deletion-type with the LR pairs the aligner
+// did not pair.
 const KIND_OF_SPLIT: Record<ArcSplitCategory, SvKind> = {
-  splitForward: 'LR',
-  splitBack: 'RL',
+  splitForward: 'deletionType',
+  splitBack: 'duplicationType',
   splitInvLL: 'inversion',
   splitInvRR: 'inversion',
 }
 
 /**
- * Which channel wins where one read's junctions, or one chain's records, name
+ * Which kind wins where one read's junctions, or one chain's records, name
  * several. A local event outranks a partner elsewhere: a long read through a
  * local event often carries a stray supplementary on a repeat elsewhere, which
  * would otherwise pull it out of the band its event fills.
  */
 export const SV_KIND_PRECEDENCE: readonly SvKind[] = [
   'inversion',
-  'RL',
-  'LR',
-  'svInsertion',
-  'partnerElsewhere',
+  'duplicationType',
+  'deletionType',
+  'insertion',
+  'elsewhere',
   'none',
 ]
 
@@ -53,16 +53,16 @@ function sameReferenceKind(a: ReadPiece, b: ReadPiece) {
   return join === undefined
     ? undefined
     : join.category === undefined
-      ? 'svInsertion'
+      ? 'insertion'
       : KIND_OF_SPLIT[join.category]
 }
 
 function junctionKind(a: ReadPiece, b: ReadPiece) {
-  return a.refName === b.refName ? sameReferenceKind(a, b) : 'partnerElsewhere'
+  return a.refName === b.refName ? sameReferenceKind(a, b) : 'elsewhere'
 }
 
 /**
- * One channel for a whole split read, from the junctions between its
+ * One kind for a whole split read, from the junctions between its
  * read-adjacent pieces. A junction counts only between two placed pieces
  * (ADR-229): a MAPQ-0 piece joins nothing, and its neighbours are not joined
  * across it, since the molecule never made that junction. Every piece's SA tag
@@ -75,9 +75,9 @@ export function splitReadKind(pieces: ReadPiece[]) {
   for (let i = 1; i < ordered.length; i++) {
     const a = ordered[i - 1]!
     const b = ordered[i]!
-    const channel = a.placed && b.placed ? junctionKind(a, b) : undefined
-    if (channel !== undefined) {
-      seen.add(channel)
+    const kind = a.placed && b.placed ? junctionKind(a, b) : undefined
+    if (kind !== undefined) {
+      seen.add(kind)
     }
   }
   return SV_KIND_PRECEDENCE.find(c => seen.has(c))
