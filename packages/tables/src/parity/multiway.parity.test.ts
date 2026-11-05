@@ -7,6 +7,7 @@ import { MULTIWAY_FADE_THIN } from '../../../../plugins/linear-comparative-view/
 import { createTablesEngine } from '../index.ts'
 import {
   ALL_VS_ALL_LANES,
+  ALL_VS_ALL_MISMATCHES,
   ALL_VS_ALL_UNALIGNED,
   ALL_VS_ALL_ZOOMED,
   GENE_BLOCK_LANES,
@@ -457,6 +458,32 @@ describe('volvox, the export given no lane genomes', () => {
   ])
 })
 
+describe('4 kb around the insertion, its CIGAR stating two mismatches', () => {
+  test('the export draws them as mismatch tiles', async () => {
+    const t = await engine.multiway({
+      adapterConfig: ALL_VS_ALL_MISMATCHES.adapterConfig,
+      anchor: ALL_VS_ALL_MISMATCHES.anchor,
+      assemblies: ALL_VS_ALL_MISMATCHES.assemblies,
+    })
+    expect(t.ribbons.kind.filter(kind => kind === 'mismatch')).toHaveLength(2)
+  })
+  parityCases(multiwayParity(ALL_VS_ALL_MISMATCHES), [
+    { name: 'defaults', config: {} },
+    {
+      name: 'strand',
+      config: {
+        display: { ribbons: { encoding: { color: { field: 'strand' } } } },
+      },
+    },
+    {
+      name: 'identity',
+      config: {
+        display: { ribbons: { encoding: { color: { field: 'identity' } } } },
+      },
+    },
+  ])
+})
+
 describe('two pairwise files against volvox', () => {
   parityCases(multiwayParity(STAR_LANES), [
     { name: 'defaults', config: {} },
@@ -564,10 +591,12 @@ describe("SyRI's calls for five accessions under Col-0", () => {
 /**
  * A reference-anchored file asked for two accessions side by side: the view
  * notes the one gutter it cannot fill and draws the rest, where the export
- * fails the whole call, as multiwayTables.test.ts asks of it. Pinned rather
- * than compared until one of the two is chosen.
+ * fails the whole call. Not a drift: the view has a gutter to write the
+ * failure in and a Retry beside it, and an export has no gutter-level error
+ * state, so a partial table would read as a file with nothing to align there
+ * (749f6c8de6, multiwayTables.test.ts).
  */
-test('a lane pair the file lacks (drift: multiway failed lane pairs)', async () => {
+test('a lane pair the file lacks fails the export and one gutter of the view', async () => {
   const settings = { ...SYRI_COLORS, rows: { kept: ['Eri', 'Ler'] } }
   const laneFailure = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { display, dispose } = await standUpMultiway({

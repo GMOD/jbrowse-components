@@ -134,6 +134,32 @@ export const ALL_VS_ALL_ZOOMED: MultiwayFixture = {
   },
 }
 
+/**
+ * The all-vs-all PAF with the insertion's first match spelled as `=` and `X`
+ * runs: two mismatches, 10 bp and 3 bp, under the zoomed window.
+ */
+function allVsAllMismatches() {
+  const lines = readFileSync(
+    path.resolve('test_data/volvox/volvox_all_vs_all.paf'),
+    'utf8',
+  )
+    .trim()
+    .split('\n')
+    .map((line, i) =>
+      i === 0 ? line.replace('cg:Z:31198M', 'cg:Z:30000=10X1000=3X185=') : line,
+    )
+  const dir = mkdtempSync(path.join(tmpdir(), 'parity-paf-'))
+  const paf = path.join(dir, 'mismatches.paf')
+  writeFileSync(paf, `${lines.join('\n')}\n`)
+  return { ...ALL_VS_ALL.adapterConfig, pafLocation: fileUri(paf) }
+}
+
+/** The zoomed window, its insertion lane carrying two mismatch runs. */
+export const ALL_VS_ALL_MISMATCHES: MultiwayFixture = {
+  ...ALL_VS_ALL_ZOOMED,
+  adapterConfig: allVsAllMismatches(),
+}
+
 /** volvox ctgB, which no lane aligns to. */
 export const ALL_VS_ALL_UNALIGNED: MultiwayFixture = {
   ...ALL_VS_ALL_LANES,
