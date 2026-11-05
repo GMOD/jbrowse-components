@@ -1,4 +1,5 @@
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
+import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import VariantsPlugin from '@jbrowse/plugin-variants'
 
 import { createTablesEngine } from '../index.ts'
@@ -24,6 +25,7 @@ const VARIANT_DECISIONS = [
   'legend',
   'ramps',
   'rowLegend',
+  'cellColors',
 ] as const
 
 type VariantDecision = (typeof VARIANT_DECISIONS)[number]
@@ -31,6 +33,31 @@ type VariantDecision = (typeof VARIANT_DECISIONS)[number]
 const ROW_KEY = 'rows.color'
 
 const engine = createTablesEngine()
+
+/**
+ * Each drawn cell over `region` as `variant row color`, in payload order:
+ * the display's painted cells, its density fade dropped with the alpha.
+ */
+function displayCellColors(m: LinearVariantDisplayModel, region: TablesRegion) {
+  const { cellData, regionCellColors } = m
+  const drawn = new Set(m.drawsGenotypeRows ? m.sources.map(s => s.name) : [])
+  const out: string[] = []
+  for (const [k, data] of Object.entries(cellData?.perRegionCellData ?? {})) {
+    const colors = regionCellColors.get(Number(k))!
+    for (let i = 0; i < data.numCells; i++) {
+      const f = data.cellFeatureIndices[i]!
+      const row = cellData!.rowNames[data.cellRowIndices[i]!]!
+      const start = data.featurePositions[f * 2]!
+      const end = data.featurePositions[f * 2 + 1]!
+      if (drawn.has(row) && end > region.start && start < region.end) {
+        out.push(
+          `${data.featureInfo[f]!.featureId} ${row} ${abgrToHex(colors[i]!)}`,
+        )
+      }
+    }
+  }
+  return out
+}
 
 /**
  * The variant display beside `engine.variants` over one fixture: the rows
@@ -92,6 +119,7 @@ function variantParity(
           color: legend.color,
           title: rowKey[0]?.title ?? '',
         },
+        cellColors: displayCellColors(m, fixture.region),
       }
     },
     exportDecisions: t => ({
@@ -106,6 +134,10 @@ function variantParity(
       legend: { ...t.legend, title: t.legendTitle },
       ramps: t.ramps,
       rowLegend: { ...t.rowLegend, title: t.rowLegendTitle },
+      cellColors: t.cells.color.map(
+        (color, i) =>
+          `${t.variants.id[t.cells.variant[i]!]} ${t.cells.row[i]} ${color}`,
+      ),
     }),
   }
 }
@@ -197,6 +229,64 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
     {
       name: 'haplotype rows, encoding.color by a field',
       config: { rows: 'haplotype', encoding: { color: { field: 'type' } } },
+    },
+    {
+      name: 'encoding.color a constant, shaded by dosage',
+      config: { encoding: { color: { value: '#cc3300' } } },
+    },
+    {
+      name: 'encoding.color by INFO.AF through a threshold',
+      config: {
+        encoding: {
+          color: {
+            field: 'INFO.AF',
+            scale: {
+              type: 'threshold',
+              domain: ['0.5'],
+              range: ['#1f77b4', '#d62728'],
+            },
+          },
+        },
+      },
+    },
+    {
+      name: 'rows.kept, encoding.color by INFO.AF in fine cuts',
+      config: {
+        rows: { kept: ['GHND000002'] },
+        encoding: {
+          color: {
+            field: 'INFO.AF',
+            scale: {
+              type: 'threshold',
+              domain: [
+                '0.1',
+                '0.2',
+                '0.3',
+                '0.4',
+                '0.5',
+                '0.6',
+                '0.7',
+                '0.8',
+                '0.9',
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      name: 'encoding.color by INFO.AF as a ramp',
+      config: {
+        encoding: { color: { field: 'INFO.AF', scale: { type: 'linear' } } },
+      },
+    },
+    {
+      name: 'haplotype rows, encoding.color by phase set',
+      config: { rows: 'haplotype', encoding: { color: { field: 'phaseSet' } } },
+    },
+    {
+      name: 'haplotype rows, encoding.color a constant',
+      config: { rows: 'haplotype', encoding: { color: { value: '#cc3300' } } },
     },
   ])
 })
