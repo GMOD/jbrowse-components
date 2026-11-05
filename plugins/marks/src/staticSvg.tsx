@@ -17,7 +17,6 @@ import type { MarkSvgBodyModel } from './LinearMarkDisplay/renderSvg.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { BufferedVisibleRegion } from '@jbrowse/display-kit/regionHost'
-import type { SvgViewFrame } from '@jbrowse/display-kit/renderDisplaySvg'
 import type {
   ExportSvgDisplayOptions,
   ExportTextStyle,
@@ -28,7 +27,8 @@ import type {
  * autoscales and keys over, and what it fetches at which zoom.
  * `staticLgvFrame` builds one from a region list and a width.
  */
-export interface StaticMarkFrame extends SvgViewFrame, MarkStaticFrame {
+export interface StaticMarkFrame extends MarkStaticFrame {
+  width: number
   bufferedVisibleRegions: BufferedVisibleRegion[]
 }
 
