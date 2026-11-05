@@ -54,6 +54,7 @@ From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../basevie
 | Member | Description |
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>number</code> |  |
+| <span id="volatile-rowstrackid">**rowsTrackId**</span><br><code>string</code> | the trackId a selected row is tagged with: the track drawing these rows when one does (the SV inspector's chord track), else this view's id, which no track shares |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited volatiles from one model</summary>
@@ -100,6 +101,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | <span id="action-loadspreadsheet">**loadSpreadsheet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string, superseded?: (() =&gt; boolean) &#124; undefined…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, superseded?: (() =&gt; boolean) &#124; undefined) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> | fetch, parse and show the wizard's file: the one path a launch, a session reload and the Open button all take |
 | <span id="action-returntoimportform">**returnToImportForm**</span><br><code>() =&gt; void</code> | drop the sheet and its cached location, so a session reload does not fetch the dismissed file again |
 | <span id="action-applyinit">**applyInit**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(init: LaunchInput&lt;SpreadsheetViewCommands&gt;, superseded?: (() =…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(init: LaunchInput&lt;SpreadsheetViewCommands&gt;, superseded?: (() =&gt; boolean) &#124; undefined) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> | point the import wizard at a launch's file and load it; without a uri or an assembly, only seed the import form with what it names |
+| <span id="action-setrowstrackid">**setRowsTrackId**</span><br><code>(trackId: string) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited actions from one model</summary>

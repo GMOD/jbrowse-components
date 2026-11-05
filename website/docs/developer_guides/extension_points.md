@@ -1374,6 +1374,8 @@ export interface SyntenyFileFormatOption {
   Component: React.FC<{
     assembly1: string
     assembly2: string
+    /** for the file selectors' internet accounts */
+    rootModel: AbstractRootModel | undefined
     onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
   }>
 }
@@ -1399,6 +1401,7 @@ function makeSimpleFormat(
   const Component = observer(function SyntenyFormat({
     assembly1,
     assembly2,
+    rootModel,
     onAdapterChange,
   }: FormatProps) {
     const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -1413,6 +1416,7 @@ function makeSimpleFormat(
 
     return (
       <StandardFormatSelector
+        rootModel={rootModel}
         radioOption={extension}
         fileLocation={fileLocation}
         assembly1={assembly1}

@@ -72,7 +72,7 @@ import {
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
-import { cutAtOrigin, sequenceLengths } from '../originSpanning.ts'
+import { circularLength, cutAtOrigin } from '../originSpanning.ts'
 
 import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -114,13 +114,13 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
             start: feature.start,
             end: feature.end,
             feature,
-            uniqueId: `${this.id}-${refName}-${i}`,
+            uniqueId: `${refName}-${i}`,
           })),
         'Parsing GFF data',
       )
 
       const header = headerLines.join('\n')
-      return { header, intervalTreeMap, lengths: sequenceLengths(header) }
+      return { header, intervalTreeMap }
     },
   })
 
@@ -139,12 +139,14 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
     // observer.error itself
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
-      const { intervalTreeMap, lengths } = await this.loadData(opts)
+      const { intervalTreeMap } = await this.loadData(opts)
       const tree = intervalTreeMap[refName]?.(opts.statusCallback)
       if (tree) {
         // a feature crossing a circular sequence's origin is stored from its
         // start near the end, so a query short of the end looks there too
-        const length = lengths.get(refName)
+        const length = circularLength(
+          tree.search([0, 1]).map(({ feature }) => feature),
+        )
         const candidates = [
           ...tree.search([start, end]),
           ...(length !== undefined && end < length
@@ -155,6 +157,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
           candidates,
           query,
           length,
+          opts.wholeAcrossOrigin,
         )) {
           observer.next(new Gff3Feature(feature, uniqueId))
         }
@@ -363,6 +366,11 @@ export interface BaseOptions {
   // that fills `hasData`. Set by `CoreGetContigs`, which every fetch waits on;
   // on a BAM of 200,000 contigs that walk costs most of a second.
   contigLengthsOnly?: boolean
+  // "I read one feature whole", so an adapter that cuts a feature crossing a
+  // circular sequence's origin into two drawable pieces (`originCut`) answers
+  // it uncut instead, in the file's coordinates, when either piece overlaps
+  // the query. Set by the feature details fetch.
+  wholeAcrossOrigin?: boolean
 }
 ```
 

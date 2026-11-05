@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1263)
+# model members with no description (1260)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -166,7 +166,6 @@ BaseChordDisplay.openErrorDialog
 BaseChordDisplay.radiusPx
 BaseChordDisplay.ready
 BaseChordDisplay.reload
-BaseChordDisplay.selectedFeatureId
 BaseChordDisplay.setFeatures
 BaseChordDisplay.view
 BaseConnectionModel.addTrackConf
@@ -577,7 +576,6 @@ LinearAlignmentsDisplay.sashimiHeight
 LinearAlignmentsDisplay.sashimiPlacement
 LinearAlignmentsDisplay.selectFeature
 LinearAlignmentsDisplay.selectFeatureById
-LinearAlignmentsDisplay.selectedFeatureId
 LinearAlignmentsDisplay.setConnectionFilter
 LinearAlignmentsDisplay.setContextMenuFeature
 LinearAlignmentsDisplay.setCoverageHeight
@@ -686,7 +684,6 @@ LinearFeatureBaseDisplay.scrollContentHeight
 LinearFeatureBaseDisplay.scrollExtentMaxY
 LinearFeatureBaseDisplay.scrollViewportHeight
 LinearFeatureBaseDisplay.selectFeatureById
-LinearFeatureBaseDisplay.selectedFeatureId
 LinearFeatureBaseDisplay.setDisplayMode
 LinearFeatureBaseDisplay.setHover
 LinearFeatureBaseDisplay.setMorphProgress
@@ -1103,7 +1100,6 @@ MultiWaySyntenyDisplay.scrollViewportHeight
 MultiWaySyntenyDisplay.seenAttributeRanges
 MultiWaySyntenyDisplay.selectFeature
 MultiWaySyntenyDisplay.selectHovered
-MultiWaySyntenyDisplay.selectedFeatureId
 MultiWaySyntenyDisplay.selectionInk
 MultiWaySyntenyDisplay.setFeatures
 MultiWaySyntenyDisplay.setGeneTextField
@@ -1208,6 +1204,7 @@ SpreadsheetView.menuItems
 SpreadsheetView.setDrilldownTracks
 SpreadsheetView.setHeight
 SpreadsheetView.setLaunch
+SpreadsheetView.setRowsTrackId
 SpreadsheetView.spreadsheet
 SpreadsheetView.width
 StoredHoverMixin.clearHoveredFeature

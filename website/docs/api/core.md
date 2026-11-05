@@ -1260,9 +1260,10 @@ sequence of the assembly it is displayed against: BAM and SAM for mismatches
 without an MD tag, CRAM to rebuild bases, GC content and the reference scans
 for everything they answer. Such an adapter is built with that reference and
 keyed on it as well as on its config, so one config shown on two genomes is
-two instances, each reading the reference of its genome, and an instance never changes reference
-for its life. Every other adapter keys on its config alone: a synteny adapter
-is fetched from each of its assemblies and reads no reference.
+two instances, each reading the reference of its genome, and an instance
+never changes reference for its life. Every other adapter keys on its config
+alone: a synteny adapter is fetched from each of its assemblies and reads no
+reference.
 
 ```js
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -1827,10 +1828,9 @@ group in `start` order, so a `line` walks one group at a time.
 
 ## withAdapterId
 
-`conf` with an `adapterId` hashed from all of it. Code that builds an inline
-config (a FromConfigAdapter's `features`) calls this: `adapterConfigCacheKey`
-hashes only a prefix, so two such configs differing past it would share an
-adapter.
+`conf` with its key stamped in as `adapterId`, so the worker reads it rather
+than hashing the config on every call. For code that builds a large inline
+config, such as a FromConfigAdapter's `features`.
 
 ```js
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'

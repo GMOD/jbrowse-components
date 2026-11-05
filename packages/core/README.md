@@ -2712,10 +2712,9 @@ the rows it has. The rows come out grouped, each group in `start` order, so a
 
 ### withAdapterId
 
-`conf` with an `adapterId` hashed from all of it. Code that builds an inline
-config (a FromConfigAdapter's `features`) calls this: `adapterConfigCacheKey`
-hashes only a prefix, so two such configs differing past it would share an
-adapter.
+`conf` with its key stamped in as `adapterId`, so the worker reads it rather
+than hashing the config on every call. For code that builds a large inline
+config, such as a FromConfigAdapter's `features`.
 
 ```js
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'

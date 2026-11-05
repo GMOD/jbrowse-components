@@ -2561,6 +2561,7 @@
         "saveSvgAsImage",
         "scheduleDetachedDestroy",
         "selectNamedRegions",
+        "selectedFeatureIdFor",
         "sessionParamKind",
         "sessionParamPayload",
         "sessionStorageAvailable",
@@ -3622,7 +3623,9 @@
       "package": "@jbrowse/core",
       "names": [
         "originHeadId",
-        "originTailId"
+        "originTailCandidates",
+        "originTailId",
+        "wholeSubfeatureId"
       ],
       "worker": "real"
     },

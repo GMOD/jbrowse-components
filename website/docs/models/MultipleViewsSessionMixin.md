@@ -32,11 +32,11 @@ From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../b
 ## Volatiles
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>8 inherited volatiles from 3 models</summary>
+<summary>9 inherited volatiles from 3 models</summary>
 
 From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="volatile-poppedout">[`poppedOut`](../drawerwidgetsessionmixin#volatile-poppedout)</span>, <span id="volatile-modalwidgets">[`modalWidgets`](../drawerwidgetsessionmixin#volatile-modalwidgets)</span>
 
-From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
+From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-selectiontrackid">[`selectionTrackId`](../basesessionmodel#volatile-selectiontrackid)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
 
 From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`snackbarMessages`](../snackbarmodel#volatile-snackbarmessages)</span>, <span id="volatile-errordialog">[`errorDialog`](../snackbarmodel#volatile-errordialog)</span>
 

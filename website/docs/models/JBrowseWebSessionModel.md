@@ -47,13 +47,13 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="property
 | <span id="volatile-permanentpluginssafemode">**permanentPluginsSafeMode**</span><br><code>{ reason: SafeModeReason; suspects: string[]; } &#124; undefined</code> | why this load skipped the list, or undefined when it loaded them, decided once at boot, so a session from the plugin-install rebuild reads the same answer |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited volatiles from 6 models</summary>
+<summary>13 inherited volatiles from 6 models</summary>
 
 From [BaseWebSessionModel](../basewebsessionmodel): <span id="volatile-pendingfilehandleids">[`pendingFileHandleIds`](../basewebsessionmodel#volatile-pendingfilehandleids)</span>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="volatile-editabletrackconfigs">[`editableTrackConfigs`](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)</span>
 
-From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
+From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-selectiontrackid">[`selectionTrackId`](../basesessionmodel#volatile-selectiontrackid)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
 
 From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`snackbarMessages`](../snackbarmodel#volatile-snackbarmessages)</span>, <span id="volatile-errordialog">[`errorDialog`](../snackbarmodel#volatile-errordialog)</span>
 
