@@ -6,9 +6,17 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "tomato-ReferenceSequenceTrack",
         "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "tomato.chrom.sizes",
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "tomato.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "tomato.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "tomato.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -249,5 +257,27 @@
         "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"]
       }
     }
-  ]
+  ],
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
+  "msa": {
+    "datasets": [
+      {
+        "datasetId": "solanaceae_orthofinder",
+        "name": "Solanaceae orthogroups (OrthoFinder)",
+        "description": "An alignment and gene tree per orthogroup",
+        "adapter": {
+          "type": "OrthoFinderMsaAdapter",
+          "resultsLocation": {
+            "uri": "orthofinder/"
+          }
+        }
+      }
+    ]
+  }
 }
