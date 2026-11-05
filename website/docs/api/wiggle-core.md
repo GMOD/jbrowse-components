@@ -8,6 +8,20 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## autoscaledDomainOf
+
+The domain an autoscaled axis draws: `range`, nice-rounded inside the
+pinned bounds, each unpinned end falling back to the display's default
+(`defaultScoreDomain`); `undefined` while there is no range. What a
+display's `autoscaledDomain` and a static export both answer.
+
+```js
+// type signature
+({ range, pinned, fallback, scaleType, zero, }: { range: readonly [number, number] | undefined; pinned: readonly [number | undefined, number | undefined]; fallback: readonly [number | undefined, number | undefined]; scaleType: string; zero: boolean; }) => [...] | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
+
 ## autoscaleDomainFromSpans
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their

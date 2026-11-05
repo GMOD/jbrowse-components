@@ -763,9 +763,12 @@
       "package": "@jbrowse/core",
       "names": [
         "buildRefNameMaps",
+        "canonicalRefNameIn",
         "checkRefName",
         "groupNamesByCanonicalRefName",
-        "isChromosome"
+        "isChromosome",
+        "refNameIndexOf",
+        "refNamePositionIn"
       ],
       "worker": "real"
     },

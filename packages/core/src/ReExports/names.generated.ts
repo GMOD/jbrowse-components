@@ -133,7 +133,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/assemblyManager/assembly': ['assemblyContigLengths', 'buildRefNameMaps', 'contigLengthMismatchMessage', 'default', 'detectContigLengthMismatch', 'getSequenceAdapterConfig', 'lookupGeneticCodeId', 'refNameMismatchMessage'],
   '@jbrowse/core/assemblyManager/assemblyConfigSchema': ['default', 'expandAssemblySequence', 'expandAssemblySequenceAdapter', 'expandAssemblyShorthand', 'expandSidecarShorthand', 'refNameAliasAdapterType'],
   '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand': ['expandAssemblySequence', 'expandAssemblySequenceAdapter', 'expandAssemblyShorthand', 'expandSidecarShorthand', 'refNameAliasAdapterType', 'referenceSequenceTrackId'],
-  '@jbrowse/core/assemblyManager/refNameMaps': ['buildRefNameMaps', 'checkRefName', 'groupNamesByCanonicalRefName', 'isChromosome'],
+  '@jbrowse/core/assemblyManager/refNameMaps': ['buildRefNameMaps', 'canonicalRefNameIn', 'checkRefName', 'groupNamesByCanonicalRefName', 'isChromosome', 'refNameIndexOf', 'refNamePositionIn'],
   '@jbrowse/core/BaseFeatureWidget': ['configSchema', 'stateModelFactory'],
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': ['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay', 'rawValueFilterActions'],
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': ['default', 'hasAttributeRows', 'withoutLocations'],

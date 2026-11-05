@@ -9,6 +9,20 @@ Manhattan, mark and coverage displays
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### autoscaledDomainOf
+
+The domain an autoscaled axis draws: `range`, nice-rounded inside the pinned
+bounds, each unpinned end falling back to the display's default
+(`defaultScoreDomain`); `undefined` while there is no range. What a display's
+`autoscaledDomain` and a static export both answer.
+
+```js
+// type signature
+({ range, pinned, fallback, scaleType, zero, }: { range: readonly [number, number] | undefined; pinned: readonly [number | undefined, number | undefined]; fallback: readonly [number | undefined, number | undefined]; scaleType: string; zero: boolean; }) => [...] | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
+
 ### autoscaleDomainFromSpans
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their
