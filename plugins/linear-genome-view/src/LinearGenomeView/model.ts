@@ -2034,78 +2034,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .actions(self => {
-      let cancelLastSlide = () => {}
-      let cancelLastZoom = () => {}
-
-      // Both animations pass `read`, so the spring yields the moment anything
-      // else moves the view: an animation drives zoomTo/scrollTo from its own
-      // position for up to a second, and a direct interaction landing in that
-      // window — a wheel/pinch zoom, a locstring nav, a rubberband "zoom to
-      // region", a click-drag pan — used to be overwritten on the next frame.
-      // Only the zoom slider defended itself, via cancelZoomAnimation, and
-      // expecting every future call site to remember that is not a workable
-      // contract.
-
-      /**
-       * #action
-       * perform animated slide
-       */
-      function slide(viewWidths: number) {
-        const [animate, cancelAnimation] = springAnimate({
-          from: self.offsetPx,
-          to: self.offsetPx + self.width * viewWidths,
-          read: () => self.offsetPx,
-          write: px => {
-            self.scrollTo(px)
-          },
-          tension: 200,
-        })
-        cancelLastSlide()
-        cancelLastSlide = cancelAnimation
-        animate()
-      }
-
-      /**
-       * #action
-       * perform animated zoom
-       */
-      function zoom(targetBpPerPx: number) {
-        cancelLastZoom()
-        const effectiveTarget = clamp(
-          targetBpPerPx,
-          self.minBpPerPx,
-          self.maxBpPerPx,
-        )
-        // nothing to animate when already at the limit, or at the target
-        if (effectiveTarget !== self.bpPerPx) {
-          const [animate, cancelAnimation] = springAnimate({
-            from: self.bpPerPx,
-            to: effectiveTarget,
-            read: () => self.bpPerPx,
-            write: bpPerPx => {
-              self.zoomTo(bpPerPx)
-            },
-            tension: 1000,
-            friction: 50,
-          })
-          cancelLastZoom = cancelAnimation
-          animate()
-        }
-      }
-
-      /**
-       * #action
-       * cancel an in-flight animated zoom. Any other zoom already stops the
-       * animation, so this is for stopping it *without* changing the
-       * zoom — the slider grabbing the thumb, before it has a value to commit.
-       */
-      function cancelZoomAnimation() {
-        cancelLastZoom()
-      }
-
-      return { slide, zoom, cancelZoomAnimation }
-    })
     .views(self => ({
       /**
        * #getter
@@ -2703,11 +2631,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * against a correct `[0,300]` when a 40bp coarse window survived a jump to
        * 4040bp on screen.
        *
-       * **The continuous paths skip this call.** The
-       * spring zoom writes through `zoomTo` per frame and a drag through
-       * `scrollTo`, so this adds no per-frame work; the settle is idempotent
-       * (`setCoarseDynamicBlocks` compares block keys), so the debounced
-       * autorun's follow-up run costs nothing.
+       * **The continuous paths skip this call.** A drag writes through
+       * `scrollTo` and every spring frame through `zoomTo`/`scrollTo`, so this
+       * adds no per-frame work; the springs and `flyTo` call it once, where they
+       * land. The settle is idempotent (`setCoarseDynamicBlocks` compares block
+       * keys), so the throttled autorun's follow-up run costs nothing.
        *
        * Every placer calls it, and `placersSettleCoarseBlocks.test.ts` enforces
        * that for the next one: it scans this file for the writes and
@@ -2720,6 +2648,88 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
     }))
+    .actions(self => {
+      let cancelLastSlide = () => {}
+      let cancelLastZoom = () => {}
+
+      // Both animations pass `read`, so the spring yields the moment anything
+      // else moves the view: an animation drives zoomTo/scrollTo from its own
+      // position for up to a second, and a direct interaction landing in that
+      // window — a wheel/pinch zoom, a locstring nav, a rubberband "zoom to
+      // region", a click-drag pan — used to be overwritten on the next frame.
+      // Only the zoom slider defended itself, via cancelZoomAnimation, and
+      // expecting every future call site to remember that is not a workable
+      // contract.
+
+      /**
+       * #action
+       * perform animated slide
+       */
+      function slide(viewWidths: number) {
+        const [animate, cancelAnimation] = springAnimate({
+          from: self.offsetPx,
+          to: self.offsetPx + self.width * viewWidths,
+          read: () => self.offsetPx,
+          write: px => {
+            self.scrollTo(px)
+          },
+          onFinish: () => {
+            if (isAlive(self)) {
+              self.settleCoarseBlocks()
+            }
+          },
+          tension: 200,
+        })
+        cancelLastSlide()
+        cancelLastSlide = cancelAnimation
+        animate()
+      }
+
+      /**
+       * #action
+       * perform animated zoom
+       */
+      function zoom(targetBpPerPx: number) {
+        cancelLastZoom()
+        const effectiveTarget = clamp(
+          targetBpPerPx,
+          self.minBpPerPx,
+          self.maxBpPerPx,
+        )
+        // nothing to animate when already at the limit, or at the target
+        if (effectiveTarget !== self.bpPerPx) {
+          const [animate, cancelAnimation] = springAnimate({
+            from: self.bpPerPx,
+            to: effectiveTarget,
+            read: () => self.bpPerPx,
+            write: bpPerPx => {
+              self.zoomTo(bpPerPx)
+            },
+            onFinish: () => {
+              if (isAlive(self)) {
+                self.settleCoarseBlocks()
+              }
+            },
+            tension: 1000,
+            friction: 50,
+          })
+          cancelLastZoom = cancelAnimation
+          animate()
+        }
+      }
+
+      /**
+       * #action
+       * cancel an in-flight animated zoom. Any other zoom already stops the
+       * animation, so this is for stopping it *without* changing the
+       * zoom — the slider grabbing the thumb, before it has a value to commit.
+       */
+      function cancelZoomAnimation() {
+        cancelLastZoom()
+      }
+
+      return { slide, zoom, cancelZoomAnimation }
+    })
     .actions(self => {
       function layOutAt(width: number) {
         self.setWidth(width)

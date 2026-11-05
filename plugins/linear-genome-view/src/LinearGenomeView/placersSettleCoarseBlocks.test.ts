@@ -55,8 +55,6 @@ const CONTINUOUS = {
   zoomTo: 'the chokepoint every zoom writes through, spring frames included',
   setWidth: 'a resize, which moves the viewport without placing it',
   horizontalScroll: 'a wheel notch or a drag frame',
-  slide: 'spring frames, through scrollTo',
-  zoom: 'spring frames, through zoomTo',
   setWindowFrame: 'setWindow per animation frame, for flyTo',
 }
 
@@ -124,6 +122,9 @@ test('the scan finds the placers it is about', () => {
     // a jump that takes a second is still a jump: the flight settles once, at
     // the end, and the per-frame writes go through `setWindowFrame` above
     'flyTo',
+    // the springs likewise, writing their frames through `scrollTo`/`zoomTo`
+    'slide',
+    'zoom',
   ]) {
     expect(names).toContain(expected)
   }

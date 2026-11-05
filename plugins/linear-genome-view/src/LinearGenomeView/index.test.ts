@@ -3871,6 +3871,68 @@ describe('a jump settles the coarse blocks', () => {
 
     expect(model.coarseDynamicBlocks).toBe(settled)
   })
+
+  // The springs write per frame through those two and settle once where they
+  // land, which is 100-250ms in: inside the 500ms throttle, so a settle seen at
+  // 450ms is the landing's.
+  describe('a spring settles them where it lands', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    // each starts its spring and hands back where it should land
+    const springs: [string, (model: LGV) => () => void][] = [
+      [
+        'zoom in',
+        model => {
+          const target = model.bpPerPx / 2
+          model.zoom(target)
+          return () => {
+            expect(model.bpPerPx).toBeCloseTo(target)
+          }
+        },
+      ],
+      [
+        'zoom out',
+        model => {
+          const target = model.bpPerPx * 2
+          model.zoom(target)
+          return () => {
+            expect(model.bpPerPx).toBeCloseTo(target)
+          }
+        },
+      ],
+      [
+        'slide',
+        model => {
+          const target = model.offsetPx + model.width / 2
+          model.slide(0.5)
+          return () => {
+            expect(model.offsetPx).toBeCloseTo(target)
+          }
+        },
+      ],
+    ]
+
+    test.each(springs)('%s', (_name, spring) => {
+      const model = makeView()
+      model.setWindow(9600, 2000)
+      const before = keys(model.coarseDynamicBlocks)
+
+      const landed = spring(model)
+      jest.advanceTimersByTime(450)
+
+      landed()
+      expect(keys(model.coarseDynamicBlocks)).toEqual(
+        keys(model.dynamicBlocks.contentBlocks),
+      )
+      expect(keys(model.coarseDynamicBlocks)).not.toEqual(before)
+      expect(model.coarseBpPerPx).toBe(model.bpPerPx)
+    })
+  })
 })
 
 // The one jump that takes time, so it cannot join the table above: it writes
