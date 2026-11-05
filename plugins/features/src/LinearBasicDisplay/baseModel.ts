@@ -14,7 +14,6 @@ import {
   getEnv,
   getPaletteHost,
   getSession,
-  isFeature,
   pluralize,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
@@ -47,7 +46,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -604,14 +603,6 @@ export default function baseStateModelFactory(
        */
       get effectiveShowDescriptions() {
         return this.labelVisibility.showDescriptions
-      },
-
-      /**
-       * #getter
-       */
-      get selectedFeatureId() {
-        const selection = isAlive(self) ? getSession(self).selection : undefined
-        return isFeature(selection) ? selection.id() : undefined
       },
 
       /**

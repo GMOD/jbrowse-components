@@ -54,7 +54,7 @@ test('a feature id names its contig', async () => {
   const [first] = await firstValueFrom(
     adapter.getFeatures(region).pipe(toArray()),
   )
-  expect(first!.id()).toMatch(new RegExp(`^${adapter.id}-ctgA-vcf-`))
+  expect(first!.id()).toMatch(/^ctgA-vcf-\d+$/)
 })
 
 test('getRegionByteSize returns a positive index estimate', async () => {

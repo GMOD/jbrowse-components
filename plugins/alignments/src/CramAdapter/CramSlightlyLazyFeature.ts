@@ -249,7 +249,7 @@ export default class CramSlightlyLazyFeature
   }
 
   id() {
-    return `${this.adapter.id}-${this.uniqueId}`
+    return `${this.uniqueId}`
   }
 
   /**

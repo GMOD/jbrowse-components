@@ -43,11 +43,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
             aggregateGtfFeatures({
               feats: parseGtfToFeatures(
                 lines.map(line => ({ line })),
-                (_record, i) => `${this.id}-${refName}-${i}`,
+                (_record, i) => `${refName}-${i}`,
               ),
               aggregateField,
               refName,
-              idPrefix: this.id,
               // whole-ref bounds so nothing is clipped at load; the tree search
               // in getFeatures does the per-query clipping instead
               regionStart: 0,

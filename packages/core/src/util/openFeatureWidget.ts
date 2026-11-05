@@ -85,13 +85,17 @@ export function openFeatureWidget(
   if (!isSessionModelWithWidgets(session)) {
     return undefined
   }
-  session.setSelection(opts.feature ?? new SimpleFeature(featureData))
+  const track = getContainingTrack(node)
+  session.setSelection(
+    opts.feature ?? new SimpleFeature(featureData),
+    track.configuration.trackId,
+  )
   const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
   const widget = session.openWidget(type, id, {
     featureData,
     parentFeature: opts.parentFeature,
     view: getContainingView(node),
-    track: getContainingTrack(node),
+    track,
     ...opts.extra,
   })
   return widget

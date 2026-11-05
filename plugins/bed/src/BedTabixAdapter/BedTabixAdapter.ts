@@ -165,7 +165,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
               end,
               scoreColumn,
               parser,
-              uniqueId: `${this.id}-${offset}`,
+              uniqueId: `${offset}`,
               names,
               disableGeneHeuristic,
             }),

@@ -93,7 +93,6 @@ test('clips passthrough features (no aggregate field) to the query region', () =
     feats,
     aggregateField: 'gene_name',
     refName: 'ctgA',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 300,
   })
@@ -115,7 +114,6 @@ test('keeps distinct genes that share a gene_name apart', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: Number.MAX_SAFE_INTEGER,
   })
@@ -142,7 +140,6 @@ test('still merges the transcripts that really do share a gene', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: Number.MAX_SAFE_INTEGER,
   })
@@ -166,7 +163,6 @@ test('builds a gene from a file with gene_id but no gene_name', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr17',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: Number.MAX_SAFE_INTEGER,
   })
@@ -190,7 +186,6 @@ test('a transcript carrying the aggregate value names a gene the first left unna
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: Number.MAX_SAFE_INTEGER,
   })
@@ -269,7 +264,6 @@ test('a malformed line cannot take its transcript down with it', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 1000,
   })
@@ -386,7 +380,6 @@ test('keeps an explicit gene line that no synthesized gene supersedes', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 1000,
   })
@@ -408,7 +401,6 @@ test('drops an explicit gene line once its transcripts build the same gene', () 
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 1000,
   })
@@ -430,7 +422,6 @@ test('a childless transcript with a gene_id still builds a gene', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr1',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 1000,
   })
@@ -456,7 +447,6 @@ test('still drops a bare transcript line that has nothing to group on', () => {
     ),
     aggregateField: 'gene_name',
     refName: 'chr17',
-    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 1000,
   })

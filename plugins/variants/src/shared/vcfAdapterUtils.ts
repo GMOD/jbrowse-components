@@ -51,7 +51,7 @@ export async function streamVcfFeatures(
     const feature = new VcfFeature({
       variant: p.parseLine(line),
       parser: p,
-      id: `${idPrefix}-vcf-${fileOffset}`,
+      id: `${idPrefix}-${fileOffset}`,
     })
     if (
       overlapsRegion(

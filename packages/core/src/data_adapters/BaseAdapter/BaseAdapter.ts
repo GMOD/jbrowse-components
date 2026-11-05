@@ -20,7 +20,6 @@ const EmptyConfig = ConfigurationSchema('empty', {})
 export class BaseAdapter<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 > {
-  id: string
   config: CONF
   getSubAdapter?: getSubAdapterType
   pluginManager?: PluginManager
@@ -49,7 +48,19 @@ export class BaseAdapter<
     this.getSubAdapter = getSubAdapter
     this.pluginManager = pluginManager
     this.sequenceAdapterConfig = sequenceAdapterConfig
-    this.id = getAdapterId(config)
+  }
+
+  private cachedId?: string
+
+  /**
+   * @deprecated a hash of the adapter config, which built-in adapters no
+   * longer put in their feature ids: a feature id is unique within its
+   * adapter, and code telling two tracks' features apart pairs it with the
+   * trackId (`session.selectionTrackId`)
+   */
+  get id() {
+    this.cachedId ??= getAdapterId(this.config)
+    return this.cachedId
   }
 
   /**

@@ -96,13 +96,12 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
 
         const feats = parseGtfToFeatures(
           lines,
-          record => `${this.id}-offset-${record.offset}`,
+          record => `offset-${record.offset}`,
         )
         const aggregated = aggregateGtfFeatures({
           feats,
           aggregateField: this.getConf('aggregateField'),
           refName: query.refName,
-          idPrefix: this.id,
           regionStart: query.start,
           regionEnd: query.end,
         })

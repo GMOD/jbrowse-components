@@ -267,6 +267,22 @@ test("selectionInk boxes the session's selected feature", () => {
   const { display, session } = setUp()
   expect(display.selectionInk).toEqual([])
 
+  const g1 = new SimpleFeature({
+    uniqueId: 'g1',
+    refName: 'ctgA',
+    start: 1000,
+    end: 2000,
+  })
+  session.setSelection(g1, display.parentTrack.configuration.trackId)
+
+  expect(display.selectedFeatureId).toBe('g1')
+  expect(display.selectionInk).toEqual([
+    { left: 100, top: 0, width: 200, height: 38 },
+  ])
+})
+
+test('a feature selected in another track boxes nothing, whatever its id', () => {
+  const { display, session } = setUp()
   session.setSelection(
     new SimpleFeature({
       uniqueId: 'g1',
@@ -274,12 +290,11 @@ test("selectionInk boxes the session's selected feature", () => {
       start: 1000,
       end: 2000,
     }),
+    'another-track',
   )
 
-  expect(display.selectedFeatureId).toBe('g1')
-  expect(display.selectionInk).toEqual([
-    { left: 100, top: 0, width: 200, height: 38 },
-  ])
+  expect(display.selectedFeatureId).toBeUndefined()
+  expect(display.selectionInk).toEqual([])
 })
 
 // The rest of this file builds rects only.

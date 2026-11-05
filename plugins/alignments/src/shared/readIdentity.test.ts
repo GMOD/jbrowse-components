@@ -107,14 +107,14 @@ test('BAM ships numeric keys that spell back to feature.id()', async () => {
   const features = await bamFeatures()
   const readArrays = expectIdsRoundTrip(features)
   expect(readArrays.readKeys).toBeInstanceOf(Float64Array)
-  expect(readArrays.readIdPrefix).toMatch(/-$/)
+  expect(readArrays.readIdPrefix).toBe('')
 }, 20000)
 
 test('CRAM ships numeric keys that spell back to feature.id()', async () => {
   const features = await cramFeatures()
   const readArrays = expectIdsRoundTrip(features)
   expect(readArrays.readKeys).toBeInstanceOf(Float64Array)
-  expect(readArrays.readIdPrefix).toMatch(/-$/)
+  expect(readArrays.readIdPrefix).toBe('')
 }, 20000)
 
 test('SAM keeps whole id strings — no record id to key on', async () => {

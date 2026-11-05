@@ -137,7 +137,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         const candidates = [lines, tail.lines].flatMap(group =>
           parseRecordsLazy(group).map(({ feature, record }) => ({
             feature,
-            uniqueId: `${this.id}-offset-${record.offset}`,
+            uniqueId: `offset-${record.offset}`,
           })),
         )
         for (const { feature, uniqueId } of cutAtOrigin(

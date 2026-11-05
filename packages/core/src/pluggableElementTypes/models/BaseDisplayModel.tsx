@@ -16,6 +16,8 @@ import {
 import {
   getContainingTrack,
   getEnv,
+  getSession,
+  selectedFeatureIdFor,
   statusFraction,
   statusMessageText,
 } from '../../util/index.ts'
@@ -85,6 +87,19 @@ function stateModelFactory() {
           )
         }
         return getContainingTrack(self)
+      },
+      /**
+       * #getter
+       * the session's selected feature's id, when it was selected from this
+       * display's track
+       */
+      get selectedFeatureId() {
+        return isAlive(self)
+          ? selectedFeatureIdFor(
+              getSession(self),
+              this.parentTrack.configuration.trackId,
+            )
+          : undefined
       },
     }))
     .views(self => ({

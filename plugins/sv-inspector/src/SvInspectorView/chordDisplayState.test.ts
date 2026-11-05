@@ -48,14 +48,17 @@ test('selecting a record of an event names the chords of that event', async () =
   const { session, view } = await inspectorWithRows()
   expect(view.highlightedChordIds).toBeUndefined()
 
-  session.setSelection(new SimpleFeature(rows[1]!.feature))
+  session.setSelection(new SimpleFeature(rows[1]!.feature), 'another-track')
+  expect(view.highlightedChordIds).toBeUndefined()
+
+  view.spreadsheetView.spreadsheet!.setSelectedFeature(rows[1]!.feature)
   expect(view.highlightedChordIds).toEqual(['a', 'b'])
 
   await when(() => view.circularView.tracks.length > 0)
   const display = chordDisplay(view.circularView.tracks[0]!)
   expect(display.highlightedFeatureIds).toEqual(['a', 'b'])
 
-  session.setSelection(new SimpleFeature(rows[2]!.feature))
+  view.spreadsheetView.spreadsheet!.setSelectedFeature(rows[2]!.feature)
   expect(view.highlightedChordIds).toBeUndefined()
   expect(display.highlightedFeatureIds).toBeUndefined()
 })

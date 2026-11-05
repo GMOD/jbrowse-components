@@ -30,6 +30,7 @@ export interface ObservedSession {
   name: string
   views: ObservedView[]
   selection?: unknown
+  selectionTrackId?: string
 }
 
 // `session` is a `types.maybe` on every root model, so this is the shape a
@@ -44,8 +45,12 @@ export type ViewLocation = string | string[] | undefined
 export interface SessionObservers {
   /** fires with every view's visible region when the layout settles */
   onLocationChange?: (locations: ViewLocation[]) => void
-  /** fires with the serialized feature when one is selected in any view */
-  onFeatureSelect?: (feature: unknown) => void
+  /**
+   * fires with the serialized feature when one is selected in any view, and
+   * the trackId it was selected from: a feature's id is unique only within
+   * its track
+   */
+  onFeatureSelect?: (feature: unknown, trackId: string | undefined) => void
   /**
    * fires with a plain-JSON snapshot of the layout the user built, in the shape
    * the `session` option takes — so "save this arrangement" is storing this
@@ -143,7 +148,7 @@ export function observeSession(
       autorun(() => {
         const selection = root.session?.selection
         if (isFeature(selection)) {
-          onFeatureSelect(selection.toJSON())
+          onFeatureSelect(selection.toJSON(), root.session?.selectionTrackId)
         }
       }),
     )

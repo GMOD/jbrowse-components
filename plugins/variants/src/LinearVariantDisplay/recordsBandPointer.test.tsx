@@ -50,7 +50,10 @@ test('a right-clicked record stays lit while its menu is open', () => {
 test('the selected record is boxed, and a click on nothing clears it', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   render(<RecordsBandOverlay model={display} />)
-  getSession(display).setSelection(display.featureById('>7494>7499')!)
+  getSession(display).setSelection(
+    display.featureById('>7494>7499')!,
+    display.parentTrack.configuration.trackId,
+  )
   expect(display.selectionInk).toEqual(display.recordsInk(['>7494>7499']))
   expect(display.selectionInk.length).toBe(1)
 

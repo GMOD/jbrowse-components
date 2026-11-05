@@ -454,14 +454,12 @@ export function aggregateGtfFeatures({
   refName,
   regionStart,
   regionEnd,
-  idPrefix,
 }: {
   feats: SimpleFeatureSerialized[]
   aggregateField: string
   refName: string
   regionStart: number
   regionEnd: number
-  idPrefix: string
 }): SimpleFeatureSerialized[] {
   const out: SimpleFeatureSerialized[] = []
   const parentAggregation = new Map<
@@ -550,7 +548,7 @@ export function aggregateGtfFeatures({
         // unlike a subfeature-derived id where the "first" transcript (and thus
         // the id) shifts with whatever the current window happened to pull in.
         // the grouping key is unique within a ref, so refName+key is unique
-        uniqueId: `${idPrefix}-${refName}-gene-${key}`,
+        uniqueId: `${refName}-gene-${key}`,
       })
     }
   }

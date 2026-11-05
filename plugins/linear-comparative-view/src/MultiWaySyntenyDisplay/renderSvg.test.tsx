@@ -59,7 +59,10 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
   expect(await exported()).toBe(quiet)
 
   display.setHoverTarget(undefined)
-  getSession(display).setSelection(target.feature)
+  getSession(display).setSelection(
+    target.feature,
+    display.parentTrack.configuration.trackId,
+  )
   expect(display.selectionInk).toEqual(boxes)
   expect(await exported()).toBe(quiet)
 })

@@ -68,7 +68,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
               const f = new VcfFeature({
                 variant: parser.parseLine(line),
                 parser,
-                id: `${this.id}-${refName}-${idx++}`,
+                id: `${refName}-${idx++}`,
               })
               intervalTree.insert([f.get('start'), f.get('end')], f)
             }

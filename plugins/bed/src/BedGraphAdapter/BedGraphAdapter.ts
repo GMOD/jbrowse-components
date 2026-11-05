@@ -41,7 +41,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
           continue
         }
         const feat = makeBedGraphFeature({
-          uniqueId: `${this.id}-${refName}-${i}-${j}`,
+          uniqueId: `${refName}-${i}-${j}`,
           refName: refName!,
           start,
           end,

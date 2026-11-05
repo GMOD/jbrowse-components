@@ -88,19 +88,14 @@ export default class BamSlightlyLazyFeature
   }
 
   id() {
-    return `${this.adapter.id}-${this.fileOffset}`
+    return `${this.fileOffset}`
   }
 
   /**
    * The number `id()` is built from, for callers that only need to tell two
-   * records of one fetch apart and would otherwise pay for the string.
-   * `fileOffset` is unique per record within a file, so within a single
-   * `getFeatures` — which is always one adapter — it carries the whole of the
-   * identity and the `${adapter.id}-` prefix distinguishes nothing.
-   *
-   * Not a replacement for `id()`, which is the cross-adapter identity every
-   * other consumer wants. See `dedupeById` in the alignments render RPC, which
-   * is the reason this exists.
+   * records apart and would otherwise pay for the string. `fileOffset` is
+   * unique per record within a file. See `dedupeById` in the alignments render
+   * RPC, which is the reason this exists.
    */
   get recordId() {
     return this.fileOffset

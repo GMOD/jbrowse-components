@@ -274,7 +274,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
         ) {
           observer.next(
             new SimpleFeature({
-              id: `${this.id}-${f.uniqueId}`,
+              id: f.uniqueId,
               data: f,
             }),
           )
@@ -307,7 +307,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
           ) {
             observer.next(
               new SimpleFeature({
-                id: `${this.id}-${group[0]!.uniqueId}-parent`,
+                id: `${group[0]!.uniqueId}-parent`,
                 data: {
                   type: 'gene',
                   subfeatures: group,

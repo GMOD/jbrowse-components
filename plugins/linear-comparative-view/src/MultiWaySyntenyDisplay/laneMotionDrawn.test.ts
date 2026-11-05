@@ -280,7 +280,7 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
     display.hitTest((hit.x1 + hit.x2) / 2 + display.dragOffsetPx, y)?.feature,
   ).not.toBe(hit.feature)
 
-  session.setSelection(hit.feature)
+  session.setSelection(hit.feature, display.parentTrack.configuration.trackId)
   const [selected] = display.selectionInk
   expect(selected!.left).toBeCloseTo(rect[0]!, 0)
   expect(selected!.left + selected!.width).toBeCloseTo(rect[1]!, 0)

@@ -92,8 +92,8 @@ export interface CreateCircularGenomeViewOptions extends CircularGenomeViewState
   plugins?: ViewStateOptions['plugins']
   makeWorkerInstance?: ViewStateOptions['makeWorkerInstance']
   configuration?: ViewStateOptions['configuration']
-  /** fires with the serialized feature when a chord is clicked/selected */
-  onFeatureSelect?: (feature: unknown) => void
+  /** fires with the serialized feature and its trackId when a chord is clicked/selected */
+  onFeatureSelect?: SessionObservers['onFeatureSelect']
   /**
    * fires with the layout as plain JSON when it settles, in the shape the
    * `session` option takes — for a host offering "save this view"

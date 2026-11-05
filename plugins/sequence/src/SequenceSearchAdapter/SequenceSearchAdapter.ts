@@ -59,7 +59,7 @@ export default class SequenceSearchAdapter extends ReferenceScanAdapter<Sequence
       for (const match of everyMatch(residues, re)) {
         const start = windowStart + match.index
         emit({
-          uniqueId: `${this.id}-${start}-${match[0]}-pos`,
+          uniqueId: `${start}-${match[0]}-pos`,
           refName: query.refName,
           start,
           end: start + match[0].length,
@@ -74,7 +74,7 @@ export default class SequenceSearchAdapter extends ReferenceScanAdapter<Sequence
       for (const match of everyMatch(revcom(residues), re)) {
         const end = windowEnd - match.index
         emit({
-          uniqueId: `${this.id}-${end - match[0].length}-${match[0]}-neg`,
+          uniqueId: `${end - match[0].length}-${match[0]}-neg`,
           refName: query.refName,
           start: end - match[0].length,
           end,

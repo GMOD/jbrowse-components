@@ -176,6 +176,8 @@ export interface AbstractSessionModel
   rpcManager: RpcManager
   assemblyNames: string[]
   selection?: unknown
+  // the track whose records a selected feature's id names
+  selectionTrackId?: string
   focusedViewId?: string
   themeName?: string
   // `palette`, on PaletteHost, is what rendering reads: plain color strings, no
@@ -211,7 +213,7 @@ export interface AbstractSessionModel
   getActiveThemeOptions?: (
     name?: string,
   ) => (ThemeOptions & { name?: string }) | undefined
-  setSelection: (feature: Feature) => void
+  setSelection: (feature: Feature, trackId?: string) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
   version: string
@@ -731,7 +733,8 @@ export function isSessionWithPermanentPlugins(
 /** abstract interface for a session that manages a global selection */
 export interface SelectionContainer extends AbstractSessionModel {
   selection?: unknown
-  setSelection(thing: unknown): void
+  selectionTrackId?: string
+  setSelection(thing: unknown, trackId?: string): void
 }
 export function isSelectionContainer(
   thing: unknown,

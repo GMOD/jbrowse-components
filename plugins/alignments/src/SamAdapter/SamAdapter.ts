@@ -89,10 +89,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
           (lines, refName) =>
             lines.map(
               (line, i) =>
-                new SamRecordFeature(
-                  parseSamLine(line),
-                  `${this.id}-${refName}-${i}`,
-                ),
+                new SamRecordFeature(parseSamLine(line), `${refName}-${i}`),
             ),
           'Processing alignments',
         ),

@@ -127,7 +127,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
                     continue
                   }
                   const feat = makeBedGraphFeature({
-                    uniqueId: `${this.id}-${fileOffset}-${j}`,
+                    uniqueId: `${fileOffset}-${j}`,
                     refName,
                     start,
                     end,

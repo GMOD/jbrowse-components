@@ -2,11 +2,11 @@ import {
   SimpleFeature,
   assembleLocString,
   getSession,
-  isFeature,
   measureGridWidth,
+  selectedFeatureIdFor,
   toLocale,
 } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   distinctJunctions,
   junctionFromFeature,
@@ -513,12 +513,17 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
+       */
+      get rowsTrackId() {
+        return getParent<{ rowsTrackId: string }>(self).rowsTrackId
+      },
+      /**
+       * #getter
        * the row holding the session's selected feature, so a chord click in
        * the SV inspector lands on its row
        */
       get selectedRowId() {
-        const { selection } = getSession(self)
-        const id = isFeature(selection) ? selection.id() : undefined
+        const id = selectedFeatureIdFor(getSession(self), this.rowsTrackId)
         return id === undefined
           ? undefined
           : self.rows?.find(r => r.feature?.uniqueId === id)?.id
@@ -543,7 +548,7 @@ export default function stateModelFactory() {
       setSelectedFeature(feature?: SimpleFeatureSerialized) {
         const session = getSession(self)
         if (feature) {
-          session.setSelection(new SimpleFeature(feature))
+          session.setSelection(new SimpleFeature(feature), self.rowsTrackId)
         } else {
           session.clearSelection()
         }

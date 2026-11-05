@@ -94,7 +94,7 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
       feats1,
       feats2,
       refName,
-      this.id,
+      'starfusion',
       (line, uniqueId, flip) =>
         this.featureFromLine(line, columnNames, uniqueId, flip),
     )

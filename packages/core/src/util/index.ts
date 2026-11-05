@@ -466,6 +466,7 @@ export {
   default as SimpleFeature,
   isFeature,
 } from './simpleFeature.ts'
+export { selectedFeatureIdFor } from './selectedFeature.ts'
 
 export { saveAs } from './FileSaver/index.ts'
 export {

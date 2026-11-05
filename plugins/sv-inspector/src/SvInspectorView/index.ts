@@ -1,5 +1,9 @@
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { getParent } from '@jbrowse/mobx-state-tree'
@@ -29,7 +33,10 @@ function defaultOnChordClick(
     if (!assemblyName) {
       return
     }
-    session.setSelection(feature)
+    session.setSelection(
+      feature,
+      getContainingTrack(chordDisplay).configuration.trackId,
+    )
     const parentView = getParent<{
       type?: string
       spreadsheetView?: {

@@ -101,6 +101,13 @@ export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
       selection: undefined as unknown,
       /**
        * #volatile
+       * the track whose records the selected feature came from. A feature id
+       * is unique only within its track, so a display matches the selection
+       * against its own records only when this is its trackId
+       */
+      selectionTrackId: undefined as string | undefined,
+      /**
+       * #volatile
        * this is the globally "hovered" object. can be anything. code that
        * wants to deal with this should examine it to see what kind of thing it
        * is.
@@ -288,8 +295,9 @@ export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
        * data field rather than the method the Feature type promises — every
        * consumer doing `isFeature(selection) ? selection.id() : …` would throw.
        */
-      setSelection(thing: unknown) {
+      setSelection(thing: unknown, trackId?: string) {
         self.selection = isFeature(thing) ? unwrapFeature(thing) : thing
+        self.selectionTrackId = trackId
       },
 
       /**
@@ -298,6 +306,7 @@ export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
        */
       clearSelection() {
         self.selection = undefined
+        self.selectionTrackId = undefined
       },
       /**
        * #action

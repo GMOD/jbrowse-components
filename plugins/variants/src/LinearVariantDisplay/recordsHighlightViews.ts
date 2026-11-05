@@ -1,9 +1,5 @@
-import {
-  canonicalizeViewRefName,
-  getSession,
-  isFeature,
-} from '@jbrowse/core/util'
-import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   createMembershipMemo,
   drawnLabelTexts,
@@ -28,6 +24,7 @@ import type {
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 interface RecordsHighlightHost extends IStateTreeNode {
+  selectedFeatureId: string | undefined
   featureHighlights: IMSTArray<typeof FeatureHighlightModel>
   recordsRenderDataMap: ReadonlyMap<number, LayoutRegionData>
   recordsLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
@@ -97,19 +94,10 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
     },
     /**
      * #getter
-     * The session's selected feature's id: a record a click opened, off the
-     * band or a cell.
-     */
-    get selectedFeatureId() {
-      const selection = isAlive(self) ? getSession(self).selection : undefined
-      return isFeature(selection) ? selection.id() : undefined
-    },
-    /**
-     * #getter
      * `HighlightHost`'s selection: the selected record's box on the band.
      */
     get selectionInk(): HighlightRect[] {
-      const id = this.selectedFeatureId
+      const id = self.selectedFeatureId
       return this.recordsInk(id === undefined ? [] : [id])
     },
     /**

@@ -80,8 +80,8 @@ export interface CreateLinearGenomeViewOptions extends LinearGenomeViewState {
   configuration?: ViewStateOptions['configuration']
   /** fires with the throttled visible region as the user pans/zooms */
   onLocationChange?: (location: string) => void
-  /** fires with the serialized feature when one is clicked/selected */
-  onFeatureSelect?: (feature: unknown) => void
+  /** fires with the serialized feature and its trackId when one is clicked/selected */
+  onFeatureSelect?: SessionObservers['onFeatureSelect']
   /**
    * fires with the layout as plain JSON when it settles, in the shape
    * the `session` option takes — for a host offering "save this view"

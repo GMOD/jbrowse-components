@@ -86,7 +86,7 @@ describe('base data adapter', () => {
 })
 
 describe('adapterConfigCacheKey', () => {
-  it('returns a stable idMaker hash when no adapterId', () => {
+  it('returns a stable fingerprint when no adapterId', () => {
     const AdapterConfig = ConfigurationSchema(
       'SomeAdapter',
       {

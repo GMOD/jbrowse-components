@@ -1,6 +1,6 @@
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { clamp, getSession, isFeature } from '@jbrowse/core/util'
+import { clamp, getSession, selectedFeatureIdFor } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   pendingLaunch,
@@ -284,12 +284,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * full strength while it dims the rest
        */
       get highlightedChordIds() {
-        const { selection } = getSession(self)
-        return isFeature(selection)
-          ? self.spreadsheetView.spreadsheet?.svEventFor({
-              uniqueId: selection.id(),
-            })?.featureIds
-          : undefined
+        const id = selectedFeatureIdFor(getSession(self), this.variantTrackId)
+        return id === undefined
+          ? undefined
+          : self.spreadsheetView.spreadsheet?.svEventFor({ uniqueId: id })
+              ?.featureIds
       },
       /**
        * #getter
@@ -384,6 +383,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return self.setHeight(oldHeight + distance) - oldHeight
       },
       afterAttach() {
+        self.spreadsheetView.setRowsTrackId(self.variantTrackId)
         addDisposer(
           self,
           autorun(

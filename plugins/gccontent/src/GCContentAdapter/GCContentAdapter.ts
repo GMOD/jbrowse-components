@@ -179,7 +179,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         const start = starts[i]!
         observer.next(
           new SimpleFeature({
-            uniqueId: `${this.id}_${start}`,
+            uniqueId: `${start}`,
             refName: query.refName,
             start,
             end: ends[i]!,

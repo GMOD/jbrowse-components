@@ -567,17 +567,6 @@ export default function stateModelFactory(
           /**
            * #getter
            */
-          get selectedFeatureId() {
-            const { selection } = getSession(self)
-            if (isFeature(selection)) {
-              return selection.id()
-            }
-            return undefined
-          },
-
-          /**
-           * #getter
-           */
           get TooltipComponent() {
             return AlignmentsTooltip
           },

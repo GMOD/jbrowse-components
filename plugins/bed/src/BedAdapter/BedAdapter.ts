@@ -98,7 +98,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
           ...bedFeatureLocus({ splitLine, colRef, colStart, colEnd }),
           scoreColumn,
           parser,
-          uniqueId: `${this.id}-${refName}-${i}`,
+          uniqueId: `${refName}-${i}`,
           names,
           disableGeneHeuristic,
         }),

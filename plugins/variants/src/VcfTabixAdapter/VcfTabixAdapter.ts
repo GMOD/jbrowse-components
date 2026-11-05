@@ -120,7 +120,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       const { vcf } = await this.configure(opts)
       const parser = this.headerAndParser(opts).then(r => r.parser)
       await streamVcfFeatures(
-        { vcf, parser, idPrefix: this.id },
+        { vcf, parser, idPrefix: 'vcf' },
         query,
         opts,
         observer,

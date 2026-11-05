@@ -54,7 +54,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
             start: feature.start,
             end: feature.end,
             feature,
-            uniqueId: `${this.id}-${refName}-${i}`,
+            uniqueId: `${refName}-${i}`,
           })),
         'Parsing GFF data',
       )

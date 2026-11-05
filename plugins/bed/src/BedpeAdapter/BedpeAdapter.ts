@@ -80,7 +80,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterCon
       feats1,
       feats2,
       refName,
-      this.id,
+      'bedpe',
       (line, uniqueId, flip) => featureData(line, uniqueId, flip, names),
     )
   }

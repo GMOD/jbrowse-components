@@ -7,13 +7,12 @@ import {
   getContainingView,
   getDialogHost,
   getSession,
-  isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId, isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 import { sliceKey } from '../CircularView/slices.ts'
@@ -172,16 +171,6 @@ export function BaseChordDisplay() {
        */
       get bezierRadius() {
         return this.radiusPx * (1 - this.curveDepth)
-      },
-      /**
-       * #getter
-       */
-      get selectedFeatureId() {
-        if (!isAlive(self)) {
-          return undefined
-        }
-        const { selection } = getSession(self)
-        return isFeature(selection) ? selection.id() : undefined
       },
       /**
        * #getter

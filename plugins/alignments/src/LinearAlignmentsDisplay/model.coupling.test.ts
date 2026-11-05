@@ -2029,6 +2029,7 @@ describe('a selection is the chrome guide, not the canvas', () => {
     expect(renderStates).toBe(1)
     session.setSelection(
       new SimpleFeature({ uniqueId: 'r1', refName: 'ctgA', start: 5, end: 9 }),
+      display.parentTrack.configuration.trackId,
     )
     expect(display.selectedFeatureId).toBe('r1')
     expect(renderStates).toBe(1)

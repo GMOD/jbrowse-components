@@ -59,11 +59,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   }
 
   wrapFeature(ncFeature: NCListRawFeature): NCListFeature {
-    return new NCListFeature(
-      ncFeature,
-      undefined,
-      `${this.id}-${ncFeature.id()}`,
-    )
+    return new NCListFeature(ncFeature, undefined, ncFeature.id())
   }
 
   async hasDataForRefName(refName: string) {

@@ -20,7 +20,6 @@ import {
   getEnv,
   getPaletteHost,
   getSession,
-  isFeature,
   isObject,
   morphClockMs,
   openFeatureWidget,
@@ -57,7 +56,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
-import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-features'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -839,16 +838,6 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
-      /** #getter */
-      get selectedFeatureId() {
-        if (isAlive(self)) {
-          const { selection } = getSession(self)
-          if (isFeature(selection)) {
-            return selection.id()
-          }
-        }
-        return undefined
-      },
       /** #getter */
       get anchorAssemblyName() {
         return self.lgv.assemblyNames[0]!

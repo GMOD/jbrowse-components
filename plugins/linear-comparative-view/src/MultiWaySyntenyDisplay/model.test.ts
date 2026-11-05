@@ -1197,18 +1197,14 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
   // keep the computed hot: outside a reaction each read re-evaluates it
   const stop = autorun(() => display.laneGlyphCells)
   const before = display.laneGlyphCells
-  session.setSelection(
-    new SimpleFeature({
-      uniqueId: 'some-other-tracks-feature',
-      refName: 'ctgA',
-      start: 0,
-      end: 10,
-    }),
-  )
+  session.setSelection(display.features![0]!, 'some-other-track')
   expect(display.selectionInk).toEqual([])
   expect(display.laneGlyphCells).toBe(before)
 
-  session.setSelection(display.features![0]!)
+  session.setSelection(
+    display.features![0]!,
+    display.parentTrack.configuration.trackId,
+  )
   expect(display.selectionInk).not.toEqual([])
   expect(display.laneGlyphCells).toBe(before)
   stop()

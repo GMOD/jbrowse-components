@@ -464,13 +464,16 @@ export function createTestAlignmentsDisplay() {
       },
       widgets: new Map<string, unknown>(),
       selection: undefined as unknown,
+      selectionTrackId: undefined as string | undefined,
     }))
     .actions(self => ({
-      setSelection(thing: unknown) {
+      setSelection(thing: unknown, trackId?: string) {
         self.selection = thing
+        self.selectionTrackId = trackId
       },
       clearSelection() {
         self.selection = undefined
+        self.selectionTrackId = undefined
       },
       openWidget(
         type: string,

@@ -324,6 +324,23 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           },
         })),
     )
+    .volatile(self => ({
+      /**
+       * #volatile
+       * the trackId a selected row is tagged with: the track drawing these
+       * rows when one does (the SV inspector's chord track), else this view's
+       * id, which no track shares
+       */
+      rowsTrackId: self.id,
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setRowsTrackId(trackId: string) {
+        self.rowsTrackId = trackId
+      },
+    }))
     .postProcessSnapshot(snap => {
       const { spreadsheet, ...rest } = snap
       if (!spreadsheet) {

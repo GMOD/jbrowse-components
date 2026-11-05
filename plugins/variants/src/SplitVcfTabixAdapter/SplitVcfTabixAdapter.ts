@@ -190,7 +190,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       const contig = await this.configure(query.refName, opts)
       if (contig) {
         await streamVcfFeatures(
-          { ...contig, idPrefix: `${this.id}-${query.refName}` },
+          { ...contig, idPrefix: `${query.refName}-vcf` },
           query,
           opts,
           observer,

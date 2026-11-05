@@ -13,7 +13,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "strand": 0,
     "subfeatures": [],
     "type": "contig",
-    "uniqueId": "test-ctgB-0",
+    "uniqueId": "ctgB-0",
   },
   {
     "end": 1984,
@@ -27,7 +27,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "test-ctgB-1",
+    "uniqueId": "ctgB-1",
   },
   {
     "end": 6130,
@@ -41,7 +41,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "test-ctgB-2",
+    "uniqueId": "ctgB-2",
   },
   {
     "end": 5968,
@@ -55,7 +55,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "strand": -1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "test-ctgB-3",
+    "uniqueId": "ctgB-3",
   },
 ]
 `;
