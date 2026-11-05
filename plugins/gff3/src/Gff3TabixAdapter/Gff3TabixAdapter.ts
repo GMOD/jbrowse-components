@@ -11,7 +11,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
-import { cutAtOrigin, sequenceLengths } from '../originSpanning.ts'
+import { circularLength, cutAtOrigin } from '../originSpanning.ts'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -53,15 +53,28 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     },
   })
 
-  // the header read is sized from the index, so it can start only once the
-  // index is in; the region read needs the same index and nothing else, so
-  // getFeatures runs the two together
-  private lengths = cachedSetup({
-    setup: async opts => {
-      const { gff } = await this.configure(opts)
-      return sequenceLengths(await gff.getHeader(opts))
-    },
-  })
+  // only a settled answer is kept, so an aborted read leaves nothing behind
+  private circularLengths = new Map<string, number | undefined>()
+
+  private async circularLength(
+    gff: TabixIndexedFile,
+    query: Region,
+    opts: BaseOptions,
+  ) {
+    if (!this.circularLengths.has(query.refName)) {
+      const lines = await readTabixLinesRedispatched(
+        gff,
+        { ...query, start: 0, end: 1 },
+        () => false,
+        opts,
+      )
+      this.circularLengths.set(
+        query.refName,
+        circularLength(parseRecordsLazy(lines).map(r => r.feature)),
+      )
+    }
+    return this.circularLengths.get(query.refName)
+  }
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { gff } = await this.configure(opts)
@@ -119,18 +132,17 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         // a feature crossing a circular sequence's origin is indexed from its
         // start near the end, so a query short of the end reads the last base
         // too, for the part such a feature carries past the origin. That read
-        // needs the length from the header, so it starts when the header
-        // arrives and the query's own read does not wait for it.
-        const tailRead = this.lengths(opts).then(async lengths => {
-          const length = lengths.get(query.refName)
-          return {
+        // needs the length off the line declaring the sequence circular, so
+        // it waits for that line and the query's own read does not.
+        const tailRead = this.circularLength(gff, query, opts).then(
+          async length => ({
             length,
             lines:
               length !== undefined && query.end < length
                 ? await read({ ...query, start: length - 1, end: length })
                 : [],
-          }
-        })
+          }),
+        )
         // the byte offset stays on our own record and is used purely to mint
         // a stable id, so it never pollutes the feature's data
         const [lines, tail] = await Promise.all([read(query), tailRead])
@@ -144,6 +156,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           candidates,
           query,
           tail.length,
+          opts.wholeAcrossOrigin,
         )) {
           observer.next(new Gff3Feature(feature, uniqueId))
         }

@@ -39,6 +39,20 @@ function isNavigableView(view: unknown): view is NavigableView {
 const GROW = 0.1
 
 /**
+ * A span back on its sequence, `length` long: a feature crossing a circular
+ * origin is written with its end past the length, and the view navigates to
+ * the part before the origin, or to the part past it shifted back when the
+ * span lies wholly there.
+ */
+function onSequence(start: number, end: number, length: number | undefined) {
+  return length === undefined || end <= length
+    ? { start, end }
+    : start >= length
+      ? { start: start - length, end: end - length }
+      : { start, end: length }
+}
+
+/**
  * For a feature, what moves the widget's view onto it with a little room
  * either side, or undefined when the view cannot: it navigates by no locus, or
  * the feature sits on an assembly the view does not show, as a synteny mate on
@@ -65,13 +79,23 @@ export function featureNavigator(model: FeatureDetailsModel) {
         )
         return inView
           ? () => {
-              const { refName, start, end } = feature
+              const { refName } = feature
+              const assembly = assemblyName
+                ? assemblyManager.get(assemblyName)
+                : undefined
+              const { start, end } = onSequence(
+                feature.start,
+                feature.end,
+                assembly?.getRegionForRefName(
+                  assembly.getCanonicalRefName2(refName),
+                )?.end,
+              )
               try {
                 view.navTo({ refName, start, end, assemblyName }, GROW)
               } catch {
                 view
                   .navToLocString(
-                    assembleLocString(feature),
+                    assembleLocString({ refName, start, end }),
                     assemblyName,
                     GROW,
                   )

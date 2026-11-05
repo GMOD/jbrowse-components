@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
+import { originHeadId } from '@jbrowse/core/util/originCut'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -14,9 +15,15 @@ export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion<'Ge
       pluginManager: this.pluginManager,
     })
 
-    const featuresArray = await dataAdapter.getFeaturesArray(region, opts)
+    const featuresArray = await dataAdapter.getFeaturesArray(region, {
+      ...opts,
+      wholeAcrossOrigin: true,
+    })
 
-    const feature = featuresArray.find(f => f.id() === featureId)
+    const headId = originHeadId(featureId)
+    const feature =
+      featuresArray.find(f => f.id() === featureId) ??
+      featuresArray.find(f => f.id() === headId)
 
     return {
       feature: feature?.toJSON(),

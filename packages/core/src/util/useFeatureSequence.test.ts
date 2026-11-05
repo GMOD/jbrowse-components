@@ -144,3 +144,27 @@ test('upstream start is clamped to 0', async () => {
     expect.objectContaining({ start: 0, end: 10 }),
   )
 })
+
+test('a feature crossing a circular origin reads round it, its downstream flank too', async () => {
+  mockFetchSeq.mockImplementation(async ({ start, end }) => `[${start},${end})`)
+
+  const { result } = renderHook(() =>
+    useFeatureSequence({
+      ...baseArgs,
+      start: 990,
+      end: 1020,
+      upDownBp: 30,
+      circularLength: 1000,
+    }),
+  )
+
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
+
+  expect(result.current.sequence).toEqual({
+    seq: '[990,1000)[0,20)',
+    upstream: '[960,990)',
+    downstream: '[20,50)',
+  })
+})

@@ -1,5 +1,13 @@
 ##gff-version 3
 ##sequence-region pTest 1 1000
+##sequence-region pLinear 1 1000
+pCds	test	region	1	1000	.	+	.	ID=pCds;Is_circular=true
+pCds	test	gene	990	1020	.	+	.	ID=geneC
+pCds	test	CDS	990	1020	.	+	0	ID=cdsC;Parent=geneC
+pCds	test	gene	995	1010	.	-	.	ID=geneD
+pCds	test	CDS	995	1010	.	-	2	ID=cdsD;Parent=geneD
+pLinear	test	region	1	1000	.	+	.	ID=pLinear
+pLinear	test	gene	950	1100	.	+	.	ID=geneL
 pTest	test	region	1	1000	.	+	.	ID=pTest;Is_circular=true
 pTest	test	gene	100	300	.	+	.	ID=geneA;Name=geneA
 pTest	test	D_loop	900	1100	.	+	.	ID=dloop;Name=D-loop

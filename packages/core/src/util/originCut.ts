@@ -19,3 +19,15 @@ export function originTailId(id: string) {
 export function originHeadId(id: string) {
   return id.endsWith(TAIL_SUFFIX) ? id.slice(0, -TAIL_SUFFIX.length) : undefined
 }
+
+/**
+ * The id the uncut feature gives the subfeature a piece calls `subfeatureId`,
+ * `pieceId` the piece's own id: the piece before the origin already carries
+ * the feature's id, and the one past it its `originTailId`.
+ */
+export function wholeSubfeatureId(pieceId: string, subfeatureId: string) {
+  const head = originHeadId(pieceId)
+  return head !== undefined && subfeatureId.startsWith(`${pieceId}-`)
+    ? `${head}${subfeatureId.slice(pieceId.length)}`
+    : subfeatureId
+}

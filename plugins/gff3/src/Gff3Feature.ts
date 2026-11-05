@@ -3,6 +3,7 @@ import { featureItemRgb } from '@jbrowse/core/util/colorBits'
 
 import { fileAttributes } from './fileAttributes.ts'
 
+import type { OriginPiece } from './originSpanning.ts'
 import type { LazyGffFeature } from '@gmod/gff-nostream'
 import type {
   Feature,
@@ -147,9 +148,10 @@ export class Gff3Feature implements Feature {
    * inflates its whole subtree eagerly on construction.)
    */
   public children() {
-    this.inflated ??= this.data.subfeatures.map(
-      (f, i) => new Gff3Feature(f, `${this.uniqueId}-${i}`, this),
-    )
+    this.inflated ??= this.data.subfeatures.map((f, i) => {
+      const { sourceIndex = i }: OriginPiece = f
+      return new Gff3Feature(f, `${this.uniqueId}-${sourceIndex}`, this)
+    })
     return this.inflated
   }
 
@@ -164,7 +166,8 @@ export class Gff3Feature implements Feature {
   // the eight parsed columns, without the raw attribute text or the nested
   // features, both of which the serialized form carries differently
   private columns() {
-    const { attributeString, subfeatures, ...rest } = this.data
+    const { attributeString, subfeatures, sourceIndex, ...rest }: OriginPiece =
+      this.data
     return rest
   }
 

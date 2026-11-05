@@ -1,5 +1,6 @@
 import CoreFeatureSequenceDialog from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog'
 import { getSession } from '@jbrowse/core/util'
+import { wholeSubfeatureId } from '@jbrowse/core/util/originCut'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { observer } from 'mobx-react'
 
@@ -55,7 +56,10 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
       const target =
         featureId === parentFeatureId
           ? parentFeature
-          : findSubfeatureById(parentFeature, featureId)
+          : findSubfeatureById(
+              parentFeature,
+              wholeSubfeatureId(parentFeatureId, featureId),
+            )
       if (!target) {
         getSession(model).notify(
           `Could not find the clicked transcript "${featureId}"; showing the sequence of ${getFeatureName(parentFeature) ?? parentFeatureId} instead`,

@@ -56,6 +56,11 @@ export interface BaseOptions {
   // that fills `hasData`. Set by `CoreGetContigs`, which every fetch waits on;
   // on a BAM of 200,000 contigs that walk costs most of a second.
   contigLengthsOnly?: boolean
+  // "I read one feature whole", so an adapter that cuts a feature crossing a
+  // circular sequence's origin into two drawable pieces (`originCut`) answers
+  // it uncut instead, in the file's coordinates, when either piece overlaps
+  // the query. Set by the feature details fetch.
+  wholeAcrossOrigin?: boolean
 }
 // #endregion
 

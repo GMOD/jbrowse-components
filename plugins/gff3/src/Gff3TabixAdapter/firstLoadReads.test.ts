@@ -28,9 +28,10 @@ jest.mock('@jbrowse/core/util/io', () => {
   }
 })
 
-// The header read is sized from the index and the region read needs only the
-// index, so a cold load issues both at once: one round trip, not two.
-test('the first load reads the header beside the region', async () => {
+// Features need no header read, and the probe for a line declaring the
+// sequence circular reads only what overlaps its first base, which here is
+// nothing: a cold load is the region's read alone.
+test('the first load reads the region and nothing else', async () => {
   const dir = '../../../../test_data/dog10k/omia_dog_variants.gff3.gz'
   const adapter = new Adapter(
     configSchema.create({
@@ -57,7 +58,5 @@ test('the first load reads the header beside the region', async () => {
       .pipe(toArray()),
   )
   expect(features.length).toBeGreaterThan(0)
-  const [first, second] = reads
-  expect([first!.event, second!.event]).toEqual(['start', 'start'])
-  expect(first!.position).not.toBe(second!.position)
+  expect(reads.map(r => r.event)).toEqual(['start', 'end'])
 })
