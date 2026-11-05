@@ -7,6 +7,7 @@ import { MULTIWAY_FADE_THIN } from '../../../../plugins/linear-comparative-view/
 import { createTablesEngine } from '../index.ts'
 import {
   ALL_VS_ALL_LANES,
+  ALL_VS_ALL_UNALIGNED,
   ALL_VS_ALL_ZOOMED,
   GENE_BLOCK_LANES,
   STAR_LANES,
@@ -82,7 +83,9 @@ const roundedPx = (value: number) => Math.round(value * 1e3) / 1e3
 
 /**
  * A lane's line across the view: the stack draws it a screen either side so
- * a pan finds it drawn, a viewport policy a static export has no use for.
+ * a pan finds it drawn, a viewport policy a static export has no use for. A
+ * lane with no contig picked draws a bare rule, no stretch of sequence, so
+ * only the anchor's and a framed lane's line compare.
  */
 function onView(a: number, b: number, width: number) {
   const left = Math.max(Math.min(a, b), 0)
@@ -225,9 +228,11 @@ function multiwayParity(
           yBottom: l.glyphTop + stack.glyphHeight,
         })),
         segments: stack.lanes.map(l =>
-          l.baseline.flatMap(([a, b]) =>
-            onView(a, b, width).map(s => s.map(nearPx)),
-          ),
+          l.isAnchor || l.frame
+            ? l.baseline.flatMap(([a, b]) =>
+                onView(a, b, width).map(s => s.map(nearPx)),
+              )
+            : [],
         ),
         blocks: stack.lanes
           .flatMap((lane, i) =>
@@ -444,6 +449,12 @@ describe('4 kb around the insertion', () => {
         display: { ribbons: { encoding: { color: { field: 'strand' } } } },
       },
     },
+    {
+      name: 'opacity by identity',
+      config: {
+        display: { ribbons: { encoding: { opacity: { field: 'identity' } } } },
+      },
+    },
   ])
 })
 
@@ -486,17 +497,17 @@ const syriSegments = (cvi: number[][]) => [
   [[3.078, 800]],
 ]
 
+const CVI_CHR1 = [
+  [3.918, 409.52],
+  [409.995, 800],
+]
+
 describe("SyRI's calls for five accessions under Col-0", () => {
   parityCases(multiwayParity(SYRI_LANES), [
     {
       name: 'colored by call, lanes in order',
       config: { display: { ...SYRI_COLORS, rows: SYRI_ORDER } },
-      drifts: pastContigEnd(
-        syriSegments([
-          [3.918, 409.52],
-          [409.995, 800],
-        ]),
-      ),
+      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
     {
       name: 'a lane pinned to another contig',
@@ -505,6 +516,128 @@ describe("SyRI's calls for five accessions under Col-0", () => {
         pins: [{ lane: 'Cvi', refName: 'Chr2' }],
       },
       drifts: pastContigEnd(syriSegments([[363.734, 800]])),
+    },
+    {
+      name: 'a categorical scheme',
+      config: {
+        display: {
+          ribbons: {
+            encoding: {
+              color: {
+                field: 'syri',
+                scale: {
+                  domain: ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP'],
+                  scheme: 'viridis',
+                },
+              },
+            },
+          },
+          rows: SYRI_ORDER,
+        },
+      },
+      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
+    },
+    {
+      name: 'names, a title, descending',
+      config: {
+        display: {
+          ribbons: {
+            encoding: {
+              color: {
+                field: 'syri',
+                scale: {
+                  domain: ['SYN', 'INV'],
+                  names: ['Syntenic', 'Inverted'],
+                },
+                legend: { title: 'Call', descending: true },
+              },
+            },
+          },
+          rows: SYRI_ORDER,
+        },
+      },
+      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
+    },
+    {
+      name: 'filter to inversions',
+      config: {
+        display: {
+          ribbons: {
+            ...SYRI_COLORS.ribbons,
+            filter: [{ field: 'syri', oneOf: ['INV'] }],
+          },
+          rows: SYRI_ORDER,
+        },
+      },
+      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
+    },
+    {
+      name: 'lane labels',
+      config: {
+        display: {
+          ...SYRI_COLORS,
+          rows: {
+            ...SYRI_ORDER,
+            labels: { Ler: 'Landsberg', Cvi: 'Cape Verde' },
+          },
+        },
+      },
+      drifts: {
+        ...pastContigEnd(syriSegments(CVI_CHR1)),
+        lanes: {
+          owner: 'multiway lane labels',
+          exported: [
+            ['Col-0', 12, 22],
+            ['Ler', 52.4, 62.4],
+            ['Cvi', 92.8, 102.8],
+            ['Eri', 133.2, 143.2],
+            ['Kyo', 173.6, 183.6],
+            ['Sha', 214, 224],
+          ].map(([assembly, yTop, yBottom], i) => ({
+            assembly,
+            label: assembly,
+            anchor: i === 0,
+            chrom: 'Chr1',
+            flipped: false,
+            bpPerPx: 38034.5888,
+            alsoOn: '',
+            yTop,
+            yBottom,
+          })),
+        },
+      },
+    },
+  ])
+})
+
+describe('volvox ctgB, which no lane aligns to', () => {
+  parityCases(multiwayParity(ALL_VS_ALL_UNALIGNED), [
+    { name: 'defaults', config: {} },
+    {
+      name: 'rows.kept',
+      config: { display: { rows: { kept: ['volvox_del'] } } },
+      drifts: {
+        lanes: {
+          owner: 'multiway unaligned chosen lanes',
+          exported: [
+            {
+              assembly: 'volvox',
+              label: 'volvox',
+              anchor: true,
+              chrom: 'ctgB',
+              flipped: false,
+              bpPerPx: 7.5988,
+              alsoOn: '',
+              yTop: 12,
+              yBottom: 34,
+            },
+          ],
+        },
+        segments: {
+          owner: 'multiway unaligned chosen lanes',
+          exported: [[[0, 800]]],
+        },
+      },
     },
   ])
 })

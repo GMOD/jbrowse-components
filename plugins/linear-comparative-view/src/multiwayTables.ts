@@ -128,7 +128,8 @@ export interface MultiWayTablesArgs {
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.encoding.opacity`,
    * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`sort`, the lanes
-   * that stack first, and `kept`, the lanes drawn), `labels.name.show`,
+   * that stack first, `kept`, the lanes drawn, and `labels`, a label for a
+   * lane by assembly name), `labels.name.show`,
    * `labels.lanes.placement` and `height`, the stack's px.
    */
   display?: {
@@ -137,7 +138,7 @@ export interface MultiWayTablesArgs {
       mark?: { interpolate?: RibbonInterpolation }
       filter?: FieldPredicate[]
     }
-    rows?: { sort?: string[]; kept?: string[] }
+    rows?: { sort?: string[]; kept?: string[]; labels?: Record<string, string> }
     labels?: {
       name?: { show?: boolean; field?: string }
       lanes?: { placement?: 'above' | 'overlay' }

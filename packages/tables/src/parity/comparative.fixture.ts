@@ -134,6 +134,12 @@ export const ALL_VS_ALL_ZOOMED: MultiwayFixture = {
   },
 }
 
+/** volvox ctgB, which no lane aligns to. */
+export const ALL_VS_ALL_UNALIGNED: MultiwayFixture = {
+  ...ALL_VS_ALL_LANES,
+  anchor: { assemblyName: 'volvox', regions: [CTGB], width: 800 },
+}
+
 /** Two pairwise PAFs, each lane stated against volvox alone. */
 export const STAR_LANES: MultiwayFixture = {
   adapterConfig: STAR.adapterConfig,
