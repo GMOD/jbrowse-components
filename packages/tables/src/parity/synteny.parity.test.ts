@@ -2,13 +2,17 @@ import { getContrastText } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { bandGroundColor, unpack } from '@jbrowse/synteny-core'
 
-import { ribbonThinFade } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import {
+  isRibbonCulled,
+  ribbonThinFade,
+} from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { KIND_MARKER } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyKinds.ts'
 import { recordedOffscreenStrips } from '../../../../plugins/linear-comparative-view/src/tables.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   CONTIGS,
   INVERSIONS,
+  INVERSIONS_APART,
   INVERSIONS_ZOOMED,
   OFFSCREEN,
   OFFSCREEN_WINDOW,
@@ -110,10 +114,13 @@ function syntenyParity(
         geometry,
         view.opacityLevel,
         f => display.featureData?.featureIds[f] ?? '',
-        i => {
-          const xs = Object.values(corners(i))
-          return Math.max(...xs) > 0 && Math.min(...xs) < view.width
-        },
+        i =>
+          !isRibbonCulled(
+            corners(i),
+            view.width,
+            view.overdrawPx,
+            geometry?.kinds[i] === KIND_MARKER,
+          ),
         i => {
           const kind = geometry?.kinds[i] ?? KIND_MARKER
           return params && kind !== KIND_MARKER
@@ -330,22 +337,12 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
   ])
 })
 
-/**
- * The view's off-screen strips also mark each ribbon whose mate has scrolled
- * out of the facing row's window (`culledRibbonMates`), which the tables do
- * not yet list: they list only mates on a contig the facing row does not show.
- */
-const CULLED_MATES = {
-  offscreen: { owner: 'synteny tables: culled ribbon mates', exported: [] },
-}
-
 describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
   parityCases(syntenyParity(INVERSIONS_ZOOMED), [
-    { name: 'defaults', config: {}, drifts: CULLED_MATES },
+    { name: 'defaults', config: {} },
     {
       name: 'strand',
       config: { encoding: { color: { field: 'strand' } } },
-      drifts: CULLED_MATES,
     },
     {
       name: 'strand, indels hidden',
@@ -353,7 +350,6 @@ describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
         encoding: { color: { field: 'strand' } },
         indels: { show: false },
       },
-      drifts: CULLED_MATES,
     },
     {
       name: 'strand, indels left as gaps',
@@ -361,12 +357,25 @@ describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
         encoding: { color: { field: 'strand' } },
         indels: { encoding: { opacity: 0 } },
       },
-      drifts: CULLED_MATES,
     },
     {
       name: 'identity',
       config: { encoding: { color: { field: 'identity' } } },
-      drifts: CULLED_MATES,
+    },
+  ])
+})
+
+describe("3 kb of each row, each row's blocks mated out of the other row's view", () => {
+  parityCases(syntenyParity(INVERSIONS_APART), [
+    { name: 'defaults', config: {} },
+    { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
+    {
+      name: 'filter by identity',
+      config: { filter: [{ field: 'identity', gte: 0.92 }] },
+    },
+    {
+      name: 'opacity by identity',
+      config: { encoding: { opacity: { field: 'identity' } } },
     },
   ])
 })

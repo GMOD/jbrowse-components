@@ -88,6 +88,20 @@ export const INVERSIONS_ZOOMED: ComparativeFixture = {
 }
 
 /**
+ * 3 kb of each, the upper row inside the first block and the lower inside
+ * the second, so each row's ribbons run to mates past the other row's
+ * overdraw: the band culls them and its strips mark them.
+ */
+export const INVERSIONS_APART: ComparativeFixture = {
+  ...INVERSIONS_ZOOMED,
+  target: {
+    assembly: VOLVOX,
+    regions: [{ refName: 'ctgA', start: 10_000, end: 13_000 }],
+    width: 800,
+  },
+}
+
+/**
  * volvox ctgA against ctgB and back, both rows showing ctgB then ctgA, the
  * reverse of the assembly's order.
  */
