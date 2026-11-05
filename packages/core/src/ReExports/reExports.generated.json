@@ -2838,6 +2838,7 @@
     "@jbrowse/core/util/calculateStaticBlocks": {
       "package": "@jbrowse/core",
       "names": [
+        "MINIMUM_BLOCK_WIDTH",
         "default"
       ],
       "worker": "real"

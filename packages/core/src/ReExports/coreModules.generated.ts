@@ -436,7 +436,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/blockTypes': m150,
   '@jbrowse/core/util/cacheBudgets': m151,
   '@jbrowse/core/util/calculateDynamicBlocks': m152.default,
-  '@jbrowse/core/util/calculateStaticBlocks': m153.default,
+  '@jbrowse/core/util/calculateStaticBlocks': { ...m153, __esModule: true },
   '@jbrowse/core/util/categoricalField': m154,
   '@jbrowse/core/util/chooseGridPitch': m155,
   '@jbrowse/core/util/color': m156,

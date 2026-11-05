@@ -108,18 +108,19 @@ view's `encoding.color` paints it; `ribbons`, what the band draws between the
 rows in paint order, each a trapezoid from a span on the query row to a span on
 the target row (`match` for the block, `insertion`, `deletion` and `skip` for
 the CIGAR ops wide enough to draw, `marker` for a location tick), with its color
-and the alpha it composites at, and whether it draws as a centerline;
-`offscreen`, the blocks whose mate lies on a contig the other row is not
-showing, in the color the strip along that row's edge paints them,
-`offscreenContigs`, the count and aligned bp of each such contig and the line
-its hover prints, and `offscreenStrip`, the marks and labels the strips along
-the band's edges paint, in px; `legend` and `ramps`, the key; and `config`, the
-view's settings with their defaults filled, `encoding.color` and
-`encoding.opacity` as config objects. For a host that draws them itself, such as
-R through V8. Positions are genomic, on the axis's region named by `queryRegion`
-and `targetRegion`; a ribbon's `queryX1`/`queryX2` and `targetX1`/`targetX2` are
-its feet in px across the row's `width`, the regions end to end with no gap,
-each foot clamped to its region, X1 joining X1 along one edge and X2 joining X2.
+and the alpha it composites at, and whether it draws as a centerline, less those
+the band culls past its overdraw; `offscreen`, the blocks whose mate lies on a
+contig the other row is not showing or past its window and overdraw, in the
+color the strip along that row's edge paints them, `offscreenContigs`, the count
+and aligned bp of each contig the strip's marks name and the line its hover
+prints, and `offscreenStrip`, the marks and labels the strips along the band's
+edges paint, in px; `legend` and `ramps`, the key; and `config`, the view's
+settings with their defaults filled, `encoding.color` and `encoding.opacity` as
+config objects. For a host that draws them itself, such as R through V8.
+Positions are genomic, on the axis's region named by `queryRegion` and
+`targetRegion`; a ribbon's `queryX1`/`queryX2` and `targetX1`/`targetX2` are its
+feet in px across the row's `width`, the regions end to end with no gap, each
+foot clamped to its region, X1 joining X1 along one edge and X2 joining X2.
 
 ```js
 // type signature
