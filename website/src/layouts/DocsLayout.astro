@@ -21,7 +21,6 @@ interface Props {
   description?: string
   toc?: TocItem[]
   videos?: VideoRef[]
-  rawMarkdown?: string
 }
 
 const {
@@ -30,7 +29,6 @@ const {
   description,
   toc = [],
   videos = [],
-  rawMarkdown = '',
 } = Astro.props
 
 const allDocs = await getCollection('docs')
@@ -111,14 +109,7 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
       </p>
     )}
   </article>
-  <CopyMarkdown
-    markdown={
-      isTutorial && tutorialBetaNotice
-        ? `${tutorialBetaNotice}\n\n${rawMarkdown}`
-        : rawMarkdown
-    }
-    title={title}
-  />
+  {mdHref && <CopyMarkdown href={mdHref} />}
   {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 

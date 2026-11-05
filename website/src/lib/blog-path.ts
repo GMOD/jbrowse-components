@@ -7,13 +7,38 @@ export function blogPath(post: { id: string }): string {
   return `${y}/${m}/${d}/${name}`
 }
 
-// Shared by the blog index and the RSS feed so both show the same preview
-// length (they previously each hard-coded 600 and had to be kept in sync).
 const EXCERPT_CHARS = 600
 
-export function blogExcerpt(body: string): { text: string; truncated: boolean } {
-  const truncated = body.length > EXCERPT_CHARS
-  return { text: truncated ? body.slice(0, EXCERPT_CHARS) : body, truncated }
+// Where a paragraph, list or fence ends: the offset of each blank line outside
+// a code fence.
+function blockEnds(body: string) {
+  const ends: number[] = []
+  let offset = 0
+  let fenced = false
+  for (const line of body.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      fenced = !fenced
+    } else if (!fenced && line.trim() === '' && offset > 0) {
+      ends.push(offset)
+    }
+    offset += line.length + 1
+  }
+  return ends
+}
+
+// The post's opening blocks, cut at the last block end within EXCERPT_CHARS
+// (or the first one, when the opening block runs longer), so no link, tag or
+// fence is cut in half.
+export function blogExcerpt(body: string) {
+  const trimmed = body.trim()
+  const ends = blockEnds(trimmed)
+  const cut =
+    trimmed.length <= EXCERPT_CHARS
+      ? undefined
+      : (ends.findLast(end => end <= EXCERPT_CHARS) ?? ends[0])
+  return cut === undefined
+    ? { text: trimmed, truncated: false }
+    : { text: trimmed.slice(0, cut).trimEnd(), truncated: true }
 }
 
 // The one date format the blog shows, on the post feed and on a post itself.

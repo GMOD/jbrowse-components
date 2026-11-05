@@ -13,22 +13,29 @@ function shouldPrefix(url: unknown, base: string): url is string {
   )
 }
 
-// markdown content references other pages/images with root-relative URLs
-// like `/docs/...` or `/img/...`; prefix those with the configured base path
-// (e.g. `/jb2`) so they resolve correctly both in `astro dev` and the built site
+const URL_PROPS: Record<string, string> = {
+  a: 'href',
+  img: 'src',
+  source: 'src',
+  track: 'src',
+  video: 'poster',
+}
+
+// markdown content references other pages, images and media with
+// root-relative URLs like `/docs/...` or `/img/...`; prefix those with the
+// configured base path (e.g. `/jb2`) so they resolve correctly both in
+// `astro dev` and the built site
 const rehypeBaseUrls: Plugin<[{ base: string }], Root> = ({ base }) => {
   return tree => {
-    if (!base) {
-      return
+    if (base) {
+      visit(tree, 'element', node => {
+        const prop = URL_PROPS[node.tagName]
+        const url = prop ? node.properties[prop] : undefined
+        if (prop && shouldPrefix(url, base)) {
+          node.properties[prop] = `${base}${url}`
+        }
+      })
     }
-    visit(tree, 'element', node => {
-      const prop =
-        node.tagName === 'a' ? 'href' : node.tagName === 'img' ? 'src' : null
-      const url = prop && node.properties[prop]
-      if (prop && shouldPrefix(url, base)) {
-        node.properties[prop] = `${base}${url}`
-      }
-    })
   }
 }
 

@@ -3,25 +3,17 @@ import { getCollection } from 'astro:content'
 import { baseUrl } from '../lib/base-url.ts'
 import { blogPath } from '../lib/blog-path.ts'
 import { entrySlug } from '../lib/docs-sidebar.ts'
-import { navLinks } from '../lib/nav.ts'
 
 import type { APIRoute } from 'astro'
 
-// Standalone routes that aren't part of a content collection: the shared nav
-// pages plus home, search, and the pages kept out of the nav bar (cancer,
-// features, contact, plugin_store, privacy, code-signing-policy) that still
-// need sitemap coverage.
-const staticRoutes = [
-  ...navLinks.map(l => l.path),
-  '',
-  'search',
-  'cancer',
-  'features',
-  'contact',
-  'plugin_store',
-  'privacy',
-  'code-signing-policy',
-]
+const staticRoutes = Object.keys(import.meta.glob('./**/*.{astro,md}'))
+  .filter(file => !file.includes('[') && file !== './404.astro')
+  .map(file =>
+    file
+      .replace(/^\.\//, '')
+      .replace(/\.(astro|md)$/, '')
+      .replace(/(^|\/)index$/, ''),
+  )
 
 export const GET: APIRoute = async ({ site }) => {
   // trailingSlash: 'always' — normalize every loc to end with '/'

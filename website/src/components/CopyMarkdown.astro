@@ -1,23 +1,15 @@
 ---
-import { site } from 'astro:config/client'
-
-import { absolutizeMarkdownLinks } from '../lib/absolutize-markdown-links.ts'
-import { baseUrl } from '../lib/base-url.ts'
-import { retargetCodeBaseInMarkdown } from '../lib/code-base.ts'
-
 interface Props {
-  markdown: string
-  title: string
+  href: string
 }
 
-const { markdown, title } = Astro.props
-const origin = `${site ?? ''}${baseUrl}`
-const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(markdown, origin))}`
+const { href } = Astro.props
 ---
 
 <button
   id="copy-markdown"
   class="rail-button"
+  data-href={href}
   type="button"
   title="Copy this page as raw Markdown (for pasting into an LLM)"
 >
@@ -45,23 +37,31 @@ const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(
   <span>Copy markdown</span>
 </button>
 
-<script is:inline define:vars={{ raw }}>
+<script>
   const btn = document.getElementById('copy-markdown')
   const label = btn?.querySelector('span')
   const copyIcon = btn?.querySelector('.copy-icon')
   const checkIcon = btn?.querySelector('.check-icon')
-  const original = label?.textContent
-  // Cancelled on re-click, so a second copy restarts the 1.5s rather than
-  // inheriting the first click's deadline — without this the button snapped
-  // back to "Copy markdown" while still reading "Copied!" from the newer press.
-  let reset
+  const original = label?.textContent ?? 'Copy markdown'
+  let reset: ReturnType<typeof setTimeout> | undefined
 
+  async function markdownBlob(href: string) {
+    const response = await fetch(href)
+    if (!response.ok) {
+      throw new Error(`${href}: ${response.status}`)
+    }
+    return new Blob([await response.text()], { type: 'text/plain' })
+  }
+
+  // The fetch's promise goes into the ClipboardItem rather than being awaited
+  // first: Safari drops the click's permission to write across an await.
   btn?.addEventListener('click', async () => {
-    // clipboard.writeText rejects on insecure origins and where the API is
-    // unavailable — surface that instead of silently doing nothing.
+    const href = btn.dataset.href ?? ''
     let ok = true
     try {
-      await navigator.clipboard.writeText(raw)
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/plain': markdownBlob(href) }),
+      ])
     } catch {
       ok = false
     }
@@ -76,7 +76,7 @@ const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(
     clearTimeout(reset)
     reset = setTimeout(() => {
       if (label) {
-        label.textContent = original ?? 'Copy markdown'
+        label.textContent = original
       }
       copyIcon?.setAttribute('style', '')
       checkIcon?.setAttribute('style', 'display: none')

@@ -77,10 +77,7 @@ function headingText(node: Heading) {
   return parts.join('').trim()
 }
 
-const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
-  const base = options.base?.replace(/\/$/, '') ?? ''
-  const withBase = (u: string) =>
-    base && u.startsWith('/') ? `${base}${u}` : u
+const remarkVideo: Plugin<[], Root> = () => {
   return (tree, file) => {
     const videos: VideoRef[] = []
     const anchors: string[] = []
@@ -105,8 +102,8 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
     const figureFor = (attrList: string) => {
       const attrs = parseAttrs(attrList)
       const rawSrc = attrs.src ?? ''
-      const mp4 = withBase(rawSrc)
-      const poster = withBase(attrs.poster ?? rawSrc.replace(/\.mp4$/, '.jpg'))
+      const mp4 = rawSrc
+      const poster = attrs.poster ?? rawSrc.replace(/\.mp4$/, '.jpg')
       const caption = escapeHtml(attrs.caption ?? '')
       const autoplay = attrs.autoplay === 'true'
       // autoplay only works muted, and a clip that starts by itself has no use
@@ -133,7 +130,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       // EXISTS — selectable, readable by a screen reader, and offered by the
       // player's own captions control to anyone who wants it larger.
       const captions = videoCaptioned.includes(name)
-        ? `<track kind="captions" srclang="en" label="Steps" src="${withBase(rawSrc.replace(/\.mp4$/, '.vtt'))}"/>`
+        ? `<track kind="captions" srclang="en" label="Steps" src="${rawSrc.replace(/\.mp4$/, '.vtt')}"/>`
         : ''
       // The tour's own frame, so the box is the right shape from the first paint.
       // Without it a <video> is 300x150 until its metadata arrives and then jumps
