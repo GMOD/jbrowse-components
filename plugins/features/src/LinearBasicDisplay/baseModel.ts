@@ -28,7 +28,10 @@ import {
   filterFieldNarrowing,
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
-import { originTailId, wholeSubfeatureId } from '@jbrowse/core/util/originCut'
+import {
+  originTailCandidates,
+  wholeSubfeatureId,
+} from '@jbrowse/core/util/originCut'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -1018,11 +1021,11 @@ export default function baseStateModelFactory(
        */
       get selectionInk(): HighlightRect[] {
         const id = self.selectedFeatureId
-        // a feature crossing a circular origin is selected whole, and boxed
-        // in both the pieces it draws as
+        // a feature crossing a circular origin is selected whole, and boxed,
+        // or its selected subfeature is, in both the pieces it draws as
         return featureHighlightInk(
           self,
-          id === undefined ? [] : [id, originTailId(id)],
+          id === undefined ? [] : [id, ...originTailCandidates(id)],
         )
       },
       /**

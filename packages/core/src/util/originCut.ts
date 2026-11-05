@@ -21,6 +21,19 @@ export function originHeadId(id: string) {
 }
 
 /**
+ * Every id the piece past the origin could give what the uncut feature calls
+ * `id`, a feature or any subfeature of it: the feature's own id is some prefix
+ * of `id` ending at a `-`, or all of it, and the piece carries `originTailId`
+ * of that prefix. Only the one the piece really carries names anything drawn.
+ */
+export function originTailCandidates(id: string) {
+  const prefixEnds = [...id.matchAll(/-/g)].map(m => m.index)
+  return [...prefixEnds, id.length].map(
+    end => `${originTailId(id.slice(0, end))}${id.slice(end)}`,
+  )
+}
+
+/**
  * The id the uncut feature gives the subfeature a piece calls `subfeatureId`,
  * `pieceId` the piece's own id: the piece before the origin already carries
  * the feature's id, and the one past it its `originTailId`.

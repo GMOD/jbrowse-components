@@ -1,4 +1,7 @@
-import { wholeSubfeatureId } from '@jbrowse/core/util/originCut'
+import {
+  originTailCandidates,
+  wholeSubfeatureId,
+} from '@jbrowse/core/util/originCut'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -163,5 +166,7 @@ describe.each(Object.entries(adapters))('%s', (_name, make) => {
     expect(wholeSubfeatureId(tailGene.id(), tailExon.id())).toBe(
       wholeExons[1]!.id(),
     )
+    expect(originTailCandidates(wholeExons[1]!.id())).toContain(tailExon.id())
+    expect(originTailCandidates(wholeGene.id())).toContain(tailGene.id())
   })
 })
