@@ -210,6 +210,23 @@ with the same track to see the three side by side:
 Anderson et al. (1981) published the sequence with this layout, twelve of the
 thirteen protein-coding genes on one strand and _ND6_ on the other.
 
+## Reproduce it end to end
+
+[`build_organelle_map.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_organelle_map.sh)
+wraps every step above. It:
+
+1. fetches the accession's FASTA and GFF3 from NCBI
+2. indexes the sequence, and sorts and indexes the genes
+3. writes a JBrowse with the circular assembly, the gene track and the circle as
+   its default session
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_organelle_map.sh
+bash build_organelle_map.sh                   # builds ./organelle_map_build/jbrowse2
+ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast bash build_organelle_map.sh chloroplast_build
+npx --yes serve organelle_map_build/jbrowse2  # then open the printed URL
+```
+
 ## See also
 
 - [](/docs/user_guides/circular_view)
