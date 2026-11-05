@@ -60,7 +60,7 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the records themselves above the genotype rows, at their genomic positions |
-| <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>undefined</code> | height in pixels of the band over genotype rows, added to the track above them; the band's seam drag writes it. Unset, the band opens at its stack of records, up to 170 px, and keeps that height from then on |
+| <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | height in pixels of the band over genotype rows, added to the track above them; the band's seam drag writes it. Unset, the band opens at its stack of records, up to 170 px, and keeps that height from then on |
 | <span id="slot-displaymode">**displayMode**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (normal, compact, superCompact, collapsed) | Unset, `compact` over genotype rows, keeping the band over them tight, and `normal` with no rows, as on a feature track. |
 | <span id="slot-mark">**mark**</span><br>[FeatureMark](../featuremark) | The box each record draws as, a [](/docs/config/featuremark) object: `{ height: 6 }`. |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | One labelled section of the band per value of a record field: `"INFO.CLNSIG"`, or `{ field, sort }` with the order its sections stack in. Not the display's own `facet`, which bands the sample rows. |

@@ -4911,7 +4911,10 @@
     "@jbrowse/display-kit/regionHost": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "contentRightEdgePx"
+        "bufferedVisibleRegionsOf",
+        "contentRightEdgePx",
+        "windowFetchRegions",
+        "windowFrames"
       ],
       "worker": "real"
     },

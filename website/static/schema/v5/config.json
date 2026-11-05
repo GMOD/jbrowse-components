@@ -7271,7 +7271,7 @@
       "type": "object",
       "properties": {
         "min": {
-          "description": "the shortest insert in bp a pair counts as normal; shorter is short.",
+          "description": "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs.",
           "if": {
             "type": "null"
           },
@@ -7280,7 +7280,7 @@
           }
         },
         "max": {
-          "description": "the longest insert in bp a pair counts as normal; longer is long.",
+          "description": "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs.",
           "if": {
             "type": "null"
           },
@@ -14260,7 +14260,7 @@
           }
         },
         "reverse": {
-          "description": "turns the identity ramp round, so its last color paints the low end; unset runs as written.",
+          "description": "turns the identity ramp round, so its last color paints the low end; unset follows the field's preset, else runs as written.",
           "if": {
             "type": "null"
           },

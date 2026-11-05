@@ -71,7 +71,7 @@ adapters must be registered on `pluginManager` (`registerVariantAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, display, byteLimit, }: VariantTablesArgs) => Promise<{ rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: never[] | string[]; legend: {…}; legendTitle: string; ramps: {…}[]; cells: {…}; rows: {…}; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, byteLimit, }: VariantTablesArgs) => Promise<{ rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: never[] | string[]; legend: {…}; legendTitle: string; ramps: {…}[]; cells: {…}; rows: {…}; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

@@ -45,6 +45,19 @@ gutter, the height its `thin` flag and fade are measured at.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
 
+### recordedOffscreenStrips
+
+What `drawOffscreenMates` paints of `strips` over a band `height` px tall: every
+mark and every label, in px from the band's top left, each named by the axis
+whose edge it hangs off.
+
+```js
+// type signature
+(strips: OffscreenMateLane[], height: number) => { marks: { x: number[]; y: number[]; width: number[]; height: number[]; color: string[]; alpha: number[]; axis: ("query" | "target")[]; }; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)
+
 ### SyntenyLevel
 
 One ribbon band between two rows of a synteny view: the shared ribbon canvas,

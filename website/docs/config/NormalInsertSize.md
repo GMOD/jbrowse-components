@@ -37,5 +37,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-min">**min**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the shortest insert in bp a pair counts as normal; shorter is short |
-| <span id="slot-max">**max**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the longest insert in bp a pair counts as normal; longer is long |
+| <span id="slot-min">**min**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs |
+| <span id="slot-max">**max**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs |

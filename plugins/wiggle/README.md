@@ -32,20 +32,22 @@ summarizes); `summaryField`, which of them the display plots (`score`,
 `minScore` or `maxScore`); `marks`, the layers the display's encoder builds from
 them in paint order (the plotted summary, and under a min-max extent the tinted
 max and min bands, or a line's min-to-max `band`), each mark in the color it
-paints and reaching down to `low`, the band's min or the origin bars grow from;
-`scoreScale`, the score axis the display autoscales to under `encoding.y`, its
-`domain`, `type` and `symlogConstant`; `rules`, the reference lines it draws,
-none where it rules no band, as a density plot does not; `ramps`, the color bar
-its key shows where one ramp paints every row (`rampKeyOf`); `legend` and
-`legendTitle`, the categorical key beside it (`colorKeyTables`): the threshold
-bands and the row color key, the subtracks of an overlay or a `rows.color`
-field's values; and `warnings`, the samples file's. For a host that draws them
-itself, such as R through V8. The adapters must be registered on `pluginManager`
-(`registerWiggleAdapters`).
+paints and reaching down to `low`, the band's min or the origin bars grow from,
+and on a bar `clipSide`, 1 where its score passes the domain's top and -1 its
+bottom, where the display paints `clipStrip` (its `color`, `px` tall) across the
+row's edge, else 0; `scoreScale`, the score axis the display autoscales to under
+`encoding.y`, its `domain`, `type` and `symlogConstant`; `rules`, the reference
+lines it draws, none where it rules no band, as a density plot does not;
+`ramps`, the color bar its key shows where one ramp paints every row
+(`rampKeyOf`); `legend` and `legendTitle`, the categorical key beside it
+(`colorKeyTables`): the threshold bands and the row color key, the subtracks of
+an overlay or a `rows.color` field's values; and `warnings`, the samples file's.
+For a host that draws them itself, such as R through V8. The adapters must be
+registered on `pluginManager` (`registerWiggleAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, regions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: {…}; ramps: {…}[]; legend: { label: string[]; color: string[]; section: string[]; }; legendTitle: string; scoreScale: { domain: [number, number]; type: string; symlogConstant: number; }; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; warnings: string[]; }>
+(pluginManager: PluginManager, { adapterConfig, regions, displayedRegions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: {…}; ramps: {…}[]; legend: {…}; legendTitle: string; scoreScale: { domain: [number, number]; type: string; symlogConstant: number; }; clipStrip: { color: string; px: number; }; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; warnings: string[]; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

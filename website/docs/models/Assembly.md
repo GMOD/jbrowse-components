@@ -63,7 +63,7 @@ names.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getconf">**getConf**</span><br><code>(arg: string) =&gt; any</code> |  |
+| <span id="method-getconf">**getConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>&lt;const SLOT extends ConfigurationLeafSlotName&lt;BaseAssemblyConfi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>&lt;const SLOT extends ConfigurationLeafSlotName&lt;BaseAssemblyConfigSchema&gt;&gt;(arg: SLOT) =&gt; ConfigurationSlotValue&lt;BaseAssemblyConfigSchema, SLOT&gt; &#124; undefined</code></pre></dialog></span> |  |
 | <span id="method-hasname">**hasName**</span><br><code>(name: string) =&gt; boolean</code> |  |
 | <span id="method-getcanonicalrefname">**getCanonicalRefName**</span><br><code>(refName: string) =&gt; string</code> | Returns the canonical refName for a given alias or refName. Note: The canonical name may differ from what's in the FASTA file when refNameAliases with override:true are configured. To get the name that matches the FASTA file, use getSeqAdapterRefName(). |
 | <span id="method-getrefnamecolor">**getRefNameColor**</span><br><code>(refName: string) =&gt; string &#124; undefined</code> |  |

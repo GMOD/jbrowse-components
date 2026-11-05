@@ -476,7 +476,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/plotMenu': ['editPlotMenuItems', 'openPlotDialog'],
   '@jbrowse/display-kit/PointerHoverMixin': ['default'],
   '@jbrowse/display-kit/regionCommit': ['makeCommitChecks', 'payloadServesZoom'],
-  '@jbrowse/display-kit/regionHost': ['contentRightEdgePx'],
+  '@jbrowse/display-kit/regionHost': ['bufferedVisibleRegionsOf', 'contentRightEdgePx', 'windowFetchRegions', 'windowFrames'],
   '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': ['regionTooLargeConfigSchemaFields'],
   '@jbrowse/display-kit/RegionTooLargeMixin': ['default'],
   '@jbrowse/display-kit/regionTooLargeUtils': ['AUTO_FORCE_LOAD_BP', 'BASE_FETCH_SIZE_LIMIT', 'SUB_FLOOR_BYTE_BUDGET_FACTOR', 'TOO_MANY_FEATURES_REASON', 'bytesTooLargeReason', 'evaluateRegionTooLarge', 'heldDataAnswers', 'nextByteEstimate', 'nextGateState', 'resolveByteLimit'],
