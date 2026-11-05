@@ -62,6 +62,7 @@ import {
 } from '../shared/wiggleColor.ts'
 import {
   wiggleConfigViews,
+  wiggleLabelViews,
   wiggleModeViews,
 } from '../shared/wiggleConfigViews.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
@@ -224,6 +225,7 @@ export default function stateModelFactory(
     }))
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
+    .views(self => wiggleLabelViews(self))
     .views(self => ({
       /**
        * #getter
@@ -410,17 +412,6 @@ export default function stateModelFactory(
           resolution: self.resolution,
           yField: self.yField,
         }
-      },
-
-      /**
-       * #getter
-       * Offset the track label above the plot so the left y-axis stays pinned
-       * to the content edge instead of dodging right of the label, and so a
-       * stack of rows is not hidden behind it. One density plot draws no left
-       * axis (just a top score legend), so there let the label overlap.
-       */
-      get prefersOffset() {
-        return !self.isDensityMode || self.isRowLayout
       },
     }))
     .views(self => wiggleColorScaleViews(self))

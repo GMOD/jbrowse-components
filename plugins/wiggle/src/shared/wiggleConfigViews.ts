@@ -140,3 +140,22 @@ export function wiggleModeViews(self: WiggleModeHost) {
     },
   }
 }
+
+/** What the export and the screen place the track's label by. */
+export function wiggleLabelViews(self: {
+  isDensityMode: boolean
+  isRowLayout: boolean
+}) {
+  return {
+    /**
+     * #getter
+     * Offset the track label above the plot so the left y-axis stays pinned
+     * to the content edge instead of dodging right of the label, and so a
+     * stack of rows is not hidden behind it. One density plot draws no left
+     * axis (just a top score legend), so there let the label overlap.
+     */
+    get prefersOffset() {
+      return !self.isDensityMode || self.isRowLayout
+    },
+  }
+}

@@ -1,3 +1,4 @@
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -35,7 +36,11 @@ import {
   wiggleRowLabelViews,
   wiggleSidebarViews,
 } from './wiggleAxisViews.ts'
-import { wiggleConfigViews, wiggleModeViews } from './wiggleConfigViews.ts'
+import {
+  wiggleConfigViews,
+  wiggleLabelViews,
+  wiggleModeViews,
+} from './wiggleConfigViews.ts'
 import { wiggleDisplayViews } from './wiggleDisplayViews.ts'
 import { wiggleColorScaleViews, wiggleScoreKeyViews } from './wiggleKeyViews.ts'
 import {
@@ -71,7 +76,7 @@ const NO_FRAME: WiggleStaticFrame = {
 /**
  * The wiggle display reduced to its config, the fetched scores and the frame
  * they were fetched over, under the views the display installs, in the
- * display's order, its row views and row hooks among them. No session, no
+ * display's order, its row views, row hooks and key among them. No session, no
  * view, no autoruns, and so no autoscale group: the axis autoscales over
  * this track alone. The tables and the static SVG export both run it.
  */
@@ -85,6 +90,7 @@ function wiggleStaticHost(
       'WiggleStaticHost',
       TrackHeightMixin(),
       YFieldConfigMixin(WIGGLE_Y_PATHS),
+      LegendMixin(),
       types.model({ id: types.string, configuration }),
     )
     .volatile(
@@ -110,6 +116,7 @@ function wiggleStaticHost(
     .views(ungroupedAutoscaleViews)
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
+    .views(self => wiggleLabelViews(self))
     .views(self => treeSidebarRowsConfigViews(self))
     .views(() => treeSidebarRowHookDefaults<Source>())
     .views(self => expandedRowViews<Source>(self))
