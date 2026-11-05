@@ -1,6 +1,6 @@
 ---
 title: 'Pangenome (HPRC) part 2: haplotypes against each other'
-sidebar_label: Pangenome (HPRC pt 2, haplotypes against each other)
+sidebar_label: Pangenome (HPRC pt 2, haplotype lanes)
 description:
   Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
   by the release's pangenome graph, at a CFH deletion, the GSTT1 gene GRCh38
