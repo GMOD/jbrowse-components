@@ -1254,6 +1254,16 @@ describe('validateConfig', () => {
       expect(errorsOf(config).length).toBeGreaterThan(0)
     })
 
+    it('still reports a configuration slot written at the top level', () => {
+      const config = {
+        ...baseConfig(),
+        theme: { palette: {} },
+        plugins: [{ name: 'MsaView', esmUrl: 'msaview.js' }],
+      }
+      expect(errorsOf(config).map(e => e.where)).toContain('theme')
+      expect(warningsOf(config).map(w => w.where)).not.toContain('theme')
+    })
+
     it('still checks the root slots core does declare', () => {
       const config = {
         ...withPluginThings(),

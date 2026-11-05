@@ -1227,12 +1227,14 @@ export function validateConfig(
       `core declares no "${key}" slot${didYouMeanKey(key, [...schema.rootConfigurationSlots])} — a plugin this config declares may`,
     )
   }
-  // a near miss of a core key stays the schema's error, so a plugin cannot
-  // hide `assemblys`
+  // a near miss of a core key, or a `configuration` slot written a level too
+  // high, stays the schema's error, so a plugin cannot hide `assemblys` or a
+  // top-level `theme`
   const pluginRootKeys = declaresPlugins
     ? Object.keys(config).filter(
         k =>
           !schema.declaresConfigKey(k) &&
+          !schema.rootConfigurationSlots.has(k) &&
           !didYouMeanKey(k, [...schema.configKeys]),
       )
     : []
