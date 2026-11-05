@@ -36,6 +36,10 @@ done
 
 PROJECT=${1:-TCGA-BRCA}
 LIMIT=${2:-0}
+# A group under 20 tumors gives percentages that are noise, so the full cohort
+# skips it; a LIMIT smoke test has no group that large, and keeps them all
+MIN_GROUP=20
+[ "$LIMIT" -gt 0 ] && MIN_GROUP=1
 # Which clinical column the recurrence track splits on. `subtype` is derived
 # from the receptor calls and so is breast only; `histology` and `stage` come
 # from harmonized GDC fields and work for any project.
@@ -118,7 +122,7 @@ python3 "$SCRIPT_DIR/tcga_clinical_tsv.py" "$PROJECT" "$CLINICAL"
 # derived from the VCF above rather than re-downloaded.
 echo "== tallying per-gene recurrence"
 python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE" \
-  --groups "$CLINICAL:$GROUP_COLUMN"
+  --groups "$CLINICAL:$GROUP_COLUMN" --min-group "$MIN_GROUP"
 bgzip -f "$RECURRENCE"
 tabix -f -C -p bed "$RECURRENCE.gz"
 
