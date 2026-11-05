@@ -194,6 +194,36 @@ asserted against `any`.
   (ARCHITECTURE.md, "where a display's state lives"). `displaySnapshot` on
   `createDisplay` is the MST-property half.
 
+### An export parity suite runs the real display beside its tables export
+
+`packages/tables/src/parity/` checks that a display's `tables.ts` export
+decides what the view does, over a matrix of configs. `standUpDisplay`
+(`testEnv.ts`) is the one place that does not use
+`createDisplayTestEnvironment`, because a parity check needs what that
+harness stubs: the real plugins' track type (so a `MultiQuantitativeTrack`'s
+display defaults apply), the real adapter, and every RPC run in-process by
+its registered method type, so the display fetches with its own args from
+the files the export reads. The view shows the export's region end to end at
+the export's `bpPerPx`, and it throws if its settled block is not that
+region.
+
+To add a display, write one `*.parity.test.ts` holding a `ParityAdapter`
+(`testUtils.ts`):
+
+- `decisionNames`: the decisions compared, such as `rows`, `domain`,
+  `ticks`, `legend`. `parityCases` runs one test per decision per case.
+- `buildModel(config)`: `standUpDisplay` with the plugin, track type,
+  display type, an `isDisplay` guard and a `settled` predicate.
+- `buildExport(config)`: the `createTablesEngine()` call over the same
+  fixture.
+- `modelDecisions` and `exportDecisions`: each side's value for every
+  decision, normalized only in spelling (hex colors, `''` for unset).
+
+A decision known to disagree goes in the case's `drifts`, naming the area
+that owns it; it runs as `test.failing`, so a fix turns it red until the
+entry goes. A case whose setup throws fails every plain test in it, so a
+drift entry never hides a broken case alone.
+
 ## Wait signals
 
 **Do not** wait on `LoadingOverlay` text: it keeps the literal `"Loading"` in the

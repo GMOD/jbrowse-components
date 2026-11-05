@@ -795,6 +795,18 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../display-test-utils
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../display-ui
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.10.0
+        version: 6.10.0(mobx@7.1.4)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../../plugins/linear-genome-view
       acorn:
         specifier: 8.19.0
         version: 8.19.0

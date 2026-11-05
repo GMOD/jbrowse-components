@@ -17,6 +17,26 @@ disagree today.
   FASTA. Steps to close it:
   [tables-order-contig-colors-by-the-assembly](tables-order-contig-colors-by-the-assembly.md).
 
+The parity suites in `packages/tables/src/parity/` (TEST_INFRASTRUCTURE.md)
+hold each of these as a `test.failing` drift:
+
+- **`rows.tree` order**, wiggle and variants: the view orders rows by the
+  tree's leaves, the tables by `rows.sort` and the file. The tree-sidebar row
+  chain.
+- **Wiggle keys no categorical scale.** The view keys the subtracks over a
+  shared plot, a `rows.color` attribute and a threshold's bands (`< -20`,
+  `-20 – 20`, `≥ 20`); the tables ship `ramps` alone. Minimal:
+  `{ rows: { field: '' } }` on a MultiWiggleAdapter.
+- **Wiggle rules on a heatmap.** `{ mark: 'rect', encoding: { y: { rules:
+  [{ value: 10 }] } } }`: the view draws no rule, the tables list one.
+- **Variants key no records-band scale.** An SV VCF's view keys `SV type`
+  (Duplication) above the genotype key; the tables do not.
+- **Variants under `genotypes: { show: false }`** ship every row, their colors
+  and the genotype key; the view draws no row and keys nothing.
+- **Variants under an identity color callback** (`value: 'jexl:…'`,
+  `scale: { type: 'identity', domain, names }`) key nothing; the view keys
+  the named colors (`identityKeyEntries`).
+
 ## Equivalent today, by hand
 
 - Autoscale glue in alignments coverage's tables, and the nice-rounding step
