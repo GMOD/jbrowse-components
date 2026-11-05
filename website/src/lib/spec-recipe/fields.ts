@@ -525,7 +525,7 @@ function hicColorStep(scale: Record<string, unknown>): FieldStep | undefined {
     return schemeStep ? { path: schemeStep } : undefined
   }
   return {
-    path: `${TRACK_MENU} → Color scheme → Log scale (${scale.type === 'log' ? 'checked' : 'unchecked'})`,
+    path: `${TRACK_MENU} → Color scheme → Log scale (${checked(scale.type !== 'linear')})`,
     note: schemeStep ? `Then ${schemeStep}.` : undefined,
   }
 }
@@ -739,6 +739,23 @@ const SCALE_TYPES: Record<string, string> = {
 
 const checked = (on: boolean) => (on ? 'checked' : 'unchecked')
 
+const isMaf = (displayType: string) => displayType === 'LinearMafDisplay'
+
+const layerShow = (value: unknown) => asRecord(value)?.show
+
+// A checkbox in the Track menu's Show submenu, on the displays that have it.
+function showToggle(
+  label: string,
+  onDisplay: (displayType: string) => boolean,
+  { read = value => value, note }: { read?: (value: unknown) => unknown; note?: string } = {},
+): FieldRecipe {
+  return (value, { displayType }) => {
+    const on = read(value)
+    return typeof on === 'boolean' && displayType && onDisplay(displayType)
+      ? { path: `${TRACK_MENU} → Show → ${label} (${checked(on)})`, note }
+      : undefined
+  }
+}
 
 function ruleValues(rules: unknown[]) {
   const values = rules.map(rule =>
@@ -1050,9 +1067,7 @@ function plotTypeStep(rendering: string): FieldStep | undefined {
 function extentStep(value: unknown): FieldStep | undefined {
   return typeof value === 'string'
     ? {
-        path: `${TRACK_MENU} → Resolution → Bin summary → Show min and max (${
-          value === 'min-max' ? 'checked' : 'unchecked'
-        })`,
+        path: `${TRACK_MENU} → Resolution → Bin summary → Show min and max (${checked(value === 'min-max')})`,
       }
     : undefined
 }
@@ -1090,7 +1105,7 @@ const checkbox = (label: string, note?: string): FieldRecipe => {
   return value =>
     typeof value === 'boolean'
       ? {
-          path: `${TRACK_MENU} → ${label} (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → ${label} (${checked(value)})`,
           note,
         }
       : undefined
@@ -1428,7 +1443,7 @@ const graphCheckbox =
   (value, context) =>
     typeof value === 'boolean'
       ? {
-          path: `${graphSurface(context, 'Graph view menu')} → Show → ${label} (${value ? 'checked' : 'unchecked'})`,
+          path: `${graphSurface(context, 'Graph view menu')} → Show → ${label} (${checked(value)})`,
         }
       : undefined
 
@@ -1522,16 +1537,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   'rows.colors': rowsColorsStep,
   facet: facetStep,
   filter: filterListStep,
-  // Declared by LinearHicDisplay alone, so as with the alignments-only fields
-  // the name settles the display and an unresolved entry can still be
-  // answered.
-  useColorPercentile: (value, { displayType }) =>
-    typeof value === 'boolean' && isHicOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Color scheme → Emphasize faint contacts (95th percentile) (${value ? 'checked' : 'unchecked'})`,
-          note: 'Saturates the color scale at the 95th percentile instead of the maximum, so faint off-diagonal contacts read more strongly.',
-        }
-      : undefined,
   'data.normalization': (value, { displayType }) =>
     typeof value === 'string' && isHicOnlyField(displayType)
       ? {
@@ -1560,13 +1565,10 @@ export const trackFields: Record<string, FieldRecipe> = {
           : undefined
       : undefined,
   clusterRegion: value => (typeof value === 'string' ? [] : undefined),
-  'rows.axis.grid': (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType === 'LinearMultiRowFeatureDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show → Row separators (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
+  'rows.axis.grid': showToggle(
+    'Row separators',
+    d => d === 'LinearMultiRowFeatureDisplay',
+  ),
   // Which attribute becomes the rows. The submenu's options are discovered from
   // the loaded features rather than configured, so the figure's own value is
   // the label to click — except a `jexl:` partition, which that menu shows as a
@@ -1650,7 +1652,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'rows.axis.labels': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Show → Row labels (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Row labels (${checked(value)})`,
           note: value
             ? undefined
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
@@ -1694,7 +1696,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Read connections → View as pairs/link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Read connections → View as pairs/link supplementary alignments (${checked(value === 'chain')})`,
         }
       : undefined,
   'readConnections.height': (value, { displayType }) =>
@@ -1717,32 +1719,18 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  'legend.show': (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType &&
-    SHOW_LEGEND_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Show → Legend (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
-  'coverage.show': (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType &&
-    (SHOW_SUBMENU_DISPLAYS.has(displayType) ||
-      displayType === 'LinearMafDisplay')
-      ? {
-          path: `${TRACK_MENU} → Show → Coverage (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
-  'pileup.collapsed': (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType &&
-    SHOW_SUBMENU_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Show → Collapse groups to one row (${value ? 'checked' : 'unchecked'})`,
-          note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
-        }
-      : undefined,
+  'legend.show': showToggle('Legend', d => SHOW_LEGEND_DISPLAYS.has(d)),
+  'coverage.show': showToggle(
+    'Coverage',
+    d => SHOW_SUBMENU_DISPLAYS.has(d) || d === 'LinearMafDisplay',
+  ),
+  'pileup.collapsed': showToggle(
+    'Collapse groups to one row',
+    d => SHOW_SUBMENU_DISPLAYS.has(d),
+    {
+      note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
+    },
+  ),
   'ribbons.encoding.color': (value, { displayType }) => {
     const label = syntenyColorMode(value)?.label
     return label && displayType === 'MultiWaySyntenyDisplay'
@@ -1753,7 +1741,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'overlay' || value === 'above') &&
     displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show → Lane names on the gene row (${value === 'overlay' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Lane names on the gene row (${checked(value === 'overlay')})`,
         }
       : undefined,
   'coverage.encoding.y': yStep(channelYMembers),
@@ -1772,12 +1760,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     ].flatMap(step => (step === undefined ? [] : step))
     return steps.length ? steps : undefined
   },
-  'conservation.show': (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'LinearMafDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show → Conservation (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
+  'conservation.show': showToggle('Conservation', isMaf),
   'conservation.unit': (value, { displayType }) => {
     const label = CONSERVATION_UNIT_OPTIONS.find(([v]) => v === value)?.[1]
     return label && displayType === 'LinearMafDisplay'
@@ -1793,22 +1776,12 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: rowHeightPath(value, presets) }
       : undefined
   },
-  'alignments.reference': (value, { displayType }) => {
-    const show = (value as { show?: unknown } | undefined)?.show
-    return typeof show === 'boolean' && displayType === 'LinearMafDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show → Reference row (${show ? 'checked' : 'unchecked'})`,
-        }
-      : undefined
-  },
-  'alignments.mismatches': (value, { displayType }) => {
-    const show = (value as { show?: unknown } | undefined)?.show
-    return typeof show === 'boolean' && displayType === 'LinearMafDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show → Mismatches (${show ? 'checked' : 'unchecked'})`,
-        }
-      : undefined
-  },
+  'alignments.reference': showToggle('Reference row', isMaf, {
+    read: layerShow,
+  }),
+  'alignments.mismatches': showToggle('Mismatches', isMaf, {
+    read: layerShow,
+  }),
   'alignments.bases': (value, { displayType }) => {
     const bases = asRecord(value)
     const field =
@@ -1845,7 +1818,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     if (typeof value !== 'boolean' || !displayType) {
       return undefined
     }
-    const state = value ? 'checked' : 'unchecked'
+    const state = checked(value)
     return TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
           path: `${TRACK_MENU} → Show → ${TREE_SIDEBAR_TOGGLE} (${state})`,
@@ -1869,7 +1842,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     if (displayType && TRIANGLE_DISPLAYS.has(displayType)) {
       return value === 'fit' || value === 'fixed'
         ? {
-            path: `${TRACK_MENU} → Layout → Fit to track height (${value === 'fit' ? 'checked' : 'unchecked'})`,
+            path: `${TRACK_MENU} → Layout → Fit to track height (${checked(value === 'fit')})`,
             note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
           }
         : undefined
@@ -1910,7 +1883,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       const shown = asRecord(part)?.show
       return typeof shown === 'boolean'
         ? {
-            path: `${TRACK_MENU} → Show → ${label} (${shown ? 'checked' : 'unchecked'})`,
+            path: `${TRACK_MENU} → Show → ${label} (${checked(shown)})`,
           }
         : undefined
     }
@@ -2261,7 +2234,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     const show = asRecord(value)?.show
     return typeof show === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} (${show ? 'checked' : 'unchecked'})`,
+          path: `${path} (${checked(show)})`,
           note: 'On by default: a locus syntenic to a contig the facing panel is not showing draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
       : undefined
@@ -2414,7 +2387,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → Center line (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → Center line (${checked(value)})`,
         }
       : undefined,
   tracklist: value =>
@@ -2428,13 +2401,13 @@ export const viewFields: Record<string, FieldRecipe> = {
   colorByFrame: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → CDS reading frame colors (${checked(value)})`,
         }
       : undefined,
   showAminoAcids: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → Amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → Amino acids when zoomed in (${checked(value)})`,
         }
       : undefined,
   // The checkbox carries the placeholder's visibility, so it reads the inverse
@@ -2454,7 +2427,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         ? (value as Record<string, unknown>).interpolate
         : undefined
     return typeof interpolate === 'string' && path
-      ? { path: `${path} (${interpolate === 'bump' ? 'checked' : 'unchecked'})` }
+      ? { path: `${path} (${checked(interpolate === 'bump')})` }
       : undefined
   },
   // Only a `true` has a click-path: the rows start each fit to their own width,
