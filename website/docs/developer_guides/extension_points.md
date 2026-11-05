@@ -712,7 +712,7 @@ Provide a different component for the "About this track" dialog.
 export interface AboutPanelProps {
   session: AbstractSessionModel
   /** the track's config, hydrated by the dialog before any panel sees it */
-  config: AnyConfigurationModel
+  config: TrackConfigModel
 }
 ```
 

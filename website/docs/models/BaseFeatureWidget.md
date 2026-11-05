@@ -40,7 +40,7 @@ config edit and survives its track being closed.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-trackconfiguration">**trackConfiguration**</span><br><code>AnyConfigurationModel &#124; undefined</code> | the config the track tier of `formatDetails` reads. The open track's own while it is open; after it is closed, the session's copy of the same config, which is why the widget records `trackId` |
+| <span id="getter-trackconfiguration">**trackConfiguration**</span><br><code>TrackConfigModel &#124; undefined</code> | the config the track tier of `formatDetails` reads. The open track's own while it is open; after it is closed, the session's copy of the same config, which is why the widget records `trackId` |
 | <span id="getter-formatdetailstiers">**formatDetailsTiers**</span><br><code>FormatDetailsTiers</code> |  |
 | <span id="getter-formatted">**formatted**</span><br><code>{ feature?: SimpleFeatureSerialized; error?: Error; }</code> |  |
 | <span id="getter-canonicaltranscripts">**canonicalTranscripts**</span><br><code>CanonicalTranscripts</code> | the isoform tags the open track's display ranks by, so the sequence panel opens on the transcript the track draws first |
