@@ -90,8 +90,8 @@ export function thresholdLabels(domain: readonly number[]): string[] {
 /**
  * #api
  * The key a value holding text that is no number files under on a threshold
- * scale, painted the misconfiguration grey rather than passing for a missing
- * value.
+ * scale, drawn in the misconfiguration grey, so it is not mistaken for a
+ * missing value.
  */
 export const NOT_A_NUMBER_LABEL = '(not a number)'
 

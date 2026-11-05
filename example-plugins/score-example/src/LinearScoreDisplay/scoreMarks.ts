@@ -24,7 +24,7 @@ export interface ScoreRenderState {
 // #region marks
 // Which of the payload's arrays feed which of the shape's lanes, and which
 // render-state values reach its uniforms: two lenses, run once per block per
-// frame. The encoder's payload already carries the shape's lane names, so the
+// frame. The encoder's payload already uses the shape's lane names, so the
 // channel lens is the payload itself. Everything that draws comes from the
 // shape.
 export const SCORE_MARKS = [

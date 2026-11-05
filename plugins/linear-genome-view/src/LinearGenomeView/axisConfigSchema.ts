@@ -20,7 +20,7 @@ export const linearGenomeViewAxisConfigSchema = ConfigurationSchema(
     grid: {
       type: 'boolean',
       defaultValue: true,
-      description: "carry the ruler's ticks down through the tracks",
+      description: "extend the ruler's ticks down through the tracks",
     },
   },
   { closed: true },

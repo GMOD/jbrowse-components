@@ -388,11 +388,11 @@ export function installFetch<TArgs, TResult>(
       // the pure "go again" signal, read unconditionally above every gate so a
       // Retry click re-runs the body even when nothing else moved
       const reloadEpoch = self.reloadCounter
-      // Tracked in the same breath and for the same reason, but the mirror
-      // image: this one CLOSES the gate below, so a run that returned before
-      // the counter read would drop the one observable that can reopen it and
-      // Cancel would be a one-way door with a Retry button on it. Order, not
-      // just position: counter first, then this, then the gates.
+      // Tracked for the same reason as the counter, but this one closes the
+      // gate below, so a run that returned before the counter read would drop
+      // the one observable that can reopen the gate, and a Cancel could not be
+      // undone by Retry. Order, not just position: counter first, then this,
+      // then the gates.
       const canceled = self.fetchCanceled === true
       // Above the gate, not only above `prepare`: teardown mutates the
       // observables this body reads before the disposers run, and every `gate`
@@ -402,7 +402,7 @@ export function installFetch<TArgs, TResult>(
       // node; the detached-and-still-alive window (ADR-069) is covered only by
       // the walk's own cache. Nothing is reported for a dead node — there is no
       // Retry button left to be dead, and the check would read three more
-      // members of a corpse to decide it.
+      // members of the destroyed node to decide it.
       if (!isAlive(self)) {
         return false
       }
@@ -418,8 +418,8 @@ export function installFetch<TArgs, TResult>(
       // The freshness gate, and the reload that overrides it. The epoch is
       // stamped at ISSUE where the key is stamped at commit: a fetch that fails
       // leaves nothing current, so this gate is open anyway on the next run and
-      // consuming the retry here costs nothing — while a reload landing
-      // mid-flight is answered by the re-run the counter read above already
+      // consuming the retry here is safe, and a reload landing
+      // mid-flight is handled by the re-run the counter read above already
       // guarantees.
       if (held !== undefined && held(args) && reloadEpoch === issuedEpoch) {
         noteFetchAutorunRun?.('declined')
@@ -429,7 +429,7 @@ export function installFetch<TArgs, TResult>(
       noteFetchAutorunRun?.('fetched')
       // `run` is called synchronously, so its prefix down to its first await
       // executes in this derivation; `FetchPhases.run` promises those reads are
-      // untracked, and unlike the MST flow the LGV side hides behind, nothing
+      // untracked, and unlike the MST flow the LGV side uses, nothing
       // here makes it so. Whatever the run needs tracked belongs in `prepare`.
       // eslint-disable-next-line no-restricted-syntax -- effect input: run's prefix reads are the fetch's, prepare is the trigger list
       untracked(() => {

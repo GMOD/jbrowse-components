@@ -157,7 +157,7 @@ const aggregateOpSchema = ConfigurationSchema(
     },
     /**
      * #slot aggregate.ops.as
-     * The output field. Empty is `count`, or `<op>_<field>`.
+     * The output field. When empty, it is `count`, or `<op>_<field>`.
      */
     as: {
       type: 'string',
@@ -198,7 +198,7 @@ const window = ConfigurationSchema(
     /**
      * #slot window.groupby
      * The fields whose distinct value sets make the groups a frame stays
-     * inside, within a facet's section. Empty is one group per section.
+     * inside, within a facet's section. When empty, each section is one group.
      */
     groupby: {
       type: 'stringArray',

@@ -101,7 +101,7 @@ export function stateModelFactory(
       /**
        * #getter
        * Whether "Color by LD to index SNP" is on: a mark's encoding names an
-       * LD field, which is what the item writes and takes off.
+       * LD field, which the menu item writes and removes.
        */
       get ldColored(): boolean {
         return this.hasLdData && self.conf.marks.some(readsLd)

@@ -25,8 +25,8 @@ function swap(a: Float32Array, i: number, j: number) {
  * #api
  * The `k`th smallest of `a[0, n)`, permuting `a` in place. Exact, where a
  * histogram collapses skewed contact counts into its bottom bucket, and O(n)
- * where a sort of 4.5M counts measured ~1s. Median-of-three because Hi-C
- * contacts arrive nearly sorted.
+ * where a sort of 4.5M counts measured ~1s. The pivot is the median of three
+ * because Hi-C contacts arrive nearly sorted.
  */
 export function selectNth(a: Float32Array, n: number, k: number) {
   let lo = 0

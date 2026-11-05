@@ -200,11 +200,11 @@ function assemblyManagerFactory(
       },
       /**
        * #method
-       * The assembly `asmName` names, or undefined. Reports a name it doesn't
-       * know to `Core-handleUnrecognizedAssembly` so a plugin can supply it.
-       * That side effect is unwanted for a caller only asking *whether* the
-       * session has the assembly, which should use {@link has}. Each name is reported at most
-       * once per session, since a handler resolves it out of band and the
+       * The assembly `asmName` names, or undefined. For a name the manager has
+       * no assembly for, calls `Core-handleUnrecognizedAssembly` so a plugin
+       * can supply it. That side effect is unwanted for a caller only asking
+       * *whether* the session has the assembly, which should use {@link has}.
+       * Each name is reported at most once per session, since a handler resolves it out of band and the
        * assembly turning up is itself the reactive signal.
        */
       get(asmName: string) {
@@ -249,7 +249,7 @@ function assemblyManagerFactory(
 
       /**
        * #method
-       * Whether the session knows this assembly. Use this, not `get`, to ask
+       * Whether the session has this assembly. Use this, not `get`, to ask
        * only whether the assembly is present: `!has(name)` is exactly the
        * condition under which `get` reports `name` to
        * `Core-handleUnrecognizedAssembly`, so probing with `get` tells every
@@ -309,9 +309,9 @@ function assemblyManagerFactory(
 
       /**
        * #getter
-       * Every name the *configs* answer to — each assembly's `name` and its
-       * `aliases` — mapped to its config, which exists before the assembly's
-       * model does. What {@link has} knows before the models exist, and
+       * Every name in the configs: each assembly's `name` and its
+       * `aliases`, mapped to its config, which exists before the assembly's
+       * model does. What {@link has} checks before the models exist, and
        * resolved by the same precedence as `assemblyNameMap`.
        */
       get confByName(): Map<string, BaseAssemblyConfigModel> {

@@ -426,9 +426,9 @@ export default function FetchMixin() {
        * **Every operation on the display opens one**, and the two come back
        * together because an operation that never retires keeps reporting status
        * for a phase that is over. The viewport fetch (`runFetch`), the clustering run
-       * and a lent `createAbortRotation` are three of them on one field;
-       * before ADR-081 each blanked the field outright and the last one to
-       * finish overwrote the status of the other two.
+       * and a lent `createAbortRotation` are three of them on one field.
+       * Each holds its own slot, so one finishing does not overwrite the
+       * status of the other two (ADR-081).
        *
        * `isCurrent` is required and has no "node is alive" default, because
        * a live node is not enough: a *superseded* fetch is on a live

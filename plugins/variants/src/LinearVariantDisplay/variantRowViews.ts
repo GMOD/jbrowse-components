@@ -213,7 +213,7 @@ export function variantDrawnRowViews(self: VariantDrawnRowHost) {
      * #getter
      * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
      * answering to its sample name, a samplesTsv `color` column the row's
-     * own color. None while no row draws.
+     * own color. Empty while no row draws.
      */
     get discoveredRows(): ProcessedSource[] {
       const samples = self.drawsGenotypeRows ? self.adapterSamples : undefined

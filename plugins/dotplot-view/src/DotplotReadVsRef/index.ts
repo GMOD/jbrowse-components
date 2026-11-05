@@ -16,7 +16,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
     menu: 'contextMenuItems',
     group: LAUNCH_LABEL,
-    // Offered from the read id, which the hit test carries, so the item is
+    // Offered from the read id, which the hit test returns, so the item is
     // there when the menu opens rather than a fetch later; the feature it needs
     // is resolved in the onClick (normally already in hand, since the fetch
     // rebuilds this menu).

@@ -6,7 +6,7 @@ import { GENE_GLYPH_DEFAULTS } from '../RenderFeatureDataRPC/renderConfig.ts'
  * #config FeatureContainers
  * #category display
  * The feature display's `containers`: the top-level types whose children
- * always stack on rows of their own, as a proteoform's ORFs do.
+ * each always stack on a separate row, as a proteoform's ORFs do.
  *
  * #example
  * ```js

@@ -35,8 +35,8 @@ export const markLocusSchema = ConfigurationSchema(
     },
     /**
      * #slot refName
-     * The feature field holding the sequence the position lies on. Empty is
-     * the feature's own.
+     * The feature field holding the sequence the position lies on. When empty,
+     * it is the feature's own.
      */
     refName: {
       type: 'featureField',

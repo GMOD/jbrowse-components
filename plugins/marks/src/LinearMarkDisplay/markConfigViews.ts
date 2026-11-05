@@ -126,7 +126,7 @@ export function markConfigViews(self: MarkConfHost) {
     },
     /**
      * #getter
-     * The fields a row carries beside its name, which a facet bands the
+     * The fields a row has besides its name, which a facet bands the
      * rows by: `group` where `rows.groups` declares groups. Config alone, so
      * whether a facet bands or splits is known before a feature loads.
      */

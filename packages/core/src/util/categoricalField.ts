@@ -36,10 +36,9 @@ export const OTHER_VALUES_LABEL = 'Other'
  * color's range entries, a key's rows. `key` files a value, `compare`
  * orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
  * after them), `label` names a key in a legend, `sectionLabel` on a chip, and
- * `color` paints it. A key's color depends only on the key and the
- * declaration, so every region agrees on it, except that a field dealing its
- * colors (`categoricalField`'s `held`) also steps a key off the colors of the
- * keys met before it.
+ * `color` gives it a color. A key's color is a function of the key and the
+ * declaration, so every region agrees on it. A field that deals its colors
+ * (`categoricalField`'s `held`) also skips the colors of keys met earlier.
  */
 export interface CategoricalField {
   field: string

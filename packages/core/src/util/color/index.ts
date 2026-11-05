@@ -167,8 +167,8 @@ function oklchToHex(lightness: number, chroma: number, hue: number) {
  * For extending a categorical palette past its length. Cycling a nine-color
  * list over a 24-chromosome karyotype repeats the color outright; cycling it
  * with a lightness shift per lap gives the hue back as a variant still told
- * apart from the original — tab20's construction, which pairs a light and a
- * dark of each hue.
+ * apart from the original, as tab20 does, pairing a light and a dark of each
+ * hue.
  *
  * SHIFT rather than a fixed lightness, and SCALE rather than a fixed chroma,
  * because a categorical palette is uneven on purpose: category10's brown and
@@ -178,7 +178,7 @@ function oklchToHex(lightness: number, chroma: number, hue: number) {
  *
  * In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where
  * the same coefficient moves a yellow and a blue by visibly different amounts:
- * a lap has to read as one tone across the whole palette or it reads as noise.
+ * each lap must look like one tone across the whole palette.
  *
  * @param color - CSS color to transform
  * @param lightnessShift - added to its OKLCH lightness (which is 0 - 1)

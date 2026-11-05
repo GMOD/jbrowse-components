@@ -88,7 +88,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
     encoding: readConnectionsEncodingConfigSchema,
     /**
      * #slot ordinaryPairs
-     * The pairs that carry no category, drawn as context: `show`.
+     * The pairs with no category, drawn as context: `show`.
      */
     ordinaryPairs: readConnectionsOrdinaryPairsConfigSchema,
   },

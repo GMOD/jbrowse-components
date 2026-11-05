@@ -187,8 +187,8 @@ function stateModelFactory() {
        * Declared here for the same reason as `hoveredFeature` above: it is read
        * across the display boundary, by chrome that does not know which display
        * it is drawing for (`SoloSelectionChip`, alignments' group-label
-       * overlay), and a name only the base declares is a name every such
-       * consumer can rely on.
+       * overlay), and a name declared only on the base is available to every
+       * such consumer.
        *
        * **A control keeps the generic word; content takes this one.** "Variant
        * height" reads as a different setting from "Feature height" when it is

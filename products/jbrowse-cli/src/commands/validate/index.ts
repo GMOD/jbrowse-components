@@ -12,16 +12,16 @@ import type { PluginManifest } from './pluginManifest.ts'
 import type { Problem } from './types.ts'
 
 const description =
-  'Check a JBrowse configuration for errors, including the ones JBrowse itself accepts silently'
+  'Check a JBrowse configuration for errors, including the ones JBrowse itself accepts without an error'
 
 const notes = `A config key JBrowse does not recognize does nothing: a track, an adapter or
-a display names it on the browser console and loads without it, and a session
-snapshot drops it in silence. This command reports each one offline, before
-anyone opens the config.
+a display logs it to the browser console and loads without it, and a session
+snapshot drops it with no message. This command reports each one offline,
+before anyone opens the config.
 
 Two levels are reported:
 
-  error    JBrowse silently does the wrong thing, or refuses to load it — an
+  error    JBrowse does the wrong thing with no error, or refuses to load it — an
            unknown slot, a key a defaultSession view or display does not
            declare, a track naming an assembly the config never defines, a
            defaultSession naming a trackId that does not exist, a duplicate

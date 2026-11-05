@@ -86,7 +86,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * A written list merges with the defaults by field: unmapped, QC-failed
      * and duplicate reads out (`flags.UNMAP`, `flags.QCFAIL` and `flags.DUP`
      * `equal: false`), and `junction.reads` and `breakpoint.reads` at least
-     * 2. An entry replaces its own field's defaults, and an entry naming a
+     * 2. An entry replaces the defaults for the field it names, and an entry naming a
      * field with no test, such as `{ field: "flags.DUP" }`, only removes
      * them.
      */

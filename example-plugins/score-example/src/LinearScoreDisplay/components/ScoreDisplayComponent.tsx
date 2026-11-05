@@ -9,7 +9,7 @@ import { SCORE_MARKS } from '../scoreMarks.ts'
 import type { LinearScoreDisplayModel } from '../model.ts'
 
 // #region factory
-// The only import on the mark path that reaches the HAL. It lives here, on the
+// The only import on the mark path that reaches the HAL. It is imported here, on the
 // lazily loaded component, and not in the model: a state model is eager, so
 // naming the backend there would load the GPU stack at plugin install.
 // createMarkBackend tries WebGPU, then WebGL2, then Canvas2D, and every backend
@@ -60,7 +60,7 @@ const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
       style={{ width: '100%' }}
       // #region hover
       // measured against the chrome container, which the canvas fills, so the
-      // pointer lands in canvas px with no offset
+      // pointer position is in canvas px with no offset
       onPointerPosition={state => {
         model.setHoveredFeature(
           state

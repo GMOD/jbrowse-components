@@ -20,12 +20,12 @@ import {
  * to the track above the rows. A record is colored by its SV type, keyed, or
  * by `encoding.color` when that is set, and lettered on one line with its ID,
  * description and the share of the samples shown as rows, no-calls included,
- * that carry it. The band is `height` tall, which its seam drag writes; unset,
+ * that have it. The band is `height` tall, which its seam drag writes; unset,
  * it opens at its stack up to that default and keeps the height it opened
  * at, so a pan never resizes the track. Records that do not fit thin their
  * names, then shrink, then hide behind a count beside the band. Past 0.2
  * records per pixel names go, past 0.1 descriptions, as on a feature track.
- * Hovering a record reports it and its carriers, and clicking opens its
+ * Hovering a record shows it and the samples that have it, and clicking opens its
  * details. At genomic positions only. On by default: a file with no record
  * in view when it opens spends 0 px on it.
  *
@@ -34,8 +34,8 @@ import {
  * SV type's color and the rest in the feature track's default, lettered as a
  * feature track letters it (the description under the name, no carrier
  * share) and sized by the display's `heightMode`. Past
- * `maxFeatureScreenDensity` records per pixel it refuses the window with the
- * region-too-large banner and its Force load, as a feature track does; over
+ * `maxFeatureScreenDensity` records per pixel it shows the region-too-large
+ * banner and its Force load in place of the window, as a feature track does; over
  * genotype rows, which cannot be refused, the records past it collapse into
  * one row. Right-clicking a record offers the
  * feature track's rows on it: zoom to, get sequence, copy.

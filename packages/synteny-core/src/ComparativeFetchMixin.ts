@@ -21,8 +21,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  * compose, so composing it lets the flags be getters here.
  *
  * `loading` and `refetching` are different questions, and the difference
- * decides whether the user gets a full overlay or a corner chip
- * (`ComparativeFetchStatus`). `displayPhase` stays per display — it reads the
+ * selects a full overlay or a corner chip (`ComparativeFetchStatus`). `displayPhase` stays per display — it reads the
  * shared canvas's `surfaceReadiness`, which each view publishes differently —
  * through `comparativeDisplayPhase`.
  */

@@ -393,7 +393,7 @@ export function linearSyntenyViewHelperModelFactory(
        * Aggregated per-frame render state, always resolved — "the view isn't
        * measured yet" is `canRender`'s precondition. An empty `perTrack` is a
        * real frame rather than a skip: the frame clears before drawing, so
-       * painting zero tracks is what drops a hidden track's ribbons.
+       * painting zero tracks drops a hidden track's ribbons.
        */
       get syntenyRenderState(): SyntenyRenderState {
         const perTrack = new Map<number, SyntenyTrackRenderParams>()
@@ -438,8 +438,8 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #getter
        * The pointer is over a ribbon somewhere in this band. Drives the canvas
-       * cursor, which is the only signal that a ribbon can be clicked at
-       * all — the hover shading is subtle at the default 0.25 opacity.
+       * cursor, which is the only indication that a ribbon can be clicked —
+       * the hover shading is subtle at the default 0.25 opacity.
        */
       get hoveringFeature() {
         return self.linearSyntenyDisplays.some(d => d.hoveredInstanceIdx >= 0)
@@ -476,10 +476,9 @@ export function linearSyntenyViewHelperModelFactory(
        * #getter
        * Overrides `RenderLifecycleMixin`'s hook: a band with no synteny track on
        * it paints its ground this tick and nothing is coming, so it has
-       * finished rather than being pending. `renderBlocks` answers "did content
-       * reach the canvas" off the blocks it drew, which is the right answer for
-       * a track still fetching and the wrong one for a band with nothing to
-       * draw on it.
+       * finished rather than being pending. `renderBlocks` reports whether content
+       * reached the canvas, from the blocks it drew, which is right for a track
+       * still fetching and wrong for a band with nothing to draw on it.
        *
        * `connectedRows` is the other half: a band whose rows are not up has no
        * tracks either and is *not* finished. This family has a second guard

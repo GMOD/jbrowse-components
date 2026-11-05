@@ -304,7 +304,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #action
        * Point the hover at one GPU instance, or -1 for none. The level's
-       * `setHoveredFeature` is what calls this, from a pick hit.
+       * `setHoveredFeature` calls this, from a pick hit.
        */
       setHoveredInstanceIdx(idx: number) {
         self.hoveredInstanceIdx = idx

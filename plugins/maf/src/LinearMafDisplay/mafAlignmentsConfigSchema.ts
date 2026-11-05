@@ -64,8 +64,8 @@ export const mafAlignmentsConfigSchema = ConfigurationSchema(
     frames: mafPartConfigSchema,
     /**
      * #slot reference
-     * `show` gives the reference species, which every other row is scored
-     * against, a row of its own; on by default.
+     * `show` draws the reference species, which every other row is scored
+     * against, as a separate row; on by default.
      */
     reference: mafReferenceRowConfigSchema,
   },

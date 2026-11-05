@@ -215,7 +215,7 @@ const NAME_GROUPS: NameGroup[] = [
   },
   {
     label:
-      'MST reflection `@jbrowse/mobx-state-tree` answers itself: `getWrappedType` and `unwrapType` see through an optional, a refinement, a snapshotProcessor or a resolved late, `asArrayType`/`asMapType` reach a collection, `getUnionSubtypes` a union through any of those',
+      'MST reflection `@jbrowse/mobx-state-tree` provides itself: `getWrappedType` and `unwrapType` see through an optional, a refinement, a snapshotProcessor or a resolved late, `asArrayType`/`asMapType` reach a collection, `getUnionSubtypes` a union through any of those',
     names: [
       'getDefaultValue',
       'getPropertyType',

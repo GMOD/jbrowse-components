@@ -33,7 +33,7 @@ const registry: {
   {
     name: 'validate',
     summary:
-      'Check a configuration for errors, including ones JBrowse accepts silently',
+      'Check a configuration for errors, including ones JBrowse accepts without an error',
     load: () => import('./commands/validate/index.ts').then(m => m.run),
   },
   {

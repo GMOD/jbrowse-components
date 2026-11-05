@@ -84,7 +84,7 @@ export function resolveOverlays(overlays?: Partial<DisplayChromeOverlays>) {
  * **The contexts themselves default to `undefined`.** A display rendering
  * outside any provider — a unit test, the SVG export, breakpoint-split-view's
  * `overlayUtils` — keeps JBrowse's own Material look, because a plain ambient
- * default would switch those to plain chrome without anyone asking. Defaulting
+ * default would switch those to plain chrome unrequested. Defaulting
  * *this component's props* is different: mounting it is a deliberate act, and
  * the act means "not the Material default".
  *

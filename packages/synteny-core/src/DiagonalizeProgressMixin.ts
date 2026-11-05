@@ -11,8 +11,8 @@ import { types } from '@jbrowse/mobx-state-tree'
  * can't capture a pre-reorder hairball.
  *
  * `withDiagonalizeProgress` drives the wait and the status/signal pair; the view's
- * init autorun raises and lowers the gate, because it alone knows a reorder
- * was asked for. Composed rather than duplicated so both
+ * init autorun raises and lowers the gate, because it is the only code that knows a
+ * reorder was asked for. Composed rather than duplicated so both
  * views report progress, cancel, and gate identically.
  */
 export function DiagonalizeProgressMixin() {

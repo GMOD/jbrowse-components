@@ -13,16 +13,16 @@ export interface ComparativeOptions extends BaseOptions {
   // pangenome graph, indexed on its reference alone) asks for this lane and
   // `targetAssemblyName` aligned to each other, read inside that window. The
   // records are on this lane's coordinates. An adapter declares that it
-  // answers these with the `lanePairsOnAnchor` capability.
+  // serves these with the `lanePairsOnAnchor` capability.
   queryAssemblyName?: string
   // Several `queryAssemblyName`/`targetAssemblyName` pairs on one anchor
   // window, answered together: a graph cuts the window once for all of them.
   // Each record's `assemblyName` and `mate.assemblyName` say which pair it
-  // belongs to. An adapter declares that it answers these with the
+  // belongs to. An adapter declares that it serves these with the
   // `lanePairBatches` capability.
   lanePairs?: { queryAssemblyName: string; targetAssemblyName: string }[]
   // A multi-genome adapter answering a no-target query folds the pairs
-  // anchored on one query feature into one feature carrying `mates: [...]`,
+  // anchored on one query feature into one feature with `mates: [...]`,
   // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
   // feature per pair.
   mateShape?: 'grouped'

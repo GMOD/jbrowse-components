@@ -56,7 +56,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The attributes the scanned features carry, which the menus offer.
+       * The attributes of the scanned features, which the menus offer.
        */
       get attributes(): readonly string[] {
         return self.plotFields?.attributes ?? []

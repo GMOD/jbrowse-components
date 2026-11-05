@@ -128,8 +128,8 @@ const INVALID_COLOR_ABGR = cssColorToABGR('')
 /**
  * #api
  * A channel read per feature: the compiled form of a {@link FieldRef}, and
- * what a display's own worker method hands the encoder for a channel no
- * field name can say — a join against a second adapter, a lookup table, a
+ * what a display's worker method passes to the encoder for a channel that no
+ * field name can express — a join against a second adapter, a lookup table, a
  * rule over two fields.
  */
 export type ChannelReader<T = unknown> = (feature: Feature) => T

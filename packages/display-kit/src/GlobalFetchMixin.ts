@@ -39,7 +39,7 @@ export function blockKeySignature(blocks: { key: string }[]) {
  *                      `currentFetchKey` / `loadedFetchKey` freshness pair
  *                      the comparative family composes too)
  *
- * What is left here is what only an LGV display can say: the hosting
+ * What remains here is what only an LGV display can supply: the hosting
  * `RegionHost`, the static-block signature every `viewSignature` in this family
  * starts from, and the readiness getters that read the view — `viewportEmpty`,
  * `canRender`, `paintInert`, `svgReady`, `displayPhase`.

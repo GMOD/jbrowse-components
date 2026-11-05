@@ -465,9 +465,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * inter-region padding, so the two differ only by `bpPerPx`. May be
          * negative when the view is scrolled past the left end.
          *
-         * The view stores the genomic window it frames rather than the pixels
-         * that framed it, because pixels mean nothing without the width they
-         * were measured at and a snapshot does not include one. A session
+         * The view stores the genomic window it frames. Pixels mean nothing
+         * without the width they were measured at, and a snapshot does not
+         * include one. A session
          * authored in a 1000px window therefore shows the same region when
          * opened at 500px, as the same location given as a `&loc=` does: both
          * ways to share a view store intent.
@@ -541,8 +541,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * ignored: the hierarchical selector is the only one. Declared because
-         * saved sessions and share links carry it.
+         * ignored: the hierarchical selector is the only one. Declared so that
+         * saved sessions and share links include it.
          * @deprecated
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
@@ -1080,7 +1080,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The same question as `ready` with the other three outcomes named, for a
+       * Like `ready`, but reports all four outcomes, for a
        * host that draws its own chrome and has to render all four. See
        * `computeViewStatus`, whose precedence this defers to — and note its
        * `ready` is narrower than the getter above, which is true when nothing
@@ -1310,7 +1310,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * or 0 for a standalone view, a mode that is off, and a stack that cannot
        * answer yet.
        *
-       * A getter rather than a volatile the container writes: the number is a
+       * A getter, because the number is a
        * function of every row's fit, all of which change on a resize, and a
        * stored copy would be stale by the next layout.
        */
@@ -2334,17 +2334,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * So the shape that looks obvious — lay an overlay out in absolute
          * genome pixels, write `translateX(-view.offsetPx)` — does not lose a
          * subpixel, it puts the row somewhere else entirely, and only on large
-         * assemblies at high zoom, which is not where anyone tests. Both
+         * assemblies at high zoom, which tests do not cover. Both
          * operands here are large and their difference is bounded by the
          * overhang (a block or two), so what reaches CSS is small and exact.
          * This applies the GPU side's rule one layer up; see
          * `agent-docs/reference/BP_PRECISION.md`.
          *
-         * Published because it is the one piece of coordinate arithmetic a host
-         * drawing its own chrome would otherwise have to know, and because
-         * copies written out at each call site disagree about rounding. Round it where the content is text
-         * (a fractional offset blurs a label); leave it alone for paths and
-         * boxes.
+         * Published so a host drawing its own chrome can reuse this coordinate
+         * arithmetic; copies written out at each call site disagree about
+         * rounding. Round it where the content is text (a fractional offset
+         * blurs a label); leave it alone for paths and boxes.
          */
         get staticBlocksTranslateX() {
           return this.staticBlocks.offsetPx - self.offsetPx
@@ -2461,9 +2460,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *   but the 24 chromosomes are under a pixel wide), so a host that
          *   skips them leaves that part of the row empty.
          * - `boundary`: past the start of the first region or the end of the
-         *   last. Greying it makes the last region's seam read as the edge of a
-         *   filled area, where it would otherwise look like a line in the
-         *   middle of the track.
+         *   last. With the seam greyed, the last region ends at what looks like
+         *   the edge of a filled area, where it would otherwise look like a
+         *   line in the middle of the track.
          *
          * Elided blocks get no seam even though they have the flag: at the
          * zoom where regions elide, one bar per region would fill the row solid
@@ -2523,8 +2522,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * it holds some but is scrolled entirely off them; either way there is
          * no visible span for the scalebar, ruler and refName labels to
          * describe. The SVG export checks it before drawing its header.
-         * Distinct from `hasDisplayedRegions`, which only asks whether the
-         * view has been given regions, not whether any are on screen.
+         * `hasDisplayedRegions` tells whether the view has been given
+         * regions, whether or not any are on screen.
          */
         get hasVisibleContent() {
           return this.dynamicBlocks.contentBlocks.length > 0
@@ -2696,15 +2695,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * freshness for not recomputing per animation frame — the location box,
        * the feature display's on-screen feature set, and the two per-bp scans behind
        * `settledDynamicBlocks`. That trade is only sound while the answer is a
-       * few frames old. **A jump makes it unrelated instead**, because there is
-       * nothing to coalesce: the viewport left behind is not an approximation of
-       * the new one, it is a different place. Unsettled, the location box reads
+       * few frames old. After a jump the answer is unrelated to the new viewport, so
+       * there is nothing to coalesce: the viewport left behind is not an
+       * approximation of the new one, it is a different place. Unsettled, the location box reads
        * as a navigation that didn't happen, and wiggle's autoscale domain is
        * computed over the window the user just left — measured at `[0,200]`
        * against a correct `[0,300]` when a 40bp coarse window survived a jump to
        * 4040bp on screen.
        *
-       * **The continuous paths do not call this.** The
+       * **The continuous paths skip this call.** The
        * spring zoom writes through `zoomTo` per frame and a drag through
        * `scrollTo`, so this adds no per-frame work; the settle is idempotent
        * (`setCoarseDynamicBlocks` compares block keys), so the debounced
@@ -2713,7 +2712,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Every placer calls it, and `placersSettleCoarseBlocks.test.ts` enforces
        * that for the next one: it scans this file for the writes and
        * fails on a placer that reaches neither the settle nor its named list of
-       * continuous paths. Two passes by hand missed four.
+       * continuous paths.
        */
       settleCoarseBlocks() {
         if (self.initialized) {

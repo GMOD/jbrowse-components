@@ -1124,8 +1124,8 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones
-         * "Color by" and "Group by" offer — every key the samples carry but
-         * the internal plumbing.
+         * "Color by" and "Group by" offer — every sample key except internal
+         * ones.
          */
         get rowColorFields(): readonly string[] {
           const keys = new Set<string>()
@@ -1346,7 +1346,7 @@ export function stateModelFactory(
           /**
            * #getter
            * Height left for the rows under the bands above them, floored at 0:
-           * every consumer treats it as a pixel dimension. None while no row
+           * every consumer treats it as a pixel dimension. 0 while no row
            * draws.
            */
           get availableHeight() {
@@ -1628,8 +1628,8 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * What one row is, `rows.field`. A haplotype row answers to its
-         * sample's name, so the arrangement carries across the switch either
+         * What one row is, `rows.field`. A haplotype row is named by its
+         * sample name, so the arrangement is kept across the switch either
          * way and a read interprets it at the field in force.
          */
         setRowsField(field: VariantRowsField) {

@@ -148,7 +148,7 @@ export default function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * The Drive link carries the file's name as its last segment so the
+       * The Drive link has the file's name as its last segment so the
        * add-track form can guess the adapter from the extension; the fetcher
        * reads only the id
        */

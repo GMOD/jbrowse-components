@@ -85,14 +85,14 @@ export function doAfterAttach(
         // while the worker still sees the current axes.
         // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
         return untracked(() => ({
-          // the resolved tier, which is what `currentFetchKey` carries —
+          // the resolved tier, which is what `currentFetchKey` holds —
           // `view.resolution` stays 'auto' while the tier flips under it
           lodTier: self.lodTier,
           hViewSnap: makeViewSnap(view.hview),
           vViewSnap: makeViewSnap(view.vview),
           regions: self.fetchRegions,
           // stamped at commit, so it names the order this fetch was laid out
-          // under rather than whatever the axes show when it lands
+          // under rather than whatever the axes show when it completes
           regionSignature: self.regionSignature,
         }))
         // #endregion

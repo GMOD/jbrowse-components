@@ -104,7 +104,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
     }))
     .views(self => ({
       // #region renderState
-      // recomputed cheaply every frame without fetching; carries the canvas
+      // recomputed cheaply every frame without fetching; includes the canvas
       // dimensions (required) plus whatever the marks read. The color is
       // resolved to the packed form here, once, so the uniform write and the
       // painter are handed the same number
@@ -121,7 +121,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
     .views(self => ({
       // #region hoverInk
       // the box the hovered bar painted, which DisplayChrome lights: the
-      // display names the instance and the shape's `ink` says where it is
+      // display names the instance and the shape's `ink` gives its rect
       get hoverInk(): HighlightRect[] {
         const hit = self.hoveredFeature
         return hit
@@ -172,7 +172,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // called once by DisplayChrome when the backend is created, and again
       // after a context loss. One installer streams each region into the
       // backend and draws every frame from renderState; it is the only part of
-      // the model that knows a backend exists, and it is the same whether that
+      // the model that references a backend, and it is the same whether that
       // backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installUpload(self, backend, {

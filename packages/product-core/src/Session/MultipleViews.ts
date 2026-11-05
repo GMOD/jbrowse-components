@@ -355,9 +355,8 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * (`core/util/TimeTraveller`, which calls this), and every view carries
          * an `ElementId` — so MST reconciles by identifier and destroys what the
          * target lacks, inside the action, with the components still mounted.
-         * We measured a redo across a closed view, with the restored view
-         * repainted first: 4 liveliness reads of its display before this, 0
-         * after.
+         * The restored view is repainted first, so its display is not read
+         * while out of sync.
          *
          * A view that is present but has changed `type` is destroyed by that
          * same reconciliation (`areSame` runs the type's `is()` before its id

@@ -238,8 +238,8 @@ export function RenderLifecycleMixin() {
        * consumers wired by hand — the loading scrim (`rendersCanvas` /
        * `fetchInert`) and the SVG export (`fetchInert`) —
        * while the fourth, `data-display-drawn`, went on publishing `"false"`
-       * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
-       * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference
+       * forever off the raw flag. `PENDING_DISPLAYS`
+       * (`@jbrowse/browser-test-utils`) selects on that attribute, so a zoomed-out reference
        * sequence track made every capture wait for the page run's
        * full timeout, which then ended without reporting it. `fetchInert` on the comparative side has the same problem: the
        * forgotten reader is the one outside the display, so the display has to

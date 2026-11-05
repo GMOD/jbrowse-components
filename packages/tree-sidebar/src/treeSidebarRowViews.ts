@@ -177,7 +177,7 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      * variant display's haplotype row refines its sample, a MAF copy row
      * its species), and what its label adds to that row's. An order, a
      * label, a color and a focus written against the parent reach every row
-     * refining it. None by default.
+     * refining it. Undefined by default.
      */
     rowParent(_row: S): RowParent | undefined {
       return undefined
@@ -187,7 +187,7 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      * Overridable hook: the rows a finer field would draw, each refining a
      * drawn row (`rowParent`), so an order or a focus naming one reaches
      * the row it refines: a sample-mode variant display's haplotype rows.
-     * None by default.
+     * Empty by default.
      */
     get finerRows(): S[] {
       return []
@@ -256,7 +256,7 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      * Overridable hook: the values of the row field `field` the config
      * declares, which the palette deals first, in this order, whether or
      * not a loaded row carries them, so a row arriving later moves no
-     * color. None by default.
+     * color. Empty by default.
      */
     rowColorDeclaredValues(_field: string): readonly string[] {
       return []

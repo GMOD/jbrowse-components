@@ -410,7 +410,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * how far out the circle may zoom, as the smallest radius it shrinks
-         * to; it is what caps bpPerPx
+         * to; it caps bpPerPx
          */
         minimumRadiusPx: types.stripDefault(
           types.number,
@@ -437,8 +437,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * ignored: the hierarchical selector is the only one. Declared because
-         * saved sessions and share links carry it.
+         * ignored: the hierarchical selector is the only one. Declared so that
+         * saved sessions and share links include it.
          * @deprecated
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),

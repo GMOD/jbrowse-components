@@ -9,8 +9,8 @@ import type { BandBounds } from './bandHeight.ts'
  * whether the band exists right now (the display pre-ANDs its settings half,
  * `showX`, with its data half, "some lane has ink"), and `height` is the stated
  * height when it does. Consumers read pixels through {@link reservedPx} or
- * {@link stackBands}, never by re-combining the pair — the re-combination is
- * where the reserver and the painter historically drifted.
+ * {@link stackBands}, never by re-combining the pair, so the reserver and the
+ * painter use the same pixel values.
  */
 export interface Band {
   active: boolean

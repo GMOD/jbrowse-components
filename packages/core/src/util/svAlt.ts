@@ -141,9 +141,8 @@ export function parseSvAlt(
  * sequence below its breakpoint (-1) and the acceptor the sequence above its
  * breakpoint (+1).
  *
- * Split out of `parseSvAlt` because a consumer holding an already-parsed
- * `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
- * polarity — the shape that produced 78bb7b84f9.
+ * A consumer holding an already-parsed `Breakend` can call this instead of
+ * repeating two adjacent ternaries of opposite polarity.
  */
 export function breakendKeepsDirections(bnd: Breakend) {
   return {
@@ -390,8 +389,8 @@ function symbolicKeeps(feature: Feature, alt: string) {
 /**
  * #api
  * Where a paired record's junction is at each of its two ends, and which side
- * of it each end keeps — the one answer every launcher, the row menu and the
- * chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+ * of it each end keeps — the junction and kept side that every launcher, the
+ * row menu and the chain walk use, whether the record is a VCF breakend, a symbolic SV or a
  * paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
  * them. `undefined` for a record naming no other end. A VCF record is read
  * through `alt`, its first ALT unless the caller names another.

@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config SyntenyNavigation
  * #category view
  * The linear synteny view's `navigation`: how a move on one genome row
- * carries to the others. With `follow` on, the rows follow the `anchor` row
+ * applies to the others. With `follow` on, the rows follow the `anchor` row
  * through the alignment, each moving to whatever region aligns to its window.
  * #example
  * ```js

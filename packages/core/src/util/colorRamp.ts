@@ -244,10 +244,10 @@ export function sampleColorRamp(stops: readonly ColorRampStop[], t: number) {
  * the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
  * the table and `rampColor`'s texel mapping cannot disagree.
  *
- * The table is always straight. A diverging ramp whose middle belongs at a
- * value off the centre of the domain reads it through `rampMidT`, the shader's
- * rule and its generated twin, so the middle follows a moving domain without a
- * new table.
+ * The table is built without the diverging midpoint. A diverging ramp whose
+ * middle belongs at a value off the centre of the domain reads it through
+ * `rampMidT`, the shader's rule and its generated twin, so the middle follows a
+ * moving domain without a new table.
  */
 export function buildColorRampLut(stops: readonly ColorRampStop[]) {
   const last = COLOR_RAMP_LUT_ENTRIES - 1

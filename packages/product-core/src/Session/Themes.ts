@@ -190,8 +190,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         /**
          * #getter
          * The palette plus the sizing tokens `makeStyles` reads — spacing,
-         * corner radius, type scale. This is what a product mounts on
-         * `StyleThemeProvider`; it costs no UI toolkit, and it is derived from
+         * corner radius, type scale. A product mounts this on
+         * `StyleThemeProvider`; it needs no UI toolkit, and it is derived from
          * the same `themeOptions` as `theme`, so a config `theme` that sets
          * `spacing` moves JBrowse's own styles and its Material components
          * together.

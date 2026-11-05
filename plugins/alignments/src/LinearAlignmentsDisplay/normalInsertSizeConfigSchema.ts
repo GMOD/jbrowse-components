@@ -12,7 +12,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * proper pair counts as `normal`, which every reader of
  * `insertSizeAndOrientation` classifies by, the read fills, the connections
  * and the hover. Both ends pin the band together; unset, each region's band
- * is sampled from its own pairs. The key names the band in bp wherever every
+ * is sampled from the pairs in that region. The key names the band in bp wherever every
  * region in view classifies by one, and the hover names the bound a pair
  * crosses. Recoloring a level is `encoding.color`'s.
  *
@@ -39,7 +39,7 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
     min: {
       type: 'maybeNumber',
       description:
-        "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs",
+        "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from the pairs in that region",
     },
     /**
      * #slot
@@ -47,7 +47,7 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
     max: {
       type: 'maybeNumber',
       description:
-        "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs",
+        "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from the pairs in that region",
     },
   },
 )

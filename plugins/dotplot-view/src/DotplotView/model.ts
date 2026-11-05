@@ -242,8 +242,8 @@ export default function stateModelFactory(pm: PluginManager) {
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
-           * ignored: the hierarchical selector is the only one. Declared because
-           * saved sessions and share links carry it.
+           * ignored: the hierarchical selector is the only one. Declared so that
+           * saved sessions and share links include it.
            * @deprecated
            */
           trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
@@ -415,8 +415,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * axes in step with this array, so one name leaves the other axis with
          * no regions and `initialized` never comes true — the view sat on its
          * spinner saying "Loading" forever, with the assembly it was supposedly
-         * waiting for already loaded. Extra names fail the other way: the view
-         * reads only the first two, so a third assembly is not plotted and no
+         * waiting for already loaded. With more than two names the view
+         * reads the first two, so a third assembly is not plotted and no
          * message says so.
          *
          * Only a hand-authored snapshot can reach this — `setAssemblyNames`
@@ -787,8 +787,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * axis, the inverse bpPerPx per axis, and the plot height the v axis is
          * flipped through (it lays out bottom-up).
          *
-         * Its own getter because three readers want exactly these and nothing
-         * else — the render state below, the pick's exact test, and
+         * A separate getter, because three readers want exactly these fields:
+         * the render state below, the pick's exact test, and
          * `DotplotDisplay.hoveredFeatureHighlight`. Taking them off
          * `dotplotRenderState` also subscribes to `alpha`, `lineWidth` and the
          * display-key list, so an opacity drag rebuilt the hover path.
@@ -796,9 +796,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * `viewHeight` belongs in here and not beside it: this is also what
          * `setupClearHoverOnPlotMove` watches to decide the plot has moved under
          * a stationary cursor, and a height change slides every alignment down
-         * the canvas exactly as a pan does. Left out, it was the one way to move
-         * the plot that kept the hover pinned to the alignment it no longer
-         * pointed at.
+         * the canvas exactly as a pan does. Without it, the hover stays pinned to
+         * the alignment it no longer points at.
          */
         get plotTransform() {
           const { hview, vview } = self
@@ -815,8 +814,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * One canvas-wide block per loaded display, in the map's insertion
          * order, so tracks paint bottom-of-the-list last. An empty list is a
          * real frame, not a skip: the backend clears before drawing, so
-         * painting zero displays is what wipes the plot when the last track is
-         * hidden.
+         * painting zero displays wipes the plot when the last track is hidden.
          */
         get dotplotBlocks() {
           return canvasWideBlocks(
@@ -1399,7 +1397,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * Set both axes to the average bpPerPx (hview divided by `ratio`),
          * re-anchoring each on the locus that was at its center. setBpPerPx
          * alone would leave offsetPx untouched while bpPerPx changed under it,
-         * scrolling the plot; the centerAt calls are what hold it still.
+         * scrolling the plot; the centerAt calls hold it still.
          */
         applySquare(ratio: number) {
           const { hview, vview } = self

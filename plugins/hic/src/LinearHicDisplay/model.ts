@@ -338,7 +338,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * The value ramp. A top below the largest loaded value reads `≥`. The
-       * title names the loaded binsize, so a figure carries it, unless
+       * title shows the loaded binsize, so a figure includes it, unless
        * `encoding.color.legend.title` replaces it.
        */
       get colorScales(): ColorScale[] {

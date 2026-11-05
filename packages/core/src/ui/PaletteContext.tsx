@@ -202,16 +202,15 @@ export function useSessionPalette(
  * this with a session and nothing else. A page that declares `light dark`
  * follows the OS, and a page that declares nothing stays light.
  *
- * A component rather than a documented pair of calls because the pair has a
- * half that can be left out with nothing to show for it. `PaletteProvider` is
- * the name a host reaches for, and it colors the React side alone; the session
- * write is what reaches the RPC worker, which bakes feature labels into the
- * rendered image. So a host that mounts only the provider gets light-mode
- * labels on a dark page, from a canvas whose every other pixel is right, and
- * nothing errors. See {@link useSessionPalette} for the mechanism.
+ * This is a component because the provider and the session write must both be
+ * mounted. `PaletteProvider` colors the React side alone; the session write
+ * reaches the RPC worker, which bakes feature labels into the rendered image.
+ * A host that mounts only the provider gets light-mode labels on a dark page,
+ * from a canvas whose every other pixel is right, and no error is raised. See
+ * {@link useSessionPalette} for the mechanism.
  *
- * The session is the only thing that resolves a palette here, so a host
- * with its own palette mounts `PaletteProvider` directly instead.
+ * This component reads the palette from the session, so a host with its own
+ * palette mounts `PaletteProvider` directly.
  */
 export const SessionPaletteProvider = observer(function SessionPaletteProvider({
   session,

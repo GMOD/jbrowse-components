@@ -109,7 +109,7 @@ export type ColorEncoding =
  * Each feature's own color: ADR-166's identity scale. With `field`, the CSS
  * color the field holds, as Vega-Lite's identity scale reads its field; with
  * none, the BED color column under whichever name the file gives it, keyed
- * by the `r,g,b` it parses to. A feature carrying none keys as `''`.
+ * by the `r,g,b` it parses to. A feature without one is keyed as `''`.
  */
 export interface IdentityRef {
   scale: 'identity'

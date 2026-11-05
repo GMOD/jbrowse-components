@@ -149,7 +149,7 @@ const BaseViewModel = types
      * Empty here for the same reason, and the dotplot is why it has to be a
      * declaration rather than a walk of `views`: that prop name holds its two
      * 1D *axis* models, which are view-shaped and are not views the user
-     * opened. No structural test separates the two — only the view knows.
+     * opened. Only the view can tell the two apart.
      */
     get ownViews(): AbstractViewModel[] {
       return []

@@ -41,7 +41,7 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
       /**
        * #getter
        * Every color JBrowse renders, resolved to plain strings and free of any UI
-       * toolkit. This is what rendering reads. See the canonical
+       * toolkit. Rendering reads this. See the canonical
        * `ThemeManagerSessionMixin` getter of the same name.
        */
       get palette() {

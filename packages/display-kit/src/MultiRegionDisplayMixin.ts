@@ -89,11 +89,9 @@ export default function MultiRegionDisplayMixin() {
          * what it brought back (`payload`), written as one record by
          * `ctx.commitRegion`.
          *
-         * A display's own `rpcDataMap` was the payload column of this map held
-         * separately, and every hook that existed to keep the two in step —
-         * `clearDisplaySpecificData`, a `regionHasData` that answered
-         * `rpcDataMap.has(idx)`, a hand-rolled prune — was that separation's
-         * cost. A display reads the payload back through `regionPayloads`.
+         * The payload is held in this map, in the same record as the span and
+         * `fetchInputs`, so no hook is needed to keep a separate payload map in
+         * step. A display reads the payload back through `regionPayloads`.
          */
         loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
       }))
@@ -274,8 +272,8 @@ export default function MultiRegionDisplayMixin() {
          * samples freshness once, and an export that samples it inside this
          * window renders the data that is about to be replaced. GWAS's LD
          * auto-index is that case: adopting the top hit as the index SNP is an
-         * `rpcProps` change, so the very load that produced the top hit is what
-         * it invalidates — and `SettingsInvalidate` runs a tick after the
+         * `rpcProps` change, so it invalidates the very load that produced the top hit,
+         * and `SettingsInvalidate` runs a tick after the
          * write, so until it does not even `staleSettingsDrawn` has seen it.
          *
          * The window is visible on screen: alignments' per-base
@@ -436,8 +434,8 @@ export default function MultiRegionDisplayMixin() {
         },
         /**
          * #getter
-         * This family's answer to the shared freshness question every display
-         * foundation must answer (`dataCurrent`): the held data corresponds to
+         * This family's implementation of the shared freshness check every
+         * display foundation implements (`dataCurrent`): the held data corresponds to
          * what is on screen right now. Four terms — spatial coverage of every
          * visible block, `loadedRegions.size` to rule out the vacuously-true
          * empty viewport, `isCacheValid` per block, and the display's own
@@ -673,8 +671,7 @@ export default function MultiRegionDisplayMixin() {
          * where `clearDisplaySpecificData` is deliberately not: bins, reads
          * and features fetched under the previous setting draw honestly under
          * the scrim `staleSettingsDrawn` raises until the refetch lands, the
-         * way canvas has kept its features since ADR-006 and every display
-         * does since 2026-09.
+         * way every display keeps its features (ADR-006).
          *
          * The variant matrix overrides it, for a structural reason: it holds
          * one payload for every visible region and the row set is a setting,

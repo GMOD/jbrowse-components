@@ -26,10 +26,10 @@ const channels: ScoreChannels = {
   count: 4,
 }
 
-// The draw-against-hit gate: every point the painter inked answers the box it
-// is on, a hit's ink lies on its box, and no answer is nearer than the box. In
+// The draw-against-hit gate: the hit test returns the box under every point
+// the painter inked, a hit's ink lies on its box, and no other hit is nearer. In
 // both orientations, at containment and with a grab radius.
-describe('score: every drawn box answers its own hit', () => {
+describe('score: every drawn box is its own hit', () => {
   for (const reversed of [false, true]) {
     for (const maxDistSq of [Number.MIN_VALUE, 16]) {
       test(`reversed ${reversed}, bound ${maxDistSq}`, () => {

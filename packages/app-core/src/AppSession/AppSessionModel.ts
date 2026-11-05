@@ -19,7 +19,7 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
  *
  * The session every full app (desktop, web, react-app) is built on: views in
  * a workspace layout, session tracks and assemblies, theme and preferences.
- * Each product composes its own connections and track-menu mixins onto it.
+ * Each product composes a set of connections and track-menu mixins onto it.
  */
 export function AppSessionModel({
   pluginManager,

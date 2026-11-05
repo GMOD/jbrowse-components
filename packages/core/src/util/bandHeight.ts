@@ -29,10 +29,8 @@ export interface BandBounds {
  * share a plot take their ceilings from the stack (`boundStackedBands` in
  * `bandLayout`), since one band's ceiling depends on the others.
  *
- * The bounds differ per band and the rule does not, which is why this takes them
- * rather than each band re-deriving the reasoning — that is how the two
- * `clampBandHeight`s in this repo drifted apart, each ending up with one half of
- * this rule and a doc comment claiming to be the whole of it.
+ * The bounds differ per band and the rule does not, so this takes the bounds
+ * and each band does not re-derive the rule.
  */
 export function boundBandHeight(
   n: number,

@@ -1592,7 +1592,7 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The codon overlay is what the rows area is painting.
+         * The rows area paints the codon overlay.
          */
         get codonCellsActive() {
           return (

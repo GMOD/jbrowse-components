@@ -7,7 +7,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  * The coordinate system of the linear synteny and dotplot views, ggplot2's
  * `coord_fixed`: `ratio: 1` holds every position axis at one bp per pixel,
  * the dotplot's x and y and each row of a synteny stack, so a longer genome
- * draws longer. Unset, each axis zooms on its own.
+ * draws longer. Unset, each axis zooms independently.
  *
  * #example
  * ```js
@@ -24,7 +24,7 @@ export const syntenyCoordConfigSchema = ConfigurationSchema(
       type: 'maybeNumber',
       model: types.maybe(types.literal(1)),
       description:
-        '1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom on its own',
+        '1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom independently',
     },
   },
   { closed: true },

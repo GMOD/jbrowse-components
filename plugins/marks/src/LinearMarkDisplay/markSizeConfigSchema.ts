@@ -89,7 +89,7 @@ export const markSizeSchema = ConfigurationSchema(
         },
         /**
          * #slot scale.range
-         * The px at each end of the domain, thinnest first. Empty is 1 to 6.
+         * The px at each end of the domain, thinnest first. When empty, it is 1 to 6.
          */
         range: {
           type: 'stringArray',

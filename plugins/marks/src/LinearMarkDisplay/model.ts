@@ -1180,7 +1180,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * identity encode — the stored payload is what the backend uploads
+         * identity encode — the backend uploads the stored payload
          */
         startRenderingBackend(backend: MarkRenderingBackend) {
           installUpload(self, backend, {

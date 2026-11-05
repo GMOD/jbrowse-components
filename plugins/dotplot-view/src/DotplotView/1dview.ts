@@ -42,7 +42,7 @@ const Dotplot1DView = Base1DView.extend(self => {
        * `LinearGenomeView.visibleRegions` uses, so this axis and a synteny row
        * hand the shared comparative fetch window (`syntenyFetchRegions`) the
        * same thing and the two displays' `fetchRegions` are one call each.
-       * Carries only what that window reads; the screen-px pair an LGV also
+       * Holds only what that window reads; the screen-px pair an LGV also
        * exposes has no reader here, and deriving it would make this recompute
        * with `offsetPx`.
        */

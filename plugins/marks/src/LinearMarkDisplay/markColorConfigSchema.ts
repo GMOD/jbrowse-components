@@ -147,7 +147,7 @@ export const markColorSchema = ConfigurationSchema(
     ...colorFieldSlot({
       fieldType: 'featureField',
       field:
-        'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
+        'the feature field a scale reads, or a jexl expression over feature, which is slower per feature',
     }),
     /**
      * #slot scale
@@ -159,7 +159,7 @@ export const markColorSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: MARK_COLOR_SCALES,
           scaleName: 'MarkColorScaleType',
-          type: 'ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity paints each feature the CSS color its field holds, or with no field its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field',
+          type: 'ordinal assigns each distinct value a color from range; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold compares the value against the domain and gives each interval a range color; identity uses the CSS color its field holds, or with no field its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:

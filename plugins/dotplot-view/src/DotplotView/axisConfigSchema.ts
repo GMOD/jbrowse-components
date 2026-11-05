@@ -3,8 +3,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config DotplotAxis
  * #category view
- * The dotplot's `axis`: both genome axes, whose ticks `grid` carries across
- * the plot and `labels` numbers.
+ * The dotplot's `axis`: both genome axes, whose ticks extend across the plot
+ * with `grid` and which `labels` numbers.
  *
  * #example
  * ```js
@@ -20,7 +20,7 @@ export const dotplotAxisConfigSchema = ConfigurationSchema(
     grid: {
       type: 'boolean',
       defaultValue: true,
-      description: "carry each axis' ruler ticks across the plot",
+      description: "extend each axis' ruler ticks across the plot",
     },
     /**
      * #slot

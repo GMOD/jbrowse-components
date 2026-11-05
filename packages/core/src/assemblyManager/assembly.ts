@@ -660,7 +660,7 @@ export default function assemblyFactory(
        * The total canonical-refName resolver, for any name arriving from
        * outside — off a feature, out of an RPC result, out of a session spec.
        * A name the assembly does not know comes back unchanged, and so does one
-       * asked for before the aliases load, where `getCanonicalRefName` answers
+       * asked for before the aliases load, where `getCanonicalRefName` returns
        * `undefined` for the first and throws for the second.
        *
        * The throw is the reason to call this rather than hand-roll
@@ -705,8 +705,8 @@ export default function assemblyFactory(
       /**
        * #method
        * Where a refName — canonical or any alias — sits in this assembly's own
-       * order, which is what chromosome painting hands its palette out by:
-       * `refNamePositionIn`, which the tables engine answers through too.
+       * order, the order chromosome painting uses to assign palette colors:
+       * `refNamePositionIn`, which the tables engine also uses.
        * Undefined before the regions load and for a name the assembly lacks.
        */
       getRefNamePosition(refName: string) {

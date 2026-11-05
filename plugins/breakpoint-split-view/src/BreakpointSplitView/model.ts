@@ -241,7 +241,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Resolved, like LGV's and linear-comparative's: it folds in the
-       * sub-views, whose assemblies are what `initialized` waits on. Without
+       * sub-views, and `initialized` waits on their assemblies. Without
        * them a failed assembly leaves `initialized` false forever with nothing
        * to report, and an SVG export waiting on it hangs behind the dialog's
        * spinner instead of raising the error (see `awaitViewInitialized`).

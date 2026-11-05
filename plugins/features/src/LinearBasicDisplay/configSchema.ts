@@ -129,7 +129,7 @@ export default function configSchemaFactory(pluginManager?: PluginManager) {
       transcripts: featureTranscriptsConfigSchema,
       /**
        * #slot
-       * The top-level types whose children stack on rows of their own, a
+       * The top-level types whose children each stack on a separate row, a
        * [](/docs/config/featurecontainers) object.
        */
       containers: featureContainersConfigSchema,

@@ -1524,8 +1524,8 @@ export function facetLayers(
 /**
  * #api
  * Run the transform steps over a feature list or a table, in order, in the
- * worker. The table a step answers is what the next one reads, and the last
- * one is what the encoder walks.
+ * worker. Each step reads the table the previous step returns, and the
+ * encoder walks the last one.
  */
 export function runTransforms(
   input: readonly Feature[] | FeatureTable,

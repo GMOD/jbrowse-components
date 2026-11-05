@@ -22,7 +22,7 @@ export const mafReferenceRowConfigSchema = ConfigurationSchema(
     show: {
       type: 'boolean',
       defaultValue: true,
-      description: 'give the reference species a row of its own',
+      description: 'draw the reference species as a separate row',
     },
   },
   { closed: true, plot: true },

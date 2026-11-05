@@ -155,8 +155,8 @@ export function groupLayoutViews(self: GroupLayoutHost) {
     /**
      * #getter
      * `rawDataByGroup` with chain identity joined across every region and
-     * lane (`attachChainFields`), in chain mode only. The worker knows no
-     * chains, so toggling the mode is this getter changing, not a fetch.
+     * lane (`attachChainFields`), in chain mode only. The worker has no
+     * chain information, so toggling the mode is this getter changing, not a fetch.
      */
     get chainAttachment() {
       return self.unit === 'chain'

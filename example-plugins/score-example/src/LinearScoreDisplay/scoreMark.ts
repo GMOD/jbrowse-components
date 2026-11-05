@@ -70,8 +70,8 @@ function scoreFrame(
 
 // One box per instance: x..x2 wide, grown up from the canvas bottom to its
 // score on the value scale. The painter and the ink both place through here,
-// and the shader owns the geometry: its generated twin (`scoreBarHeightPx`)
-// and constant (`MIN_WIDTH_PX`), so the three cannot drift.
+// and the shader defines the geometry: its generated twin (`scoreBarHeightPx`)
+// and constant (`MIN_WIDTH_PX`), so the three stay consistent.
 function placeScore(c: ScoreChannels, g: ScoreFrame, i: number) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
@@ -93,7 +93,7 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   pass: {
     ...slangPass({ id: 'score', mod: shader }),
     // the generated packInstances interleaves the parallel arrays into the
-    // shader's instance layout; the instance count is the buffer's own
+    // shader's instance layout; the instance count comes from `c.count`
     pack: c => shader.packInstances(c, c.count),
   },
 

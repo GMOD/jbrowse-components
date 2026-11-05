@@ -21,7 +21,7 @@ export const linearSyntenyAxisConfigSchema = ConfigurationSchema(
     grid: {
       type: 'boolean',
       defaultValue: false,
-      description: "carry each row's ruler ticks down through the ribbons",
+      description: "extend each row's ruler ticks down through the ribbons",
     },
   },
   { closed: true },

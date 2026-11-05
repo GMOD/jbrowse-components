@@ -9,7 +9,7 @@ export interface SvInspectorViewCommands extends SpreadsheetViewCommands {
   // than the first one in the config
   assembly?: string
   // search-box text for the spreadsheet half, applied once the file is loaded.
-  // The circular half draws the rows it leaves, so this is what makes a chord
+  // The circular half draws the rows it leaves, so this makes a chord
   // subset reachable from a link
   filterText?: string
   // trackIds every view a row or chord opens starts with, beside the callset's

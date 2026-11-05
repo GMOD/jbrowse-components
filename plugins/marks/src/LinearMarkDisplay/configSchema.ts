@@ -58,8 +58,8 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.field
-     * The feature field an ordinal scale reads — or a jexl expression over
-     * `feature`, which is slower per feature and so the opt-in.
+     * The feature field an ordinal scale reads, or a jexl expression over
+     * `feature`, which is slower per feature.
      */
     field: {
       type: 'featureField',
@@ -75,8 +75,8 @@ const markShapeSchema = ConfigurationSchema(
       {
         /**
          * #slot marks.encoding.shape.scale.type
-         * `ordinal` hands a shape from `range` to each distinct value of
-         * `field`. Unset beside a `field`, it is `ordinal`.
+         * `ordinal` assigns each distinct value of `field` a shape from
+         * `range`. Unset beside a `field`, it is `ordinal`.
          */
         type: {
           type: 'maybeStringEnum',
@@ -87,9 +87,9 @@ const markShapeSchema = ConfigurationSchema(
         },
         /**
          * #slot marks.encoding.shape.scale.range
-         * The shape names an ordinal scale hands out, in order. Empty is
-         * `circle`, `triangle-down`, `diamond`; `square` draws only where
-         * listed.
+         * The shape names an ordinal scale assigns, in order. When empty, the
+         * scale uses `circle`, `triangle-down` and `diamond`. `square` is used
+         * only if listed.
          */
         range: {
           type: 'stringEnumArray',
@@ -100,7 +100,7 @@ const markShapeSchema = ConfigurationSchema(
         /**
          * #slot marks.encoding.shape.scale.domain
          * The values in legend order, walking `range` from the first entry;
-         * left empty, each value derives its shape from itself, so every
+         * left empty, each value's shape is computed from the value, so every
          * region agrees.
          */
         domain: {
@@ -194,10 +194,10 @@ const markEncodingSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.y
      * The feature field, or jexl expression over `feature`, plotted on the score
-     * axis. A feature whose value is not a finite number is skipped. Empty
-     * reads what the steps before this mark's encode wrote, the way a ggplot2
-     * stat names what its geom plots: a `coverage` step's depth, or the one
-     * summary an `aggregate` with one op writes. A bar or point with neither
+     * axis. A feature whose value is not a finite number is skipped. When
+     * empty, the field is the one the steps before this mark's encode produce:
+     * a `coverage` step's depth, or the single output of an `aggregate` with
+     * one op. A bar or point with neither
      * draws nothing and the track shows a corner notice, while a text with
      * neither stands at the apex of a link drawn between its two ends, or in
      * the middle of its band where none is. The scale it is read through is
@@ -320,8 +320,8 @@ const markSchema = ConfigurationSchema(
     transform: types.array(markTransformStep),
     /**
      * #slot marks.minBpPerPx
-     * The mark draws only when the view is at least this zoomed out, in bp per
-     * px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
+     * The mark draws when the view's bp per px is at least this value.
+     * 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
      * a density zoomed out and the features zoomed in.
      */
     minBpPerPx: {
@@ -355,8 +355,8 @@ export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
 /**
  * #config LinearMarkDisplay
  * #category display
- * A grammar of graphics over a feature, alignments or variant track,
- * experimental in v5: its own settings may still grow. A list of marks —
+ * A grammar-of-graphics display for feature, alignments or variant tracks. It
+ * is experimental in v5, and its settings may change. A list of marks —
  * bars, points, rules, lines, rects, text or links — each with an encoding
  * naming which feature fields feed its channels and a transform list run
  * before it. One fetch per region evaluates every encoding in the worker; the
@@ -457,13 +457,13 @@ export function configSchemaFactory() {
       rows: markRowsConfigSchema,
       /**
        * #slot encoding
-       * The channels the marks are read through, owned by the display rather
-       * than by a mark, a [MarkDisplayEncoding](../markdisplayencoding): `y`,
-       * the [YChannel](../ychannel) every mark's `encoding.y` shares, which
-       * names no field since each mark names its own, and `color`, which a
-       * mark paints whose own `encoding.color` says nothing, as a ggplot2
-       * layer inherits the plot's aesthetics. `encoding.y.axis` is the value
-       * axis; the row axis is `rows.axis`.
+       * The display-level [MarkDisplayEncoding](../markdisplayencoding),
+       * shared by all marks. `y` is the [YChannel](../ychannel) that every
+       * mark's `encoding.y` uses, and it names no field because each mark sets
+       * its own. `color` is the default color for any mark whose
+       * `encoding.color` is unset, as a ggplot2 layer inherits the plot's
+       * aesthetics. `encoding.y.axis` is the value axis; the row axis is
+       * `rows.axis`.
        * #example
        * ```js
        * { encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }

@@ -54,7 +54,7 @@ export default function createModel(
        * #property
        * Any CSS height, applied to the component's own root whether or not a
        * drawer is open. Absent, the component is content-height and grows with
-       * the page, and the host's box is what bounds it.
+       * the page, and the host's box bounds it.
        */
       height: types.maybe(types.string),
       /**
@@ -94,7 +94,7 @@ export default function createModel(
        * #getter
        * The height in force: `height` when a host gave one, `drawerViewHeight`
        * while a drawer is open, and nothing otherwise -- the view is
-       * content-height and the host's own box is what bounds it. The session's
+       * content-height and the host's own box bounds it. The session's
        * `stickyViewHeaders` reads it too.
        */
       get effectiveHeight() {

@@ -15,7 +15,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * sends `CoreGetEncodedFeature` the request the instance's region came back
  * under, and the worker answers the entry of `layer`'s list that the
  * instance's `featureIndex` names: the record as the adapter wrote it, or the
- * bin or run the steps made. A second click aborts the first.
+ * bin or run the steps made. A second click aborts the first request.
  */
 export function selectEncodedFeature(
   self: IStateTreeNode,

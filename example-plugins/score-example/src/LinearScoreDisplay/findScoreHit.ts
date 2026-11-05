@@ -26,10 +26,10 @@ const HIT_RADIUS_PX = 4
 // #region hit
 // `nearestMarkHit` walks the blocks under the cursor and asks the mark's
 // `hitNearest`, which measures the cursor against the rect its `ink`
-// declares. What the display chooses is the candidates: every instance here,
+// declares. The display chooses the candidates: every instance here,
 // back to front so a tie goes to the box painted on top, which is enough at a
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
-// its `index` lane — a Flatbush over (bp, score) — and answers with what that
+// its `index` lane — a Flatbush over (bp, score) — and returns what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
 // (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(
