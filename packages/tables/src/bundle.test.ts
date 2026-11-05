@@ -44,7 +44,22 @@ const wholeReads = new Map<string, number>()
 const add = (counts: Map<string, number>, url: string, n: number) =>
   counts.set(url, (counts.get(url) ?? 0) + n)
 
+interface HostRead {
+  status: number
+  size: number
+  bytes: Uint8Array
+}
+
+// What a remote host answers in place of the file, when a test sets it
+let fault:
+  | ((url: string, start: number, end: number) => HostRead | undefined)
+  | undefined
+
 function readRange(url: string, start: number, end: number) {
+  return fault?.(url, start, end) ?? readFile(url, start, end)
+}
+
+function readFile(url: string, start: number, end: number): HostRead {
   const file = fileURLToPath(url)
   const size = statSync(file).size
   const last = end < 0 ? size - 1 : Math.min(end, size - 1)
@@ -563,5 +578,139 @@ describe('a bare host under a budget', () => {
       adapters: 0,
       assemblies: 0,
     })
+  })
+})
+
+// The keys a host reads each table's columns by, two levels down: R reads
+// `s$reads$row`, so a renamed column reaches it as NULL with no error.
+function keysOf(value: unknown, depth = 2): unknown {
+  return Array.isArray(value)
+    ? 'array'
+    : value !== null && typeof value === 'object' && depth > 0
+      ? Object.fromEntries(
+          Object.entries(value)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => [k, keysOf(v, depth - 1)]),
+        )
+      : value === null
+        ? 'null'
+        : typeof value
+}
+
+test('each call answers the tables and columns a host reads by name', async () => {
+  const calls = [
+    ['alignments', jbrowse.alignments, BAM],
+    [
+      'alignmentsByChain',
+      jbrowse.alignments,
+      { ...PAIRED_INVERSION, display: { unit: 'chain' } },
+    ],
+    ['features', jbrowse.features, GFF3],
+    ['wiggle', jbrowse.wiggle, SIGNED_BIGWIG],
+    ['variants', jbrowse.variants, DOG_VCF],
+    ['synteny', jbrowse.synteny, INV_INDELS],
+    ['dotplot', jbrowse.dotplot, INV_INDELS_DOTPLOT],
+    ['multiway', jbrowse.multiway, ALL_VS_ALL],
+    ['contigs', jbrowse.contigs, { adapterConfig: INV_INDELS.adapterConfig }],
+  ] as const
+  const shapes: Record<string, unknown> = {}
+  for (const [name, call, args] of calls) {
+    shapes[name] = keysOf(read(await call(JSON.stringify(args))))
+  }
+  expect(shapes).toMatchSnapshot()
+})
+
+describe('a remote host whose reads fail', () => {
+  const { bamLocation, index } = BAM.adapterConfig
+  const notFound = {
+    status: 404,
+    size: 9,
+    bytes: new TextEncoder().encode('Not Found'),
+  }
+
+  beforeEach(async () => {
+    await jbrowse.clearCache()
+  })
+  afterEach(() => {
+    fault = undefined
+  })
+
+  test('an index answering 404 fails the call, naming the file', async () => {
+    fault = url => (url === index.location.uri ? notFound : undefined)
+    await expect(jbrowse.alignments(JSON.stringify(BAM))).rejects.toThrow(
+      /404[\s\S]*volvox-sorted\.bam\.bai|volvox-sorted\.bam\.bai[\s\S]*404/,
+    )
+  })
+
+  test('a data file answering 404 fails the call, naming the file', async () => {
+    fault = url => (url === bamLocation.uri ? notFound : undefined)
+    await expect(jbrowse.alignments(JSON.stringify(BAM))).rejects.toThrow(
+      /volvox-sorted\.bam\b/,
+    )
+  })
+
+  test('a read failing partway fails the call with the host’s error, and the next call reads the file whole', async () => {
+    let reads = 0
+    fault = url => {
+      if (url === bamLocation.uri && ++reads === 2) {
+        throw new Error('curl: (56) Recv failure: Connection reset by peer')
+      }
+      return undefined
+    }
+    await expect(jbrowse.alignments(JSON.stringify(BAM))).rejects.toThrow(
+      /Connection reset by peer/,
+    )
+    fault = undefined
+    const again = read(await jbrowse.alignments(JSON.stringify(BAM)))
+    const direct = await createTablesEngine().alignments(BAM)
+    expect(again.reads.start).toEqual(Array.from(direct.reads.start))
+  })
+
+  test('a server that ignores the range and sends the whole file fails the call, naming the file', async () => {
+    fault = (url, start, end) =>
+      start > 0 || end >= 0 ? readFile(url, 0, -1) : undefined
+    await expect(jbrowse.alignments(JSON.stringify(BAM))).rejects.toThrow(
+      /volvox-sorted\.bam[^,]*ignored the Range header/,
+    )
+  })
+
+  test('a file cut short of what its index promises fails the call', async () => {
+    fault = (url, start, end) => {
+      if (url === bamLocation.uri) {
+        const whole = readFile(url, start, end)
+        return {
+          ...whole,
+          bytes: whole.bytes.slice(0, whole.bytes.length >> 1),
+        }
+      }
+      return undefined
+    }
+    await expect(jbrowse.alignments(JSON.stringify(BAM))).rejects.toThrow()
+  })
+})
+
+describe('a call given arguments it cannot read', () => {
+  test.each([
+    ['no region', { adapterConfig: BAM.adapterConfig }],
+    ['a region with no end', { ...BAM, region: { refName: 'ctgA', start: 0 } }],
+    [
+      'an adapter type no plugin registers',
+      {
+        ...BAM,
+        adapterConfig: { ...BAM.adapterConfig, type: 'NoSuchAdapter' },
+      },
+    ],
+    [
+      'a region ending before it starts',
+      { ...BAM, region: { ...BAM.region, start: 500, end: 100 } },
+    ],
+  ])('%s fails the call, saying what is wrong', async (_, args) => {
+    await expect(jbrowse.alignments(JSON.stringify(args))).rejects.toThrow(
+      /region|adapter|NoSuchAdapter|start|end/i,
+    )
+  })
+
+  test('text that is not JSON fails the call', async () => {
+    await expect(jbrowse.alignments('{region:')).rejects.toThrow()
   })
 })

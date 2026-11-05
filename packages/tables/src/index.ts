@@ -157,6 +157,29 @@ function refuseUnknownArgs(call: string, args: object, keys: object) {
   }
 }
 
+function refuseMalformedRegions(
+  call: string,
+  regions: readonly { refName: unknown; start: unknown; end: unknown }[],
+) {
+  const malformed = regions.filter(
+    ({ refName, start, end }) =>
+      typeof refName !== 'string' ||
+      typeof start !== 'number' ||
+      typeof end !== 'number' ||
+      !Number.isFinite(start) ||
+      !Number.isFinite(end) ||
+      start < 0 ||
+      end <= start,
+  )
+  if (regions.length === 0) {
+    throw new Error(`${call} takes a region or regions to read`)
+  } else if (malformed.length > 0) {
+    throw new Error(
+      `${call} reads a region as a refName and a start of 0 or more before its end, not ${malformed.map(r => JSON.stringify(r)).join(', ')}`,
+    )
+  }
+}
+
 const REGION_READ_ARGS = {
   adapterConfig: true,
   region: true,
@@ -468,6 +491,7 @@ export function createTablesEngine() {
         rowLimit,
         ...rest
       }: HostArgs<A>) => {
+        refuseMalformedRegions(name, regions)
         const given = { ...rest, regions } as A
         const resolved = assembly ? await assemblyOf(assembly) : undefined
         const args = resolved
