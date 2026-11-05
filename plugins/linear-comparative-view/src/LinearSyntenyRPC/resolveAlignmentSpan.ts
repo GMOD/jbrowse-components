@@ -1,10 +1,12 @@
+import { adapterRefName } from '@jbrowse/core/util'
+
 import {
   findPosInCigar,
   findPosInCigarByMate,
 } from '../LaunchSyntenyView/findPosInCigar.ts'
 import { getAlignmentOps, getMate } from '../syntenyMate.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { AdapterRefName, Feature } from '@jbrowse/core/util'
 
 export interface SpanOfInterest {
   start: number
@@ -13,6 +15,12 @@ export interface SpanOfInterest {
 
 export interface ResolvedSpan {
   refName: string
+  start: number
+  end: number
+}
+
+export interface AdapterSpan {
+  refName: AdapterRefName
   start: number
   end: number
 }
@@ -44,7 +52,7 @@ export function resolveAlignmentSpan({
   alignment: Feature
   window: SpanOfInterest
   toMate: boolean
-}): ResolvedSpan | undefined {
+}): AdapterSpan | undefined {
   const mate = getMate(alignment)
   const cigar = getAlignmentOps(alignment)
   if (!mate || !cigar) {
@@ -70,7 +78,7 @@ export function resolveAlignmentSpan({
     const a = strand === -1 ? mate.end - mLo : mate.start + mLo
     const b = strand === -1 ? mate.end - mHi : mate.start + mHi
     return {
-      refName: mate.refName,
+      refName: adapterRefName(mate.refName),
       start: Math.floor(Math.min(a, b)),
       end: Math.ceil(Math.max(a, b)),
     }
@@ -87,7 +95,7 @@ export function resolveAlignmentSpan({
   const [fLo] = findPosInCigarByMate(cigar, oLo)
   const [fHi] = findPosInCigarByMate(cigar, oHi)
   return {
-    refName: alignment.get('refName'),
+    refName: adapterRefName(alignment.get('refName')),
     start: Math.floor(featStart + Math.min(fLo, fHi)),
     end: Math.ceil(featStart + Math.max(fLo, fHi)),
   }

@@ -8,6 +8,7 @@ import {
   readTrailingBodyDir,
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
+import { adapterRefName } from '@jbrowse/core/util'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { splitJunctionSlot } from '../arcs/arcColors.ts'
@@ -15,6 +16,7 @@ import { SPLIT_JUNCTION_CLASSES, splitClassCode } from './junctionClass.ts'
 
 import type { FeatureData } from '../../shared/webglRpcTypes.ts'
 import type { ReadNames } from '@jbrowse/alignments-core'
+import type { AdapterRefName } from '@jbrowse/core/util'
 
 const CATEGORY_OF_SLOT = new Map(
   SPLIT_JUNCTION_CLASSES.map(c => [ARC_SLOT_CATEGORY.indexOf(c), c]),
@@ -189,7 +191,7 @@ export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
 export function forEachSplitJunction(
   segment: { start: number; end: number; strand: number; clipAtStart: number },
   sa: string,
-  isHere: (refName: string) => boolean,
+  isHere: (refName: AdapterRefName) => boolean,
   visit: Visit,
 ) {
   const { clipAtStart } = segment
@@ -197,7 +199,7 @@ export function forEachSplitJunction(
   forEachSAEntry(sa, (nameStart, nameEnd, start, end, strand, clip) => {
     if (clip < clipAtStart && clip > (near.before?.clip ?? -1)) {
       near.before = {
-        here: isHere(sa.slice(nameStart, nameEnd)),
+        here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
         strand,
         start,
         end,
@@ -205,7 +207,7 @@ export function forEachSplitJunction(
       }
     } else if (clip > clipAtStart && clip < (near.after?.clip ?? Infinity)) {
       near.after = {
-        here: isHere(sa.slice(nameStart, nameEnd)),
+        here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
         strand,
         start,
         end,
@@ -327,7 +329,8 @@ export function computeSplitJunctions({
   const byStart = new Map<number, SplitJunction[]>()
   let record = 0
   let mate = 0
-  const isHere = (name: string) => name === refName
+  const here = adapterRefName(refName)
+  const isHere = (name: AdapterRefName) => name === here
   const visit: Visit = (start, end, splitClass, predecessorClip) => {
     if (
       predecessorClip === -1 ||

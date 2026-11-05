@@ -8,6 +8,7 @@ import {
   readIdAt,
   readNameAt,
 } from '@jbrowse/alignments-core'
+import { canonicalAdapterRefName } from '@jbrowse/core/util'
 
 import { isLevelPairMinimized } from './util.ts'
 
@@ -143,7 +144,7 @@ export function buildReadChains(
     if (entries.length >= 2) {
       const assembly = assemblies[entries[0]!.level]
       const connections = readGroupConnections(entries, refName =>
-        assembly ? assembly.getCanonicalRefName2(refName) : refName,
+        canonicalAdapterRefName(assembly, refName),
       ).filter(isEvidenceLink)
       if (connections.length > 0) {
         chains.push({ entries, connections })

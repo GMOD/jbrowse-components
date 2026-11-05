@@ -12,7 +12,7 @@ import type { BaseLayer, WorkerFacet } from '../shared/types'
 import type { InterbaseIndicatorRule, ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
-import type { Region } from '@jbrowse/core/util'
+import type { AdapterRefName, Region } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
@@ -151,7 +151,7 @@ export interface WorkerPileupData {
   // one. A string per read held ONE distinct value on the deepest fixture; see
   // shared/readNextRefs.ts.
   readNextRefIds: Int32Array
-  nextRefNames: string[]
+  nextRefNames: AdapterRefName[]
 
   // Segment data - per-exon segments for GPU instancing (reads split at skip gaps)
   segmentPositions: Uint32Array // [start, end] absolute pairs per segment

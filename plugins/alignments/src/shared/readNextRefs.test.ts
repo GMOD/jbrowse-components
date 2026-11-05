@@ -1,3 +1,4 @@
+import { adapterRefName } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -90,7 +91,7 @@ test('BAM resolves one name per contig and still answers per read', async () => 
   ).toBeDefined()
   const table = buildReadNextRefs(features)
   for (let i = 0; i < features.length; i++) {
-    expect(nextRefAt(table, i)).toBe(features[i]!.get('next_ref') ?? '')
+    expect(nextRefAt(table, i)).toBe(features[i]!.get('next_ref'))
   }
   // volvox-sorted's mates are all on ctgA, which is the point: 1 name for
   // however many reads.
@@ -108,7 +109,7 @@ test('CRAM resolves one name per contig and still answers per read', async () =>
   ).toBeDefined()
   const table = buildReadNextRefs(features)
   for (let i = 0; i < features.length; i++) {
-    expect(nextRefAt(table, i)).toBe(features[i]!.get('next_ref') ?? '')
+    expect(nextRefAt(table, i)).toBe(features[i]!.get('next_ref'))
   }
   expect(table.nextRefNames.length).toBeLessThanOrEqual(2)
 }, 20000)
@@ -127,29 +128,35 @@ describe('nextRefsToTable', () => {
     const t = nextRefsToTable(['', 'chr1', ''])
     expect(t.nextRefNames).toEqual(['chr1'])
     expect([...t.readNextRefIds]).toEqual([-1, 0, -1])
-    expect(nextRefAt(t, 0)).toBe('')
-    expect(nextRefAt(t, 2)).toBe('')
+    expect(nextRefAt(t, 0)).toBeUndefined()
+    expect(nextRefAt(t, 2)).toBeUndefined()
   })
 
   test('reads past the end have no mate reference', () => {
-    expect(nextRefAt(nextRefsToTable([]), 0)).toBe('')
+    expect(nextRefAt(nextRefsToTable([]), 0)).toBeUndefined()
   })
 })
 
 describe('buildReadInterchrom', () => {
   test('flags reads whose mate is on a different chromosome', () => {
     const t = nextRefsToTable(['chr1', 'chr2', 'chr1'])
-    expect([...buildReadInterchrom(t, 'chr1', 3)]).toEqual([0, 1, 0])
+    expect([...buildReadInterchrom(t, adapterRefName('chr1'), 3)]).toEqual([
+      0, 1, 0,
+    ])
   })
 
   test('no mate is not interchromosomal', () => {
     const t = nextRefsToTable(['', 'chr2'])
-    expect([...buildReadInterchrom(t, 'chr1', 2)]).toEqual([0, 1])
+    expect([...buildReadInterchrom(t, adapterRefName('chr1'), 2)]).toEqual([
+      0, 1,
+    ])
   })
 
   test('an empty table yields all zeros of the read count', () => {
     const t = nextRefsToTable([])
-    expect([...buildReadInterchrom(t, 'chr1', 3)]).toEqual([0, 0, 0])
+    expect([...buildReadInterchrom(t, adapterRefName('chr1'), 3)]).toEqual([
+      0, 0, 0,
+    ])
   })
 })
 

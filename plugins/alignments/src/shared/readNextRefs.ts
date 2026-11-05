@@ -1,4 +1,6 @@
-import type { Feature } from '@jbrowse/core/util'
+import { adapterRefName, adapterRefNameText } from '@jbrowse/core/util'
+
+import type { AdapterRefName, Feature } from '@jbrowse/core/util'
 
 /**
  * The mate's reference name per read, as a slot into a table of the distinct
@@ -27,13 +29,13 @@ export interface ReadNextRefs {
   readNextRefIds: Int32Array
   // The distinct mate reference names, in first-seen order. A handful of
   // entries — one on the fixture above, a few dozen on a whole-genome BAM.
-  nextRefNames: string[]
+  nextRefNames: AdapterRefName[]
 }
 
-/** The mate's reference name for read `i`, or `''` when it has no mate. */
+/** The mate's reference name for read `i`, or undefined when it has no mate. */
 export function nextRefAt(d: ReadNextRefs, i: number) {
   const slot = d.readNextRefIds[i]
-  return slot === undefined || slot < 0 ? '' : (d.nextRefNames[slot] ?? '')
+  return slot === undefined || slot < 0 ? undefined : d.nextRefNames[slot]
 }
 
 /**
@@ -43,7 +45,7 @@ export function nextRefAt(d: ReadNextRefs, i: number) {
  */
 export function nextRefsToTable(mateRefs: string[]): ReadNextRefs {
   const readNextRefIds = new Int32Array(mateRefs.length)
-  const nextRefNames: string[] = []
+  const nextRefNames: AdapterRefName[] = []
   const slots = new Map<string, number>()
   for (let i = 0; i < mateRefs.length; i++) {
     const name = mateRefs[i]!
@@ -54,7 +56,7 @@ export function nextRefsToTable(mateRefs: string[]): ReadNextRefs {
     let slot = slots.get(name)
     if (slot === undefined) {
       slot = nextRefNames.length
-      nextRefNames.push(name)
+      nextRefNames.push(adapterRefName(name))
       slots.set(name, slot)
     }
     readNextRefIds[i] = slot
@@ -84,7 +86,7 @@ interface HasNextRefId {
 export function buildReadNextRefs(features: Feature[]): ReadNextRefs {
   const n = features.length
   const readNextRefIds = new Int32Array(n)
-  const nextRefNames: string[] = []
+  const nextRefNames: AdapterRefName[] = []
   // One cast for the array rather than one per element, which in a hot loop is
   // the same assertion n times.
   const mated = features as (Feature & HasNextRefId)[]
@@ -110,7 +112,7 @@ export function buildReadNextRefs(features: Feature[]): ReadNextRefs {
       // The one place a name is built, and only for a contig not yet seen.
       const name = (features[i]!.get('next_ref') as string | undefined) ?? ''
       slot = nextRefNames.length
-      nextRefNames.push(name)
+      nextRefNames.push(adapterRefName(name))
       slotByRefId[refId] = slot
     }
     readNextRefIds[i] = slot
@@ -129,12 +131,12 @@ export function buildReadNextRefs(features: Feature[]): ReadNextRefs {
  */
 export function buildReadInterchrom(
   d: ReadNextRefs,
-  refName: string,
+  refName: AdapterRefName,
   numReads: number,
 ): Uint8Array {
   const out = new Uint8Array(numReads)
   const elsewhere = d.nextRefNames.map(name =>
-    name && name !== refName ? 1 : 0,
+    adapterRefNameText(name) && name !== refName ? 1 : 0,
   )
   const ids = d.readNextRefIds
   for (let i = 0; i < numReads; i++) {

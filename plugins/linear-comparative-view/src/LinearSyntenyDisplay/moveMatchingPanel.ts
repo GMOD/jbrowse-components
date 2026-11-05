@@ -1,4 +1,5 @@
 import {
+  adapterRefNameText,
   assembleLocString,
   assembleLocStringRaw,
   getSession,
@@ -255,7 +256,7 @@ export async function resolveMatchingSpan({
     assemblyManager,
     assemblyName: axisAssemblyName,
   })
-  return { ...span, refName: canonical(span.refName) }
+  return { ...span, refName: canonical(adapterRefNameText(span.refName)) }
 }
 
 /**

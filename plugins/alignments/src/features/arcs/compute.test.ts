@@ -8,6 +8,7 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { adapterRefNameText } from '@jbrowse/core/util'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
@@ -2006,7 +2007,8 @@ describe('computeArcsFromPileupData', () => {
 
     const norm = computeArcsFromPileupData(new Map([[0, data]]), regions, {
       ...base,
-      canonicalRefName: r => (r === 'chr1' ? '1' : r),
+      canonicalRefName: r =>
+        adapterRefNameText(r) === 'chr1' ? '1' : adapterRefNameText(r),
     })
     expect(norm.arcs).toHaveLength(1)
     expect(norm.arcs[0]!.p1.refName).toBe('1')

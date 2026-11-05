@@ -8,12 +8,14 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
   splitSA,
 } from '@jbrowse/cigar-utils'
+import { adapterRefName } from '@jbrowse/core/util'
 
 import { formatLocationRange } from './locStrings.ts'
 import { pairDirectionOfNum, splitJunctionKind } from './orientation.ts'
 
 import type { ConnectionKind } from './connectionLabels.ts'
 import type { ReadKey, ReadKeys } from './readIdentity.ts'
+import type { AdapterRefName } from '@jbrowse/core/util'
 
 /**
  * The per-read arrays a connection is resolved from: the alignments worker's
@@ -32,7 +34,7 @@ export interface ConnectionReadArrays {
 }
 
 // Maps a raw BAM refName (SA tag, RNEXT) to the name the fetched reads carry.
-type CanonicalRefName = (refName: string) => string
+type CanonicalRefName = (refName: AdapterRefName) => string
 
 // A per-read array bundle plus the read's index into it. Each consumer's own
 // entry type satisfies it by having those two fields.
@@ -228,7 +230,7 @@ function hiddenSegments<E extends MinEntry>(
       .map(sa => ({
         clip: sa.clipLengthAtStartOfRead,
         loc: formatLocationRange(
-          canonicalRefName(sa.refName),
+          canonicalRefName(adapterRefName(sa.refName)),
           sa.start,
           sa.end,
         ),

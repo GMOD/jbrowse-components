@@ -4,7 +4,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, adapterRefNameText } from '@jbrowse/core/util'
 
 import {
   MAX_FALLBACK_LOCI,
@@ -44,7 +44,7 @@ function fetcherOver(feats: Feature[]) {
     return feats.filter(f =>
       loci.some(
         l =>
-          l.refName === f.get('refName') &&
+          adapterRefNameText(l.refName) === f.get('refName') &&
           l.start < f.get('end') &&
           l.start + 1 > f.get('start'),
       ),

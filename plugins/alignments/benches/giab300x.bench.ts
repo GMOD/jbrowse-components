@@ -35,6 +35,7 @@ import {
   buildReadNameBlock,
   readNameAt,
 } from '@jbrowse/alignments-core'
+import { adapterRefName, adapterRefNameText } from '@jbrowse/core/util'
 import { RemoteFile } from 'generic-filehandle2'
 
 import {
@@ -163,7 +164,7 @@ async function main() {
   const keys = buildKeys()
   const block = buildReadNameBlock(feats)
   const refs = buildReadNextRefs(feats)
-  buildReadInterchrom(refs, REF, records.length)
+  buildReadInterchrom(refs, adapterRefName(REF), records.length)
   const wIds = oldIds()
   const wNames = oldNames()
   const wRefs = oldRefs()
@@ -183,7 +184,10 @@ async function main() {
     if (readNameAt(block, i) !== f.get('name')) {
       bad++
     }
-    if (nextRefAt(refs, i) !== (f.get('next_ref') ?? '')) {
+    const mateRef = nextRefAt(refs, i)
+    if (
+      (mateRef ? adapterRefNameText(mateRef) : '') !== (f.get('next_ref') ?? '')
+    ) {
       bad++
     }
   }
@@ -193,7 +197,10 @@ async function main() {
     ['newKeys', buildKeys],
     ['newNames', () => buildReadNameBlock(feats)],
     ['newRefs', () => buildReadNextRefs(feats)],
-    ['newInter', () => buildReadInterchrom(refs, REF, records.length)],
+    [
+      'newInter',
+      () => buildReadInterchrom(refs, adapterRefName(REF), records.length),
+    ],
     ['oldIdsB', oldIds],
     ['oldIdsP', () => structuredClone(wIds)],
     ['oldNamesB', oldNames],

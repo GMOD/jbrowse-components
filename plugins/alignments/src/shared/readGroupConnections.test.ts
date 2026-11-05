@@ -11,6 +11,7 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { adapterRefNameText } from '@jbrowse/core/util'
 
 import { basePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 
@@ -244,7 +245,7 @@ describe('readGroupConnections', () => {
 // over any number the view never loaded. That is the difference between a real
 // rearrangement and a drawn one, so the junction reports it.
 describe('a junction over segments no region fetched', () => {
-  const canonical = (refName: string) => refName
+  const canonical = adapterRefNameText
   // Both fetched segments sit at read bases 0-100 and 300-400; the read declares
   // a third at 100-300 that only its tag knows about.
   const twoOfThree = () =>

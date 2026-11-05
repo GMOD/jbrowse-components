@@ -42,6 +42,7 @@ import {
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
+import { adapterRefNameText } from '@jbrowse/core/util'
 import {
   abgrAlpha,
   abgrToHex,
@@ -1095,7 +1096,7 @@ function sectionConnectors(
     [...laidByGroup].map(([key, laid]) => {
       const pileupHeight = sectionMaxY(laid) * readPitch
       const byRegion = new Map<number, PlacedConnector[]>()
-      for (const pair of iterLinkedPairs(laid, r => r, refNameAt)) {
+      for (const pair of iterLinkedPairs(laid, adapterRefNameText, refNameAt)) {
         const placed = admits(pair)
           ? connectorInstance(
               pair,

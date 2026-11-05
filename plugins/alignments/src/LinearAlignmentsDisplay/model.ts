@@ -20,6 +20,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
+  canonicalAdapterRefName,
   canonicalizeViewRefName,
   getDialogHost,
   getNotificationSink,
@@ -266,7 +267,7 @@ import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { AdapterRefName, Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -1707,7 +1708,8 @@ export default function stateModelFactory(
           get canonicalRefName() {
             const assembly = self.loadedAssembly
             return assembly
-              ? (refName: string) => assembly.getCanonicalRefName2(refName)
+              ? (refName: AdapterRefName) =>
+                  canonicalAdapterRefName(assembly, refName)
               : undefined
           },
 

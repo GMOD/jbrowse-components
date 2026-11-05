@@ -9,7 +9,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { CUBIC_APEX_RATIO, max } from '@jbrowse/core/util'
+import { CUBIC_APEX_RATIO, adapterRefNameText, max } from '@jbrowse/core/util'
 import {
   CONNECTOR_DASHED,
   CONNECTOR_STRAIGHT,
@@ -20,6 +20,8 @@ import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+
+import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 
 // Distinguishable values, not makeTestPalette's all-zero default: the
 // assertions below are that two SLOTS carry different colors, which every
@@ -125,7 +127,7 @@ function drawnConnectors(opts: {
 // The straight-line pass's records, as the display resolves them.
 function linesOf(
   map: Parameters<typeof resolveConnectors>[0],
-  canonicalRefName?: (refName: string) => string,
+  canonicalRefName?: CanonicalRefName,
 ) {
   return resolveConnectors(map, {
     lines: true,
@@ -962,7 +964,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     ys: [0, 1],
   })
   const sections = new Map([[0, foldback]])
-  const identity = (refName: string) => refName
+  const identity = adapterRefNameText
 
   it('names the hidden loci in read order, once per hop', () => {
     const pairs = enumerateConnectorPairs(sections, 'all', identity)
@@ -995,7 +997,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
   // tooltip sends the reader to a refName the view does not have.
   it('reports the loci in the assembly-canonical spelling', () => {
     const pairs = enumerateConnectorPairs(sections, 'all', refName =>
-      refName.replace('chr', ''),
+      adapterRefNameText(refName).replace('chr', ''),
     )
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
       '10:600,001-600,199',
@@ -1378,7 +1380,7 @@ describe('a same-strand junction across segments nothing fetched', () => {
         }),
       ],
     ])
-  const identity = (refName: string) => refName
+  const identity = adapterRefNameText
   const arcOf = (ys: number[]) =>
     drawnConnectors({
       colors: PALETTE,

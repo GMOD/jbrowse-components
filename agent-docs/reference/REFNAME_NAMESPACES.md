@@ -49,8 +49,10 @@ instances; two assemblies over one FASTA, or an alias spelling, hash to one.
 
 ## Plugin workarounds
 
-A new plugin that receives an out-of-request refName should **resolve on receipt
-through the assembly's alias table**, not invert the outbound map. The outbound
+A new plugin that receives an out-of-request refName should **type it
+`AdapterRefName` where it is read and resolve it on receipt through the
+assembly's alias table** (`canonicalAdapterRefName`, below), not invert the
+outbound map. The outbound
 map is keyed by canonical name, so inverting it keeps one file spelling per
 contig and is not total.
 
@@ -81,14 +83,49 @@ re-intern, which is why it is not an in-place `.map()`. Such a file is also
 half-broken going OUT: `loadRefNameMap` keeps one spelling per contig, so rows
 under the other spelling are never fetched. Nothing in synteny can close that.
 
-## Branding catches most straddles, only if both ends are branded
+## `AdapterRefName`: the out-of-request names are typed
 
-`type AdapterRefName = string & { readonly __ns: 'adapter' }` is compile-time
-only. Comparing two brands is TS2367, `Map<Canonical,_>.get(adapterName)` is
-TS2345.
+`AdapterRefName` (`@jbrowse/core/util`, `util/adapterRefName.ts`) is an
+out-of-request name in the file's spelling. It is a plain string at runtime and
+deliberately **not** a `string` subtype. A `string & {…}` brand, the obvious
+spelling, catches nothing here: `plain === branded` overlaps, so only a
+comparison between two brands errors, and view state is plain `string`
+everywhere. The opaque brand needs only the out-of-request end typed. Meeting
+any string is then TS2367, and so is being handed to a `string` parameter or
+`Map<string,_>.get` (TS2345) or indexing a `Record` (TS2538). That covers a core
+sink taking a plain `string`, which the intersection brand could not.
+`adapterRefName.test.ts` pins all three with `@ts-expect-error`.
 
-**The trap:** `plain === branded` does not error, because `string` and
-`string & {…}` overlap. Both ends must be branded, and the brand cannot catch a
-site that hands the name to a core function taking a plain `string`
-(`positionViewOnSpan` → `bpToOffset`). Brand out-of-request refNames (mate,
-partner, target), not refName generally.
+Three functions, and nothing else crosses the brand:
+
+- `adapterRefName(text)` mints, where the name is first read.
+- `canonicalAdapterRefName(assembly, name)` converts, through
+  `getCanonicalRefName2`, keeping the file's spelling when there is no
+  assembly.
+- `adapterRefNameText(name)` spells it for display, for a name going back to
+  the adapter that spelled it, and as the identity normalizer where no assembly
+  is resolved.
+
+Minted at:
+
+- **RNEXT**: `computeMateFields` (`MateFields.nextRef`) and `buildReadNextRefs` /
+  `nextRefsToTable` (`ReadNextRefs.nextRefNames`, which crosses the RPC typed).
+  `nextRefAt` answers `undefined` for no mate.
+- **SA records**: where `featurizeSA`'s output is read (`saSegments`,
+  `readGroupConnections`' `hiddenSegments`), in `forEachSplitJunction`, and in
+  `supplementaryLoci` (`AlignmentLocus.refName`). `@jbrowse/cigar-utils` does
+  not depend on core, so `featurizeSA` itself returns `string`.
+- **Worker region names** compared with a mate in file space:
+  `buildReadInterchrom` and `computeSplitJunctions`. The rename made those
+  regions adapter-space.
+- **Synteny's span**: `resolveAlignmentSpan` returns an `AdapterSpan`, which is
+  `SyntenyResolveMatchingRegion`'s RPC return type. `resolveMatchingSpan`
+  converts it to the canonical `ResolvedSpan`, so a forgotten rename is TS2322
+  at its consumers.
+
+The alignments normalizer `CanonicalRefName` (`arcTypes.ts`, and
+`readGroupConnections`' copy) takes an `AdapterRefName`, so a canonical name
+cannot be fed back through it. The breakpoint split view's `readChains` passes
+one built on `canonicalAdapterRefName`.
+
+Not branded, and why, in `ideas/ready/brand-the-out-of-request-refnames.md`.

@@ -4,7 +4,7 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, adapterRefNameText } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
@@ -38,7 +38,7 @@ function splitArcs(
       lanes.map(lane => ['', lane] as const),
       regions,
     ),
-    { filter: {}, canonicalRefName: r => r },
+    { filter: {}, canonicalRefName: adapterRefNameText },
   ).filter(arc => arc.isSplit)
 }
 

@@ -1,6 +1,7 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ConnectionFilter } from '../../shared/types.ts'
+import type { AdapterRefName } from '@jbrowse/core/util'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
 // settings that gate it, the pending form a read pair or split junction takes
@@ -335,7 +336,7 @@ export interface ReadEntry {
 // to the assembly-canonical name the fetched reads carry (e.g. `1`). Keeping
 // every SegAln/PendingArc refName canonical is what stops a same-chr split
 // junction from reading as inter-chromosomal.
-export type CanonicalRefName = (refName: string) => string
+export type CanonicalRefName = (refName: AdapterRefName) => string
 
 // Dependencies threaded through pending-arc EMISSION: the normalizer above plus
 // the two filter categories that decide whether a connection to a partner this

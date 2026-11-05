@@ -262,6 +262,12 @@ export {
 } from './intervals.ts'
 export { clampToContig, clampToListedContig } from './clampToContig.ts'
 export {
+  type AdapterRefName,
+  adapterRefName,
+  adapterRefNameText,
+  canonicalAdapterRefName,
+} from './adapterRefName.ts'
+export {
   MORPH_DURATION_MS,
   animationAllowed,
   easeInOutCubic,

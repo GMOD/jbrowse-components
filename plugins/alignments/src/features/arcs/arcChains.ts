@@ -18,6 +18,7 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
 } from '@jbrowse/cigar-utils'
+import { adapterRefName } from '@jbrowse/core/util'
 
 import { isMatePlacedRead, isPlacedRead } from '../../shared/placedReads.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
@@ -177,7 +178,7 @@ function saSegments(
   )
     .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
     .map(sa => ({
-      refName: canonicalRefName(sa.refName),
+      refName: canonicalRefName(adapterRefName(sa.refName)),
       start: sa.start,
       end: sa.end,
       strand: sa.strand,
@@ -387,7 +388,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 // is still visible — which also moves `buildReadInterchrom` and the tooltip's
 // RNEXT, for a mate at base 0 of a contig with its arc off screen. Not worth
 // the three consumers; recorded so it is not re-derived.
-// The RNEXT `*` case is NOT this test's: `nextRefAt` already answers `''` for a
+// The RNEXT `*` case is NOT this test's: `nextRefAt` already answers undefined for a
 // BAM `next_refid` -1, and `parseSam` maps a literal `*` to `undefined`.
 //
 // The arc connects the read's own outer (5') edge — the fragment boundary TLEN

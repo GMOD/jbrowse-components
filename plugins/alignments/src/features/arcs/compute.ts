@@ -1,4 +1,5 @@
 import { isConcordantPairRead } from '@jbrowse/alignments-core'
+import { adapterRefNameText } from '@jbrowse/core/util'
 
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
@@ -179,7 +180,7 @@ interface ArcInputs {
 function arcChainContext(settings: ArcCollectionSettings): ArcChainContext {
   return {
     filter: settings.filter ?? {},
-    canonicalRefName: settings.canonicalRefName ?? (refName => refName),
+    canonicalRefName: settings.canonicalRefName ?? adapterRefNameText,
   }
 }
 

@@ -26,6 +26,7 @@ import { resolveConnectors } from './computeOverlay.ts'
 import { connectorStyler } from './connectorStyle.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { ReadEntry } from './compute.ts'
 
 // What a connector of `colorType` paints, in the arc band's vocabulary.
@@ -36,7 +37,7 @@ function paints(colorType: number) {
 // The straight-line pass's records, as the display resolves them.
 function linesOf(
   map: Parameters<typeof resolveConnectors>[0],
-  canonicalRefName?: (refName: string) => string,
+  canonicalRefName?: CanonicalRefName,
 ) {
   return resolveConnectors(map, {
     lines: true,

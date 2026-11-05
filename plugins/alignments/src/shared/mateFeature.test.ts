@@ -1,4 +1,4 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, adapterRefName } from '@jbrowse/core/util'
 
 import { buildPairedEndMateFeature, getMateFields } from './mateFeature.ts'
 
@@ -86,7 +86,7 @@ test('buildPairedEndMateFeature carries a distinct mate uniqueId', () => {
     start: 100,
     end: 200,
     strand: 1,
-    nextRef: 'chr2',
+    nextRef: adapterRefName('chr2'),
     nextPos: 5000,
     mateStrand: -1,
   })

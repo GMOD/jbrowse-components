@@ -1,4 +1,5 @@
 import {
+  canonicalAdapterRefName,
   clampToContig,
   clampToListedContig,
   gatherOverlaps,
@@ -70,7 +71,7 @@ export function viewMateRegionInCurrentView({
   // The read's refName came back from a region this view asked for, so the
   // assembly has that contig. `nextRef` did not.
   const mateSpan = clampToListedContig(assembly, {
-    refName: nextRef,
+    refName: canonicalAdapterRefName(assembly, nextRef),
     start: nextPos - pad,
     end: nextPos + (end - start) + pad,
   })

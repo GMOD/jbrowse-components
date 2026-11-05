@@ -6,12 +6,17 @@ import {
   splitSA,
 } from '@jbrowse/cigar-utils'
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import {
+  adapterRefName,
+  canonicalAdapterRefName,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getTag } from '@jbrowse/modifications-utils'
 
 import type {
   AbstractTrackModel,
+  AdapterRefName,
   Feature,
   StatusCallback,
 } from '@jbrowse/core/util'
@@ -19,7 +24,7 @@ import type {
 const PAIR_ROLE = SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SECOND_IN_PAIR
 
 export interface AlignmentLocus {
-  refName: string
+  refName: AdapterRefName
   start: number
 }
 
@@ -38,7 +43,7 @@ export function supplementaryLoci(feature: Feature): AlignmentLocus[] {
     const [refName, pos] = record.split(',')
     const start = Number(pos) - 1
     return refName && Number.isInteger(start) && start >= 0
-      ? [{ refName, start }]
+      ? [{ refName: adapterRefName(refName), start }]
       : []
   })
 }
@@ -134,12 +139,10 @@ export async function fetchPrimaryAlignment(
     const assembly = asm
       ? await assemblyManager.waitForAssembly(asm)
       : undefined
-    const canonical = (refName: string) =>
-      assembly?.getCanonicalRefName2(refName) ?? refName
     return rpcManager.call(getRpcSessionId(track), 'CoreGetFeatures', {
       adapterConfig: getConf(track, 'adapter'),
       regions: loci.map(({ refName, start }) => ({
-        refName: canonical(refName),
+        refName: canonicalAdapterRefName(assembly, refName),
         start,
         end: start + 1,
         assemblyName: asm ?? '',

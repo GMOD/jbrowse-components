@@ -1,3 +1,5 @@
+import { adapterRefName } from '@jbrowse/core/util'
+
 import { viewMateRegionInCurrentView } from './viewMateRegion.ts'
 
 import type { MateFields } from '../shared/mateFeature.ts'
@@ -84,14 +86,17 @@ jest.mock('@jbrowse/core/util', () => ({
   getDialogHost: (node: { session: unknown }) => node.session,
 }))
 
-function mate(over: Partial<MateFields> = {}): MateFields {
+function mate({
+  nextRef = 'ctgA',
+  ...over
+}: Partial<Omit<MateFields, 'nextRef'>> & { nextRef?: string } = {}) {
   return {
     uniqueId: 'read1',
     refName: 'ctgA',
     start: 1000,
     end: 1150,
     strand: 1,
-    nextRef: 'ctgA',
+    nextRef: adapterRefName(nextRef),
     nextPos: 1100,
     mateStrand: -1,
     ...over,

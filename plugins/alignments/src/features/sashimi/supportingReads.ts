@@ -1,4 +1,5 @@
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
+import { adapterRefNameText } from '@jbrowse/core/util'
 
 import { GAP_SKIP } from '../../shaders/slang/gap.consts.generated.ts'
 import { splitClassCode } from './junctionClass.ts'
@@ -7,6 +8,8 @@ import { forEachSplitJunction } from './splitJunctions.ts'
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { CanonicalRefName } from '../arcs/arcTypes.ts'
+import type { AdapterRefName } from '@jbrowse/core/util'
 
 /** A junction as one lane draws it: what a hovered arc names. */
 export interface LaneJunction {
@@ -65,7 +68,7 @@ function splitReads(
   data: ReadFields,
   junction: LaneJunction,
   split: ArcSplitCategory,
-  canonicalRefName: (refName: string) => string,
+  canonicalRefName: CanonicalRefName,
 ) {
   const { readSuppAlignments, readClipAtStart, readPositions, readStrands } =
     data
@@ -74,7 +77,7 @@ function splitReads(
     return reads
   }
   const code = splitClassCode(split)
-  const isHere = (refName: string) =>
+  const isHere = (refName: AdapterRefName) =>
     canonicalRefName(refName) === junction.refName
   let read = -1
   const visit = (start: number, end: number, splitClass: number) => {
@@ -121,7 +124,7 @@ export function junctionSupportingReadSlots(
     data: ReadFields
   }>,
   junction: LaneJunction,
-  canonicalRefName: (refName: string) => string = refName => refName,
+  canonicalRefName: CanonicalRefName = adapterRefNameText,
 ) {
   const { groupKey, start, end, split } = junction
   const slots: ReadSlot[] = []

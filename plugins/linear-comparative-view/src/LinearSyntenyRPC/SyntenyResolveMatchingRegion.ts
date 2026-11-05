@@ -3,7 +3,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import { findAlignmentById } from './findAlignmentById.ts'
 
 import type { AlignmentLookupArgs } from './findAlignmentById.ts'
-import type { ResolvedSpan, SpanOfInterest } from './resolveAlignmentSpan.ts'
+import type { AdapterSpan, SpanOfInterest } from './resolveAlignmentSpan.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 /**
@@ -26,7 +26,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     SyntenyResolveMatchingRegion: {
       args: SyntenyResolveMatchingRegionArgs
-      return: ResolvedSpan | undefined
+      return: AdapterSpan | undefined
     }
   }
 }

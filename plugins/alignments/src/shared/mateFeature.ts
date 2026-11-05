@@ -2,11 +2,15 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
 } from '@jbrowse/cigar-utils'
-import { SimpleFeature } from '@jbrowse/core/util'
+import {
+  adapterRefName,
+  adapterRefNameText,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 
 import { getStrand } from './util.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { AdapterRefName, Feature } from '@jbrowse/core/util'
 
 // The subset of paired-read fields needed to build a read+mate feature. A live
 // pileup Feature (via .get()) and a serialized feature-detail object both expose
@@ -18,7 +22,7 @@ export interface MateFields {
   start: number
   end: number
   strand?: number
-  nextRef: string
+  nextRef: AdapterRefName
   nextPos: number
   mateStrand: number
 }
@@ -47,7 +51,7 @@ export function computeMateFields(args: {
     !mateUnmapped
     ? {
         ...rest,
-        nextRef,
+        nextRef: adapterRefName(nextRef),
         nextPos,
         mateStrand: flagBits & SAM_FLAG_MATE_REVERSE ? -1 : 1,
       }
@@ -83,7 +87,7 @@ export function buildPairedEndMateFeature(f: MateFields) {
     strand: f.strand,
     mate: {
       uniqueId: `${f.uniqueId}-mate`,
-      refName: f.nextRef,
+      refName: adapterRefNameText(f.nextRef),
       start: f.nextPos,
       end: f.nextPos + 1,
       strand: f.mateStrand,

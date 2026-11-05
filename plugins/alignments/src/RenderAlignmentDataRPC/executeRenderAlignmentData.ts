@@ -6,7 +6,11 @@ import {
 } from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import {
+  adapterRefName,
+  createProgressReporter,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
@@ -329,7 +333,7 @@ async function buildGroupResult(
   // distinct contig rather than per read.
   const readInterchrom = buildReadInterchrom(
     nextRefs,
-    region.refName,
+    adapterRefName(region.refName),
     drawn.lists.features.length,
   )
 

@@ -7,7 +7,7 @@ import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { toLocale } from '@jbrowse/core/util'
+import { adapterRefNameText, toLocale } from '@jbrowse/core/util'
 import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import { isChainData } from '../../RenderAlignmentDataRPC/types.ts'
@@ -34,6 +34,7 @@ import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { CoverageBin, InterbaseBin } from './positionStats.ts'
+import type { AdapterRefName } from '@jbrowse/core/util'
 
 // Lines of plain text, rendered as text nodes: a read name or a tag value can
 // hold `<`, `>` or `&`, and there is no markup here for them to be mistaken for.
@@ -203,15 +204,16 @@ function getPairTypeDescriptions({
   insertSize: number
   interchrom: number
   insertSizeStats?: InsertSizeBand
-  nextRef: string
+  nextRef: AdapterRefName | undefined
 }): string[] {
   if (flags & SAM_FLAG_MATE_UNMAPPED) {
     return ['Unmapped mate']
   }
+  const mateRef = nextRef ? adapterRefNameText(nextRef) : ''
   if (interchrom === 1) {
     return [
-      nextRef
-        ? `Inter-chromosomal (mate on ${nextRef})`
+      mateRef
+        ? `Inter-chromosomal (mate on ${mateRef})`
         : 'Inter-chromosomal mate',
     ]
   }

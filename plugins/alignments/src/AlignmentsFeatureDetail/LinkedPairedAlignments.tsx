@@ -1,5 +1,6 @@
 import { formatStartLocation } from '@jbrowse/alignments-core'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { adapterRefNameText } from '@jbrowse/core/util'
 import { getAssemblyName, hasBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -46,7 +47,10 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
             the only mate coordinate the record carries */}
         <BreakpointPair
           from={formatStartLocation(refName, start)}
-          to={formatStartLocation(mate.nextRef, mate.nextPos)}
+          to={formatStartLocation(
+            adapterRefNameText(mate.nextRef),
+            mate.nextPos,
+          )}
         />{' '}
         (breakpoint split view)
       </LaunchBreakpointSplitViewLink>
