@@ -16,7 +16,7 @@ The parity suites in `packages/tables/src/parity/` (TEST_INFRASTRUCTURE.md)
 hold a known disagreement as a drift pinned to the export's value today; the
 wiggle and variants suites hold none. Their last ones closed by running the
 display's own views on the tables' static hosts
-([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)):
+([a-displays-render-inputs-run-on-a-plain-host](../waiting-on-a-number/a-displays-render-inputs-run-on-a-plain-host.md)):
 the `rows.tree` order, wiggle's categorical key (`legend`, `legendTitle`) and
 its rules on a heatmap (`scoreRulesDrawn`), and the variants records-band
 key, `genotypes: { show: false }` (`drawsGenotypeRows`) and an identity color
@@ -38,7 +38,7 @@ lane the window aligns nothing to run the display's `laneLabelOf` and
 - Wiggle's range, domain, color and mark sources run the model's own
   getters, and the wiggle and variants
   rows, row colors and row color key run `TreeSidebarMixin`'s
-  ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
+  ([a-displays-render-inputs-run-on-a-plain-host](../waiting-on-a-number/a-displays-render-inputs-run-on-a-plain-host.md)).
 - Alignments' read colors, read key and read palette run the model's own
   getters (`alignmentsColorViews`, `readPaletteViews`), and the coverage band's
   autoscale its `coverageScaleViews`, with no autoscale group
@@ -61,7 +61,7 @@ lane the window aligns nothing to run the display's `laneLabelOf` and
   `fitHeightToDisplay`, `facet.hidden` read as `hiddenGroups`, the hand-built
   `FeatureBandHost`, the color key's `isHidden`/`order`) run the model's own
   views on a static MST host (`FeatureTablesHost`,
-  [a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
+  [a-displays-render-inputs-run-on-a-plain-host](../waiting-on-a-number/a-displays-render-inputs-run-on-a-plain-host.md)).
   The parity suite compares rows, transcripts, truncation, labels, sections and
   the key over 19 configs at two zooms and finds no drift.
   The export's `fitMeasureFeatureIds` had counted a hidden section's features;

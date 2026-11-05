@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables and staticWiggleSvg both run, its parity test comparing the display's whole SVG node with jb2export's. Built too: the sidebar and the key, alignments' coverage scale and palette, variants' cell and record colors, the byte gate as views, staticFeaturesSvg, and the LGV chrome over a static frame, so a one-wiggle jb2export image is byte-identical statically. Left: the CLI switch, every other display, and the non-linear view frames."
+description: "Parked 2026-11-05 until a measurement says jb2export's app boot is worth replacing: the per-display static SVG port (wiggle, features, marks and the LGV chrome built, sixteen displays and four view frames left) stopped, since the tables, not jb2export, are the priority. The static hosts the tables run stay. If jb2export is ever made deterministic, run the real display models under the tables' parity harness root rather than porting each display."
 ---
 
 # A display's render inputs run on a plain host
@@ -19,6 +19,25 @@ static export rather than a headless boot of the interactive app. Today
   its painter's inputs.
 - **Paint**: the display's export body, the Canvas2D draws the SVG export
   already reuses, inside the display shell.
+
+## Parked
+
+Colin, 2026-11-05: "i need @jbrowse/tables to be ultrareliable at minimum.
+jb2export is sort of a side win". Four reviews agreed: stop porting displays
+to static SVG. The exporters below have no product caller; jb2export stays
+on its session path.
+
+- **Kept**: the static hosts the tables run (wiggle, features, variants,
+  alignments, marks) and `staticWiggle.test.ts`/`staticFeatures.test.ts`,
+  which check the hosts the tables share harder than the tables' own suites.
+- **The number that reopens it**: how much of a typical `jb2export lgv` run is
+  the app root and plugin boot (`createViewStateAsync`) against fetch and
+  settle. No run was found to draw differently twice; the cost is waste.
+- **If it reopens, not a port per display**: the display models already wait
+  on their own `svgReady`, and `packages/tables/src/parity/testEnv.ts` is a
+  lean session with a real LGV, real displays and in-process RPC. Promoted to
+  jb2export's root, it needs no per-display code in any mode; the views
+  functions below make the tables call the display, not the export.
 
 Drawing it from `@jbrowse/tables` was considered and declined: tables stop at
 data plus the display's decisions, so jb2export would need a second drawer per
