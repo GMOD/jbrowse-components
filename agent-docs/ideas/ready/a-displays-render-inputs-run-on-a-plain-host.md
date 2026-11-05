@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables and staticWiggleSvg both run, its parity test comparing the display's whole SVG node with jb2export's. Built too: the sidebar and the key, alignments' coverage scale and palette, variants' cell and record colors, and the byte gate as views. Left: every other display, the non-linear view frames, the chrome, and the CLI switch."
+description: "@jbrowse/img (jb2export) as a deterministic export rather than a headless app boot: frame, fetch, resolve, paint, with each display's resolve views installed on a minimal MST model holding only its config and fetched results. Built: wiggle's whole resolve chain and the tree-sidebar rows as views functions, each display's row hooks written once, and one wiggle static host the wiggle tables and staticWiggleSvg both run, its parity test comparing the display's whole SVG node with jb2export's. Built too: the sidebar and the key, alignments' coverage scale and palette, variants' cell and record colors, the byte gate as views, staticFeaturesSvg, and the LGV chrome over a static frame, so a one-wiggle jb2export image is byte-identical statically. Left: the CLI switch, every other display, and the non-linear view frames."
 ---
 
 # A display's render inputs run on a plain host
@@ -247,18 +247,63 @@ marks. They are pure calls rather than a views function because multi-way
 runs the chain per lane layer, which has no host; a static mark host wraps
 them in views over `conf`, `bpPerPx` and `hiddenCategories`.
 
+## Built: the static features SVG
+
+`staticFeaturesSvg` (`@jbrowse/plugin-features/staticSvg`) runs on the one
+feature static host the tables run, `plugins/features/src/shared/featureStaticHost.ts`
+(`FeatureStaticHost`), built over a frame (`bpPerPx`, `coarseBpPerPx`,
+`trackWidthPx`, `settledDynamicBlocks`); the tables build theirs from their
+regions. It composes `TrackHeightMixin` and installs, in the display's order,
+the height chain lifted off `HeightModeMixin` (`fitTargetHeightViews`, the
+display's `heightViews`, then `grownHeightViews`, whose view check reads a
+`hostInitialized` the static host answers true) and two layers lifted off the
+base model, `featureRenderStateViews` (`renderState`) and `groupLabelViews`
+(`showsGroupLabels`). The export fetches over the frame's buffered regions
+(`fetchFeatureRegions`), reads everything drawn in one `runInAction` into a
+plain `FeaturesSvgBodyModel`, and mounts the display's `FeaturesSvgBody` in
+`renderDisplaySvgInFrame`.
+
+`products/jbrowse-img/src/staticFeatures.test.ts` compares the display's whole
+node with jb2export's over volvox's GFF3: normal mode with labels, collapsed, a
+whole contig where labels thin out, features crossing the window edge, color by
+`type`, grow, and a strand facet's chips. No drift. Both paths fetch the same
+buffered regions and fit to the frame's on-screen blocks, so the layout is
+deterministic. Left for features: the key (the view draws it in a sibling
+group from the display's legend settings), the byte gate (over the limit
+throws, as the tables do), and a zoomed-in CDS, which needs the caller to pass
+the sequence adapter and genetic code.
+
+## Built: the LGV chrome and refNames
+
+The LGV's `renderToSvg` draws through `lgvSvgDocument`
+(`svgcomponents/lgvSvgDocument.tsx`): header, scalebar, ruler, gridlines,
+region separators, track boxes and labels, both gutters and the highlight
+clip, read only through an `LgvSvgChromeView`. That is the view, or a
+`staticLgvFrame`, which carries the chrome's blocks, ticks, labels and
+orientation through `lgvChromeOf` (`staticChrome.ts`). Track rows name
+themselves, the track geometry is the pure `layoutSvgTracks`, and cytobands
+and highlights are slots only a session fills. `staticLgvSvg` lays out a
+static export's tracks through the same two.
+
+A static frame is in the assembly's names, as a view's is. jb2export's
+`staticLinearSvg` (`products/jbrowse-img/src/staticLinear.ts`) resolves the
+assembly with the tables' `assemblyResolver` before the frame, resolves the
+locString through its aliases, and fetches each wiggle track under the file's
+names (`renameRegions`, the hook `staticWiggleDisplay` takes).
+`staticLinear.test.ts` compares the whole document with `renderRegion`'s byte
+for byte over six wiggle command lines, an aliased contig among them.
+
 ## Left
 
-- **RefNames**: the frame must carry the adapter's refNames; the static path
-  has no assembly manager. `packages/tables`' `assemblyResolver` is the piece to
-  run before the frame.
+- **The CLI switch for wiggle-only sessions**: modifiers into display config
+  (`buildDisplaySnapshot`), multi-region, reversed and gene-name locs, the
+  theme from the config, cytobands, `reportConfigProblems`, the config's
+  `plugins`, and display ids that assume track *i* sits at index *i*.
 - **Autoscale groups** across tracks: a static host answers no group
   (`ungroupedAutoscaleViews`, on the wiggle and alignments hosts), so a figure
   whose tracks share one needs the union across their static hosts.
 - **What the session did around the body**: a static consumer of the byte
-  gate (above), rasterized layers (the parity test is vector), and the chrome —
-  ruler, track labels, region separators, the legend gutter.
-- **The CLI**: `jb2export` still renders through the session.
+  gate (above), and rasterized layers (the parity tests are vector).
 
 ## The long tail
 
@@ -268,8 +313,7 @@ parity test against `renderRegion`. By family, cheapest first:
 
 - **Score plots** (wiggle multi-source, `LinearMarkDisplay` and Manhattan,
   the sequence display): the wiggle pieces carry over.
-- **Features** (`LinearBasicDisplay`): the layout is main-thread but pure, so
-  it moves as a views function too; the features-layout work is that move.
+- **Features** (`LinearBasicDisplay`): built (above), less its key.
 - **Matrices** (Hi-C, `LDDisplay`, the variant matrix): `TriangleMatrixMixin`
   and `MatrixRampMixin` move as wiggle's axis did; variants' rows are built.
 - **Alignments** and **MAF**: the longest chains (`renderState`,
