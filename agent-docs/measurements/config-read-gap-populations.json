@@ -28,14 +28,14 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 14
+        "reads": 12
       }
     },
     {
       "values": {
         "population": "root config",
         "slots": "`shareURL`, `logoPath`, `disableAnalytics`",
-        "reads": 3
+        "reads": 0
       }
     },
     {
@@ -49,7 +49,7 @@
       "values": {
         "population": "helper shared by adapters, typed as the bare base class",
         "slots": "`pifGzLocation`, `nhLocation`, `samplesTsvLocation`",
-        "reads": 3
+        "reads": 0
       }
     },
     {
