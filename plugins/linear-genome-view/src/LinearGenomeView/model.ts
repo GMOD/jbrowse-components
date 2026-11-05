@@ -962,6 +962,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * False until the view has a measured width. A view that is not on
+       * screen gets no assumed width, since a width it was never laid out at
+       * is false information; a hidden or minimized window keeps it false.
        */
       get initialized() {
         if (self.volatileWidth === undefined) {
