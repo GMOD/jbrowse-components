@@ -33,7 +33,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { reportProblems } from './check-utils.ts'
+import { escapeRegExp, reportProblems } from './check-utils.ts'
 import { withoutMarkerBlocks } from './markerBlocks.ts'
 import { docsDir } from './paths.ts'
 
@@ -141,10 +141,6 @@ function namesIn(sections: string[]) {
   ])
 }
 
-function escape(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 // A name that is not a tool: a data file, a hostname, a format tag, an assembly
 // the page's own configs name, or a config type its JSON blocks declare.
 function isTool(
@@ -160,7 +156,7 @@ function isTool(
     !/^[A-Z]{1,3}$/.test(name) &&
     !PLUMBING.has(name.toLowerCase()) &&
     !assemblies.has(name) &&
-    !new RegExp(`\\b${escape(name)}\\b`).test(configTypes)
+    !new RegExp(`\\b${escapeRegExp(name)}\\b`).test(configTypes)
   )
 }
 
@@ -204,7 +200,7 @@ for (const file of readdirSync(tutorials).sort()) {
       continue
     }
     checked++
-    if (new RegExp(`\\b${escape(name.toLowerCase())}`).test(runnable)) {
+    if (new RegExp(`\\b${escapeRegExp(name.toLowerCase())}`).test(runnable)) {
       continue
     }
     const key = `${file}#${name}`

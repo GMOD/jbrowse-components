@@ -42,7 +42,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { callsAndArgs } from './callArguments.ts'
-import { reportProblems } from './check-utils.ts'
+import { escapeRegExp, reportProblems } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 import { toolsAndFlags } from './shellCommands.ts'
 
@@ -65,7 +65,7 @@ const CALLS = {
   // has to find a script that imported the module under another alias.
   bare: (name: string) => name.split(/::|\./).pop()!,
   names: (script: string, bare: string) =>
-    new RegExp(`(^|[\\s|(/"'.:])${escape(bare)}\\b`, 'm').test(script),
+    new RegExp(`(^|[\\s|(/"'.:])${escapeRegExp(bare)}\\b`, 'm').test(script),
   verb: 'calls',
   part: 'argument',
   // A keyword argument is a bare word, so grepping the script for one is not
@@ -90,7 +90,7 @@ const LANGUAGES: Record<string, typeof CALLS> = {
     // script collecting its shared flags in an array (`PLINK_ARGS=(--double-id
     // ...)`) passes the first of them on the same word as the paren.
     hasPart: (script: string, _name: string, part: string) =>
-      new RegExp(`(^|[\\s(])${escape(part)}(\\b|=)`, 'm').test(script),
+      new RegExp(`(^|[\\s(])${escapeRegExp(part)}(\\b|=)`, 'm').test(script),
   },
   python: CALLS,
   r: CALLS,
@@ -204,18 +204,14 @@ export function checkPage(mdPath: string) {
   })
 }
 
-function escape(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 // A build script may run a tool through an overridable variable — plink is
 // `PLINK="${PLINK:-plink}"` because Debian ships it as plink1.9 — and the name
 // is then never a command word for the first pattern to find. The tool the
 // script runs is the tool it runs, so a variable defaulting to it counts.
 function runsTool(script: string, bare: string) {
   return (
-    new RegExp(`(^|[\\s|(/"'])${escape(bare)}\\b`, 'm').test(script) ||
-    new RegExp(`\\$\\{\\w+:?-${escape(bare)}\\}`, 'm').test(script)
+    new RegExp(`(^|[\\s|(/"'])${escapeRegExp(bare)}\\b`, 'm').test(script) ||
+    new RegExp(`\\$\\{\\w+:?-${escapeRegExp(bare)}\\}`, 'm').test(script)
   )
 }
 

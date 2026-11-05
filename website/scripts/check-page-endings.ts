@@ -8,9 +8,7 @@ import { docFiles, reportProblems } from './check-utils.ts'
 import { pageEndingProblems } from './page-endings.ts'
 import { docRelative, docsDir } from './paths.ts'
 
-const pages = docFiles(join(docsDir, 'tutorials')).filter(
-  f => !f.endsWith('CLAUDE.md'),
-)
+const pages = docFiles(join(docsDir, 'tutorials'))
 const errors = pages.flatMap(file =>
   pageEndingProblems(readFileSync(file, 'utf8')).map(
     p => `${docRelative(file)}: ${p}`,

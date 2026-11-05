@@ -17,7 +17,7 @@ const tutorialsDir = join(docsDir, 'tutorials')
 const slugOf = (file: string) =>
   file.slice(file.lastIndexOf('/') + 1).replace(/\.md$/, '')
 
-const pages = docFiles(tutorialsDir).filter(f => slugOf(f) !== 'CLAUDE')
+const pages = docFiles(tutorialsDir)
 const slugs = new Set(pages.map(slugOf))
 const linked = new Set<string>()
 

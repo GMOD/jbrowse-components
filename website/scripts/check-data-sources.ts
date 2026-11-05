@@ -58,9 +58,7 @@ function sectionProblems(src: string) {
   return problems
 }
 
-const pages = docFiles(join(docsDir, 'tutorials')).filter(
-  f => !f.endsWith('CLAUDE.md'),
-)
+const pages = docFiles(join(docsDir, 'tutorials'))
 const errors = pages.flatMap(file =>
   sectionProblems(readFileSync(file, 'utf8')).map(
     p => `${docRelative(file)}: ${p}`,
