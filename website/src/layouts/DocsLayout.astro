@@ -23,13 +23,7 @@ interface Props {
   videos?: VideoRef[]
 }
 
-const {
-  title,
-  currentSlug,
-  description,
-  toc = [],
-  videos = [],
-} = Astro.props
+const { title, currentSlug, description, toc = [], videos = [] } = Astro.props
 
 const allDocs = await getCollection('docs')
 // Raw-Markdown alternate emitted by emit-raw-markdown.ts (introduction, whose
