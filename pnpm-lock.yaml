@@ -1955,6 +1955,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
         version: 6.10.0(mobx@7.1.4)
+      mobx:
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
