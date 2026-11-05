@@ -27,16 +27,18 @@
 #   solanaceae   tomato, potato, pepper and Nicotiana attenuata, which share a
 #                whole-genome triplication, with coffee as the outgroup.
 #
-# No genome FASTA is downloaded: each assembly is a ChromSizesAdapter built from
-# the sequence report's lengths, which is all a gene-level synteny view needs
-# and keeps a five-genome demo small.
+# No genome FASTA is downloaded unless MSA=1 asks for one: each assembly is a
+# ChromSizesAdapter built from the sequence report's lengths, which is all a
+# gene-level synteny view needs and keeps a five-genome demo small.
 #
 # Requires: orthofinder + diamond, MCScanX_h (bioconda mcscanx=1.0.0), python3,
 #           bgzip/tabix (htslib), the NCBI datasets CLI (`datasets` and
 #           `dataformat`), and node (JBrowse CLI, fetched via npx unless
 #           `jbrowse` is on PATH). A manifest naming files by URL also needs
 #           wget, and one whose column 2 is a genome rather than a proteome
-#           needs gffread, which is what derives one from the other.
+#           needs gffread, which is what derives one from the other. MSA=1 also
+#           needs samtools, and OrthoFinder's MAFFT and FastTree, which its
+#           container and its bioconda package both carry.
 #
 # Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
 # so the project's container covers the first requirement without root. As an
@@ -52,6 +54,7 @@
 #           bash scripts/build_orthofinder_synteny.sh my_genomes.tsv [outdir]
 #
 #   MAXSEQ=60 MAXCOPIES=6 bash scripts/build_orthofinder_synteny.sh wheat
+#   MSA=1 bash scripts/build_orthofinder_synteny.sh drosophila
 #
 # The first argument is one of the sets below, or a manifest naming genomes of
 # your own. Three whitespace-separated columns, `#` comments and blank lines
@@ -127,6 +130,13 @@ MAXSEQ="${MAXSEQ:-30}"
 # nothing. 4 clears the ploidy in all three sets, bread wheat's homoeologs
 # included; the conversion counts what it drops.
 MAXCOPIES="${MAXCOPIES:-4}"
+
+# MSA=1 runs OrthoFinder past the orthogroups to an alignment and a gene tree
+# per orthogroup, and wires the MsaView plugin to them, so right-clicking a gene
+# in an MSA_GENOMES assembly opens its orthogroup beside the genome. Those
+# assemblies get their genome sequence, which MsaView translates the transcript
+# from; MSA_GENOMES defaults to the top row of the stack.
+MSA="${MSA:-}"
 
 # Each set is a heredoc of `name accession` rows: the name is the JBrowse
 # assembly name and the proteome filename OrthoFinder names its column after,
@@ -242,6 +252,7 @@ else
 fi
 
 NAMES=$(echo "$SPECIES" | awk '{print $1}')
+MSA_GENOMES="${MSA_GENOMES:-${NAMES%%$'\n'*}}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
@@ -278,6 +289,8 @@ fetch() {
 #   name.gff3.gz      the GFF3 for the gene track, its whole-sequence `region`
 #                     rows dropped, since a gene track draws them as a bar the
 #                     length of the chromosome
+#   name.seqids.tsv   accession and the name every file here uses for it, which
+#                     is how MSA=1 names the genome FASTA's sequences to match
 #
 # Each chromosome takes the report's chrName (1A, 2L, LG11, V) in every file,
 # since the names NCBI displays mix prefixes across genomes of one set (Chr1A,
@@ -285,7 +298,9 @@ fetch() {
 # sequence with no chromosome of its own, or one whose chrName repeats, keeps
 # its accession.
 #
-# Gene ids drop NCBI's `gene-` prefix. A protein reaches its gene through its
+# Gene ids drop NCBI's `gene-` prefix and decode GFF3's percent escapes, as
+# JBrowse's GFF3 parser does (tomato's `mpka1%3B1` is the gene `mpka1;1`), so the
+# BED and the gene track name a gene alike. A protein reaches its gene through its
 # CDS: RefSeq hangs a CDS off an mRNA (`rna-...`) whose parent is the gene,
 # while a submitter's GenBank annotation (durum, coffee) hangs it off the gene
 # directly, so both parents are followed.
@@ -296,12 +311,14 @@ fetch_ncbi() {
       --filename "$name.ncbi.zip.part"
     mv "$name.ncbi.zip.part" "$name.ncbi.zip"
   fi
-  [ -f "$name.pep.fa.gz" ] || python3 - "$name.ncbi.zip" "$acc" "$name" <<'PY'
+  [ -f "$name.pep.fa.gz" ] && [ -f "$name.seqids.tsv" ] \
+    || python3 - "$name.ncbi.zip" "$acc" "$name" <<'PY'
 import gzip
 import json
 import os
 import sys
 import zipfile
+from urllib.parse import unquote
 
 src, acc, name = sys.argv[1:]
 data = f'ncbi_dataset/data/{acc}'
@@ -312,7 +329,7 @@ def attrs(col9):
 
 
 def strip(gene_id):
-    return gene_id[5:] if gene_id.startswith('gene-') else gene_id
+    return unquote(gene_id[5:] if gene_id.startswith('gene-') else gene_id)
 
 
 parent_gene = {}
@@ -344,6 +361,9 @@ with zipfile.ZipFile(src) as z:
     with open(f'{name}.lengths.tsv.part', 'w') as out:
         for r in report:
             out.write(f"{rename.get(r[seqid_key], r[seqid_key])}\t{r['length']}\n")
+    with open(f'{name}.seqids.tsv.part', 'w') as out:
+        for r in report:
+            out.write(f"{r[seqid_key]}\t{rename.get(r[seqid_key], r[seqid_key])}\n")
     with z.open(f'{data}/genomic.gff') as raw, \
             gzip.open(f'{name}.gff3.gz.part', 'wt') as gff:
         for line in (b.decode() for b in raw):
@@ -393,7 +413,7 @@ with zipfile.ZipFile(src) as z:
                     out.write(f'>{protein} gene:{strip(gene)}\n')
             elif not skip:
                 out.write(line)
-for part in ('gff3.gz', 'lengths.tsv', 'genes.tsv', 'pep.fa.gz'):
+for part in ('gff3.gz', 'lengths.tsv', 'genes.tsv', 'pep.fa.gz', 'seqids.tsv'):
     os.rename(f'{name}.{part}.part', f'{name}.{part}')
 print(f'{name} ({acc}): {len(genes)} genes, {kept} proteins, {orphan} with no gene to join', file=sys.stderr)
 PY
@@ -716,11 +736,25 @@ done
 # Its results directory is named for the day it ran, so the glob picks it up on
 # a re-run instead of running the whole thing again. Newest by MTIME: those names
 # are Results_Aug14, Results_Sep05, Results_Dec01, which sort Aug < Dec < Sep.
-if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2>&1; then
-  orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+#
+# MSA=1 runs on past the orthogroups instead, and the alignments it writes are
+# what its glob waits for. -M msa says so outright: OrthoFinder 3 aligns by
+# default, while 2.5, which the container above runs, writes no alignments
+# without it.
+if [ -n "$MSA" ]; then
+  if ! ls -d proteomes/OrthoFinder/Results_*/MultipleSequenceAlignments >/dev/null 2>&1; then
+    orthofinder -f proteomes -M msa -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+  fi
+  # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
+  RESULTS=$(dirname "$(ls -1dt proteomes/OrthoFinder/Results_*/MultipleSequenceAlignments | sed -n 1p)")
+else
+  if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2>&1; then
+    orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+  fi
+  # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
+  RESULTS=$(dirname "$(dirname "$(ls -1dt proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | sed -n 1p)")")
 fi
-# shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
-ORTHOGROUPS=$(ls -1dt proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | sed -n 1p)
+ORTHOGROUPS="$RESULTS/Orthogroups/Orthogroups.tsv"
 
 # ── Orthogroups.tsv -> .blocks table ─────────────────────────────────────────
 # One --bed per column, so the script reports how many ids each one resolves
@@ -833,6 +867,85 @@ for pair in $PAIRS; do
 done
 gzip -f "$SETNAME.blocks.paf"
 
+# ── MSA=1: the genome of each MSA_GENOMES assembly ───────────────────────────
+# MsaView finds a gene's row in its orthogroup's alignment by translating the
+# transcript, so those assemblies need their sequence. Only the sequences
+# chrom.sizes kept are written, under the names it gave them: the FASTA stands in
+# for chrom.sizes as the assembly, and its row of the stack must list the same
+# sequences as before. A set's genome comes from NCBI, a manifest's from the
+# genome its column 2 named.
+launch_genome() {
+  local name=$1 acc=$2 src
+  if [ -n "$MANIFEST" ]; then
+    src="$name.genome.fa.gz"
+    if [ ! -f "$src" ]; then
+      echo "MSA_GENOMES names $name, whose manifest row gives a proteome rather" >&2
+      echo "than a genome, and MsaView needs the genome to place a gene" >&2
+      exit 1
+    fi
+  else
+    src="$name.genome.zip"
+    if [ ! -f "$src" ]; then
+      datasets download genome accession "$acc" --include genome \
+        --filename "$src.part"
+      mv "$src.part" "$src"
+    fi
+  fi
+  python3 - "$src" "$name.seqids.tsv" "$name.chrom.sizes" "$name.fa" <<'PY'
+import gzip
+import os
+import sys
+import zipfile
+
+src, seqids, sizes, dest = sys.argv[1:]
+rename = {}
+if os.path.exists(seqids):
+    with open(seqids) as fh:
+        rename = dict(line.rstrip('\n').split('\t') for line in fh)
+with open(sizes) as fh:
+    keep = {line.split('\t')[0] for line in fh}
+
+
+def lines():
+    if src.endswith('.zip'):
+        with zipfile.ZipFile(src) as z:
+            fna = next(n for n in z.namelist() if n.endswith('_genomic.fna'))
+            with z.open(fna) as raw:
+                for b in raw:
+                    yield b.decode()
+    else:
+        with gzip.open(src, 'rt') as fh:
+            yield from fh
+
+
+written = set()
+on = False
+with open(f'{dest}.part', 'w') as out:
+    for line in lines():
+        if line.startswith('>'):
+            seq = rename.get(line[1:].split()[0], line[1:].split()[0])
+            on = seq in keep and seq not in written
+            if on:
+                written.add(seq)
+                out.write(f'>{seq}\n')
+        elif on:
+            out.write(line)
+if keep - written:
+    sys.exit(f'{dest}: no sequence for {sorted(keep - written)[:5]} in {src}')
+os.replace(f'{dest}.part', dest)
+print(f'{dest}: {len(written)} sequences', file=sys.stderr)
+PY
+  bgzip -f -i "$name.fa"
+  samtools faidx "$name.fa.gz"
+}
+if [ -n "$MSA" ]; then
+  for name in $MSA_GENOMES; do
+    if [ ! -f "$name.fa.gz.fai" ]; then
+      launch_genome "$name" "$(echo "$SPECIES" | awk -v n="$name" '$1 == n { print $2 }')"
+    fi
+  done
+fi
+
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
 if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
@@ -847,9 +960,13 @@ cp "$TABLE.gz" "$APP"/
 for name in $NAMES; do cp "$name.bed.gz" "$APP"/; done
 cp "$SETNAME.blocks.paf.gz" "$APP"/
 
-# One assembly per genome, names and lengths only
+# One assembly per genome, names and lengths only, but for MSA=1's genomes
 for name in $NAMES; do
-  jb add-assembly "$name.chrom.sizes" --name "$name" --load copy --force --out "$APP"
+  if [ -n "$MSA" ] && [[ " ${MSA_GENOMES//$'\n'/ } " == *" $name "* ]]; then
+    jb add-assembly "$name.fa.gz" --name "$name" --load copy --force --out "$APP"
+  else
+    jb add-assembly "$name.chrom.sizes" --name "$name" --load copy --force --out "$APP"
+  fi
 done
 
 # refNameAliases for the genomes listed in ALIASES, from NCBI's sequence report
@@ -999,9 +1116,50 @@ print(json.dumps({
 PY
 jb set-default-session --session session.json --out "$APP"
 
+# ── MSA=1: the OrthoFinder results as an MsaView dataset ─────────────────────
+# MsaView reads the three folders as OrthoFinder wrote them, from beside the
+# config; nothing else in the results directory is read.
+if [ -n "$MSA" ]; then
+  rm -rf "$APP/orthofinder"
+  mkdir -p "$APP/orthofinder"
+  cp -r "$RESULTS/Orthogroups" "$RESULTS/MultipleSequenceAlignments" \
+    "$RESULTS/Resolved_Gene_Trees" "$APP/orthofinder/"
+  python3 - "$APP/config.json" "$SETNAME" <<'PY'
+import json
+import sys
+
+path, set_name = sys.argv[1:]
+with open(path) as f:
+    config = json.load(f)
+plugin = {
+    "name": "MsaView",
+    "storePlugin": "MsaView",
+    "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js",
+}
+config["plugins"] = [
+    p for p in config.get("plugins", []) if p.get("name") != "MsaView"
+] + [plugin]
+config["msa"] = {
+    "datasets": [{
+        "datasetId": f"{set_name}_orthofinder",
+        "name": f"{set_name.capitalize()} orthogroups (OrthoFinder)",
+        "description": "An alignment and gene tree per orthogroup",
+        "adapter": {
+            "type": "OrthoFinderMsaAdapter",
+            "resultsLocation": {"uri": "orthofinder/"},
+        },
+    }]
+}
+with open(path, "w") as f:
+    json.dump(config, f, indent=2)
+    f.write("\n")
+PY
+fi
+
 echo
 echo "Built $APP/config.json with the $SETNAME assemblies, gene tracks, the"
 echo "OrthoFinder orthogroup synteny track, and a stacked default session."
+[ -z "$MSA" ] || echo "Right-click a gene in $(echo $MSA_GENOMES) to open its orthogroup in MSA view."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
