@@ -1,17 +1,17 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import AssemblyInfoPanel from './AssemblyInfoPanel.tsx'
-import { makeTrackConf } from './aboutTestUtils.ts'
+import {
+  ReferenceSequenceTrackConf,
+  aboutTestPluginManager,
+  makeTrackConf,
+} from './aboutTestUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-const pluginManager = new PluginManager([]).createPluggableElements()
-pluginManager.configure()
 
 const AssemblyConfigSchema = ConfigurationSchema(
   'Assembly',
@@ -26,15 +26,7 @@ const AssemblyConfigSchema = ConfigurationSchema(
         features: { type: 'frozen', defaultValue: [] },
       }),
     }),
-    sequence: ConfigurationSchema('ReferenceSequenceTrack', {
-      trackId: { type: 'string', defaultValue: '' },
-      adapter: ConfigurationSchema('TwoBitAdapter', {
-        twoBitLocation: {
-          type: 'fileLocation',
-          defaultValue: { uri: '', locationType: 'UriLocation' },
-        },
-      }),
-    }),
+    sequence: ReferenceSequenceTrackConf,
   },
   { explicitIdentifier: 'name' },
 )
@@ -55,16 +47,18 @@ function makeAssemblyConf() {
         },
       },
       sequence: {
+        type: 'ReferenceSequenceTrack',
         trackId: 'volvox_refseq',
         adapter: {
-          twoBitLocation: {
-            uri: 'http://example.com/volvox.2bit',
+          type: 'TestAdapter',
+          bamLocation: {
+            uri: 'http://example.com/volvox.bam',
             locationType: 'UriLocation',
           },
         },
       },
     },
-    { pluginManager },
+    { pluginManager: aboutTestPluginManager },
   )
 }
 
@@ -85,7 +79,7 @@ function makeSession(assembly: FakeAssembly | undefined) {
 }
 
 function renderPanel(
-  config: AnyConfigurationModel,
+  config: TrackConfigModel,
   {
     hideUris = false,
     // null, not undefined: an omitted key defaults to the loaded assembly, so

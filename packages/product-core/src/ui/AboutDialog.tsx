@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 
 import AboutContents from './AboutDialogContents.tsx'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const AboutDialog = observer(function AboutDialog({
@@ -24,7 +24,7 @@ const AboutDialog = observer(function AboutDialog({
    * hierarchical selector passes a `session.tracks` entry, a plain object
    * until something references the track
    */
-  config: AnyConfigurationModel | Record<string, unknown>
+  config: AnyTrackConfig
   handleClose: () => void
 }) {
   const { pluginManager } = getEnv(session)

@@ -156,12 +156,10 @@ export function trackActionItems<C extends { trackId: string }>({
   ]
 }
 
-type TrackConfig = AnyConfigurationModel | Record<string, unknown>
-
 /** "About track" menu item, shared by every product's track menu */
 export function aboutTrackMenuItem(
   session: AbstractSessionModel,
-  config: TrackConfig,
+  config: AnyTrackConfig,
 ): MenuItem {
   return {
     label: 'About track',
@@ -180,7 +178,7 @@ export function aboutTrackMenuItem(
  */
 export function trackListMenuItems(
   session: AbstractSessionModel,
-  config: TrackConfig,
+  config: AnyTrackConfig,
   actions: MenuItem[],
 ): MenuItem[] {
   return [aboutTrackMenuItem(session, config), ...actions]
@@ -192,7 +190,7 @@ export function trackListMenuItems(
  */
 export function trackActionMenuItems(
   session: AbstractSessionModel,
-  config: TrackConfig,
+  config: AnyTrackConfig,
   actions: MenuItem[],
 ): MenuItem[] {
   return [

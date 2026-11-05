@@ -11,7 +11,7 @@ import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
 import { applyFormatDetails, formatDetailsNumber } from './formatDetails.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { TrackConfigModel } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import type {
   ParentFeatureSummary,
   SimpleFeatureSerialized,
@@ -125,7 +125,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * own while it is open; after it is closed, the session's copy of the
        * same config, which is why the widget records `trackId`
        */
-      get trackConfiguration(): AnyConfigurationModel | undefined {
+      get trackConfiguration(): TrackConfigModel | undefined {
         const { track, trackId } = self
         if (track) {
           return track.configuration

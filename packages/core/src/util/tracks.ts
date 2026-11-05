@@ -69,7 +69,10 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '../configuration/index.ts'
-import type { TrackConfigNode } from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import type {
+  TrackConfigModel,
+  TrackConfigNode,
+} from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import type { TrackConfigSnapshot } from '../pluggableElementTypes/models/migrateTrackConfig.ts'
 import type { DisplayConfSnapshot } from './displayChoice.ts'
 import type {
@@ -212,10 +215,8 @@ function confAssemblyNames(conf: AnyConfiguration) {
   if (!hasParent(conf)) {
     return undefined
   }
-  const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(conf)
-  return 'sequence' in parent
-    ? [readConfObject(parent, 'name') as string]
-    : undefined
+  const parent = getParent<BaseAssemblyConfigModel>(conf)
+  return 'sequence' in parent ? [readConfObject(parent, 'name')] : undefined
 }
 
 export function getConfAssemblyNames(conf: AnyConfiguration) {
@@ -255,7 +256,7 @@ export function toTrackConfigEntry(conf: AnyTrackConfig): TrackConfigEntry {
  * A call under any other id lands on another worker, which builds a second
  * copy of the adapter that nothing frees.
  */
-export function getConfRpcSessionId(conf: AnyConfigurationModel) {
+export function getConfRpcSessionId(conf: TrackConfigModel) {
   return adapterConfigCacheKey(readConfObject(conf, 'adapter'))
 }
 
@@ -1532,8 +1533,7 @@ function warmTrackAdapter(
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const raw: AnyConfigurationModel | Record<string, unknown> | undefined =
-    session.getTrackById(trackId)
+  const raw = session.getTrackById(trackId)
   const conf = isStateTreeNode(raw)
     ? raw
     : typeof raw?.type === 'string'
@@ -1542,10 +1542,7 @@ function warmTrackAdapter(
           .configSchema.create(raw, { pluginManager })
       : undefined
   if (conf) {
-    const adapterConfig = readConfObject(conf, 'adapter') as Record<
-      string,
-      unknown
-    >
+    const adapterConfig = readConfObject(conf, 'adapter')
     const sessionId = getConfRpcSessionId(conf)
     session.rpcManager
       // eslint-disable-next-line no-restricted-syntax -- a code download the track's first request would make anyway: nothing to show, and nothing a user can move on from

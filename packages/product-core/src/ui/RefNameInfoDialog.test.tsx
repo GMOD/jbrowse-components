@@ -4,9 +4,13 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitForElementToBeRemoved } from '@testing-library/react'
 
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
-import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
+import {
+  ReferenceSequenceTrackConf,
+  aboutTestPluginManager,
+  makeTrackConf,
+} from './aboutTestUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 interface CallArgs {
@@ -37,7 +41,7 @@ function contigs(...refNames: string[]) {
   return { refNames, lengths: [] }
 }
 
-function renderConfig(config: AnyConfigurationModel, call: Call) {
+function renderConfig(config: TrackConfigModel, call: Call) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <RefNameInfoDialog
@@ -103,20 +107,18 @@ test("lists the stated lengths, and the assembly's where they differ", async () 
 // so reading one gave undefined, which useFetch reads as "key incomplete, don't
 // fetch" — the dialog said "Loading refNames" forever, on every assembly's
 // sequence track. The name comes from the assembly config holding it.
-const SeqTrackConf = ConfigurationSchema(
-  'ReferenceSequenceTrack',
-  { adapter: ConfigurationSchema('TestAdapter', {}) },
-  { explicitIdentifier: 'trackId', explicitlyTyped: true },
-)
 const AssemblyConf = ConfigurationSchema(
   'Assembly',
-  { sequence: SeqTrackConf },
+  { sequence: ReferenceSequenceTrackConf },
   { explicitIdentifier: 'name' },
 )
 
 test('resolves a reference sequence track to its assembly', async () => {
   const assembly = AssemblyConf.create(
-    { name: 'volvox', sequence: { trackId: 'volvox_refseq' } },
+    {
+      name: 'volvox',
+      sequence: { type: 'ReferenceSequenceTrack', trackId: 'volvox_refseq' },
+    },
     { pluginManager: aboutTestPluginManager },
   )
   const call = jest.fn<Promise<unknown>, [unknown, unknown, CallArgs]>(
@@ -131,8 +133,8 @@ test('resolves a reference sequence track to its assembly', async () => {
 // an unanswerable question lands in the banner rather than spinning forever
 test('says so when a config names no assembly and hangs off none', async () => {
   const { findByText } = renderConfig(
-    SeqTrackConf.create(
-      { trackId: 'track1' },
+    ReferenceSequenceTrackConf.create(
+      { type: 'ReferenceSequenceTrack', trackId: 'track1' },
       { pluginManager: aboutTestPluginManager },
     ),
     async () => contigs(),

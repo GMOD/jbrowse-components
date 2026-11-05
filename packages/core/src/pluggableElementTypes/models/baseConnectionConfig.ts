@@ -46,3 +46,12 @@ const BaseConnectionConfig = ConfigurationSchema(
 export default BaseConnectionConfig
 export type BaseConnectionConfigSchema = typeof BaseConnectionConfig
 export type BaseConnectionConfigModel = Instance<BaseConnectionConfigSchema>
+
+/**
+ * A live connection config of any connection type, its other members a raw
+ * `unknown`. Not `PluggableConfigNode &`: a second node brand in the
+ * intersection widens every slot read back to `any`.
+ */
+export type BaseConnectionConfigNode = BaseConnectionConfigModel & {
+  readonly [key: string]: unknown
+}

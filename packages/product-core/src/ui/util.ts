@@ -6,13 +6,14 @@ import {
 } from '@jbrowse/core/configuration'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // #region aboutPanelProps
 export interface AboutPanelProps {
   session: AbstractSessionModel
   /** the track's config, hydrated by the dialog before any panel sees it */
-  config: AnyConfigurationModel
+  config: TrackConfigModel
 }
 // #endregion
 

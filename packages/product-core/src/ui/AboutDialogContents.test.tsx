@@ -10,7 +10,7 @@ import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import AboutDialogContents from './AboutDialogContents.tsx'
 import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const SessionModel = types
@@ -30,7 +30,7 @@ function makeSession(hideUris = false) {
   ) as unknown as AbstractSessionModel
 }
 
-function renderContents(config: AnyConfigurationModel, hideUris = false) {
+function renderContents(config: TrackConfigModel, hideUris = false) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <AboutDialogContents config={config} session={makeSession(hideUris)} />
@@ -42,7 +42,7 @@ const config = makeTrackConf({
   trackId: 't1',
   name: 'Track 1',
   adapter: {
-    type: 'BamAdapter',
+    type: 'TestAdapter',
     bamLocation: {
       localPath: '/srv/secretdir/x.bam',
       locationType: 'LocalPathLocation',
@@ -83,7 +83,7 @@ test('Copy config writes a relative uri resolved against its baseUri', () => {
       trackId: 'relative',
       name: 'Relative',
       adapter: {
-        type: 'BamAdapter',
+        type: 'TestAdapter',
         bamLocation: {
           uri: 'x.bam',
           baseUri: 'https://example.org/hub/config.json',
@@ -162,7 +162,7 @@ describe('Advanced card', () => {
     const indexed = makeTrackConf({
       trackId: 't5',
       adapter: {
-        type: 'BamAdapter',
+        type: 'TestAdapter',
         baiLocation: { uri: 'x.bai', locationType: 'UriLocation' },
       },
     })

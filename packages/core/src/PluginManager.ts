@@ -30,7 +30,7 @@ import type { BaseConnectionModel } from './pluggableElementTypes/models/BaseCon
 import type { DisplayModel } from './pluggableElementTypes/models/BaseDisplayModel.tsx'
 import type { TrackModelOf } from './pluggableElementTypes/models/BaseTrackModel.ts'
 import type { IBaseViewModel } from './pluggableElementTypes/models/BaseViewModel.ts'
-import type { BaseConnectionConfigModel } from './pluggableElementTypes/models/baseConnectionConfig.ts'
+import type { BaseConnectionConfigNode } from './pluggableElementTypes/models/baseConnectionConfig.ts'
 import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackConfig.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
@@ -1094,7 +1094,7 @@ export default class PluginManager {
    */
   pluggableConfigSchemaType(
     typeGroup: 'connection',
-  ): IType<any, any, PluggableConfigNode & BaseConnectionConfigModel>
+  ): IType<any, any, BaseConnectionConfigNode>
   pluggableConfigSchemaType(
     typeGroup: 'track',
   ): IType<any, any, TrackConfigNode>

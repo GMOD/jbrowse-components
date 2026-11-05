@@ -4,10 +4,10 @@ import { getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { byPosition } from '../saveTrackFileTypes/util.ts'
 
-import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
 import type { Feature } from '../../../util/simpleFeature.ts'
+import type { TrackConfigModel } from '../baseTrackConfig.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -19,7 +19,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * whose filter decides which fetched features the file holds.
  */
 export interface ExportableTrack extends IStateTreeNode {
-  configuration: AnyConfigurationModel
+  configuration: TrackConfigModel
   exportsDataViaAdapter: boolean
   exportByteLimit: number
   saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>

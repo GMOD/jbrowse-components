@@ -11,7 +11,7 @@ import { render } from '@testing-library/react'
 import { makeTrackConf } from './aboutTestUtils.ts'
 
 import type { AboutPanelProps } from './util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // The two About points have no consumer in this repo — a track that wants to
@@ -33,7 +33,7 @@ const copiedConfig = makeTrackConf({
 
 const session = {} as AbstractSessionModel
 
-function propsFor(c: AnyConfigurationModel): AboutPanelProps {
+function propsFor(c: TrackConfigModel): AboutPanelProps {
   return { session, config: c }
 }
 
@@ -74,7 +74,7 @@ function addReplaceAbout(pluginManager: PluginManager) {
 }
 // #endregion
 
-function renderPanels(pluginManager: PluginManager, c: AnyConfigurationModel) {
+function renderPanels(pluginManager: PluginManager, c: TrackConfigModel) {
   return render(
     <PluggableComponents
       pluginManager={pluginManager}
@@ -84,7 +84,7 @@ function renderPanels(pluginManager: PluginManager, c: AnyConfigurationModel) {
   ).container.textContent
 }
 
-function renderAbout(pluginManager: PluginManager, c: AnyConfigurationModel) {
+function renderAbout(pluginManager: PluginManager, c: TrackConfigModel) {
   return render(
     <PluggableComponent
       pluginManager={pluginManager}

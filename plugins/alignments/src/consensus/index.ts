@@ -18,7 +18,7 @@ import { isLinearAlignmentsDisplay } from '../LinearAlignmentsDisplay/isLinearAl
 
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // plugin install() runs at startup, so a static import would put the dialog
 // (and the MUI Slider it uses) in the first-paint bundle
@@ -37,7 +37,7 @@ const CONSENSUS_LABEL = 'Consensus sequence'
 const VISIBLE_LABEL = 'Consensus sequence (visible region)...'
 
 interface TrackLike {
-  configuration: AnyConfigurationModel
+  configuration: TrackConfigModel
   displays: readonly unknown[]
 }
 
@@ -50,7 +50,7 @@ function alignmentsDisplays(tracks: readonly TrackLike[]) {
     for (const display of track.displays) {
       if (isLinearAlignmentsDisplay(display)) {
         out.push({
-          name: coarseStripHTML(`${getConf(track, 'name')}`),
+          name: coarseStripHTML(getConf(track, 'name')),
           display,
         })
       }
