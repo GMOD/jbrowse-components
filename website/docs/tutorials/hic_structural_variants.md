@@ -214,6 +214,37 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_hic_translocation.sh
 ```
 
+```text output
+════ chr9 x chr22 inter-chromosomal contact, 250000bp bins, normalization NONE
+  K562 (ENCFF080DPJ)            55376 occupied bin pairs        1539676 total   max    161282 at chr9:130750000 x chr22:23000000
+  GM12878 (ENCFF053VBX)         66136 occupied bin pairs        2072975 total   max      7204 at chr9:129250000 x chr22:23500000
+
+════ top 10 bin pairs in K562 (ENCFF080DPJ), with the SAME bin in GM12878 (ENCFF053VBX)
+     (a breakpoint is hot in the case and cold in the control; a bin hot in
+      both is an artifact, not a rearrangement)
+               chr9          chr22       case       ctrl
+          130750000       23000000     161282        149
+          130750000       22750000      93598         84
+          131000000       23000000      77652        126
+          131000000       22750000      51701         78
+          130750000       22500000      43383         68
+          130750000       23250000      37052        120
+          131000000       22500000      28456         69
+          131000000       16750000      22278         10
+          130750000       22000000      21911        107
+          130750000       22250000      21178         72
+
+════ the same ranking for GM12878 (ENCFF053VBX), to show what background looks like
+               chr9          chr22       ctrl
+          129250000       23500000       7204
+          129250000       23250000       4647
+          129250000       23000000       2099
+          129250000       23750000       1578
+          129250000       24000000        987
+
+Wrote hic_translocation_scan/case.chr9-chr22.250000.NONE.txt and hic_translocation_scan/ctrl.chr9-chr22.250000.NONE.txt.
+```
+
 Override `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` to scan any two `.hic`
 files that hold inter-chromosomal blocks. Reading the output:
 

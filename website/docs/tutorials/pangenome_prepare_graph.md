@@ -246,6 +246,12 @@ tabix hprc.graph.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' \
   | awk '$4 == "N"' | head -3
 ```
 
+```text output
+GRCh38#0#chr1	103668404	103713477	N	s653929	95	HG00323#2#CM087328.1	104135607	104135610
+GRCh38#0#chr1	103668404	103713477	N	s653930	95	HG00323#2#CM087328.1	104135610	104144685
+GRCh38#0#chr1	103668404	103713477	N	s663586	205	HG02723#2#JAHEOT020000031.1	103971922	104013350
+```
+
 The `awk` keeps the segment rows, which have `N` in column four where a link row
 has `L`. In a segment row, columns one to three give the reference interval the
 command filed it under, five the segment id, six its rank (build order), and
