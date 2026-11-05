@@ -978,7 +978,7 @@ test("a chain's overlapping segments come back as spans on its row, in a neutral
   expect(chained.overlaps.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
 })
 
-test('pileup.collapsed on a faceted display is dropped with a warning, as the tables stack each section', async () => {
+test('pileup.collapsed lays each facet section on one row, its depth as overlap spans, as the display does', async () => {
   const faceted = await engine.alignments({
     ...BAM,
     display: { facet: { field: 'strand' } },
@@ -987,16 +987,27 @@ test('pileup.collapsed on a faceted display is dropped with a warning, as the ta
     ...BAM,
     display: { facet: { field: 'strand' }, pileup: { collapsed: true } },
   })
+  const sorted = await engine.alignments({
+    ...BAM,
+    display: {
+      facet: { field: 'strand' },
+      pileup: { collapsed: true },
+      sort: 'length',
+    },
+  })
   const plain = await engine.alignments({
     ...BAM,
     display: { pileup: { collapsed: true } },
   })
-  expect(faceted.warnings).toEqual([])
-  expect(collapsed.warnings).toEqual([
-    expect.stringContaining('pileup.collapsed is dropped'),
+  expect(Math.max(...faceted.reads.row)).toBeGreaterThan(0)
+  expect(new Set(collapsed.reads.row)).toEqual(new Set([0]))
+  expect(collapsed.overlaps.start.length).toBeGreaterThan(0)
+  expect(new Set(collapsed.overlaps.row)).toEqual(new Set([0]))
+  expect(collapsed.warnings).toEqual([])
+  expect(sorted.warnings).toEqual([
+    expect.stringContaining('under pileup.collapsed'),
   ])
-  expect(collapsed.reads.row).toEqual(faceted.reads.row)
-  expect(collapsed.overlaps.start).toHaveLength(0)
+  expect(plain.reads.row).toEqual((await engine.alignments(BAM)).reads.row)
   expect(plain.warnings).toEqual([])
 })
 

@@ -46,7 +46,7 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -81,13 +81,10 @@ import {
   readPaletteViews,
 } from './LinearAlignmentsDisplay/alignmentsColorViews.ts'
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
-import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
-  framesUnpairedChainStrand,
   readColorFromCategoryIndex,
 } from './LinearAlignmentsDisplay/colorUtils.ts'
-import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/configSchema.ts'
 import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
 import {
@@ -97,14 +94,17 @@ import {
   coverageStatsViews,
   coverageTicksViews,
 } from './LinearAlignmentsDisplay/coverageScaleViews.ts'
-import { applyChainStrandFrames } from './LinearAlignmentsDisplay/groupLayout.ts'
-import {
-  buildRawDataByGroup,
-  orderedGroups,
-} from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+import { groupMaxY } from './LinearAlignmentsDisplay/groupLayout.ts'
 import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
+import {
+  connectorSettingViews,
+  connectorViews,
+  facetLayoutViews,
+  groupLayoutViews,
+  pileupLayoutViews,
+} from './LinearAlignmentsDisplay/pileupLayoutViews.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
   intronAlpha,
@@ -112,10 +112,8 @@ import {
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { boundCoverageHeight } from './LinearAlignmentsDisplay/sectionLayout.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
-import {
-  appliedPileupSort,
-  buildLaidOutPileupMap,
-} from './RenderAlignmentDataRPC/sortLayout.ts'
+import { appliedPileupSort } from './RenderAlignmentDataRPC/sortLayout.ts'
+import { UNCAPPED } from './RenderAlignmentDataRPC/types.ts'
 import {
   ARC_COLOR_INTERCHROM,
   arcColorSlot,
@@ -131,14 +129,10 @@ import {
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
-import { iterLinkedPairs } from './features/linkedReads/compute.ts'
-import {
-  connectorDipReservePx,
-  connectorFilterOf,
-} from './features/linkedReads/computeOverlay.ts'
 import {
   connectorArrowPx,
   connectorInstance,
+  linePassInstance,
 } from './features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
 import {
@@ -181,12 +175,7 @@ import {
 } from './shared/colorFieldDefs.ts'
 import { countedEventsOf } from './shared/drawnReads.ts'
 import { fieldTag } from './shared/facetLabels.ts'
-import {
-  facetForUnit,
-  facetUnitNotices,
-  sectionOrder,
-  workerFacet,
-} from './shared/groupFeatures.ts'
+import { facetUnitNotices, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import {
   arcLegendTitle,
@@ -210,12 +199,12 @@ import { getOrCreate } from './shared/util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
-import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   GroupedAlignmentsResult,
   LaidOutPileupData,
+  RowCap,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
@@ -431,27 +420,26 @@ function readLevelOf(colorField: string | undefined) {
           levels.get(category) ?? ''
 }
 
-/** What `alignmentTables` fetched and laid out, which the display derives. */
+/** What `alignmentTables` fetched, and the regions it reads them in. */
 interface AlignmentsTablesInputs {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
-  laidOutByGroupFramed: LaidOutByGroup
-  keyWindows: readonly KeyWindow[]
+  regionInfos: RegionInfo[]
+  sortColumn: SortColumn | undefined
   paintedRefNamePosition: RefNamePosition | undefined
-  view: SettledBlocksView
 }
 
-const NO_FRAME: SettledBlocksView = {
-  initialized: false,
-  settledDynamicBlocks: [],
-}
+const NO_KEYS: ReadonlySet<string> = new Set()
+const NO_ROW_CAPS: ReadonlyMap<string, RowCap> = new Map()
 
 /**
  * The alignments display reduced to what its tables decide from: its config,
- * the fetched and laid-out reads with the regions as the frame, the default
- * theme, and the coverage scale and read color views the display installs
- * over its config-slot views. No session, view or autoruns, and so no
- * autoscale group. The tables lay every section out uncollapsed at the
- * configured read height and always build the key.
+ * the fetched reads with the regions as the frame, the default theme, and
+ * the views the display installs over its config-slot views, from its facet
+ * and section layout through its connectors to its coverage scale and read
+ * colors. No session, view or autoruns, and so no autoscale group. A
+ * viewport's row caps, a lane's coverage-only chevron and a lane's dragged
+ * size are the view's, so the tables lay every row out, at the configured
+ * read height, and always build the key.
  */
 const AlignmentsTablesHost = types
   .compose(
@@ -464,39 +452,62 @@ const AlignmentsTablesHost = types
   )
   .volatile((): AlignmentsTablesInputs & { theme: JBrowsePalette } => ({
     rpcDataMap: new Map(),
-    laidOutByGroupFramed: new Map(),
-    keyWindows: [],
+    regionInfos: [],
+    sortColumn: undefined,
     paintedRefNamePosition: undefined,
-    view: NO_FRAME,
     theme: resolvePalette(),
   }))
   .actions(self => ({
     setInputs(inputs: AlignmentsTablesInputs) {
       self.rpcDataMap = inputs.rpcDataMap
-      self.laidOutByGroupFramed = inputs.laidOutByGroupFramed
-      self.keyWindows = inputs.keyWindows
+      self.regionInfos = inputs.regionInfos
+      self.sortColumn = inputs.sortColumn
       self.paintedRefNamePosition = inputs.paintedRefNamePosition
-      self.view = inputs.view
     },
   }))
+  .views(heightModeViews)
   .views(ungroupedAutoscaleViews)
   .views(coverageBandSlotViews)
   .views(configSlotViews)
   .views(self => ({
-    get effectiveFacet() {
-      return facetForUnit(self.facet, self.unit)
+    get loadedRegions(): ReadonlyMap<number, RegionBounds> {
+      return new Map(self.regionInfos.map((r, i) => [i, r]))
     },
-    get collapseSections() {
-      return false
+    get host() {
+      return { displayedRegions: self.regionInfos }
+    },
+    get view(): SettledBlocksView {
+      return {
+        initialized: self.regionInfos.length > 0,
+        settledDynamicBlocks: self.regionInfos,
+      }
+    },
+    get keyWindows(): readonly KeyWindow[] {
+      return keyWindowsOf(self.regionInfos)
     },
     get featureHeight() {
       return self.markHeight
     },
+    get featureSpacing() {
+      return featureSpacingForHeight(self.markHeight)
+    },
+    get collapsedGroups() {
+      return NO_KEYS
+    },
+    get groupRowCaps() {
+      return NO_ROW_CAPS
+    },
+    get fitDefaultCap() {
+      return UNCAPPED
+    },
+    get fitCeilingRows() {
+      return UNCAPPED.rows
+    },
+    get canonicalRefName() {
+      return adapterRefNameText
+    },
     get showLegend() {
       return true
-    },
-    get framesChainStrand() {
-      return framesUnpairedChainStrand(self.bodyColorKind, self.unit)
     },
     get detectedModifications() {
       return detectedModificationsOf(self.rpcDataMap)
@@ -505,12 +516,19 @@ const AlignmentsTablesHost = types
       return getConf(self, 'height')
     },
   }))
+  .views(self => connectorSettingViews(self))
+  .views(self => facetLayoutViews(self))
+  .views(self => hiddenGroupsViews(self))
+  .views(self => groupLayoutViews(self))
   .views(self => ({
-    get groupKeySpace() {
-      return groupKeySpaceOf(self.effectiveFacet)
+    get arcCollection() {
+      return collectArcs(self.rawDataByGroup, self.regionInfos, {
+        filter: self.connectionFilter,
+      })
     },
   }))
-  .views(self => hiddenGroupsViews(self))
+  .views(self => pileupLayoutViews(self))
+  .views(self => connectorViews(self))
   .views(self => bandPlotViews(self))
   .views(self => ({
     get bandHeights() {
@@ -1051,45 +1069,43 @@ function overlapTables(
 }
 
 /**
- * Each section's connectors as the pileup draws them (always under a chain
- * unit, else under `pileup.connectors.show`), after the display's connection
- * filter, each placed as the connector mark places it (`connectorInstance`)
- * and filed by the region holding its first end.
+ * Each section's connectors as the display draws them (`connectorsByGroup`):
+ * the straight-line pass's pairs (`linePassInstance`) and the connector
+ * mark's (`connectorInstance`), each filed by the region holding its first
+ * end.
  */
-function sectionConnectors(
-  laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
-  regionInfos: RegionInfo[],
-  admits: (pair: LinkedPair) => boolean,
-  readPitch: number,
-  arrows: boolean,
-) {
-  const refNameAt = (i: number) => regionInfos[i]?.refName
+function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
+  const regions = host.regionInfos
+  const arrows = connectorArrowPx(host.featureHeight) > 0
   return new Map(
-    [...laidByGroup].map(([key, laid]) => {
-      const pileupHeight = sectionMaxY(laid) * readPitch
+    [...host.laidOutByGroupFramed].map(([key, laid]) => {
+      const pileupHeight = groupMaxY(laid) * readPitch
+      const connectors = host.connectorsByGroup.get(key)
       const byRegion = new Map<number, PlacedConnector[]>()
-      for (const pair of iterLinkedPairs(laid, adapterRefNameText, refNameAt)) {
-        const placed = admits(pair)
-          ? connectorInstance(
-              pair,
-              regionInfos,
-              pileupHeight,
-              readPitch,
-              arrows,
-            )
-          : undefined
+      const file = (pair: LinkedPair, placed: PlacedConnector['placed']) => {
+        getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
+      }
+      for (const pair of connectors?.linePairs ?? []) {
+        const placed = linePassInstance(pair, regions, pileupHeight, readPitch)
         if (placed) {
-          getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
+          file(pair, placed)
+        }
+      }
+      for (const pair of connectors?.overlayPairs ?? []) {
+        const placed = connectorInstance(
+          pair,
+          regions,
+          pileupHeight,
+          readPitch,
+          arrows,
+        )
+        if (placed) {
+          file(pair, placed)
         }
       }
       return [key, byRegion]
     }),
   )
-}
-
-// A section's rows across its regions, which share one set of rows
-function sectionMaxY(laid?: ReadonlyMap<number, LaidOutPileupData>) {
-  return Math.max(0, ...[...(laid?.values() ?? [])].map(d => d.maxY))
 }
 
 interface PlacedConnector {
@@ -1424,7 +1440,6 @@ export async function alignmentTables(
     laidOutTables(host, {
       regions,
       fetched,
-      noReads,
       sortColumn,
       paintedRefNamePosition,
     }),
@@ -1441,90 +1456,43 @@ function laidOutTables(
   {
     regions,
     fetched,
-    noReads,
     sortColumn,
     paintedRefNamePosition,
   }: {
     regions: TablesRegion[]
     fetched: ReadonlyMap<number, GroupedAlignmentsResult>
-    noReads: boolean
     sortColumn: SortColumn | undefined
     paintedRefNamePosition: RefNamePosition | undefined
   },
 ) {
   const conf = host.configuration
-  const { unit, featureHeight, effectiveFacet: facetSetting } = host
+  host.setInputs({
+    rpcDataMap: fetched,
+    regionInfos: regions.map((r, i) => ({
+      refName: r.refName,
+      start: r.start,
+      end: r.end,
+      displayedRegionIndex: i,
+    })),
+    sortColumn,
+    paintedRefNamePosition,
+  })
+  const { unit, featureHeight, regionInfos } = host
   const chain = unit === 'chain'
-  const hidden = noReads ? undefined : host.hiddenGroups
-  const order = orderedGroups(
-    fetched,
-    hidden,
-    sectionOrder(facetSetting?.field ?? '', facetSetting?.sort),
-  )
+  const order = host.groupOrder
   if (!order.length) {
     throw new Error(
       `every section at ${lociOf(regions)} is hidden; facet.hidden lists them all`,
     )
   }
-  const rawByGroup = buildRawDataByGroup(
-    fetched,
-    hidden,
-    host.pinnedInsertSizeBand,
-  )
-  const sectionData = new Map(
-    order.map(({ key }) => [key, rawByGroup.get(key)!]),
-  )
-  const regionBounds = new Map(regions.map((r, i) => [i, r]))
-  const regionInfos: RegionInfo[] = regions.map((r, i) => ({
-    refName: r.refName,
-    start: r.start,
-    end: r.end,
-    displayedRegionIndex: i,
-  }))
-  const windows = keyWindowsOf(regionInfos)
-  const chained = chain ? attachChainFields(sectionData) : undefined
+  const sectionData = host.rawDataByGroup
   const dataFor = (key: string, idx: number) =>
-    chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
-  const laidByGroup = chain
-    ? applyChainStrandFrames(
-        new Map(
-          order.map(({ key }) => [
-            key,
-            buildLaidOutChainMap({
-              dataMap: chained!.get(key)!,
-              regions: regionBounds,
-            }),
-          ]),
-        ),
-        unit,
-        host.framesChainStrand,
-      )
-    : new Map(
-        order.map(({ key }) => [
-          key,
-          buildLaidOutPileupMap({
-            dataMap: sectionData.get(key)!,
-            sortColumn,
-            layoutOrder: host.layoutOrder,
-            showSoftClips: host.showSoftClips,
-            regions: regionBounds,
-          }),
-        ]),
-      )
+    host.chainedByGroup.get(key)!.get(idx)!
+  const laidByGroup = host.laidOutByGroupFramed
   const drawsOverlaps = shouldDrawOverlaps({
     unit,
     collapseSections: host.collapseSections,
     featureHeight,
-  })
-  host.setInputs({
-    rpcDataMap: fetched,
-    laidOutByGroupFramed: laidByGroup,
-    keyWindows: windows,
-    paintedRefNamePosition,
-    view: {
-      initialized: true,
-      settledDynamicBlocks: regionInfos,
-    },
   })
   const colors = colorReads(host)
   const paint = markColors(colors.palette, host.baseLayer)
@@ -1532,36 +1500,15 @@ function laidOutTables(
     minAlleleFraction: host.coverageMinAlleleFraction,
     junctions: host.junctionFilter,
   }
-  const readPitch = featureHeight + featureSpacingForHeight(featureHeight)
-  let belowFloor: ReadonlySet<string> | undefined
-  const connectorsBySection =
-    chain || host.showConnectors
-      ? sectionConnectors(
-          laidByGroup,
-          regionInfos,
-          connectorFilterOf(
-            host.connectionFilter,
-            i => regionInfos[i]?.refName,
-            () => {
-              belowFloor ??= collectArcs(
-                new Map([...sectionData].map(([k, m]) => [k, new Map(m)])),
-                regionInfos,
-                { filter: host.connectionFilter },
-              ).belowFloor
-              return belowFloor
-            },
-          ),
-          readPitch,
-          connectorArrowPx(featureHeight) > 0,
-        )
-      : undefined
+  const readPitch = featureHeight + host.featureSpacing
+  const connectorsBySection = sectionConnectors(host, readPitch)
   const connections = readConnectionTables(
     host,
     sectionData,
     regionInfos,
     colors,
     new Set(
-      [...(connectorsBySection?.values() ?? [])].flatMap(byRegion =>
+      [...connectorsBySection.values()].flatMap(byRegion =>
         [...byRegion.values()].flatMap(list =>
           list.map(({ placed }) => placed.slot),
         ),
@@ -1590,12 +1537,12 @@ function laidOutTables(
               columns: { section: label, region: i },
               tables: {
                 ...connectorColumns(
-                  connectorsBySection?.get(key)?.get(i) ?? [],
+                  connectorsBySection.get(key)?.get(i) ?? [],
                   connectorSlotColor,
                   keyOf,
                 ),
                 ...overlapTables(
-                  chain ? laid : undefined,
+                  laid,
                   drawsOverlaps,
                   byOverlapKind(
                     normalizedRgbToHex(colors.palette.colorOverlap),
@@ -1651,15 +1598,10 @@ function laidOutTables(
       key: order.map(g => g.key),
       label: order.map(g => g.label),
       dipReserve: order.map(({ key }) =>
-        connectorDipReservePx({
-          pairs: [...(connectorsBySection?.get(key)?.values() ?? [])].flatMap(
-            list => list.map(({ pair }) => pair),
-          ),
-          displayedRegions: regionInfos,
-          featureHeight,
-          featureSpacing: featureSpacingForHeight(featureHeight),
-          pileupHeight: sectionMaxY(laidByGroup.get(key)) * readPitch,
-        }),
+        host.connectorDipReserve(
+          key,
+          groupMaxY(laidByGroup.get(key)!) * readPitch,
+        ),
       ),
     },
     // apart where the display's one legend box merges them: a host drawing
@@ -1688,7 +1630,7 @@ function laidOutTables(
     },
     readPitch: {
       featureHeight,
-      featureSpacing: featureSpacingForHeight(featureHeight),
+      featureSpacing: host.featureSpacing,
     },
     config: resolvedConfig(host),
     warnings: [
@@ -1699,24 +1641,20 @@ function laidOutTables(
         layoutOrder: host.layoutOrder,
         chain,
         softClippingAsked: host.showSoftClips,
-        collapseAsked:
-          !chain &&
-          facetSetting !== undefined &&
-          readConfObject(conf, ['pileup', 'collapsed']),
+        collapsed: host.collapseSections,
         sections: order.map(({ key }) => sectionData.get(key)!),
-        regions: regionBounds,
+        regions: host.loadedRegions,
       }),
     ],
   }
 }
 
 /**
- * What the layout drops of the display's `sort`, `pileup.softClips` and
- * `pileup.collapsed` without saying so, in words a host can show: a column
- * sort with no `pos`, a sort the regions' contigs or reads leave nowhere to
- * apply, under `unit: 'chain'` any sort or soft clipping, as chains lay out
- * by chain, and a collapse of the facet's sections, which the tables lay out
- * as stacks.
+ * What the layout drops of the display's `sort` and `pileup.softClips`
+ * without saying so, in words a host can show: a column sort with no `pos`,
+ * a sort the regions' contigs or reads leave nowhere to apply, under
+ * `unit: 'chain'` any sort or soft clipping, as chains lay out by chain, and
+ * any sort of sections collapsed to one row.
  */
 function layoutWarnings({
   sortField,
@@ -1724,7 +1662,7 @@ function layoutWarnings({
   layoutOrder,
   chain,
   softClippingAsked,
-  collapseAsked,
+  collapsed,
   sections,
   regions,
 }: {
@@ -1733,21 +1671,17 @@ function layoutWarnings({
   layoutOrder: LayoutOrder
   chain: boolean
   softClippingAsked: boolean
-  collapseAsked: boolean
+  collapsed: boolean
   sections: ReadonlyMap<number, WorkerPileupData>[]
   regions: ReadonlyMap<number, RegionBounds>
 }) {
   const warnings = new Set<string>()
-  if (collapseAsked) {
-    warnings.add(
-      'the tables lay each facet section out as a stack of rows, so pileup.collapsed is dropped, with the overlap tint it draws',
-    )
-  }
+  const sorts = sortColumn !== undefined || layoutOrder !== 'position'
   if (!isLayoutOrder(sortField) && !sortColumn) {
     warnings.add(`the sort by ${sortField} names no pos, so it is dropped`)
   }
   if (chain) {
-    if (sortColumn || layoutOrder !== 'position') {
+    if (sorts) {
       warnings.add(
         `under unit 'chain' the reads lay out by chain, so the sort by ${sortField} is dropped`,
       )
@@ -1757,23 +1691,29 @@ function layoutWarnings({
         `under unit 'chain' the reads lay out by chain, so pileup.softClips is dropped`,
       )
     }
-    return [...warnings]
-  }
-  for (const dataMap of sections) {
-    if (sortColumn && !appliedPileupSort({ dataMap, sortColumn, regions })) {
-      const withReads = [...dataMap]
-        .filter(([, d]) => d.readKeys.length > 0)
-        .map(([i]) => regions.get(i)!)
-      const contigs = [...new Set(withReads.map(r => r.refName))]
-      const why =
-        contigs.length > 1
-          ? `the regions with reads span several contigs (${contigs.join(', ')})`
-          : contigs[0] !== sortColumn.refName
-            ? `no region with reads is on ${sortColumn.refName}`
-            : `no region with reads holds position ${sortColumn.pos}`
+  } else if (collapsed) {
+    if (sorts) {
       warnings.add(
-        `the sort by ${sortColumn.field} at ${sortColumn.refName}:${sortColumn.pos} is dropped: ${why}, so the reads lay out by position`,
+        `under pileup.collapsed each section lays its reads out on one row, so the sort by ${sortField} is dropped`,
       )
+    }
+  } else {
+    for (const dataMap of sections) {
+      if (sortColumn && !appliedPileupSort({ dataMap, sortColumn, regions })) {
+        const withReads = [...dataMap]
+          .filter(([, d]) => d.readKeys.length > 0)
+          .map(([i]) => regions.get(i)!)
+        const contigs = [...new Set(withReads.map(r => r.refName))]
+        const why =
+          contigs.length > 1
+            ? `the regions with reads span several contigs (${contigs.join(', ')})`
+            : contigs[0] !== sortColumn.refName
+              ? `no region with reads is on ${sortColumn.refName}`
+              : `no region with reads holds position ${sortColumn.pos}`
+        warnings.add(
+          `the sort by ${sortColumn.field} at ${sortColumn.refName}:${sortColumn.pos} is dropped: ${why}, so the reads lay out by position`,
+        )
+      }
     }
   }
   return [...warnings]

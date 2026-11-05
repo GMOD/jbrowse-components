@@ -145,8 +145,11 @@ a quiet region.
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser squeezes the
   pitch to the track's height, which is the host's.
 - `connectors` holds each connector the pileup draws (always under
-  `unit: 'chain'`, else under `pileup.connectors.show`), each placed by the
-  feed the connector mark draws from (`connectorInstance`): both ends'
+  `unit: 'chain'`, else under `pileup.connectors.show`), the display's own
+  `connectorsByGroup`: the straight-line pass's pairs, straight whatever
+  their shape (`linePassInstance`), and the connector mark's, each placed by
+  the feed the mark draws from (`connectorInstance`). A section on one row
+  draws no straight line, so it lists none. Each has both ends'
   positions, rows and regions, the connection's arc color at its `opacity`,
   the stroke `width` in px, its `kind` (`straight`, `curve` or `loop`),
   `dashed` for a junction over segments not in view, the `dip` in px a curve
@@ -158,18 +161,25 @@ a quiet region.
   each cubic's two control points in bp and rows and the arrowhead's arms, so
   a dip flattens as the figure zooms out, as the display's does.
 - `sections` has `dipReserve`, the px the display keeps under a section's
-  last row for its deepest dipping connector (`connectorDipReservePx`), 0
-  where nothing dips past the rows; a host adds it to the pileup's height.
+  last row for its deepest dipping connector (the display's
+  `connectorDipReserve`), 0 where nothing dips past the rows and under
+  `heightMode: 'fit'`; a host adds it to the pileup's height.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where
-  only two mates are. The display draws no overlap below a 3 px read
+  only two mates are. Under `pileup.collapsed` on a faceted display, each
+  section lays its reads on row 0 and `overlaps` holds its depth tint, one
+  span per read past the first covering a stretch, as the display draws it. The display draws no overlap below a 3 px read
   (`shouldDrawOverlaps`), so there `overlaps` comes back empty. Where the tables
   return an overlap, `legend` ends with the display's row for each kind drawn,
   "Split segments overlap here" and "Mates overlap here".
-- The tables lay each facet section out as a stack and ignore `pileup.collapsed`,
-  so they return none of the overlap tint the display draws over a collapsed
-  section. Where a faceted config sets it, `warnings` holds a line saying so.
+- The tables run the display's own layout views (`pileupLayoutViews.ts`:
+  `facetLayoutViews`, `groupLayoutViews`, `pileupLayoutViews`,
+  `connectorViews`) on their static host, so a read's row and section, the
+  connectors and the dip reserve are the display's. What a viewport adds
+  stays the view's: the row caps that split a track's height between
+  sections, a lane's coverage-only chevron and a dragged lane size. The tables
+  lay every row out.
 
 **A table takes the display's own config and answers what the display draws with
 it.** `alignmentTables` takes `display`, the `LinearAlignmentsDisplay` config as a
@@ -250,8 +260,8 @@ A setting the table cannot serve is refused with an error:
 - `spanLimit` and `byteLimit` apply to the regions' sum.
 - `warnings` names each setting the layout drops without an error, such as a
   column sort with no `pos`, a sort across contigs or held by no region with reads,
-  a sort or `pileup.softClips` under `unit: 'chain'`, and `pileup.collapsed` on a
-  faceted display.
+  a sort or `pileup.softClips` under `unit: 'chain'`, and a sort of sections
+  collapsed to one row.
 
 Beside the reads come the marks the display draws on them, each as the worker
 ships it:

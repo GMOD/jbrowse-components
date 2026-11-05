@@ -8,7 +8,6 @@ import {
 import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
-  getConf,
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -30,7 +29,6 @@ import {
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin, {
   writtenColorOf,
@@ -59,12 +57,7 @@ import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
-import {
-  connectorCategories,
-  connectorDipReservePx,
-  connectorFilterOf,
-  resolveConnectorsByGroup,
-} from '../features/linkedReads/computeOverlay.ts'
+import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
@@ -79,7 +72,6 @@ import { withBasesFields } from '../shared/basesFilter.ts'
 import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
 import {
-  facetForUnit,
   facetValueNotices,
   overflowSplitNotices,
   sectionOrder,
@@ -101,8 +93,8 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
-import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
-import { framesUnpairedChainStrand, rgb255 } from './colorUtils.ts'
+import { buildReadIdsByChainName } from './chainFields.ts'
+import { rgb255 } from './colorUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
@@ -131,23 +123,18 @@ import {
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import { exportedReads } from './exportedReads.ts'
 import {
-  applyChainStrandFrames,
   attachLinkedReadLinesByGroup,
   fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
-  layoutGroupsToViewport,
   maxRowsFor,
   resolveFitDefaultCap,
-  laneLayoutOf,
 } from './groupLayout.ts'
 import {
-  buildRawDataByGroup,
   buildReadIdIndex,
   buildSashimiDownKeys,
   hasNamedGroups,
   hiddenGroupReadIds,
-  orderedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -174,6 +161,13 @@ import {
   getSortMenuItem,
   getTrackSizingItems,
 } from './menus/index.ts'
+import {
+  connectorSettingViews,
+  connectorViews,
+  facetLayoutViews,
+  groupLayoutViews,
+  pileupLayoutViews,
+} from './pileupLayoutViews.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { connectorBandState } from './renderers/connectorMarks.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
@@ -195,7 +189,6 @@ import type {
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
-import type { ConnectorScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
@@ -485,31 +478,14 @@ export default function stateModelFactory(
         get view() {
           return containingLgv(self)
         },
-        /**
-         * #getter
-         * Whether the pileup connectors draw: always in chain layout, where a
-         * connector is how a chain's reads join, and otherwise as
-         * `pileup.connectors.show` says.
-         */
-        get drawsConnectors() {
-          return self.unit === 'chain' || self.showConnectors
-        },
-        /**
-         * #getter
-         * Which pairs the connector mark draws — see `ConnectorScope`.
-         */
-        get connectorScope(): ConnectorScope {
-          return this.drawsConnectors ? 'all' : 'none'
-        },
       }))
+      .views(self => connectorSettingViews(self))
+      .views(self => facetLayoutViews(self))
       .views(self => bandPlotViews(self))
       .views(self => coverageStatsViews(self))
       .views(self => coverageAutoscaleViews(self))
       .views(self => coverageDomainViews(self))
       .views(self => {
-        let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
-        let fitCap: IComputedValue<RowCap> | undefined
-        const superConfigProblemsOf = self.configProblemsOf
         const keyWindows = stableIdentityComputed(() =>
           self.view.initialized
             ? keyWindowsOf(self.view.settledDynamicBlocks)
@@ -646,62 +622,14 @@ export default function stateModelFactory(
               canonicalizeViewRefName(self, refName),
             ).sortColumn
           },
-
-          /**
-           * #getter
-           * The facet the fetch partitions by. Chain mode turns a per-read
-           * dimension into ungrouped without changing the slot, so the slot
-           * alone does not determine which sections come back.
-           */
-          get effectiveFacet() {
-            return facetForUnit(self.facet, self.unit)
-          },
-
-          /**
-           * #getter
-           * Identity of the key space the fetched group keys belong to, and so of
-           * every collection this model keys by group key — see
-           * `groupKeySpaceOf`.
-           */
-          get groupKeySpace() {
-            return groupKeySpaceOf(this.effectiveFacet)
-          },
-
-          /**
-           * #getter
-           * Whether the grouping will be honored, decidable from settings alone
-           * since chain mode drops a per-read dimension (`facetForUnit`).
-           * Positions the track label, which is placed before data arrives and
-           * must not jump afterwards.
-           */
-          get prefersOffset() {
-            return this.effectiveFacet !== undefined
-          },
-
-          /**
-           * #getter
-           * Whether each group draws as one row, overlap depth shown by the
-           * tint layer — the collapse in effect. Reads `canCollapseSections`,
-           * not the slot alone: a config default can be ticked where collapsing
-           * is inert.
-           */
-          get collapseSections(): boolean {
-            return (
-              this.canCollapseSections && getConf(self, ['pileup', 'collapsed'])
-            )
-          },
-
-          /**
-           * #getter
-           * Whether collapsing can take effect, so whether the "Show" menu
-           * offers the toggle. Chain mode never collapses (`laneLayoutOf`).
-           * The menu omits the row rather than disabling it: a click would
-           * write a slot no getter reads.
-           */
-          get canCollapseSections() {
-            return this.prefersOffset && self.unit !== 'chain'
-          },
-
+        }
+      })
+      .views(self => groupLayoutViews(self))
+      .views(self => {
+        let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
+        let fitCap: IComputedValue<RowCap> | undefined
+        const superConfigProblemsOf = self.configProblemsOf
+        return {
           /**
            * #getter
            * Why an explicit read ordering cannot take effect, or `undefined`:
@@ -725,8 +653,8 @@ export default function stateModelFactory(
            * stacks nothing, whatever cap it holds.
            */
           get collapseSortBlockedReason(): string | undefined {
-            return this.collapseSections &&
-              !this.groupOrder.some(
+            return self.collapseSections &&
+              !self.groupOrder.some(
                 g =>
                   this.groupRowCaps.has(g.key) &&
                   !self.collapsedGroups.has(g.key),
@@ -779,7 +707,7 @@ export default function stateModelFactory(
               // `crossRegionByGroup`; see `ArcsByGroupResult`.
               for (const slot of arcSlotsInWindows(
                 this.arcsResult,
-                this.keyWindows,
+                self.keyWindows,
               )) {
                 present.add(arcSlotCategory(slot))
               }
@@ -895,7 +823,7 @@ export default function stateModelFactory(
           get laneBandOverheads(): number[] {
             return laneBandOverheads(
               this.belowCoverageBandsSettings,
-              this.groupOrder.map(g => g.key),
+              self.groupOrder.map(g => g.key),
               this.arcsResult.inkGroupKeys,
               this.sashimiDownArcLanes,
             )
@@ -921,7 +849,7 @@ export default function stateModelFactory(
               groupRowCaps({
                 sizes: this.groupSizesInEffect,
                 ceilingPx: self.pileupMaxLayoutHeight,
-                rowHeight: this.rowHeight,
+                rowHeight: self.rowHeight,
               }),
             )
             return rowCaps.get()
@@ -954,16 +882,16 @@ export default function stateModelFactory(
             // and an equal slice would hide a deep lane's reads beside a
             // shallow lane's blank ones. Fit with no room for reads has no
             // pitch, and splits like fixed.
-            const { order } = this.groupLayoutContext
+            const { order } = self.groupLayoutContext
             return resolveFitDefaultCap({
-              splitsViewport: order.length > 1 && !this.isFitting,
+              splitsViewport: order.length > 1 && !self.isFitting,
               height: self.autoHeight
                 ? self.growMaxHeight
                 : self.fitTargetHeight,
               visibleGroupCount: order.filter(
                 g => !self.collapsedGroups.has(g.key),
               ).length,
-              rowHeight: this.rowHeight,
+              rowHeight: self.rowHeight,
               totalOverhead: this.totalBandOverhead,
               maxRows: this.fitCeilingRows,
             })
@@ -977,7 +905,7 @@ export default function stateModelFactory(
            */
           get fitLaneRows(): number[] {
             return fitLaneRows(
-              this.groupLayoutContext,
+              self.groupLayoutContext,
               self.pileupMaxLayoutHeight,
               self.collapsedGroups,
             )
@@ -1000,112 +928,9 @@ export default function stateModelFactory(
           get fitCeilingRows(): number {
             const ceiling = maxRowsFor(
               self.pileupMaxLayoutHeight,
-              this.rowHeight,
+              self.rowHeight,
             )
-            return this.isFitting ? Math.min(ceiling, this.fitRows) : ceiling
-          },
-
-          /**
-           * #getter
-           * Per-group laid-out data: group key → (region index → laid-out
-           * data). Each group lays out independently under a per-group cap, so a
-           * dense group cannot starve the rest. Rows only; the per-read color
-           * arrays bake one computed later, in `laidOutByGroup`.
-           */
-          get laidOutByGroupUncolored() {
-            return layoutGroupsToViewport(this.groupLayoutContext, {
-              collapsedKeys: self.collapsedGroups,
-              // Reads only the resolved caps, not the track height, row pitch
-              // or band overhead behind them, which move a px per drag frame.
-              maxRows: this.fitCeilingRows,
-              defaultCap: this.fitDefaultCap,
-              overrideCaps: this.groupRowCaps,
-            })
-          },
-
-          /**
-           * #getter
-           * Whether the unpaired chain-strand framing is on: the one answer the
-           * consensus pass, the bake (`readColorOpts`) and the key read. A
-           * boolean in a separate computed, so a field switch that leaves the
-           * answer alone does not re-run the frame solve.
-           */
-          get framesChainStrand() {
-            return framesUnpairedChainStrand(self.bodyColorKind, self.unit)
-          },
-
-          /**
-           * #getter
-           * The laid-out data with every chain's strand frame settled — see
-           * `applyChainStrandFrames`.
-           */
-          get laidOutByGroupFramed() {
-            return applyChainStrandFrames(
-              this.laidOutByGroupUncolored,
-              self.unit,
-              this.framesChainStrand,
-            )
-          },
-
-          /**
-           * #getter
-           * Every read connector per group, from one walk of its reads: the
-           * straight-line pass's records and the pairs the connector mark
-           * draws. Reads the layout tier, so a band resize, height drag or
-           * recolor reuses them.
-           */
-          get connectorsByGroup() {
-            return resolveConnectorsByGroup(
-              this.laidOutByGroupFramed,
-              {
-                lines: self.drawsConnectors,
-                scope: self.connectorScope,
-                canonicalRefName: this.canonicalRefName,
-                refNameAt: i => self.loadedRegions.get(i)?.refName,
-                admits: self.drawsConnectors ? this.connectorFilter : undefined,
-              },
-              key =>
-                laneLayoutOf(
-                  this.groupLayoutContext,
-                  key,
-                  this.groupRowCaps,
-                  self.collapsedGroups,
-                ) === 'stacked',
-            )
-          },
-
-          /**
-           * #getter
-           * Which pairs the connectors draw under `connectionFilter`. The
-           * inter-chromosomal floor comes from the arc band's collection
-           * stage, which runs only once a connector crosses chromosomes.
-           */
-          get connectorFilter() {
-            return connectorFilterOf(
-              self.connectionFilter,
-              i => self.loadedRegions.get(i)?.refName,
-              () => this.arcCollection.belowFloor,
-            )
-          },
-
-          /**
-           * #getter
-           * The layout mechanics (grouping, sort, soft-clip) shared by the
-           * viewport fit pass and ad-hoc layouts such as `fittedFeatureHeight`.
-           * Excludes the fit policy (row caps) and the color inputs, which
-           * invalidate a later tier.
-           */
-          get groupLayoutContext() {
-            return {
-              order: this.groupOrder,
-              rawByGroup: this.chainedByGroup,
-              unit: self.unit,
-              sortColumn: this.sortColumn,
-              showSoftClips: self.showSoftClips,
-              layoutOrder: self.layoutOrder,
-              regions: self.loadedRegions,
-              collapseSections: this.collapseSections,
-            }
+            return self.isFitting ? Math.min(ceiling, this.fitRows) : ceiling
           },
 
           /**
@@ -1127,30 +952,15 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Group keys + labels in stacking order; one entry (key '') when
-           * ungrouped. Derived from the fetched `rpcDataMap`, not the layout
-           * pass, so group identity and order stay stable across relayouts.
-           */
-          get groupOrder() {
-            const facet = this.effectiveFacet
-            return orderedGroups(
-              self.rpcDataMap,
-              self.hiddenGroups,
-              sectionOrder(facet?.field ?? '', facet?.sort),
-            )
-          },
-
-          /**
-           * #getter
            * A facet field no fetched read answers, and the values whose reads
            * split between their own section and the overflow one.
            */
           get liveNotices(): string[] {
-            const facet = this.effectiveFacet
+            const facet = self.effectiveFacet
             return [
               ...facetValueNotices(
                 facet,
-                this.groupOrder.map(g => g.key),
+                self.groupOrder.map(g => g.key),
               ),
               ...overflowSplitNotices(
                 splitOverflowKeys(
@@ -1184,7 +994,7 @@ export default function stateModelFactory(
            * `hasNamedGroups`.
            */
           get showsGroupLabels() {
-            return hasNamedGroups(this.groupOrder)
+            return hasNamedGroups(self.groupOrder)
           },
 
           /**
@@ -1197,55 +1007,13 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Raw (un-laid-out) data regrouped as group key → (region idx →
-           * data), insertion-ordered so the first key is the primary group;
-           * ungrouped is the single key `''`. Hidden lanes are already gone,
-           * like `groupOrder`, so a walk of every entry is a walk of every
-           * DRAWN lane. See `buildRawDataByGroup`.
-           */
-          get rawDataByGroup() {
-            return buildRawDataByGroup(
-              self.rpcDataMap,
-              self.hiddenGroups,
-              self.pinnedInsertSizeBand,
-            )
-          },
-
-          /**
-           * #getter
-           * `rawDataByGroup` with chain identity joined across every region and
-           * lane (`attachChainFields`), in chain mode only. The worker knows no
-           * chains, so toggling the mode is this getter changing, not a fetch.
-           */
-          get chainAttachment() {
-            return self.unit === 'chain'
-              ? attachChainFields(this.rawDataByGroup)
-              : undefined
-          },
-
-          /**
-           * #getter
-           * The layout's input: `chainAttachment` in chain mode, else the
-           * fetched data. `rawDataByGroup` stays chain-free, so the arcs,
-           * sashimi, coverage and a split view overlaying this display do not
-           * recompute on the toggle.
-           */
-          get chainedByGroup(): ReadonlyMap<
-            string,
-            ReadonlyMap<number, ChainedPileupData>
-          > {
-            return this.chainAttachment ?? this.rawDataByGroup
-          },
-
-          /**
-           * #getter
            * Chain name → the ids of the READS in it; empty outside chain mode.
            * The key is a chain's own identity and the values are read ids,
            * which consumers resolve through `readIdToIndex` / `readIdIndexMap`
            * (hence `highlightedChainReadIds`, `selectedChainReadIds`).
            */
           get readIdsByChainName(): ReadonlyMap<string, string[]> {
-            const chained = this.chainAttachment
+            const chained = self.chainAttachment
             return chained ? buildReadIdsByChainName(chained) : new Map()
           },
 
@@ -1347,7 +1115,7 @@ export default function stateModelFactory(
            * off, so both marks drop the same connections.
            */
           get arcCollection() {
-            return collectArcs(this.rawDataByGroup, this.loadedRegionInfos, {
+            return collectArcs(self.rawDataByGroup, this.loadedRegionInfos, {
               filter: self.connectionFilter,
               canonicalRefName: this.canonicalRefName,
             })
@@ -1372,6 +1140,8 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => pileupLayoutViews(self))
+      .views(self => connectorViews(self))
       .views(self => coverageTicksViews(self))
       .views(self => alignmentsColorViews(self))
       .views(self => ({
@@ -1488,20 +1258,8 @@ export default function stateModelFactory(
             {
               rowHeight: self.rowHeight,
               minSectionHeight: this.minSectionHeight,
-              dipReservePx: (lane, pileupHeight) => {
-                const pairs = self.fitHeightToDisplay
-                  ? undefined
-                  : self.connectorsByGroup.get(lane.groupKey)?.overlayPairs
-                return pairs?.length
-                  ? connectorDipReservePx({
-                      pairs,
-                      displayedRegions: self.host.displayedRegions,
-                      featureHeight: self.featureHeight,
-                      featureSpacing: self.featureSpacing,
-                      pileupHeight,
-                    })
-                  : 0
-              },
+              dipReservePx: (lane, pileupHeight) =>
+                self.connectorDipReserve(lane.groupKey, pileupHeight),
             },
           )
         },

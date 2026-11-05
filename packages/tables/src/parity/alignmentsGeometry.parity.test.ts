@@ -275,6 +275,18 @@ describe('volvox reads', () => {
     { name: 'a whole-window sort', config: { ...TALL, sort: 'length' } },
     { name: 'facet by strand', config: { ...TALL, facet: 'strand' } },
     {
+      name: 'facet by strand, collapsed to one row',
+      config: { ...TALL, facet: 'strand', pileup: { collapsed: true } },
+    },
+    {
+      name: 'facet by strand, collapsed, pileup connectors',
+      config: {
+        ...TALL,
+        facet: 'strand',
+        pileup: { collapsed: true, connectors: { show: true } },
+      },
+    },
+    {
       name: 'no pileup, the coverage alone',
       config: { ...TALL, pileup: { show: false } },
     },

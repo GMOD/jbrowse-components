@@ -182,12 +182,18 @@ the read palette is `readPaletteViews` (`colorsIn`) over a `theme` volatile.
 Running them found no drift; a hidden coverage band (`coverage.show: false`)
 now exports no axis, as the display draws none.
 
-The tables still lay out every row where the view lays out under row caps
-(`layoutGroupsToViewport`). That is an export difference, not a drift: a cap
-is a viewport policy, and the bake and the read rows of the key read no row,
-since a read past the cap stays in the laid-out map on the overflow row
-(`sortLayout.ts`, the `maxRows` sentinel). Only the overlap rows read layout
-output, and each side keys the overlaps it draws.
+The layout runs there too: `pileupLayoutViews.ts` holds `facetLayoutViews`
+(the facet and the collapse in effect), `groupLayoutViews` (the sections and
+their `groupLayoutContext`), `pileupLayoutViews` (`layoutGroupsToViewport`,
+then `applyChainStrandFrames`) and `connectorViews` (`connectorsByGroup` and
+each section's `connectorDipReserve`), which the model installs around its fit
+policy and the tables' host installs with no row cap, no coverage-only lane
+and no sized lane: a cap is a viewport policy, so the tables lay every row
+out. Running them closed a drift: the tables laid a faceted
+`pileup.collapsed` out as stacks.
+`packages/tables/src/parity/alignmentsGeometry.parity.test.ts` compares each
+read's row and section, the connectors, the dip reserve, the junctions, the
+arcs and the mismatch colors.
 
 ## Built: features on a static MST host
 
@@ -343,8 +349,8 @@ parity test against `renderRegion`. By family, cheapest first:
 - **Alignments** and **MAF**: the longest chains (`renderState`,
   `sourceSections`, `renderSections` in `LinearAlignmentsDisplay/model.ts`),
   alignments' pileup layout pure on the main thread, MAF on the rows as well.
-  Alignments' read colors, key, palette and coverage scale already run on the
-  tables' static host.
+  Alignments' read colors, key, palette, coverage scale, pileup layout and
+  connectors already run on the tables' static host.
 - **Comparative and circular displays** (`MultiWaySyntenyDisplay`,
   `LinearSyntenyDisplay`, the dotplot display, `ChordSyntenyDisplay`,
   `ChordVariantDisplay`): each needs its own view's frame first.

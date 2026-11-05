@@ -151,6 +151,8 @@ export function connectorFilterOf(
 export interface GroupConnectors {
   // the straight-line pass's records, by displayed region index
   lines: ReadonlyMap<number, LinkedReadLinesUploadData>
+  // the pairs those records draw
+  linePairs: LinkedPair[]
   // what the overlay draws
   overlayPairs: LinkedPair[]
 }
@@ -192,6 +194,7 @@ export function resolveConnectors(
     )
     return {
       lines: NO_LINES,
+      linePairs: [],
       overlayPairs: admits ? pairs.filter(admits) : pairs,
     }
   }
@@ -204,6 +207,7 @@ export function resolveConnectors(
   }
   return {
     lines: linkedReadLinesByRegion(straight),
+    linePairs: straight,
     overlayPairs:
       scope === 'all'
         ? rest

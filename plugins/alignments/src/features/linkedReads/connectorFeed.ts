@@ -179,6 +179,37 @@ export function connectorInstance(
   return undefined
 }
 
+/**
+ * One pair the straight-line pass draws (`GroupConnectors.linePairs`), in
+ * `connectorInstance`'s shape: that pass draws every pair it holds as a
+ * straight line, so a pair whose own shape would dip under its row is
+ * straight here too.
+ */
+export function linePassInstance(
+  pair: LinkedPair,
+  displayedRegions: readonly DisplayedRegion[],
+  pileupHeight: number,
+  rowPitch: number,
+) {
+  const placed = connectorInstance(
+    pair,
+    displayedRegions,
+    pileupHeight,
+    rowPitch,
+    false,
+  )
+  return placed && !placed.straight
+    ? {
+        ...placed,
+        bend: CONNECTOR_BOW,
+        width: LINKED_READ_LINE_WIDTH_PX,
+        alpha: LINKED_READ_LINE_ALPHA,
+        straight: true,
+        bits: placed.bits | CONNECTOR_STRAIGHT,
+      }
+    : placed
+}
+
 export interface ConnectorFeedInput {
   pairs: readonly LinkedPair[]
   displayedRegions: readonly DisplayedRegion[]
