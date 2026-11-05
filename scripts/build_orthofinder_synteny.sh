@@ -740,10 +740,14 @@ done
 # MSA=1 runs on past the orthogroups instead, and the alignments it writes are
 # what its glob waits for. -M msa says so outright: OrthoFinder 3 aligns by
 # default, while 2.5, which the container above runs, writes no alignments
-# without it.
+# without it. -z keeps every column: OrthoFinder otherwise trims mostly-gap
+# columns from a long alignment, which takes residues out of the rows (10 of
+# human ADAM32's 787), so MsaView can neither find a gene's row by its protein
+# nor read a column back to its codon. 566 of the flies' 13,222 alignments lost
+# some.
 if [ -n "$MSA" ]; then
   if ! ls -d proteomes/OrthoFinder/Results_*/MultipleSequenceAlignments >/dev/null 2>&1; then
-    orthofinder -f proteomes -M msa -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+    orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
   fi
   # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
   RESULTS=$(dirname "$(ls -1dt proteomes/OrthoFinder/Results_*/MultipleSequenceAlignments | sed -n 1p)")

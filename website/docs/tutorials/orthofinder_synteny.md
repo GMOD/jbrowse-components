@@ -532,14 +532,15 @@ synteny tracks:
 MSA=1 bash build_orthofinder_synteny.sh drosophila
 ```
 
-It changes three things. OrthoFinder runs without `-og`, and with `-M msa`,
-which OrthoFinder 2.5 (the `davidemms/orthofinder` container) needs before it
-aligns anything:
+It changes three things. OrthoFinder runs without `-og`, with `-M msa`, which
+OrthoFinder 2.5 (the `davidemms/orthofinder` container) needs before it aligns
+anything, and with `-z`, which stops it trimming columns, and so residues, out
+of a long alignment:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
 ```bash
-orthofinder -f proteomes -M msa -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 ```
 
 For the five flies that took 15 minutes on 24 threads. The plugin finds the
