@@ -103,8 +103,8 @@ export const PATH_ROOTS = new Set([
  * applying, and its comment with it when nothing else is under that comment.
  */
 export const PATH_PROSE = new Set([
-  // the location box, then the highlight control
-  'Zoom to region / use the location box, then add a highlight',
+  // a drag on the ruler, before the selection menu's row
+  'Drag a selection across the ruler',
   // the tree sidebar's own drag/checkbox/swatch affordances, none of them menu
   // rows
   'untick the rows you do not want',

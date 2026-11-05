@@ -103,6 +103,32 @@ test('clustering over a narrower window names that window in its step', () => {
   ).toEqual([])
 })
 
+test('each clustering display names its own run row under Clustering', () => {
+  expect(stepPaths('runClustering', true, 'LinearVariantDisplay')).toEqual([
+    'Track menu → Clustering → Cluster rows by genotype...',
+  ])
+  expect(stepPaths('runClustering', true, 'LinearMafDisplay')).toEqual([
+    'Track menu → Clustering → Cluster rows by identity...',
+  ])
+  expect(stepPaths('runClustering', true, 'LinearWiggleDisplay')).toEqual([
+    'Track menu → Clustering → Cluster rows by score...',
+  ])
+  expect(stepPaths('runClustering', true, 'LinearMarkDisplay')).toEqual([
+    'Track menu → Clustering → Cluster rows by similarity...',
+  ])
+  expect(stepPaths('clusterRegion', 'chr1:1-100', 'LinearVariantDisplay')).toEqual(
+    [],
+  )
+})
+
+test('a facet that hides a lane says so whatever it groups by', () => {
+  const step = trackFields.facet!(
+    { field: 'split', hidden: ['unsplit'] },
+    { noun: 'read', displayType: 'LinearAlignmentsDisplay' },
+  )
+  expect(Array.isArray(step) ? undefined : step?.note).toContain('unsplit')
+})
+
 function stepPaths(
   field: string,
   value: unknown,

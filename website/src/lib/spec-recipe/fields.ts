@@ -325,7 +325,9 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
                   ? ` The figure hides the ${hidden.join(', ')} lane: "Hide self-alignment lane" below the radios for the view's own assembly, or Hide on a lane's chip.`
                   : ''
               }`
-            : undefined,
+            : hidden.length
+              ? `The figure hides the ${hidden.join(', ')} lane: Hide on its chip.`
+              : undefined,
       }
     : undefined
 }
@@ -1557,16 +1559,7 @@ export const trackFields: Record<string, FieldRecipe> = {
             }
           : undefined
       : undefined,
-  // Elsewhere runClustering's step names the window
-  clusterRegion: (value, { displayType }) =>
-    typeof value !== 'string'
-      ? undefined
-      : displayType && VARIANT_DISPLAYS.has(displayType)
-        ? {
-            path: `Navigate to the region you want to cluster on, then ${TRACK_MENU} → Cluster rows by genotype...`,
-            note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
-          }
-        : [],
+  clusterRegion: value => (typeof value === 'string' ? [] : undefined),
   'rows.axis.grid': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
@@ -2051,13 +2044,10 @@ export const trackFields: Record<string, FieldRecipe> = {
   // each note says what the order is computed FROM: clustering uses the whole
   // region in view, the sort uses a single column.
   runClustering: (value, { displayType, settings }) => {
-    const region =
-      displayType && VARIANT_DISPLAYS.has(displayType)
-        ? undefined
-        : asString(settings?.clusterRegion)
+    const region = asString(settings?.clusterRegion)
     return value === true
       ? {
-          path: `${TRACK_MENU} → Clustering → Cluster rows by similarity`,
+          path: `${TRACK_MENU} → Clustering → ${clusterRunLabel(displayType)}`,
           note: region
             ? `Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. This figure clusters over ${region}: zoom there, run it, then zoom back out, and the order holds.`
             : 'Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. It clusters over what is displayed, so the same menu item somewhere else gives a different order.',
@@ -2091,6 +2081,19 @@ export const trackFields: Record<string, FieldRecipe> = {
             note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), of the attribute clustering compares rows on, which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
           }
   },
+}
+
+const CLUSTER_RUN_LABELS: Record<string, string> = {
+  LinearMafDisplay: 'Cluster rows by identity...',
+  LinearVariantDisplay: 'Cluster rows by genotype...',
+  LinearWiggleDisplay: 'Cluster rows by score...',
+}
+
+function clusterRunLabel(displayType: string | undefined) {
+  return (
+    (displayType ? CLUSTER_RUN_LABELS[displayType] : undefined) ??
+    'Cluster rows by similarity...'
+  )
 }
 
 const TRACK_LABELS: Record<string, string> = {
@@ -2419,7 +2422,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
     return option
-      ? { path: `View menu → Show → ${option}` }
+      ? { path: `View menu → Track labels → ${option}` }
       : undefined
   },
   colorByFrame: value =>
@@ -2483,7 +2486,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   highlight: value =>
     Array.isArray(value)
       ? {
-          path: 'View menu → Zoom to region / use the location box, then add a highlight',
+          path: 'Drag a selection across the ruler → Highlight region',
           note: `This figure highlights ${value.length} region${value.length === 1 ? '' : 's'}; highlights can also be set with the &highlight= URL parameter.`,
         }
       : undefined,
