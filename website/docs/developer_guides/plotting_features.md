@@ -29,12 +29,12 @@ over the same worker encoding, in a display of your own.
 :::
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
-[no-build](/docs/developer_guides/no_build_plugin) one: it bundles
-`@jbrowse/render-core` and composes mixins from
+[no-build](/docs/developer_guides/no_build_plugin) one: it imports
+`@jbrowse/render-core`, which the host serves, and composes mixins from
 `@jbrowse/plugin-linear-genome-view`, whose surface is larger and faster-moving
 than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
-versions you develop against. `@jbrowse/render-core` first publishes in the next
-release; until then, build against a `jbrowse-components` checkout.
+versions you develop against. Both are on npm as the v5 beta
+(`npm install @jbrowse/render-core@next`).
 
 <Figure src="/img/gwas/manhattan.png" caption="The mark display's point mark over a GWAS file, each point a variant at its −log₁₀(p)."/>
 

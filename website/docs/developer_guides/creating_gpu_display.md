@@ -33,7 +33,7 @@ a [build-step plugin](/docs/developer_guides/simple_plugin).
 
 ## Architecture overview
 
-<Figure caption="The worker sends data to the GPU when the region changes; every later frame redraws what the GPU already holds, so panning and zooming never refetch." src="/img/gpu_display_tldr.png" />
+<Figure caption="The worker sends data to the GPU when the region changes; every later frame redraws what the GPU already holds, so panning and zooming within the loaded region redraw without a fetch." src="/img/gpu_display_tldr.png" />
 
 <Figure caption="The dashed lines mark where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame." src="/img/gpu_display_lifecycle.png" />
 
@@ -937,8 +937,8 @@ lists what each backend refuses to allocate.
 ## Key invariants
 
 - All worker output uses absolute genomic uint32 coordinates, not
-  region-relative. float32 cannot hold 3 Gbp; use uint32 for positions crossing
-  the worker boundary.
+  region-relative. float32 loses single-base precision past ~16.7 Mbp, so use
+  uint32 for positions crossing the worker boundary.
 - `rpcProps` must not contain fetch results. `SettingsInvalidate` watches
   `rpcProps()`; putting derived cell data there creates an infinite fetch loop.
 - Shader uniforms use CSS pixels: don't scale `canvas_width`/`canvas_height` by
