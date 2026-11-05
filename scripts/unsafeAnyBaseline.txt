@@ -184,7 +184,7 @@
 2 no-unsafe-argument packages/tables/src/bundle.ts
 1 no-unsafe-member-access packages/text-indexing-core/src/types/common.ts
 4 no-unsafe-assignment packages/tree-sidebar/src/rowColorChoice.ts
-1 no-unsafe-return packages/tree-sidebar/src/TreeSidebarMixin.ts
+1 no-unsafe-return packages/tree-sidebar/src/treeSidebarRowViews.ts
 1 no-unsafe-assignment plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts
 1 no-unsafe-assignment plugins/alignments/src/shared/alignmentsFilter.ts
 1 no-unsafe-member-access plugins/alignments/src/shared/alignmentsFilter.ts

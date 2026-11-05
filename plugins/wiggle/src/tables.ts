@@ -5,17 +5,9 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import { arrangeRows } from '@jbrowse/tree-sidebar/arrangeRows'
-import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
-import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
-import {
-  dealValueColors,
-  resolveRowColors,
-  withRowColors,
-} from '@jbrowse/tree-sidebar/rowColorScale'
+import { treeSidebarRowsModel } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import {
   computeScoreStats,
   readYMember,
@@ -28,7 +20,10 @@ import {
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
-import { declaredValueDomain } from './LinearWiggleDisplay/sourcesLogic.ts'
+import {
+  declaredValueDomain,
+  sourcesFromRegionData,
+} from './LinearWiggleDisplay/sourcesLogic.ts'
 import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
@@ -52,14 +47,10 @@ import {
 import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
+import type { Source } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-
-function once<T>(compute: () => T) {
-  let cached: { value: T } | undefined
-  return () => (cached ??= { value: compute() }).value
-}
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -168,67 +159,33 @@ export async function wiggleTables(
     label: readConfObject(rule, 'label'),
   }))
 
-  const rows = once(() => {
-    const paletteDeals =
-      wiggleSharesPanel(rowLayout, data.sources.length) &&
-      views.rowColorPaintsMarks
-    const rowColor = rowColorsOfRows(
-      conf.rows.color,
-      readConfObject(conf.rows, 'colors'),
-    )
-    const rowColors = resolveRowColors(
-      data.sources,
-      rowColor.setting.field,
-      dealValueColors(rowColor.setting, () => data.sources, paletteDeals),
-      rowColor.pinned,
-      undefined,
-    )
-    const arranged = arrangeRows(
-      data.sources,
-      {
-        domain: readConfObject(conf.rows, 'sort'),
-        labels: readConfObject(conf.rows, 'labels'),
+  const discoveredRows = sourcesFromRegionData(new Map(results.entries()))
+  const host = treeSidebarRowsModel<Source>(conf)
+    .volatile(() => ({
+      isDensityMode: density,
+      extent: readConfObject(conf, ['mark', 'extent']),
+      origin,
+      colorSetting: setting,
+      summaryField,
+      renderingType,
+      isRowLayout: rowLayout,
+      scoreRules: rules,
+    }))
+    .views(self => ({
+      get discoveredRows(): Source[] {
+        return discoveredRows
       },
-      {
-        unlistedRowsSort: 'source',
-        rowAlias: undefined,
-        rowParent: () => undefined,
+      get sharesPanel(): boolean {
+        return wiggleSharesPanel(self.isRowLayout, self.discoveredRows.length)
       },
-    )
-    return {
-      paletteDeals,
-      rowColors,
-      sources: narrowRows(withRowColors(arranged, rowColors), {
-        kept: readConfObject(conf.rows, 'kept'),
-        filter: predicatesOf(conf.rows.filter),
-      }),
-    }
-  })
-  const views = wiggleResolveViews({
-    isDensityMode: density,
-    extent: readConfObject(conf, ['mark', 'extent']),
-    origin,
-    colorSetting: setting,
-    summaryField,
-    renderingType,
-    isRowLayout: rowLayout,
-    scoreRules: rules,
-    get sources() {
-      return rows().sources
-    },
-    get rowPaletteDeals() {
-      return rows().paletteDeals
-    },
-    get resolvedRowColors() {
-      return rows().rowColors
-    },
-  })
-  const { wiggleColor, effectiveExtent } = views
-  const { sources } = rows()
+    }))
+    .views(self => wiggleResolveViews(self))
+    .create()
+  const { wiggleColor, effectiveExtent, sources } = host
 
   const scaleType: string = readYMember(conf, WIGGLE_Y_PATHS, 'type')
   const zero = readYMember(conf, WIGGLE_Y_PATHS, 'zero') && !density
-  const drawnNames = views.autoscaleSourceNames
+  const drawnNames = host.autoscaleSourceNames
   const entries = results.flatMap((result, i) =>
     result.sources
       .filter(source => drawnNames.has(source.name))
@@ -244,7 +201,7 @@ export async function wiggleTables(
     zero,
     field: summaryField,
     extent: effectiveExtent,
-    ruleValues: views.scoreRuleValues,
+    ruleValues: host.scoreRuleValues,
   })
   const domain = resolveRenderState(
     autoscaledDomainOf({
@@ -266,11 +223,11 @@ export async function wiggleTables(
     rawConstant,
   )
 
-  const { markSources } = views
+  const { markSources } = host
   const { rampLut, rampMid } = wiggleColor
   const scoreRamp =
-    views.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined
-  const gpuProps = { ...views.gpuProps(), rowLayout: true }
+    host.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined
+  const gpuProps = { ...host.gpuProps(), rowLayout: true }
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, gpuProps).map(layer => ({
       layer,

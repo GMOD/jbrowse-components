@@ -35,7 +35,8 @@
     "./rowGroups": "./src/rowGroups.ts",
     "./rowSortColumn": "./src/rowSortColumn.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
-    "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts"
+    "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts",
+    "./treeSidebarRowViews": "./src/treeSidebarRowViews.ts"
   },
   "files": [
     "esm"
@@ -87,7 +88,8 @@
       "./rowGroups": "./esm/rowGroups.js",
       "./rowSortColumn": "./esm/rowSortColumn.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
-      "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js"
+      "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js",
+      "./treeSidebarRowViews": "./esm/treeSidebarRowViews.js"
     }
   },
   "sideEffects": false

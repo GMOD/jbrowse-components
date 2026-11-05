@@ -7,7 +7,6 @@ import {
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
-import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import {
   FEATURE_FIELD_PRESETS,
@@ -17,22 +16,11 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
   colorSnapshotOf,
   paintedColorEncoding,
-  pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import {
-  arrangeRows,
-  bandRows,
-  rowAliasOver,
-} from '@jbrowse/tree-sidebar/arrangeRows'
+import { types } from '@jbrowse/mobx-state-tree'
 import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
-import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
-import {
-  dealValueColors,
-  resolveRowColors,
-  rowColorKeyEntries,
-  rowFieldValue,
-} from '@jbrowse/tree-sidebar/rowColorScale'
+import { treeSidebarRowsModel } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 
 import configSchemaFactory from './LinearVariantDisplay/configSchema.ts'
 import {
@@ -74,9 +62,7 @@ import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
-import type { RowAlias } from '@jbrowse/tree-sidebar/arrangeRows'
-
-type DisplayConf = ReturnType<ReturnType<typeof configSchemaFactory>['create']>
+import type { RowBanding, RowParent } from '@jbrowse/tree-sidebar/arrangeRows'
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
 export function registerVariantAdapters(pluginManager: PluginManager) {
@@ -165,11 +151,6 @@ export async function variantTables(
   const rowsField: VariantRowsField = readConfObject(conf.rows, 'field')
   const predicates = predicatesOf(conf.filter)
   const filters = predicates.filter(p => !isSiteField(p.field))
-  const arrangement = {
-    domain: readConfObject(conf.rows, 'sort'),
-    labels: readConfObject(conf.rows, 'labels'),
-    kept: readConfObject(conf.rows, 'kept'),
-  }
   const adapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,
@@ -187,9 +168,52 @@ export async function variantTables(
     ...source,
     sampleName: resolveSampleName(source),
   }))
+  const host = treeSidebarRowsModel<ProcessedSource>(conf)
+    .props({
+      samplePloidy: types.maybe(types.frozen<Record<string, number>>()),
+    })
+    .views(self => ({
+      get discoveredRows(): ProcessedSource[] {
+        return sources
+      },
+      expandRows(rows: ProcessedSource[]): ProcessedSource[] {
+        return rowsField === 'haplotype'
+          ? expandPhasedRows({
+              rows,
+              ploidy: self.samplePloidy,
+              domain: self.rowSort,
+            })
+          : rows
+      },
+      rowParent(row: ProcessedSource): RowParent | undefined {
+        return haplotypeRowParent(row)
+      },
+      get finerRows(): ProcessedSource[] {
+        return finerHaplotypeRows({
+          rows: self.discoveredRows,
+          ploidy: self.samplePloidy,
+          domain: [...self.rowSort, ...(self.rowFocus ?? [])],
+        })
+      },
+      get rowBanding(): RowBanding | undefined {
+        return facetSettingOf({
+          field: readConfObject(conf.facet, 'field'),
+          sort: readConfObject(conf.facet, 'sort'),
+        })
+      },
+      get rowColorPaintsMarks(): boolean {
+        return false
+      },
+    }))
+    .actions(self => ({
+      setSamplePloidy(ploidy: Record<string, number>) {
+        self.samplePloidy = ploidy
+      },
+    }))
+    .create()
   const narrowing = {
-    kept: arrangement.kept,
-    filter: predicatesOf(conf.rows.filter),
+    kept: host.rowFocus ?? [],
+    filter: host.rowFilter,
     rowAlias: entryAliasOf(sources),
   }
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
@@ -224,57 +248,19 @@ export async function variantTables(
   )
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
-  const expanded =
-    rowsField === 'haplotype'
-      ? expandPhasedRows({
-          rows: sources,
-          ploidy: value.samplePloidy,
-          domain: arrangement.domain,
-        })
-      : sources
+  host.setSamplePloidy(value.samplePloidy)
   const fetched = new Set(value.rowNames)
-  const rowParent = (row: ProcessedSource) => haplotypeRowParent(row)
-  const rowAlias = rowAliasOver(
-    expanded,
-    finerHaplotypeRows({
-      rows: sources,
-      ploidy: value.samplePloidy,
-      domain: [...arrangement.domain, ...arrangement.kept],
-    }),
-    rowParent,
-  )
-  const ordered = arrangeRows(expanded, arrangement, {
-    unlistedRowsSort: 'source',
-    rowAlias,
-    rowParent,
-  })
-  const arranged = narrowRows(ordered, { ...narrowing, rowAlias }).filter(row =>
-    fetched.has(row.name),
-  )
-  const facet = facetSettingOf({
-    field: readConfObject(conf.facet, 'field'),
-    sort: readConfObject(conf.facet, 'sort'),
-  })
-  const banded = facet
-    ? bandRows(arranged, row => rowFieldValue(row, facet.field), facet)
-    : { rows: arranged, bands: [] }
-  const drawn = banded.rows
-  const labels = new Map(ordered.map(row => [row.name, row.label ?? row.name]))
-  const rowColor = rowColorsOf(
-    conf,
-    expanded,
-    drawn,
-    rowAlias,
-    name => labels.get(name) ?? name,
-  )
+  const drawn = host.sources.filter(row => fetched.has(row.name))
+  const rowColors = host.resolvedRowColors
+  const [rowKey] = host.rowColorScales
   const rows = {
     name: drawn.map(row => row.name),
     label: drawn.map(row => row.label ?? row.name),
     sample: drawn.map(row => row.sampleName),
     haplotype: drawn.map(row => (row.HP === undefined ? 0 : row.HP + 1)),
     ploidy: drawn.map(row => value.samplePloidy[row.sampleName] ?? 0),
-    band: drawn.map(row => (facet ? rowFieldValue(row, facet.field) : '')),
-    color: rowColor.colors,
+    band: drawn.map(row => host.rowBand(row)),
+    color: drawn.map(row => rowColors.get(row.name) ?? ''),
   }
   const rowIndex = new Map(rows.name.map((name, i) => [name, i]))
 
@@ -377,11 +363,14 @@ export async function variantTables(
     cells,
     rows,
     ...colorKeyTables(scales),
-    rowLegend: rowColor.legend,
-    rowLegendTitle: rowColor.title,
+    rowLegend: {
+      label: rowKey?.entries.map(e => e.label) ?? [],
+      color: rowKey?.entries.map(e => e.color ?? '') ?? [],
+    },
+    rowLegendTitle: rowKey?.title ?? '',
     bands: {
-      key: banded.bands.map(b => b.key),
-      label: banded.bands.map(b => b.label),
+      key: host.rowBands.map(b => b.key),
+      label: host.rowBands.map(b => b.label),
     },
     config: fullConfSnapshot(conf),
     warnings: listing.warnings,
@@ -701,57 +690,6 @@ function cellDosage(
     return null
   }
   return Number.isNaN(dosage) ? null : dosage
-}
-
-/**
- * Each row's label-bar color as the display resolves it: its `rows.colors`
- * pin, else the `rows.color` field's value for the row's sample in the
- * samples file, dealt the row palette over `dealRows`, the rows in their
- * source's order, else the sample's own `color`, else `''`; and the key the
- * display shows for an attribute, a pinned row's entry by `labelOf`.
- */
-function rowColorsOf(
-  conf: DisplayConf,
-  dealRows: readonly ProcessedSource[],
-  drawn: readonly ProcessedSource[],
-  rowAlias: RowAlias | undefined,
-  labelOf: (name: string) => string,
-) {
-  const { setting, pinned } = rowColorsOfRows(
-    conf.rows.color,
-    readConfObject(conf.rows, 'colors'),
-  )
-  const dealt = dealValueColors(setting, () => dealRows, false)
-  const resolved = resolveRowColors(
-    dealRows,
-    setting.field,
-    dealt,
-    pinned,
-    rowAlias,
-  )
-  const attribute = setting.field === 'name' ? '' : setting.field
-  const entries = attribute
-    ? rowColorKeyEntries(
-        dealRows,
-        {
-          setting,
-          pairs: pairedColorsOf(setting.scale),
-          dealt,
-          resolved,
-          pinned,
-          alias: rowAlias,
-        },
-        labelOf,
-      )
-    : []
-  return {
-    colors: drawn.map(row => resolved.get(row.name) ?? ''),
-    legend: {
-      label: entries.map(e => e.label),
-      color: entries.map(e => e.color ?? ''),
-    },
-    title: attribute ? capitalizeFirst(attribute) : '',
-  }
 }
 
 /**

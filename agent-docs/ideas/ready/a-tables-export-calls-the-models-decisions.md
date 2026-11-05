@@ -51,10 +51,10 @@ hold each of these as a drift pinned to the export's value today:
 
 - Autoscale glue in alignments coverage's tables, and the nice-rounding step
   in wiggle's, which ignore `encoding.y.scale.group`. Wiggle's range, color
-  and mark sources run the model's own getters
+  and mark sources run the model's own getters, and the wiggle and variants
+  rows, row colors and row color key run `TreeSidebarMixin`'s
   ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
-- Variants row colors (`rowColorsOf` in `plugins/variants/src/tables.ts`) and
-  the features carry-overs in `plugins/features/src/tables.ts`: the collapsed
+- The features carry-overs in `plugins/features/src/tables.ts`: the collapsed
   mode's forced `subfeatureLabels` of `'none'`, the `resolvedGeneGlyphMode`
   call in the fetch args, and the hand-built `layoutInputs` handed to
   `hostFeatureBand`.

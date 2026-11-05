@@ -1,6 +1,6 @@
 ---
 name: a-displays-render-inputs-run-on-a-plain-host
-description: "The getters that turn a display's settings and fetched data into its painter's inputs are written once over a duck-typed host: the model installs them as a views layer, and a static export runs the same getters over a plain object. Wiggle's color, mark sources, drawn extent and gpuProps are built (wiggleResolveViews) and tables.ts runs them. Left for jb2export with no session: plot geometry, renderState, axes and the sidebar on the plain host, and renderDisplaySvg's MST-node contract. Alignments after."
+description: "The getters that turn a display's settings and fetched data into its painter's inputs are written once over a duck-typed host: the model installs them as a views layer, and a static export runs the same getters over a plain object. Wiggle's color, mark sources, drawn extent and gpuProps are built (wiggleResolveViews), and so are the rows (treeSidebarRowViews), which the wiggle and variants tables run. Left for jb2export with no session: plot geometry, renderState, axes and the sidebar on the plain host, and renderDisplaySvg's MST-node contract. Alignments after."
 ---
 
 # A display's render inputs run on a plain host
@@ -44,6 +44,27 @@ a real drift: the tables autoscaled over every source while the view autoscales
 over the rows drawn, so a `rows.kept` or `rows.filter` export got a wider score
 domain than the screen (pinned in `packages/tables/src/wiggle.test.ts`).
 
+## Built: the rows
+
+`packages/tree-sidebar/src/treeSidebarRowViews.ts` holds the row chain
+`TreeSidebarMixin` installs: the `rows` reads, the hook defaults, and one views
+function per stage from `expandedRows` through `rowOrder`, the row colors and
+their key to `sources`, each reading through `self` only. The plain host here
+is an MST model, `treeSidebarRowsModel`: the same layers over the display's
+config node, which the wiggle and variants `tables.ts` extend with their
+display's hook overrides and create, in place of their hand-built
+`arrangeRows` → `withRowColors` → `narrowRows` chains and variants' row color
+key. MST gives it the screen's `self` and override semantics with no casts.
+Wiggle's host also installs `wiggleResolveViews`, so its `rowColorPaintsMarks`
+reaches the row palette as on screen. Running them closed a drift: the exports
+ordered by `rows.sort` alone, so a supplied `rows.tree` drew its leaf order on
+screen and the file's order in the export (pinned in
+`packages/tables/src/variants.test.ts` and `wiggle.test.ts`).
+
+A plain object with getters installed by hand was built first and replaced: it
+needed a cast for the views' own hooks and lazy forwarding between the host and
+the views, and its inputs were re-read from the config beside the views.
+
 ## Left
 
 - **The rest of wiggle's chain on the plain host**: `plotGeometry`,
@@ -55,10 +76,6 @@ domain than the screen (pinned in `packages/tables/src/wiggle.test.ts`).
 - **The SVG shell's contract**: `renderDisplaySvg` takes an `LgvSvgExportable`,
   which extends `IStateTreeNode`, so `WiggleSvgBody` cannot render from a plain
   host until the shell takes its view and height as arguments.
-- **The rows**: `tables.ts` still composes `arrangeRows` → `withRowColors` →
-  `narrowRows` by hand where the model gets them from `TreeSidebarMixin`. The
-  same move there (the mixin's row getters over a duck-typed host) would serve
-  every row display's tables, variants included.
 - **Alignments**, whose chain is the longest (`renderState`, `sourceSections`,
   `renderSections` in `LinearAlignmentsDisplay/model.ts`).
 

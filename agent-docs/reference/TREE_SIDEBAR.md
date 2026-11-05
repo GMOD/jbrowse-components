@@ -159,6 +159,17 @@ only the stages downstream of it:
   `rowBands` is each band's value, label and row span.
 - `sources`, the display's: palette, MAF's reference row.
 
+The stages, the hook defaults, the `rows` reads they start from and the row
+colors and key are written once, in `treeSidebarRowViews.ts`, as one views
+function per stage, each reading only through `self` what an earlier stage or a
+hook gives. The mixin installs them as `.views()` layers, so each getter stays
+its own computed and a display's override answers wherever a stage reads a
+hook. The wiggle and variants tables exports build `treeSidebarRowsModel`: an
+MST model of the same layers over the display's config node, which the export
+extends with the hooks its display overrides (in a later `.views`, as the
+display does) and creates, with no session or view. So an export orders,
+narrows, bands and colors the rows as the view does.
+
 The hooks are declared by the mixin and overridden by a getter in a later
 `.views` block, as `RowHeightMixin`'s `autoRowHeight` is; a `.volatile` of a
 hook's name throws at `create`:

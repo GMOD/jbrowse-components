@@ -16,10 +16,15 @@ function read(file: string) {
 
 // Each member the mixin declares, and whether its doc offers it as a hook.
 function mixinMembers() {
-  const src = read('packages/tree-sidebar/src/TreeSidebarMixin.ts')
+  const src = [
+    'packages/tree-sidebar/src/TreeSidebarMixin.ts',
+    'packages/tree-sidebar/src/treeSidebarRowViews.ts',
+  ]
+    .map(read)
+    .join('\n')
   const members = new Map<string, boolean>()
   for (const m of src.matchAll(
-    /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*\n {6}(?:get )?([A-Za-z_]\w*)\(/g,
+    /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*\n {4,6}(?:get )?([A-Za-z_]\w*)[<(]/g,
   )) {
     members.set(m[2]!, m[1]!.includes('Overridable'))
   }

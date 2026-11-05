@@ -236,6 +236,19 @@ test('a multi-wiggle stacks its sources in the order rows.sort gives', async () 
   expect(new Set(shared.marks.source).size).toBe(3)
 })
 
+test('a multi-wiggle stacks its sources in the order a supplied rows.tree lists', async () => {
+  const t = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    display: {
+      rows: {
+        field: 'source',
+        tree: '((posneg_rw3,posneg_rw1),posneg_rw2);',
+      },
+    },
+  })
+  expect(t.sources.name).toEqual(['posneg_rw3', 'posneg_rw1', 'posneg_rw2'])
+})
+
 // The export narrows as the display does: rows.filter over a subtrack's
 // field, then rows.kept, the rows stacking in what is left.
 test('a multi-wiggle draws the sources rows.filter and rows.kept leave', async () => {

@@ -200,6 +200,19 @@ test('the rows take the arrangement `rows` saves: its order first, its labels, i
   expect(new Set(focused.cells.row)).toEqual(new Set([a, b]))
 })
 
+// A tree that arrived as data leads the order with its leaves, as the
+// display's rowOrder does, where rows.sort alone would keep the file's order.
+test('a supplied rows.tree orders the rows by its leaves', async () => {
+  const plain = await engine.variants(DOG_VCF)
+  const [a, b, c] = plain.rows.name as [string, string, string]
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { tree: `((${c},${b}),${a});` } },
+  })
+  expect(t.rows.name.slice(0, 3)).toEqual([c, b, a])
+  expect(t.rows.name.slice(3)).toEqual(plain.rows.name.slice(3))
+})
+
 // One narrowing, as the display's: rows.filter over the samples file's
 // attribute, then rows.kept, narrows the fetch and the rows alike.
 test('the rows take rows.filter over the samples file, then rows.kept', async () => {

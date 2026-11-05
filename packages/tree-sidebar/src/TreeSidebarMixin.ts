@@ -7,18 +7,16 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
-import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
+import { persistTrackConfigNow } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import {
   predicatesOf,
   unreadFieldNotice,
 } from '@jbrowse/core/util/fieldPredicate'
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
 import {
   treeOfLeaves,
   buildTree,
@@ -44,40 +42,42 @@ import {
   rowColorChoiceOf,
   rowColorMembers,
   rowColorResetTarget,
-  rowColorSettingOf,
   sameRowColor,
   startingRowColor,
 } from './rowColorChoice.ts'
 import {
   ROW_COLOR_SCALE_ID,
-  dealValueColors,
-  resolveRowColors,
-  rowColorKeyEntries,
   rowColorKeyValue,
-  rowFieldValue,
   withPinnedColors,
-  withRowColors,
 } from './rowColorScale.ts'
 import { labelEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 import { buildSpatialIndex } from './spatialIndex.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
+import {
+  bandedRowViews,
+  bandedSourceViews,
+  clusterableRowViews,
+  editableRowViews,
+  expandedRowViews,
+  listsInOrder,
+  resolvedRowColorViews,
+  rowAliasViews,
+  rowOrderViews,
+  rowTreeViews,
+  sourceViews,
+  treeSidebarRowHookDefaults,
+  treeSidebarRowsConfigViews,
+} from './treeSidebarRowViews.ts'
 
-import type {
-  RowAlias,
-  RowBand,
-  RowBanding,
-  RowParent,
-  UnlistedRowsSort,
-} from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowNarrowing } from './narrowRows.ts'
-import type { RowColorEdits, RowColorSnapshot } from './rowColorChoice.ts'
-import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
+import type { RowColorEdits } from './rowColorChoice.ts'
+import type { RowColorSetting } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
+import type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -85,22 +85,12 @@ import type {
 } from './types.ts'
 import type {
   AnyConfigurationModel,
-  ConfigModelForFields,
   KeyedWrites,
 } from '@jbrowse/core/configuration'
-import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
-import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
-/**
- * The `rows` every display composing `TreeSidebarMixin` declares: MAF's
- * field-less `RowArrangement`, or a `Rows` adding `field`, `filter` and the
- * axis `grid` to it.
- */
-export type TreeSidebarConfigModel = ConfigModelForFields<{
-  rows: typeof rowArrangementConfigSchema
-}>
+export type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
@@ -178,15 +168,6 @@ function liveRows(self: object): RowsMembers {
   return getSnapshot(host(self).configuration.rows)
 }
 
-// `rows.filter`, none where the display declares no filter on its rows
-function storedRowFilter(self: object): FieldPredicate[] {
-  return predicatesOf(Reflect.get(host(self).configuration.rows, 'filter'))
-}
-
-function storedTree(self: object): string | undefined {
-  return getConf(host(self), ['rows', 'tree', 'newick'])
-}
-
 /**
  * The order a reorder writes: the rows it named lead, and the names the
  * current order carries beyond them follow in their current order, so a
@@ -217,25 +198,6 @@ function orderDropsTree(
     (current.length !== next.length ||
       current.some((name, idx) => name !== next[idx]))
   )
-}
-
-/**
- * Whether the names of `order` that `leaves` holds appear in `leaves`' order.
- */
-function listsInOrder(leaves: readonly string[], order: readonly string[]) {
-  const position = new Map(leaves.map((name, i) => [name, i]))
-  let last = -1
-  for (const name of order) {
-    const at = position.get(name)
-    if (at !== undefined) {
-      if (at < last) {
-        return false
-      }
-      last = at
-      position.delete(name)
-    }
-  }
-  return true
 }
 
 /** Whether some rotation of `newick` lists `order`'s names in its order. */
@@ -275,7 +237,10 @@ export interface ClusterRun {
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and each with its resolved color as `rowColor`, then
  * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
- * in the bands `rowBanding` names.
+ * in the bands `rowBanding` names. The stages and the row colors are
+ * written in `treeSidebarRowViews.ts`, which a tables export installs on a
+ * model of its own (`treeSidebarRowsModel`), so it arranges and colors the
+ * rows as the view does.
  *
  * A row's color is `resolvedRowColors`: its `rows.colors` entry, else its
  * `rows.color` entry (the color `dealtValueColors` deals its field's value),
@@ -365,52 +330,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The row order, `rows.sort`: the rows it names lead, in its order,
-       * and the rest follow as `unlistedRowsSort` says.
-       */
-      get rowSort(): string[] {
-        return getConf(host(self), ['rows', 'sort'])
-      },
-      /**
-       * #getter
-       * The labels drawn in place of row names, `rows.labels`, by name.
-       */
-      get rowLabels(): Readonly<Record<string, string>> {
-        return getConf(host(self), ['rows', 'labels'])
-      },
-      /**
-       * #getter
-       * What `rowTree` was computed from, the locus and the settings; undefined
-       * for a tree that arrived as data, and while no newick is stored, since
-       * a provenance describes only the newick beside it.
-       */
-      get rowTreeProvenance(): ClusterProvenance | undefined {
-        return storedTree(self)
-          ? getConf(host(self), ['rows', 'tree', 'provenance'])
-          : undefined
-      },
-      /**
-       * #getter
-       * Overridable hook: the row names a focus narrows the display to,
-       * `rows.kept` — a clade picked off the tree or a key row's rows — or
-       * undefined while every row shows. A display that can hide its rows
-       * answers undefined while they are hidden.
-       */
-      get rowFocus(): readonly string[] | undefined {
-        const kept: string[] = getConf(host(self), ['rows', 'kept'])
-        return kept.length ? kept : undefined
-      },
-      /**
-       * #getter
-       * Overridable hook: `rows.filter`, the predicates over row attributes
-       * a row must pass to show, none where the display declares none. A
-       * display that can hide its rows answers none while they are hidden.
-       */
-      get rowFilter(): readonly FieldPredicate[] {
-        return storedRowFilter(self)
-      },
-      /**
-       * #getter
        * Overridable hook: whether the track lists its rows before any region
        * loads (a VCF's samples, a multi-wiggle's subtracks), so a `rows.kept`
        * name no row has is a typo worth naming. False by default, for rows
@@ -431,21 +350,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The `rows.color` object: the row field whose values take colors,
-       * `name` where it names none, and the values with an assigned color.
-       */
-      get rowColorChannel(): RowColorSetting {
-        return rowColorSettingOf(host(self).configuration.rows.color)
-      },
-      /**
-       * #getter
-       * The colors pinned on rows, `rows.colors`, by name.
-       */
-      get rowColorPins(): ReadonlyMap<string, string> {
-        return pinnedColorsOf(getConf(host(self), ['rows', 'colors']))
-      },
-      /**
-       * #getter
        * The `rows.color` object this display's base declares, which a reset
        * returns to and "is this the reader's" compares against.
        */
@@ -453,16 +357,9 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return liftRowColor(baseRows(self).color)
       },
     }))
+    .views(self => treeSidebarRowsConfigViews(host(self)))
+    .views(() => treeSidebarRowHookDefaults<S>())
     .views(self => ({
-      /**
-       * #getter
-       * `rows.color` with the pins folded in under `name`
-       * (`withPinnedColors`), the shape the deal, the choice and the key
-       * read.
-       */
-      get rowColorSetting(): RowColorSetting {
-        return withPinnedColors(self.rowColorChannel, self.rowColorPins)
-      },
       /**
        * #getter
        * `rowColorSetting` as this display's base declares it.
@@ -475,48 +372,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook, which every display overrides: the rows as the data
-       * reports them, before any arrangement. A getter, and a stable-identity
-       * one wherever the rows come off region payloads, so a refetch of the
-       * same rows re-derives nothing.
-       */
-      get discoveredRows(): S[] {
-        return []
-      },
-      /**
-       * #getter
-       * Overridable hook: the guide tree the display's adapter supplies, as
-       * newick, which `rowTree` draws while some rotation of it lists
-       * `rows.sort`. It never enters `rows.tree`, since the adapter
-       * re-supplies it on every load. `undefined` by default.
-       */
-      get guideTreeNewick(): string | undefined {
-        return undefined
-      },
-      /**
-       * #method
-       * Overridable hook: the row `row` refines, read off the row itself, for
-       * a display whose rows stand for something named by another name (a
-       * variant display's haplotype row refines its sample, a MAF copy row
-       * its species), and what its label adds to that row's. An order, a
-       * label, a color and a focus written against the parent reach every row
-       * refining it. None by default.
-       */
-      rowParent(_row: S): RowParent | undefined {
-        return undefined
-      },
-      /**
-       * #getter
-       * Overridable hook: the rows a finer field would draw, each refining a
-       * drawn row (`rowParent`), so an order or a focus naming one reaches
-       * the row it refines: a sample-mode variant display's haplotype rows.
-       * None by default.
-       */
-      get finerRows(): S[] {
-        return []
-      },
-      /**
-       * #getter
        * Overridable hook: what the sidebar says where the tree's leaves are
        * `finerRows`, which it hides.
        */
@@ -526,31 +381,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           title:
             'The tree names rows each of these stands for. Re-run clustering to cluster these rows. Click to dismiss.',
         }
-      },
-      /**
-       * #getter
-       * Overridable hook: where the rows `rowOrder` does not list go, in the
-       * order they arrived by default.
-       */
-      get unlistedRowsSort(): UnlistedRowsSort {
-        return 'source'
-      },
-      /**
-       * #getter
-       * Overridable hook: the field the rows stack in bands by and the
-       * bands listed first, or undefined, the default, for no bands.
-       */
-      get rowBanding(): RowBanding | undefined {
-        return undefined
-      },
-      /**
-       * #method
-       * Overridable hook: the discovered rows as the rows drawn, the rows
-       * themselves by default; a variant display's phased mode expands each
-       * sample to its haplotypes.
-       */
-      expandRows(rows: S[]): S[] {
-        return rows
       },
       /**
        * #getter
@@ -570,74 +400,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return 0
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * `discoveredRows` through `expandRows`: the rows at the granularity
-       * drawn, before any arrangement.
-       */
-      get expandedRows(): S[] {
-        return self.expandRows(self.discoveredRows)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: the name each row also answers to, read off
-       * `rowParent`: a refining row its parent's, and a `finerRows` row the
-       * drawn row it refines. Undefined while no row refines another. MAF
-       * reads it off a copy row's name instead, since a copy exists at some
-       * loci only and a stored name must answer where no block aligns it.
-       */
-      get rowAlias(): RowAlias | undefined {
-        return rowAliasOver(self.expandedRows, self.finerRows, row =>
-          self.rowParent(row),
-        )
-      },
-      /**
-       * #getter
-       * The rows refining each parent no row draws, in their order: what a
-       * tree leaf naming that parent forks into, as a sample leaf of a tree
-       * clustered per sample forks over its haplotype rows.
-       */
-      get rowForks(): ReadonlyMap<string, readonly string[]> {
-        const rows = self.expandedRows
-        const drawn = new Set(rows.map(row => row.name))
-        const forks = new Map<string, string[]>()
-        for (const row of rows) {
-          const parent = self.rowParent(row)?.name
-          if (parent !== undefined && !drawn.has(parent)) {
-            const kids = forks.get(parent)
-            if (kids) {
-              kids.push(row.name)
-            } else {
-              forks.set(parent, [row.name])
-            }
-          }
-        }
-        return forks
-      },
-      /**
-       * #getter
-       * What narrows the rows shown: `rowFilter`, then `rowFocus`, through
-       * `rowAlias`. The one narrowing the rows drawn, the rows a run
-       * clusters, the tree, a fetch's samples and an export all read.
-       */
-      get rowNarrowing(): RowNarrowing {
-        return {
-          kept: self.rowFocus ?? [],
-          filter: self.rowFilter,
-          rowAlias: this.rowAlias,
-        }
-      },
-      /**
-       * #method
-       * `rows` narrowed by `rowNarrowing`: `filter`, then `kept`.
-       */
-      narrowRows<T extends { name: string }>(rows: T[]): T[] {
-        return narrowRows(rows, this.rowNarrowing)
-      },
-    }))
+    .views(self => expandedRowViews<S>(self))
+    .views(self => rowAliasViews<S>(self))
+    .views(self => rowTreeViews<S>(self))
+    .views(self => rowOrderViews<S>(self))
+    .views(self => resolvedRowColorViews<S>(self))
+    .views(self => editableRowViews<S>(self))
+    .views(self => clusterableRowViews<S>(self))
+    .views(self => bandedRowViews<S>(self))
+    .views(self => bandedSourceViews<S>(self))
+    .views(self => sourceViews<S>(self))
     .views(self => ({
       /**
        * #getter
@@ -680,114 +452,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * `guideTreeNewick` parsed and rotated towards `rows.sort`; undefined
-       * while the display supplies none.
-       */
-      get guideTree() {
-        const newick = self.guideTreeNewick
-        return newick ? buildTree(newick, self.rowSort) : undefined
-      },
-      /**
-       * #getter
-       * Whether the rotated guide tree lists `rows.sort`'s names in
-       * `rows.sort`'s order, which holds exactly when some rotation of it
-       * does.
-       */
-      get guideTreeHonoursDomain(): boolean {
-        const { guideTree } = this
-        return (
-          !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowSort)
-        )
-      },
-      /**
-       * #getter
-       * The tree that arranges the rows, as newick: `rows.tree`, else the
-       * guide tree while `guideTreeHonoursDomain`. A reorder no rotation
-       * produces hides the guide tree, and a reset brings it back.
-       */
-      get rowTree(): string | undefined {
-        return (
-          storedTree(self) ??
-          (this.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * Overridable hook: the band a row stacks in while `rowBanding` is set,
-       * by default its value of the banding field, '' for none.
-       */
-      rowBand(row: S): string {
-        const banding = self.rowBanding
-        return banding ? rowFieldValue(row, banding.field) : ''
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `rowTree` parsed. A run rotated its tree in the same write as the
-       * order it produced; a tree that arrived as data rotates towards
-       * `rows.sort` here, and the guide tree is `guideTree`'s parse.
-       */
-      get parsedTree() {
-        const tree = storedTree(self)
-        if (tree) {
-          const forks = self.rowForks
-          return buildTree(
-            tree,
-            self.rowTreeProvenance ? [] : self.rowSort,
-            forks.size > 0 ? leaf => forks.get(leaf) : undefined,
-          )
-        }
-        return self.guideTreeHonoursDomain ? self.guideTree : undefined
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: the row names in display order. A tree that
-       * arrived as data (a supplied `rows.tree` or a guide tree) leads with
-       * its leaves, then `rows.sort` for the rows it lacks. `rows.sort`
-       * alone otherwise, since a computed tree's run wrote its leaf order
-       * there and a later `rows.sort` write is the reader's.
-       */
-      get rowOrder(): readonly string[] {
-        const { parsedTree, rowSort, rowTreeProvenance } = self
-        return parsedTree && !rowTreeProvenance
-          ? [...getLeafNames(parsedTree), ...rowSort]
-          : rowSort
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: whether the rows share one panel, so nothing but
-       * color tells them apart. False by default.
-       */
-      get sharesPanel(): boolean {
-        return false
-      },
-      /**
-       * #getter
-       * Overridable hook: whether a row's color paints its data marks, which
-       * holds while nothing else colors them. True by default.
-       */
-      get rowColorPaintsMarks(): boolean {
-        return true
-      },
-      /**
-       * #getter
-       * Overridable hook: what one row is called, which titles the row color
-       * key where it lists the rows by name in a shared panel. "Row" by
-       * default, which only a display that shares a panel would
-       * show; a wiggle overlay's rows are subtracks.
-       */
-      get rowNoun(): string {
-        return 'Row'
-      },
       /**
        * #getter
        * Overridable hook: the row fields that are display plumbing,
@@ -846,53 +510,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Whether the palette deals each row a color by name: only where the
-       * rows share one panel and their color paints the marks.
-       */
-      get rowPaletteDeals(): boolean {
-        return self.sharesPanel && self.rowColorPaintsMarks
-      },
-      /**
-       * #getter
-       * The rows the palette deals over: `expandedRows`, in the order their
-       * source lists them, so no `rows.sort` (the config's or a reorder's),
-       * focus or relabel recolors a row, and a tables export deals the same.
-       */
-      get rowColorDealRows(): readonly S[] {
-        return self.expandedRows
-      },
-      /**
-       * #method
-       * Overridable hook: the values of the row field `field` the config
-       * declares, which the palette deals first, in this order, whether or
-       * not a loaded row carries them, so a row arriving later moves no
-       * color. None by default.
-       */
-      rowColorDeclaredValues(_field: string): readonly string[] {
-        return []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * The color each value takes under `setting` (`dealValueColors`),
-       * which the arrangement dialog shows before it writes the setting.
-       */
-      dealtValueColorsFor(
-        setting: RowColorSnapshot,
-      ): ReadonlyMap<string, string> {
-        const lifted = liftRowColor(setting)
-        return dealValueColors(
-          lifted,
-          () => self.rowColorDealRows,
-          self.rowPaletteDeals,
-          self.rowColorDeclaredValues(lifted.field),
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Whether `rows.color` gives its field's values colors the config does
        * not, so "Reset row order" is offered for a recolor too: whether
        * `rowColorResetTarget` has anything to write. A choice of row color
@@ -929,22 +546,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           self.rowPaletteDeals,
         )
       },
-      /**
-       * #getter
-       * The field that colors the rows, or '' for `name`.
-       */
-      get rowColorField(): string {
-        const { field } = self.rowColorSetting
-        return field === 'name' ? '' : field
-      },
-      /**
-       * #getter
-       * The color each value of the config's `rows.color` field takes,
-       * listed pairs first and then in the order dealt.
-       */
-      get dealtValueColors(): ReadonlyMap<string, string> {
-        return self.dealtValueColorsFor(self.rowColorSetting)
-      },
     }))
     .views(self => ({
       /**
@@ -960,24 +561,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           ? self.rowColorFields
           : [...self.rowColorFields, current]
       },
-      /**
-       * #getter
-       * Each row's color, by name: its `rows.colors` entry, else its
-       * `rows.color` entry, else the row's `color`, else the palette's where
-       * `rowPaletteDeals`. The one answer every display paints a row's color
-       * from.
-       */
-      get resolvedRowColors(): ReadonlyMap<string, string> {
-        return resolveRowColors(
-          self.expandedRows,
-          self.rowColorSetting.field,
-          self.dealtValueColors,
-          self.rowColorPins,
-          self.rowAlias,
-        )
-      },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Whether the arrangement differs from what the config declares — what
@@ -996,93 +579,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The rows in the reader's arrangement, each with its resolved color
-       * as `rowColor`, and with no focus or band: the list the arrangement dialog
-       * edits, so a submit writes back only what the reader chose.
-       * `expandedRows` itself while nothing is arranged or colored.
-       */
-      get editableSources(): S[] {
-        return withRowColors(
-          arrangeRows(
-            self.expandedRows,
-            { domain: self.rowOrder, labels: self.rowLabels },
-            self,
-          ),
-          self.resolvedRowColors,
-        )
-      },
-      /**
-       * #getter
-       * What the row color key and its focus read of the colors.
-       */
-      get rowColorKeyInputs(): RowColorKeyInputs {
-        const setting = self.rowColorSetting
-        return {
-          setting,
-          pairs: pairedColorsOf(setting.scale),
-          dealt: self.dealtValueColors,
-          resolved: self.resolvedRowColors,
-          pinned: self.rowColorPins,
-          alias: self.rowAlias,
-        }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The row color key, which every display spreads into its
-       * `colorScales`: one scale titled by the `rows.color` field, or none
-       * where it has no entries. Its entries (`rowColorKeyEntries`) show
-       * where the labels cannot name the colors: by a field, where a row
-       * `rows.colors` pins takes an entry by its label, or by name in a
-       * shared panel. By name on stacked rows the labels are the key.
-       */
-      get rowColorScales(): CategoricalScale[] {
-        const field = self.rowColorField
-        if (!field && !self.sharesPanel) {
-          return []
-        }
-        const labels = new Map(
-          self.editableSources.map(row => [row.name, row.label ?? row.name]),
-        )
-        const entries = rowColorKeyEntries(
-          self.rowColorDealRows,
-          self.rowColorKeyInputs,
-          name => labels.get(name) ?? name,
-        )
-        return entries.length > 0
-          ? [
-              {
-                kind: 'categorical',
-                id: ROW_COLOR_SCALE_ID,
-                title: field ? capitalizeFirst(field) : self.rowNoun,
-                focusesRows: true,
-                entries,
-              },
-            ]
-          : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: `editableSources` narrowed to the focus, the rows a
-       * clustering run clusters, and deliberately not the display's decorated
-       * `sources`, whose palette and band a run has no business writing back.
-       * MAF applies a focus as given on a track that discovers its species.
-       */
-      get clusterableSources(): S[] {
-        return self.narrowRows(self.editableSources)
-      },
-      /**
-       * #getter
        * The tree a reorder rotates rather than drops, as newick: a supplied
        * `rows.tree`, one with no provenance, else the guide tree while
        * `guideTreeHonoursDomain`. A computed tree is never one, since its run
        * rotated it already.
        */
       get rotatableRowTree(): string | undefined {
-        const tree = storedTree(self)
+        const tree = self.storedRowTree
         return tree
           ? self.rowTreeProvenance
             ? undefined
@@ -1105,21 +608,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           ? !rotationLists(rotatable, order)
           : orderDropsTree(self.rowTree, self.rowSort, order)
       },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * Whether the arrangement dialog's submit of `next` drops the tree: an
-       * order that moves no row is not written, so it drops nothing.
-       */
-      rowOrderWillDropTree(next: readonly { name: string }[]) {
-        return (
-          !movesNoRow(next, self.editableSources) &&
-          self.orderDropsRowTree(orderOver(self.rowSort, next))
-        )
-      },
-    }))
-    .views(self => ({
       /**
        * #getter
        * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
@@ -1148,45 +636,18 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             : undefined
           : tree
       },
-      /**
-       * #getter
-       * `bandedSources` and `rowBands`, from one pass over the rows.
-       */
-      get bandedRows() {
-        const banding = self.rowBanding
-        const rows = self.clusterableSources
-        return banding
-          ? bandRows(rows, row => self.rowBand(row), banding)
-          : { rows, bands: [] }
-      },
     }))
     .views(self => ({
       /**
-       * #getter
-       * `clusterableSources` stacked in bands by `rowBanding`, each band's rows
-       * in their arranged order: the rows each display paints its palette
-       * over. `clusterableSources` itself while nothing bands.
+       * #method
+       * Whether the arrangement dialog's submit of `next` drops the tree: an
+       * order that moves no row is not written, so it drops nothing.
        */
-      get bandedSources(): S[] {
-        return self.bandedRows.rows
-      },
-      /**
-       * #getter
-       * Each band's value, label and the rows it spans in `bandedSources`;
-       * none while nothing bands.
-       */
-      get rowBands(): readonly RowBand[] {
-        return self.bandedRows.bands
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: the rows drawn, top to bottom, `bandedSources` by
-       * default. MAF drops its hidden reference row.
-       */
-      get sources(): S[] {
-        return self.bandedSources
+      rowOrderWillDropTree(next: readonly { name: string }[]) {
+        return (
+          !movesNoRow(next, self.editableSources) &&
+          self.orderDropsRowTree(orderOver(self.rowSort, next))
+        )
       },
       /**
        * #getter
