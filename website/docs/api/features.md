@@ -81,3 +81,20 @@ it through `view.getTrack(id)?.activeDisplay` to drive its own controls.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/isLinearBasicDisplay.ts)
+
+## staticFeaturesSvg
+
+A feature track's display (`LinearBasicDisplay`) as its SVG export draws
+it, with no session: the fetch the display issues over `frame`'s buffered
+regions, then the display's own views on the feature static host (its
+layout, fit ladder, labels and colors), then its export body in the display
+shell. The track is drawn unscrolled, nothing pinned or expanded. The
+refNames in `frame` must be the adapter's, and the adapters registered on
+`pluginManager`.
+
+```js
+// type signature
+(pluginManager: PluginManager, { display, frame, id, opts, byteLimit, ...fetchArgs }: StaticFeaturesSvgArgs) => Promise<Element>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/staticSvg.tsx)

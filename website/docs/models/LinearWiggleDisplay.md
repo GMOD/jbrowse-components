@@ -136,6 +136,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  |
 | <span id="getter-colorkeytitle">**colorKeyTitle**</span><br><code>string</code> | The heading both color keys carry: `encoding.color.legend.title` as written (`''` draws none), else the y axis title the key replaces, else `Score`. |
 | <span id="getter-isoverlay">**isOverlay**</span><br><code>boolean</code> | Every source in one plot box. The complement of the row layout, named for what is drawn rather than for the setting that is off. |
+| <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | Offset the track label above the plot so the left y-axis stays pinned to the content edge instead of dodging right of the label, and so a stack of rows is not hidden behind it. One density plot draws no left axis (just a top score legend), so there let the label overlap. |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> | Asked of the display's own adapter, for the GC track the synthesized GCContentAdapter: the resolution slot it gates is passed to whatever this display fetches from. |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  |
 | <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | The bounds the adapter declares its values lie in, where it declares any (`getValueDomain`): a GC content track's [0, 1], so its axis reads alike at every locus. Config bounds still win. |
@@ -174,7 +175,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-sidebarpanel">**sidebarPanel**</span><br><code>SvgSidebarProps</code> | The dendrogram and row labels at the display's left, which the axis sits past on screen and the export parks left of the figure. |
 | <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | The one scale every row shares, ruling a band per row stacked down the track, past the dendrogram where one is shown. Density rows, one color per row, map the scale to color rather than to y, so they rule no band and the chrome captions the domain instead; under the one ramp the ramp is the key and shows the domain itself. |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps</code> |  |
-| <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | Offset the track label above the plot so the left y-axis stays pinned to the content edge instead of dodging right of the label, and so a stack of rows is not hidden behind it. One density plot draws no left axis (just a top score legend), so there let the label overlap. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the score ramp or threshold key, then the row color key, except in a shared panel painting the score gradient, where no row color shows. |
 
 <details class="inherited-members" data-pagefind-ignore>

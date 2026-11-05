@@ -13,12 +13,13 @@ import these from a plugin.
 A quantitative track's display as its SVG export draws it, with no session:
 the fetch the display issues over `frame`, then the display's own views on
 the wiggle static host, then its export body in the display shell. The
-refNames in `frame` must be the adapter's, and the adapters registered on
+frame's regions are the assembly's, as a view's are; `renameRegions` puts
+them in the file's names for the fetch. The adapters must be registered on
 `pluginManager`.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, display, frame, id, opts, trackType, }: StaticWiggleSvgArgs) => Promise<Element>
+(pluginManager: PluginManager, args: StaticWiggleSvgArgs) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | AwaitedReactNode>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/staticSvg.tsx)

@@ -54,6 +54,7 @@
     "@jbrowse/render-core": "file:./packed/jbrowse-render-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/synteny-core": "file:./packed/jbrowse-synteny-core.tgz",
+    "@jbrowse/tables": "file:./packed/jbrowse-tables.tgz",
     "@jbrowse/tree-sidebar": "file:./packed/jbrowse-tree-sidebar.tgz",
     "@jbrowse/wiggle-core": "file:./packed/jbrowse-wiggle-core.tgz"
   }

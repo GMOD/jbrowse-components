@@ -1314,6 +1314,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/rpc/methods/executeEncodedLayers": {
+      "package": "@jbrowse/core",
+      "names": [
+        "executeGetEncodedFeature",
+        "executeGetEncodedLayers"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/rpc/RpcManager": {
       "package": "@jbrowse/core",
       "names": [
@@ -4741,6 +4749,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
+        "fitTargetHeightViews",
+        "grownHeightViews",
         "heightModeViews",
         "installGrowExitBake"
       ],
