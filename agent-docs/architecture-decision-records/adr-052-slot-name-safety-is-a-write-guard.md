@@ -168,7 +168,7 @@ Four reasons, in descending order of how much they should stop a revival:
 ### What is still worth doing
 
 Naming a concrete schema in a state model factory
-(`packages/core/src/configuration/CLAUDE.md` §"Read type narrowing")
+(`scripts/audit-config-read-types.ts` counts the reads that miss it)
 remains the right lever where it is cheap, and importing a base schema directly
 rather than through the registry is a genuine fix. Both were applied. But
 calibrate: doing this across the nine widened display factories moved the audit

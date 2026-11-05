@@ -5,7 +5,8 @@ description: A tab overflow menu and what has to measure for it, and the drag ge
 
 # Workspace layout (tabs and panels)
 
-`packages/app-core/src/WorkspaceLayout/`, whose CLAUDE.md is the design. These are
+`packages/app-core/src/WorkspaceLayout/`, whose `model.ts` and `tree.ts` hold the
+design (ADR-068). These are
 what was left on the table after the strip's drag, keyboard and overflow work, in
 descending order of how much they are worth. Panel maximize was the entry above
 these and landed as designed — the flag on the mixin, the strip's double-click,

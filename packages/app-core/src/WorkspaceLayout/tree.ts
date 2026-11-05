@@ -7,7 +7,7 @@
 /** One tab: a vertical stack of views. */
 export interface TabNode {
   id: string
-  /** membership only — `session.views` is the order (see WorkspaceLayout/CLAUDE.md) */
+  /** membership only — `session.views` is the order (see `homeViews`) */
   viewIds: string[]
   /** set only when the user renames it; otherwise derived from the views */
   title?: string

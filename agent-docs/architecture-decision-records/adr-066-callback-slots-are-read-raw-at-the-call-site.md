@@ -121,7 +121,7 @@ it: a lint that misses a slot is a smaller failure than a reader that does.
   wants. `self.conf.<slot>` is that transport read, informally — what is missing
   is anything that makes a call site use it or makes the resolved-typed read
   refuse. Doing it properly needs `ConfigurationSlotValue` to fork; note that
-  `packages/core/src/configuration/CLAUDE.md` §"Read type narrowing" records that
+  ADR-052 records that
   threading generics through these readers has been tried and failed, for a
   different reason but on the same machinery.
 - `LinearManhattanDisplay` gained a typed `conf` getter (the `ConfigurationReference`-

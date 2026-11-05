@@ -182,8 +182,8 @@ adapter checks that the class reads the schema it was registered with.
   43 contravariance errors it raises. One line against a generic, but it leaves
   the class/schema pairing unchecked, which is the defect above.
 - **Narrowing `AbstractTrackModel.configuration` all the way**, which
-  `LinearReferenceSequenceDisplay` refuses for the reason
-  `packages/core/src/configuration/CLAUDE.md` gives. It is
+  `LinearReferenceSequenceDisplay` refuses: a pinned shared base unchecks every
+  consumer reading its own slots through it. It is
   `BaseTrackConfig & { displays }`.
 
 ## Consequences

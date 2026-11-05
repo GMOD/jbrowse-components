@@ -19,9 +19,9 @@ depends on who is asking and what already exists.
 | Contract check on every add path; reports through `reportContractViolation`, never throws | `packages/product-core/src/Session/temporaryAssemblyTracks.ts` |
 | Capability guards | `isSessionWithAddSessionTrack`, `isSessionWithPublishTrackConf`, `isSessionWithSessionTracks`, `isSessionWithAddTracks` in `packages/core/src/util/types/index.ts` |
 | Temporary-assembly refusal | [ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md) |
-| Working invariants (delta caching, reset-not-delete) | `packages/product-core/src/Session/CLAUDE.md` |
+| Working invariants (delta caching, reset-not-delete) | `packages/product-core/src/Session/SessionTracks.ts` |
 
-`UpdateTrackConfiguration.test.ts` is the canary named in `Session/CLAUDE.md`,
+`UpdateTrackConfiguration.test.ts` is the canary for the delta model,
 `TrackConfigWorkingCopy.test.ts` pins a slot reset holding on screen, and
 `pluginFacingSessionApi.test.ts` pins the deprecated `addTrackConf` alias that
 two prebuilt plugin bundles still call by name.

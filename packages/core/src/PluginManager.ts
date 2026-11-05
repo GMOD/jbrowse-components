@@ -1112,7 +1112,7 @@ export default class PluginManager {
     }
     // a union, not a model type: claiming model-ness here is what made a
     // schema taking its base from this look concrete while its own slot reads
-    // had already degraded to `any` — see configuration/CLAUDE.md.
+    // had already degraded to `any` — see scripts/audit-config-read-types.ts.
     const union = types.union(...pluggableTypes)
     // A track union dispatches on `type`, so the loose `{ trackId, uri }` form
     // has to become a full config before the union sees it. Here rather than

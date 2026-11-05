@@ -211,7 +211,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // Memoize merged configs per (base object, delta value) pair so the tracks
       // getter returns stable object identity across unrelated recomputes. A
       // fresh merged object each time would rehydrate a new MST node in
-      // TrackConfigurationReference, losing open display state (see CLAUDE.md).
+      // TrackConfigurationReference, losing open display state.
       // Both keys have stable identity until they actually change: a track's
       // delta only when that track is edited, and the base only on a
       // jbrowse.tracks write or a sessionTracks entry replaced. This relies on

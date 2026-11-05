@@ -109,9 +109,9 @@ in a light JBrowse theme too, the way the app bar is.
 
 ## Consequences
 
-- Details of the tree, its invariants, and the two runtime-looked-up members
-  that fail silently live in
-  [app-core/CLAUDE.md](../../packages/app-core/CLAUDE.md).
+- Details of the tree and its invariants live in `WorkspaceLayout/tree.ts` and
+  `model.ts`; the runtime-looked-up members that fail silently, in
+  [WorkspaceLayout/CLAUDE.md](../../packages/app-core/src/WorkspaceLayout/CLAUDE.md).
 - `@jbrowse/react-app2/styles.css` stays exported and is now empty. Owning that
   entry point is what let the dependency go without breaking a single embedder's
   import — the one part of ADR-057's reasoning that paid off exactly as written.

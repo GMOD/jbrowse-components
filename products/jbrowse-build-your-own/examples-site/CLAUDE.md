@@ -7,21 +7,16 @@ Shared rules for all four sites:
   Mounting, status and chrome come from `@jbrowse/display-ui/embed`. A control
   that is one input bound to one view property stays inline, since it shows the
   reader the API; a kit export earns its place with logic of its own.
-- **A page spells out its genome's FASTA.** `jbrowseHub` also fetches the hub's
-  track catalog and search index, and `genome-by-name` is the page that shows
-  it.
-- **Labels beside the tracks stay the page's own** (`track-labels`). A gutter in
-  `TrackStack` would need synced row heights or `children` split into in-flow
-  headers and overlay layers, and the app's own gutter is parked.
-- No comments in example files, bar a one-line pointer at an option a reader
-  would not otherwise find.
-- **`ultraminimal` imports only what the current npm beta of
-  `@jbrowse/display-ui` exports**, because it is the page a reader copies first.
-- `EmbedProvider` mounts `Notifications`, so a page owes no error plumbing of
-  its own.
-- **A block repeating across pages wants a helper in `@jbrowse/display-ui/embed`
-  with a jest test**; `check-duplication.mjs` fails one copied into three files
-  and has no allowlist. It sees only named top-level declarations, so repeated
-  inline JSX needs a name before a green run means anything.
-- **A page-specific smoke check is a `PAGE_CHECKS` entry** in `smoke.mjs`, keyed
-  by slug; the smoke fails on a key that names no smoked page.
+- **Spell out the genome's FASTA on a page.** `jbrowseHub` also fetches the
+  hub's track catalog and search index, and `genome-by-name` is the page that
+  shows it.
+- **Keep labels beside the tracks the page's own** (`track-labels`); a gutter in
+  `TrackStack` is parked.
+- Write no comments in example files, bar a one-line pointer at an option a
+  reader would not otherwise find.
+- **Import in `ultraminimal` only what the current npm beta of
+  `@jbrowse/display-ui` exports** — it is the page a reader copies first.
+- **Move a block repeating across pages into a helper in
+  `@jbrowse/display-ui/embed` with a jest test.** `check-duplication.mjs` sees
+  only named top-level declarations, so name repeated inline JSX before a green
+  run means anything.
