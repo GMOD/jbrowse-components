@@ -339,13 +339,10 @@ const isMultiWayDisplay = (
   hasDisplayType(display, 'MultiWaySyntenyDisplay')
 
 /**
- * A real `LinearGenomeView` showing the anchor's regions end to end across
- * its width, holding the track's `MultiWaySyntenyDisplay` with the reader's
- * pins and hidden lanes, settled once it reads as ready to export. Not yet
- * framed as the app frames a locus (`framed`): the multi-way tables fetch
- * the anchor's regions alone, where the display fetches the view's static
- * blocks around them, so a framed view parts from them at the window's
- * edges.
+ * A real `LinearGenomeView` framing the anchor's regions as the app frames
+ * them (`framed`) and scrolled to them across its width, holding the track's
+ * `MultiWaySyntenyDisplay` with the reader's pins and hidden lanes, settled
+ * once it reads as ready to export.
  */
 export async function standUpMultiway(spec: MultiwayViewSpec) {
   const { anchor, assemblies } = spec
@@ -373,13 +370,7 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
   session.setPreferenceOverride('animationMode', 'disabled')
   const typeName: string = 'LinearGenomeView'
   const bpPerPx = totalBp(anchor.regions) / anchor.width
-  const frame = {
-    displayedRegions: anchor.regions.map(r => ({
-      ...r,
-      assemblyName: anchor.assemblyName,
-    })),
-    windowStartBp: 0,
-  }
+  const frame = await framed(session, anchor.assemblyName, anchor.regions)
   const offsetPx = frame.windowStartBp / bpPerPx
   const view = await session.launchView(typeName, {
     ...frame,
