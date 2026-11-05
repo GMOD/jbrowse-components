@@ -27,8 +27,8 @@ color keys nothing as on screen, and a `trackName` argument gives a key by
 
 ## Equivalent today, by hand
 
-- The nice-rounding step in wiggle's tables. Wiggle's range, color
-  and mark sources run the model's own getters, and the wiggle and variants
+- Wiggle's range, domain, color and mark sources run the model's own
+  getters, and the wiggle and variants
   rows, row colors and row color key run `TreeSidebarMixin`'s
   ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
 - Alignments' read colors, read key and read palette run the model's own
