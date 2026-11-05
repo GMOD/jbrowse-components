@@ -1757,7 +1757,7 @@ Every track the session can show, as trackCatalogEntry records.
 import { trackCatalog } from '@jbrowse/core/util/tracks'
 
 // type signature
-(session: { tracks: TrackConfigEntry[]; connectionInstances?: { tracks: AnyConfigurationModel[]; }[] | undefined; assemblies: BaseAssemblyConfig[]; }) => { trackId: string; name: string; category: string[]; description: string; }[]
+(session: { tracks: TrackConfigEntry[]; connectionInstances?: { tracks: TrackConfigNode[]; }[] | undefined; assemblies: BaseAssemblyConfig[]; }) => { trackId: string; name: string; category: string[]; description: string; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tracks.ts)

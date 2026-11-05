@@ -30119,6 +30119,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "shareURL": {
+          "description": "URL of the session-sharing backend used by the Share button, a JBrowse-hosted service by default.",
           "default": "https://share.jbrowse.org/api/v1/",
           "if": {
             "type": "null"
@@ -30128,12 +30129,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "disableAnalytics": {
+          "description": "disables collection of anonymous usage analytics.",
           "default": false,
           "if": {
             "type": "null"
           },
           "else": {
             "type": "boolean"
+          }
+        },
+        "logoPath": {
+          "description": "a custom logo image displayed in the app header; unset, the JBrowse logo.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "hierarchical": {
@@ -30172,15 +30183,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "not": {
               "$ref": "#/$defs/JexlString"
             }
-          }
-        },
-        "logoPath": {
-          "description": "a custom logo image displayed in the app header; unset, the JBrowse logo.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FileLocation"
           }
         },
         "LinearGenomeViewPlugin": {

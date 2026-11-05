@@ -140,7 +140,7 @@ the session's working copy instead (ADR-032), which has the same content.
 import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 
 // type signature
-(pluginManager: PluginManager, config: Record<string, unknown>) => AnyConfigurationModel | undefined
+(pluginManager: PluginManager, config: Record<string, unknown>) => TrackConfigNode | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)

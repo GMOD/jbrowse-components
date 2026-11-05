@@ -70,7 +70,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 | Member | Description |
 | --- | --- |
 | <span id="getter-root">**root**</span><br><code>AbstractWebRootModel</code> |  |
-| <span id="getter-shareurl">**shareURL**</span><br><code>any</code> |  |
+| <span id="getter-shareurl">**shareURL**</span><br><code>string</code> |  |
 | <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
