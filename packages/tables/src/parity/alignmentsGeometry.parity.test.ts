@@ -10,6 +10,7 @@ import { arcColorSlot } from '../../../../plugins/alignments/src/features/arcs/a
 import {
   connectorArrowPx,
   connectorInstance,
+  linePassInstance,
 } from '../../../../plugins/alignments/src/features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from '../../../../plugins/alignments/src/features/mismatch/baseColors.ts'
 import { junctionColor } from '../../../../plugins/alignments/src/features/sashimi/bandFeed.ts'
@@ -71,30 +72,36 @@ interface Window {
   end: number
 }
 
-/** How a connector names a read in the margin, which no table lists. */
-const MARGIN = 'margin'
-
 /** Whether a span, its ends in either order, reaches into `window`. */
 const touches = (window: Window, a = 0, b = a) =>
   Math.max(a, b) > window.start && Math.min(a, b) < window.end
 
-/** Whether read `i` of `d` touches `window`: the reads the window shows. */
+/**
+ * Whether the window shows read `i` of `d`: it touches the window, or a
+ * connector the window draws joins it, partly off screen.
+ */
 const readShown = (
   window: Window,
-  d: { readPositions: ArrayLike<number> },
+  joined: ReadonlySet<unknown>,
+  d: { readPositions: ArrayLike<number>; readKeys: ArrayLike<unknown> },
   i: number,
-) => touches(window, d.readPositions[2 * i], d.readPositions[2 * i + 1])
+) =>
+  touches(window, d.readPositions[2 * i], d.readPositions[2 * i + 1]) ||
+  joined.has(d.readKeys[i])
 
 /** Each drawn read the window shows, its section and row by its read key. */
 function readRows(
   sections: LinearAlignmentsDisplayModel['renderSections'],
-  window: Window,
+  shown: (
+    d: { readPositions: ArrayLike<number>; readKeys: ArrayLike<unknown> },
+    i: number,
+  ) => boolean,
 ) {
   const rows: Record<string, string> = {}
   for (const sec of sections) {
     for (const d of sec.laidOutPileupMap.values()) {
       for (let i = 0; i < d.readKeys.length; i++) {
-        if (readShown(window, d, i)) {
+        if (shown(d, i)) {
           rows[String(d.readKeys[i])] = `${sec.label}:${d.readYs[i]}`
         }
       }
@@ -134,13 +141,41 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
       ).flat(),
     ),
   )
-  const shownKey = (end: {
-    data: { readKeys: ArrayLike<unknown>; readPositions: ArrayLike<number> }
-    readIdx: number
-  }) =>
-    readShown(window, end.data, end.readIdx)
-      ? String(end.data.readKeys[end.readIdx])
-      : MARGIN
+  const joined = new Set<unknown>()
+  for (const sec of sections) {
+    const group = m.connectorsByGroup.get(sec.groupKey)
+    const placedPairs = [
+      ...(group?.linePairs ?? []).map(pair => ({
+        pair,
+        placed: linePassInstance(
+          pair,
+          displayedRegions,
+          sec.pileupHeight,
+          rowPitch,
+        ),
+      })),
+      ...(group?.overlayPairs ?? []).map(pair => ({
+        pair,
+        placed: connectorInstance(
+          pair,
+          displayedRegions,
+          sec.pileupHeight,
+          rowPitch,
+          arrows,
+        ),
+      })),
+    ]
+    for (const { pair, placed } of placedPairs) {
+      if (placed && touches(window, placed.x, placed.x2)) {
+        joined.add(pair.e1.data.readKeys[pair.e1.readIdx])
+        joined.add(pair.e2.data.readKeys[pair.e2.readIdx])
+      }
+    }
+  }
+  const shown = (
+    d: { readPositions: ArrayLike<number>; readKeys: ArrayLike<unknown> },
+    i: number,
+  ) => readShown(window, joined, d, i)
   const marked = m.connectorPairSections.flatMap(sec =>
     sec.pairs.flatMap(pair => {
       const placed = connectorInstance(
@@ -155,7 +190,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
         ? [
             placed.straight
               ? `${label} ${placed.x}-${placed.x2} ${placed.row}/${placed.row2} straight`
-              : `${label} ${shownKey(pair.e1)}>${shownKey(pair.e2)} ${placed.row}/${placed.row2} ${placed.loop ? 'loop' : 'curve'} ${placed.bend === CONNECTOR_BOW ? 0 : placed.bend}`,
+              : `${label} ${pair.e1.data.readKeys[pair.e1.readIdx]}>${pair.e2.data.readKeys[pair.e2.readIdx]} ${placed.row}/${placed.row2} ${placed.loop ? 'loop' : 'curve'} ${placed.bend === CONNECTOR_BOW ? 0 : placed.bend}`,
           ]
         : []
     }),
@@ -164,7 +199,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
   const baseColors = effectiveBaseColors(m.renderState)
   return {
     sections: sections.map(s => s.label),
-    rows: m.showPileup ? readRows(sections, window) : {},
+    rows: m.showPileup ? readRows(sections, shown) : {},
     connectors: sorted([...straightLines, ...marked]),
     dipReserve: Object.fromEntries(sections.map(s => [s.label, s.dipReserve])),
     junctions: Object.fromEntries(
@@ -199,7 +234,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
                     base in baseColors
                       ? baseColors[base as keyof typeof baseColors]
                       : baseColors.N
-                  return readShown(window, d, d.mismatchReadIndices[k]!)
+                  return shown(d, d.mismatchReadIndices[k]!)
                     ? [[base, normalizedRgbToHex(rgb)]]
                     : []
                 }).flat(),
@@ -227,7 +262,7 @@ function exportGeometry(t: AlignmentTables) {
       c.kind.map((kind, i) =>
         kind === 'straight'
           ? `${c.section[i]} ${c.start[i]}-${c.end[i]} ${c.row[i]}/${c.endRow[i]} straight`
-          : `${c.section[i]} ${idOfKey.get(c.key[i]!) ?? MARGIN}>${idOfKey.get(c.mateKey[i]!) ?? MARGIN} ${c.row[i]}/${c.endRow[i]} ${kind} ${c.dip[i]}`,
+          : `${c.section[i]} ${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.row[i]}/${c.endRow[i]} ${kind} ${c.dip[i]}`,
       ),
     ),
     dipReserve: Object.fromEntries(

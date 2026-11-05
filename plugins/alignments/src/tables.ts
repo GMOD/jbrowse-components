@@ -336,22 +336,32 @@ const BASE_OF_CODE: Record<number, string> = {
 
 /**
  * One section's tables in one region, listing of the reads fetched with the
- * view's margin the ones touching `region`, with their marks. A connector
- * reaching into the region from a read in the margin keeps its own row and
- * ends, naming a `key` no listed read holds.
+ * view's margin the ones touching `region` and the ones a listed connector
+ * joins, which the display draws partly off screen, each with its marks.
  */
-function windowedPart<C extends Record<string, unknown>, T>(
+function windowedPart<
+  C extends Record<string, unknown>,
+  T extends {
+    reads: { key: ArrayLike<number> }
+    connectors: { key: readonly number[]; mateKey: readonly number[] }
+  },
+>(
   columns: C,
   d: WorkerPileupData,
   region: { start: number; end: number },
   tables: T,
 ) {
+  const joined = new Set([
+    ...tables.connectors.key,
+    ...tables.connectors.mateKey,
+  ])
   return {
     columns,
     tables,
     keepRead: (read: number) =>
-      d.readPositions[read * 2]! < region.end &&
-      d.readPositions[read * 2 + 1]! > region.start,
+      (d.readPositions[read * 2]! < region.end &&
+        d.readPositions[read * 2 + 1]! > region.start) ||
+      joined.has(tables.reads.key[read]!),
   }
 }
 
@@ -1444,7 +1454,7 @@ export async function alignmentTables(
   }
   const fetchedRegions = windowFetchRegions(regions, displayedRegions)
   const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(fetchedRegions, bytes, byteLimit, 'alignments')
+    overByteLimitError(regions, bytes, byteLimit, 'alignments')
   const dataAdapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,

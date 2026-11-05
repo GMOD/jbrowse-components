@@ -249,10 +249,12 @@ what touches the window:
   mark of its glyph; `truncated` counts only those.
 - `wiggle`: the bins and marks touching it.
 - `variants`: the records in it, with their cells.
-- `alignments`: the reads touching it, with their marks; a connector reaching
-  into it from a read in the margin keeps its row and ends and names a `key` no
-  listed read holds. Connectors and the dip reserve are placed in the contig.
-- `byteLimit` applies to what is fetched.
+- `alignments`: the reads touching it and the reads a listed connector joins
+  to them, which the display draws partly off screen, with their marks, so
+  every `key`, `mateKey` and `read` names a listed read. Connectors and the dip
+  reserve are placed in the contig.
+- A refusal names the regions asked for: `byteLimit` counts the bytes fetched,
+  the margin's included, and `spanLimit` the span asked for.
 
 Several regions are the view's displayed regions themselves, as the browser
 shows several loci, so each fetches itself.

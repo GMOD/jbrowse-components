@@ -899,6 +899,57 @@ test('a per-read facet under unit chain is one section, with a warning', async (
   )
 })
 
+/** A table's column by name, where the table has one. */
+function columnOf(table: unknown, column: string): unknown[] {
+  const values =
+    typeof table === 'object' && table !== null
+      ? Object.entries(table).find(([name]) => name === column)?.[1]
+      : undefined
+  return Array.isArray(values) ? values : []
+}
+
+test('a window inside a contig references only the reads it lists, the margin\u2019s mates included', async () => {
+  const windows = [
+    PAIRED_INVERSION,
+    {
+      ...PAIRED_INVERSION,
+      region: { refName: 'ctgA', start: 21_000, end: 24_000 },
+    },
+  ]
+  const displays = [
+    { unit: 'chain' },
+    { pileup: { connectors: { show: true } } },
+  ]
+  for (const fixture of windows) {
+    for (const display of displays) {
+      const t = await engine.alignments({ ...fixture, display })
+      const keys = new Set(t.reads.key)
+      const joined = [...t.connectors.key, ...t.connectors.mateKey]
+      expect(joined.length).toBeGreaterThan(0)
+      expect(joined.filter(key => !keys.has(key))).toEqual([])
+      const byKey = new Map(t.reads.key.map((key, i) => [key, i]))
+      t.connectors.key.forEach((key, i) => {
+        const mate = byKey.get(t.connectors.mateKey[i]!)!
+        expect(t.reads.name[mate]).toBe(t.reads.name[byKey.get(key)!])
+      })
+      const outside = t.reads.start.filter(
+        (start, i) =>
+          start >= fixture.region.end ||
+          t.reads.end[i]! <= fixture.region.start,
+      )
+      expect(outside.length).toBeGreaterThan(0)
+      for (const [name, table] of Object.entries(t)) {
+        const reads = name === 'reads' ? [] : columnOf(table, 'read')
+        for (const read of reads) {
+          expect(typeof read === 'number' && read < t.reads.key.length).toBe(
+            true,
+          )
+        }
+      }
+    }
+  }
+})
+
 test('a chain puts a read, its mate and its split segments on one row, joined by connectors', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const chained = await engine.alignments({
@@ -909,7 +960,8 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
   expect(chained.connectors.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(
     true,
   )
-  expect(chained.reads.start).toEqual(plain.reads.start)
+  const listed = new Set(chained.reads.id)
+  expect(plain.reads.id.every(id => listed.has(id))).toBe(true)
   const rows = new Map<string, Set<number>>()
   for (let i = 0; i < chained.reads.name.length; i++) {
     const row = rows.get(chained.reads.name[i]!) ?? new Set<number>()
@@ -932,18 +984,13 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
     chained.reads.key.map((key, i) => [key, chained.reads.name[i]!]),
   )
   const joined = new Set<string>()
-  // a connector reaching in from a read in the margin names a key no
-  // listed read holds
-  const listedKeys = new Set(chained.reads.key)
   for (let i = 0; i < chained.connectors.start.length; i++) {
     const key = chained.connectors.key[i]!
     const mateKey = chained.connectors.mateKey[i]!
+    expect(chained.connectors.row[i]).toBe(rowOfKey.get(key))
     expect(chained.connectors.endRow[i]).toBe(chained.connectors.row[i])
-    if (listedKeys.has(key) && listedKeys.has(mateKey)) {
-      expect(chained.connectors.row[i]).toBe(rowOfKey.get(key))
-      expect(nameOfKey.get(mateKey)).toBe(nameOfKey.get(key))
-      joined.add(nameOfKey.get(key)!)
-    }
+    expect(nameOfKey.get(mateKey)).toBe(nameOfKey.get(key))
+    joined.add(nameOfKey.get(key)!)
   }
   for (const at of mates) {
     expect(joined.has(chained.reads.name[at[0]!]!)).toBe(true)
@@ -1449,6 +1496,32 @@ test('a region over the byte limit is refused before any read is fetched', async
   await expect(engine.alignments({ ...BAM, byteLimit: 1000 })).rejects.toThrow(
     /over the 1000-byte limit/,
   )
+})
+
+test('a refusal names the region asked for, not the margin fetched around it', async () => {
+  const asked =
+    /^ctgA:1000-6000 needs \d+ bytes of \w+, over the 1000-byte limit/
+  for (const read of [
+    engine.alignments({ ...BAM, byteLimit: 1000 }),
+    engine.features({ ...GFF3, region: BAM.region, byteLimit: 1000 }),
+  ]) {
+    await expect(read).rejects.toThrow(asked)
+  }
+  const { region } = DOG_VCF
+  await expect(
+    engine.variants({ ...DOG_VCF, byteLimit: 1000 }),
+  ).rejects.toThrow(
+    new RegExp(
+      `^${region.refName}:${region.start}-${region.end} needs \\d+ bytes of variants, over the 1000-byte limit`,
+    ),
+  )
+  const span = BAM.region.end - BAM.region.start
+  await expect(
+    engine.alignments({ ...BAM, spanLimit: span }),
+  ).resolves.toBeDefined()
+  await expect(
+    engine.alignments({ ...BAM, spanLimit: span - 1 }),
+  ).rejects.toThrow(`ctgA:1000-6000 spans ${span} bp of alignments`)
 })
 
 test('a region over the span limit is refused before any read is fetched', async () => {

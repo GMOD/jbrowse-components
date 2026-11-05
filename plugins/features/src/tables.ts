@@ -370,6 +370,7 @@ export async function featureTables(
     windowFetchRegions(regions, displayedRegions).map((region, index) => ({
       region: { assemblyName: TABLES_ASSEMBLY, ...region },
       index,
+      requested: { assemblyName: TABLES_ASSEMBLY, ...regions[index]! },
     })),
     {
       adapterConfig,

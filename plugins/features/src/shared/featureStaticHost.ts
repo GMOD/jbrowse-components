@@ -187,12 +187,13 @@ export interface FeatureFetchArgs {
  * The display's fetch over `regions` at the frame's zoom, run in-process, its
  * results set on `host` keyed by each region's `index`: the inputs the worker
  * reads off the display in one batch, then one `RenderFeatureData` per
- * region. A region over `byteLimit` throws. Returns the config the fetch read.
+ * region. A region over `byteLimit` throws, naming its `requested` region
+ * where the fetch widens one. Returns the config the fetch read.
  */
 export async function fetchFeatureRegions(
   pluginManager: PluginManager,
   host: FeatureStaticHost,
-  regions: readonly { region: Region; index: number }[],
+  regions: readonly { region: Region; index: number; requested?: Region }[],
   {
     adapterConfig,
     sequenceAdapter,
@@ -221,7 +222,11 @@ export async function fetchFeatureRegions(
   const peptideCache = createPeptideCache()
   const fetched = await Promise.all(
     regions.map(
-      async ({ region, index }): Promise<[number, LayoutRegionData]> => {
+      async ({
+        region,
+        index,
+        requested = region,
+      }): Promise<[number, LayoutRegionData]> => {
         const result = await executeRenderFeatureData({
           pluginManager,
           peptideCache,
@@ -242,7 +247,7 @@ export async function fetchFeatureRegions(
         })
         if ('regionTooLarge' in result) {
           throw overByteLimitError(
-            [region],
+            [requested],
             result.bytes,
             byteLimit,
             'features',

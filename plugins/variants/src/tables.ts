@@ -254,7 +254,7 @@ export async function variantTables(
   const fetchedRegions = windowFetchRegions(regions, displayedRegions)
   const fetchRegions = fetchedRegions.map(r => ({ assemblyName: '', ...r }))
   const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(fetchedRegions, bytes, byteLimit, 'variants')
+    overByteLimitError(regions, bytes, byteLimit, 'variants')
   const bytes = await totalRegionBytes(adapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)
