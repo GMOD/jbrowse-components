@@ -13,11 +13,14 @@
 # dependency it forgot to declare. Off the PR path, like blat-canary.yml: a
 # red run names a downstream repo this commit broke, and the fix goes here or
 # there. On a `v*` tag rather than a release, since a beta's release is a
-# draft and publishes no event.
+# draft and publishes no event. Every push to main runs ggjbrowse alone: R
+# reads @jbrowse/tables' output by name, and code far from packages/tables
+# reaches it.
 name: Downstream canary
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
   schedule:
     # 05:30 UTC daily, before the downstream repos' own 06:00 nightlies
@@ -25,7 +28,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -39,11 +42,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - repo: JBrowseR
-          - repo: jbrowse-anywidget
-          - repo: ggjbrowse
-            r: true
+        repo:
+          ${{ fromJSON(github.ref == 'refs/heads/main' && github.event_name ==
+          'push' && '["ggjbrowse"]' || '["JBrowseR", "jbrowse-anywidget",
+          "ggjbrowse"]') }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -54,11 +56,11 @@ jobs:
           repository: GMOD/${{ matrix.repo }}
           path: ${{ matrix.repo }}
           persist-credentials: false
-      - if: matrix.r
+      - if: matrix.repo == 'ggjbrowse'
         uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
         with:
           use-public-rspm: true
-      - if: matrix.r
+      - if: matrix.repo == 'ggjbrowse'
         uses: r-lib/actions/setup-r-dependencies@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
         with:
           working-directory: ${{ matrix.repo }}
