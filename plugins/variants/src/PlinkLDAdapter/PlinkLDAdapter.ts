@@ -5,6 +5,7 @@ import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
 import { bpInRegion } from './bpInRegion.ts'
 
+import type { PlinkLDAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
@@ -15,7 +16,10 @@ interface Config {
   refNames: string[]
 }
 
-export default class PlinkLDAdapter extends PlinkLDAdapterBase<Config> {
+export default class PlinkLDAdapter extends PlinkLDAdapterBase<
+  Config,
+  PlinkLDAdapterConfig
+> {
   protected statusLabel() {
     return 'Downloading LD data'
   }

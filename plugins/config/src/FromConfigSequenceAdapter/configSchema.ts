@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config FromConfigSequenceAdapter
  * #trackType ReferenceSequenceTrack
@@ -53,5 +55,9 @@ const sequenceConfigSchema = ConfigurationSchema(
     retired: { featureClass: () => ({}) },
   },
 )
+
+export interface FromConfigSequenceAdapterConfig extends Instance<
+  typeof sequenceConfigSchema
+> {}
 
 export default sequenceConfigSchema

@@ -3,8 +3,10 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
+import type FromConfigAdapterSchema from './configSchema.ts'
+import type { FromConfigAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ConfigModelForSlots } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type {
   Feature,
@@ -67,16 +69,28 @@ export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
   return features
 }
 
-export default class FromConfigAdapter extends BaseFeatureDataAdapter {
+// the slot FromConfigAdapter and FromConfigSequenceAdapter both declare
+type FeaturesConfigModel = ConfigModelForSlots<
+  typeof FromConfigAdapterSchema,
+  'features'
+>
+
+export default class FromConfigAdapter<
+  CONF extends FeaturesConfigModel = FromConfigAdapterConfig,
+> extends BaseFeatureDataAdapter<CONF> {
   protected features: Map<string, Feature[]>
 
   constructor(
-    conf: AnyConfigurationModel,
+    conf: CONF,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(conf, getSubAdapter, pluginManager)
-    const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
+    const featuresConf: FeaturesConfigModel = conf
+    const feats = readConfObject(
+      featuresConf,
+      'features',
+    ) as SimpleFeatureSerialized[]
     this.features = makeFeatures(feats)
   }
 

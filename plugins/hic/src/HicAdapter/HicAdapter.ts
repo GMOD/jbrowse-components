@@ -16,10 +16,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { controlChromosomes } from './controlChromosomes.ts'
 import { binExtent, joinControl } from './joinControl.ts'
 
+import type { HicAdapterConfig } from './configSchema.ts'
 import type { AxisMasks } from './joinControl.ts'
 import type { ContactRecords, ExpectedValues, HicRegion } from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -112,7 +112,7 @@ function validBins(values: Float64Array | undefined, n: number) {
 // bounded because the parser's block cache is sized for this many in flight.
 const PAIR_CONCURRENCY = 6
 
-export default class HicAdapter extends BaseFeatureDataAdapter {
+export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig> {
   private hic: HicFile
 
   private setup = cachedSetup({
@@ -128,7 +128,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   private vectorMeans = new Map<string, Promise<number | undefined>>()
 
   public constructor(
-    config: AnyConfigurationModel,
+    config: HicAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {

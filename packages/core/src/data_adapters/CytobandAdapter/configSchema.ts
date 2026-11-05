@@ -3,6 +3,8 @@ import {
   expandUriShorthand,
 } from '../../configuration/index.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config CytobandAdapter
  * Reads an assembly's cytoband file, which the linear genome view draws as
@@ -66,5 +68,7 @@ const configSchema = ConfigurationSchema(
     preProcessSnapshot: snap => expandUriShorthand(snap, 'cytobandLocation'),
   },
 )
+
+export interface CytobandAdapterConfig extends Instance<typeof configSchema> {}
 
 export default configSchema

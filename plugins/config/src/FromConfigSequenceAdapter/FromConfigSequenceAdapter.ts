@@ -5,6 +5,7 @@ import FromConfigAdapter, {
   mergeFeaturesToRegions,
 } from '../FromConfigAdapter/FromConfigAdapter.ts'
 
+import type { FromConfigSequenceAdapterConfig } from './configSchema.ts'
 import type {
   BaseOptions,
   RegionsAdapter,
@@ -13,7 +14,7 @@ import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class FromConfigSequenceAdapter
-  extends FromConfigAdapter
+  extends FromConfigAdapter<FromConfigSequenceAdapterConfig>
   implements RegionsAdapter
 {
   /**

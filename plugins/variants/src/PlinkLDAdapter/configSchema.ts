@@ -3,6 +3,8 @@ import {
   expandUriShorthand,
 } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'ldLocation')
 }
@@ -91,5 +93,7 @@ const PlinkLDAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface PlinkLDAdapterConfig extends Instance<typeof PlinkLDAdapter> {}
 
 export default PlinkLDAdapter

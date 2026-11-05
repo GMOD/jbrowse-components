@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config JBrowse1TextSearchAdapter
  * #trackType TextSearchAdapter
@@ -20,7 +22,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-export default ConfigurationSchema(
+const JBrowse1TextSearchAdapter = ConfigurationSchema(
   'JBrowse1TextSearchAdapter',
   {
     /**
@@ -50,3 +52,9 @@ export default ConfigurationSchema(
     },
   },
 )
+
+export interface JBrowse1TextSearchAdapterConfig extends Instance<
+  typeof JBrowse1TextSearchAdapter
+> {}
+
+export default JBrowse1TextSearchAdapter

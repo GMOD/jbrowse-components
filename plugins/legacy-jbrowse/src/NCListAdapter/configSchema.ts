@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config NCListAdapter
  * #trackType FeatureTrack
@@ -50,4 +52,6 @@ const NCListAdapter = ConfigurationSchema(
     closed: true,
   },
 )
+export interface NCListAdapterConfig extends Instance<typeof NCListAdapter> {}
+
 export default NCListAdapter

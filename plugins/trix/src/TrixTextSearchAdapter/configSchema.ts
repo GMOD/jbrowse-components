@@ -1,5 +1,7 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return typeof snap.uri === 'string'
     ? fillLocations(snap, {
@@ -105,5 +107,9 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface TrixTextSearchAdapterConfig extends Instance<
+  typeof TrixTextSearchAdapter
+> {}
 
 export default TrixTextSearchAdapter

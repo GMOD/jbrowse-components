@@ -3,6 +3,7 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type {
@@ -20,8 +21,9 @@ import type {
  */
 export abstract class PlinkLDAdapterBase<
   Config extends { header: PlinkLDHeader },
+  CONF extends AnyConfigurationModel,
 >
-  extends BaseAdapter
+  extends BaseAdapter<CONF>
   implements LDRecordSource
 {
   // Load and return the subclass payload (parsed records, or a tabix handle).

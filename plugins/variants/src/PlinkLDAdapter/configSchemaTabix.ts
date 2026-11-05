@@ -4,6 +4,8 @@ import {
   tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandTabixShorthand(snap, 'ldLocation')
 }
@@ -120,5 +122,9 @@ const PlinkLDTabixAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface PlinkLDTabixAdapterConfig extends Instance<
+  typeof PlinkLDTabixAdapter
+> {}
 
 export default PlinkLDTabixAdapter

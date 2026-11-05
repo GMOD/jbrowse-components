@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config MultiWiggleAdapter
  * #trackType MultiQuantitativeTrack
@@ -99,5 +101,9 @@ const MultiWiggleAdapter = ConfigurationSchema(
   },
   { explicitlyTyped: true, closed: true },
 )
+
+export interface MultiWiggleAdapterConfig extends Instance<
+  typeof MultiWiggleAdapter
+> {}
 
 export default MultiWiggleAdapter

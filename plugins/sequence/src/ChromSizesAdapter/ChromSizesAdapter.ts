@@ -7,13 +7,14 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
 
+import type { ChromSizesAdapterConfig } from './configSchema.ts'
 import type {
   BaseOptions,
   RegionsAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class ChromSizesAdapter
-  extends BaseAdapter
+  extends BaseAdapter<ChromSizesAdapterConfig>
   implements RegionsAdapter
 {
   // No `label`: `fetchAndMaybeUnzipText` narrates the download itself.

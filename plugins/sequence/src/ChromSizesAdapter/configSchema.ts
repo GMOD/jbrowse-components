@@ -3,6 +3,8 @@ import {
   expandUriShorthand,
 } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'chromSizesLocation')
 }
@@ -59,5 +61,9 @@ const ChromSizesAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface ChromSizesAdapterConfig extends Instance<
+  typeof ChromSizesAdapter
+> {}
 
 export default ChromSizesAdapter

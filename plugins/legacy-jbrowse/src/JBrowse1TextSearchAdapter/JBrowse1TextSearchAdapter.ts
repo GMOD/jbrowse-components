@@ -1,11 +1,13 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { resolveUriLocation } from '@jbrowse/core/util/io'
+import { isUriLocation } from '@jbrowse/core/util/types'
 
 import HttpMap from './HttpMap.ts'
 
+import type { JBrowse1TextSearchAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
@@ -23,21 +25,24 @@ type IndexFile = Record<string, SearchResults>
 
 // Uses index built by generate-names.pl
 export default class JBrowse1TextSearchAdapter
-  extends BaseAdapter
+  extends BaseAdapter<JBrowse1TextSearchAdapterConfig>
   implements BaseTextSearchAdapter
 {
   httpMap: HttpMap
 
   constructor(
-    config: AnyConfigurationModel,
+    config: JBrowse1TextSearchAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const { baseUri, uri } = readConfObject(config, 'namesIndexLocation')
-    this.httpMap = new HttpMap({
-      url: baseUri ? new URL(uri, baseUri).href : uri,
-    })
+    const location = readConfObject(config, 'namesIndexLocation')
+    if (!isUriLocation(location)) {
+      throw new Error(
+        'JBrowse1TextSearchAdapter fetches its namesIndexLocation over HTTP, so it takes a { "uri" } location',
+      )
+    }
+    this.httpMap = new HttpMap({ url: resolveUriLocation(location).uri })
   }
 
   /**

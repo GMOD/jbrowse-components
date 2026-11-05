@@ -2,31 +2,37 @@ import NCListStore from '@gmod/nclist'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { isUriLocation } from '@jbrowse/core/util/types'
 import { RemoteFile } from 'generic-filehandle2'
 
 import NCListFeature from './NCListFeature.ts'
 
 import type { NCListRawFeature } from './NCListFeature.ts'
+import type { NCListAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class NCListAdapter extends BaseFeatureDataAdapter {
+export default class NCListAdapter extends BaseFeatureDataAdapter<NCListAdapterConfig> {
   private nclist: NCListStore
 
   private configRefNames?: string[]
 
   constructor(
-    config: AnyConfigurationModel,
+    config: NCListAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
     const refNames = this.getConf('refNames')
     const rootUrlTemplate = this.getConf('rootUrlTemplate')
+    if (!isUriLocation(rootUrlTemplate)) {
+      throw new Error(
+        'NCListAdapter fetches its rootUrlTemplate over HTTP, so it takes a { "uri" } location',
+      )
+    }
     this.configRefNames = refNames
 
     this.nclist = new NCListStore({

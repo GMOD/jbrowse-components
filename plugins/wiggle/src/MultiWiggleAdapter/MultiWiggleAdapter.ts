@@ -25,6 +25,7 @@ import { multiWiggleFeatureTable } from './multiWiggleFeatureTable.ts'
 
 import type { MultiSourceFetchOpts as WiggleOptions } from '../multiSourceAdapter.ts'
 import type { RawFeatureArrays } from '../util.ts'
+import type { MultiWiggleAdapterConfig } from './configSchema.ts'
 import type { MemberConfig } from './memberLocation.ts'
 import type {
   BaseOptions,
@@ -147,7 +148,7 @@ function isText(value: unknown): value is string {
 }
 
 export default class MultiWiggleAdapter
-  extends BaseFeatureDataAdapter
+  extends BaseFeatureDataAdapter<MultiWiggleAdapterConfig>
   implements RowSourceLister
 {
   public static capabilities = ['hasResolution']
@@ -160,7 +161,7 @@ export default class MultiWiggleAdapter
       return subConfs
     }
     const baseUri = this.getConf('baseUri') || undefined
-    return (this.getConf('bigWigs') as string[]).map(uri => ({
+    return this.getConf('bigWigs').map(uri => ({
       type: 'BigWigAdapter',
       bigWigLocation: { uri, baseUri },
     }))

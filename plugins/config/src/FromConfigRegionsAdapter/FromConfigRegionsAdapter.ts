@@ -6,8 +6,8 @@ import {
   mergeFeaturesToRegions,
 } from '../FromConfigAdapter/FromConfigAdapter.ts'
 
+import type { FromConfigRegionsAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type {
@@ -21,13 +21,13 @@ import type {
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 export default class FromConfigRegionsAdapter
-  extends BaseAdapter
+  extends BaseAdapter<FromConfigRegionsAdapterConfig>
   implements RegionsAdapter
 {
   private features: Map<string, Feature[]>
 
   constructor(
-    config: AnyConfigurationModel,
+    config: FromConfigRegionsAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {

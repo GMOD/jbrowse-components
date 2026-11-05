@@ -58,7 +58,7 @@ interface SPARQLFeatureData {
   [propName: string]: unknown
 }
 
-export default class SPARQLAdapter extends BaseFeatureDataAdapter {
+export default class SPARQLAdapter extends BaseFeatureDataAdapter<SPARQLAdapterConfig> {
   private endpoint: string
 
   private queryTemplate: string

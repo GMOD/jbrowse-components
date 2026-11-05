@@ -10,6 +10,7 @@ import {
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
 
+import type { PlinkLDTabixAdapterConfig } from './configSchemaTabix.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
@@ -19,7 +20,10 @@ interface Config {
   header: PlinkLDHeader
 }
 
-export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
+export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<
+  Config,
+  PlinkLDTabixAdapterConfig
+> {
   // set once the file is open, for dataAdapterCache's eviction to clear
   private file?: TabixIndexedFile
 

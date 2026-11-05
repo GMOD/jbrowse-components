@@ -3,8 +3,9 @@ import { openLocation } from '../../util/io/index.ts'
 import { BaseAdapter } from '../BaseAdapter/index.ts'
 
 import type { BaseOptions } from '../BaseAdapter/types.ts'
+import type { CytobandAdapterConfig } from './configSchema.ts'
 
-export default class CytobandAdapter extends BaseAdapter {
+export default class CytobandAdapter extends BaseAdapter<CytobandAdapterConfig> {
   async getData(opts?: BaseOptions) {
     const conf = this.getConf('cytobandLocation')
     if (!conf) {

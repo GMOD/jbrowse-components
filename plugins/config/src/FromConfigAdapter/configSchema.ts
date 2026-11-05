@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config FromConfigAdapter
  * #trackType FeatureTrack
@@ -49,5 +51,9 @@ const configSchema = ConfigurationSchema(
     retired: { featureClass: () => ({}) },
   },
 )
+
+export interface FromConfigAdapterConfig extends Instance<
+  typeof configSchema
+> {}
 
 export default configSchema

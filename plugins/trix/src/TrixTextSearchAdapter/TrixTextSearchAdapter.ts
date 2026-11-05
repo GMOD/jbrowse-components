@@ -5,8 +5,8 @@ import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import type { TrixTextSearchAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
@@ -56,29 +56,20 @@ export function snippetAround(str: string, term: string, w = 15) {
 }
 
 export default class TrixTextSearchAdapter
-  extends BaseAdapter
+  extends BaseAdapter<TrixTextSearchAdapterConfig>
   implements BaseTextSearchAdapter
 {
   trixJs: Trix
 
   constructor(
-    config: AnyConfigurationModel,
+    config: TrixTextSearchAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const ixFilePath = readConfObject(config, 'ixFilePath')
-    const ixxFilePath = readConfObject(config, 'ixxFilePath')
-
-    if (!ixFilePath) {
-      throw new Error('TrixTextSearchAdapter requires an ixFilePath')
-    }
-    if (!ixxFilePath) {
-      throw new Error('TrixTextSearchAdapter requires an ixxFilePath')
-    }
     this.trixJs = new Trix(
-      openLocation(ixxFilePath, pluginManager),
-      openLocation(ixFilePath, pluginManager),
+      openLocation(readConfObject(config, 'ixxFilePath'), pluginManager),
+      openLocation(readConfObject(config, 'ixFilePath'), pluginManager),
       1500,
     )
   }
