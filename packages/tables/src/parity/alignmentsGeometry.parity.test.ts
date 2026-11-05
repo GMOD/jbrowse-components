@@ -66,6 +66,19 @@ const engine = createTablesEngine()
 
 const sorted = (entries: string[]) => entries.toSorted()
 
+/** Each drawn read's section and row, by its read key. */
+function readRows(sections: LinearAlignmentsDisplayModel['renderSections']) {
+  const rows: Record<string, string> = {}
+  for (const sec of sections) {
+    for (const d of sec.laidOutPileupMap.values()) {
+      for (let i = 0; i < d.readKeys.length; i++) {
+        rows[String(d.readKeys[i])] = `${sec.label}:${d.readYs[i]}`
+      }
+    }
+  }
+  return rows
+}
+
 /**
  * What the alignments display draws of its pileup's geometry, read off the
  * model as its renderers read it: each drawn read's section and row, every
@@ -112,18 +125,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
   const baseColors = effectiveBaseColors(m.renderState)
   return {
     sections: sections.map(s => s.label),
-    rows: m.showPileup
-      ? Object.fromEntries(
-          sections.flatMap(sec =>
-            [...sec.laidOutPileupMap.values()].flatMap(d =>
-              Array.from(d.readKeys, (k, i) => [
-                k,
-                `${sec.label}:${d.readYs[i]}`,
-              ]),
-            ),
-          ),
-        )
-      : {},
+    rows: m.showPileup ? readRows(sections) : {},
     connectors: sorted([...straightLines, ...marked]),
     dipReserve: Object.fromEntries(sections.map(s => [s.label, s.dipReserve])),
     junctions: Object.fromEntries(
