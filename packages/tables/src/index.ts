@@ -105,7 +105,10 @@ type HostArgs<A extends RegionArgs> = Omit<
  * the region reads take one, deals a color by contig name its palette in the
  * assembly's order, through its aliases, as the view does.
  */
-type HostAxisArgs = Omit<SyntenyReadArgs['query'], 'refNamePosition'> & {
+type HostAxisArgs = Omit<
+  SyntenyReadArgs['query'],
+  'refNamePosition' | 'displayedRegions'
+> & {
   assembly?: AssemblyConfig
 }
 
@@ -460,12 +463,16 @@ export function createTablesEngine() {
   const pluginManager = tablesPluginManager()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
-  const positioned = async ({ assembly, ...axis }: HostAxisArgs) => ({
-    ...axis,
-    refNamePosition: assembly
-      ? (await assemblyOf(assembly)).refNamePosition
-      : undefined,
-  })
+  const positioned = async ({ assembly, ...axis }: HostAxisArgs) => {
+    const resolved = assembly ? await assemblyOf(assembly) : undefined
+    return {
+      ...axis,
+      displayedRegions: resolved
+        ? await displayedRegionsOf(pluginManager, axis, resolved)
+        : undefined,
+      refNamePosition: resolved?.refNamePosition,
+    }
+  }
   const call =
     <A extends object, R>(
       name: string,

@@ -2,6 +2,8 @@ import { getContrastText } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { bandGroundColor, unpack } from '@jbrowse/synteny-core'
 
+import { ribbonThinFade } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import { KIND_MARKER } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyKinds.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   CONTIGS,
@@ -68,10 +70,38 @@ function syntenyParity(
         view: { height: LEVEL_HEIGHT, ...view },
       }),
     modelDecisions: ({ view, level, display }) => {
+      const geometry = display.renderInstanceData
+      const params = display.renderParams
+      const corners = (i: number) => ({
+        sx1: px(geometry?.bp1[i], geometry?.base0, 0),
+        sx2: px(geometry?.bp2[i], geometry?.base0, 0),
+        sx3: px(geometry?.bp3[i], geometry?.base1, 1),
+        sx4: px(geometry?.bp4[i], geometry?.base1, 1),
+      })
+      const px = (bp = 0, base = 0, row: 0 | 1) =>
+        params
+          ? (bp + base) / params[`bpPerPx${row}`] - params[`offsetPx${row}`]
+          : 0
       const drawn = drawnColors(
-        display.renderInstanceData,
+        geometry,
         view.opacityLevel,
         f => display.featureData?.featureIds[f] ?? '',
+        i => {
+          const xs = Object.values(corners(i))
+          return Math.max(...xs) > 0 && Math.min(...xs) < view.width
+        },
+        i => {
+          const kind = geometry?.kinds[i] ?? KIND_MARKER
+          return params && kind !== KIND_MARKER
+            ? ribbonThinFade(
+                corners(i),
+                params.height,
+                params.drawCurves,
+                kind,
+                params.fadeThinAlignments,
+              ).fade
+            : 1
+        },
       )
       const ink = cssColorToHex(getContrastText(bandGroundColor()))
       return {
@@ -270,19 +300,30 @@ describe('a PAF of seven blocks, two reverse, with text and numeric columns', ()
   ])
 })
 
+/**
+ * The view's off-screen strips also mark each ribbon whose mate has scrolled
+ * out of the facing row's window (`culledRibbonMates`), which the tables do
+ * not yet list: they list only mates on a contig the facing row does not show.
+ */
+const CULLED_MATES = {
+  offscreen: { owner: 'synteny tables: culled ribbon mates', exported: [] },
+}
+
 describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
   parityCases(syntenyParity(INVERSIONS_ZOOMED), [
+    { name: 'defaults', config: {}, drifts: CULLED_MATES },
     {
-      name: 'defaults',
-      config: {},
+      name: 'strand',
+      config: { encoding: { color: { field: 'strand' } } },
+      drifts: CULLED_MATES,
     },
-    { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
     {
       name: 'strand, indels hidden',
       config: {
         encoding: { color: { field: 'strand' } },
         indels: { show: false },
       },
+      drifts: CULLED_MATES,
     },
     {
       name: 'strand, indels left as gaps',
@@ -290,10 +331,12 @@ describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
         encoding: { color: { field: 'strand' } },
         indels: { encoding: { opacity: 0 } },
       },
+      drifts: CULLED_MATES,
     },
     {
       name: 'identity',
       config: { encoding: { color: { field: 'identity' } } },
+      drifts: CULLED_MATES,
     },
   ])
 })

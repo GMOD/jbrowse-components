@@ -111,6 +111,77 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   }
 })
 
+test('a row through its assembly is a window into its contig: ribbons reach past it, for the host to clip', async () => {
+  const assembly = (name: string, fasta: string) => {
+    const location = (file: string) => ({
+      uri: pathToFileURL(path.resolve('test_data/volvox', file)).href,
+      locationType: 'UriLocation',
+    })
+    return {
+      name,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: `${name}-ReferenceSequenceTrack`,
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation: location(fasta),
+          faiLocation: location(`${fasta}.fai`),
+        },
+      },
+    }
+  }
+  const width = 800
+  const query = { refName: 'ctgA', start: 27_000, end: 30_000 }
+  const target = { refName: 'ctgA', start: 27_450, end: 30_450 }
+  const framed = await engine.synteny({
+    ...INV_INDELS,
+    query: {
+      regions: [query],
+      width,
+      assembly: assembly(
+        'volvox_random_inv',
+        'output_prefix3.simseq.genome.fa',
+      ),
+    },
+    target: {
+      regions: [target],
+      width,
+      assembly: assembly('volvox', 'volvox.fa'),
+    },
+  })
+  const { ribbons } = framed
+  columnsAgree(framed.alignments)
+  columnsAgree(ribbons)
+  const feet = ribbons.queryX1.map((x1, i) => [
+    x1,
+    ribbons.queryX2[i]!,
+    ribbons.targetX1[i]!,
+    ribbons.targetX2[i]!,
+  ])
+  for (const xs of feet) {
+    expect(Math.max(...xs)).toBeGreaterThan(0)
+    expect(Math.min(...xs)).toBeLessThan(width)
+  }
+  expect(Math.min(...feet.flat())).toBeLessThan(0)
+  expect(Math.max(...feet.flat())).toBeGreaterThan(width)
+  expect(Math.min(...ribbons.queryStart, ...ribbons.queryEnd)).toBeLessThan(
+    query.start,
+  )
+
+  const trimmed = await engine.synteny({
+    ...INV_INDELS,
+    query: { regions: [query], width },
+    target: { regions: [target], width },
+  })
+  const trimmedFeet = trimmed.ribbons.queryX1.concat(
+    trimmed.ribbons.queryX2,
+    trimmed.ribbons.targetX1,
+    trimmed.ribbons.targetX2,
+  )
+  expect(Math.min(...trimmedFeet)).toBeGreaterThanOrEqual(0)
+  expect(Math.max(...trimmedFeet)).toBeLessThanOrEqual(width)
+})
+
 test('the indels part draws the ops colored, the matches alone, or the block alone', async () => {
   const off = await engine.synteny({
     ...INV_INDELS,

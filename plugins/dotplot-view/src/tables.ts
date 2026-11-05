@@ -4,7 +4,7 @@ import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapter
 import {
   attributeColumns,
   axesNamePositionFor,
-  comparativeAxis,
+  comparativeFrame,
   comparativeLegend,
   isInstanceInvisible,
   locateCum,
@@ -89,13 +89,15 @@ export async function dotplotTables(
     indels: indels.settings,
     lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
   }
-  const h = comparativeAxis(x, adapterConfig, 0)
-  const v = comparativeAxis(y, adapterConfig, 1)
+  const hFrame = comparativeFrame(x, adapterConfig, 0)
+  const vFrame = comparativeFrame(y, adapterConfig, 1)
+  const h = hFrame.frame
+  const v = vFrame.frame
   const { value } = await executeDotplotFeaturesAndPositions({
     pluginManager,
     sessionId: 'tables',
     adapterConfig,
-    regions: h.regions,
+    regions: hFrame.fetchRegions,
     hViewSnap: { bpPerPx: h.bpPerPx, displayedRegions: h.regions },
     vViewSnap: { bpPerPx: v.bpPerPx, displayedRegions: v.regions },
     statusCallback: () => {},
@@ -147,40 +149,6 @@ export async function dotplotTables(
   )
   const level = settings.level
 
-  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
-    Array.from(ids, id => dict[id]!)
-  const n = rpcData.p11.length
-  const alignments = {
-    name: named(rpcData.nameDict, rpcData.nameIds),
-    xChrom: named(rpcData.refNameDict, rpcData.refNameIds),
-    xStart: [] as number[],
-    xEnd: [] as number[],
-    yChrom: named(rpcData.mateRefNameDict, rpcData.mateRefNameIds),
-    yStart: [] as number[],
-    yEnd: [] as number[],
-    strand: Array.from(rpcData.strands),
-    length: Array.from(rpcData.alignmentLengths),
-    ...attributeColumns(rpcData.attributes, rpcData.attributeRanges),
-    color: [] as string[],
-    alpha: [] as number[],
-  }
-  const span = (axis: ComparativeAxis, a: number, b: number) => {
-    const lo = locateCum(axis, Math.min(a, b), Math.max(a, b)).coord
-    const hi = locateCum(axis, Math.max(a, b), Math.min(a, b)).coord
-    return [Math.min(lo, hi), Math.max(lo, hi)]
-  }
-  for (let i = 0; i < n; i++) {
-    const [xs, xe] = span(h, rpcData.p11[i]!, rpcData.p12[i]!)
-    const [ys, ye] = span(v, rpcData.p21[i]!, rpcData.p22[i]!)
-    alignments.xStart.push(xs!)
-    alignments.xEnd.push(xe!)
-    alignments.yStart.push(ys!)
-    alignments.yEnd.push(ye!)
-    const { color, alpha } = unpack(featureColor(i))
-    alignments.color.push(color)
-    alignments.alpha.push(alpha * level)
-  }
-
   const segments = {
     alignment: [] as number[],
     op: [] as string[],
@@ -195,15 +163,31 @@ export async function dotplotTables(
     color: [] as string[],
     alpha: [] as number[],
   }
+  const inWindow = (
+    { offsetPx, window }: typeof hFrame,
+    widthPx: number,
+    a: number,
+    b: number,
+  ) =>
+    Math.max(a, b) / window.bpPerPx > offsetPx &&
+    Math.min(a, b) / window.bpPerPx < offsetPx + widthPx
+  const drawn = new Set<number>()
   for (let i = 0; i < instanceData.instanceCount; i++) {
     const packed = colors[i]!
-    if (isInstanceInvisible(packed, level)) {
-      continue
-    }
     const x1 = instanceData.x1[i]!
     const x2 = instanceData.x2[i]!
     const y1 = instanceData.y1[i]!
     const y2 = instanceData.y2[i]!
+    if (
+      !inWindow(hFrame, x.width, x1, x2) ||
+      !inWindow(vFrame, y.width, y1, y2)
+    ) {
+      continue
+    }
+    drawn.add(instanceData.instanceFeatureIdx[i]!)
+    if (isInstanceInvisible(packed, level)) {
+      continue
+    }
     const xa = locateCum(h, x1, x2)
     const xb = locateCum(h, x2, x1)
     const ya = locateCum(v, y1, y2)
@@ -222,6 +206,52 @@ export async function dotplotTables(
     segments.color.push(color)
     segments.alpha.push(alpha * level)
   }
+
+  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
+    Array.from(ids, id => dict[id]!)
+  const rows = [...drawn].sort((a, b) => a - b)
+  const rowOf = new Map(rows.map((f, row) => [f, row]))
+  function pick<T>(column: ArrayLike<T>) {
+    return rows.map(f => column[f]!)
+  }
+  const attributes = attributeColumns(
+    rpcData.attributes,
+    rpcData.attributeRanges,
+  )
+  const alignments = {
+    name: named(rpcData.nameDict, pick(rpcData.nameIds)),
+    xChrom: named(rpcData.refNameDict, pick(rpcData.refNameIds)),
+    xStart: [] as number[],
+    xEnd: [] as number[],
+    yChrom: named(rpcData.mateRefNameDict, pick(rpcData.mateRefNameIds)),
+    yStart: [] as number[],
+    yEnd: [] as number[],
+    strand: pick(rpcData.strands),
+    length: pick(rpcData.alignmentLengths),
+    ...Object.fromEntries(
+      Object.entries(attributes).map(([key, column]) => [key, pick(column)]),
+    ),
+    color: [] as string[],
+    alpha: [] as number[],
+  }
+  const span = (axis: ComparativeAxis, a: number, b: number) => {
+    const lo = locateCum(axis, Math.min(a, b), Math.max(a, b)).coord
+    const hi = locateCum(axis, Math.max(a, b), Math.min(a, b)).coord
+    return [Math.min(lo, hi), Math.max(lo, hi)]
+  }
+  for (const i of rows) {
+    const [xs, xe] = span(h, rpcData.p11[i]!, rpcData.p12[i]!)
+    const [ys, ye] = span(v, rpcData.p21[i]!, rpcData.p22[i]!)
+    alignments.xStart.push(xs!)
+    alignments.xEnd.push(xe!)
+    alignments.yStart.push(ys!)
+    alignments.yEnd.push(ye!)
+    const { color, alpha } = unpack(featureColor(i))
+    alignments.color.push(color)
+    alignments.alpha.push(alpha * level)
+  }
+
+  segments.alignment = segments.alignment.map(f => rowOf.get(f)!)
 
   return {
     alignments,

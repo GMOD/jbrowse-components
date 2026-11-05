@@ -20,6 +20,7 @@ import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
 import { syntenyColorConfigSchema } from './syntenyColorConfigSchema.ts'
+import { syntenyFetchRegions } from './syntenyFetchWindow.ts'
 import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 import { syntenyTrackPalette } from './trackColors.ts'
 
@@ -46,10 +47,13 @@ export interface AxisRegionArgs {
  * that side), the pixels it draws them across, which sets the zoom, and the
  * order a color by contig name hands its palette out in: `refNamePosition`,
  * the axis's assembly's own (`Assembly.getRefNamePosition`), else the
- * contigs of `refNames` in order, else the regions'.
+ * contigs of `refNames` in order, else the regions'. `displayedRegions` are
+ * what the view displays, which `regions` are windows into: one locus's
+ * whole contig, as the browser shows a locus; unset, `regions` themselves.
  */
 export interface AxisArgs {
   regions: AxisRegionArgs[]
+  displayedRegions?: AxisRegionArgs[]
   assemblyName?: string
   width: number
   refNames?: string[]
@@ -88,6 +92,58 @@ export function comparativeAxis(
     assemblyName,
     before,
     bpPerPx: total / Math.max(1, axis.width),
+  }
+}
+
+/**
+ * An axis framed as the view frames it: `window`, the regions the host asked
+ * for at the zoom their width sets, and `frame`, the displayed regions they
+ * are windows into at that zoom, scrolled `offsetPx` to the window, with
+ * `fetchRegions`, the window and the view's pan buffer, snapped and clamped
+ * to the frame (`syntenyFetchRegions`). A window no displayed region holds
+ * frames itself.
+ */
+export function comparativeFrame(
+  axis: AxisArgs,
+  adapterConfig: Record<string, unknown>,
+  side: 0 | 1,
+) {
+  const window = comparativeAxis(axis, adapterConfig, side)
+  const displayed = comparativeAxis(
+    { ...axis, regions: axis.displayedRegions ?? axis.regions },
+    adapterConfig,
+    side,
+  )
+  const holding = window.regions.map(w =>
+    displayed.regions.findIndex(
+      d => d.refName === w.refName && d.start <= w.start && d.end >= w.end,
+    ),
+  )
+  const frame = {
+    ...(holding.includes(-1) ? window : displayed),
+    bpPerPx: window.bpPerPx,
+  }
+  const first = window.regions[0]
+  const at = holding.includes(-1) ? 0 : (holding[0] ?? 0)
+  const held = frame.regions[at]
+  const offsetBp =
+    first && held
+      ? frame.before[at]! +
+        (held.reversed ? held.end - first.end : first.start - held.start)
+      : 0
+  return {
+    window,
+    frame,
+    offsetPx: offsetBp / window.bpPerPx,
+    fetchRegions: syntenyFetchRegions({
+      visibleRegions: window.regions.map((w, i) => ({
+        ...w,
+        displayedRegionIndex: holding.includes(-1) ? i : holding[i]!,
+      })),
+      displayedRegions: frame.regions,
+      width: axis.width,
+      bpPerPx: window.bpPerPx,
+    }),
   }
 }
 

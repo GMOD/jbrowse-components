@@ -1,5 +1,10 @@
 import { createTablesEngine } from '../index.ts'
-import { CONTIGS, INVERSIONS, INVERSIONS_WIDE } from './comparative.fixture.ts'
+import {
+  CONTIGS,
+  INVERSIONS,
+  INVERSIONS_WIDE,
+  INVERSIONS_ZOOMED,
+} from './comparative.fixture.ts'
 import { TRACK_NAME, standUpDotplot } from './comparative/testEnv.ts'
 import {
   COMPARATIVE_DECISIONS,
@@ -50,7 +55,24 @@ function dotplotParity(
         view,
       }),
     modelDecisions: ({ view, display }) => {
-      const drawn = drawnColors(display.geometry, view.opacityLevel, String)
+      const { geometry } = display
+      const [x, y] = [fixture.query, fixture.target]
+      const inWindow = (
+        axis: { offsetPx: number; bpPerPx: number },
+        width: number,
+        a = 0,
+        b = 0,
+      ) =>
+        Math.max(a, b) / axis.bpPerPx > axis.offsetPx &&
+        Math.min(a, b) / axis.bpPerPx < axis.offsetPx + width
+      const drawn = drawnColors(
+        geometry,
+        view.opacityLevel,
+        String,
+        i =>
+          inWindow(view.hview, x.width, geometry?.x1[i], geometry?.x2[i]) &&
+          inWindow(view.vview, y.width, geometry?.y1[i], geometry?.y2[i]),
+      )
       return {
         colors: drawn,
         admitted: Object.keys(drawn).sort(),
@@ -174,5 +196,16 @@ describe('two contigs aligned to each other, shown out of assembly order', () =>
   parityCases(dotplotParity(CONTIGS), [
     { name: 'query', config: { encoding: { color: { field: 'query' } } } },
     { name: 'target', config: { encoding: { color: { field: 'target' } } } },
+  ])
+})
+
+describe('3 kb of each axis, inside the contigs', () => {
+  parityCases(dotplotParity(INVERSIONS_ZOOMED), [
+    { name: 'defaults', config: {} },
+    { name: 'strand', config: { encoding: { color: { field: 'strand' } } } },
+    {
+      name: 'filter by length',
+      config: { filter: [{ field: 'length', gte: 2000 }] },
+    },
   ])
 })

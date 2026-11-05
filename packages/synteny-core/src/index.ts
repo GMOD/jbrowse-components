@@ -435,6 +435,7 @@ export {
   axesNamePositionFor,
   axisNamePosition,
   comparativeAxis,
+  comparativeFrame,
   comparativeLegend,
   locateCum,
   unpack,

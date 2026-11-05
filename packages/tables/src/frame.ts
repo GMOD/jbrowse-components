@@ -34,9 +34,9 @@ async function contigsOf(
 }
 
 /** The whole contig `locus` lies on, unbounded where its length is unknown. */
-async function contigHolding(
+async function contigHolding<R extends TablesRegion>(
   pluginManager: PluginManager,
-  locus: TablesRegion,
+  locus: R,
   sequenceAdapter: Record<string, unknown> | undefined,
   assembly: ResolvedAssembly | undefined,
 ) {
@@ -61,13 +61,13 @@ async function contigHolding(
  * Several are the displayed regions themselves, as the browser shows several
  * loci.
  */
-export async function displayedRegionsOf(
+export async function displayedRegionsOf<R extends TablesRegion>(
   pluginManager: PluginManager,
   {
     regions,
     sequenceAdapter,
   }: {
-    regions: TablesRegion[]
+    regions: R[]
     sequenceAdapter?: Record<string, unknown>
   },
   assembly: ResolvedAssembly | undefined,

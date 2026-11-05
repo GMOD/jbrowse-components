@@ -9,7 +9,7 @@ import {
   axisNamePosition,
   bandGroundColor,
   cappedMeanWidthPx,
-  comparativeAxis,
+  comparativeFrame,
   comparativeLegend,
   fadesThinAt,
   isInstanceInvisible,
@@ -362,8 +362,10 @@ export async function syntenyTables(
   }: SyntenyTablesArgs,
 ) {
   const view = liftSyntenyViewSettings(written) as typeof written
-  const q = comparativeAxis(query, adapterConfig, 0)
-  const t = comparativeAxis(target, adapterConfig, 1)
+  const queryFrame = comparativeFrame(query, adapterConfig, 0)
+  const targetFrame = comparativeFrame(target, adapterConfig, 1)
+  const q = queryFrame.frame
+  const t = targetFrame.frame
   const indels = resolvedIndels(view.indels)
   const config = {
     filter: view.filter ?? [],
@@ -380,17 +382,17 @@ export async function syntenyTables(
     adapterConfig,
     queryView: {
       bpPerPx: q.bpPerPx,
-      offsetPx: 0,
+      offsetPx: queryFrame.offsetPx,
       displayedRegions: q.regions,
       width: query.width,
-      fetchRegions: q.regions,
+      fetchRegions: queryFrame.fetchRegions,
     },
     targetView: {
       bpPerPx: t.bpPerPx,
-      offsetPx: 0,
+      offsetPx: targetFrame.offsetPx,
       displayedRegions: t.regions,
-      windowRegions: t.regions,
-      fetchRegions: t.regions,
+      windowRegions: targetFrame.fetchRegions,
+      fetchRegions: targetFrame.fetchRegions,
     },
     cigarMode: indels.drawing,
     statusCallback: () => {},
@@ -443,31 +445,6 @@ export async function syntenyTables(
   const level = settings.level
   const curves = config.mark.interpolate === 'bump'
 
-  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
-    Array.from(ids, id => dict[id]!)
-  const alignments = {
-    id: featureData.featureIds,
-    name: named(featureData.nameDict, featureData.nameIds),
-    queryChrom: named(featureData.refNameDict, featureData.refNameIds),
-    queryStart: Array.from(featureData.starts),
-    queryEnd: Array.from(featureData.ends),
-    targetChrom: named(featureData.mateRefNameDict, featureData.mateRefNameIds),
-    targetStart: Array.from(featureData.mateStarts),
-    targetEnd: Array.from(featureData.mateEnds),
-    strand: Array.from(featureData.strands),
-    length: Array.from(featureData.starts, (s, i) =>
-      Math.abs(featureData.ends[i]! - s),
-    ),
-    ...attributeColumns(featureData.attributes, featureData.attributeRanges),
-    color: [] as string[],
-    alpha: [] as number[],
-  }
-  for (let i = 0; i < n; i++) {
-    const { color, alpha } = unpack(featureColor(i))
-    alignments.color.push(color)
-    alignments.alpha.push(alpha * level)
-  }
-
   const ribbons = {
     alignment: [] as number[],
     kind: [] as string[],
@@ -490,7 +467,12 @@ export async function syntenyTables(
   const { bp1, bp2, bp3, bp4, base0, base1, kinds, instanceFeatureIdx } =
     instanceData
   const corners = { sx1: 0, sx2: 0, sx3: 0, sx4: 0 }
-  const place = (axis: ComparativeAxis, a: number, b: number) => {
+  const place = (
+    axis: ComparativeAxis,
+    offsetPx: number,
+    a: number,
+    b: number,
+  ) => {
     const from = locateCum(axis, a, b)
     const to = locateCum(axis, b, a)
     const r = axis.regions[from.region]!
@@ -500,31 +482,37 @@ export async function syntenyTables(
       region: from.region,
       from: from.coord,
       to: to.coord,
-      x1: clamp(a, lo, hi) / axis.bpPerPx,
-      x2: clamp(b, lo, hi) / axis.bpPerPx,
+      x1: clamp(a, lo, hi) / axis.bpPerPx - offsetPx,
+      x2: clamp(b, lo, hi) / axis.bpPerPx - offsetPx,
     }
   }
+  const drawn = new Set<number>()
   for (let i = 0; i < instanceData.instanceCount; i++) {
     const kind = kinds[i]!
     const marker = kind === KIND_MARKER
     const packed = colors[i]!
-    if (isInstanceInvisible(packed, marker ? 1 : level)) {
-      continue
-    }
     const c1 = bp1[i]! + base0
     const c2 = bp2[i]! + base0
     const c3 = bp3[i]! + base1
     const c4 = bp4[i]! + base1
-    corners.sx1 = c1 / q.bpPerPx
-    corners.sx2 = c2 / q.bpPerPx
-    corners.sx3 = c3 / t.bpPerPx
-    corners.sx4 = c4 / t.bpPerPx
+    corners.sx1 = c1 / q.bpPerPx - queryFrame.offsetPx
+    corners.sx2 = c2 / q.bpPerPx - queryFrame.offsetPx
+    corners.sx3 = c3 / t.bpPerPx - targetFrame.offsetPx
+    corners.sx4 = c4 / t.bpPerPx - targetFrame.offsetPx
+    const xs = [corners.sx1, corners.sx2, corners.sx3, corners.sx4]
+    if (Math.max(...xs) <= 0 || Math.min(...xs) >= query.width) {
+      continue
+    }
+    drawn.add(instanceFeatureIdx[i]!)
+    if (isInstanceInvisible(packed, marker ? 1 : level)) {
+      continue
+    }
     const { thin, fade } = marker
       ? { thin: true, fade: 1 }
       : ribbonThinFade(corners, height, curves, kind, fadeThin)
     const { color, alpha } = unpack(packed)
-    const qs = place(q, c1, c2)
-    const ts = place(t, c4, c3)
+    const qs = place(q, queryFrame.offsetPx, c1, c2)
+    const ts = place(t, targetFrame.offsetPx, c4, c3)
     ribbons.alignment.push(instanceFeatureIdx[i]!)
     ribbons.kind.push(KIND_NAMES[kind] ?? 'match')
     ribbons.queryRegion.push(qs.region)
@@ -543,6 +531,43 @@ export async function syntenyTables(
     ribbons.alpha.push(alpha * (marker ? 1 : level) * fade)
     ribbons.thin.push(thin)
   }
+
+  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
+    Array.from(ids, id => dict[id]!)
+  const rows = [...drawn].sort((a, b) => a - b)
+  const rowOf = new Map(rows.map((f, row) => [f, row]))
+  function pick<T>(column: ArrayLike<T>) {
+    return rows.map(f => column[f]!)
+  }
+  const attributes = attributeColumns(
+    featureData.attributes,
+    featureData.attributeRanges,
+  )
+  const paints = rows.map(f => unpack(featureColor(f)))
+  const alignments = {
+    id: pick(featureData.featureIds),
+    name: named(featureData.nameDict, pick(featureData.nameIds)),
+    queryChrom: named(featureData.refNameDict, pick(featureData.refNameIds)),
+    queryStart: pick(featureData.starts),
+    queryEnd: pick(featureData.ends),
+    targetChrom: named(
+      featureData.mateRefNameDict,
+      pick(featureData.mateRefNameIds),
+    ),
+    targetStart: pick(featureData.mateStarts),
+    targetEnd: pick(featureData.mateEnds),
+    strand: pick(featureData.strands),
+    length: rows.map(f =>
+      Math.abs(featureData.ends[f]! - featureData.starts[f]!),
+    ),
+    ...Object.fromEntries(
+      Object.entries(attributes).map(([key, column]) => [key, pick(column)]),
+    ),
+    color: paints.map(p => p.color),
+    alpha: paints.map(p => p.alpha * level),
+  }
+
+  ribbons.alignment = ribbons.alignment.map(f => rowOf.get(f)!)
 
   const lanes = [
     offscreenLane(featureData.offscreenMates, 'query', q, {
