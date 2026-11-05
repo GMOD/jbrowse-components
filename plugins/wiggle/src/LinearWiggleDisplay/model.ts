@@ -49,12 +49,10 @@ import {
 import {
   SCORE_RANGE_LABEL,
   YFieldConfigMixin,
-  autoscaleDomainFromStats,
   axisPlotBox,
   computeScoreStats,
   makeScoreAxisMenuItem,
   visibleStats,
-  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -69,11 +67,6 @@ import { clampResolution } from '../shared/resolution.ts'
 import { colorKeyTitleOf } from '../shared/scoreRampScale.ts'
 import {
   declaredCuts,
-  paintedWiggleColor,
-  resolveWiggleColor,
-  wiggleColorEncoding,
-  wiggleMarkColoring,
-  wiggleMarkSources,
   wiggleColorProblems,
   wiggleColorSettingOf,
   wiggleSharesPanel,
@@ -86,6 +79,10 @@ import {
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
+import {
+  wiggleAutoscaleRange,
+  wiggleResolveViews,
+} from '../shared/wiggleResolveViews.ts'
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
@@ -97,7 +94,6 @@ import type {
   WiggleRendering,
 } from '../renderingTypes.ts'
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { Extent } from '../shared/wiggleMarkConfigSchema.ts'
 import type { Source, WiggleHoveredFeature, WiggleMarkObject } from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
@@ -301,108 +297,6 @@ export default function stateModelFactory(
             .adapterCapabilities.includes('hasResolution')
         )
       },
-      /**
-       * #getter
-       * The extent actually drawn. A heatmap maps score to color and has no
-       * min-max presentation, so the autoscale domain reads this rather than
-       * the raw slot; otherwise the color ramp spans the min and max while
-       * the plot paints one summary, and the score legend reports a range
-       * nothing on screen reaches. Single-wiggle defaults to min-max, so plain
-       * "Plot type → Heatmap" hit this.
-       */
-      get effectiveExtent(): Extent {
-        return self.isDensityMode ? 'none' : this.extent
-      },
-      /**
-       * #getter
-       * Whether a summary bin's tooltip lists its min and max: where they are
-       * drawn, or where the bar is one of them rather than the mean.
-       */
-      get tooltipShowsMinMax() {
-        return (
-          this.effectiveExtent === 'min-max' || self.summaryField !== 'score'
-        )
-      },
-    }))
-    .views(() => ({
-      /**
-       * #getter
-       * Source names to include when computing the autoscale domain;
-       * `undefined` means every fetched source. The wiggle display always
-       * fetches all sources and filters client-side, so it overrides this to
-       * the visible subset — otherwise a subtree filter that hides sources
-       * would leave the Y-axis scaled to the hidden ones.
-       */
-      get autoscaleSourceNames(): Set<string> | undefined {
-        return undefined
-      },
-    }))
-    .views(() => ({
-      /**
-       * #getter
-       * Scores the axis must reach whatever the data does, so a rule drawn at
-       * one stays on it. `[]` here and overridden by the display that draws
-       * `encoding.y.rules`.
-       */
-      get scoreRuleValues(): number[] {
-        return []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The stats of the sources visible in the settled blocks, `undefined`
-       * until the view and the data are ready.
-       */
-      get statsInView() {
-        const names = self.autoscaleSourceNames
-        return visibleStats({
-          active: true,
-          view: self.host,
-          payloadFor: index => self.rpcDataMap.get(index),
-          itemsFor: regionData =>
-            regionData.sources.filter(
-              source => names === undefined || names.has(source.name),
-            ),
-          accumulate: entries =>
-            computeScoreStats(self.summaryField, entries, self.effectiveExtent),
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * What the sources visible in the settled blocks span, under the
-       * autoscale mode. `undefined` until the view and the data are ready,
-       * which is not the `[0, 1]` a caller falls back to — see
-       * `visibleStats`.
-       */
-      get autoscaleRange(): [number, number] | undefined {
-        const walked = self.statsInView
-        return walked
-          ? widenRangeToRules(
-              autoscaleDomainFromStats({
-                stats: walked.stats,
-                quantile: self.fenceQuantile,
-                zero: self.axisReachesZero,
-                field: self.summaryField,
-                extent: self.effectiveExtent,
-                visibleEntries: walked.entries,
-              }),
-              self.scoreRuleValues,
-            )
-          : undefined
-      },
-      /**
-       * #getter
-       * The least and greatest value the visible sources draw, unfenced.
-       */
-      get valuesInView(): [number, number] | undefined {
-        const walked = self.statsInView
-        return walked
-          ? [walked.stats.scoreMin, walked.stats.scoreMax]
-          : undefined
-      },
     }))
     .views(self => ({
       /**
@@ -593,58 +487,6 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The color actually painted: what the config says, else the pos/neg
-       * pair about the `origin`.
-       */
-      get effectiveColor(): ColorSetting {
-        return paintedWiggleColor(self.colorSetting, {
-          rect: self.isDensityMode,
-          origin: self.origin,
-        })
-      },
-
-      /**
-       * #getter
-       * `effectiveColor` as it paints, through the one resolver every
-       * display's color object goes through.
-       */
-      get colorEncoding() {
-        return wiggleColorEncoding(this.effectiveColor)
-      },
-
-      /**
-       * #getter
-       * `colorEncoding` as the encoder and both backends take it.
-       */
-      get wiggleColor(): ResolvedWiggleColor {
-        return resolveWiggleColor(this.colorEncoding, self.origin)
-      },
-
-      /**
-       * #getter
-       * How the plot spends color (`wiggleMarkColoring`): whether the score
-       * gradient paints, whether row colors do, and which of a source's
-       * colors its marks take.
-       */
-      get markColoring() {
-        return wiggleMarkColoring({
-          colorSetting: self.colorSetting,
-          wiggleColor: this.wiggleColor,
-          rect: self.isDensityMode,
-        })
-      },
-
-      /**
-       * #getter
-       * Whether a gradient spends color on the score: any mark under a
-       * `linear` color, which a heatmap draws its unset pair as.
-       */
-      get scoreGradientPaints() {
-        return this.markColoring.gradientPaints
-      },
-
-      /**
-       * #getter
        * What the loaded sources said they could not serve, and
        * `rowNarrowingNotices`.
        */
@@ -659,7 +501,9 @@ export default function stateModelFactory(
             : []),
         ]
       },
-
+    }))
+    .views(self => wiggleResolveViews(self))
+    .views(self => ({
       /**
        * #getter
        * The one color the circular view's key names this track by
@@ -668,53 +512,66 @@ export default function stateModelFactory(
        * nothing parts.
        */
       get legendColor(): string {
-        return this.wiggleColor.posColor
+        return self.wiggleColor.posColor
       },
-
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: a subtrack's color paints its plot while
-       * the plot colors by `source` (`wiggleColorsBySource`).
+       * Whether a summary bin's tooltip lists its min and max: where they are
+       * drawn, or where the bar is one of them rather than the mean.
        */
-      get rowColorPaintsMarks(): boolean {
-        return this.markColoring.rowColorPaintsMarks
+      get tooltipShowsMinMax() {
+        return (
+          self.effectiveExtent === 'min-max' || self.summaryField !== 'score'
+        )
+      },
+      /**
+       * #getter
+       * The stats of the sources visible in the settled blocks, `undefined`
+       * until the view and the data are ready.
+       */
+      get statsInView() {
+        const names = self.autoscaleSourceNames
+        return visibleStats({
+          active: true,
+          view: self.host,
+          payloadFor: index => self.rpcDataMap.get(index),
+          itemsFor: regionData =>
+            regionData.sources.filter(source => names.has(source.name)),
+          accumulate: entries =>
+            computeScoreStats(self.summaryField, entries, self.effectiveExtent),
+        })
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Each source and the color its marks paint in (`wiggleMarkSources`),
-       * which the encoder and the tooltip read.
+       * What the sources visible in the settled blocks span, under the
+       * autoscale mode (`wiggleAutoscaleRange`). `undefined` until the view
+       * and the data are ready, which is not the `[0, 1]` a caller falls
+       * back to — see `visibleStats`.
        */
-      get markSources(): { name: string; color?: string }[] {
-        return wiggleMarkSources(self.sources, {
-          rowColorPaintsMarks: self.rowColorPaintsMarks,
-          paletteDeals: self.rowPaletteDeals,
-          anyRowColored: self.resolvedRowColors.size > 0,
+      get autoscaleRange(): [number, number] | undefined {
+        return wiggleAutoscaleRange(self.statsInView, {
+          quantile: self.fenceQuantile,
+          zero: self.axisReachesZero,
+          field: self.summaryField,
+          extent: self.effectiveExtent,
+          ruleValues: self.scoreRuleValues,
         })
       },
-
       /**
        * #getter
-       * Overrides the empty base above, so the axis reaches a
-       * rule of `encoding.y.rules` even where the visible data does not.
-       *
-       * Empty in density, where no rule is drawn: the domain is spent on the
-       * color ramp there, so widening it stretches the ramp over a range
-       * nothing on screen reaches.
+       * The least and greatest value the visible sources draw, unfenced.
        */
-      get scoreRuleValues() {
-        return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
+      get valuesInView(): [number, number] | undefined {
+        const walked = self.statsInView
+        return walked
+          ? [walked.stats.scoreMin, walked.stats.scoreMax]
+          : undefined
       },
 
       get numSources() {
         return self.sources.length
-      },
-
-      // Restrict the shared autoscale domain to the currently-visible sources
-      // (a subtree filter hides some), so hidden sources don't stretch the axis.
-      get autoscaleSourceNames() {
-        return new Set(self.sources.map(s => s.name))
       },
 
       /**
@@ -877,28 +734,6 @@ export default function stateModelFactory(
         return {
           resolution: self.resolution,
           yField: self.yField,
-        }
-      },
-
-      /**
-       * #method
-       * The row list is this display's own: the encoder places each payload
-       * source by its position here, so a filter or a reorder re-uploads
-       * bytes already in hand.
-       *
-       * The color rides here and not in `rpcProps`: the worker ships one set
-       * of score arrays and the main thread colors each instance by its side
-       * of the cut, so a new color re-encodes and refetches nothing.
-       */
-      gpuProps() {
-        return {
-          wiggleColor: self.wiggleColor,
-          origin: self.origin,
-          summaryField: self.summaryField,
-          effectiveExtent: self.effectiveExtent,
-          renderingType: self.renderingType,
-          sources: self.markSources,
-          rowLayout: self.isRowLayout,
         }
       },
 

@@ -274,6 +274,12 @@ test('a multi-wiggle draws the sources rows.filter and rows.kept leave', async (
   })
   expect(kept.sources.name).toEqual(['posneg_rw3'])
   expect(new Set(kept.marks.source)).toEqual(new Set(['posneg_rw3']))
+
+  const keptTop = Math.max(...kept.bins.score)
+  const hiddenTop = Math.max(...filtered.bins.score)
+  expect(keptTop).toBeLessThan(hiddenTop)
+  expect(kept.scoreScale.domain[1]).toBeGreaterThanOrEqual(keptTop)
+  expect(kept.scoreScale.domain[1]).toBeLessThan(hiddenTop)
 })
 
 test('a multi-wiggle reads under the multi-track defaults: a row per source, no min-max extent', async () => {

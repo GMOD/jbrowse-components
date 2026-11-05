@@ -19,8 +19,10 @@ disagree today.
 
 ## Equivalent today, by hand
 
-- Autoscale glue in wiggle's and alignments coverage's tables, which ignores
-  `encoding.y.scale.group`.
+- Autoscale glue in alignments coverage's tables, and the nice-rounding step
+  in wiggle's, which ignore `encoding.y.scale.group`. Wiggle's range, color
+  and mark sources run the model's own getters
+  ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
 - Variants row colors (`rowColorsOf` in `plugins/variants/src/tables.ts`) and
   the features carry-overs in `plugins/features/src/tables.ts`: the collapsed
   mode's forced `subfeatureLabels` of `'none'`, the `resolvedGeneGlyphMode`

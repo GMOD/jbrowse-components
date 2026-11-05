@@ -14,16 +14,16 @@ import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
   resolveRowColors,
+  withRowColors,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
-  computeAutoscaleDomain,
+  computeScoreStats,
   readYMember,
   summaryFieldOf,
   yRuleNodes,
   getNiceDomain,
   resolveRenderState,
   resolveSymlogConstant,
-  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
@@ -41,20 +41,24 @@ import {
 } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
-  paintedWiggleColor,
-  resolveWiggleColor,
-  wiggleColorEncoding,
   wiggleColorSettingOf,
-  wiggleMarkColoring,
-  wiggleMarkSources,
   wiggleSharesPanel,
 } from './shared/wiggleColor.ts'
+import {
+  wiggleAutoscaleRange,
+  wiggleResolveViews,
+} from './shared/wiggleResolveViews.ts'
 import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+
+function once<T>(compute: () => T) {
+  let cached: { value: T } | undefined
+  return () => (cached ??= { value: compute() }).value
+}
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -154,43 +158,97 @@ export async function wiggleTables(
   const summaryField = summaryFieldOf(
     readConfObject(conf, ['encoding', 'y', 'field']),
   )
-  const extent: string = density
-    ? 'none'
-    : readConfObject(conf, ['mark', 'extent'])
   const origin: number = readConfObject(conf, 'origin')
   const setting = wiggleColorSettingOf(conf.encoding.color)
-  const wiggleColor = resolveWiggleColor(
-    wiggleColorEncoding(paintedWiggleColor(setting, { rect: density, origin })),
-    origin,
-  )
-
-  const scaleType: string = readYMember(conf, WIGGLE_Y_PATHS, 'type')
-  const zero = readYMember(conf, WIGGLE_Y_PATHS, 'zero') && !density
+  const rowLayout = readConfObject(conf.rows, 'field') !== ''
   const rules = yRuleNodes(conf, WIGGLE_Y_PATHS).map(rule => ({
     value: readConfObject(rule, 'value'),
     color: cssColorToHex(readConfObject(rule, 'color') ?? DEFAULT_RULE_COLOR),
     label: readConfObject(rule, 'label'),
   }))
-  const range = computeAutoscaleDomain(
-    readYMember(conf, WIGGLE_Y_PATHS, 'fence'),
+
+  const rows = once(() => {
+    const paletteDeals =
+      wiggleSharesPanel(rowLayout, data.sources.length) &&
+      views.rowColorPaintsMarks
+    const rowColor = rowColorsOfRows(
+      conf.rows.color,
+      readConfObject(conf.rows, 'colors'),
+    )
+    const rowColors = resolveRowColors(
+      data.sources,
+      rowColor.setting.field,
+      dealValueColors(rowColor.setting, () => data.sources, paletteDeals),
+      rowColor.pinned,
+      undefined,
+    )
+    const arranged = arrangeRows(
+      data.sources,
+      {
+        domain: readConfObject(conf.rows, 'sort'),
+        labels: readConfObject(conf.rows, 'labels'),
+      },
+      {
+        unlistedRowsSort: 'source',
+        rowAlias: undefined,
+        rowParent: () => undefined,
+      },
+    )
+    return {
+      paletteDeals,
+      rowColors,
+      sources: narrowRows(withRowColors(arranged, rowColors), {
+        kept: readConfObject(conf.rows, 'kept'),
+        filter: predicatesOf(conf.rows.filter),
+      }),
+    }
+  })
+  const views = wiggleResolveViews({
+    isDensityMode: density,
+    extent: readConfObject(conf, ['mark', 'extent']),
+    origin,
+    colorSetting: setting,
     summaryField,
-    results.flatMap((result, i) =>
-      result.sources.map(source => ({
+    renderingType,
+    isRowLayout: rowLayout,
+    scoreRules: rules,
+    get sources() {
+      return rows().sources
+    },
+    get rowPaletteDeals() {
+      return rows().paletteDeals
+    },
+    get resolvedRowColors() {
+      return rows().rowColors
+    },
+  })
+  const { wiggleColor, effectiveExtent } = views
+  const { sources } = rows()
+
+  const scaleType: string = readYMember(conf, WIGGLE_Y_PATHS, 'type')
+  const zero = readYMember(conf, WIGGLE_Y_PATHS, 'zero') && !density
+  const drawnNames = views.autoscaleSourceNames
+  const entries = results.flatMap((result, i) =>
+    result.sources
+      .filter(source => drawnNames.has(source.name))
+      .map(source => ({
         data: source,
         visStart: regions[i]!.start,
         visEnd: regions[i]!.end,
       })),
-    ),
-    zero,
-    extent,
   )
+  const stats = computeScoreStats(summaryField, entries, effectiveExtent)
+  const range = wiggleAutoscaleRange(stats && { stats, entries }, {
+    quantile: readYMember(conf, WIGGLE_Y_PATHS, 'fence'),
+    zero,
+    field: summaryField,
+    extent: effectiveExtent,
+    ruleValues: views.scoreRuleValues,
+  })
   const domain = resolveRenderState(
     range &&
       getNiceDomain({
-        domain: widenRangeToRules(
-          range,
-          density ? [] : rules.map(r => r.value),
-        ),
+        domain: range,
         bounds: [
           readYMember(conf, WIGGLE_Y_PATHS, 'domainMin') ??
             data.valueDomain?.[0],
@@ -209,59 +267,13 @@ export async function wiggleTables(
     rawConstant,
   )
 
-  const rowLayout = readConfObject(conf.rows, 'field') !== ''
-  const sources = narrowRows(
-    arrangeRows(
-      data.sources,
-      {
-        domain: readConfObject(conf.rows, 'sort'),
-        labels: readConfObject(conf.rows, 'labels'),
-      },
-      {
-        unlistedRowsSort: 'source',
-        rowAlias: undefined,
-        rowParent: () => undefined,
-      },
-    ),
-    {
-      kept: readConfObject(conf.rows, 'kept'),
-      filter: predicatesOf(conf.rows.filter),
-    },
-  )
-  const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
-    colorSetting: setting,
-    wiggleColor,
-    rect: density,
-  })
-  const paletteDeals =
-    wiggleSharesPanel(rowLayout, data.sources.length) && rowColorPaintsMarks
-  const rowColor = rowColorsOfRows(
-    conf.rows.color,
-    readConfObject(conf.rows, 'colors'),
-  )
-  const rowColors = resolveRowColors(
-    sources,
-    rowColor.setting.field,
-    dealValueColors(rowColor.setting, () => data.sources, paletteDeals),
-    rowColor.pinned,
-    undefined,
-  )
-  const markSources = wiggleMarkSources(
-    sources.map(s => ({ name: s.name, rowColor: rowColors.get(s.name) })),
-    { rowColorPaintsMarks, paletteDeals, anyRowColored: rowColors.size > 0 },
-  )
+  const { markSources } = views
   const { rampLut, rampMid } = wiggleColor
-  const scoreRamp = gradientPaints && rampLut ? { rampLut, rampMid } : undefined
+  const scoreRamp =
+    views.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined
+  const gpuProps = { ...views.gpuProps(), rowLayout: true }
   const regionLayers = results.map(result =>
-    buildSourceRenderData(result, {
-      sources: markSources,
-      rowLayout: true,
-      wiggleColor,
-      origin,
-      summaryField,
-      effectiveExtent: extent,
-      renderingType,
-    }).map(layer => ({
+    buildSourceRenderData(result, gpuProps).map(layer => ({
       layer,
       source: sources[layer.rowIndex]!.name,
       row: rowLayout ? layer.rowIndex : 0,
