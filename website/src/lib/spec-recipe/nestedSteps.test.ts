@@ -161,7 +161,7 @@ test('a breakpoint split view opens from the first panel, and a later panel adds
   )
   expect(recipe.steps.at(-1)).toMatchObject({
     title: 'Panel 2',
-    substeps: [{ example: expect.stringContaining('volvox_filtered_vcf') }],
+    substeps: [{ example: expect.stringContaining('volvox filtered vcf') }],
   })
 })
 
