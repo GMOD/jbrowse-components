@@ -287,7 +287,11 @@ function viewPhase(v: ViewSelf) {
     return { error: String(v.error) }
   }
   if (v.initialized === false && v.showImportForm !== true) {
-    return { phase: 'initializing' }
+    return {
+      phase: 'initializing',
+      reason:
+        "the view waits for a measured width and its assembly's regions, and a hidden or minimized window never measures one",
+    }
   }
   if (v.pendingLaunch !== undefined) {
     return {
@@ -1195,8 +1199,11 @@ async function visibleRegionsOf(
     }
     visible = undefined
     if (Date.now() >= deadline) {
+      const phase = viewPhase(view)
       throw new Error(
-        'The view has not finished initializing a visible region — pass loc, or navigate first',
+        'reason' in phase
+          ? `View ${describeView(session, chosen)} shows no region after 10 s, still ${phase.phase}: ${phase.reason}`
+          : `View ${describeView(session, chosen)} shows no region — navigate with view.navToLocString, or pass loc`,
       )
     }
     await delay(250)

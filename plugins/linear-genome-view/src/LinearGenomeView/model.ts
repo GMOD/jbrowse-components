@@ -3099,6 +3099,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
+        } else if (!input.startsWith('{')) {
+          throw new Error(
+            self.volatileWidth === undefined
+              ? `View ${self.id} has no assembly to read "${input}" against, and no measured width to navigate in: a hidden or minimized window never measures one`
+              : `View ${self.id} has no assembly to read "${input}" against: pass it as navToLocString's second argument`,
+          )
         }
         if (!isAlive(self)) {
           return false

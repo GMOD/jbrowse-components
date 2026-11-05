@@ -213,6 +213,29 @@ describe('waitReady', () => {
     )
   })
 
+  it('names the phase a view showing no region is stuck in', async () => {
+    const view = (initialized: boolean) => ({
+      id: 'v1',
+      type: 'LinearGenomeView',
+      initialized,
+      visibleRegions: [],
+      ownViews: [],
+      ownTracks: [],
+    })
+    const jbOver = (initialized: boolean) =>
+      createJbApi({
+        rootModel: {
+          session: { views: [view(initialized)], snackbarMessages: [] },
+        },
+      } as unknown as PluginManager)
+    await expect(drained(jbOver(false).visibleRegions())).rejects.toThrow(
+      /View v1 \(LinearGenomeView\) shows no region after 10 s, still initializing: .*a hidden or minimized window never measures one/,
+    )
+    await expect(drained(jbOver(true).visibleRegions())).rejects.toThrow(
+      /View v1 \(LinearGenomeView\) shows no region — navigate with view.navToLocString, or pass loc/,
+    )
+  })
+
   // A display that loaded a config it cannot draw as written stays `ready`
   // and raises no toast; its corner notice is the only place the problem is
   // said, and a caller with no screen cannot read it.

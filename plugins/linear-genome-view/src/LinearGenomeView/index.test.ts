@@ -1473,6 +1473,21 @@ test('init without loc shows whole genome', async () => {
   })
 })
 
+test('navToLocString on a view with no assembly names what it lacks', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({ id: 'noAssembly', type: 'LinearGenomeView' }),
+  )
+  await expect(model.navToLocString('ctgA:1-100')).rejects.toThrow(
+    /View noAssembly has no assembly to read "ctgA:1-100" against, and no measured width/,
+  )
+  model.setWidth(800)
+  await expect(model.navToLocString('ctgA:1-100')).rejects.toThrow(
+    /pass it as navToLocString's second argument/,
+  )
+})
+
 test('init with loc keeps loading until navigation populates regions', async () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })
