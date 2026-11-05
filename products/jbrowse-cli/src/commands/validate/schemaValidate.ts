@@ -712,6 +712,20 @@ export function createSchemaValidator(
     Object.keys(defs.RootConfiguration!.properties as Schema),
   )
 
+  /**
+   * The keys core declares at the top of a config.json. A plugin's
+   * `rootConfigurationSchema` adds its own beside them, the way MsaView's `msa`
+   * holds its datasets.
+   */
+  const configKeys = new Set(Object.keys(root.properties as Schema))
+  const configKeyPatterns = Object.keys(
+    (root.patternProperties ?? {}) as Schema,
+  ).map(pattern => new RegExp(pattern))
+
+  function declaresConfigKey(key: string) {
+    return configKeys.has(key) || configKeyPatterns.some(re => re.test(key))
+  }
+
   function hasSchemaDefinition(name: string) {
     return Object.hasOwn(defs, name)
   }
@@ -720,6 +734,8 @@ export function createSchemaValidator(
     schemaProblems,
     hasDeclaredShape,
     rootConfigurationSlots,
+    configKeys,
+    declaresConfigKey,
     hasSchemaDefinition,
     configSchemaUrl: schemaId,
   }
@@ -733,6 +749,8 @@ export const {
   schemaProblems,
   hasDeclaredShape,
   rootConfigurationSlots,
+  configKeys,
+  declaresConfigKey,
   hasSchemaDefinition,
   configSchemaUrl,
 } = coreSchemaValidator

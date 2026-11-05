@@ -1229,6 +1229,31 @@ describe('validateConfig', () => {
       ])
     })
 
+    it("takes a top-level key beside a declared plugin as that plugin's", () => {
+      const msa = { datasets: [] }
+      expect(errorsOf({ ...baseConfig(), msa }).map(e => e.where)).toEqual([
+        'msa',
+      ])
+      const config = {
+        ...baseConfig(),
+        msa,
+        plugins: [{ name: 'MsaView', esmUrl: 'msaview.js' }],
+      }
+      expect(errorsOf(config)).toEqual([])
+      expect(warningsOf(config).map(w => w.where)).toEqual(['msa'])
+    })
+
+    it('still reports a misspelled top-level key beside a declared plugin', () => {
+      const { assemblies, ...rest } = baseConfig()
+      const config = {
+        ...rest,
+        assemblys: assemblies,
+        plugins: [{ name: 'MsaView', esmUrl: 'msaview.js' }],
+      }
+      expect(warningsOf(config).map(w => w.where)).not.toContain('assemblys')
+      expect(errorsOf(config).length).toBeGreaterThan(0)
+    })
+
     it('still checks the root slots core does declare', () => {
       const config = {
         ...withPluginThings(),

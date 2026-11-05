@@ -1227,18 +1227,36 @@ export function validateConfig(
       `core declares no "${key}" slot${didYouMeanKey(key, [...schema.rootConfigurationSlots])} — a plugin this config declares may`,
     )
   }
+  // a near miss of a core key stays the schema's error, so a plugin cannot
+  // hide `assemblys`
+  const pluginRootKeys = declaresPlugins
+    ? Object.keys(config).filter(
+        k =>
+          !schema.declaresConfigKey(k) &&
+          !didYouMeanKey(k, [...schema.configKeys]),
+      )
+    : []
+  for (const key of pluginRootKeys) {
+    report.warn(
+      key,
+      `core declares no top-level "${key}" — a plugin this config declares may, through its rootConfigurationSchema`,
+    )
+  }
+  const coreKeys = Object.fromEntries(
+    Object.entries(config).filter(([k]) => !pluginRootKeys.includes(k)),
+  )
   report.problems.push(
     ...schema.schemaProblems(
       pluginSlots.length && isRecord(configuration)
         ? {
-            ...config,
+            ...coreKeys,
             configuration: Object.fromEntries(
               Object.entries(configuration).filter(
                 ([k]) => !pluginSlots.includes(k),
               ),
             ),
           }
-        : config,
+        : coreKeys,
     ),
   )
 
