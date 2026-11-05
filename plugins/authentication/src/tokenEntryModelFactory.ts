@@ -4,7 +4,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { getAccountSession, getResponseError, proveToken } from './util.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ExternalTokenInternetAccountConfigModel } from './ExternalTokenModel/configSchema.ts'
+import type { HTTPBasicInternetAccountConfigModel } from './HTTPBasicModel/configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type React from 'react'
 
@@ -23,7 +24,9 @@ type TokenEntryForm = React.FC<{
  */
 export function tokenEntryModelFactory<Type extends string>(
   typeName: Type,
-  configSchema: AnyConfigurationSchemaType,
+  configSchema:
+    | ExternalTokenInternetAccountConfigModel
+    | HTTPBasicInternetAccountConfigModel,
   LoginForm: TokenEntryForm,
 ) {
   return InternetAccount.named(typeName)
@@ -42,7 +45,7 @@ export function tokenEntryModelFactory<Type extends string>(
        * #getter
        * validate the token with a HEAD request before it is used
        */
-      get validateWithHEAD(): boolean {
+      get validateWithHEAD() {
         return getConf(self, 'validateWithHEAD')
       },
     }))

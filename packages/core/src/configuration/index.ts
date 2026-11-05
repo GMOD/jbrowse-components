@@ -38,6 +38,7 @@ export type {
   HostChecksSlotNames,
   IdentifierSlotDef,
   PluggableConfigNode,
+  PluggableConfigSnapshot,
   TrackConfigEntry,
   TypeSlotDef,
 } from './types.ts'

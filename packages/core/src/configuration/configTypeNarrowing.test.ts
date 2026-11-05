@@ -18,6 +18,8 @@ import type {
   ConfigModelForSlots,
   ConfigurationSnapshot,
   HostChecksSlotNames,
+  PluggableConfigNode,
+  PluggableConfigSnapshot,
 } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -450,6 +452,27 @@ describe('a mixin host type narrows the slot names, or silently does not', () =>
         false
       >
     >()
+    expect(true).toBe(true)
+  })
+})
+
+describe('a pluggable union slot reads as the member it holds', () => {
+  it('reads a snapshot naming its type, and the node prop as the member', () => {
+    const check = (pm: PluginManager) => {
+      const pluggableSchema = ConfigurationSchema('ConfigPluggableSlot', {
+        adapter: pm.pluggableConfigSchemaType('adapter'),
+        raw: types.frozen(),
+      })
+      return (node: Instance<typeof pluggableSchema>) => {
+        const adapter = readConfObject(node, 'adapter')
+        assertType<Equal<typeof adapter, PluggableConfigSnapshot>>()
+        assertType<Equal<typeof node.adapter, PluggableConfigNode>>()
+        // a raw MST type holding `any` is not a pluggable union
+        const raw = readConfObject(node, 'raw')
+        assertType<Equal<typeof raw, any>>()
+      }
+    }
+    void check
     expect(true).toBe(true)
   })
 })

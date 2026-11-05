@@ -12,6 +12,7 @@ import type {
   IOptionalIType,
   ISimpleType,
   IStateTreeNode,
+  IType,
   Instance,
   SnapshotOut,
 } from '@jbrowse/mobx-state-tree'
@@ -80,18 +81,40 @@ type WidenDefaultValue<V> = [V] extends [boolean]
       ? number
       : unknown
 
+// A pluggable union slot (a track's `adapter`), whose member names its `type`.
+// A raw MST type whose instance is `any` is not one.
+type PluggableNodeOf<DEF> =
+  DEF extends IType<any, any, infer NODE>
+    ? IsAny<NODE> extends true
+      ? never
+      : NODE extends PluggableConfigNode
+        ? NODE
+        : never
+    : never
+
+/** A pluggable union slot's value as a read gives it: the member's snapshot. */
+export type PluggableConfigSnapshot = AnyConfigurationSnapshot & {
+  type: string
+}
+
 type ConfigNodeValue<DEF> =
   IsAny<DEF> extends true
     ? any
     : DEF extends AnyConfigurationSchemaType
       ? DEF['Type']
-      : DEF extends IArrayType<any> | IOptionalIType<IArrayType<any>, any>
-        ? DEF['Type']
-        : DEF extends string
-          ? string
-          : DEF extends number
-            ? number
-            : SlotValueRawFromDef<DEF>
+      : [PluggableNodeOf<DEF>] extends [never]
+        ? ConfigNodeLeafValue<DEF>
+        : PluggableNodeOf<DEF>
+
+type ConfigNodeLeafValue<DEF> = DEF extends
+  | IArrayType<any>
+  | IOptionalIType<IArrayType<any>, any>
+  ? DEF['Type']
+  : DEF extends string
+    ? string
+    : DEF extends number
+      ? number
+      : SlotValueRawFromDef<DEF>
 
 /**
  * A config node's slots, off the schema's definition, so `node.colorr` is a
@@ -206,27 +229,31 @@ export type SlotValueTableCoversBuiltinSlotTypes = Assert<
 // list is added back here.
 type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
   ? AnyConfigurationSnapshot
-  : DEF extends {
-        model: ISimpleType<infer T extends string>
-      }
-    ? DEF extends { type: 'maybeStringEnum' }
-      ? T | undefined
-      : DEF extends { type: 'stringEnumArray' }
-        ? T[]
-        : T
-    : DEF extends { type: infer T extends keyof SlotValueByType }
-      ? SlotValueByType[T]
-      : // only a `type` the table doesn't name, such as one widened to
-        // `string` by a schema not inferred `const`
-        DEF extends { defaultValue: infer V }
-        ? [V] extends [boolean]
-          ? boolean
-          : [V] extends [string]
-            ? string
-            : [V] extends [number]
-              ? number
-              : any
-        : any
+  : [PluggableNodeOf<DEF>] extends [never]
+    ? SlotValueRawFromLeafDef<DEF>
+    : PluggableConfigSnapshot
+
+type SlotValueRawFromLeafDef<DEF> = DEF extends {
+  model: ISimpleType<infer T extends string>
+}
+  ? DEF extends { type: 'maybeStringEnum' }
+    ? T | undefined
+    : DEF extends { type: 'stringEnumArray' }
+      ? T[]
+      : T
+  : DEF extends { type: infer T extends keyof SlotValueByType }
+    ? SlotValueByType[T]
+    : // only a `type` the table doesn't name, such as one widened to
+      // `string` by a schema not inferred `const`
+      DEF extends { defaultValue: infer V }
+      ? [V] extends [boolean]
+        ? boolean
+        : [V] extends [string]
+          ? string
+          : [V] extends [number]
+            ? number
+            : any
+      : any
 
 // Without the IsAny arm a widened schema's path walk answers `never` from two
 // segments on, which satisfies any annotation and refuses every member read.

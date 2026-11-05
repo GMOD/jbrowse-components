@@ -16,9 +16,17 @@ import configSchemaF from './configSchema.ts'
 import type { GCContentAdapterConfig } from '../GCContentAdapter/configSchema.ts'
 import type { GCStep } from '../GCContentAdapter/gcWindow.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluggableConfigNode } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const formatBp = (n: number) => `${toLocale(n)} bp`
+
+// a loaded track's adapter is always one: liftGCSettings wraps any other
+function isGCContentAdapterConfig(
+  node: PluggableConfigNode,
+): node is GCContentAdapterConfig {
+  return node.type === 'GCContentAdapter'
+}
 
 export default function GCContentTrackF(pm: PluginManager) {
   pm.addTrackType(() => {
@@ -37,8 +45,14 @@ export default function GCContentTrackF(pm: PluginManager) {
            * The `GCContentAdapter` computing the signal, which holds the op,
            * the window and the step.
            */
-          get gcAdapter(): GCContentAdapterConfig {
-            return self.configuration.adapter
+          get gcAdapter() {
+            const { adapter } = self.configuration
+            if (!isGCContentAdapterConfig(adapter)) {
+              throw new Error(
+                `a GCContentTrack computes through a GCContentAdapter, and this one holds a ${adapter.type}`,
+              )
+            }
+            return adapter
           },
           /**
            * #getter
