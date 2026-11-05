@@ -347,11 +347,18 @@ export interface AlignmentTablesArgs {
   display?: Record<string, unknown>
   /**
    * The assembly's contigs in its own order, spelled as the file spells them,
-   * which `encoding.color: "mateRefName"` deals its palette by: a read's
-   * mate reference is matched as written, where the browser canonicalizes it
-   * through the assembly first. Unset, the file header's order stands in.
+   * which `encoding.color: "mateRefName"` deals its palette by where no
+   * `refNamePosition` is given: a read's mate reference is matched as
+   * written. Unset, the file header's order stands in.
    */
   refNames?: readonly string[]
+  /**
+   * Where a mate reference sits in the assembly's order, canonicalized
+   * through its aliases, as the browser's `Assembly.getRefNamePosition`
+   * answers it: what `mateRefName` deals its palette by, before `refNames`.
+   * The tables engine sets it from the call's `assembly`.
+   */
+  refNamePosition?: RefNamePosition
   /**
    * The most compressed bytes the regions may need together, refused off the
    * index before any read is fetched. 200 MB by default; a host holds the
@@ -1406,6 +1413,7 @@ export async function alignmentTables(
     regions,
     display = {},
     refNames,
+    refNamePosition,
     byteLimit = DEFAULT_BYTE_LIMIT,
     spanLimit = DEFAULT_SPAN_LIMIT,
   }: AlignmentTablesArgs,
@@ -1587,7 +1595,8 @@ export async function alignmentTables(
     chain ? { unit, framesChainStrand } : {},
     facetSetting,
     colorField === 'mateRefName'
-      ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
+      ? (refNamePosition ??
+          positionIn(refNames ?? (await dataAdapter.getRefNames())))
       : undefined,
     drawsOverlaps
       ? overlapLegendRows(chain, overlapKindsInWindows(laidByGroup, windows))

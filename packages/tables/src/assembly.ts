@@ -3,7 +3,12 @@ import {
   expandSidecarShorthand,
   refNameAliasAdapterType,
 } from '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand'
-import { buildRefNameMaps } from '@jbrowse/core/assemblyManager/refNameMaps'
+import {
+  buildRefNameMaps,
+  canonicalRefNameIn,
+  refNameIndexOf,
+  refNamePositionIn,
+} from '@jbrowse/core/assemblyManager/refNameMaps'
 import {
   isRefNameAliasAdapter,
   isRegionsAdapter,
@@ -24,6 +29,8 @@ export interface ResolvedAssembly {
   sequenceAdapter?: Record<string, unknown>
   regions: { refName: string; start: number; end: number }[]
   canonical: (name: string) => string
+  /** where a contig name sits in the assembly's order, as the browser's assembly answers it */
+  refNamePosition: (name: string) => number | undefined
 }
 
 function aliasAdapterOf(sidecar: unknown) {
@@ -65,13 +72,14 @@ async function resolveAssembly(
     regions,
     aliases,
   )
+  const canonical = (name: string) =>
+    canonicalRefNameIn(refNameAliases, lowerCaseRefNameAliases, name) || name
+  const index = refNameIndexOf(regions.map(r => canonical(r.refName)))
   return {
     sequenceAdapter,
     regions,
-    canonical: name =>
-      refNameAliases[name] ??
-      lowerCaseRefNameAliases[name.toLowerCase()] ??
-      name,
+    canonical,
+    refNamePosition: name => refNamePositionIn(index, canonical, name),
   }
 }
 

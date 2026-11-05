@@ -26,9 +26,12 @@ import { defaultRefNameColors } from './refNameColors.ts'
 import { refNameMapKey } from './refNameMapKey.ts'
 import {
   buildRefNameMaps,
+  canonicalRefNameIn,
   isChromosome,
   checkRefName,
   groupNamesByCanonicalRefName,
+  refNameIndexOf,
+  refNamePositionIn,
 } from './refNameMaps.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -570,16 +573,7 @@ export default function assemblyFactory(
        */
       get refNameToIndex() {
         const { refNames } = self
-        if (!refNames) {
-          return undefined
-        }
-        const map = new Map<string, number>()
-        for (const [i, refName] of refNames.entries()) {
-          if (!map.has(refName)) {
-            map.set(refName, i)
-          }
-        }
-        return map
+        return refNames ? refNameIndexOf(refNames) : undefined
       },
     }))
     .views(self => ({
@@ -591,15 +585,16 @@ export default function assemblyFactory(
        * matches the FASTA file, use getSeqAdapterRefName().
        */
       getCanonicalRefName(refName: string) {
-        if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
+        const { refNameAliases, lowerCaseRefNameAliases } = self
+        if (!refNameAliases || !lowerCaseRefNameAliases) {
           throw new Error(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-
-        return (
-          self.refNameAliases[refName] ||
-          self.lowerCaseRefNameAliases[refName.toLowerCase()]
+        return canonicalRefNameIn(
+          refNameAliases,
+          lowerCaseRefNameAliases,
+          refName,
         )
       },
       /**
@@ -703,14 +698,16 @@ export default function assemblyFactory(
       /**
        * #method
        * Where a refName — canonical or any alias — sits in this assembly's own
-       * order, which is what chromosome painting hands its palette out by.
-       * Canonicalized first because a name off a feature can be the FILE's
-       * spelling (`1` against a canonical `chr1`), and a missed probe is silent:
-       * the painter falls back to a hash color. Undefined before the regions
-       * load and for a name the assembly lacks.
+       * order, which is what chromosome painting hands its palette out by:
+       * `refNamePositionIn`, which the tables engine answers through too.
+       * Undefined before the regions load and for a name the assembly lacks.
        */
       getRefNamePosition(refName: string) {
-        return self.refNameToIndex?.get(self.getCanonicalRefName2(refName))
+        return refNamePositionIn(
+          self.refNameToIndex,
+          self.getCanonicalRefName2,
+          refName,
+        )
       },
       /**
        * #method

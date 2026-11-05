@@ -41,15 +41,15 @@ import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
 
-import type { AssemblyConfig } from './assembly.ts'
+import type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { AlignmentTablesArgs as AlignmentReadArgs } from '@jbrowse/plugin-alignments/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
-import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
+import type { DotplotTablesArgs as DotplotReadArgs } from '@jbrowse/plugin-dotplot-view/tables'
 import type { FeatureTablesArgs as FeatureReadArgs } from '@jbrowse/plugin-features/tables'
 import type {
   MultiWayTablesArgs,
-  SyntenyTablesArgs,
+  SyntenyTablesArgs as SyntenyReadArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 import type { VariantTablesArgs as VariantReadArgs } from '@jbrowse/plugin-variants/tables'
 import type { WiggleTablesArgs as WiggleReadArgs } from '@jbrowse/plugin-wiggle/tables'
@@ -60,15 +60,11 @@ export type {
   ContigTables,
   ContigTablesArgs,
 } from '@jbrowse/plugin-comparative-adapters/tables'
-export type {
-  DotplotTables,
-  DotplotTablesArgs,
-} from '@jbrowse/plugin-dotplot-view/tables'
+export type { DotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 export type {
   MultiWayTables,
   MultiWayTablesArgs,
   SyntenyTables,
-  SyntenyTablesArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 export type { VariantTables } from '@jbrowse/plugin-variants/tables'
 export type { WiggleTables } from '@jbrowse/plugin-wiggle/tables'
@@ -92,11 +88,29 @@ interface RegionArgs {
  * which it is refused, naming the table. A host sets `rowLimit` on a read of
  * a whole file (`fileRegions`), where nothing else bounds the rows.
  */
-type HostArgs<A extends RegionArgs> = Omit<A, 'regions'> & {
+type HostArgs<A extends RegionArgs> = Omit<A, 'regions' | 'refNamePosition'> & {
   region?: TablesRegion
   regions?: TablesRegion[]
   assembly?: AssemblyConfig
   rowLimit?: number
+}
+
+/**
+ * A comparative axis as a host sends it: `assembly`, an assembly config as
+ * the region reads take one, deals a color by contig name its palette in the
+ * assembly's order, through its aliases, as the view does.
+ */
+type HostAxisArgs = Omit<SyntenyReadArgs['query'], 'refNamePosition'> & {
+  assembly?: AssemblyConfig
+}
+
+export type SyntenyTablesArgs = Omit<SyntenyReadArgs, 'query' | 'target'> & {
+  query: HostAxisArgs
+  target: HostAxisArgs
+}
+export type DotplotTablesArgs = Omit<DotplotReadArgs, 'x' | 'y'> & {
+  x: HostAxisArgs
+  y: HostAxisArgs
 }
 
 /**
@@ -383,6 +397,12 @@ export function createTablesEngine() {
   pluginManager.configure()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
+  const positioned = async ({ assembly, ...axis }: HostAxisArgs) => ({
+    ...axis,
+    refNamePosition: assembly
+      ? (await assemblyOf(assembly)).refNamePosition
+      : undefined,
+  })
   const call =
     <A extends object, R>(
       name: string,
@@ -397,7 +417,11 @@ export function createTablesEngine() {
   const regionRead = <A extends RegionArgs, T extends object>(
     name: string,
     keys: ArgKeys<HostArgs<A>>,
-    table: (pm: PluginManager, args: A) => Promise<T>,
+    table: (
+      pm: PluginManager,
+      args: A,
+      assembly: ResolvedAssembly | undefined,
+    ) => Promise<T>,
   ) =>
     call(
       name,
@@ -410,16 +434,13 @@ export function createTablesEngine() {
         ...rest
       }: HostArgs<A>) => {
         const given = { ...rest, regions } as A
-        const args = assembly
-          ? await renameRegions(
-              pluginManager,
-              given,
-              await assemblyOf(assembly),
-            )
+        const resolved = assembly ? await assemblyOf(assembly) : undefined
+        const args = resolved
+          ? await renameRegions(pluginManager, given, resolved)
           : given
         const [missing, tables] = await Promise.all([
           missingContigs(pluginManager, args),
-          table(pluginManager, args),
+          table(pluginManager, args, resolved),
         ])
         refuseOverRows(tables, rowLimit)
         return {
@@ -438,9 +459,12 @@ export function createTablesEngine() {
     alignments: regionRead(
       'alignments',
       ALIGNMENTS_ARGS,
-      async (pm, args: AlignmentReadArgs) => {
+      async (pm, args: AlignmentReadArgs, assembly) => {
         const [tables, undecodable] = await Promise.all([
-          alignmentTables(pm, args),
+          alignmentTables(pm, {
+            ...args,
+            refNamePosition: assembly?.refNamePosition,
+          }),
           undecodableContigs(pm, args),
         ])
         return { ...tables, warnings: [...tables.warnings, ...undecodable] }
@@ -479,7 +503,11 @@ export function createTablesEngine() {
     alignmentMarkAlpha,
     alignmentConnectorCurves,
     synteny: call('synteny', SYNTENY_ARGS, async (args: SyntenyTablesArgs) => {
-      const tables = await syntenyTables(pluginManager, args)
+      const tables = await syntenyTables(pluginManager, {
+        ...args,
+        query: await positioned(args.query),
+        target: await positioned(args.target),
+      })
       const [query, target] = tables.assemblyNames
       return {
         ...tables,
@@ -500,7 +528,11 @@ export function createTablesEngine() {
       }
     }),
     dotplot: call('dotplot', DOTPLOT_ARGS, async (args: DotplotTablesArgs) => {
-      const tables = await dotplotTables(pluginManager, args)
+      const tables = await dotplotTables(pluginManager, {
+        ...args,
+        x: await positioned(args.x),
+        y: await positioned(args.y),
+      })
       const [x, y] = tables.assemblyNames
       return {
         ...tables,

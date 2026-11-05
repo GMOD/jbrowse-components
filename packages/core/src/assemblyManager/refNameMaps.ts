@@ -115,6 +115,47 @@ export function buildRefNameMaps(
 }
 
 /**
+ * The canonical name the alias maps give a refName, matched as written, then
+ * in any case. Undefined for a name they lack.
+ */
+export function canonicalRefNameIn(
+  refNameAliases: RefNameAliases,
+  lowerCaseRefNameAliases: RefNameAliases,
+  refName: string,
+) {
+  return (
+    refNameAliases[refName] || lowerCaseRefNameAliases[refName.toLowerCase()]
+  )
+}
+
+/** Each refName's index in an assembly's regions, the first where one repeats. */
+export function refNameIndexOf(refNames: readonly string[]) {
+  const index = new Map<string, number>()
+  for (const [i, refName] of refNames.entries()) {
+    if (!index.has(refName)) {
+      index.set(refName, i)
+    }
+  }
+  return index
+}
+
+/**
+ * Where a refName, canonical or any alias, sits in an assembly's own order:
+ * what chromosome painting hands its palette out by, in the browser and in
+ * the tables. Canonicalized first, because a name off a file can be the
+ * file's spelling (`1` against a canonical `chr1`), and a missed probe is
+ * silent: the painter falls back to a hash color. Undefined for a name the
+ * assembly lacks.
+ */
+export function refNamePositionIn(
+  refNameToIndex: ReadonlyMap<string, number> | undefined,
+  canonical: (refName: string) => string,
+  refName: string,
+) {
+  return refNameToIndex?.get(canonical(refName))
+}
+
+/**
  * Inverts an alias map into canonical refName -> every name for that sequence,
  * the canonical name first and its aliases after it.
  *

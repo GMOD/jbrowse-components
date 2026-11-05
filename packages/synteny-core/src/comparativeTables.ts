@@ -23,6 +23,7 @@ import { syntenyColorConfigSchema } from './syntenyColorConfigSchema.ts'
 import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 import { syntenyTrackPalette } from './trackColors.ts'
 
+import type { RefNamePosition } from './colorFunctions.ts'
 import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -43,19 +44,22 @@ export interface AxisRegionArgs {
  * One axis of a comparative view as a host writes it: the regions it shows,
  * end to end, the assembly they are on (unset, the adapter's own name for
  * that side), the pixels it draws them across, which sets the zoom, and the
- * assembly's contigs in order, which hand out the palette a color by contig
- * name paints (unset, the regions' own order).
+ * order a color by contig name hands its palette out in: `refNamePosition`,
+ * the axis's assembly's own (`Assembly.getRefNamePosition`), else the
+ * contigs of `refNames` in order, else the regions'.
  */
 export interface AxisArgs {
   regions: AxisRegionArgs[]
   assemblyName?: string
   width: number
   refNames?: string[]
+  refNamePosition?: RefNamePosition
 }
 
 export interface ComparativeAxis {
   regions: Region[]
   refNames: string[]
+  refNamePosition?: RefNamePosition
   bpPerPx: number
   assemblyName: string
   /** cumulative bp before each region, no padding, as the views lay them out */
@@ -80,6 +84,7 @@ export function comparativeAxis(
   return {
     regions,
     refNames: axis.refNames ?? [...new Set(regions.map(r => r.refName))],
+    refNamePosition: axis.refNamePosition,
     assemblyName,
     before,
     bpPerPx: total / Math.max(1, axis.width),
@@ -107,9 +112,13 @@ export function locateCum(axis: ComparativeAxis, cum: number, hint = cum) {
   return { region: i, coord: r.reversed ? r.end - off : r.start + off }
 }
 
-/** The order `query` and `target` painting hand the palette out in: the axis's contigs'. */
+/** The order `query` and `target` painting hand the palette out in: the axis's assembly's, else its contigs'. */
 export function axisNamePosition(axis: ComparativeAxis) {
-  const position = new Map(axis.refNames.map((name, i) => [name, i]))
+  return axis.refNamePosition ?? positionIn(axis.refNames)
+}
+
+function positionIn(refNames: readonly string[]) {
+  const position = new Map(refNames.map((name, i) => [name, i]))
   return (refName: string) => position.get(refName)
 }
 
