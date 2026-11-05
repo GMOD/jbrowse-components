@@ -26,6 +26,8 @@ lineage with one copy. We:
   genome
 - chain the drosophila orthogroups into collinear blocks with MCScanX and load
   them as a PAF track
+- open one drosophila orthogroup's protein alignment and gene tree beside the
+  genome with the MSA view plugin
 
 ## Prerequisites
 
@@ -491,6 +493,97 @@ every band:
 
 <Figure caption="The same stack from the drosophila_blocks track, one ribbon per collinear block." src="/img/orthofinder_synteny/drosophila_blocks.png" />
 
+### The alignment and gene tree behind an orthogroup {#orthogroup-alignments}
+
+An orthogroup says which genes are related, not how their proteins line up.
+OrthoFinder works that out too when it runs past the orthogroups: drop `-og` and
+it aligns the orthogroups and infers a rooted gene tree for each one of four or
+more genes.
+
+```bash
+orthofinder -f proteomes -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+```
+
+For the five flies that took 16 minutes on 12 threads. `Results_<date>` then
+holds `MultipleSequenceAlignments/<orthogroup>.fa` and
+`Resolved_Gene_Trees/Resolved_Gene_Trees.txt` beside `Orthogroups/`. Host those
+three folders, about 75 MB here, without the run's `WorkingDirectory/`, and the
+[MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) reads them as
+written. Name the plugin and the folder in the config:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
+  "msa": {
+    "datasets": [
+      {
+        "datasetId": "drosophila_orthofinder",
+        "name": "Drosophila orthogroups (OrthoFinder)",
+        "adapter": {
+          "type": "OrthoFinderMsaAdapter",
+          "resultsLocation": { "uri": "orthofinder/" }
+        }
+      }
+    ]
+  }
+}
+```
+
+The plugin finds a gene's row in the alignment by translating its transcript, so
+the assembly needs its genome sequence where a chrom.sizes is enough for the
+synteny tracks. The `drosophila` config gives melanogaster a bgzipped FASTA
+(`bgzip -i` then `samtools faidx`), its sequences named like its chrom.sizes:
+
+```json addassembly
+{
+  "name": "melanogaster",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "melanogaster-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "BgzipFastaAdapter",
+      "uri": "melanogaster.fa.gz"
+    }
+  }
+}
+```
+
+Open melanogaster at the `l(2)gl` gene:
+
+```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
+{
+  "defaultSession": {
+    "name": "melanogaster l(2)gl",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "melanogaster",
+        "loc": "2L:9,000-22,000",
+        "tracks": ["melanogaster_genes"]
+      }
+    ]
+  }
+}
+```
+
+Right-click `l(2)gl`, pick **Launch MSA view**, and submit the **Pre-loaded MSA
+datasets** tab. The view opens beside the genome with one row per fly, named
+`<proteome>_<gene id>`, under OrthoFinder's tree for that orthogroup, and a
+click in the alignment moves the genome view to that codon.
+
+The proteomes hold one protein per gene, named by gene id, so the plugin finds
+the orthogroup through the gene and the fly's row by its residues. OrthoFinder
+writes a gene id with `_` for each `(`, `)`, `:` and other character a tree or
+table cannot hold (`E(spl)m2-BFM` is `E_spl_m2-BFM`), and the plugin matches
+those too. Only melanogaster has its sequence in the demo, so launch from its
+genes; another fly needs its own FASTA the same way.
+
 ## Reproduce it end to end
 
 [`build_orthofinder_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_orthofinder_synteny.sh)
@@ -588,6 +681,8 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
 
 - Emms and Kelly (2019).
   [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)
+- Emms, Liu, Belcher, Holmes and Kelly (2026).
+  [OrthoFinder 3, Nature Methods 23:1327–1333](https://doi.org/10.1038/s41592-026-03126-6)
 - Wang et al. (2012).
   [MCScanX: a toolkit for detection and evolutionary analysis of gene synteny and collinearity](https://doi.org/10.1093/nar/gkr1293)
 - Schnable et al. (2009).
