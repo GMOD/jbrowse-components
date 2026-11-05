@@ -67,6 +67,30 @@ describe('sort output survives a consumer that stops reading', () => {
   })
 })
 
+test('sort-gff drops the blank lines tabix rejects, as in an NCBI GFF3 export', () => {
+  const gff = [
+    '##gff-version 3',
+    'chr1\tsrc\tgene\t200\t300\t.\t+\t.\tID=b',
+    'chr1\tsrc\tgene\t100\t150\t.\t+\t.\tID=a',
+    '',
+    ' ',
+    '',
+  ].join('\n')
+  const { status, stdout, stderr } = pipe(`node ${bin} sort-gff`, {
+    input: gff,
+  })
+  expect(stderr).toBe('')
+  expect(status).toBe(0)
+  expect(stdout).toBe(
+    [
+      '##gff-version 3',
+      'chr1\tsrc\tgene\t100\t150\t.\t+\t.\tID=a',
+      'chr1\tsrc\tgene\t200\t300\t.\t+\t.\tID=b',
+      '',
+    ].join('\n'),
+  )
+})
+
 describe('"-" reads JSON from stdin', () => {
   const minimalConfig = {
     assemblies: [

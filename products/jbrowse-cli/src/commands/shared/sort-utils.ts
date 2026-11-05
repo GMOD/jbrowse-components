@@ -22,7 +22,7 @@ export interface SortConfig {
 
 export const BED_CONFIG: SortConfig = {
   description:
-    'Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data. Takes a file, or the same data on stdin',
+    'Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data, and blank lines dropped, which tabix rejects. Takes a file, or the same data on stdin',
   examples: [
     '# sort bed and pipe to bgzip',
     '$ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz',
@@ -36,7 +36,7 @@ export const BED_CONFIG: SortConfig = {
 
 export const GFF_CONFIG: SortConfig = {
   description:
-    'Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data. Takes a file, or the same data on stdin',
+    'Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data, and blank lines dropped, which tabix rejects. Takes a file, or the same data on stdin',
   examples: [
     '# sort gff and pipe to bgzip',
     '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
@@ -65,7 +65,7 @@ function getMinimalEnvironment(): NodeJS.ProcessEnv {
 // metacharacters (`"`, `$(...)`, backticks) cannot break out and execute. Only
 // sortColumn, an integer from the BED/GFF configs, is interpolated.
 function sortPipeline(sortColumn: number): string {
-  return `grep "^#" "$1"; grep -v "^#" "$1" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
+  return `grep "^#" "$1"; grep -v -e "^#" -e "^[[:space:]]*$" "$1" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
 }
 
 function createSortCommandForStdin(sortColumn: number): {
