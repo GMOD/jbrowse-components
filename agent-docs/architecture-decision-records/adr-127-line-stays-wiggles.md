@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Superseded by ADR-184: the `line` shape lands in two modules once wiggle's port made it the second consumer"
+summary: "Superseded by ADR-184, which landed `line` once wiggle became its second consumer. Decided no render-core `line` shape, since porting wiggle onto per-instance lanes cost 16 more bytes a feature"
 ---
 
 # ADR-127: The line stays wiggle's

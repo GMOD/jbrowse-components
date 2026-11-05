@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema`, holding the type, domain ends, autoscale and axis guides (`rules`, `title`, `grid`, `minimalTicks`); `ScoreScaleMixin` reads and writes it, with no migration"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema`, holding the type, domain ends, `domainQuantile` (ADR-179) and axis guides (`rules`, `title`, `grid`, `minimalTicks`); `ScoreScaleMixin` reads and writes it, with no migration"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display

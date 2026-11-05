@@ -1,6 +1,6 @@
 ---
 name: row-attributes-have-one-home
-description: Row displays get per-row attributes three ways (samples TSV, a wiggle subadapter's `group`, `rows.groups` regexes), so `facet`, `rows.filter`, `rows.color` and `rows.labels` mean different things per display. Read before adding a row attribute source.
+description: Row displays get per-row attributes three ways (samples TSV, a wiggle subadapter's `group`, `rows.groups` regexes), so `facet`, `rows.filter`, `rows.color` and `rows.labels` read them by three rules. Proposes one `rows.data` table keyed by row name. Read before adding an attribute source, variant `groups` or attribute labels.
 ---
 
 # Row attributes have one home
