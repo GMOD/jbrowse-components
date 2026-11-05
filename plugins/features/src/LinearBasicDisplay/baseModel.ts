@@ -110,6 +110,7 @@ import {
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
+import { featureRenderStateViews, groupLabelViews } from './renderStateViews.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -425,20 +426,7 @@ export default function baseStateModelFactory(
         return widthPx
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get renderState() {
-        return {
-          scrollY: self.scrollTop,
-          canvasWidth: self.canvasWidthPx,
-          canvasHeight: self.height,
-          outlineColor: 0,
-          hideChevrons: !this.showChevrons,
-        }
-      },
-
+    .views(() => ({
       /**
        * #getter
        * Overridable hook (default on): whether intron lines have chevrons.
@@ -448,7 +436,9 @@ export default function baseStateModelFactory(
       get showChevrons(): boolean {
         return true
       },
-
+    }))
+    .views(self => featureRenderStateViews(self))
+    .views(self => ({
       /**
        * #getter
        */
@@ -621,6 +611,7 @@ export default function baseStateModelFactory(
     }))
     .views(self => basicDisplayLayoutViews(self))
     .views(featureBandViews)
+    .views(self => groupLabelViews(self))
     .views(self => ({
       /**
        * #getter
@@ -629,14 +620,6 @@ export default function baseStateModelFactory(
        */
       get fitScale() {
         return self.fitStage.scale
-      },
-      /**
-       * #getter
-       * Whether the section chips and dividers draw: a grouping is set and
-       * the layout produced a section for it.
-       */
-      get showsGroupLabels() {
-        return self.groupSections.length > 0
       },
       /**
        * #getter

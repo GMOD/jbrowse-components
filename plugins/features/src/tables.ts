@@ -1,25 +1,11 @@
-import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import {
-  DEFAULT_BYTE_LIMIT,
-  overByteLimitError,
-} from '@jbrowse/core/data_adapters/tables'
+import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
-import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
-import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
-import { types } from '@jbrowse/mobx-state-tree'
 import { runInAction } from 'mobx'
 
-import {
-  basicDisplayGlyphViews,
-  basicDisplayLayoutViews,
-  featureDisplayConfigViews,
-  hiddenSectionViews,
-} from './LinearBasicDisplay/basicDisplayLayoutViews.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
 import {
@@ -29,12 +15,7 @@ import {
   peptideFill,
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
-import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
-import { featureColorScaleViews } from './LinearBasicDisplay/derivedColorKey.ts'
 import { sectionIdsOf } from './LinearBasicDisplay/facet.ts'
-import { featureBandViews } from './LinearBasicDisplay/featureBandViews.ts'
-import { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
-import { featureIdsTouchingBlocks } from './LinearBasicDisplay/layoutQueries.ts'
 import {
   ARROW_LENGTH_PX,
   STEM_HALF_H_PX,
@@ -53,18 +34,14 @@ import {
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
-import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
-import { createPeptideCache } from './RenderFeatureDataRPC/peptides/peptideCache.ts'
-import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
+import { shouldRenderPeptideText } from './RenderFeatureDataRPC/zoomThresholds.ts'
 import {
-  shouldRenderPeptideBackground,
-  shouldRenderPeptideText,
-} from './RenderFeatureDataRPC/zoomThresholds.ts'
-import { featureColorViews } from './shared/featureColorViews.ts'
+  createFeatureStaticHost,
+  fetchFeatureRegions,
+} from './shared/featureStaticHost.ts'
 
 import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPositioning.ts'
-import type { LayoutRegionData } from './LinearBasicDisplay/layoutInputs.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -72,7 +49,6 @@ import type {
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureTablesArgs {
@@ -316,82 +292,6 @@ function arrows(
 // keys each contig under one empty name.
 const TABLES_ASSEMBLY = ''
 
-const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
-
-interface FeatureTablesWindow {
-  regions: readonly TablesRegion[]
-  bpPerPx: number
-}
-
-/**
- * A `LinearBasicDisplay`'s decisions with no session or view: its config
- * node, and as volatiles the regions laid end to end at one zoom and what was
- * fetched over them, under the views layers the display installs. Every
- * fetched region is on screen, nothing is pinned or expanded, and no density
- * gate measured.
- */
-const FeatureTablesHost = types
-  .model('FeatureTablesHost', {
-    configuration: configSchemaFactory(),
-  })
-  .volatile((): FeatureTablesWindow => ({ regions: [], bpPerPx: 1 }))
-  .volatile(() => ({
-    rpcDataMap: new Map<number, LayoutRegionData>(),
-    layoutPinnedFeatureIdSet: NO_FEATURE_IDS,
-    expandedGeneIdSet: NO_FEATURE_IDS,
-    visibleFeatureDensityPerPx: 0,
-  }))
-  .actions(self => ({
-    setWindow({ regions, bpPerPx }: FeatureTablesWindow) {
-      self.regions = regions
-      self.bpPerPx = bpPerPx
-    },
-    setRpcDataMap(rpcDataMap: Map<number, LayoutRegionData>) {
-      self.rpcDataMap = rpcDataMap
-    },
-  }))
-  .views(self => ({
-    get conf() {
-      return self.configuration
-    },
-    get host() {
-      return { bpPerPx: self.bpPerPx, coarseBpPerPx: self.bpPerPx }
-    },
-    get layoutReady() {
-      return self.rpcDataMap.size > 0
-    },
-    get onScreenWidthPx() {
-      return self.regions.reduce(
-        (sum, r) => sum + (r.end - r.start) / self.bpPerPx,
-        0,
-      )
-    },
-    get fitTargetHeight(): number {
-      return getConf(self, 'height')
-    },
-    get hidesOverflow() {
-      return false
-    },
-  }))
-  .views(self => heightModeViews(self))
-  .views(self => featureDisplayConfigViews(self))
-  .views(self => hiddenGroupsViews(self))
-  .views(self => hiddenSectionViews(self))
-  .views(featureColorViews)
-  .views(self => ({
-    get onScreenFeatureIds() {
-      return featureIdsTouchingBlocks(
-        self.rpcDataMap.values(),
-        self.regions.map(r => ({ assemblyName: TABLES_ASSEMBLY, ...r })),
-        self.hiddenGroupFeatureIds,
-      )
-    },
-  }))
-  .views(self => basicDisplayGlyphViews(self))
-  .views(self => basicDisplayLayoutViews(self))
-  .views(featureBandViews)
-  .views(self => featureColorScaleViews(self))
-
 /**
  * #api
  * A region's features, or several regions', as the feature display
@@ -437,76 +337,30 @@ export async function featureTables(
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: FeatureTablesArgs,
 ) {
-  const host = FeatureTablesHost.create(
-    {
-      configuration: {
-        ...display,
-        type: 'LinearBasicDisplay',
-        displayId: 'tables',
-      },
-    },
-    { pluginManager },
-  )
-  host.setWindow({ regions, bpPerPx })
-  const request = runInAction(() => ({
-    subfeatureLabels: host.effectiveSubfeatureLabels,
-    geneGlyphMode: host.effectiveGeneGlyphMode,
-    facet: host.facet,
+  const host = createFeatureStaticHost({ id: 'tables', display, pluginManager })
+  const blocks = regions.map(r => ({
+    assemblyName: TABLES_ASSEMBLY,
+    ...r,
+    widthPx: (r.end - r.start) / bpPerPx,
   }))
-  const config = fullConfSnapshot(host.configuration)
-  const workerConfig = {
-    ...pickDisplayConfig(config),
-    subfeatureLabels: request.subfeatureLabels,
-    ...(request.facet === undefined || request.facet.field === STRAND_FIELD
-      ? {}
-      : { facetField: request.facet.field }),
-  }
-  const peptideCache = createPeptideCache()
-  const raws = await Promise.all(
-    regions.map(async r => {
-      const result = await executeRenderFeatureData({
-        pluginManager,
-        peptideCache,
-        args: {
-          sessionId: 'tables',
-          adapterConfig,
-          sequenceAdapter,
-          region: { assemblyName: TABLES_ASSEMBLY, ...r },
-          displayConfig: workerConfig,
-          geneGlyphMode: request.geneGlyphMode,
-          bpPerPx,
-          colorByFrame,
-          peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
-          geneticCodeId,
-          byteLimit,
-          statusCallback: () => {},
-        } satisfies RpcExecuteArgs<'RenderFeatureData'>,
-      })
-      if ('regionTooLarge' in result) {
-        throw overByteLimitError([r], result.bytes, byteLimit, 'features')
-      }
-      return result.value
-    }),
-  )
-  host.setRpcDataMap(
-    new Map(
-      raws.map((raw, i) => {
-        const { refName, start, end } = regions[i]!
-        return [
-          i,
-          {
-            ...raw,
-            regionKey: layoutRegionKey({
-              assemblyName: TABLES_ASSEMBLY,
-              refName,
-            }),
-            regionStart: start,
-            regionEnd: end,
-            reversed: false,
-          },
-        ]
-      }),
-    ),
+  host.setFrame({
+    bpPerPx,
+    coarseBpPerPx: bpPerPx,
+    trackWidthPx: blocks.reduce((sum, b) => sum + b.widthPx, 0),
+    settledDynamicBlocks: blocks,
+  })
+  const config = await fetchFeatureRegions(
+    pluginManager,
+    host,
+    blocks.map((region, index) => ({ region, index })),
+    {
+      adapterConfig,
+      sequenceAdapter,
+      colorByFrame,
+      aminoAcids,
+      geneticCodeId,
+      byteLimit,
+    },
   )
   // One batch, so every read shares one fit solve.
   const {
@@ -530,8 +384,7 @@ export async function featureTables(
     showChevrons: host.showChevrons,
     fontSize: host.labelFontSize,
   }))
-  const items = raws.flatMap(raw => raw.flatbushItems)
-  const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
+  const items = [...host.rpcDataMap.values()].flatMap(raw => raw.flatbushItems)
   const sectionOf = facet ? sectionIdsOf(facet) : undefined
   const isHidden = (item: FlatbushItem) =>
     !!hiddenGroupFeatureIds?.has(item.featureId)
@@ -547,7 +400,7 @@ export async function featureTables(
     regions.map((r, i) =>
       laidOutTables(resolved.get(i)!, {
         region: r,
-        widthPx: widthsPx[i]!,
+        widthPx: blocks[i]!.widthPx,
         bpPerPx,
         hideChevrons: !showChevrons,
         labels: regionLabels[i]!,
