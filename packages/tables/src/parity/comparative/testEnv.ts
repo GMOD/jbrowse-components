@@ -75,8 +75,41 @@ const totalBp = (regions: readonly TablesRegion[]) =>
 export const axisBpPerPx = ({ regions, width }: ComparativeAxis) =>
   totalBp(regions) / width
 
-const displayedRegions = ({ assembly, regions }: ComparativeAxis) =>
-  regions.map(r => ({ ...r, assemblyName: assembly.name }))
+type TestSession = ReturnType<typeof createTestSession>
+
+/**
+ * How the app frames an axis's regions: one region is a locus, a window into
+ * its whole contig; several are the displayed regions themselves. The frame's
+ * regions and the window's start in them, in bp.
+ */
+async function framed(
+  session: TestSession,
+  assemblyName: string,
+  regions: readonly TablesRegion[],
+) {
+  const [locus, ...rest] = regions
+  const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
+  const contig =
+    locus && rest.length === 0
+      ? assembly?.regions?.find(r => r.refName === locus.refName)
+      : undefined
+  return contig && locus
+    ? {
+        displayedRegions: [
+          {
+            refName: contig.refName,
+            start: contig.start,
+            end: contig.end,
+            assemblyName,
+          },
+        ],
+        windowStartBp: locus.start - contig.start,
+      }
+    : {
+        displayedRegions: regions.map(r => ({ ...r, assemblyName })),
+        windowStartBp: 0,
+      }
+}
 
 // A web session holding both assemblies and one synteny track over the
 // adapter, its RPC on the main thread, so the display fetches with its own
@@ -111,21 +144,27 @@ const settled = (
 function assertWindow(
   what: string,
   axis: ComparativeAxis,
+  windowStartBp: number,
   shown: { bpPerPx: number; offsetPx: number },
 ) {
   const bpPerPx = axisBpPerPx(axis)
-  if (shown.bpPerPx !== bpPerPx || shown.offsetPx !== 0) {
+  const offsetPx = windowStartBp / bpPerPx
+  if (
+    Math.abs(shown.bpPerPx - bpPerPx) > 1e-9 ||
+    Math.abs(shown.offsetPx - offsetPx) > 1e-6
+  ) {
     throw new Error(
-      `the ${what} shows ${shown.bpPerPx} bp/px from ${shown.offsetPx} px, not the export's ${bpPerPx} from 0`,
+      `the ${what} shows ${shown.bpPerPx} bp/px from ${shown.offsetPx} px, not the export's ${bpPerPx} from ${offsetPx}`,
     )
   }
 }
 
 /**
- * A real `LinearSyntenyView` of two genome rows, each showing its axis's
- * regions end to end across the axis's width, and one level holding the
- * track's `LinearSyntenyDisplay` at `height` px, settled on its first fetch.
- * The rows open on that window, so the first fetch is the one compared.
+ * A real `LinearSyntenyView` of two genome rows, each framed as the app
+ * frames its axis (`framed`) and scrolled to the axis's regions across its
+ * width, and one level holding the track's `LinearSyntenyDisplay` at
+ * `height` px, settled on its first fetch. The rows open on that window, so
+ * the first fetch is the one compared.
  */
 export async function standUpSynteny(
   spec: ComparativeViewSpec & { height: number },
@@ -135,15 +174,17 @@ export async function standUpSynteny(
   if (query.width !== target.width) {
     throw new Error('the synteny rows share one width')
   }
+  const frames = await Promise.all(
+    spec.axes.map(axis => framed(session, axis.assembly.name, axis.regions)),
+  )
   const typeName: string = 'LinearSyntenyView'
   const view = await session.launchView(typeName, {
     ...spec.settings,
-    views: spec.axes.map(axis => ({
+    views: spec.axes.map((axis, i) => ({
       type: 'LinearGenomeView',
       hideHeader: true,
-      displayedRegions: displayedRegions(axis),
+      ...frames[i],
       windowWidthBp: totalBp(axis.regions),
-      windowStartBp: 0,
     })),
     levels: [
       {
@@ -181,7 +222,7 @@ export async function standUpSynteny(
   spec.axes.forEach((axis, i) => {
     const row = view.views[i]
     if (row) {
-      assertWindow(`row ${i}`, axis, row)
+      assertWindow(`row ${i}`, axis, frames[i]!.windowStartBp, row)
     }
   })
   return {
@@ -202,23 +243,30 @@ const DOTPLOT_MARGIN_PX = 400
 
 /**
  * A real `DotplotView` whose horizontal axis shows the query axis's regions
- * and whose vertical the target's, each at its axis's bp per px from 0, and
- * the track's `DotplotDisplay`, settled on its first fetch.
+ * and whose vertical the target's, each framed as the app frames it
+ * (`framed`) at its axis's bp per px, and the track's `DotplotDisplay`,
+ * settled on its first fetch.
  */
 export async function standUpDotplot(spec: ComparativeViewSpec) {
   const session = comparativeSession(spec)
   const [x, y] = spec.axes
-  const axisView = (axis: ComparativeAxis) => ({
-    displayedRegions: displayedRegions(axis),
+  const [xFrame, yFrame] = await Promise.all(
+    spec.axes.map(axis => framed(session, axis.assembly.name, axis.regions)),
+  )
+  const axisView = (
+    axis: ComparativeAxis,
+    { displayedRegions, windowStartBp }: Awaited<ReturnType<typeof framed>>,
+  ) => ({
+    displayedRegions,
     bpPerPx: axisBpPerPx(axis),
-    offsetPx: 0,
+    offsetPx: windowStartBp / axisBpPerPx(axis),
   })
   const typeName: string = 'DotplotView'
   const view = await session.launchView(typeName, {
     ...spec.settings,
     assemblyNames: [x.assembly.name, y.assembly.name],
-    hview: axisView(x),
-    vview: axisView(y),
+    hview: axisView(x, xFrame!),
+    vview: axisView(y, yFrame!),
     tracks: [
       {
         type: 'SyntenyTrack',
@@ -244,8 +292,8 @@ export async function standUpDotplot(spec: ComparativeViewSpec) {
   } else if (display.error) {
     throw new Error(`the DotplotDisplay failed: ${String(display.error)}`)
   }
-  assertWindow('horizontal axis', x, view.hview)
-  assertWindow('vertical axis', y, view.vview)
+  assertWindow('horizontal axis', x, xFrame!.windowStartBp, view.hview)
+  assertWindow('vertical axis', y, yFrame!.windowStartBp, view.vview)
   return {
     view,
     display,
@@ -290,18 +338,11 @@ const isMultiWayDisplay = (
 ): display is MultiWaySyntenyDisplayModel =>
   hasDisplayType(display, 'MultiWaySyntenyDisplay')
 
-// fetched, every lane's dependent fetch landed and no lane mid-motion
-const multiwaySettled = (display: MultiWaySyntenyDisplayModel) =>
-  display.features !== undefined &&
-  !display.awaitingDependentData &&
-  !display.dataSuperseded &&
-  display.lanesBeingDescribed.size === 0
-
 /**
- * A real `LinearGenomeView` showing the anchor's regions end to end across
- * its width, holding the track's `MultiWaySyntenyDisplay` with the reader's
- * pins and hidden lanes, settled once its anchor fetch and every lane fetch
- * it calls for have landed.
+ * A real `LinearGenomeView` framed as the app frames the anchor's regions
+ * (`framed`) and scrolled to them across its width, holding the track's
+ * `MultiWaySyntenyDisplay` with the reader's pins and hidden lanes, settled
+ * once its anchor fetch and every lane fetch it calls for have landed.
  */
 export async function standUpMultiway(spec: MultiwayViewSpec) {
   const { anchor, assemblies } = spec
@@ -329,13 +370,11 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
   session.setPreferenceOverride('animationMode', 'disabled')
   const typeName: string = 'LinearGenomeView'
   const bpPerPx = totalBp(anchor.regions) / anchor.width
+  const frame = await framed(session, anchor.assemblyName, anchor.regions)
+  const offsetPx = frame.windowStartBp / bpPerPx
   const view = await session.launchView(typeName, {
-    displayedRegions: anchor.regions.map(r => ({
-      ...r,
-      assemblyName: anchor.assemblyName,
-    })),
+    ...frame,
     windowWidthBp: totalBp(anchor.regions),
-    windowStartBp: 0,
     showTrackOutlines: false,
     tracks: [
       {
@@ -364,7 +403,7 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
     assemblies.map(a => session.assemblyManager.waitForAssembly(a.name)),
   )
   await until(
-    () => multiwaySettled(display),
+    () => display.svgReady,
     () => 'MultiWaySyntenyDisplay',
   )
   if (display.error) {
@@ -372,12 +411,12 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
       `the MultiWaySyntenyDisplay failed: ${String(display.error)}`,
     )
   } else if (
-    view.bpPerPx !== bpPerPx ||
-    view.offsetPx !== 0 ||
+    Math.abs(view.bpPerPx - bpPerPx) > 1e-9 ||
+    Math.abs(view.offsetPx - offsetPx) > 1e-6 ||
     display.canvasWidthPx !== anchor.width
   ) {
     throw new Error(
-      `the view shows ${view.bpPerPx} bp/px from ${view.offsetPx} px over ${display.canvasWidthPx}, not the export's ${bpPerPx} from 0 over ${anchor.width}`,
+      `the view shows ${view.bpPerPx} bp/px from ${view.offsetPx} px over ${display.canvasWidthPx}, not the export's ${bpPerPx} from ${offsetPx} over ${anchor.width}`,
     )
   }
   return {
