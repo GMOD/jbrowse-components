@@ -2437,6 +2437,9 @@ importers:
       '@jbrowse/plugin-features':
         specifier: workspace:^
         version: link:../../plugins/features
+      '@jbrowse/plugin-gff3':
+        specifier: workspace:^
+        version: link:../../plugins/gff3
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
