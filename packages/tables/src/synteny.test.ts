@@ -158,9 +158,10 @@ test('a row through its assembly is a window into its contig: ribbons reach past
     ribbons.targetX1[i]!,
     ribbons.targetX2[i]!,
   ])
+  const strokePx = 1
   for (const xs of feet) {
-    expect(Math.max(...xs)).toBeGreaterThan(0)
-    expect(Math.min(...xs)).toBeLessThan(width)
+    expect(Math.max(...xs)).toBeGreaterThan(-strokePx)
+    expect(Math.min(...xs)).toBeLessThan(width + strokePx)
   }
   expect(Math.min(...feet.flat())).toBeLessThan(0)
   expect(Math.max(...feet.flat())).toBeGreaterThan(width)
@@ -194,6 +195,41 @@ test('a row through its assembly is a window into its contig: ribbons reach past
       ),
     ).toEqual([bare.alignments.queryStart[a], bare.alignments.queryEnd[a]])
   }
+})
+
+test("a ribbon whose mate lies past the facing row's overdraw is culled, and the strip on its own row marks it", async () => {
+  const width = 800
+  const overdrawPx = 1000
+  const query = { refName: 'ctgA', start: 27_000, end: 30_000 }
+  const target = { refName: 'ctgA', start: 10_000, end: 13_000 }
+  const t = await engine.synteny({
+    ...INV_INDELS,
+    query: { regions: [query], width },
+    target: { regions: [target], width },
+  })
+  const edges = t.ribbons.queryX1.map((x1, i) => [
+    [x1, t.ribbons.queryX2[i]!],
+    [t.ribbons.targetX1[i]!, t.ribbons.targetX2[i]!],
+  ])
+  for (const edge of edges.flat()) {
+    expect(Math.max(...edge)).toBeGreaterThanOrEqual(-overdrawPx)
+    expect(Math.min(...edge)).toBeLessThanOrEqual(width + overdrawPx)
+  }
+  const o = t.offscreen
+  const marked = (axis: string, window: typeof query) =>
+    o.axis.filter(
+      (a, i) =>
+        a === axis &&
+        o.mateChrom[i] === 'ctgA' &&
+        o.drawn[i] &&
+        o.start[i]! < window.end &&
+        o.end[i]! > window.start,
+    )
+  expect(marked('query', query).length).toBeGreaterThan(0)
+  expect(marked('target', target).length).toBeGreaterThan(0)
+  expect(new Set(t.offscreenStrip.marks.axis)).toEqual(
+    new Set(['query', 'target']),
+  )
 })
 
 test('the indels part draws the ops colored, the matches alone, or the block alone', async () => {

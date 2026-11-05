@@ -145,7 +145,11 @@ export function datasetMayHide(
     : band !== undefined && (mateAxis.lo < band.lo || mateAxis.hi > band.hi)
 }
 
-function ribbonDrawn(mateAxis: MateAxisPlacement, i: number, band: MateBand) {
+export function ribbonDrawn(
+  mateAxis: MateAxisPlacement,
+  i: number,
+  band: MateBand,
+) {
   return mateAxis.ends[i]! >= band.lo && mateAxis.starts[i]! <= band.hi
 }
 
@@ -180,16 +184,22 @@ function stripGeometry({
   }
 }
 
-// Each dataset's contigs with the aligned bp of that contig across the whole
-// lane: one contig split over two tracks, or over the worker's marks and the
-// band's, is one contig to a reader, and the floor is a question about it.
-function laneContigBp(datasets: OffscreenMateDataset[]) {
+// Each contig a lane's datasets name with the aligned bp of that contig across
+// the whole lane: one contig split over two tracks, or over the worker's marks
+// and the band's, is one contig to a reader, and the floor is a question about
+// it.
+export function laneContigBpByName(datasets: readonly OffscreenMateData[]) {
   const byName = new Map<string, number>()
   for (const { mateRefNameDict, alignedBp } of datasets) {
     for (const [id, name] of mateRefNameDict.entries()) {
       byName.set(name, (byName.get(name) ?? 0) + (alignedBp[id] ?? Infinity))
     }
   }
+  return byName
+}
+
+function laneContigBp(datasets: OffscreenMateDataset[]) {
+  const byName = laneContigBpByName(datasets)
   return datasets.map(({ mateRefNameDict }) =>
     Float64Array.from(mateRefNameDict, name => byName.get(name)!),
   )

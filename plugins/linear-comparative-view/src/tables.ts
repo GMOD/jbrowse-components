@@ -20,16 +20,23 @@ import {
   viewColorSettings,
 } from '@jbrowse/synteny-core'
 
+import { culledRibbonMateData } from './LinearSyntenyDisplay/culledRibbonMates.ts'
 import {
   MIN_CONTIG_MARK_PX,
+  datasetMayHide,
   drawOffscreenMates,
+  laneContigBpByName,
   offscreenMateColors,
+  ribbonDrawn,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import {
   computeSyntenyColors,
   createSyntenyColorFunction,
 } from './LinearSyntenyDisplay/syntenyColors.ts'
-import { ribbonThinFade } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import {
+  isRibbonCulled,
+  ribbonThinFade,
+} from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import {
   admittedOffscreenMates,
   offscreenMateFilter,
@@ -44,11 +51,18 @@ import {
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './LinearSyntenyRPC/syntenyKinds.ts'
-import { DEFAULT_ALPHA } from './LinearSyntenyView/consts.ts'
+import {
+  DEFAULT_ALPHA,
+  DEFAULT_OVERDRAW_PX,
+} from './LinearSyntenyView/consts.ts'
 import { offscreenMateMarkColorFor } from './LinearSyntenyViewHelper/offscreenMateMarkColors.ts'
 import { offscreenMateSummary } from './LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
-import type { OffscreenMateLane } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type { CulledRibbonMateData } from './LinearSyntenyDisplay/culledRibbonMates.ts'
+import type {
+  MateBand,
+  OffscreenMateLane,
+} from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type {
   FetchedOffscreenMates,
   OffscreenMateData,
@@ -118,6 +132,11 @@ interface OffscreenLane {
   // the ones the filter admits, which the strip draws and the contigs count
   data: OffscreenMateData
   passes?: (index: number) => boolean
+  // every ribbon the band drew geometry for, placed on the facing axis, held
+  // while the facing row's band leaves one out (`culledRibbonMates`)
+  culled?: CulledRibbonMateData
+  // the facing row's window and overdraw, in its cumBp
+  mateBand: MateBand
   axis: 'query' | 'target'
   on: ComparativeAxis
   // where the row's window starts in its frame, and how wide it is
@@ -141,12 +160,16 @@ function offscreenLane(
     filter,
     offsetPx,
     width,
+    culled,
+    mateBand,
   }: {
     field: string | undefined
     namePosition?: RefNamePosition
     filter: readonly FieldPredicate[]
     offsetPx: number
     width: number
+    culled: CulledRibbonMateData | undefined
+    mateBand: MateBand
   },
 ): OffscreenLane {
   const markColorFor = offscreenMateMarkColorFor(
@@ -158,6 +181,11 @@ function offscreenLane(
     fetched,
     data: admittedOffscreenMates(fetched, filter, { axis }),
     passes: offscreenMateFilter(fetched, filter, { axis }),
+    culled:
+      culled && culled.starts.length > 0 && datasetMayHide(culled, mateBand)
+        ? culled
+        : undefined,
+    mateBand,
     axis,
     on,
     offsetPx,
@@ -232,6 +260,12 @@ function recordingContext() {
   return { ctx: ctx as unknown as Ctx2D, marks, labels }
 }
 
+// What a lane's strip walks, as the display hangs it: the worker's marks,
+// then the band's culled ribbons
+function laneDatasets({ data, culled }: OffscreenLane) {
+  return [data, ...(culled ? [culled] : [])].filter(d => d.starts.length > 0)
+}
+
 // The strip as the band paints it over its `height` px: every mark, in px
 // from the band's top left, and every label the strips have room for, in the
 // display's 10px sans-serif
@@ -240,10 +274,11 @@ function offscreenStrip(
   { width, height }: { width: number; height: number },
 ) {
   const strips: OffscreenMateLane[] = lanes
-    .filter(lane => lane.data.starts.length > 0)
-    .map(lane => ({
-      datasets: [lane.data],
-      mateBand: { lo: -Infinity, hi: Infinity },
+    .map(lane => ({ lane, datasets: laneDatasets(lane) }))
+    .filter(({ datasets }) => datasets.length > 0)
+    .map(({ lane, datasets }) => ({
+      datasets,
+      mateBand: lane.mateBand,
       bpPerPx: lane.on.bpPerPx,
       offsetPx: lane.offsetPx,
       side: lane.axis === 'query' ? 'top' : 'bottom',
@@ -280,31 +315,64 @@ export function recordedOffscreenStrips(
   }
 }
 
-// The blocks placed on one axis whose mate the other row does not show, each
-// back on the region of that axis its clamped span lies in, in the color the
-// strip paints it and whether it clears the strip's floors
-function offscreenRows({
-  fetched: data,
-  data: admitted,
-  passes,
-  axis,
-  on,
-  offsetPx,
-  width,
-  colorOf,
-}: OffscreenLane) {
-  const rows = Array.from(data.starts, (_, i) => i).filter(i => {
-    const a = data.starts[i]! / on.bpPerPx - offsetPx
-    const b = data.ends[i]! / on.bpPerPx - offsetPx
-    return Math.max(a, b) > 0 && Math.min(a, b) < width
-  })
+// The blocks placed on one axis whose mate the other row does not show, and
+// the ribbons the band culls whose mate lies past the facing row's overdraw,
+// each back on the region of that axis its clamped span lies in, in the color
+// the strip paints it and whether it clears the strip's floors
+function offscreenRows(lane: OffscreenLane) {
+  const { fetched, data: admitted, passes, culled, mateBand } = lane
+  const contigFloor = MIN_CONTIG_MARK_PX * lane.on.bpPerPx
+  const contigBp = laneContigBpByName([admitted, ...(culled ? [culled] : [])])
+  const inView = (start: number, end: number) =>
+    end / lane.on.bpPerPx - lane.offsetPx >= 0 &&
+    start / lane.on.bpPerPx - lane.offsetPx <= lane.width
+  const workerRows = markRows(
+    lane,
+    fetched,
+    Array.from(fetched.starts, (_, i) => i).filter(i =>
+      inView(
+        Math.min(fetched.starts[i]!, fetched.ends[i]!),
+        Math.max(fetched.starts[i]!, fetched.ends[i]!),
+      ),
+    ),
+    i => passes?.(i) ?? true,
+    contigBp,
+    contigFloor,
+  )
+  return culled
+    ? concatColumns(
+        workerRows,
+        markRows(
+          lane,
+          culled,
+          Array.from(culled.starts, (_, i) => i).filter(
+            i =>
+              culled.starts[i]! <= culled.ends[i]! &&
+              inView(culled.starts[i]!, culled.ends[i]!) &&
+              !ribbonDrawn(culled.mateAxis, i, mateBand),
+          ),
+          () => true,
+          contigBp,
+          contigFloor,
+        ),
+      )
+    : workerRows
+}
+
+function markRows(
+  { axis, on, colorOf }: OffscreenLane,
+  data: OffscreenMateData,
+  rows: number[],
+  passes: (index: number) => boolean,
+  contigBp: ReadonlyMap<string, number>,
+  contigFloor: number,
+) {
   const from = rows.map(i => locateCum(on, data.starts[i]!, data.ends[i]))
   const to = rows.map(i => locateCum(on, data.ends[i]!, data.starts[i]))
   const mateChrom = rows.map(
     i => data.mateRefNameDict[data.mateRefNameIds[i]!]!,
   )
   const paint = mateChrom.map(colorOf)
-  const contigFloor = MIN_CONTIG_MARK_PX * on.bpPerPx
   return {
     axis: rows.map(() => axis),
     region: from.map(p => p.region),
@@ -318,49 +386,42 @@ function offscreenRows({
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
     drawn: rows.map(
-      i =>
-        (passes?.(i) ?? true) &&
-        (admitted.alignedBp[data.mateRefNameIds[i]!] ?? Infinity) >=
-          contigFloor,
+      (i, k) =>
+        passes(i) && (contigBp.get(mateChrom[k]!) ?? Infinity) >= contigFloor,
     ),
   }
 }
 
 // Each contig a lane's mates lie on, with what the strip's hover reports of
-// it: the alignments to it, the sequence they cover, and the line it prints
-function offscreenContigRows({ data, axis, colorOf }: OffscreenLane) {
-  const paint = data.mateRefNameDict.map(colorOf)
-  const count = Array.from(data.counts)
-  const alignedBp = Array.from(data.alignedBp)
+// it: the alignments to it and the sequence they cover, a row for each
+// dataset the strip walks, and the line its hover prints, summed over them
+function offscreenContigRows(lane: OffscreenLane) {
+  const { data, culled, axis, colorOf } = lane
+  const datasets = [data, ...(culled ? [culled] : [])]
+  const totals = (name: string) =>
+    datasets.reduce(
+      (sum, d) => {
+        const id = d.mateRefNameDict.indexOf(name)
+        return id < 0
+          ? sum
+          : {
+              alignments: sum.alignments + (d.counts[id] ?? 0),
+              alignedBp: sum.alignedBp + (d.alignedBp[id] ?? 0),
+            }
+      },
+      { alignments: 0, alignedBp: 0 },
+    )
+  const names = datasets.flatMap(d => d.mateRefNameDict)
+  const paint = names.map(colorOf)
   return {
-    axis: data.mateRefNameDict.map(() => axis),
-    mateChrom: [...data.mateRefNameDict],
-    count,
-    alignedBp,
-    label: data.mateRefNameDict.map((name, i) =>
-      offscreenMateSummary(name, {
-        alignments: count[i]!,
-        alignedBp: alignedBp[i]!,
-      }),
-    ),
+    axis: names.map(() => axis),
+    mateChrom: names,
+    count: datasets.flatMap(d => Array.from(d.counts)),
+    alignedBp: datasets.flatMap(d => Array.from(d.alignedBp)),
+    label: names.map(name => offscreenMateSummary(name, totals(name))),
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
   }
-}
-
-// Whether a ribbon from feet `top` on a row `topWidth` px wide to feet
-// `bottom` on one `bottomWidth` wide crosses the window: it does unless every
-// foot lies left of both rows or right of its own row's edge
-function ribbonInWindow(
-  top: readonly number[],
-  bottom: readonly number[],
-  topWidth: number,
-  bottomWidth: number,
-) {
-  return (
-    Math.max(...top, ...bottom) > 0 &&
-    (Math.min(...top) < topWidth || Math.min(...bottom) < bottomWidth)
-  )
 }
 
 function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
@@ -380,10 +441,11 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * a span on the target row (`match` for the block, `insertion`, `deletion`
  * and `skip` for the CIGAR ops wide enough to draw, `marker` for a location
  * tick), with its color and the alpha it composites at, and whether it draws
- * as a centerline; `offscreen`, the blocks whose mate lies on a contig the
- * other row is not showing, in the color the strip along that row's edge
- * paints them, `offscreenContigs`, the count and aligned bp of each such
- * contig and the line its hover prints, and `offscreenStrip`, the marks and
+ * as a centerline, less those the band culls past its overdraw;
+ * `offscreen`, the blocks whose mate lies on a contig the other row is not
+ * showing or past its window and overdraw, in the color the strip along
+ * that row's edge paints them, `offscreenContigs`, the count and aligned bp
+ * of each contig the strip's marks name and the line its hover prints, and `offscreenStrip`, the marks and
  * labels the strips along the band's edges paint, in px;
  * `legend` and `ramps`, the key; and `config`, the view's settings with
  * their defaults filled, `encoding.color` and `encoding.opacity` as config objects. For a host that draws
@@ -541,14 +603,7 @@ export async function syntenyTables(
     corners.sx2 = c2 / q.bpPerPx - queryFrame.offsetPx
     corners.sx3 = c3 / t.bpPerPx - targetFrame.offsetPx
     corners.sx4 = c4 / t.bpPerPx - targetFrame.offsetPx
-    if (
-      !ribbonInWindow(
-        [corners.sx1, corners.sx2],
-        [corners.sx3, corners.sx4],
-        query.width,
-        target.width,
-      )
-    ) {
+    if (isRibbonCulled(corners, query.width, DEFAULT_OVERDRAW_PX, marker)) {
       continue
     }
     drawn.add(instanceFeatureIdx[i]!)
@@ -617,6 +672,17 @@ export async function syntenyTables(
 
   ribbons.alignment = ribbons.alignment.map(f => rowOf.get(f)!)
 
+  const culled = culledRibbonMateData(
+    instanceData,
+    featureData,
+    config.filter.length > 0 || settings.fade !== undefined
+      ? colors
+      : undefined,
+  )
+  const bandOf = (axis: ComparativeAxis, offsetPx: number) => ({
+    lo: (offsetPx - DEFAULT_OVERDRAW_PX) * axis.bpPerPx,
+    hi: (offsetPx + query.width + DEFAULT_OVERDRAW_PX) * axis.bpPerPx,
+  })
   const lanes = [
     offscreenLane(featureData.offscreenMates, 'query', q, {
       field: settings.field,
@@ -624,6 +690,8 @@ export async function syntenyTables(
       filter: config.filter,
       offsetPx: queryFrame.offsetPx,
       width: query.width,
+      culled: culled.onQueryAxis,
+      mateBand: bandOf(t, targetFrame.offsetPx),
     }),
     offscreenLane(featureData.targetOffscreenMates, 'target', t, {
       field: settings.field,
@@ -631,6 +699,8 @@ export async function syntenyTables(
       filter: config.filter,
       offsetPx: targetFrame.offsetPx,
       width: target.width,
+      culled: featureData.targetQueried ? culled.onTargetAxis : undefined,
+      mateBand: bandOf(q, queryFrame.offsetPx),
     }),
   ] as const
   const offscreen = concatColumns(

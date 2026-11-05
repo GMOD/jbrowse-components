@@ -622,9 +622,13 @@ call, so one value can take two colors across two calls.
   `segments` are those crossing both axes' windows.
 - `offscreen` lists the blocks touching the row's window, and `offscreenStrip`
   paints from the window's place in its frame.
-- The view's off-screen strip also marks a ribbon whose mate scrolled out of the
-  facing row (`culledRibbonMates`); the tables list only mates on a contig the
-  facing row does not show.
+- `ribbons` leaves out what the band culls (`isRibbonCulled`): a ribbon with
+  an edge wholly past the view's overdraw (1000 px) either side of its row.
+  `offscreen` lists those whose mate lies past the facing row's window and
+  overdraw beside the blocks mated to a contig that row does not show, as the
+  strip marks both (`culledRibbonMates`), and `offscreenContigs` adds a row
+  per contig the band's ribbons reach, counting every one the band drew,
+  while the strip has one to mark.
 - `multiway` frames a one-region anchor the same way, in the contig its lane's
   entry in `assemblies` states, else the file, and fetches the view's static
   blocks around the window as the display does. It lists the groups the window
