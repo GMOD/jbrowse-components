@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node scripts/audit-config-read-types.ts --write",
-    "notes": "Every getConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone."
+    "notes": "Every getConf/readConfObject call, and every `x.getConf(slot)` method read (an adapter or model's own accessor), in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone."
   },
   "columns": [
     {
@@ -44,22 +44,22 @@
     {
       "values": {
         "scope": "source",
-        "calls": 576,
-        "unchecked": 28
+        "calls": 736,
+        "unchecked": 40
       }
     },
     {
       "values": {
         "scope": "tests",
-        "calls": 921,
-        "unchecked": 148
+        "calls": 929,
+        "unchecked": 152
       }
     },
     {
       "values": {
         "scope": "all",
-        "calls": 1497,
-        "unchecked": 176
+        "calls": 1665,
+        "unchecked": 192
       }
     }
   ]

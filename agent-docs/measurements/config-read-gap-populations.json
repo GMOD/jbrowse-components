@@ -41,8 +41,15 @@
     {
       "values": {
         "population": "frozen slot, `any` by design",
-        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`, `assemblyNameToPanSN`",
-        "reads": 10
+        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`, `assemblyNameToPanSN`, `geneticCodes`, `samples`, `lanes`, `bedLocations`, `adapters`, `subadapters`, `sequenceAdapter`, `controlAdapter`, `summaryAdapter`",
+        "reads": 19
+      }
+    },
+    {
+      "values": {
+        "population": "helper shared by adapters, typed as the bare base class",
+        "slots": "`pifGzLocation`, `nhLocation`, `samplesTsvLocation`",
+        "reads": 3
       }
     },
     {

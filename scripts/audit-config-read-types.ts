@@ -78,7 +78,20 @@ const POPULATIONS: { label: string; slots: string[] }[] = [
       'metadata',
       'ldAdapter',
       'assemblyNameToPanSN',
+      'geneticCodes',
+      'samples',
+      'lanes',
+      'bedLocations',
+      'adapters',
+      'subadapters',
+      'sequenceAdapter',
+      'controlAdapter',
+      'summaryAdapter',
     ],
+  },
+  {
+    label: 'helper shared by adapters, typed as the bare base class',
+    slots: ['pifGzLocation', 'nhLocation', 'samplesTsvLocation'],
   },
 ]
 
@@ -111,6 +124,40 @@ function createProgram() {
 // because only string-literal slot args are recorded (see `isLiteralSlot`).
 const READERS = new Set(['getConf', 'readConfObject'])
 const WRITERS = new Set(['setConf'])
+
+// A model or adapter's own `getConf` method — BaseAdapter's `this.getConf`,
+// Assembly's `self.getConf` — takes the slot first and widens the same way: a
+// class that passes its base no config type, or a helper with no stated return
+// type, reads `any`. Filed with its receiver so it reads as a method in the
+// baseline.
+const METHOD_READER = 'getConf'
+
+function methodReceiver(receiver: ts.Expression) {
+  return ts.isIdentifier(receiver) ||
+    receiver.kind === ts.SyntaxKind.ThisKeyword
+    ? receiver.getText()
+    : '…'
+}
+
+function accessorCall(node: ts.CallExpression) {
+  const callee = node.expression
+  return ts.isIdentifier(callee)
+    ? READERS.has(callee.text) || WRITERS.has(callee.text)
+      ? {
+          name: callee.text,
+          isRead: READERS.has(callee.text),
+          slotArg: node.arguments[1],
+        }
+      : undefined
+    : ts.isPropertyAccessExpression(callee) &&
+        callee.name.text === METHOD_READER
+      ? {
+          name: `${methodReceiver(callee.expression)}.${METHOD_READER}`,
+          isRead: true,
+          slotArg: node.arguments[0],
+        }
+      : undefined
+}
 
 type Bucket = 'source' | 'test'
 
@@ -166,7 +213,7 @@ function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
     measured,
     published: false,
     source: source(
-      'Every getConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.',
+      "Every getConf/readConfObject call, and every `x.getConf(slot)` method read (an adapter or model's own accessor), in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.",
     ),
     columns: [
       { key: 'scope', label: 'scope' },
@@ -273,38 +320,37 @@ function main() {
         continue
       }
       const visit = (node: ts.Node): void => {
-        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-          const callee = node.expression.text
-          const isRead = READERS.has(callee)
-          if (isRead || WRITERS.has(callee)) {
-            total++
-            const slotArg = node.arguments[1]
-            // a dynamic or array-path slot is out of scope: the loose overload
-            // is deliberate there (config editor slot facade, nested paths)
-            const isLiteralSlot = slotArg && ts.isStringLiteral(slotArg)
-            const slot = isLiteralSlot ? slotArg.text : '<dynamic>'
-            const { line } = sf.getLineAndCharacterOfPosition(node.getStart())
-            const file = path.relative(process.cwd(), sf.fileName)
-            // Per bucket as well as in total: a checked SHARE is only honest
-            // against the calls in its own scope, and the tests' share is a
-            // different claim from the source's.
-            calls[bucketFor(file)]++
+        const accessor = ts.isCallExpression(node)
+          ? accessorCall(node)
+          : undefined
+        if (accessor) {
+          const { name: callee, isRead, slotArg } = accessor
+          total++
+          // a dynamic or array-path slot is out of scope: the loose overload
+          // is deliberate there (config editor slot facade, nested paths)
+          const isLiteralSlot = slotArg && ts.isStringLiteral(slotArg)
+          const slot = isLiteralSlot ? slotArg.text : '<dynamic>'
+          const { line } = sf.getLineAndCharacterOfPosition(node.getStart())
+          const file = path.relative(process.cwd(), sf.fileName)
+          // Per bucket as well as in total: a checked SHARE is only honest
+          // against the calls in its own scope, and the tests' share is a
+          // different claim from the source's.
+          calls[bucketFor(file)]++
 
-            // Only the readers carry a signal. `setConf` returns void, so
-            // there is nothing to inspect — but it widens with its siblings (the
-            // constraint is the same `ConfigurationSlotName`), so a holder whose
-            // reads are unchecked has unchecked writes too, and the reads are
-            // what this counts.
-            if (isLiteralSlot && isRead) {
-              if (!readIsChecked(checker.getTypeAtLocation(node))) {
-                gaps.push({
-                  file,
-                  line: line + 1,
-                  callee,
-                  slot,
-                  bucket: bucketFor(file),
-                })
-              }
+          // Only the readers carry a signal. `setConf` returns void, so
+          // there is nothing to inspect — but it widens with its siblings (the
+          // constraint is the same `ConfigurationSlotName`), so a holder whose
+          // reads are unchecked has unchecked writes too, and the reads are
+          // what this counts.
+          if (isLiteralSlot && isRead) {
+            if (!readIsChecked(checker.getTypeAtLocation(node))) {
+              gaps.push({
+                file,
+                line: line + 1,
+                callee,
+                slot,
+                bucket: bucketFor(file),
+              })
             }
           }
         }
@@ -342,7 +388,7 @@ function main() {
       '# throws on an undeclared name and MST type-checks the value — and the read',
       '# path cannot take the same guard (see adr-052).',
       '#',
-      '# Four populations, and they want different things:',
+      '# Five populations, and they want different things:',
       '#',
       '#   - a MIXIN casting its own `self` to a widened config holder. **No longer',
       '#     accepted, and no longer here**: a mixin names its own field table',
@@ -362,9 +408,14 @@ function main() {
       '#     Usually one line, unless its base schema is itself widened — a base',
       '#     taken from `pluginManager.getDisplayType(…).configSchema` poisons the',
       '#     whole schema through GetBase and has to be re-plumbed first.',
+      '#   - a helper several adapters share that takes the bare `BaseFeatureDataAdapter`',
+      '#     (`PifFile`, `getSamplesFromAdapter`): its `adapter.getConf` has no schema.',
+      '#     Narrowing it means passing the slot values in, not typing the base.',
       '#',
       `# ${sourceGaps.length} unchecked in source, ${gaps.length - sourceGaps.length} in tests,`,
       `# of ${total} total config accessor calls. The gate counts source only.`,
+      '# A read spelled `this.getConf` / `self.getConf` / `….getConf` is an',
+      "# adapter's or model's own accessor method, whose slot is its first argument.",
       '',
       ...[...byFile].flatMap(([file, list]) => [
         `${file}  (${list.length})${list[0]!.bucket === 'test' ? '  [test]' : ''}`,

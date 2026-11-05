@@ -11,7 +11,7 @@
 # throws on an undeclared name and MST type-checks the value — and the read
 # path cannot take the same guard (see adr-052).
 #
-# Four populations, and they want different things:
+# Five populations, and they want different things:
 #
 #   - a MIXIN casting its own `self` to a widened config holder. **No longer
 #     accepted, and no longer here**: a mixin names its own field table
@@ -31,14 +31,21 @@
 #     Usually one line, unless its base schema is itself widened — a base
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
+#   - a helper several adapters share that takes the bare `BaseFeatureDataAdapter`
+#     (`PifFile`, `getSamplesFromAdapter`): its `adapter.getConf` has no schema.
+#     Narrowing it means passing the slot values in, not typing the base.
 #
-# 28 unchecked in source, 148 in tests,
-# of 1497 total config accessor calls. The gate counts source only.
+# 40 unchecked in source, 152 in tests,
+# of 1665 total config accessor calls. The gate counts source only.
+# A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
+# adapter's or model's own accessor method, whose slot is its first argument.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1241	readConfObject('adapter')
 packages/app-core/src/WebSession/BaseWebSession.ts  (1)
   101	getConf('shareURL')
+packages/core/src/assemblyManager/assembly.ts  (1)
+  640	self.getConf('geneticCodes')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (8)  [test]
@@ -86,6 +93,11 @@ packages/core/src/configuration/getConf.test.ts  (3)  [test]
   39	readConfObject('height')
   47	readConfObject('resolution')
   49	getConf('resolution')
+packages/core/src/data_adapters/freeAdapterSession.integration.test.ts  (1)  [test]
+  28	this.getConf('path')
+packages/core/src/data_adapters/keepAdapters.test.ts  (2)  [test]
+  19	this.getConf('path')
+  54	adapter.getConf('path')
 packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.test.ts  (3)  [test]
   71	readConfObject('adapter')
   82	readConfObject('adapter')
@@ -151,6 +163,13 @@ plugins/alignments/src/LinearAlignmentsDisplay/menus/presets.test.ts  (2)  [test
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
+plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts  (1)
+  223	this.getConf('bedLocations')
+plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/MultiPairwiseSyntenyAdapter.ts  (2)
+  201	this.getConf('adapters')
+  237	this.getConf('lanes')
+plugins/comparative-adapters/src/PifFile.ts  (1)
+  37	adapter.getConf('pifGzLocation')
 plugins/comparative-adapters/src/util.ts  (1)
   46	readConfObject('assemblyNameToPanSN')
 plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.test.tsx  (1)  [test]
@@ -170,13 +189,19 @@ plugins/data-management/src/BulkAddTracksWorkflow/BulkAddTracksWorkflow.test.tsx
   333	readConfObject('name')
 plugins/features/src/shared/FeatureGateMixin.test.ts  (1)  [test]
   17	getConf('maxFeatureScreenDensty')
+plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts  (1)
+  41	this.getConf('sequenceAdapter')
 plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
   57	readConfObject('ldAdapter')
+plugins/hic/src/HicAdapter/HicAdapter.ts  (1)
+  183	this.getConf('controlAdapter')
 plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts  (1)
   87	readConfObject('adapter')
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
   108	readConfObject('trackId')
   115	readConfObject('trackId')
+plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/testEnv.ts  (1)  [test]
+  160	this.getConf('rows')
 plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
   100	getConf('color')
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
@@ -192,10 +217,18 @@ plugins/maf/src/MafTabixAdapter/summaryAdapter.test.ts  (5)  [test]
   259	readConfObject('summaryAdapter')
   276	readConfObject('summaryAdapter')
   286	readConfObject('summaryAdapter')
+plugins/maf/src/util/getSamples.ts  (3)
+  212	self.getConf('nhLocation')
+  213	self.getConf('samples')
+  214	self.getConf('samplesTsvLocation')
+plugins/maf/src/util/loadMafSummaryAdapter.ts  (1)
+  38	self.getConf('summaryAdapter')
 plugins/marks/src/LinearMarkDisplay/quantitativeTrackRows.test.ts  (1)  [test]
   52	readConfObject('type')
 plugins/sequence/src/index.test.ts  (1)  [test]
   38	readConfObject('motifs')
+plugins/wiggle/src/MultiWiggleAdapter/MultiWiggleAdapter.ts  (1)
+  159	this.getConf('subadapters')
 plugins/wiggle/src/rowsShorthand.test.ts  (1)  [test]
   124	readConfObject('height')
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
