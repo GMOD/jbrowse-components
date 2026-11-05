@@ -92,6 +92,17 @@ export const WGSIM = {
   region: { refName: 'ctgA', start: 1000, end: 2000 },
 } satisfies AlignmentTablesArgs
 
+/** Simulated short pairs over ctgA and ctgB, with MD tags, around SVs. */
+export const SV_READS = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-sv.bam'),
+    index: { location: uri('volvox-sv.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgB', start: 1000, end: 2500 },
+} satisfies AlignmentTablesArgs
+
 export const PAIRED_INVERSION = {
   adapterConfig: {
     type: 'BamAdapter',
@@ -173,6 +184,28 @@ export const BIGBED = {
   bpPerPx: 50,
 } satisfies FeatureTablesArgs
 
+/**
+ * volvox's genes as BED12, tabix-indexed, read with no sequence: nothing
+ * states the contig's length.
+ */
+export const BED_TABIX = {
+  adapterConfig: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: uri('volvox-bed12.bed.gz'),
+    index: { location: uri('volvox-bed12.bed.gz.tbi'), indexType: 'TBI' },
+  },
+  region: { refName: 'ctgA', start: 15_000, end: 25_000 },
+  bpPerPx: 10,
+} satisfies FeatureTablesArgs
+
+/** volvox's EDEN gene and its transcripts as a GTF. */
+export const GTF = {
+  adapterConfig: { type: 'GtfAdapter', gtfLocation: uri('volvox.sorted.gtf') },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 10_000 },
+  bpPerPx: 10,
+} satisfies FeatureTablesArgs
+
 /** A signed microarray track over the whole contig, at 50 bp/px. */
 export const SIGNED_BIGWIG = {
   adapterConfig: {
@@ -212,6 +245,32 @@ export const DOG_SV = {
     samplesTsvLocation: uri('dog10k_amy2b_samples.tsv', DOG10K),
   },
   region: { refName: 'chr6', start: 47340000, end: 47420000 },
+} satisfies VariantTablesArgs
+
+/**
+ * `posneg_rw1.bw` as a BedGraph over ctgA and ctgB: nothing states either
+ * contig's length.
+ */
+export const BEDGRAPH = {
+  adapterConfig: {
+    type: 'BedGraphAdapter',
+    bedGraphLocation: uri('posneg_rw1.bedgraph'),
+  },
+  region: { refName: 'ctgA', start: 20_000, end: 30_000 },
+  bpPerPx: 10,
+} satisfies WiggleTablesArgs
+
+/**
+ * Breakends joining ctgA and ctgB, with no samples and no `##contig` lines:
+ * nothing states either contig's length.
+ */
+export const BREAKENDS = {
+  adapterConfig: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: uri('volvox.dup.vcf.gz'),
+    index: { location: uri('volvox.dup.vcf.gz.tbi'), indexType: 'TBI' },
+  },
+  region: { refName: 'ctgA', start: 20_000, end: 25_000 },
 } satisfies VariantTablesArgs
 
 /** Three signed BigWigs as one multi-wiggle track, `posneg_rw1` to `3`. */

@@ -17,8 +17,8 @@ import { junctionColor } from '../../../../plugins/alignments/src/features/sashi
 import { buildArcColorPalette } from '../../../../plugins/alignments/src/shaders/palettes.ts'
 import { CONNECTOR_BOW } from '../../../render-core/src/shaders/connectorMark.consts.generated.ts'
 import { createTablesEngine } from '../index.ts'
-import { BAM, PAIRED_INVERSION, SPLICED } from '../volvox.fixture.ts'
-import { standUpDisplay } from './testEnv.ts'
+import { BAM, PAIRED_INVERSION, SPLICED, SV_READS } from '../volvox.fixture.ts'
+import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { AlignmentTables } from '../index.ts'
@@ -28,7 +28,7 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments/Li
 
 interface GeometryFixture {
   adapterConfig: Record<string, unknown>
-  region: TablesRegion
+  regions: TablesRegion[]
 }
 
 const GEOMETRY_DECISIONS = [
@@ -42,8 +42,6 @@ const GEOMETRY_DECISIONS = [
 ] as const
 
 type GeometryDecision = (typeof GEOMETRY_DECISIONS)[number]
-
-const VOLVOX_CONTIG = 50_001
 
 const volvoxBam = (file: string) => {
   const uri = (name: string) => ({
@@ -60,7 +58,7 @@ const volvoxBam = (file: string) => {
 /** Simulated short reads over a tandem duplication: split reads map back. */
 const TANDEM_DUPLICATION = {
   adapterConfig: volvoxBam('volvox-sv.bam'),
-  region: { refName: 'ctgA', start: 41000, end: 44000 },
+  regions: [{ refName: 'ctgA', start: 41000, end: 44000 }],
 }
 
 const engine = createTablesEngine()
@@ -72,21 +70,25 @@ interface Window {
   end: number
 }
 
-/** Whether a span, its ends in either order, reaches into `window`. */
-const touches = (window: Window, a = 0, b = a) =>
-  Math.max(a, b) > window.start && Math.min(a, b) < window.end
+/**
+ * Whether a span, its ends in either order, reaches into one of `windows`.
+ * Several windows are the displayed regions, which hold everything the
+ * display fetched, so no span reaches into one window from another's data.
+ */
+const touches = (windows: readonly Window[], a = 0, b = a) =>
+  windows.some(w => Math.max(a, b) > w.start && Math.min(a, b) < w.end)
 
 /**
  * Whether the window shows read `i` of `d`: it touches the window, or a
  * connector the window draws joins it, partly off screen.
  */
 const readShown = (
-  window: Window,
+  windows: readonly Window[],
   joined: ReadonlySet<unknown>,
   d: { readPositions: ArrayLike<number>; readKeys: ArrayLike<unknown> },
   i: number,
 ) =>
-  touches(window, d.readPositions[2 * i], d.readPositions[2 * i + 1]) ||
+  touches(windows, d.readPositions[2 * i], d.readPositions[2 * i + 1]) ||
   joined.has(d.readKeys[i])
 
 /** Each drawn read the window shows, its section and row by its read key. */
@@ -115,11 +117,15 @@ function readRows(
  * read off the model as its renderers read it: each drawn read's section and
  * row, every connector the line pass and the connector mark draw, each
  * section's dip reserve, the junctions the sashimi band draws and their
- * color, the arcs the read-connection band draws, and the color each
- * mismatched base paints. The display lays out the view's margin around the
- * window too, which the window does not show.
+ * color, the arcs the read-connection band draws (those joining two regions
+ * by its overlay), and the color each mismatched base paints. The display
+ * lays out the view's margin around a one-locus window too, which the window
+ * does not show.
  */
-function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
+function modelGeometry(
+  m: LinearAlignmentsDisplayModel,
+  windows: readonly Window[],
+) {
   const sections = m.renderSections
   const labelOf = new Map(sections.map(s => [s.groupKey, s.label]))
   const palette = m.themed.colors
@@ -130,7 +136,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
     [...lines.values()].flatMap(l =>
       Array.from({ length: l.numLinkedReadLines }, (_, i) =>
         touches(
-          window,
+          windows,
           l.linkedReadLinePositions[2 * i],
           l.linkedReadLinePositions[2 * i + 1],
         )
@@ -166,7 +172,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
       })),
     ]
     for (const { pair, placed } of placedPairs) {
-      if (placed && touches(window, placed.x, placed.x2)) {
+      if (placed && touches(windows, placed.x, placed.x2)) {
         joined.add(pair.e1.data.readKeys[pair.e1.readIdx])
         joined.add(pair.e2.data.readKeys[pair.e2.readIdx])
       }
@@ -175,7 +181,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
   const shown = (
     d: { readPositions: ArrayLike<number>; readKeys: ArrayLike<unknown> },
     i: number,
-  ) => readShown(window, joined, d, i)
+  ) => readShown(windows, joined, d, i)
   const marked = m.connectorPairSections.flatMap(sec =>
     sec.pairs.flatMap(pair => {
       const placed = connectorInstance(
@@ -186,7 +192,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
         arrows,
       )
       const label = labelOf.get(sec.groupKey)
-      return placed && touches(window, placed.x, placed.x2)
+      return placed && touches(windows, placed.x, placed.x2)
         ? [
             placed.straight
               ? `${label} ${placed.x}-${placed.x2} ${placed.row}/${placed.row2} straight`
@@ -210,11 +216,11 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
         ]),
       ),
     ),
-    arcs: sorted(
-      [...m.arcsResult.byGroup].flatMap(([key, byRegion]) =>
+    arcs: sorted([
+      ...[...m.arcsResult.byGroup].flatMap(([key, byRegion]) =>
         [...byRegion.values()].flatMap(a =>
           Array.from({ length: a.numArcs }, (_, i) =>
-            touches(window, a.arcX1[i], a.arcX2[i])
+            touches(windows, a.arcX1[i], a.arcX2[i])
               ? [
                   `${labelOf.get(key)} ${a.arcX1[i]}-${a.arcX2[i]} ${arcSlotColor[arcColorSlot(a.arcColorTypes[i]!)]}`,
                 ]
@@ -222,7 +228,13 @@ function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
           ).flat(),
         ),
       ),
-    ),
+      ...[...m.arcsResult.crossRegionByGroup].flatMap(([key, arcs]) =>
+        arcs.map(
+          a =>
+            `${labelOf.get(key)} ${a.p1.bp}-${a.p2.bp} ${arcSlotColor[arcColorSlot(a.colorType)]}`,
+        ),
+      ),
+    ]),
     mismatchColors:
       m.showPileup && m.showMismatches
         ? Object.fromEntries(
@@ -316,9 +328,10 @@ function geometryParity(
           displayType: 'LinearAlignmentsDisplay',
           isDisplay: isLinearAlignmentsDisplay,
           displayConfig: display,
-          region: fixture.region,
-          contigLength: VOLVOX_CONTIG,
-          bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
+          regions: fixture.regions,
+          contigLengths: VOLVOX_CONTIGS,
+          bpPerPx:
+            fixture.regions.reduce((sum, r) => sum + r.end - r.start, 0) / 1000,
         })
       const clipped = model.lanes.filter(
         l => l.clippedBy !== undefined && l.clippedBy !== 'collapse',
@@ -334,18 +347,26 @@ function geometryParity(
     buildExport: display =>
       engine.alignments({
         adapterConfig: fixture.adapterConfig,
-        region: fixture.region,
+        regions: fixture.regions,
         display,
       }),
-    modelDecisions: m => modelGeometry(m, fixture.region),
+    modelDecisions: m => modelGeometry(m, fixture.regions),
     exportDecisions: exportGeometry,
   }
 }
 
 const TALL = { height: 2000 }
 
+const windowsOf = ({
+  adapterConfig,
+  region,
+}: {
+  adapterConfig: Record<string, unknown>
+  region: TablesRegion
+}) => ({ adapterConfig, regions: [region] })
+
 describe('volvox reads', () => {
-  parityCases(geometryParity(BAM), [
+  parityCases(geometryParity(windowsOf(BAM)), [
     { name: 'defaults', config: TALL },
     {
       name: 'a column sort',
@@ -378,7 +399,7 @@ describe('volvox reads', () => {
 })
 
 describe('volvox pairs across an inversion', () => {
-  parityCases(geometryParity(PAIRED_INVERSION), [
+  parityCases(geometryParity(windowsOf(PAIRED_INVERSION)), [
     {
       name: 'unit chain, read connections',
       config: { ...TALL, unit: 'chain', readConnections: { show: true } },
@@ -411,7 +432,7 @@ describe('split reads over a tandem duplication', () => {
 })
 
 describe('spliced reads', () => {
-  parityCases(geometryParity(SPLICED), [
+  parityCases(geometryParity(windowsOf(SPLICED)), [
     { name: 'defaults', config: TALL },
     {
       name: 'facet by strand',
@@ -420,8 +441,74 @@ describe('spliced reads', () => {
   ])
 })
 
-test('the cases decide over loops, curves, straight lines, junctions, arcs and a dip reserve', async () => {
-  const [loops, pairs, spliced, arcs] = await Promise.all([
+describe('two loci of volvox reads on ctgA, end to end', () => {
+  parityCases(
+    geometryParity({
+      adapterConfig: BAM.adapterConfig,
+      regions: [
+        { refName: 'ctgA', start: 1000, end: 3000 },
+        { refName: 'ctgA', start: 20_000, end: 22_000 },
+      ],
+    }),
+    [
+      { name: 'defaults', config: TALL },
+      { name: 'facet by strand', config: { ...TALL, facet: 'strand' } },
+      {
+        name: 'pileup connectors',
+        config: { ...TALL, pileup: { connectors: { show: true } } },
+      },
+      { name: 'unit chain', config: { ...TALL, unit: 'chain' } },
+    ],
+  )
+})
+
+/** Two windows either side of the inversion, its pairs joining them. */
+const INVERSION_LOCI = {
+  adapterConfig: PAIRED_INVERSION.adapterConfig,
+  regions: [
+    { refName: 'ctgA', start: 18_000, end: 22_000 },
+    { refName: 'ctgA', start: 28_000, end: 32_000 },
+  ],
+}
+
+describe('two loci of volvox pairs either side of an inversion', () => {
+  parityCases(geometryParity(INVERSION_LOCI), [
+    {
+      name: 'unit chain, read connections',
+      config: { ...TALL, unit: 'chain', readConnections: { show: true } },
+    },
+    {
+      name: 'pileup connectors',
+      config: { ...TALL, pileup: { connectors: { show: true } } },
+    },
+  ])
+})
+
+describe('simulated pairs over loci on two contigs, end to end', () => {
+  parityCases(
+    geometryParity({
+      adapterConfig: SV_READS.adapterConfig,
+      regions: [
+        { refName: 'ctgA', start: 1000, end: 2500 },
+        { refName: 'ctgB', start: 1000, end: 2500 },
+      ],
+    }),
+    [
+      { name: 'defaults', config: TALL },
+      {
+        name: 'pileup connectors',
+        config: { ...TALL, pileup: { connectors: { show: true } } },
+      },
+      {
+        name: 'read connections',
+        config: { ...TALL, readConnections: { show: true } },
+      },
+    ],
+  )
+})
+
+test('the cases decide over loops, curves, straight lines, junctions, arcs within and across regions, and a dip reserve', async () => {
+  const [loops, pairs, spliced, arcs, acrossLoci] = await Promise.all([
     engine.alignments({ ...TANDEM_DUPLICATION, display: { unit: 'chain' } }),
     engine.alignments({
       ...PAIRED_INVERSION,
@@ -432,6 +519,10 @@ test('the cases decide over loops, curves, straight lines, junctions, arcs and a
       ...PAIRED_INVERSION,
       display: { readConnections: { show: true } },
     }),
+    engine.alignments({
+      ...INVERSION_LOCI,
+      display: { unit: 'chain', readConnections: { show: true } },
+    }),
   ])
   expect(loops.connectors.kind).toContain('loop')
   expect(pairs.connectors.kind).toContain('curve')
@@ -439,4 +530,9 @@ test('the cases decide over loops, curves, straight lines, junctions, arcs and a
   expect(Math.max(...pairs.sections.dipReserve)).toBeGreaterThan(0)
   expect(spliced.junctions.shown).toContain(true)
   expect(arcs.arcs.start.length).toBeGreaterThan(0)
+  expect(
+    acrossLoci.arcs.startRegion.some(
+      (r, i) => r !== acrossLoci.arcs.endRegion[i],
+    ),
+  ).toBe(true)
 }, 60_000)

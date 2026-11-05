@@ -3,8 +3,8 @@ import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import VariantsPlugin from '@jbrowse/plugin-variants'
 
 import { createTablesEngine } from '../index.ts'
-import { DOG_SV, DOG_VCF } from '../volvox.fixture.ts'
-import { hasDisplayType, standUpDisplay } from './testEnv.ts'
+import { BREAKENDS, DOG_SV, DOG_VCF } from '../volvox.fixture.ts'
+import { VOLVOX_CONTIGS, hasDisplayType, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { VariantTables } from '../index.ts'
@@ -14,8 +14,19 @@ import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 interface VariantFixture {
   adapterConfig: Record<string, unknown>
-  region: TablesRegion
-  contigLength: number
+  regions: TablesRegion[]
+  contigLengths: Record<string, number>
+}
+
+/** Whether `start`-`end` reaches into the window the payload `k` draws. */
+const inWindow = (
+  regions: readonly TablesRegion[],
+  k: string,
+  start: number,
+  end: number,
+) => {
+  const window = regions[Number(k)]
+  return !!window && end > window.start && start < window.end
 }
 
 const VARIANT_DECISIONS = [
@@ -35,10 +46,10 @@ const ROW_KEY = 'rows.color'
 
 const engine = createTablesEngine()
 
-/** Each record over `region` as `variant color`, as the records band paints it. */
+/** Each record over `regions` as `variant color`, as the records band paints it. */
 function displayRecordColors(
   m: LinearVariantDisplayModel,
-  region: TablesRegion,
+  regions: readonly TablesRegion[],
 ) {
   const { cellData, regionRecordColors } = m
   const out: string[] = []
@@ -47,7 +58,7 @@ function displayRecordColors(
     data.featureInfo.forEach((info, f) => {
       const start = data.featurePositions[f * 2]!
       const end = data.featurePositions[f * 2 + 1]!
-      if (end > region.start && start < region.end) {
+      if (inWindow(regions, k, start, end)) {
         out.push(`${info.featureId} ${abgrToHex(colors[f]!)}`)
       }
     })
@@ -56,10 +67,13 @@ function displayRecordColors(
 }
 
 /**
- * Each drawn cell over `region` as `variant row color`, in payload order:
+ * Each drawn cell over `regions` as `variant row color`, in payload order:
  * the display's painted cells, its density fade dropped with the alpha.
  */
-function displayCellColors(m: LinearVariantDisplayModel, region: TablesRegion) {
+function displayCellColors(
+  m: LinearVariantDisplayModel,
+  regions: readonly TablesRegion[],
+) {
   const { cellData, regionCellColors } = m
   const drawn = new Set(m.drawsGenotypeRows ? m.sources.map(s => s.name) : [])
   const out: string[] = []
@@ -70,7 +84,7 @@ function displayCellColors(m: LinearVariantDisplayModel, region: TablesRegion) {
       const row = cellData!.rowNames[data.cellRowIndices[i]!]!
       const start = data.featurePositions[f * 2]!
       const end = data.featurePositions[f * 2 + 1]!
-      if (drawn.has(row) && end > region.start && start < region.end) {
+      if (drawn.has(row) && inWindow(regions, k, start, end)) {
         out.push(
           `${data.featureInfo[f]!.featureId} ${row} ${abgrToHex(colors[i]!)}`,
         )
@@ -104,16 +118,17 @@ function variantParity(
           isDisplay: (d): d is LinearVariantDisplayModel =>
             hasDisplayType(d, 'LinearVariantDisplay'),
           displayConfig: display,
-          region: fixture.region,
-          contigLength: fixture.contigLength,
-          bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
+          regions: fixture.regions,
+          contigLengths: fixture.contigLengths,
+          bpPerPx:
+            fixture.regions.reduce((sum, r) => sum + r.end - r.start, 0) / 1000,
         })
       return { model, dispose }
     },
     buildExport: display =>
       engine.variants({
         adapterConfig: fixture.adapterConfig,
-        region: fixture.region,
+        regions: fixture.regions,
         display,
       }),
     modelDecisions: m => {
@@ -139,8 +154,8 @@ function variantParity(
           color: legend.color,
           title: rowKey[0]?.title ?? '',
         },
-        cellColors: displayCellColors(m, fixture.region),
-        recordColors: displayRecordColors(m, fixture.region),
+        cellColors: displayCellColors(m, fixture.regions),
+        recordColors: displayRecordColors(m, fixture.regions),
       }
     },
     exportDecisions: t => ({
@@ -170,8 +185,8 @@ const CONTIG_LENGTH = 90_000_000
 
 const snvs = variantParity({
   adapterConfig: DOG_VCF.adapterConfig,
-  region: DOG_VCF.region,
-  contigLength: CONTIG_LENGTH,
+  regions: [DOG_VCF.region],
+  contigLengths: { chr30: CONTIG_LENGTH },
 })
 
 describe('39 dogs genotyped at SNVs, a few phased', () => {
@@ -321,8 +336,8 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
 
 const svs = variantParity({
   adapterConfig: DOG_SV.adapterConfig,
-  region: DOG_SV.region,
-  contigLength: CONTIG_LENGTH,
+  regions: [DOG_SV.region],
+  contigLengths: { chr6: CONTIG_LENGTH },
 })
 
 describe('dog SVs with a samples file of groups and breeds', () => {
@@ -376,3 +391,82 @@ describe('dog SVs with a samples file of groups and breeds', () => {
     },
   ])
 })
+
+const SNV_LOCI = {
+  adapterConfig: DOG_VCF.adapterConfig,
+  regions: [
+    { refName: 'chr30', start: 38_258_000, end: 38_261_000 },
+    { refName: 'chr30', start: 38_262_000, end: 38_265_000 },
+  ],
+}
+
+const BREAKEND_CONTIGS = {
+  adapterConfig: BREAKENDS.adapterConfig,
+  regions: [
+    { refName: 'ctgA', start: 20_000, end: 25_000 },
+    { refName: 'ctgB', start: 0, end: 5000 },
+  ],
+}
+
+describe('two loci of the dog SNVs on chr30, end to end', () => {
+  parityCases(
+    variantParity({ ...SNV_LOCI, contigLengths: { chr30: CONTIG_LENGTH } }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'haplotype rows', config: { rows: 'haplotype' } },
+      {
+        name: 'site filter',
+        config: { filter: [{ field: 'minorAlleleFrequency', gte: 0.3 }] },
+      },
+      {
+        name: 'encoding.color by INFO.AF as a ramp',
+        config: {
+          encoding: { color: { field: 'INFO.AF', scale: { type: 'linear' } } },
+        },
+      },
+      {
+        name: 'rows.tree',
+        config: {
+          rows: { tree: '((GHND000004:1,GHND000002:1):1,GHND000001:2);' },
+        },
+      },
+    ],
+  )
+})
+
+describe("breakends with no samples, nothing stating their contigs' lengths", () => {
+  parityCases(
+    variantParity({
+      adapterConfig: BREAKENDS.adapterConfig,
+      regions: [BREAKENDS.region],
+      contigLengths: VOLVOX_CONTIGS,
+    }),
+    [
+      { name: 'defaults', config: {} },
+      {
+        name: 'encoding.color by a field',
+        config: { encoding: { color: { field: 'type' } } },
+      },
+    ],
+  )
+})
+
+describe('breakends over loci on two contigs, end to end', () => {
+  parityCases(
+    variantParity({ ...BREAKEND_CONTIGS, contigLengths: VOLVOX_CONTIGS }),
+    [
+      { name: 'defaults', config: {} },
+      {
+        name: 'encoding.color by a field',
+        config: { encoding: { color: { field: 'type' } } },
+      },
+    ],
+  )
+})
+
+test('the several-region cases decide over records in each region', async () => {
+  for (const args of [SNV_LOCI, BREAKEND_CONTIGS]) {
+    const t = await engine.variants(args)
+    expect(new Set(t.variants.region).size).toBe(args.regions.length)
+  }
+}, 60_000)

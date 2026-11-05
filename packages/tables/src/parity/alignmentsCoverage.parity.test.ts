@@ -3,12 +3,13 @@ import AlignmentsPlugin, {
 } from '@jbrowse/plugin-alignments'
 
 import { createTablesEngine } from '../index.ts'
-import { BAM } from '../volvox.fixture.ts'
-import { standUpDisplay } from './testEnv.ts'
+import { BAM, SV_READS } from '../volvox.fixture.ts'
+import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { AlignmentTables } from '../index.ts'
 import type { ParityAdapter } from './testUtils.ts'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'
 
 const COVERAGE_DECISIONS = ['sections', 'domain', 'scaleType', 'ticks'] as const
@@ -19,50 +20,53 @@ const engine = createTablesEngine()
 
 /**
  * The alignments display's coverage band beside `engine.alignments` over
- * `BAM`'s region, read with no reference on either side: the sections the
- * facet splits the reads into, and the depth axis they share, its domain,
- * scale type and the ticks it labels at the band's height.
+ * `regions` of a BAM at 5 bp/px, read with no reference on either side: the
+ * sections the facet splits the reads into, and the depth axis they share,
+ * its domain, scale type and the ticks it labels at the band's height.
  */
-const coverage: ParityAdapter<
+function coverageParity(
+  adapterConfig: Record<string, unknown>,
+  regions: TablesRegion[],
+): ParityAdapter<
   Record<string, unknown>,
   LinearAlignmentsDisplayModel,
   AlignmentTables,
   CoverageDecision
-> = {
-  decisionNames: COVERAGE_DECISIONS,
-  buildModel: async display => {
-    const { display: model, dispose } =
-      await standUpDisplay<LinearAlignmentsDisplayModel>({
-        plugins: [new AlignmentsPlugin()],
-        track: { type: 'AlignmentsTrack', adapter: BAM.adapterConfig },
-        displayType: 'LinearAlignmentsDisplay',
-        isDisplay: isLinearAlignmentsDisplay,
-        displayConfig: display,
-        region: BAM.region,
-        contigLength: 50_001,
-        bpPerPx: 5,
-      })
-    return { model, dispose }
-  },
-  buildExport: display =>
-    engine.alignments({
-      adapterConfig: BAM.adapterConfig,
-      region: BAM.region,
-      display,
+> {
+  return {
+    decisionNames: COVERAGE_DECISIONS,
+    buildModel: async display => {
+      const { display: model, dispose } =
+        await standUpDisplay<LinearAlignmentsDisplayModel>({
+          plugins: [new AlignmentsPlugin()],
+          track: { type: 'AlignmentsTrack', adapter: adapterConfig },
+          displayType: 'LinearAlignmentsDisplay',
+          isDisplay: isLinearAlignmentsDisplay,
+          displayConfig: display,
+          regions,
+          contigLengths: VOLVOX_CONTIGS,
+          bpPerPx: 5,
+        })
+      return { model, dispose }
+    },
+    buildExport: display =>
+      engine.alignments({ adapterConfig, regions, display }),
+    modelDecisions: m => ({
+      sections: m.renderSections.map(s => s.groupKey),
+      domain: m.coverageDepthDomain,
+      scaleType: m.scaleType,
+      ticks: m.coverageTicks?.items.map(tick => tick.value),
     }),
-  modelDecisions: m => ({
-    sections: m.renderSections.map(s => s.groupKey),
-    domain: m.coverageDepthDomain,
-    scaleType: m.scaleType,
-    ticks: m.coverageTicks?.items.map(tick => tick.value),
-  }),
-  exportDecisions: t => ({
-    sections: t.sections.key,
-    domain: t.coverageScale.domain,
-    scaleType: t.coverageScale.type,
-    ticks: t.coverageScale.ticks,
-  }),
+    exportDecisions: t => ({
+      sections: t.sections.key,
+      domain: t.coverageScale.domain,
+      scaleType: t.coverageScale.type,
+      ticks: t.coverageScale.ticks,
+    }),
+  }
 }
+
+const coverage = coverageParity(BAM.adapterConfig, [BAM.region])
 
 describe('the coverage band over volvox reads', () => {
   parityCases(coverage, [
@@ -169,4 +173,40 @@ describe('the coverage band over volvox reads', () => {
       config: { facet: { field: 'strand', sort: ['-1'] } },
     },
   ])
+})
+
+describe('the coverage band over two loci of volvox reads, end to end', () => {
+  parityCases(
+    coverageParity(BAM.adapterConfig, [
+      { refName: 'ctgA', start: 1000, end: 3500 },
+      { refName: 'ctgA', start: 20_000, end: 22_500 },
+    ]),
+    [
+      { name: 'defaults', config: {} },
+      {
+        name: 'encoding.y log',
+        config: { coverage: { encoding: { y: { scale: { type: 'log' } } } } },
+      },
+      {
+        name: 'encoding.y fence',
+        config: {
+          coverage: { encoding: { y: { scale: { fenceQuantile: 0.9 } } } },
+        },
+      },
+      { name: 'facet by strand', config: { facet: 'strand' } },
+    ],
+  )
+})
+
+describe('the coverage band over loci on two contigs, end to end', () => {
+  parityCases(
+    coverageParity(SV_READS.adapterConfig, [
+      { refName: 'ctgA', start: 1000, end: 3500 },
+      { refName: 'ctgB', start: 1000, end: 3500 },
+    ]),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'facet by strand', config: { facet: 'strand' } },
+    ],
+  )
 })

@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
+import BedPlugin from '@jbrowse/plugin-bed'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
 
 import { encodeWiggleRegions } from '../../../../plugins/wiggle/src/shared/buildSourceRenderData.ts'
@@ -16,11 +17,12 @@ import { clipSide } from '../../../render-core/src/shaders/clipStrip.js.generate
 import { RENDERING_TYPE_XYPLOT } from '../../../wiggle-core/src/wiggleRenderModes.generated.ts'
 import { createTablesEngine } from '../index.ts'
 import {
+  BEDGRAPH,
   COVERAGE_BIGWIG,
   MULTI_BIGWIG,
   SIGNED_BIGWIG,
 } from '../volvox.fixture.ts'
-import { hasDisplayType, standUpDisplay } from './testEnv.ts'
+import { VOLVOX_CONTIGS, hasDisplayType, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { WiggleTables } from '../index.ts'
@@ -30,8 +32,7 @@ import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWigg
 
 interface WiggleFixture {
   adapterConfig: Record<string, unknown>
-  region: TablesRegion
-  contigLength: number
+  regions: TablesRegion[]
   bpPerPx: number
   trackType: 'QuantitativeTrack' | 'MultiQuantitativeTrack'
 }
@@ -75,14 +76,14 @@ function wiggleParity(
     buildModel: async display => {
       const { display: model, dispose } =
         await standUpDisplay<LinearWiggleDisplayModel>({
-          plugins: [new WigglePlugin()],
+          plugins: [new WigglePlugin(), new BedPlugin()],
           track: { type: fixture.trackType, adapter: fixture.adapterConfig },
           displayType: 'LinearWiggleDisplay',
           isDisplay: (d): d is LinearWiggleDisplayModel =>
             hasDisplayType(d, 'LinearWiggleDisplay'),
           displayConfig: display,
-          region: fixture.region,
-          contigLength: fixture.contigLength,
+          regions: fixture.regions,
+          contigLengths: VOLVOX_CONTIGS,
           bpPerPx: fixture.bpPerPx,
         })
       return { model, dispose }
@@ -90,7 +91,7 @@ function wiggleParity(
     buildExport: display =>
       engine.wiggle({
         adapterConfig: fixture.adapterConfig,
-        region: fixture.region,
+        regions: fixture.regions,
         bpPerPx: fixture.bpPerPx,
         trackType: fixture.trackType,
         display,
@@ -123,8 +124,8 @@ function wiggleParity(
         height: m.height,
         clipped: {
           strip: { color: abgrToHex(CLIP_STRIP_COLOR), px: CLIP_STRIP_PX },
-          bars: [...encodeWiggleRegions(m).values()]
-            .flatMap(layers =>
+          bars: [...encodeWiggleRegions(m)]
+            .flatMap(([index, layers]) =>
               layers.flatMap(layer =>
                 layer.renderingType === RENDERING_TYPE_XYPLOT && !layer.band
                   ? Array.from({ length: layer.numFeatures }, (_, i) => {
@@ -138,9 +139,11 @@ function wiggleParity(
                             scaleTypeCode(m.scaleType),
                           )
                         : 0
+                      const window = fixture.regions[index]
                       return side !== 0 &&
-                        end > fixture.region.start &&
-                        start < fixture.region.end
+                        window &&
+                        end > window.start &&
+                        start < window.end
                         ? [
                             `${m.sources[layer.rowIndex]?.name} ${start}-${end} ${side}`,
                           ]
@@ -191,13 +194,11 @@ function wiggleParity(
   }
 }
 
-const CTGA = { refName: 'ctgA', start: 0, end: 50_000 }
-const CTGA_LENGTH = 50_001
+const CTGA = [{ refName: 'ctgA', start: 0, end: 50_000 }]
 
 const multi = wiggleParity({
   adapterConfig: MULTI_BIGWIG.adapterConfig,
-  region: CTGA,
-  contigLength: CTGA_LENGTH,
+  regions: CTGA,
   bpPerPx: 50,
   trackType: 'MultiQuantitativeTrack',
 })
@@ -326,8 +327,7 @@ const grouped = wiggleParity({
       subtrack(3, { group: 'liver' }),
     ],
   },
-  region: CTGA,
-  contigLength: CTGA_LENGTH,
+  regions: CTGA,
   bpPerPx: 50,
   trackType: 'MultiQuantitativeTrack',
 })
@@ -380,8 +380,7 @@ describe('a MultiQuantitativeTrack whose subtracks carry a group and a color', (
 
 const signed = wiggleParity({
   adapterConfig: SIGNED_BIGWIG.adapterConfig,
-  region: CTGA,
-  contigLength: CTGA_LENGTH,
+  regions: CTGA,
   bpPerPx: 50,
   trackType: 'QuantitativeTrack',
 })
@@ -419,8 +418,7 @@ describe('a QuantitativeTrack of one signed BigWig', () => {
 
 const coverage = wiggleParity({
   adapterConfig: COVERAGE_BIGWIG.adapterConfig,
-  region: CTGA,
-  contigLength: CTGA_LENGTH,
+  regions: CTGA,
   bpPerPx: 1000,
   trackType: 'QuantitativeTrack',
 })
@@ -448,8 +446,7 @@ describe('a 10 kb window of three signed BigWigs, inside the contig', () => {
   parityCases(
     wiggleParity({
       adapterConfig: MULTI_BIGWIG.adapterConfig,
-      region: { refName: 'ctgA', start: 20_000, end: 30_000 },
-      contigLength: CTGA_LENGTH,
+      regions: [{ refName: 'ctgA', start: 20_000, end: 30_000 }],
       bpPerPx: 20,
       trackType: 'MultiQuantitativeTrack',
     }),
@@ -463,3 +460,118 @@ describe('a 10 kb window of three signed BigWigs, inside the contig', () => {
     ],
   )
 })
+
+const TWO_LOCI = [
+  { refName: 'ctgA', start: 5000, end: 10_000 },
+  { refName: 'ctgA', start: 30_000, end: 35_000 },
+]
+
+const TWO_CONTIGS = [
+  { refName: 'ctgA', start: 5000, end: 10_000 },
+  { refName: 'ctgB', start: 1000, end: 6000 },
+]
+
+describe('two loci of three signed BigWigs on ctgA, end to end', () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: MULTI_BIGWIG.adapterConfig,
+      regions: TWO_LOCI,
+      bpPerPx: 10,
+      trackType: 'MultiQuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'overlay', config: { rows: { field: '' } } },
+      {
+        name: 'encoding.y fence',
+        config: { encoding: { y: { scale: { fenceQuantile: 0.9 } } } },
+      },
+      {
+        name: 'encoding.y pinned bounds',
+        config: { encoding: { y: { scale: { domainMin: -5, domainMax: 5 } } } },
+      },
+      { name: 'mark line', config: { mark: 'line' } },
+    ],
+  )
+})
+
+describe('loci on two contigs of three signed BigWigs, end to end', () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: MULTI_BIGWIG.adapterConfig,
+      regions: TWO_CONTIGS,
+      bpPerPx: 10,
+      trackType: 'MultiQuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'overlay', config: { rows: { field: '' } } },
+      {
+        name: 'encoding.y log',
+        config: { encoding: { y: { scale: { type: 'log' } } } },
+      },
+    ],
+  )
+})
+
+describe("a BedGraph, nothing stating its contigs' lengths", () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: BEDGRAPH.adapterConfig,
+      regions: [BEDGRAPH.region],
+      bpPerPx: BEDGRAPH.bpPerPx,
+      trackType: 'QuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'mark line', config: { mark: 'line' } },
+      {
+        name: 'encoding.y fence',
+        config: { encoding: { y: { scale: { fenceQuantile: 0.9 } } } },
+      },
+    ],
+  )
+})
+
+describe("a BedGraph window reaching ctgB's end", () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: BEDGRAPH.adapterConfig,
+      regions: [{ refName: 'ctgB', start: 2079, end: 6079 }],
+      bpPerPx: 4,
+      trackType: 'QuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'mark line', config: { mark: 'line' } },
+    ],
+  )
+})
+
+describe('a BedGraph over loci on two contigs', () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: BEDGRAPH.adapterConfig,
+      regions: TWO_CONTIGS,
+      bpPerPx: 10,
+      trackType: 'QuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'mark line', config: { mark: 'line' } },
+    ],
+  )
+})
+
+test('the several-region and BedGraph cases decide over bins in each region', async () => {
+  const reads = [
+    { adapterConfig: MULTI_BIGWIG.adapterConfig, regions: TWO_LOCI },
+    { adapterConfig: MULTI_BIGWIG.adapterConfig, regions: TWO_CONTIGS },
+    { adapterConfig: BEDGRAPH.adapterConfig, regions: [BEDGRAPH.region] },
+    { adapterConfig: BEDGRAPH.adapterConfig, regions: TWO_CONTIGS },
+  ]
+  for (const args of reads) {
+    const t = await engine.wiggle({ ...args, bpPerPx: 10 })
+    expect(new Set(t.bins.region).size).toBe(args.regions.length)
+  }
+}, 60_000)

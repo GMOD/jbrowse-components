@@ -57,6 +57,8 @@ export async function until(
 interface ExportableDisplay {
   svgReady: boolean
   error: unknown
+  /** A row morph in flight, which its deadline timer ends. */
+  animating?: boolean
 }
 
 export interface ParityViewSpec<T extends ExportableDisplay> {
@@ -67,10 +69,14 @@ export interface ParityViewSpec<T extends ExportableDisplay> {
   displayType: string
   /** The display's config slots, as the export's `display` argument. */
   displayConfig: Record<string, unknown>
-  /** The window the view shows inside its contig, and what the export reads. */
-  region: TablesRegion
-  /** The contig's length: the view displays the whole contig. */
-  contigLength: number
+  /**
+   * The windows the view shows end to end, and what the export reads: one
+   * locus is a window into its whole contig, several are the view's
+   * displayed regions themselves, as the view shows several loci.
+   */
+  regions: TablesRegion[]
+  /** Each contig's length by name: the contigs the assembly lists. */
+  contigLengths: Record<string, number>
   bpPerPx: number
   /** Whether the track's display is the model the adapter reads. */
   isDisplay: (display: unknown) => display is T
@@ -86,19 +92,45 @@ export function hasDisplayType(display: unknown, type: string) {
   )
 }
 
+/** volvox's contigs, as `volvox.fa.fai` gives their lengths. */
+export const VOLVOX_CONTIGS = { ctgA: 50_001, ctgB: 6079 }
+
+const locStrings = (regions: readonly TablesRegion[]) =>
+  regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(',')
+
+/**
+ * The regions the view displays for `regions`: one locus's whole contig, or
+ * the loci themselves.
+ */
+function displayedRegionsFor(
+  regions: readonly TablesRegion[],
+  contigLengths: Record<string, number>,
+) {
+  const [locus] = regions
+  const length = locus ? contigLengths[locus.refName] : undefined
+  return (
+    locus && regions.length === 1
+      ? [{ refName: locus.refName, start: 0, end: length ?? locus.end }]
+      : regions.map(({ refName, start, end }) => ({ refName, start, end }))
+  ).map(r => ({ ...r, assemblyName: 'volvox' }))
+}
+
 /**
  * A real display of a real track type in a real `LinearGenomeView` framed as
- * the app frames a locus: the whole contig displayed, scrolled at `bpPerPx`
- * so its settled block is `region`, the window a static export reads, and the
- * display fetching its own margin around it. Unlike
+ * the app frames `regions`: one locus as a window into its whole contig,
+ * scrolled at `bpPerPx` so its settled block is the locus and the display
+ * fetches its own margin around it; several loci as the displayed regions
+ * themselves, end to end across the view. Either way the settled blocks are
+ * the windows a static export reads. Unlike
  * `createDisplayTestEnvironment`, nothing is stubbed: the track type's
  * display defaults apply and the fetch runs through the real RPC. Settled
- * once the display reads as ready to export (`svgReady`).
+ * once the display reads as ready to export (`svgReady`) and no row morph
+ * is in flight, as a later region's fetch re-packs the rows.
  */
 export async function standUpDisplay<T extends ExportableDisplay>(
   spec: ParityViewSpec<T>,
 ) {
-  const { region, bpPerPx, displayType } = spec
+  const { regions, contigLengths, bpPerPx, displayType } = spec
   const pluginManager = new PluginManager([
     new LinearGenomeViewPlugin(),
     ...spec.plugins,
@@ -125,14 +157,12 @@ export async function standUpDisplay<T extends ExportableDisplay>(
     rpcManager,
     assemblyManager: testAssemblyManager(
       testAssembly({
-        regions: [
-          {
-            refName: region.refName,
-            start: 0,
-            end: spec.contigLength,
-            assemblyName: 'volvox',
-          },
-        ],
+        regions: Object.entries(contigLengths).map(([refName, end]) => ({
+          refName,
+          start: 0,
+          end,
+          assemblyName: 'volvox',
+        })),
       }),
     ),
     getTrackById: (id: string) => (id === TRACK_ID ? trackConfig : undefined),
@@ -152,20 +182,17 @@ export async function standUpDisplay<T extends ExportableDisplay>(
       ],
     }),
   )
-  view.setWidth(Math.round((region.end - region.start) / bpPerPx))
-  view.setDisplayedRegions([
-    {
-      refName: region.refName,
-      start: 0,
-      end: spec.contigLength,
-      assemblyName: 'volvox',
-    },
-  ])
-  view.setNewView(bpPerPx, region.start / bpPerPx)
-  const window = view.settledDynamicBlocks
-    .map(b => `${b.refName}:${b.start}-${b.end}`)
-    .join(',')
-  const wanted = `${region.refName}:${region.start}-${region.end}`
+  const [first] = regions
+  view.setWidth(
+    Math.round(regions.reduce((sum, r) => sum + r.end - r.start, 0) / bpPerPx),
+  )
+  view.setDisplayedRegions(displayedRegionsFor(regions, contigLengths))
+  view.setNewView(
+    bpPerPx,
+    first && regions.length === 1 ? first.start / bpPerPx : 0,
+  )
+  const window = locStrings(view.settledDynamicBlocks)
+  const wanted = locStrings(regions)
   if (window !== wanted) {
     throw new Error(`the view shows ${window}, not the export's ${wanted}`)
   }
@@ -175,7 +202,7 @@ export async function standUpDisplay<T extends ExportableDisplay>(
     throw new Error(`the track holds no ${displayType}`)
   }
   await until(
-    () => display.svgReady,
+    () => display.svgReady && !display.animating,
     () =>
       `${displayType}; RPC methods nothing registers: ${[...rpcManager.unregistered].join(', ') || 'none'}`,
   )

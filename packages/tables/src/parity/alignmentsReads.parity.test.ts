@@ -11,8 +11,9 @@ import {
   METHYLATED,
   PAIRED_INVERSION,
   READ_GROUPS,
+  SV_READS,
 } from '../volvox.fixture.ts'
-import { standUpDisplay } from './testEnv.ts'
+import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { AlignmentTables } from '../index.ts'
@@ -22,8 +23,8 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments/Li
 
 interface ReadsFixture {
   adapterConfig: Record<string, unknown>
-  region: TablesRegion
-  contigLength: number
+  regions: TablesRegion[]
+  contigLengths: Record<string, number>
 }
 
 const READ_DECISIONS = ['legend', 'legendTitle', 'ramps', 'readColors'] as const
@@ -62,16 +63,17 @@ function readsParity(
           displayType: 'LinearAlignmentsDisplay',
           isDisplay: isLinearAlignmentsDisplay,
           displayConfig: keyed(display),
-          region: fixture.region,
-          contigLength: fixture.contigLength,
-          bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
+          regions: fixture.regions,
+          contigLengths: fixture.contigLengths,
+          bpPerPx:
+            fixture.regions.reduce((sum, r) => sum + r.end - r.start, 0) / 1000,
         })
       return { model, dispose }
     },
     buildExport: display =>
       engine.alignments({
         adapterConfig: fixture.adapterConfig,
-        region: fixture.region,
+        regions: fixture.regions,
         display: keyed(display),
       }),
     modelDecisions: m => {
@@ -87,8 +89,11 @@ function readsParity(
           [...m.laidOutByGroupColored.values()].flatMap(byRegion =>
             [...byRegion.values()].flatMap(data =>
               Array.from(data.readColorCategories, (category, i) =>
-                data.readPositions[i * 2]! < fixture.region.end &&
-                data.readPositions[i * 2 + 1]! > fixture.region.start
+                fixture.regions.some(
+                  w =>
+                    data.readPositions[i * 2]! < w.end &&
+                    data.readPositions[i * 2 + 1]! > w.start,
+                )
                   ? [
                       [
                         `${data.readKeys[i]}`,
@@ -120,9 +125,11 @@ function readsParity(
   }
 }
 
-const VOLVOX_CONTIG = 50_001
-
-const volvoxReads = readsParity({ ...BAM, contigLength: VOLVOX_CONTIG })
+const volvoxReads = readsParity({
+  adapterConfig: BAM.adapterConfig,
+  regions: [BAM.region],
+  contigLengths: VOLVOX_CONTIGS,
+})
 
 test('both sides decide over every read and a keyed strand', async () => {
   const config = { encoding: { color: 'strand' } }
@@ -202,9 +209,9 @@ describe('volvox reads', () => {
 describe('volvox reads in two read groups', () => {
   parityCases(
     readsParity({
-      ...READ_GROUPS,
-      region: BAM.region,
-      contigLength: VOLVOX_CONTIG,
+      adapterConfig: READ_GROUPS.adapterConfig,
+      regions: [BAM.region],
+      contigLengths: VOLVOX_CONTIGS,
     }),
     [
       { name: 'tag', config: { encoding: { color: { field: 'tags.RG' } } } },
@@ -230,7 +237,11 @@ describe('volvox reads in two read groups', () => {
 
 describe('volvox pairs across an inversion', () => {
   parityCases(
-    readsParity({ ...PAIRED_INVERSION, contigLength: VOLVOX_CONTIG }),
+    readsParity({
+      adapterConfig: PAIRED_INVERSION.adapterConfig,
+      regions: [PAIRED_INVERSION.region],
+      contigLengths: VOLVOX_CONTIGS,
+    }),
     [
       {
         name: 'insert size and orientation',
@@ -265,14 +276,73 @@ describe('volvox pairs across an inversion', () => {
 })
 
 describe('ONT reads with 5mC calls', () => {
-  parityCases(readsParity({ ...METHYLATED, contigLength: 29_565 }), [
-    {
-      name: 'modifications',
-      config: {
-        pileup: {
-          bases: { show: true, encoding: { color: 'modifications' } },
+  parityCases(
+    readsParity({
+      adapterConfig: METHYLATED.adapterConfig,
+      regions: [METHYLATED.region],
+      contigLengths: { [METHYLATED.region.refName]: 29_565 },
+    }),
+    [
+      {
+        name: 'modifications',
+        config: {
+          pileup: {
+            bases: { show: true, encoding: { color: 'modifications' } },
+          },
         },
       },
-    },
-  ])
+    ],
+  )
 })
+
+const TWO_LOCI = [
+  { refName: 'ctgA', start: 1000, end: 6000 },
+  { refName: 'ctgA', start: 20_000, end: 25_000 },
+]
+
+const TWO_CONTIGS = [
+  { refName: 'ctgA', start: 1000, end: 4000 },
+  { refName: 'ctgB', start: 1000, end: 4000 },
+]
+
+describe('two loci of volvox reads on ctgA, end to end', () => {
+  parityCases(
+    readsParity({
+      adapterConfig: BAM.adapterConfig,
+      regions: TWO_LOCI,
+      contigLengths: VOLVOX_CONTIGS,
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'strand', config: { encoding: { color: 'strand' } } },
+      { name: 'mapq bins', config: { encoding: { color: 'mapq' } } },
+    ],
+  )
+})
+
+describe('simulated pairs over loci on two contigs, end to end', () => {
+  parityCases(
+    readsParity({
+      adapterConfig: SV_READS.adapterConfig,
+      regions: TWO_CONTIGS,
+      contigLengths: VOLVOX_CONTIGS,
+    }),
+    [
+      { name: 'strand', config: { encoding: { color: 'strand' } } },
+      {
+        name: 'insert size and orientation',
+        config: { encoding: { color: 'insertSizeAndOrientation' } },
+      },
+    ],
+  )
+})
+
+test('the several-region cases decide over reads in each region', async () => {
+  for (const args of [
+    { adapterConfig: BAM.adapterConfig, regions: TWO_LOCI },
+    { adapterConfig: SV_READS.adapterConfig, regions: TWO_CONTIGS },
+  ]) {
+    const t = await engine.alignments({ ...args, display: {} })
+    expect(new Set(t.reads.region).size).toBe(args.regions.length)
+  }
+}, 60_000)
