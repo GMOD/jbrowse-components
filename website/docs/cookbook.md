@@ -7,7 +7,7 @@ description:
 ---
 
 Copy-paste recipes for the settings people reach for most. Each is a whole track
-config, so it lands the same way in `config.json`, through the CLI, or pasted
+config, so it works the same way in `config.json`, through the CLI, or pasted
 into a running JBrowse. They run against the `volvox` sample data JBrowse ships
 ([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox)).
 
@@ -25,8 +25,8 @@ An assembly to supply the reference sequence, and a track to draw on it:
 
 JBrowse reads the adapter and the track type off the file's extension, finds the
 index sibling, and takes `name` from the file name
-([the shortest track](/docs/config_guides/tracks#the-shortest-track)). The same
-track written out. Every recipe below starts from this:
+([the shortest track](/docs/config_guides/tracks#the-shortest-track)). Written
+out in full, the same track is the start of every recipe below:
 
 ```json addtrack
 {
@@ -389,8 +389,8 @@ every `jexl:` expression, on variant tracks too:
 
 ## Quantitative (wiggle) tracks
 
-A `value` in `encoding.color` paints every bar; left alone, a wiggle cuts at its
-`origin` and paints the two sides apart.
+A `value` in `encoding.color` paints every bar; with no `value`, a wiggle splits
+at its `origin` and colors the two sides differently.
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `line`,
 `point`, or `span`.
 
@@ -439,8 +439,8 @@ A `value` in `encoding.color` paints every bar; left alone, a wiggle cuts at its
 }
 ```
 
-`rows` decides the layout: `"source"` stacks one row per signal, and `""`,
-above, draws every signal in one shared plot box. Pin
+`rows` sets the layout: `"source"` stacks one row per signal, and `""`, above,
+draws every signal in one shared plot box. Pin
 `encoding.y.scale.domainMin`/`domainMax` when the quantity has an absolute
 meaning, or per-row autoscale draws a flat sample at the same height as an
 amplified one. Past a handful of samples, generate `subadapters` from your

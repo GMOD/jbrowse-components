@@ -52,11 +52,11 @@ generated from the same run. The categories:
   `exports` maps publish. Your editor's completion on these is the list of what
   you can import.
 
-No other `@jbrowse` package is re-exported. A helper package such as
-`@jbrowse/cigar-utils` gets bundled into your plugin like any npm dependency,
-and another plugin's package (`@jbrowse/plugin-linear-genome-view`, ...) is not
-something a plugin imports at runtime: bundling one gives your plugin a second
-copy of that plugin's models.
+Every other `@jbrowse` package is bundled into your plugin. A helper package
+such as `@jbrowse/cigar-utils` is bundled like any npm dependency, and another
+plugin's package (`@jbrowse/plugin-linear-genome-view`, ...) is not something a
+plugin imports at runtime: bundling one gives your plugin a second copy of that
+plugin's models.
 
 A plugin's one bundle is evaluated on the main thread and again in the RPC
 worker, where nothing renders. The worker serves a module for real unless the
@@ -81,18 +81,18 @@ in both realms.
 
 <!-- END GENERATED REEXPORT_MODULES -->
 
-## What is _not_ re-exported
+## Bundled dependencies
 
 Anything not in that list (`d3`, `lodash-es`, a file-format parser, your own
 helpers): `import` it normally and your bundler includes it in your plugin's
 output. These libraries tolerate more than one copy, so they are not shared.
 
 A `@jbrowse` subpath the exports map does not publish is not importable at all,
-so there is nothing of a served package that a plugin can end up bundling. What
-a host can lack is a whole package it does not bundle — the embedded
-circular-genome-view build serves fewer plugins than jbrowse-web — and a key a
-host lacks throws at the plugin's first read, naming the key, so the failure is
-one notification rather than an `undefined is not a function` somewhere later.
+so a plugin bundles no part of a served package. What a host can lack is a whole
+package it does not bundle — the embedded circular-genome-view build serves
+fewer plugins than jbrowse-web — and a key a host lacks throws at the plugin's
+first read, naming the key, so the failure is one notification rather than an
+`undefined is not a function` somewhere later.
 
 ## Standalone helper packages
 
@@ -154,9 +154,9 @@ runtime: the `@jbrowse/core` subpaths, `@jbrowse/display-kit`,
 `@jbrowse/render-core`, `@jbrowse/mobx-state-tree`, `mobx`. A dependency that is
 not on the list — `d3-scale`, say — is bundled into the plugin. The build
 configs read `ReExports/list.ts` directly, so you do not maintain this set
-yourself; what it does mean is that a plugin rebuilt against a newer
-`@jbrowse/core` externalizes whatever that version's list names, and needs a
-host at least that new.
+yourself, and a plugin rebuilt against a newer `@jbrowse/core` therefore
+externalizes whatever that version's list names, and needs a host at least that
+new.
 
 ### Checking imports against the host
 
@@ -196,7 +196,7 @@ line to change is in your own tsconfig:
 The [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
 a plugin started from one never meets this. Leaving `moduleResolution` out
 entirely also works, because TypeScript now defaults to `bundler`. The error
-reaches you only from a tsconfig naming `"node"` explicitly, which was the
+appears only with a tsconfig that sets `"node"` explicitly, which was the
 default years ago and which older plugins still set. TypeScript 6 deprecates
 that setting and TypeScript 7 removes it.
 
@@ -224,7 +224,8 @@ const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 const React = pluginManager.jbrequire('react')
 ```
 
-`jbrequire` only knows the re-export list. Requesting anything else throws:
+`jbrequire` resolves only the modules on the re-export list. Requesting anything
+else throws:
 
 ```text
 No jbrequire re-export defined for 'd3-scale'. The host serves what
@@ -246,14 +247,14 @@ inline it into your single file, or switch to a build-step plugin.
 
 ## A second copy of `@jbrowse/core` is the failure to avoid {#jbrowsecore-paths-not-in-the-list}
 
-Before the list was generated from the exports maps it named 25 of core's
-subpaths, and a build-step plugin importing any other — or importing
-`@jbrowse/display-kit`, which reaches 33 of them — bundled a copy of that code
-beside the host's. One published plugin bundled 84 files of core that way,
-including the blob map JBrowse uses to send a locally opened file to the worker
-and a React context the host's provider never reaches. Every published subpath
-is served now, so a plugin built against the current template cannot do this; a
-plugin built against an older list can, and its next rebuild fixes it.
+A build-step plugin that imports a core subpath missing from its host list, or
+imports `@jbrowse/display-kit`, which reaches 33 of them, bundles a copy of that
+code beside the host's. A plugin built against a list older than the generated
+one, which named 25 of core's subpaths, can do this. One published plugin
+bundled 84 files of core that way, including the blob map JBrowse uses to send a
+locally opened file to the worker and a React context the host's provider never
+reaches. Every published subpath is served now, so a plugin built against the
+current template cannot, and the next rebuild fixes an older one.
 
 ## See also
 
@@ -261,5 +262,4 @@ plugin built against an older list can, and its next rebuild fixes it.
 - [](/docs/developer_guides/no_build_plugin)
 - [](/docs/developer_guides/pluggable_elements)
 - [PLUGIN_ABI_STABILITY.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_ABI_STABILITY.md)
-  — why a name on this page ossifies once it ships, and what removing one
-  actually costs
+  — why a shipped name stays, and what removing one breaks

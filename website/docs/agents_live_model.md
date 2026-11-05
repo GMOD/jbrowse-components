@@ -22,25 +22,25 @@ expression. In scope either way:
 
 ## The helper library
 
-A helper exists where the raw model answers wrong **without an error** (an
+A helper exists where the raw model returns a wrong result **with no error** (an
 unrenamed refName, a display that replaced its subtree without a toast, a name
-several views could answer) and turns that into a throw or a report. Everything
+that matches several views) and turns that into a throw or a report. Everything
 else is done with the model.
 
 Orientation and building:
 
-- `jb.sessionSummary()` orients: views, tracks (display type, render phase),
+- `jb.sessionSummary()` lists: views, tracks (display type, render phase),
   assemblies, visible regions, `drawer` and `dialog`.
 - `jb.inspect(node?, maxBytes?)`: a live node's value, getters, **actions** and
   `modelType`; `Object.keys` lists no MST action. Bare, it is the session.
 - `jb.listTracks(search?, limit?)`: the catalog, `{ total, tracks }` of
   `{ trackId, name, type, assemblyNames }`, 100 by default.
 - `jb.loadSessionSpec(spec, settleMs?)` builds views from a spec
-  (`docs topic:"session-spec"`), settles (default 30000) and answers the settle
+  (`docs topic:"session-spec"`), settles (default 30000) and returns the settle
   plus the summary. It **replaces the session**: your `session` argument is dead
   afterwards, and `jb.session` is the live one.
 - `jb.addView(spec, settleMs?)` opens one entry of a spec's `views` beside what
-  is open; an unknown key throws first. Answers `{ viewId }` plus the settle.
+  is open; an unknown key throws first. Returns `{ viewId }` plus the settle.
 - `jb.setSession(document, settleMs?)` rewrites the session as a document,
   `jb.mst.getSnapshot(jb.session)` edited: an entry keeping its `id` is patched,
   one dropped is closed, one without is new, and a top-level key left out keeps
@@ -48,7 +48,7 @@ Orientation and building:
 - `jb.fitToWindow(settleMs?)` shrinks what is open until it fits the window.
 - `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
   adds an absolute local path or a URL (relative refused), infers the format,
-  shows it and settles; an unreadable file reports in `notReady`.
+  shows it and settles; an unreadable file is listed in `notReady`.
 - `jb.addTrack({ trackId, settings?, viewId?, settleMs? })` shows a catalog
   track; the file keys are refused.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
@@ -68,12 +68,13 @@ Reading:
 - `jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? })`,
   or `jb.getFeatures(trackId, loc?, { assembly?, viewId?, byteLimit? })`, is the
   track's data as live Feature objects, over the visible region by default. It
-  runs `renameRegionsIfNeeded`, so a file spelling "ctgA" "contigA" answers. See
+  runs `renameRegionsIfNeeded`, so a file that spells "ctgA" as "contigA" still
+  returns features. See
   [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
   (`{ assemblyName, refName, start, end }`).
 - `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
-  drawing (default 30000), answering `notifications` (error toasts), `notReady`
+  drawing (default 30000), returning `notifications` (error toasts), `notReady`
   (views failed or `initializing`, tracks settled without drawing (`phase`) or
   drawn around config (`notices`), views working around a failed step
   (`notices`)), `offscreen` (views taller than the window), `drawer` and
@@ -100,14 +101,14 @@ The foundations:
 - Synteny and dotplot rows each take `loc` and `displayedRegionNames`, in a spec
   and in `jb.setSession`, so an axis is navigated declaratively.
 
-## Calls and what they answer with
+## What a call returns
 
 State persists between calls in one app run: stash helpers on `globalThis`. The
 `open` tool and `jb.loadSessionSpec` replace `session`, so re-read it per call
 and never cache it. `open` from the start screen loads a new page, emptying
 `globalThis`.
 
-Besides `value`, a call answers with:
+Besides `value`, a call returns:
 
 - `logs`, the console output in order. Print intermediate state instead of
   returning it.
@@ -118,9 +119,9 @@ Besides `value`, a call answers with:
 - a thrown error as its message plus `at code line L, column C`, counted in your
   code. A compile error has no line; look for an unbalanced bracket or an
   `await` in a non-async callback.
-- a call that outlives `timeoutMs` (default 120 s) answers with an error and the
-  logs so far; the code keeps running with `signal` aborted. For a long job,
-  park the promise:
+- a call that outlives `timeoutMs` (default 120 s) returns an error and the logs
+  so far; the code keeps running with `signal` aborted. For a long job, park the
+  promise:
 
 ```js
 // call 1
@@ -153,7 +154,8 @@ return 'started'
 
 ## Deep dives
 
-Everything above is the contract. Read one when a task reaches past it.
+The sections below go deeper; read one when a task needs more than the reference
+above.
 
 ## The model, oriented
 
@@ -202,8 +204,8 @@ as below. Any other object (`filter`, `encoding`, `encoding.y`, a band) takes
 the members written, and a `null` member resets that member. A string is the
 one-value form, the facet's field or the color's field, and an object spells the
 rest out: `facet: { field, sort }` orders the sections,
-`encoding.color: { field, scale: { domain, range } }` hands the `scale.domain`
-values the `scale.range` colors in order. A field is a feature attribute, a
+`encoding.color: { field, scale: { domain, range } }` assigns the `scale.range`
+colors to the `scale.domain` values in order. A field is a feature attribute, a
 dotted path such as `INFO.SVTYPE`, or `strand`; an alignments track's facet
 field is a read dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`).
 The `filter` is a list of `jexl:` expressions, such as
@@ -250,11 +252,11 @@ an `encoding` over feature fields and its `transform` steps), `transform`,
 another track's mark display draws the same thing there. The docs topic `plots`
 is the whole vocabulary, with the ggplot2 and Vega-Lite name for each idea.
 
-A feature's label is whatever `name` it has, else its `id`, and a file decides
-which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and has no
-`Name`, so `f.get('name')` is `null` there and `f.get('id')` is the symbol.
-`Object.keys(f.toJSON())` lists what one feature has before you filter on a
-field.
+A feature's label is whatever `name` it has, else its `id`, and which one
+depends on the file: the hosted RefSeq GFF names a gene by `ID` and `gene_id`
+and has no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
+symbol. `Object.keys(f.toJSON())` lists what one feature has before you filter
+on a field.
 
 - Reads are plain property or getter access; **mutations only through actions**
   (`view.setWidth(800)` works, `view.width = 800` throws).
@@ -272,28 +274,27 @@ field.
   load with the setting missing. A spec `layout` indexes the spec's `views`
   array.
 - An action's signature is under `docs topic:"model:<modelType>"`
-  `section:"Actions"` — the `modelType` `jb.inspect` answered with — config
-  slots by type under `docs topic:"config:BamAdapter"`, every name under
+  `section:"Actions"` — the `modelType` `jb.inspect` returned — config slots by
+  type under `docs topic:"config:BamAdapter"`, every name under
   `docs topic:"types"`. A display's actions, for anything a slot does not cover,
   are in the model topic. With the name already in hand, pass it as the
   `section`: `section:"setColor"` returns that one line, where the section
   holding it is the whole getter or action list, and the page's contents lists
   how many characters that is.
-- A track too tall for the window wants a height strategy, not `displayMode`: a
+- A track too tall for the window needs a height strategy, not `displayMode`: a
   display may take `heightMode` `fit` or `grow`, and `compact` only shrinks each
   feature. `describeSlots` lists both.
 - The `drawer` in `jb.sessionSummary()` is the widget panel, and it reports the
   width that panel takes off every view; `session.hideAllWidgets()` closes it.
   `jb.listTracks` covers connection and hub tracks as well as the session's own.
 
-The fine print on the building helpers, once the one-liners above stop being
-enough:
+More detail on the building helpers:
 
 - A `notReady` entry's `phase` is `tooLarge`, `error`, `renderError`, `loading`,
   or `canceled` for a load the user stopped, which
   `track.activeDisplay.reload()` retries.
-- `applyDisplaySettings` answers `{ applied, unapplied, failed }`: `failed` is a
-  key the display knows and could not set (a wrongly typed value included).
+- `applyDisplaySettings` returns `{ applied, unapplied, failed }`: `failed` is a
+  key the display declares and could not set (a wrongly typed value included).
   `unapplied` holds `{ key, reason }` — `no-slot` for a key no slot covers,
   misspellings included, and `setter-only` for one the display takes through a
   `set<Key>` action, which you call yourself.
@@ -343,19 +344,19 @@ return {
 ```
 
 - `loc` is one place: a locstring, or a region object
-  (`{ refName, start, end }`, what `jb.visibleRegions` answers). Several places
+  (`{ refName, start, end }`, what `jb.visibleRegions` returns). Several places
   go in `regions`.
 - `assembly` is for a track that names none. A wrong one, or a visible region
   from a view on another assembly, throws rather than reading the wrong
   coordinates.
 - A region over the byte gate throws `region too large for jb.getFeatures`,
-  naming the estimate and the limit, rather than answering short. Narrow the
-  region, or pass `byteLimit` for a read you mean to be that big.
+  naming the estimate and the limit, rather than returning a partial result.
+  Narrow the region, or pass `byteLimit` for a read you mean to be that big.
 - A base-level quantitative track is one feature per base, so a 160 kb window is
   about 160k of them. Reduce with a loop, never `Math.max(...scores)`, which
   blows the call stack on an array that size.
 - The reference sequence is a track too: `jb.listTracks` lists each assembly's
-  as a `ReferenceSequenceTrack`, and `jb.getFeatures` on its trackId answers one
+  as a `ReferenceSequenceTrack`, and `jb.getFeatures` on its trackId returns one
   feature per region whose `seq` holds the bases.
 - Never `return` thousands of raw features: aggregate, slice, or put them on
   screen as a track.
@@ -366,9 +367,9 @@ pass an `AbortController`'s `signal` in the args to cancel it.
 
 **To find out what a remote file holds before adding it as a track, build its
 adapter and ask.** The adapter cache is a registry module, and `getAdapter` is
-async and answers `{ dataAdapter }`. `getRefNames()` is on every feature
-adapter; `getHeader()` answers for formats with one (BAM, CRAM, VCF, BED, GFF3)
-and `null` for a bigWig:
+async and returns `{ dataAdapter }`. `getRefNames()` is on every feature
+adapter; `getHeader()` returns the header for formats with one (BAM, CRAM, VCF,
+BED, GFF3) and `null` for a bigWig:
 
 ```js
 const { getAdapter } = jb.require(
@@ -413,7 +414,7 @@ it before trusting a screenshot of either:
 - `notices` are steps that failed and left the view working: a superposition, a
   recolor, a domain fetch. `jb.waitReady` lists them under `notReady`, beside a
   view still loading as `phase: 'loading'`.
-- A ProteinView structure's `locateResidues(target)` answers each residue in
+- A ProteinView structure's `locateResidues(target)` returns each residue in
   every numbering (author, transcript, 0-based position) with its codon on the
   genome. `locateGenomeRegion({ refName, start, end })`, 0-based half-open, goes
   the other way, and `view.locateGenomeRegion(region)` asks every structure.
@@ -498,7 +499,8 @@ return jb.waitReady(60000)
 - **Recomputed the values? Delete, re-add, and change the `adapterId`.**
   `addSessionTrackConf` refuses a known trackId whose content differs (the same
   content is idempotent), and the adapter cache is keyed on `adapterId`, so the
-  same id with new features keeps serving the first array it saw.
+  same id with new features keeps returning the first array cached under that
+  id.
 - **Plan for a few thousand features, not more.** The array is part of the track
   config, so it is held in memory, written into the session snapshot, and
   re-serialized by every autosave. Above that, run the tool that does the job
@@ -528,7 +530,7 @@ client gives you, never through `window.require`:
 - **Data out of JBrowse** comes back as the value you `return` (features, a
   table, an SVG), and your file tools write it to disk.
 - **A `fetch` from the app** has a browser Origin and obeys CORS, and some hosts
-  refuse it (NCBI's acc.cgi answers 403; eutils does not). Fetch those with your
+  refuse it (NCBI's acc.cgi returns 403; eutils does not). Fetch those with your
   own tools, then load the file.
 
 ## In a browser
@@ -554,7 +556,7 @@ The Claude in Chrome extension changes the calling convention:
   the body in `(async () => { ... })()`.
 - **One evaluation has a fixed time budget**, about 45 seconds, and the code
   keeps running when it expires. `jb.loadSessionSpec` settles the new session
-  before it answers, which on a cold hosted config can outlive the budget. Call
+  before it returns, which on a cold hosted config can outlive the budget. Call
   it alone, and read `jb.sessionSummary()` on the next call.
 - **Results are sanitized on the way back.** Nested objects are cut off past a
   few levels, long strings are clipped, and a string that looks like base64 is

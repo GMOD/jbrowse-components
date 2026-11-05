@@ -353,11 +353,11 @@ so add that panel. COLO829's der(3) is a closed cycle over three chromosomes, so
 the junction below needs a chr10 panel between the two it appears to join, and
 with it every connector in the figure is solid.
 
-**One render per sample, and the control is the other render.** A somatic call
-is the difference between the tumour and its matched normal, so a figure for one
-is two renders side by side, with the same `--loc` list and the same `--width`
-and one `--track` each. The connecting curves are drawn per track, so the tumour
-render has them and the normal render has none.
+**Render each sample separately, the matched normal beside the tumour.** A
+somatic call is the difference between the tumour and its matched normal, so a
+figure for one is two renders side by side, with the same `--loc` list and the
+same `--width` and one `--track` each. The connecting curves are drawn per
+track, so the tumour render has them and the normal render has none.
 
 <!-- jb2export: sv_review_tumor -->
 
@@ -393,10 +393,10 @@ The tumour and normal commands each take two modifiers:
 - **`featureHeight:super-compact`** draws each read 1 px tall, so six pileups
   fit on one screen.
 
-**A reconstructed allele is an assembly, so it is a third render.** Once the
-junctions have been resolved into a derivative contig, the three loci above form
-one axis, in order, so they need one panel instead of three. That contig is an
-assembly in the same config, so only the `--assembly` argument changes.
+**Render a reconstructed allele as its own assembly, in a third render.** Once
+the junctions have been resolved into a derivative contig, the three loci above
+form one axis, in order, so they need one panel instead of three. That contig is
+an assembly in the same config, so only the `--assembly` argument changes.
 
 <!-- jb2export: sv_review_derivative -->
 
@@ -562,9 +562,9 @@ jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
 
 ![A Hi-C contact matrix as a triangular heatmap along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.239de0eebc0f.png)
 
-`color:viridis` on a `--hic` track names the ramp the counts run across, any
+`color:viridis` on a `--hic` track sets the color ramp for the counts, any
 [scheme HicColor takes](https://jbrowse.org/jb2/docs/config/hiccolor/#slot-scalescheme),
-and `encoding.color.scale.type=log` places them on it by their log2.
+and `encoding.color.scale.type=log` maps each count's log2 onto the ramp.
 
 ### Gene tracks and the reference sequence
 
@@ -610,14 +610,15 @@ of named modifiers. Any other display setting is a
 [slot write](#any-display-setting-slotpathvalue), spelled as the display spells
 the slot.
 
-Modifiers are grouped below by the track types they apply to. A modifier lands
+Modifiers are grouped below by the track types they apply to. A modifier applies
 only where the display the track opens as has the setting it writes; anywhere
 else it prints a warning naming the display and the setting it lacks, as
 `sashimi:up` does on a BigWig and `heightMode:fit` on a multi-row feature track.
 `force:` is the exception: a display that never gates a large region, such as a
-BigWig's or a Hi-C map's, skips it without a word. A track whose display none of
-these target (GWAS, MAF, LD, marks, synteny, sequence) takes only the all-tracks
-modifiers and [slot writes](#any-display-setting-slotpathvalue).
+BigWig's or a Hi-C map's, ignores it and prints no warning. A track whose
+display none of these target (GWAS, MAF, LD, marks, synteny, sequence) takes
+only the all-tracks modifiers and
+[slot writes](#any-display-setting-slotpathvalue).
 
 A modifier **value** the modifier can't use, such as `arcs:upp`, `height:8o` or
 `force:ture`, is an error. The tool writes one figure and exits, so a warning
@@ -673,8 +674,8 @@ Reads & coloring:
 | `sort:field` or `sort:tag:TAG` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `base`, or `tag:<TAG>`)                                  |
 
 The modifiers below choose which reads are drawn. The flag, MAPQ and tag
-modifiers also decide which reads count, so a read they remove leaves the
-coverage band too; the category modifiers hide rows and leave the coverage
+modifiers also set which reads the coverage counts, so a read they remove leaves
+the coverage band too; the category modifiers hide rows and leave the coverage
 counting every read, so a category's own depth needs a section of its own
 (`facet=split`, say).
 
@@ -689,7 +690,7 @@ a script pass a category through from a variable that may be empty.
 | ------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `flags:include:exclude`  | `flags::UNMAP,SECONDARY,QCFAIL,DUP` | SAM flag masks, `samtools -f` then `-F`. Each half is a number or samtools' flag names, comma-separated (`PAIRED`, `PROPER_PAIR`, `UNMAP`, `MUNMAP`, `REVERSE`, `MREVERSE`, `READ1`, `READ2`, `SECONDARY`, `QCFAIL`, `DUP`, `SUPPLEMENTARY`). The two masks replace every flag filter the track's config sets, defaults included, and an empty half is 0, so `flags::SECONDARY` alone also keeps unmapped, QC-failed and duplicate reads |
 | `mapq:N`                 | `mapq:20`                           | Keep only reads with a mapping quality of at least N, `samtools -q`. A read with MAPQ 255 (none reported) is kept                                                                                                                                                                                                                                                                                                                        |
-| `filterTag:TAG:value`    | `filterTag:HP:1`                    | Keep only reads whose tag has this value, or, with no value, reads carrying the tag. It replaces the condition the track's config sets on that tag. Repeated on one tag, a read passes with any of the values; on different tags, it must pass each                                                                                                                                                                                      |
+| `filterTag:TAG:value`    | `filterTag:HP:1`                    | Keep only reads whose tag has this value, or, with no value, reads with the tag. It replaces the condition the track's config sets on that tag. Repeated on one tag, a read passes with any of the values; on different tags, it must pass each                                                                                                                                                                                          |
 | `svSignal:only\|exclude` | `svSignal:only`                     | SV evidence, and the rest of the read's pair in the same window: a split read, an insertion or deletion of 50 bp or more, or a paired read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `mapq:` judges each read alone                                                                                                                                               |
 | `split:only\|exclude`    | `split:only`                        | Reads the aligner gave a supplementary segment (SAM flag 0x800), read off the SA tag                                                                                                                                                                                                                                                                                                                                                     |
 | `alone:only\|exclude`    | `alone:exclude`                     | Reads with no mate or split segment in the window                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -772,7 +773,7 @@ to both. `facet=<field>` stacks the track into one labelled section per value:
 A BigWig's score axis is the `encoding.y` setting. A BAM/CRAM track's coverage
 band spells its axis `coverage.encoding.y`, where
 `coverage.encoding.y.scale.type=log` is the usual setting for RNA-seq. `mark`
-names how the scores draw: `bar`, `point`, `line` or `span`.
+sets how the scores are drawn: `bar`, `point`, `line` or `span`.
 
 | Write                                                           | Description                              |
 | --------------------------------------------------------------- | ---------------------------------------- |
@@ -843,8 +844,8 @@ MultiWiggle track, which is everything but `--hic`, so the tracks differ in
 which fields they provide. A read's `score` is its MAPQ; a variant has its
 quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
 wants; a BigWig past its raw section provides a zoom level's mean as `score`,
-with `minScore` and `maxScore` beside it, and a raw record answers its score for
-all three.
+with `minScore` and `maxScore` beside it, and a raw record has its score in all
+three.
 
 A whole plot is a list of objects, so state it as one JSON modifier, which has
 the structure the track's config or a session spec holds. Here one BigWig draws

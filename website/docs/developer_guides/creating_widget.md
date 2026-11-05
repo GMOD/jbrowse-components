@@ -71,7 +71,7 @@ renders.
 Closing a widget hides it, and it stays in the session with everything it holds.
 A widget that shows a result rather than a tool a user returns to — a feature's
 details, a search's hits — sets **`discardOnClose: true`** on its `WidgetType`,
-so closing removes it and what it holds stops riding along in every session a
+so closing removes it and what it holds is no longer saved with every session a
 user saves or shares.
 
 ## Opening a widget

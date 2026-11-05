@@ -43,7 +43,7 @@ advance.
 
 The MCP server ships in **JBrowse Desktop 5.0.0 and later**. On an earlier build
 the `--mcp` argument below is unhandled, so the client launches the app's window
-and waits forever on a server that never speaks — the app is on screen and the
+and waits forever on a server that never responds — the app is on screen and the
 agent cannot reach it. **Help → Connect an AI agent...** exists only in a build
 that serves the bridge, which is the quickest way to tell.
 
@@ -135,9 +135,10 @@ jb.trackModel(trackId).applyDisplaySettings(s) // restyle, and report what lande
 jb.waitReady(ms) // wait for drawing, and report what did not draw
 ```
 
-Each helper covers an answer the raw model gets wrong with no error: a refName
+Each helper turns a wrong result the raw model returns with no error (a refName
 the file spells differently, a settings key the display drops, a track that
-settled without drawing. Everything else is the model itself.
+settled without drawing) into a throw or a report; everything else is done
+directly on the model.
 
 - [](/docs/agents_live_model) is the reference the agent reads.
 - [](/docs/agents_recipes) is a verified snippet per ask.

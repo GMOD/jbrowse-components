@@ -18,7 +18,7 @@ decisions, and the first two are in your build.
 ## Register lazily
 
 A view or display type takes its state model either built or as a thunk, and the
-thunk is what defers everything the model names. JBrowse's own test fixture for
+thunk defers loading everything the model names. JBrowse's own test fixture for
 this is the shortest statement of it:
 
 <!-- include: test_data/split_plugin/index.js#register -->
@@ -49,7 +49,7 @@ snapshot names before it applies one, so a saved session opens normally.
 Registration itself stays eager, and so does the config schema — the config
 editor and the track union need it before any model exists.
 
-## Split the bundle, or the thunk buys nothing
+## Split the bundle, or the thunk defers nothing
 
 A `lazy()` and a state-model thunk only defer anything if the build emits more
 than one file. Both official templates bundle to a single UMD file, and esbuild
@@ -80,12 +80,12 @@ plugins at runtime — core, the display toolkit, React, MobX, Material UI. A
 specifier your build does not externalize is a second copy of something already
 on the page.
 
-The trap is the version you build against. If you intersect that list with an
+Build against the newest host you support. If you intersect that list with an
 older floor so one bundle runs on every host, every specifier only the newer
 host serves gets bundled, along with its whole relative closure. The plugin
 store publishes a `jbrowseRange` per version, so a plugin can ship a build for
-current JBrowse and keep an older one for older hosts rather than paying the
-floor on every load.
+current JBrowse and keep an older one for older hosts rather than bundling the
+older floor's extra specifiers into every load.
 
 ## See also
 

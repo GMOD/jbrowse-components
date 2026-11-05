@@ -93,8 +93,10 @@ while rendering on WebGPU.
 
 The largest allocation is the render target: `WebGPUHal` holds one 4x MSAA color
 attachment per display, sized from canvas area, so an empty tall track costs
-what a full one does — 79.2 MiB for one, counted nowhere. How many GPU displays
-a page can open at all is a separate ceiling,
+what a full one does — 79.2 MiB for one
+([ARCHITECTURAL_LIMITS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ARCHITECTURAL_LIMITS.md)),
+and no budget counts it. How many GPU displays a page can open at all is a
+separate ceiling,
 [](/docs/developer_guides/creating_gpu_display#the-webgl2-context-ceiling).
 
 [ADR-064](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/architecture-decision-records/adr-064-parsed-chunk-budgets-are-per-worker-not-per-file.md)

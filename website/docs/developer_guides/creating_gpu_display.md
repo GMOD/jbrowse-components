@@ -312,11 +312,10 @@ module.
 | `score.glsl.generated.ts`   | the compiled WebGL2 stages                                        | nothing: `SOURCE.glsl()` loads it when a WebGL2 backend is built          |
 
 A display model that reads one threshold should therefore import the `.consts.`
-module, not the shader module that re-exports it. The text is the one part no
-module you import contains: a mark declared at module scope is evaluated when
-your plugin registers, in the RPC worker too, so the WGSL and GLSL wait behind
-`import()` until a display builds a GPU backend with the pass. Import neither
-yourself.
+module, not the shader module that re-exports it. The WGSL and GLSL text modules
+load through `import()` only when a display builds a GPU backend with the pass,
+because a mark declared at module scope is evaluated when your plugin registers,
+in the RPC worker too. Import neither yourself.
 
 The table below lists the exports a plugin imports from `score.generated.ts`.
 That module re-exports the interface and consts modules, so the table is the
@@ -379,8 +378,7 @@ the library's vocabulary: `x`, `x2`, `y` or `row`, `color`, plus any names
 specific to the shape. The display's payload can name its arrays differently,
 because `channels` on the mark maps one set of names to the other. The file
 below defines the placement function that two members share, then the four
-members. A shape has no constructor. It is an object literal, admitted by having
-a consumer and not by completeness.
+members. A shape is an object literal and needs no constructor.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.ts -->
 
@@ -517,12 +515,13 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
 }
 ```
 
-What each member is held to:
+Each member must meet these requirements:
 
 - **`pass`** is `slangPass` over the generated module plus a `pack`. The
-  instance count comes from the buffer size: a packer that allocates
-  `n * INSTANCE_STRIDE_BYTES` has stated `n`. A region with nothing to draw
-  releases its buffer through an empty pack.
+  instance count comes from the buffer size: `uploadPass` divides the buffer's
+  byte length by the stride, so a packer that allocates
+  `n * INSTANCE_STRIDE_BYTES` gives `n`. A region with nothing to draw releases
+  its buffer through an empty pack.
 - **`writeUniforms`** uses the generated packer (`shader.writeUniforms`), which
   writes every field. The scratch buffer outlives the frame, so a field left out
   of a manual offset write would redraw with last frame's value. The `bpRangeX`
@@ -589,8 +588,8 @@ into a recording context and checks `ink` against what the painter drew: the
 painting lies inside the box, and every edge of the box is within a pixel of the
 painting. It then walks the block in half-pixel steps and checks the hit test
 against both. A point on a box returns that box, a hit's `x`/`y` lies inside the
-box it names, and no answer is nearer than its painting. Run the sweep in both
-orientations:
+returned box, and no other hit is nearer than its painting. Run the sweep in
+both orientations:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.test.ts -->
 
@@ -707,7 +706,7 @@ scale, declare that value as `inputs`. A change to `inputs` re-encodes every
 loaded region. Reading the value inside `encode` does not work, because the
 helper invalidates only on `inputs` and on the region's data.
 
-Three settings buckets (see the
+Settings go in three places (see the
 [`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)):
 
 - **`rpcProps()`** refetches in the worker, so scroll and zoom must stay out of

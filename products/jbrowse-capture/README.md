@@ -31,7 +31,7 @@ npx @jbrowse/capture --genome hg38 --loc EGFR \
   page applies them as it opens the track.
 - **`--view`:** view settings by their session-spec names, as `path=value` or
   JSON.
-- **Settings ride in a session spec**: with any present, the URL opens the same
+- **Settings go in a session spec**: with any present, the URL opens the same
   view through `session=spec-…` instead of the `assembly`/`loc`/`tracks`
   parameters.
 - **No data files:** capture opens what a config lists, and has no way to serve
@@ -40,10 +40,9 @@ npx @jbrowse/capture --genome hg38 --loc EGFR \
 
 ## Knowing when JBrowse has finished rendering
 
-Knowing when a genome browser is done is the entire problem. JBrowse loads its
-config, builds a session, resolves an assembly, fetches each track, and then
-draws to a canvas — and a screenshot taken at any point before the last step is
-a picture of an empty browser that looks like a successful run.
+JBrowse loads its config, builds a session, resolves an assembly, fetches each
+track, and then draws to a canvas — and a screenshot taken at any point before
+the last step is a picture of an empty browser that looks like a successful run.
 
 Nearly every signal a browser publishes is **negative** — no loading overlay, no
 display in its loading phase, no unpainted canvas — and an absence is equally
@@ -52,14 +51,13 @@ build with two remote tracks:
 
 - `networkidle2` resolves at ~350ms
 - the session appears at ~880ms
-- the assembly and tracks land at ~2500ms
+- the assembly and tracks load at ~2500ms
 - the loading overlay only goes up _after that_
 
 A wait chain built from those signals alone finishes in under a second and
 reports success.
 
-So this package waits on the two **positive** signals instead, and nothing else
-decides the answer:
+This package waits on the two **positive** signals instead:
 
 1. **The census.** `AppReadyMarker` publishes what is open as `data-app-views`,
    `data-app-assemblies` and `data-app-tracks`, and the gate reads that one
@@ -74,15 +72,16 @@ decides the answer:
    not merely be true once: a display drops to `ready` in the gap between one
    fetch finishing and the debounced next one starting. The hold also waits out
    a view body still loading its code and a display drawing a morph between two
-   layouts (`data-display-animating="true"`), neither of which the marker can
-   see.
+   layouts (`data-display-animating="true"`), neither of which the marker
+   reports.
 
-Then one check on what the frame shows, which the marker does not answer. The
-marker is about WORK, so it reads `ready` over a display whose fetch failed or
+Capture then checks what the frame shows, which the marker does not report. The
+marker tracks work, so it reads `ready` over a display whose fetch failed or
 that the user canceled. Capture names every display that is unpainted, canceled
 or showing an error banner, and fails. It fails too on an error toast or error
-box, which no display carries: a track whose config fails to load never becomes
-a display, so the frame lacks it while every display present has painted.
+box, which belongs to no display: a track whose config fails to load never
+becomes a display, so the frame lacks it while every display present has
+painted.
 
 **The instance has to be JBrowse v5 or later**, the first release to publish the
 marker. Capture reads the instance's `version.txt` before launching a browser
@@ -137,7 +136,7 @@ Two waits, depending on what you did:
   navigated yourself. `waitForFrame(page)` is its second half alone, for a page
   whose session you already gated, after a resize or a click. `waitForSession`,
   the first half, is exported too.
-- **`waitForAppSettled(page)`** is the wait after you CLICK something. A page
+- **`waitForAppSettled(page)`** is the wait after you click something. A page
   that is loading starts out `loading` and the transition into `ready` is it
   finishing; a page you just clicked is already `ready` and stays that way until
   the click's work registers, so waiting for `ready` there returns on the
@@ -154,7 +153,7 @@ last example above does.
 Puppeteer waits are usually written `.catch(() => {})` so a slow page is not
 failed for being slow. The cost is that "everything settled" and "we gave up"
 become the same `void` — the run ends with an image and an exit code of 0 either
-way, which is the vacuous-gate problem again, one step later.
+way, so the exit code no longer shows whether the page finished.
 
 Here every stage reports its outcome, and an unsettled one throws by default,
 naming the gate:
@@ -177,11 +176,11 @@ Three fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
-- **`pending`** — displays not showing their data when the shutter fired, each
-  with its own phase: `loading` is a slow fetch, `error` and `renderError` a
-  banner, `canceled` a user's stop, and `ready` a display claiming it finished
-  without drawing. Each one lands in `unsettled` too, so a capture returns them
-  only under `allowUnsettled`.
+- **`pending`** — displays not showing their data when the screenshot was taken,
+  each with its own phase: `loading` is a slow fetch, `error` and `renderError`
+  a banner, `canceled` a user's stop, and `ready` a display claiming it finished
+  without drawing. Each one is also listed in `unsettled`, so a capture returns
+  them only under `allowUnsettled`.
 - **`tooLarge`** — displays showing "Requested too much data" instead of their
   features, because the region is wider than the track fetches without being
   asked. The capture still succeeds, since that is the app working as designed,
@@ -213,24 +212,24 @@ npx @jbrowse/capture --genome hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated \
   --annotations callouts.json -o brca1.png
 ```
 
-Each callout places itself through an `anchor` that resolves against the running
-session, so none of them is a pixel measured off an earlier capture:
+Each callout is positioned through an `anchor` that resolves against the running
+session, not pixel coordinates from an earlier capture:
 
 - `loc`, with an optional `trackId` and `fracY` (0 is the track's top, 1 its
-  bottom), lands on a genomic position in a linear genome view. A `view` index
+  bottom), points at a genomic position in a linear genome view. A `view` index
   picks the view, and an array (`[0, 1]`) descends into a synteny view's rows.
 - `feature`, with a `trackId`, names a feature or record that track drew by the
   text its label shows (`rs334`, `CYP1A2`). Where the label repeats, a `loc`
   picks the copy.
 - `row`, with a `trackId`, names a row of a multi-row track (a sample, a
   haplotype, a species) by its name or the label beside it, or a band of rows by
-  its label. With a `loc` the callout lands on that row at that position, and
+  its label. With a `loc` the callout points at that row at that position, and
   `fracY` is then a fraction of the row's height.
 - `graphNode` names a GFA segment in a graph view or graph track.
 - `hLoc` and `vLoc` name a dotplot's cell, as a whole chromosome (`chr4`) or a
   span (`chr4:1-5,000,000`).
 - `residue` names a residue of a protein view's 3D structure as chain and number
-  (`B:6`); the callout lands on its side chain wherever the camera drew it.
+  (`B:6`); the callout points at its side chain wherever the camera drew it.
 - `selector` and `text` name an element of the page, such as a menu item.
 
 `dx` and `dy` nudge a callout off its anchor, and `fromAnchor` anchors an
@@ -267,7 +266,7 @@ An object names its `out` and may set `genome`, `config`, `assembly`, `loc`,
 out. `--concurrency` sets how many windows are open at once (default 4).
 
 Each image is reported on a line of its own with the time it took. A failed
-image is reported and the rest carry on, a browser that died is relaunched for
+image is reported and the rest continue, a browser that died is relaunched for
 the images left, and the exit code is 1 if any image failed. Chrome flags and
 `--headed` apply to the whole batch, so images that need different ones go in
 separate batches.

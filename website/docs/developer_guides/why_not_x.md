@@ -114,7 +114,7 @@ worker loop
 because the memory access pattern changes the measured result, and that pattern
 is already visible in TypeScript.
 
-## Where Rust earns it
+## Where JBrowse uses Rust
 
 Rust runs in three places here, sharing one property: each either runs before
 the browser does, or is small enough that its bytes do not show up on the load

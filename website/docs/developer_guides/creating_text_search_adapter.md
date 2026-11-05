@@ -54,11 +54,11 @@ export interface BaseTextSearchArgs {
 `'exact'` simply returns its prefix hits and the ranker floats the exact one.
 
 **Prefer tagging exactness over filtering on it.** Set `exact: true` on the
-results that matched precisely and one unrestricted search answers both "what
+results that matched precisely and one unrestricted search serves both "what
 matches?" and "what matches exactly?". Only the adapter can make that judgement
-— trix calls a hit exact when _any_ indexed attribute equals the query — so it
-travels on the result. Filtering on `searchType === 'exact'` works, and the
-built-ins also do it, but filtering in the search box costs two reads of one
+— trix calls a hit exact when _any_ indexed attribute equals the query — so the
+adapter marks it on the result. Filtering on `searchType === 'exact'` works, and
+the built-ins also do it, but filtering in the search box costs two reads of one
 index.
 
 ## Implementing the adapter

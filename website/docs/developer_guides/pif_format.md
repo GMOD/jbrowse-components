@@ -107,7 +107,7 @@ One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 Every field is optional, and files built before the header have none. A reader
 skips a header key it does not know, such as the `writer:Z:` key that files from
-the 5.0.0 betas carry.
+the 5.0.0 betas contain.
 
 ### Format version
 
@@ -172,7 +172,7 @@ lands.
 
 In a file whose header states a bound and `cigars:Z:all`, a tagless coarse row
 is therefore exactly one run, and readers walk it as `<own>:<mate>M` over its
-columns. A reader that meets a `version` newer than it knows keeps only that
+columns. A reader that meets a `version` newer than it supports keeps only that
 field: no bound, no implied runs, and `cr:Z:` ignored, so the coarse tier draws
 as plain ribbons.
 
@@ -180,8 +180,8 @@ The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
 run is a ribbon segment between its corners, each kept gap a colored indel
 wedge. An indel large enough to see at whole-genome zoom looks the same in both
 tiers. Navigation walks it too, so "Move other panel to the matching region",
-follow mode and the launch dialog's clip-to-region answer within `--coarse` bp
-of the CIGAR's answer.
+follow mode and the launch dialog's clip-to-region give positions within
+`--coarse` bp of the CIGAR's.
 
 ```bash
 jbrowse make-pif input.paf                 # default, runs within 10kb
@@ -193,9 +193,9 @@ jbrowse make-pif --format-version          # prints the format version, e.g. 2
 ```
 
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
-is the zoom at which `auto` switches, and the header keeps it honest: a value
-below the `--coarse` the file was built with is raised to it. A `--no-coarse`
-file serves the fine tier at every zoom whatever the setting says.
+is the zoom at which `auto` switches, and the header's `coarse` field sets a
+floor: a value below the `--coarse` the file was built with is raised to it. A
+`--no-coarse` file serves the fine tier at every zoom whatever the setting says.
 
 A PIF built before `cr:Z:` existed has coarse rows split at large indels with no
 alignment string, and draws as plain ribbons. A JBrowse older than `cr:Z:` reads

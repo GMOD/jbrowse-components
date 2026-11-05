@@ -62,8 +62,8 @@ still valid for the current view, by comparing the whole fetch key; a display
 does not override it. A display whose data falls out of date for reasons the
 bounds can't detect reports that through `zoomFetchArgs` (the zoom-derived
 arguments a fetch now would send the worker, which the foundation stamps beside
-each region) or `regionHasData` (whether what the last fetch stored still
-answers at this zoom).
+each region) or `regionHasData` (whether what the last fetch stored is still
+valid at this zoom).
 
 ## Implementing fetchNeeded
 
@@ -105,12 +105,12 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 ```
 
 `call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`. The
-context injects this fetch's signal and its status callback, so every RPC a
-fetch issues is known to the cancel and the progress bar. If you pass them by
-hand and forget one, nothing reports it: the display loses cancellation or
-progress. The envelope keeps the literal method name at the call site, so the
-registry's types for args and return still apply. Each region receives a
-separate `ctx`, so every region's progress aggregates into one bar.
+context injects this fetch's signal and its status callback, so the cancel and
+the progress bar track every RPC a fetch issues. If you pass them by hand and
+forget one, there is no error: the display loses cancellation or progress. The
+envelope keeps the literal method name at the call site, so the registry's types
+for args and return still apply. Each region receives a separate `ctx`, so every
+region's progress aggregates into one bar.
 
 Put a batch-wide step that runs after every region has loaded in `onComplete`.
 It runs once, under the same staleness guard. Both feature displays commit their
@@ -119,7 +119,7 @@ the batch, even though the payloads are not.
 
 ### The two batched counterparts
 
-Reach past `fetchEachRegion` when the worker does not answer one payload per
+Reach past `fetchEachRegion` when the worker does not return one payload per
 region:
 
 - **`fetchAllRegions`** hands all regions to a single RPC call that returns one
@@ -127,7 +127,7 @@ region:
   adapter serves the whole set more efficiently in one pass. BigWig, for
   example, coalesces adjacent on-disk blocks across region boundaries, which N
   independent calls cannot do.
-- **`fetchRegionsBatched`** is for a worker answer that covers every region and
+- **`fetchRegionsBatched`** is for a worker result that covers every region and
   cannot be split, such as multi-sample variant's `cellData` or MAF's per-batch
   sample union. It makes one `call` and one `commit`, and marks every region
   loaded together. It takes the region list as an argument in place of the
@@ -247,7 +247,7 @@ To extend a parent class's `rpcProps`, capture the super version before
 redefining it, with the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
 used for any extended view. Otherwise the override drops the parent's
-dependencies, and nothing reports it.
+dependencies, with no error.
 
 ## Byte estimation and regionTooLarge
 
@@ -307,14 +307,13 @@ The gate judges on two axes, and each stops gating for a different reason:
 [REGION_TOO_LARGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REGION_TOO_LARGE.md)
 is the full account.
 
-No display calls the gate by hand. Both fetch runners call it: the three helpers
-in `fetchEachRegion.ts` (`fetchEachRegion`, `fetchAllRegions`,
-`fetchRegionsBatched`) for this family, and `installGlobalFetchAutorun`'s shared
-phases for the global family. A display outside the per-region chain therefore
-opts in with the same getter and nothing else. The commit side is shared too.
-`nextGateState(prev, event)` holds the rules about _order_: which of two
-measurements wins, what a clear leaves behind, and what a force-load approval
-outlives. An exhaustive truth table over states cannot express those rules.
+Both fetch runners call the gate: the three helpers in `fetchEachRegion.ts`
+(`fetchEachRegion`, `fetchAllRegions`, `fetchRegionsBatched`) for this family,
+and `installGlobalFetchAutorun`'s shared phases for the global family. A display
+outside the per-region chain therefore opts in with the same getter and nothing
+else. The commit side is shared too. `nextGateState(prev, event)` holds the
+rules about _order_: which of two measurements wins, what a clear leaves behind,
+and what a force-load approval outlives.
 
 ## FetchMixin: cancellation and staleness
 
@@ -337,7 +336,7 @@ trigger.
 `FetchMixin` also owns `reloadCounter`, the "go again" signal. `reload()` bumps
 it, and every fetch autorun reads it unconditionally, above its bail-outs. After
 an error the other inputs are unchanged, so without `reloadCounter` nothing
-would wake the fetch. `FetchMixin` holds it because both LGV fetch foundations
+would re-run the fetch. `FetchMixin` holds it because both LGV fetch foundations
 compose `FetchMixin`. A display that overrides `reload()` should still bump it.
 
 ## Prerequisite fetches
@@ -374,7 +373,7 @@ and nothing else on screen shows the failure. Pass no `contract`. The display's
 foundation already installed the two display-contract checks, and the check
 reports a second install as a double-attach.
 
-The viewport fetch declines until the prerequisite lands, and reports that with
+The viewport fetch declines until the prerequisite loads, and reports that with
 `awaitingPrerequisite`. That flag **defers** the retry verdict to the run after
 the prerequisite arrives; it does not waive the verdict.
 

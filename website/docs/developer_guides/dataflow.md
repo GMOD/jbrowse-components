@@ -12,40 +12,41 @@ zoom therefore costs a frame and not a fetch.
 
 <Figure caption="A pan or zoom takes the dashed edge, re-entering at buffers the GPU already holds." src="/img/dataflow.png" />
 
-A viewport change first checks one thing: is this region already loaded? Where
-it is, nothing below the top of the figure runs. Where it is not, the display
-calls an adapter in an RPC worker, which reads the file's index, issues range
-requests for the chunks the index named, inflates them, builds records, and
-reduces those records to what the screen needs — a layout, a coverage summary, a
-set of packed columns. The result crosses back as transferable typed arrays in
-absolute genomic coordinates, and the main thread uploads it once.
+On a viewport change the display first checks whether the region is already
+loaded. Where it is, nothing below the top of the figure runs. Where it is not,
+the display calls an adapter in an RPC worker, which reads the file's index,
+issues range requests for the chunks the index named, inflates them, builds
+records, and reduces those records to what the screen needs — a layout, a
+coverage summary, a set of packed columns. The result crosses back as
+transferable typed arrays in absolute genomic coordinates, and the main thread
+uploads it once.
 
 Three other pages draw one segment of this path in full, and the figure names
 each one on the edge it details:
 
-- [Data fetching](/docs/developer_guides/data_fetching) owns the decision the
-  top edge holds (`fetch_chain`), with its debounce, byte gate, staleness check
-  and generation counter
-- [RPC workers](/docs/developer_guides/rpc_workers) owns the crossing
+- [Data fetching](/docs/developer_guides/data_fetching) documents the decision
+  the top edge holds (`fetch_chain`), with its debounce, byte gate, staleness
+  check and generation counter
+- [RPC workers](/docs/developer_guides/rpc_workers) documents the crossing
   (`rpc_lifecycle`), with the serialize and deserialize hooks on it
-- [Creating a GPU display](/docs/developer_guides/creating_gpu_display) owns the
-  two autoruns at the bottom (`gpu_display_lifecycle`)
+- [Creating a GPU display](/docs/developer_guides/creating_gpu_display)
+  documents the two autoruns at the bottom (`gpu_display_lifecycle`)
 
-Why each step looks the way it does, and what measured it, is
-[](/docs/developer_guides/optimizations).
+[](/docs/developer_guides/optimizations) explains why each step looks the way it
+does and links what measured it.
 
 The figure is the main path only. It leaves out:
 
 - the assembly and refName aliases, which load before any track does
-- the text-search index, which answers the location box
+- the text-search index, which serves searches from the location box
 - the non-linear views — synteny and dotplot own their fetch and share one
   canvas between displays, so they compose neither of the
   [fetch foundations](/docs/developer_guides/creating_display#display-foundations)
   this path is built on
 
 [SHARED_CANVAS_VIEWS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHARED_CANVAS_VIEWS.md)
-draws that third shape, and its rules generalize to any container laying out one
-canvas its children draw on.
+describes the shared-canvas layout of the non-linear views, and its rules
+generalize to any container laying out one canvas its children draw on.
 
 ## Where the worker sits
 
@@ -63,7 +64,7 @@ The main thread holds the result, uploads it, and draws it.
 do. An embedded component runs the same pool once the page hands it a
 `makeWorkerInstance` factory; without one it runs every step in the box on the
 UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
-a worker is bundler-specific, so the factory is the host's to write — the
+a worker is bundler-specific, so the host writes the factory — the
 [web worker example](https://jbrowse.org/storybook/lgv/web-worker/) has the Vite
 and the webpack spelling, and passing one is the whole switch, with no config
 slot to set.
@@ -104,11 +105,11 @@ a new region re-enters at the top.
 `RemoteFileWithRangeCache` and the parser's own chunk cache hold a byte range
 and what that range decoded to, and neither answer changes while the session
 runs. Both are evicted, never invalidated, and what evicts them is
-[](/docs/developer_guides/memory). `rpcDataMap` can hold a wrong answer: it
+[](/docs/developer_guides/memory). `rpcDataMap` can hold out-of-date data: it
 keeps what the worker computed under one set of settings, so
 `SettingsInvalidate` watches the `rpcProps()` payload as a value and refetches
-every region when it changes, drawing the old answer under a scrim until the new
-one lands.
+every region when it changes, drawing the old data under a scrim until the new
+data loads.
 [The cache key](/docs/developer_guides/data_fetching#rpcprops-the-cache-key)
 section lists what may go in it.
 

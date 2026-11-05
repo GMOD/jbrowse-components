@@ -152,9 +152,10 @@ export interface ElementList<P> {
 `args` alone does not identify a point's shape. A `TrackTypeGuesser` takes an
 argument and returns a string, the same signature a function component has, so a
 structural test admits it as a wrappable slot. `kind` exists only in the type
-and is absent at runtime. `extensionPointShapes.test.ts` pins each seam against
-the points of the other shapes, and fails a new `ComponentList` or `ElementList`
-declared the long way, which would otherwise be a point no producer accepts.
+and is absent at runtime. `extensionPointShapes.test.ts` checks each seam
+against the points of the other shapes, and fails a new `ComponentList` or
+`ElementList` declared the long way, since no producer would accept such a
+point.
 
 ## API
 
@@ -190,15 +191,15 @@ pluginManager.listenToExtensionPoint(extensionPointName, props => {
 Only `addToExtensionPoint` threads a value: each callback's return value becomes
 the next callback's `args`. `props` is passed unchanged to every callback
 whichever method registered it, and any of the three creates the point if it
-doesn't exist yet. Each rejects the points the other two own, so the method you
-can call is the one the point's shape calls for.
+doesn't exist yet. Each rejects a point registered through either of the other
+two, so call the method that matches the point's shape.
 
 There is a fourth fire method, `evaluateAsyncExtensionPointStrict`, which is
 `evaluateAsyncExtensionPoint` without the swallow-and-continue: a callback that
 throws propagates to the producer instead of being logged. Every `LaunchView-`
 point is fired that way, so a launcher that throws reaches the user as an error.
 Producers of accumulating points want the plain runner, where one plugin failing
-does not cost the others their entries.
+does not remove the others' entries.
 
 The API block above holds the only signatures on this page that are not
 generated from source. It uses placeholder argument names so the seven read side
@@ -320,8 +321,8 @@ cannot, and JBrowse logs a warning naming the slot when that happens.
 Every track-scoped point fires for every track, so a contribution with no track
 selector applies to all of them: a wrapper takes over every widget that opens,
 and a panel appears on every feature. `matchesTrackSelector`, also from
-`@jbrowse/core/ui`, answers whether the props you were handed belong to a track
-`select` names. What you do with the answer depends on the point:
+`@jbrowse/core/ui`, returns whether the props you were handed belong to a track
+`select` names. What you do with the result depends on the point:
 
 - a **wrapper** renders the component it was handed
 - a **panel** renders `null`
@@ -365,7 +366,7 @@ matching yourself.
 
 `matchesTrackSelector` reads either the widget model these points provide or the
 track config the About points provide, so one call scopes a contribution to any
-of them. Anything the fields cannot express joins the same condition; the panel
+of them. Add any test the fields cannot express to the same condition; the panel
 below adds `depth` to it.
 
 Don't reach for `matchTrackId` from `@jbrowse/core/util`. It tests an id against
@@ -418,9 +419,8 @@ There is one component per shape, and the API block above shows all three:
 
 All three components are observers, so a contributor that scopes itself on an
 observable is re-evaluated when that observable changes. A point's registry
-entry decides which component the point takes: each component accepts only the
-points of its shape, so pointing one at another shape's point is a compile
-error.
+entry declares its shape, and each component accepts only the points of its
+shape, so pointing one at another shape's point is a compile error.
 
 A point fired this way has no string-literal call site, so its `#extensionPoint`
 docs tag goes on its `ExtensionPointRegistry` entry instead.
@@ -543,9 +543,9 @@ it must select the one it means.
 Most view and display types register their state model lazily. For those the
 point fires when the state model loads rather than at startup, so
 `elt.stateModel = extend(elt.stateModel)` in the callback sees a loaded model
-and works as it did in v4. A callback that instead changes something the host
-reads before any model loads, such as a display's `configSchema`, runs too late
-for a lazy element.
+and works as usual. A callback that instead changes something the host reads
+before any model loads, such as a display's `configSchema`, runs too late for a
+lazy element.
 
 For the two common cases use `extendViewType` / `extendDisplayType`, which check
 the `group` and look the name up in a registry:
@@ -564,11 +564,10 @@ extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
 )
 ```
 
-`stateModel` arrives typed, so `self` is typed through the rest of the chain
-with no `as`. The name is checked too: register your view or display in the
-registry beside its state model type, and a typo or a rename becomes a compile
-error, where an unchecked name would leave the extension unapplied with no
-error.
+`stateModel` is typed, so `self` is typed through the rest of the chain with no
+`as`. The name is checked too: register your view or display in the registry
+beside its state model type, and a typo or a rename becomes a compile error,
+where an unchecked name would leave the extension unapplied with no error.
 
 `extendViewType` and `extendDisplayType` take either one name or an array of
 names. An array lets a contribution reach a family of displays, which share a
@@ -648,11 +647,10 @@ export default function MultiGenomePAFAdapterF(pluginManager: PluginManager) {
 }
 ```
 
-`alsoReads` is a form hint only. It does not enter this extension point, so a
-file still resolves to one adapter headlessly, from the CLI, and in every
-existing guesser. It also covers an extension no guesser claims at all, where
-the file resolves to `UNKNOWN` and the adapter would otherwise have to be found
-by name.
+`alsoReads` is a form hint and the guesser chain ignores it, so a file still
+resolves to one adapter headlessly, from the CLI, and in every existing guesser.
+It also covers an extension no guesser claims at all, where the file resolves to
+`UNKNOWN` and the adapter would otherwise have to be found by name.
 
 ### Core-guessTrackTypeForLocation
 
@@ -703,8 +701,9 @@ type: synchronous
 Provide a different component for the "About this track" dialog.
 
 - `args` - a `ReactComponent`, by default the AboutTrack dialog
-- `props` - `AboutPanelProps`, shared by both About points. The dialog hydrates
-  the track config before either point fires, so `config` is always a live node:
+- `props` - `AboutPanelProps`, shared by both About points. The dialog builds
+  the live track config node before either point fires, so `config` is always a
+  live node:
 
 <!-- include: packages/product-core/src/ui/util.ts#aboutPanelProps -->
 
@@ -774,9 +773,8 @@ registration order.
   component
 
 Return value: your component, or `undefined` to add no panel. A callback never
-receives the array, so nothing you return can drop another plugin's panel. A
-panel supplies the card chrome around its content, so use `BaseCard` for a
-titled section.
+receives the array, so every plugin's panel is kept. A panel supplies the card
+chrome around its content, so use `BaseCard` for a titled section.
 
 Example: adds an extra about dialog panel for a particular track ID
 
@@ -1014,8 +1012,8 @@ covers every entry point into a display setting: a `displays` entry, the
 retired it instead of reporting a key no display declares), a session spec or
 share link, an agent's settings bag, and the session migration.
 
-A retired **value** in a slot the display still declares is the schema's
-`preProcessSnapshot`, which runs on the same entry points.
+A retired **value** in a slot the display still declares is handled by the
+schema's `preProcessSnapshot`, which runs on the same entry points.
 
 `retiredTypes` names the display types this one replaced, on the `DisplayType`:
 
@@ -1494,9 +1492,9 @@ function addStartScreenMenuItem(
 }
 ```
 
-A callback that throws here costs the plugin its menu items only: the fold
-reports it and continues, so the other plugins' items still appear and the
-dialog that can uninstall the misbehaving one stays reachable.
+When a callback throws here, the fold reports it and continues, so that plugin's
+items are missing, the other plugins' items still appear, and the dialog that
+can uninstall the misbehaving one stays reachable.
 
 ### Desktop-StartScreenLaunchPanel
 

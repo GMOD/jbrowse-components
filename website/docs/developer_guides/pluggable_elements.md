@@ -142,9 +142,9 @@ The **display types** implement drawing:
 the loading scrim, the error banner, the "region too large" message and the
 render-error retry. It picks between them from a single getter,
 [`displayPhase`](/docs/models/multiregiondisplaymixin#getter-displayphase),
-which each display answers with one of `loading` / `error` / `tooLarge` /
+which each display returns as one of `loading` / `error` / `tooLarge` /
 `renderError` / `ready`. So a new display gets every terminal state by composing
-the foundation mixins and answering that getter.
+the foundation mixins and defining that getter.
 
 See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
@@ -197,7 +197,7 @@ the session — `UCSCTrackHubConnection`, `JB2TrackHubConnection` and
 
 ## Text search adapter types
 
-A text search adapter answers the search box's name lookups. See
+A text search adapter serves the search box's name lookups. See
 [](/docs/developer_guides/creating_text_search_adapter).
 
 ## Internet account types

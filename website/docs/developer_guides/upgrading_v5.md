@@ -116,9 +116,9 @@ subpaths. It is generated now, from the `exports` map of the four packages the
 host serves: `@jbrowse/core`, `@jbrowse/display-kit`, `@jbrowse/display-ui` and
 `@jbrowse/render-core`. A plugin importing `@jbrowse/display-kit/DisplayChrome`
 gets the host's copy rather than bundling its own; a display mixin or a React
-context works no other way. A plugin bundles every other `@jbrowse` package,
-core plugins such as `@jbrowse/plugin-linear-genome-view` included, and gets no
-other plugin's code at run time.
+context works only from the host's copy. A plugin bundles every other `@jbrowse`
+package, core plugins such as `@jbrowse/plugin-linear-genome-view` included, and
+gets no other plugin's code at run time.
 [](/docs/developer_guides/imports_and_reexports) has the table.
 
 Two things follow for a plugin author:
@@ -144,10 +144,9 @@ named export of the plugin package — see the next section.
 Names the 4.3.0 `@jbrowse/core` exported from a subpath this build still
 publishes, and this build does not. Where 4.3.0 served that subpath to runtime
 plugins — `util`, `configuration`, `pluggableElementTypes` and the rest of its
-re-export list — a removed name is `undefined` inside a bundle nobody is going
-to rebuild, which is the quietest failure on this page. From any other subpath a
-4.3.0 bundle has its own copy, so the removal breaks the plugin's next build
-instead:
+re-export list — a removed name is `undefined` inside an already-built bundle,
+which raises no error at load. From any other subpath a 4.3.0 bundle has its own
+copy, so the removal breaks the plugin's next build instead:
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
 
@@ -177,7 +176,7 @@ instead:
 <!-- END GENERATED ABI_REMOVED_NAMES -->
 
 `scripts/check-published-plugins.ts` reads every bundle in the plugin store and
-reports what each one takes off the host; `abi-watch.yml` refreshes that answer
+reports what each one takes off the host; `abi-watch.yml` refreshes that report
 weekly. A store entry declaring `jbrowseRange: "*"` is offered to a v5 user as
 compatible whatever its state here.
 
@@ -247,15 +246,16 @@ published.
 
 The map is generated from in-repo import sites
 (`packages/core/scripts/generateExports.mjs`), so a subpath leaves it whenever
-its last in-repo importer does, with nobody deciding to drop it.
+its last in-repo importer does, with no manual step.
 
 ## Names removed from the session and from a plugin's `exports`
 
 A plugin reaches these surfaces without importing anything. It looks up a
 session member on an object at runtime, often behind `'x' in session`, so
-removing one raises no error and the plugin stops asking. A plugin `exports`
-object is reached as `pluginManager.getPlugin('X').exports.Y`, where a missing
-name is `undefined` and calling it throws inside the calling plugin's `install`.
+removing one raises no error and the plugin's `'x' in session` check returns
+false. A plugin `exports` object is reached as
+`pluginManager.getPlugin('X').exports.Y`, where a missing name is `undefined`
+and calling it throws inside the calling plugin's `install`.
 
 - **the session**, which a plugin reaches by member lookup (`'x' in session`)
   rather than by import, so nothing fails at build time:
@@ -274,7 +274,7 @@ name is `undefined` and calling it throws inside the calling plugin's `install`.
     whatever was showing it
   - `addTrackConf`: **still there, writing somewhere else.** It wrote to the
     jbrowse config in v4; it is now a deprecated alias of `addSessionTrackConf`,
-    so the track lives for the session and no longer goes into the `config.json`
+    so the track lasts for the session and no longer goes into the `config.json`
     every visitor is served. Say which you mean: `addSessionTrackConf` for a
     track your plugin stands up on the user's behalf, `publishTrackConf` for an
     Add-track workflow where an admin means to add it for the whole site
@@ -292,11 +292,10 @@ name is `undefined` and calling it throws inside the calling plugin's `install`.
     `Instance` of the mixin and `SessionWithDialogsType` its `ReturnType`
 - **the plugin `exports` objects, all of them.** `AuthenticationPlugin`,
   `DataManagementPlugin`, `LinearGenomeViewPlugin` and `WigglePlugin` had one;
-  `pluginManager.getPlugin('X').exports` is now `undefined` on every plugin. A
-  runtime plugin gets no other plugin's code: the display schema they had is
-  `baseLinearDisplayConfigSchema` from `@jbrowse/display-kit/configSchema`,
-  which the host re-exports, and `SearchBox`, `ZoomControls` and
-  `AssemblyManager` have no replacement (see
+  `pluginManager.getPlugin('X').exports` is now `undefined` on every plugin. The
+  display schema they had is `baseLinearDisplayConfigSchema` from
+  `@jbrowse/display-kit/configSchema`, which the host re-exports, and
+  `SearchBox`, `ZoomControls` and `AssemblyManager` have no replacement (see
   [](/docs/developer_guides/imports_and_reexports)). No v5-era plugin in the
   store bundles reaches an `exports` object; the v4 bundles that did (`gdc`,
   `icgc`, `gwas`, `quantseq`, `mafviewer`, `multilevel-linear-view2`) each
@@ -324,14 +323,13 @@ name is `undefined` and calling it throws inside the calling plugin's `install`.
     exported past it or read anywhere
 
 The removals table above and `scripts/check-published-plugins.ts` both work from
-module exports and are not checked against a published bundle, so neither
-reaches a plugin `exports` object or the session.
-`pluginFacingSessionApi.test.ts` pins the session members published bundles
-call, and performs the call rather than just asserting the member exists. For
-everything else, including `getReferring`'s changed signature, this page is the
-record.
+module exports and are not checked against a published bundle, so neither covers
+a plugin `exports` object or the session. `pluginFacingSessionApi.test.ts` pins
+the session members published bundles call, and performs the call rather than
+just asserting the member exists. For everything else, including
+`getReferring`'s changed signature, this page is the record.
 
-## Display types collapsed
+## Display types merged
 
 A saved config's `type:` still resolves, because each old name is registered as
 an alias that migrates its settings across. A plugin that matched on the old
@@ -424,11 +422,11 @@ palette.
 ## The multi-row feature display's rows are config too
 
 The multi-row feature display is new in v5. Its rows are the values of a feature
-attribute, and `rows` holds both halves: `rows.field` is the attribute, empty
-still picking one off the data, and the other members are the arrangement, as on
-the quantitative display. `rows.colors` pairs row values with colors, and holds
-both a color a config names and a color a reader sets in **Edit
-colors/arrangement...**.
+attribute, and `rows` holds both halves: `rows.field` is the attribute (an empty
+one makes the display pick an attribute from the data), and the other members
+are the arrangement, as on the quantitative display. `rows.colors` pairs row
+values with colors, and holds both a color a config names and a color a reader
+sets in **Edit colors/arrangement...**.
 
 ## The MAF rows are config too
 
@@ -550,7 +548,7 @@ LGVSynteny and MAF displays at `coverage.encoding.y`.
 - Earlier v5 betas wrote `scales.y`, with `domainQuantile` for `fenceQuantile`,
   `symlogConstant` for `constant`, `autoscaleGroup` for `group`, and `title` and
   `grid` beside the scale members.
-- **A config or session in any of these spellings lifts when it loads.**
+- **A config or session in any of these spellings is converted when it loads.**
   `minimalTicks`, `numStdDev`, `inverted` and `numQuantile` have no successor
   and are dropped. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels went away: an
   end left unset autoscales.
@@ -581,9 +579,9 @@ the value axis is `encoding.y.axis`.
 - `showRowSeparators` is `rows.axis.grid`, on every one of them but MAF. That
   `rows.axis.grid` draws lines between rows; `encoding.y.axis.grid` draws value
   gridlines, and a view's `axis.grid` draws ruler gridlines.
-- **A config or session in the v4 spellings lifts when it loads.** A beta's
-  top-level `axis` does not: it loads without it and names the key on the
-  console. Code that reads one with `getConf` needs updating; the model getters
+- **A config or session in the v4 spellings is converted when it loads.** A
+  beta's top-level `axis` does not: it is dropped on load and the console names
+  the key. Code that reads one with `getConf` needs updating; the model getters
   keep their names.
 - `@jbrowse/display-kit` exports `rowAxisConfigSchema` and
   `rowAxisWithGridConfigSchema` in place of `treeSidebarConfigSchemaFields` and
@@ -597,7 +595,7 @@ The beta releases' top-level `rowColor` on the row displays is two members of
 ([](/docs/config/rows/#slot-colors)), and `rows.color` colors the rows by an
 attribute through a scale ([](/docs/config/rowcolor)).
 
-- A beta's `rowColor` loads without it, and the console names `rows.color`.
+- A beta's `rowColor` is dropped on load, and the console names `rows.color`.
 - Its name pairs (`scale.domain` and `scale.range` under the default
   `field: "name"`) belong in `rows.colors`, as `{ "mom": "#b2182b" }`;
   `rows.color` refuses a `scale.domain` under `name`.
@@ -878,6 +876,17 @@ exports:
 
 The RPC methods `GetCanvasFeatureDetails` and `GetCanvasGroupByCandidates` are
 now `GetBasicFeatureDetails` and `GetBasicGroupByCandidates`.
+
+## An internet account's `domains` matches a whole host
+
+In v4 a `domains` entry was a substring test against the whole URL. In v5 an
+entry names a whole host or a path, so `domains: ["dropbox"]` stops matching
+`dropbox.com`, and a match inside a query string stops counting. A location's
+`internetAccountId` also stopped overriding `domains`: an account that
+authenticated an off-origin file through the id alone needs that file's host
+added to its `domains`. Both changes stop a crafted `sessionTracks` link from
+sending a user's token to a server of its choosing. The current rules are in
+[](/docs/config_guides/authentication).
 
 ## Removals with no replacement
 

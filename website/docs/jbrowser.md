@@ -54,8 +54,8 @@ JBrowseR(
 ```
 
 `track_data_frame()` turns an in-memory data frame into a track with no file or
-server, which is the one thing a config file can't express. A genome of your own
-is `list(name = "mygenome", uri = "https://.../mygenome.fa.gz")`.
+server, which a config file cannot express. A genome of your own is
+`list(name = "mygenome", uri = "https://.../mygenome.fa.gz")`.
 
 ## Comparing genomes
 

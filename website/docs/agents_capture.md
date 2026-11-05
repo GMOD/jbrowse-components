@@ -21,7 +21,7 @@ script there are two tools:
 
 - Use `@jbrowse/img` by default; most requests are just a static figure of some
   tracks.
-- `@jbrowse/capture` when the answer depends on the real application: a
+- Use `@jbrowse/capture` when the result depends on the real application: a
   canvas-rendered display, a dialog or menu, or state you want to click into and
   read back.
 
@@ -52,7 +52,7 @@ JBrowse loads a config, builds a session, resolves an assembly, fetches each
 track, and then draws to a canvas. A screenshot taken before the last step is a
 plausible picture of an empty browser, so nothing downstream flags it.
 
-For a page that is loading, the answer is one selector:
+For a page that is loading, wait on one selector:
 
 ```js
 await page.waitForSelector('[data-app-phase="ready"]')

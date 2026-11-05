@@ -101,14 +101,14 @@ export default BedGraphAdapter
 The name must match the `type` field in config JSON, and `explicitlyTyped: true`
 requires that field to be present. Each slot becomes an observable MST property.
 A display's schema is implicitly `closed`, and an adapter's declares
-`closed: true`: a config carrying a key the schema does not declare loads
-without it and names the key on the console, and a write of one through
-`setConf` throws. An adapter's `preProcessSnapshot` therefore strips the
-shorthand keys it consumed, which `fillLocations` does for `uri` and `baseUri`.
-A key a shipped release declared and a later one dropped goes in the schema's
-`retired` map instead, lifted onto the slot that took it over or dropped with
-`() => ({})`, so a config written for that release loads in silence and
-`jbrowse validate` reports a dropped key as never read.
+`closed: true`: JBrowse drops a key the schema does not declare on load and logs
+the key to the console, and a write of one through `setConf` throws. An
+adapter's `preProcessSnapshot` therefore strips the shorthand keys it consumed,
+which `fillLocations` does for `uri` and `baseUri`. A key a shipped release
+declared and a later one dropped goes in the schema's `retired` map instead,
+lifted onto the slot that took it over or dropped with `() => ({})`, so a config
+written for that release loads with no console message and `jbrowse validate`
+reports a dropped key as never read.
 
 The `Instance<typeof …>` export at the bottom is how the rest of the codebase
 gets a typed handle on the schema — it is the `CONF` in
@@ -162,11 +162,11 @@ because such a slot otherwise still _works_ — the value round-trips as long as
 you supply a `model` — and the only symptom is that everything keyed off the
 type name stops recognising it.
 
-The `maybe*` forms are `undefined` while unset. Unset is the one state no config
-can spell, so it stays distinguishable from every real value a user might write,
-and a display reads it as "decide this from the data" — a MAF track's `height`
-fits its rows when nobody has fixed one, and a feature `encoding.color` left
-unset lets the feature's own BED color through.
+The `maybe*` forms are `undefined` while unset. A config cannot write unset, so
+it stays distinguishable from every real value a user might write, and a display
+reads it as "decide this from the data" — a MAF track's `height` fits its rows
+when nobody has fixed one, and a feature `encoding.color` left unset lets the
+feature's own BED color through.
 
 Because unset _is_ their default, **`maybe*` slots omit `defaultValue`** — every
 other type must declare one, and leaving it off is a type error. Writing
@@ -178,7 +178,7 @@ inherits the base's value and the slot is never unset. State
 `defaultValue: undefined` there to overwrite it.
 
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
-reactive, and reads are typed `any` — the structure is the caller's to assert.
+reactive, and reads are typed `any` — the caller asserts the structure.
 
 For enums, use `type: 'stringEnum'` and add a `model` field. The y scale's
 `type` member:
@@ -303,10 +303,9 @@ Writes go through [`setConf`](/docs/api/core-configuration#setconf), not a bare
 `self.configuration.setSlot('x', v)`. `setConf` constrains the slot name against
 the schema the same way `getConf` does, so on a model whose schema is concrete a
 typo is a compile error. `setSlot` takes a plain `string` and cannot do that; it
-throws at runtime instead, naming the slots the schema does declare. That
-runtime check is the backstop for the writes the compile-time one cannot see —
-anything through a mixin or a widened factory, where the concrete schema is
-erased.
+throws at runtime instead, naming the slots the schema does declare. The runtime
+check catches the writes the compile-time check cannot see — anything through a
+mixin or a widened factory, where the concrete schema is erased.
 
 ## ConfigurationReference
 
@@ -343,8 +342,8 @@ concrete**. Type the state model factory's `configSchema` parameter to the
 schema's own type, not to `AnyConfigurationSchemaType`, or the reads degrade to
 `any` with no compile error to say so. A `conf` getter typed off the concrete
 schema (`get conf(): LinearMarkDisplayConfig`) is still the tidy way to name it
-once, the same move as `BaseAdapter<CONF>`, but it no longer provides the
-checking.
+once, the same move as `BaseAdapter<CONF>`, but the checking comes from typing
+it to the schema's own type.
 
 ## Frozen track hydration
 
@@ -358,7 +357,7 @@ fabricate a fresh non-identical node.
 The cache is why `session.getTrackById(id)` hands back a plain object for a
 track nobody has opened: access it with `readConfObject`, not `getConf`. (There
 is a `getTracksById()` returning the whole map, but it is deprecated — reading
-it subscribes the caller to every track, so an edit to any one of them wakes
+it subscribes the caller to every track, so an edit to any one of them re-runs
 it.)
 
 ## Config callbacks (jexl)
@@ -426,21 +425,21 @@ The context object is `readConfObject`'s and `getConf`'s optional third
 argument, so "what is this setting" and "what is this setting for this feature"
 are the same call with and without it. On a slot holding a `jexl:` value the
 arg-less form still evaluates, against a context where every name the expression
-mentions is `undefined`, and hands back the fallout as the setting. The reader
-raises no error, and the two ways it goes wrong differ:
+mentions is `undefined`, and returns what the expression evaluates to as the
+setting. The reader raises no error, and the two ways it goes wrong differ:
 
 - the expression touches a member of the missing value (`get(feature,…)`) and
   throws out of whatever getter did the read, which shows up as the display
   erroring;
 - every function in it is total (`split(feature.name,…)`), and a plausible wrong
-  value comes back — `''`, `NaN` — and travels on as a real setting.
+  value comes back — `''`, `NaN` — and is used as a real setting.
 
-A value going into `rpcProps()`, a renderer, or a worker is one something
-downstream will still bind a feature to. Read it **raw** (`self.conf.someSlot`),
-not through a reader. A value used on the main thread here and now, such as a
-swatch, a menu label, or arithmetic, is a resolving read instead, and needs
-either a feature in the third argument or an `isJexl` guard and a fallback,
-since no single swatch can show a per-feature expression.
+A value going into `rpcProps()`, a renderer, or a worker gets a feature bound to
+it downstream. Read it **raw** (`self.conf.someSlot`), not through a reader. A
+value used on the main thread here and now, such as a swatch, a menu label, or
+arithmetic, is a resolving read instead, and needs either a feature in the third
+argument or an `isJexl` guard and a fallback, since no single swatch can show a
+per-feature expression.
 
 :::
 

@@ -24,13 +24,13 @@ one, a lighter `primary`.
 A user picks a palette and a mode separately in the Preferences dialog. Read
 `session.themeName` for the palette, `session.themeMode` for the raw choice
 (`light`, `dark` or `system`) and `session.effectiveThemeMode` for that choice
-with `system` resolved against `prefers-color-scheme`. `session.themeIsDark`
-answers off the resolved palette, so a palette pinned to one mode answers for
-itself. `setThemeMode` moves the mode without touching the palette.
+with `system` resolved against `prefers-color-scheme`. `session.themeIsDark` is
+computed from the resolved palette, so a palette pinned to one mode reports its
+own mode. `setThemeMode` moves the mode without touching the palette.
 
-The names from before the axis — `lightStock`, `darkStock`, `lightMinimal`,
-`darkMinimal` — still resolve to the palette and mode they meant, wherever one
-is stored or passed.
+The combined names `lightStock`, `darkStock`, `lightMinimal`, `darkMinimal`
+still resolve to the palette and mode they meant, wherever one is stored or
+passed.
 
 ## Custom palette properties
 
@@ -173,9 +173,9 @@ variants are derived automatically.
 from the same `resolvePalette` call, so they can't disagree. They are for
 different consumers, and one of them is the rendering input:
 
-- **`session.palette`** (`JBrowsePalette`) holds the colors rendering reads.
-  Plain color strings, no toolkit, serializable — so it crosses the RPC boundary
-  as itself and works with no browser at all.
+- **`session.palette`** (`JBrowsePalette`) holds the colors rendering reads. Its
+  colors are plain, serializable strings with no toolkit, so it crosses the RPC
+  boundary as itself and works with no browser at all.
 - **`session.theme`** is the resolved MUI `Theme`, for components that are MUI.
 
 Derive a display's colors in a **model getter** over `session.palette`, and read

@@ -14,9 +14,10 @@ JBrowse Web reads its launch state from the URL. Embedded components such as
 - Every parameter works in either place: `?config=…&loc=…` or `#config=…&loc=…`.
 - A fragment is never sent to the server, so a long value (an `encoded-` or
   `json-` session, a whole [session spec](#session-spec), a big
-  `&sessionTracks=`) cannot trip the request-line limit that answers a long
-  query string with HTTP 414. The Share button writes every link as a hash URL,
-  which also keeps a short link's key out of the web server's logs.
+  `&sessionTracks=`) does not count against the server's request-line limit,
+  which rejects a long query string with HTTP 414. The Share button writes every
+  link as a hash URL, which also keeps a short link's key out of the web
+  server's logs.
 - If the fragment contains an `=`, JBrowse reads its parameters only from there
   and ignores the query string. A link must therefore put every parameter in the
   fragment: `?config=my.json#session=spec-{…}` loads the default `config.json`,
@@ -129,9 +130,8 @@ config. A trackId added by `&sessionTracks=` can be named here too.
 ### &sessionTracks=
 
 Adds track configs to the session from the URL. A track over a data file needs
-no `type` or `adapter`, since the extension gives both, but nothing implies its
-assembly, so name it
-([the shortest track](/docs/config_guides/tracks#the-shortest-track)):
+no `type` or `adapter`, since the extension gives both, but its assembly must be
+named ([the shortest track](/docs/config_guides/tracks#the-shortest-track)):
 
 ```text
 &sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]
@@ -217,7 +217,7 @@ first linear genome view of that session, whose assembly is used, so
 [session spec](#session-spec) is the way to add a track config to a curated
 session.
 
-## Which parameter decides the launch
+## Launch precedence
 
 A link can contain several of these at once, and they do not combine: one
 decides what opens and the rest are layered onto it or dropped. Highest first:
@@ -276,7 +276,7 @@ prefixed `spec-`:
 
 ### Session-wide fields
 
-Four top-level arrays furnish the session the views open into, applied in this
+Four top-level arrays add to the session the views open into, applied in this
 order so each can name what the ones before it registered:
 
 - `sessionAssemblies` registers assemblies. With `?config=none` a spec is then
@@ -401,8 +401,8 @@ unplaced scaffolds, alts, patches and organelles are left out, so
 
 - A whole-genome view given no names opens the same set, and `["*"]` opens every
   sequence.
-- On an assembly whose aliases state no roles, `chromosomes` names nothing and
-  says so.
+- On an assembly whose aliases state no roles, `chromosomes` matches no
+  sequence, and JBrowse reports that.
 - A contig really named `chromosomes` wins, as an exact name beats a glob.
 
 #### Advanced track configuration
@@ -1058,7 +1058,7 @@ loaded, through the config's `plugins`, a hosted config, or a session's
   (`msa`, `tree`, `msaFileLocation`, `connectedViewId`, `connectedTranscript`).
 
 Both publish what a launch resolved as `view.report`, which the live-model
-guide's [plugin views](/docs/agents_live_model#plugin-views) section reads.
+guide's [plugin views](/docs/agents_live_model#plugin-views) section describes.
 
 ### Tiled views / Workspaces
 
@@ -1205,12 +1205,12 @@ IndexedDB.
 `https://host/jbrowse2/#session=share-Xb3_kPq9LmZ`, from the Share button.
 
 - The client mints a random key, encrypts the session and uploads the blob
-  without the key to a DynamoDB store, under a hash of the key. The link carries
-  only the key, and the recipient's browser sends the store only the hash and
-  decrypts the session itself, so the store's contents cannot be read even by
-  JBrowse administrators.
+  without the key to a DynamoDB store, under a hash of the key. The link
+  contains only the key, and the recipient's browser sends the store only the
+  hash and decrypts the session itself, so the store's contents cannot be read
+  even by JBrowse administrators.
 - A share service that names its own ids puts the id in the link before the key.
-- A link from before JBrowse 5 carries its key as `&password=`, and still opens.
+- A link from before JBrowse 5 has its key in `&password=`, and still opens.
 - Behind a firewall that cannot reach the shortener, the Share dialog's gear
   icon switches to "Long URL". `shareURL` in the config points at a shortener of
   your own.
@@ -1220,8 +1220,8 @@ IndexedDB.
 - The short link is not reproducible: each click mints a new key and uploads a
   new blob, so the same view gives a new key every time.
 - "Long URL" is reproducible: it contains the whole session in the link, so the
-  same view and config produce the same link, and it survives moving the
-  instance.
+  same view and config produce the same link, and it still opens after the
+  instance moves.
 - The config can still break either link: a restored session names tracks by
   `trackId`, so a redeploy that regenerates `config.json` with different ids
   leaves the link unable to find them

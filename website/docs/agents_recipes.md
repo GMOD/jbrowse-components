@@ -18,7 +18,7 @@ description:
 
 ## Find the tracks you can use
 
-`jb.listTracks` answers `{ total, tracks }`, not an array. A row has `trackId`,
+`jb.listTracks` returns `{ total, tracks }`, not an array. A row has `trackId`,
 `name`, `type` and `assemblyNames`, so a config with several assemblies is
 filtered in code:
 
@@ -121,8 +121,8 @@ return {
 ```
 
 - `f.get('start')` is zero-based and `f.get('end')` exclusive.
-- A VCF feature also answers `REF`, `ALT` (an array), `QUAL`, `FILTER`, `INFO`
-  and `samples`; a GFF feature its column-nine attributes by name.
+- A VCF feature also has `REF`, `ALT` (an array), `QUAL`, `FILTER`, `INFO` and
+  `samples`; a GFF feature its column-nine attributes by name.
 - `Object.keys(f.toJSON())` lists what one feature has, and is worth a look
   before filtering on `name`: the hosted RefSeq GFF names a gene by `ID` and
   `gene_id` with no `Name`, so `name` is `null` on every gene there and `id` is
@@ -172,7 +172,7 @@ return genes
 
 ## Find the highest value in a quantitative track and go there
 
-A bigWig answers one feature per interval with a `score`. Reduce with a loop
+A bigWig returns one feature per interval with a `score`. Reduce with a loop
 rather than `Math.max(...scores)`, which overflows the call stack on a
 base-resolution track, then navigate to what you found:
 
@@ -212,7 +212,7 @@ return { scanned: feats.length, peak, now: view.visibleLocStrings, ...settle }
 
 ## Reads by strand and mapping quality
 
-An alignment feature answers `strand` as `1` or `-1`, `score` as the mapping
+An alignment feature has `strand` as `1` or `-1`, `score` as the mapping
 quality, and `flags`, `CIGAR`, `seq`, `qual`, `template_length` and `tags`
 besides:
 
@@ -283,7 +283,7 @@ return {
 - A fresh `trackId` and `adapterId` per computation is deliberate. Re-adding a
   known `trackId` with different content is refused, and the adapter cache is
   keyed on `adapterId`, so a recomputed track under the old ids keeps showing
-  the first values it saw.
+  the first values cached under those ids.
 - Plan for a few thousand features and no more; above that, write a real file
   and load it with `jb.addTrack`.
 
@@ -341,7 +341,7 @@ column, and `bin` plus `aggregate` steps count features per bin zoomed out. The
 [mark display guide](/docs/config_guides/mark_display) lists every mark type,
 channel and step.
 
-## Restyle, and read back what landed
+## Restyle, and read back what was applied
 
 Settings keys come from the display's own schema. A key it does not declare is
 not an error, so read the report:
@@ -371,8 +371,8 @@ return {
 }
 ```
 
-- `unapplied` is the misspelling; `failed` is a key the display knows and could
-  not set. A `reason` of `setter-only` is neither: the display takes that
+- `unapplied` is the misspelling; `failed` is a key the display declares and
+  could not set. A `reason` of `setter-only` is neither: the display takes that
   setting through a `set<Key>` action rather than a slot.
 - Anything a slot does not cover is an action on the display itself, listed by
   `docs topic:"model:<modelType>" section:"Actions"` with the type name from
@@ -450,10 +450,10 @@ return {
 
 ## A publication figure, at a path you choose
 
-A screenshot is the window; `view.exportSvg` is the figure — vector, no browser
-chrome, the same output the Export SVG dialog writes. `save: false` returns the
-markup, and your own file tools write it where you want. Raise `maxBytes` on the
-call to get the whole document back:
+A screenshot captures the window; `view.exportSvg` writes the figure as vector
+graphics with no browser chrome, the same output the Export SVG dialog writes.
+`save: false` returns the markup, and your own file tools write it where you
+want. Raise `maxBytes` on the call to get the whole document back:
 
 ```js
 const view = jb.view()
@@ -490,8 +490,8 @@ return { ...added, valuesInView: values.length }
 
 - The result names the `trackId` it chose, the inferred types, the view it was
   shown in and the settle report.
-- A count of zero over a region that should have signal is the refName-mismatch
-  trap: read `getRefNames()` off the adapter (the
+- A count of zero over a region that should have signal usually means the file's
+  refNames differ from the assembly's: read `getRefNames()` off the adapter (the
   [live model guide](/docs/agents_live_model) shows how) and compare against the
   assembly's names.
 - In JBrowse Web the location must be a URL the host serves with CORS headers; a
@@ -502,10 +502,9 @@ return { ...added, valuesInView: values.length }
 
 minimap2 picks its seeds and penalties from a preset, and the preset has to
 match how far apart the genomes are: `asm5`, `asm10` and `asm20` suit about
-0.1%, 1% and 5% divergence. How closely related two species sound is not a
-measurement. Align the largest chromosome of each with `asm20` first and read
-the divergence off the `de:f` tag. The two genomes may name that chromosome
-differently, so pick it from each `.fai`:
+0.1%, 1% and 5% divergence. Measure the divergence first: align the largest
+chromosome of each with `asm20` and read the divergence off the `de:f` tag. The
+two genomes may name that chromosome differently, so pick it from each `.fai`:
 
 ```bash
 zcat query.fa.gz | bgzip > q.fa.gz && samtools faidx q.fa.gz
@@ -576,7 +575,7 @@ return jb.loadSessionSpec({
 ```
 
 - The hosted configs include each assembly's sequence and chromAlias file, so
-  `chr2R` answers for the `NC_` names the FASTA used.
+  `chr2R` resolves to the `NC_` names the FASTA used.
 - `sessionTracks` takes each config's gene track too; leave out any trackId the
   open session already has, which the notifications name.
 - Take the GenArk gene track as `<assembly>-ncbiGene`, a bigGenePred whose
@@ -608,7 +607,7 @@ return {
 }
 ```
 
-Against volvox this answers with the linear displays a `VariantTrack` has —
+Against volvox this returns the linear displays a `VariantTrack` has —
 `LinearVariantDisplay` and `LinearMarkDisplay`, among them.
 `configuration.displays` also holds the types other views draw, such as a
 circular view's `ChordVariantDisplay`.
@@ -665,7 +664,7 @@ view.tracks.push({ trackId: 'volvox_alignments', height: 150 })
 return jb.setSession(doc)
 ```
 
-- The answer is the settle plus `session`, the summary after the rewrite.
+- The call returns the settle plus `session`, the summary after the rewrite.
 - Top-level keys the document leaves out keep their value, so `{ views }` is a
   whole instruction. Views the document does not list are closed.
 - A document the model refuses throws naming the path and the value, and nothing

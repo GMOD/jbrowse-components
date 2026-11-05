@@ -20,15 +20,15 @@ covers.
 Plotting a field of a feature file needs no plugin at all. A `marks` entry on
 [`LinearMarkDisplay`](/docs/config_guides/mark_display) draws a `bar`, `point`
 or `span` over any feature adapter, with an `encoding` naming which fields feed
-it, and that page is the first rung. The second is a display built on the mark
-display, adding a meaning it lacks and drawing through its marks:
-`plugins/gwas`'s Manhattan plot is the mark display's point mark plus the join
-to an index SNP's r². This guide is the third: a **shape** the library lacks,
-over the same worker encoding, in a display of your own.
+it, so start with that page. Next is a display built on the mark display, adding
+a meaning it lacks and drawing through its marks: `plugins/gwas`'s Manhattan
+plot is the mark display's point mark plus the join to an index SNP's r². This
+guide covers the third case: a **shape** the library lacks, over the same worker
+encoding, in a display of your own.
 
 :::
 
-A [build-step plugin](/docs/developer_guides/simple_plugin), not a
+This is a [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it imports
 `@jbrowse/render-core`, which the host serves, and composes mixins from
 `@jbrowse/plugin-linear-genome-view`, whose surface is larger and faster-moving
@@ -39,8 +39,6 @@ versions you develop against. Both are on npm as the v5 beta
 <Figure src="/img/gwas/manhattan.png" caption="The mark display's point mark over a GWAS file, each point a variant at its −log₁₀(p)."/>
 
 ## Rendering across two threads
-
-Rendering splits across two threads:
 
 <Figure caption="The worker fetches and encodes, the main thread stores per region and draws. The shape's painter backs both the Canvas2D fallback and the SVG export." src="/img/feature_plotting_threads.png" />
 
@@ -125,7 +123,7 @@ which reads the score column as `y` and returns the channels. `encodeFeatures`
 is the evaluation `LinearMarkDisplay` runs for a `marks` entry, so a display
 with a custom shape and a config-declared bar chart pack a region the same way.
 See [](/docs/developer_guides/rpc_workers) for the full `RpcMethodType`
-contract; the shape is:
+contract; the method looks like this:
 
 `ScoreRPC/GetScoreData.ts`:
 
@@ -411,7 +409,7 @@ uniform write, one Canvas2D painter (which is also the SVG export) and one hit
 test, all reading the same channel arrays. A **mark** binds a shape to this
 display through two lenses: `channels` names which of the payload's arrays feed
 which of the shape's lanes, and `params` names which render-state values reach
-its uniforms. That declaration is the whole of the renderer:
+its uniforms. The display needs no other rendering code:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#marks -->
 
@@ -624,7 +622,7 @@ The shape defines where its ink is: its `ink` is the rect its painter fills,
 `hitNearest` measures the cursor against it, and the shared shapes have both.
 The walk over the blocks under the cursor is render-core's `nearestMarkHit`; the
 display's part is which candidates each mark is asked about, and what to do with
-the answer:
+the hit it returns:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
 
@@ -675,10 +673,10 @@ hit through `StoredHoverMixin` (composed in Step 3), whose `hoveredFeature` the
 body reads back. A display with many features per block builds a spatial index
 (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
-from `rpcDataMap` in a cached view, and its `candidates` answers what the index
-finds in the reach it is handed, which holds the values the shape can ink near
-the cursor as well as the bp, instead of every instance; `plugins/marks`'s
-`findMarkHit.ts` does that.
+from `rpcDataMap` in a cached view, and its `candidates` returns the instances
+the index finds within the reach it is given, which holds the values the shape
+can ink near the cursor as well as the bp, instead of every instance;
+`plugins/marks`'s `findMarkHit.ts` does that.
 
 ## SVG export
 
@@ -724,7 +722,7 @@ The model's `renderSvg` action loads it lazily.
 
 ## Letters over marks
 
-Per-base text is not instances of a shape. The reference sequence display
+Per-base text is drawn outside the mark layer. The reference sequence display
 declares its cells as marks and paints its letters on an `OverlayCanvas` above
 the backend, one Canvas2D function the SVG export calls after `paintMarkBlocks`:
 
@@ -756,8 +754,9 @@ hand-written Canvas2D backend through `createCanvas2DBackend`.
 
 Everything above stays unchanged — model, fetch chain, `renderState`, the mark
 list, the component and the SVG export. Only the `shape` the mark names changes:
-a `.slang`, a uniform write, a painter and a hit test of your own, held to each
-other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
+a `.slang`, a uniform write, a painter and a hit test of your own, which a sweep
+test checks against each other. See
+[](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 
@@ -766,8 +765,8 @@ other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
   slot, the legend off the encoder's scale tables
 - `plugins/gwas/src/LinearManhattanDisplay/` - a display built on the mark
   display: its model composes `LinearMarkDisplay`'s, its schema takes that
-  display's as its base with a default plot, and what it adds is the LD join
-  each region's fetch hands the adapter
+  display's as its base with a default plot, and it adds the LD join that each
+  region's fetch hands the adapter
 - `plugins/variants/src/LinearVariantDisplay/` - a display that defines a custom
   shape (`cellMark.ts`) beside its shader
 - `plugins/features/src/LinearBasicDisplay/` - the fullest reference: the

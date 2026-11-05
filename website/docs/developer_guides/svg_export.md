@@ -286,9 +286,9 @@ render state to a painter clears the hovered and selected ids first.
 truth, and SVG export runs it.** A shader-only tweak therefore leaves the export
 unchanged.
 
-A display on the mark layer gets this for nothing: `MarkSvgLayer` runs each
-mark's `paintBlock` against the SVG context, so its body is one component over
-the same list the on-screen backend draws —
+A display on the mark layer gets this with no extra code: `MarkSvgLayer` runs
+each mark's `paintBlock` against the SVG context, so its body is one component
+over the same list the on-screen backend draws —
 `example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx` is the
 whole of one. Drawing that is not a shape is a function written against `Ctx2D`
 and called from both the on-screen layer and `renderSvg` — the sequence body

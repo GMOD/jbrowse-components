@@ -108,8 +108,8 @@ puppeteer while loading one bgzip-backed track: four `blob:` workers means
 engaged, zero means it fell back, and a bigwig track is the control that spawns
 none.
 [BGZF_WORKER_POOL.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BGZF_WORKER_POOL.md)
-has the harness and the three benchmark traps, two of which produce numbers that
-look real.
+has the harness and the three benchmark mistakes, two of which produce numbers
+that look real.
 
 ### Byte forecasts and multi-region reads
 
@@ -183,10 +183,9 @@ The coarse and fine arms each read every row of a different tier from the same
 file. The `bytes/row` column is the one to read: the coarse copy returns
 alignments that are far smaller, and the CIGAR accounts for the difference.
 
-The coarse copy once split an alignment into pieces wherever an indel was large
-enough to matter, and read whichever piece bounded the query region. It now has
-one row per alignment plus a folded CIGAR (`cr:Z:`), which adds bytes back, on
-the same hosted human/mouse file:
+The coarse copy has one row per alignment plus a folded CIGAR (`cr:Z:`), which
+adds bytes over splitting an alignment at large indels, on the same hosted
+human/mouse file:
 
 <!-- BEGIN GENERATED MEASUREMENT pif-coarse-fold-bytes -->
 
@@ -204,10 +203,10 @@ them because the format bounds every run to within `--coarse` of the true path.
 In the file-size table, the last column lists what keeping both copies adds to
 the file, and the `coarse/fine bytes` column beside it lists what reading only
 the coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
-almost nothing; at 5 Mb it is the difference between reading the CIGARs and not.
-**The coarse copy makes each alignment cheaper and does not make them fewer**,
-so it suits a few huge alignments with megabase CIGARs, and does little for a
-dense all-vs-all comparison, where the cost is the number of alignments.
+almost nothing; at 5 Mb it skips reading the CIGARs. **The coarse copy makes
+each alignment cheaper and does not make them fewer**, so it suits a few huge
+alignments with megabase CIGARs, and does little for a dense all-vs-all
+comparison, where the cost is the number of alignments.
 
 To reduce the cost of a dense all-vs-all comparison, the obvious step is to bin
 alignments together as they are read, and its gain has a ceiling. Profiling a
@@ -260,10 +259,10 @@ goes. The drawing loop then works in codes and keys its style memo by code, so
 <!-- END GENERATED MEASUREMENT genotype-codes-speedup -->
 
 Codes, dictionary, sample order, ploidy, phasing and legend flags all come out
-byte-identical across the change. **The two halves measure only together.**
-Packing a genotype into one integer measured 1.02x alone, which suggests it is
-not worth having; the lookup beside it, keyed by sample name, masked the gain,
-and the packing was worth another 1.15x once that lookup went.
+byte-identical across the change. **Each change shows its gain only alongside
+the other.** Packing a genotype into one integer measured 1.02x alone, which
+suggests it is not worth having; the lookup beside it, keyed by sample name,
+masked the gain, and the packing was worth another 1.15x once that lookup went.
 [MULTI_SAMPLE_VARIANTS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MULTI_SAMPLE_VARIANTS.md)
 records this pairing.
 
@@ -304,8 +303,8 @@ correctly. The whole 4.5x comes from testing "is this a base" as
 comparison.
 
 Decomposition did move the walk: the largest single item in the per-cell body
-was a bounds test answering a question about the whole block, and hoisting it to
-a per-block scan is 1.13-1.24x across eight shapes.
+was a bounds test whose result is the same for the whole block, and hoisting it
+to a per-block scan is 1.13-1.24x across eight shapes.
 [MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)
 has the method: measure the bare loop against the loop-plus-output, sweep the
 working set, and peel the body one operation at a time.
@@ -321,10 +320,11 @@ and a record is an index shared across them. Arrays in that shape cross as
 so handing a block over costs the same whether it holds ten records or a
 million. They are also the buffers the graphics card takes, so the main thread
 uploads them without reading them. The decoder writes the arrays the shader
-reads, and no step in between converts between representations.
+reads.
 
 Sending typed arrays instead of objects is the largest single win here: on one
-region, the MAF worker's `postMessage` fell from 3.3 s to 0.03 ms.
+region, the MAF worker's `postMessage` fell from 3.3 s to 0.03 ms
+([MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)).
 
 ## The frame clock
 
@@ -358,9 +358,9 @@ measured here, and the two of its neighbours that are not publishable.
 ### Coordinates are absolute uint32, split in the shader
 
 Every position array crossing the worker boundary holds absolute genomic
-positions as `uint32`. Absolute, because region boundaries move on zoom-out and
-anything keyed to `regionStart` becomes wrong when the anchor shifts; `uint32`,
-because that is exact to 4.29 Gbp at four bytes per vertex.
+positions as `uint32`. Positions are absolute because region boundaries move on
+zoom-out and anything keyed to `regionStart` becomes wrong when the anchor
+shifts, and `uint32` because that is exact to 4.29 Gbp at four bytes per vertex.
 
 A shader does its arithmetic in float32, which holds a coordinate that large
 only approximately, so the conversion would lose precision. The shader therefore
@@ -368,10 +368,10 @@ cuts the integer into a high half (bits 12..31) and a low half (bits 0..11),
 each small enough to be exact in float32, cuts the viewport start the same way
 on the CPU, and subtracts high from high and low from low separately. Every
 subtraction is then large-minus-large or small-minus-small, and none of them
-cancels catastrophically. GenomeSpy applies the same double-single
-representation to the same problem.
+cancels catastrophically. [GenomeSpy](https://genomespy.app/) applies the same
+double-single representation to the same problem.
 
-Two alternatives, and what each costs: `uint32` converted in one step loses
+The two alternatives each cost more: `uint32` converted in one step loses
 precision above about 16 Mbp, and float hi/lo vertex attributes double
 per-vertex position memory and push the split onto every CPU packer.
 [BP_PRECISION.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BP_PRECISION.md)
@@ -421,8 +421,8 @@ against it.
 The sashimi overlay is the worked example. Its splice-junction merge depends on
 loaded data, the region set on screen and two filter settings; only the
 projection to screen x depends on the pan. In one computed, a gesture recomputed
-both although only the projection changed. Split, at real RNA-seq junction
-counts:
+both although only the projection changed. With the merge and the projection in
+separate computeds, at real RNA-seq junction counts:
 
 <!-- BEGIN GENERATED MEASUREMENT sashimi-frame-split -->
 
@@ -440,12 +440,11 @@ junction at all, yet the computed still rebuilt a list of empty sections per
 frame, and its overlay re-rendered on all 20 frames of a zoom to return a list
 of nulls. One shared empty array, returned instead, takes that to zero.
 
-**The same measurement showed no case for** moving these arcs off SVG onto the
-canvas the neighbouring read-connection arcs use. The case would be per-feature
-DOM work, and none of the expensive kind exists: the paths are keyed by
-junction, so React reuses them and a pan patches one path attribute per arc
-while creating and destroying no nodes. The coordinate ruler above was fixed to
-work the same way.
+**The same measurement found no reason to move** these arcs off SVG onto the
+canvas the neighbouring read-connection arcs use. A move would pay off only by
+cutting per-feature DOM work, and the paths are keyed by junction, so React
+reuses them and a pan patches one path attribute per arc while creating and
+destroying no nodes. The coordinate ruler above was fixed to work the same way.
 [INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md)
 has both counts and lists what this still does not measure: a whole-app frame
 budget on RNA-seq, because no fixture in the repo has the junction counts for
@@ -482,15 +481,15 @@ A hover over a synteny view must find which alignment is under the pointer. It
 asks a `flatbush` interval index which alignments' horizontal extents cover that
 x, then tests those exactly. The index is one-dimensional, because a ribbon
 spans the whole track height and only its horizontal extent tells it apart from
-another; and a ribbon's extent covers everything between its two endpoints.
-Those two facts determine the performance.
+another; and a ribbon's extent covers everything between its two endpoints, so
+the index's performance depends on how wide the extents are.
 
 The collinear and all-vs-all tables below are each 300k drawn ribbons with the
 viewport parked mid-genome, differing only in which genome each ribbon connects
 to. `kept` is how many ribbons are wide enough to be worth picking and so enter
 the index; `candidates` is how many the index returns for one hover.
 
-Two related genomes, where the index works:
+Between two related genomes the index narrows the candidates:
 
 <!-- BEGIN GENERATED MEASUREMENT synteny-pick-collinear -->
 
@@ -502,8 +501,8 @@ Two related genomes, where the index works:
 
 <!-- END GENERATED MEASUREMENT synteny-pick-collinear -->
 
-An all-vs-all comparison, where every sequence is aligned against every other,
-and where it does not:
+In an all-vs-all comparison, where every sequence is aligned against every
+other, the index does not narrow the candidates:
 
 <!-- BEGIN GENERATED MEASUREMENT synteny-pick-random -->
 
@@ -594,8 +593,8 @@ Some of the largest wins are decisions about the files.
 
 ## What is still slow
 
-The reference doc that measured each item below is where the next attempt
-starts.
+Each item below links the reference doc with its measurement, which is where the
+next attempt starts.
 
 - **Interaction is main-thread React re-render bound**, and the residual after
   the ruler fix is the rest of the components that read `bpPerPx` / `offsetPx`
@@ -610,8 +609,8 @@ starts.
   ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md);
   the declined ideas rule out the suppression direction).
 - **One track's parse is single-threaded.** Worker assignment is sticky per
-  adapter. Sticky assignment makes the inflate pool worth having and is also a
-  ceiling.
+  adapter. Sticky assignment makes the inflate pool worth having and also keeps
+  one track's parse on one worker.
 - **A hover over an all-vs-all comparison** costs what the picking table lists,
   and the index cannot fix it
   ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md#synteny-picking-measured)).
@@ -621,7 +620,7 @@ starts.
   ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md)).
 - **Dropping small mismatches** would cut the MAF worker's largest remaining
   emission. It trades fidelity for speed, so it is held back deliberately while
-  free performance remains
+  speedups that keep every mismatch remain
   ([MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)).
 
 One of these is also an architectural limit: the sticky worker assignment has a
@@ -642,8 +641,8 @@ discusses each one, including the three places Rust already is.
 Every number on this page names the fixture and the method in the reference doc
 it links to. Before adding one of your own, read
 [BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md),
-which catalogues the traps that have produced fake numbers in this repo, each
-with the bogus figure it reported. The four that recur:
+which lists the mistakes that have produced fake numbers in this repo, each with
+the bogus figure it reported. The four that recur:
 
 - **Interleave the arms.** A change in machine state during the run otherwise
   biases only the arm that ran second.
@@ -652,8 +651,8 @@ with the bogus figure it reported. The four that recur:
 - **Node cannot measure anything that uses workers.** `getSharedWorkerPool()`
   needs a global `Worker` and Blob URLs, so every vitest bench of it reports
   parity forever.
-- **A ratio survives a loaded machine; a millisecond does not.** Absolute
-  figures taken while the box is descheduling are not properties of the code.
+- **On a loaded machine, compare ratios.** Absolute figures taken while the box
+  is descheduling are not properties of the code.
 
 BENCHMARKING.md also has the patterns for taking a first measurement of the
 frame clock: what to instrument for a render or a scroll that feels slow,

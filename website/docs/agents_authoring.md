@@ -15,8 +15,7 @@ and the result is a file you can keep, share or regenerate.
 
 1. **Start from a hosted genome.** [](/docs/agents_hosted_data) has every UCSC
    and GenArk assembly as a ready config with its sequence, refName aliases and
-   gene index. Downloading hg38 to show one gene turns a short task into a long
-   one.
+   gene index, so you do not download hg38 to show one gene.
 2. **Make the data loadable.** `bgzip` and `tabix` a VCF, BED or GFF;
    `samtools index` a BAM or CRAM. [](/docs/config_guides/file_types) maps each
    format to its adapter and track type.

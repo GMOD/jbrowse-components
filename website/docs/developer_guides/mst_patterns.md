@@ -72,10 +72,9 @@ identical result.
 
 :::warning An autorun must do its own reads — an MST action is an untracked one
 
-`untracked` above is deliberate. **An MST action is the same thing by accident:
-actions run untracked**, so moving an autorun's body into one leaves the autorun
-with no dependencies at all. It fires exactly once, never again, and nothing
-throws or warns.
+`untracked` above is deliberate. **MST actions also run untracked**, so moving
+an autorun's body into one leaves the autorun with no dependencies at all. It
+fires exactly once, never again, and nothing throws or warns.
 
 Factoring the body out into an action is easy to reach for, because it looks
 like the obvious way to reuse it — from a menu item, or from a flush-on-teardown
@@ -83,9 +82,9 @@ path that wants the same work on demand. The fix is to duplicate the reads in
 the autorun and say why in a comment; `RegionTooLargeMixin`'s byte gate is the
 worked example.
 
-A related trap: `self.someAction(getSnapshot(self))` tracks fine, and only
-because the snapshot is taken in the argument list, before the action is
-entered. Move that read inside the action and the dependency disappears with it.
+`self.someAction(getSnapshot(self))` also tracks, but only because the snapshot
+is taken in the argument list, before the action is entered. Move that read
+inside the action and the dependency disappears with it.
 
 :::
 
@@ -257,8 +256,8 @@ the fetch:
 },
 ```
 
-Give every autorun a `name` as that one does — it is what shows up when
-debugging which effect refired.
+Give every autorun a `name` as that one does; MobX shows the name when you debug
+which effect refired.
 
 ## self over this in .views()
 

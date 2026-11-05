@@ -17,9 +17,9 @@ a display shows that track inside a particular view and owns the drawing.
 Track  ─owns→  Display(s)  ─draw→  canvas
 ```
 
-Tracks are deliberately thin. Every in-tree registration, with the view each
-display renders in — `SyntenyTrack` and `VariantTrack` are the two that reach
-past `LinearGenomeView`:
+A track holds little beyond its identity. The table lists every in-tree
+registration and the view each display renders in; `SyntenyTrack` and
+`VariantTrack` are the two that reach past `LinearGenomeView`:
 
 <!-- BEGIN GENERATED DISPLAY_VIEW_TYPES -->
 
@@ -92,8 +92,8 @@ reference sequence's letters, is an `OverlayCanvas` beside the backend.
 ## Display foundations
 
 LGV (LinearGenomeView) displays compose one **foundation mixin** on
-`BaseDisplay`, all sharing `baseLinearDisplayConfigSchema`. The foundation
-answers how the display _fetches_; how it _renders_ is a separate axis on top.
+`BaseDisplay`, all sharing `baseLinearDisplayConfigSchema`. The foundation sets
+how the display _fetches_; how it _renders_ is a separate axis on top.
 
 <!-- BEGIN GENERATED DISPLAY_FOUNDATIONS -->
 
@@ -118,12 +118,12 @@ stored hit keeps naming the content that was there before.
 
 ## Cross-cutting mixins
 
-Orthogonal to the foundation — compose any of them on top of whichever one you
-picked. Each is one mixin with one overridable hook, and composing it **is** the
-opt-in: a display that never overrides the hook gets the default at no extra
-cost. Reach for one before writing the behavior yourself; **Composed by** is
-read off the `types.compose(...)` calls, so it also answers "does anything else
-already do this?"
+These mixins are independent of the foundation; compose any of them on top of
+whichever one you picked. Each is one mixin with one overridable hook, and
+composing it **is** the opt-in: a display that never overrides the hook gets the
+default. Reach for one before writing the behavior yourself; **Composed by** is
+read off the `types.compose(...)` calls, so it also shows whether anything else
+already does this.
 
 <!-- BEGIN GENERATED CROSS_CUTTING_MIXINS -->
 

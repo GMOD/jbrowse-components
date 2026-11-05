@@ -158,8 +158,8 @@ and [](/docs/tutorials/synteny_visualization) runs one end to end.
 The folder is a static site: plain files a web server hands out unchanged, and
 the visitor's browser fetches the pieces of each data file it needs. Any web
 server, S3 or GCS bucket, or institutional file host can serve it
-([](/docs/config_guides/deploying)). Two properties decide whether a host works.
-Missing either produces no error message, just a track that looks broken:
+([](/docs/config_guides/deploying)). A host must support two things, and missing
+either produces no error message, just a track that looks broken:
 
 - **Byte-range requests.** JBrowse reads slices of a BAM, CRAM, BigWig or tabix
   file, so the host has to answer a `Range` header with `206 Partial Content`. A
