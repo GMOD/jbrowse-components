@@ -46,7 +46,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-export default function configSchemaFactory(pluginManager: PluginManager) {
+export default function configSchemaFactory(pluginManager?: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
     {

@@ -159,18 +159,37 @@ since a read past the cap stays in the laid-out map on the overflow row
 (`sortLayout.ts`, the `maxRows` sentinel). Only the overlap rows read layout
 output, and each side keys the overlaps it draws.
 
-## Built: features' label and layout decisions
+## Built: features on a static MST host
 
-`plugins/features/src/LinearBasicDisplay/basicDisplayLayoutViews.ts` holds two
-layers. `basicDisplayGlyphViews` (`effectiveSubfeatureLabels`,
-`effectiveGeneGlyphMode`, `showsEveryIsoform`) is installed by
-`LinearBasicDisplay`'s model over the base's hooks; `basicDisplayLayoutViews`
-(`geneLabelDensityPerPx`, `labelVisibility` and its three reads,
-`layoutInputs`, `fitMeasureFeatureIds`, `reservesBelowLabelRows`) is installed
-by the base model in front of `featureBandViews`. `tables.ts` runs both over a
-plain host and spreads the result into `hostFeatureBand`, and the color key is
-one `featureColorScales` both call, which closed a key drift (see
-[a-tables-export-calls-the-models-decisions](a-tables-export-calls-the-models-decisions.md)).
+A static consumer builds its host as a minimal MST model with no session, view
+or autoruns: the display's config node, the fetched inputs as volatiles, and
+the same views functions the display installs. A plain object spread-merged
+with a views object (`{...host, ...views(host)}`) evaluates every getter
+eagerly against the bare host, so `labelVisibility` and its scan recomputed
+about five times and a later layer's override never applied.
+
+`FeatureTablesHost` in `plugins/features/src/tables.ts` is that model. Its
+one prop is the display's config schema; the window and then the fetched
+regions are volatiles, each set by one action, as the alignments host's
+`setInputs` does. It installs, in the display's order: `heightModeViews`
+(`HeightModeMixin`), `featureDisplayConfigViews` (`facet`, `displayMode`,
+`groupKeySpace`, `labelFontSize`, `showNames`, `showDescriptions`),
+`hiddenGroupsViews` (`HiddenGroupsMixin`), `hiddenSectionViews`,
+`featureColorViews`, `basicDisplayGlyphViews` (now with the
+`subfeatureLabels`, `showChevrons` and `geneGlyphMode` config reads),
+`basicDisplayLayoutViews` (now with `labelDensityPerPx`), `featureBandViews`
+and `featureColorScaleViews` (`derivedColorScales`). Its own views answer only
+what a view supplies the display: the window (`host`, `onScreenWidthPx`, the
+on-screen ids through `featureIdsTouchingBlocks` over the regions),
+`layoutReady`, `fitTargetHeight` off the `height` slot and the `hidesOverflow`
+hook. The reads before the fetch (the worker's subfeature-label and gene-glyph
+modes) are one `runInAction`, everything after it another.
+`packages/tables/src/parity/features.parity.test.ts` runs the display beside
+it.
+
+`hostFeatureBand` (`observable(featureBandViews(host))`) stays for the variant
+display's records band, which is a live display's own band rather than an
+export.
 
 ## Left
 

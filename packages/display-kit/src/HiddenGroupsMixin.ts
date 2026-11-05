@@ -18,6 +18,32 @@ export interface GroupKeySpaceHost {
 const keySpaceHost = (self: object) => self as GroupKeySpaceHost
 
 /**
+ * The sections hidden off `facet.hidden`, which `HiddenGroupsMixin` installs
+ * and a static host composes beside its config node.
+ */
+export function hiddenGroupsViews(self: GroupKeySpaceHost) {
+  return {
+    /**
+     * #getter
+     * The sections the user hid: `facet.hidden`, while the stack groups by
+     * the facet's field. A fresh Set per change, so a layout memo comparing
+     * its inputs by identity sees a hide.
+     */
+    get hiddenGroups(): ReadonlySet<string> {
+      const { groupKeySpace } = self
+      if (
+        !groupKeySpace ||
+        groupKeySpace !== getConf(self, ['facet', 'field'])
+      ) {
+        return NO_HIDDEN_GROUPS
+      }
+      const hidden: readonly string[] = getConf(self, ['facet', 'hidden'])
+      return hidden.length > 0 ? new Set(hidden) : NO_HIDDEN_GROUPS
+    },
+  }
+}
+
+/**
  * #stateModel HiddenGroupsMixin
  * #category display
  * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, `hiddenGroups` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
@@ -46,26 +72,7 @@ export default function HiddenGroupsMixin() {
         return undefined
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The sections the user hid: `facet.hidden`, while the stack groups by
-       * the facet's field. A fresh Set per change, so a layout memo comparing
-       * its inputs by identity sees a hide.
-       */
-      get hiddenGroups(): ReadonlySet<string> {
-        const host = keySpaceHost(self)
-        const { groupKeySpace } = host
-        if (
-          !groupKeySpace ||
-          groupKeySpace !== getConf(host, ['facet', 'field'])
-        ) {
-          return NO_HIDDEN_GROUPS
-        }
-        const hidden: readonly string[] = getConf(host, ['facet', 'hidden'])
-        return hidden.length > 0 ? new Set(hidden) : NO_HIDDEN_GROUPS
-      },
-    }))
+    .views(self => hiddenGroupsViews(keySpaceHost(self)))
     .views(self => ({
       /**
        * #getter

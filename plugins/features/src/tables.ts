@@ -1,4 +1,4 @@
-import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   DEFAULT_BYTE_LIMIT,
@@ -8,13 +8,17 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
+import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { types } from '@jbrowse/mobx-state-tree'
 import { runInAction } from 'mobx'
 
 import {
   basicDisplayGlyphViews,
   basicDisplayLayoutViews,
+  featureDisplayConfigViews,
+  hiddenSectionViews,
 } from './LinearBasicDisplay/basicDisplayLayoutViews.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
@@ -26,12 +30,11 @@ import {
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
-import { featureColorScales } from './LinearBasicDisplay/derivedColorKey.ts'
-import {
-  featureGroupSections,
-  sectionIdsOf,
-} from './LinearBasicDisplay/facet.ts'
-import { hostFeatureBand } from './LinearBasicDisplay/featureBandViews.ts'
+import { featureColorScaleViews } from './LinearBasicDisplay/derivedColorKey.ts'
+import { sectionIdsOf } from './LinearBasicDisplay/facet.ts'
+import { featureBandViews } from './LinearBasicDisplay/featureBandViews.ts'
+import { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
+import { featureIdsTouchingBlocks } from './LinearBasicDisplay/layoutQueries.ts'
 import {
   ARROW_LENGTH_PX,
   STEM_HALF_H_PX,
@@ -50,9 +53,7 @@ import {
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
-import { subfeatureLabelsOf } from './RenderFeatureDataRPC/displayModes.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
-import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { createPeptideCache } from './RenderFeatureDataRPC/peptides/peptideCache.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
@@ -63,10 +64,10 @@ import {
 import { featureColorViews } from './shared/featureColorViews.ts'
 
 import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPositioning.ts'
+import type { LayoutRegionData } from './LinearBasicDisplay/layoutInputs.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
-  SectionStamp,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -311,6 +312,86 @@ function arrows(
   return out
 }
 
+// An export reads one assembly's regions and names it nowhere, so its layout
+// keys each contig under one empty name.
+const TABLES_ASSEMBLY = ''
+
+const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
+
+interface FeatureTablesWindow {
+  regions: readonly TablesRegion[]
+  bpPerPx: number
+}
+
+/**
+ * A `LinearBasicDisplay`'s decisions with no session or view: its config
+ * node, and as volatiles the regions laid end to end at one zoom and what was
+ * fetched over them, under the views layers the display installs. Every
+ * fetched region is on screen, nothing is pinned or expanded, and no density
+ * gate measured.
+ */
+const FeatureTablesHost = types
+  .model('FeatureTablesHost', {
+    configuration: configSchemaFactory(),
+  })
+  .volatile((): FeatureTablesWindow => ({ regions: [], bpPerPx: 1 }))
+  .volatile(() => ({
+    rpcDataMap: new Map<number, LayoutRegionData>(),
+    layoutPinnedFeatureIdSet: NO_FEATURE_IDS,
+    expandedGeneIdSet: NO_FEATURE_IDS,
+    visibleFeatureDensityPerPx: 0,
+  }))
+  .actions(self => ({
+    setWindow({ regions, bpPerPx }: FeatureTablesWindow) {
+      self.regions = regions
+      self.bpPerPx = bpPerPx
+    },
+    setRpcDataMap(rpcDataMap: Map<number, LayoutRegionData>) {
+      self.rpcDataMap = rpcDataMap
+    },
+  }))
+  .views(self => ({
+    get conf() {
+      return self.configuration
+    },
+    get host() {
+      return { bpPerPx: self.bpPerPx, coarseBpPerPx: self.bpPerPx }
+    },
+    get layoutReady() {
+      return self.rpcDataMap.size > 0
+    },
+    get onScreenWidthPx() {
+      return self.regions.reduce(
+        (sum, r) => sum + (r.end - r.start) / self.bpPerPx,
+        0,
+      )
+    },
+    get fitTargetHeight(): number {
+      return getConf(self, 'height')
+    },
+    get hidesOverflow() {
+      return false
+    },
+  }))
+  .views(self => heightModeViews(self))
+  .views(self => featureDisplayConfigViews(self))
+  .views(self => hiddenGroupsViews(self))
+  .views(self => hiddenSectionViews(self))
+  .views(featureColorViews)
+  .views(self => ({
+    get onScreenFeatureIds() {
+      return featureIdsTouchingBlocks(
+        self.rpcDataMap.values(),
+        self.regions.map(r => ({ assemblyName: TABLES_ASSEMBLY, ...r })),
+        self.hiddenGroupFeatureIds,
+      )
+    },
+  }))
+  .views(self => basicDisplayGlyphViews(self))
+  .views(self => basicDisplayLayoutViews(self))
+  .views(featureBandViews)
+  .views(self => featureColorScaleViews(self))
+
 /**
  * #api
  * A region's features, or several regions', as the feature display
@@ -356,39 +437,29 @@ export async function featureTables(
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: FeatureTablesArgs,
 ) {
-  const conf = configSchemaFactory(pluginManager).create({
-    ...display,
-    type: 'LinearBasicDisplay',
-    displayId: 'tables',
-  })
-  const displayMode = readConfObject(conf, 'displayMode')
-  const view = { bpPerPx, coarseBpPerPx: bpPerPx }
-  const glyph = basicDisplayGlyphViews({
-    displayMode,
-    subfeatureLabels: subfeatureLabelsOf({
-      show: readConfObject(conf, ['labels', 'subfeatures', 'show']),
-      placement: readConfObject(conf, ['labels', 'subfeatures', 'placement']),
-    }),
-    geneGlyphMode: readConfObject(conf, 'geneGlyphMode'),
-    host: view,
-  })
-  const facet = facetSettingOf({
-    field: readConfObject(conf, ['facet', 'field']),
-    sort: readConfObject(conf, ['facet', 'sort']),
-  })
-  const hiddenGroupKeys = new Set<string>(
-    facet ? readConfObject(conf, ['facet', 'hidden']) : [],
+  const host = FeatureTablesHost.create(
+    {
+      configuration: {
+        ...display,
+        type: 'LinearBasicDisplay',
+        displayId: 'tables',
+      },
+    },
+    { pluginManager },
   )
-  const sectionOf = facet ? sectionIdsOf(facet) : undefined
-  const isHidden = (item: SectionStamp) =>
-    !!sectionOf && hiddenGroupKeys.has(sectionOf(item).key)
-  const config = fullConfSnapshot(conf)
+  host.setWindow({ regions, bpPerPx })
+  const request = runInAction(() => ({
+    subfeatureLabels: host.effectiveSubfeatureLabels,
+    geneGlyphMode: host.effectiveGeneGlyphMode,
+    facet: host.facet,
+  }))
+  const config = fullConfSnapshot(host.configuration)
   const workerConfig = {
     ...pickDisplayConfig(config),
-    subfeatureLabels: glyph.effectiveSubfeatureLabels,
-    ...(facet === undefined || facet.field === STRAND_FIELD
+    subfeatureLabels: request.subfeatureLabels,
+    ...(request.facet === undefined || request.facet.field === STRAND_FIELD
       ? {}
-      : { facetField: facet.field }),
+      : { facetField: request.facet.field }),
   }
   const peptideCache = createPeptideCache()
   const raws = await Promise.all(
@@ -400,9 +471,9 @@ export async function featureTables(
           sessionId: 'tables',
           adapterConfig,
           sequenceAdapter,
-          region: { assemblyName: '', ...r },
+          region: { assemblyName: TABLES_ASSEMBLY, ...r },
           displayConfig: workerConfig,
-          geneGlyphMode: glyph.effectiveGeneGlyphMode,
+          geneGlyphMode: request.geneGlyphMode,
           bpPerPx,
           colorByFrame,
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
@@ -417,78 +488,56 @@ export async function featureTables(
       return result.value
     }),
   )
+  host.setRpcDataMap(
+    new Map(
+      raws.map((raw, i) => {
+        const { refName, start, end } = regions[i]!
+        return [
+          i,
+          {
+            ...raw,
+            regionKey: layoutRegionKey({
+              assemblyName: TABLES_ASSEMBLY,
+              refName,
+            }),
+            regionStart: start,
+            regionEnd: end,
+            reversed: false,
+          },
+        ]
+      }),
+    ),
+  )
+  // One batch, so every read shares one fit solve.
+  const {
+    laid,
+    renderedLabels,
+    groupSections,
+    facet,
+    hiddenGroupFeatureIds,
+    fieldPalette,
+    scales,
+    showChevrons,
+    fontSize,
+  } = runInAction(() => ({
+    laid: host.laidOutDataMap,
+    renderedLabels: host.renderedLabels,
+    groupSections: host.groupSections,
+    facet: host.facet,
+    hiddenGroupFeatureIds: host.hiddenGroupFeatureIds,
+    fieldPalette: host.fieldPalette,
+    scales: host.derivedColorScales,
+    showChevrons: host.showChevrons,
+    fontSize: host.labelFontSize,
+  }))
   const items = raws.flatMap(raw => raw.flatbushItems)
   const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
-  const widthPx = widthsPx.reduce((a, b) => a + b, 0)
-  // every fetched feature is on screen, each once however many regions it
-  // crosses, less those of a hidden section, as the display's on-screen ids
-  const onScreenFeatureIds = new Set(
-    items.filter(item => !isHidden(item)).map(item => item.featureId),
-  )
-  const heightMode: string = readConfObject(conf, 'heightMode')
-  const trackHeight: number = readConfObject(conf, 'height')
-  const fontSize = labelFontSize(displayMode)
-  // keyed by contig, as the display keys its regions, so the regions of one
-  // contig pack as one group
-  const rpcDataMap = new Map(
-    raws.map((raw, i) => {
-      const { refName, start, end } = regions[i]!
-      return [
-        i,
-        {
-          ...raw,
-          regionKey: refName,
-          regionStart: start,
-          regionEnd: end,
-          reversed: false,
-        },
-      ]
-    }),
-  )
-  const host = {
-    host: view,
-    rpcDataMap,
-    displayMode,
-    showNames: readConfObject(conf, ['labels', 'name', 'show']),
-    showDescriptions: readConfObject(conf, ['labels', 'description', 'show']),
-    labelDensityPerPx: onScreenFeatureIds.size / widthPx,
-    onScreenFeatureIds,
-    onScreenWidthPx: widthPx,
-    layoutPinnedFeatureIdSet: new Set<string>(),
-    expandedGeneIdSet: new Set<string>(),
-    facet,
-    hiddenGroups: hiddenGroupKeys,
-    autoHeight: heightMode === 'grow',
-    effectiveSubfeatureLabels: glyph.effectiveSubfeatureLabels,
-  }
-  const band = hostFeatureBand({
-    ...host,
-    ...basicDisplayLayoutViews(host),
-    layoutReady: true,
-    fitHeightToDisplay: heightMode === 'fit',
-    showsEveryIsoform: glyph.showsEveryIsoform,
-    fitTargetHeight: trackHeight,
-    labelFontSize: fontSize,
-    hidesOverflow: false,
-  })
-  // One batch, so both reads share one fit solve.
-  const { laid, renderedLabels } = runInAction(() => ({
-    laid: band.laidOutDataMap,
-    renderedLabels: band.renderedLabels,
-  }))
+  const sectionOf = facet ? sectionIdsOf(facet) : undefined
+  const isHidden = (item: FlatbushItem) =>
+    !!hiddenGroupFeatureIds?.has(item.featureId)
   const palette = resolvePalette()
-  const colors = featureColorViews({
-    conf: { encoding: { color: conf.encoding.color } },
-    rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
-  })
-  const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
-  const scales = featureColorScales(colors, raws, {
-    onScreen: onScreenFeatureIds,
-    facet,
-    hiddenGroups: hiddenGroupKeys,
-  })
+  const resolved = resolveMapColors(laid, palette, fieldPalette)
   const key = colorKeyTables(scales)
-  const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
     ...renderedLabels,
     colors: labelColors(palette),
@@ -500,7 +549,7 @@ export async function featureTables(
         region: r,
         widthPx: widthsPx[i]!,
         bpPerPx,
-        hideChevrons,
+        hideChevrons: !showChevrons,
         labels: regionLabels[i]!,
         sectionOf,
         isHidden,
@@ -508,7 +557,7 @@ export async function featureTables(
     ),
   )
   const sections = facet
-    ? featureGroupSections(resolved, facet, GROUP_LABEL_HEIGHT)
+    ? groupSections
     : [{ key: '', label: '', top: 0, height: joined.height }]
   if (items.length > 0 && items.every(isHidden)) {
     throw new Error(

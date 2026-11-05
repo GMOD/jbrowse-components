@@ -1,8 +1,4 @@
-import {
-  ConfigurationReference,
-  getConf,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, setConf } from '@jbrowse/core/configuration'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
@@ -17,10 +13,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
-import {
-  SUBFEATURE_LABEL_OPTIONS,
-  subfeatureLabelsOf,
-} from '../RenderFeatureDataRPC/displayModes.ts'
+import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
@@ -96,17 +89,6 @@ export default function stateModelFactory(
         return self.configuration
       },
 
-      get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return subfeatureLabelsOf({
-          show: getConf(self, ['labels', 'subfeatures', 'show']),
-          placement: getConf(self, ['labels', 'subfeatures', 'placement']),
-        })
-      },
-
-      get showChevrons(): boolean {
-        return getConf(self, ['chevrons', 'show'])
-      },
-
       // Raw slot rather than getConf: a jexl color evaluated without a
       // feature throws. Unset, a UTR takes the solid fill where one paints.
       get utrColor(): string {
@@ -116,10 +98,6 @@ export default function stateModelFactory(
           : self.colorByMode === 'solid' && self.solidColor !== undefined
             ? self.solidColor
             : utrDefaultColor
-      },
-
-      get geneGlyphMode() {
-        return getConf(self, 'geneGlyphMode')
       },
 
       get genesFilter(): CategoryFilter | undefined {

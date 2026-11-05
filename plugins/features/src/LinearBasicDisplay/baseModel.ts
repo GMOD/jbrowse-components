@@ -47,7 +47,6 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -60,7 +59,6 @@ import { toJS } from 'mobx'
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { buildFeatureAdmission } from '../RenderFeatureDataRPC/featureAdmission.ts'
-import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import FeatureGateMixin from '../shared/FeatureGateMixin.ts'
@@ -72,7 +70,11 @@ import {
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createFeatureDetailsOpener } from '../shared/openFeatureDetails.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
-import { basicDisplayLayoutViews } from './basicDisplayLayoutViews.ts'
+import {
+  basicDisplayLayoutViews,
+  featureDisplayConfigViews,
+  hiddenSectionViews,
+} from './basicDisplayLayoutViews.ts'
 import { colorViews } from './colorViews.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
@@ -80,8 +82,7 @@ import {
   labelScrollBucket,
 } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
-import { featureColorScales } from './derivedColorKey.ts'
-import { hiddenSectionFeatureIds } from './facet.ts'
+import { featureColorScaleViews } from './derivedColorKey.ts'
 import { featureBandViews } from './featureBandViews.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -139,7 +140,6 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
-import type { FeatureFacet } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { FeatureMatch } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
@@ -379,32 +379,8 @@ export default function baseStateModelFactory(
         return undefined
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The `facet` object as written, or undefined while ungrouped.
-       */
-      get facet(): FeatureFacet | undefined {
-        return facetSettingOf({
-          field: getConf(self, ['facet', 'field']),
-          sort: getConf(self, ['facet', 'sort']),
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The features of the sections the user hid, which sit unplaced by
-       * choice and so count as nothing the track failed to show.
-       */
-      get hiddenGroupFeatureIds() {
-        return hiddenSectionFeatureIds(
-          self.rpcDataMap.values(),
-          self.facet,
-          self.hiddenGroups,
-        )
-      },
-    }))
+    .views(self => featureDisplayConfigViews(self))
+    .views(self => hiddenSectionViews(self))
     .views(self => ({
       /**
        * #getter
@@ -437,18 +413,6 @@ export default function baseStateModelFactory(
                 self.hiddenGroupFeatureIds,
               ),
             )
-      },
-      /**
-       * #getter
-       * Features per pixel of what is actually ON SCREEN — the density the
-       * `auto` label modes gate on (ADR-093).
-       */
-      get labelDensityPerPx() {
-        const ids = this.onScreenFeatureIds
-        const widthPx = this.onScreenWidthPx
-        return ids && widthPx > 0
-          ? ids.size / widthPx
-          : self.visibleFeatureDensityPerPx
       },
       /**
        * #getter
@@ -496,51 +460,11 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       */
-      get displayMode(): DisplayMode {
-        return getConf(self, 'displayMode')
-      },
-
-      /**
-       * #getter
-       * `HiddenGroupsMixin`'s hook: a section key means nothing outside the
-       * field that issued it, so moving the field drops what was hidden.
-       */
-      get groupKeySpace(): string {
-        return getConf(self, ['facet', 'field'])
-      },
-
-      /**
-       * #getter
        * Overridable hook (default none): the subfeature-label mode the worker
        * bakes.
        */
       get effectiveSubfeatureLabels(): SubfeatureLabels {
         return 'none'
-      },
-
-      /**
-       * #getter
-       */
-      get labelFontSize() {
-        return labelFontSize(this.displayMode)
-      },
-
-      /**
-       * #getter
-       * `labels.name.show`, the persisted intent before the density gate and
-       * collapsed mode have a say, so the menu's checkbox reflects the choice.
-       */
-      get showNames(): boolean {
-        return getConf(self, ['labels', 'name', 'show'])
-      },
-
-      /**
-       * #getter
-       * `labels.description.show`, the persisted intent, as `showNames` is.
-       */
-      get showDescriptions(): boolean {
-        return getConf(self, ['labels', 'description', 'show'])
       },
 
       /**
@@ -1343,21 +1267,8 @@ export default function baseStateModelFactory(
         },
       }
     })
+    .views(self => featureColorScaleViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * The key the color channel's scale derives from what the worker
-       * painted, less the values only a hidden section painted, in the
-       * sections' order where the facet reads the same field. An identity
-       * scale's key is its `domain` colors whole, once anything is drawn.
-       */
-      get derivedColorScales(): ColorScale[] {
-        return featureColorScales(self, [...self.rpcDataMap.values()], {
-          onScreen: self.onScreenFeatureIds,
-          facet: self.facet,
-          hiddenGroups: self.hiddenGroups,
-        })
-      },
       /**
        * #method
        * The color the Group by dialog's choice of field writes: a color by
@@ -1408,7 +1319,7 @@ export default function baseStateModelFactory(
        * `LegendMixin`'s hook: the key the color channel's scale derives.
        */
       get colorScales(): ColorScale[] {
-        return this.derivedColorScales
+        return self.derivedColorScales
       },
     }))
     .views(self => {

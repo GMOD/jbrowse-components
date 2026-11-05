@@ -55,11 +55,14 @@ callback's names (`variantDataColorScales`). Still open:
 ## Closed
 
 - The features carry-overs (collapsed mode's forced `subfeatureLabels`, the
-  `resolvedGeneGlyphMode` call, the `labelVisibility` inputs, the hand-built
+  `resolvedGeneGlyphMode` call, the `labelVisibility` inputs and
+  `labelDensityPerPx`, `heightMode` read as `autoHeight` and
+  `fitHeightToDisplay`, `facet.hidden` read as `hiddenGroups`, the hand-built
   `FeatureBandHost`, the color key's `isHidden`/`order`) run the model's own
-  getters (`basicDisplayGlyphViews`, `basicDisplayLayoutViews`) and one
-  `featureColorScales`
-  ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
+  views on a static MST host (`FeatureTablesHost`,
+  [a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
+  The parity suite compares rows, transcripts, truncation, labels, sections and
+  the key over 19 configs at two zooms and finds no drift.
   The export's `fitMeasureFeatureIds` had counted a hidden section's features;
   the layout never places them and every measure skips an unplaced feature, so
   that was equivalent. The key was not: the export keyed every value the worker

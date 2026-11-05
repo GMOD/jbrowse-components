@@ -128,50 +128,64 @@ export function featureColorKey(
 }
 
 /**
- * The key a feature display draws for what `regions` painted: narrowed to the
- * `onScreen` features where the window is known, less the values only a
- * section in `hiddenGroups` painted, and in the sections' order where the
- * `facet` reads the color's own field (`featureColorKey`).
+ * What the key reads: a feature display's color views, its fetched regions,
+ * the features on screen, its facet and the sections the user hid.
  */
-export function featureColorScales(
-  colors: FeatureColors &
-    Pick<ReturnType<typeof featureColorViews>, 'categoricalColorField'>,
-  regions: readonly Pick<
-    FeatureDataResult,
-    | 'colorValues'
-    | 'rectColorValues'
-    | 'rectFeatureIndices'
-    | 'flatbushItems'
-    | 'rectPositions'
-  >[],
-  {
-    onScreen,
-    facet,
-    hiddenGroups,
-  }: {
-    onScreen: ReadonlySet<string> | undefined
+export type FeatureColorScaleHost = FeatureColors &
+  Pick<ReturnType<typeof featureColorViews>, 'categoricalColorField'> & {
+    rpcDataMap: ReadonlyMap<
+      number,
+      Pick<
+        FeatureDataResult,
+        | 'colorValues'
+        | 'rectColorValues'
+        | 'rectFeatureIndices'
+        | 'flatbushItems'
+        | 'rectPositions'
+      >
+    >
+    onScreenFeatureIds: ReadonlySet<string> | undefined
     facet: FeatureFacet | undefined
     hiddenGroups: ReadonlySet<string>
-  },
-) {
-  const sectionOf =
-    facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
-  return featureColorKey(
-    colors,
-    onScreen
-      ? regions.map(data => onScreenColorValues(data, onScreen))
-      : regions,
-    {
-      isHidden:
-        sectionOf && (section => hiddenGroups.has(sectionOf(section).key)),
-      order:
-        facet && facet.field === colors.categoricalColorField?.field
-          ? scale => ({
-              ...facetField(facet),
-              label: scale.label,
-              unknown: scale.unknown,
-            })
-          : undefined,
+  }
+
+/**
+ * The key a feature display draws. The base model installs it as a
+ * `.views()` layer; the tables export's static host installs the same.
+ */
+export function featureColorScaleViews(self: FeatureColorScaleHost) {
+  return {
+    /**
+     * #getter
+     * The key the color channel's scale derives from what the worker
+     * painted, narrowed to the on-screen features where the window is known,
+     * less the values only a hidden section painted, in the sections' order
+     * where the facet reads the same field. An identity scale's key is its
+     * `domain` colors whole, once anything is drawn.
+     */
+    get derivedColorScales(): ColorScale[] {
+      const { facet, hiddenGroups, onScreenFeatureIds } = self
+      const regions = [...self.rpcDataMap.values()]
+      const sectionOf =
+        facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
+      return featureColorKey(
+        self,
+        onScreenFeatureIds
+          ? regions.map(data => onScreenColorValues(data, onScreenFeatureIds))
+          : regions,
+        {
+          isHidden:
+            sectionOf && (section => hiddenGroups.has(sectionOf(section).key)),
+          order:
+            facet && facet.field === self.categoricalColorField?.field
+              ? scale => ({
+                  ...facetField(facet),
+                  label: scale.label,
+                  unknown: scale.unknown,
+                })
+              : undefined,
+        },
+      )
     },
-  )
+  }
 }

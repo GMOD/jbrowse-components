@@ -1,3 +1,9 @@
+import { getConf } from '@jbrowse/core/configuration'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+
+import { subfeatureLabelsOf } from '../RenderFeatureDataRPC/displayModes.ts'
+import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { hiddenSectionFeatureIds } from './facet.ts'
 import { resolvedGeneGlyphMode } from './geneGlyphMode.ts'
 import { labelVisibility } from './showLabelsMode.ts'
 
@@ -5,36 +11,155 @@ import type {
   DisplayMode,
   SubfeatureLabels,
 } from '../RenderFeatureDataRPC/displayModes.ts'
+import type { SectionStamp } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
+import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureFacet } from './facet.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
- * What the glyph views read: the settings a `LinearBasicDisplay` reads off
- * its config and the zoom its view is at, or a config and a `bpPerPx` in a
- * static export.
+ * The settings a feature display reads off its config before anything is
+ * fetched. The base model installs them as a `.views()` layer; the tables
+ * export's static host composes them beside its config node.
+ */
+export function featureDisplayConfigViews(self: {
+  configuration: Instance<LinearFeatureBaseDisplayConfigModel>
+}) {
+  return {
+    /**
+     * #getter
+     * The `facet` object as written, or undefined while ungrouped.
+     */
+    get facet(): FeatureFacet | undefined {
+      return facetSettingOf({
+        field: getConf(self, ['facet', 'field']),
+        sort: getConf(self, ['facet', 'sort']),
+      })
+    },
+
+    /**
+     * #getter
+     */
+    get displayMode(): DisplayMode {
+      return getConf(self, 'displayMode')
+    },
+
+    /**
+     * #getter
+     * `HiddenGroupsMixin`'s hook: a section key means nothing outside the
+     * field that issued it, so moving the field drops what was hidden.
+     */
+    get groupKeySpace(): string {
+      return getConf(self, ['facet', 'field'])
+    },
+
+    /**
+     * #getter
+     */
+    get labelFontSize() {
+      return labelFontSize(this.displayMode)
+    },
+
+    /**
+     * #getter
+     * `labels.name.show`, the persisted intent before the density gate and
+     * collapsed mode have a say, so the menu's checkbox reflects the choice.
+     */
+    get showNames(): boolean {
+      return getConf(self, ['labels', 'name', 'show'])
+    },
+
+    /**
+     * #getter
+     * `labels.description.show`, the persisted intent, as `showNames` is.
+     */
+    get showDescriptions(): boolean {
+      return getConf(self, ['labels', 'description', 'show'])
+    },
+  }
+}
+
+/**
+ * The fetched features a hidden section holds. The base model installs it
+ * as a `.views()` layer; the tables export's static host installs the same.
+ */
+export function hiddenSectionViews(self: {
+  rpcDataMap: ReadonlyMap<
+    number,
+    { flatbushItems: readonly (SectionStamp & { featureId: string })[] }
+  >
+  facet: FeatureFacet | undefined
+  hiddenGroups: ReadonlySet<string>
+}) {
+  return {
+    /**
+     * #getter
+     * The features of the sections the user hid, which sit unplaced by
+     * choice and so count as nothing the track failed to show.
+     */
+    get hiddenGroupFeatureIds() {
+      return hiddenSectionFeatureIds(
+        self.rpcDataMap.values(),
+        self.facet,
+        self.hiddenGroups,
+      )
+    },
+  }
+}
+
+/**
+ * What the glyph views read: a `LinearBasicDisplay`'s config, its resolved
+ * `displayMode` and the zoom its view is at, or the zoom a static export
+ * lays out at.
  */
 export interface BasicDisplayGlyphHost {
+  configuration: LinearBasicDisplayConfig
   displayMode: DisplayMode
-  subfeatureLabels: SubfeatureLabels
-  geneGlyphMode: GeneGlyphMode
   host: { bpPerPx: number }
 }
 
 /**
- * The glyph modes a `LinearBasicDisplay` asks the worker for, as the display
- * resolves its settings. The model installs them as a `.views()` layer, so
- * each is its own computed; the tables export runs the same getters over a
- * plain host.
+ * The glyph settings a `LinearBasicDisplay` reads off its config and the
+ * modes it asks the worker for, as the display resolves them. The model
+ * installs them as a `.views()` layer, so each is its own computed; the
+ * tables export's static host installs the same layer.
  */
 export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
   return {
+    /**
+     * #getter
+     * `labels.subfeatures` as the one mode the worker reads.
+     */
+    get subfeatureLabels(): SubfeatureLabels {
+      return subfeatureLabelsOf({
+        show: getConf(self, ['labels', 'subfeatures', 'show']),
+        placement: getConf(self, ['labels', 'subfeatures', 'placement']),
+      })
+    },
+
+    /**
+     * #getter
+     * `chevrons.show`, over the base's hook.
+     */
+    get showChevrons(): boolean {
+      return getConf(self, ['chevrons', 'show'])
+    },
+
+    /**
+     * #getter
+     */
+    get geneGlyphMode(): GeneGlyphMode {
+      return getConf(self, 'geneGlyphMode')
+    },
+
     /**
      * #getter
      * The subfeature-label mode the worker bakes: `subfeatureLabels`, but
      * none while collapsed, since the label is baked in the worker.
      */
     get effectiveSubfeatureLabels(): SubfeatureLabels {
-      return self.displayMode === 'collapsed' ? 'none' : self.subfeatureLabels
+      return self.displayMode === 'collapsed' ? 'none' : this.subfeatureLabels
     },
 
     /**
@@ -45,7 +170,7 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
      * it.
      */
     get effectiveGeneGlyphMode(): GeneGlyphMode {
-      return resolvedGeneGlyphMode(self.geneGlyphMode, self.host.bpPerPx)
+      return resolvedGeneGlyphMode(this.geneGlyphMode, self.host.bpPerPx)
     },
 
     /**
@@ -56,7 +181,7 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
      * fit ladder's trim.
      */
     get showsEveryIsoform() {
-      return self.geneGlyphMode === 'all'
+      return this.geneGlyphMode === 'all'
     },
   }
 }
@@ -76,7 +201,7 @@ export interface BasicDisplayLayoutHost {
   displayMode: DisplayMode
   showNames: boolean
   showDescriptions: boolean
-  labelDensityPerPx: number
+  visibleFeatureDensityPerPx: number
   onScreenFeatureIds: ReadonlySet<string> | undefined
   onScreenWidthPx: number
   layoutPinnedFeatureIdSet: ReadonlySet<string>
@@ -92,10 +217,23 @@ export interface BasicDisplayLayoutHost {
  * (`featureBandViews`): which labels draw at the on-screen density, the layout
  * inputs every fit rung shares, and what the ladder measures. The model
  * installs them as a `.views()` layer, so each is its own computed; the tables
- * export runs the same getters over a plain host.
+ * export's static host installs the same layer.
  */
 export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
   return {
+    /**
+     * #getter
+     * Features per pixel of what is actually ON SCREEN — the density the
+     * `auto` label modes gate on (ADR-093).
+     */
+    get labelDensityPerPx() {
+      const ids = self.onScreenFeatureIds
+      const widthPx = self.onScreenWidthPx
+      return ids && widthPx > 0
+        ? ids.size / widthPx
+        : self.visibleFeatureDensityPerPx
+    },
+
     /**
      * #getter
      * On-screen gene features per pixel, which `auto` holds to the same
@@ -132,7 +270,7 @@ export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
         name: self.showNames,
         description: self.showDescriptions,
         collapsed: self.displayMode === 'collapsed',
-        density: self.labelDensityPerPx,
+        density: this.labelDensityPerPx,
         geneDensity: () => this.geneLabelDensityPerPx,
       })
     },

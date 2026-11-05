@@ -23,6 +23,36 @@ export type HeightModeHost = { configuration: HeightModeConfigModel }
 const confNode = (self: object) => self as HeightModeHost
 
 /**
+ * The track-height strategy off the `heightMode` slot, which `HeightModeMixin`
+ * installs and a static host composes beside its config node.
+ */
+export function heightModeViews(self: HeightModeHost) {
+  return {
+    /**
+     * #getter
+     * The track-height strategy (`fixed`/`grow`/`fit`).
+     */
+    get heightMode(): HeightMode {
+      return getConf(self, 'heightMode')
+    },
+    /**
+     * #getter
+     * `grow` mode as a boolean, derived from the unified `heightMode` slot.
+     */
+    get autoHeight(): boolean {
+      return this.heightMode === 'grow'
+    },
+    /**
+     * #getter
+     * `fit` mode as a boolean, derived from the unified `heightMode` slot.
+     */
+    get fitHeightToDisplay(): boolean {
+      return this.heightMode === 'fit'
+    },
+  }
+}
+
+/**
  * #stateModel HeightModeMixin
  * #category display
  * #crossCuttingMixin Track-height strategy over `TrackHeightMixin()`, which it composes and whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
@@ -55,14 +85,8 @@ const confNode = (self: object) => self as HeightModeHost
 export default function HeightModeMixin() {
   return types
     .compose('HeightModeMixin', TrackHeightMixin(), types.model({}))
+    .views(self => heightModeViews(confNode(self)))
     .views(self => ({
-      /**
-       * #getter
-       * The track-height strategy (`fixed`/`grow`/`fit`).
-       */
-      get heightMode(): HeightMode {
-        return getConf(confNode(self), 'heightMode')
-      },
       /**
        * #getter
        * The height the track is allotted (`TrackHeightMixin.allottedHeight`:
@@ -86,20 +110,6 @@ export default function HeightModeMixin() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * `grow` mode as a boolean, derived from the unified `heightMode` slot.
-       */
-      get autoHeight(): boolean {
-        return self.heightMode === 'grow'
-      },
-      /**
-       * #getter
-       * `fit` mode as a boolean, derived from the unified `heightMode` slot.
-       */
-      get fitHeightToDisplay(): boolean {
-        return self.heightMode === 'fit'
-      },
       /**
        * #getter
        * Overridable hook: the height this display's laid-out content wants, in
