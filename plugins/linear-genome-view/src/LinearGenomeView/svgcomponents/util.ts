@@ -80,7 +80,7 @@ export function sessionTrackRows(
   session: TrackCatalog,
 ): SvgTrackRow[] {
   return displayResults.map(({ track, result, legendHeight }) => ({
-    trackId: track.configuration.trackId,
+    trackId: String(track.configuration.trackId),
     name: svgTrackName(track, session),
     track,
     result,
