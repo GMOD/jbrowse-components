@@ -1,11 +1,4 @@
 {
-  "plugins": [
-    {
-      "name": "MsaView",
-      "storePlugin": "MsaView",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
-    }
-  ],
   "assemblies": [
     {
       "name": "melanogaster",
@@ -14,7 +7,18 @@
         "trackId": "melanogaster-ReferenceSequenceTrack",
         "adapter": {
           "type": "BgzipFastaAdapter",
-          "uri": "melanogaster.fa.gz"
+          "fastaLocation": {
+            "uri": "melanogaster.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "melanogaster.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "melanogaster.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
         }
       }
     },
@@ -284,12 +288,19 @@
       }
     }
   ],
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
   "msa": {
     "datasets": [
       {
         "datasetId": "drosophila_orthofinder",
         "name": "Drosophila orthogroups (OrthoFinder)",
-        "description": "An alignment and gene tree per orthogroup, from OrthoFinder 3.2 over the five fly proteomes",
+        "description": "An alignment and gene tree per orthogroup",
         "adapter": {
           "type": "OrthoFinderMsaAdapter",
           "resultsLocation": {
