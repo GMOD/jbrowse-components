@@ -54,7 +54,6 @@ import { labelEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 import { buildSpatialIndex } from './spatialIndex.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
-import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 import {
   bandedRowViews,
   bandedSourceViews,
@@ -64,8 +63,11 @@ import {
   listsInOrder,
   resolvedRowColorViews,
   rowAliasViews,
+  rowFocusLineViews,
+  rowNarrowingShowsViews,
   rowOrderViews,
   rowTreeViews,
+  rowsTopOffsetViews,
   sourceViews,
   treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
@@ -237,10 +239,10 @@ export interface ClusterRun {
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and each with its resolved color as `rowColor`, then
  * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
- * in the bands `rowBanding` names. The stages and the row colors are
- * written in `treeSidebarRowViews.ts`, which a tables export installs on a
- * model of its own (`treeSidebarRowsModel`), so it arranges and colors the
- * rows as the view does.
+ * in the bands `rowBanding` names. The stages, the row colors and where
+ * the rows start (`rowsTopOffset`) are written in `treeSidebarRowViews.ts`,
+ * which a tables export installs on a model of its own beside its display's
+ * row hooks, so it arranges and colors the rows as the view does.
  *
  * A row's color is `resolvedRowColors`: its `rows.colors` entry, else its
  * `rows.color` entry (the color `dealtValueColors` deals its field's value),
@@ -391,14 +393,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get svgSidebar(): SvgSidebarProps | undefined {
         return undefined
       },
-      /**
-       * #getter
-       * Overridable hook: the px of bands, an axis inset or anything else the
-       * display stacks above its rows, 0 by default.
-       */
-      get rowsHeaderHeight(): number {
-        return 0
-      },
     }))
     .views(self => expandedRowViews<S>(self))
     .views(self => rowAliasViews<S>(self))
@@ -410,37 +404,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => bandedRowViews<S>(self))
     .views(self => bandedSourceViews<S>(self))
     .views(self => sourceViews<S>(self))
+    .views(self => rowNarrowingShowsViews<S>(self))
+    .views(self => rowFocusLineViews(self))
+    .views(self => rowsTopOffsetViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * Whether the "Showing N of M rows" chip shows: something narrows the
-       * rows, and the rows are known, so no "0 of 0" shows before the first
-       * region lands.
-       */
-      get rowNarrowingShows(): boolean {
-        return narrows(self.rowNarrowing) && self.expandedRows.length > 0
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The line the "Showing N of M rows" chip takes above the first row
-       * while `rowNarrowingShows`, 0 otherwise.
-       */
-      get rowFocusLineHeight(): number {
-        return self.rowNarrowingShows ? SIDEBAR_HINT_LINE_PX : 0
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Where the rows start in the display's box: under the display's own
-       * `rowsHeaderHeight` and the focus chip's line. Every row painter, hit
-       * test, label, tree and export places the rows from here.
-       */
-      get rowsTopOffset(): number {
-        return self.rowsHeaderHeight + self.rowFocusLineHeight
-      },
       /**
        * #method
        * Px the SVG export reserves left of the track for `svgSidebar`, measured

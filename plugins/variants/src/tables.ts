@@ -17,10 +17,23 @@ import {
   colorSnapshotOf,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
-import { treeSidebarRowsModel } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
+import {
+  bandedRowViews,
+  bandedSourceViews,
+  clusterableRowViews,
+  editableRowViews,
+  expandedRowViews,
+  resolvedRowColorViews,
+  rowAliasViews,
+  rowOrderViews,
+  rowTreeViews,
+  sourceViews,
+  treeSidebarRowHookDefaults,
+  treeSidebarRowsConfigViews,
+} from '@jbrowse/tree-sidebar/treeSidebarRowViews'
+import { runInAction } from 'mobx'
 
 import configSchemaFactory from './LinearVariantDisplay/configSchema.ts'
 import {
@@ -34,6 +47,10 @@ import {
   paintFeatureColors,
 } from './LinearVariantDisplay/paintCells.ts'
 import { getVariantColorScales } from './LinearVariantDisplay/variantLegend.ts'
+import {
+  variantRowConfigViews,
+  variantRowHookViews,
+} from './LinearVariantDisplay/variantRowViews.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
 import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
@@ -46,23 +63,56 @@ import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { cellColorEncodingOf, cellHueOf } from './shared/cellHue.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
-import {
-  entryAliasOf,
-  expandPhasedRows,
-  finerHaplotypeRows,
-  haplotypeRowParent,
-  resolveSampleName,
-} from './shared/getSources.ts'
+import { entryAliasOf, resolveSampleName } from './shared/getSources.ts'
 import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 
-import type { VariantRowsField } from './shared/constants.ts'
 import type { ProcessedSource } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
-import type { RowBanding, RowParent } from '@jbrowse/tree-sidebar/arrangeRows'
+
+/**
+ * The variant display reduced to what its tables read: the display's config,
+ * the samples the adapter lists and the ploidies the fetch reports, under the
+ * row views the display installs and its row hooks. No session, no view.
+ */
+const VariantTablesHost = types
+  .model('VariantTablesHost', { configuration: configSchemaFactory() })
+  .volatile(
+    (): {
+      listedSamples: ProcessedSource[]
+      samplePloidy: Readonly<Record<string, number>> | undefined
+    } => ({ listedSamples: [], samplePloidy: undefined }),
+  )
+  .actions(self => ({
+    setListedSamples(samples: ProcessedSource[]) {
+      self.listedSamples = samples
+    },
+    setSamplePloidy(ploidy: Readonly<Record<string, number>>) {
+      self.samplePloidy = ploidy
+    },
+  }))
+  .views(self => variantRowConfigViews(self))
+  .views(self => treeSidebarRowsConfigViews(self))
+  .views(() => treeSidebarRowHookDefaults<ProcessedSource>())
+  .views(self => expandedRowViews<ProcessedSource>(self))
+  .views(self => rowAliasViews<ProcessedSource>(self))
+  .views(self => rowTreeViews<ProcessedSource>(self))
+  .views(self => rowOrderViews<ProcessedSource>(self))
+  .views(self => resolvedRowColorViews<ProcessedSource>(self))
+  .views(self => editableRowViews<ProcessedSource>(self))
+  .views(self => clusterableRowViews<ProcessedSource>(self))
+  .views(self => bandedRowViews<ProcessedSource>(self))
+  .views(self => bandedSourceViews<ProcessedSource>(self))
+  .views(self => sourceViews<ProcessedSource>(self))
+  .views(self => ({
+    get discoveredRows(): ProcessedSource[] {
+      return self.listedSamples
+    },
+  }))
+  .views(self => variantRowHookViews(self))
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
 export function registerVariantAdapters(pluginManager: PluginManager) {
@@ -132,11 +182,14 @@ export async function variantTables(
   if (regions.length === 0) {
     throw new Error('variantTables reads a region, or regions')
   }
-  const conf = configSchemaFactory().create({
-    ...display,
-    type: 'LinearVariantDisplay',
-    displayId: 'tables',
+  const host = VariantTablesHost.create({
+    configuration: {
+      ...display,
+      type: 'LinearVariantDisplay',
+      displayId: 'tables',
+    },
   })
+  const conf = host.configuration
   const colorSetting = colorSnapshotOf(conf.encoding.color)
   const encoding = cellColorEncodingOf(colorSetting)
   const slots: HeldSlots | undefined =
@@ -148,7 +201,6 @@ export async function variantTables(
     colorSetting.field,
     slots,
   )
-  const rowsField: VariantRowsField = readConfObject(conf.rows, 'field')
   const predicates = predicatesOf(conf.filter)
   const filters = predicates.filter(p => !isSiteField(p.field))
   const adapter = await tablesFeatureAdapter(
@@ -168,54 +220,15 @@ export async function variantTables(
     ...source,
     sampleName: resolveSampleName(source),
   }))
-  const host = treeSidebarRowsModel<ProcessedSource>(conf)
-    .props({
-      samplePloidy: types.maybe(types.frozen<Record<string, number>>()),
-    })
-    .views(self => ({
-      get discoveredRows(): ProcessedSource[] {
-        return sources
-      },
-      expandRows(rows: ProcessedSource[]): ProcessedSource[] {
-        return rowsField === 'haplotype'
-          ? expandPhasedRows({
-              rows,
-              ploidy: self.samplePloidy,
-              domain: self.rowSort,
-            })
-          : rows
-      },
-      rowParent(row: ProcessedSource): RowParent | undefined {
-        return haplotypeRowParent(row)
-      },
-      get finerRows(): ProcessedSource[] {
-        return finerHaplotypeRows({
-          rows: self.discoveredRows,
-          ploidy: self.samplePloidy,
-          domain: [...self.rowSort, ...(self.rowFocus ?? [])],
-        })
-      },
-      get rowBanding(): RowBanding | undefined {
-        return facetSettingOf({
-          field: readConfObject(conf.facet, 'field'),
-          sort: readConfObject(conf.facet, 'sort'),
-        })
-      },
-      get rowColorPaintsMarks(): boolean {
-        return false
-      },
-    }))
-    .actions(self => ({
-      setSamplePloidy(ploidy: Record<string, number>) {
-        self.samplePloidy = ploidy
-      },
-    }))
-    .create()
-  const narrowing = {
-    kept: host.rowFocus ?? [],
-    filter: host.rowFilter,
-    rowAlias: entryAliasOf(sources),
-  }
+  host.setListedSamples(sources)
+  const { rowsField, narrowing } = runInAction(() => ({
+    rowsField: host.rowsField,
+    narrowing: {
+      kept: host.rowFocus ?? [],
+      filter: host.rowFilter,
+      rowAlias: entryAliasOf(sources),
+    },
+  }))
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -250,17 +263,25 @@ export async function variantTables(
   const sampleIndex = buildSampleIndex(value.sampleNames)
   host.setSamplePloidy(value.samplePloidy)
   const fetched = new Set(value.rowNames)
-  const drawn = host.sources.filter(row => fetched.has(row.name))
-  const rowColors = host.resolvedRowColors
-  const [rowKey] = host.rowColorScales
+  const { drawn, band, color, rowKey, rowBands } = runInAction(() => {
+    const shown = host.sources.filter(row => fetched.has(row.name))
+    const rowColors = host.resolvedRowColors
+    return {
+      drawn: shown,
+      band: shown.map(row => host.rowBand(row)),
+      color: shown.map(row => rowColors.get(row.name) ?? ''),
+      rowKey: host.rowColorScales[0],
+      rowBands: host.rowBands,
+    }
+  })
   const rows = {
     name: drawn.map(row => row.name),
     label: drawn.map(row => row.label ?? row.name),
     sample: drawn.map(row => row.sampleName),
     haplotype: drawn.map(row => (row.HP === undefined ? 0 : row.HP + 1)),
     ploidy: drawn.map(row => value.samplePloidy[row.sampleName] ?? 0),
-    band: drawn.map(row => host.rowBand(row)),
-    color: drawn.map(row => rowColors.get(row.name) ?? ''),
+    band,
+    color,
   }
   const rowIndex = new Map(rows.name.map((name, i) => [name, i]))
 
@@ -369,8 +390,8 @@ export async function variantTables(
     },
     rowLegendTitle: rowKey?.title ?? '',
     bands: {
-      key: host.rowBands.map(b => b.key),
-      label: host.rowBands.map(b => b.label),
+      key: rowBands.map(b => b.key),
+      label: rowBands.map(b => b.label),
     },
     config: fullConfSnapshot(conf),
     warnings: listing.warnings,

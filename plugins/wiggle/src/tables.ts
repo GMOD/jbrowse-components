@@ -5,45 +5,56 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
+import { types } from '@jbrowse/mobx-state-tree'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import { treeSidebarRowsModel } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import {
-  computeScoreStats,
-  readYMember,
-  summaryFieldOf,
-  yRuleNodes,
-  autoscaledDomainOf,
+  bandedRowViews,
+  bandedSourceViews,
+  clusterableRowViews,
+  editableRowViews,
+  expandedRowViews,
+  resolvedRowColorViews,
+  rowAliasViews,
+  rowFocusLineViews,
+  rowNarrowingShowsViews,
+  rowOrderViews,
+  rowTreeViews,
+  rowsTopOffsetViews,
+  sourceViews,
+  treeSidebarRowHookDefaults,
+  treeSidebarRowsConfigViews,
+} from '@jbrowse/tree-sidebar/treeSidebarRowViews'
+import {
+  YFieldConfigMixin,
   resolveRenderState,
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
+import { runInAction } from 'mobx'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
-import {
-  declaredValueDomain,
-  sourcesFromRegionData,
-} from './LinearWiggleDisplay/sourcesLogic.ts'
 import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
-import { renderingOf } from './renderingTypes.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
-import { clampResolution } from './shared/resolution.ts'
-import {
-  colorKeyTitleOf,
-  scoreRampFill,
-  scoreRampScale,
-} from './shared/scoreRampScale.ts'
+import { scoreRampFill, scoreRampScale } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
-  wiggleColorSettingOf,
-  wiggleSharesPanel,
-} from './shared/wiggleColor.ts'
+  wiggleConfigViews,
+  wiggleModeViews,
+} from './shared/wiggleConfigViews.ts'
 import {
-  wiggleAutoscaleRange,
-  wiggleResolveViews,
-} from './shared/wiggleResolveViews.ts'
+  wiggleAutoscaleViews,
+  wiggleDomainViews,
+  wigglePlotViews,
+  wiggleRowHeightViews,
+  wiggleRowsBoxViews,
+  wiggleStatsViews,
+} from './shared/wigglePlotViews.ts'
+import { wiggleResolveViews } from './shared/wiggleResolveViews.ts'
+import { wiggleRowHookViews } from './shared/wiggleRowHookViews.ts'
 import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
@@ -51,6 +62,77 @@ import type { Source } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { SettledBlocksView, WiggleDataResult } from '@jbrowse/wiggle-core'
+
+const NO_FRAME: SettledBlocksView = {
+  initialized: false,
+  settledDynamicBlocks: [],
+}
+
+/**
+ * The wiggle display reduced to what its tables read: the display's config,
+ * the fetched scores and the blocks they were fetched over, under the views
+ * the display installs, its row views and row hooks among them. No session,
+ * no view, no autoruns.
+ */
+function wiggleTablesHost(
+  configuration:
+    | typeof linearWiggleDisplayConfigSchema
+    | typeof multiQuantitativeWiggleConfigSchema,
+) {
+  return types
+    .compose(
+      'WiggleTablesHost',
+      TrackHeightMixin(),
+      YFieldConfigMixin(WIGGLE_Y_PATHS),
+      types.model({ configuration }),
+    )
+    .volatile(
+      (): {
+        host: SettledBlocksView
+        rpcDataMap: ReadonlyMap<number, WiggleDataResult>
+      } => ({ host: NO_FRAME, rpcDataMap: new Map() }),
+    )
+    .actions(self => ({
+      setFetched(
+        host: SettledBlocksView,
+        rpcDataMap: ReadonlyMap<number, WiggleDataResult>,
+      ) {
+        self.host = host
+        self.rpcDataMap = rpcDataMap
+      },
+    }))
+    .views(self => wiggleConfigViews(self))
+    .views(self => wiggleModeViews(self))
+    .views(self => treeSidebarRowsConfigViews(self))
+    .views(() => treeSidebarRowHookDefaults<Source>())
+    .views(self => expandedRowViews<Source>(self))
+    .views(self => rowAliasViews<Source>(self))
+    .views(self => rowTreeViews<Source>(self))
+    .views(self => rowOrderViews<Source>(self))
+    .views(self => resolvedRowColorViews<Source>(self))
+    .views(self => editableRowViews<Source>(self))
+    .views(self => clusterableRowViews<Source>(self))
+    .views(self => bandedRowViews<Source>(self))
+    .views(self => bandedSourceViews<Source>(self))
+    .views(self => sourceViews<Source>(self))
+    .views(self => rowNarrowingShowsViews<Source>(self))
+    .views(self => rowFocusLineViews(self))
+    .views(self => rowsTopOffsetViews(self))
+    .views(self => wiggleRowHookViews(self))
+    .views(self => wiggleDomainViews(self))
+    .views(self => wiggleResolveViews(self))
+    .views(self => wiggleStatsViews(self))
+    .views(self => wiggleAutoscaleViews(self))
+    .views(self => wiggleRowsBoxViews(self))
+    .views(self => wiggleRowHeightViews(self))
+    .views(self => wigglePlotViews(self))
+}
+
+const QuantitativeTablesHost = wiggleTablesHost(linearWiggleDisplayConfigSchema)
+const MultiQuantitativeTablesHost = wiggleTablesHost(
+  multiQuantitativeWiggleConfigSchema,
+)
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -115,22 +197,28 @@ export async function wiggleTables(
       : 'QuantitativeTrack',
   }: WiggleTablesArgs,
 ) {
-  const schema =
+  const model = (
     trackType === 'MultiQuantitativeTrack'
-      ? multiQuantitativeWiggleConfigSchema
-      : linearWiggleDisplayConfigSchema
-  const conf = schema.create({
-    ...display,
-    type: 'LinearWiggleDisplay',
-    displayId: 'tables',
+      ? MultiQuantitativeTablesHost
+      : QuantitativeTablesHost
+  ).create({
+    configuration: {
+      ...display,
+      type: 'LinearWiggleDisplay',
+      displayId: 'tables',
+    },
   })
+  const conf = model.configuration
+  const fetchInputs = runInAction(() => ({
+    resolution: model.resolution,
+    yField: model.yField,
+  }))
   const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
     sessionId: 'tables',
     adapterConfig,
     regions: regions.map(r => ({ assemblyName: '', ...r })),
     bpPerPx,
-    resolution: clampResolution(readConfObject(conf, ['data', 'resolution'])),
-    yField: readConfObject(conf, ['encoding', 'y', 'field']),
+    ...fetchInputs,
     statusCallback: () => {},
   }
   if (args.regions.length === 0) {
@@ -139,95 +227,67 @@ export async function wiggleTables(
   const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
     .value
   const data = results[0]!
-
-  const mark: WiggleMark = readConfObject(conf, ['mark', 'type'])
-  const interpolate: LineInterpolation = readConfObject(conf, [
-    'mark',
-    'interpolate',
-  ])
-  const renderingType = renderingOf(mark, interpolate)
-  const density = renderingType === 'density'
-  const summaryField = summaryFieldOf(
-    readConfObject(conf, ['encoding', 'y', 'field']),
-  )
-  const origin: number = readConfObject(conf, 'origin')
-  const setting = wiggleColorSettingOf(conf.encoding.color)
-  const rowLayout = readConfObject(conf.rows, 'field') !== ''
-  const rules = yRuleNodes(conf, WIGGLE_Y_PATHS).map(rule => ({
-    value: readConfObject(rule, 'value'),
-    color: cssColorToHex(readConfObject(rule, 'color') ?? DEFAULT_RULE_COLOR),
-    label: readConfObject(rule, 'label'),
-  }))
-
-  const discoveredRows = sourcesFromRegionData(new Map(results.entries()))
-  const host = treeSidebarRowsModel<Source>(conf)
-    .volatile(() => ({
-      isDensityMode: density,
-      extent: readConfObject(conf, ['mark', 'extent']),
-      origin,
-      colorSetting: setting,
-      summaryField,
-      renderingType,
-      isRowLayout: rowLayout,
-      scoreRules: rules,
-    }))
-    .views(self => ({
-      get discoveredRows(): Source[] {
-        return discoveredRows
-      },
-      get sharesPanel(): boolean {
-        return wiggleSharesPanel(self.isRowLayout, self.discoveredRows.length)
-      },
-    }))
-    .views(self => wiggleResolveViews(self))
-    .create()
-  const { wiggleColor, effectiveExtent, sources } = host
-
-  const scaleType: string = readYMember(conf, WIGGLE_Y_PATHS, 'type')
-  const zero = readYMember(conf, WIGGLE_Y_PATHS, 'zero') && !density
-  const drawnNames = host.autoscaleSourceNames
-  const entries = results.flatMap((result, i) =>
-    result.sources
-      .filter(source => drawnNames.has(source.name))
-      .map(source => ({
-        data: source,
-        visStart: regions[i]!.start,
-        visEnd: regions[i]!.end,
+  model.setFetched(
+    {
+      initialized: true,
+      settledDynamicBlocks: regions.map((r, i) => ({
+        start: r.start,
+        end: r.end,
+        displayedRegionIndex: i,
       })),
+    },
+    new Map(results.entries()),
   )
-  const stats = computeScoreStats(summaryField, entries, effectiveExtent)
-  const range = wiggleAutoscaleRange(stats && { stats, entries }, {
-    quantile: readYMember(conf, WIGGLE_Y_PATHS, 'fence'),
-    zero,
-    field: summaryField,
-    extent: effectiveExtent,
-    ruleValues: host.scoreRuleValues,
+
+  const {
+    sources,
+    markSources,
+    wiggleColor,
+    scoreRamp,
+    gpuProps,
+    domain,
+    scaleType,
+    rawConstant,
+    rules,
+    colorKeyTitle,
+    origin,
+    summaryField,
+    rowLayout,
+    height,
+  } = runInAction(() => {
+    const { rampLut, rampMid } = model.wiggleColor
+    return {
+      sources: model.sources,
+      markSources: model.markSources,
+      wiggleColor: model.wiggleColor,
+      scoreRamp:
+        model.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined,
+      gpuProps: { ...model.gpuProps(), rowLayout: true },
+      domain: resolveRenderState(model.domain, d => d),
+      scaleType: model.scaleType,
+      rawConstant: model.symlogConstant,
+      rules: model.scoreRules.map(rule => ({
+        value: rule.value,
+        color: cssColorToHex(rule.color ?? DEFAULT_RULE_COLOR),
+        label: rule.label ?? '',
+      })),
+      colorKeyTitle: model.colorKeyTitle,
+      origin: model.origin,
+      summaryField: model.summaryField,
+      rowLayout: model.isRowLayout,
+      height: model.height,
+    }
   })
-  const domain = resolveRenderState(
-    autoscaledDomainOf({
-      range,
-      pinned: [
-        readYMember(conf, WIGGLE_Y_PATHS, 'domainMin'),
-        readYMember(conf, WIGGLE_Y_PATHS, 'domainMax'),
-      ],
-      fallback: declaredValueDomain(results),
-      scaleType,
-      zero,
-    }),
-    d => d,
-  )
-  const rawConstant: number = readYMember(conf, WIGGLE_Y_PATHS, 'constant')
   const symlogConstant = resolveSymlogConstant(
     domain[0],
     domain[1],
     rawConstant,
   )
-
-  const { markSources } = host
-  const { rampLut, rampMid } = wiggleColor
-  const scoreRamp =
-    host.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined
-  const gpuProps = { ...host.gpuProps(), rowLayout: true }
+  const mark: WiggleMark = readConfObject(conf, ['mark', 'type'])
+  const interpolate: LineInterpolation = readConfObject(conf, [
+    'mark',
+    'interpolate',
+  ])
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, gpuProps).map(layer => ({
       layer,
@@ -357,10 +417,7 @@ export async function wiggleTables(
               scaleType,
               rawConstant,
               scoreRamp,
-              colorKeyTitleOf(
-                setting.legend.title,
-                readYMember(conf, WIGGLE_Y_PATHS, 'title'),
-              ),
+              colorKeyTitle,
             ),
           ),
         ]
@@ -371,7 +428,7 @@ export async function wiggleTables(
     interpolate,
     origin,
     rowLayout,
-    height: readConfObject(conf, 'height'),
+    height,
     config: fullConfSnapshot(conf),
     warnings: data.warnings ?? [],
   }

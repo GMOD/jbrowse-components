@@ -30,7 +30,6 @@ type VariantDecision = (typeof VARIANT_DECISIONS)[number]
 
 const ROW_KEY = 'rows.color'
 
-const TREE_ORDER = 'rows.tree order, the tree-sidebar row chain'
 const NO_RECORDS_KEY =
   'unowned, variants tables key no records-band scale: SV type'
 const HIDDEN_GENOTYPES =
@@ -221,7 +220,6 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
       config: {
         rows: { tree: '((GHND000004:1,GHND000002:1):1,GHND000001:2);' },
       },
-      drifts: { rows: { owner: TREE_ORDER, exported: FILE_ORDER_ROWS } },
     },
     {
       name: 'site filter',

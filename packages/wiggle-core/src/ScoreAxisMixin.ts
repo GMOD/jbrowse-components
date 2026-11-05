@@ -10,6 +10,47 @@ import { scoreRuleMarks } from './scoreRuleMarks.ts'
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
 
 /**
+ * The axes of `scales`, one per scale whose domain resolved: the position of
+ * each tick in the band's pixel space, through `computeYTicks` unless the
+ * scale supplies its own ladder, and the position of each of the scale's
+ * `rules` inside the domain in that same box, through the scale type the
+ * renderer places its values by.
+ */
+function valueScaleAxes(scales: readonly ValueScale[]): YAxis[] {
+  return scales.flatMap(scale => {
+    const { domain, rules = [] } = scale
+    const ticks =
+      scale.ticks ??
+      computeYTicks({
+        height: scale.height,
+        offset: scale.offset,
+        domain,
+        scaleType: scale.scaleType,
+        symlogConstant: scale.symlogConstant,
+      })
+    if (!domain || !ticks) {
+      return []
+    }
+    const [min, max] = domain
+    const ruleMarks =
+      rules.length > 0
+        ? scoreRuleMarks({
+            rules,
+            domain,
+            box: ticks,
+            normalize: makeScoreNormalizer(
+              min,
+              max,
+              scaleTypeCode(scale.scaleType),
+              resolveSymlogConstant(min, max, scale.symlogConstant ?? 0),
+            ),
+          })
+        : []
+    return [{ ...scale, domain, ticks, ruleMarks }]
+  })
+}
+
+/**
  * #stateModel ScoreAxisMixin
  * #category display
  * {@link ScoreScaleMixin} is the one composer of this mixin, and a display
@@ -190,44 +231,10 @@ export function ScoreAxisMixin() {
       },
       /**
        * #getter
-       * The axes, one per declared scale whose domain resolved: the position
-       * of each tick in the band's pixel space, through `computeYTicks`
-       * unless the scale supplies its own ladder, and the position of each of
-       * the scale's `rules` inside the domain in that same box, through the
-       * scale type the renderer places its values by.
+       * The axes of the declared scales (`valueScaleAxes`).
        */
       get axes(): YAxis[] {
-        return self.valueScales.flatMap(scale => {
-          const { domain, rules = [] } = scale
-          const ticks =
-            scale.ticks ??
-            computeYTicks({
-              height: scale.height,
-              offset: scale.offset,
-              domain,
-              scaleType: scale.scaleType,
-              symlogConstant: scale.symlogConstant,
-            })
-          if (!domain || !ticks) {
-            return []
-          }
-          const [min, max] = domain
-          const ruleMarks =
-            rules.length > 0
-              ? scoreRuleMarks({
-                  rules,
-                  domain,
-                  box: ticks,
-                  normalize: makeScoreNormalizer(
-                    min,
-                    max,
-                    scaleTypeCode(scale.scaleType),
-                    resolveSymlogConstant(min, max, scale.symlogConstant ?? 0),
-                  ),
-                })
-              : []
-          return [{ ...scale, domain, ticks, ruleMarks }]
-        })
+        return valueScaleAxes(self.valueScales)
       },
     }))
 }

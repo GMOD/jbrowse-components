@@ -10,6 +10,15 @@ const DISPLAY_MODELS = [
   'plugins/marks/src/LinearMarkDisplay/model.ts',
 ]
 
+// The views functions a display installs its hook overrides from, which its
+// tables export installs too.
+const HOOK_VIEWS = [
+  'plugins/variants/src/LinearVariantDisplay/variantRowViews.ts',
+  'plugins/wiggle/src/shared/wiggleAxisViews.ts',
+  'plugins/wiggle/src/shared/wiggleResolveViews.ts',
+  'plugins/wiggle/src/shared/wiggleRowHookViews.ts',
+]
+
 function read(file: string) {
   return fs.readFileSync(path.join(root, file), 'utf8')
 }
@@ -47,7 +56,7 @@ test('a display overrides only the members the mixin declares as hooks', () => {
   }
   expect(members.get('hierarchy')).toBe(false)
   expect(members.get('rowsContentHeight')).toBe(false)
-  const undeclared = DISPLAY_MODELS.flatMap(file =>
+  const undeclared = [...DISPLAY_MODELS, ...HOOK_VIEWS].flatMap(file =>
     [...definedMembers(read(file))]
       .filter(name => members.get(name) === false)
       .map(name => `${file}: ${name}`),

@@ -141,7 +141,6 @@ function wiggleParity(
   }
 }
 
-const TREE_ORDER = 'rows.tree order, the tree-sidebar row chain'
 const NO_CATEGORICAL_KEY =
   'unowned, wiggle tables key no categorical scale: subtracks, rows.color, threshold'
 const DENSITY_RULES =
@@ -195,16 +194,6 @@ describe('a MultiQuantitativeTrack of three signed BigWigs', () => {
       name: 'rows.tree',
       config: {
         rows: { tree: '((posneg_rw3:1,posneg_rw1:1):1,posneg_rw2:2);' },
-      },
-      drifts: {
-        rows: {
-          owner: TREE_ORDER,
-          exported: ['posneg_rw1', 'posneg_rw2', 'posneg_rw3'].map(name => ({
-            name,
-            label: name,
-            group: '',
-          })),
-        },
       },
     },
     {

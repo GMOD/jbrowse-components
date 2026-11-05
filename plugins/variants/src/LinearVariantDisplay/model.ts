@@ -50,7 +50,6 @@ import {
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import {
   containingHost,
@@ -98,10 +97,7 @@ import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
 import {
   entryAliasOf,
-  expandPhasedRows,
-  finerHaplotypeRows,
   haplotypeNameCollisions,
-  haplotypeRowParent,
   parseRowName,
   resolveSampleName,
 } from '../shared/getSources.ts'
@@ -147,6 +143,10 @@ import {
   variantTrackMenuItems,
 } from './variantDisplayMenuItems.ts'
 import { getVariantColorScales } from './variantLegend.ts'
+import {
+  variantRowConfigViews,
+  variantRowHookViews,
+} from './variantRowViews.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -190,11 +190,7 @@ import type {
   FeatureMenuHit,
   HitFeatureResult,
 } from '@jbrowse/plugin-features/band'
-import type {
-  RowBanding,
-  RowParent,
-  SvgSidebarProps,
-} from '@jbrowse/tree-sidebar'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
@@ -672,13 +668,8 @@ export function stateModelFactory(
           },
         }
       })
+      .views(self => variantRowConfigViews(self))
       .views(self => ({
-        /**
-         * #getter
-         */
-        get rowsField(): VariantRowsField {
-          return getConf(self, ['rows', 'field'])
-        },
         /**
          * #getter
          * Whether `genotypes.show` is written, by config or by the menu.
@@ -738,18 +729,6 @@ export function stateModelFactory(
           return getConf(self, ['tooltip', 'show'])
         },
 
-        /**
-         * #getter
-         * The `facet` object as written: the sample-metadata attribute whose
-         * values band the rows, and the band order; undefined leaves the
-         * existing order alone.
-         */
-        get facet(): FacetSetting | undefined {
-          return facetSettingOf({
-            field: getConf(self, ['facet', 'field']),
-            sort: getConf(self, ['facet', 'sort']),
-          })
-        },
         /**
          * #getter
          * `encoding.color` as written, `value` raw: a `jexl:` callback is the
@@ -1254,14 +1233,6 @@ export function stateModelFactory(
 
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: never, since the cells paint by genotype
-         * and a row's color shows only on its label bar.
-         */
-        get rowColorPaintsMarks(): boolean {
-          return false
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: a haplotype row's `sampleName`, `HP` and `sole`,
          * which the arrangement dialog lists as no column.
          */
@@ -1301,17 +1272,6 @@ export function stateModelFactory(
           }))
         },
         /**
-         * #method
-         * `TreeSidebarMixin`'s hook: a haplotype row refines its sample, read
-         * off the row's own `sampleName` and `HP`, so an order, a label, a
-         * tint or a focus written against a sample reaches each of its
-         * haplotypes, a label as `Mother HP1`; a haploid sample's one row
-         * takes the sample's label alone.
-         */
-        rowParent(row: ProcessedSource): RowParent | undefined {
-          return haplotypeRowParent(row)
-        },
-        /**
          * #getter
          * `TreeSidebarMixin`'s hook: a tree clustered per haplotype hides in
          * sample mode, and says so.
@@ -1323,52 +1283,8 @@ export function stateModelFactory(
               'The tree was clustered on haplotype rows. Show rows per haplotype to draw it, or re-run clustering per sample. Click to dismiss.',
           }
         },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: the `facet` bands the rows by a samplesTsv
-         * attribute.
-         */
-        get rowBanding(): RowBanding | undefined {
-          return self.facet
-        },
-        /**
-         * #method
-         * `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype,
-         * once `samplePloidy` lands or the order names them.
-         */
-        expandRows(rows: ProcessedSource[]): ProcessedSource[] {
-          return self.rowsField === 'haplotype'
-            ? expandPhasedRows({
-                rows,
-                ploidy: self.samplePloidy,
-                domain: self.rowSort,
-              })
-            : rows
-        },
       }))
-      .views(self => {
-        const finer = stableIdentityComputed(() =>
-          finerHaplotypeRows({
-            rows: self.discoveredRows,
-            ploidy: self.samplePloidy,
-            domain: [...self.rowSort, ...(self.rowFocus ?? [])],
-          }),
-        )
-        return {
-          /**
-           * #getter
-           * `TreeSidebarMixin`'s hook: the haplotype rows phased mode draws,
-           * or would, so an order or a focus naming a haplotype reaches a
-           * sample row standing for it: in sample mode, a sample ranking at
-           * its first haplotype entry, and in phased mode before the ploidy
-           * lands. The same array while a write names no new haplotype, so a
-           * focus or a reorder re-arranges nothing for it.
-           */
-          get finerRows(): ProcessedSource[] {
-            return finer.get()
-          },
-        }
-      })
+      .views(self => variantRowHookViews(self))
       .views(self => ({
         /**
          * #getter

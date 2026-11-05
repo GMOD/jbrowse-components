@@ -2,11 +2,10 @@ import { getConf } from '@jbrowse/core/configuration'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
 import { buildTree, getLeafNames } from './clusterUtils.ts'
-import { narrowRows } from './narrowRows.ts'
+import { narrowRows, narrows } from './narrowRows.ts'
 import {
   liftRowColor,
   pinnedColorsOf,
@@ -21,6 +20,7 @@ import {
   withPinnedColors,
   withRowColors,
 } from './rowColorScale.ts'
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type {
   RowAlias,
@@ -233,6 +233,14 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      */
     get rowNoun(): string {
       return 'Row'
+    },
+    /**
+     * #getter
+     * Overridable hook: the px of bands, an axis inset or anything else the
+     * display stacks above its rows, 0 by default.
+     */
+    get rowsHeaderHeight(): number {
+      return 0
     },
     /**
      * #method
@@ -670,6 +678,58 @@ export function sourceViews<S extends RowSource>(self: BandedSourcesHost<S>) {
   }
 }
 
+type SourcesHost<S extends RowSource> = BandedSourcesHost<S> &
+  ReturnType<typeof sourceViews<S>>
+
+/** Whether the rows drawn are narrowed, which a chip above them says. */
+export function rowNarrowingShowsViews<S extends RowSource>(
+  self: SourcesHost<S>,
+) {
+  return {
+    /**
+     * #getter
+     * Whether the "Showing N of M rows" chip shows: something narrows the
+     * rows, and the rows are known, so no "0 of 0" shows before the first
+     * region lands.
+     */
+    get rowNarrowingShows(): boolean {
+      return narrows(self.rowNarrowing) && self.expandedRows.length > 0
+    },
+  }
+}
+
+/** The line the narrowing chip takes above the rows. */
+export function rowFocusLineViews(self: { rowNarrowingShows: boolean }) {
+  return {
+    /**
+     * #getter
+     * The line the "Showing N of M rows" chip takes above the first row
+     * while `rowNarrowingShows`, 0 otherwise.
+     */
+    get rowFocusLineHeight(): number {
+      return self.rowNarrowingShows ? SIDEBAR_HINT_LINE_PX : 0
+    },
+  }
+}
+
+/** Where the rows start in the display's box. */
+export function rowsTopOffsetViews(self: {
+  rowsHeaderHeight: number
+  rowFocusLineHeight: number
+}) {
+  return {
+    /**
+     * #getter
+     * Where the rows start in the display's box: under the display's own
+     * `rowsHeaderHeight` and the focus chip's line. Every row painter, hit
+     * test, label, tree and export places the rows from here.
+     */
+    get rowsTopOffset(): number {
+      return self.rowsHeaderHeight + self.rowFocusLineHeight
+    },
+  }
+}
+
 /**
  * Whether the names of `order` that `leaves` holds appear in `leaves`' order.
  */
@@ -690,31 +750,4 @@ export function listsInOrder(
     }
   }
   return true
-}
-
-/**
- * The rows of a display with `configuration`, as a model a tables export
- * extends with the hooks its display overrides and creates: the same row
- * config views, hook defaults and row stages `TreeSidebarMixin` installs, in
- * the same order, so an export arranges, narrows, bands and colors the rows
- * as the view does.
- */
-export function treeSidebarRowsModel<S extends RowSource>(
-  configuration: TreeSidebarConfigModel,
-) {
-  return types
-    .model('TreeSidebarRows', {})
-    .volatile(() => ({ configuration }))
-    .views(self => treeSidebarRowsConfigViews(self))
-    .views(() => treeSidebarRowHookDefaults<S>())
-    .views(self => expandedRowViews<S>(self))
-    .views(self => rowAliasViews<S>(self))
-    .views(self => rowTreeViews<S>(self))
-    .views(self => rowOrderViews<S>(self))
-    .views(self => resolvedRowColorViews<S>(self))
-    .views(self => editableRowViews<S>(self))
-    .views(self => clusterableRowViews<S>(self))
-    .views(self => bandedRowViews<S>(self))
-    .views(self => bandedSourceViews<S>(self))
-    .views(self => sourceViews<S>(self))
 }

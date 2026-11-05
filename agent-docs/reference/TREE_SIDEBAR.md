@@ -159,16 +159,22 @@ only the stages downstream of it:
   `rowBands` is each band's value, label and row span.
 - `sources`, the display's: palette, MAF's reference row.
 
-The stages, the hook defaults, the `rows` reads they start from and the row
-colors and key are written once, in `treeSidebarRowViews.ts`, as one views
-function per stage, each reading only through `self` what an earlier stage or a
-hook gives. The mixin installs them as `.views()` layers, so each getter stays
-its own computed and a display's override answers wherever a stage reads a
-hook. The wiggle and variants tables exports build `treeSidebarRowsModel`: an
-MST model of the same layers over the display's config node, which the export
-extends with the hooks its display overrides (in a later `.views`, as the
-display does) and creates, with no session or view. So an export orders,
-narrows, bands and colors the rows as the view does.
+The stages, the hook defaults, the `rows` reads they start from, the row
+colors and key, and where the rows start (`rowNarrowingShows`,
+`rowFocusLineHeight`, `rowsTopOffset`) are written once, in
+`treeSidebarRowViews.ts`, as one views function per stage, each reading only
+through `self` what an earlier stage or a hook gives. The mixin installs them as
+`.views()` layers, so each getter stays its own computed and a display's
+override answers wherever a stage reads a hook.
+
+A display writes its own hook overrides as a views function too
+(`wiggleRowHookViews`, `variantRowHookViews`), which the display installs after
+the mixin and its tables export installs after the same stages. The wiggle and
+variants `tables.ts` each declare a module-scope MST model with the display's
+config node as a child, the fetched inputs as volatiles, and those layers, and
+create it with no session or view. So an export orders, narrows, bands and
+colors the rows as the view does. `declaredHooks.test.ts` reads the hook files
+beside the display models.
 
 The hooks are declared by the mixin and overridden by a getter in a later
 `.views` block, as `RowHeightMixin`'s `autoRowHeight` is; a `.volatile` of a

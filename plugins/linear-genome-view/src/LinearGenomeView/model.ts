@@ -110,6 +110,7 @@ import {
   regionsOrientation,
   setDisplayedRegionsKeepingCenter,
 } from './util.ts'
+import { bufferedVisibleRegionsOf, visibleRegionsOf } from './visibleRegions.ts'
 
 import type { FlightViewport } from './flyTo.ts'
 import type {
@@ -2531,19 +2532,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * Used by WebGL displays for per-region data fetching and rendering.
          */
         get visibleRegions() {
-          return this.dynamicBlocks.contentBlocks.map(block => {
-            const screenStartPx = block.offsetPx - self.offsetPx
-            return {
-              refName: block.refName,
-              start: block.start,
-              end: block.end,
-              assemblyName: block.assemblyName,
-              reversed: block.reversed,
-              displayedRegionIndex: block.displayedRegionIndex!,
-              screenStartPx,
-              screenEndPx: screenStartPx + block.widthPx,
-            }
-          })
+          return visibleRegionsOf(
+            this.dynamicBlocks.contentBlocks,
+            self.offsetPx,
+          )
         },
         /**
          * #getter
@@ -2580,25 +2572,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * viewport for smooth scrolling.
          */
         get bufferedVisibleRegions() {
-          const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
-          return this.visibleRegions.map(vr => {
-            const dr = self.displayedRegions[vr.displayedRegionIndex]!
-            return {
-              region: {
-                refName: vr.refName,
-                start: Math.max(dr.start, Math.floor(vr.start) - bufferBp),
-                end: Math.min(dr.end, Math.ceil(vr.end) + bufferBp),
-                assemblyName: vr.assemblyName,
-                // orientation rides along with the fetch region, not just with
-                // the render blocks: canvas records it on the rpcDataMap entry
-                // (`LayoutRegionData.reversed`) because label overhang packs
-                // toward lower bp in a flipped region. A flip mutates
-                // `displayedRegions`, so DisplayedRegionsChange refetches and
-                // the recorded flag can't go stale.
-                reversed: vr.reversed,
-              },
-              displayedRegionIndex: vr.displayedRegionIndex,
-            }
+          return bufferedVisibleRegionsOf({
+            visibleRegions: this.visibleRegions,
+            displayedRegions: self.displayedRegions,
+            width: self.width,
+            bpPerPx: self.bpPerPx,
           })
         },
 

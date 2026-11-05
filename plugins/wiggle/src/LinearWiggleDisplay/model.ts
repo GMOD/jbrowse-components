@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
-  getConf,
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -30,8 +29,6 @@ import {
   openPlotDialog as queuePlotDialog,
 } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ContextMenuMixin,
@@ -43,35 +40,33 @@ import {
   showRowSeparatorsMenuItem,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
-  sidebarPanelWidth,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import {
   SCORE_RANGE_LABEL,
   YFieldConfigMixin,
-  axisPlotBox,
-  computeScoreStats,
   makeScoreAxisMenuItem,
-  visibleStats,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import {
-  DEFAULT_LINE_WIDTH_PX,
-  DEFAULT_POINT_SIZE_PX,
-  renderingOf,
-} from '../renderingTypes.ts'
+import { renderingOf } from '../renderingTypes.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { clampResolution } from '../shared/resolution.ts'
-import { colorKeyTitleOf } from '../shared/scoreRampScale.ts'
+import {
+  wiggleAxisViews,
+  wiggleRowLabelViews,
+  wiggleSidebarViews,
+} from '../shared/wiggleAxisViews.ts'
 import {
   declaredCuts,
   wiggleColorProblems,
   wiggleColorSettingOf,
-  wiggleSharesPanel,
 } from '../shared/wiggleColor.ts'
-import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
+import {
+  wiggleConfigViews,
+  wiggleModeViews,
+} from '../shared/wiggleConfigViews.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import { wiggleFeatureWidgetData } from '../shared/wiggleHitTest.ts'
 import {
@@ -80,23 +75,21 @@ import {
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import {
-  wiggleAutoscaleRange,
-  wiggleResolveViews,
-} from '../shared/wiggleResolveViews.ts'
+  wiggleAutoscaleViews,
+  wiggleDomainViews,
+  wigglePlotViews,
+  wiggleRowHeightViews,
+  wiggleRowsBoxViews,
+  wiggleStatsViews,
+} from '../shared/wigglePlotViews.ts'
+import { wiggleResolveViews } from '../shared/wiggleResolveViews.ts'
+import { wiggleRowHookViews } from '../shared/wiggleRowHookViews.ts'
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  declaredValueDomain,
-  sourceWarnings,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { sourceWarnings } from './sourcesLogic.ts'
 
-import type {
-  LineInterpolation,
-  WiggleMark,
-  WiggleRendering,
-} from '../renderingTypes.ts'
+import type { LineInterpolation, WiggleMark } from '../renderingTypes.ts'
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Extent } from '../shared/wiggleMarkConfigSchema.ts'
 import type { Source, WiggleHoveredFeature, WiggleMarkObject } from '../util.ts'
@@ -108,13 +101,10 @@ import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type {
-  ValueScale,
   WiggleDataResult,
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
@@ -225,15 +215,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Points per pixel the fetch asks for, clamped to what the Resolution
-       * menu offers: the slot is reachable from a track config, which runs no
-       * setter, and `0` there divides by zero inside the adapter.
-       */
-      get resolution(): number {
-        return clampResolution(getConf(self, ['data', 'resolution']))
-      },
-      /**
-       * #getter
        * The fetched scores, keyed by displayedRegionIndex — the foundation's
        * per-region store, narrowed.
        */
@@ -241,49 +222,9 @@ export default function stateModelFactory(
         return self.regionPayloads as ReadonlyMap<number, WiggleDataResult>
       },
     }))
+    .views(self => wiggleConfigViews(self))
+    .views(self => wiggleModeViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * The value bars grow from, which a color scale also reads where its
-       * domain is unset.
-       */
-      get origin(): number {
-        return getConf(self, 'origin')
-      },
-      /**
-       * #getter
-       * A line's width, `encoding.strokeWidth` or 1 px while unset.
-       */
-      get lineWidth(): number {
-        return (
-          getConf(self, ['encoding', 'strokeWidth', 'value']) ??
-          DEFAULT_LINE_WIDTH_PX
-        )
-      },
-      /**
-       * #getter
-       * A point's diameter, `encoding.size` or 2 px while unset.
-       */
-      get size(): number {
-        return (
-          getConf(self, ['encoding', 'size', 'value']) ?? DEFAULT_POINT_SIZE_PX
-        )
-      },
-      /**
-       * #getter
-       */
-      get extent(): Extent {
-        return getConf(self, ['mark', 'extent'])
-      },
-      /**
-       * #getter
-       */
-      get renderingType(): WiggleRendering {
-        return renderingOf(
-          getConf(self, ['mark', 'type']),
-          getConf(self, ['mark', 'interpolate']),
-        )
-      },
       /**
        * #getter
        * Asked of the display's own adapter, for the GC track the synthesized
@@ -302,23 +243,7 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get domain() {
-        return self.autoscaledDomain
-      },
-      /**
-       * #getter
-       * The bounds the adapter declares its values lie in, where it declares
-       * any (`getValueDomain`): a GC content track's [0, 1], so its axis
-       * reads alike at every locus. Config bounds still win.
-       */
-      get defaultScoreDomain(): [number | undefined, number | undefined] {
-        return declaredValueDomain(self.rpcDataMap.values())
-      },
-    }))
+    .views(self => wiggleDomainViews(self))
     .actions(self => ({
       /**
        * #action
@@ -391,90 +316,8 @@ export default function stateModelFactory(
         setConf(self, ['encoding', 'strokeWidth', 'value'], val)
       },
     }))
+    .views(self => wiggleRowHookViews(self))
     .views(self => ({
-      // overrides WiggleScoreConfigMixin's `false` base, which is what its
-      // axisReachesZero getter keys on
-      get isDensityMode() {
-        return self.renderingType === 'density'
-      },
-
-      /**
-       * #getter
-       * The `encoding.color` channel as written, `value` undefined while
-       * nothing names a color and the layout decides (`effectiveColor`).
-       */
-      get colorSetting(): ColorSetting {
-        return wiggleColorSettingOf(self.configuration.encoding.color)
-      },
-
-      /**
-       * #getter
-       * The heading both color keys carry: `encoding.color.legend.title` as
-       * written (`''` draws none), else the y axis title the key replaces,
-       * else `Score`.
-       */
-      get colorKeyTitle() {
-        return colorKeyTitleOf(this.colorSetting.legend.title, self.scaleTitle)
-      },
-
-      /**
-       * #getter
-       * Whether each source is drawn in a separate row, which is all that
-       * `rows.field` decides here: the tree sidebar, the row labels, the separators,
-       * the clustering menu and the row-order sort all hang off it.
-       */
-      get isRowLayout() {
-        return getConf(self, ['rows', 'field']) !== ''
-      },
-
-      /**
-       * #getter
-       * Every source in one plot box. The complement of the row layout, named
-       * for what is drawn rather than for the setting that is off.
-       */
-      get isOverlay() {
-        return !this.isRowLayout
-      },
-    }))
-    .views(self => {
-      // This list reaches `gpuProps()`, whose identity re-encodes every loaded
-      // region, and a plain getter would hand out a fresh array on every region
-      // arrival — `stableIdentityComputed` keeps the previous one while the row
-      // metadata is unchanged, which is what a refetch of the same track
-      // produces.
-      const sources = stableIdentityComputed(() =>
-        sourcesFromRegionData(self.rpcDataMap),
-      )
-      return {
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: the adapter's sources, discovered from
-         * the loaded regions in adapter order.
-         */
-        get discoveredRows(): Source[] {
-          return sources.get()
-        },
-      }
-    })
-    .views(self => ({
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: whether several plots share one box, where
-       * only color tells the sources apart. A lone plot has nothing to be
-       * told apart from and is the pos/neg picture a quantitative track has
-       * always drawn.
-       */
-      get sharesPanel(): boolean {
-        return wiggleSharesPanel(self.isRowLayout, self.discoveredRows.length)
-      },
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: the row color key over a shared panel
-       * lists subtracks.
-       */
-      get rowNoun(): string {
-        return 'Subtrack'
-      },
       /**
        * #getter
        * `TreeSidebarMixin`'s hook: the adapter lists its subtracks, so a
@@ -523,135 +366,14 @@ export default function stateModelFactory(
           self.effectiveExtent === 'min-max' || self.summaryField !== 'score'
         )
       },
-      /**
-       * #getter
-       * The stats of the sources visible in the settled blocks, `undefined`
-       * until the view and the data are ready.
-       */
-      get statsInView() {
-        const names = self.autoscaleSourceNames
-        return visibleStats({
-          active: true,
-          view: self.host,
-          payloadFor: index => self.rpcDataMap.get(index),
-          itemsFor: regionData =>
-            regionData.sources.filter(source => names.has(source.name)),
-          accumulate: entries =>
-            computeScoreStats(self.summaryField, entries, self.effectiveExtent),
-        })
-      },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * What the sources visible in the settled blocks span, under the
-       * autoscale mode (`wiggleAutoscaleRange`). `undefined` until the view
-       * and the data are ready, which is not the `[0, 1]` a caller falls
-       * back to — see `visibleStats`.
-       */
-      get autoscaleRange(): [number, number] | undefined {
-        return wiggleAutoscaleRange(self.statsInView, {
-          quantile: self.fenceQuantile,
-          zero: self.axisReachesZero,
-          field: self.summaryField,
-          extent: self.effectiveExtent,
-          ruleValues: self.scoreRuleValues,
-        })
-      },
-      /**
-       * #getter
-       * The least and greatest value the visible sources draw, unfenced.
-       */
-      get valuesInView(): [number, number] | undefined {
-        const walked = self.statsInView
-        return walked
-          ? [walked.stats.scoreMin, walked.stats.scoreMax]
-          : undefined
-      },
-
-      get numSources() {
-        return self.sources.length
-      },
-
-      /**
-       * #getter
-       * Resolved per-row height. This display is always fit-to-display-height —
-       * its rows declare no `step`, so there is no pinned height to
-       * resolve — but it uses the same name every row display exposes its
-       * resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT),
-       * which is also what tree-sidebar's `TreeDrawingModel` reads.
-       */
-      get effectiveRowHeight() {
-        return self.isOverlay
-          ? this.rowsHeight
-          : getRowHeight(this.rowsHeight, this.numSources)
-      },
-
-      /**
-       * #getter
-       * The height under `rowsTopOffset` the rows, or the one plot, fill.
-       */
-      get rowsHeight() {
-        return Math.max(0, self.height - self.rowsTopOffset)
-      },
-
-      /**
-       * #getter
-       * Rows actually drawn: overlay collapses every source onto one shared
-       * plot. Read by the render state and by everything that repeats itself
-       * per row (scalebars, cross hatches), so they can't disagree about how
-       * many rows exist.
-       */
-      get numRows() {
-        return self.isOverlay ? 1 : this.numSources
-      },
-
-      /**
-       * #getter
-       * One row takes the scalebar-label gutter at top and bottom, so its end
-       * labels are never clipped; a stack of rows gives that up, because the
-       * axis is drawn per row and maximum density is the point. `ticks`, the
-       * render height, the on-screen canvas and the SVG clip all read this, so
-       * a tick stays on the data it labels.
-       */
-      get plotGeometry() {
-        const { rowsTopOffset } = self
-        const { rowsHeight, numRows } = this
-        if (numRows === 1) {
-          const { yTop, plotHeight } = axisPlotBox(rowsHeight)
-          return {
-            yTop: rowsTopOffset + yTop,
-            plotHeight,
-            numRows: 1,
-            tickHeight: rowsHeight,
-          }
-        }
-        return {
-          yTop: rowsTopOffset,
-          plotHeight: rowsHeight,
-          numRows,
-          tickHeight: this.effectiveRowHeight,
-        }
-      },
-
-      /**
-       * #getter
-       * A density row has no y scale, so under the one ramp the ramp is the
-       * key and shows the domain; bars and points keep their axis beside it.
-       */
-      get scoreRampReplacesAxis() {
-        return self.isDensityMode && self.scoreGradientPaints
-      },
-    }))
+    .views(self => wiggleStatsViews(self))
+    .views(self => wiggleAutoscaleViews(self))
+    .views(self => wiggleRowsBoxViews(self))
+    .views(self => wiggleRowHeightViews(self))
+    .views(self => wigglePlotViews(self))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * Overlay draws every source on one row, so it names none.
-       */
-      get drawsRowLabels() {
-        return self.numSources > 1 && self.isRowLayout && self.showRowLabels
-      },
       /**
        * #getter
        * `TreeSidebarMixin`'s hook. On a log or symlog axis it also waits for
@@ -670,57 +392,10 @@ export default function stateModelFactory(
         )
       },
     }))
+    .views(self => wiggleRowLabelViews(self))
+    .views(self => wiggleSidebarViews(self))
+    .views(self => wiggleAxisViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * The dendrogram and row labels at the display's left, which the axis
-       * sits past on screen and the export parks left of the figure.
-       */
-      get sidebarPanel(): SvgSidebarProps {
-        return {
-          showTree: self.showTree,
-          hierarchy: self.hierarchy,
-          sources: self.sources,
-          rowHeight: self.effectiveRowHeight,
-          treeAreaWidth: self.treeAreaWidth,
-          showLabels: self.drawsRowLabels,
-        }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The one scale every row shares, ruling a band per row stacked down the
-       * track, past the dendrogram where one is shown. Density rows, one
-       * color per row, map the scale to color rather than to y, so they
-       * rule no band and the chrome captions the domain instead; under the
-       * one ramp the ramp is the key and shows the domain itself.
-       */
-      get valueScales(): ValueScale[] {
-        if (self.scoreRampReplacesAxis) {
-          return []
-        }
-        const { tickHeight, yTop, numRows } = self.plotGeometry
-        return [
-          {
-            domain: self.domain,
-            scaleType: self.scaleType,
-            height: tickHeight,
-            offset: yTop - self.rowsTopOffset,
-            symlogConstant: self.symlogConstant,
-            bandTops: self.isDensityMode
-              ? []
-              : Array.from(
-                  { length: numRows },
-                  (_, row) =>
-                    self.rowsTopOffset +
-                    getRowTop(row, self.effectiveRowHeight),
-                ),
-            left: sidebarPanelWidth(self.sidebarPanel),
-            ...self.axisGuide,
-          },
-        ]
-      },
       /**
        * #method
        * `y` is a fetch key as written, so picking another stored summary
@@ -734,10 +409,6 @@ export default function stateModelFactory(
           resolution: self.resolution,
           yField: self.yField,
         }
-      },
-
-      get showRowSeparators(): boolean {
-        return getConf(self, ['rows', 'axis', 'grid'])
       },
 
       /**
@@ -819,16 +490,6 @@ export default function stateModelFactory(
        */
       get drawsTree(): boolean {
         return self.isRowLayout
-      },
-
-      /**
-       * #getter
-       */
-      get svgSidebar(): SvgSidebarProps {
-        return {
-          ...self.sidebarPanel,
-          leftInset: leftAxisGutterWidth(self.axes),
-        }
       },
     }))
     .views(self => {
