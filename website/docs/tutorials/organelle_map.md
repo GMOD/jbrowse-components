@@ -104,13 +104,14 @@ samtools faidx genome.fa
 ```
 
 The assembly is named `human_mito`, and two of its settings name the sequence
-`NC_012920.1`. The add-genome form has a field for neither, so the JSON adds
-both:
+`NC_012920.1`. The add-genome form has a field for neither, so in JBrowse
+Desktop the assembly loads from a
+[CLI-built config.json](/docs/tutorials/cli_desktop#open-the-cli-built-folder-in-jbrowse-desktop):
 
 ```json addassembly
 {
   "name": "human_mito",
-  "uri": "https://jbrowse.org/code/jb2/main/test_data/human_mito/sequence.fasta.gz",
+  "uri": "genome.fa",
   "circularRefNames": ["NC_012920.1"],
   "geneticCodes": { "NC_012920.1": 2 }
 }
@@ -121,9 +122,7 @@ both:
 - `geneticCodes` translates it with NCBI's vertebrate mitochondrial code, table
   2, wherever JBrowse shows a protein.
 
-The `uri` points at a hosted copy of the same FASTA. For your own accession,
-point it at your `genome.fa`, put your sequence's name in both settings, and
-pick its
+For your own accession, put your sequence's name in both settings and pick its
 [NCBI genetic code](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
 (11 for a plastid or a bacterial plasmid).
 
@@ -142,8 +141,7 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the gene
 track's `facet` splits it into a section per `strand`, and its `encoding.color`
 is a color scale mapping the GFF3 `type` field to colors. The name label falls
 back through the GFF3 attributes, so a record with no `gene` or `product`, like
-the D-loop, takes its `gbkey`. For your own file, swap the `uri` for
-`genes.gff.gz`:
+the D-loop, takes its `gbkey`:
 
 ```json addtrack
 {
@@ -153,7 +151,7 @@ the D-loop, takes its `gbkey`. For your own file, swap the `uri` for
   "assemblyNames": ["human_mito"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/code/jb2/main/test_data/human_mito/mito.gff.gz"
+    "uri": "genes.gff.gz"
   },
   "displayDefaults": {
     "labels": {
