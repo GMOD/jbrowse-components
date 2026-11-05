@@ -5,158 +5,27 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
-import { types } from '@jbrowse/mobx-state-tree'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import {
-  bandedRowViews,
-  bandedSourceViews,
-  clusterableRowViews,
-  editableRowViews,
-  expandedRowViews,
-  hierarchyViews,
-  resolvedRowColorViews,
-  rowAliasViews,
-  rowFocusLineViews,
-  rowNarrowingShowsViews,
-  rowOrderViews,
-  rowTreeRootViews,
-  rowTreeViews,
-  rowsContentHeightViews,
-  rowsTopOffsetViews,
-  sourceViews,
-  treeSidebarAxisConfigViews,
-  treeSidebarRowHookDefaults,
-  treeSidebarRowsConfigViews,
-  treeSidebarTreeHookDefaults,
-} from '@jbrowse/tree-sidebar/treeSidebarRowViews'
-import {
-  YFieldConfigMixin,
-  resolveRenderState,
-  resolveSymlogConstant,
-} from '@jbrowse/wiggle-core'
+import { resolveRenderState, resolveSymlogConstant } from '@jbrowse/wiggle-core'
 import { runInAction } from 'mobx'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
-import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
-import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
 import { scoreRampFill } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
-  wiggleAxisViews,
-  wiggleRowLabelViews,
-  wiggleSidebarViews,
-} from './shared/wiggleAxisViews.ts'
-import {
-  wiggleConfigViews,
-  wiggleModeViews,
-} from './shared/wiggleConfigViews.ts'
-import {
-  wiggleColorScaleViews,
-  wiggleScoreKeyViews,
-} from './shared/wiggleKeyViews.ts'
-import {
-  wiggleAutoscaleViews,
-  wiggleDomainViews,
-  wigglePlotViews,
-  wiggleRowHeightViews,
-  wiggleRowsBoxViews,
-  wiggleStatsViews,
-} from './shared/wigglePlotViews.ts'
-import { wiggleResolveViews } from './shared/wiggleResolveViews.ts'
-import { wiggleRowHookViews } from './shared/wiggleRowHookViews.ts'
-import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
+  createWiggleStaticHost,
+  wiggleTrackTypeOf,
+} from './shared/wiggleStaticHost.ts'
 
 import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
-import type { Source } from './util.ts'
+import type { WiggleTrackType } from './shared/wiggleStaticHost.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { SettledBlocksView, WiggleDataResult } from '@jbrowse/wiggle-core'
-
-const NO_FRAME: SettledBlocksView = {
-  initialized: false,
-  settledDynamicBlocks: [],
-}
-
-/**
- * The wiggle display reduced to what its tables read: the display's config,
- * the fetched scores and the blocks they were fetched over, under the views
- * the display installs, its row views and row hooks among them. No session,
- * no view, no autoruns.
- */
-function wiggleTablesHost(
-  configuration:
-    | typeof linearWiggleDisplayConfigSchema
-    | typeof multiQuantitativeWiggleConfigSchema,
-) {
-  return types
-    .compose(
-      'WiggleTablesHost',
-      TrackHeightMixin(),
-      YFieldConfigMixin(WIGGLE_Y_PATHS),
-      types.model({ configuration }),
-    )
-    .volatile(
-      (): {
-        host: SettledBlocksView
-        rpcDataMap: ReadonlyMap<number, WiggleDataResult>
-      } => ({ host: NO_FRAME, rpcDataMap: new Map() }),
-    )
-    .actions(self => ({
-      setFetched(
-        host: SettledBlocksView,
-        rpcDataMap: ReadonlyMap<number, WiggleDataResult>,
-      ) {
-        self.host = host
-        self.rpcDataMap = rpcDataMap
-      },
-    }))
-    .views(self => wiggleConfigViews(self))
-    .views(self => wiggleModeViews(self))
-    .views(self => treeSidebarRowsConfigViews(self))
-    .views(() => treeSidebarRowHookDefaults<Source>())
-    .views(self => expandedRowViews<Source>(self))
-    .views(self => rowAliasViews<Source>(self))
-    .views(self => rowTreeViews<Source>(self))
-    .views(self => rowOrderViews<Source>(self))
-    .views(self => resolvedRowColorViews<Source>(self))
-    .views(self => editableRowViews<Source>(self))
-    .views(self => clusterableRowViews<Source>(self))
-    .views(self => bandedRowViews<Source>(self))
-    .views(self => bandedSourceViews<Source>(self))
-    .views(self => sourceViews<Source>(self))
-    .views(self => rowNarrowingShowsViews<Source>(self))
-    .views(self => rowFocusLineViews(self))
-    .views(self => rowsTopOffsetViews(self))
-    .views(self => treeSidebarAxisConfigViews(self))
-    .views(self => rowTreeRootViews<Source>(self))
-    .views(self => treeSidebarTreeHookDefaults(self))
-    .views(self => wiggleRowHookViews(self))
-    .views(self => wiggleDomainViews(self))
-    .views(self => wiggleResolveViews(self))
-    .views(self => wiggleStatsViews(self))
-    .views(self => wiggleAutoscaleViews(self))
-    .views(self => wiggleRowsBoxViews(self))
-    .views(self => wiggleRowHeightViews(self))
-    .views(self => wigglePlotViews(self))
-    .views(self => rowsContentHeightViews(self))
-    .views(self => hierarchyViews(self))
-    .views(self => wiggleRowLabelViews(self))
-    .views(self => wiggleSidebarViews(self))
-    .views(self => wiggleAxisViews(self))
-    .views(self => wiggleScoreKeyViews(self))
-    .views(self => wiggleColorScaleViews(self))
-}
-
-const QuantitativeTablesHost = wiggleTablesHost(linearWiggleDisplayConfigSchema)
-const MultiQuantitativeTablesHost = wiggleTablesHost(
-  multiQuantitativeWiggleConfigSchema,
-)
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -188,7 +57,7 @@ export interface WiggleTablesArgs {
    * `MultiQuantitativeTrack` defaults to a row per source and no min-max
    * extent. Unset, a `MultiWiggleAdapter` reads as one.
    */
-  trackType?: 'QuantitativeTrack' | 'MultiQuantitativeTrack'
+  trackType?: WiggleTrackType
 }
 
 /**
@@ -219,22 +88,10 @@ export async function wiggleTables(
     regions,
     display = {},
     bpPerPx,
-    trackType = adapterConfig.type === 'MultiWiggleAdapter'
-      ? 'MultiQuantitativeTrack'
-      : 'QuantitativeTrack',
+    trackType = wiggleTrackTypeOf(adapterConfig),
   }: WiggleTablesArgs,
 ) {
-  const model = (
-    trackType === 'MultiQuantitativeTrack'
-      ? MultiQuantitativeTablesHost
-      : QuantitativeTablesHost
-  ).create({
-    configuration: {
-      ...display,
-      type: 'LinearWiggleDisplay',
-      displayId: 'tables',
-    },
-  })
+  const model = createWiggleStaticHost({ trackType, id: 'tables', display })
   const conf = model.configuration
   const fetchInputs = runInAction(() => ({
     resolution: model.resolution,
@@ -262,6 +119,10 @@ export async function wiggleTables(
         end: r.end,
         displayedRegionIndex: i,
       })),
+      trackWidthPx: regions.reduce(
+        (sum, r) => sum + (r.end - r.start) / bpPerPx,
+        0,
+      ),
     },
     new Map(results.entries()),
   )

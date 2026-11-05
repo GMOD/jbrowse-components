@@ -32,7 +32,7 @@ import { isLegendHost } from './legendHost.ts'
 
 import type { AxisHost } from './axisHost.ts'
 import type { HighlightRect } from './highlightHost.ts'
-import type { RegionHost } from './regionHost.ts'
+import type { RegionHost, VisibleRegion } from './regionHost.ts'
 import type { ExportSvgDisplayOptions, ExportTextStyle } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -42,13 +42,13 @@ import type { ThemeOptions } from '@mui/material'
 import type React from 'react'
 
 /**
- * The minimum a display must expose to be exported through {@link
- * renderDisplaySvg}: the terminal-state trio from `SvgExportable` plus the
- * height its box occupies.
+ * What {@link renderDisplaySvgInFrame} reads off a display whose data is in
+ * hand: the box it occupies and whether it drew the too-large note.
  */
-export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
+export interface SvgDisplayBox {
   id: string
   height: number
+  regionTooLarge: boolean
   /**
    * Px the export reserves left of the display for its tree and row labels,
    * measured in the export's text. Absent for a display with no sidebar.
@@ -57,12 +57,33 @@ export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
 }
 
 /**
- * What the shell resolves for the body. `canvasWidth` is the load-bearing one:
- * see {@link renderDisplaySvg}.
+ * The minimum a display must expose to be exported through {@link
+ * renderDisplaySvg}: the terminal-state trio from `SvgExportable` plus the
+ * height its box occupies.
  */
-export interface LgvSvgBodyProps<M> {
+export interface LgvSvgExportable
+  extends SvgExportable, IStateTreeNode, SvgDisplayBox {}
+
+/**
+ * What the shell reads off the view a display is drawn in: its width, its
+ * scroll and the regions on screen. A `RegionHost` is one; so is a static
+ * frame built from a region list and a width, with no view at all.
+ */
+export interface SvgViewFrame {
+  width: number
+  offsetPx: number
+  visibleRegions: VisibleRegion[]
+}
+
+/**
+ * What the shell resolves for the body. `canvasWidth` is the load-bearing one:
+ * see {@link renderDisplaySvg}. `V` is the view the body reads, the containing
+ * `RegionHost` under {@link renderDisplaySvg}; a body that reads no more than
+ * {@link SvgViewFrame} also renders from a static frame.
+ */
+export interface LgvSvgBodyProps<M, V extends SvgViewFrame = RegionHost> {
   model: M
-  view: RegionHost
+  view: V
   height: number
   /**
    * The width the export paints at — `view.width`, deliberately NOT the
@@ -299,7 +320,24 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   Body: React.ComponentType<LgvSvgBodyProps<M>>,
 ): Promise<React.ReactNode> {
   await awaitSvgReady(model)
-  const view = containingHost(model)
+  return renderDisplaySvgInFrame(model, containingHost(model), opts, Body)
+}
+
+/**
+ * {@link renderDisplaySvg} past its readiness wait, with the view handed in
+ * rather than found up the state tree: the shell for a display whose data is
+ * already in hand, an MST display once `awaitSvgReady` resolves or a plain
+ * host a static export built from fetched results and a static frame.
+ */
+export function renderDisplaySvgInFrame<
+  M extends SvgDisplayBox,
+  V extends SvgViewFrame,
+>(
+  model: M,
+  view: V,
+  opts: ExportSvgDisplayOptions | undefined,
+  Body: React.ComponentType<LgvSvgBodyProps<M, V>>,
+) {
   const height = model.height
   const overlays = !opts?.plotOnly
   const sidebarWidth = overlays ? (model.svgSidebarWidth?.(opts) ?? 0) : 0
