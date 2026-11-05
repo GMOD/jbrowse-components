@@ -10,12 +10,17 @@
 // `multiway_synteny_grape_peach_cacao` long before, so the curated position was
 // doing nothing.
 //
+// It also holds the landing page's first two sections to Getting started, then
+// genomes.jbrowse.org: the grant aim is JBrowse on other groups' websites, and
+// the pair had been swapped back three times.
+//
 // Run: `pnpm check-guide-order`.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import {
   GUIDE_ORDER,
+  TUTORIAL_CATEGORIES,
   TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
 } from '../src/lib/guide-categories.ts'
@@ -108,6 +113,18 @@ for (const [dirName, slugs] of Object.entries(GUIDE_ORDER)) {
       )
     }
   }
+}
+
+const LEADING_TUTORIAL_CATEGORIES = ['Getting started', 'genomes.jbrowse.org']
+const leading = TUTORIAL_CATEGORIES.slice(0, LEADING_TUTORIAL_CATEGORIES.length)
+if (leading.join('\n') !== LEADING_TUTORIAL_CATEGORIES.join('\n')) {
+  errors.push(
+    `TUTORIAL_CATEGORIES starts ${JSON.stringify(leading)}; it must start ` +
+      `${JSON.stringify(LEADING_TUTORIAL_CATEGORIES)}. The grant aim is ` +
+      `JBrowse running on other groups' websites, so installing it leads the ` +
+      `tutorials page and genomes.jbrowse.org follows. This is a standing ` +
+      `directive, not a judgement call to revisit.`,
+  )
 }
 
 reportProblems(
