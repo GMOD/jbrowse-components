@@ -7,8 +7,11 @@ import { createBaseTrackConfig } from '../pluggableElementTypes/models/index.ts'
 import {
   ConfigurationSchema,
   hydrateTrackConfig,
+  isConfigurationModel,
   readConfObject,
 } from './index.ts'
+
+import type { TrackConfigNode } from '../pluggableElementTypes/models/index.ts'
 
 function pluginManagerWithFeatureTrack() {
   const pluginManager = new PluginManager()
@@ -44,6 +47,14 @@ function pluginManagerWithFeatureTrack() {
   return pluginManager
 }
 
+function textSearchAdapterOf(conf: TrackConfigNode | undefined) {
+  const textSearching = conf?.textSearching
+  if (!isConfigurationModel(textSearching)) {
+    throw new Error('the track hydrated with no textSearching node')
+  }
+  return readConfObject(textSearching, 'textSearchAdapter')
+}
+
 // products/jbrowse-desktop/src/indexJobsModel.ts used to write a track's
 // post-indexing `textSearching` by mutating the frozen conf object already
 // sitting in `jbrowse.tracks` in place. This pins why that was never visible
@@ -64,9 +75,8 @@ test('mutating a frozen track object in place is invisible to a cached hydration
     textSearchAdapter: { type: 'TrixTextSearchAdapter', uri: 'genes.ix' },
   }
 
-  const rehydrated = hydrateTrackConfig(pluginManager, frozen)!
   expect(
-    readConfObject(rehydrated, ['textSearching', 'textSearchAdapter']),
+    textSearchAdapterOf(hydrateTrackConfig(pluginManager, frozen)),
   ).toBeUndefined()
 })
 
@@ -86,8 +96,7 @@ test('replacing the track object (new identity) is visible to a fresh hydration'
     },
   }
 
-  const rehydrated = hydrateTrackConfig(pluginManager, replaced)!
   expect(
-    readConfObject(rehydrated, ['textSearching', 'textSearchAdapter']),
+    textSearchAdapterOf(hydrateTrackConfig(pluginManager, replaced)),
   ).toMatchObject({ type: 'TrixTextSearchAdapter', uri: 'genes.ix' })
 })

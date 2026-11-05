@@ -1,6 +1,8 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
+import TrackType from '../pluggableElementTypes/TrackType.ts'
+import { createBaseTrackConfig } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import {
   ConfigurationReference,
   ConfigurationSchema,
@@ -21,7 +23,7 @@ import type {
   PluggableConfigNode,
   PluggableConfigSnapshot,
 } from './types.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 
 // Regression guard for the config-read narrowing
 // `scripts/audit-config-read-types.ts` counts. `Equal` is an exact type equality
@@ -472,6 +474,26 @@ describe('a pluggable union slot reads as the member it holds', () => {
         assertType<Equal<typeof raw, any>>()
       }
     }
+    void check
+    expect(true).toBe(true)
+  })
+})
+
+describe('a track schema written inline in new TrackType', () => {
+  it('keeps its identifier literal, so it is a TrackConfigSchema', () => {
+    const check = (pm: PluginManager, stateModel: IAnyModelType) =>
+      new TrackType({
+        name: 'ConfigInlineTrack',
+        stateModel,
+        configSchema: ConfigurationSchema(
+          'ConfigInlineTrack',
+          {},
+          {
+            baseConfiguration: createBaseTrackConfig(pm),
+            explicitIdentifier: 'trackId',
+          },
+        ),
+      })
     void check
     expect(true).toBe(true)
   })

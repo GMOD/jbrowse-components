@@ -1,9 +1,14 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
+import {
+  hydrateTrackConfig,
+  isConfigurationModel,
+  readConfObject,
+} from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { checkAbortSignal, isAbortException } from '../util/aborting.ts'
+import { isObject } from '../util/objectUtils.ts'
 import {
   allSessionTracks,
   canonicalAssemblyNames,
@@ -172,10 +177,13 @@ export default class TextSearchManager {
         const live = isStateTreeNode(track)
           ? track
           : hydrateTrackConfig(this.pluginManager, track)
-        const conf = live?.textSearching.textSearchAdapter as
-          | AnyConfigurationModel
-          | undefined
-        return conf ? [{ conf, trackId: track.trackId }] : []
+        const textSearching = live?.textSearching
+        const conf = isObject(textSearching)
+          ? textSearching.textSearchAdapter
+          : undefined
+        return isConfigurationModel(conf)
+          ? [{ conf, trackId: track.trackId }]
+          : []
       })
   }
 

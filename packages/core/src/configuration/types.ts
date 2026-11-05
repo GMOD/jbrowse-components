@@ -1,3 +1,4 @@
+import type { TrackConfigNode } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import type { FileLocation } from '../util/types/index.ts'
 import type { IsAny } from '../util/types/isAny.ts'
 import type {
@@ -395,13 +396,20 @@ export type ConfigModelForFields<
 export type ConfigModelForSlots<
   SCHEMA extends AnyConfigurationSchemaType,
   SLOTS extends ConfigurationSlotName<SCHEMA>,
+> = Instance<ConfigSchemaForSlots<SCHEMA, SLOTS>>
+
+/**
+ * The schema type of `ConfigModelForSlots`: a field typed with it takes any
+ * schema declaring those slots the same way, a subclass schema included.
+ */
+export type ConfigSchemaForSlots<
+  SCHEMA extends AnyConfigurationSchemaType,
+  SLOTS extends ConfigurationSlotName<SCHEMA>,
 > =
   SCHEMA extends ConfigurationSchemaType<infer DEFINITION, any>
-    ? Instance<
-        ConfigurationSchemaType<
-          Pick<DEFINITION, SLOTS & keyof DEFINITION>,
-          ConfigurationSchemaOptions<undefined, undefined>
-        >
+    ? ConfigurationSchemaType<
+        Pick<DEFINITION, SLOTS & keyof DEFINITION>,
+        ConfigurationSchemaOptions<undefined, undefined>
       >
     : never
 
@@ -455,4 +463,4 @@ export interface TrackConfigEntry {
  * an assembly's sequence track or a track a connection holds. A raw member
  * read works on both, and finds a slot at its default only on the node.
  */
-export type AnyTrackConfig = TrackConfigEntry | AnyConfigurationModel
+export type AnyTrackConfig = TrackConfigEntry | TrackConfigNode

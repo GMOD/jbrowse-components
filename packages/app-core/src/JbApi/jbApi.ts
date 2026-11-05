@@ -860,9 +860,7 @@ function trackEntry(conf: AnyTrackConfig) {
 // Each assembly's own sequence track, which no track list holds: the config
 // keeps it under the assembly as `sequence`, so `jb.getFeatures` on its
 // trackId reads bases while `listTracks` never named it.
-function sequenceTracks(
-  session: AbstractSessionModel,
-): AnyConfigurationModel[] {
+function sequenceTracks(session: AbstractSessionModel) {
   return session.assemblyManager.assemblyList.map(asm => asm.sequence)
 }
 

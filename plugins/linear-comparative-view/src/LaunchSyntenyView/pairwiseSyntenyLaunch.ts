@@ -71,7 +71,7 @@ export function pairwiseSyntenyLaunch({
       LaunchSyntenyViewDialog,
       {
         region,
-        trackId: track.trackId as string,
+        trackId: track.trackId,
         handleClose,
         session: host,
         anchorAssembly,

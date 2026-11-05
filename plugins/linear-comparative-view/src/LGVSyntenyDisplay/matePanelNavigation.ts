@@ -10,7 +10,7 @@ import { hasAlignmentString } from '../syntenyMate.ts'
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AbstractViewModel,
   Feature,
@@ -31,7 +31,7 @@ export interface PanelStack
   // The synteny bands between adjacent panels, each with its own tracks —
   // present on a LinearSyntenyView, absent on a BreakpointSplitView, whose
   // panels are joined by nothing a launch reads.
-  levels?: { tracks: { configuration: AnyConfigurationModel }[] }[]
+  levels?: { tracks: { configuration: TrackConfigModel }[] }[]
   // The follow state is OPTIONAL because only one of the two stacks has it: a
   // LinearSyntenyView can be following, BreakpointSplitView has no such mode.
 }

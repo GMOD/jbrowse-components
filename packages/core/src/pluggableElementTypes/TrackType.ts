@@ -1,13 +1,13 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
 import type DisplayType from './DisplayType.ts'
+import type { TrackConfigSchema } from './models/baseTrackConfig.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class TrackType extends PluggableElementBase {
   stateModel: IAnyModelType
 
-  configSchema: AnyConfigurationSchemaType
+  configSchema: TrackConfigSchema
 
   displayTypes: DisplayType[] = []
 
@@ -15,7 +15,7 @@ export default class TrackType extends PluggableElementBase {
     name: string
     stateModel: IAnyModelType
     displayName?: string
-    configSchema: AnyConfigurationSchemaType
+    configSchema: TrackConfigSchema
     aliases?: string[]
   }) {
     super(stuff)

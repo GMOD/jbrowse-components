@@ -901,7 +901,7 @@ export function stateModelFactory(
       get sessionTracksById(): ReadonlyMap<string, AnyTrackConfig> {
         return new Map(
           allSessionTracks(getSession(self)).map(track => [
-            track.trackId as string,
+            track.trackId,
             track,
           ]),
         )
@@ -3113,7 +3113,7 @@ export function stateModelFactory(
           loc,
           tracks: [
             self.parentTrack.configuration.trackId,
-            ...(genes ? [genes.trackId as string] : []),
+            ...(genes ? [genes.trackId] : []),
           ],
         }).catch((e: unknown) => {
           session.notifyError(`${e}`, e)

@@ -11,8 +11,8 @@ import {
 } from '@jbrowse/synteny-core'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AdapterSessionFreer } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AssemblyHost,
   Region,
@@ -61,7 +61,7 @@ export function makeMateDiscovery({
   // and a config node is not under the session in the state tree (a connection's
   // configs are not even under the config root), so getSession throws there
   session: MateDiscoveryHost
-  track: AnyConfigurationModel
+  track: TrackConfigModel
   region: Region
   // the width the panels open at, which with the region's span is the zoom the
   // tier is resolved against
@@ -84,10 +84,7 @@ export function makeMateDiscovery({
     )
     return withAdapterSession(rpcManager, sessionId, () =>
       rpcManager.call(sessionId, 'SyntenyDiscoverMates', {
-        adapterConfig: readConfObject(track, 'adapter') as Record<
-          string,
-          unknown
-        >,
+        adapterConfig: readConfObject(track, 'adapter'),
         regions: [anchor!],
         trackAssemblyNames,
         anchorAssembly: anchor!.assemblyName,

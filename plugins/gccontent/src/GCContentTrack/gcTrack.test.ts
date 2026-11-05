@@ -217,7 +217,7 @@ test("v4's GC display settings land on the adapter, and a bare sequence adapter 
   expect(readConfObject(conf, ['adapter', 'sequenceAdapter'])).toMatchObject({
     type: 'IndexedFastaAdapter',
   })
-  const [display] = conf.displays
+  const display = conf.displays[0]!
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(readConfObject(display, ['encoding', 'y', 'field'])).toBe('score')
 })

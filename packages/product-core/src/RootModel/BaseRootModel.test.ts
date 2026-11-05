@@ -4,6 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   AdapterType,
   TrackType,
+  createBaseTrackConfig,
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -38,18 +39,21 @@ function makeRootType() {
         },
       }),
   )
-  pluginManager.addTrackType(
-    () =>
-      new TrackType({
-        name: 'ReferenceSequenceTrack',
-        configSchema: ConfigurationSchema(
-          'ReferenceSequenceTrack',
-          {},
-          { explicitlyTyped: true },
-        ),
-        stateModel: types.model('ReferenceSequenceTrack', {}),
-      }),
-  )
+  pluginManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'ReferenceSequenceTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'ReferenceSequenceTrack',
+      configSchema,
+      stateModel: types.model('ReferenceSequenceTrack', {}),
+    })
+  })
   pluginManager.addViewType(
     () =>
       new ViewType({

@@ -116,7 +116,7 @@ function loadTrack(snap: Record<string, unknown>) {
 
 function threeSlots(snap: Record<string, unknown>) {
   const track = loadTrack(snap)
-  const [display] = track.displays
+  const display = track.displays[0]!
   return {
     track,
     slots: {

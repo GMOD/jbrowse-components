@@ -51,21 +51,21 @@ function trackConfig() {
   const pluginManager = new PluginManager()
   pluginManager.addAdapterType(adapter('BedAdapter'))
   pluginManager.addAdapterType(adapter('GraphAdapter', ['getSubgraph']))
-  pluginManager.addTrackType(
-    () =>
-      new TrackType({
-        name: 'FeatureTrack',
-        configSchema: ConfigurationSchema(
-          'FeatureTrack',
-          {},
-          {
-            baseConfiguration: createBaseTrackConfig(pluginManager),
-            explicitIdentifier: 'trackId',
-          },
-        ),
-        stateModel: types.model('FeatureTrack', {}),
-      }),
-  )
+  pluginManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'FeatureTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'FeatureTrack',
+      configSchema,
+      stateModel: types.model('FeatureTrack', {}),
+    })
+  })
   pluginManager.addDisplayType(display('LinearBasicDisplay'))
   pluginManager.addDisplayType(
     display('LinearGraphDisplay', ['getSubgraph'], {

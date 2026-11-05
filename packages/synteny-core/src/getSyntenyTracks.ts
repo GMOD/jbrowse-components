@@ -1,3 +1,4 @@
+import { isObject } from '@jbrowse/core/util'
 import {
   canonicalAssemblyNames,
   getConfAssemblyNamesOrNone,
@@ -39,8 +40,15 @@ export function sameAssemblySet(a: string[], b: string[]) {
 
 const SYNTENY_ADAPTER_CATEGORY = 'Synteny adapters'
 
-function readsSyntenyAdapter(track: AnyTrackConfig) {
-  const adapterType: unknown = track.adapter?.type
+/** What telling a synteny track reads: its type, and a live node's adapter. */
+interface TrackTypeAndAdapter {
+  type: string
+  adapter?: unknown
+}
+
+function readsSyntenyAdapter(track: TrackTypeAndAdapter) {
+  const { adapter } = track
+  const adapterType = isObject(adapter) ? adapter.type : undefined
   if (typeof adapterType !== 'string' || !isStateTreeNode(track)) {
     return false
   }
@@ -57,7 +65,7 @@ function readsSyntenyAdapter(track: AnyTrackConfig) {
  * track over a gbz-base database aligns haplotypes as well as a SyntenyTrack
  * does. No config read, so it can gate the `readConfObject` in every scan below.
  */
-export function isSyntenyTrack(track: AnyTrackConfig) {
+export function isSyntenyTrack(track: TrackTypeAndAdapter) {
   return track.type.includes('Synteny') || readsSyntenyAdapter(track)
 }
 

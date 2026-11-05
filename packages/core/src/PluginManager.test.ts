@@ -6,6 +6,7 @@ import { ConfigurationSchema } from './configuration/index.ts'
 import DisplayType from './pluggableElementTypes/DisplayType.ts'
 import TrackType from './pluggableElementTypes/TrackType.ts'
 import ViewType from './pluggableElementTypes/ViewType.ts'
+import { createBaseTrackConfig } from './pluggableElementTypes/models/index.ts'
 
 import type { AnyReactComponentType } from './util/index.ts'
 
@@ -364,14 +365,21 @@ test('a display naming several track types attaches to each of them', () => {
       }),
   )
   for (const name of ['TrackA', 'TrackB', 'TrackC']) {
-    pm.addTrackType(
-      () =>
-        new TrackType({
-          name,
-          configSchema: ConfigurationSchema(name, {}),
-          stateModel: types.model(name, {}),
-        }),
-    )
+    pm.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        name,
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pm),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name,
+        configSchema,
+        stateModel: types.model(name, {}),
+      })
+    })
   }
   pm.createPluggableElements()
   const displaysOf = (name: string) =>

@@ -74,7 +74,7 @@ test('an unregistered track type drops its own row, not the selector', async () 
   expect(session.tracks.map(t => t.trackId)).toContain('fromMissingPlugin')
 
   expect(
-    model.allTracks.flatMap(g => g.tracks.map(t => t.conf.trackId as string)),
+    model.allTracks.flatMap(g => g.tracks.map(t => t.conf.trackId)),
   ).toEqual(['volMyt1-seq', 'ordinary'])
 })
 

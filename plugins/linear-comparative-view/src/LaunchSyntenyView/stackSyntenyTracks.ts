@@ -1,6 +1,5 @@
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -18,9 +17,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * assembly — or the dialog says it aligns to nothing here, which is also an
  * answer.
  */
-export function launchableTrackConfs(
-  view: LinearGenomeViewModel,
-): AnyConfigurationModel[] {
+export function launchableTrackConfs(view: LinearGenomeViewModel) {
   const stack = containingPanelStack(view)
   return [
     ...view.tracks.map(track => track.configuration),

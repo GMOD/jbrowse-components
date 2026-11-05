@@ -1,19 +1,64 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConfRpcSessionId } from '@jbrowse/core/util/tracks'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { makeMateDiscovery } from './discoverMates.ts'
 
+import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 
-const schema = ConfigurationSchema(
-  'SyntenyTrack',
-  {
-    assemblyNames: { type: 'stringArray', defaultValue: [] },
-    adapter: { type: 'frozen', defaultValue: {} },
-  },
-  { explicitIdentifier: 'trackId', explicitlyTyped: true },
-)
+function syntenyTrackConfigFactory() {
+  const pluginManager = new PluginManager()
+  const adapters: [string, ConfigurationSchemaDefinition][] = [
+    ['PAFAdapter', { uri: { type: 'string', defaultValue: '' } }],
+    [
+      'PairwiseIndexedPAFAdapter',
+      { coarseBpPerPxThreshold: { type: 'number', defaultValue: 0 } },
+    ],
+  ]
+  for (const [name, slots] of adapters) {
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name,
+          configSchema: ConfigurationSchema(name, slots, {
+            explicitlyTyped: true,
+          }),
+          getAdapterClass: () => Promise.reject(new Error('not instantiated')),
+        }),
+    )
+  }
+  pluginManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'SyntenyTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'SyntenyTrack',
+      configSchema,
+      stateModel: types.model('SyntenyTrack', {}),
+    })
+  })
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const TrackConfig = pluginManager.pluggableConfigSchemaType('track')
+  return (snapshot: Record<string, unknown>) =>
+    TrackConfig.create(
+      { type: 'SyntenyTrack', trackId: 't1', ...snapshot },
+      { pluginManager },
+    )
+}
+
+const syntenyTrackConfig = syntenyTrackConfigFactory()
 
 const region: Region = {
   assemblyName: 'volvox',
@@ -59,11 +104,7 @@ function setup({
         ({ vvx: 'volvox', volvox: 'volvox' })[name],
     },
   } as unknown as AbstractSessionModel
-  const track = schema.create({
-    trackId: 't1',
-    assemblyNames,
-    adapter,
-  })
+  const track = syntenyTrackConfig({ assemblyNames, adapter })
   return {
     discover: makeMateDiscovery({
       session,

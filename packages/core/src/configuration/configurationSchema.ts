@@ -37,6 +37,7 @@ import {
 } from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { TrackConfigNode } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import type { FieldPresets } from '../util/colorScale.ts'
 import type { IsAny } from '../util/types/isAny.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
@@ -650,8 +651,10 @@ export function ConfigurationSchema<
   // `const` keeps each slot's literal `type`, which the read types key on
   const DEFINITION extends ConfigurationSchemaDefinition,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
-  EXPLICIT_IDENTIFIER extends string | undefined = undefined,
-  EXPLICITLY_TYPED extends boolean | undefined = undefined,
+  // `const` keeps the identifier's name literal where a contextual type would
+  // widen it, as a schema written inline in `new TrackType({ configSchema })`
+  const EXPLICIT_IDENTIFIER extends string | undefined = undefined,
+  const EXPLICITLY_TYPED extends boolean | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
@@ -711,18 +714,14 @@ function hydrateInto(
 export function hydrateTrackConfig(
   pluginManager: PluginManager,
   config: Record<string, unknown>,
-): AnyConfigurationModel | undefined {
+): TrackConfigNode | undefined {
   const type = config.type
   if (typeof type !== 'string') {
     return undefined
   }
   try {
     const { configSchema } = pluginManager.getTrackType(type)
-    return hydrateInto(
-      pluginManager,
-      configSchema,
-      config,
-    ) as AnyConfigurationModel
+    return hydrateInto(pluginManager, configSchema, config) as TrackConfigNode
   } catch (e) {
     console.error(e)
     return undefined

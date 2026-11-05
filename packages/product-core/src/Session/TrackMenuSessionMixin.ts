@@ -6,10 +6,8 @@ import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
 import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel,
-  AnyTrackConfig,
-} from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
 
@@ -46,7 +44,7 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
         config,
         view,
       }: {
-        config: AnyConfigurationModel
+        config: TrackConfigModel
         view?: TrackActionView
       }): MenuItem[] {
         return [

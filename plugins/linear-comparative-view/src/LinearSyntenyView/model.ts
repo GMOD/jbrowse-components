@@ -905,7 +905,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               i => self.views[i]!.assemblyNames[0] ?? '',
             ),
             session.assemblyManager,
-          ).map(t => t.trackId as string)
+          ).map(t => t.trackId)
           const trackId = connecting.find(id => shown.has(id)) ?? connecting[0]
           if (trackId) {
             self.levels[firstBand]!.launchTrack(trackId).catch((e: unknown) => {

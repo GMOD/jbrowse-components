@@ -706,7 +706,7 @@ test('model selection methods', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  const tracks = model.allTrackConfigurations.map(t => t.trackId as string)
+  const tracks = model.allTrackConfigurations.map(t => t.trackId)
   expect(tracks.length).toBeGreaterThanOrEqual(2)
 
   // initially no selection
@@ -1085,7 +1085,7 @@ test('setTracksSelected updates the selection in shopping-cart mode', () => {
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   setTracksSelected(model, ['fooC', 'barC'], true, true)
-  expect(model.selection.map(s => `${s.trackId}`).toSorted()).toEqual([
+  expect(model.selection.map(s => s.trackId).toSorted()).toEqual([
     'barC',
     'fooC',
   ])
@@ -1094,7 +1094,7 @@ test('setTracksSelected updates the selection in shopping-cart mode', () => {
   expect(model.selection.length).toBe(2)
 
   setTracksSelected(model, ['fooC'], false, true)
-  expect(model.selection.map(s => `${s.trackId}`)).toEqual(['barC'])
+  expect(model.selection.map(s => s.trackId)).toEqual(['barC'])
 
   // view is untouched in shopping-cart mode
   expect(model.shownTrackIds.size).toBe(0)

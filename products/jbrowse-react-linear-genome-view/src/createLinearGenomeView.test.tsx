@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, isUriLocation } from '@jbrowse/core/util'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -18,7 +18,6 @@ import { createLinearGenomeView } from './index.ts'
 import type { LinearGenomeViewController, ViewModel } from './index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { UriLocation } from '@jbrowse/core/util'
 import type { TrackInput } from '@jbrowse/product-core'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -231,11 +230,13 @@ function resolvedUri(session: ViewModel['session'], trackId: string) {
   const { pluginManager } = getEnv(session)
   const conf = session.getTrackById(trackId)
   const snapshot = isStateTreeNode(conf) ? getSnapshot(conf) : conf
-  const { bedGzLocation } = readConfObject(
+  const bedGzLocation = readConfObject(
     hydrateTrackConfig(pluginManager, snapshot as Record<string, unknown>)!,
-    'adapter',
-  ) as { bedGzLocation: UriLocation }
-  return resolveUriLocation(bedGzLocation).uri
+    ['adapter', 'bedGzLocation'],
+  )
+  return isUriLocation(bedGzLocation)
+    ? resolveUriLocation(bedGzLocation).uri
+    : undefined
 }
 
 const pageUrl = (path: string) => new URL(path, document.baseURI).href

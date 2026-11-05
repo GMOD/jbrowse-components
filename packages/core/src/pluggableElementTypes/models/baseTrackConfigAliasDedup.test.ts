@@ -1,7 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../../PluginManager.ts'
-import { ConfigurationSchema } from '../../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '../../configuration/index.ts'
 import DisplayType from '../DisplayType.ts'
 import TrackType from '../TrackType.ts'
 import { createBaseTrackConfig } from './index.ts'
@@ -100,7 +103,7 @@ test('first occurrence wins, preserving the default display', () => {
     { pluginManager },
   )
 
-  const displays = conf.displays as { displayId: string }[]
-  expect(displays).toHaveLength(1)
-  expect(displays[0]!.displayId).toBe('aln2-pileup')
+  expect(conf.displays.map(d => readConfObject(d, 'displayId'))).toEqual([
+    'aln2-pileup',
+  ])
 })

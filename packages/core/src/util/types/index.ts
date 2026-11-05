@@ -12,6 +12,7 @@ import type {
   TrackConfigEntry,
 } from '../../configuration/index.ts'
 import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/models/baseConnectionConfig.ts'
+import type { TrackConfigNode } from '../../pluggableElementTypes/models/baseTrackConfig.ts'
 import type {
   BaseInternetAccountModel,
   BaseTrackConfig,
@@ -155,7 +156,7 @@ export type AnimationMode = 'system' | 'enabled' | 'disabled'
 export interface TrackCatalog {
   tracks: TrackConfigEntry[]
   assemblies: BaseAssemblyConfigModel[]
-  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+  connectionInstances?: { tracks: TrackConfigNode[] }[]
   getTrackById: (id: string) => AnyTrackConfig | undefined
 }
 
@@ -660,7 +661,7 @@ export function isSessionModelWithWidgets(
 export interface ConnectionInstance {
   name: string
   connectionId: string
-  tracks: AnyConfigurationModel[]
+  tracks: TrackConfigNode[]
   configuration: BaseConnectionConfigModel
   // true while the connection is fetching its tracks
   loading: boolean

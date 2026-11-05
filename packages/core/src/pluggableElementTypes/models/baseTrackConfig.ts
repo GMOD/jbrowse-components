@@ -7,6 +7,7 @@ import {
 } from '../../configuration/index.ts'
 import { feedsDisplay } from '../../util/displayChoice.ts'
 import { expandLooseSearchIndex } from '../../util/expandLooseSearchIndex.ts'
+import { isObject } from '../../util/objectUtils.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import {
   liftLegacyRendererConfig,
@@ -14,6 +15,10 @@ import {
 } from './migrateTrackConfig.ts'
 
 import type PluginManager from '../../PluginManager.ts'
+import type {
+  ConfigurationSchemaOptions,
+  ConfigurationSchemaType,
+} from '../../configuration/configurationSchema.ts'
 import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -30,9 +35,9 @@ interface TrackConfigSnapshot {
 /** The capabilities a track's adapter type declares, none for an unknown one. */
 export function adapterCapabilities(
   pluginManager: PluginManager,
-  adapter: TrackConfigSnapshot['adapter'],
+  adapter: unknown,
 ) {
-  const type = adapter?.type
+  const type = isObject(adapter) ? adapter.type : undefined
   return typeof type === 'string' && pluginManager.hasAdapterType(type)
     ? pluginManager.getAdapterType(type).adapterCapabilities
     : []
@@ -43,10 +48,7 @@ export function adapterCapabilities(
  * `adapterCapabilities` entry the display asks for, among those the adapter
  * type declares.
  */
-export function adapterFeeds(
-  pluginManager: PluginManager,
-  adapter: TrackConfigSnapshot['adapter'],
-) {
+export function adapterFeeds(pluginManager: PluginManager, adapter: unknown) {
   return feedsDisplay(adapterCapabilities(pluginManager, adapter))
 }
 
@@ -57,7 +59,7 @@ export function adapterFeeds(
 export function displayTypesFedBy(
   pluginManager: PluginManager,
   trackType: string,
-  adapter: TrackConfigSnapshot['adapter'],
+  adapter: unknown,
 ) {
   return pluginManager
     .getTrackType(trackType)
@@ -337,3 +339,43 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
 export type BaseTrackConfigSchema = ReturnType<typeof createBaseTrackConfig>
 export type BaseTrackConfig = Instance<BaseTrackConfigSchema>
+
+/**
+ * The slots every track schema declares the same way, the base track's and the
+ * reference sequence track's alike. An interface, so a declaration naming a
+ * track config prints this name rather than the base track's whole definition.
+ */
+export interface TrackConfigDefinition extends Pick<
+  BaseTrackDefinition,
+  | 'trackId'
+  | 'type'
+  | 'name'
+  | 'description'
+  | 'adapter'
+  | 'displays'
+  | 'metadata'
+  | 'formatAbout'
+> {}
+
+type BaseTrackDefinition =
+  BaseTrackConfigSchema extends ConfigurationSchemaType<infer DEFINITION, any>
+    ? DEFINITION
+    : never
+
+/** What every track type's schema is, whatever slots it adds. */
+export type TrackConfigSchema = ConfigurationSchemaType<
+  TrackConfigDefinition,
+  ConfigurationSchemaOptions<undefined, undefined>
+>
+
+/** A live track config of any track type. */
+export type TrackConfigModel = Instance<TrackConfigSchema>
+
+/**
+ * A live track config whose other members a raw read reaches as `unknown`, as
+ * it does on a frozen `TrackConfigEntry`. Not `PluggableConfigNode &`: a second
+ * node brand in the intersection widens every slot read back to `any`.
+ */
+export type TrackConfigNode = TrackConfigModel & {
+  readonly [key: string]: unknown
+}

@@ -7,6 +7,7 @@ import {
   FormatDetailsConfigSchemaFactory,
 } from '../configuration/index.ts'
 import TrackType from '../pluggableElementTypes/TrackType.ts'
+import { createBaseTrackConfig } from '../pluggableElementTypes/models/index.ts'
 import { ElementId } from '../util/types/mst.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
 
@@ -20,8 +21,8 @@ import type {
 // part a config author cannot see from either schema on its own.
 //
 // A stub track state model rather than `createBaseTrackModel`: the widget reads
-// exactly `track.type` and `track.configuration`, and the stub still carries
-// the real `formatDetails` schema, which is the thing under test.
+// exactly `track.type` and `track.configuration`, and the track config is the
+// base track's, so its `formatDetails` is the real one under test.
 function setup({
   sessionFormatDetails,
   trackFormatDetails,
@@ -32,11 +33,11 @@ function setup({
   const pluginManager = new PluginManager()
   const trackConfigSchema = ConfigurationSchema(
     'TestTrack',
+    {},
     {
-      name: { type: 'string', defaultValue: '' },
-      formatDetails: FormatDetailsConfigSchemaFactory(),
+      baseConfiguration: createBaseTrackConfig(pluginManager),
+      explicitIdentifier: 'trackId',
     },
-    { explicitIdentifier: 'trackId', explicitlyTyped: true },
   )
   const trackStateModel = types.model('TestTrack', {
     id: ElementId,

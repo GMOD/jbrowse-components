@@ -1,4 +1,5 @@
 import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
+import { isUriLocation } from '@jbrowse/core/util'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -7,7 +8,6 @@ import { createApp } from './createApp.ts'
 import { resolveAssemblies } from './index.ts'
 
 import type { CreateAppOptions } from './createApp.ts'
-import type { UriLocation } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -354,7 +354,7 @@ test('relative uris in config and session resolve against the page for the worke
   const { session } = controller.viewState
   for (const trackId of ['config', 'session']) {
     const conf = session.getTrackById(trackId)
-    const { bedGzLocation } = readConfObject(
+    const bedGzLocation = readConfObject(
       hydrateTrackConfig(
         controller.viewState.pluginManager,
         (isStateTreeNode(conf) ? getSnapshot(conf) : conf) as Record<
@@ -362,11 +362,11 @@ test('relative uris in config and session resolve against the page for the worke
           unknown
         >,
       )!,
-      'adapter',
-    ) as { bedGzLocation: UriLocation }
-    expect(resolveUriLocation(bedGzLocation).uri).toBe(
-      new URL(`data/${trackId}.bed.gz`, document.baseURI).href,
+      ['adapter', 'bedGzLocation'],
     )
+    expect(
+      isUriLocation(bedGzLocation) && resolveUriLocation(bedGzLocation).uri,
+    ).toBe(new URL(`data/${trackId}.bed.gz`, document.baseURI).href)
   }
   controller.destroy()
 })

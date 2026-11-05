@@ -16,21 +16,21 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 // end to end through real config creation.
 function makePluginManager(alignmentsColorSlot = 'baseColor') {
   const pluginManager = new PluginManager()
-  pluginManager.addTrackType(
-    () =>
-      new TrackType({
-        name: 'FeatureTrack',
-        configSchema: ConfigurationSchema(
-          'FeatureTrack',
-          {},
-          {
-            baseConfiguration: createBaseTrackConfig(pluginManager),
-            explicitIdentifier: 'trackId',
-          },
-        ),
-        stateModel: types.model('FeatureTrack', {}),
-      }),
-  )
+  pluginManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'FeatureTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'FeatureTrack',
+      configSchema,
+      stateModel: types.model('FeatureTrack', {}),
+    })
+  })
   const displayType = (name: string, colorSlot: string) =>
     new DisplayType({
       name,

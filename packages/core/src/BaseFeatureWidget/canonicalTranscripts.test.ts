@@ -6,6 +6,7 @@ import {
   ConfigurationSchema,
 } from '../configuration/index.ts'
 import TrackType from '../pluggableElementTypes/TrackType.ts'
+import { createBaseTrackConfig } from '../pluggableElementTypes/models/index.ts'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '../util/isoformRank.ts'
 import { ElementId } from '../util/types/mst.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
@@ -17,7 +18,10 @@ function setup(displays: { ranksIsoforms: boolean }[]) {
   const trackConfigSchema = ConfigurationSchema(
     'TestTrack',
     {},
-    { explicitIdentifier: 'trackId', explicitlyTyped: true },
+    {
+      baseConfiguration: createBaseTrackConfig(pluginManager),
+      explicitIdentifier: 'trackId',
+    },
   )
   const Display = types.model('TestDisplay', {
     ranksIsoforms: types.boolean,

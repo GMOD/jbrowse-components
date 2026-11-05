@@ -5,7 +5,7 @@ import { anchorPanelTracks } from './anchorPanelTracks.ts'
 import { syntenyRegionMenuItems } from './regionLaunchMenuItems.ts'
 
 import type { SyntenyLaunchHost } from './regionLaunchMenuItems.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -35,7 +35,7 @@ export function allAssembliesLaunchItems({
 }: {
   session: SyntenyLaunchHost
   view: LinearGenomeViewModel
-  track: AnyConfigurationModel
+  track: TrackConfigModel
   region: { refName: string; start: number; end: number } | undefined
 }): MenuItem[] {
   const assemblyName = view.assemblyNames[0]

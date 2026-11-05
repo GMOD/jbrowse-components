@@ -24,6 +24,7 @@ export type {
   AnyTrackConfig,
   ConfigModelForFields,
   ConfigModelForSlots,
+  ConfigSchemaForSlots,
   ConfigNodeActions,
   ConfigNodeBrand,
   ConfigNodeProps,

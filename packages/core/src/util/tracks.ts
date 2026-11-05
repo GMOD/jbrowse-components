@@ -69,6 +69,8 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '../configuration/index.ts'
+import type { TrackConfigNode } from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import type { TrackConfigSnapshot } from '../pluggableElementTypes/models/migrateTrackConfig.ts'
 import type { DisplayConfSnapshot } from './displayChoice.ts'
 import type {
   BlobLocation,
@@ -983,7 +985,7 @@ export function viewDisplayNames(
 export function viewCanDisplayTrack(
   pluginManager: PluginManager,
   viewDisplays: Set<string>,
-  track: { type: string; adapter?: { type?: unknown } },
+  track: { type: string; adapter?: unknown },
 ) {
   if (!pluginManager.trackTypes.has(track.type)) {
     return false
@@ -1074,9 +1076,7 @@ function refSeqTrackConf(
 ) {
   const { assemblyManager } = getSession(view)
   const { pluginManager } = getEnv(view)
-  const conf = assemblyManager.get(assemblyName)?.configuration?.sequence as
-    | AnyConfigurationModel
-    | undefined
+  const conf = assemblyManager.get(assemblyName)?.configuration?.sequence
   // the same display-compatibility question filterTracks asks of every other
   // track, so a view that cannot draw a sequence is not offered one
   return conf &&
@@ -1240,7 +1240,7 @@ function resolveTrackDisplayChoice(
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
 
-  const confSnapshot = structuredClone(
+  const confSnapshot: TrackConfigSnapshot = structuredClone(
     isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
   )
   // `& { type: string }` because `rawConf` unions a live node with a loose
@@ -1650,7 +1650,7 @@ export async function launchToggleTrackGeneric(
  */
 export function allSessionTracks(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+  connectionInstances?: { tracks: TrackConfigNode[] }[]
 }): AnyTrackConfig[] {
   const connectionTracks = (session.connectionInstances ?? []).flatMap(
     conn => conn.tracks,
@@ -1671,7 +1671,7 @@ export function trackCatalogEntry(
   session: { assemblies: BaseAssemblyConfigModel[] },
 ) {
   return {
-    trackId: conf.trackId as string,
+    trackId: conf.trackId,
     name: getTrackName(conf, session),
     category: (conf.category as string[] | undefined) ?? [],
     description: (conf.description as string | undefined) ?? '',
@@ -1684,7 +1684,7 @@ export function trackCatalogEntry(
  */
 export function trackCatalog(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+  connectionInstances?: { tracks: TrackConfigNode[] }[]
   assemblies: BaseAssemblyConfigModel[]
 }) {
   return allSessionTracks(session).map(conf => trackCatalogEntry(conf, session))
@@ -1700,7 +1700,7 @@ export function trackCatalog(session: {
 export function annotationTrackIds(
   session: {
     tracks: TrackConfigEntry[]
-    connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+    connectionInstances?: { tracks: TrackConfigNode[] }[]
     assemblyManager: AssemblyNameResolver
   },
   assemblyName: string,

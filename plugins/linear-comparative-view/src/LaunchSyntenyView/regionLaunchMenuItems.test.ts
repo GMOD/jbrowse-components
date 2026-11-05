@@ -1,4 +1,8 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   syntenyRegionMenuItems,
@@ -6,7 +10,7 @@ import {
   widestRegion,
 } from './regionLaunchMenuItems.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AbstractSessionModel,
   AbstractViewModel,
@@ -17,33 +21,46 @@ const sourceView = { width: 800 } as AbstractViewModel
 
 // Real config models rather than stubs with a mocked readConfObject: the
 // discovery reads `type`, `trackId` and `assemblyNames` off them, which is
-// exactly what a fake would have to reimplement.
-const schema = ConfigurationSchema(
-  'SyntenyTrack',
-  {
-    name: { type: 'string', defaultValue: '' },
-    assemblyNames: { type: 'stringArray', defaultValue: [] },
-  },
-  { explicitIdentifier: 'trackId', explicitlyTyped: true },
-)
+// exactly what a fake would have to reimplement. A view has more than synteny
+// tracks open, and every one of them now reaches the discovery — so the type
+// gate is part of what is under test here.
+function trackConfigFactory() {
+  const pluginManager = new PluginManager()
+  for (const name of ['SyntenyTrack', 'AlignmentsTrack']) {
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        name,
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name,
+        configSchema,
+        stateModel: types.model(name, {}),
+      })
+    })
+  }
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const TrackConfig = pluginManager.pluggableConfigSchemaType('track')
+  return (type: string, trackId: string, assemblyNames: string[]) =>
+    TrackConfig.create(
+      { type, trackId, name: trackId, assemblyNames },
+      { pluginManager },
+    )
+}
 
-// A view has more than synteny tracks open, and every one of them now reaches
-// the discovery — so the type gate is part of what is under test here.
-const alignmentsSchema = ConfigurationSchema(
-  'AlignmentsTrack',
-  {
-    name: { type: 'string', defaultValue: '' },
-    assemblyNames: { type: 'stringArray', defaultValue: [] },
-  },
-  { explicitIdentifier: 'trackId', explicitlyTyped: true },
-)
+const trackConfig = trackConfigFactory()
 
 function track(trackId: string, assemblyNames: string[]) {
-  return schema.create({ trackId, name: trackId, assemblyNames })
+  return trackConfig('SyntenyTrack', trackId, assemblyNames)
 }
 
 function alignmentsTrack(trackId: string, assemblyNames: string[]) {
-  return alignmentsSchema.create({ trackId, name: trackId, assemblyNames })
+  return trackConfig('AlignmentsTrack', trackId, assemblyNames)
 }
 
 function makeSession(tracks: ReturnType<typeof track>[]) {
@@ -71,7 +88,7 @@ const region: Region = {
 
 function menuItems(
   session: AbstractSessionModel,
-  openTracks: AnyConfigurationModel[] = [],
+  openTracks: TrackConfigModel[] = [],
 ) {
   return syntenyRegionMenuItems({
     label: 'Launch',

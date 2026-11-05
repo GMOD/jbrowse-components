@@ -2,10 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
-import type {
-  AnyConfigurationModel,
-  TrackConfigEntry,
-} from '@jbrowse/core/configuration'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
 const CATEGORIES: Record<string, string> = {
   PAFAdapter: 'Synteny adapters',
@@ -26,10 +23,7 @@ const TrackConf = types.model({
 })
 
 const track = (type: string, adapterType: string) =>
-  TrackConf.create(
-    { type, adapter: { type: adapterType } },
-    { pluginManager },
-  ) as unknown as AnyConfigurationModel
+  TrackConf.create({ type, adapter: { type: adapterType } }, { pluginManager })
 
 test('a SyntenyTrack is a synteny track', () => {
   expect(isSyntenyTrack(track('SyntenyTrack', 'PAFAdapter'))).toBe(true)

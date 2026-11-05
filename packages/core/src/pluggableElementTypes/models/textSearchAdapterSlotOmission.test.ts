@@ -34,24 +34,30 @@ function trackConfigSchema() {
         }),
     )
   }
-  pluginManager.addTrackType(() => {
-    const configSchema = ConfigurationSchema(
-      'FeatureTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'FeatureTrack',
-      configSchema,
-      stateModel: types.model('FeatureTrack', {}),
-    })
-  })
+  pluginManager.addTrackType(
+    () =>
+      new TrackType({
+        name: 'FeatureTrack',
+        configSchema: featureTrackConfigSchema(pluginManager),
+        stateModel: types.model('FeatureTrack', {}),
+      }),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  return pluginManager.getTrackType('FeatureTrack').configSchema
+  return featureTrackConfigSchema(pluginManager)
+}
+
+// Rebuilt rather than read back off the track type, whose `configSchema`
+// declares only the slots every track shares, not `textSearching`.
+function featureTrackConfigSchema(pluginManager: PluginManager) {
+  return ConfigurationSchema(
+    'FeatureTrack',
+    {},
+    {
+      baseConfiguration: createBaseTrackConfig(pluginManager),
+      explicitIdentifier: 'trackId',
+    },
+  )
 }
 
 test('a track with no textSearching configured reads textSearchAdapter as undefined', () => {

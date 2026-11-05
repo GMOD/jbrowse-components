@@ -34,6 +34,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import {
+  getTrackName,
   hideTrackGeneric,
   launchToggleTrackGeneric,
   launchTrackGeneric,
@@ -173,6 +174,14 @@ export type SearchPickerState = SearchHits
 
 export type { PaddingSpan } from './util.ts'
 
+function trackNameOf(
+  session: ReturnType<typeof getSession>,
+  trackId: string | undefined,
+) {
+  const conf = trackId ? session.getTrackById(trackId) : undefined
+  return conf ? getTrackName(conf, session) : ''
+}
+
 function searchHitsOf(
   model: LinearGenomeViewModel,
   results: BaseResult[],
@@ -198,7 +207,7 @@ function searchHitsOf(
           assembly && location
             ? canonicalLocString(location, assembly)
             : location,
-        trackName: trackId ? (session.getTrackById(trackId)?.name ?? '') : '',
+        trackName: trackNameOf(session, trackId),
       }
     }),
     pick: async id => {

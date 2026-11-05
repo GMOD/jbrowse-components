@@ -1,6 +1,6 @@
 import { isSyntenyTrack } from '@jbrowse/synteny-core'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // The shape read off a launching view's open tracks — a structural type rather
@@ -8,7 +8,7 @@ import type { TrackInit } from '@jbrowse/core/util/tracks'
 // so both launch paths (the per-alignment right-click and the region rubberband)
 // can call it without agreeing on a view type.
 export interface SourceViewTrack {
-  configuration: AnyConfigurationModel
+  configuration: TrackConfigModel
   displays: { type: string }[]
 }
 

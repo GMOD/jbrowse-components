@@ -9,7 +9,7 @@ import { makeMateDiscovery } from './discoverMates.ts'
 
 import type { LaunchableTrack } from './LaunchSyntenyViewForRegionDialog.tsx'
 import type { MateDiscovery, MateDiscoveryHost } from './discoverMates.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractViewContainer,
@@ -66,8 +66,8 @@ const LaunchSyntenyViewForRegionDialog = lazy(
 function launchableTracks(
   session: AssemblyHost & TrackCatalog,
   assemblyName: string,
-  openTracks: AnyConfigurationModel[],
-): (LaunchableTrack & { conf: AnyConfigurationModel })[] {
+  openTracks: TrackConfigModel[],
+): (LaunchableTrack & { conf: TrackConfigModel })[] {
   return getSyntenyTracks(
     openTracks,
     [assemblyName],
@@ -138,7 +138,7 @@ export function syntenyRegionMenuItems({
   region: Region | undefined
   session: SyntenyLaunchHost
   // the launching view's open track configs, which are the datasets on offer
-  openTracks: AnyConfigurationModel[]
+  openTracks: TrackConfigModel[]
   // the launching view's own tracks, offered to the panel that opens on its
   // assembly (the region's). Resolved by the caller, which has the view
   anchorTracks: TrackInit[]

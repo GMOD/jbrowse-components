@@ -1,36 +1,63 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
+import PluginManager from '../PluginManager.ts'
+import { ConfigurationSchema } from '../configuration/index.ts'
+import TrackType from '../pluggableElementTypes/TrackType.ts'
+import { createBaseTrackConfig } from '../pluggableElementTypes/models/index.ts'
 import { allSessionTracks } from './tracks.ts'
 
-import type {
-  AnyConfigurationModel,
-  TrackConfigEntry,
-} from '../configuration/index.ts'
+import type { TrackConfigEntry } from '../configuration/index.ts'
 
 const track = (trackId: string): TrackConfigEntry => ({
   trackId,
   type: 'FeatureTrack',
 })
-const connectionTrack = (trackId: string) =>
-  track(trackId) as unknown as AnyConfigurationModel
+
+function connectionTrackFactory() {
+  const pluginManager = new PluginManager()
+  pluginManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'FeatureTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'FeatureTrack',
+      configSchema,
+      stateModel: types.model('FeatureTrack', {}),
+    })
+  })
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const TrackConfig = pluginManager.pluggableConfigSchemaType('track')
+  return (trackId: string) =>
+    TrackConfig.create({ trackId, type: 'FeatureTrack' }, { pluginManager })
+}
+
+const connectionTrack = connectionTrackFactory()
 
 test('connection tracks are included, so a hub track is visible', () => {
+  const b = connectionTrack('b')
   expect(
     allSessionTracks({
       tracks: [track('a')],
-      connectionInstances: [{ tracks: [connectionTrack('b')] }],
+      connectionInstances: [{ tracks: [b] }],
     }),
-  ).toEqual([track('a'), track('b')])
+  ).toEqual([track('a'), b])
 })
 
 test('every connection contributes', () => {
+  const b = connectionTrack('b')
+  const c = connectionTrack('c')
   expect(
     allSessionTracks({
       tracks: [],
-      connectionInstances: [
-        { tracks: [connectionTrack('b')] },
-        { tracks: [connectionTrack('c')] },
-      ],
+      connectionInstances: [{ tracks: [b] }, { tracks: [c] }],
     }),
-  ).toEqual([track('b'), track('c')])
+  ).toEqual([b, c])
 })
 
 test('session tracks are not doubled', () => {
