@@ -1101,7 +1101,7 @@ check("a cell past --max-copies is a gene family and contributes nothing",
 fam = {"orthogroups": 0, "expanded": 0, "families": 0}
 og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3, fam)
 og.orthogroup_rows(["Os1", "Z1", "Sb1"], "expand", 2, [None] * 3, fam)
-og.orthogroup_rows(["Os1", "Z1, Z2", "Sb1"], "expand", 2, [None, set(), None], fam)
+og.orthogroup_rows(["Os1", "Z1, Z2", "Sb1"], "expand", 2, [None, {}, None], fam)
 check("a cell --max-copies emptied is counted, one the BED emptied is not",
       fam["families"], 1)
 # a row with one gene names no link, and would draw nothing while inflating the
@@ -1111,8 +1111,17 @@ check("an orthogroup present in one genome only is dropped",
 # OrthoFinder ids come from the protein FASTA headers; ids the BED cannot
 # resolve draw nothing, so they are dropped here where the count is reported
 check("a gene the BED does not have is not counted as an answer",
-      og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b"}, None]),
+      og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b": "Zm01b"}, None]),
       [["Os01g1", "Zm01b", "Sb01g"]])
+# OrthoFinder writes `E(spl)m2-BFM` as `E_spl_m2-BFM`; the table has to carry
+# the BED's spelling, which is what MCScanBlocksAdapter looks the gene up by
+spl = os.path.join(tempfile.mkdtemp(), "spl.bed")
+with open(spl, "w") as fh:
+    fh.write("3R\t100\t200\tE(spl)m2-BFM\n3R\t300\t400\tmpka1;1\n")
+check("an id OrthoFinder rewrote resolves to the BED's own spelling",
+      og.orthogroup_rows(["E_spl_m2-BFM", "mpka1_1"], "expand", 4,
+                         [og.read_bed_names(spl)] * 2),
+      [["E(spl)m2-BFM", "mpka1;1"]])
 # MCScanX_h picks the collinear copy from gene order, so it gets every pairing,
 # not the index-paired rows that already chose one
 check("--homology writes the product of two duplicated cells",
@@ -1121,7 +1130,7 @@ check("--homology writes the product of two duplicated cells",
        (1, 2): [("B1", "C1"), ("B2", "C1")]})
 check("--homology drops a gene family and an unplaced gene as the table does",
       og.homology_pairs(["A1", "B1, B2, B3", "C1, C2"], [(0, 1), (0, 2)], 2,
-                        [None, None, {"C2"}]),
+                        [None, None, {"C2": "C2"}]),
       {(0, 1): [], (0, 2): [("A1", "C2")]})
 # symbols_to_blocks.py: the same three modes over a symbol join, where a column's
 # copies are the genes sharing one symbol. Expanding them is what draws a
@@ -1189,7 +1198,7 @@ with open(minimal, "w") as fh:
     fh.write("# a comment\ntrack name=genes\nchr1\t100\t200\tOs01g1\n"
              "chr1\t300\t400\tOs01g2\t0\t+\n")
 check("read_bed_names reads a four-column BED, and skips its header lines",
-      og.read_bed_names(minimal), {"Os01g1", "Os01g2"})
+      og.read_bed_names(minimal), {"Os01g1": "Os01g1", "Os01g2": "Os01g2"})
 # The share is what makes "near zero" readable; a bare count is not, and an
 # unchecked column must not print as one that resolved.
 placed, dead = og.report_columns(

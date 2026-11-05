@@ -43,6 +43,12 @@ result, so it exits non-zero instead of writing a table with one dead genome in
 it. The share needs both numbers to be readable, which is why a column with no
 `--bed` is reported as unchecked rather than as a count that looks the same.
 
+OrthoFinder writes a gene id with `_` for each character a tree or a table
+cannot hold (its `clean_name`: 3.x replaces whitespace and `: ; ( ) , [ ] = ' "`,
+2.5 only `: , ( )`), so NCBI's `E(spl)m2-BFM` is `E_spl_m2-BFM` in its
+results. Each id is looked up as written and as OrthoFinder spells it, and the
+table carries the BED's own spelling, which is the one the adapter reads.
+
 Requires: python3 only.
 Usage:
   python3 orthogroups_to_blocks.py Orthogroups.tsv -o rice.blocks \\
@@ -53,6 +59,7 @@ Usage:
 import argparse
 import gzip
 import os
+import re
 import sys
 
 
@@ -67,20 +74,25 @@ def parse_kv(values, what):
     return dict(v.split("=", 1) for v in values)
 
 
+ORTHOFINDER_UNSAFE = re.compile(r"""[\s\x00-\x1f\x7f-\x9f:;(),\[\]='"]""")
+
+
 def read_bed_names(path):
-    """Column 4 of a BED, the field the table's ids have to match.
+    """{id as OrthoFinder may write it: column 4 of the BED}.
 
     Stripped, and the line ending taken off before the split: only the last
     field carries the newline, so a BED with the four required columns and no
     score/strand put it on the name and resolved every id in that column to
     nothing, which is the exact failure this check exists to report."""
-    names = set()
+    names = {}
     with opener(path) as fh:
         for line in fh:
             if not line.startswith(("#", "track ", "browser ")):
                 fields = line.rstrip("\r\n").split("\t")
                 if len(fields) > 3 and fields[3].strip():
-                    names.add(fields[3].strip())
+                    name = fields[3].strip()
+                    names.setdefault(ORTHOFINDER_UNSAFE.sub("_", name), name)
+                    names[name] = name
     return names
 
 
@@ -104,7 +116,7 @@ def cell_genes(cell, known, max_copies):
     counting: the per-column placement share below already reports that one."""
     genes = [g.strip() for g in cell.split(",") if g.strip()]
     if known is not None:
-        genes = [g for g in genes if g in known]
+        genes = [known[g] for g in genes if g in known]
     return ([], True) if len(genes) > max_copies else (genes, False)
 
 
