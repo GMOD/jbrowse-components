@@ -1,32 +1,22 @@
-A tutorial shows a reader how to do a task in JBrowse. A section that only
-convinces us, the authors, that a result is right gets cut.
+A tutorial shows a reader how to do a task in JBrowse. Cut a section that only
+convinces us, the authors, that a result is right.
 
-Show rather than tell: informative figures, minimal prose. No em-dashes anywhere
-in tutorials, code comments included. Captions, numbers and voice:
-`website/CLAUDE.md`; page mechanics: `website/docs/CLAUDE.md`.
-
-The `check-*` scripts under `website/scripts/` (figure-actions,
-unshown-settings, unshown-tools, prereq-tools, data-sources, script-commands,
-menu-paths, page-endings, tutorial-openings, and `check-build-scripts.py`) hold
-most page mechanics and print their rule when they fail; `--list` prints a
-ratchet's backlog. What follows is what no check sees.
+Show rather than tell: informative figures, minimal prose. No em-dashes in
+tutorials, code comments included.
 
 ## Shape
 
 - **A tutorial is one continuous line of work.** Each step consumes what the
-  step before produced. If the sections could be reordered without breaking, the
+  step before produced; if the sections could be reordered without breaking, the
   page is a user guide. The spine can be a task (`display_settings`,
   `cli_desktop`) rather than a dataset.
-- **A figure follows an instruction, and an instruction gets a figure**: the
-  window to type, the menu path, the config or the command, then the picture of
-  its result.
-- Most pages spend 150 to 250 lines on preparation before the first figure, on
-  purpose. "Put the payoff figure first" is a closed question.
-- One dataset is the default. A second belongs only where the first raised the
+- Keep the preparation before the first figure (150 to 250 lines on most pages);
+  payoff-first was declined.
+- One dataset by default. A second belongs only where the first raised the
   question it answers.
-- A closing check against the raw data earns its place only as a JBrowse step a
-  reader would repeat on their own data, such as opening the reads under a call.
-  Cut a script that re-derives the figure's claim from the file.
+- A closing check against the raw data stays only as a JBrowse step a reader
+  would repeat on their own data, such as opening the reads under a call. Cut a
+  script that re-derives the figure's claim from the file.
 - `pangenome_ecoli` and `pangenome_cactus` take the same strains through the
   same sections on purpose, so a reader can compare the two graph builders.
 
@@ -39,16 +29,14 @@ ratchet's backlog. What follows is what no check sees.
   unargued, not terse.
 - **The opening paragraph reads to someone who has never used JBrowse**: what
   the page looks at and why, in the reader's terms, before any JBrowse noun or
-  display class name. The opening names the task and lists the loci.
+  display class name. It names the task and lists the loci.
   `pangenome_hprc_haplotypes` is the page to copy.
-- **The opening ends in a list of what we do**, which `check-tutorial-openings`
-  holds to a lead-in ending "We:" and three to five bullets. Write each bullet
-  as one stage of the page, in page order, opening with a verb. A bullet says
-  what JBrowse does (load a file as a track type, color, group, facet, open a
-  view); the biology goes in the lead-in. It names a step or a locus, not a
-  finding. A sprawling page needs this most.
+- The opening's lead-in ends "We:"; each bullet is one stage of the page, in
+  page order, opening with a verb that says what JBrowse does (load a file as a
+  track type, color, group, facet, open a view). The biology goes in the
+  lead-in; a bullet names a step or a locus, not a finding.
 - Readers skip prose and copy commands, so cut content rather than compress it,
-  but never cut a route a reader can run on their own data.
+  but keep every route a reader can run on their own data.
 - Say each thing once. Prose beside a figure adds what the caption lacks; prose
   beside a fence adds what its keys and comments lack; a flag's explanation goes
   in the comment in its fence. A sentence naming another tutorial needs a step
@@ -58,12 +46,11 @@ ratchet's backlog. What follows is what no check sees.
 
 - A gene symbol is `_italic_` in prose and bare in captions, headings, titles
   and link labels; a protein product is roman. `mappability_qc` is the page to
-  copy. oxfmt picks the emphasis marker.
+  copy.
 - A menu path in prose spells the app's label, with the ellipsis a row that
   opens a dialog carries: `**Color by → Tag...**`. A caption keeps the path
-  bare.
-- `Add track` (FAB menu) and `Add track...` (track hamburger) are both real
-  labels.
+  bare. `Add track` (FAB menu) and `Add track...` (track hamburger) are both
+  real labels.
 
 ## Commands
 
@@ -71,62 +58,55 @@ ratchet's backlog. What follows is what no check sees.
   form a reader runs on their own data: placeholder filenames, one command per
   fence, one line above it saying what it produces. Anything naming an
   accession, sample list or locus belongs in `scripts/build_*.sh` under
-  `## Reproduce it end to end`.
-- The reader has not cloned the repo: Reproduce curls the script and runs the
-  copy.
-- **Never hand over a script bare.** Above the `curl … | bash` fence, a numbered
-  list of three or four steps describes what the script does and why, in the
-  reader's terms, with no commands.
-- `<!-- from: scripts/build_<topic>.sh -->` goes over a fence showing a real
-  command the script runs, never over the `curl … | bash` fence, where it
-  asserts nothing. Leave it off a fence the script only approximates. A `python`
-  or `r` fence takes it too; `dtu` is the example.
+  `## Reproduce it end to end`, which curls the script and runs the copy (the
+  reader has not cloned the repo).
+- **Above the `curl … | bash` fence, a numbered list** of three or four steps
+  says what the script does and why, in the reader's terms, with no commands.
+- Put `<!-- from: scripts/build_<topic>.sh -->` over a fence showing a real
+  command the script runs (`python` and `r` fences too; `dtu` is the example).
+  Leave it off the `curl … | bash` fence and off a fence the script only
+  approximates.
 - Explain flags in comments inside the fence, including why each is there
   (`seed=42`: FLARE samples randomly, so runs differ unless the seed is pinned).
-- **`gzip -dc`, never `zcat`**: macOS `zcat` wants a `.Z` and writes an empty
-  file. Where a command's speed depends on GNU or BSD tools, say so.
+- **Write `gzip -dc`, not `zcat`**: macOS `zcat` wants a `.Z` and writes an
+  empty file. Where a command's speed depends on GNU or BSD tools, say so.
 - A display setting the figure depends on goes in the page's track config, not
   only in the script's config patch.
 
 ## Page structure
 
 - `## Prerequisites` comes under the opening paragraph: a bulleted list, then
-  the install fence, generated from a
-  `<!-- BEGIN GENERATED TUTORIAL_INSTALL tool,tool -->` marker pair out of
-  `website/scripts/api-docs/tutorialInstall.json` (apt and conda lines, a Linux
-  wget line for binaries apt lacks, plus cargo, pip and npm). A tool with no
+  the install fence from a `<!-- BEGIN GENERATED TUTORIAL_INSTALL tool,tool -->`
+  marker pair (`website/scripts/api-docs/tutorialInstall.json`). A tool with no
   packaged install stays a bullet with a link. The intro gets its own heading.
-- **The data section gives the reader instructions.** Its heading is
-  `## Download the data` when the reader fetches files by hand, with a `bash`
-  fence of `wget -c` lines, one comment per file giving its size, and otherwise
+- **The data section gives the reader instructions.** Head it
+  `## Download the data` when the reader fetches files by hand (a `bash` fence
+  of `wget -c` lines, one comment per file giving its size), otherwise
   `## The data`, whose second sentence says whether the reader needs the files:
   "Nothing to download" when the track configs read by URL, "You don't need
   these files to follow the page" when every track reads a hosted result, "run
   [the build script] first, or follow the same commands on your own files" when
-  the tracks read local files it writes, and the mixed form when both occur.
-  Never "nothing to download by hand", which hides all three. The data is an
-  example, so a page that hosts its results also names the step that takes the
-  reader's own files. State the cost (size, time, memory) when it passes about 1
-  GB or ten minutes, and mark a file the script streams "streamed and never
-  downloaded". It lists only what the page's commands or script download, as one
-  two-column table: **What it is** (what reads it, in the reader's terms) and
-  **File** (a link whose text is the file name). A source read by URL goes in a
-  `<details>` summarised "Read by URL (no download needed)"; our own hub configs
-  and rehosted results are cut. Past ten rows, split into labelled groups;
-  `check-data-sources` holds the shape (two intro paragraphs at most, nothing
-  after the last table).
+  the tracks read local files it writes, and the mixed form when both occur. A
+  page that hosts its results also names the step that takes the reader's own
+  files. State the cost (size, time, memory) past about 1 GB or ten minutes, and
+  mark a file the script streams "streamed and never downloaded".
+- The data table lists only what the page's commands or script download, in two
+  columns: **What it is** (what reads it, in the reader's terms) and **File** (a
+  link whose text is the file name). A source read by URL goes in a `<details>`
+  summarised "Read by URL (no download needed)"; cut our own hub configs and
+  rehosted results.
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
-- A Reproduce section does not mean the script fetches the data. Read how the
-  script gets each file before writing the sentence.
-- A new page goes in `TUTORIAL_ORDER` in `src/lib/guide-categories.ts`.
+- Read how the script gets each file before writing that the data is fetched: a
+  Reproduce section does not mean the script fetches it.
+- Add a new page to `TUTORIAL_ORDER` in `src/lib/guide-categories.ts`; an
+  unlisted one falls to the end.
 - A `sidebar_label` leads with the word its kin lead with:
   `Synteny (MCScan anchors)`.
-- **A See also entry is a bare link**, with no qualifier and no kind prefix; the
-  build adds the prefix.
+- **A See also entry is a bare link** with no qualifier.
 - No convenience pitches ("nothing to install"). A genomes.jbrowse.org link is
   welcome where the story uses it.
-- If you move a figure off a page, move its card's crop source in
-  `gen-tutorial-thumbs.ts` too; no check warns you.
+- Move a figure off a page and you move its card's crop source in
+  `gen-tutorial-thumbs.ts` too; nothing warns you.
 
 ## Before adding a locus
 

@@ -29,7 +29,8 @@ awaiting a verdict; delete it when the clip lands.
 `recordDemoTui.mjs` writes `clip.mp4` and `clip.jpg` with the static stretches
 collapsed; `encode.mjs` / `encodeBrowser.mjs` do that for the other harnesses.
 `readTranscript.mjs <outdir>/transcript.json` prints what each turn did. A
-finished clip reaches the media store as in `website/CLAUDE.md` § Videos.
+finished clip reaches the media store as in `website/CLAUDE.md` § Figure and
+media store.
 
 ## The TUI
 

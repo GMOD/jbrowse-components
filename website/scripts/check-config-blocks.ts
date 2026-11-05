@@ -1,5 +1,4 @@
-// Enforce how the hand-written docs present a JSON config block, the convention
-// in website/docs/CLAUDE.md:
+// Enforce how the hand-written docs present a JSON config block:
 //
 //   * a complete track config is tagged ```json addtrack, a complete assembly
 //     config ```json addassembly, and a lone `defaultSession` ```json session,
@@ -245,9 +244,7 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
 }
 
 if (problems.length) {
-  problems.unshift(
-    `Found JSON config blocks that break the docs convention (see website/docs/CLAUDE.md):\n`,
-  )
+  problems.unshift(`Found JSON config blocks that break the docs convention:\n`)
 }
 reportProblems(
   problems,
