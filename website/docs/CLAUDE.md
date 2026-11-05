@@ -28,6 +28,9 @@
   retargets it. An addtrack fence takes `loc=` (no spaces) from a locus the page
   already states. **Judge what the session shows**; `check-session-urls` passing
   says only that it opens.
+- **Show what a command prints in a `text output` fence directly under it**,
+  pasted from a real run; it joins the command's box. A file the command writes
+  stays a plain `text` fence.
 - Write jexl the short way: `feature.rank`, not `get(feature,'rank')`.
 - `user_guides/` drives the UI; `config_guides/` shows the JSON.
 
