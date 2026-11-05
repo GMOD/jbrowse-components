@@ -35,7 +35,7 @@
 #     (`PifFile`, `getSamplesFromAdapter`): its `adapter.getConf` has no schema.
 #     Narrowing it means passing the slot values in, not typing the base.
 #
-# 32 unchecked in source, 146 in tests,
+# 25 unchecked in source, 146 in tests,
 # of 1665 total config accessor calls. The gate counts source only.
 # A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
 # adapter's or model's own accessor method, whose slot is its first argument.
@@ -98,8 +98,6 @@ packages/core/src/data_adapters/keepAdapters.test.ts  (2)  [test]
   54	adapter.getConf('path')
 packages/core/src/pluggableElementTypes/models/baseTrackConfigAliasDedup.test.ts  (1)  [test]
   106	readConfObject('displayId')
-packages/core/src/pluggableElementTypes/models/components/SaveTrackData.tsx  (1)
-  90	getConf('trackId')
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (14)  [test]
   80	readConfObject('type')
   93	readConfObject('color')
@@ -117,12 +115,9 @@ packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.tes
   219	readConfObject('type')
 packages/core/src/TextSearch/TextSearchManager.ts  (1)
   152	readConfObject('assemblyNames')
-packages/core/src/util/tracks.ts  (5)
-  206	readConfObject('assemblyNames')
-  217	readConfObject('name')
-  259	readConfObject('adapter')
-  772	readConfObject('name')
-  1545	readConfObject('adapter')
+packages/core/src/util/tracks.ts  (2)
+  209	readConfObject('assemblyNames')
+  773	readConfObject('name')
 packages/display-kit/src/ColorWritesMixin.ts  (1)
   41	readConfObject('field')
 packages/product-core/src/embedded/EmbeddedSessionThemeMixin.ts  (1)
@@ -134,10 +129,6 @@ packages/product-core/src/Session/Themes.ts  (4)
   252	getConf('theme')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
   130	readConfObject('metadata')
-packages/product-core/src/ui/FileInfoPanel.tsx  (1)
-  23	readConfObject('adapter')
-packages/product-core/src/ui/RefNameInfoDialog.tsx  (1)
-  87	readConfObject('adapter')
 packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
   168	getConf('rowHieght')
 packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
@@ -145,8 +136,6 @@ packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
 packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (2)  [test]
   20	getConf('displayCrossHatche')
   22	getConf('scoreFields')
-plugins/alignments/src/consensus/index.ts  (1)
-  53	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/filterWrites.test.ts  (1)  [test]
   25	getConf('filter')
 plugins/alignments/src/LinearAlignmentsDisplay/menus/presets.test.ts  (2)  [test]
