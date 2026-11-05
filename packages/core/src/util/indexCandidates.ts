@@ -18,7 +18,10 @@ export {
  * Only a URI and a local path have a sibling at all. A Blob or a FileHandle is
  * whatever the user picked out of a file dialog and there is no directory
  * around it to look in, so those get `undefined` — the honest answer, and the
- * reason index detection cannot work from a browser file picker.
+ * reason index detection cannot work from a browser file picker. A URI that
+ * names an internet account is treated the same way: it may be one picked
+ * from a store that addresses files by id (Google Drive), where a name beside
+ * the file's name addresses nothing.
  */
 export function siblingLocation(
   location: FileLocation,
@@ -28,7 +31,7 @@ export function siblingLocation(
     // the separator is kept: a Windows local path uses backslashes and a URI
     // never does, so rebuilding with '/' would corrupt one of them
     path.replace(/[^/\\]*$/, () => fileName)
-  if (location.locationType === 'UriLocation') {
+  if (location.locationType === 'UriLocation' && !location.internetAccountId) {
     return { ...location, uri: replaceLast(location.uri) }
   }
   if (location.locationType === 'LocalPathLocation') {

@@ -53,6 +53,22 @@ describe('siblingLocation', () => {
       ),
     ).toBeUndefined()
   })
+
+  it('has none for a file picked through an internet account', () => {
+    // Google Drive reads only the id out of this link, so the name after it
+    // addresses nothing: a .bai "beside" it fetched the BAM itself, and the
+    // probe reported it found
+    expect(
+      siblingLocation(
+        {
+          uri: 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz012345/reads.bam',
+          locationType: 'UriLocation',
+          internetAccountId: 'googleOAuth',
+        },
+        'reads.bam.bai',
+      ),
+    ).toBeUndefined()
+  })
 })
 
 describe('detectIndexLocation', () => {

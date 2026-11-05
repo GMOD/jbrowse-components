@@ -320,6 +320,18 @@ describe('applyPrimaryFile', () => {
     expect(s.fastaLocation).toBe(fasta)
   })
 
+  test('guesses no index beside a FASTA picked through an internet account', () => {
+    const picked = {
+      uri: 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz012345/hg38.fa.gz',
+      locationType: 'UriLocation' as const,
+      internetAccountId: 'googleOAuth',
+    }
+    const s = applyPrimaryFile(initialFormState(), picked)
+    expect(s.adapterSelection).toBe('BgzipFastaAdapter')
+    expect(isBlank(s.faiLocation)).toBe(true)
+    expect(isBlank(s.gziLocation)).toBe(true)
+  })
+
   test('detects BgzipFastaAdapter for .fa.gz', () => {
     const s = applyPrimaryFile(initialFormState(), fastaGz)
     expect(s.fastaLocation).toBe(fastaGz)

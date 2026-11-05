@@ -182,7 +182,7 @@ export function applyPrimaryFile(
 
 // Prefill conventional .fai/.gzi sidecars sitting next to the chosen FASTA,
 // leaving any field the user already set untouched. Spreading the source
-// location carries over its baseUri/auth so the sidecars use the same access.
+// location carries over its baseUri.
 function guessSidecarLocations(
   state: FormState,
   location: FileLocation,
@@ -206,7 +206,8 @@ function sidecar(
   location: FileLocation,
   ext: string,
 ): FileLocation | undefined {
-  if (isUriLocation(location)) {
+  // a URI picked through an account has no sibling (see siblingLocation)
+  if (isUriLocation(location) && !location.internetAccountId) {
     return { ...location, uri: `${location.uri}${ext}` }
   }
   if (isLocalPathLocation(location)) {
