@@ -1,6 +1,8 @@
 // Every fenced code block in the docs and blog names a language rehype-shiki
 // can highlight, or `text` for output and plain listings. A bare fence or a
-// misspelled label renders as uncolored text and nothing else notices.
+// misspelled label renders as uncolored text and nothing else notices. A
+// `text output` fence sits directly under the command it shows the output of,
+// or it renders as a plain block.
 // Generated pages (config/, models/) take their fences from plugin JSDoc, so a
 // problem there is fixed in the source.
 //
@@ -13,6 +15,7 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
 import { resolveLang } from '../src/lib/rehype-shiki.ts'
+import { followsCommand, isOutputFence } from '../src/lib/remark-code-output.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docsDir, websiteDir } from './paths.ts'
 
@@ -22,16 +25,29 @@ const problems = [...docFiles(docsDir), ...docFiles(join(websiteDir, 'blog'))]
   .sort()
   .flatMap(file => {
     const found: string[] = []
-    visit(parser.parse(readFileSync(file, 'utf8')), 'code', node => {
-      const where = `${relative(websiteDir, file)}:${node.position?.start.line}`
-      if (!node.lang) {
-        found.push(
-          `${where}: fence has no language (use \`text\` for plain output)`,
-        )
-      } else if (node.lang !== 'text' && !resolveLang(node.lang)) {
-        found.push(`${where}: shiki has no grammar for \`${node.lang}\``)
-      }
-    })
+    visit(
+      parser.parse(readFileSync(file, 'utf8')),
+      'code',
+      (node, i, parent) => {
+        const where = `${relative(websiteDir, file)}:${node.position?.start.line}`
+        if (isOutputFence(node) && node.lang !== 'text') {
+          found.push(`${where}: an \`output\` fence is \`text output\``)
+        } else if (
+          isOutputFence(node) &&
+          !followsCommand(parent?.children[(i ?? 0) - 1])
+        ) {
+          found.push(
+            `${where}: an \`output\` fence goes directly under the fence it is the output of`,
+          )
+        } else if (!node.lang) {
+          found.push(
+            `${where}: fence has no language (use \`text\` for plain output)`,
+          )
+        } else if (node.lang !== 'text' && !resolveLang(node.lang)) {
+          found.push(`${where}: shiki has no grammar for \`${node.lang}\``)
+        }
+      },
+    )
     return found
   })
 

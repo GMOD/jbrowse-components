@@ -16,6 +16,7 @@ import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkAutolinkTypes from './remark-autolink-types.ts'
 import remarkCodeBase from './remark-code-base.ts'
+import remarkCodeOutput from './remark-code-output.ts'
 import remarkConfigCliTabs from './remark-config-cli-tabs.ts'
 import remarkCustomHeadingId from './remark-custom-heading-id.ts'
 import remarkDocCards from './remark-doc-cards.ts'
@@ -58,6 +59,7 @@ export function createRenderMarkdown({
     .use(remarkDocCards)
     .use(remarkSpecExample)
     .use(remarkCodeBase)
+    .use(remarkCodeOutput)
     .use(remarkAutolinkTypes)
     .use(remarkWikiTitle)
     .use(remarkRelatedGuides)

@@ -85,7 +85,7 @@ length:
 grep -e '^##sequence-region' -e 'D_loop' genes.gff3
 ```
 
-```text
+```text output
 ##sequence-region NC_012920.1 1 16569
 NC_012920.1	RefSeq	D_loop	16024	17145	.	-	.	ID=id-NC_012920.1:1..16569;gbkey=D-loop
 ```

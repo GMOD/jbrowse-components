@@ -103,8 +103,21 @@ lists a file's tiers from its index without downloading the alignment:
 ```bash
 # the #pif header, if the file was built recently enough to have one
 tabix -H https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | awk 'NR==1'
+```
+
+```text output
+#pif	version:i:2	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
+```
+
+<!-- from: scripts/build_hg38_liftover_multiway.sh -->
+
+```bash
 # how many coarse-tier sequences the index holds; zero means one tier
 tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep -c '^[TQ]'
+```
+
+```text output
+922
 ```
 
 ## Composing the chains into one track

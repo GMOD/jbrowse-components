@@ -35,12 +35,14 @@
   margin: 1rem 0;
   display: block;
 }
-.prose :global(pre) {
-  background: var(--color-surface);
-  padding: 1rem;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 0.9rem;
+@layer prose {
+  .prose :global(pre) {
+    background: var(--color-surface);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
 }
 .prose :global(code:not(pre code)) {
   font-family: var(--font-mono);

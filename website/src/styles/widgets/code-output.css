@@ -1,0 +1,28 @@
+/* A ```text output fence joined to the command above it into one box.
+   Markup: remark-code-output.ts and rehype-shiki. */
+@layer widget {
+  .code-copywrap:has(+ .code-output) pre {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .code-output {
+    margin-top: 0;
+    border-top: 1px solid var(--color-code-output-rule);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    background: var(--color-code-output-bg);
+    color: var(--color-code-output-text);
+  }
+  .code-output::before {
+    content: 'Output';
+    display: block;
+    margin-bottom: 0.4rem;
+    font-family: var(--font-roboto), sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-code-output-label);
+  }
+}

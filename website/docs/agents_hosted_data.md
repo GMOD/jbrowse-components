@@ -74,7 +74,7 @@ curl -s https://genomes.jbrowse.org/searchIndex.json |
          "\(.[0])\t\(.[1])\t\(.[3])"'
 ```
 
-```text
+```text output
 GCA_002915635.3   axolotl (DD151 2021)             AmbMex60DD
 GCF_040938575.1   axolotl (Mex_15411 2024 refseq)  UKY_AmexF1_1
 GCA_040938575.1   axolotl (Mex_15411 2024 genbank) UKY_AmexF1_1
@@ -98,7 +98,7 @@ npx @jbrowse/img list hg38
 npx @jbrowse/img list hg38 conservation
 ```
 
-```text
+```text output
   hg38-phyloP30way      QuantitativeTrack   Basewise Conservation (phyloP) - 30-way vertebrate alignment
   hg38-phyloP100way     QuantitativeTrack   Basewise Conservation (phyloP) - 100-way vertebrate alignment
   hg38-phastCons30way   QuantitativeTrack   Element Conservation (phastCons) - 30-way vertebrates

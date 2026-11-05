@@ -397,7 +397,7 @@ The file opens with header lines, which `tabix -H` prints:
 tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 ```
 
-```text
+```text output
 #walks	format:i:5	chunk:i:65536	maxnode:i:1024	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000
 #reference	CHM13
 #haplotype	GRCh38#0

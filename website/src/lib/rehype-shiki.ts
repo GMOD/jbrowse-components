@@ -2,6 +2,7 @@ import { bundledLanguages, createHighlighter } from 'shiki'
 import { visit } from 'unist-util-visit'
 
 import { getText } from './hast-utils.ts'
+import { OUTPUT_CLASS } from './remark-code-output.ts'
 
 import type { Element, Root } from 'hast'
 import type { BundledLanguage, Highlighter } from 'shiki'
@@ -32,11 +33,14 @@ function getHighlighter() {
   return highlighterPromise
 }
 
+function classes(node: Element) {
+  const className = node.properties.className
+  return Array.isArray(className) ? className.map(String) : []
+}
+
 function codeLang(code: Element) {
-  const className = code.properties.className
-  const classes = Array.isArray(className) ? className : []
-  const match = classes
-    .map(c => /^language-(.+)$/.exec(String(c)))
+  const match = classes(code)
+    .map(c => /^language-(.+)$/.exec(c))
     .find(Boolean)
   return match?.[1]
 }
@@ -51,8 +55,7 @@ function codeBlock(node: Element) {
 }
 
 function isCopyWrap(node: Root | Element) {
-  const className = node.type === 'element' ? node.properties.className : []
-  return Array.isArray(className) && className.includes('code-copywrap')
+  return node.type === 'element' && classes(node).includes('code-copywrap')
 }
 
 function copyWrap(pre: Element): Element {
@@ -86,7 +89,19 @@ const rehypeShiki: Plugin<[], Root> = () => {
     await highlighter.loadLanguage(...langs)
     visit(tree, 'element', (node, index, parent) => {
       const code = codeBlock(node)
-      if (code && parent && index !== undefined) {
+      if (code && classes(code).includes(OUTPUT_CLASS)) {
+        node.properties.className = [OUTPUT_CLASS]
+        node.children = [
+          {
+            type: 'element',
+            tagName: 'code',
+            properties: {},
+            children: [
+              { type: 'text', value: getText(code).replace(/\n$/, '') },
+            ],
+          },
+        ]
+      } else if (code && parent && index !== undefined) {
         const highlighted = highlighter.codeToHast(
           getText(code).replace(/\n$/, ''),
           { lang: resolveLang(codeLang(code)) ?? 'text', theme: THEME },
