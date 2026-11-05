@@ -22,10 +22,8 @@ import {
   vlinePath,
 } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../index.ts'
 import type { ScalebarRefNameLabel } from '../util.ts'
-
-type LGV = LinearGenomeViewModel
+import type { LgvSvgChromeView } from './util.ts'
 
 // Tick marks and their coordinate labels, read from the same model getters the
 // on-screen Gridlines/ScalebarCoordinateLabels use (gridlineTicks /
@@ -38,7 +36,7 @@ function Ruler({
   tickTopY,
   numbersBaselineY,
 }: {
-  model: LGV
+  model: LgvSvgChromeView
   // Top y of the tick marks; they hang downward toward the tracks.
   tickTopY: number
   // Baseline y for the tick-number text, positioned above the tick marks.
@@ -95,7 +93,7 @@ function Ruler({
 // labels — and no locstring, so a flipped row used to leave the numbers
 // counting down as the only evidence it was flipped. On screen the search box
 // says so; a figure has no search box.
-function SVGRefNameLabels({ model }: { model: LGV }) {
+function SVGRefNameLabels({ model }: { model: LgvSvgChromeView }) {
   const palette = usePalette()
   const fill = stripAlpha(palette.text.primary)
   const { labels, caption } = getScalebarRefNameLabels({
@@ -173,7 +171,7 @@ export default function SVGRuler({
   model,
   rulerHeight,
 }: {
-  model: LGV
+  model: LgvSvgChromeView
   // Total vertical budget for this ruler (refName label + tick numbers + tick
   // marks), matching the caller's own row-height math. The tick marks are
   // anchored to the bottom of this budget (minus a small margin) so they can

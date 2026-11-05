@@ -4,15 +4,13 @@ import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
 import { labelBaselineFromTop } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../index.ts'
-
-type LGV = LinearGenomeViewModel
+import type { LgvSvgChromeView } from './util.ts'
 
 export default function SVGScalebar({
   model,
   fontSize,
 }: {
-  model: LGV
+  model: LgvSvgChromeView
   fontSize: number
 }) {
   const {

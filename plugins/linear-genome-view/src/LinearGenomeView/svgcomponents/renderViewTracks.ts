@@ -5,6 +5,7 @@ import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
 import { labelOffset, totalHeight, trackBoxOffsets } from './util.ts'
 
 import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
+import type { SvgRowTrack } from './util.ts'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { ThemeOptions } from '@mui/material'
@@ -114,6 +115,41 @@ export async function renderViewTracks<T extends SvgExportTrack>({
       result: await track.displays[0]!.renderSvg!({ ...opts, theme }),
     })),
   )
+  const { tracksHeight, legendHeights, legendWidth } = layoutSvgTracks({
+    tracks,
+    theme,
+    textHeight,
+    trackLabels,
+  })
+  return {
+    tracks,
+    displayResults: displayResults.map((r, i) => ({
+      ...r,
+      legendHeight: legendHeights[i],
+    })),
+    tracksHeight,
+    legendWidth,
+    skippedTracks,
+  }
+}
+
+/**
+ * The geometry of a stack of rendered tracks, which {@link renderViewTracks}
+ * measures once the renders resolve and a static export measures over the
+ * display boxes it resolved: the stack's height, each track's room in the
+ * legend gutter (absent for a track with no key), and the gutter's width.
+ */
+export function layoutSvgTracks({
+  tracks,
+  theme,
+  textHeight,
+  trackLabels,
+}: {
+  tracks: SvgRowTrack[]
+  theme: ThemeOptions | undefined
+  textHeight: number
+  trackLabels: TrackLabelMode
+}) {
   const tracksHeight = totalHeight(tracks, trackLabels, textHeight)
   const keyed = tracks.map(
     track =>
@@ -133,12 +169,8 @@ export async function renderViewTracks<T extends SvgExportTrack>({
       : undefined
   })
   return {
-    tracks,
-    displayResults: displayResults.map((r, i) => ({
-      ...r,
-      legendHeight: legendHeights[i],
-    })),
     tracksHeight,
+    legendHeights,
     legendWidth: max(
       tracks.map((track, i) => {
         const height = legendHeights[i]
@@ -148,6 +180,5 @@ export async function renderViewTracks<T extends SvgExportTrack>({
       }),
       0,
     ),
-    skippedTracks,
   }
 }

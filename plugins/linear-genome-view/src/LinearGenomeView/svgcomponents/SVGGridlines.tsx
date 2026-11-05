@@ -5,15 +5,13 @@ import { getStrokeProps } from '@jbrowse/core/util'
 
 import { gridlineTickXs, vlinePath } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../index.ts'
-
-type LGV = LinearGenomeViewModel
+import type { LgvSvgChromeView } from './util.ts'
 
 export default function SVGGridlines({
   model,
   height,
 }: {
-  model: LGV
+  model: LgvSvgChromeView
   height: number
 }) {
   const { width } = model

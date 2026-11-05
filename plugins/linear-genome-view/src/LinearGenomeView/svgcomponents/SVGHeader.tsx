@@ -14,11 +14,12 @@ import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { HeaderLayout } from './util.ts'
+import type { HeaderLayout, LgvSvgChromeView } from './util.ts'
+import type { ReactNode } from 'react'
 
 // "you are here" cytoband overview rendered above the ruler. Self-contained so
 // the overview-layout work only runs when cytobands are actually shown.
-function CytobandOverview({
+export function CytobandOverview({
   model,
   y,
 }: {
@@ -65,18 +66,20 @@ function CytobandOverview({
   ) : null
 }
 
+// `cytobands` draws the overview at the y it is given, and its presence is
+// what `layout` reserved the overview's rows for
 export default function SVGHeader({
   model,
   fontSize,
   rulerHeight,
   layout,
-  showCytobands,
+  cytobands,
 }: {
-  model: LinearGenomeViewModel
+  model: LgvSvgChromeView
   rulerHeight: number
   fontSize: number
   layout: HeaderLayout
-  showCytobands: boolean
+  cytobands?: (y: number) => ReactNode
 }) {
   const palette = usePalette()
   const fill = stripAlpha(palette.text.primary)
@@ -92,9 +95,7 @@ export default function SVGHeader({
         {model.assemblyNames.join(', ')}
       </text>
 
-      {showCytobands ? (
-        <CytobandOverview model={model} y={cytobandTop} />
-      ) : null}
+      {cytobands?.(cytobandTop)}
 
       <g transform={`translate(0 ${scalebarLineY})`}>
         <SVGScalebar model={model} fontSize={fontSize} />

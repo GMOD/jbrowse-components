@@ -1,34 +1,19 @@
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { getSession } from '@jbrowse/core/util'
+
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
-import SVGTracks from './SVGTracks.tsx'
-import { labelOffset, trackBoxOffsets } from './util.ts'
+import { SVGTrackRows } from './SVGTracks.tsx'
+import { labelOffset, sessionTrackRows, trackBoxOffsets } from './util.ts'
 
+import type { BandGap } from '../components/SVGHighlightBand.tsx'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
-import type { SvgDisplayResult } from './util.ts'
+import type { LgvSvgChromeView, SvgDisplayResult, SvgTrackRow } from './util.ts'
 import type { ReactNode } from 'react'
 
-// One LGV's worth of exported SVG: a caller-supplied header on top, then
-// optional gridlines, the track bodies, and the highlight layer over them.
-// Shared by all three exports that stack an LGV — the standalone one, and the
-// linear-synteny and breakpoint-split rows — so their per-view layout can't
-// drift. It did drift while the standalone export kept its own copy of these
-// four groups.
-export default function SVGView({
-  view,
-  displayResults,
-  header,
-  fontSize,
-  textHeight,
-  trackLabels,
-  trackLabelOffset,
-  contentTop,
-  tracksHeight,
-  showGridlines,
-  leftBuffer,
-}: {
-  view: LinearGenomeViewModel
-  displayResults: SvgDisplayResult[]
+interface ViewLayout {
   // What sits above the track bodies, drawn from this component's own origin
   // and inset by `trackLabelOffset` like everything else that lines up with the
   // genome. SVGRowHeader (assembly name + ruler) for a stacked row, SVGHeader
@@ -52,8 +37,62 @@ export default function SVGView({
   // (a wiggle Y-scalebar) isn't clipped. Callers that translate the whole view
   // by a margin pass that margin here.
   leftBuffer: number
+}
+
+// One LGV's worth of exported SVG: a caller-supplied header on top, then
+// optional gridlines, the track bodies, and the highlight layer over them.
+// Shared by all three exports that stack an LGV — the standalone one, and the
+// linear-synteny and breakpoint-split rows — so their per-view layout can't
+// drift. It did drift while the standalone export kept its own copy of these
+// four groups.
+export default function SVGView({
+  view,
+  displayResults,
+  ...layout
+}: ViewLayout & {
+  view: LinearGenomeViewModel
+  displayResults: SvgDisplayResult[]
 }) {
-  const tracks = displayResults.map(r => r.track)
+  return (
+    <SVGViewChrome
+      view={view}
+      rows={sessionTrackRows(displayResults, getSession(view))}
+      highlights={gaps => (
+        <SVGHighlightsOverlay
+          model={view}
+          tracksHeight={layout.tracksHeight}
+          gaps={gaps}
+        />
+      )}
+      {...layout}
+    />
+  )
+}
+
+/**
+ * {@link SVGView} over named rows and a frame rather than a session's view:
+ * `highlights` draws inside the highlight layer's clip, given the bands of the
+ * tracks that do not draw in genomic coordinates.
+ */
+export function SVGViewChrome({
+  view,
+  rows,
+  highlights,
+  header,
+  fontSize,
+  textHeight,
+  trackLabels,
+  trackLabelOffset,
+  contentTop,
+  tracksHeight,
+  showGridlines,
+  leftBuffer,
+}: ViewLayout & {
+  view: LgvSvgChromeView
+  rows: SvgTrackRow[]
+  highlights?: (gaps: BandGap[]) => ReactNode
+}) {
+  const tracks = rows.map(r => r.track)
   const offsets = trackBoxOffsets(tracks, trackLabels, textHeight)
   const nonGenomicBands = tracks.flatMap((track, i) => {
     const display = track.displays[0]!
@@ -75,12 +114,12 @@ export default function SVGView({
         </g>
       ) : null}
       <g transform={`translate(0 ${contentTop})`}>
-        <SVGTracks
+        <SVGTrackRows
           textHeight={textHeight}
           trackLabels={trackLabels}
           fontSize={fontSize}
-          model={view}
-          displayResults={displayResults}
+          view={view}
+          rows={rows}
           trackLabelOffset={trackLabelOffset}
           leftBuffer={leftBuffer}
         />
@@ -92,11 +131,13 @@ export default function SVGView({
         user's highlights entirely for as long as it was the caller's job.
       */}
       <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
-        <SVGHighlightsOverlay
-          model={view}
-          tracksHeight={tracksHeight}
-          gaps={nonGenomicBands}
-        />
+        <SvgClipRect
+          id={`highlight-clip-${svgNodeId(view)}`}
+          width={view.width}
+          height={tracksHeight}
+        >
+          {highlights?.(nonGenomicBands)}
+        </SvgClipRect>
       </g>
     </>
   )

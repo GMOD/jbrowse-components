@@ -1,8 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
-import type { LinearGenomeViewModel } from '../index.ts'
-
-type LGV = LinearGenomeViewModel
+import type { LgvSvgChromeView } from './util.ts'
 
 // SVG counterpart of the on-screen PaddingBlocks region separators: an opaque
 // 3px bar at the right edge of every displayed region, in the same per-mode grey
@@ -22,7 +20,7 @@ export default function SVGRegionSeparators({
   height,
 }: {
   height: number
-  model: LGV
+  model: LgvSvgChromeView
 }) {
   const { dynamicBlocks, offsetPx } = model
   const fill = usePalette().regionSeparator

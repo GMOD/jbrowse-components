@@ -1,17 +1,12 @@
-import { exportMargin } from '@jbrowse/core/svg/constants'
 import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
-import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
-import SVGHeader from './SVGHeader.tsx'
-import SVGView from './SVGView.tsx'
+import { CytobandOverview } from './SVGHeader.tsx'
+import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
+import { lgvSvgDocument, lgvSvgLayoutOptions } from './lgvSvgDocument.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
-import {
-  defaultTextHeight,
-  getHeaderLayout,
-  trackLabelLeftOffset,
-} from './util.ts'
+import { sessionTrackRows } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
@@ -31,27 +26,16 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   if (!model.hasDisplayedRegions) {
     throw new Error('Cannot export: no regions are displayed')
   }
-  const {
-    fontSize = 13,
-    // the label band scales with the font it holds; destructured after
-    // fontSize so the default can read it
-    textHeight = defaultTextHeight(fontSize),
-    rulerHeight = 34,
-    trackLabels = 'offset',
-    themeName,
-    fontFamily,
-    showGridlines = false,
-    Wrapper,
-  } = opts
+  const { fontSize, textHeight, trackLabels } = lgvSvgLayoutOptions(opts)
   const session = getSession(model)
-  const theme = session.getActiveThemeOptions?.(themeName)
+  const theme = session.getActiveThemeOptions?.(opts.themeName)
 
   // owns the ordering this used to spell out by hand: the stack's height and
   // legend gutter measured after the awaits. Every display's `renderSvg` owns its
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
-  const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
+  const { displayResults, tracksHeight, legendWidth, skippedTracks } =
     await renderViewTracks({
       view: model,
       opts: { ...opts, fontSize },
@@ -63,59 +47,24 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     notifySkippedSvgTracks(session, skippedTracks)
   }
 
-  // read after the displays' waits, and handed to SVGHeader rather than read
-  // again, so the reserved `tracksTop` and the drawn header are one layout
-  const { width, effectiveShowCytobands } = model
-  const headerLayout = getHeaderLayout({
-    fontSize,
-    showCytobands: effectiveShowCytobands,
-    rulerHeight,
-  })
-  const { tracksTop } = headerLayout
-  const trackLabelOffset = trackLabelLeftOffset({
-    tracks,
-    trackLabels,
-    fontSize,
-    fontFamily,
-    session,
-  })
-  const w = width + trackLabelOffset + legendWidth
-
-  // the xlink namespace is used for rendering <image> tag
-  return wrapSvgExport({
+  // read after the displays' waits, so the reserved `tracksTop` and the drawn
+  // header are one layout
+  return lgvSvgDocument({
+    view: model,
+    rows: sessionTrackRows(displayResults, session),
+    tracksHeight,
+    legendWidth,
     theme,
-    width: w,
-    height: tracksTop + tracksHeight + exportMargin,
-    fontFamily,
-    Wrapper,
-    children: (
-      <g transform={`translate(${exportMargin} 0)`}>
-        <SVGView
-          view={model}
-          displayResults={displayResults}
-          // the standalone export is the one with room above the tracks, so its
-          // header is the full one: cytoband overview and total-bp scalebar as
-          // well as the assembly name and ruler. `tracksTop` is the height
-          // getHeaderLayout gave it.
-          header={
-            <SVGHeader
-              model={model}
-              fontSize={fontSize}
-              rulerHeight={rulerHeight}
-              layout={headerLayout}
-              showCytobands={effectiveShowCytobands}
-            />
-          }
-          fontSize={fontSize}
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          trackLabelOffset={trackLabelOffset}
-          contentTop={tracksTop}
-          tracksHeight={tracksHeight}
-          showGridlines={showGridlines}
-          leftBuffer={exportMargin}
-        />
-      </g>
+    opts,
+    cytobands: model.effectiveShowCytobands
+      ? y => <CytobandOverview model={model} y={y} />
+      : undefined,
+    highlights: gaps => (
+      <SVGHighlightsOverlay
+        model={model}
+        tracksHeight={tracksHeight}
+        gaps={gaps}
+      />
     ),
   })
 }

@@ -9,11 +9,33 @@ import {
 import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { TrackLabelMode } from '../types.ts'
+import type { RegionsOrientation } from '../util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
+import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type { ReactNode } from 'react'
+
+/**
+ * What the LGV export's chrome (header, ruler, gridlines, region separators,
+ * track boxes and labels) reads off the view it frames. The view is one; so is
+ * a `staticLgvFrame`, which computes each member from a region list and a
+ * width with the functions the view's getters call.
+ */
+export interface LgvSvgChromeView {
+  id: string
+  width: number
+  offsetPx: number
+  assemblyNames: string[]
+  hasVisibleContent: boolean
+  dynamicBlocks: BlockSet
+  staticBlocks: BlockSet
+  staticBlocksTranslateX: number
+  gridlineTicks: { major: boolean; x: number }[]
+  scalebarLabels: { x: number; label: string; key: string }[]
+  displayedRegionsOrientation: RegionsOrientation
+}
 
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
@@ -21,6 +43,49 @@ type SidebarDisplay = Pick<LgvSvgExportable, 'svgSidebarWidth'>
 
 interface TrackHeights {
   displays: ({ height: number; prefersOffset?: boolean } & SidebarDisplay)[]
+}
+
+/**
+ * The display box a row of the export lays out and draws chrome around:
+ * its height, its terminal state, the sidebar it reserves, and (for
+ * `SvgLegend`) whatever legend members it carries.
+ */
+export type SvgRowDisplay = {
+  height: number
+  regionTooLarge?: boolean
+  drawsGenomicCoordinates?: boolean
+  prefersOffset?: boolean
+} & SidebarDisplay
+
+export interface SvgRowTrack {
+  displays: SvgRowDisplay[]
+}
+
+/**
+ * One track's row of the export as the chrome draws it, with no session
+ * behind it: its id (the clip ids carry it), its name as drawn, its display
+ * box, the body its display rendered, and the room its key has.
+ */
+export interface SvgTrackRow {
+  trackId: string
+  name: string
+  track: SvgRowTrack
+  result: ReactNode
+  legendHeight?: number
+}
+
+/** A session's rendered tracks as rows, each named as the session names it. */
+export function sessionTrackRows(
+  displayResults: SvgDisplayResult[],
+  session: TrackCatalog,
+): SvgTrackRow[] {
+  return displayResults.map(({ track, result, legendHeight }) => ({
+    trackId: track.configuration.trackId,
+    name: svgTrackName(track, session),
+    track,
+    result,
+    legendHeight,
+  }))
 }
 
 // A rendered track body plus the track it came from, as produced by each
@@ -327,13 +392,35 @@ export function trackLabelLeftOffset({
   fontFamily?: string
   session: TrackCatalog
 }) {
+  return trackLabelGutterWidth({
+    rows: tracks.map(track => ({ track, name: svgTrackName(track, session) })),
+    trackLabels,
+    fontSize,
+    fontFamily,
+  })
+}
+
+/** {@link trackLabelLeftOffset} over tracks already named. */
+export function trackLabelGutterWidth({
+  rows,
+  trackLabels,
+  fontSize,
+  fontFamily,
+}: {
+  rows: {
+    track: { displays: ({ prefersOffset?: boolean } & SidebarDisplay)[] }
+    name: string
+  }[]
+  trackLabels: TrackLabelMode
+  fontSize: number
+  fontFamily?: string
+}) {
   return max(
-    tracks.map(t =>
+    rows.map(({ track, name }) =>
       Math.max(
-        trackSidebarWidth(t, { fontSize, fontFamily }),
-        trackLabelMode(t, trackLabels) === 'left'
-          ? measureText(svgTrackName(t, session), fontSize, fontFamily) +
-              TRACK_LABEL_GAP
+        trackSidebarWidth(track, { fontSize, fontFamily }),
+        trackLabelMode(track, trackLabels) === 'left'
+          ? measureText(name, fontSize, fontFamily) + TRACK_LABEL_GAP
           : 0,
       ),
     ),
