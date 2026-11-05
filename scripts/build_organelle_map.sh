@@ -45,8 +45,16 @@ cd "$OUTDIR"
 APP=jbrowse2
 
 # ── Inputs ──────────────────────────────────────────────────────────────────
-[ -s genome.fa ] || curl -fsSLo genome.fa "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=$ACC&rettype=fasta"
-[ -s genes.gff3 ] || curl -fsSLo genes.gff3 "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=$ACC"
+fetch() {
+  local url=$1 file=$2
+  if [ ! -s "$file" ]; then
+    curl -fsSL -o "$file.part" "$url"
+    mv "$file.part" "$file"
+  fi
+}
+
+fetch "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=$ACC&rettype=fasta" genome.fa
+fetch "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=$ACC" genes.gff3
 
 samtools faidx genome.fa
 jb sort-gff genes.gff3 | bgzip >genes.gff.gz

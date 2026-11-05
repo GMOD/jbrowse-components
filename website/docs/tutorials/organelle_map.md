@@ -99,6 +99,8 @@ before it and a piece after, so keep that line in the file you load.
 
 We'll load the sequence as an assembly, indexed with samtools first:
 
+<!-- from: scripts/build_organelle_map.sh -->
+
 ```bash
 samtools faidx genome.fa
 ```
@@ -129,9 +131,13 @@ For your own accession, put your sequence's name in both settings and pick its
 We'll sort, compress and index the GFF3, keeping the pragma at the top
 ([Quickstart](/docs/quickstart_web#gff3-and-gtf) has the general recipe):
 
+<!-- from: scripts/build_organelle_map.sh -->
+
 ```bash
 jbrowse sort-gff genes.gff3 | bgzip > genes.gff.gz
 ```
+
+<!-- from: scripts/build_organelle_map.sh -->
 
 ```bash
 tabix -p gff genes.gff.gz
