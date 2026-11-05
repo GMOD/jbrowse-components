@@ -219,10 +219,28 @@ To add a display, write one `*.parity.test.ts` holding a `ParityAdapter`
 - `modelDecisions` and `exportDecisions`: each side's value for every
   decision, normalized only in spelling (hex colors, `''` for unset).
 
-A decision known to disagree goes in the case's `drifts`, naming the area
-that owns it; it runs as `test.failing`, so a fix turns it red until the
-entry goes. A case whose setup throws fails every plain test in it, so a
-drift entry never hides a broken case alone.
+A decision known to disagree goes in the case's `drifts` as `{ owner,
+exported }`: the area that owns it and the export's value today. Its test
+asserts the export still decides `exported` and the view something else, so
+a fix fails with "drift fixed: … delete this entry" and a different wrong
+value with "drift changed: …", which prints the new value to re-pin. A case
+whose setup throws fails every test in it, drifts included.
+
+The synteny and dotplot suites stand up through `comparative/testEnv.ts`
+instead: a real web session (`createTestSession`, RPC on the main thread)
+holding two FASTA assemblies and one `SyntenyTrack`, a `LinearSyntenyView`
+whose rows open on the export's regions end to end (`windowWidthBp`, not
+`bpPerPx`), or a `DotplotView` whose axes hold them at the export's bp per px.
+It waits for the display to fetch (`!fetchInert && svgReady`: an inert display
+is `svgReady` while its assemblies load) and throws if a row or axis moved.
+These suites need `jest.mock('@jbrowse/web/makeWorkerInstance', …)`. Their
+decisions (`comparative/testUtils.ts`) are each alignment's drawn marks in
+color and alpha, the admitted alignments, the key with its chips composited as
+a host does (`legendChipColor` at the export's `alpha`), the opacity level,
+and for synteny the contigs the off-screen strips name. The marks' alpha holds
+the thin-ribbon fade, but not the auto fade's latch: a fresh view's latch is
+the export's unlatched answer, and none of the fixtures holds enough
+alignments to reach it.
 
 ## Wait signals
 

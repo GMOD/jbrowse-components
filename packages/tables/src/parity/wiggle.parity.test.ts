@@ -147,6 +147,8 @@ const NO_CATEGORICAL_KEY =
 const DENSITY_RULES =
   'unowned, wiggle tables list the rules a density plot does not draw'
 
+const NO_LEGEND = { label: [], color: [], section: [] }
+
 const CTGA = { refName: 'ctgA', start: 0, end: 50_000 }
 const CTGA_LENGTH = 50_001
 
@@ -164,7 +166,7 @@ describe('a MultiQuantitativeTrack of three signed BigWigs', () => {
     {
       name: 'overlay',
       config: { rows: { field: '' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     { name: 'rows.sort', config: { rows: { sort: ['posneg_rw3'] } } },
     {
@@ -182,19 +184,28 @@ describe('a MultiQuantitativeTrack of three signed BigWigs', () => {
     {
       name: 'rows.colors in an overlay',
       config: { rows: { field: '', colors: { posneg_rw2: '#0000ff' } } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.color by name in an overlay',
       config: { rows: { field: '', color: 'name' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.tree',
       config: {
         rows: { tree: '((posneg_rw3:1,posneg_rw1:1):1,posneg_rw2:2);' },
       },
-      drifts: { rows: TREE_ORDER },
+      drifts: {
+        rows: {
+          owner: TREE_ORDER,
+          exported: ['posneg_rw1', 'posneg_rw2', 'posneg_rw3'].map(name => ({
+            name,
+            label: name,
+            group: '',
+          })),
+        },
+      },
     },
     {
       name: 'encoding.color source in rows',
@@ -258,7 +269,7 @@ describe('a MultiQuantitativeTrack of three signed BigWigs', () => {
           },
         },
       },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'encoding.color value',
@@ -299,7 +310,7 @@ describe('a MultiQuantitativeTrack whose subtracks carry a group and a color', (
     {
       name: 'overlay',
       config: { rows: { field: '' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.filter',
@@ -317,22 +328,22 @@ describe('a MultiQuantitativeTrack whose subtracks carry a group and a color', (
     {
       name: 'rows.color by group',
       config: { rows: { color: 'group' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.color by group in an overlay',
       config: { rows: { field: '', color: 'group' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.color by group under a pinned color',
       config: { rows: { color: 'group', colors: { posneg_rw3: '#00ff00' } } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.color by group, line',
       config: { mark: 'line', rows: { color: 'group' } },
-      drifts: { legend: NO_CATEGORICAL_KEY },
+      drifts: { legend: { owner: NO_CATEGORICAL_KEY, exported: NO_LEGEND } },
     },
     {
       name: 'rows.filter, the axis over the rows left',
@@ -363,7 +374,12 @@ describe('a QuantitativeTrack of one signed BigWig', () => {
     {
       name: 'encoding.y rules in density',
       config: { mark: 'rect', encoding: { y: { rules: [{ value: 10 }] } } },
-      drifts: { rules: DENSITY_RULES },
+      drifts: {
+        rules: {
+          owner: DENSITY_RULES,
+          exported: [{ value: 10, color: '#787878', label: '' }],
+        },
+      },
     },
     {
       name: 'encoding.y rules outside the domain',

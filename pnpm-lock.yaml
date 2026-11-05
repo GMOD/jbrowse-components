@@ -807,6 +807,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../synteny-core
       acorn:
         specifier: 8.19.0
         version: 8.19.0

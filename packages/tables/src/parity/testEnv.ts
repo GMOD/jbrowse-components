@@ -40,7 +40,7 @@ function inProcessRpc(pluginManager: PluginManager) {
   }
 }
 
-async function until(
+export async function until(
   done: () => boolean,
   what: () => string,
   timeoutMs = 20_000,
