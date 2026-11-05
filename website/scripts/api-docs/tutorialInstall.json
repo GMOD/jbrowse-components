@@ -155,5 +155,8 @@
     "apt": "sra-toolkit",
     "conda": "sra-tools",
     "bins": ["prefetch", "fasterq-dump", "sam-dump"]
+  },
+  "regtools": {
+    "conda": "regtools"
   }
 }
