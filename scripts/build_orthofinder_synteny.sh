@@ -41,8 +41,11 @@
 #           container and its bioconda package both carry.
 #
 # Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
-# so the project's container covers the first requirement without root. As an
-# Apptainer shim:
+# so the project's container covers the first requirement without root. It
+# runs 2.5.5, which the wheat set needs: OrthoFinder 3.2 (bioconda's) split
+# wheat's homoeolog families into 70,922 orthogroups against 2.5.5's 44,921,
+# losing 40% of the tauschii-wheat gene pairs and half the collinear blocks.
+# The other four sets come out alike under either. As an Apptainer shim:
 #
 #   apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
 #   mkdir -p ~/.local/bin && cat > ~/.local/bin/orthofinder <<'EOF'

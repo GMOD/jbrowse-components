@@ -543,10 +543,14 @@ of a long alignment:
 orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 ```
 
-For the five flies that took 15 minutes on 24 threads. The plugin finds the
-clicked gene's row in the alignment by translating its transcript, so the top
-genome (`MSA_GENOMES` names others) is downloaded and cut to the sequences in
-its chrom.sizes, and becomes the assembly in their place:
+For the five flies that took 15 minutes on 24 threads. The demos ran OrthoFinder
+3.2 for four sets and the 2.5.5 container for wheat: 3.2 split wheat's homoeolog
+families into 70,922 orthogroups where 2.5.5 kept 44,921, which cut the
+tauschii-wheat gene pairs by 40% and the collinear blocks by half. The other
+sets came out alike under either. The plugin finds the clicked gene's row in the
+alignment by translating its transcript, so the top genome (`MSA_GENOMES` names
+others) is downloaded and cut to the sequences in its chrom.sizes, and becomes
+the assembly in their place:
 
 ```json addassembly
 {
