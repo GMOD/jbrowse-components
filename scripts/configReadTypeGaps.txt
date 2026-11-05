@@ -33,7 +33,7 @@
 #     whole schema through GetBase and has to be re-plumbed first.
 #
 # 28 unchecked in source, 148 in tests,
-# of 1499 total config accessor calls. The gate counts source only.
+# of 1497 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1241	readConfObject('adapter')
@@ -152,7 +152,7 @@ plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
 plugins/comparative-adapters/src/util.ts  (1)
-  48	readConfObject('assemblyNameToPanSN')
+  46	readConfObject('assemblyNameToPanSN')
 plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.test.tsx  (1)  [test]
   314	readConfObject('height')
 plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.tsx  (1)

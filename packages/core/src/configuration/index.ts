@@ -39,6 +39,7 @@ export type {
   IdentifierSlotDef,
   PluggableConfigNode,
   PluggableConfigSnapshot,
+  SlotValueByType,
   TrackConfigEntry,
   TypeSlotDef,
 } from './types.ts'

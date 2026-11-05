@@ -188,7 +188,7 @@ export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
  * What each builtin slot type reads as, beside `slotTypes` in
  * `configurationSlot.ts`. The enum types read their members off `model`.
  */
-interface SlotValueByType {
+export interface SlotValueByType {
   stringArray: string[]
   expressionArray: string[]
   stringArrayMap: Record<string, string[]>

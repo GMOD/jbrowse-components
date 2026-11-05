@@ -41,15 +41,15 @@
     {
       "values": {
         "population": "frozen slot, `any` by design",
-        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`",
-        "reads": 9
+        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`, `assemblyNameToPanSN`",
+        "reads": 10
       }
     },
     {
       "values": {
         "population": "everything else",
-        "slots": "2 other names",
-        "reads": 2
+        "slots": "1 other names",
+        "reads": 1
       }
     }
   ]

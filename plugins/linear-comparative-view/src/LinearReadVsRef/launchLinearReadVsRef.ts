@@ -1,5 +1,6 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getSession, launchOrReplaceView } from '@jbrowse/core/util'
+import { getIdentifier } from '@jbrowse/mobx-state-tree'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
@@ -23,8 +24,9 @@ export async function launchLinearReadVsRef({
   if (!assembly?.configuration) {
     throw new Error('assembly not found')
   }
-  const sequenceTrackConf = {
-    trackId: readConfObject(assembly.configuration, ['sequence', 'trackId']),
+  const sequenceTrackId = getIdentifier(assembly.configuration.sequence)
+  if (!sequenceTrackId) {
+    throw new Error('assembly has no reference sequence track')
   }
 
   const { temporaryAssembly, viewSpec } = buildReadVsRefSpec({
@@ -32,7 +34,7 @@ export async function launchLinearReadVsRef({
     windowSize,
     trackAssembly: assembly.name,
     getCanonicalRefName: assembly.getCanonicalRefName2,
-    sequenceTrackConf,
+    sequenceTrackConf: { trackId: sequenceTrackId },
     now: () => Date.now(),
     rand: () => Math.random(),
   })

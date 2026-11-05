@@ -21,8 +21,8 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type BaseResult from './BaseResults.ts'
 
-// A misconfigured or unreachable index (a 404 .ix, a config missing
-// ixFilePath) must not take down search as a whole: the remaining indexes, and
+// A misconfigured or unreachable index (a 404 .ix, a names index given a local
+// path) must not take down search as a whole: the remaining indexes, and
 // the refName results the caller merges in afterwards, are still useful. The
 // failures are logged and handed back, so a miss can say an index failed rather
 // than that the name is absent. An abort is not a failure — every keystroke

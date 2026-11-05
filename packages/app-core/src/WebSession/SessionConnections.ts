@@ -13,13 +13,13 @@ import type {
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 export interface WebSessionWithConnections {
-  sessionConnections: AnyConfigurationModel[]
-  addSessionConnectionConf(conf: AnyConfiguration): AnyConfigurationModel
+  sessionConnections: BaseConnectionConfigModel[]
+  addSessionConnectionConf(conf: AnyConfiguration): BaseConnectionConfigModel
   // `silent` suppresses a connection's first-connect side effects (its own view
   // launch, its success snackbar) — for a caller that is launching the view
   // itself, or re-establishing a connection whose tracks are already restored
   makeConnection(
-    conf: AnyConfigurationModel,
+    conf: BaseConnectionConfigModel,
     initialSnapshot?: { silent?: boolean },
   ): void
 }

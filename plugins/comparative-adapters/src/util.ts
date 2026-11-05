@@ -42,10 +42,8 @@ export type MultiGenomeAssemblyConfigModel = ConfigModelForSlots<
 
 // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
 // unmapped).
-function assemblyNameToPanSN(
-  conf: MultiGenomeAssemblyConfigModel,
-): Record<string, string> {
-  return readConfObject(conf, 'assemblyNameToPanSN')
+function assemblyNameToPanSN(conf: MultiGenomeAssemblyConfigModel) {
+  return readConfObject(conf, 'assemblyNameToPanSN') as Record<string, string>
 }
 
 // Resolve one assembly name to its PanSN sample prefix; undefined passes through

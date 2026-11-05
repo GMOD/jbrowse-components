@@ -81,10 +81,7 @@ function tracksOf(view: LinearGenomeViewModel) {
         trackId: track.configuration.trackId,
         trackName: svgTrackName(track, session),
         displayType: display.type,
-        adapter: readConfObject(track.configuration, 'adapter') as Record<
-          string,
-          unknown
-        >,
+        adapter: readConfObject(track.configuration, 'adapter'),
         display: written,
         heightMode: records?.fits ? 'fit' : heightMode,
         height: records ? records.height : height,
