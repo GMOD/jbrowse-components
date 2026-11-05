@@ -94,7 +94,7 @@ display keeps its model, and the static path runs that model's views.
 - **The tables run them**: `plugins/variants/src/tables.ts` declares
   `VariantTablesHost` (config, the listed samples and the fetched ploidies, the
   row views, `variantRowHookViews`); `plugins/wiggle/src/tables.ts` declares
-  one wiggle static host per track type's schema (`wiggleTablesHost`):
+  one wiggle static host per track type's schema (`wiggleStaticHost`):
   `TrackHeightMixin`, `YFieldConfigMixin`, the config child, the fetched
   scores and the blocks they span as volatiles, `wiggleConfigViews` and
   `wiggleModeViews`, the row views, `wiggleRowHookViews`, `wiggleDomainViews`,

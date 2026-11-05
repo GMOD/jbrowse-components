@@ -346,7 +346,7 @@ export function markLayerRequest(
 export function markStepListsOf(
   marks: readonly MarkConfig[],
   sharedSteps: readonly MarkTransformStepConfig[] = [],
-) {
+): MarkTransformStepConfig[][] {
   return marks.map(m => [...sharedSteps, ...m.transform])
 }
 
