@@ -49,6 +49,9 @@ callback's names (`variantDataColorScales`). Still open:
   mode's forced `subfeatureLabels` of `'none'`, the `resolvedGeneGlyphMode`
   call in the fetch args, and the hand-built `layoutInputs` handed to
   `hostFeatureBand`.
+- Alignments' read colors and read key run the model's own getters
+  (`alignmentsColorViews`); the read palette is still built by hand from the
+  default theme.
 
 ## Not a defect
 
@@ -66,6 +69,11 @@ the display's one legend box merges them when they share a color
 2026-10-20: ggjbrowse draws reads and arcs as separate layers, each with its
 own guide, so an arcs-only plot lost its key. Merging is the legend box's
 presentation, which a host composing its own guides does for itself.
+
+The alignments tables lay out every row, where the view caps rows to its
+viewport (`layoutGroupsToViewport`), and stack sections `pileup.collapsed`
+would fold (a `warnings` entry says so): row caps and collapsed lanes are
+viewport policy, and no read color reads a row.
 
 Variants categorical slots start empty in the tables, where the view holds
 them session-wide (`display-kit/src/heldColorSlots.ts`): a stateless export

@@ -131,6 +131,29 @@ a static body missing a trailing element, the y axis, passes. It must find the
 display's whole node in both outputs, from its opening tag to its matching
 close, and compare the two nodes whole.
 
+## Built: alignments' read colors and read key
+
+`plugins/alignments/src/LinearAlignmentsDisplay/alignmentsColorViews.ts` holds
+the bake chain (`readColorOpts`, `bakedColorExtent`, `linearFieldExtent`,
+`bakedColorScale`, `readColorContext`, `laidOutByGroupColored`) and the read
+key over it (`baseQualitySpan`, the `*InWindows` presence scans,
+`declaredReadLabels`, `keyReadLabels`, `overlapLegendRows`, `keySectionOrder`,
+`colorRamps`, `legendItems`), over a host of the display's resolved settings
+and its framed layout (`laidOutByGroupFramed`). The model installs it between
+its layout block and `laidOutByGroup`; `tables.ts` runs it over a plain host,
+memoizing each getter once (`memoizedViews`) since a plain getter recomputes
+on every read and the scans would re-bake every read. Running it found no
+drift; the tables' hand copy was equivalent. The scans that read no baked
+color now read the framed layout rather than `laidOutByGroup`, so a recolor or
+a connector toggle no longer re-runs them.
+
+The tables still lay out every row where the view lays out under row caps
+(`layoutGroupsToViewport`). That is an export difference, not a drift: a cap
+is a viewport policy, and the bake and the read rows of the key read no row,
+since a read past the cap stays in the laid-out map on the overflow row
+(`sortLayout.ts`, the `maxRows` sentinel). Only the overlap rows read layout
+output, and each side keys the overlaps it draws.
+
 ## Left
 
 - **`renderState`** (`wiggleDisplayViews`) on the static host, then the body.
@@ -159,6 +182,9 @@ parity test against `renderRegion`. By family, cheapest first:
 - **Alignments** and **MAF**: the longest chains (`renderState`,
   `sourceSections`, `renderSections` in `LinearAlignmentsDisplay/model.ts`),
   alignments' pileup layout pure on the main thread, MAF on the rows as well.
+  Alignments' read colors and key already run on the tables' static host; the
+  read palette (`colorsIn`) is still built by hand there from the default
+  theme.
 - **Comparative and circular displays** (`MultiWaySyntenyDisplay`,
   `LinearSyntenyDisplay`, the dotplot display, `ChordSyntenyDisplay`,
   `ChordVariantDisplay`): each needs its own view's frame first.

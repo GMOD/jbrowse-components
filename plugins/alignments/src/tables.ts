@@ -81,12 +81,11 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
-import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
-  bakedColorExtent,
-  bakedColorScale,
-  linearFieldExtent,
-} from './LinearAlignmentsDisplay/bakedColorScale.ts'
+  alignmentsColorViews,
+  detectedModificationsOf,
+} from './LinearAlignmentsDisplay/alignmentsColorViews.ts'
+import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -97,32 +96,16 @@ import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/componen
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
 import { drawnReadConnectionsOf } from './LinearAlignmentsDisplay/constants.ts'
-import {
-  applyChainStrandFrames,
-  applyReadColorsByGroup,
-  collectAcrossGroups,
-} from './LinearAlignmentsDisplay/groupLayout.ts'
+import { applyChainStrandFrames } from './LinearAlignmentsDisplay/groupLayout.ts'
 import {
   buildRawDataByGroup,
   orderedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
-import {
-  arcSlotsInWindows,
-  insertSizeBandInWindows,
-  modificationTypesInWindows,
-  overlapKindsInWindows,
-  readCategoriesInWindows,
-  readMapqsInWindows,
-  readTagValuesInWindows,
-} from './LinearAlignmentsDisplay/keyWindows.ts'
+import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pinnedInsertSizeBandOf } from './LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
-import {
-  NO_QUALITY_SPAN,
-  baseQualitySpanAcrossGroups,
-} from './LinearAlignmentsDisplay/qualitySpans.ts'
 import {
   intronAlpha,
   shouldDrawOverlaps,
@@ -203,7 +186,6 @@ import {
   alignmentsColorSnapshotOf,
   baseLayerOf,
   bodyColorKind,
-  declaredReadLabels,
   isBakedField,
   paintedLevelOf,
   readColorFieldOf,
@@ -229,14 +211,9 @@ import {
   workerFacet,
 } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
-import { keySectionOrder } from './shared/keySectionOrder.ts'
 import {
   arcLegendTitle,
-  colorRampScales,
   getArcLegendItems,
-  getReadDisplayLegendItems,
-  insertSizeBandLabels,
-  overlapLegendRows,
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
@@ -252,16 +229,11 @@ import {
   isLayoutOrder,
 } from './shared/types.ts'
 import { getOrCreate } from './shared/util.ts'
-import { getColorForModification } from './util.ts'
 
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
-import type {
-  ReadColorCategory,
-  ReadColorOpts,
-} from './LinearAlignmentsDisplay/colorUtils.ts'
+import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
-import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -277,8 +249,10 @@ import type {
 } from './features/sashimi/junctions.ts'
 import type { ColorPalette } from './shaders/colors.ts'
 import type { ArcCategory } from './shaders/palettes.ts'
-import type { AlignmentsColorEncoding } from './shared/alignmentsColor.ts'
-import type { OverlapLegendRow } from './shared/legendUtils.ts'
+import type {
+  AlignmentsColorEncoding,
+  AlignmentsColorSetting,
+} from './shared/alignmentsColor.ts'
 import type {
   BaseLayer,
   InterbaseTypeName,
@@ -287,10 +261,8 @@ import type {
   SortColumn,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -483,53 +455,49 @@ function readLevelOf(colorField: string | undefined) {
 }
 
 /**
- * The display's color pipeline over its laid-out sections: `encoding.color`
- * resolved as the display resolves it, the worker's reads baked through one
- * scale and classified into the same buckets, each painted the color the
- * display paints it, and the key the display shows beside them.
+ * `views` with each getter computed once on first read, as the display's
+ * computeds are, over a host that never changes.
+ */
+function memoizedViews<T extends object>(views: T) {
+  for (const [key, { get }] of Object.entries(
+    Object.getOwnPropertyDescriptors(views),
+  )) {
+    if (get) {
+      let cached: { value: unknown } | undefined
+      Object.defineProperty(views, key, {
+        get: () => (cached ??= { value: get.call(views) }).value,
+      })
+    }
+  }
+  return views
+}
+
+/**
+ * The display's color pipeline over its laid-out sections, run as the display
+ * runs it (`alignmentsColorViews`): each read painted the color the display
+ * paints it, in the bucket and level it classifies into, and the key the
+ * display shows beside them.
  */
 function colorReads(
+  views: ReturnType<typeof alignmentsColorViews>,
   {
-    node,
+    setting,
     encoding,
     field: colorField,
+    title,
   }: {
-    node: AnyConfigurationModel
+    setting: AlignmentsColorSetting
     encoding: AlignmentsColorEncoding
     field: string | undefined
+    title: string | undefined
   },
-  baseLayer: BaseLayer | undefined,
-  byGroup: LaidOutByGroup,
-  readColorOpts: ReadColorOpts,
-  facet: { field: string; sort?: readonly string[] } | undefined,
-  refNamePosition: RefNamePosition | undefined,
-  overlaps: readonly OverlapLegendRow[],
-  windows: readonly KeyWindow[],
 ) {
-  const setting = alignmentsColorSnapshotOf(node)
-  const preset = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend
-  const bakedScale = isBakedField(colorField)
-    ? bakedColorScale(
-        colorField,
-        encoding,
-        refNamePosition,
-        bakedColorExtent(encoding, colorField, byGroup, () =>
-          linearFieldExtent(encoding, colorField, byGroup),
-        ),
-      )
-    : undefined
-  const colored = applyReadColorsByGroup(byGroup, {
-    colorField,
-    bodyColorKind: bodyColorKind(colorField, baseLayer),
-    readColorOpts,
-    bakedScale,
-  })
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
     declared: writtenReadCategoryColors(setting, encoding),
   })
   const levelOf = readLevelOf(colorField)
   const sections = new Map(
-    [...colored].map(([key, map]) => [
+    [...views.laidOutByGroupColored].map(([key, map]) => [
       key,
       new Map(
         [...map].map(([idx, data]) => {
@@ -553,59 +521,15 @@ function colorReads(
       ),
     ]),
   )
-  const declared = declaredReadLabels(encoding, setting.scale.names ?? [])
-  const keyLabels = {
-    ...declared,
-    categories: {
-      ...insertSizeBandLabels(insertSizeBandInWindows(byGroup, windows)),
-      ...declared.categories,
-    },
-  }
-  const presentTagValues = !isBakedField(colorField)
-    ? undefined
-    : colorField === 'mapq'
-      ? readMapqsInWindows(colored, windows)
-      : readTagValuesInWindows(colored, windows)
-  const detectedModifications = new Map(
-    [...collectAcrossGroups(colored, d => d.detectedModifications)].map(
-      type => [type, getColorForModification(type)],
-    ),
-  )
-  const qualitySpan =
-    baseLayer?.field === 'baseQuality'
-      ? baseQualitySpanAcrossGroups(byGroup)
-      : NO_QUALITY_SPAN
-  const legend = getReadDisplayLegendItems({
-    overlaps,
-    colorField,
-    baseLayer,
-    detectedModifications,
-    presentModifications: modificationTypesInWindows(colored, windows),
-    presentCategories: readCategoriesInWindows(colored, windows),
-    palette,
-    presentTagValues,
-    refNamePosition,
-    bakedScale,
-    sectionOrder: keySectionOrder(facet, colorField),
-    baseQualityUnavailable: qualitySpan.unavailable,
-    labels: keyLabels,
-    descending: preset.descending,
-  }).filter(item => item.color !== undefined)
-  const { ramps, readTitle } = titledReadColorKey(
-    colorRampScales({
-      colorField,
-      baseLayer,
-      bakedScale,
-      linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
-      baseQualityExtent: qualitySpan.extent,
-    }),
-    preset.title,
-  )
+  const legend = views
+    .legendItems(palette)
+    .filter(item => item.color !== undefined)
+  const { ramps, readTitle } = titledReadColorKey(views.colorRamps, title)
   return {
     sections,
     palette,
-    declared,
-    keyLabels,
+    declared: views.declaredReadLabels,
+    keyLabels: views.keyReadLabels,
     readField: colorField,
     legend: {
       label: legend.map(item => item.label),
@@ -1588,20 +1512,39 @@ export async function alignmentTables(
     collapseSections: false,
     featureHeight,
   })
+  const setting = alignmentsColorSnapshotOf(color.node)
+  const presetLegend = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend
   const colors = colorReads(
-    { ...color, field: colorField },
-    baseLayer,
-    laidByGroup,
-    chain ? { unit, framesChainStrand } : {},
-    facetSetting,
-    colorField === 'mateRefName'
-      ? (refNamePosition ??
-          positionIn(refNames ?? (await dataAdapter.getRefNames())))
-      : undefined,
-    drawsOverlaps
-      ? overlapLegendRows(chain, overlapKindsInWindows(laidByGroup, windows))
-      : [],
-    windows,
+    memoizedViews(
+      alignmentsColorViews({
+        colorEncoding: color.encoding,
+        colorField,
+        colorLabels: setting.scale.names ?? [],
+        colorKeyDescending: presetLegend.descending,
+        bodyColorKind: bodyColorKind(colorField, baseLayer),
+        baseLayer,
+        unit,
+        effectiveFacet: facetSetting,
+        collapseSections: false,
+        featureHeight,
+        showLegend: true,
+        framesChainStrand,
+        laidOutByGroupFramed: laidByGroup,
+        keyWindows: windows,
+        paintedRefNamePosition:
+          colorField === 'mateRefName'
+            ? (refNamePosition ??
+                positionIn(refNames ?? (await dataAdapter.getRefNames())))
+            : undefined,
+        detectedModifications: detectedModificationsOf(fetched),
+      }),
+    ),
+    {
+      setting,
+      encoding: color.encoding,
+      field: colorField,
+      title: presetLegend.title,
+    },
   )
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {

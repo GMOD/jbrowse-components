@@ -88,17 +88,9 @@ import {
   sameLaneJunction,
 } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
-import {
-  writtenReadCategoryColors,
-  declaredReadLabels,
-  isBakedField,
-} from '../shared/alignmentsColor.ts'
+import { writtenReadCategoryColors } from '../shared/alignmentsColor.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
-import {
-  paintsEveryBase,
-  paintsModifications,
-  workerColorField,
-} from '../shared/colorFieldDefs.ts'
+import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
 import {
   facetForUnit,
@@ -107,28 +99,21 @@ import {
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
-import { keySectionOrder } from '../shared/keySectionOrder.ts'
 import {
   LEGEND_MAX_WIDTH,
-  colorRampScales,
   getAlignmentsColorScales,
   arcColorCategoryLabel,
   arcLegendTitle,
   getArcLegendItems,
-  getReadDisplayLegendItems,
-  insertSizeBandLabels,
-  overlapLegendRows,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
   sashimiLegend,
 } from '../shared/legendUtils.ts'
-import { getColorForModification } from '../util.ts'
-import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
-  bakedColorExtent,
-  bakedColorScale,
-  linearFieldExtent,
-} from './bakedColorScale.ts'
+  alignmentsColorViews,
+  detectedModificationsOf,
+} from './alignmentsColorViews.ts'
+import { sortOf } from './alignmentsSortConfigSchema.ts'
 import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import { framesUnpairedChainStrand, rgb255 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
@@ -154,7 +139,6 @@ import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import { exportedReads } from './exportedReads.ts'
 import {
   applyChainStrandFrames,
-  applyReadColorsByGroup,
   attachLinkedReadLinesByGroup,
   fitLaneRows,
   fittedReadPitch,
@@ -177,13 +161,7 @@ import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   arcSlotsInWindows,
   connectorSlotsInWindows,
-  insertSizeBandInWindows,
   junctionInWindows,
-  modificationTypesInWindows,
-  overlapKindsInWindows,
-  readCategoriesInWindows,
-  readMapqsInWindows,
-  readTagValuesInWindows,
 } from './keyWindows.ts'
 import { buildLanes, drawnLanesOf } from './lanes.ts'
 import {
@@ -203,10 +181,8 @@ import {
   getSortMenuItem,
   getTrackSizingItems,
 } from './menus/index.ts'
-import { NO_QUALITY_SPAN, baseQualitySpanAcrossGroups } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { connectorBandState } from './renderers/connectorMarks.ts'
-import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
@@ -233,8 +209,6 @@ import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
-import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
-import type { OverlapLegendRow } from '../shared/legendUtils.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   BasesPatch,
@@ -242,7 +216,6 @@ import type {
   SortColumn,
   SortSetting,
 } from '../shared/types'
-import type { NumericExtent } from './bakedColorScale.ts'
 import type {
   BaseLinearAlignmentsDisplayConfigModel,
   BaseLinearAlignmentsDisplayConfigSchema,
@@ -255,7 +228,6 @@ import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
 import type { GroupSize } from './groupLayout.ts'
 import type { AlignmentLane } from './lanes.ts'
-import type { QualitySpan } from './qualitySpans.ts'
 import type {
   AlignmentsRenderingBackend,
   SectionSource,
@@ -581,17 +553,7 @@ export default function stateModelFactory(
            * instead.
            */
           get detectedModifications(): ReadonlyMap<string, string> {
-            const out = new Map<string, string>()
-            for (const { groups } of self.rpcDataMap.values()) {
-              for (const { data } of groups) {
-                for (const type of data.detectedModifications) {
-                  if (!out.has(type)) {
-                    out.set(type, getColorForModification(type))
-                  }
-                }
-              }
-            }
-            return out
+            return detectedModificationsOf(self.rpcDataMap)
           },
 
           /**
@@ -913,89 +875,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Read-color buckets present across the rendered reads, so the legend
-           * lists only relevant swatches. Empty while the legend is hidden,
-           * skipping the O(reads) scan.
-           */
-          get colorLegendCategories(): Set<ReadColorCategory> {
-            // Baked categories off the laid-out groups, not a second
-            // classification of `rpcDataMap`: `readFillColors` is empty until
-            // the main thread bakes it.
-            return self.showLegend
-              ? readCategoriesInWindows(this.laidOutByGroup, this.keyWindows)
-              : new Set()
-          },
-
-          /**
-           * #getter
-           * The per-read values the CPU-baked fields painted in the rendered
-           * reads (tag values, or mate refNames under chromosome painting).
-           * `undefined` for other fields, and the legend then does not filter;
-           * the empty set means none are on screen. Gated on showLegend:
-           * O(reads).
-           */
-          get presentTagValues(): ReadonlySet<string> | undefined {
-            if (!self.showLegend || !isBakedField(self.colorField)) {
-              return undefined
-            }
-            return self.colorField === 'mapq'
-              ? readMapqsInWindows(this.laidOutByGroup, this.keyWindows)
-              : readTagValuesInWindows(this.laidOutByGroup, this.keyWindows)
-          },
-
-          /**
-           * #getter
-           * The modification types drawn in the rendered reads. Read from
-           * `modificationTypes`, which the worker builds from the drawn marks;
-           * `detectedModifications` includes hidden lanes. The legend's
-           * bisulfite branch runs before this filter, since the two differ
-           * there. `undefined` outside the modification fields.
-           */
-          get presentModifications(): ReadonlySet<string> | undefined {
-            if (!self.showLegend || !paintsModifications(self.baseLayer)) {
-              return undefined
-            }
-            return modificationTypesInWindows(
-              this.laidOutByGroup,
-              this.keyWindows,
-            )
-          },
-
-          /**
-           * #getter
-           * `encoding.color.scale.names` against the read buckets and values it names, which
-           * every key row, hover and connection curve names a bucket by.
-           */
-          get declaredReadLabels(): DeclaredReadLabels {
-            return declaredReadLabels(self.colorEncoding, self.colorLabels)
-          },
-
-          /**
-           * #getter
-           * The keys' row names: `declaredReadLabels` over the insert-size rows
-           * named with the band they part at, where every region in view
-           * classifies by one band.
-           */
-          get keyReadLabels(): DeclaredReadLabels {
-            const declared = this.declaredReadLabels
-            return {
-              ...declared,
-              categories: {
-                ...insertSizeBandLabels(
-                  self.showLegend
-                    ? insertSizeBandInWindows(
-                        this.laidOutByGroup,
-                        this.keyWindows,
-                      )
-                    : undefined,
-                ),
-                ...declared.categories,
-              },
-            }
-          },
-
-          /**
-           * #getter
            * The arc color slots plotted, mapped to legend buckets, for curved
            * arcs and the read cloud alike. Empty unless an overlay is on with
            * the legend shown.
@@ -1013,61 +892,6 @@ export default function stateModelFactory(
               }
             }
             return present
-          },
-
-          /**
-           * #getter
-           * The overlap rows the legend names: a chain's split-segment and
-           * mate overlaps, or the collapsed rows' tint. A row needs the pass to
-           * be DRAWING (`shouldDrawOverlaps`, shared with both renderers) and
-           * some region to hold an interval of its kind, so no row explains an
-           * off-screen mark. O(regions).
-           */
-          get overlapLegendRows(): readonly OverlapLegendRow[] {
-            return shouldDrawOverlaps({
-              unit: self.unit,
-              collapseSections: this.collapseSections,
-              featureHeight: this.featureHeight,
-            })
-              ? overlapLegendRows(
-                  self.unit === 'chain',
-                  overlapKindsInWindows(this.laidOutByGroup, this.keyWindows),
-                )
-              : []
-          },
-
-          /**
-           * #getter
-           * The sections' order, where the facet field is the one the reads are
-           * colored by: a key over one field lists the values as the sections
-           * stack.
-           * Not over `mapq`, whose sections are bins and whose key is its bins
-           * or its raw values.
-           */
-          get keySectionOrder() {
-            return keySectionOrder(this.effectiveFacet, self.colorField)
-          },
-
-          /**
-           * #method
-           */
-          legendItems(palette: ColorPalette) {
-            return getReadDisplayLegendItems({
-              overlaps: this.overlapLegendRows,
-              colorField: self.colorField,
-              baseLayer: self.baseLayer,
-              presentCategories: this.colorLegendCategories,
-              palette,
-              detectedModifications: this.detectedModifications,
-              presentTagValues: this.presentTagValues,
-              presentModifications: this.presentModifications,
-              refNamePosition: this.paintedRefNamePosition,
-              bakedScale: this.bakedColorScale,
-              sectionOrder: this.keySectionOrder,
-              baseQualityUnavailable: this.baseQualitySpan.unavailable,
-              labels: this.keyReadLabels,
-              descending: self.colorKeyDescending,
-            })
           },
 
           /**
@@ -1346,35 +1170,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-group laid-out data with the per-read color arrays baked on.
-           * No input in `readColorContext` moves a read's row, so a recolor
-           * keeps the layout memoized and `readYs` keeps its identity: the GPU
-           * upload memo checks `readYs` to rewrite only the read pass. Tag
-           * colors bake here, not in the worker, so tag coloring stays a
-           * main-thread tier-2 setting.
-           */
-          get laidOutByGroupColored() {
-            return applyReadColorsByGroup(
-              this.laidOutByGroupFramed,
-              this.readColorContext,
-            )
-          },
-
-          /**
-           * #getter
-           * `laidOutByGroupColored` with the straight-line pass's records
-           * spread on, so a curved-connector toggle re-spreads the lines and
-           * keeps both the layout and the colors.
-           */
-          get laidOutByGroup() {
-            return attachLinkedReadLinesByGroup(
-              this.laidOutByGroupColored,
-              this.connectorsByGroup,
-            )
-          },
-
-          /**
-           * #getter
            * Every read connector per group, from one walk of its reads: the
            * straight-line pass's records and the pairs the connector mark
            * draws. Reads the layout tier, so a band resize, height drag or
@@ -1436,78 +1231,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-read color bake's inputs, kept out of `groupLayoutContext`
-           * so a recolor never relays.
-           */
-          get readColorContext() {
-            return {
-              colorField: self.colorField,
-              bodyColorKind: self.bodyColorKind,
-              readColorOpts: this.readColorOpts,
-              bakedScale: this.bakedColorScale,
-            }
-          },
-
-          /**
-           * #getter
-           * The span of a linear color field over the loaded reads, which a
-           * ramp's open ends stretch across: their extremes, or below a
-           * `domainQuantile` of 1 that quantile of each sign. Undefined
-           * while `domainMin` and `domainMax` both pin the ramp or another
-           * scale paints, so a region arriving rebakes nothing then.
-           */
-          get bakedColorExtent(): NumericExtent | undefined {
-            return bakedColorExtent(
-              self.colorEncoding,
-              self.colorField,
-              this.laidOutByGroupFramed,
-              () => this.linearFieldExtent,
-            )
-          },
-
-          /**
-           * #getter
-           * The whole span of a linear color field, a tag or MAPQ, over the
-           * loaded reads (`linearFieldExtent`).
-           */
-          get linearFieldExtent(): NumericExtent | undefined {
-            return linearFieldExtent(
-              self.colorEncoding,
-              self.colorField,
-              this.laidOutByGroupFramed,
-            )
-          },
-
-          /**
-           * #getter
-           * The span of the base qualities drawn, and whether a base has
-           * none. O(bases), so gated on showLegend like the category scan.
-           */
-          get baseQualitySpan(): QualitySpan {
-            return self.showLegend && self.baseLayer?.field === 'baseQuality'
-              ? baseQualitySpanAcrossGroups(this.laidOutByGroupFramed)
-              : NO_QUALITY_SPAN
-          },
-
-          /**
-           * #getter
-           * The scale a tag, attribute or mate reference bakes through, read by
-           * the per-read bake and the key alike. Undefined for the fields the
-           * category table paints.
-           */
-          get bakedColorScale() {
-            return isBakedField(self.colorField)
-              ? bakedColorScale(
-                  self.colorField,
-                  self.colorEncoding,
-                  this.paintedRefNamePosition,
-                  this.bakedColorExtent,
-                )
-              : undefined
-          },
-
-          /**
-           * #getter
            * Where a mate's reference sits in this assembly's own chromosome
            * order, for chromosome painting — the same
            * `Assembly.getRefNamePosition` the comparative displays paint by.
@@ -1521,19 +1244,6 @@ export default function stateModelFactory(
                 ? self.loadedAssembly
                 : undefined
             return assembly?.getRefNamePosition
-          },
-
-          /**
-           * #getter
-           * The inputs to read classification beside the field, with the framing as
-           * `framesChainStrand` answered it, so the bake frames exactly where
-           * the consensus pass ran and the key words it.
-           */
-          get readColorOpts() {
-            return {
-              unit: self.unit,
-              framesChainStrand: this.framesChainStrand,
-            }
           },
 
           /**
@@ -1783,6 +1493,21 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => alignmentsColorViews(self))
+      .views(self => ({
+        /**
+         * #getter
+         * `laidOutByGroupColored` with the straight-line pass's records
+         * spread on, so a curved-connector toggle re-spreads the lines and
+         * keeps both the layout and the colors.
+         */
+        get laidOutByGroup() {
+          return attachLinkedReadLinesByGroup(
+            self.laidOutByGroupColored,
+            self.connectorsByGroup,
+          )
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -2460,13 +2185,7 @@ export default function stateModelFactory(
           colorScalesIn(theme: JBrowsePalette): ColorScale[] {
             const palette = colorsIn(theme)
             return getAlignmentsColorScales({
-              ramps: colorRampScales({
-                colorField: self.colorField,
-                baseLayer: self.baseLayer,
-                bakedScale: self.bakedColorScale,
-                linearFieldExtent: self.linearFieldExtent,
-                baseQualityExtent: self.baseQualitySpan.extent,
-              }),
+              ramps: self.colorRamps,
               colorTitle: self.colorKeyTitle,
               legendItems: () => self.legendItems(palette),
               arcLegendTitle: self.arcLegendTitle,
