@@ -6,12 +6,15 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
 import { containingHost } from './foundationView.ts'
+import { nextGateState } from './regionTooLargeUtils.ts'
 import {
-  AUTO_FORCE_LOAD_BP,
-  evaluateRegionTooLarge,
-  nextGateState,
-  resolveByteLimit,
-} from './regionTooLargeUtils.ts'
+  regionTooLargeActiveViews,
+  regionTooLargeBudgetViews,
+  regionTooLargeConfigViews,
+  regionTooLargeFloorViews,
+  regionTooLargeStatusViews,
+  regionTooLargeVerdictViews,
+} from './regionTooLargeViews.ts'
 
 import type { RegionTooLargeConfigModel } from './regionTooLargeConfigSchemaFields.ts'
 import type {
@@ -61,6 +64,9 @@ function host(self: object) {
  * `regionTooLarge` is derived from that last measurement. While the banner is
  * up the fetch runs once per settled viewport and settings, which is the
  * re-measure.
+ * The budget and the verdict are written in `regionTooLargeViews.ts`, over
+ * the leaves `RegionTooLargeGateHost` names, so a static export installs them
+ * on a model of its own and gates as the screen does.
  * Composed by `MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and
  * the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
  *
@@ -113,17 +119,6 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The display's `fetchSizeLimit` slot, from
-       * `regionTooLargeConfigSchemaFields`. `number | undefined`, because
-       * `getConf` returns `undefined` for a slot a composing display's schema
-       * never declared, which typing it `number` would hide —
-       * `resolveByteLimit` falls back closed, and reports why.
-       */
-      get configuredFetchSizeLimit(): number | undefined {
-        return getConf(host(self), 'fetchSizeLimit')
-      },
-      /**
-       * #getter
        * The density axis's verdict, and the whole of that axis's opt-in:
        * `FeatureGateMixin` overrides it beside the measurement that
        * fills it, and a byte-only display leaves it false.
@@ -151,13 +146,6 @@ export default function RegionTooLargeMixin() {
           ...this.byteGateAdapterPath,
           'fetchSizeLimit',
         ])
-      },
-      /**
-       * #getter
-       * The declarative `forceLoad` slot.
-       */
-      get configForceLoad(): boolean {
-        return getConf(host(self), 'forceLoad')
       },
       /**
        * #getter
@@ -206,30 +194,10 @@ export default function RegionTooLargeMixin() {
         }
       },
     }))
+    .views(self => regionTooLargeConfigViews(host(self)))
+    .views(self => regionTooLargeFloorViews(self))
+    .views(self => regionTooLargeBudgetViews(self))
     .views(self => ({
-      /**
-       * #getter
-       * Whether the span on screen is at or above `AUTO_FORCE_LOAD_BP`, the one
-       * comparison against that constant. False on an unmeasured view.
-       */
-      get aboveForceLoadFloor(): boolean {
-        const spanBp = self.gateViewportSpanBp
-        return spanBp !== undefined && spanBp >= AUTO_FORCE_LOAD_BP
-      },
-      /**
-       * #getter
-       * Nothing may gate on either axis: the `forceLoad` slot or the button.
-       */
-      get gateExempt() {
-        return self.configForceLoad || self.forceLoadTrack
-      },
-      /**
-       * #getter
-       * The stored estimate's bytes; undefined when nothing has been measured.
-       */
-      get estimatedFetchBytes() {
-        return self.byteEstimate?.bytes
-      },
       /**
        * #getter
        * Whether the last measurement still describes what a fetch issued now
@@ -244,52 +212,6 @@ export default function RegionTooLargeMixin() {
           self.gateViewport?.key,
         )
       },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The byte budget: the adapter's limit, else the display's, doubled below
-       * `AUTO_FORCE_LOAD_BP`. Read only through `resolvedByteLimit()`.
-       */
-      get gateByteLimit() {
-        return resolveByteLimit({
-          adapterFetchSizeLimit: self.adapterFetchSizeLimit,
-          configFetchSizeLimit: self.configuredFetchSizeLimit,
-          belowForceLoadFloor: !self.aboveForceLoadFloor,
-        })
-      },
-      /**
-       * #getter
-       * Whether the gate may act right now, on any axis: opted in, not exempt,
-       * view measured. The view is read last, so an ungated display never
-       * touches it.
-       */
-      get gateActive(): boolean {
-        return (
-          self.gateEnabled &&
-          !self.gateExempt &&
-          self.gateViewportSpanBp !== undefined
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether the density axis may act: `gateActive`, and the span is above
-       * the floor — the one axis the floor applies to. Whether it has anything
-       * to say is `densityTooLarge`.
-       */
-      get densityGateActive(): boolean {
-        return self.gateActive && self.aboveForceLoadFloor
-      },
-      /**
-       * #method
-       * The budget the worker enforces and the banner compares against — the
-       * one spelling of that pair. Undefined when the gate may not act.
-       */
-      resolvedByteLimit(): number | undefined {
-        return self.gateActive ? self.gateByteLimit : undefined
-      },
       /**
        * #method
        * The gate as it stands for a fetch about to be issued. Calling it is the
@@ -303,48 +225,9 @@ export default function RegionTooLargeMixin() {
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The verdict and its banner text, from the stored estimate against
-       * `resolvedByteLimit()` and the density axis when it may act.
-       */
-      get tooLargeStatus() {
-        return evaluateRegionTooLarge({
-          estimatedFetchBytes: self.estimatedFetchBytes,
-          byteLimit: self.resolvedByteLimit(),
-          densityTooLarge: self.densityGateActive && self.densityTooLarge,
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get regionTooLarge() {
-        return self.tooLargeStatus.tooLarge
-      },
-
-      /**
-       * #getter
-       * Banner text for the axis that tripped; empty when not too large.
-       */
-      get regionTooLargeReason() {
-        return self.tooLargeStatus.reason
-      },
-
-      /**
-       * #getter
-       * Whether "zoom in to see features" is honest advice. Density always
-       * releases on zoom; bytes only if the last zoom-in moved the estimate.
-       */
-      get zoomCanReleaseGate(): boolean {
-        return (
-          self.tooLargeStatus.axis !== 'bytes' ||
-          !self.byteEstimate?.zoomIneffective
-        )
-      },
-    }))
+    .views(self => regionTooLargeActiveViews(self))
+    .views(self => regionTooLargeStatusViews(self))
+    .views(self => regionTooLargeVerdictViews(self))
     .views(self => ({
       /**
        * #getter
