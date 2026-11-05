@@ -49,6 +49,80 @@ export function heightModeViews(self: HeightModeHost) {
     get fitHeightToDisplay(): boolean {
       return this.heightMode === 'fit'
     },
+    /**
+     * #getter
+     * Ceiling `grow` mode sizes the track to, in px (content past it scrolls).
+     * Lives here rather than as a constant so a track whose whole point is a
+     * deep pileup can raise it; both displays that own a `grownHeight` read
+     * this, so the two can't diverge.
+     */
+    get growMaxHeight(): number {
+      return getConf(self, 'growMaxHeight')
+    },
+  }
+}
+
+/**
+ * The height the fit and grow layouts pack into, off `TrackHeightMixin`'s
+ * `allottedHeight`, which `HeightModeMixin` installs and a static host
+ * composing `TrackHeightMixin` installs too.
+ */
+export function fitTargetHeightViews(self: { allottedHeight: number }) {
+  return {
+    /**
+     * #getter
+     * The height the track is allotted (`TrackHeightMixin.allottedHeight`:
+     * the slot's, or a ring's band) — the fit target the fit/grow layout
+     * scales or packs content into. Read there instead of the reactive
+     * `height` getter to break the grow-mode cycle
+     * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
+     */
+    get fitTargetHeight(): number {
+      return self.allottedHeight
+    },
+  }
+}
+
+/**
+ * The track height under the `heightMode` strategy, past the display's
+ * `growTargetHeight` hook: `HeightModeMixin` installs it, and a static host,
+ * whose frame is always measured, installs the same.
+ */
+export function grownHeightViews(self: {
+  autoHeight: boolean
+  fitTargetHeight: number
+  growMaxHeight: number
+  growTargetHeight: number
+  hostInitialized: boolean
+}) {
+  return {
+    /**
+     * #getter
+     * Target track height for `grow`: what the content wants, capped so a
+     * deep stack doesn't grow the track to thousands of px (the remainder
+     * scrolls). What `installGrowExitBake` bakes into the slot on exit.
+     */
+    get grownHeight(): number {
+      return Math.min(self.growTargetHeight, self.growMaxHeight)
+    },
+    /**
+     * #getter
+     * In grow mode the track height follows the laid-out content reactively —
+     * no autorun writes the height config slot, so a settled relayout never
+     * churns the persisted session nor bakes a momentary height. Fixed/fit
+     * read the slot (fit shrinks content to fill it).
+     *
+     * Guarded on `hostInitialized`: `growTargetHeight` transitively reads
+     * view-geometry getters that throw before the view is measured, and unlike
+     * an autorun (whose MobX error boundary would swallow the pre-init throw)
+     * a getter propagates it into render/hydration. Overrides
+     * `TrackHeightMixin.height`.
+     */
+    get height(): number {
+      return self.autoHeight && self.hostInitialized
+        ? this.grownHeight
+        : self.fitTargetHeight
+    },
   }
 }
 
@@ -86,29 +160,7 @@ export default function HeightModeMixin() {
   return types
     .compose('HeightModeMixin', TrackHeightMixin(), types.model({}))
     .views(self => heightModeViews(confNode(self)))
-    .views(self => ({
-      /**
-       * #getter
-       * The height the track is allotted (`TrackHeightMixin.allottedHeight`:
-       * the slot's, or a ring's band) — the fit target the fit/grow layout
-       * scales or packs content into. Read there instead of the reactive
-       * `height` getter to break the grow-mode cycle
-       * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
-       */
-      get fitTargetHeight(): number {
-        return self.allottedHeight
-      },
-      /**
-       * #getter
-       * Ceiling `grow` mode sizes the track to, in px (content past it scrolls).
-       * Lives here rather than as a constant so a track whose whole point is a
-       * deep pileup can raise it; both displays that own a `grownHeight` read
-       * this, so the two can't diverge.
-       */
-      get growMaxHeight(): number {
-        return getConf(confNode(self), 'growMaxHeight')
-      },
-    }))
+    .views(self => fitTargetHeightViews(self))
     .views(self => ({
       /**
        * #getter
@@ -126,39 +178,16 @@ export default function HeightModeMixin() {
       get growTargetHeight(): number {
         return self.fitTargetHeight
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * Target track height for `grow`: what the content wants, capped so a
-       * deep stack doesn't grow the track to thousands of px (the remainder
-       * scrolls). What `installGrowExitBake` bakes into the slot on exit.
+       * Whether the containing view is measured, which a grown `height`
+       * waits on.
        */
-      get grownHeight(): number {
-        return Math.min(self.growTargetHeight, self.growMaxHeight)
+      get hostInitialized(): boolean {
+        return containingHost(self).initialized
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * In grow mode the track height follows the laid-out content reactively —
-       * no autorun writes the height config slot, so a settled relayout never
-       * churns the persisted session nor bakes a momentary height. Fixed/fit
-       * read the slot (fit shrinks content to fill it).
-       *
-       * Guarded on `view.initialized`: `growTargetHeight` transitively reads
-       * view-geometry getters that throw before the view is measured, and unlike
-       * an autorun (whose MobX error boundary would swallow the pre-init throw)
-       * a getter propagates it into render/hydration. Overrides
-       * `TrackHeightMixin.height`.
-       */
-      get height(): number {
-        const view = containingHost(self)
-        return self.autoHeight && view.initialized
-          ? self.grownHeight
-          : self.fitTargetHeight
-      },
-    }))
+    .views(self => grownHeightViews(self))
     .actions(self => ({
       /**
        * #action
