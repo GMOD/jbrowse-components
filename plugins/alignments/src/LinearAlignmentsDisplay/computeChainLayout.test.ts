@@ -59,7 +59,6 @@ function makeChainData(opts: {
   const readKeys = Array.from({ length: numReads }, (_, i) => `id${i}`)
 
   return {
-    readIdPrefix: undefined,
     ...emptyModTooltipIndex(),
     ...nextRefsToTable(Array.from({ length: numReads }, () => '')),
     readChainIndices,

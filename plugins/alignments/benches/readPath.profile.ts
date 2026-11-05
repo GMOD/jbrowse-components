@@ -78,8 +78,7 @@ console.log(
     `  reference=${regionSequence ? `${regionSequence.length}bp` : 'none (MD only)'}`,
 )
 
-const readIdPrefix = ''
-const buildFeatureData = (f: any) => buildBaseFeatureData(f, readIdPrefix)
+const buildFeatureData = (f: any) => buildBaseFeatureData(f, true)
 const extractOpts = {
   colorBy: undefined,
   showSoftClips: false,
@@ -128,7 +127,7 @@ const { buildReadNextRefs } = await import(
 const buildTimes: number[] = []
 for (let r = 0; r < ROUNDS; r++) {
   const t = performance.now()
-  buildBaseReadArrays(records as any, readIdPrefix)
+  buildBaseReadArrays(records as any, true)
   buildReadNameBlock(records as any)
   buildReadNextRefs(records as any)
   buildTimes.push(performance.now() - t)

@@ -34,7 +34,6 @@ interface Read {
 function arrays(reads: Read[]): OverlayReadArrays {
   return {
     readKeys: reads.map(r => r.id),
-    readIdPrefix: undefined,
     ...namesToBlock(reads.map(r => r.name)),
     readPositions: new Uint32Array(reads.flatMap(r => [r.start, r.end])),
     readFlags: new Uint16Array(reads.map(r => r.flags ?? 0)),

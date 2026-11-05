@@ -81,10 +81,10 @@ function splitArcs(
 function fetchResult(features: Feature[], region: Region) {
   const extracted = extractFeatureArrays(
     features,
-    (f: Feature) => buildBaseFeatureData(f, undefined),
+    (f: Feature) => buildBaseFeatureData(f, false),
     { showSoftClips: false, region, perBaseBinBp: 1 },
   )
-  const { readArrays } = buildBaseReadArrays(extracted.features, undefined)
+  const { readArrays } = buildBaseReadArrays(extracted.features, false)
   return makePileupDataResult({
     ...readArrays,
     ...buildReadNameBlock(features),

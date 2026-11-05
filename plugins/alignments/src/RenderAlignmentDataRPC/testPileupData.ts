@@ -87,7 +87,6 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     // sortLayout.test.ts, since it changes the canonical tiebreak from a
     // lexicographic compare to a numeric one.
     readKeys: Array.from({ length: n }, (_, i) => `id${i}`),
-    readIdPrefix: undefined,
     // `read0read1...` with the offsets that cut it back up, which is the shape
     // the worker ships (alignments-core/src/readNameBlock.ts).
     ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),

@@ -56,7 +56,6 @@ export function pileupDataFromSamRecords(
     // ids are per-record and distinct; names are the QNAME, which split
     // segments of one read share and which is what groups them
     readKeys: records.map((_, i) => `id${i}`),
-    readIdPrefix: undefined,
     ...namesToBlock(records.map(rec => rec.name)),
     readSuppAlignments: records.map(rec => rec.SA),
   }

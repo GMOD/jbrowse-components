@@ -22,7 +22,6 @@ describe('chainHighlightRects', () => {
     refName,
     data: {
       readKeys: [id],
-      readIdPrefix: undefined,
     } as unknown as ReadEntry['data'],
     readIdx: 0,
   })

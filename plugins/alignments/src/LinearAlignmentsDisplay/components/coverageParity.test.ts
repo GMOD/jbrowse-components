@@ -97,7 +97,6 @@ const SNP_BUFFER = packSnpInstances(
 function makeMinimalReadData() {
   return {
     regionStart: REGION_START,
-    readIdPrefix: undefined,
     readPositions: new Uint32Array([]),
     readYs: new Uint16Array([]),
     readFlags: new Uint16Array([]),

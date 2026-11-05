@@ -29,8 +29,8 @@ paired/supplementary/secondary/mate questions.
 
 - **A map key, dedupe key or sort tiebreak takes `readKeys`.** Build the string
   with `readIdAt(data, i)` only where the id leaves the arrays (hover, click,
-  details fetch), and never spell it yourself: a wrong prefix fails only in the
-  worker, as "Could not load details".
+  details fetch), and never spell it yourself: a wrong spelling fails only in
+  the worker, as "Could not load details".
 - **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** Anything
   feeding the block stays allocation-free (`copyNameInto`, not a `nameBytes`
   view). `groupReadsByName` hashing slices is a priced-in cost — don't "fix" it

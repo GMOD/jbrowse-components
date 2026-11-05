@@ -26,7 +26,7 @@ describe('buildBaseReadArrays', () => {
   test('keeps the true start of a read overhanging the region start', () => {
     const { readArrays } = buildBaseReadArrays(
       [feat({ start: 100, end: 2000 })],
-      undefined,
+      false,
     )
     expect([...readArrays.readPositions]).toEqual([100, 2000])
   })
@@ -37,7 +37,7 @@ describe('buildBaseReadArrays', () => {
         feat({ id: 'a', start: 1000, end: 1100 }),
         feat({ id: 'b', start: 1200, end: 1300 }),
       ],
-      undefined,
+      false,
     )
     expect([...readArrays.readPositions]).toEqual([1000, 1100, 1200, 1300])
   })
@@ -54,7 +54,7 @@ describe('buildBaseReadArrays', () => {
           strand: -1,
         }),
       ],
-      undefined,
+      false,
     )
     expect(readArrays.readKeys).toEqual(['x'])
     expect(readArrays.readFlags[0]).toBe(99)
@@ -66,7 +66,7 @@ describe('buildBaseReadArrays', () => {
 
   // Uint8Array would wrap a raw 260; MAPQ 255 also means "unavailable".
   test('saturates mapq at 255', () => {
-    const { readArrays } = buildBaseReadArrays([feat({ mapq: 260 })], undefined)
+    const { readArrays } = buildBaseReadArrays([feat({ mapq: 260 })], false)
     expect(readArrays.readMapqs[0]).toBe(255)
   })
 
@@ -76,7 +76,7 @@ describe('buildBaseReadArrays', () => {
   test('emits no Y array', () => {
     const { readArrays } = buildBaseReadArrays(
       [feat({}), feat({ id: 'f2' })],
-      undefined,
+      false,
     )
     expect(readArrays).not.toHaveProperty('readYs')
   })

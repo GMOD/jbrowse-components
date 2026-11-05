@@ -1,8 +1,8 @@
 // What did `readIds: string[]` cost, built and then posted?
 //
 // LANDED. The numeric arm is what ships — the result carries `readKeys`
-// (a transferable Float64Array of the record id) plus the `readIdPrefix` that
-// spells the string back where one escapes; see alignments-core/src/readIdentity.ts. This
+// (a transferable Float64Array of the record id), which `readIdAt` spells back
+// into the string where one escapes; see alignments-core/src/readIdentity.ts. This
 // bench is kept because it is the A/B that decided it, and because the two
 // halves have to stay separated for the reason below.
 //

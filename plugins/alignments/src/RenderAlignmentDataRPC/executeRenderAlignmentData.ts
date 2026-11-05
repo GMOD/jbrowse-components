@@ -1,6 +1,6 @@
 import {
   buildReadNameBlock,
-  readIdPrefixOf,
+  recordIdsAreIds,
   readKeyOf,
   readNameAt,
 } from '@jbrowse/alignments-core'
@@ -72,11 +72,10 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 // the fetch (not the group) — resolving them once keeps modification coloring
 // identical in every section.
 interface GroupContext {
-  // The fetch's verified `${adapter.id}-`, or undefined when its features carry
-  // no numeric record id. Resolved once for the whole fetch rather than per
-  // group so every section's `readKeys` are the same form. See
-  // alignments-core/src/readIdentity.ts.
-  readIdPrefix: string | undefined
+  // Whether the fetch's record ids are its read ids (`recordIdsAreIds`).
+  // Resolved once for the whole fetch rather than per group so every section's
+  // `readKeys` are the same form. See alignments-core/src/readIdentity.ts.
+  numericKeys: boolean
   region: Region
   showSoftClips: boolean
   showCoverage: boolean
@@ -197,7 +196,7 @@ async function buildGroupResult(
     detectedModifications,
   } = extraction
   const {
-    readIdPrefix,
+    numericKeys,
     region,
     showSoftClips,
     showCoverage,
@@ -318,7 +317,7 @@ async function buildGroupResult(
 
   // Layout (readYs/gapYs/mismatchYs/etc.) and chain identity are the main
   // thread's — see `PileupLayoutArrays` and `ChainFields`.
-  const { readArrays } = buildBaseReadArrays(drawn.lists.features, readIdPrefix)
+  const { readArrays } = buildBaseReadArrays(drawn.lists.features, numericKeys)
 
   // Both modes, off the raw features, for the same reason the name block is:
   // the mate's reference is a NUMBER on the record and only becomes a string
@@ -481,10 +480,10 @@ export async function groupsOfFetch({
   }
 
   const featureGroups = partitionFeatures(sample, facet, pluginManager.jexl)
-  // One prefix for the whole fetch, off the unfiltered feature set so an empty
+  // One form for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
-  const readIdPrefix = readIdPrefixOf(featuresArray)
-  const buildFeatureData = (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
+  const numericKeys = recordIdsAreIds(featuresArray)
+  const buildFeatureData = (f: Feature) => buildBaseFeatureData(f, numericKeys)
   const extractOpts = {
     jexl: pluginManager.jexl,
     colorField,
@@ -586,7 +585,7 @@ export async function groupsOfFetch({
     : new Map()
 
   const ctx: GroupContext = {
-    readIdPrefix,
+    numericKeys,
     region,
     showSoftClips,
     showCoverage,

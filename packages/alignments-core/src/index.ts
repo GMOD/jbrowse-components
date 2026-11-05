@@ -63,7 +63,12 @@ export {
   svSignalTier,
   withSvTier,
 } from './readCategoryBits.ts'
-export { readIdAt, readIdPrefixOf, readKeyOf } from './readIdentity.ts'
+export {
+  readIdAt,
+  readIdPrefixOf,
+  readKeyOf,
+  recordIdsAreIds,
+} from './readIdentity.ts'
 export type { ReadIdentity, ReadKey, ReadKeys } from './readIdentity.ts'
 export {
   buildReadNameBlock,

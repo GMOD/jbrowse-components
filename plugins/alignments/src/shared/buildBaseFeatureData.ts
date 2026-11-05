@@ -6,18 +6,15 @@ import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * `readIdPrefix` is the fetch's verified `${adapter.id}-` (see
- * `readIdPrefixOf`), or undefined when these features have no numeric record id
- * — and it is what decides which form `id` takes. Undefined means read the
- * string, so a numeric key can never exist without a prefix to rebuild its
- * string from.
+ * `numericKeys` is `recordIdsAreIds` over the fetch, and decides which form
+ * `id` takes, so a numeric key exists only where it spells the read's id.
  */
 export function buildBaseFeatureData(
   feature: Feature,
-  readIdPrefix: string | undefined,
+  numericKeys: boolean,
 ): FeatureData {
   return {
-    id: readIdPrefix === undefined ? feature.id() : readKeyOf(feature),
+    id: numericKeys ? readKeyOf(feature) : feature.id(),
     start: feature.get('start'),
     end: feature.get('end'),
     flags: getFlags(feature),

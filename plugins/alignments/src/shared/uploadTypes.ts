@@ -23,7 +23,6 @@ export interface ReadUploadData {
   readColorCategories: Uint8Array
   readInterchrom: Uint8Array // 1 = mate on a different chromosome
   readKeys: ReadKeys
-  readIdPrefix: string | undefined
   maxY: number
   insertSizeStats?: InsertSizeBand
   segmentPositions: Uint32Array

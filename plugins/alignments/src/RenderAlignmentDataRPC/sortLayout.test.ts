@@ -1757,7 +1757,6 @@ describe('numeric read keys', () => {
       reads: keys.map(() => ({ start: 100, end: 200 })),
     }),
     readKeys: new Float64Array(keys),
-    readIdPrefix: 'a-',
   })
 
   test('the canonical tiebreak orders keys numerically', () => {
@@ -1783,7 +1782,6 @@ describe('numeric read keys', () => {
         reads: starts.map(s => ({ start: s, end: s + 100 })),
       }),
       readKeys: new Float64Array(keys),
-      readIdPrefix: 'a-',
     })
     const { rowMap, maxY } = computeMultiRegionLayout({
       entries: [

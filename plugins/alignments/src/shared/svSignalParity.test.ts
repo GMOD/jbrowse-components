@@ -125,14 +125,14 @@ const features = CASES.map(
 
 const extraction = extractFeatureArrays(
   features,
-  f => buildBaseFeatureData(f, undefined),
+  f => buildBaseFeatureData(f, false),
   {
     showSoftClips: false,
     region: { assemblyName: 'hg', refName: 'chr1', start: 0, end: 10_000 },
     perBaseBinBp: 1,
   },
 )
-const { readArrays } = buildBaseReadArrays(extraction.features, undefined)
+const { readArrays } = buildBaseReadArrays(extraction.features, false)
 const overlay = {
   ...readArrays,
   ...namesToBlock(CASES.map(c => c.name)),

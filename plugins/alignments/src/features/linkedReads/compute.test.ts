@@ -480,8 +480,7 @@ describe('readGroupConnections', () => {
   it('dedupes one read appearing in two regions (collapsed introns), no self-junction', () => {
     // A single unpaired alignment overlapping two collapsed-intron exon regions
     // is returned by BOTH region fetches, so it appears as two same-name entries
-    // sharing a readId (f.id() = adapter.id + fileOffset is stable across
-    // fetches). Without dedup, the two copies look like a 2-segment split read
+    // sharing a readId (f.id() is the fileOffset, stable across fetches). Without dedup, the two copies look like a 2-segment split read
     // and chainSubRead fabricates a junction between the read and itself.
     const regionA = makeData({
       names: ['r1'],

@@ -3,23 +3,20 @@ import type { ReadKeys } from '@jbrowse/alignments-core'
 
 /**
  * Collect the per-read identity keys. Numeric — one transferable rather than
- * `n` cloned strings — whenever the features carry a record id, which is what
- * `readIdPrefix` being defined means. See alignments-core/src/readIdentity.ts for the
- * measurement and the invariant.
+ * `n` cloned strings — whenever the features' record ids are their ids
+ * (`numericKeys`). See alignments-core/src/readIdentity.ts for the measurement
+ * and the invariant.
  *
- * The prefix decides the branch — `buildBaseFeatureData` reads `id()` whenever
- * it is undefined, so a numeric key never exists without a verified prefix to
- * rebuild its string from. Every feature of one fetch comes from one adapter, so
- * the branch is uniform; the per-read check is only there so a mixed set falls
- * back to strings rather than writing `NaN` into the array, and the fallback
- * still spells each id through the prefix so both branches carry the same one.
+ * Every feature of one fetch comes from one adapter, so the branch is uniform;
+ * the per-read check is only there so a mixed set falls back to strings rather
+ * than writing `NaN` into the array.
  */
 function buildReadKeys(
   features: FeatureData[],
-  readIdPrefix: string | undefined,
+  numericKeys: boolean,
 ): ReadKeys {
   const n = features.length
-  if (readIdPrefix !== undefined) {
+  if (numericKeys) {
     const keys = new Float64Array(n)
     let i = 0
     for (; i < n; i++) {
@@ -33,10 +30,7 @@ function buildReadKeys(
       return keys
     }
   }
-  const prefix = readIdPrefix ?? ''
-  return features.map(f =>
-    typeof f.id === 'number' ? `${prefix}${f.id}` : f.id,
-  )
+  return features.map(f => `${f.id}`)
 }
 
 /**
@@ -65,7 +59,7 @@ function buildReadKeys(
  */
 export function buildBaseReadArrays(
   features: FeatureData[],
-  readIdPrefix: string | undefined,
+  numericKeys: boolean,
 ) {
   const n = features.length
   const readPositions = new Uint32Array(n * 2)
@@ -94,8 +88,7 @@ export function buildBaseReadArrays(
       readInsertSizes,
       readPairOrientations,
       readStrands,
-      readKeys: buildReadKeys(features, readIdPrefix),
-      readIdPrefix,
+      readKeys: buildReadKeys(features, numericKeys),
     },
   }
 }

@@ -30,7 +30,7 @@ import { BamFile } from '@gmod/bam'
 // down. `agent-docs/reference/BENCHMARKING.md` has the rest of the traps.
 import {
   readIdAt,
-  readIdPrefixOf,
+  recordIdsAreIds,
   readKeyOf,
   buildReadNameBlock,
   readNameAt,
@@ -54,8 +54,7 @@ const START = Number(process.argv[3] ?? 10_000_000)
 const END = Number(process.argv[4] ?? 10_100_000)
 const ROUNDS = Number(process.env.ROUNDS ?? 15)
 
-// A config-hash-shaped id, so `readIdPrefixOf` has something realistic to strip
-// — including the '-' inside it, which a naive lastIndexOf would split wrongly.
+// The adapter-hash prefix read ids carried when the string arm was measured
 const ADAPTER_ID = 'adp--793442664'
 
 // Stands in for `BamSlightlyLazyFeature`, spelling the same accessors the
@@ -69,7 +68,7 @@ class Feat {
     this.names = names
   }
   id() {
-    return `${ADAPTER_ID}-${this.r.fileOffset}`
+    return `${this.r.fileOffset}`
   }
   get recordId() {
     return this.r.fileOffset
@@ -145,7 +144,7 @@ async function main() {
     nameBytes += r.read_name_length - 1
   }
 
-  const prefix = readIdPrefixOf(feats)
+  const numericKeys = recordIdsAreIds(feats)
   const buildKeys = () => {
     const out = new Float64Array(feats.length)
     for (let i = 0; i < feats.length; i++) {
@@ -178,7 +177,7 @@ async function main() {
   let bad = 0
   for (let i = 0; i < feats.length; i++) {
     const f = feats[i] as unknown as Feat
-    if (readIdAt({ readKeys: keys, readIdPrefix: prefix }, i) !== f.id()) {
+    if (readIdAt({ readKeys: keys }, i) !== f.id()) {
       bad++
     }
     if (readNameAt(block, i) !== f.get('name')) {
@@ -232,7 +231,7 @@ async function main() {
       `  max fileOffset        ${maxOffset} — over 2^32: ${maxOffset > 2 ** 32} (${(maxOffset / 2 ** 32).toFixed(0)}x)\n` +
       `  SA present            ${saCount} reads (${((100 * saCount) / records.length).toFixed(2)}%)\n` +
       `  distinct mate refs    ${refs.nextRefNames.length}\n` +
-      `  prefix stripped       ${prefix === undefined ? 'undefined — STRING FALLBACK' : `"${prefix}"`}\n` +
+      `  numeric keys          ${numericKeys ? 'yes' : 'no — STRING FALLBACK'}\n` +
       `  round-trip mismatches ${bad}   <- must be 0\n` +
       `\n` +
       `  build = CPU in the worker; post = structuredClone across to the main\n` +

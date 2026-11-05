@@ -139,10 +139,9 @@ export interface WorkerPileupData {
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
   // Per-read identity for hit testing, dedupe and layout tiebreaks — numeric
-  // for BAM/CRAM, with `readIdPrefix` rebuilding the `feature.id()` string at
+  // for BAM/CRAM, spelled back into the `feature.id()` string by `readIdAt` at
   // the few places one escapes. alignments-core/src/readIdentity.ts holds the invariant.
   readKeys: ReadKeys
-  readIdPrefix: string | undefined
   // Every read's QNAME as one string plus offsets into it — `readNameAt` slices
   // one back out. See alignments-core/src/readNameBlock.ts for why it is a block and not an
   // array, and what that costs the two consumers that want all of them.

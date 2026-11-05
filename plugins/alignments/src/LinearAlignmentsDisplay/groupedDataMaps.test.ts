@@ -409,20 +409,18 @@ test('buildReadIdIndex spells numeric keys back into ids', () => {
             key: '+',
             data: makePileupDataResult({
               readKeys: new Float64Array([4096, 8192]),
-              readIdPrefix: 'J9v2mQ1xKp-',
             }),
           },
         ]),
       ],
     ]),
   )
-  expect(map.get('J9v2mQ1xKp-4096')).toEqual({
+  expect(map.get('4096')).toEqual({
     displayedRegionIndex: 0,
     groupKey: '+',
     idx: 0,
   })
-  expect(map.get('J9v2mQ1xKp-8192')?.idx).toBe(1)
-  expect(map.get('4096')).toBeUndefined()
+  expect(map.get('8192')?.idx).toBe(1)
 })
 
 test('buildRawDataByGroup regroups regions into per-group region maps', () => {

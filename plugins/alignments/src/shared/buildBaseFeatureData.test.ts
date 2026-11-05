@@ -12,7 +12,7 @@ describe('buildBaseFeatureData', () => {
       strand: 1,
       flags: 0,
     })
-    expect(buildBaseFeatureData(feature, undefined).insertSize).toBe(0)
+    expect(buildBaseFeatureData(feature, false).insertSize).toBe(0)
   })
 
   test('mapq comes from feature score', () => {
@@ -25,7 +25,7 @@ describe('buildBaseFeatureData', () => {
       flags: 0,
       score: 37,
     })
-    expect(buildBaseFeatureData(feature, undefined).mapq).toBe(37)
+    expect(buildBaseFeatureData(feature, false).mapq).toBe(37)
   })
 
   test('mapq defaults to 255 (SAM unavailable) when score is undefined', () => {
@@ -37,7 +37,7 @@ describe('buildBaseFeatureData', () => {
       strand: 1,
       flags: 0,
     })
-    expect(buildBaseFeatureData(feature, undefined).mapq).toBe(255)
+    expect(buildBaseFeatureData(feature, false).mapq).toBe(255)
   })
 
   test('mapq does not fall back to per-base qual field', () => {
@@ -50,7 +50,7 @@ describe('buildBaseFeatureData', () => {
       flags: 0,
       qual: '30 30 30',
     })
-    expect(buildBaseFeatureData(feature, undefined).mapq).toBe(255)
+    expect(buildBaseFeatureData(feature, false).mapq).toBe(255)
   })
 
   test('preserves all other FeatureData fields', () => {
@@ -66,7 +66,7 @@ describe('buildBaseFeatureData', () => {
       template_length: 350,
       pair_orientation: 'FR',
     })
-    const data = buildBaseFeatureData(feature, undefined)
+    const data = buildBaseFeatureData(feature, false)
     expect(data.id).toBe('r9')
     expect(data.start).toBe(500)
     expect(data.end).toBe(600)
@@ -76,12 +76,12 @@ describe('buildBaseFeatureData', () => {
     expect(data.strand).toBe(-1)
   })
 
-  // With a prefix, `id` is the record id rather than the string — the whole
+  // With numeric keys, `id` is the record id rather than the string — the whole
   // point of shipping keys. A feature with no `recordId` still yields its id
   // string, so a mixed set stays honest and `buildReadKeys` falls back.
-  test('carries the record id as the key when a prefix is in force', () => {
+  test('carries the record id as the key when keys are numeric', () => {
     const feature = new SimpleFeature({
-      uniqueId: 'adapter1-4096',
+      uniqueId: '4096',
       refName: 'ctgA',
       start: 0,
       end: 10,
@@ -89,7 +89,7 @@ describe('buildBaseFeatureData', () => {
       flags: 0,
     })
     Object.defineProperty(feature, 'recordId', { value: 4096 })
-    expect(buildBaseFeatureData(feature, 'adapter1-').id).toBe(4096)
-    expect(buildBaseFeatureData(feature, undefined).id).toBe('adapter1-4096')
+    expect(buildBaseFeatureData(feature, true).id).toBe(4096)
+    expect(buildBaseFeatureData(feature, false).id).toBe('4096')
   })
 })

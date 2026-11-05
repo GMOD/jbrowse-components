@@ -1,9 +1,8 @@
 import type { ReadKey } from '@jbrowse/alignments-core'
 
 export interface FeatureData {
-  // The read's identity key, NOT its id string — `readKeyOf`, so the
-  // `${adapter.id}-${recordId}` template literal is never built per read. See
-  // alignments-core/src/readIdentity.ts.
+  // The read's identity key, NOT its id string — `readKeyOf`, so no id string
+  // is built per read. See alignments-core/src/readIdentity.ts.
   id: ReadKey
   start: number
   end: number
