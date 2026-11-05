@@ -6,10 +6,10 @@ description:
 guide_category: Track types
 ---
 
-A `GWASTrack` renders association results as a Manhattan plot. The main work is
-prep: a bgzipped, tabix-indexed BED-like file whose score column is in -log₁₀(p)
-units (or set `scoreTransform` to convert). Add a PLINK `.ld` file to color
-points by linkage disequilibrium to an index SNP. The plot is a
+A `GWASTrack` renders association results as a Manhattan plot. Most of the setup
+is preparing a bgzipped, tabix-indexed BED-like file whose score column is in
+-log₁₀(p) units (or set `scoreTransform` to convert). Add a PLINK `.ld` file to
+color points by linkage disequilibrium to an index SNP. The plot is a
 [mark display](/docs/config_guides/mark_display) whose default plot is a point
 per SNP at its score, so its marks, scales, facets and rows all apply, and any
 `FeatureTrack` can draw the same plot from one of its numeric columns — see
@@ -150,18 +150,18 @@ right-clicking a point pins it as the index
 scan, a QTL table or any BED-like file with a numeric column draws as a
 Manhattan plot without a `GWASTrack` or a `GWASAdapter`. Name the display in the
 track's `displays` (it is also offered under the track menu's **Display
-types**), and its point mark chooses what it reads:
+types**), and its point mark's encoding sets what it reads:
 
 - `encoding.y` — the column plotted as y. The default `score` is the BED score
   column (or what the adapter's `scoreColumn` rewrote it to); an explicit name
   reaches a raw column of the file. A feature with no finite value there is
   skipped.
 - `encoding.color: { "field": "population" }` — gives each distinct value of a
-  column a different color and draws a key of the values met. A value takes the
-  same color in every region and session. Its
+  column a different color and draws a key of the values found. A value takes
+  the same color in every region and session. Its
   [`scale.domain`](/docs/config/markcolor/#slot-scaledomain) is the order those
   values take, in the key and in the colors: the values it lists come first, in
-  that order, and the rest follow sorted, and `scale.range` hands them colors.
+  that order, and the rest follow sorted, and `scale.range` assigns them colors.
 
 The track menu's **Edit marks...** edits both, and `encoding.size` is the point
 diameter in px. A point stands at the middle of its window; `"mark": "rule"`

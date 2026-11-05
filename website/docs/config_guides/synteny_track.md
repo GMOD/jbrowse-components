@@ -4,10 +4,10 @@ description: Synteny track config for dotplot and linear synteny views
 guide_category: Track types
 ---
 
-A `SyntenyTrack` pairs two assemblies from an alignment file and powers both the
-dotplot and linear synteny views. Pick the adapter by alignment format (PAF for
-minimap2). The one thing to get right is that `assemblyNames` is
-`[query, target]`, the reverse of the order minimap2 takes its inputs.
+A `SyntenyTrack` pairs two assemblies from an alignment file and draws in both
+the dotplot and linear synteny views. Pick the adapter by alignment format (PAF
+for minimap2). `assemblyNames` is `[query, target]`, the reverse of the order
+minimap2 takes its inputs.
 
 ## Choosing an adapter
 
@@ -33,9 +33,9 @@ minimap2). The one thing to get right is that `assemblyNames` is
 
 ## Alignment format glossary
 
-Every format records the same thing in a different dialect: this stretch of one
-genome matches that stretch of the other. The **query** and **target** roles and
-the **CIGAR** are shared across them, and
+Every format records which stretch of one genome matches which stretch of the
+other. The **query** and **target** roles and the **CIGAR** are shared across
+them, and
 [query, target, and CIGAR](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
 explains them.
 
@@ -74,8 +74,8 @@ minimap2 -cx asm20 target.fa query.fa > alignment.paf
 `asm5`, `asm10` and `asm20` suit about 0.1%, 1% and 5% divergence. Measure it
 before choosing: align one chromosome with `asm20` and read the `de:f` tag,
 minimap2's per-alignment divergence. D. simulans against D. mauritiana, sister
-species, reads 2.4%, and `asm5` splits their largest chromosome into 6,805
-records where `asm20` gives 278.
+species, reads 2.4%, and `asm5` splits their largest chromosome into thousands
+of records where `asm20` gives a few hundred.
 
 ```json addtrack
 {
@@ -123,11 +123,11 @@ Each adapter's config page lists its slots. Across all of them:
   memory.** Convert a large alignment to PIF and use `PairwiseIndexedPAFAdapter`
   or `MultiGenomeIndexedPAFAdapter`; `MultiPairwiseSyntenyAdapter` reads no file
   itself and inherits whichever behaviour its children have
-- **The two compressions are not interchangeable.** A whole-file adapter takes
-  plain `gzip`, so `.paf.gz` works with no index. The two indexed adapters need
-  bgzip plus a tabix index, as `jbrowse make-pif` writes; a plain `gzip` file
-  has no blocks to seek into and fails outright. `csi: true` selects a `.csi`
-  index over `.tbi`
+- **Whole-file adapters take gzip; indexed adapters need bgzip.** A whole-file
+  adapter takes plain `gzip`, so `.paf.gz` works with no index. The two indexed
+  adapters need bgzip plus a tabix index, as `jbrowse make-pif` writes; a plain
+  `gzip` file has no blocks to seek into and fails outright. `csi: true` selects
+  a `.csi` index over `.tbi`
 - **The MCScan anchors adapters take one BED per assembly** (`bed1`, `bed2`),
   intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
@@ -506,8 +506,7 @@ the block's own extent on both arcs and an inversion drawn as a twist — a
 Circos-style picture of where a genome's blocks land. Clicking one opens the
 same synteny feature details panel the linear views open.
 
-The circle has to include both ends of the alignment, so what the view is opened
-on decides what can be drawn.
+The view draws an alignment only when the circle includes both of its ends.
 
 **A self-alignment** — a genome against itself, segmental duplications, a
 whole-genome-duplication PAF — names one assembly on both sides and needs

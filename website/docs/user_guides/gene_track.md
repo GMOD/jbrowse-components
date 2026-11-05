@@ -160,7 +160,7 @@ filter alone:
 
 A color by a field is the `encoding.color` setting's
 `{ "field", "scale": { "domain", "range" } }` form, and the track draws a key
-from the values it painted. A `scale.domain` spends the `scale.range` colors on
+from the values it painted. A `scale.domain` assigns the `scale.range` colors to
 the values it lists, in order, and a value it leaves out never takes one of
 their colors. Every other value takes a distinct color the first time the track
 shows it, and keeps it while the track is open; a value that no other value

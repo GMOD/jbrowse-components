@@ -18,9 +18,9 @@ Genotype rows** in the track menu draws its row.
 
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 
-Each variant is drawn at its real genomic position. This is the layout that
-renders structural variants at the right scale, and overlapping calls use slight
-transparency so you can still tell them apart.
+Each variant is drawn at its real genomic position. This layout draws structural
+variants at their real scale, and overlapping calls use slight transparency so
+you can still tell them apart.
 
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
@@ -68,7 +68,7 @@ The two filters can be preset so the track loads already filtered, with
 ## Rows: per sample or per haplotype
 
 The display's [`rows.field`](/docs/config/variantrows/#slot-field), which the
-track menu's **Rows** item sets, decides what one row stands for and how each
+track menu's **Rows** item sets, sets what one row stands for and how each
 genotype cell is colored.
 
 With **Rows → Per sample** (`rows.field: 'sample'`), one cell is drawn per
@@ -101,14 +101,15 @@ stays disabled until the view holds phased or haploid genotypes.
 A haplotype row is named `<sample> HP1`, `<sample> HP2`, and so on: JBrowse's
 numbering of the sample's alleles, counting from 1, not the VCF's `HP` tag.
 `haplotype` here is no column of the file, unlike a mark display's
-`rows: 'haplotype'` over a BED. A haplotype row answers to its sample's name, so
-the arrangement carries across the switch either way: an order, a label, a
-color, a tree or a kept row written against a sample reaches its haplotype rows,
-a sample's label showing on them as `Mother HP1` and `Mother HP2`, and a tree
-clustered per sample forking over each sample's haplotype rows. What is written
-against a haplotype row waits unseen in per-sample rows: a sample takes the
-place of its first listed haplotype, and a tree clustered per haplotype hides,
-the sidebar saying why, until **Per haplotype** draws it again.
+`rows: 'haplotype'` over a BED. Each haplotype row is matched to its sample's
+name, so the arrangement applies in both row modes: an order, a label, a color,
+a tree or a kept row written against a sample applies to its haplotype rows, a
+sample's label showing on them as `Mother HP1` and `Mother HP2`, and a tree
+clustered per sample forking over each sample's haplotype rows. Settings written
+against a haplotype row are kept but not shown in per-sample rows: each sample
+is placed where its first listed haplotype was, and a tree clustered per
+haplotype is hidden, with the sidebar saying why, until you switch back to **Per
+haplotype**.
 
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 
@@ -152,10 +153,11 @@ so a deletion is the same red here, on the single-variant display, on a mark
 display and on the SV inspector's chords: deletion (red), duplication (blue),
 insertion (purple), inversion (orange), copy-number variable (dark brown),
 tandem repeat (pink), breakend (cyan), complex (green), and other / mixed
-(black) for a token no class names or a record whose alleles disagree. A het
-cell draws its class color paler, as in the default coloring, and the legend
-shows both shades. The legend lists only the classes present in the loaded
-region, and a record with no structural class keeps the default alt color.
+(black) for a type token outside these classes or a record whose alleles
+disagree. A het cell draws its class color paler, as in the default coloring,
+and the legend shows both shades. The legend lists only the classes present in
+the loaded region, and a record with no structural class keeps the default alt
+color.
 
 The class is read from the ALT allele first: `<DEL>`, `<DUP:TANDEM>`, breakend
 notation, and 1000 Genomes' `<CN0>` (a deletion) and `<CN2>` and up (a
@@ -189,7 +191,7 @@ hom, as in every other coloring.
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata: population, phenotype, sex, or
-any attribute you supply. Two slots wire it up:
+any attribute you supply. Two slots configure it:
 
 - `samplesTsvLocation` on the adapter takes a samples TSV whose first column is
   the sample name (matching the VCF header) and whose every remaining column is
@@ -210,7 +212,7 @@ any attribute you supply. Two slots wire it up:
   lead the rows; the rest keep the file's order, and a grouping attribute bands
   within that order.
 
-The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
+The JBrowse demo configures the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and
 display slots, see
 [auto-coloring samples by metadata](/docs/config_guides/variant_track#auto-coloring-samples-by-metadata).

@@ -6,9 +6,9 @@ guide_category: Views
 
 The multi-way synteny display stacks several genomes under a linear genome view,
 one lane per genome, each drawn in that genome's own coordinates. The view's
-genome is the anchor on top. Each lane fits itself to wherever the alignment
-places the anchor's window, and ribbons join the matching stretches or genes
-between lanes.
+genome is the anchor on top. The display fits each lane to the stretch the
+alignment matches to the anchor's window, and ribbons join the matching
+stretches or genes between lanes.
 
 A synteny track over several genomes draws this way from its track menu:
 **Display types → Multi-way synteny display**.
@@ -18,7 +18,7 @@ of your own.
 
 ## What a ribbon joins
 
-The track's source decides which two lanes a ribbon connects:
+Which two lanes a ribbon connects depends on the track's source:
 
 | Source                                                                 | A ribbon joins                                                                                    | Worked through in                                                                                                                              |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

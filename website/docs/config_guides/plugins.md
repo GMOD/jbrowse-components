@@ -34,7 +34,8 @@ yourself by its url.
   listed.
 - **`name` must match the plugin's own registration** (`name = 'MyPlugin'` in
   the plugin class) for a UMD build, which is looked up by that name once its
-  script has run. An ESM build has its own, and a store entry supplies one.
+  script has run. An ESM build declares its own name, and a store entry supplies
+  one.
 - **Embedded components load plugins inline**; see the
   [inline plugins example](https://jbrowse.org/storybook/lgv/inline-plugin/).
 
@@ -59,10 +60,10 @@ chunks that load when first used, which a UMD build cannot; see
 Add `integrity` beside a UMD url to have the browser check the bytes against the
 hash before running them; the store publishes one for each UMD build.
 
-A url is an answer computed on the day the config was written. `storePlugin`
-defers it to load time instead, and the two can ride together — the ref for a
-JBrowse that resolves it, the url for one that does not, and as the fallback
-when the store cannot be reached:
+A url pins the build chosen when the config was written, and `storePlugin`
+resolves the build at load time. A config can give both: the ref for a JBrowse
+that resolves it, the url for one that does not, and as the fallback when the
+store cannot be reached:
 
 ```json
 {
@@ -76,13 +77,10 @@ when the store cannot be reached:
 }
 ```
 
-## The retired `cjsUrl`
+## `cjsUrl`
 
-The `cjsUrl` field is gone as of v5. It loaded a plugin by writing it to a temp
-file and `require`ing it in jbrowse-desktop's renderer, which nothing needed:
-Electron's renderer runs both other formats, and a plugin reaching the main
-process does it through `window.require('electron')` whichever format it ships
-in. A config still naming one fails that plugin by name and opens without it.
+A plugin entry naming `cjsUrl` fails that plugin by name, and the config opens
+without it. Use `url`/`umdUrl` or `esmUrl`.
 
 <Figure src="/img/plugin_store.png" caption="The plugin store from the Tools menu. A plugin installed via the config shows a lock icon, and the GUI cannot remove it."/>
 

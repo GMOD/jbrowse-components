@@ -30,9 +30,9 @@ either, through `displayDefaults`.
 
 The axis is one object, [`encoding.y`](/docs/config/yfieldchannel), the color is
 one object, [`encoding.color`](/docs/config/wiggleencoding/#slot-color), and
-[`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
-three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
-all three go through `displayDefaults`.
+[`rows`](/docs/config/linearwiggledisplay/#slot-rows) sets the layout; all three
+are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and all
+three go through `displayDefaults`.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `point`,
 `line` or `rect`, what a signal is drawn as; `rows` sets how many rows there
@@ -85,10 +85,10 @@ stops, runs straight across the y domain unless `scale.domainMid` places its
 middle stop, and with one color runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
-`encoding.color` reads `score` alone. A color per source is the row's:
+`encoding.color` reads `score` alone. Per-source colors are set on the rows:
 [`rows.colors`](/docs/config/quantitativerows/#slot-colors) names each source's
 color, `{ "k1": "red" }`, and several sources sharing one plot box with no
-`encoding.color` set take palette colors by name unprompted, except under
+`encoding.color` set take palette colors by name automatically, except under
 `rect`, where the score ramp is the whole color.
 
 ## Adapters
@@ -154,8 +154,8 @@ per-subtrack `color`, `group`, and `source`.
 ```
 
 The track type defaults its display to `rows: "source"`, `mark.extent: "none"`
-and a 200px height, so it opens as one row per source without saying so.
-`rows: ""` puts every source back in one shared plot box, and
+and a 200px height, so it opens as one row per source with no config. `rows: ""`
+puts every source back in one shared plot box, and
 `rows: { "field": "source", "sort": […] }` names the sources that lead the row
 order. The same object takes `labels`, a label per source by name, and
 [`colors`](/docs/config/quantitativerows/#slot-colors), a color per source.

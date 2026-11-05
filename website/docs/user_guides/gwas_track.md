@@ -73,9 +73,9 @@ bgzipped or not. Generate it from:
 - Reference panel - 1000 Genomes phase 3 at
   `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
   AMR, or SAS by population). Point `bcftools` at the `.bcf` files under
-  `supporting/bcf_files/` rather than the `.vcf.gz` beside them: the BCF and its
-  `.csi` answer a remote region query in seconds, while the `.vcf.gz` index
-  sends htslib to an offset that fails with "Illegal seek"
+  `supporting/bcf_files/` rather than the `.vcf.gz` beside them: htslib reads a
+  remote region from the BCF and its `.csi` in seconds, while the `.vcf.gz`
+  index points it at an offset that fails with "Illegal seek"
 
 ## Clumping the peak
 

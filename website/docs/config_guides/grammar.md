@@ -7,7 +7,7 @@ guide_category: Track types
 ---
 
 A track's appearance is set by a few objects that mean the same thing on every
-track type. `encoding.color` says how features are colored, `encoding.y` how a
+track type. `encoding.color` sets how features are colored, `encoding.y` how a
 value is plotted, `facet` how features split into sections, `rows` how a row
 display orders and labels its rows, and `filter` which features are drawn. They
 follow the grammar of graphics as Vega-Lite spells it, so a color written for a
@@ -31,8 +31,8 @@ it takes, and which members of each.
 `encoding.color` is in one of three states. Unset, the track paints its own
 default. A `value` paints every feature one color. A `field` paints each feature
 by its value through a `scale`, and the track's key comes from the same object.
-A bare field name is short for `{ "field": … }`. The same threshold object reads
-mapping quality on reads and score on genes:
+A bare field name is short for `{ "field": … }`. The same threshold object
+applies to mapping quality on reads and to score on genes:
 
 ```json addtrack
 {
@@ -129,13 +129,13 @@ test. A `jexl:` string is accepted for a test no field states, and runs slower:
 The track menu's **Advanced → Edit plot...** shows a track's grammar settings as
 JSON, the same objects a config writes, with worked examples to start from. The
 **Color by** and **Group by** menus write the same `encoding.color` and `facet`
-objects, so an edit made from a menu reads back in Edit plot, survives a reload
-and travels in a share link.
+objects, so an edit made from a menu reads back in Edit plot, is kept across a
+reload and included in a share link.
 
 ## For plugin developers
 
-A display joins this vocabulary by reading these objects through the shared code
-rather than spelling its own settings.
+A display joins this vocabulary by reading these objects through the shared
+code.
 [The grammar, stage by stage](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GRAMMAR_STAGES.md)
 names the code behind each object, and
 [the grammar of graphics spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GRAMMAR_OF_GRAPHICS.md)

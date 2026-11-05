@@ -568,5 +568,5 @@ walks through.
 
 [](/docs/config_guides/mark_display) shows a density and the raw features in one
 track across zooms and a facet over a BAM's haplotype tag;
-[](/docs/tutorials/alu_age) and [](/docs/tutorials/read_marks) each take one
-file through a question.
+[](/docs/tutorials/alu_age) and [](/docs/tutorials/read_marks) each work through
+one file to answer one question.

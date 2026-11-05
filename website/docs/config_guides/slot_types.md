@@ -64,7 +64,7 @@ A whole number.
 
 ## fileLocation
 
-Where a data file lives. The shorthand is a plain URL string:
+The location of a data file. The shorthand is a plain URL string:
 
 ```json
 { "uri": "https://example.com/data.bam" }

@@ -6,13 +6,12 @@ description:
 guide_category: Track types
 ---
 
-Several unrelated-looking track settings — a gene track's biotype sections, an
-alignments track's haplotype bands, a multi-sample variant track's karyotype
-rows, a multiway synteny track's lanes, a multi-row display's partitions — use
-the same two ideas: a field (or, for multiway synteny, the assembly itself)
-splits the data into sections, and a `sort` list decides which section draws
-first. This page is the shared mechanism; each example below links to the guide
-or tutorial it is worked through in full.
+A gene track's biotype sections, an alignments track's haplotype bands, a
+multi-sample variant track's karyotype rows, a multiway synteny track's lanes
+and a multi-row display's partitions are all set by a field (or, for multiway
+synteny, the assembly itself) that splits the data into sections and a `sort`
+list that orders them. Each example below links to the guide or tutorial that
+works it through in full.
 
 ## `field` and `sort`
 
@@ -62,10 +61,10 @@ what **Edit plot...** accepts.
 
 ## Alignments tracks
 
-The alignments displays take `facet` the same way, plus a handful of read
-dimensions no attribute expresses — `strand`, `firstOfPairStrand`,
-`pairOrientation`, `pairing`, `split`, `spliced`, `mapq`. The same idea over a
-`LinearMarkDisplay` faceting a BAM by its `HP` haplotype tag:
+The alignments displays take `facet` the same way, plus seven built-in read
+dimensions: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
+`split`, `spliced`, `mapq`. The same idea over a `LinearMarkDisplay` faceting a
+BAM by its `HP` haplotype tag:
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
@@ -75,9 +74,8 @@ worked `LinearAlignmentsDisplay` config; the reordering rule is the same `sort`.
 ## Variant tracks
 
 `LinearVariantDisplay` takes the same `facet` object to band rows by a metadata
-column instead of VCF file order. Bands are what makes two biologically
-meaningful examples readable rather than a wall of samples in whatever order the
-VCF lists them:
+column instead of VCF file order. In the two examples below, the bands group
+samples that the VCF lists in whatever order it has them:
 
 ```json
 "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] }
@@ -91,9 +89,9 @@ VCF lists them:
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
-The order in each case is a genetics decision, not an alphabetical one: dosage
-order in the mosquito figure, standard-before-inverted in the fly figure, both
-read off the `sort` lists above.
+Each order follows the genetics: dosage order in the mosquito figure,
+standard-before-inverted in the fly figure, both read off the `sort` lists
+above.
 [LD in mosquitoes](/docs/tutorials/ld_mosquitoes#reading-the-2la-ld-block-against-the-karyotype-rows)
 works through the mosquito one, and
 [population genomics](/docs/tutorials/population_genomics#the-inversion-genome-wide-and-within-each-arrangement)
@@ -180,10 +178,10 @@ the lane controls in the app.
 
 ## Row-partitioned tracks
 
-`LinearMultiRowFeatureDisplay` fixes one row per value rather than a foldable
-section — no chip, no hide, no overflow merge — through `rows` instead of
-`facet`, with the same `sort`. Nine ENCODE cell types, pinned to ENCODE's own
-tiers rather than alphabetical order:
+`LinearMultiRowFeatureDisplay` draws one fixed row per value, set through `rows`
+instead of `facet`, with the same `sort` and without a facet section's chip,
+hiding or overflow merge. Nine ENCODE cell types, pinned to ENCODE's own tiers
+rather than alphabetical order:
 
 ```json addtrack
 {
@@ -234,7 +232,7 @@ slot it read the curated order from — the gene track and mark display's
 **Sections** list, the alignments track menu's group-by sections, multiway
 synteny's **Lanes** menu and lane-header drag, and the multi-row display's row
 drag, which writes `rows.sort`. A session saved after reordering records the new
-order in `config.json` terms, not as separate runtime-only state.
+order in `config.json` terms.
 
 ## See also
 

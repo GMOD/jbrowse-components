@@ -127,9 +127,9 @@ rooted on different genomes, as `pggb -M` produces, needs re-rooting first
 
 ## The zoom-out tier
 
-Every MAF format packs each block's species sequences together, so a zoomed-out
-query downloads them all, and JBrowse blocks it with a "requested too much data"
-prompt. A track with no `summaryAdapter` has no zoom-out view at all.
+In every MAF format, each block stores its species' sequences together, so a
+zoomed-out query downloads them all, and JBrowse blocks it with a "requested too
+much data" prompt. A track with no `summaryAdapter` has no zoom-out view at all.
 
 [`summaryAdapter`](/docs/config/maftabixadapter/#slot-summaryadapter) points at
 a much smaller file with one row per species per aligned region, a score and no
@@ -182,9 +182,10 @@ Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 ```
 
 `BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot and the same
-summary BED. Their `.tai` index bounds a read to the span on screen, which moves
-the zoom-out ceiling on a deep alignment; the summary file removes it. Each slot
-doc quotes the bytes per base measured on HPRC's published alignment:
+summary BED. Their `.tai` index bounds a read to the span on screen, which lets
+a deep alignment draw further zoomed out before the force-load prompt; the
+summary file removes the prompt. Each slot doc quotes the bytes per base
+measured on HPRC's published alignment:
 [`BgzipMafAdapter`](/docs/config/bgzipmafadapter/#slot-summaryadapter),
 [`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter/#slot-summaryadapter).
 

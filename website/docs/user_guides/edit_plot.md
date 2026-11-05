@@ -70,8 +70,9 @@ stacks one section per strand and colors each feature by its type.
 
 - The text is the whole plot: a setting or a member you delete returns to its
   default.
-- An example lands over the plot as it stands and changes only what it names, so
-  an example writing a `filter` list keeps the filter's other tests in the text.
+- An example is merged into the plot as it stands and changes only what it
+  names, so an example writing a `filter` list keeps the filter's other tests in
+  the text.
 - A string is a setting's one-value form, such as a facet's field or a color's
   field.
 

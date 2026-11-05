@@ -27,8 +27,8 @@ who sees a track. Two consequences:
 The simpler setup puts JBrowse and its data files on the same server, in the
 same site, behind the login the site already has (a session cookie, an SSO
 proxy, nginx `auth_request`). The browser then sends the cookie with every data
-request by itself: no `internetAccounts` entry, and no credential material in
-your config or in a shared session.
+request by itself, so the config needs no `internetAccounts` entry and holds no
+credentials, and neither does a shared session.
 
 ### What counts as the same origin
 
@@ -56,7 +56,7 @@ directly:
 curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
 ```
 
-A logged-in request answers `206 Partial Content`; a `200` with
+A logged-in request returns `206 Partial Content`; a `200` with
 `content-type: text/html`, or a redirect, is the login page. A session expiring
 while a view is open produces the same errors mid-use, which a reload resolves.
 
@@ -81,7 +81,7 @@ the auth header in `Access-Control-Allow-Headers`.
 ## Internet accounts
 
 An internet account is an entry in the top-level `internetAccounts` array that
-knows how to obtain a token and which URLs to attach it to. With this one in
+specifies how to obtain a token and which URLs to attach it to. With this one in
 place, opening a track served from `data.mylab.org` prompts for a username and
 password once, then reuses them for the session; nothing on the track config
 changes:
@@ -195,25 +195,17 @@ a `/`:
 
 The query string and the fragment are never consulted under either shape, so a
 URL that merely mentions one of your domains in a parameter does not match. An
-account with an empty `domains` list matches nothing on its own; it still works
-for same-origin files a location names it on, and needs the hosts it serves for
-anything else, including an account the user picks by hand in the Add Track
-form.
+account with an empty `domains` list matches no URL by itself. It still applies
+to a same-origin file whose location names it; for any other file, including one
+the user assigns in the Add Track form, list the file's host in `domains`.
 
-:::note Changed in v5
-
-`domains` used to be a plain substring test against the whole URL. Entries that
-name a host or a path behave the same way now. Two kinds no longer match: a
-fragment of a hostname (`domains: ["dropbox"]` no longer matches `dropbox.com`;
-write the whole host), and anything relying on the match landing in a query
-string. A location's `internetAccountId` also no longer overrides `domains`; it
-orders the choice among accounts already scoped for the URL. Both changes close
-the same hole: jbrowse-web builds tracks from `sessionTracks` in the URL, so a
-crafted link could otherwise aim a user's token at a server of its choosing. An
-account that authenticated an off-origin file through the id alone needs that
-file's host added to its `domains`.
-
-:::
+A `domains` entry names a whole host or a path, so `domains: ["dropbox"]` does
+not match `dropbox.com`; write `dropbox.com`. A location's `internetAccountId`
+orders the choice among accounts already scoped for the URL and never overrides
+`domains`. Both rules matter because jbrowse-web builds tracks from
+`sessionTracks` in the URL, and a crafted link could otherwise aim a user's
+token at a server of its choosing. An account that authenticates an off-origin
+file needs that file's host in its `domains`.
 
 ## OAuth
 
@@ -374,7 +366,6 @@ them:
 ```
 
 Range requests work, because `Range` is not a header a presigned URL signs.
-Three things to know:
 
 - **Name the index yourself.** The `uri` shorthand appends `.bai` after the
   signature parameters, which the bucket rejects.
@@ -387,12 +378,12 @@ Three things to know:
 
 ### An internet account that signs at fetch time
 
-Access that lasts keeps the permanent unsigned URL in the config and derives the
-signature per request, which is an internet account in a plugin, since no
-built-in type covers S3. A state model extending `BaseInternetAccountModel`
-overrides `getFetcher` and either computes a SigV4 signature in the browser over
-the URL, method and `range` header, or asks your own backend to presign the URL
-and fetches what comes back. Three rules either way:
+For access that does not expire, keep the permanent unsigned URL in the config
+and have a plugin internet account sign each request, since no built-in type
+covers S3. A state model extending `BaseInternetAccountModel` overrides
+`getFetcher` and either computes a SigV4 signature in the browser over the URL,
+method and `range` header, or asks your own backend to presign the URL and
+fetches what comes back. Three rules either way:
 
 - **Only a temporary credential reaches the browser** (a Cognito identity pool,
   `AssumeRoleWithWebIdentity`, or your app's own session token that authorizes
@@ -407,9 +398,9 @@ and fetches what comes back. Three rules either way:
   refreshing, since a credential can lapse between two chunk fetches.
 
 The credential travels to the RPC workers over the existing pre-authorization
-path as an opaque token, so neither shape needs extra plumbing. Bucket CORS has
-to allow the headers the signature covers (`Authorization`, `Range`,
-`x-amz-date`, `x-amz-content-sha256`); see [](/docs/config_guides/serving_data).
+path as an opaque token, so neither shape needs extra code. Bucket CORS has to
+allow the headers the signature covers (`Authorization`, `Range`, `x-amz-date`,
+`x-amz-content-sha256`); see [](/docs/config_guides/serving_data).
 
 CloudFront signed cookies need no JBrowse code, since your app renews the cookie
 and the browser attaches it, but only for data on the same origin as the app:

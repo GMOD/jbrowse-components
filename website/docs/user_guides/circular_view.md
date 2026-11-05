@@ -9,10 +9,10 @@ guide_category: Views
 The circular genome view lays out an entire assembly as a ring and draws
 long-range structural variants as chords across the interior, one arc per event
 connecting its two breakpoints. An arc with its two ends in different chromosome
-segments is an inter-chromosomal event, which no single linear window can hold.
-Any track that draws in the linear genome view — a bigWig, a feature density, an
-alignment coverage — draws on the circle as a ring inside the ideogram, so a
-Circos-style figure is the same tracks opened on this view.
+segments is an inter-chromosomal event, which a linear view shows only as two
+separate regions. Any track that draws in the linear genome view — a bigWig, a
+feature density, an alignment coverage — draws on the circle as a ring inside
+the ideogram, so a Circos-style figure is the same tracks opened on this view.
 
 <Figure caption="A circular view of a structural-variant VCF, each chord joining the two breakpoints of one variant." src="/img/jbrowse-img/circular_chords.png" />
 
@@ -65,7 +65,7 @@ A multi-source quantitative track with its sources on rows gives each source a
 band inside one ring, so a sample pair or a small cohort is one nested set
 rather than a ring each. The bands are drawn against the display's single score
 domain, and a stack of rows has no axis, so name that domain where the bands are
-meant to be read against each other. Naming the sources is the color's job here:
+meant to be read against each other. Color identifies the sources here, because
 the row labels are part of the display's chrome and a ring samples only its
 canvas, so give each subtrack a `color` in the adapter.
 
@@ -100,10 +100,10 @@ opens, and **Re-order chromosomes** in the view's menu does it on demand. The
 reorder puts the second genome's chromosomes in the order of the first's, by how
 many aligned bases each pair shares, and the circle lays that genome out
 mirrored so the ribbons come out as a band of parallel arcs.
-`autoDiagonalize: false` on the view keeps each genome in its contig order. It
-is the same pass the linear synteny view and the dotplot run, over the same
-alignment file, and it is offered on a two-genome circle with a synteny track
-and nowhere else.
+`autoDiagonalize: false` on the view keeps each genome in its contig order. The
+reorder is the same pass the linear synteny view and the dotplot run, over the
+same alignment file, and it is offered on a two-genome circle with a synteny
+track and nowhere else.
 
 A synteny circle, of one genome or two, opens with each ribbon in the ideogram
 color of the first genome's chromosome it leaves. **Color by** in the view's

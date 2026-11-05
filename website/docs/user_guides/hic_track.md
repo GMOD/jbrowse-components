@@ -62,10 +62,10 @@ written `false`. These are the ramps every color scale in JBrowse names, so a
 config spells one as
 [`encoding.color.scale.scheme`](/docs/config/hiccolor/#slot-scalescheme).
 
-**Color scheme → Emphasize faint contacts (95th percentile)** decides what the
-ramp spans. <!-- menu-path-ok --> Off, the diagonal owns the scale and
-everything below it washes out; on (the default) the scale saturates at the 95th
-percentile of counts and TAD structure separates from background.
+**Color scheme → Emphasize faint contacts (95th percentile)** sets what the ramp
+spans. <!-- menu-path-ok --> Off, the scale follows the diagonal and everything
+below it washes out; on (the default) the scale saturates at the 95th percentile
+of counts and TAD structure separates from background.
 
 <Figure caption="Emphasize faint contacts off and on, each frame labeled with its setting." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
 
@@ -115,22 +115,22 @@ auto-picked resolution is finer than anything the file holds for that pair, the
 cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
 
-The pairwise geometry of two regions scales to the whole genome. **View → Zoom →
-Show all regions in assembly** puts every chromosome in the view at once, which
-makes the fetch every chromosome against every other one and the drawing a block
+**View → Zoom → Show all regions in assembly** applies the same pairwise drawing
+to the whole genome. It puts every chromosome in the view at once, which makes
+the fetch every chromosome against every other one and the drawing a block
 diagonal: each chromosome is a triangle along the bottom edge, each pair of
 chromosomes is the block between their two triangles, and the whole pyramid is
 the genome against itself.
 
 <Figure caption="GM12878 Hi-C at its coarsest binsize, hg38 chr1 to chrY in one view." src="/img/hic/whole_genome.png" />
 
-How much figure this is depends on the file. A file storing only
+What the whole-genome view shows depends on the file. A file storing only
 intra-chromosomal contacts leaves every block between the triangles empty, so
-check a candidate before reading anything into a blank off-diagonal. It also
-decides the sensible ramp: a sparse file needs a log
-[`encoding.color.scale.type`](/docs/config/hiccolor/#slot-scaletype) to lift its
-decayed long-range bins off the floor, and a dense one comes back solid under
-the same setting, since every bin then reaches the top of the scale.
+check a candidate before reading anything into a blank off-diagonal. The file
+also determines which ramp suits it: a sparse file needs a log
+[`encoding.color.scale.type`](/docs/config/hiccolor/#slot-scaletype) to make its
+decayed long-range bins visible, and a dense one comes back solid under the same
+setting, since every bin then reaches the top of the scale.
 
 The track has to be tall here. A pair's contacts are drawn in the wedge between
 its two regions, so the drawing is as tall as the widest pair on screen is wide,
@@ -153,7 +153,8 @@ where it lost them. Hovering a bin prints the ratio and both counts.
 JBrowse refuses a control whose chromosomes differ in length from the map's,
 since two builds share chromosome names and differ in coordinates. Only the
 binsizes and normalizations both files hold are offered, and where the two fall
-back to different normalizations for a region pair, both read raw counts.
+back to different normalizations for a region pair, both are drawn from raw
+counts.
 
 ## Fitting the triangle to the track height
 
@@ -171,10 +172,10 @@ as a link from one end to its mate, so you can stack the called loops directly
 above the matrix they came from.
 
 Add the BEDPE file from **Add a track** and pick **Marks** from the track menu's
-display types: the display sees each call name its other end and draws the arcs
-with nothing configured. Then add the `.hic` matrix as a separate track and
-reorder so the links sit above it. A link's `strokeWidth` sets its stroke width,
-and `encoding.strokeWidth` bound to a field scales it by the score.
+display types: the display reads each call's other end from the file and draws
+the arcs with nothing configured. Then add the `.hic` matrix as a separate track
+and reorder so the links sit above it. A link's `strokeWidth` sets its stroke
+width, and `encoding.strokeWidth` bound to a field scales it by the score.
 
 ## Compartments and subcompartments
 
@@ -204,13 +205,13 @@ Hi-C experiment, both derived from the matrix in the same track:
   ordinary [quantitative track](/docs/user_guides/quantitative_track) and draws
   as a two-color plot around zero.
 - **Subcompartments**, a BED. Clustering the interaction profiles splits A and B
-  further, and the file has a color per class in its `itemRgb` column, so the
-  track paints itself with no color configuration.
+  further, and the file has a color per class in its `itemRgb` column, so
+  JBrowse colors the track from it with no color configuration.
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
 
-Two things about that figure are worth copying whenever you compare compartments
-between samples, since getting either wrong invents a difference.
+When you compare compartments between samples, set up the tracks as in that
+figure; getting either step wrong produces a spurious difference.
 
 **Pin both eigenvector tracks to the same scale.** Left to autoscale, each track
 scales to the min and max of its data, so the two stop being comparable. Set the

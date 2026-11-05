@@ -6,23 +6,21 @@ guide_category: Sequence tools
 ---
 
 The consensus sequence panel calls a per-position consensus from the reads in an
-alignments track, letting the reads rather than the reference define the
-sequence over a region of interest. Download the result as FASTA, or as a VCF of
-the positions that differ from the reference (also openable directly as a
-variant track).
+alignments track, so the sequence over a region of interest comes from the
+reads. Download the result as FASTA, or as a VCF of the positions that differ
+from the reference (also openable directly as a variant track).
 
 ## Opening the panel
 
-Two ways in, differing only in which region the panel opens on:
+The panel opens two ways, which differ in the region it opens on:
 
 - **From the track menu** — **Launch → Consensus sequence (visible region)...**
   on the alignments track. The panel opens on what the view is showing, and its
-  **Region** field is editable, so this is a starting point rather than the
-  call.
+  **Region** field is editable, so it can be edited before you run the call.
 - **From a selection** — click and drag across the region of interest, then
   **Launch → Consensus sequence** in the menu that appears, then the alignments
-  track to call from. That last step is there even with a single track open
-  (which track the reads come from decides the answer, so it is always named),
+  track to call from. That last step is there even with a single track open (the
+  consensus depends on which track's reads it uses, so the menu always asks),
   and the dialog title repeats the name.
 
 Regions are limited to 500kb. Reads are much heavier to fetch than reference
@@ -40,9 +38,9 @@ The base with the most votes is called, provided it clears the minimum call
 fraction; otherwise the position is N (reads were present but did not agree
 enough).
 
-Deletions are treated asymmetrically. A winning gap is always called, even below
-the call fraction, because agreement that a base is absent is still evidence of
-absence. A winning base below the call fraction is N.
+A winning gap is always called, even below the call fraction, because agreement
+that a base is absent is still evidence of absence. A winning base below the
+call fraction is N.
 
 ## Settings
 
@@ -64,8 +62,8 @@ showing, is remembered for the next consensus you run.
   sets for itself: unchecking it includes secondary reads even on a track whose
   own filter drops them. Every other flag is inherited from the track's
   [**Filter by**](/docs/user_guides/alignments_track#filtering-reads) settings,
-  which by default exclude unmapped, QC-fail and duplicate reads — so a track
-  you have re-filtered feeds that same filter to the consensus. Reads stored
+  which by default exclude unmapped, QC-fail and duplicate reads — so the
+  consensus uses the filter of a track you have re-filtered. Reads stored
   without a sequence are always skipped, having no bases to vote with.
 
 ## Ambiguity codes
@@ -83,9 +81,9 @@ Positions where a base and a deletion are both well supported have no IUPAC
 code, since the notation only covers bases. These are written as a lowercase
 base, following the same convention samtools uses.
 
-A genuine four-way split is also written N, because that is what IUPAC spells
-for all four bases. A tetraploid site with four real alleles and a position with
-no usable signal are indistinguishable in this notation.
+A genuine four-way split is also written N, because N is the IUPAC code for all
+four bases. A tetraploid site with four real alleles and a position with no
+usable signal are indistinguishable in this notation.
 
 ## Exporting
 
@@ -118,8 +116,9 @@ joins the call, so such a site can report as V, H, D, or B rather than being
 truncated to two alleles.
 
 The calling is quality-independent: it counts and weights reads without using
-base quality scores or a genotype likelihood model. It answers "what do these
-reads say is here"; for genotypes and confidence scores, use a dedicated caller.
+base quality scores or a genotype likelihood model. It reports the bases the
+reads have at each position; for genotypes and confidence scores, use a
+dedicated caller.
 
 ## See also
 

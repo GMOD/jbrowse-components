@@ -58,8 +58,7 @@ Drag the six-dot handle on a track label up or down.
 
 ### Reordering views
 
-Views have no drag handle. Use "Move up"/"Move down" in the view menu (hamburger
-icon).
+To reorder views, use "Move up"/"Move down" in the view menu (hamburger icon).
 
 ### Using the location search box
 
@@ -122,12 +121,12 @@ machine. The bytes are read in the browser, not uploaded anywhere.
 
 Where the browser has the File System Access API (Chrome and Edge), JBrowse Web
 remembers which file you picked, so a reopened session can get the track back.
-The browser still asks you to re-grant read permission after a reload, which is
-what the "local files need permission to be restored" banner and its **Restore
-access** button do. Elsewhere (Firefox), a local file lasts for the life of the
-tab, and after a refresh the track shows "(need to reload)".
+The browser still asks you to re-grant read permission after a reload; the
+"local files need permission to be restored" banner and its **Restore access**
+button do that. Elsewhere (Firefox), a local file lasts for the life of the tab,
+and after a refresh the track shows "(need to reload)".
 
-A local file never travels in a share link, and its index has to be picked by
+A share link never includes a local file, and its index has to be picked by
 hand. [JBrowse Desktop](/docs/quickstart_desktop) has neither limit, since it
 stores the path.
 
@@ -232,8 +231,8 @@ The track menu opens this dialog.
 On a **reference sequence track** the dialog also has an "Assembly" section: the
 assembly's config (name, aliases, and the alias, cytoband and genetic-code files
 it loads), a "Copy assembly config" button, and "Show ref name aliases", which
-lists every reference name next to the other names it answers to. That listing
-has a filter box, so it is how to look up what one contig is called elsewhere.
+lists every reference name next to its aliases. That listing has a filter box,
+so it is how to look up what one contig is called elsewhere.
 
 ## Editing track configs
 

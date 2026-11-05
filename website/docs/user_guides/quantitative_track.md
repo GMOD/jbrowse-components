@@ -55,8 +55,8 @@ axis...**, and on a density plot, which maps score to color, **Score range...**.
   ticked by default, keeps one spike from flattening the rest. The axis runs to
   the lowest and highest value in view unless one would stretch it past twice
   the height the other 99% of values need; that end stops there, and the bars
-  past it wear a 2 px red strip. A plot with no spike shows no strip. A config
-  takes any quantile, `0.95` for a tighter fence.
+  past it are drawn with a 2 px red strip. A plot with no spike shows no strip.
+  A config takes any quantile, `0.95` for a tighter fence.
 - **Share axis with** ticks the other tracks in the view that share this one's
   axis, which then autoscales over all of their data as you pan and zoom
   ([`encoding.y.scale.group`](/docs/config/yscale/#slot-group)). A coverage
@@ -96,10 +96,10 @@ beneath them, where **Color rows by → Each row** picks a subtrack's color in t
 list, and on overlapping plots gives every other subtrack a separate palette
 entry.
 
-**Edit plot...**, in that dialog, is the escape for what the line does not
-offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
-the colors a heatmap fades through, and a threshold naming several cut points, a
-color per band. The
+**Edit plot...**, in that dialog, sets what that line has no control for: a ramp
+(`{ "field": "score", "scale": "linear", "scheme": "viridis" }`), the colors a
+heatmap fades through, and a threshold naming several cut points, a color per
+band. The
 [quantitative track configuration](/docs/config_guides/quantitative_track#colors)
 guide writes the same object into a config file.
 
@@ -118,9 +118,10 @@ Each row keeps the color its subtrack was configured with. Sources sharing one
 plot box take a palette entry each instead, so the overlaid plots can be told
 apart.
 
-An outlier on one signal can blow out the shared Y axis. **Clip extreme
-outliers** in the **Y axis...** panel stops the axis short of a spike that would
-flatten the other rows, or pin the min and max there.
+An outlier on one signal can stretch the shared Y axis until the other signals
+flatten. **Clip extreme outliers** in the **Y axis...** panel stops the axis
+short of a spike that would flatten the other rows, or pin the min and max
+there.
 
 <Figure caption="Twelve per-cell-type BigWigs as one multi-quantitative track over CD8A and MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -147,8 +148,8 @@ Three ways to create one:
 [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
 tab-separated BED format where each row reports the methylation fraction at a
 single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
-`BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
-subtrack per modification type; see
+`BedTabixAdapter` and maps to `MultiQuantitativeTrack`, with one subtrack per
+modification type; see
 [Loading bedMethyl as a multi-quantitative track](/docs/config_guides/quantitative_track#loading-bedmethyl-as-a-multi-quantitative-track)
 for generating the file and the adapter config. For the per-read view of the
 same modified-base calls, see
@@ -184,7 +185,7 @@ sort, a clustering run, and a hand-arranged order alike. Where a track should
 open on a particular order, the
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) slot's `sort` lists the
 sources that lead — the rest keep the adapter's order, and the reset returns to
-that order rather than past it.
+that order.
 
 A session can persist the sort with `sortRowsBy`, the way `runClustering`
 persists a clustering run — see [](/docs/models/linearwiggledisplay) for both

@@ -112,8 +112,8 @@ Preset its slots in a `displays` array; they are listed on
   overlapping variants readable
 - **`rows.field`** is `sample` (one row per sample, darker for homozygous) or
   `haplotype` (one row per phased haplotype, named `<sample> HP1`,
-  `<sample> HP2`, counting from 1). A haplotype row answers to its sample's
-  name, so the rest of `rows` carries across the switch
+  `<sample> HP2`, counting from 1). Each haplotype row is matched to its
+  sample's name, so the rest of `rows` applies in both modes
 - **`filter`** is a list of [field tests](/docs/config/fieldpredicate):
   `minorAlleleFrequency` with `gte` hides variants below an allele-frequency
   floor, `missingness` with `lte` hides those above a no-call ceiling, and a
@@ -282,11 +282,11 @@ shares its key:
 
 Clicking a cell makes its SNP the index SNP: its row and column of the triangle
 light up, its LD to every other variant. Click empty space, or use **Clear index
-SNP** in the track menu, to let it go.
+SNP** in the track menu, to clear it.
 
-Thinning is plink's `--maf`, decided when the table is written: it holds the
-dense callset down to the common, block-tagging variants. High enough it reaches
-the tagging variants themselves, and the block fades. Several haplotypes at one
+Thinning is set by plink's `--maf` when the table is written, reducing the dense
+callset to the common, block-tagging variants. A `--maf` high enough to remove
+the tagging variants themselves makes the block fade. Several haplotypes at one
 locus fragment the block too, since no single pair of biallelic markers tags
 them all, so a soft sweep reads patchier than its strength suggests.
 

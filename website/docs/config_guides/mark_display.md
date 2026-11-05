@@ -8,18 +8,17 @@ guide_category: Track types
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track, in the sense of
-Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
-rather than drawn by code. It is experimental in v5, and its own settings may
-still grow. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a `VariantTrack`,
-a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a `bar`, `point`,
+Vega-Lite or ggplot: a picture is declared in the config as marks, encodings and
+transforms. It is experimental in v5, and its own settings may still grow. It
+goes on a `FeatureTrack`, an `AlignmentsTrack`, a `VariantTrack`, a
+`QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a `bar`, `point`,
 `rule`, `line`, `rect`, `text` or `link` per `marks` entry, each with an
 `encoding` naming the fields that feed it, a `transform` list that can bin,
 count, pack or measure coverage, and a zoom range it draws in.
 
-Reach for it when a field is the picture: a BED score, a segment's log ratio, a
-peak's signal and q-value, a read's MAPQ, a variant's `QUAL`. The format-typed
-displays still cover mismatches, genotypes and isoform tiering, which are not
-fields.
+Use it to plot a field directly: a BED score, a segment's log ratio, a peak's
+signal and q-value, a read's MAPQ, a variant's `QUAL`. The format-typed displays
+still cover mismatches, genotypes and isoform tiering, which are not fields.
 
 ## A worked example
 
@@ -275,8 +274,8 @@ one display and one `encoding.y` per track, so each axis has the field it
 measures and the reader can stack the tracks in whatever order the comparison
 needs.
 
-Where the two quantities answer the same question at different zooms, one track
-still does it: give each mark a zoom range and they never draw together.
+Where the two quantities measure the same thing at different zooms, one track
+can show both: give each mark a zoom range and they never draw together.
 
 ```json
 "marks": [
@@ -291,14 +290,14 @@ still does it: give each mark a zoom range and they never draw together.
 ```
 
 The coverage draws zoomed out and the per-read value zoomed in, and the axis at
-each zoom is the drawing mark's. v5.0.0 withdrew the right-hand second axis,
-because with two axes each bar could belong to either set of numbers.
+each zoom is the drawing mark's. The display has one axis, because with two axes
+each bar could belong to either set of numbers.
 
 ## Color scales
 
 `color` as a bare string names a field, and as an object binds that field to a
 scale, so the legend reads the same table the colors came from. A constant is
-`{ "value": "steelblue" }`, or a `value` holding a jexl callback that answers a
+`{ "value": "steelblue" }`, or a `value` holding a jexl callback that returns a
 color per feature; a color name written bare is reported as a field no feature
 holds. With `scale` unset, `score` runs through a linear ramp and any other
 field is categorical, a color per distinct value, so a numeric field such as
@@ -431,7 +430,7 @@ with two colors paints a rise across zero in both, changing at the axis.
 ```
 
 A `rect` has no `y`: it paints a band from `x` to `x2` in its color, for an
-interval whose extent is the point. With no `row` every rect shares one band;
+interval whose extent is the data. With no `row` every rect shares one band;
 with one, `{ "mark": "rect", "encoding": { "row": "sampleIndex" } }`, the plot
 divides into as many bands as the highest row on screen needs. A color scale
 over a field makes the rect a heatmap:
@@ -579,8 +578,8 @@ than three screens straightens into a leg rising from each end, and a mate the
 view does not show draws a short stem at the end it does. Where the `mate` step
 read a direction for an end, as it does from a breakend `ALT`, the link draws a
 short foot there, lying over the side of the junction the rearranged sequence
-keeps. A link answers a hover and a click along its stroke, and the SVG export
-writes it as a path.
+keeps. A link responds to a hover or a click along its stroke, and the SVG
+export writes it as a path.
 
 A `text` mark naming no `y` labels the link on its two ends: each label sits
 just inside the apex of its curve, or just over it where the curve is too small
@@ -709,17 +708,18 @@ A row's color, pinned in [`rows.colors`](/docs/config/markrows/#slot-colors) or
 mapped from an attribute by [`rows.color`](/docs/config/markrows/#slot-color),
 paints the bar beside its label, a mark naming no color, and a mark colored by
 the field the rows split on, `"color": "source"` under `"rows": "source"`. A
-row's own color there beats the mark's `scale.range`, which colors the rows that
-have none. `"colors": { "tumor": "#e15759" }` in `rows` pins a row's color, the
-form **Edit colors/arrangement...** writes.
+row's own color there takes precedence over the mark's `scale.range`, which
+colors the rows that have none. `"colors": { "tumor": "#e15759" }` in `rows`
+pins a row's color, the form **Edit colors/arrangement...** writes.
 
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and has a chip, where a
-row is one row. Beside a facet, the facet draws: with `rows` on the same field
-the facet is the whole picture, and with `rows` on another field the track shows
-a warning, because bands of rows are not drawn yet. A mark display picked from
-the track menu over a multi-BigWig opens with `rows: "source"`, a row per file
-in the adapter's order, unless the display already names a `facet` or `rows`.
+row is one row. When both are set, the facet takes precedence: with `rows` on
+the same field the facet is the whole picture, and with `rows` on another field
+the track shows a warning, because the display does not draw bands of rows. A
+mark display picked from the track menu over a multi-BigWig opens with
+`rows: "source"`, a row per file in the adapter's order, unless the display
+already names a `facet` or `rows`.
 
 A row per species over a MAF is the same `rows`, once a `flatten` has fanned
 each alignment block out. A MAF block is one feature with an `alignments` record
@@ -842,7 +842,7 @@ belonging to another step is refused where the config is read:
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`. A
-computed value is a `formula`'s to write, for the steps after it to read.
+`formula` step computes a value for the steps after it to read.
 
 A `bin` then an `aggregate` is a density: one bar per bin, its height the count
 of features starting in it. The `aggregate` groups by the edges the `bin` wrote
@@ -864,8 +864,9 @@ track beside it:
 A mark that names no `y` plots what its steps wrote, the way a ggplot2 stat
 names what its geom draws (`after_stat`): the depth a `coverage` writes, or the
 one summary an `aggregate` with a single op writes. An aggregate writing two
-summaries needs `y` to choose one. A link behind a `mate` step reaches the other
-end the step found without naming `x2`, and a written channel takes precedence.
+summaries needs `y` to choose one. A link after a `mate` step draws to the other
+end that step found, with no `x2` needed, and a written channel takes
+precedence.
 
 `pileup` expresses the packing of a read pileup as a step. It writes the lowest
 row on which each feature overlaps nothing already there, and a `rect` reading
@@ -928,9 +929,9 @@ quantities takes a title covering both, or none.
 `"step": "auto"` picks the width from the view instead: four pixels of screen,
 snapped up to the next 1, 2 or 5. The bars stay one width however far you zoom
 out, and one mark replaces the three a config otherwise writes. The width
-resolves before the fetch and is keyed into it, so zooming within a rung re-uses
-what is loaded and crossing one re-reads, the way a BigWig picks a summary
-level.
+resolves before the fetch and is keyed into it, so zooming within one bin width
+re-uses what is loaded and crossing to the next width re-reads, the way a BigWig
+picks a summary level.
 
 ```json
 "transform": [
@@ -1000,12 +1001,12 @@ shows the rule's id beside it.
 
 ## What the track menu offers
 
-**Edit marks...** is the whole plot as controls. Above are the settings of the
-plot as a whole: the field its sections stack by (`facet`) and the field that
-gives each value a row (`rows`), each with the order its values take, and the
-axis every mark stands on, with its title, type, pinned ends and grid. Below,
-the marks in paint order on the left, and on the right the selected mark's type,
-its steps, and a field picker per channel that type reads.
+**Edit marks...** shows every setting of the plot as form controls. Above are
+the settings of the plot as a whole: the field its sections stack by (`facet`)
+and the field that gives each value a row (`rows`), each with the order its
+values take, and the axis every mark stands on, with its title, type, pinned
+ends and grid. Below, the marks in paint order on the left, and on the right the
+selected mark's type, its steps, and a field picker per channel that type reads.
 
 <Figure src="/img/mark_display/edit_plot.png" caption="Edit marks on a multiscale pair: the two marks on the left, the selected mark's channels and zoom range on the right."/>
 
@@ -1024,7 +1025,7 @@ The editor lists a mark's steps, each named by what it writes and shown with its
 settings in place, with a list of common steps to add: a count per bin, a
 coverage, a filter. A step that writes a value fills a bar that names no `y`.
 Beside **Add mark**, **Add zoomed-out density** appends the count per bin that
-draws from 100 bp per px out and hands the marks above it the closer zooms.
+draws from 100 bp per px out and leaves the closer zooms to the marks above it.
 
 The form shows, without rewriting, a channel the mark's type stopped reading and
 a far end that names a separate sequence field. The rules run as you type and

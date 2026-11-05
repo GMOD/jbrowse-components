@@ -5,15 +5,15 @@ description:
 guide_category: Sequence tools
 ---
 
-The `blat` plugin adds two **Tools** menu items that answer "where is this
-sequence in the genome", **BLAT search** and **In-silico PCR**. Both query
-UCSC-style sequence-search servers and turn the hits into a track built on the
-fly, with every hit listed so you can go to the one you want.
+The `blat` plugin adds two **Tools** menu items that find where a sequence is in
+the genome, **BLAT search** and **In-silico PCR**. Both query UCSC-style
+sequence-search servers and turn the hits into a track built on the fly, with
+every hit listed so you can go to the one you want.
 
 Neither JBrowse Web nor JBrowse Desktop bundles it. It loads from a config's
 `plugins` entry, and every genome on
 [genomes.jbrowse.org](https://genomes.jbrowse.org) names it, in either app.
-Another JBrowse offers the two items once its config carries the same entry:
+Another JBrowse offers the two items once its config has the same entry:
 
 ```json
 {
@@ -41,7 +41,7 @@ location is a link that takes the view there, labelled with the percent identity
 and the fraction of the query the hit covers.
 
 A query adds the track and shows you the list, leaving the view where it was.
-Which hit matters is yours to decide, and the top-scoring one is not always it.
+You choose the hit; the top-scoring one is not always the right one.
 
 The track is an alignments track. A PSL hit is a list of aligned blocks in query
 and target coordinates, the same information a CIGAR encodes, so each hit is
@@ -72,7 +72,7 @@ records were pasted, and names any record that found nothing.
 ### Starting from a read or a selection
 
 The dialog also opens filled in from what is on screen, on the assembly of the
-view it was opened from. Nothing is submitted until you press Submit.
+view it was opened from. The search runs when you press Submit.
 
 - Right-click a read in an alignments track and open **Launch**. **BLAT read**
   searches the read's whole sequence, and **BLAT soft-clipped bases** searches
@@ -100,10 +100,9 @@ The assembly picker drives the UCSC database, resolved in this order:
 **Show advanced settings** exposes the resolved db so you can override it,
 including with a GenArk accession such as `GCF_000001405.40`.
 
-An assembly UCSC does not host has nowhere to search — a genome you opened from
-your own files is the usual case — and the dialog warns of this before you
-submit. If UCSC does have a database for it, set that database under advanced
-settings. These dialogs have no local aligner behind them;
+Both dialogs search only assemblies UCSC hosts, so a genome you opened from your
+own files is usually not searchable, and the dialog warns before you submit. If
+UCSC does have a database for it, set that database under advanced settings.
 [](/docs/user_guides/sequence_search) scans the reference for an exact pattern
 without involving UCSC.
 
@@ -145,9 +144,9 @@ primer's 5' tail passes with at least two matches per mismatch, so a 20-mer
 sitting over a SNP still amplifies but one with two mismatches in its first five
 bases does not. UCSC does not check the forward primer's 5' tail at all.
 
-More than one product means more than one band. The results panel counts the
-products, lists each size to compare against a gel, and states explicitly when
-more than one product exists. Two products of similar size will not resolve.
+Each product is a separate band on a gel, and products of similar size will not
+resolve. The results panel counts the products, lists each size to compare
+against a gel, and states explicitly when more than one product exists.
 
 <Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19."/>
 
@@ -155,9 +154,9 @@ more than one product exists. Two products of similar size will not resolve.
 
 ## Notes
 
-Result tracks store their features inline in the session, so they live as long
-as the session does and travel with it when you save. Each search adds another
-track; delete the ones you are done with from the track selector.
+Result tracks store their features inline in the session, so they are kept as
+long as the session is and saved with it. Each search adds another track; delete
+the ones you are done with from the track selector.
 
 ## See also
 

@@ -6,16 +6,15 @@ guide_category: Track types
 
 A MAF track shows a multiple sequence alignment of several species (or samples)
 against a reference genome: one row per aligned species at its true genomic
-position, with a coverage summary on top. It answers "how does this region
-compare across many genomes at once", the kind of multiz alignment UCSC
-publishes (e.g. the human 470-way or the _C. elegans_ 26-way).
+position, with a coverage summary on top. Use it to compare a region across many
+genomes at once, as in the multiz alignments UCSC publishes (e.g. the human
+470-way or the _C. elegans_ 26-way).
 
 JBrowse reads three formats, MAF (tabix-indexed BED), BigMaf, and bgzipped TAF
 (taffy), all opened as a single track. Add one with **File → Open track**, or
 load a track an administrator has configured. Data-format and configuration
 details (adapters, the species list or Newick guide tree) are in the
-[MAF track configuration guide](/docs/config_guides/maf_track). This page covers
-what you can do once the track is on screen.
+[MAF track configuration guide](/docs/config_guides/maf_track).
 
 <Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way alignment under the ce11 genes: the coverage band, then one row per species with its differences from the reference."/>
 
@@ -29,15 +28,16 @@ them.
 
 ## Zooming out past the alignment
 
-Every MAF format packs each block's species sequences together, so a zoomed-out
-query would download all of them — tens of megabytes for a single screen of a
-deep alignment. JBrowse blocks that with a "requested too much data" prompt.
+In every MAF format, each block stores its species' sequences together, so a
+zoomed-out query would download all of them — tens of megabytes for a single
+screen of a deep alignment. JBrowse blocks that with a "requested too much data"
+prompt.
 
 A track configured with a summary file shows presence bars there instead: one
 bar per species per aligned region, shaded by the summary's score, with no
-sequence read. Hover one to name the species, the aligned block and its score,
-which on a deep alignment is how to tell one row from another once the labels
-shrink away. Zooming back in swaps the bars for the alignment itself. Neither
+sequence read. Hover one to name the species, the aligned block and its score.
+On a deep alignment the labels become too small to read, so hovering is how to
+identify a row. Zooming back in swaps the bars for the alignment itself. Neither
 the coverage band nor the conservation band is drawn on the summary tier, since
 both need the per-base alignment the tier skips reading. Pointing a track at a
 summary file is covered in the
@@ -45,10 +45,9 @@ summary file is covered in the
 
 <Figure src="/img/maf_summary_tier.png" caption="The hg38 470-way narrowed to ~30 mammals over GAPDH. At 180 kb (top) the track reads its summary file; at 200 bp (bottom) it draws the alignment."/>
 
-A summary read costs the span on screen against the summary file, not against
-the alignment, so the tier holds at whole-chromosome scale on an alignment deep
-enough that the tier is the only way to see it at all. The HPRC pangenome is
-that case:
+A summary read fetches the span on screen from the summary file, so the tier
+draws at whole-chromosome scale even on an alignment too deep to load. On the
+HPRC pangenome,
 [open the whole of chr6](https://jbrowse.org/code/jb2/main/?config=test_data/hprc_maf_summary.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%22%2C%22tracks%22%3A%5B%22hprc_v2_1_mc_grch38_summary%22%5D%7D%5D%7D)
 and its 464 haplotypes draw with no forced load, where the alignment beneath
 them is refused.
@@ -60,10 +59,10 @@ aligned species whose base matches the reference, a quick read of which regions
 are conserved versus divergent. It is computed from the alignment itself, so no
 extra files are needed.
 
-The rows work as the [alignments track](/docs/user_guides/alignments_track)'s
-reads do: a fill, with the mismatches drawn over it. **Color by** breaks the
-same signal out per species, so you can see _which_ genomes diverge in a region.
-Its first block picks the fill:
+Like the [alignments track](/docs/user_guides/alignments_track)'s reads, each
+row is a fill with the mismatches drawn over it. **Color by** breaks the same
+signal out per species, so you can see _which_ genomes diverge in a region. Its
+first block picks the fill:
 
 - **Default** fills each row in one tone, the mismatches standing out over it.
 - **Identity to reference** shades each row on a red→grey→blue ramp (red
@@ -81,8 +80,8 @@ lowercase soft-masked repeats. **Show → Mismatches** takes the differing bases
 insertion markers and deletion counts off, leaving the fill.
 
 **Plot type** › **Identity X-Y plot** draws identity as each row's bar height, a
-per-species wiggle. The bars take the fill: the heatmap's ramp under **Identity
-to reference**, and one color under **Default**.
+per-species wiggle. The bars are colored with the heatmap's ramp under
+**Identity to reference** and with one color under **Default**.
 
 In a display config the fill is [`encoding.color`](/docs/config/mafcolor)
 (`identity`, `refNameRank`, or a constant `value`), the per-base coloring
@@ -102,11 +101,11 @@ The heatmap and the X-Y plot draw only while you are zoomed out past base level.
 Zooming in to base level swaps them for the default fill and the mismatches,
 since a single base's identity is just whether it matches.
 
-The heatmap works on large alignments: with all ~470 species of the UCSC hg38
-470-way shown at once, the heatmap gives a per-base conservation view across the
-full set of species. Fit-to-display-height mode takes every species into one
-display, so each row goes near-1px and the alignment reads as a texture, with
-the guide tree (dendrogram) down the left.
+With all ~470 species of the UCSC hg38 470-way shown at once, the heatmap gives
+a per-base conservation view across the full set of species.
+Fit-to-display-height mode takes every species into one display, so each row
+goes near-1px and the alignment reads as a texture, with the guide tree
+(dendrogram) down the left.
 
 <Figure src="/img/maf_470way.png" caption="The hg38 470-way over GAPDH, every species at once."/>
 
@@ -118,11 +117,11 @@ the source chromosomes its blocks come from (in that species' own genome) are
 ranked by coverage: the row's main chromosome gets the primary color, and blocks
 from a different source chromosome take a contrasting accent. A row that stays
 one color is collinear; a row that _changes color along its length_ is drawing
-blocks from more than one source chromosome, an immediate flag for a
-translocation or rearrangement. The ranking is per row, and a compact legend in
-the top-right names the scheme (main / 2nd / 3rd source). Like conservation, it
-is derived from the alignment with no extra data to fetch. The figure turns off
-**Show → Mismatches**, which at this zoom would cover most of the fill.
+blocks from more than one source chromosome, which flags a translocation or
+rearrangement. The ranking is per row, and a compact legend in the top-right
+names the scheme (main / 2nd / 3rd source). Like conservation, it is derived
+from the alignment with no extra data to fetch. The figure turns off **Show →
+Mismatches**, which at this zoom would cover most of the fill.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="The ce11 26-way colored by source chromosome, a row switching color where its blocks come from another chromosome."/>
 
@@ -187,8 +186,8 @@ the reference's and labels the change synonymous or nonsynonymous.
 Drag a selection across the track and the menu that opens on release offers
 **View subsequences → All rows**, or **Selected rows** to take only the rows the
 drag covered. Either opens the aligned columns for that window, one sequence per
-species, with **Download as FASTA** and **Copy to clipboard** in its menu. That
-is the slice a downstream alignment viewer or tree builder wants.
+species, with **Download as FASTA** and **Copy to clipboard** in its menu, ready
+for a downstream alignment viewer or tree builder.
 
 Without a drag, the track menu's **Launch → View subsequences (visible region)**
 takes the whole window and every row.
@@ -226,10 +225,10 @@ submenu — opens as a two-row
 [linear synteny view](/docs/user_guides/linear_synteny_view): **Linear synteny
 view, \<ref\> vs...** lists the same species, and picking one opens the
 reference over that species' genome with the alignment drawn between them as
-ribbons. The ribbons come from the MAF's own columns, so every insertion and
-deletion in the block is where the alignment put it, and no synteny file is
-involved. The reference row has the tracks this view had open, the MAF included;
-the species row has that species' gene track where the session has one.
+ribbons. The view draws the ribbons from the MAF's columns, so each insertion
+and deletion appears where the alignment placed it, without a synteny file. The
+reference row has the tracks this view had open, the MAF included; the species
+row has that species' gene track where the session has one.
 
 <Figure caption="The menu a drag across the rows raises, listing each strain the drag covers." src="/img/maf_row_menu.png" />
 
@@ -243,14 +242,13 @@ track is configured with a Newick guide tree.
 - **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its
-  `sort` is the order: with a guide tree it rotates the tree rather than
-  overruling it, each node putting the clade holding the earliest listed species
-  first, so a listed species comes as early as the topology allows and brings
-  its relatives with it — `["mm10"]` on `((hg38,panTro4),mm10)` draws mouse's
-  branch at the top. With no guide tree the listed species simply lead. The tree
-  draws while some rotation of it lists the species in `sort`'s order, so a
-  reorder that splits a clade hides it until **Reset row order** brings it back,
-  and one that only turns a clade keeps it.
+  `sort` is the order: with a guide tree it rotates the tree, each node putting
+  the clade holding the earliest listed species first, so a listed species comes
+  as early as the topology allows and brings its relatives with it — `["mm10"]`
+  on `((hg38,panTro4),mm10)` draws mouse's branch at the top. With no guide tree
+  the listed species simply lead. The tree draws while some rotation of it lists
+  the species in `sort`'s order, so a reorder that splits a clade hides it until
+  **Reset row order** brings it back, and one that only turns a clade keeps it.
 - The species rows always share the track's height between them, so more species
   make thinner rows. Drag the track taller, or select a subtree, to read the
   bases on fewer, taller rows.
@@ -261,10 +259,11 @@ Click an internal node of the tree to filter the track to that clade, or pick a
 set of species from **Edit row arrangement...**. The tree then redraws as the
 pruned dendrogram of the kept species, so it matches the visible rows, including
 for a selection that is not a single clade. **Clustering → Show all rows**
-restores all species. The focus is `rows.kept`. On a track whose species come
-from a `samples` array or a Newick tree, a focus naming none of them shows every
-row; on one that finds its species in the alignment blocks, it shows only the
-species it names, so none where the alignment holds none of them.
+restores all species. The focus is stored in `rows.kept`. On a track whose
+species come from a `samples` array or a Newick tree, a focus naming none of
+them shows every row; on a track that reads its species from the alignment
+blocks, the focus shows the species it names, and no rows where the alignment
+has none of them.
 
 ### Clustering rows by identity
 
@@ -275,11 +274,11 @@ matches the reference at, where a stretch it does not reach at all scores zero,
 and hierarchical clustering over those scores gives the row order and the
 dendrogram.
 
-A cohort alignment wants exactly this ordering. A file of one species ships no
-guide tree, since which haplotypes group together is a property of the locus, so
-its rows arrive in the order the file names them. Under an active subtree filter
-the run covers the visible rows only, so it resolves the structure inside the
-clade.
+Clustering suits a cohort alignment: a file of one species' haplotypes has no
+guide tree, because which haplotypes group together is a property of the locus,
+so its rows are listed in the order the file gives them. Under an active subtree
+filter the run covers the visible rows only, so it resolves the structure inside
+the clade.
 
 The submenu names the locus a tree was computed over, since clustering reads the
 region in view. The run rotates its tree towards the current `rows.sort`, a

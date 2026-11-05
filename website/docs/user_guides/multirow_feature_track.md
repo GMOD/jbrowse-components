@@ -22,15 +22,15 @@ reach every mark, scale, filter and facet setting.
 
 ## Turning a feature track into rows
 
-Picking it from **Display types** reads a sample of the features once and splits
-them on whichever column the file turns out to have: a RepeatMasker table opens
-as ~20 rows of `repClass`, and anything else falls back to the `name` column.
-Which column assigns a feature to a row is then **One row per...** in the same
-track menu, which lists the attributes the sampled features carry, so
-RepeatMasker also offers `repFamily` and `name` beside the class it started on.
-A saved row order, its labels and colors, and a clustering run survive a
-repartition. They name rows by value, so they match no row under the new
-partition and apply again when the field comes back.
+When you pick it from **Display types**, JBrowse reads a sample of the features
+once and splits them on a column the file has: a RepeatMasker table opens as ~20
+rows of `repClass`, and anything else falls back to the `name` column. Which
+column assigns a feature to a row is then **One row per...** in the same track
+menu, which lists the attributes the sampled features have, so RepeatMasker also
+offers `repFamily` and `name` beside the class it started on. A saved row order,
+its labels and colors, and a clustering run are kept across a repartition. They
+refer to rows by value, so they apply to no row under the new partition and
+apply again when the field comes back.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 
@@ -58,14 +58,14 @@ config:
 `rows` names the feature attribute whose value assigns a feature to a row.
 Features sharing a value stack into the same row, and the value becomes the row
 label. The display picks `rows`, its marks and its color from the features only
-while the config states no `marks`, so a config that writes its own `marks`
-writes `rows` too, or every feature lands in one row.
+while the config states no `marks`, so a config that sets `marks` must also set
+`rows`, or every feature is drawn in one row.
 
 A feature whose children have none of their own, such as a BED12 row or a GFF
 transcript at the top of its file, draws them as blocks joined by a line, as a
 gene track draws exons. The plot is then two marks, a line over each feature and
-a `rect` over its blocks, and a hover or a click on any block answers for the
-whole feature.
+a `rect` over its blocks, and a hover or a click on any block reports the whole
+feature.
 
 The rows are discovered from the values of the features in the window, so a file
 that gains a sample or a category needs no config change, and a window missing

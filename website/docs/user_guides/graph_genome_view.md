@@ -67,13 +67,13 @@ track menu's items do.
 
 The graph opens force-directed, its backbone running left to right in reference
 order under the other tracks. Typing in the location box, a gene search, a click
-on the cytoband and a drag-zoom move the view, and the track cuts the new window
-and lays it out again, keeping the drawing it had.
+on the cytoband and a drag-zoom move the view, and the track cuts the subgraph
+for the new window and lays it out again, keeping the drawing it had.
 
 A graph track can also name a coarse tier, the same graph with one node per
-bubble. Zoomed out past the handover the track names, the track cuts the tier,
-so a whole chromosome draws as a graph, and zoomed back in it cuts the segments
-again.
+bubble. Zoomed out past the handover the track names (the zoom where it switches
+to the tier), the track cuts the tier, so a whole chromosome draws as a graph,
+and zoomed back in it cuts the segments again.
 
 Two adapters cut a subgraph: `RgfaTabixAdapter` over the index, and
 `WalkTabixSyntenyAdapter` over `gfa-to-tabix --walks` files, whose cut includes
@@ -128,8 +128,8 @@ The rGFA in these figures is a minigraph graph of five strains, built by the
 [pangenome tutorials](/docs/tutorials/pangenome_ecoli). To build your own,
 minigraph needs PanSN-named records. It takes its stable names from the input
 FASTA headers, and the per-strain files call their contig `chr` in all five. Fed
-those files, minigraph puts every segment on an ambiguous `chr` that no later
-command can query by strain.
+those files, minigraph puts every segment on an ambiguous `chr`, so later
+commands cannot query a segment by strain.
 
 `gfa-to-tabix` makes four choices when it walks a plain GFA:
 
@@ -143,8 +143,8 @@ command can query by strain.
 - The walk also records **which haplotypes visit each segment**, as an `SB:H:`
   bitmask in the index over the haplotypes its `#samples` header lists. rGFA has
   no field for them. On this route that value fills `samples` in the node popup.
-- When a path reaches a segment twice, **the first visit wins**, and the node
-  draws as one tube at one x, and the repeat stays visible as depth.
+- When a path reaches a segment twice, **the first visit sets the node's x**,
+  and the node draws as one tube, and the repeat stays visible as depth.
 - A segment the reference never visits is placed on **the coordinates of the
   assembly it comes from**. rGFA places such segments the same way, which is why
   a reference query reaches them through the link rows.
@@ -226,7 +226,8 @@ Once the linear view is zoomed out past the handover, the graph track cuts the
 tier and the size limit no longer applies; the drawing barely changes across the
 handover, since the fine cut has folded the same variants by then. The segments
 lane draws segments at every zoom, so load the tier's prefix as a separate track
-too, because that lane draws a whole chromosome where the segments lane refuses.
+too, because that lane draws a whole chromosome where the segments lane does not
+draw.
 
 Each line in the graph is one graph link. The track draws a link only when both
 endpoints are inside the cut, so an allele near the window's edge draws only the
@@ -257,10 +258,10 @@ every traversal, and **Node details** lists them under `samples`. A true rGFA
 has no traversals to read. There `samples` is empty, and the panel reports
 `contributingAssembly`, the one assembly `SN` gives for the segment.
 
-Route 1 gives the same answer without the GFA file when the index came from a
-plain GFA. On that route `gfa-to-tabix build` does the traversal walk offline
-and writes each segment's haplotypes into the index as `SB:H:` bits. Only an
-index built from a minigraph rGFA lacks them.
+Route 1 also lists each node's samples without the GFA file, when the index came
+from a plain GFA. On that route `gfa-to-tabix build` does the traversal walk
+offline and writes each segment's haplotypes into the index as `SB:H:` bits.
+Only an index built from a minigraph rGFA lacks them.
 
 **Sample rows** draws a row per contributing assembly. Each node is drawn once,
 on the row of the first path that reaches it, and the other haplotypes stay in
@@ -378,7 +379,7 @@ Rank comes from how the graph was built. At a dense locus one rank holds alleles
 from many haplotypes, so a rank row has no biological meaning. **Sample rows**
 groups rows by the assembly each allele came from. The backbone sits on top, and
 each strain's charcoal marks sit under it, tied by grey threads to where they
-attach, so a row shows what that strain does to the reference.
+attach, so a row shows that strain's differences from the reference.
 
 <Figure caption="90 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
@@ -453,8 +454,8 @@ Two alternative settings fix that:
   chain nodes, and the drawing grows with node count.
 - **Compress lengths** pulls both ends towards the graph's mean, so a cut
   spanning kilobases and single bases fits one drawing at any node count. It
-  uses Bandage's power law, moved onto the axis a pangenome needs it on. The
-  cost is that a long node no longer looks long.
+  uses Bandage's power law, moved onto the axis a pangenome needs it on. A long
+  node no longer looks long.
 
 **Proportional** is the unmodified Bandage map. Keep it when a figure is about
 relative length.

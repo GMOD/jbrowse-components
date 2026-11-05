@@ -33,14 +33,15 @@ blocks. For which file formats have one and which adapter reads each, see
 a synteny track, it opens in **Quick start**: pick the track and it fills in a
 row per assembly that track names, however many that is, then click **Launch**.
 **Swap** reverses the row order, since a synteny track is queryable in either
-direction and its listed order does not claim which genome belongs on top.
+direction and the order a track lists its assemblies in has no bearing on which
+genome goes on top.
 
 **Manual** is the same form with the rows exposed: select each row's assembly
 yourself, click the arrow between two rows to give that pair its dataset, and
 add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
-.anchors.simple (MCScan) file there if the session has none. It is the way in
-for a stack whose rows no single track names, and the way to adjust the ones
-Quick start filled in.
+.anchors.simple (MCScan) file there if the session has none. Use **Manual** for
+a stack whose rows come from more than one track, and to adjust the rows Quick
+start filled in.
 
 Quick start and Manual both stack more than two genomes. The worked examples are
 from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
@@ -55,8 +56,8 @@ a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 The other way in starts from a locus in a linear genome view with a synteny
 track open on it, and lets JBrowse frame the panels. The track has to be open:
-its ribbons are what say the locus aligns anywhere at all, and the import form
-above is for a dataset that is configured but closed.
+JBrowse finds the aligned regions from its ribbons, and the import form above is
+for a dataset that is configured but closed.
 
 - **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
   view**. The dialog names the **synteny dataset** the region is read back out
@@ -65,10 +66,10 @@ above is for a dataset that is configured but closed.
   to the region in that dataset and opens a panel for each. The dialog lists
   them top to bottom with the locus and size each panel will open on and up/down
   arrows, the assembly you selected in among them: ribbons are drawn between
-  neighbouring panels only, so that order decides which comparisons the view can
-  show. This is the form to use for an
-  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
-  several assemblies at once.
+  neighbouring panels only, so the view compares only adjacent panels in that
+  order. This is the form to use for an
+  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus aligns
+  to several assemblies at once.
 - **Right-click a single alignment** in a synteny track drawn in a linear genome
   view and pick **Launch → Linear synteny view with \<assembly\>**,
   <!-- menu-path-ok --> which opens the one pair that alignment describes. Its
@@ -99,8 +100,8 @@ above is for a dataset that is configured but closed.
   genomes.
 - **A row of a [](/docs/user_guides/maf_track)** opens as a synteny view too:
   drag-select across the rows and pick **Linear synteny view, \<ref\> vs...**,
-  then the sample. The ribbons are cut from the alignment's own columns, so no
-  synteny file is involved.
+  then the sample. The ribbons are cut from the alignment's columns, so the view
+  needs no synteny file.
 
 Every Launch dialog above offers a **window size** (padding added to every
 panel) and a **horizontally flip inverted targets** checkbox. Without flipping,
@@ -128,8 +129,9 @@ panel drives; the others are placed from it, outward one level at a time in a
 stack of three or more.
 
 Dragging the ribbons between two panels pans them all at once. While following,
-the drag moves the anchor panel and the others follow it, except a panel past a
-band with no synteny track, which the follow cannot place and the drag pans.
+the drag moves the anchor panel and the others follow it. A panel past a band
+with no synteny track is the exception: the follow cannot place it, so the drag
+pans it.
 
 The header's arrows button toggles following on and off without opening the
 menu, and shows whether it is running. It changes to a warning form where
@@ -212,8 +214,8 @@ mode.
 
 A mode whose number a track does not have leaves every ribbon the default color.
 
-A text column's label takes a distinct color the first time the view meets it,
-and keeps that color as other labels arrive. The view's
+A text column's label takes a distinct color the first time the view draws it,
+and keeps that color as more labels load. The view's
 `encoding.color.scale.domain` lists labels that take the palette in order and
 lead the legend, the rest sorted after them, so a session can put an ancestral
 linkage group's names in the order a reader expects and fix each one's color.
@@ -224,14 +226,14 @@ to pin it, or reset a track to its automatic palette slot.
 
 The settings button beside it has **Identity fade**, which modulates ribbon
 opacity by identity independently of the color mode, so low-identity blocks fade
-out without spending the color channel.
+out, leaving the color mode free.
 
 ## Display settings
 
-The sliders button in the header opens a menu of every setting that decides what
-the ribbons look like. The checkboxes come first, then the rows that open a
-submenu of options or a slider. The hamburger menu next to it answers what the
-view _is_ — which genomes it stacks, where they point, what leaves it.
+The sliders button in the header opens a menu of every setting for how the
+ribbons look. The checkboxes come first, then the rows that open a submenu of
+options or a slider. The hamburger menu next to it sets which genomes the view
+stacks, where they point and what leaves it.
 
 - **Identity fade** is described above
 - **Curved lines** draws ribbons as bezier curves, which reads far better at
@@ -305,10 +307,9 @@ is the common case in a stack of whole genomes: every contig is displayed there,
 so nothing is missing from the panel, and the ribbons still disappear as soon as
 the two rows are not over each other.
 
-Where the mate sits on the facing panel is a live question, so the marks answer
-it live. Scroll that panel onto the mate and the mark becomes the ribbon it
-stood in for. The pan buffer past the window's edge is the edge it is measured
-against.
+The marks update as the facing panel scrolls: scroll that panel onto the mate
+and the mark becomes the ribbon it stood in for. The pan buffer past the
+window's edge is the edge it is measured against.
 
 **Off-screen mates** in the settings menu turns the marks on, and it is on by
 default. Each mark sits where the alignment is on the panel it does have,
@@ -350,7 +351,7 @@ click adds the mate to the panel's regions without removing any. A contig the
 panel lacks is appended, and a contig the panel shows slices of gains a new
 slice beside the one nearest the mate. The panel then zooms to the mate's own
 locus, widened to at least 20kb and a little past its ends, so a single small
-anchor arrives with context around it. Right-clicking a mark offers the same
+anchor is shown with context around it. Right-clicking a mark offers the same
 navigation and copies the contig's name.
 
 In both cases the click raises a notification with an **Undo** that puts back

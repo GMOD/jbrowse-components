@@ -35,9 +35,9 @@ below uses the second:
   horizontal axis differently, and **Strand** colors by strand instead. The
   numbers an alignment has, identity and mapping quality among them, sit under
   **Color by value**. Each option has a description of what it colors. A text
-  column there paints one color per label, and a label keeps its color as others
-  arrive. The view's `encoding.color.scale.domain` lists labels that take the
-  palette in order and lead the legend. With more than one alignment file
+  column there paints one color per label, and a label keeps its color as more
+  labels load. The view's `encoding.color.scale.domain` lists labels that take
+  the palette in order and lead the legend. With more than one alignment file
   plotted together, **Distinct color per track** gives each track a separate
   color, and **Track colors** below it pins the color for one track at a time.
   On a plot whose blocks are all a single pixel wide, reach for **Min length**
@@ -56,8 +56,8 @@ numbers, so the gridlines row reads **none at this zoom** while it stays ticked.
 
 <Figure caption="Grape (y) against peach (x) with a minimum alignment length applied." src="/img/dotplot.png" />
 
-When a plot still reads as specks after Min length, the pair is too divergent
-for a whole-genome view to say anything; the next move is a smaller window.
+When a plot still reads as specks after Min length, the pair is too divergent to
+show synteny at whole-genome scale; zoom to a smaller window.
 
 ## A genome against itself
 
@@ -87,11 +87,11 @@ gaps inside the arms are where the two copies differ.
 
 <Figure caption="Top: the boxed span replotted at a 100 kb minimum length. Bottom: one crossing in a linear synteny view, colored by strand." src="/img/synteny_self_chry_palindromes.png" />
 
-Which view to reach for is a question of how many alignments are in frame. Every
-ribbon spans the full height of the strip, so ribbons stack rather than
-separate. The same track over the whole 4.8 Mb box above is a mat, whereas a
-dotplot spreads the alignments across two axes. Use the plot to find the
-structures and a synteny view on one of them.
+The choice of view depends on how many alignments are in frame. Every ribbon
+spans the full height of the strip, so ribbons stack rather than separate. The
+same track over the whole 4.8 Mb box above draws as a solid block of overlapping
+ribbons, whereas a dotplot spreads the alignments across two axes. Use the plot
+to find the structures and a synteny view on one of them.
 
 Align the sequence to itself with one extra minimap2 flag:
 

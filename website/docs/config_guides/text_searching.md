@@ -32,7 +32,7 @@ A config holding several assemblies names the one each index covers:
 ```
 
 A per-track index searches its track's own assemblies, shown here with the two
-slots that decide what `text-index` puts in it:
+slots that set what `text-index` puts in it:
 
 ```json addtrack
 {
@@ -72,8 +72,8 @@ shorthand names `ixFilePath` (the `.ix` the search box reads) and derives
 `ixxFilePath` (`uri` plus an `x`, the prefix index). Set the two
 [slots](/docs/config/trixtextsearchadapter) individually when the files do not
 sit together under those names. The third file, `<name>_meta.json`, records what
-the index was built from for whoever built it; nothing in JBrowse reads it, so
-no slot points at it.
+the index was built from for whoever built it; JBrowse does not read it and has
+no slot for it.
 
 A names index from JBrowse 1's `generate-names.pl` still works through
 [`JBrowse1TextSearchAdapter`](/docs/config/jbrowse1textsearchadapter), with

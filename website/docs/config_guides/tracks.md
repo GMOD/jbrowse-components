@@ -76,7 +76,7 @@ one assembly supplies `assemblyNames`. Any key written beside `uri` wins over
 the guess
 ([the whole-track shorthand](/docs/config_guides/file_types#the-whole-track-shorthand)
 lists the extensions). Two places imply no assembly: a session's
-`sessionTracks`, where a track without `assemblyNames` belongs to nothing, and a
+`sessionTracks`, where a track without `assemblyNames` has no assembly, and a
 config with several assemblies. Name it there.
 
 ## Configuring displays

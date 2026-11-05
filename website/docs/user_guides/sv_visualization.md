@@ -8,10 +8,10 @@ Triage structural variant (SV) candidates in the
 [SV inspector](/docs/user_guides/sv_inspector_view), then open the
 [alignments](/docs/user_guides/alignments_track) at each breakpoint for the
 read-level evidence. The sections below say what those read patterns mean: which
-color scheme lifts which pattern out of the pileup, what each SV type looks like
-in short and long reads, and which view to open once a breakpoint is found. The
-[alignments track guide](/docs/user_guides/alignments_track) covers what each
-control does.
+color scheme makes each pattern stand out in the pileup, what each SV type looks
+like in short and long reads, and which view to open once a breakpoint is found.
+The [alignments track guide](/docs/user_guides/alignments_track) covers what
+each control does.
 
 End-to-end walkthroughs: [](/docs/tutorials/sv_visualization_cgiab),
 [](/docs/tutorials/cancer_sv), [](/docs/tutorials/sv_multisamples). How the SAM
@@ -46,8 +46,8 @@ reads, then the views that show both sides of a breakpoint at once.
 ### Pair orientation
 
 Pair orientation is the strands a read's two mates aligned to. **Color by →
-Insert size and orientation** paints an abnormal orientation in its own color,
-and a normal one by its insert size, below. The colors follow
+Insert size and orientation** paints each abnormal orientation in a separate
+color, and a normal one by its insert size, below. The colors follow
 [IGV's](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 and assume a standard `fr` (Illumina) library. SOLiD-style orientations are not
 supported.
@@ -128,9 +128,8 @@ as an ordinary LR pair.
 <figcaption>A pair sequenced across a junction of an inverted segment. The end that fell inside the segment maps to the mirrored position on the opposite strand, so the pair lands as LL on the left junction and RR on the right, and the two reach across the same segment. A pair wholly inside the segment maps as an ordinary LR pair.</figcaption>
 </figure>
 
-The duplication half of an inverted duplication has no orientation signature.
-The call's `INFO.CPX_INTERVALS` names where the second copy went, and no pair in
-the pileup states it.
+The duplication half of an inverted duplication leaves no orientation signature
+in the pairs. The call's `INFO.CPX_INTERVALS` gives where the second copy went.
 
 ### Insert size
 
@@ -151,10 +150,10 @@ abnormal orientation takes its orientation's color instead.
 
 <!-- END GENERATED COLOR_TABLE alignments-insert-size -->
 
-**Color by → Insert size and orientation** combines both. A pair of abnormal
-orientation takes its orientation's color whatever its insert, and a pair of
-normal orientation takes its insert's: red for the classic deletion, pink for an
-insertion. It combines both signals, so it is the usual first setting to try.
+**Color by → Insert size and orientation** combines both signals, so it is the
+usual first setting to try. A pair of abnormal orientation takes its
+orientation's color whatever its insert, and a pair of normal orientation takes
+its insert's: red for the classic deletion, pink for an insertion.
 
 ### Read arcs
 
@@ -172,35 +171,35 @@ Hover any arc for its classification. A read can have a grey LR fill and still
 have a colored arc: the read itself crosses the breakpoint, splits into a
 primary and a strand-flipped supplementary alignment, and the arc joining those
 takes the color of the pair class that spans the same junction, green or navy at
-an inversion. That is evidence from one molecule rather than from a pair.
+an inversion, so the arc is evidence from one molecule.
 
 ### SV channels
 
-Every scheme above paints one pileup, so an event's evidence arrives mixed into
-the rows around it. **Presets → SV channels** takes the same reads apart into
-one band per kind of SV evidence, each with a coverage curve, its evidence reads
-and their arcs, and the sashimi arcs over coverage go away: deletion-type,
+Every scheme above paints one pileup, so an event's evidence is mixed into the
+rows around it. **Presets → SV channels** takes the same reads apart into one
+band per kind of SV evidence, each with a coverage curve, its evidence reads and
+their arcs, and the sashimi arcs over coverage go away: deletion-type,
 duplication-type, inversion, a partner on another chromosome or unmapped, an
-SV-size insertion, and no SV evidence. A discordant pair files by its
+SV-size insertion, and no SV evidence. The preset files a discordant pair by its
 orientation, an LR pair whose mates sit closer than the library's fragments as
 an insertion, and a split read by its junction, so short and long reads of one
 event fill the same band. Concordant pairs and every other read without SV
 evidence fill the last band, the depth the others are read against. The preset
 also sets **Filter by → SV evidence → Only SV evidence**, which hides rows and
 leaves every band's coverage counting all its reads, so the last band draws its
-coverage alone and the others draw only the reads that carry evidence. Which
-band fills names the rearrangement, and a band that stays empty under a call is
-a call with no read evidence behind it. A kind of evidence no read in the window
-carries gets no band. The partner band is never empty on short reads: at every
-locus some mates land on another chromosome, and an insertion longer than the
-fragment adds mates that do not map.
+coverage alone and the others draw only the reads with SV evidence. The band
+that fills identifies the rearrangement, and a band that stays empty under a
+call is a call with no read evidence behind it. A band appears only for a kind
+of evidence that some read in the window has. The partner band is never empty on
+short reads: at every locus some mates land on another chromosome, and an
+insertion longer than the fragment adds mates that do not map.
 
-**SV evidence** decides which reads are evidence: a split read whose placed
-pieces join, an insertion or deletion of 50 bp or more, or a discordant pair,
-with both ends placed. **Filter by** and **Sort by** use it, and **SV kind**,
-the Group by row this arrangement sets, bands a read, its mate and its split
-pieces together by the kind of SV they point at, so the last band holds exactly
-the reads the filter hides.
+A read counts as **SV evidence** when it is a split read whose placed pieces
+join, an insertion or deletion of 50 bp or more, or a discordant pair, with both
+ends placed. **Filter by** and **Sort by** use it, and **SV kind**, the Group by
+row this arrangement sets, bands a read, its mate and its split pieces together
+by the kind of SV they point at, so the last band holds exactly the reads the
+filter hides.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
@@ -268,10 +267,10 @@ event reads the same on both platforms.
 <Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
 
 **Tools → Undo** (Ctrl+Z) returns the track to how it was before the preset.
-Each setting the preset changes also stays in its own menu: **Filter by → SV
-evidence → All reads** draws every read in the bands, with the color scheme
-untouched. [](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call
-band by band.
+Each setting the preset changes can also be changed from its usual menu:
+**Filter by → SV evidence → All reads** draws every read in the bands, with the
+color scheme untouched. [](/docs/tutorials/sv_multisamples) reads a complex 1000
+Genomes call band by band.
 
 ### Read cloud
 
@@ -309,8 +308,8 @@ copy and one uninverted.
 
 Right-click any read for **Linear read vs ref** or **Dotplot of read vs ref**,
 which lay one read out against every locus it touches. On a read spanning a
-breakpoint, the order it visits those loci in is the structure of the
-rearrangement. See
+breakpoint, the order in which its segments align to those loci gives the
+structure of the rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read against the reference below." src="/img/read_vs_ref_insertion.png" />
@@ -319,10 +318,9 @@ rearrangement. See
 
 Where long reads cross every junction of a rearrangement, the allele they have
 can be assembled as a sequence and loaded as a separate assembly, with the reads
-realigned to it. Assembling it is an assembler's job — Flye, Shasta and hifiasm
-all do local assemblies of this kind — and JBrowse shows the contig against the
-reference as a synteny view. [](/docs/tutorials/cancer_sv) does that with
-COLO829's der(3).
+realigned to it. An assembler such as Flye, Shasta or hifiasm builds a local
+assembly of this kind, and JBrowse shows the contig against the reference as a
+synteny view. [](/docs/tutorials/cancer_sv) does that with COLO829's der(3).
 
 ## Signatures by SV type
 
@@ -352,14 +350,15 @@ A spline takes the color its arc takes in the alignments track. The right end of
 the header, and the top of an SVG export, list the colors the view is drawing.
 
 Inside one panel, a call whose glyph already spans both of its ends gets no
-curve, and neither do the reads of an alignments track that links its own reads.
+curve, and neither do the reads of an alignments track with **View as pairs/link
+supplementary alignments** on.
 
 <Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the blue curve with feet is the variant call." src="/img/breakpoint_split_view.png" />
 
 Hovering a spline shades the reads it joins, every segment of the read in every
-panel it visits, and every other spline of the same read thickens alongside it.
-Untick **Allow clicking connections** in the view menu to turn the overlay, read
-splines and variant curves alike, back into a static picture.
+panel where it aligns, and every other spline of the same read thickens
+alongside it. Untick **Allow clicking connections** in the view menu to turn the
+overlay, read splines and variant curves alike, back into a static picture.
 
 ### Launching it
 
@@ -379,22 +378,23 @@ splines and variant curves alike, back into a static picture.
 
 ### Multi-hop events
 
-A read with several supplementary alignments visits more than two loci, and the
-view grows a panel per locus. The COLO829 tutorial follows one such chain across
-three chromosomes and
+A read with several supplementary alignments aligns to more than two loci, and
+the view grows a panel per locus. The COLO829 tutorial follows one such chain
+across three chromosomes and
 [opens this view from a callset record](/docs/tutorials/cancer_sv#following-the-chain-across-panels).
 
 <Figure caption="A COLO829 chain through chr3, chr10 and chr12, one panel per locus. Splines join the same molecules from panel to panel." src="/img/cancer_sv/multihop_split_view.png" />
 
 ### Following a chain of breakends
 
-A BND record names one partner, so a launch from one record is two loci however
-many the rearrangement has. **Follow further breakends at each end** reaches the
-rest from the callset: at each end of the chain it looks for another junction
-leaving from within a kilobase of the same place, and takes it when there is
-exactly one, adding a panel per hop up to four. Only the two launches that can
-read the callset offer it, a variant track's right-click menu and a click on a
-chord drawn from that same file, and only for the stacked shape.
+A BND record names one partner, so a split view launched from one record opens
+two loci, however many the rearrangement has. With **Follow further breakends at
+each end** ticked, JBrowse reads the rest from the callset: at each end of the
+chain it looks for another junction leaving from within a kilobase of the same
+place, and takes it when there is exactly one, adding a panel per hop up to
+four. Only the two launches that can read the callset offer it, a variant
+track's right-click menu and a click on a chord drawn from that same file, and
+only for the stacked shape.
 
 <Figure caption="The breakend's right-click menu, the dialog with Follow further breakends ticked, and the three panels it opens." src="/img/cancer_sv/split_view_from_breakend.png" />
 
@@ -409,10 +409,10 @@ For a heterozygous SV, the supporting reads all coming from one haplotype is
 strong evidence for the call. Where the BAM/CRAM has been haplotagged (WhatsHap,
 HiPhase), reads have an `HP` tag, and sorting, coloring or
 [grouping](/docs/user_guides/alignments_track#grouping-reads) by it from the
-track menu clusters each haplotype. Grouping goes furthest: each haplotype gets
-a separate pileup section, and untagged reads get one too, so unphased support
-stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
-phased haplotypes end to end.
+track menu clusters each haplotype. Grouping gives each haplotype a separate
+pileup section, and untagged reads one more, so unphased support stays visible.
+The [phased trio tutorial](/docs/tutorials/analyze_trio) covers phased
+haplotypes end to end.
 
 The deletion below is at `1:63,005,000-63,008,000` in the
 [hg19 demo](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19):

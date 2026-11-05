@@ -58,7 +58,7 @@ A track ggjbrowse cannot read yet, such as an arc or GWAS track, and a setting
 it cannot draw, such as facets on a feature track, go in a comment block at the
 top of the script that lists where the figure differs from the view.
 
-## Where the data lives
+## Data file paths
 
 The script opens each track by its path or URL, so every track needs one an R
 session can open.

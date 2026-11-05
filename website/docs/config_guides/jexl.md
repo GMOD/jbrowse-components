@@ -71,9 +71,9 @@ jexl: len = feature.end - feature.start; len > 1000 ? 'long' : 'short' // a vari
   JavaScript's reading of `null` as 0.
 - **`^` is a power**, as `**` is in JavaScript, and `&` binds tighter than `==`,
   so `feature.flags & 16 == 0` tests the bit.
-- **jexl refuses what a reader would have to guess.** `0.1 < x < 0.5` and
-  `-x ^ 2` are syntax errors naming the fix: `between(x, 0.1, 0.5)`, and
-  `-(x ^ 2)` or `(-x) ^ 2`.
+- **jexl rejects chained comparisons and an ambiguous unary minus with `^`.**
+  `0.1 < x < 0.5` and `-x ^ 2` are syntax errors naming the fix:
+  `between(x, 0.1, 0.5)`, and `-(x ^ 2)` or `(-x) ^ 2`.
 
 On a list field, `between(feature.INFO.AF, 0.1, 0.5)` holds when one frequency
 lies in the range, where `feature.INFO.AF >= 0.1 && feature.INFO.AF <= 0.5` also
@@ -82,8 +82,8 @@ holds when one frequency is above 0.1 and a different one below 0.5. The
 
 ## Functions
 
-Beyond the feature's own properties, jexl has these functions. `getTag` smooths
-over the differences between BAM and CRAM features to reach their tags.
+Beyond the feature's own properties, jexl has these functions. `getTag` reads
+tags from both BAM and CRAM features.
 
 <!-- BEGIN GENERATED JEXL_CATALOG -->
 
@@ -193,8 +193,8 @@ The catalog is generated from the registrations themselves, core's in
 and each plugin's beside the display it serves. The last two groups come from
 plugins that ship with JBrowse:
 
-- **the variant functions** are what the variant track's filter and color menus
-  write, so a menu choice can be copied into a config and edited
+- **the variant functions** are the expressions the variant track's filter and
+  color menus write, so a menu choice can be copied into a config and edited
   ([variant tracks](/docs/config_guides/variant_track))
 - **the slot defaults** are what those slots evaluate to unconfigured, listed so
   you can compose with one
@@ -205,9 +205,9 @@ plugins that ship with JBrowse:
 
 ## Adding your own jexl function
 
-Past a certain length, even with variables and lambdas, an expression stops
-being readable. A small plugin file with no build step adds a function to the
-language, called like any built-in: `"color": "jexl:customColor(feature)"`. The
+For an expression too long to read, even with variables and lambdas, a small
+plugin file with no build step adds a function to the language, called like any
+built-in: `"color": "jexl:customColor(feature)"`. The
 [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) is the
 plugin;
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) and

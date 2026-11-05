@@ -75,7 +75,7 @@ The panel is prefilled with common cloning enzymes; wipe it and paste your own
 set from REBASE or anywhere else. Sites may use
 [IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html) (e.g.
 `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
-name names itself.
+name is named by its sequence.
 
 The cut notation contains the cuts themselves. `(n/m)` pins both strands' cuts
 outright; a `^` pins the top-strand cut, and for a palindromic site the

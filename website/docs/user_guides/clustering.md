@@ -22,8 +22,8 @@ naming what is being clustered.
 Clustering reads **only the region currently in view**, so it describes one
 window: a clustered painting is genome-wide relatedness only when the view is
 the whole genome. After a run, the locus the tree was computed from is shown
-beside the dendrogram and travels with an SVG export, so the figure includes its
-scope.
+beside the dendrogram and is included in an SVG export, so the figure includes
+its scope.
 
 Hierarchical clustering returns a fully resolved tree for any input, including
 one with no structure in it, so re-running across loci until the rows separate
@@ -39,12 +39,12 @@ well-supported one. A [](/docs/user_guides/maf_track) can show a real phylogeny,
 read from an `.nh` file; that tree has no locus caption, which distinguishes the
 two on screen.
 
-For genotype data the window matters in one more way. A tree asks for a single
+For genotype data the window matters in one more way. A tree needs a single
 distance summarizing the whole window, and a haplotype is a mosaic of segments
 with different histories, so past the first recombination breakpoint a
 window-averaged distance describes no position in particular. The multi-sample
-variant display's **Sort rows by genotype here** (right-click a variant) answers
-that question directly: it orders rows by their allele at that variant and then
+variant display's **Sort rows by genotype here** (right-click a variant)
+addresses that directly: it orders rows by their allele at that variant and then
 by how far they agree outward, so the shared block reads as a solid rectangle
 and frays exactly where recombination ends it.
 
@@ -53,7 +53,7 @@ and frays exactly where recombination ends it.
 Every display opens the same dialog, with two modes:
 
 - **Auto** runs hierarchical clustering (hclust, compiled to WebAssembly) in a
-  worker, reporting progress as it goes. This is the mode to use.
+  worker, reporting progress as it goes; it is the usual choice.
 - **Manual** is for clustering outside JBrowse: it exports the matrix, either as
   an R script that runs `hclust` and prints the row order, or as a plain TSV for
   any other tool. Paste the resulting order back into the dialog and click

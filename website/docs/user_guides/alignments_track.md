@@ -77,8 +77,8 @@ The track menu's **Color by** offers several schemes.
   dark blue at 0 to yellow at 40 and above, the quickest way to tell a variant
   from a run of low-confidence calls. A CRAM read stored without quality scores
   draws its bases in the plain read color.
-- **Base letters** draws every aligned base in its nucleotide color, not just
-  the mismatches.
+- **Base letters** draws every aligned base in its nucleotide color, matching
+  bases included.
 
 ### A read tag
 
@@ -127,7 +127,7 @@ them, since plant genomes methylate in all three. The
 For paired-end data, **Color by → Insert size and orientation** highlights
 discordant pairs, the main way to scan short reads for structural variants:
 unexpectedly large inserts turn red, small ones pink, and an abnormal
-orientation takes its own color whatever the insert. The
+orientation is colored by its orientation whatever the insert. The
 [SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation)
 has the color tables, the expected-insert threshold, and what each pattern means
 at a breakpoint.
@@ -231,7 +231,7 @@ basecalling error; a position that disagrees in both bands is a real variant.
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
 **Track menu → Presets → SV channels** groups reads by the kind of SV evidence
-they carry, keeps only the evidence reads drawn, drops the sashimi arcs and
+each read shows, keeps only the evidence reads drawn, drops the sashimi arcs and
 turns the read arcs on together, so each kind becomes a separate coverage band
 with its reads and a separate set of arcs. See
 [SV channels](/docs/user_guides/sv_visualization#sv-channels).
@@ -257,11 +257,11 @@ A pileup taller than the track scrolls. Two settings change that:
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
 
-Fit mode adapts to how much room a pileup has: drag the track taller or shorter
-and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
-than 1px, so a deep enough pileup still overflows. With grouping, each group's
-coverage row is reserved first and the expanded groups share what is left, so
-collapsing a group gives the rest more height.
+In fit mode, dragging the track taller or shorter re-fits the reads. Reads draw
+no taller than the Normal preset and no smaller than 1px, so a deep enough
+pileup still overflows. With grouping, each group's coverage row is reserved
+first and the expanded groups share what is left, so collapsing a group gives
+the rest more height.
 
 ## Insertion and clipping indicators
 
@@ -285,10 +285,10 @@ reads at that base.
 <Figure caption="Clip indicators above the coverage track: blue marks soft clips, red marks hard clips." src="/img/alignment_clipping_indicators.png" />
 
 Insertions larger than 10bp also draw a purple rectangle in the pileup. A long
-read spans the insertion and carries the mark. A short read ends at the
-insertion's edge, and [**Show → Soft clipping**](#soft-clipping) draws its
-unaligned bases past that edge, as on the Illumina track below (GIAB HG002 reads
-at `1:55,705,770-55,706,090` on hg19).
+read spanning the insertion shows the mark. A short read ends at the insertion's
+edge, and [**Show → Soft clipping**](#soft-clipping) draws its unaligned bases
+past that edge, as on the Illumina track below (GIAB HG002 reads at
+`1:55,705,770-55,706,090` on hg19).
 
 <Figure caption="A large insertion across GIAB HG002 nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
 
@@ -333,8 +333,8 @@ Sashimi-style arcs draw automatically over spliced alignments (`N` in the
 CIGAR), so RNA-seq and Iso-Seq junctions appear with no setup. The arc strand
 follows the aligner's strand tag: `XS` or `TS` give the transcript strand,
 minimap2's `ts` is relative to the read and combined with the read's strand, and
-a read with none (default STAR output without `--outSAMstrandField`) casts no
-vote.
+a read with none (default STAR output without `--outSAMstrandField`) contributes
+no strand to the arc.
 
 JBrowse also reads the two bases at each end of every intron off the reference
 and classifies the splice motif: GT-AG, GC-AG or AT-AC on either strand, or
@@ -420,7 +420,7 @@ mapped:
 For a split read, the **View split alignments** submenu offers the same two:
 **Split current view to show split alignments** lays out one region per segment
 of its `SA` tag, in read order, and **Open breakpoint split view** stacks a
-panel per locus the read visits, each centred on its junction.
+panel per locus the read aligns to, each centred on its junction.
 
 ## One read against the reference
 
@@ -431,13 +431,13 @@ record's `SA` tag, drawn as separate rows in the pileup.
 Right-click any of them and choose **Launch → Linear read vs ref** to put them
 back together. The read becomes a separate assembly along one row, every
 reference locus it touches lies along the other, and each alignment segment is a
-ribbon between them in the order the read visits them. An insertion shows as a
-gap in the diagonal. Dragging over the read row extracts that sequence.
+ribbon between them in read order. An insertion shows as a gap in the diagonal.
+Dragging over the read row extracts that sequence.
 
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read drawn against the reference below. Each gap in the diagonal is inserted sequence." src="/img/read_vs_ref_insertion.png" />
 
 `Dotplot of read vs ref` plots the same alignment as a dotplot, clearer when a
-read visits one locus repeatedly.
+read aligns to one locus several times.
 
 ## See also
 

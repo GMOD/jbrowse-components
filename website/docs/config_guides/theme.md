@@ -9,7 +9,7 @@ guide_category: Appearance
 Set colors and sizing under a top-level `theme` in the
 [`configuration`](/docs/config/jbrowseconfiguration) section. JBrowse's palette
 has four customizable colors (`primary`, `secondary`, `tertiary`, `quaternary`),
-and a `dark` block for whatever a palette wants different when drawn dark.
+and a `dark` block for the palette colors to use in dark mode.
 `configuration.preferences` sets the starting value of the settings users can
 toggle for themselves.
 
@@ -48,16 +48,15 @@ theme picker chooses colors — Default (from config), Stock, Minimal, or any
 The two settings are independent, so a reader on Minimal who switches to dark
 gets dark Minimal, and the colors you set under `theme` above apply in both.
 
-Sessions start on Light, so a reader reaches dark by asking for it. Picking
+Sessions start on Light, so a reader switches to dark in Preferences. Picking
 Follow system puts a sun or moon in the toolbar showing the mode the OS
 currently uses. Clicking it switches to the other mode and holds it until the OS
 next changes; clicking again goes back to following.
 
 Most of a dark theme follows from the setting: the backgrounds, text, dividers,
-gridlines, coverage and hover colors all have dark values already. What does not
-survive the flip is a brand color — a deep navy that reads well on white is
-nearly invisible on a dark background — so a palette may state the slots it
-wants different when drawn dark:
+gridlines, coverage and hover colors all have dark values already. A brand color
+is the exception: a deep navy that reads well on white is nearly invisible on a
+dark background, so a palette may state the slots to change in dark mode:
 
 ```json
 {

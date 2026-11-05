@@ -53,7 +53,7 @@ properties (`feature.type`); in the plugin's JavaScript the same feature is a
 
 Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...)
 are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a
-BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes
+BED7-BED11 file the file leaves the extra columns unnamed, so JBrowse exposes
 them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
 `undefined` in a jexl callback. Set `columnNames` to refer to them by name.
 
@@ -62,15 +62,15 @@ them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
 <!-- END GENERATED GOTCHA BedAdapter -->
 
 An unset [`encoding.color`](/docs/config/featureencoding/#slot-color) paints
-each feature from the colors a BED has, under whichever of those names they
-land, so a callback is only needed to override that.
+each feature from the colors a BED has, under whichever column name holds them,
+so a callback is only needed to override that.
 
 ## Reading the type list off the file
 
-An `encoding.color` object with chosen colors per `type` is only as good as its
-`scale.domain`, so read the types off the file. The `/^##FASTA/{exit}` stops
-before any inline sequence, whose lines have no `#` and would otherwise count as
-types:
+An `encoding.color` object with chosen colors per `type` covers only the types
+its `scale.domain` lists, so read the types off the file. The `/^##FASTA/{exit}`
+stops before any inline sequence, whose lines have no `#` and would otherwise
+count as types:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
