@@ -26,6 +26,7 @@ import io
 import json
 import re
 import sys
+import time
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -64,14 +65,26 @@ def parse_args(argv):
     return p.parse_args(argv)
 
 
+def post_bytes(path, body, attempts=4):
+    """POST to the GDC API, retrying: it drops a slow response's connection."""
+    for attempt in range(attempts):
+        req = urllib.request.Request(
+            f"{API}/{path}",
+            data=json.dumps(body).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=300) as fh:
+                return fh.read()
+        except OSError as err:
+            if attempt == attempts - 1:
+                raise
+            print(f"   GDC {path}: {err}; retrying", file=sys.stderr)
+            time.sleep(10 * (attempt + 1))
+
+
 def post(path, body):
-    req = urllib.request.Request(
-        f"{API}/{path}",
-        data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req) as fh:
-        return json.load(fh)
+    return json.loads(post_bytes(path, body))
 
 
 def cases(project):
@@ -168,16 +181,10 @@ def receptors(file_ids):
     found = {}
     ids = sorted(file_ids.values())
     by_id = {v: k for k, v in file_ids.items()}
-    batch = 300
+    batch = 50
     for i in range(0, len(ids), batch):
         chunk = ids[i:i + batch]
-        req = urllib.request.Request(
-            f"{API}/data",
-            data=json.dumps({"ids": chunk}).encode(),
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req) as fh:
-            buf = io.BytesIO(fh.read())
+        buf = io.BytesIO(post_bytes("data", {"ids": chunk}))
         with tarfile.open(fileobj=buf, mode="r:gz") as tar:
             for member in tar.getmembers():
                 if not member.name.endswith(".xml"):
