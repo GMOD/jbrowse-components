@@ -2449,6 +2449,9 @@ importers:
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants

@@ -63,6 +63,7 @@
     "@jbrowse/plugin-features": "workspace:^",
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
+    "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@types/jsdom": "^30.0.0"
