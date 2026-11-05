@@ -37,6 +37,7 @@ const browser = await puppeteer.launch({
   executablePath: findChromeExecutable(),
   args: GPU_CANVAS_ARGS,
   protocolTimeout: 600_000,
+  timeout: 120_000,
 })
 let failed = false
 try {

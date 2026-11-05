@@ -37,15 +37,21 @@ runs:
         registry-url: ${{ inputs.registry-url }}
     # The timeout and retries are for a package archive that hangs rather than
     # refuses: a stalled `apt-get update` once held a main run until its job
-    # timeout.
+    # timeout. A mirror that stalls on one package usually serves it on a fresh
+    # attempt, so the whole install is retried rather than failing the job.
     - if: inputs.apt-packages != ''
       shell: bash
       env:
         APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
-        apt=(sudo timeout 300 apt-get -o Acquire::Retries=3)
-        "${apt[@]}" update
-        "${apt[@]}" install -y $APT_PACKAGES
+        apt=(sudo timeout 120 apt-get -o Acquire::Retries=3)
+        for attempt in 1 2 3; do
+          if "${apt[@]}" update && "${apt[@]}" install -y $APT_PACKAGES; then
+            exit 0
+          fi
+          echo "apt attempt $attempt failed"
+        done
+        exit 1
     - if: inputs.install == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}
