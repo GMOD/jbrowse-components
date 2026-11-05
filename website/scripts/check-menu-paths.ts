@@ -29,6 +29,7 @@
 import { readFileSync } from 'node:fs'
 
 import { docFiles, reportProblems } from './check-utils.ts'
+import { fencedLines } from './docFenceRegions.ts'
 import { docRelative, docsDir } from './paths.ts'
 import { unwrapBold } from './unwrap-bold.ts'
 
@@ -70,16 +71,13 @@ for (const file of docFiles(docsDir)) {
   if (GENERATED_PREFIXES.some(p => rel.startsWith(p))) {
     continue
   }
-  let inFence = false
-  unwrapBold(readFileSync(file, 'utf8')).forEach(({ line: i, text: line }) => {
-    if (line.startsWith('```')) {
-      inFence = !inFence
-      return
-    }
-    if (inFence || line.includes(SUPPRESS)) {
-      return
-    }
-    const rule = RULES.find(r => r.re.test(line))
+  const logical = unwrapBold(readFileSync(file, 'utf8'))
+  const fenced = fencedLines(logical.map(l => l.text))
+  logical.forEach(({ line: i, text: line }, k) => {
+    const rule =
+      fenced[k] || line.includes(SUPPRESS)
+        ? undefined
+        : RULES.find(r => r.re.test(line))
     if (rule) {
       errorLines.push(`  ${rel}:${i + 1} (${rule.what})\n      ${line.trim()}`)
     }

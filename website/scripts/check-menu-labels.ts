@@ -43,6 +43,7 @@ import {
   GRAPH_FORM_LABELS,
 } from '../src/lib/derive-desktop-steps.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
+import { fencedLines } from './docFenceRegions.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
 import {
   docRelative,
@@ -207,7 +208,6 @@ for (const file of docFiles(docsDir)) {
   const lines = readFileSync(file, 'utf8').split('\n')
   let para: string[] = []
   let paraStart = 0
-  let inFence = false
   const flush = () => {
     if (para.length === 0) {
       return
@@ -250,20 +250,16 @@ for (const file of docFiles(docsDir)) {
     }
     para = []
   }
+  const fenced = fencedLines(lines)
   lines.forEach((line, i) => {
-    if (line.startsWith('```')) {
-      inFence = !inFence
+    if (fenced[i] || line.trim() === '') {
       flush()
-      return
+    } else {
+      if (para.length === 0) {
+        paraStart = i + 1
+      }
+      para.push(line.trim())
     }
-    if (inFence || line.trim() === '') {
-      flush()
-      return
-    }
-    if (para.length === 0) {
-      paraStart = i + 1
-    }
-    para.push(line.trim())
   })
   flush()
 }

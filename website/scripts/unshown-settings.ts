@@ -27,6 +27,7 @@
 // frame above the sentence. **Don't shoot a second figure for one of these.**
 // Where a page is worth repairing at all, name the setting before the figure it
 // produced.
+import { fencedLines } from './docFenceRegions.ts'
 import { unwrapBold } from './unwrap-bold.ts'
 
 const MENU_PATH =
@@ -47,17 +48,14 @@ export function unshownSettings(text: string): UnshownSetting[] {
   const sections: { start: number }[] = []
   const media: number[] = []
   const found: { line: number; path: string; section: number }[] = []
-  let inFence = false
   let section = -1
-  for (const { line: i, text: line } of unwrapBold(text)) {
+  const logical = unwrapBold(text)
+  const fenced = fencedLines(logical.map(l => l.text))
+  for (const [k, { line: i, text: line }] of logical.entries()) {
     if (TAIL.test(line)) {
       break
     }
-    if (/^\s*(?:```|~~~)/.test(line)) {
-      inFence = !inFence
-      continue
-    }
-    if (inFence) {
+    if (fenced[k]) {
       continue
     }
     if (HEADING.test(line)) {

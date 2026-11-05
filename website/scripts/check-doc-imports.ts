@@ -52,7 +52,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
 import { isFile, reportProblems, walkFiles } from './check-utils.ts'
-import { CODE_FENCE_LANGS, FENCE } from './docFenceRegions.ts'
+import { CODE_FENCE_LANGS, FENCE, fencedLines } from './docFenceRegions.ts'
 import {
   anchorOf,
   citableTargets,
@@ -320,11 +320,10 @@ function headingSlugs(absPath: string): Set<string> {
   }
   const set = new Set<string>()
   const counts = new Map<string, number>()
-  let inFence = false
-  for (const line of readFileSync(absPath, 'utf8').split('\n')) {
-    if (/^\s*```/.test(line)) {
-      inFence = !inFence
-    } else if (!inFence) {
+  const lines = readFileSync(absPath, 'utf8').split('\n')
+  const fenced = fencedLines(lines)
+  for (const [i, line] of lines.entries()) {
+    if (!fenced[i]) {
       const m = /^(#{1,6})\s+(.*?)\s*#*\s*$/.exec(line)
       if (m) {
         const base = slugify(m[2]!)
@@ -833,11 +832,9 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
   }
   symbolCache ??= collectSymbols()
   const problems: Problem[] = []
-  let inCode = false
+  const fenced = fencedLines(lines)
   lines.forEach((line, i) => {
-    if (FENCE.test(line)) {
-      inCode = !inCode
-    } else if (!inCode) {
+    if (!fenced[i]) {
       for (const match of line.matchAll(TICKED_SYMBOL)) {
         const id = match[1]!
         if (

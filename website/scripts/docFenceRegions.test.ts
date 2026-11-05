@@ -19,6 +19,7 @@
 import {
   countUnIncludedFences,
   extractRegion,
+  fencedLines,
   isGeneratedDocPath,
   stripRegionMarkers,
 } from './docFenceRegions.ts'
@@ -252,4 +253,19 @@ test('a hand-written page whose name starts with a generated dir is not exempt',
   expect(isGeneratedDocPath('developer_guides/menus.md')).toBe(false)
   expect(isGeneratedDocPath('tutorials/display_settings.md')).toBe(false)
   expect(isGeneratedDocPath('automating.md')).toBe(false)
+})
+
+// A fence nested under a list item is indented, and a check that tested
+// `startsWith('```')` read its body as prose.
+test('fencedLines marks an indented fence and its body, not the prose around it', () => {
+  expect(
+    fencedLines([
+      '1. Paste:',
+      '',
+      '   ```json',
+      '   { "a": 1 }',
+      '   ```',
+      'after',
+    ]),
+  ).toEqual([false, false, true, true, true, false])
 })

@@ -5,26 +5,24 @@
 // plus the wrapped path whole. Fenced lines are never joined: `f(**kwargs)`
 // would otherwise swallow the closing fence.
 
+import { FENCE, fencedLines } from './docFenceRegions.ts'
+
 export interface LogicalLine {
   /** 0-based index of the first physical line */
   line: number
   text: string
 }
 
-const FENCE = /^\s*(?:```|~~~)/
-
 const unpaired = (text: string) => (text.match(/\*\*/g) ?? []).length % 2 === 1
 
 export function unwrapBold(text: string): LogicalLine[] {
   const lines = text.split('\n')
+  const fenced = fencedLines(lines)
   const out: LogicalLine[] = []
-  let inFence = false
   for (let i = 0; i < lines.length; i++) {
     const start = i
     let joined = lines[i]!
-    if (FENCE.test(joined)) {
-      inFence = !inFence
-    } else if (!inFence) {
+    if (!fenced[i]) {
       while (
         unpaired(joined) &&
         i + 1 < lines.length &&

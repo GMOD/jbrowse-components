@@ -7,6 +7,7 @@
 // before the tag inside that section, so a page that shows the result and then
 // says how to get it is flagged the same as one that never says.
 
+import { FENCE } from './docFenceRegions.ts'
 import { unwrapBold } from './unwrap-bold.ts'
 
 const LOCSTRING = /`[A-Za-z0-9_.-]+:[\d,]+-[\d,]+`/
@@ -28,7 +29,7 @@ export function unpromptedTags(text: string): UnpromptedTag[] {
   let inFence = false
   let actionSeen = false
   unwrapBold(text).forEach(({ line: i, text: line }) => {
-    if (/^\s*(?:```|~~~)/.test(line)) {
+    if (FENCE.test(line)) {
       if (!inFence && ACTION_FENCE.test(line)) {
         actionSeen = true
       }

@@ -65,7 +65,7 @@ import {
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
-import { FENCE } from './docFenceRegions.ts'
+import { fencedLines } from './docFenceRegions.ts'
 import { markerBlocks, withoutMarkerBlocks } from './markerBlocks.ts'
 import { docsDir, repoRoot } from './paths.ts'
 import { figuresIn } from './quotedFigures.ts'
@@ -80,31 +80,21 @@ import { figuresIn } from './quotedFigures.ts'
  */
 function proseOf(text: string, file: string) {
   const out: string[] = []
-  let inFence = false
   let inFrontmatter = false
-  withoutMarkerBlocks(text, file)
-    .split('\n')
-    .forEach((line, i) => {
-      const trimmed = line.trim()
-      if (i === 0 && trimmed === '---') {
-        inFrontmatter = true
-        return
-      }
-      if (inFrontmatter) {
-        inFrontmatter = trimmed !== '---'
-        return
-      }
-      if (FENCE.test(line)) {
-        inFence = !inFence
-        return
-      }
-      if (inFence) {
-        return
-      }
+  const lines = withoutMarkerBlocks(text, file).split('\n')
+  const fenced = fencedLines(lines)
+  lines.forEach((line, i) => {
+    const trimmed = line.trim()
+    if (i === 0 && trimmed === '---') {
+      inFrontmatter = true
+    } else if (inFrontmatter) {
+      inFrontmatter = trimmed !== '---'
+    } else if (!fenced[i]) {
       out.push(
         line.replaceAll(/\]\([^)]*\)/g, ']').replaceAll(/`[^`]*`/g, '``'),
       )
-    })
+    }
+  })
   return out.join('\n')
 }
 

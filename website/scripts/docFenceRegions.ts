@@ -96,8 +96,22 @@ export const CODE_FENCE_LANGS = new Set([
   'javascript',
 ])
 
-// Opening line of a fence, capturing its info string.
-export const FENCE = /^\s*```(\S*)/
+// A fence delimiter line, indented or not, capturing an opening line's info
+// string.
+export const FENCE = /^\s*(?:```|~~~)(\S*)/
+
+// Per line, whether it is a fence delimiter or inside a fence: a check that
+// reads prose skips every line this marks.
+export function fencedLines(lines: string[]) {
+  let inFence = false
+  return lines.map(line => {
+    if (FENCE.test(line)) {
+      inFence = !inFence
+      return true
+    }
+    return inFence
+  })
+}
 
 const INCLUDE_MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
 
