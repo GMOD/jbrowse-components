@@ -438,3 +438,39 @@ export function toBinEdges(region: Region, step: number, bounds: Region) {
     end: Math.min(bounds.end, Math.ceil(region.end / step) * step),
   }
 }
+
+/**
+ * The regions a fetch asks for: each widened to the edges of the widest bin
+ * a drawn mark's steps run, inside its displayed region, so a bin at a
+ * window's edge counts every feature it spans.
+ */
+export function binnedFetchRegions<
+  N extends { region: Region; displayedRegionIndex: number },
+>(
+  needed: N[],
+  request: {
+    transform: readonly TransformStep[]
+    facet?: { transform?: readonly TransformStep[] }
+    layers: readonly { transform?: readonly TransformStep[] }[]
+  },
+  visible: readonly boolean[],
+  displayedRegions: readonly Region[],
+) {
+  const step = widestBinStep([
+    ...request.transform,
+    ...(request.facet?.transform ?? []),
+    ...request.layers.flatMap((layer, i) =>
+      visible[i] ? (layer.transform ?? []) : [],
+    ),
+  ])
+  return step > 0
+    ? needed.map(n => ({
+        ...n,
+        region: toBinEdges(
+          n.region,
+          step,
+          displayedRegions[n.displayedRegionIndex]!,
+        ),
+      }))
+    : needed
+}

@@ -1,3 +1,4 @@
+import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
@@ -24,6 +25,7 @@ import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRang
 import type {
   CoreGetEncodedLayersArgs,
   EncodedChannels,
+  EncodedLayersResult,
   FacetSection,
   HitIndexed,
   LaneName,
@@ -466,5 +468,17 @@ function shapeMark(entry: MarkEntry, i: number) {
         (s, d) => linkParamsOf(entry, i, s, d),
       )
     }
+  }
+}
+
+/** A region's `CoreGetEncodedLayers` answer as the display stores it. */
+export function storedRegionData(result: EncodedLayersResult): MarkRegionData {
+  return {
+    layers: result.layers.map(layer => withHitIndex(layer)),
+    facet: result.facet,
+    zoomRange: result.zoomRange,
+    notices: result.notices,
+    facts: result.facts,
+    unreadFilterFields: result.unreadFilterFields,
   }
 }
