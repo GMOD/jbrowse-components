@@ -39,7 +39,7 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
     min: {
       type: 'maybeNumber',
       description:
-        'the shortest insert in bp a pair counts as normal; shorter is short',
+        "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs",
     },
     /**
      * #slot
@@ -47,7 +47,7 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
     max: {
       type: 'maybeNumber',
       description:
-        'the longest insert in bp a pair counts as normal; longer is long',
+        "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs",
     },
   },
 )
@@ -55,8 +55,8 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
 type NormalInsertSizeConfig = Instance<typeof normalInsertSizeConfigSchema>
 
 function endsOf(conf: NormalInsertSizeConfig) {
-  const min: number | undefined = readConfObject(conf, 'min')
-  const max: number | undefined = readConfObject(conf, 'max')
+  const min = readConfObject(conf, 'min')
+  const max = readConfObject(conf, 'max')
   return { min, max }
 }
 

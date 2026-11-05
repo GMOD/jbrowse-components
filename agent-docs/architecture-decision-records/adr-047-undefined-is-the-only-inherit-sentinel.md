@@ -8,8 +8,9 @@ summary: "A promotable slot's inherit sentinel is always `undefined` (a `maybe*`
 ## Status
 
 Superseded by [ADR-111](adr-111-display-type-defaults-backed-out.md) (2026-09):
-no cascade means no inherit state. The `maybe*` slot types stay for the five
-slots whose `undefined` means "decide from the data".
+no cascade means no inherit state. The `maybe*` slot types stay, for
+slots whose `undefined` is a state of its own (decide from the data, follow a
+preset, or leave an optional piece out).
 Accepted (2026-07), superseding two earlier forms, both removed.
 
 ## Context

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`setSlot` reads `null` as a reset to the slot's default, because JSON cannot spell `undefined` — so no slot stores `null` as a value, and a slot meaning \"unset\" is `maybeFrozen`"
+summary: "`setSlot` reads `null` as a reset to the slot's default, because JSON cannot spell `undefined` — so no slot stores `null` as a value, and a slot meaning \"unset\" is a `maybe*` type"
 ---
 
 # ADR-146: `null` is the JSON spelling of a slot reset
@@ -90,8 +90,8 @@ member", rather than inventing a house convention.
 
 ## Consequences
 
-- **A slot that means "unset" is `maybeFrozen`**, never `frozen` with
-  `defaultValue: null`. `ConfigSlot` already refuses a `maybe*` slot with a
+- **A slot that means "unset" is a `maybe*` type** (`maybeFrozen` for the ten
+  above), never `frozen` with `defaultValue: null`. `ConfigSlot` already refuses a `maybe*` slot with a
   concrete merged default, so the two rules do not fight.
 - **Writing `null` is still allowed and still means what it meant** for the ten
   slots above: their default was `null` and is now unset, and both are falsy, so
@@ -105,10 +105,8 @@ member", rather than inventing a house convention.
   and now leaves a truthy object, so a reader spelled `if (conf.thing)` flips.
   Nothing in this tree or in the plugin checkouts writes `null` to one, and a
   third-party `frozen` slot with an object default is where it would first bite.
-- **"No slot declares `null` as its default" is convention, not a check.**
-  `ConfigSlot` accepts `{ type: 'frozen', defaultValue: null }`, while the
-  adjacent rule it sits beside — a `maybe*` slot with a concrete merged default
-  — throws. The newer of the two rules is the unenforced one.
+- **`ConfigSlot` throws on a slot declaring `null` as its default**, beside
+  its throw on a `maybe*` slot with a concrete merged default.
 - **`getSnapshot` of a reset slot no longer emits `null`**, so a slot reset
   through the merge path round-trips as absent rather than as a stored value.
 - **A namespace's member resets the same way, at any depth.**
@@ -134,8 +132,7 @@ member", rather than inventing a house convention.
   every depth, since each schema runs it over its own members. Before, a
   `null` in a `maybe*` slot — `{ scales: { y: { domainMin: null } } }` — failed
   MST validation and the session dropped the whole track. A frozen-family
-  slot keeps what the Decision says of it: its type takes `null`, so the
-  snapshot stores one. For `scales.y.title` a `null` is unset, which since
+  slot resets the same way, as the Decision says. For `scales.y.title` a `null` is unset, which since
   2026-09-21 draws no caption, as `""` does
   ([ADR-142](adr-142-one-value-scale-object.md) §"Amended 2026-09-21").
 - A frozen slot's *nested* nulls are untouched — the merge path reinterprets a

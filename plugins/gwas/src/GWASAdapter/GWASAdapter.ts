@@ -54,8 +54,10 @@ export default class GWASAdapter extends BedTabixAdapter {
   }
 
   private async readLdToIndex(join: LdJoin, opts: BaseOptions) {
-    const config: Record<string, unknown> | undefined =
-      readConfObject(this.config, 'ldAdapter') ?? undefined
+    const config: Record<string, unknown> | undefined = readConfObject(
+      this.config,
+      'ldAdapter',
+    )
     if (!config || !this.getSubAdapter) {
       return undefined
     }

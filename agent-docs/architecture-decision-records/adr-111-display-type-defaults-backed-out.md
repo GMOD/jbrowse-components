@@ -58,6 +58,6 @@ what it actually is: a multi-select in the track selector with an "apply to
 selected tracks" action. That writes each track's own config, needs no cascade,
 no session store and no bake, and draws no state it cannot explain.
 
-The `maybe*` slot types stay — five non-promotable slots use `undefined` for a
-genuine "decide from the data" state — as does `trackConfigDelta` and the
-track-selector "Edited" badge for per-track edits.
+The `maybe*` slot types stay, for slots whose `undefined` is a state of its own
+(decide from the data, follow a preset, or leave an optional piece out), as do
+`trackConfigDelta` and the track-selector "Edited" badge for per-track edits.

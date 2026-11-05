@@ -112,9 +112,8 @@ export function sortOf(
   fallbackRefName?: string,
 ): { layoutOrder: LayoutOrder; sortColumn: SortColumn | undefined } {
   const field: string = readConfObject(sort, 'field')
-  const pos: number | undefined = readConfObject(sort, 'pos')
-  const refName: string | undefined =
-    readConfObject(sort, 'refName') ?? fallbackRefName
+  const pos = readConfObject(sort, 'pos')
+  const refName = readConfObject(sort, 'refName') ?? fallbackRefName
   return isLayoutOrder(field)
     ? { layoutOrder: field, sortColumn: undefined }
     : {

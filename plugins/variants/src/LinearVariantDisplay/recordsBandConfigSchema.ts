@@ -73,7 +73,6 @@ export const recordsBandConfigSchema = ConfigurationSchema(
      */
     height: {
       type: 'maybeNumber',
-      defaultValue: undefined,
       description:
         "height in pixels of the band over genotype rows, added to the track above them; the band's seam drag writes it. Unset, the band opens at its stack of records, up to 170 px, and keeps that height from then on",
     },

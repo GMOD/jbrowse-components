@@ -385,9 +385,7 @@ export default function stateModelFactory(
          * against a snapshot misses defaulted slots.
          */
         get framesAdapterConfig(): Record<string, unknown> | undefined {
-          return (
-            getConf(self.parentTrack, ['adapter', 'framesAdapter']) ?? undefined
-          )
+          return getConf(self.parentTrack, ['adapter', 'framesAdapter'])
         },
       }))
       .views(self => ({

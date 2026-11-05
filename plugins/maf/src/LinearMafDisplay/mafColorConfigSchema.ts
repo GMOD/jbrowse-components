@@ -127,7 +127,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
         reverse: {
           type: 'maybeBoolean',
           description:
-            'turns the identity ramp round, so its last color paints the low end; unset runs as written',
+            "turns the identity ramp round, so its last color paints the low end; unset follows the field's preset, else runs as written",
         },
         /**
          * #slot scale.domainMin

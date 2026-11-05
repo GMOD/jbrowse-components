@@ -180,7 +180,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   private async openControl(opts: BaseOptions): Promise<Control | undefined> {
     const config: Record<string, unknown> | undefined =
-      this.getConf('controlAdapter') ?? undefined
+      this.getConf('controlAdapter')
     if (!config || !this.getSubAdapter) {
       return undefined
     }

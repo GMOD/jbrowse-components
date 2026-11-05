@@ -269,7 +269,6 @@ export default function configSchemaFactory() {
            */
           show: {
             type: 'maybeBoolean',
-            defaultValue: undefined,
             description:
               'draw a row per sample. Unset, a VCF with two or more samples draws its rows and a one-sample VCF draws its records alone, as one with no samples does; off, the track is the records band alone',
           },

@@ -22,6 +22,11 @@ registered types in `configManifest.generated.ts`, main has 59 `frozen` slots.
 (`filterBy`, `sortedBy`, `showOutline`, `modifications`, `rowGroups`) are being
 typed as this is written, so the count will move again.
 
+Amended 2026-10-27: a `frozen` or `maybeFrozen` slot declaring
+`holds: 'adapter'` — the sub-adapter slots such as `sequenceAdapter`,
+`summaryAdapter` and `ldAdapter` — is no longer open. It publishes as the
+`Adapter` def, so `jbrowse validate` checks the adapter config it holds.
+
 ## Context
 
 `configManifest.generated.ts` was a schema in everything but format: 181 KB of

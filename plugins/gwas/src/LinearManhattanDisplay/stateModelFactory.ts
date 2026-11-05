@@ -80,7 +80,7 @@ export function stateModelFactory(
        * which leaves out a slot at its default.
        */
       get ldAdapterConfig(): Record<string, unknown> | undefined {
-        return getConf(self.parentTrack, ['adapter', 'ldAdapter']) ?? undefined
+        return getConf(self.parentTrack, ['adapter', 'ldAdapter'])
       },
       /**
        * #getter

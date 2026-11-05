@@ -120,11 +120,14 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 `maybeFrozen` and `maybeFileLocation` each accept everything the type without
 the prefix accepts, plus one more state: **unset**.
 
-An unset slot holds no value, so the display decides what to do from the data in
-front of it. Unset differs from every value the slot could hold, including one
-that looks like the display's usual choice. A `maybeString` left unset is
-therefore not the empty string: a color's `legend.title` keeps the display's own
-heading while unset, and `""` is a key with no heading.
+An unset slot holds no value, and its own description says what that means: most
+often the display decides from the data in front of it, a color's scale follows
+its field's preset, and an optional file or sub-adapter (a FASTA's
+`metadataLocation`, a GC-content track's `sequenceAdapter`) is simply left out.
+Unset differs from every value the slot could hold, including one that looks
+like the display's usual choice. A `maybeString` left unset is therefore not the
+empty string: a color's `legend.title` keeps the display's own heading while
+unset, and `""` is a key with no heading.
 
 ## See also
 
