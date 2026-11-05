@@ -70,7 +70,14 @@ function cliTab(config: Record<string, unknown>, json: string): Tab {
   return {
     kind: 'cli',
     label: command === null ? 'CLI (add-track-json)' : 'CLI (add-track)',
-    nodes: [bash(command ?? deriveAddTrackJson(json))],
+    nodes: [
+      cliPlacement([
+        'Edits ',
+        { code: 'config.json' },
+        ' in the current folder',
+      ]),
+      bash(command ?? deriveAddTrackJson(json)),
+    ],
   }
 }
 
@@ -80,7 +87,18 @@ function assemblyCliTab(config: Record<string, unknown>): Tab | undefined {
   const command = deriveAddAssembly(config)
   return command === null
     ? undefined
-    : { kind: 'cli', label: 'CLI (add-assembly)', nodes: [bash(command)] }
+    : {
+        kind: 'cli',
+        label: 'CLI (add-assembly)',
+        nodes: [
+          cliPlacement([
+            'Edits ',
+            { code: 'config.json' },
+            ' in the current folder, creating it if there is none',
+          ]),
+          bash(command),
+        ],
+      }
 }
 
 // Same shape as the assembly tab, and refused for the same reason: a block
@@ -92,15 +110,28 @@ function sessionCliTab(
   const command = deriveSetDefaultSession(config, json)
   return command === null
     ? undefined
-    : { kind: 'cli', label: 'CLI (set-default-session)', nodes: [bash(command)] }
+    : {
+        kind: 'cli',
+        label: 'CLI (set-default-session)',
+        nodes: [
+          cliPlacement([
+            'Replaces any ',
+            { code: 'defaultSession' },
+            ' in ',
+            { code: 'config.json' },
+            ' in the current folder',
+          ]),
+          bash(command),
+        ],
+      }
 }
 
 function bash(value: string) {
   return { type: 'code', lang: 'bash', value } satisfies Code
 }
 
-function desktopTab(nodes: RootContent[], label = 'JBrowse Desktop'): Tab {
-  return { kind: 'desktop', label, nodes }
+function desktopTab(nodes: RootContent[]): Tab {
+  return { kind: 'desktop', label: 'In the app', nodes }
 }
 
 // Links rather than the URL as text: once its JSON is percent-encoded the URL
@@ -130,8 +161,9 @@ function text(value: string) {
   return { type: 'text', value } satisfies PhrasingContent
 }
 
-// The Config file tab's one line saying where the JSON goes, which the page
-// prose is told not to say (docs/CLAUDE.md). `{ code }` parts render as code.
+// The one line atop the Config file and CLI tabs saying which config.json the
+// JSON lands in, which the page prose is told not to say (docs/CLAUDE.md).
+// `{ code }` parts render as code.
 function placement(
   parts: (string | { code: string })[],
   guide: { title: string; url: string },
@@ -150,6 +182,13 @@ function placement(
       text('.'),
     ],
   }
+}
+
+function cliPlacement(parts: (string | { code: string })[]) {
+  return placement(parts, {
+    title: 'JBrowse CLI with Desktop',
+    url: '/docs/tutorials/cli_desktop/',
+  })
 }
 
 // Reuses the JS-free radio-tab classes the figure recipe uses, styled in
@@ -224,7 +263,6 @@ const TAGS: TagEntry[] = [
             json,
             sessionTrackIds.has(String(config.trackId)),
           ),
-          'In the app',
         ),
         ...(links && 'webUrl' in links ? [liveTab('track', links.webUrl, links.desktopUrl)] : []),
       ]

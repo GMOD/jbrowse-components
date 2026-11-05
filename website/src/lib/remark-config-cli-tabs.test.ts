@@ -68,6 +68,42 @@ test('the Config file tab says where the JSON goes', () => {
   )
 })
 
+function cliPanel(html: string) {
+  const start = html.indexOf('data-tab-kind="cli"')
+  return html.slice(start, html.indexOf('data-tab-kind=', start + 1))
+}
+
+const CLI_GUIDE = 'See [JBrowse CLI with Desktop](/docs/tutorials/cli_desktop/).'
+
+test('each CLI tab says which config.json the command edits', () => {
+  expect(cliPanel(render('addtrack').html)).toContain(
+    `Edits config.json in the current folder. ${CLI_GUIDE}`,
+  )
+  expect(
+    cliPanel(
+      render('addassembly', {
+        name: 'hg38',
+        uri: 'https://example.com/hg38.fa.gz',
+      }).html,
+    ),
+  ).toContain(
+    `Edits config.json in the current folder, creating it if there is none. ${CLI_GUIDE}`,
+  )
+  expect(
+    cliPanel(
+      render('session', {
+        defaultSession: {
+          views: [
+            { type: 'LinearGenomeView', assembly: 'volvox', tracks: ['a'] },
+          ],
+        },
+      }).html,
+    ),
+  ).toContain(
+    `Replaces any defaultSession in config.json in the current folder. ${CLI_GUIDE}`,
+  )
+})
+
 test('config= on an addtrack fence opens the track as a session track', () => {
   const { kinds, hrefs, messages } = render(
     'addtrack config=test_data/volvox/config.json loc=chr1:1-100',
@@ -195,15 +231,14 @@ test('a fence nested in a list item still renders', () => {
   expect(flatten(tree)).toContain('data-tab-kind="desktop"')
 })
 
-test('the track tab is labelled for the app and the assembly tab for Desktop', () => {
+test('the track and assembly app tabs share one label', () => {
   expect(render('addtrack').html).toContain('>In the app</label>')
-  expect(render('addtrack').html).not.toContain('>JBrowse Desktop</label>')
   expect(
     render('addassembly', {
       name: 'hg38',
       uri: 'https://example.com/hg38.fa.gz',
     }).html,
-  ).toContain('>JBrowse Desktop</label>')
+  ).toContain('>In the app</label>')
 })
 
 test('a whole-track shorthand fence gets the add-track tab and its synteny note', () => {
