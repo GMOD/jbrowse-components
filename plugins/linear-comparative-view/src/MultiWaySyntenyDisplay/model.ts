@@ -60,9 +60,9 @@ import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-features'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
-  markColorOf,
+  markChannelsOf,
+  markColorsOf,
   paintScalesOver,
-  stepChannels,
 } from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
@@ -2682,9 +2682,7 @@ export function stateModelFactory(
         get laneLayerColors(): ColorSource[][] {
           return sameColors(
             self.configuration.laneLayers.map(layer =>
-              layer.marks.map(m =>
-                markColorOf(m, stepChannels(m.transform), self),
-              ),
+              markColorsOf(layer.marks, markChannelsOf(layer.marks), self),
             ),
           )
         },

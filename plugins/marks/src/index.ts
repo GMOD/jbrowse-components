@@ -14,7 +14,6 @@ export {
 } from './LinearMarkDisplay/configSchema.ts'
 export {
   layerColorScale,
-  markColorOf,
   markColorsOf,
   withMarkColor,
 } from './LinearMarkDisplay/markColor.ts'
@@ -22,9 +21,7 @@ export { paintScalesOver } from './LinearMarkDisplay/legend.ts'
 export {
   layerRequestsOf,
   markChannelsOf,
-  markLayerRequest,
 } from './LinearMarkDisplay/markRequest.ts'
-export { stepChannels } from './LinearMarkDisplay/stepChannels.ts'
 export type {
   LinearMarkDisplayConfigModel,
   MarkConfig,

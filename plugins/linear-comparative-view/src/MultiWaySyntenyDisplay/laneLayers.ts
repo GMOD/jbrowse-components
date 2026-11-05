@@ -2,8 +2,8 @@ import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { toTrackConfigEntry } from '@jbrowse/core/util/tracks'
 import {
   layerColorScale,
-  markLayerRequest,
-  stepChannels,
+  layerRequestsOf,
+  markChannelsOf,
   withMarkColor,
 } from '@jbrowse/plugin-marks'
 import { isThreshold } from '@jbrowse/render-core/marks'
@@ -20,7 +20,7 @@ import type {
   EncodedChannels,
   LayerRequest,
 } from '@jbrowse/core/util/markEncoding'
-import type { ColorSource } from '@jbrowse/plugin-marks'
+import type { ColorSource, MarkConfig } from '@jbrowse/plugin-marks'
 import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
@@ -117,15 +117,17 @@ export function laneLayerSourcesOf({
   })
 }
 
-type LayerMark = Parameters<typeof markLayerRequest>[0]
-
 export interface LaneLayerReadsInputs {
-  layers: readonly { marks: readonly LayerMark[] }[]
+  layers: readonly { marks: readonly MarkConfig[] }[]
   sources: readonly Map<string, LaneLayerSource>[]
   windows: ReadonlyMap<string, LaneWindow>
 }
 
-/** `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`. */
+/**
+ * `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`. A
+ * layer's marks share no steps and inherit no color: the layer declares
+ * neither, and the display's `encoding.color` paints the genes (ADR-248).
+ */
 export function laneLayerReadsOf({
   layers,
   sources,
@@ -134,6 +136,7 @@ export function laneLayerReadsOf({
   const specs: LaneLayerFetchSpec[] = []
   const pastCap = layers.map(() => false)
   layers.forEach(({ marks }, layer) => {
+    const channels = markChannelsOf(marks)
     for (const [assemblyName, window] of windows) {
       const from = sources[layer]?.get(assemblyName)
       if (!from) {
@@ -149,9 +152,7 @@ export function laneLayerReadsOf({
         continue
       }
       const bpPerPx = laneLayerBpPerPx(window.bpPerPx)
-      const requests = marks.map(m =>
-        markLayerRequest(m, stepChannels(m.transform), bpPerPx),
-      )
+      const requests = layerRequestsOf(marks, channels, bpPerPx)
       const signature = JSON.stringify(requests)
       regions.forEach((region, i) => {
         specs.push({
