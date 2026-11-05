@@ -8,7 +8,7 @@
 //
 // Run: `pnpm --filter @jbrowse/cli build`, then
 //      node scripts/run-tutorial-builds.ts [--only a,b] [--jobs 2]
-//        [--timeout 120] [--out dir] [--list] [--clean]
+//        [--timeout 120] [--out dir] [--list] [--clean] [--min-free-gb 150]
 
 import { spawn, spawnSync } from 'node:child_process'
 import {
@@ -18,6 +18,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statfsSync,
   writeFileSync,
 } from 'node:fs'
 import os from 'node:os'
@@ -362,6 +363,7 @@ async function main() {
       },
       list: { type: 'boolean' },
       clean: { type: 'boolean' },
+      'min-free-gb': { type: 'string', default: '150' },
     },
   })
   const only = values.only?.split(',').map(s => s.trim().replace(/\.sh$/, ''))
@@ -388,8 +390,19 @@ async function main() {
   const timeoutMs = Number(values.timeout) * 60_000
   const queue = [...runs]
   const results: Result[] = []
+  const freeGb = () => {
+    const { bavail, bsize } = statfsSync(outRoot)
+    return (bavail * bsize) / 1024 ** 3
+  }
   const worker = async () => {
     for (let run = queue.shift(); run; run = queue.shift()) {
+      if (freeGb() < Number(values['min-free-gb'])) {
+        console.log(
+          `stopping: ${Math.round(freeGb())} GB free, under --min-free-gb; ${queue.length + 1} runs not started`,
+        )
+        queue.length = 0
+        break
+      }
       const result = await runOne(
         run,
         outRoot,
