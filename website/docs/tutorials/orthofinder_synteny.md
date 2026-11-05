@@ -26,8 +26,8 @@ lineage with one copy. We:
   genome
 - chain the drosophila orthogroups into collinear blocks with MCScanX and load
   them as a PAF track
-- open one drosophila orthogroup's protein alignment and gene tree beside the
-  genome with the MSA view plugin
+- open a gene's orthogroup as a protein alignment under its gene tree, beside
+  the genome, with the MSA view plugin
 
 ## Prerequisites
 
@@ -493,23 +493,78 @@ every band:
 
 <Figure caption="The same stack from the drosophila_blocks track, one ribbon per collinear block." src="/img/orthofinder_synteny/drosophila_blocks.png" />
 
-### The alignment and gene tree behind an orthogroup {#orthogroup-alignments}
+## An orthogroup's alignment and gene tree {#orthogroup-alignments}
 
-An orthogroup says which genes are related, not how their proteins line up.
-OrthoFinder works that out too when it runs past the orthogroups: drop `-og` and
-it aligns the orthogroups and infers a rooted gene tree for each one of four or
-more genes.
+An orthogroup says which genes are related, not how their proteins line up. Run
+on past the orthogroups, OrthoFinder also aligns each orthogroup and infers a
+gene tree for every one of four or more genes, and the
+[MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) opens them
+from a gene on the genome. Every set's config loads them, launched from the top
+genome of its stack: melanogaster, rice, human, tomato or tauschii.
 
-```bash
-orthofinder -f proteomes -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+Open melanogaster at the `l(2)gl` gene:
+
+```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
+{
+  "defaultSession": {
+    "name": "melanogaster l(2)gl",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "melanogaster",
+        "loc": "2L:9,000-22,000",
+        "tracks": ["melanogaster_genes"]
+      }
+    ]
+  }
+}
 ```
 
-For the five flies that took 16 minutes on 12 threads. `Results_<date>` then
-holds `MultipleSequenceAlignments/<orthogroup>.fa` and
-`Resolved_Gene_Trees/Resolved_Gene_Trees.txt` beside `Orthogroups/`. Host those
-three folders, about 75 MB here, without the run's `WorkingDirectory/`, and the
-[MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) reads them as
-written. Name the plugin and the folder in the config:
+Right-click `l(2)gl`, pick **Launch MSA view**, and submit the **Pre-loaded MSA
+datasets** tab. The view opens beside the genome with a row per fly under
+OrthoFinder's tree for the orthogroup, and a click in the alignment moves the
+genome view to that codon.
+
+`MSA=1` builds this with the rest of a set, from the same OrthoFinder run as its
+synteny tracks:
+
+```bash
+MSA=1 bash build_orthofinder_synteny.sh drosophila
+```
+
+It changes three things. OrthoFinder runs without `-og`, and with `-M msa`,
+which OrthoFinder 2.5 (the `davidemms/orthofinder` container) needs before it
+aligns anything:
+
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
+```bash
+orthofinder -f proteomes -M msa -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+```
+
+For the five flies that took 15 minutes on 24 threads. The plugin finds the
+clicked gene's row in the alignment by translating its transcript, so the top
+genome (`MSA_GENOMES` names others) is downloaded and cut to the sequences in
+its chrom.sizes, and becomes the assembly in their place:
+
+```json addassembly
+{
+  "name": "melanogaster",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "melanogaster-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "BgzipFastaAdapter",
+      "uri": "melanogaster.fa.gz"
+    }
+  }
+}
+```
+
+Last, the run's `Orthogroups/`, `MultipleSequenceAlignments/` and
+`Resolved_Gene_Trees/` are copied into an `orthofinder/` folder beside
+`config.json` (77 MB for the flies), and the config names the plugin and that
+folder:
 
 ```json
 {
@@ -535,54 +590,9 @@ written. Name the plugin and the folder in the config:
 }
 ```
 
-The plugin finds a gene's row in the alignment by translating its transcript, so
-the assembly needs its genome sequence where a chrom.sizes is enough for the
-synteny tracks. The `drosophila` config gives melanogaster a bgzipped FASTA
-(`bgzip -i` then `samtools faidx`), its sequences named like its chrom.sizes:
-
-```json addassembly
-{
-  "name": "melanogaster",
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "melanogaster-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "BgzipFastaAdapter",
-      "uri": "melanogaster.fa.gz"
-    }
-  }
-}
-```
-
-Open melanogaster at the `l(2)gl` gene:
-
-```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
-{
-  "defaultSession": {
-    "name": "melanogaster l(2)gl",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "melanogaster",
-        "loc": "2L:9,000-22,000",
-        "tracks": ["melanogaster_genes"]
-      }
-    ]
-  }
-}
-```
-
-Right-click `l(2)gl`, pick **Launch MSA view**, and submit the **Pre-loaded MSA
-datasets** tab. The view opens beside the genome with one row per fly, named
-`<proteome>_<gene id>`, under OrthoFinder's tree for that orthogroup, and a
-click in the alignment moves the genome view to that codon.
-
-The proteomes hold one protein per gene, named by gene id, so the plugin finds
-the orthogroup through the gene and the fly's row by its residues. OrthoFinder
-writes a gene id with `_` for each `(`, `)`, `:` and other character a tree or
-table cannot hold (`E(spl)m2-BFM` is `E_spl_m2-BFM`), and the plugin matches
-those too. Only melanogaster has its sequence in the demo, so launch from its
-genes; another fly needs its own FASTA the same way.
+How the plugin matches a gene to its protein, including the ids OrthoFinder
+rewrites, is in its
+[OrthoFinder docs](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/docs/your-own-alignments.md#an-orthofinder-run).
 
 ## Reproduce it end to end
 
@@ -593,13 +603,14 @@ tracks, the synteny track and a stacked default session:
 1. Download each genome's proteins, GFF3 and sequence report from NCBI, keeping
    each gene's longest protein under its gene id so the table and the BEDs
    agree, and write a gene BED and chrom.sizes per genome.
-2. Run OrthoFinder to the orthogroups only.
+2. Run OrthoFinder to the orthogroups only, or with `MSA=1` on to an alignment
+   and gene tree per orthogroup.
 3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
    as gene families, and print how one-to-one each adjacent pair of genomes is.
 4. Chain every pair of genomes into collinear blocks with `MCScanX_h`, and
    collect the blocks into one PAF.
 5. Write the assemblies, gene tracks, the orthogroups and blocks tracks and a
-   stacked session.
+   stacked session, and with `MSA=1` the MSA view dataset.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
