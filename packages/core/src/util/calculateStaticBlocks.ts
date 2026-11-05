@@ -17,6 +17,9 @@ export type Base1DViewModel = BlockLayoutInput
 
 const blockSizeCssPx = 800
 
+/** a displayed region narrower than this many px draws as an elided block */
+export const MINIMUM_BLOCK_WIDTH = 3
+
 export default function calculateStaticBlocks(
   model: BlockLayoutInput,
   padding = true,

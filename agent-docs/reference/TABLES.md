@@ -625,6 +625,12 @@ call, so one value can take two colors across two calls.
 - The view's off-screen strip also marks a ribbon whose mate scrolled out of the
   facing row (`culledRibbonMates`); the tables list only mates on a contig the
   facing row does not show.
+- `multiway` frames a one-region anchor the same way, in the contig its lane's
+  entry in `assemblies` states, else the file, and fetches the view's static
+  blocks around the window as the display does. It lists the groups the window
+  shows, uncut at its edges, so `blocks` and `ribbons` reach past `0` and
+  `width` for the host to clip, each foot's bp on the contig; `alignments` ids
+  name the block they were fetched in.
 - `multiway` lays the stack out as the display does over `display.height` (240 px
   unless set) and returns where it put things, in px down from the stack's top:
   `height`, each lane's `yTop` and `yBottom`, and each ribbon's `yTop` and `yBottom`.

@@ -31,7 +31,9 @@ import {
 import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 import { wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import calculateStaticBlocks, {
+  MINIMUM_BLOCK_WIDTH,
+} from '@jbrowse/core/util/calculateStaticBlocks'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import {
   getTrackName,
@@ -82,7 +84,6 @@ import {
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
   MINIMIZED_TRACK_HEIGHT,
-  MINIMUM_BLOCK_WIDTH,
   RESIZE_ALL_HANDLE_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,

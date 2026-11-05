@@ -3,6 +3,10 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
+import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import calculateStaticBlocks, {
+  MINIMUM_BLOCK_WIDTH,
+} from '@jbrowse/core/util/calculateStaticBlocks'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -10,7 +14,7 @@ import {
   PRESET_ATTRIBUTES,
   adapterAssemblyNames,
   colorPaintOf,
-  comparativeAxis,
+  comparativeFrame,
   declaredAttributes,
   declaredLanesOf,
   featureAttributeRanges,
@@ -65,6 +69,7 @@ import {
   laneBpOfOpened,
   laneFetchRegion,
   laneOpeningsOf,
+  mergeContiguousRegions,
   rowAssembliesOf,
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -179,20 +184,23 @@ function anchorRegionSpans(axis: ComparativeAxis): Span[] {
   })
 }
 
-/** The groups a static view shows, each cut to the regions it meets. */
-function shownGroups(groups: MultiWayGroup[], axis: ComparativeAxis) {
+/**
+ * The groups the window shows, each with the hull of the window's regions it
+ * meets, as the display reads its settled blocks (`visibleGroupWindows`).
+ */
+function windowGroups(groups: MultiWayGroup[], window: ComparativeAxis) {
   return groups.flatMap(group => {
     const { refName, start, end } = group.anchor
-    const met = axis.regions.filter(
+    const met = window.regions.filter(
       r => r.refName === refName && start < r.end && end > r.start,
     )
     return met.length
       ? [
-          clipGroupToAnchor(
+          {
             group,
-            Math.min(...met.map(r => r.start)),
-            Math.max(...met.map(r => r.end)),
-          ),
+            start: Math.min(...met.map(r => r.start)),
+            end: Math.max(...met.map(r => r.end)),
+          },
         ]
       : []
   })
@@ -477,21 +485,27 @@ export async function multiwayTables(
     )
   }
   const settings = readDisplay(display)
-  const axis = comparativeAxis(anchorArgs, adapterConfig, 0)
+  const {
+    window: axis,
+    frame: anchorFrame,
+    offsetPx,
+  } = comparativeFrame(anchorArgs, adapterConfig, 0)
   const anchor = axis.assemblyName
   const { width } = anchorArgs
-  const unitBp = axis.bpPerPx * width
+  const { bpPerPx } = axis
+  const unitBp = bpPerPx * width
   const stage: AnchorStage = {
     layout: {
-      displayedRegions: axis.regions,
-      bpPerPx: axis.bpPerPx,
-      offsetPx: 0,
+      displayedRegions: anchorFrame.regions,
+      bpPerPx,
+      offsetPx,
       wholePx: false,
     },
-    originPx: 0,
+    originPx: offsetPx,
     width,
     anchorReversed:
-      axis.regions.length > 0 && axis.regions.every(r => !!r.reversed),
+      anchorFrame.regions.length > 0 &&
+      anchorFrame.regions.every(r => !!r.reversed),
     canon: refName => refName,
   }
   const keyOf = (name: string) => name
@@ -537,12 +551,15 @@ export async function multiwayTables(
       ),
     )
 
-  const anchorRegions = axis.regions.map(r => ({
-    assemblyName: anchor,
-    refName: r.refName,
-    start: r.start,
-    end: r.end,
-  }))
+  const anchorRegions = mergeContiguousRegions(
+    calculateStaticBlocks({
+      offsetPx,
+      width,
+      displayedRegions: anchorFrame.regions,
+      bpPerPx,
+      minimumBlockWidth: MINIMUM_BLOCK_WIDTH,
+    }).contentBlocks,
+  )
   const fetched = await fetch(
     anchorRegions,
     { mateShape: 'grouped' },
@@ -589,9 +606,17 @@ export async function multiwayTables(
     keyOf,
   })
 
-  const shown = shownGroups(groups, axis)
+  const inWindow = windowGroups(groups, axis)
+  const shown = inWindow.map(({ group }) => {
+    const clipped = clipToDisplayedRegions(stage.layout, group.anchor)
+    return clipped
+      ? clipGroupToAnchor(group, clipped.start, clipped.end)
+      : group
+  })
   const decisions = decideLanesOn(stage, {
-    groups: shown,
+    groups: inWindow.map(({ group, start, end }) =>
+      clipGroupToAnchor(group, start, end),
+    ),
     assemblyNames: rows,
     previous: new Map(),
     pins: pinsInForceOf(pins, rows, anchor, keyOf),
@@ -712,8 +737,11 @@ export async function multiwayTables(
 
   const onLane = (lane: Lane, px: number) => {
     if (lane.isAnchor) {
-      const at = locateCum(axis, px * axis.bpPerPx)
-      return { refName: axis.regions[at.region]!.refName, coord: at.coord }
+      const at = locateCum(anchorFrame, (px + offsetPx) * bpPerPx)
+      return {
+        refName: anchorFrame.regions[at.region]!.refName,
+        coord: at.coord,
+      }
     }
     const frame = lane.frame!
     return { refName: frame.refName, coord: laneBpAt(frame, px, width) }

@@ -36,6 +36,7 @@ import {
   registerWiggleAdapters,
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
+import { adapterAssemblyNames } from '@jbrowse/synteny-core'
 
 import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
@@ -130,9 +131,13 @@ export type DotplotTablesArgs = Omit<DotplotReadArgs, 'x' | 'y'> & {
  * A multi-way read as a host sends it: `assemblies`, assembly configs as the
  * region reads take them, each the genome of the lane its `name` or one of
  * its `aliases` names, whose contigs stop that lane's line at their ends, as
- * the display's do.
+ * the display's do, and which frame an anchor locus in its contig.
  */
-export type MultiWayTablesArgs = Omit<MultiWayReadArgs, 'laneAssemblyOf'> & {
+export type MultiWayTablesArgs = Omit<
+  MultiWayReadArgs,
+  'laneAssemblyOf' | 'anchor'
+> & {
+  anchor: Omit<MultiWayReadArgs['anchor'], 'displayedRegions'>
   assemblies?: AssemblyConfig[]
 }
 
@@ -468,27 +473,50 @@ export function createTablesEngine() {
   const pluginManager = tablesPluginManager()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
+  /**
+   * The regions a comparative view displays for an axis: one locus framed in
+   * its contig, from the assembly, else the length the file states, else
+   * undefined, the regions themselves.
+   */
+  const displayedAxisRegions = async (
+    axis: Omit<HostAxisArgs, 'assembly'>,
+    adapterConfig: Record<string, unknown>,
+    side: 0 | 1,
+    resolved: ResolvedAssembly | undefined,
+  ) => {
+    const [locus] = axis.regions
+    const contig =
+      locus && axis.regions.length === 1
+        ? ((resolved &&
+            (await referenceContig(
+              pluginManager,
+              locus,
+              undefined,
+              resolved,
+            ))) ??
+          (await comparativeFileContig(pluginManager, {
+            adapterConfig,
+            side,
+            assemblyName: axis.assemblyName,
+            refName: locus.refName,
+          })))
+        : undefined
+    return contig ? framedIn(axis.regions, contig) : undefined
+  }
   const positioned = async (
     { assembly, ...axis }: HostAxisArgs,
     adapterConfig: Record<string, unknown>,
     side: 0 | 1,
   ) => {
     const resolved = assembly ? await assemblyOf(assembly) : undefined
-    const [locus] = axis.regions
-    const contig =
-      locus && axis.regions.length === 1
-        ? resolved
-          ? await referenceContig(pluginManager, locus, undefined, resolved)
-          : await comparativeFileContig(pluginManager, {
-              adapterConfig,
-              side,
-              assemblyName: axis.assemblyName,
-              refName: locus.refName,
-            })
-        : undefined
     return {
       ...axis,
-      displayedRegions: contig ? framedIn(axis.regions, contig) : undefined,
+      displayedRegions: await displayedAxisRegions(
+        axis,
+        adapterConfig,
+        side,
+        resolved,
+      ),
       refNamePosition: resolved?.refNamePosition,
     }
   }
@@ -665,8 +693,20 @@ export function createTablesEngine() {
             )
           ).flat(),
         )
+        const { anchor } = args
+        const anchorName =
+          anchor.assemblyName ?? adapterAssemblyNames(args.adapterConfig)[0]
         const tables = await multiwayTables(pluginManager, {
           ...args,
+          anchor: {
+            ...anchor,
+            displayedRegions: await displayedAxisRegions(
+              anchor,
+              args.adapterConfig,
+              0,
+              anchorName === undefined ? undefined : lanes.get(anchorName),
+            ),
+          },
           laneAssemblyOf: name => lanes.get(name),
         })
         return {

@@ -50,14 +50,14 @@
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
-    "@jbrowse/plugin-wiggle": "workspace:^"
+    "@jbrowse/plugin-wiggle": "workspace:^",
+    "@jbrowse/synteny-core": "workspace:^"
   },
   "devDependencies": {
     "@jbrowse/display-test-utils": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.10.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@jbrowse/synteny-core": "workspace:^",
     "acorn": "8.19.0",
     "esbuild": "^0.28.2"
   },

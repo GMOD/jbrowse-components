@@ -27,6 +27,11 @@ const column = (table: object, name: string) =>
 const indexes = (values: unknown[], test: (v: unknown) => boolean) =>
   values.flatMap((v, i) => (test(v) ? [i] : []))
 
+const fasta = (name: string) => ({
+  name,
+  uri: pathToFileURL(path.resolve(`test_data/volvox/${name}.fa`)).href,
+})
+
 test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter', async () => {
   const t = await engine.multiway(ALL_VS_ALL)
   for (const table of [t.lanes, t.segments, t.blocks, t.ribbons]) {
@@ -95,10 +100,6 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
 })
 
 test("a lane's genome stops its line at the end of its contig", async () => {
-  const fasta = (name: string) => ({
-    name,
-    uri: pathToFileURL(path.resolve(`test_data/volvox/${name}.fa`)).href,
-  })
   const given = await engine.multiway({
     ...ALL_VS_ALL,
     assemblies: [fasta('volvox_del'), fasta('volvox_ins')],
@@ -111,6 +112,55 @@ test("a lane's genome stops its line at the end of its contig", async () => {
   await expect(
     engine.multiway({ ...ALL_VS_ALL, assemblies: [{ uri: 'x.fa' }] }),
   ).rejects.toThrow('each of assemblies names its genome in name')
+})
+
+test('an anchor locus through its genome is a window into its contig: blocks and ribbons reach past it, for the host to clip', async () => {
+  const width = 800
+  const locus = { refName: 'ctgA', start: 29_000, end: 33_000 }
+  const bpPerPx = (locus.end - locus.start) / width
+  const anchor = { assemblyName: 'volvox', regions: [locus], width }
+  const framed = await engine.multiway({
+    ...ALL_VS_ALL,
+    anchor,
+    assemblies: [fasta('volvox')],
+  })
+  const r = framed.ribbons
+  columnsAgree(r)
+  const feet = r.upperX1.map((x1, i) => [
+    x1,
+    r.upperX2[i]!,
+    r.lowerX1[i]!,
+    r.lowerX2[i]!,
+  ])
+  for (const xs of feet) {
+    expect(Math.max(...xs)).toBeGreaterThan(0)
+    expect(Math.min(...xs)).toBeLessThan(width)
+  }
+  expect(Math.min(...feet.flat())).toBeLessThan(0)
+  expect(Math.max(...feet.flat())).toBeGreaterThan(width)
+  for (const i of indexes(r.upperLane, lane => lane === 0)) {
+    expect(
+      Math.abs(r.upperStart[i]! - (locus.start + r.upperX1[i]! * bpPerPx)),
+    ).toBeLessThanOrEqual(1)
+    expect(
+      Math.abs(r.upperEnd[i]! - (locus.start + r.upperX2[i]! * bpPerPx)),
+    ).toBeLessThanOrEqual(1)
+  }
+  const anchorFeet = (t: typeof framed) =>
+    indexes(t.ribbons.upperLane, lane => lane === 0).map(
+      i => t.ribbons.upperStart[i]!,
+    )
+  expect(Math.min(...anchorFeet(framed))).toBeLessThan(locus.start)
+  expect(r.alignment.every(a => a < framed.alignments.id.length)).toBe(true)
+  const anchorBlocks = indexes(framed.blocks.lane, lane => lane === 0)
+  expect(Math.min(...anchorBlocks.map(i => framed.blocks.x1[i]!))).toBeLessThan(
+    0,
+  )
+
+  // the file states no contig length, so with no genome the window is the
+  // whole frame, and every ribbon stops at its edges
+  const bare = await engine.multiway({ ...ALL_VS_ALL, anchor })
+  expect(Math.min(...anchorFeet(bare))).toBeGreaterThanOrEqual(locus.start)
 })
 
 test('the rows slot orders the lanes and keeps the ones it names', async () => {
