@@ -78,7 +78,7 @@ export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuide
         ) {
           continue
         }
-        const id = `${featureStart}-${strand}`
+        const id = `${query.refName}-${featureStart}-${strand}`
         emit({
           uniqueId: id,
           refName: query.refName,

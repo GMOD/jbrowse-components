@@ -93,7 +93,7 @@ export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdap
         const cutSiteBottom =
           bottomOffset === undefined ? undefined : at(bottomOffset)
         emit({
-          uniqueId: `${motifIdx}-${start}-${strand}`,
+          uniqueId: `${query.refName}-${motifIdx}-${start}-${strand}`,
           refName: query.refName,
           start,
           end,

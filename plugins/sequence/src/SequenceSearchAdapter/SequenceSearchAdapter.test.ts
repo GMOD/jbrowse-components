@@ -184,3 +184,13 @@ test('hits outside the queried window are filtered out', async () => {
   expect(feats).toHaveLength(1)
   expect(feats[0]!.get('start')).toBe(14)
 })
+
+// a feature id is unique only within its track, and one track spans refNames
+test('the same match on two refNames gets two ids', async () => {
+  const seq = 'AAGAATTCAA'
+  const conf = { search: 'GAATTC' }
+  const [onChr1] = await search(seq, conf, { refName: 'chr1' })
+  const [onChr2] = await search(seq, conf, { refName: 'chr2' })
+  expect(onChr1!.get('start')).toBe(onChr2!.get('start'))
+  expect(onChr1!.id()).not.toBe(onChr2!.id())
+})
