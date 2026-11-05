@@ -48,7 +48,7 @@ import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tabl
 import type { DotplotTablesArgs as DotplotReadArgs } from '@jbrowse/plugin-dotplot-view/tables'
 import type { FeatureTablesArgs as FeatureReadArgs } from '@jbrowse/plugin-features/tables'
 import type {
-  MultiWayTablesArgs,
+  MultiWayTablesArgs as MultiWayReadArgs,
   SyntenyTablesArgs as SyntenyReadArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 import type { VariantTablesArgs as VariantReadArgs } from '@jbrowse/plugin-variants/tables'
@@ -63,7 +63,6 @@ export type {
 export type { DotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 export type {
   MultiWayTables,
-  MultiWayTablesArgs,
   SyntenyTables,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 export type { VariantTables } from '@jbrowse/plugin-variants/tables'
@@ -114,6 +113,16 @@ export type DotplotTablesArgs = Omit<DotplotReadArgs, 'x' | 'y'> & {
 }
 
 /**
+ * A multi-way read as a host sends it: `assemblies`, assembly configs as the
+ * region reads take them, each the genome of the lane its `name` or one of
+ * its `aliases` names, whose contigs stop that lane's line at their ends, as
+ * the display's do.
+ */
+export type MultiWayTablesArgs = Omit<MultiWayReadArgs, 'laneAssemblyOf'> & {
+  assemblies?: AssemblyConfig[]
+}
+
+/**
  * Every key a call's args may hold, kept equal to its args type by the
  * compiler (`satisfies`), so a host's misspelled or renamed key is refused
  * rather than dropped.
@@ -124,6 +133,19 @@ export type AlignmentTablesArgs = HostArgs<AlignmentReadArgs>
 export type FeatureTablesArgs = HostArgs<FeatureReadArgs>
 export type WiggleTablesArgs = HostArgs<WiggleReadArgs>
 export type VariantTablesArgs = HostArgs<VariantReadArgs>
+
+/** Every name an assembly config answers to: its `name`, then its `aliases`. */
+function assemblyNamesOf({ name, aliases }: AssemblyConfig) {
+  if (typeof name !== 'string') {
+    throw new TypeError('each of assemblies names its genome in name')
+  }
+  return [
+    name,
+    ...(Array.isArray(aliases)
+      ? aliases.filter((alias): alias is string => typeof alias === 'string')
+      : []),
+  ]
+}
 
 function refuseUnknownArgs(call: string, args: object, keys: object) {
   const unknown = Object.keys(args).filter(k => !Object.hasOwn(keys, k))
@@ -199,6 +221,7 @@ const MULTIWAY_ARGS = {
   pins: true,
   hidden: true,
   display: true,
+  assemblies: true,
 } satisfies ArgKeys<MultiWayTablesArgs>
 
 const FILE_REGIONS_ARGS = { adapterConfig: true, assembly: true } as const
@@ -560,8 +583,22 @@ export function createTablesEngine() {
     multiway: call(
       'multiway',
       MULTIWAY_ARGS,
-      async (args: MultiWayTablesArgs) => {
-        const tables = await multiwayTables(pluginManager, args)
+      async ({ assemblies = [], ...args }: MultiWayTablesArgs) => {
+        const lanes = new Map(
+          (
+            await Promise.all(
+              assemblies.map(async config => {
+                const names = assemblyNamesOf(config)
+                const resolved = await assemblyOf(config)
+                return names.map(name => [name, resolved] as const)
+              }),
+            )
+          ).flat(),
+        )
+        const tables = await multiwayTables(pluginManager, {
+          ...args,
+          laneAssemblyOf: name => lanes.get(name),
+        })
         return {
           ...tables,
           missingContigs: await axisMissingContigs(

@@ -45,14 +45,14 @@ export function fastaAssembly(name: string, fasta: string) {
 export type FastaAssembly = ReturnType<typeof fastaAssembly>
 
 /** An assembly config: its name and the sequence adapter it reads. */
-export interface AssemblyConfig {
+export type AssemblyConfig = Readonly<{
   name: string
   sequence: {
     type: string
     trackId: string
     adapter: Record<string, unknown>
   }
-}
+}>
 
 /** One axis: its assembly, the regions it shows end to end, and its px. */
 export interface ComparativeAxis {
@@ -360,6 +360,9 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
   if (!isMultiWayDisplay(display)) {
     throw new Error('the view holds no MultiWaySyntenyDisplay')
   }
+  await Promise.all(
+    assemblies.map(a => session.assemblyManager.waitForAssembly(a.name)),
+  )
   await until(
     () => multiwaySettled(display),
     () => 'MultiWaySyntenyDisplay',

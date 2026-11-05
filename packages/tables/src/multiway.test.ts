@@ -94,6 +94,25 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
   ])
 })
 
+test("a lane's genome stops its line at the end of its contig", async () => {
+  const fasta = (name: string) => ({
+    name,
+    uri: pathToFileURL(path.resolve(`test_data/volvox/${name}.fa`)).href,
+  })
+  const given = await engine.multiway({
+    ...ALL_VS_ALL,
+    assemblies: [fasta('volvox_del'), fasta('volvox_ins')],
+  })
+  const bare = await engine.multiway(ALL_VS_ALL)
+  const del = (t: typeof bare) => indexes(t.segments.lane, l => l === 2)
+  expect(del(bare).map(i => bare.segments.end[i])).toEqual([47_571])
+  expect(del(given).map(i => given.segments.end[i])).toEqual([45_141])
+  expect(given.segments.x2[del(given)[0]!]).toBeLessThan(800)
+  await expect(
+    engine.multiway({ ...ALL_VS_ALL, assemblies: [{ uri: 'x.fa' }] }),
+  ).rejects.toThrow('each of assemblies names its genome in name')
+})
+
 test('the rows slot orders the lanes and keeps the ones it names', async () => {
   const swapped = await engine.multiway({
     ...ALL_VS_ALL,

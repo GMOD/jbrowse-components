@@ -148,6 +148,18 @@ export interface MultiWayTablesArgs {
     }
     height?: number
   }
+  /**
+   * A lane's assembly, by the lane's assembly name, as the session holds it
+   * for the display: its contigs, each name its canonical spelling, and the
+   * canonical spelling of any name. A lane's line stops at its contig's
+   * ends; a lane with none runs to the view's edge.
+   */
+  laneAssemblyOf?: (assemblyName: string) => LaneAssembly | undefined
+}
+
+export interface LaneAssembly {
+  regions: { refName: string; start: number; end: number }[]
+  canonical: (refName: string) => string
 }
 
 const SESSION = 'tables'
@@ -344,8 +356,14 @@ function laneTables(
       })
     } else if (frame) {
       const openings = frameOpenings(frame)
-      const lo = Math.max(0, Math.ceil(laneBpOfOpened(openings, frame.min)))
-      const hi = Math.floor(laneBpOfOpened(openings, frame.max))
+      const lo = Math.max(
+        l.contig?.start ?? 0,
+        Math.ceil(laneBpOfOpened(openings, frame.min)),
+      )
+      const hi = Math.min(
+        l.contig?.end ?? Number.POSITIVE_INFINITY,
+        Math.floor(laneBpOfOpened(openings, frame.max)),
+      )
       for (const s of frameSegments(frame, lo, hi, width)) {
         segment(i, frame.refName, s.start, s.end, s.px)
       }
@@ -432,7 +450,8 @@ function alignmentRows(
  * linear genome view, as tables: `lanes`, the anchor first and then each
  * mate lane in the order a fresh load stacks it, with the contig, zoom and orientation
  * it picked; `segments`, the stretches of each lane's sequence across the
- * view, cut where a lane opens a hole for a deletion, each with the px it
+ * view, cut where a lane opens a hole for a deletion and stopped at the
+ * ends of its contig where the lane's assembly is given, each with the px it
  * spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
  * each gutter draws in paint order, a trapezoid from a span on its upper
  * lane to a span on its lower one, with its color and the alpha it
@@ -452,6 +471,7 @@ export async function multiwayTables(
     pins = [],
     hidden = [],
     display,
+    laneAssemblyOf = () => undefined,
   }: MultiWayTablesArgs,
 ) {
   if (!Array.isArray(pins)) {
@@ -657,8 +677,9 @@ export async function multiwayTables(
     groups: [...shown, ...anchorless],
     anchorSpans: anchorSpansOn(stage, shown),
     rowFrames,
-    contigOf: () => undefined,
-    refNameAliasOf: () => undefined,
+    contigOf: (name, refName) =>
+      laneAssemblyOf(name)?.regions.find(r => r.refName === refName),
+    refNameAliasOf: name => laneAssemblyOf(name)?.canonical,
     geometry: laneGeom,
     labelOf: name =>
       laneLabelOf(name, {

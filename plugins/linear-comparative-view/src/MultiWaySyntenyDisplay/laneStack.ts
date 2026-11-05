@@ -146,6 +146,11 @@ export interface Lane {
   bpPerPx: number
   /** the canonical refName; compare a BED and a GFF3 spelling through it */
   canon: (refName: string) => string
+  /**
+   * the extent of the frame's contig in the lane's own assembly, which the
+   * baseline stops at; undefined where the session holds no such assembly
+   */
+  contig?: { start: number; end: number }
   /** px the baseline draws over, a screen either side at most */
   baseline: Span[]
   glyphTop: number
@@ -307,6 +312,7 @@ export function buildLanes({
           : frame
             ? frameBpPerPx(frame, width)
             : Infinity,
+        contig,
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
           : frame

@@ -133,6 +133,7 @@ function rowsOf<T extends Record<string, unknown[]>>(table: T) {
  */
 function multiwayParity(
   fixture: MultiwayFixture,
+  { lanesGiven = true } = {},
 ): ParityAdapter<
   MultiwayCase,
   MultiwayModel,
@@ -157,6 +158,7 @@ function multiwayParity(
       engine.multiway({
         adapterConfig: fixture.adapterConfig,
         anchor: fixture.anchor,
+        ...(lanesGiven ? { assemblies: fixture.assemblies } : {}),
         ...args,
       }),
     modelDecisions: ({ display }) => {
@@ -353,25 +355,11 @@ function multiwayParity(
   }
 }
 
-/**
- * The export runs each mate lane's line to the edge of the view, where the
- * view stops it at the end of the lane's contig: the stack reads the
- * contig's length off the lane's assembly, which the export is never given.
- */
-function pastContigEnd(exported: number[][][]) {
-  return {
-    segments: { owner: 'multiway lane contig extents', exported },
-  }
-}
-
-const VOLVOX_SEGMENTS = [[[0, 800]], [[0, 800]], [[38.879, 800]]]
-
 describe('volvox, an insertion and a deletion, all against all', () => {
   parityCases(multiwayParity(ALL_VS_ALL_LANES), [
     {
       name: 'defaults',
       config: {},
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'strand, bump curves',
@@ -383,14 +371,12 @@ describe('volvox, an insertion and a deletion, all against all', () => {
           },
         },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'identity',
       config: {
         display: { ribbons: { encoding: { color: { field: 'identity' } } } },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'a constant at an opacity',
@@ -399,34 +385,28 @@ describe('volvox, an insertion and a deletion, all against all', () => {
           ribbons: { encoding: { color: { value: '#008000' }, opacity: 0.6 } },
         },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'filter by identity',
       config: {
         display: { ribbons: { filter: [{ field: 'identity', gte: 0.95 }] } },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'rows.sort',
       config: { display: { rows: { sort: ['volvox_del'] } } },
-      drifts: pastContigEnd([[[0, 800]], [[38.879, 800]], [[0, 800]]]),
     },
     {
       name: 'rows.kept',
       config: { display: { rows: { kept: ['volvox_del'] } } },
-      drifts: pastContigEnd([[[0, 800]], [[38.879, 800]]]),
     },
     {
       name: 'a hidden lane',
       config: { hidden: ['volvox_ins'] },
-      drifts: pastContigEnd([[[0, 800]], [[38.879, 800]]]),
     },
     {
       name: 'a tall stack',
       config: { display: { height: 900 } },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
     {
       name: 'no gene names, lane names over the lanes',
@@ -435,7 +415,6 @@ describe('volvox, an insertion and a deletion, all against all', () => {
           labels: { name: { show: false }, lanes: { placement: 'overlay' } },
         },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
   ])
 })
@@ -458,15 +437,34 @@ describe('4 kb around the insertion', () => {
   ])
 })
 
+/**
+ * Without the lanes' genomes the export knows no contig's length, so it runs
+ * each mate lane's line to the edge of the view, where the view stops it at
+ * the end of the lane's contig: volvox_del's 45 kb ctgA here.
+ */
+describe('volvox, the export given no lane genomes', () => {
+  parityCases(multiwayParity(ALL_VS_ALL_LANES, { lanesGiven: false }), [
+    {
+      name: 'defaults',
+      config: {},
+      drifts: {
+        segments: {
+          owner: 'multiway lane genomes not given',
+          exported: [[[0, 800]], [[0, 800]], [[38.879, 800]]],
+        },
+      },
+    },
+  ])
+})
+
 describe('two pairwise files against volvox', () => {
   parityCases(multiwayParity(STAR_LANES), [
-    { name: 'defaults', config: {}, drifts: pastContigEnd(VOLVOX_SEGMENTS) },
+    { name: 'defaults', config: {} },
     {
       name: 'strand',
       config: {
         display: { ribbons: { encoding: { color: { field: 'strand' } } } },
       },
-      drifts: pastContigEnd(VOLVOX_SEGMENTS),
     },
   ])
 })
@@ -484,30 +482,11 @@ const SYRI_COLORS = {
 
 const SYRI_ORDER = { sort: ['Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'] }
 
-/** Col-0, Ler, Cvi on the contig given, Eri, Kyo and Sha */
-const syriSegments = (cvi: number[][]) => [
-  [[0, 800]],
-  [[8.495, 800]],
-  cvi,
-  [[30.227, 800]],
-  [
-    [16.084, 417.585],
-    [419.047, 800],
-  ],
-  [[3.078, 800]],
-]
-
-const CVI_CHR1 = [
-  [3.918, 409.52],
-  [409.995, 800],
-]
-
 describe("SyRI's calls for five accessions under Col-0", () => {
   parityCases(multiwayParity(SYRI_LANES), [
     {
       name: 'colored by call, lanes in order',
       config: { display: { ...SYRI_COLORS, rows: SYRI_ORDER } },
-      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
     {
       name: 'a lane pinned to another contig',
@@ -515,7 +494,6 @@ describe("SyRI's calls for five accessions under Col-0", () => {
         display: { ...SYRI_COLORS, rows: SYRI_ORDER },
         pins: [{ lane: 'Cvi', refName: 'Chr2' }],
       },
-      drifts: pastContigEnd(syriSegments([[363.734, 800]])),
     },
     {
       name: 'a categorical scheme',
@@ -535,7 +513,6 @@ describe("SyRI's calls for five accessions under Col-0", () => {
           rows: SYRI_ORDER,
         },
       },
-      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
     {
       name: 'names, a title, descending',
@@ -556,7 +533,6 @@ describe("SyRI's calls for five accessions under Col-0", () => {
           rows: SYRI_ORDER,
         },
       },
-      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
     {
       name: 'filter to inversions',
@@ -569,7 +545,6 @@ describe("SyRI's calls for five accessions under Col-0", () => {
           rows: SYRI_ORDER,
         },
       },
-      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
     {
       name: 'lane labels',
@@ -582,7 +557,6 @@ describe("SyRI's calls for five accessions under Col-0", () => {
           },
         },
       },
-      drifts: pastContigEnd(syriSegments(CVI_CHR1)),
     },
   ])
 })
