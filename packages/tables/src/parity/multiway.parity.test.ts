@@ -587,6 +587,42 @@ describe("SyRI's calls for five accessions under Col-0", () => {
   ])
 })
 
+/**
+ * A reference-anchored file asked for two accessions side by side: the view
+ * notes the one gutter it cannot fill and draws the rest, where the export
+ * fails the whole call, as multiwayTables.test.ts asks of it. Pinned rather
+ * than compared until one of the two is chosen.
+ */
+test('a lane pair the file lacks (drift: multiway failed lane pairs)', async () => {
+  const settings = { ...SYRI_COLORS, rows: { kept: ['Eri', 'Ler'] } }
+  const laneFailure = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { display, dispose } = await standUpMultiway({
+    adapterConfig: SYRI_LANES.adapterConfig,
+    assemblies: SYRI_LANES.assemblies,
+    anchor: SYRI_LANES.anchor,
+    settings,
+  })
+  try {
+    expect(display.rowAssemblies).toEqual(['Eri', 'Ler'])
+    expect(display.failedGutters).toHaveLength(1)
+    expect(display.ribbonGeometry.targets.length).toBeGreaterThan(0)
+    expect(laneFailure).toHaveBeenCalledWith(
+      'MultiWayLaneLinks: one lane failed',
+      expect.any(Error),
+    )
+  } finally {
+    laneFailure.mockRestore()
+    dispose()
+  }
+  await expect(
+    engine.multiway({
+      adapterConfig: SYRI_LANES.adapterConfig,
+      anchor: SYRI_LANES.anchor,
+      display: settings,
+    }),
+  ).rejects.toThrow('This file contains no alignments between "Eri" and "Ler"')
+}, 60_000)
+
 describe('volvox ctgB, which no lane aligns to', () => {
   parityCases(multiwayParity(ALL_VS_ALL_UNALIGNED), [
     { name: 'defaults', config: {} },
