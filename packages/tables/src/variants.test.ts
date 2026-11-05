@@ -3,10 +3,15 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+
 import { createTablesEngine } from './index.ts'
 import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
+
+const GOLDENROD = cssColorToHex(featureDefaultColor)
 
 const without = <A extends { region: unknown }>({ region, ...rest }: A) => rest
 
@@ -39,7 +44,7 @@ test('a multi-sample VCF comes back as the display paints its genotypes', async 
   expect(colorOf.get('0/1')!.size).toBe(1)
   expect(colorOf.get('1/1')!.size).toBe(1)
   expect(het).not.toBe(hom)
-  expect(hom).toBe(t.variants.color[0])
+  expect(new Set(t.variants.color)).toEqual(new Set([GOLDENROD]))
   t.cells.dosage.forEach((d, i) => {
     const called = t.cells.genotype[i]!.split(/[/|]/).filter(a => a !== '.')
     const alt = called.filter(a => a !== '0').length
@@ -57,6 +62,27 @@ test('a multi-sample VCF comes back as the display paints its genotypes', async 
   }
   expect(t.legendTitle).toBe('Genotypes')
   expect(new Set(t.legend.section)).toEqual(new Set(['Genotypes']))
+})
+
+test('each record takes the records band’s color: its SV class’s, else the default feature color, under no picked color and under phaseSet', async () => {
+  for (const color of [undefined, { field: 'phaseSet' }]) {
+    const display = color ? { encoding: { color } } : {}
+    const svs = await engine.variants({ ...DOG_SV, display })
+    expect(svs.variants.type).toEqual(['duplication'])
+    expect(svs.variants.color).toEqual(['#377eb8'])
+    const snvs = await engine.variants({ ...DOG_VCF, display })
+    expect(new Set(snvs.variants.color)).toEqual(new Set([GOLDENROD]))
+  }
+})
+
+test('under a picked color each record takes its alt cells’ hue at full dose', async () => {
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { encoding: { color: { value: '#cc3300' } } },
+  })
+  const hom = t.cells.color.filter((_, i) => t.cells.genotype[i] === '1/1')
+  expect(new Set(hom)).toEqual(new Set(['#cc3300']))
+  expect(new Set(t.variants.color)).toEqual(new Set(['#cc3300']))
 })
 
 test('the key takes the title encoding.color.legend gives it', async () => {

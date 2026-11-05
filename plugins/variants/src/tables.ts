@@ -46,8 +46,8 @@ import {
   NO_KEYED_VARIANTS,
   keyedVariantsFetched,
 } from './LinearVariantDisplay/keyedVariants.ts'
-import { paintFeatureColors } from './LinearVariantDisplay/paintCells.ts'
 import {
+  recordColorViews,
   recordsColorScaleViews,
   recordsKeyViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
@@ -150,6 +150,7 @@ const VariantTablesHost = types
   .views(self => variantRowHookViews(self))
   .views(self => recordsKeyViews(self))
   .views(self => cellKeyViews(self))
+  .views(self => recordColorViews(self))
   .views(self => recordsColorScaleViews(self))
   .views(self => regionCellColorViews(self))
   .views(self => variantDataKeyViews(self))
@@ -190,7 +191,10 @@ export interface VariantTablesArgs {
  * #api
  * A region of a multi-sample VCF as the variant display fetches,
  * filters and paints it, as tables: `variants`, each record the display
- * keeps, with its color and its `filter`; `info`, each INFO key's
+ * keeps, with its `color` as the records band paints it (its SV class's,
+ * else `featureDefaultColor`, under no picked `encoding.color` and under
+ * `phaseSet`; else the alt cells' hue at full dose) and its `filter`;
+ * `info`, each INFO key's
  * values aligned to `variants`, and `infoFields`, the header's declaration
  * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
  * consequences, a row per record and consequence, which then leave `info`
@@ -301,8 +305,7 @@ export async function variantTables(
     color,
     rowKey,
     rowBands,
-    cellHue,
-    cellHueValuesRead,
+    recordColors,
     cellColors,
     scales,
   } = runInAction(() => {
@@ -314,8 +317,7 @@ export async function variantTables(
       color: shown.map(row => rowColors.get(row.name) ?? ''),
       rowKey: host.rowColorScales[0],
       rowBands: host.rowBands,
-      cellHue: host.cellHue,
-      cellHueValuesRead: host.cellHueValuesRead,
+      recordColors: host.regionRecordColors,
       cellColors: host.regionCellColors,
       scales: host.dataColorScales,
     }
@@ -355,7 +357,7 @@ export async function variantTables(
   const keys = new Map<string, number>()
   for (const { region: regionIndex, data } of perRegion) {
     const offset = variants.start.length
-    const featureColors = paintFeatureColors(data, cellHue, cellHueValuesRead)
+    const featureColors = recordColors.get(regionIndex)!
     data.featureInfo.forEach((info, f) => {
       if (!keys.has(info.featureId)) {
         keys.set(info.featureId, keys.size)

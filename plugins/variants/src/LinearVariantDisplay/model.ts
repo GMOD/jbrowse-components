@@ -119,6 +119,7 @@ import {
   installRecordsOpeningHeight,
   recordsBandActions,
   recordsColorScaleViews,
+  recordColorViews,
   recordsKeyViews,
   recordsLayoutActions,
   recordsLayoutViews,
@@ -1279,6 +1280,7 @@ export function stateModelFactory(
         }
       })
       .views(self => cellKeyViews(self))
+      .views(self => recordColorViews(self))
       .views(recordsRenderViews)
       .views(recordsColorScaleViews)
       .views(self => {

@@ -26,6 +26,7 @@ const VARIANT_DECISIONS = [
   'ramps',
   'rowLegend',
   'cellColors',
+  'recordColors',
 ] as const
 
 type VariantDecision = (typeof VARIANT_DECISIONS)[number]
@@ -33,6 +34,26 @@ type VariantDecision = (typeof VARIANT_DECISIONS)[number]
 const ROW_KEY = 'rows.color'
 
 const engine = createTablesEngine()
+
+/** Each record over `region` as `variant color`, as the records band paints it. */
+function displayRecordColors(
+  m: LinearVariantDisplayModel,
+  region: TablesRegion,
+) {
+  const { cellData, regionRecordColors } = m
+  const out: string[] = []
+  for (const [k, data] of Object.entries(cellData?.perRegionCellData ?? {})) {
+    const colors = regionRecordColors.get(Number(k))!
+    data.featureInfo.forEach((info, f) => {
+      const start = data.featurePositions[f * 2]!
+      const end = data.featurePositions[f * 2 + 1]!
+      if (end > region.start && start < region.end) {
+        out.push(`${info.featureId} ${abgrToHex(colors[f]!)}`)
+      }
+    })
+  }
+  return out
+}
 
 /**
  * Each drawn cell over `region` as `variant row color`, in payload order:
@@ -120,6 +141,7 @@ function variantParity(
           title: rowKey[0]?.title ?? '',
         },
         cellColors: displayCellColors(m, fixture.region),
+        recordColors: displayRecordColors(m, fixture.region),
       }
     },
     exportDecisions: t => ({
@@ -134,6 +156,9 @@ function variantParity(
       legend: { ...t.legend, title: t.legendTitle },
       ramps: t.ramps,
       rowLegend: { ...t.rowLegend, title: t.rowLegendTitle },
+      recordColors: t.variants.color.map(
+        (color, i) => `${t.variants.id[i]} ${color}`,
+      ),
       cellColors: t.cells.color.map(
         (color, i) =>
           `${t.variants.id[t.cells.variant[i]!]} ${t.cells.row[i]} ${color}`,
@@ -281,6 +306,10 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
       },
     },
     {
+      name: 'encoding.color by phase set',
+      config: { encoding: { color: { field: 'phaseSet' } } },
+    },
+    {
       name: 'haplotype rows, encoding.color by phase set',
       config: { rows: 'haplotype', encoding: { color: { field: 'phaseSet' } } },
     },
@@ -302,6 +331,10 @@ describe('dog SVs with a samples file of groups and breeds', () => {
     {
       name: 'defaults',
       config: {},
+    },
+    {
+      name: 'encoding.color by a field',
+      config: { encoding: { color: { field: 'type' } } },
     },
     {
       name: 'rows.color by group',

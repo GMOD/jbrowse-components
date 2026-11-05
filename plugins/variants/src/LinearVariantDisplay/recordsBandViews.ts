@@ -384,13 +384,41 @@ export function recordsBandActions(self: RecordsActionsHost) {
   }
 }
 
+/** What {@link recordColorViews} reads: the payload and its coloring. */
+export interface RecordColorHost {
+  cellData: CellDataResult | undefined
+  cellHue: CellHue
+  cellHueValuesRead: boolean
+  recordsColorBySvClass: boolean
+}
+
+/** The records' colors, which the display and a static export install alike. */
+export function recordColorViews(self: RecordColorHost) {
+  return {
+    /**
+     * #getter
+     * Each fetched region's record colors: the SV class or
+     * `featureDefaultColor` (`svClassColors`), or under a picked
+     * `encoding.color` the alt cells' hue at full dose, which neither
+     * shading nor the phased mode moves.
+     */
+    get regionRecordColors() {
+      const { cellData } = self
+      return self.recordsColorBySvClass
+        ? mapPayloadRegions(cellData, data => svClassColors(data.featureInfo))
+        : mapPayloadRegions(cellData, data =>
+            paintFeatureColors(data, self.cellHue, self.cellHueValuesRead),
+          )
+    },
+  }
+}
+
 interface RecordsRenderHost
   extends
     RecordsSettings,
     Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsGenotypeRows'> {
   cellData: CellDataResult | undefined
-  cellHue: CellHue
-  cellHueValuesRead: boolean
+  regionRecordColors: ReadonlyMap<number, Uint32Array>
   keyedVariants: KeyedVariants
   sources: ProcessedSource[]
   view: LinearGenomeViewModel
@@ -424,21 +452,6 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       return cellData && self.showRecords && self.drawsGenotypeRows
         ? countRecordCarriers(cellData, this.recordCarrierSamples)
         : new Map<string, RecordCarriers>()
-    },
-    /**
-     * #getter
-     * Each fetched region's record colors: the SV class or
-     * `featureDefaultColor` (`svClassColors`), or under a picked
-     * `encoding.color` the alt cells' hue at full dose, which neither
-     * shading nor the phased mode moves.
-     */
-    get regionRecordColors() {
-      const { cellData } = self
-      return self.recordsColorBySvClass
-        ? mapPayloadRegions(cellData, data => svClassColors(data.featureInfo))
-        : mapPayloadRegions(cellData, data =>
-            paintFeatureColors(data, self.cellHue, self.cellHueValuesRead),
-          )
     },
     /**
      * #getter
@@ -594,7 +607,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
         })
         const { jexl } = getEnv(self).pluginManager
         const { displayedRegions } = self.view
-        const featureColors = this.regionRecordColors
+        const featureColors = self.regionRecordColors
         const carriers = this.recordCarriers
         for (const k in cellData.perRegionCellData) {
           const displayedRegionIndex = Number(k)
