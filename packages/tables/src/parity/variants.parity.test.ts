@@ -107,7 +107,6 @@ function variantParity(
           region: fixture.region,
           contigLength: fixture.contigLength,
           bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
-          settled: m => m.cellData !== undefined && m.sourcesBase !== undefined,
         })
       return { model, dispose }
     },

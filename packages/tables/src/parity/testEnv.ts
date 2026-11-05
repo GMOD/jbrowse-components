@@ -54,7 +54,12 @@ export async function until(
   }
 }
 
-export interface ParityViewSpec<T> {
+interface ExportableDisplay {
+  svgReady: boolean
+  error: unknown
+}
+
+export interface ParityViewSpec<T extends ExportableDisplay> {
   /** Plugins the real track, display, adapter and RPC types come from. */
   plugins: Plugin[]
   /** The track config, without `trackId`, `assemblyNames` or `displays`. */
@@ -62,15 +67,13 @@ export interface ParityViewSpec<T> {
   displayType: string
   /** The display's config slots, as the export's `display` argument. */
   displayConfig: Record<string, unknown>
-  /** What the view shows, and what the export reads. */
+  /** The window the view shows inside its contig, and what the export reads. */
   region: TablesRegion
-  /** The contig's length, so the assembly holds the region. */
+  /** The contig's length: the view displays the whole contig. */
   contigLength: number
   bpPerPx: number
   /** Whether the track's display is the model the adapter reads. */
   isDisplay: (display: unknown) => display is T
-  /** When the display has drawn what it fetched. */
-  settled: (display: T) => boolean
 }
 
 /** Whether `display` is a display of type `type`, by the name it carries. */
@@ -84,13 +87,17 @@ export function hasDisplayType(display: unknown, type: string) {
 }
 
 /**
- * A real display of a real track type in a real `LinearGenomeView` whose one
- * displayed region is `region`, laid out at `bpPerPx` so its settled block is
- * the region end to end: the window a static export reads. Unlike
+ * A real display of a real track type in a real `LinearGenomeView` framed as
+ * the app frames a locus: the whole contig displayed, scrolled at `bpPerPx`
+ * so its settled block is `region`, the window a static export reads, and the
+ * display fetching its own margin around it. Unlike
  * `createDisplayTestEnvironment`, nothing is stubbed: the track type's
- * display defaults apply and the fetch runs through the real RPC.
+ * display defaults apply and the fetch runs through the real RPC. Settled
+ * once the display reads as ready to export (`svgReady`).
  */
-export async function standUpDisplay<T>(spec: ParityViewSpec<T>) {
+export async function standUpDisplay<T extends ExportableDisplay>(
+  spec: ParityViewSpec<T>,
+) {
   const { region, bpPerPx, displayType } = spec
   const pluginManager = new PluginManager([
     new LinearGenomeViewPlugin(),
@@ -146,8 +153,15 @@ export async function standUpDisplay<T>(spec: ParityViewSpec<T>) {
     }),
   )
   view.setWidth(Math.round((region.end - region.start) / bpPerPx))
-  view.setDisplayedRegions([{ ...region, assemblyName: 'volvox' }])
-  view.setNewView(bpPerPx, 0)
+  view.setDisplayedRegions([
+    {
+      refName: region.refName,
+      start: 0,
+      end: spec.contigLength,
+      assemblyName: 'volvox',
+    },
+  ])
+  view.setNewView(bpPerPx, region.start / bpPerPx)
   const window = view.settledDynamicBlocks
     .map(b => `${b.refName}:${b.start}-${b.end}`)
     .join(',')
@@ -161,10 +175,13 @@ export async function standUpDisplay<T>(spec: ParityViewSpec<T>) {
     throw new Error(`the track holds no ${displayType}`)
   }
   await until(
-    () => spec.settled(display),
+    () => display.svgReady,
     () =>
       `${displayType}; RPC methods nothing registers: ${[...rpcManager.unregistered].join(', ') || 'none'}`,
   )
+  if (display.error) {
+    throw new Error(`the ${displayType} failed: ${String(display.error)}`)
+  }
   return {
     display,
     view,

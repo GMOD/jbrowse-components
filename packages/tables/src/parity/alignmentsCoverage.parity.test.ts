@@ -41,7 +41,6 @@ const coverage: ParityAdapter<
         region: BAM.region,
         contigLength: 50_001,
         bpPerPx: 5,
-        settled: m => m.coverageTicks !== undefined,
       })
     return { model, dispose }
   },
