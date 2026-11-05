@@ -293,8 +293,32 @@ names (`renameRegions`, the hook `staticWiggleDisplay` takes).
 `staticLinear.test.ts` compares the whole document with `renderRegion`'s byte
 for byte over six wiggle command lines, an aliased contig among them.
 
+## Built: the static mark SVG
+
+`staticMarkSvg` (`@jbrowse/plugin-marks/staticSvg`) runs `MarkStaticHost`
+(`LinearMarkDisplay/markStaticHost.ts`): the display's config and
+`hiddenCategories`, the frame, fetched layers and row listing as volatiles,
+the config mixins the display composes (`TrackHeightMixin`, `RowHeightMixin`,
+`ScoreScaleMixin`, `LegendMixin`), the tree-sidebar row views, and the mark
+chain `LinearMarkDisplay` installs in the same order: `markConfigViews.ts`
+from `markConfigViews` to `markRequestViews`, and `markResolveViews.ts` from
+`markRowListingViews` to `markSvgSidebarViews`. It fetches through
+`executeGetEncodedLayers` over `binnedFetchRegions`, and `executeGetRowSources`
+where the display draws rows, and returns `{ svg, legend }`: the key is an
+`SvgLegend` model the view's chrome places, since its placement and height
+are chrome. `products/jbrowse-img/src/staticMark.test.ts` compares the
+display's whole node and the key's whole group with jb2export's for a bar, a
+line and rule on a log axis, categorical points with their key, an aggregate
+over a shared bin, a hidden key category and a row per value. No drift. The
+one session read, the assembly manager's canonical refName for a link mark's
+far end, is the display's `canonicalRefName`; the static host answers the
+refName unchanged, which holds only while its frame is in the adapter's names.
+
 ## Left
 
+- **Marks under `staticLinearSvg`**: its frame is in the assembly's names, so
+  `MarkStaticHost.canonicalRefName` must canonicalize through the resolved
+  assembly's aliases before a link mark's far end is matched.
 - **The CLI switch for wiggle-only sessions**: modifiers into display config
   (`buildDisplaySnapshot`), multi-region, reversed and gene-name locs, the
   theme from the config, cytobands, `reportConfigProblems`, the config's
@@ -311,8 +335,8 @@ Seventeen displays export through a `renderSvg`. Each needs its resolve chain
 moved into views functions, a static model composing its config mixins, and a
 parity test against `renderRegion`. By family, cheapest first:
 
-- **Score plots** (wiggle multi-source, `LinearMarkDisplay` and Manhattan,
-  the sequence display): the wiggle pieces carry over.
+- **Score plots** (Manhattan, the sequence display): the wiggle and mark
+  pieces carry over; wiggle and `LinearMarkDisplay` are built.
 - **Features** (`LinearBasicDisplay`): built (above), less its key.
 - **Matrices** (Hi-C, `LDDisplay`, the variant matrix): `TriangleMatrixMixin`
   and `MatrixRampMixin` move as wiggle's axis did; variants' rows are built.
