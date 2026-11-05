@@ -30,12 +30,21 @@
 # is a screen of its own, because three of the accessions that listing handed
 # over turned out to be a Leclercia, a Salmonella and a suppressed Shigella sp.
 #
-# Requires: the NCBI `datasets` CLI, bgzip/tabix (htslib), unzip, python3
+# Requires: the NCBI `datasets` CLI, bgzip/tabix (htslib), unzip, python3,
+#           curl, awk, sort, gzip
 # Usage:    bash build_ecoli_orthologs.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in datasets unzip bgzip tabix curl python3 awk sort gzip; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(symbols_to_blocks.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

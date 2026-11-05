@@ -24,10 +24,11 @@
 # shape a lane stack anchored on hg38 reads; a band between two haplotypes is
 # empty by construction.
 #
-# Requires: curl, awk, sort, python3, bgzip, tabix, and the JBrowse CLI
-#           (`jbrowse`, or JBROWSE_CLI="node products/jbrowse-cli/src/bin.ts"
-#           for the in-repo one, which is where `make-pif --coarse` lives);
-#           pigz (gzip -dc works, slower)
+# Requires: curl, awk, sort, gzip, xargs, python3, bgzip, tabix, node and the
+#           JBrowse CLI (`jbrowse`, npx, or
+#           JBROWSE_CLI="node products/jbrowse-cli/src/bin.ts" for the in-repo
+#           one, which is where `make-pif --coarse` lives); pigz (gzip -dc
+#           works, slower); the AWS CLI (`aws`) for UPLOAD=1
 # Usage:    bash scripts/build_hprc_multiway_synteny.sh [outdir]
 #           CAT_JOBS=4 bash scripts/build_hprc_multiway_synteny.sh
 #           GFA=/data/hprc-v2.1-mc-grch38.gfa.gz bash scripts/build_hprc_multiway_synteny.sh
@@ -57,6 +58,14 @@ OUTDIR="${1:-hprc_multiway_build}"
 CAT_JOBS="${CAT_JOBS:-4}"
 MAX_GAP="${MAX_GAP:-10000}"
 GFA_TO_PAF_VERSION=v1.0.0
+
+for tool in curl awk sort gzip xargs python3 bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 GFA_TO_PAF=gfa-to-pairwise-paf-$GFA_TO_PAF_VERSION/gfa_to_pairwise_paf.py
@@ -350,6 +359,10 @@ EOF
 # The bucket has no versioning, so a key that exists is left alone; the READMEs
 # and config.json go through scripts/deploy-demo.sh from their demos/ copies.
 if [ "${UPLOAD:-}" = 1 ]; then
+  command -v aws >/dev/null 2>&1 || {
+    echo "error: 'aws' not found on PATH" >&2
+    exit 1
+  }
   echo "== uploading new objects to s3://jbrowse.org/demos/hprc_multiway/"
   for f in "$PIF" "$PIF.csi" ./*."$SIZES"; do
     key="demos/hprc_multiway/${f#./}"

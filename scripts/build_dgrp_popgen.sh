@@ -15,13 +15,21 @@
 # reproduces the same tracks.
 #
 # Requires: vcftools, bcftools, htslib (bgzip/tabix), UCSC bedGraphToBigWig,
-#           curl, awk, and node (JBrowse CLI, fetched via npx unless `jbrowse`
+#           curl, awk, sort, and node (JBrowse CLI, fetched via npx unless `jbrowse`
 #           is on PATH).
 # Usage:    bash scripts/build_dgrp_popgen.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-dgrp_popgen_build}"
+
+for tool in vcftools bcftools bgzip tabix bedGraphToBigWig curl awk sort node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd

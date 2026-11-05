@@ -26,7 +26,7 @@
 # files, 25 MB as bytes, to the BED's 5.9 MB. It is a second representation
 # worth having for the zoomed-out views, not a replacement.
 #
-# Requires: curl, node >= 22 (for its own TypeScript stripping; no npm install)
+# Requires: curl, awk, node >= 22 (for its own TypeScript stripping; no npm install)
 # Output:   tcga_<project>_cnv.zarr/
 # Runtime:  ~1 min for BRCA (1104 tumors), plus the download if run standalone
 #
@@ -42,6 +42,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAW=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
 DEMOS=https://jbrowse.org/demos/tcga
 S3=s3://jbrowse.org/demos/tcga
+
+for tool in curl awk node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # The converter this runs, fetched next to it when absent, so a bare `curl -fO`
 # of this one file behaves the same as a repo checkout. It imports @gmod/bbi

@@ -10,7 +10,7 @@
 # gbz-base-query reads each adjacent pair's alignment off the walks, and a band
 # between two haplotypes covers what they share and GRCh38 lacks.
 #
-# Requires: curl, python3, and Node.js for `npx`
+# Requires: curl, awk, python3, and Node.js for `npx`
 # Usage:    REGION=chr6:31940000-32090000 ROWS='HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1' \
 #             bash build_graph_haplotype_stack.sh [outdir]
 #
@@ -28,6 +28,13 @@ ROWS="${ROWS:-HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1}"
 GBZ_DB="${GBZ_DB:-https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db}"
 GBZ_INDEX="${GBZ_INDEX:-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db}"
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
+
+for tool in curl awk node python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUT"
 cd "$OUT"

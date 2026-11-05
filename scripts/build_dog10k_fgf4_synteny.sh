@@ -48,6 +48,13 @@ WIN_START=48865000
 WIN_END=48876000
 CHROM_LEN=56472973
 
+for tool in curl python3 samtools bgzip tabix minimap2; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

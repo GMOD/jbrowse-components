@@ -30,6 +30,14 @@
 set -euo pipefail
 
 OUT="${1:-amylase_haplotypes}"
+
+for tool in curl awk python3 samtools minimap2 node npm; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUT"
 cd "$OUT"
 

@@ -13,6 +13,14 @@
 set -euo pipefail
 
 out="${1:-fto_ld}"
+
+for tool in curl awk bcftools plink bgzip tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$out"
 cd "$out"
 

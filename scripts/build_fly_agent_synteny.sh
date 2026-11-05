@@ -24,6 +24,14 @@
 set -euo pipefail
 
 OUTDIR="${1:-fly_agent_synteny_build}"
+
+for tool in minimap2 jq curl node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

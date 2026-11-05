@@ -30,14 +30,22 @@
 # Requires: docker, apptainer or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
 #           gfa-to-tabix 2.0.0 or later, the NCBI `datasets` CLI, samtools,
-#           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
-#           unless `jbrowse` is on PATH).
+#           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip,
+#           curl, awk, sort, and node (JBrowse CLI, via npx unless `jbrowse` is
+#           on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
 #           CONTAINER=apptainer THREADS=16 bash scripts/build_ecoli_pangenome_graph.sh
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after cd
+
+for tool in datasets unzip samtools bgzip tabix bedGraphToBigWig gfa-to-tabix python3 curl awk sort node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.

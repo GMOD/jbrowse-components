@@ -37,6 +37,13 @@ SV=$SHARE/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
 REGION=chr6:47360000-47405000
 DUP_POS=47375677
 
+for tool in bcftools tabix curl python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

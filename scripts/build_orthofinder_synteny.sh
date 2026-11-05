@@ -32,13 +32,13 @@
 # gene-level synteny view needs and keeps a five-genome demo small.
 #
 # Requires: orthofinder + diamond, MCScanX_h (bioconda mcscanx=1.0.0), python3,
-#           bgzip/tabix (htslib), the NCBI datasets CLI (`datasets` and
-#           `dataformat`), and node (JBrowse CLI, fetched via npx unless
-#           `jbrowse` is on PATH). A manifest naming files by URL also needs
-#           wget, and one whose column 2 is a genome rather than a proteome
-#           needs gffread, which is what derives one from the other. MSA=1 also
-#           needs samtools, and OrthoFinder's MAFFT and FastTree, which its
-#           container and its bioconda package both carry.
+#           curl, awk, gzip, bgzip/tabix (htslib), the NCBI datasets CLI
+#           (`datasets` and `dataformat`), and node (JBrowse CLI, fetched via
+#           npx unless `jbrowse` is on PATH). A manifest naming files by URL
+#           also needs wget, and one whose column 2 is a genome rather than a
+#           proteome needs gffread, which is what derives one from the other.
+#           MSA=1 also needs samtools, and OrthoFinder's MAFFT and FastTree,
+#           which its container and its bioconda package both carry.
 #
 # Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
 # so the project's container covers the first requirement without root. It
@@ -108,6 +108,13 @@
 #     annotation carrying none leaves the assembly with no reference sequences.
 #
 set -euo pipefail
+
+for tool in curl awk python3 gzip orthofinder MCScanX_h bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(orthogroups_to_blocks.py mcscanx_to_anchors.py)
@@ -254,6 +261,19 @@ else
   ALIASES=""
 fi
 
+if [ -z "$MANIFEST" ]; then
+  command -v datasets >/dev/null 2>&1 || {
+    echo "error: 'datasets' not found on PATH" >&2
+    exit 1
+  }
+fi
+if [ -n "$MSA" ]; then
+  command -v samtools >/dev/null 2>&1 || {
+    echo "error: 'samtools' not found on PATH" >&2
+    exit 1
+  }
+fi
+
 NAMES=$(echo "$SPECIES" | awk '{print $1}')
 MSA_GENOMES="${MSA_GENOMES:-${NAMES%%$'\n'*}}"
 mkdir -p "$OUTDIR"
@@ -275,6 +295,10 @@ fetch() {
     if [ -f "$url" ]; then
       cp "$url" "$dest.part"
     else
+      command -v wget >/dev/null 2>&1 || {
+        echo "error: 'wget' not found on PATH" >&2
+        exit 1
+      }
       wget -c -O "$dest.part" "$url"
     fi
     mv "$dest.part" "$dest"
@@ -461,6 +485,10 @@ PY
 # from the .fai gffread leaves beside the genome.
 derive_proteome() {
   local name=$1
+  command -v gffread >/dev/null 2>&1 || {
+    echo "error: 'gffread' not found on PATH" >&2
+    exit 1
+  }
   gzip -dc "$name.genome.fa.gz" > "$name.genome.fa"
   gzip -dc "$name.gff3.gz" > "$name.ann.gff3"
   gffread --table @id,@geneid,@chr,@start,@end,@strand "$name.ann.gff3" \
@@ -992,6 +1020,12 @@ if [ -n "$ALIASES" ]; then
     case "$source" in
     GCA_* | GCF_*)
       if [ ! -f "$name.sequence_report.tsv" ]; then
+        for tool in datasets dataformat; do
+          command -v "$tool" >/dev/null 2>&1 || {
+            echo "error: '$tool' not found on PATH" >&2
+            exit 1
+          }
+        done
         datasets download genome accession "$source" --include seq-report \
           --filename "$name.seq-report.zip"
         dataformat tsv genome-seq --package "$name.seq-report.zip" \

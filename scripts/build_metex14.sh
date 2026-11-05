@@ -8,7 +8,8 @@
 # not, so the BAMs are what a reader's own pipeline would give. Mates are
 # aligned one read at a time.
 #
-# Requires: curl, sra-tools (sam-dump), samtools, hisat2
+# Requires: curl, gzip (zcat), sra-tools (sam-dump), samtools, hisat2
+#           (hisat2 and hisat2-build)
 # Usage:    bash build_metex14.sh [outdir]
 #
 # Your own reads: skip the slicing and align your FASTQ with the same hisat2
@@ -17,6 +18,14 @@
 set -euo pipefail
 
 work=${1:-metex14_build}
+
+for tool in curl zcat gzip samtools sam-dump hisat2 hisat2-build; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$work"/ref "$work"/out
 cd "$work"
 

@@ -14,15 +14,23 @@
 # reproduces the same view. The alignment step downloads a full WGBS run and can
 # take hours; it's the same pipeline the tutorial documents step by step.
 #
-# Requires: the NCBI `datasets` CLI, wget, curl, Trim Galore, bwameth, samtools,
-#           python3, and node (JBrowse CLI, fetched via npx unless `jbrowse` is
-#           on PATH).
+# Requires: the NCBI `datasets` CLI, unzip, wget, curl, Trim Galore, bwameth,
+#           samtools, python3, and node (JBrowse CLI, fetched via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_arabidopsis_wgbs.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-arabidopsis_wgbs_build}"
 THREADS="${THREADS:-8}"
+
+for tool in datasets unzip wget trim_galore bwameth.py samtools curl python3 node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

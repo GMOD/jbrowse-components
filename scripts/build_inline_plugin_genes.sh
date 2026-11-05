@@ -20,6 +20,13 @@ OUT="${1:-genes.json}"
 GFF=https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz
 REF=chr17
 
+for tool in tabix awk; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 tabix -D "$GFF" "$REF" |
   awk -F'\t' -v ref="$REF" '
     $3 == "gene" {

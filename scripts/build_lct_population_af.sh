@@ -26,6 +26,13 @@ POPS="CEU FIN PJL TSI YRI CHB"
 # rs4988235, the lactase-persistence enhancer variant, chr2:135,851,076 on hg38
 CAUSAL_POS=135851076
 
+for tool in bcftools bedGraphToBigWig curl awk; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

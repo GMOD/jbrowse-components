@@ -27,7 +27,8 @@
 # outputs, so it runs against the hosted copies in under a minute rather than
 # repeating the GDC download.
 #
-# Requires: curl, python3, bgzip + tabix (htslib)
+# Requires: curl, python3, tar, bgzip + tabix (htslib), and node (JBrowse CLI,
+#           fetched via npx unless `jbrowse` is on PATH)
 # Output:   tcga_<project>_cnv.bed.gz (+ .csi)
 #           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .csi)
 #           tcga_<project>_cnv_recurrence_by_<groupby>.bedGraph.gz (+ .csi)
@@ -41,6 +42,13 @@
 #            breast specific; histology and stage are harmonized across projects)
 
 set -euo pipefail
+
+for tool in curl python3 tar bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

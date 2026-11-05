@@ -17,13 +17,21 @@
 # odp that made the deposit), so the JBrowse half below works unchanged on your
 # own species.
 #
-# Requires: python3, samtools, curl, tar, and node
+# Requires: python3, samtools, curl, tar, awk, gzip, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    DRYAD_DIR=~/Downloads bash scripts/build_odp_linkage_groups_synteny.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl tar awk gzip samtools python3 node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(rbh_to_blocks.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

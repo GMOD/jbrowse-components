@@ -14,7 +14,7 @@
 # IGF1 track: groups defined by what they carry would score their own definition.
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix, bgzip),
-#           curl, python3.
+#           curl, python3, awk, sort, gzip, xargs.
 # Usage:    bash scripts/build_dog10k_size_fst.sh [outdir]
 #
 # WINDOW, REGIONS and OUTBED are overridable, which is how the SAME panel and the
@@ -55,6 +55,13 @@ OUTBED="${OUTBED:-dog10k_size_fst.bed}"
 # One HTTP stream per chromosome. The panel is remote, so this is bound by the
 # transfer rather than by the arithmetic.
 JOBS="${JOBS:-8}"
+
+for tool in bcftools bgzip tabix curl python3 awk sort gzip xargs; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

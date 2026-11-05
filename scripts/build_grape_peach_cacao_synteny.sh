@@ -16,13 +16,21 @@
 # sequence, a chromAlias table that resolves the NC_ names in the BEDs, and the
 # NCBI RefSeq genes.
 #
-# Requires: the NCBI `datasets` CLI, jcvi + the LAST aligner, gffread, samtools,
-#           curl, python3
+# Requires: the NCBI `datasets` CLI, unzip, jcvi + the LAST aligner, gffread,
+#           samtools, curl, awk, gzip, python3 (and `python`, which runs jcvi)
 # Usage:    bash scripts/build_grape_peach_cacao_synteny.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-grape_peach_cacao_build}"
+
+for tool in datasets unzip samtools gffread lastal lastdb python python3 awk gzip curl; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

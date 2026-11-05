@@ -29,7 +29,7 @@
 #     panel, mirrored on jbrowse.org, sample list derived from the lab's own
 #     UCSC trackDb the same way scripts/build_1000g_cnv_zarr.sh derives it
 #
-# Needs: htslib (tabix), curl, and UCSC's bigWigToBedGraph
+# Needs: htslib (tabix), curl, awk, sort, and UCSC's bigWigToBedGraph
 # (https://hgdownload.soe.ucsc.edu/admin/exe/, one binary, no install):
 #   curl -fO https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
 #   chmod +x bigWigToBedGraph && sudo mv bigWigToBedGraph /usr/local/bin/
@@ -39,6 +39,14 @@
 set -euo pipefail
 
 OUT=${1:-hprc_kiv2_cn}
+
+for tool in tabix curl bigWigToBedGraph awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUT/bw"
 
 WAVE_VCF=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz

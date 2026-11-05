@@ -14,8 +14,8 @@
 # re-running reproduces the same view.
 #
 # Requires: the NCBI `datasets` CLI, minimap2, samtools, bgzip/tabix (htslib),
-#           unzip, and node (JBrowse CLI, fetched via npx unless `jbrowse` is on
-#           PATH).
+#           unzip, awk, sort, and node (JBrowse CLI, fetched via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_synteny.sh [outdir]
 #
 set -euo pipefail
@@ -26,6 +26,14 @@ set -euo pipefail
 STRAINS="K12 Sakai CFT073 NCTC86 IAI39"
 
 OUTDIR="${1:-ecoli_pangenome_build}"
+
+for tool in datasets unzip awk sort minimap2 bgzip samtools tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

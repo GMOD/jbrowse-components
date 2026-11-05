@@ -42,8 +42,9 @@
 #
 # Requires: jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
-#           gets one it does), diamond, python3 with biopython, wget, and node
-#           (JBrowse CLI, via npx unless `jbrowse` is on PATH). Downloads
+#           gets one it does; its commands run as `python`), diamond, python3
+#           with biopython, curl, wget, tar, awk, gzip, and node (JBrowse CLI,
+#           via npx unless `jbrowse` is on PATH). Downloads
 #           ~3.3 GB, nearly all of it the genome, and cutting the CDS holds
 #           one chromosome at a time, ~2 GB of memory. Budget over an hour for the
 #           self-alignment: the annotation calls ~189k genes, and a proteome
@@ -53,6 +54,14 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in diamond python python3 curl wget tar awk gzip node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(kaks_from_pairs.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

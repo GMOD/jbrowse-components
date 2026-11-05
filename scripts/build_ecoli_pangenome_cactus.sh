@@ -25,15 +25,22 @@
 # Requires: docker or singularity (the cactus image, which also carries odgi,
 #           halSynteny, hal2maf, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib),
-#           gfa-to-tabix, unzip, wget, ImageMagick (`convert`/`identify`, for the
-#           correspondence band), and node (JBrowse CLI, via npx unless
-#           `jbrowse` is on PATH).
+#           gfa-to-tabix, curl, unzip, wget, awk, sort, gzip, ImageMagick
+#           (`convert`/`identify`, for the correspondence band), and node
+#           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
 #           CONTAINER=singularity bash scripts/build_ecoli_pangenome_cactus.sh
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so maf_to_bed.py resolves after cd
+
+for tool in curl datasets unzip awk sort gzip wget samtools bedGraphToBigWig python3 bgzip tabix gfa-to-tabix identify convert node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.

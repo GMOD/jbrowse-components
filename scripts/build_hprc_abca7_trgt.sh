@@ -5,13 +5,21 @@
 # published TRGTdb of 100 HPRC samples (Zenodo 8329210), 94 of which have a call
 # at this locus; nothing here re-genotypes anything.
 #
-# Requires: curl, tar, duckdb, python3, bgzip, tabix
+# Requires: curl, tar, gzip, awk, duckdb, python3, bgzip, tabix
 # Usage:    bash scripts/build_hprc_abca7_trgt.sh [outdir]
 #
 # Writes hprc_abca7_trgt.vcf.gz{,.csi}
 set -euo pipefail
 
 OUTDIR="${1:-hprc_abca7_trgt_build}"
+
+for tool in curl tar gzip awk duckdb python3 bgzip tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 CHROM=chr19
 START=1049407
 END=1050096

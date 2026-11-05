@@ -11,8 +11,8 @@
 # Everything is pinned (fixed input URLs, fixed hap-ibd thresholds), so
 # re-running reproduces the same track.
 #
-# Requires: java (8+), python3, curl, unzip, bgzip/tabix (htslib), and node
-#           (for the JBrowse CLI, fetched via npx unless $JBROWSE is set).
+# Requires: java (8+), python3, curl, unzip, sort, bgzip/tabix (htslib), and
+#           node (for the JBrowse CLI, fetched via npx unless $JBROWSE is set).
 # Usage:    bash scripts/build_khv_trio_hapibd.sh [outdir]
 #
 set -euo pipefail
@@ -20,6 +20,13 @@ set -euo pipefail
 # Absolute path to this script's dir, captured before we cd elsewhere, so the
 # sibling hapibd_to_bed.py resolves no matter where the script is run from.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl java unzip python3 sort bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.

@@ -14,11 +14,19 @@
 # The tumour CRAM and the normal BAM are streamed from the ONT bucket rather than
 # downloaded; only the reconstruction outputs are written locally.
 #
-# Requires: samtools, bedGraphToBigWig, bgzip, tabix, curl, python3, node>=18
+# Requires: samtools, bedGraphToBigWig, bgzip, tabix, curl, python3, gzip, awk,
+#           sort, node>=18
 #           The UCSC liftOver binary is downloaded into the output directory;
 #           nothing is installed.
 # Usage:    bash scripts/build_cancer_sv_demo.sh [outdir]
 set -euo pipefail
+
+for tool in samtools bedGraphToBigWig bgzip tabix curl python3 gzip awk sort node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 

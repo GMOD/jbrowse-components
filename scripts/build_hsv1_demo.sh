@@ -38,11 +38,19 @@
 # separates this from the same claim made on a human locus, where one side is
 # usually empty.
 #
-# Requires: minimap2, samtools, bgzip, tabix, curl
+# Requires: minimap2, samtools, bgzip, tabix, curl, awk, sort
 # Usage:    bash scripts/build_hsv1_demo.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-hsv1_build}"
+
+for tool in minimap2 samtools bgzip tabix curl awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

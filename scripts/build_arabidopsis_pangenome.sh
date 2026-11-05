@@ -8,7 +8,7 @@
 # bigWigs on TAIR10, and every accession's gene, transposon, methylation and
 # histone tracks load straight from the 1001 Genomes data centre.
 #
-# Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
+# Requires: curl, unzip, awk (gawk), sort, gzip, python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
 #           biocontainers image), node (npx) and gfa-to-tabix 2.0.0
@@ -23,6 +23,14 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl unzip awk sort gzip python3 samtools minimap2 minigraph gfatools bgzip tabix bedGraphToBigWig datasets gfa-to-tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

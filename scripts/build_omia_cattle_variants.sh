@@ -9,12 +9,19 @@
 # chromosome under the same accession, version and length, so both place
 # directly. Records on UMD3.1 or ARS-UCD2.0 are reported and dropped.
 #
-# Requires: curl, python3, htslib (bgzip, tabix)
+# Requires: curl, python3, gzip, htslib (bgzip, tabix)
 # Usage:    bash scripts/build_omia_cattle_variants.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-omia_cattle_build}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl python3 bgzip tabix gzip; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 HELPERS=(omia_sql_to_bed.py omia_bed_to_gff.py)
 for h in "${HELPERS[@]}"; do

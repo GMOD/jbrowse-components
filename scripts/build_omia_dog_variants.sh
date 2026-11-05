@@ -14,13 +14,20 @@
 # own chain; records on the other two assemblies are reported and dropped rather
 # than silently placed. The script prints how many of each it kept.
 #
-# Requires: curl, python3, htslib (bgzip, tabix). The UCSC liftOver binary is
+# Requires: curl, python3, gzip, htslib (bgzip, tabix). The UCSC liftOver binary is
 #           downloaded into the output directory; nothing is installed.
 # Usage:    bash scripts/build_omia_dog_variants.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-omia_dog_build}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl python3 bgzip tabix gzip; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # fetched on demand so a bare `curl -O` of this one script still works
 HELPERS=(omia_sql_to_bed.py omia_bed_to_gff.py)

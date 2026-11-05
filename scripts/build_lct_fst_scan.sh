@@ -42,7 +42,8 @@
 # Same release, same panels, same estimator and same tool as build_lct_ld.sh, so
 # the two lanes are one analysis at two scales rather than two datasets.
 #
-# Requires: bcftools (with libcurl), tabix, plink2, bedGraphToBigWig, curl, awk
+# Requires: bcftools (with libcurl), tabix, plink2, bedGraphToBigWig, curl, awk,
+#           sort
 # Usage:    bash scripts/build_lct_fst_scan.sh [outdir]
 set -euo pipefail
 
@@ -59,6 +60,13 @@ REGION=chr2:116000000-156000000
 PANEL_CODE=EUR
 CAUSAL_POS=135851076
 CHR2_LEN=242193529
+
+for tool in bcftools tabix "$PLINK" bedGraphToBigWig curl awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

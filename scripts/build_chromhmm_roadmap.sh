@@ -51,7 +51,7 @@
 #     itemRgb column that paints the track does not exist until this script
 #     adds it.
 #
-# Requires: curl, tar, awk, sort, python3, htslib (bgzip, tabix), and node
+# Requires: curl, tar, awk, gzip, sort, python3, htslib (bgzip, tabix), and node
 #           (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
 # Output:   roadmap.multirow.bed.gz plus its .csi
 #           jbrowse2/config.json, hg19 plus that track
@@ -77,10 +77,12 @@ ROADMAP=https://egg2.wustl.edu/roadmap/data/byFileType
 FINAL=$ROADMAP/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final
 EIDS="${EIDS:-}"
 
-command -v bgzip >/dev/null 2>&1 || {
-  echo "bgzip not found (htslib)" >&2
-  exit 1
-}
+for tool in curl tar awk gzip sort python3 bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # ── The three published tables, and the segmentations ────────────────────────
 [ -f EID_metadata.tab ] || curl -sfL -o EID_metadata.tab "$ROADMAP/metadata/EID_metadata.tab"

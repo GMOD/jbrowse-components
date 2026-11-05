@@ -21,8 +21,8 @@
 #
 # Requires: samtools + tabix + bcftools (htslib >=1.20), minimap2, bedGraphToBigWig
 #           (UCSC), megadepth and HiFiCNV
-#           (both fetched below if absent), wget/curl, and node (JBrowse CLI, via
-#           npx unless `jbrowse` is on PATH).
+#           (both fetched below if absent), wget, curl, gunzip, awk, sort, and
+#           node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Disk:     ~1.5 TB free (the CRAMs are copied into the JBrowse dir; if
 #           constrained, switch the CRAM add-track calls to `--load move` and
 #           delete intermediates as you go).
@@ -73,6 +73,13 @@ set -euo pipefail
 
 OUTDIR="${1:-cgiab_build}"
 THREADS="${THREADS:-8}"
+
+for tool in samtools tabix bcftools minimap2 bedGraphToBigWig curl wget gunzip awk sort node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # ── Pinned dataset versions ──────────────────────────────────────────────────
 # Everything version-specific lives here, so moving to a newer C-GIAB release

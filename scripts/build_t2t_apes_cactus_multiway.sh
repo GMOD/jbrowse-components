@@ -18,14 +18,21 @@
 # genomes.jbrowse.org, as on the gene-symbol primate page. The chains name
 # contigs by GenBank accession (CM054434.2), which the hub's chromAlias maps.
 #
-# Requires: curl, chain2paf (github.com/AndreaGuarracino/chain2paf), jbrowse
-#           (@jbrowse/cli), python3
+# Requires: curl, awk, gzip, chain2paf (github.com/AndreaGuarracino/chain2paf),
+#           jbrowse (@jbrowse/cli), python3
 # Usage:    bash build_t2t_apes_cactus_multiway.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-t2t_apes_cactus_build}"
 CHAINS=https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains
+
+for tool in curl awk gzip chain2paf jbrowse python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Lane order, top to bottom: the genome's name in the Cactus alignment, the
 # hub it loads from (also its PanSN sample in the PAF), the lane label. The

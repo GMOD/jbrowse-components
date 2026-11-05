@@ -8,7 +8,7 @@
 # GrainGenes hosts every assembly as bgzipped, faidx-indexed FASTA, so one
 # chromosome comes out of a 15 Gb genome by range request.
 #
-# Requires: curl, awk, python3, bgzip, tabix, samtools (built with libcurl),
+# Requires: curl, gzip, awk, python3, bgzip, tabix, samtools (built with libcurl),
 #           minimap2 2.31, and the JBrowse CLI (`jbrowse`, or `npx`)
 # Usage:    bash build_wheat_introgressions.sh [outdir]
 #           CHROM=2B bash build_wheat_introgressions.sh   # Lancer's T. timopheevii segment
@@ -24,6 +24,14 @@ set -euo pipefail
 OUT="${1:-wheat_introgressions}"
 CHROM="${CHROM:-2A}"
 THREADS="${THREADS:-4}"
+
+for tool in curl samtools gzip awk bgzip tabix minimap2 python3 node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUT"
 cd "$OUT"
 

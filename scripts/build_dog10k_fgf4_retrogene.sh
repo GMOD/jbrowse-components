@@ -34,6 +34,13 @@ REGION=chr18:48865000-48876000
 INTRON1_POS=48869782
 INTRON2_POS=48870417
 
+for tool in curl python3 bcftools tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

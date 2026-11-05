@@ -12,11 +12,20 @@
 # record gets a row, GRCh38 and CHM13 with blanks, because a samples table that
 # omits a sample drops it from a multi-sample display.
 #
+# Requires: curl, python3
 # Usage: scripts/build_hprc_samples.sh [outdir]   (default: a temp dir)
 # Then:  scripts/deploy-demo.sh <outdir>/hprc_samples.tsv hprc/hprc_samples.tsv
 set -euo pipefail
 
 out=${1:-$(mktemp -d)}
+
+for tool in curl python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$out"
 cd "$out"
 

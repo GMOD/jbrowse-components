@@ -11,6 +11,8 @@
 #   bash build_1000g_cnv_zarr.sh                # the tutorial's windows, 1kb bins
 #   bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb bins up
 #
+# Requires: curl, node, and npm when run outside a checkout
+#
 # Runs either from a checkout or on its own: downloaded by itself it fetches the
 # converter beside its output and installs the converter's two npm packages
 # there, so no clone of this repository is needed.
@@ -28,6 +30,13 @@ case "${1:-}" in
     exit 1
     ;;
 esac
+
+for tool in curl node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Only the finest level is held whole in memory, so the two modes differ in
 # their pyramid as much as in their extent: over hg38 this panel is ~31 GB of
@@ -88,8 +97,13 @@ done
 
 # The converter imports two npm packages and nothing else. A checkout resolves
 # them from the workspace; on its own it needs them installed next to it.
-(cd "$HERE" && node --input-type=module -e 'await import("@gmod/bbi")') 2>/dev/null ||
+(cd "$HERE" && node --input-type=module -e 'await import("@gmod/bbi")') 2>/dev/null || {
+  command -v npm >/dev/null 2>&1 || {
+    echo "error: 'npm' not found on PATH" >&2
+    exit 1
+  }
   npm install --silent --no-save --prefix "$HERE" @gmod/bbi generic-filehandle2
+}
 
 # The store this repository *reads* is the hosted one at $STORE_URL, not a tree
 # in the checkout — 2.4 MB of undeltifiable chunks that every clone pays for.

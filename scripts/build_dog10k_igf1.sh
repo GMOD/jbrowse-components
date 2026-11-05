@@ -12,13 +12,20 @@
 # rows selected by what they carry would group by what they carry, so the
 # clustering would reproduce the selection rather than test it.
 #
-# Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl,
+# Requires: bcftools (>= 1.17, with libcurl support), htslib (bgzip, tabix), curl,
 #           python3.
 # Usage:    bash scripts/build_dog10k_igf1.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-dog10k_igf1_build}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in bcftools bgzip tabix curl python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # fetched on demand so a bare `curl -O` of this one script still works
 HELPERS=(igf1_site_fst.py)

@@ -26,14 +26,23 @@
 # Requires: jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, htslib
-#           (bgzip/tabix), the NCBI datasets CLI, and node (JBrowse CLI, via
-#           npx unless `jbrowse` is on PATH). Downloads ~170 MB; the
-#           reshape holds a whole RefSeq annotation, ~3 GB of memory.
+#           (bgzip/tabix), the NCBI datasets CLI, curl, awk, gzip, and node
+#           (JBrowse CLI, via npx unless `jbrowse` is on PATH). Downloads
+#           ~170 MB; the reshape holds a whole RefSeq annotation, ~3 GB of
+#           memory.
 # Usage:    bash scripts/build_primate_selection.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl datasets python python3 diamond awk gzip bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(kaks_from_pairs.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

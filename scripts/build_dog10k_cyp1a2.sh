@@ -23,6 +23,13 @@ SHARE="${SHARE:-https://kiddlabshare.med.umich.edu/dog10K}"
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 REGION=chr30:38258000-38265000
 
+for tool in bcftools tabix curl python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

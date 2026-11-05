@@ -27,6 +27,13 @@ REGION=chr37:25500000-25620000
 # reference are polymorphic in adjacent introns.
 DENR_REGION=chr26:6920000-6950000
 
+for tool in curl python3 bcftools tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

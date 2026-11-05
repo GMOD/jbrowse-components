@@ -73,7 +73,7 @@
 # 450 layout rows and 600 drawn rows against a 300-leaf tree. Fixed, with the
 # measurement, in the commit that added this line's neighbour.
 #
-# Requires: bcftools (>= 1.17, with libcurl), tabix, curl, awk
+# Requires: bcftools (>= 1.17, with libcurl), tabix, curl, awk, sort
 # Usage:    bash scripts/build_lct_haploblock.sh [outdir]
 set -euo pipefail
 
@@ -96,6 +96,13 @@ MAF=0.35
 # resolves it. The figure DRAWS wider than this (see the spec): clustering on a
 # narrower core than is drawn is the dog10k-igf1-haplotype pattern.
 WINDOW=chr2:135000000-136150000
+
+for tool in bcftools tabix curl awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

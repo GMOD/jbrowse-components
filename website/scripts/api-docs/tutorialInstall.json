@@ -43,7 +43,7 @@
   "node": {
     "apt": "nodejs",
     "conda": "nodejs",
-    "bins": ["node", "npx"]
+    "bins": ["node", "npx", "npm"]
   },
   "pigz": {
     "apt": "pigz",
@@ -149,14 +149,50 @@
   },
   "hisat2": {
     "apt": "hisat2",
-    "conda": "hisat2"
+    "conda": "hisat2",
+    "bins": ["hisat2", "hisat2-build"]
   },
   "sra-tools": {
     "apt": "sra-toolkit",
     "conda": "sra-tools",
-    "bins": ["prefetch", "fasterq-dump", "sam-dump"]
+    "bins": ["prefetch", "fasterq-dump", "fastq-dump", "sam-dump"]
   },
   "regtools": {
     "conda": "regtools"
+  },
+  "bigBedToBed": {
+    "conda": "ucsc-bigbedtobed",
+    "download": [
+      "https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigBedToBed"
+    ]
+  },
+  "python": {
+    "apt": "python-is-python3",
+    "conda": "python"
+  },
+  "maf2bed": {
+    "cargo": "maf2bed"
+  },
+  "chain2paf": {
+    "conda": "chain2paf"
+  },
+  "trim-galore": {
+    "apt": "trim-galore",
+    "conda": "trim-galore",
+    "bins": ["trim_galore"]
+  },
+  "bwameth": {
+    "conda": "bwameth",
+    "bins": ["bwameth.py"]
+  },
+  "imagemagick": {
+    "apt": "imagemagick",
+    "conda": "imagemagick",
+    "bins": ["convert", "identify"]
+  },
+  "bbmap": {
+    "apt": "bbmap",
+    "conda": "bbmap",
+    "bins": ["bbduk.sh"]
   }
 }

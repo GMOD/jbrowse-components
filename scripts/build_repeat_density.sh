@@ -39,7 +39,7 @@
 # are ~650 kb wide, so a 5 kb bin is ~8 screen px: wide enough to smooth single
 # elements into a density, narrow enough that a 13 kb L1 is not a whole bar.
 #
-# Requires: curl, bedtools, awk, sort, and two kentUtils binaries.
+# Requires: curl, gzip, bedtools, awk, sort, and two kentUtils binaries.
 #
 #   apt install bedtools          # or: brew install bedtools
 #
@@ -77,6 +77,13 @@ BIN=5000
 # being small here because it is the class that would dominate if the window
 # ever moved onto a centromere.
 CLASSES="LINE SINE LTR DNA Satellite Simple_repeat"
+
+for tool in curl gzip awk sort bedtools bigBedToBed bedGraphToBigWig; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

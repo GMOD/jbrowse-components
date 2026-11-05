@@ -13,8 +13,8 @@
 # difference between needing 50GB of scratch and needing none. The three small
 # CellRanger outputs (matrix, index) are fetched.
 #
-# Requires: python3 (>=3.10), bedGraphToBigWig (UCSC), and node (for the JBrowse
-#           CLI, fetched via npx unless `jbrowse` is on PATH).
+# Requires: python3 (>=3.10), bedGraphToBigWig (UCSC), curl, awk, and node (for
+#           the JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
 # Output:   bw/<Cell_Type>.bw, one per labeled cell type
 #           web/cells.json, web/expr.bin, web/sources.json for the embedded demo
 #           out/pbmc5k_scrna.h5ad, the labeled AnnData the rest is derived from
@@ -46,10 +46,12 @@ if [ -z "${CURL_CA_BUNDLE:-}" ] && [ -f /etc/ssl/certs/ca-certificates.crt ]; th
   export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 fi
 
-command -v bedGraphToBigWig >/dev/null 2>&1 || {
-  echo "bedGraphToBigWig not found (UCSC utilities)" >&2
-  exit 1
-}
+for tool in curl awk python3 bedGraphToBigWig node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 [ -d venv ] || python3 -m venv venv
 ./venv/bin/pip install --quiet --upgrade pip

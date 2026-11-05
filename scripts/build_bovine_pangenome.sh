@@ -35,7 +35,7 @@
 # order below that carries this segment", and never carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 2.0.0 or later,
+#           gzip, bgzip/tabix (htslib), node (npx) and gfa-to-tabix 2.0.0 or later,
 #           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
@@ -44,6 +44,13 @@
 # re-run resumes.
 #
 set -euo pipefail
+
+for tool in curl tar md5sum python3 gfatools vg awk sort gzip bgzip tabix gfa-to-tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 

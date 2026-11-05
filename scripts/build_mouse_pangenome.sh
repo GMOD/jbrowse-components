@@ -29,9 +29,9 @@
 # also yields a VCF via misc/mgutils.js merge) or rebuilding with
 # minigraph-cactus, which writes per-haplotype walks. See the foot of this file.
 #
-# Requires: curl, samtools, bgzip (htslib), minigraph, gfatools, gawk (as
-#           `awk`), sort, flock, python3, node (npx) and gfa-to-tabix for
-#           the coarse tier
+# Requires: curl, gzip, samtools, bgzip + tabix (htslib), minigraph, gfatools,
+#           gawk (as `awk`), sort, flock, xargs, python3, node (npx) and
+#           gfa-to-tabix for the coarse tier
 # Usage:    bash scripts/build_mouse_pangenome.sh [outdir]
 #           THREADS=8 JOBS=2 MEM_FLOOR_GB=30 bash scripts/build_mouse_pangenome.sh
 #
@@ -44,6 +44,14 @@
 set -euo pipefail
 
 OUTDIR="${1:-mouse_pangenome_build}"
+
+for tool in curl awk gzip bgzip samtools minigraph gfatools sort flock xargs gfa-to-tabix tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

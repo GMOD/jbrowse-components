@@ -12,13 +12,21 @@
 # Everything is pinned (fixed UCSC download dir, fixed cell-type order), so
 # re-running reproduces the same track.
 #
-# Requires: wget, awk, bgzip/tabix (htslib), and node (JBrowse CLI, fetched via
+# Requires: wget, awk, gzip, bgzip/tabix (htslib), and node (JBrowse CLI, fetched via
 #           npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_chromhmm_multirow.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-chromhmm_build}"
+
+for tool in wget awk gzip bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd

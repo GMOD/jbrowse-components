@@ -69,6 +69,14 @@
 set -euo pipefail
 
 OUTDIR="${1:-dog10k_cyp1a2_cn_build}"
+
+for tool in samtools bcftools bgzip tabix curl python3 awk; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 SHARE=https://kiddlabshare.med.umich.edu/dog10K
 CRAMS=$SHARE/cram-share
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz

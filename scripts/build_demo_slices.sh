@@ -26,11 +26,19 @@
 # The regions are hs37d5-style (no chr) for the HG002 pair and GRCh38-style for
 # HG008; that difference is the assembly, not an inconsistency.
 #
-# Requires: samtools (1.10+, for remote BAM over https)
+# Requires: samtools (1.10+, for remote BAM over https), awk
 # Usage:    bash scripts/build_demo_slices.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-demo_slices_build}"
+
+for tool in samtools awk; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

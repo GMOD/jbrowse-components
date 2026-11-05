@@ -13,7 +13,8 @@
 #   whole-chromosome read: 73 kB (chrM) to 212 kB (chr1), vs a 5 MB budget
 #   the alignment tier it stands in for asks 3.19 GB for chr6 alone
 #
-# Requires: maf2bed >= 0.6.0, sort, bgzip, tabix, curl
+# Requires: maf2bed >= 0.6.0, sort, awk, gzip, bgzip, tabix, and curl when the
+#           alignment is a URL
 # Usage:    bash scripts/build_hprc_maf_summary.sh <alignment.maf.gz|URL> <ref-name> <out-prefix>
 #   e.g.    bash scripts/build_hprc_maf_summary.sh https://…/hprc-v2.1-mc-grch38.full.maf.gz GRCh38 hprc-v2.1-mc-grch38.summary
 #
@@ -57,6 +58,14 @@ fi
 aln="$1"
 ref="$2"
 prefix="$3"
+
+for tool in maf2bed bgzip awk sort gzip tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 work="${prefix}.work"
 mkdir -p "$work"
 
@@ -69,7 +78,13 @@ sort_opts=(-T "$TMPDIR" --compress-program=gzip -S 1G)
 raw="$work/raw.bed"
 if [ ! -s "$raw" ]; then
   case "$aln" in
-    http://* | https://*) read_cmd=(curl -fsS "$aln") ;;
+    http://* | https://*)
+      command -v curl >/dev/null 2>&1 || {
+        echo "error: 'curl' not found on PATH" >&2
+        exit 1
+      }
+      read_cmd=(curl -fsS "$aln")
+      ;;
     *) read_cmd=(cat "$aln") ;;
   esac
   echo "streaming $aln -> $raw"

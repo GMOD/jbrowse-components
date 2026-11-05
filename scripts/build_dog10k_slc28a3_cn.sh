@@ -34,9 +34,9 @@
 #
 # Requires: route 1, bcftools (with libcurl), htslib (bgzip, tabix), curl,
 #           python3. Route 2 adds sra-toolkit (fastq-dump), bbmap (bbduk.sh),
-#           minimap2, samtools, awk, and UCSC's bedGraphToBigWig, plus ~35 GB of
-#           scratch: the reference, its minimap2 index, and one run at a time.
-#           minimap2 holds the index in ~11 GB of RAM.
+#           minimap2, samtools, gunzip, awk, and UCSC's bedGraphToBigWig, plus
+#           ~35 GB of scratch: the reference, its minimap2 index, and one run at
+#           a time. minimap2 holds the index in ~11 GB of RAM.
 # Usage:    bash scripts/build_dog10k_slc28a3_cn.sh [outdir]
 set -euo pipefail
 
@@ -45,6 +45,14 @@ SHARE=https://kiddlabshare.med.umich.edu/dog10K
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 UCSC=https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips
 SRA=https://sra-pub-run-odp.s3.amazonaws.com/sra
+
+for tool in curl bcftools python3 bgzip tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 # SLC28A3 is chr1:75,622,825-75,700,238 on UU_Cfam_GSD_1.0 (UCSC canFam4). The
 # duplications the Dog10K SV callset carries here run from about 75,578,000 to
 # 75,758,000, so the window adds ~150 kb either side of that: the flanks are
@@ -276,6 +284,13 @@ echo "check its color and rows.sort against the blocks printed above."
 echo "Route 2 follows, and needs the reference and the SRA runs."
 
 # ── Route 2: six panel dogs, from their reads ───────────────────────────────
+for tool in gunzip samtools minimap2 awk fastq-dump bbduk.sh bedGraphToBigWig; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 # ── One-time: the reference, a short-read index, and the bait ────────────────
 if [ ! -f canFam4.fa ]; then
   curl -fsSL -C - -o canFam4.fa.gz "$UCSC/canFam4.fa.gz"

@@ -14,12 +14,20 @@
 # genomes.jbrowse.org, taken verbatim but for the label.
 #
 # Requires: the NCBI `datasets` CLI, jcvi + the LAST aligner, gffread, samtools,
-#           curl, python3
+#           curl, python3 (and `python` for jcvi), awk, gzip, unzip
 # Usage:    bash scripts/build_grape_peach_anchors.sh [outdir]
 #
 set -euo pipefail
 
 OUTDIR="${1:-grape_peach_anchors_build}"
+
+for tool in datasets unzip samtools gffread lastal lastdb python python3 awk gzip curl; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 

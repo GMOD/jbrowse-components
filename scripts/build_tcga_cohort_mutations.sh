@@ -13,7 +13,8 @@
 # The MAFs are exome only. This cohort therefore says nothing about mutation
 # density between genes, and every figure built on it is a gene-scale figure.
 #
-# Requires: curl, python3, samtools + bgzip + tabix (htslib)
+# Requires: curl, tar, python3, samtools + bgzip + tabix (htslib), and node
+#           (the JBrowse CLI is fetched via npx unless `jbrowse` is on PATH)
 # Output:   tcga_<project>_mutations.vcf.gz (+ .csi)
 #           tcga_<project>_clinical.tsv
 # Runtime:  ~10 min for BRCA (979 tumors), dominated by the GDC downloads
@@ -25,6 +26,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl python3 tar bgzip tabix node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.

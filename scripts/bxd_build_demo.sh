@@ -16,11 +16,18 @@
 # reproduces the same tracks.
 #
 # Requires: curl, jq (reshaping GeneNetwork's scan), python3 (the painting's
-#           run-length encoding), bgzip/tabix (htslib), and node (JBrowse CLI,
+#           run-length encoding), bgzip/tabix (htslib), sort, and node (JBrowse CLI,
 #           fetched via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/bxd_build_demo.sh [outdir]
 #
 set -euo pipefail
+
+for tool in curl jq python3 bgzip tabix sort node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # so the .py helpers resolve after cd
 

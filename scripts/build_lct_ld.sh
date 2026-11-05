@@ -47,9 +47,10 @@
 # rather than failing: trim before use.
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix, bgzip),
-#           curl, awk, bedGraphToBigWig (UCSC), for the Fst track.
+#           curl, awk, sort, bedGraphToBigWig (UCSC), for the Fst track.
 #           plink2 (frequency filter, Fst) and plink 1.9 (the r² tables) — see
-#           the ld_human.md footnote for why both.
+#           the ld_human.md footnote for why both. python3, and node (JBrowse
+#           CLI, fetched via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
 set -euo pipefail
 
@@ -93,6 +94,13 @@ BLOCK=135000000-136150000
 MAF=0.35
 # hg38 chr2, for the Fst bigWig's chrom.sizes.
 CHR2_LEN=242193529
+
+for tool in bcftools tabix bgzip curl awk sort bedGraphToBigWig "$PLINK" "$PLINK19" python3 node; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

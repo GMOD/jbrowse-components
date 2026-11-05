@@ -21,7 +21,7 @@
 # reproduces the same painting.
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (bgzip, tabix),
-#           java 8+, python3, curl.
+#           java 8+, python3, curl, awk, sort, tar, gzip.
 # Usage:    bash scripts/build_dog10k_wolfdog_ancestry.sh [chrom] [outdir]
 #           chrom defaults to chr1; pass another (chr1..chr38) to paint it
 #           instead.
@@ -30,6 +30,13 @@ set -euo pipefail
 CHROM="${1:-chr1}"
 OUTDIR="${2:-dog10k_wolfdog_build}"
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+for tool in curl awk sort tar gzip bcftools bgzip tabix java python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.

@@ -37,7 +37,7 @@
 #   ENCODE Project Consortium. An integrated encyclopedia of DNA elements in the
 #   human genome. Nature 2012;489:57-74.
 #
-# Requires: java (17+; Debian/Ubuntu: apt install default-jre), curl, awk.
+# Requires: java (17+; Debian/Ubuntu: apt install default-jre), curl, awk, sort.
 #           juicer_tools is downloaded into the outdir if not already there.
 # Usage:    bash scripts/build_gm12878_wholegenome_hic.sh [outdir]
 #
@@ -55,6 +55,13 @@ SRC="${SRC:-https://encode-public.s3.amazonaws.com/2022/04/25/c70efe98-342c-4334
 NAME="${NAME:-gm12878_wholegenome_2500kb}"
 RES="${RES:-2500000}"
 JAR_URL="https://github.com/aidenlab/Juicebox/releases/download/v2.20.00/juicer_tools.2.20.00.jar"
+
+for tool in java curl awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 mkdir -p "$OUTDIR/dumps"
 cd "$OUTDIR"

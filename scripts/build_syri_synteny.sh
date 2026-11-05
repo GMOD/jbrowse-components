@@ -7,8 +7,9 @@
 # PAF, whose records carry their type and plotsr's color for it as tags, and a
 # BED of every accession's regions on Col-0.
 #
-# Requires: curl, unzip, awk, python3, samtools, minimap2, bgzip and tabix, the
-#           NCBI `datasets` CLI, and SyRI (`syri` on the PATH, or Docker, which
+# Requires: curl, awk, sort, python3, samtools, minimap2, bgzip and tabix,
+#           the NCBI `datasets` CLI and unzip for a genome downloaded by
+#           accession, and SyRI (`syri` on the PATH, or Docker, which
 #           runs the biocontainers image)
 # Usage:    bash build_syri_synteny.sh [outdir] [rows]
 #
@@ -18,6 +19,13 @@
 # genomes; a row without one needs the accession to download it.
 
 set -euo pipefail
+
+for tool in curl awk sort python3 samtools minimap2 bgzip tabix; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(syri_to_paf.py)
@@ -63,6 +71,12 @@ while read -r name accession; do
       echo "no $name.fa, and no accession to download it" >&2
       exit 1
     fi
+    for tool in datasets unzip; do
+      command -v "$tool" >/dev/null 2>&1 || {
+        echo "error: '$tool' not found on PATH" >&2
+        exit 1
+      }
+    done
     datasets download genome accession "$accession" --include genome \
       --filename "$name.zip" --no-progressbar
     unzip -o -q "$name.zip" -d "$name.ncbi"

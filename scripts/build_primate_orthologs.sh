@@ -23,12 +23,20 @@
 # Human is first because the table is anchored on it: every row is one human
 # gene and the other columns are that gene's ortholog.
 #
-# Requires: the NCBI `datasets` CLI, curl, unzip, python3
+# Requires: the NCBI `datasets` CLI, curl, awk, sort, gzip, unzip, python3
 # Usage:    bash build_primate_orthologs.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for tool in curl awk sort gzip datasets unzip python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 HELPERS=(symbols_to_blocks.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
