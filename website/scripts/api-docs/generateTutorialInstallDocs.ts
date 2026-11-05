@@ -21,6 +21,8 @@ type Manager = (typeof MANAGERS)[number]
 type Entry = Partial<Record<Manager, string>> & {
   download?: string[]
   npmPrerelease?: string
+  bins?: string[]
+  modules?: string[]
 }
 
 const PRERELEASE = (

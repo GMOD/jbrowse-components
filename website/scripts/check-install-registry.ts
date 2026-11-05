@@ -50,10 +50,15 @@ const probes: Record<string, (value: string) => Promise<boolean | undefined>> =
     download: url => exists(url, 'HEAD'),
   }
 
+const NOT_PACKAGES = new Set(['bins', 'modules', 'npmPrerelease'])
+
 const errors: string[] = []
 let checked = 0
 for (const [tool, entry] of Object.entries(registry)) {
   for (const [manager, value] of Object.entries(entry)) {
+    if (NOT_PACKAGES.has(manager)) {
+      continue
+    }
     for (const v of [value].flat()) {
       const probe = probes[manager]
       if (!probe) {

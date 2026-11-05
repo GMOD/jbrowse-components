@@ -12,7 +12,7 @@
     "conda": "diamond"
   },
   "duckdb": {
-    "conda": "duckdb"
+    "conda": "duckdb-cli"
   },
   "gffread": {
     "apt": "gffread",
@@ -20,15 +20,18 @@
   },
   "hmmer": {
     "apt": "hmmer",
-    "conda": "hmmer"
+    "conda": "hmmer",
+    "bins": ["hmmscan", "hmmpress"]
   },
   "htslib": {
     "apt": "tabix",
-    "conda": "htslib"
+    "conda": "htslib",
+    "bins": ["bgzip", "tabix", "htsfile"]
   },
   "last": {
     "apt": "last-align",
-    "conda": "last"
+    "conda": "last",
+    "bins": ["lastal", "lastdb"]
   },
   "minigraph": {
     "conda": "minigraph"
@@ -39,7 +42,8 @@
   },
   "node": {
     "apt": "nodejs",
-    "conda": "nodejs"
+    "conda": "nodejs",
+    "bins": ["node", "npx"]
   },
   "pigz": {
     "apt": "pigz",
@@ -70,7 +74,8 @@
     "download": [
       "https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets",
       "https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat"
-    ]
+    ],
+    "bins": ["datasets", "dataformat"]
   },
   "gfatools": {
     "conda": "gfatools"
@@ -85,7 +90,8 @@
     ]
   },
   "mcscanx": {
-    "conda": "mcscanx"
+    "conda": "mcscanx",
+    "bins": ["MCScanX", "MCScanX_h"]
   },
   "megadepth": {
     "conda": "megadepth"
@@ -118,21 +124,28 @@
     "cargo": "gfa-to-tabix"
   },
   "biopython": {
-    "pip": "biopython"
+    "pip": "biopython",
+    "bins": [],
+    "modules": ["Bio"]
   },
   "jcvi": {
-    "pip": "jcvi"
+    "pip": "jcvi",
+    "bins": [],
+    "modules": ["jcvi"]
   },
   "whatshap": {
-    "pip": "whatshap"
+    "pip": "whatshap",
+    "modules": ["whatshap"]
   },
   "jbrowse-cli": {
     "npm": "@jbrowse/cli",
-    "npmPrerelease": "next"
+    "npmPrerelease": "next",
+    "bins": ["jbrowse"]
   },
   "jbrowse-img": {
     "npm": "@jbrowse/img",
-    "npmPrerelease": "next"
+    "npmPrerelease": "next",
+    "bins": ["jb2export"]
   },
   "hisat2": {
     "apt": "hisat2",
@@ -140,6 +153,7 @@
   },
   "sra-tools": {
     "apt": "sra-toolkit",
-    "conda": "sra-tools"
+    "conda": "sra-tools",
+    "bins": ["prefetch", "fasterq-dump", "sam-dump"]
   }
 }

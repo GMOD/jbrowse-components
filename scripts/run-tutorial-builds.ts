@@ -6,9 +6,16 @@
 // section's fences; later lines are alternatives (another cohort, the whole
 // genome). Heavy and network-bound, so it runs on ada, not the laptop.
 //
+// `--cli released` runs the scripts on the published `@jbrowse/cli@next`, as a
+// reader's copy does, so a fix that is on main but unreleased still fails there.
+//
 // Run: `pnpm --filter @jbrowse/cli build`, then
 //      node scripts/run-tutorial-builds.ts [--only a,b] [--jobs 2]
 //        [--timeout 120] [--out dir] [--list] [--clean] [--min-free-gb 150]
+//        [--cli main|released] [--env <prefix>]
+//
+// `--env` puts a tool environment's bin first on PATH, the one
+// scripts/tutorial-tools-env.ts builds from the tutorials' install registry.
 
 import { spawn, spawnSync } from 'node:child_process'
 import {
@@ -43,6 +50,14 @@ interface Run {
   args: string[]
   env: Record<string, string>
   pages: string[]
+}
+
+interface RunOptions {
+  outRoot: string
+  timeoutMs: number
+  clean: boolean
+  jbrowseCli: string
+  pathPrefix: string
 }
 
 interface Result {
@@ -156,7 +171,7 @@ function logTail(logFile: string, lines: number) {
     .join('\n')
 }
 
-function execute(run: Run, runDir: string, timeoutMs: number) {
+function execute(run: Run, runDir: string, options: RunOptions) {
   const logFile = path.join(runDir, 'run.log')
   const log = createWriteStream(logFile)
   const started = Date.now()
@@ -165,7 +180,12 @@ function execute(run: Run, runDir: string, timeoutMs: number) {
     [path.join(repo, 'scripts', run.script), ...run.args],
     {
       cwd: runDir,
-      env: { ...process.env, ...run.env, JBROWSE_CLI: `node ${cliBin}` },
+      env: {
+        ...process.env,
+        ...run.env,
+        PATH: `${options.pathPrefix}${process.env.PATH}`,
+        JBROWSE_CLI: options.jbrowseCli,
+      },
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     },
@@ -176,7 +196,7 @@ function execute(run: Run, runDir: string, timeoutMs: number) {
   const timer = setTimeout(() => {
     timedOut = true
     process.kill(-child.pid!, 'SIGKILL')
-  }, timeoutMs)
+  }, options.timeoutMs)
   return new Promise<{
     code: number | null
     timedOut: boolean
@@ -208,12 +228,8 @@ function validate(config: string) {
   return { ok: out.status === 0, output: `${out.stdout}${out.stderr}`.trim() }
 }
 
-async function runOne(
-  run: Run,
-  outRoot: string,
-  timeoutMs: number,
-  clean: boolean,
-) {
+async function runOne(run: Run, options: RunOptions) {
+  const { outRoot, clean } = options
   const base = {
     id: run.id,
     script: run.script,
@@ -240,7 +256,7 @@ async function runOne(
   const { code, timedOut, seconds, logFile } = await execute(
     run,
     runDir,
-    timeoutMs,
+    options,
   )
   const tail = logTail(logFile, 25)
   const missingTool = /error: '([^']+)' not found on PATH/.exec(tail)?.[1]
@@ -300,7 +316,7 @@ function humanBytes(bytes: number) {
   return `${(bytes / 1024 ** exp).toFixed(exp ? 1 : 0)} ${units[exp]}`
 }
 
-function summary(results: Result[], outRoot: string) {
+function summary(results: Result[], outRoot: string, jbrowseCli: string) {
   const order: Result['status'][] = [
     'fail',
     'invalid-config',
@@ -323,7 +339,7 @@ function summary(results: Result[], outRoot: string) {
   return [
     `# Tutorial builds, ${new Date().toISOString()}`,
     '',
-    `Output: ${outRoot}. ${counts}.`,
+    `CLI: \`${jbrowseCli}\`. Output: ${outRoot}. ${counts}.`,
     '',
     '| Status | Run | Pages | Time | Disk | Detail |',
     '| --- | --- | --- | --- | --- | --- |',
@@ -364,6 +380,8 @@ async function main() {
       list: { type: 'boolean' },
       clean: { type: 'boolean' },
       'min-free-gb': { type: 'string', default: '150' },
+      cli: { type: 'string', default: 'main' },
+      env: { type: 'string' },
     },
   })
   const only = values.only?.split(',').map(s => s.trim().replace(/\.sh$/, ''))
@@ -385,9 +403,21 @@ async function main() {
       `${cliBin} is missing; run pnpm --filter @jbrowse/cli build first`,
     )
   }
+  if (values.cli !== 'main' && values.cli !== 'released') {
+    throw new Error(`--cli is main or released, not ${values.cli}`)
+  }
   const outRoot = path.resolve(values.out)
   mkdirSync(outRoot, { recursive: true })
-  const timeoutMs = Number(values.timeout) * 60_000
+  const options: RunOptions = {
+    outRoot,
+    timeoutMs: Number(values.timeout) * 60_000,
+    clean: values.clean ?? false,
+    jbrowseCli:
+      values.cli === 'main' ? `node ${cliBin}` : 'npx -y @jbrowse/cli@next',
+    pathPrefix: values.env
+      ? `${path.join(path.resolve(values.env), 'bin')}${path.delimiter}`
+      : '',
+  }
   const queue = [...runs]
   const results: Result[] = []
   const freeGb = () => {
@@ -403,12 +433,7 @@ async function main() {
         queue.length = 0
         break
       }
-      const result = await runOne(
-        run,
-        outRoot,
-        timeoutMs,
-        values.clean ?? false,
-      )
+      const result = await runOne(run, options)
       results.push(result)
       console.log(
         `${result.status.padEnd(14)} ${String(result.seconds).padStart(6)}s  ${result.command}`,
@@ -420,7 +445,7 @@ async function main() {
     }
   }
   await Promise.all(Array.from({ length: Number(values.jobs) }, worker))
-  const report = summary(results, outRoot)
+  const report = summary(results, outRoot, options.jbrowseCli)
   writeFileSync(path.join(outRoot, 'summary.md'), report)
   console.log(`\n${report}`)
   process.exitCode = results.some(r => !['pass', 'skipped'].includes(r.status))

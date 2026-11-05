@@ -58,8 +58,8 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
 # Debian/Ubuntu
 sudo apt install samtools bcftools minimap2 nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools bcftools minimap2 duckdb \
-  nodejs trgt
+conda install -c bioconda -c conda-forge samtools bcftools minimap2 \
+  duckdb-cli nodejs trgt
 ```
 
 <!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt -->
