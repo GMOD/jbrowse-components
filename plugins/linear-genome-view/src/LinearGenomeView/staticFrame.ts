@@ -1,8 +1,11 @@
-import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
+import {
+  bufferedVisibleRegionsOf,
+  contentRightEdgePx,
+} from '@jbrowse/display-kit/regionHost'
 
 import { MINIMUM_BLOCK_WIDTH } from './consts.ts'
 import { lgvChromeOf } from './staticChrome.ts'
-import { bufferedVisibleRegionsOf, visibleRegionsOf } from './visibleRegions.ts'
+import { visibleRegionsOf } from './visibleRegions.ts'
 
 import type { Region } from '@jbrowse/core/util/types'
 

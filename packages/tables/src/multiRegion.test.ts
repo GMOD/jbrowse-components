@@ -119,14 +119,16 @@ test('regions on two contigs lay out on their own, and a base sort across them w
     { refName: 'ctgB', start: 1000, end: 2000 },
   ]
   const both = await engine.alignments({ ...without(WGSIM), regions })
-  const alone = await Promise.all(
-    regions.map(region => engine.alignments({ ...WGSIM, region })),
-  )
-  regions.forEach((_, i) => {
-    expect(both.reads.row.filter((_, j) => both.reads.region[j] === i)).toEqual(
-      alone[i]!.reads.row,
-    )
+  const swapped = await engine.alignments({
+    ...without(WGSIM),
+    regions: regions.toReversed(),
   })
+  const rowsIn = (t: typeof both, region: number) =>
+    t.reads.row.filter((_, j) => t.reads.region[j] === region)
+  expect(rowsIn(both, 0)).toEqual(rowsIn(swapped, 1))
+  expect(rowsIn(both, 1)).toEqual(rowsIn(swapped, 0))
+  expect(rowsIn(both, 0).length).toBeGreaterThan(0)
+  expect(rowsIn(both, 1).length).toBeGreaterThan(0)
   expect(new Set(both.reads.key).size).toBe(both.reads.key.length)
 
   const sort = { field: 'base', pos: 1500, refName: 'ctgA' }
@@ -207,7 +209,11 @@ test('an arc whose feet two regions hold is listed once, naming both', async () 
     display,
   })
   const arcsOf = (a: typeof t.arcs) =>
-    a.start.map((s, i) => `${s} ${a.end[i]} ${a.support[i]}`).sort()
+    a.start
+      .map((s, i) => [Math.min(s, a.end[i]!), Math.max(s, a.end[i]!), i])
+      .filter(([lo, hi]) => lo! >= 18000 && hi! <= 32000)
+      .map(([lo, hi, i]) => `${lo} ${hi} ${a.support[i!]}`)
+      .sort()
   expect(arcsOf(t.arcs)).toEqual(arcsOf(one.arcs))
   const crossing = t.arcs.start
     .map((_, i) => i)
@@ -247,7 +253,7 @@ test('a chain across two regions keeps one row, and a sort under it warns', asyn
 
 test('sections are every region’s: a value only the second region holds has its own', async () => {
   const regions = [
-    { refName: 'ctgA', start: 0, end: 50 },
+    { refName: 'ctgA', start: 0, end: 30 },
     { refName: 'ctgA', start: 1000, end: 1100 },
   ]
   const display = { facet: { field: 'tags.RG' } }

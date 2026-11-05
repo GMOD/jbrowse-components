@@ -49,6 +49,7 @@ import {
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
+import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { connectorPlacement } from '@jbrowse/render-core/marks/connectorPlacement'
 import {
@@ -274,6 +275,13 @@ export interface AlignmentTablesArgs {
    */
   regions: TablesRegion[]
   /**
+   * The regions the view displays, which `regions` are windows into: one
+   * locus's whole contig, as the browser shows a locus. The display fetches
+   * over each window and the view's margin around it, clamped to the region
+   * displayed, which `byteLimit` applies to. Unset, `regions` themselves.
+   */
+  displayedRegions?: TablesRegion[]
+  /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `encoding.color`,
    * `filter`, `sort` and `facet` objects, and its four
@@ -321,6 +329,66 @@ const BASE_OF_CODE: Record<number, string> = {
   71: 'G',
   84: 'T',
   78: 'N',
+}
+
+/**
+ * One section's tables in one region, listing of the reads fetched with the
+ * view's margin the ones touching `region`, and the ones a listed connector
+ * joins to them, as the display draws them.
+ */
+function windowedPart<
+  C extends Record<string, unknown>,
+  T extends {
+    reads: { key: ArrayLike<number> }
+    connectors: { key: readonly number[]; mateKey: readonly number[] }
+  },
+>(
+  columns: C,
+  d: WorkerPileupData,
+  region: { start: number; end: number },
+  tables: T,
+) {
+  const joined = new Set([
+    ...tables.connectors.key,
+    ...tables.connectors.mateKey,
+  ])
+  return {
+    columns,
+    tables,
+    keepRead: (read: number) =>
+      (d.readPositions[read * 2]! < region.end &&
+        d.readPositions[read * 2 + 1]! > region.start) ||
+      joined.has(tables.reads.key[read]!),
+  }
+}
+
+/**
+ * The joined tables with each read's `key` renumbered from 0 in the order the
+ * reads list them, the connectors' with them: the margin's reads take keys as
+ * they are read and leave the tables after.
+ */
+function denseKeys<
+  T extends {
+    reads: { key: number[] }
+    connectors: { key: number[]; mateKey: number[] }
+  },
+>(tables: T) {
+  const dense = new Map<number, number>()
+  const renumber = (key: number) => {
+    const known = dense.get(key)
+    const next = known ?? dense.size
+    dense.set(key, next)
+    return next
+  }
+  return {
+    ...tables,
+    reads: { ...tables.reads, key: tables.reads.key.map(renumber) },
+    connectors: {
+      ...tables.connectors,
+      key: tables.connectors.key.map(renumber),
+      mateKey: tables.connectors.mateKey.map(renumber),
+    },
+  }
 }
 
 function pairs(a: ArrayLike<number>) {
@@ -420,9 +488,13 @@ function readLevelOf(colorField: string | undefined) {
           levels.get(category) ?? ''
 }
 
-/** What `alignmentTables` fetched, and the regions it reads them in. */
+/**
+ * What `alignmentTables` fetched, the regions it fetched them over (each
+ * window and the view's margin around it), and the windows it reads them in.
+ */
 interface AlignmentsTablesInputs {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
+  fetchedRegions: RegionBounds[]
   regionInfos: RegionInfo[]
   sortColumn: SortColumn | undefined
   paintedRefNamePosition: RefNamePosition | undefined
@@ -452,6 +524,7 @@ const AlignmentsTablesHost = types
   )
   .volatile((): AlignmentsTablesInputs & { theme: JBrowsePalette } => ({
     rpcDataMap: new Map(),
+    fetchedRegions: [],
     regionInfos: [],
     sortColumn: undefined,
     paintedRefNamePosition: undefined,
@@ -460,6 +533,7 @@ const AlignmentsTablesHost = types
   .actions(self => ({
     setInputs(inputs: AlignmentsTablesInputs) {
       self.rpcDataMap = inputs.rpcDataMap
+      self.fetchedRegions = inputs.fetchedRegions
       self.regionInfos = inputs.regionInfos
       self.sortColumn = inputs.sortColumn
       self.paintedRefNamePosition = inputs.paintedRefNamePosition
@@ -471,7 +545,7 @@ const AlignmentsTablesHost = types
   .views(configSlotViews)
   .views(self => ({
     get loadedRegions(): ReadonlyMap<number, RegionBounds> {
-      return new Map(self.regionInfos.map((r, i) => [i, r]))
+      return new Map(self.fetchedRegions.map((r, i) => [i, r]))
     },
     get host() {
       return { displayedRegions: self.regionInfos }
@@ -1344,6 +1418,7 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
     regions,
+    displayedRegions,
     display = {},
     refNames,
     refNamePosition,
@@ -1361,14 +1436,15 @@ export async function alignmentTables(
       `${lociOf(regions)} ${several ? 'span' : 'spans'} ${span} bp of alignments${several ? ' in total' : ''}, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
     )
   }
+  const fetchedRegions = windowFetchRegions(regions, displayedRegions)
   const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(regions, bytes, byteLimit, 'alignments')
+    overByteLimitError(fetchedRegions, bytes, byteLimit, 'alignments')
   const dataAdapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,
     sequenceAdapter,
   )
-  const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
+  const fetchRegions = fetchedRegions.map(r => ({ assemblyName: '', ...r }))
   const bytes = await totalRegionBytes(dataAdapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)
@@ -1439,6 +1515,7 @@ export async function alignmentTables(
   return runInAction(() =>
     laidOutTables(host, {
       regions,
+      fetchedRegions,
       fetched,
       sortColumn,
       paintedRefNamePosition,
@@ -1455,11 +1532,13 @@ function laidOutTables(
   host: AlignmentsTablesHostModel,
   {
     regions,
+    fetchedRegions,
     fetched,
     sortColumn,
     paintedRefNamePosition,
   }: {
     regions: TablesRegion[]
+    fetchedRegions: TablesRegion[]
     fetched: ReadonlyMap<number, GroupedAlignmentsResult>
     sortColumn: SortColumn | undefined
     paintedRefNamePosition: RefNamePosition | undefined
@@ -1468,6 +1547,7 @@ function laidOutTables(
   const conf = host.configuration
   host.setInputs({
     rpcDataMap: fetched,
+    fetchedRegions,
     regionInfos: regions.map((r, i) => ({
       refName: r.refName,
       start: r.start,
@@ -1533,40 +1613,37 @@ function laidOutTables(
       const laid = laidByGroup.get(key)!.get(i)
       return laid
         ? [
-            {
-              columns: { section: label, region: i },
-              tables: {
-                ...connectorColumns(
-                  connectorsBySection.get(key)?.get(i) ?? [],
-                  connectorSlotColor,
-                  keyOf,
+            windowedPart({ section: label, region: i }, dataFor(key, i), r, {
+              ...connectorColumns(
+                connectorsBySection.get(key)?.get(i) ?? [],
+                connectorSlotColor,
+                keyOf,
+              ),
+              ...overlapTables(
+                laid,
+                drawsOverlaps,
+                byOverlapKind(
+                  normalizedRgbToHex(colors.palette.colorOverlap),
+                  normalizedRgbToHex(colors.palette.colorMateOverlap),
                 ),
-                ...overlapTables(
-                  laid,
-                  drawsOverlaps,
-                  byOverlapKind(
-                    normalizedRgbToHex(colors.palette.colorOverlap),
-                    normalizedRgbToHex(colors.palette.colorMateOverlap),
-                  ),
-                ),
-                ...sectionTables(
-                  dataFor(key, i),
-                  laid.readYs,
-                  colors.sections.get(key)!.get(i)!,
-                  r,
-                  keyOf,
-                  plainRead,
-                  paint,
-                  thresholds,
-                ),
-              },
-            },
+              ),
+              ...sectionTables(
+                dataFor(key, i),
+                laid.readYs,
+                colors.sections.get(key)!.get(i)!,
+                r,
+                keyOf,
+                plainRead,
+                paint,
+                thresholds,
+              ),
+            }),
           ]
         : []
     }),
   )
   const tables = drawnBands(conf, {
-    ...joinSections(pileups, t => t.reads.start.length),
+    ...denseKeys(joinSections(pileups, t => t.reads.start.length)),
     ...joinSections(
       regions.flatMap((_, i) =>
         order.map(({ key, label }) => ({

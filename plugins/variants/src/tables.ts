@@ -11,6 +11,7 @@ import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
 import {
@@ -172,6 +173,13 @@ export interface VariantTablesArgs {
    */
   regions: TablesRegion[]
   /**
+   * The regions the view displays, which `regions` are windows into: one
+   * locus's whole contig, as the browser shows a locus. The display fetches
+   * over each window and the view's margin around it, clamped to the region
+   * displayed, which the rows and the key are drawn from, and the tables list the records the windows show. Unset, `regions` themselves.
+   */
+  displayedRegions?: TablesRegion[]
+  /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearVariantDisplay`: `encoding`, `rows.field` (`'sample'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
@@ -220,6 +228,7 @@ export async function variantTables(
     adapterConfig,
     sequenceAdapter,
     regions,
+    displayedRegions,
     display = {},
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: VariantTablesArgs,
@@ -242,9 +251,10 @@ export async function variantTables(
     adapterConfig,
     sequenceAdapter,
   )
-  const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
+  const fetchedRegions = windowFetchRegions(regions, displayedRegions)
+  const fetchRegions = fetchedRegions.map(r => ({ assemblyName: '', ...r }))
   const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(regions, bytes, byteLimit, 'variants')
+    overByteLimitError(fetchedRegions, bytes, byteLimit, 'variants')
   const bytes = await totalRegionBytes(adapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)
@@ -286,13 +296,26 @@ export async function variantTables(
     throw tooLarge(result.bytes)
   }
   const value = result.value
-  const perRegion = regions.flatMap((_, i) => {
+  const perRegion = regions.flatMap(({ start, end }, i) => {
     const data = value.perRegionCellData[i]
-    return data ? [{ region: i, data }] : []
+    return data
+      ? [
+          {
+            region: i,
+            data,
+            shown: data.featureInfo.flatMap((_, f) =>
+              data.featurePositions[f * 2 + 1]! > start &&
+              data.featurePositions[f * 2]! < end
+                ? [f]
+                : [],
+            ),
+          },
+        ]
+      : []
   })
   const recordOf = new Map(result.records.map(r => [r.id(), r]))
-  const records = perRegion.flatMap(({ data }) =>
-    data.featureInfo.map(info => recordOf.get(info.featureId)!),
+  const records = perRegion.flatMap(({ data, shown }) =>
+    shown.map(f => recordOf.get(data.featureInfo[f]!.featureId)!),
   )
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
@@ -355,10 +378,12 @@ export async function variantTables(
     region: [] as number[],
   }
   const keys = new Map<string, number>()
-  for (const { region: regionIndex, data } of perRegion) {
+  for (const { region: regionIndex, data, shown } of perRegion) {
     const offset = variants.start.length
     const featureColors = recordColors.get(regionIndex)!
-    data.featureInfo.forEach((info, f) => {
+    const variantOf = new Map(shown.map((f, i) => [f, offset + i]))
+    for (const f of shown) {
+      const info = data.featureInfo[f]!
       if (!keys.has(info.featureId)) {
         keys.set(info.featureId, keys.size)
       }
@@ -372,16 +397,17 @@ export async function variantTables(
       variants.color.push(abgrToHex(featureColors[f]!))
       variants.region.push(regionIndex)
       variants.key.push(keys.get(info.featureId)!)
-    })
+    }
     const colors = cellColors.get(regionIndex)!
     for (let i = 0; i < data.numCells; i++) {
       const f = data.cellFeatureIndices[i]!
       const name = value.rowNames[data.cellRowIndices[i]!]!
       const row = rowIndex.get(name)
-      if (row === undefined) {
+      const variant = variantOf.get(f)
+      if (row === undefined || variant === undefined) {
         continue
       }
-      cells.variant.push(offset + f)
+      cells.variant.push(variant)
       cells.row.push(name)
       cells.genotype.push(
         decodeGenotype(

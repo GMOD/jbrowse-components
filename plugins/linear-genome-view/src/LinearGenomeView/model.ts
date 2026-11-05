@@ -52,7 +52,10 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
-import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
+import {
+  bufferedVisibleRegionsOf,
+  contentRightEdgePx,
+} from '@jbrowse/display-kit/regionHost'
 import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 import {
   cast,
@@ -110,7 +113,7 @@ import {
   regionsOrientation,
   setDisplayedRegionsKeepingCenter,
 } from './util.ts'
-import { bufferedVisibleRegionsOf, visibleRegionsOf } from './visibleRegions.ts'
+import { visibleRegionsOf } from './visibleRegions.ts'
 
 import type { FlightViewport } from './flyTo.ts'
 import type {

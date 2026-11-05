@@ -5,6 +5,7 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { resolveRenderState, resolveSymlogConstant } from '@jbrowse/wiggle-core'
@@ -41,6 +42,14 @@ export interface WiggleTablesArgs {
    */
   regions: TablesRegion[]
   /**
+   * The regions the view displays, which `regions` are windows into: one
+   * locus's whole contig, as the browser shows a locus. The display fetches
+   * and scales over each window and the view's margin around it, clamped to the
+   * region displayed, and the tables list what the windows show. Unset,
+   * `regions` themselves.
+   */
+  displayedRegions?: TablesRegion[]
+  /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearWiggleDisplay`: `mark`, `origin`, `encoding`, `rows`,
    * `data` and the rest of its slots. Unset reads the default display.
@@ -57,6 +66,12 @@ export interface WiggleTablesArgs {
    * extent. Unset, a `MultiWiggleAdapter` reads as one.
    */
   trackType?: WiggleTrackType
+}
+
+/** Whether the bin of `positions`, start and end pairs, at `i` overlaps `region`. */
+function binInWindow({ start, end }: { start: number; end: number }) {
+  return (positions: ArrayLike<number>, i: number) =>
+    positions[i * 2 + 1]! > start && positions[i * 2]! < end
 }
 
 /**
@@ -85,6 +100,7 @@ export async function wiggleTables(
   {
     adapterConfig,
     regions,
+    displayedRegions,
     display = {},
     bpPerPx,
     trackType = wiggleTrackTypeOf(adapterConfig),
@@ -99,7 +115,10 @@ export async function wiggleTables(
   const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
     sessionId: 'tables',
     adapterConfig,
-    regions: regions.map(r => ({ assemblyName: '', ...r })),
+    regions: windowFetchRegions(regions, displayedRegions).map(r => ({
+      assemblyName: '',
+      ...r,
+    })),
     bpPerPx,
     ...fetchInputs,
     statusCallback: () => {},
@@ -230,26 +249,33 @@ export async function wiggleTables(
         marks.run.push(run)
       }
       run++
+      const inWindow = binInWindow(regions[regionIndex]!)
       for (let i = 0; i < layer.numFeatures; i++) {
-        const score = layer.featureScores[i]!
-        if (layer.band && bandColors) {
-          const min = layer.band.minScores[i]!
-          const edges = [min, ...cuts.filter(c => c > min && c < score), score]
-          for (let k = 1; k < edges.length; k++) {
+        if (inWindow(layer.featurePositions, i)) {
+          const score = layer.featureScores[i]!
+          if (layer.band && bandColors) {
+            const min = layer.band.minScores[i]!
+            const edges = [
+              min,
+              ...cuts.filter(c => c > min && c < score),
+              score,
+            ]
+            for (let k = 1; k < edges.length; k++) {
+              push(
+                i,
+                edges[k - 1]!,
+                edges[k]!,
+                bandColors[thresholdBandOf(edges[k - 1]!, cuts)]!,
+              )
+            }
+          } else {
             push(
               i,
-              edges[k - 1]!,
-              edges[k]!,
-              bandColors[thresholdBandOf(edges[k - 1]!, cuts)]!,
+              layer.band ? layer.band.minScores[i]! : origin,
+              score,
+              colorAt(score, i),
             )
           }
-        } else {
-          push(
-            i,
-            layer.band ? layer.band.minScores[i]! : origin,
-            score,
-            colorAt(score, i),
-          )
         }
       }
     })
@@ -267,16 +293,19 @@ export async function wiggleTables(
   const sourceIndex = new Map(data.sources.map((source, i) => [source.name, i]))
   const rowOrder = sources.map(source => sourceIndex.get(source.name)!)
   results.forEach((result, regionIndex) => {
+    const inWindow = binInWindow(regions[regionIndex]!)
     for (const k of rowOrder) {
       const source = result.sources[k]!
       for (let i = 0; i < source.numFeatures; i++) {
-        bins.region.push(regionIndex)
-        bins.source.push(source.name)
-        bins.start.push(source.featurePositions[i * 2]!)
-        bins.end.push(source.featurePositions[i * 2 + 1]!)
-        bins.score.push(source.featureScores[i]!)
-        bins.min.push(source.featureMinScores[i]!)
-        bins.max.push(source.featureMaxScores[i]!)
+        if (inWindow(source.featurePositions, i)) {
+          bins.region.push(regionIndex)
+          bins.source.push(source.name)
+          bins.start.push(source.featurePositions[i * 2]!)
+          bins.end.push(source.featurePositions[i * 2 + 1]!)
+          bins.score.push(source.featureScores[i]!)
+          bins.min.push(source.featureMinScores[i]!)
+          bins.max.push(source.featureMaxScores[i]!)
+        }
       }
     }
   })

@@ -40,6 +40,7 @@ import {
 import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
+import { displayedRegionsOf } from './frame.ts'
 
 import type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
@@ -79,6 +80,7 @@ interface RegionArgs {
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: TablesRegion[]
+  displayedRegions?: TablesRegion[]
 }
 
 /**
@@ -88,7 +90,10 @@ interface RegionArgs {
  * which it is refused, naming the table. A host sets `rowLimit` on a read of
  * a whole file (`fileRegions`), where nothing else bounds the rows.
  */
-type HostArgs<A extends RegionArgs> = Omit<A, 'regions' | 'refNamePosition'> & {
+type HostArgs<A extends RegionArgs> = Omit<
+  A,
+  'regions' | 'displayedRegions' | 'refNamePosition'
+> & {
   region?: TablesRegion
   regions?: TablesRegion[]
   assembly?: AssemblyConfig
@@ -497,9 +502,14 @@ export function createTablesEngine() {
         const args = resolved
           ? await renameRegions(pluginManager, given, resolved)
           : given
+        const displayedRegions = await displayedRegionsOf(
+          pluginManager,
+          args,
+          resolved,
+        )
         const [missing, tables] = await Promise.all([
           missingContigs(pluginManager, args),
-          table(pluginManager, args, resolved),
+          table(pluginManager, { ...args, displayedRegions }, resolved),
         ])
         refuseOverRows(tables, rowLimit)
         return {

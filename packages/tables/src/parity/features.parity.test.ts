@@ -11,6 +11,7 @@ import { parityCases } from './testUtils.ts'
 
 import type { FeatureTables } from '../index.ts'
 import type { ParityAdapter } from './testUtils.ts'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
 
 const FEATURE_DECISIONS = [
@@ -53,6 +54,7 @@ const engine = createTablesEngine()
  */
 function featureParity(
   bpPerPx: number,
+  region: TablesRegion = GFF3.region,
 ): ParityAdapter<
   Record<string, unknown>,
   LinearBasicDisplayModel,
@@ -69,20 +71,21 @@ function featureParity(
           displayType: 'LinearBasicDisplay',
           isDisplay: isLinearBasicDisplay,
           displayConfig: display,
-          region: GFF3.region,
+          region,
           contigLength: 50_001,
           bpPerPx,
-          settled: m => m.layoutReady && m.laidOutDataMap.size > 0,
         })
       return { model, dispose }
     },
-    buildExport: display => engine.features({ ...GFF3, bpPerPx, display }),
+    buildExport: display =>
+      engine.features({ ...GFF3, region, bpPerPx, display }),
     modelDecisions: m => {
       const rows = new Map<string, Span>()
       const transcripts = new Map<string, Span>()
+      const onScreen = m.onScreenFeatureIds
       for (const data of m.laidOutDataMap.values()) {
         for (const item of data.flatbushItems) {
-          if (isPlacedRow(item.topPx)) {
+          if (isPlacedRow(item.topPx) && onScreen?.has(item.featureId)) {
             rows.set(item.featureId, {
               id: item.featureId,
               top: item.topPx,
@@ -226,4 +229,21 @@ describe("volvox's genes at 250 bp/px, past the label density limit", () => {
       config: { ...GROW, facet: { field: 'strand', hidden: ['-1'] } },
     },
   ])
+})
+
+describe("a 10 kb window of volvox's genes, features crossing both edges", () => {
+  parityCases(
+    featureParity(20, { refName: 'ctgA', start: 5000, end: 15_000 }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'grow', config: GROW },
+      { name: 'a short fit track', config: { height: 40 } },
+      { name: 'every transcript', config: { geneGlyphMode: 'all' } },
+      {
+        name: 'encoding.color by type',
+        config: { ...GROW, encoding: { color: { field: 'type' } } },
+      },
+      { name: 'facet by strand', config: { ...GROW, facet: 'strand' } },
+    ],
+  )
 })

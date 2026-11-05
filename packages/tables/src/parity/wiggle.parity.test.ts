@@ -75,7 +75,6 @@ function wiggleParity(
           region: fixture.region,
           contigLength: fixture.contigLength,
           bpPerPx: fixture.bpPerPx,
-          settled: m => m.regionPayloads.size > 0 && m.domain !== undefined,
         })
       return { model, dispose }
     },
@@ -392,4 +391,24 @@ describe('a QuantitativeTrack zoomed out to summary bins', () => {
       config: { encoding: { y: { scale: { type: 'log' } } } },
     },
   ])
+})
+
+describe('a 10 kb window of three signed BigWigs, inside the contig', () => {
+  parityCases(
+    wiggleParity({
+      adapterConfig: MULTI_BIGWIG.adapterConfig,
+      region: { refName: 'ctgA', start: 20_000, end: 30_000 },
+      contigLength: CTGA_LENGTH,
+      bpPerPx: 20,
+      trackType: 'MultiQuantitativeTrack',
+    }),
+    [
+      { name: 'defaults', config: {} },
+      { name: 'overlay', config: { rows: { field: '' } } },
+      {
+        name: 'encoding.y fence',
+        config: { encoding: { y: { scale: { fenceQuantile: 0.9 } } } },
+      },
+    ],
+  )
 })

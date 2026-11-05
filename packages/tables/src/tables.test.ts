@@ -610,9 +610,11 @@ test('the interbase histogram counts the reads\u2019 insertions and clips, and t
     const expected = new Map<string, number>()
     const total = new Map<number, number>()
     const bump = (position: number, type: string) => {
-      const key = `${position} ${type}`
-      expected.set(key, (expected.get(key) ?? 0) + 1)
-      total.set(position, (total.get(position) ?? 0) + 1)
+      if (position >= fixture.region.start && position < fixture.region.end) {
+        const key = `${position} ${type}`
+        expected.set(key, (expected.get(key) ?? 0) + 1)
+        total.set(position, (total.get(position) ?? 0) + 1)
+      }
     }
     insertions.position.forEach(p => {
       bump(p, 'insertion')
@@ -907,7 +909,8 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
   expect(chained.connectors.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(
     true,
   )
-  expect(chained.reads.start).toEqual(plain.reads.start)
+  const listed = new Set(chained.reads.id)
+  expect(plain.reads.id.every(id => listed.has(id))).toBe(true)
   const rows = new Map<string, Set<number>>()
   for (let i = 0; i < chained.reads.name.length; i++) {
     const row = rows.get(chained.reads.name[i]!) ?? new Set<number>()

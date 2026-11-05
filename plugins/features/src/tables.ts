@@ -4,6 +4,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { runInAction } from 'mobx'
 
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
@@ -63,6 +64,14 @@ export interface FeatureTablesArgs {
    */
   regions: TablesRegion[]
   /**
+   * The regions the view displays, which `regions` are windows into: one
+   * locus's whole contig, as the browser shows a locus. The display fetches
+   * and packs over each window and the view's margin around it, clamped to the
+   * region displayed, and the tables list what the windows show. Unset,
+   * `regions` themselves.
+   */
+  displayedRegions?: TablesRegion[]
+  /**
    * The display's config as a track's `displays` entry writes it:
    * `encoding`, `displayMode`, `labels`, `geneGlyphMode`, `filter`, `mark`,
    * `facet` and the rest of a `LinearBasicDisplay`'s slots. Unset draws the
@@ -94,22 +103,24 @@ export interface FeatureTablesArgs {
 
 // The packer leaves a feature past its row ceiling at `OFFSCREEN_Y`, and a
 // table row a million px up is no row: those features and their primitives
-// leave every table. `row` maps a lane's feature index to its row in the
-// `features` table, -1 for one left out.
-// A feature of a hidden section is unplaced by choice, so `truncated` leaves
-// it out.
+// leave every table, as do the ones `isShown` leaves in the fetch's margin.
+// `row` maps a lane's feature index to its row in the `features` table, -1
+// for one left out. A feature of a hidden section is unplaced by choice, so
+// `truncated` leaves it out.
 function placedFeatures(
   d: FeatureDataResult,
   isHidden: (item: FlatbushItem) => boolean,
+  isShown: (item: FlatbushItem) => boolean,
 ) {
   const items: FlatbushItem[] = []
   const row: number[] = []
   let truncated = 0
   for (const item of d.flatbushItems) {
-    row.push(isPlacedRow(item.topPx) ? items.length : -1)
-    if (isPlacedRow(item.topPx)) {
+    const placed = isPlacedRow(item.topPx) && isShown(item)
+    row.push(placed ? items.length : -1)
+    if (placed) {
       items.push(item)
-    } else if (!isHidden(item)) {
+    } else if (isShown(item) && !isHidden(item)) {
       truncated++
     }
   }
@@ -312,7 +323,10 @@ const TABLES_ASSEMBLY = ''
  * its `heightMode` and `height`: `fit` (the default) runs the display's fit
  * ladder, so the labels, isoforms and row heights the browser gives up to fit
  * the track are given up here too, and `grow` places every feature at full
- * size. A feature the packer could not place within its 10000 px row ceiling
+ * size. The layout packs what `fetchRegions` fetched, and the tables list the
+ * features touching `regions`, each with every mark of its glyph, as the
+ * view draws them before its edges clip them. A feature in view the packer
+ * could not place within its 10000 px row ceiling
  * is left out of every table and counted in `truncated`; the legend keys what
  * the worker painted, such a feature included, as the browser's key does.
  *
@@ -329,6 +343,7 @@ export async function featureTables(
     adapterConfig,
     sequenceAdapter,
     regions,
+    displayedRegions,
     display = {},
     bpPerPx,
     colorByFrame = false,
@@ -352,7 +367,10 @@ export async function featureTables(
   const config = await fetchFeatureRegions(
     pluginManager,
     host,
-    blocks.map((region, index) => ({ region, index })),
+    windowFetchRegions(regions, displayedRegions).map((region, index) => ({
+      region: { assemblyName: TABLES_ASSEMBLY, ...region },
+      index,
+    })),
     {
       adapterConfig,
       sequenceAdapter,
@@ -373,6 +391,7 @@ export async function featureTables(
     scales,
     showChevrons,
     fontSize,
+    onScreen,
   } = runInAction(() => ({
     laid: host.laidOutDataMap,
     renderedLabels: host.renderedLabels,
@@ -383,11 +402,13 @@ export async function featureTables(
     scales: host.derivedColorScales,
     showChevrons: host.showChevrons,
     fontSize: host.labelFontSize,
+    onScreen: host.onScreenFeatureIds,
   }))
   const items = [...host.rpcDataMap.values()].flatMap(raw => raw.flatbushItems)
   const sectionOf = facet ? sectionIdsOf(facet) : undefined
   const isHidden = (item: FlatbushItem) =>
     !!hiddenGroupFeatureIds?.has(item.featureId)
+  const isShown = (item: FlatbushItem) => onScreen.has(item.featureId)
   const palette = resolvePalette()
   const resolved = resolveMapColors(laid, palette, fieldPalette)
   const key = colorKeyTables(scales)
@@ -406,6 +427,7 @@ export async function featureTables(
         labels: regionLabels[i]!,
         sectionOf,
         isHidden,
+        isShown,
       }),
     ),
   )
@@ -510,6 +532,7 @@ export function laidOutTables(
     labels: placed,
     sectionOf,
     isHidden = () => false,
+    isShown = () => true,
   }: {
     region: { start: number; end: number }
     widthPx: number
@@ -518,9 +541,10 @@ export function laidOutTables(
     labels: readonly TableLabel[]
     sectionOf?: (item: FlatbushItem) => { label: string }
     isHidden?: (item: FlatbushItem) => boolean
+    isShown?: (item: FlatbushItem) => boolean
   },
 ) {
-  const rows = placedFeatures(d, isHidden)
+  const rows = placedFeatures(d, isHidden, isShown)
   const { items, featureIndex } = rows
   const subfeatures = d.subfeatureInfos.filter(s =>
     featureIndex.has(s.parentFeatureId),

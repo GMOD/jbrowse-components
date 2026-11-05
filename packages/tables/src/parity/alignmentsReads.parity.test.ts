@@ -65,7 +65,6 @@ function readsParity(
           region: fixture.region,
           contigLength: fixture.contigLength,
           bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
-          settled: m => m.rpcDataMap.size > 0,
         })
       return { model, dispose }
     },
@@ -87,12 +86,24 @@ function readsParity(
         readColors: Object.fromEntries(
           [...m.laidOutByGroupColored.values()].flatMap(byRegion =>
             [...byRegion.values()].flatMap(data =>
-              Array.from(data.readColorCategories, (category, i) => [
-                `${data.readKeys[i]}`,
-                cssColorToHex(
-                  readColorFromCategoryIndex(category, i, data, palette),
-                ),
-              ]),
+              Array.from(data.readColorCategories, (category, i) =>
+                data.readPositions[i * 2]! < fixture.region.end &&
+                data.readPositions[i * 2 + 1]! > fixture.region.start
+                  ? [
+                      [
+                        `${data.readKeys[i]}`,
+                        cssColorToHex(
+                          readColorFromCategoryIndex(
+                            category,
+                            i,
+                            data,
+                            palette,
+                          ),
+                        ),
+                      ],
+                    ]
+                  : [],
+              ).flat(),
             ),
           ),
         ),
