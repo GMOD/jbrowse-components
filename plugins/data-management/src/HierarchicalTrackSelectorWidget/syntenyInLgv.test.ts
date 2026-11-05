@@ -71,7 +71,7 @@ function offeredBy(session: TestSession, assemblyName: string) {
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   return model.allTracks
-    .flatMap(g => g.tracks.map(t => t.conf.trackId as string))
+    .flatMap(g => g.tracks.map(t => t.conf.trackId))
     .filter(id => !id.endsWith('-seq'))
     .toSorted()
 }

@@ -75,7 +75,7 @@ async function selectorFor(session: TestSession, assemblyName: string) {
 
 function trackIds(model: HierarchicalTrackSelectorModel) {
   return model.allTracks
-    .flatMap(g => g.tracks.map(t => t.conf.trackId as string))
+    .flatMap(g => g.tracks.map(t => t.conf.trackId))
     .toSorted()
 }
 

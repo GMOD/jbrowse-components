@@ -66,7 +66,7 @@ test('a contributed row gets the selector model, nested as well as flat', async 
       onClick: (...args: unknown[]) => {
         seen.push({
           where: 'flat',
-          selected: cart.selection.map(c => `${c.trackId}`),
+          selected: cart.selection.map(c => c.trackId),
           args: args.length,
         })
       },
@@ -79,7 +79,7 @@ test('a contributed row gets the selector model, nested as well as flat', async 
           onClick: (...args: unknown[]) => {
             seen.push({
               where: 'nested',
-              selected: cart.selection.map(c => `${c.trackId}`),
+              selected: cart.selection.map(c => c.trackId),
               args: args.length,
             })
           },
