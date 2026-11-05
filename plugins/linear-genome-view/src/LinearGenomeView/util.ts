@@ -11,8 +11,6 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 
-import { MINIMUM_BLOCK_WIDTH } from './consts.ts'
-
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -999,18 +997,6 @@ export function getScalebarLabels({
 }
 
 /**
- * Where an elided run draws. One narrower than a region is allowed to draw
- * gets that width, clear of the seam drawn before it, which would otherwise
- * cover it: a region a pixel can't hold — a 1 bp contig between two whole
- * ones — still shows the reader it is there.
- */
-export function elidedMarker(x: number, widthPx: number, clearOf = x) {
-  return widthPx < MINIMUM_BLOCK_WIDTH
-    ? { x: Math.max(x, clearOf), width: MINIMUM_BLOCK_WIDTH }
-    : { x, width: widthPx }
-}
-
-/**
  * Every span along the row that is not track data, in the staticBlocks frame.
  * Nothing to draw returns one shared array, so the computed's value repeats and
  * MobX's `===` stops the chain: a view inside one contig has no seam, elision
@@ -1029,19 +1015,12 @@ export function getPaddingSpans(blocks: BaseBlock[], firstBlockOffset: number) {
           kind: 'seam',
         })
       }
-    } else if (block.type === 'ElidedBlock') {
-      const before = spans.at(-1)
-      spans.push({
-        key: block.key,
-        ...elidedMarker(x, block.widthPx, before ? before.x + before.width : x),
-        kind: 'elided',
-      })
     } else {
       spans.push({
         key: block.key,
         x,
         width: block.widthPx,
-        kind: 'boundary',
+        kind: block.type === 'ElidedBlock' ? 'elided' : 'boundary',
       })
     }
   }

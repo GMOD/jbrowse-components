@@ -8,7 +8,6 @@ import { observer } from 'mobx-react'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import {
   REF_NAME_LABEL_FONT_SIZE,
-  elidedMarker,
   getBlockRefName,
   showRefNameLabels,
 } from '../util.ts'
@@ -228,10 +227,6 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   )
 })
 
-function spanStyle({ x, width }: { x: number; width: number }) {
-  return { width, transform: `translateX(${x}px)` }
-}
-
 const OverviewScalebarContent = observer(function OverviewScalebarContent({
   model,
 }: {
@@ -258,7 +253,10 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
           <div
             key={block.key}
             className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
-            style={spanStyle(elidedMarker(block.offsetPx, block.widthPx))}
+            style={{
+              width: block.widthPx,
+              transform: `translateX(${block.offsetPx}px)`,
+            }}
           />
         ) : null,
       )}
