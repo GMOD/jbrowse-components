@@ -42,7 +42,8 @@ import type {
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
-  PackPrepInputs,
+  PackKnobFreeInputs,
+  PrepMetrics,
 } from './layoutInputs.ts'
 
 // Three stages so a solve probes ~10 factors against one preparation; the
@@ -51,9 +52,10 @@ import type {
 interface FeatureGeometry {
   readonly startBp: number
   readonly endBp: number
-  readonly bodyHeightPx: number
-  // `bodyHeightPx` is this stack untrimmed; a count that bites re-derives the
-  // height in `trimPreparedRef`.
+  // Unscaled, so one prep serves every body scale; `geometryBodyHeightPx`
+  // scales it. A count that bites re-derives a stack's in `trimPreparedRef`.
+  readonly heightPx: number
+  readonly labelRows: number | undefined
   readonly stack: IsoformStack | undefined
   readonly strand: number
   readonly densityFade: boolean
@@ -169,7 +171,6 @@ function gatherLabelInfo(
 // reserves overhang on both sides.
 function gatherFeatureGeometry(
   regions: [number, LayoutRegionData][],
-  metrics: DisplayModeMetrics,
   featureIds: ReadonlySet<string> | undefined,
   toDrawnBp: DrawnAxis,
 ) {
@@ -196,12 +197,8 @@ function gatherFeatureGeometry(
           cut: endBp - startBp < item.endBp - item.startBp,
           seamBeforeBp: seamAtOrBefore(toDrawnBp, startBp),
           seamAfterBp: seamAtOrAfter(toDrawnBp, endBp),
-          bodyHeightPx: bodyHeightPx(
-            item.featureHeightPx,
-            item.labelRows,
-            metrics.heightMultiplier,
-            metrics.labelFontPx,
-          ),
+          heightPx: item.featureHeightPx,
+          labelRows: item.labelRows,
           stack: item.isoformStack,
           strand: item.strand ?? 0,
           hasReversed: reversed,
@@ -215,14 +212,27 @@ function gatherFeatureGeometry(
   return features
 }
 
-// Reads the raw region data and applies `heightMultiplier` itself, so the
-// probes skip the clone and probe and commit are identical by construction.
+function geometryBodyHeightPx(
+  geom: FeatureGeometry,
+  { heightMultiplier, labelFontPx }: DisplayModeMetrics,
+) {
+  return bodyHeightPx(
+    geom.heightPx,
+    geom.labelRows,
+    heightMultiplier,
+    labelFontPx,
+  )
+}
+
+// Reads the raw region data, and the pack applies `heightMultiplier` itself,
+// so the probes skip the clone and probe and commit are identical by
+// construction.
 // `featureIds` narrows the pack to one group's section; the density collapse
 // and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
   regions: [number, LayoutRegionData][],
-  inputs: PackPrepInputs,
-  metrics: DisplayModeMetrics,
+  inputs: PackKnobFreeInputs,
+  metrics: PrepMetrics,
   toDrawnBp: DrawnAxis,
   featureIds?: ReadonlySet<string>,
 ): PackPrep {
@@ -243,12 +253,7 @@ export function prepareRefPack(
     bpPerPx,
     toDrawnBp,
   )
-  const features = gatherFeatureGeometry(
-    regions,
-    metrics,
-    featureIds,
-    toDrawnBp,
-  )
+  const features = gatherFeatureGeometry(regions, featureIds, toDrawnBp)
 
   const namedFeatureIds = new Set<string>()
   // A subfeature label draws whatever the fit drops, so a mark carrying one
@@ -372,7 +377,7 @@ export function trimPreparedRef(
               heightMultiplier,
               labelFontPx,
             )
-          : geom.bodyHeightPx) +
+          : geometryBodyHeightPx(geom, metrics)) +
         isoformGapSpreadPx(stack, heightMultiplier, trim),
       startBp: trim ? prep.toDrawnBp(trim.startBp) : geom.startBp,
       endBp: trim ? prep.toDrawnBp(trim.endBp) : geom.endBp,
@@ -456,7 +461,10 @@ function decideLabelReservations(
   for (const [id, geom] of features) {
     const labelInfo = labelInfoByFeatureId.get(id)
     const body = trims.bodies.get(id)
-    const { bodyHeightPx, startBp, endBp } = body ?? geom
+    const { startBp, endBp } = body ?? geom
+    const bodyPx = body
+      ? body.bodyHeightPx
+      : geometryBodyHeightPx(geom, metrics)
     // A member of a named pile its leader names for it.
     const folded =
       collapsedFeatureIds.has(id) && pileByMemberId.get(id)?.leaderId !== id
@@ -521,8 +529,8 @@ function decideLabelReservations(
         reach && geom.hasNonReversed
           ? Math.max(span.layoutEndBp, reach.high)
           : span.layoutEndBp,
-      height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
-      labelTopPx: labelLines * labelFontPx > 0 ? bodyHeightPx : undefined,
+      height: bodyPx + rowPadding + labelLines * labelFontPx,
+      labelTopPx: labelLines * labelFontPx > 0 ? bodyPx : undefined,
     })
   }
   return { packed, droppedNameIds, droppedDescriptionIds }

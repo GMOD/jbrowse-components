@@ -35,7 +35,7 @@ import type {
   LayoutRegionData,
   PackKnobFreeInputs,
   PackKnobs,
-  PackPrepInputs,
+  PrepMetrics,
 } from './layoutInputs.ts'
 import type { PackPrep, PackTrims } from './packRef.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
@@ -82,8 +82,8 @@ const UNGROUPED: GroupId = { key: '', label: '' }
 // the one-section case, so nothing downstream carries an ungrouped branch.
 function prepareRefSections(
   { regions, toDrawnBp }: RefGroup,
-  inputs: PackPrepInputs,
-  metrics: DisplayModeMetrics,
+  inputs: PackKnobFreeInputs,
+  metrics: PrepMetrics,
   sectionOf: ((item: FlatbushItem) => GroupId) | undefined,
 ): RefSections {
   const hiddenIds = new Set<string>()
@@ -345,6 +345,9 @@ function layoutRefGroups(
 export interface PackedBottoms {
   ids: string[]
   bottoms: number[]
+  // The last measurement, since a settle re-measures cached packs against an
+  // on-screen set that keeps its identity while its membership holds.
+  measured?: { measureIds: ReadonlySet<string> | undefined; height: number }
 }
 
 function packedBottoms(
@@ -375,22 +378,28 @@ function packedBottoms(
 }
 
 function measuredHeight(
-  { ids, bottoms }: PackedBottoms,
+  packed: PackedBottoms,
   measureIds: ReadonlySet<string> | undefined,
 ) {
+  const { measured } = packed
+  if (measured && measured.measureIds === measureIds) {
+    return measured.height
+  }
+  const { ids, bottoms } = packed
   let max = 0
   for (let i = 0; i < ids.length; i++) {
     if ((!measureIds || measureIds.has(ids[i]!)) && bottoms[i]! > max) {
       max = bottoms[i]!
     }
   }
+  packed.measured = { measureIds, height: max }
   return max
 }
 
-// A probe skips `cloneMutableFields` and `applyLayoutToRegion`, and preps
-// once per body scale, since no other knob reaches the prep. Probe and commit
-// run the identical pack over identical raw values, so the measured height is
-// the committed height by construction.
+// A probe skips `cloneMutableFields` and `applyLayoutToRegion`, and shares
+// one prep, kept on the cache entry, across every knob it turns. Probe and
+// commit run the identical pack over identical raw values, so the measured
+// height is the committed height by construction.
 export function createPackHeightProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: PackKnobFreeInputs,
@@ -398,37 +407,30 @@ export function createPackHeightProbe(
   measureIds: ReadonlySet<string> | undefined,
   cache: PackHeightCache = createPackHeightCache(),
 ) {
-  const packs = cache(rpcDataMap, inputs)
-  let prepared:
-    | {
-        bodyScale: number | undefined
-        metrics: DisplayModeMetrics
-        refs: RefSections[]
-      }
-    | undefined
-  const prepAt = (bodyScale: number | undefined) => {
-    if (!prepared || prepared.bodyScale !== bodyScale) {
-      const prepInputs: PackPrepInputs = { ...inputs, bodyScale }
-      const metrics = displayModeMetrics(prepInputs)
-      const sectionOf = sectionAssignment(prepInputs)
-      prepared = {
-        bodyScale,
-        metrics,
-        refs: groupRawByRef(rpcDataMap).map(group =>
-          prepareRefSections(group, prepInputs, metrics, sectionOf),
-        ),
-      }
+  const entry = cache(rpcDataMap, inputs)
+  const preparedRefs = () => {
+    if (!entry.refs) {
+      const metrics = displayModeMetrics(inputs)
+      const sectionOf = sectionAssignment(inputs)
+      entry.refs = groupRawByRef(rpcDataMap).map(group =>
+        prepareRefSections(group, inputs, metrics, sectionOf),
+      )
     }
-    return prepared
+    return entry.refs
   }
+  const { packs } = entry
   return (knobs: PackKnobs) => {
     const key = `${knobs.bodyScale}:${knobs.maxIsoformsPerGene}:${knobs.labelRoomFactor}:${knobs.geneLabelRoomFactor}`
     let packed = packs.get(key)
     if (packed) {
       packs.delete(key)
     } else {
-      const { refs, metrics } = prepAt(knobs.bodyScale)
-      packed = packedBottoms(refs, { ...inputs, ...knobs }, metrics)
+      const packInputs = { ...inputs, ...knobs }
+      packed = packedBottoms(
+        preparedRefs(),
+        packInputs,
+        displayModeMetrics(packInputs),
+      )
     }
     packs.set(key, packed)
     if (packs.size > PROBE_PACK_LIMIT) {
@@ -544,14 +546,16 @@ const PROBE_CONFIG_KEYS = LAYOUT_CACHE_KEYS.filter(
 // packs each, then ~7 body scales.
 const PROBE_PACK_LIMIT = 64
 
-interface PackHeightCacheEntry {
+export interface PackHeightCacheEntry {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>
   inputs: PackKnobFreeInputs
   packs: Map<string, PackedBottoms>
+  // Built by the first probe that misses, since every knob shares it.
+  refs?: RefSections[]
 }
 
-// Keeps a probe site's packs across settles of the view, since a pan moves
-// only the on-screen set and no pack reads it. Like `createIncrementalLayout`,
+// Keeps a probe site's prep and packs across settles of the view, since a pan
+// moves only the on-screen set and neither reads it. Like `createIncrementalLayout`,
 // an instance holds one config, so each probe site takes its own.
 export function createPackHeightCache() {
   let entry: PackHeightCacheEntry | undefined
@@ -565,10 +569,10 @@ export function createPackHeightCache() {
         prev?.rpcDataMap === rpcDataMap &&
         PROBE_CONFIG_KEYS.every(key => prev.inputs[key] === inputs[key])
       ) {
-        return prev.packs
+        return prev
       }
       entry = { rpcDataMap, inputs, packs: new Map() }
-      return entry.packs
+      return entry
     },
     {
       clear: () => {

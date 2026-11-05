@@ -113,12 +113,9 @@ export type LabelRoomFactorFreeInputs = Omit<
 
 export type IsoformCountFreeInputs = Omit<LayoutInputs, 'maxIsoformsPerGene'>
 
-// `prepareRefPack` takes this type, so one prep is valid for every factor and
-// count probed; the trim happens per count in `trimPreparedRef`.
-export type PackPrepInputs = Omit<
-  LayoutInputs,
-  keyof LabelRoomFactors | 'maxIsoformsPerGene'
->
+// What `prepareRefPack` may read of the metrics: none of it scales with
+// `bodyScale`, so one prep serves every body scale probed.
+export type PrepMetrics = Pick<DisplayModeMetrics, 'labelFontPx' | 'singleRow'>
 
 // What a fit solve turns between probes. Every key is present, so spread over
 // a probe's inputs it overrides any stray value they carry.
@@ -128,4 +125,7 @@ export type PackKnobs = {
     | undefined
 }
 
+// `prepareRefPack` takes this type, so one prep is valid for every knob value
+// probed: the trim happens per count in `trimPreparedRef`, and the body
+// heights per scale in the pack.
 export type PackKnobFreeInputs = Omit<LayoutInputs, keyof PackKnobs>

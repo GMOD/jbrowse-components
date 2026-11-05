@@ -22,6 +22,7 @@ import type * as Layout from './layout.ts'
 import type {
   LayoutInputs,
   LayoutRegionData,
+  PackKnobFreeInputs,
   PackKnobs,
 } from './layoutInputs.ts'
 import type * as PackRef from './packRef.ts'
@@ -35,6 +36,7 @@ const collectGarbage = async () => {
 }
 
 const mockPackCount = { value: 0 }
+const mockPrepCount = { value: 0 }
 // A display built while this is set holds caches that never hand a pack
 // back: the answer the cached solve must reproduce.
 const mockUncached = { value: false }
@@ -47,6 +49,10 @@ jest.mock('./packRef.ts', () => {
       mockPackCount.value++
       return actual.packPreparedRef(...args)
     },
+    prepareRefPack: (...args: Parameters<typeof actual.prepareRefPack>) => {
+      mockPrepCount.value++
+      return actual.prepareRefPack(...args)
+    },
   }
 })
 
@@ -56,7 +62,13 @@ jest.mock('./layout.ts', () => {
     ...actual,
     createPackHeightCache: () =>
       mockUncached.value
-        ? Object.assign(() => new Map(), { clear: () => {}, prune: () => {} })
+        ? Object.assign(
+            (
+              rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+              inputs: PackKnobFreeInputs,
+            ) => ({ rpcDataMap, inputs, packs: new Map() }),
+            { clear: () => {}, prune: () => {} },
+          )
         : actual.createPackHeightCache(),
   }
 })
@@ -303,6 +315,31 @@ describe('the pack cache', () => {
     })
   }
 
+  it('preps once for every body scale its probes turn', () => {
+    const cache = createPackHeightCache()
+    mockPrepCount.value = 0
+    for (const bodyScale of [1, 0.8, 0.6]) {
+      createPackHeightProbe(
+        rpcDataMap,
+        inputs,
+        undefined,
+        cache,
+      )({ ...start, bodyScale })
+    }
+    expect(mockPrepCount.value).toBe(1)
+  })
+
+  it('measures a cached pack against the set each probe names', () => {
+    const cache = createPackHeightCache()
+    const heightOver = (measureIds?: ReadonlySet<string>) =>
+      createPackHeightProbe(rpcDataMap, inputs, measureIds, cache)(start)
+    const whole = heightOver()
+    const firstGene = heightOver(new Set(['g0']))
+    expect(firstGene).toBeGreaterThan(0)
+    expect(firstGene).toBeLessThan(whole)
+    expect(heightOver()).toBe(whole)
+  })
+
   for (const [change, data, config] of [
     ['the data', crowdedGenes(2), inputs],
     ['showLabels', rpcDataMap, { ...inputs, showLabels: false }],
@@ -388,11 +425,11 @@ describe('the fit-only memos', () => {
     expect(memo(regions, inputs).get(0)).not.toBe(first.get(0))
 
     const cache = createPackHeightCache()
-    const packs = cache(regions, inputs)
-    packs.set('k', { ids: [], bottoms: [] })
-    expect(cache(regions, inputs)).toBe(packs)
+    const entry = cache(regions, inputs)
+    entry.packs.set('k', { ids: [], bottoms: [] })
+    expect(cache(regions, inputs)).toBe(entry)
     cache.clear()
-    expect(cache(regions, inputs)).not.toBe(packs)
+    expect(cache(regions, inputs)).not.toBe(entry)
   })
 
   it('keeps a live region as a seed but never reuses a group packed beside an evicted one', () => {
