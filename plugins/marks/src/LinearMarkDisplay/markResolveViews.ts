@@ -51,6 +51,7 @@ import {
   facetRowName,
   facetRowTable,
   keyRegion,
+  listingNamesRows,
   markRowTable,
   sectionRowName,
 } from './rowTable.ts'
@@ -64,7 +65,10 @@ import type { MarkRowsHost } from './markConfigViews.ts'
 import type { MarkRegionData, MarkRenderState } from './markList.ts'
 import type { RowColors } from './rowColors.ts'
 import type { RowKeySpace } from './rowTable.ts'
-import type { ListedRowSource } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+import type {
+  ListedRowSource,
+  RowSourceListing,
+} from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { SizeScaleTable } from '@jbrowse/core/util/markEncoding'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -98,6 +102,56 @@ export type MarkViewFrame = Pick<
   | 'settledDynamicBlocks'
   | 'displayedRegionOffsetsPx'
 >
+
+/** What {@link markRowListingViews} reads beside the request. */
+export type MarkListingHost = MarkRowsHost & {
+  adapterListing: RowSourceListing | undefined
+}
+
+/** Whether the adapter's row listing names the rows drawn. */
+export function markRowListingViews(self: MarkListingHost) {
+  return {
+    /**
+     * #getter
+     * The adapter's row listing where it names the rows drawn: its field
+     * is `rows.field`, or the key a `flatten` in the shared steps wrote
+     * over its field. Undefined for an adapter that lists no rows, for one
+     * that lists another field, and until the listing for the current
+     * adapter config arrives.
+     */
+    get rowListing(): RowSourceListing | undefined {
+      const listing = self.adapterListing
+      return listing &&
+        listingNamesRows(self.rowsField, listing.field, self.sharedSteps)
+        ? listing
+        : undefined
+    },
+  }
+}
+
+/** The sources and the guide tree the adapter's row listing names. */
+export function markListedSourceViews(self: {
+  rowListing: RowSourceListing | undefined
+}) {
+  return {
+    /**
+     * #getter
+     * The sources the adapter lists whatever a region holds, a
+     * multi-BigWig's files or a MAF's species, in the adapter's order.
+     */
+    get adapterSources(): ListedRowSource[] | undefined {
+      return self.rowListing?.sources
+    },
+    /**
+     * #getter
+     * `TreeSidebarMixin`'s hook: the guide tree the adapter lists over
+     * the rows, a MAF's species tree.
+     */
+    get guideTreeNewick(): string | undefined {
+      return self.rowListing?.tree
+    },
+  }
+}
 
 /**
  * What the regions are resolved from: the fetched layers, the rows the

@@ -12,16 +12,51 @@ import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { TEXT_HALO_PX, TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
-import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
+import type { MarkType } from './configSchema.ts'
+import type { FacetLayout } from './facet.ts'
+import type {
+  DisplayMark,
+  MarkRegionData,
+  MarkRenderState,
+  TextMarkEntry,
+} from './markList.ts'
 import type {
   LgvSvgBodyProps,
   LgvSvgExportable,
+  SvgDisplayBox,
+  SvgViewFrame,
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type { YAxis } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
-type RenderSvgModel = MarkDisplayModel & LgvSvgExportable
+/**
+ * What the export's body reads off the display, spelled out rather than the
+ * concrete model, so a static export builds it as a plain host.
+ */
+export interface MarkSvgBodyModel extends SvgDisplayBox {
+  markList: DisplayMark[]
+  markTypes: MarkType[]
+  textMarkEntries: TextMarkEntry[]
+  rpcDataMap: ReadonlyMap<number, MarkRegionData>
+  renderState: MarkRenderState
+  plotBox: { yTop: number; plotHeight: number }
+  facetLayout: FacetLayout
+  effectiveRowHeight: number
+  drawsRows: boolean
+  showRowSeparators: boolean
+  nrow: number
+  scrollTop: number
+  svgSidebar: SvgSidebarProps | undefined
+
+  // read by the shell's axes
+  axes: YAxis[]
+  canvasWidthPx: number
+}
+
+type RenderSvgModel = MarkSvgBodyModel & LgvSvgExportable
 
 // The text marks' labels as `<text>`, at the placements the screen draws,
 // measured in the export's font and inheriting it. Not an observer, since a
@@ -33,7 +68,7 @@ function MarkTextSvg({
   plotHeight,
   fontFamily,
 }: {
-  model: RenderSvgModel
+  model: MarkSvgBodyModel
   blocks: RenderBlock[]
   canvasWidth: number
   plotHeight: number
@@ -72,7 +107,13 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, MarkSvgBody)
 }
 
-function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
+/**
+ * The exported plot, mounted by the display shell over the containing view or
+ * over a static frame.
+ */
+export function MarkSvgBody(
+  props: LgvSvgBodyProps<MarkSvgBodyModel, SvgViewFrame>,
+) {
   const { model, canvasWidth, overlays, opts, renderBlocks } = props
   const plotGeometry = model.plotBox
   const { yTop, plotHeight } = plotGeometry

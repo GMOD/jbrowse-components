@@ -80,6 +80,8 @@ import { binnedFetchRegions, positionSource } from './markRequest.ts'
 import {
   markAutoscaleViews,
   markDiscoveredRowViews,
+  markListedSourceViews,
+  markRowListingViews,
   markDomainViews,
   markDrawnKeyViews,
   markRegionViews,
@@ -99,7 +101,6 @@ import {
   rowCompareLabel,
   rowCompareOf,
 } from './rowCompare.ts'
-import { listingNamesRows } from './rowTable.ts'
 import { TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -120,10 +121,7 @@ import type {
   AnyConfigurationModel,
   PlotWriteOptions,
 } from '@jbrowse/core/configuration'
-import type {
-  ListedRowSource,
-  RowSourceListing,
-} from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+import type { RowSourceListing } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
@@ -375,18 +373,11 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The adapter's row listing where it names the rows drawn: its field
-         * is `rows.field`, or the key a `flatten` in the shared steps wrote
-         * over its field. Undefined for an adapter that lists no rows, for one
-         * that lists another field, and until the listing for the current
-         * adapter config arrives.
+         * The adapter's row listing for the current adapter config, until
+         * which it is undefined, as for an adapter that lists none.
          */
-        get rowListing(): RowSourceListing | undefined {
-          const listing = readFor(self, self.sourceListing)
-          return listing &&
-            listingNamesRows(self.rowsField, listing.field, self.sharedSteps)
-            ? listing
-            : undefined
+        get adapterListing(): RowSourceListing | undefined {
+          return readFor(self, self.sourceListing) ?? undefined
         },
         /**
          * #getter
@@ -396,33 +387,19 @@ export function stateModelFactory(
         get rowListingSettled(): boolean {
           return !self.drawsRows || isCurrentRead(self, self.sourceListing)
         },
+      }))
+      .views(self => ({
         /**
          * #getter
          * True until the row listing settles, since the listing adds rows to
          * the ones the features name and reorders them.
          */
         get dataSuperseded(): boolean {
-          return !this.rowListingSettled
+          return !self.rowListingSettled
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * The sources the adapter lists whatever a region holds, a
-         * multi-BigWig's files or a MAF's species, in the adapter's order.
-         */
-        get adapterSources(): ListedRowSource[] | undefined {
-          return self.rowListing?.sources
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: the guide tree the adapter lists over
-         * the rows, a MAF's species tree.
-         */
-        get guideTreeNewick(): string | undefined {
-          return self.rowListing?.tree
-        },
-      }))
+      .views(self => markRowListingViews(self))
+      .views(self => markListedSourceViews(self))
       .views(self => ({
         /**
          * #method
