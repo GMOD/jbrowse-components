@@ -9,8 +9,8 @@ import {
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SHOW_ALL_REGIONS_LABELS = [
-  'Show all regions - each row fit to width',
-  'Show all regions - same bp per pixel',
+  'Show whole genome - each row fit to width',
+  'Show whole genome - same bp per pixel',
 ]
 
 describe('navigationMenuItems', () => {
@@ -78,12 +78,12 @@ describe('navigationMenuItems', () => {
     const { items, calls } = build()
     expect(items.slice(0, 3).map(i => ('label' in i ? i.label : ''))).toEqual([
       'Square view - average bp per pixel',
-      'Show all regions - each row fit to width',
-      'Show all regions - same bp per pixel',
+      'Show whole genome - each row fit to width',
+      'Show whole genome - same bp per pixel',
     ])
     labelled(items, 'Square view - average bp per pixel')?.onClick?.()
-    labelled(items, 'Show all regions - each row fit to width')?.onClick?.()
-    labelled(items, 'Show all regions - same bp per pixel')?.onClick?.()
+    labelled(items, 'Show whole genome - each row fit to width')?.onClick?.()
+    labelled(items, 'Show whole genome - same bp per pixel')?.onClick?.()
     expect(calls).toEqual(['square', 'fit', 'sameScale'])
   })
 
@@ -94,7 +94,7 @@ describe('navigationMenuItems', () => {
         i =>
           'label' in i &&
           typeof i.label === 'string' &&
-          i.label.startsWith('Show all regions - '),
+          i.label.startsWith('Show whole genome - '),
       ),
     ).toHaveLength(2)
   })
@@ -114,8 +114,8 @@ describe('navigationMenuItems', () => {
 
   test('the mark follows the fit rule in force', () => {
     for (const [state, expected] of [
-      [{}, 'Show all regions - each row fit to width'],
-      [{ ratio: 1 }, 'Show all regions - same bp per pixel'],
+      [{}, 'Show whole genome - each row fit to width'],
+      [{ ratio: 1 }, 'Show whole genome - same bp per pixel'],
     ] as const) {
       const { items } = build(state)
       expect(

@@ -56,12 +56,12 @@ interface NavigationModel extends FollowHost {
 const SHOW_ALL_REGIONS_MODES = [
   {
     value: 'fit',
-    label: 'Show all regions - each row fit to width',
+    label: 'Show whole genome - each row fit to width',
     keepMenuOpen: false,
   },
   {
     value: 'same',
-    label: 'Show all regions - same bp per pixel',
+    label: 'Show whole genome - same bp per pixel',
     keepMenuOpen: false,
   },
 ] as const
@@ -69,7 +69,7 @@ const SHOW_ALL_REGIONS_MODES = [
 /**
  * The three zoom commands that act on every row at once, and the follow.
  *
- * The two show-all-regions rows act on a click and carry a mark: the mark names
+ * The two show-whole-genome rows act on a click and carry a mark: the mark names
  * the fit rule the rows are under (`coord.ratio`), which holds after a zoom back
  * in.
  */

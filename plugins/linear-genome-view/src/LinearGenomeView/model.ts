@@ -2930,12 +2930,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.settleCoarseBlocks()
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * the regions `pick` takes from the assembly, all in view
-       */
-      showRegionsOfAssembly(
+    .actions(self => {
+      function showRegionsOfAssembly(
         assemblyName: string | undefined,
         pick: (assembly: Assembly) => readonly Region[],
       ) {
@@ -2956,26 +2952,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
             self.showAllRegions()
           }
         }
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         * the assembly's whole genome: its chromosomes where it knows them,
+         * else every region (`Assembly.wholeGenomeRegions`)
+         */
+        showAllRegionsInAssembly(assemblyName?: string) {
+          showRegionsOfAssembly(assemblyName, a => a.wholeGenomeRegions)
+        },
+        /**
+         * #action
+         * every region of the assembly, the alt and unplaced contigs a
+         * chromosome-only whole genome leaves out included
+         */
+        showEveryRegionInAssembly(assemblyName?: string) {
+          showRegionsOfAssembly(assemblyName, a => a.regions ?? [])
+        },
+      }
+    })
     .actions(self => ({
-      /**
-       * #action
-       * the assembly's whole genome: its chromosomes where it knows them, else
-       * every region (`Assembly.wholeGenomeRegions`)
-       */
-      showAllRegionsInAssembly(assemblyName?: string) {
-        self.showRegionsOfAssembly(assemblyName, a => a.wholeGenomeRegions)
-      },
-      /**
-       * #action
-       * every region of the assembly, the alt and unplaced contigs a
-       * chromosome-only whole genome leaves out included
-       */
-      showEveryRegionInAssembly(assemblyName?: string) {
-        self.showRegionsOfAssembly(assemblyName, a => a.regions ?? [])
-      },
-
       /**
        * #action
        * this "clears the view" and makes the view return to the import form

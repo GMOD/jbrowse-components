@@ -393,7 +393,7 @@ Open the `drosophila` config and stack the flies as simulans, melanogaster,
 yakuba, melanogaster, pseudoobscura, melanogaster, virilis, so every band sets
 one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 
-- Pick **Show all regions - same bp per pixel** in the view menu
+- Pick **Show whole genome - same bp per pixel** in the view menu
   (`coord: { ratio: 1 }` in a session spec), which puts the rows on one bp/px,
   so row length on screen matches genome size.
 - Pick **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec),

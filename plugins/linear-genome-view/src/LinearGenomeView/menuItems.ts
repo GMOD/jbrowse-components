@@ -59,28 +59,23 @@ const TRACK_LABEL_OPTIONS = [
   { value: 'hidden', label: 'Hidden' },
 ] as const
 
-function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
+function showWholeGenomeMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   const [assemblyName, ...others] = self.assemblyNames
   const assembly =
     assemblyName !== undefined && others.length === 0
       ? getSession(self).assemblyManager.get(assemblyName)
       : undefined
-  const showWholeGenome = {
-    label: showWholeGenomeLabel(assembly),
-    onClick: () => {
-      self.showAllRegionsInAssembly()
+  return [
+    {
+      label: showWholeGenomeLabel(assembly),
+      onClick: () => {
+        self.showAllRegionsInAssembly()
+      },
     },
-  }
-  const everyRegion = everyRegionMenuItems(assembly, () => {
-    self.showEveryRegionInAssembly()
-  })
-  return everyRegion.length
-    ? {
-        label: 'Show whole genome',
-        type: 'subMenu',
-        subMenu: [showWholeGenome, ...everyRegion],
-      }
-    : showWholeGenome
+    ...everyRegionMenuItems(assembly, () => {
+      self.showEveryRegionInAssembly()
+    }),
+  ]
 }
 
 export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
@@ -97,7 +92,7 @@ export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.zoom(self.bpPerPx * r)
       },
     })),
-    showAllRegionsMenuItem(self),
+    ...showWholeGenomeMenuItems(self),
     {
       label: 'Custom zoom',
       onClick: () => {
@@ -231,7 +226,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     ...makeShowSubMenu([
-      showAllRegionsMenuItem(self),
+      ...showWholeGenomeMenuItems(self),
       {
         label: 'Ruler only',
         type: 'checkbox',

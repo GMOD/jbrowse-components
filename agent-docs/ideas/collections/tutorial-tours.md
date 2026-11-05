@@ -38,7 +38,7 @@ on a respine, 19 on the frame.
     instruction contradicts the figure it introduces.
 
 18) **`orthofinder_synteny/same_scale`** (`orthofinder_synteny.md`) — the view
-    menu's **Show all regions - each row fit to width** → **Show all regions -
+    menu's **Show whole genome - each row fit to width** → **Show whole genome -
     same bp per pixel**, one radio, the fly stack's rows visibly re-scaling
     from equal-length to genome-length, which the drosophila section's bullet
     describes and no figure holds. `keepMenuOpen: false` on both rows, so it

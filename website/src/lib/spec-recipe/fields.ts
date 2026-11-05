@@ -2456,7 +2456,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   },
   // Only a `true` has a click-path: the rows start each fit to their own width,
   // so a reader following the recipe does nothing for a `false` — the sibling
-  // row beside it, 'Show all regions - each row fit to width', is the way back
+  // row beside it, 'Show whole genome - each row fit to width', is the way back
   // off. Both are top-level rows in the header menu carrying the name they
   // share in the label, so a reader picks between them in place.
   // `{ ratio: 1 }`: every position axis on one bp/px
@@ -2466,7 +2466,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       : viewType === 'DotplotView'
         ? { path: 'Dotplot header → the ⋮ menu → Lock aspect ratio (same bp/px)' }
         : {
-            path: 'Synteny view header → View options → Show all regions - same bp per pixel',
+            path: 'Synteny view header → View options → Show whole genome - same bp per pixel',
             note: 'Row length becomes genome size, which is what makes the rows comparable.',
           },
   // How a standalone graph view gets its data: it opens on its own import form
