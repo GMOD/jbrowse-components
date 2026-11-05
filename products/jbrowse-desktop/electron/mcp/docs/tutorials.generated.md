@@ -503,8 +503,6 @@ The human mitochondrial genome drawn as a circular map from NCBI's FASTA and GFF
 Page: https://jbrowse.org/jb2/docs/tutorials/organelle_map/
 
 - https://jbrowse.org/code/jb2/main/test_data/human_mito/config.json
-- https://jbrowse.org/code/jb2/main/test_data/human_mito/mito.gff.gz
-- https://jbrowse.org/code/jb2/main/test_data/human_mito/sequence.fasta.gz
 
 ## Synteny visualization (OrthoFinder orthogroups)
 

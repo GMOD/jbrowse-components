@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1254)
+# model members with no description (1253)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -727,7 +727,6 @@ LinearGenomeView.height
 LinearGenomeView.hideTrack
 LinearGenomeView.horizontalScroll
 LinearGenomeView.horizontallyFlip
-LinearGenomeView.initialized
 LinearGenomeView.isScalebarRefNameMenuOpen
 LinearGenomeView.isTrackSelectorOpen
 LinearGenomeView.lastTrackDragY
