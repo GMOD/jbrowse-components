@@ -74,6 +74,20 @@ export function autoscaleGroupMembers(
   )
 }
 
+/**
+ * #api
+ * What a static host answers `ScoreAxisMixin` for its group: none, whatever
+ * `scale.group` names, since it stands in no view and has no peers to union
+ * with, so its axis autoscales over its own range alone.
+ */
+export function ungroupedAutoscaleViews() {
+  return {
+    get autoscaleGroup(): string | undefined {
+      return undefined
+    },
+  }
+}
+
 /** The span every defined range covers; undefined where none is. */
 export function unionRanges(
   ranges: readonly ([number, number] | undefined)[],

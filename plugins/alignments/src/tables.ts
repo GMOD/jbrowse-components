@@ -1,10 +1,6 @@
 import {
   INDICATOR_TRIANGLE_H,
   INDICATOR_TRIANGLE_HW,
-  computeCoverageTicks,
-  computeVisibleCoverageDomain,
-  computeVisibleCoverageStats,
-  coverageDefaultDomain,
   coverageDepthDomain,
   LABEL_FADE_FLOOR,
   LABEL_FADE_HI_RATIO,
@@ -29,6 +25,7 @@ import {
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   fullConfSnapshot,
+  getConf,
   readConfObject,
   refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
@@ -43,13 +40,14 @@ import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { adapterRefNameText } from '@jbrowse/core/util'
-import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
   abgrAlpha,
   abgrToHex,
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { types } from '@jbrowse/mobx-state-tree'
 import { connectorPlacement } from '@jbrowse/render-core/marks/connectorPlacement'
@@ -68,11 +66,9 @@ import {
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 import {
-  autoscaledDomainOf,
-  readYMember,
+  ScoreScaleMixin,
   resolveSymlogConstant,
-  widenRangeToRules,
-  yRuleNodes,
+  ungroupedAutoscaleViews,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { runInAction } from 'mobx'
@@ -94,6 +90,13 @@ import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/componen
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/configSchema.ts'
 import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
+import {
+  bandPlotViews,
+  coverageAutoscaleViews,
+  coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
+} from './LinearAlignmentsDisplay/coverageScaleViews.ts'
 import { applyChainStrandFrames } from './LinearAlignmentsDisplay/groupLayout.ts'
 import {
   buildRawDataByGroup,
@@ -240,6 +243,7 @@ import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SettledBlocksView } from '@jbrowse/wiggle-core'
 
 /**
  * #api
@@ -436,25 +440,37 @@ interface AlignmentsTablesInputs {
   laidOutByGroupFramed: LaidOutByGroup
   keyWindows: readonly KeyWindow[]
   paintedRefNamePosition: RefNamePosition | undefined
+  view: SettledBlocksView
+}
+
+const NO_FRAME: SettledBlocksView = {
+  initialized: false,
+  settledDynamicBlocks: [],
 }
 
 /**
  * The alignments display reduced to what its tables decide from: its config,
- * the fetched and laid-out reads, and the read color views the display
- * installs over its config-slot views. No session, view or autoruns. The
- * tables lay every section out uncollapsed at the configured read height and
- * always build the key.
+ * the fetched and laid-out reads with the regions as the frame, and the
+ * coverage scale and read color views the display installs
+ * over its config-slot views. No session, view or autoruns, and so no
+ * autoscale group. The tables lay every section out uncollapsed at the
+ * configured read height and always build the key.
  */
 const AlignmentsTablesHost = types
-  .model('AlignmentsTablesHost', {
-    type: types.literal('LinearAlignmentsDisplay'),
-    configuration: linearAlignmentsDisplayConfigSchema,
-  })
+  .compose(
+    'AlignmentsTablesHost',
+    ScoreScaleMixin(COVERAGE_Y_PATHS),
+    types.model({
+      type: types.literal('LinearAlignmentsDisplay'),
+      configuration: linearAlignmentsDisplayConfigSchema,
+    }),
+  )
   .volatile((): AlignmentsTablesInputs => ({
     rpcDataMap: new Map(),
     laidOutByGroupFramed: new Map(),
     keyWindows: [],
     paintedRefNamePosition: undefined,
+    view: NO_FRAME,
   }))
   .actions(self => ({
     setInputs(inputs: AlignmentsTablesInputs) {
@@ -462,8 +478,10 @@ const AlignmentsTablesHost = types
       self.laidOutByGroupFramed = inputs.laidOutByGroupFramed
       self.keyWindows = inputs.keyWindows
       self.paintedRefNamePosition = inputs.paintedRefNamePosition
+      self.view = inputs.view
     },
   }))
+  .views(ungroupedAutoscaleViews)
   .views(coverageBandSlotViews)
   .views(configSlotViews)
   .views(self => ({
@@ -485,7 +503,28 @@ const AlignmentsTablesHost = types
     get detectedModifications() {
       return detectedModificationsOf(self.rpcDataMap)
     },
+    get fitTargetHeight(): number {
+      return getConf(self, 'height')
+    },
   }))
+  .views(self => ({
+    get groupKeySpace() {
+      return groupKeySpaceOf(self.effectiveFacet)
+    },
+  }))
+  .views(self => hiddenGroupsViews(self))
+  .views(self => bandPlotViews(self))
+  .views(self => ({
+    get bandHeights() {
+      return {
+        coverageHeight: boundCoverageHeight(self.coverageHeight, self.bandPlot),
+      }
+    },
+  }))
+  .views(self => coverageStatsViews(self))
+  .views(self => coverageAutoscaleViews(self))
+  .views(self => coverageDomainViews(self))
+  .views(self => coverageTicksViews(self))
   .views(self => alignmentsColorViews(self))
 
 interface AlignmentsTablesHostModel extends Instance<
@@ -1242,69 +1281,24 @@ function rowsAt<T extends Record<string, ArrayLike<unknown>>>(
 }
 
 /**
- * The coverage band's depth axis as the display autoscales it: every shown
- * section's visible depths in every region under `coverage.encoding.y`'s
- * fence, rules and bounds, nice-rounded, with a log scale floored at one
- * read, and the ticks the display labels it with at its height.
+ * The coverage band's depth axis as the display autoscales it
+ * (`coverageScaleViews`): every shown section's visible depths in every
+ * region under `coverage.encoding.y`'s fence, rules and bounds, nice-rounded,
+ * with a log scale floored at one read, and the ticks the display labels it
+ * with at its height. A band the display does not draw has no ticks.
  */
-function coverageScale(
-  conf: DisplayConf,
-  sections: {
-    data: WorkerPileupData
-    region: { start: number; end: number }
-  }[],
-) {
-  const type: string = readYMember(conf, COVERAGE_Y_PATHS, 'type')
-  const zero: boolean = readYMember(conf, COVERAGE_Y_PATHS, 'zero')
-  const entries = sections.map(({ data, region }) => ({
-    visStart: Math.floor(region.start),
-    visEnd: Math.ceil(region.end),
-    data,
-  }))
-  const stats = computeVisibleCoverageStats(entries)
-  const range =
-    stats &&
-    widenRangeToRules(
-      computeVisibleCoverageDomain({
-        stats,
-        quantile: readYMember(conf, COVERAGE_Y_PATHS, 'fence'),
-        entries,
-      }),
-      yRuleNodes(conf, COVERAGE_Y_PATHS).map(rule =>
-        readConfObject(rule, 'value'),
-      ),
-    )
-  const domain = coverageDepthDomain(
-    autoscaledDomainOf({
-      range,
-      pinned: [
-        readYMember(conf, COVERAGE_Y_PATHS, 'domainMin'),
-        readYMember(conf, COVERAGE_Y_PATHS, 'domainMax'),
-      ],
-      fallback: coverageDefaultDomain(zero),
-      scaleType: type,
-      zero,
-    }) ?? [0, 0],
-    type,
-  )
-  const coverageHeight = boundCoverageHeight(
-    readConfObject(conf, ['coverage', 'height']),
-    {
-      height: readConfObject(conf, 'height'),
-      floor: readConfObject(conf, ['pileup', 'show']) ? MIN_BAND_HEIGHT : 0,
-    },
-  )
-  const symlogConstant: number = readYMember(conf, COVERAGE_Y_PATHS, 'constant')
+function coverageScale(host: AlignmentsTablesHostModel) {
+  const type = host.scaleType
+  const domain = host.coverageDepthDomain ?? coverageDepthDomain([0, 0], type)
   return {
     domain,
     type,
-    symlogConstant: resolveSymlogConstant(domain[0], domain[1], symlogConstant),
-    ticks: computeCoverageTicks(
-      domain,
-      coverageHeight,
-      type,
-      symlogConstant,
-    ).items.map(tick => tick.value),
+    symlogConstant: resolveSymlogConstant(
+      domain[0],
+      domain[1],
+      host.symlogConstant,
+    ),
+    ticks: host.coverageTicks?.items.map(tick => tick.value) ?? [],
   }
 }
 
@@ -1459,9 +1453,7 @@ function laidOutTables(
   const conf = host.configuration
   const { unit, featureHeight, effectiveFacet: facetSetting } = host
   const chain = unit === 'chain'
-  const hidden = noReads
-    ? undefined
-    : new Set<string>(readConfObject(conf.facet, 'hidden'))
+  const hidden = noReads ? undefined : host.hiddenGroups
   const order = orderedGroups(
     fetched,
     hidden,
@@ -1527,6 +1519,10 @@ function laidOutTables(
     laidOutByGroupFramed: laidByGroup,
     keyWindows: windows,
     paintedRefNamePosition,
+    view: {
+      initialized: true,
+      settledDynamicBlocks: regionInfos,
+    },
   })
   const colors = colorReads(host)
   const paint = markColors(colors.palette, host.baseLayer)
@@ -1672,15 +1668,7 @@ function laidOutTables(
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
-    coverageScale: coverageScale(
-      conf,
-      order.flatMap(({ key }) =>
-        [...sectionData.get(key)!].map(([i, data]) => ({
-          data,
-          region: regions[i]!,
-        })),
-      ),
-    ),
+    coverageScale: coverageScale(host),
     glyph: {
       intronAlpha: intronAlpha(featureHeight),
       label: {

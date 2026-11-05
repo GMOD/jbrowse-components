@@ -1,13 +1,6 @@
 import { lazy } from 'react'
 
 import {
-  computeCoverageTicks,
-  coverageDefaultDomain,
-  coverageDepthDomain,
-  computeVisibleCoverageDomain,
-  computeVisibleCoverageStats,
-} from '@jbrowse/alignments-core'
-import {
   COVERAGE_Y_PATHS,
   coverageBandSlotActions,
   coverageBandSlotViews,
@@ -35,7 +28,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
@@ -61,13 +54,7 @@ import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
-import {
-  ScoreScaleMixin,
-  resolveSymlogConstant,
-  visibleStats,
-  widenRangeToRules,
-} from '@jbrowse/wiggle-core'
+import { ScoreScaleMixin, resolveSymlogConstant } from '@jbrowse/wiggle-core'
 import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
@@ -135,6 +122,13 @@ import {
   configSlotViews,
   requireReadsConf,
 } from './configSlotViews.ts'
+import {
+  bandPlotViews,
+  coverageAutoscaleViews,
+  coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
+} from './coverageScaleViews.ts'
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import { exportedReads } from './exportedReads.ts'
 import {
@@ -509,6 +503,10 @@ export default function stateModelFactory(
           return this.drawsConnectors ? 'all' : 'none'
         },
       }))
+      .views(self => bandPlotViews(self))
+      .views(self => coverageStatsViews(self))
+      .views(self => coverageAutoscaleViews(self))
+      .views(self => coverageDomainViews(self))
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
@@ -771,110 +769,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           */
-          get coverageScaleType() {
-            return scaleTypeCode(self.scaleType)
-          },
-
-          /**
-           * #getter
-           * The depth stats of every SHOWN group in the settled blocks;
-           * hidden lanes are excluded.
-           */
-          get statsInView() {
-            const hidden = self.hiddenGroups
-            return visibleStats({
-              active: self.showCoverage,
-              view: self.view,
-              payloadFor: index => self.rpcDataMap.get(index),
-              itemsFor: grouped =>
-                grouped.groups
-                  .filter(({ key }) => !hidden.has(key))
-                  .map(({ data }) => data),
-              accumulate: entries => computeVisibleCoverageStats(entries),
-            })
-          },
-          /**
-           * #getter
-           * The depth every SHOWN group spans, so stacked sections share a
-           * scale.
-           */
-          get autoscaleRange(): [number, number] | undefined {
-            const walked = this.statsInView
-            return walked
-              ? widenRangeToRules(
-                  computeVisibleCoverageDomain({
-                    stats: walked.stats,
-                    quantile: self.fenceQuantile,
-                    entries: walked.entries,
-                  }),
-                  self.scoreRules.map(rule => rule.value),
-                )
-              : undefined
-          },
-          /**
-           * #getter
-           * The least and greatest depth in view, unfenced.
-           */
-          get valuesInView(): [number, number] | undefined {
-            const walked = this.statsInView
-            return walked
-              ? [walked.stats.scoreMin, walked.stats.scoreMax]
-              : undefined
-          },
-
-          /**
-           * #getter
-           * Depth has a floor of 0 while the axis reaches it, so an unpinned
-           * bottom stays there whatever a rule below it asks for; with
-           * `coverage.encoding.y.scale.zero` off it spans the depths in view.
-           */
-          get defaultScoreDomain(): [number | undefined, number | undefined] {
-            return coverageDefaultDomain(self.scaleZero)
-          },
-
-          /**
-           * #getter
-           * The autoscaled depth domain. Undefined until some region holds
-           * one.
-           */
-          get coverageDomain(): [number, number] | undefined {
-            return self.autoscaledDomain
-          },
-
-          /**
-           * #getter
-           * The domain the coverage band draws against: `coverageDomain` with a
-           * log scale's floor pulled up to one read (see
-           * `coverageDepthDomain`). Every consumer reads this one — the y-axis
-           * ticks and both renderers' normalizers.
-           */
-          get coverageDepthDomain() {
-            return this.coverageDomain
-              ? coverageDepthDomain(this.coverageDomain, self.scaleType)
-              : undefined
-          },
-
-          /**
-           * #getter
-           * The coverage band's own ladder (`computeCoverageTicks`), which
-           * `valueScales` hands the chrome in place of the mixin's. Takes the
-           * raw `coverage.encoding.y.scale.constant`, resolved from the same domain as
-           * `renderState`, so the labels sit on the bars.
-           */
-          get coverageTicks() {
-            return this.coverageDepthDomain
-              ? computeCoverageTicks(
-                  this.coverageDepthDomain,
-                  this.bandHeights.coverageHeight,
-                  self.scaleType,
-                  self.symlogConstant,
-                )
-              : undefined
-          },
-
-          /**
-           * #getter
            * The arc color slots plotted, mapped to legend buckets, for curved
            * arcs and the read cloud alike. Empty unless an overlay is on with
            * the legend shown.
@@ -940,20 +834,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The plot the three bands are taken from, which the resize handles
-           * drag against and `bandHeights` binds within. Leaves the pileup a
-           * row while it shows. Reads `fitTargetHeight`, not `height`, which
-           * derives from the layout these heights feed in grow mode.
-           */
-          get bandPlot() {
-            return {
-              height: self.fitTargetHeight,
-              floor: self.showPileup ? MIN_BAND_HEIGHT : 0,
-            }
-          },
-
-          /**
-           * #getter
            * The below-coverage bands as stated: the height slots, the settings
            * and whether any lane has arcs or a sashimi junction bound for its
            * strip.
@@ -981,7 +861,7 @@ export default function stateModelFactory(
           get bandHeights() {
             return boundBelowCoverageHeights(
               this.statedBelowCoverageBands,
-              this.bandPlot,
+              self.bandPlot,
             )
           },
 
@@ -1493,6 +1373,7 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => coverageTicksViews(self))
       .views(self => alignmentsColorViews(self))
       .views(self => ({
         /**

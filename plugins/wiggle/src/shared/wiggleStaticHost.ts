@@ -23,7 +23,10 @@ import {
   treeSidebarRowsConfigViews,
   treeSidebarTreeHookDefaults,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
-import { YFieldConfigMixin } from '@jbrowse/wiggle-core'
+import {
+  YFieldConfigMixin,
+  ungroupedAutoscaleViews,
+} from '@jbrowse/wiggle-core'
 
 import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
 import { multiQuantitativeWiggleConfigSchema } from '../MultiQuantitativeTrack/displaySchema.ts'
@@ -69,7 +72,8 @@ const NO_FRAME: WiggleStaticFrame = {
  * The wiggle display reduced to its config, the fetched scores and the frame
  * they were fetched over, under the views the display installs, in the
  * display's order, its row views and row hooks among them. No session, no
- * view, no autoruns. The tables and the static SVG export both run it.
+ * view, no autoruns, and so no autoscale group: the axis autoscales over
+ * this track alone. The tables and the static SVG export both run it.
  */
 function wiggleStaticHost(
   configuration:
@@ -103,6 +107,7 @@ function wiggleStaticHost(
         return trackCanvasWidthPx(self.host)
       },
     }))
+    .views(ungroupedAutoscaleViews)
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
     .views(self => treeSidebarRowsConfigViews(self))

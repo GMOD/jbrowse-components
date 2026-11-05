@@ -703,6 +703,16 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
   )
 })
 
+test('a coverage band the display does not draw autoscales to nothing and labels no ticks', async () => {
+  const hidden = await engine.alignments({
+    ...BAM,
+    display: { coverage: { show: false } },
+  })
+  expect(hidden.coverage.depth).toEqual([])
+  expect(hidden.coverageScale.domain).toEqual([0, 0])
+  expect(hidden.coverageScale.ticks).toEqual([])
+})
+
 test('the coverage ticks fit the band the track height leaves, as the display draws it', async () => {
   const tallBand = { coverage: { height: 100 } }
   const roomy = await engine.alignments({

@@ -110,7 +110,57 @@ describe('the coverage band over volvox reads', () => {
       name: 'encoding.y rules',
       config: { coverage: { encoding: { y: { rules: [{ value: 60 }] } } } },
     },
+    {
+      name: 'encoding.y a fixed domain',
+      config: {
+        coverage: {
+          encoding: { y: { scale: { domainMin: 5, domainMax: 20 } } },
+        },
+      },
+    },
+    {
+      name: 'encoding.y domainMin alone, zero off',
+      config: {
+        coverage: {
+          encoding: { y: { scale: { domainMin: 3, zero: false } } },
+        },
+      },
+    },
+    {
+      name: 'encoding.y log with a pinned max',
+      config: {
+        coverage: {
+          encoding: { y: { scale: { type: 'log', domainMax: 100 } } },
+        },
+      },
+    },
+    {
+      name: 'encoding.y a clip fence',
+      config: {
+        coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
+      },
+    },
+    {
+      name: 'encoding.y a group, alone in its view',
+      config: { coverage: { encoding: { y: { scale: { group: 'shared' } } } } },
+    },
+    { name: 'v4 autoscale local', config: { autoscale: 'local' } },
+    { name: 'v4 autoscale global', config: { autoscale: 'global' } },
+    { name: 'v4 autoscale globalsd', config: { autoscale: 'globalsd' } },
+    {
+      name: 'v4 autoscale localpercentile',
+      config: { autoscale: 'localpercentile' },
+    },
+    { name: 'v4 minScore and maxScore', config: { minScore: 5, maxScore: 20 } },
+    { name: 'v4 scaleType log', config: { scaleType: 'log' } },
     { name: 'facet by strand', config: { facet: 'strand' } },
+    {
+      name: 'facet by strand, log',
+      config: {
+        facet: 'strand',
+        coverage: { encoding: { y: { scale: { type: 'log' } } } },
+      },
+    },
     {
       name: 'facet by strand, one hidden',
       config: { facet: { field: 'strand', hidden: ['-1'] } },

@@ -3,6 +3,7 @@ export {
   retiredScaleSpellings,
   valueScaleOf,
 } from './retiredYScale.ts'
+export { ungroupedAutoscaleViews } from './autoscaleGroup.ts'
 export { yChannelSchema } from './yChannelConfigSchema.ts'
 export { yEncodingSchema } from './yEncodingConfigSchema.ts'
 export { yFieldChannelSchema } from './yFieldChannelConfigSchema.ts'
