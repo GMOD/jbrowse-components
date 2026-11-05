@@ -207,10 +207,9 @@ import btn from '../styles/button.module.css'
     gap: 1rem;
   }
 
-  /* Hero and Genome Hubs are the same layout: a column of copy that becomes a
-     half-width pair with its screenshot on a wide screen. */
-  .hero-row,
-  .hubs-row {
+  /* A column of copy that becomes a half-width pair with its screenshot on a
+     wide screen. */
+  .hero-row {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -218,26 +217,18 @@ import btn from '../styles/button.module.css'
   .hero-row {
     margin-bottom: clamp(2rem, 5vw, 3rem);
   }
-  .hero-text,
-  .hubs-text {
+  .hero-text {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
-  .hero-image img,
-  .hubs-image img {
+  .hero-image img {
     border-radius: var(--card-radius);
     border: 1px solid var(--color-border);
     height: auto;
     width: 100%;
     display: block;
   }
-  /* A desktop-app screenshot scaled to a phone width is unreadable, and it's
-     only reinforcing the text beside it. */
-  .hubs-image {
-    display: none;
-  }
-
   .newsletter-hero {
     text-align: center;
     padding: 20px 24px;
@@ -250,12 +241,6 @@ import btn from '../styles/button.module.css'
     color: var(--color-text-muted);
     margin: 0 0 8px;
   }
-  .hubs-list {
-    margin: 0;
-    padding-left: 1.2rem;
-    line-height: 1.6;
-  }
-
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
@@ -267,15 +252,12 @@ import btn from '../styles/button.module.css'
     border: 1px solid var(--color-border);
     border-radius: var(--card-radius);
     background: var(--color-surface);
+    gap: 0.5rem;
+    padding: 1.25rem;
   }
   .card:hover {
     border-color: var(--card-hover-border);
     box-shadow: var(--card-hover-shadow);
-  }
-
-  .card {
-    gap: 0.5rem;
-    padding: 1.25rem;
   }
   .card-icon {
     color: var(--color-primary);
@@ -334,19 +316,13 @@ import btn from '../styles/button.module.css'
   }
 
   @media (min-width: 900px) {
-    .hero-row,
-    .hubs-row {
+    .hero-row {
       flex-direction: row;
       align-items: center;
     }
     .hero-text,
-    .hero-image,
-    .hubs-text,
-    .hubs-image {
+    .hero-image {
       flex: 50%;
-    }
-    .hubs-image {
-      display: block;
     }
   }
 </style>
