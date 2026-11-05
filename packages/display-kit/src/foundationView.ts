@@ -58,7 +58,7 @@ export function containingHost(self: IStateTreeNode): RegionHost {
  * `renderSvg` overrides `canvasWidth` with the shell's own width (see
  * `LgvSvgBodyProps`).
  */
-export function trackCanvasWidthPx(host: RegionHost) {
+export function trackCanvasWidthPx(host: Pick<RegionHost, 'trackWidthPx'>) {
   return host.trackWidthPx
 }
 

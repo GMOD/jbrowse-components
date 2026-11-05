@@ -1,4 +1,5 @@
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   bandedRowViews,
@@ -99,7 +100,7 @@ function wiggleStaticHost(
     }))
     .views(self => ({
       get canvasWidthPx() {
-        return self.host.trackWidthPx
+        return trackCanvasWidthPx(self.host)
       },
     }))
     .views(self => wiggleConfigViews(self))

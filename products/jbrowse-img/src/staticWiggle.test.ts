@@ -74,8 +74,6 @@ const svgOpts = {
   fontSize: 13,
 }
 
-const DISPLAY_CLIP = 'display-clip-'
-
 function parse(svg: string) {
   return new DOMParser().parseFromString(svg, 'image/svg+xml')
 }
@@ -86,16 +84,14 @@ function parse(svg: string) {
  * group's end.
  */
 function fromDisplayClip(doc: Document) {
-  const defs = doc.querySelector(
-    `clipPath[id^="${DISPLAY_CLIP}"]`,
-  )?.parentElement
+  const defs = doc.querySelector('clipPath[id^="display-clip-"]')?.parentElement
   const group = defs?.parentElement
   if (!defs?.firstElementChild || !group) {
     throw new Error('no display clip in the export')
   }
   const nodes = [...group.children]
   return {
-    id: defs.firstElementChild.id.slice(DISPLAY_CLIP.length),
+    id: defs.firstElementChild.id.replace(/^display-clip-/, ''),
     nodes: nodes.slice(nodes.indexOf(defs)),
   }
 }
