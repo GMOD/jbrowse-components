@@ -548,3 +548,59 @@ test('label density leaves out the features of a hidden section', async () => {
   expect(free.labels.text.length).toBeGreaterThan(0)
   expect(atTheLimit.labels.text).toEqual(free.labels.text)
 })
+
+// The worker records a box's value as it colors it, before the region's
+// window drops the boxes outside it, so a transcript crossing the region on
+// its intron alone records a value no box on screen paints. The display keys
+// what its on-screen features' boxes paint (`onScreenColorValues`), and the
+// export calls the same key.
+test('the key leaves out a value only a box outside the region paints', async () => {
+  const t = await engine.features({
+    adapterConfig: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'spanning',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+          type: 'mRNA',
+          source: 'intronOnly',
+          subfeatures: [
+            { refName: 'ctgA', start: 0, end: 100, type: 'exon' },
+            { refName: 'ctgA', start: 900, end: 1000, type: 'exon' },
+          ],
+        },
+        {
+          uniqueId: 'inside',
+          refName: 'ctgA',
+          start: 400,
+          end: 600,
+          type: 'mRNA',
+          source: 'drawn',
+          subfeatures: [
+            { refName: 'ctgA', start: 400, end: 600, type: 'exon' },
+          ],
+        },
+        {
+          uniqueId: 'beside',
+          refName: 'ctgA',
+          start: 450,
+          end: 550,
+          type: 'mRNA',
+          source: 'alsoDrawn',
+          subfeatures: [
+            { refName: 'ctgA', start: 450, end: 550, type: 'exon' },
+          ],
+        },
+      ],
+    },
+    region: { refName: 'ctgA', start: 300, end: 700 },
+    bpPerPx: 1,
+    display: { ...GROW, encoding: { color: { field: 'source' } } },
+  })
+  expect(t.features.id).toEqual(
+    expect.arrayContaining(['spanning', 'inside', 'beside']),
+  )
+  expect([...t.legend.label].sort()).toEqual(['alsoDrawn', 'drawn'])
+})

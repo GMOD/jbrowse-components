@@ -1,6 +1,7 @@
 import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
 
 import { fieldColorCandidates } from '../shared/fieldColorCandidates.ts'
+import { facetField, sectionIdsOf } from './facet.ts'
 
 import type {
   ColorValues,
@@ -8,6 +9,7 @@ import type {
   SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { featureColorViews } from '../shared/featureColorViews.ts'
+import type { FeatureFacet } from './facet.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 
@@ -123,4 +125,53 @@ export function featureColorKey(
         colorKeyTitle,
       )
     : []
+}
+
+/**
+ * The key a feature display draws for what `regions` painted: narrowed to the
+ * `onScreen` features where the window is known, less the values only a
+ * section in `hiddenGroups` painted, and in the sections' order where the
+ * `facet` reads the color's own field (`featureColorKey`).
+ */
+export function featureColorScales(
+  colors: FeatureColors &
+    Pick<ReturnType<typeof featureColorViews>, 'categoricalColorField'>,
+  regions: readonly Pick<
+    FeatureDataResult,
+    | 'colorValues'
+    | 'rectColorValues'
+    | 'rectFeatureIndices'
+    | 'flatbushItems'
+    | 'rectPositions'
+  >[],
+  {
+    onScreen,
+    facet,
+    hiddenGroups,
+  }: {
+    onScreen: ReadonlySet<string> | undefined
+    facet: FeatureFacet | undefined
+    hiddenGroups: ReadonlySet<string>
+  },
+) {
+  const sectionOf =
+    facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
+  return featureColorKey(
+    colors,
+    onScreen
+      ? regions.map(data => onScreenColorValues(data, onScreen))
+      : regions,
+    {
+      isHidden:
+        sectionOf && (section => hiddenGroups.has(sectionOf(section).key)),
+      order:
+        facet && facet.field === colors.categoricalColorField?.field
+          ? scale => ({
+              ...facetField(facet),
+              label: scale.label,
+              unknown: scale.unknown,
+            })
+          : undefined,
+    },
+  )
 }

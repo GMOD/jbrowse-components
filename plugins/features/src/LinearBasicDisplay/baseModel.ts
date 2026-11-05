@@ -72,6 +72,7 @@ import {
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createFeatureDetailsOpener } from '../shared/openFeatureDetails.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
+import { basicDisplayLayoutViews } from './basicDisplayLayoutViews.ts'
 import { colorViews } from './colorViews.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
@@ -79,8 +80,8 @@ import {
   labelScrollBucket,
 } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
-import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
-import { facetField, hiddenSectionFeatureIds, sectionIdsOf } from './facet.ts'
+import { featureColorScales } from './derivedColorKey.ts'
+import { hiddenSectionFeatureIds } from './facet.ts'
 import { featureBandViews } from './featureBandViews.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -109,11 +110,7 @@ import {
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
-import {
-  labelVisibility,
-  modeCanShowDescription,
-  modeCanShowName,
-} from './showLabelsMode.ts'
+import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
   featureTrackMenuItems,
   colorBySubMenuItems,
@@ -463,28 +460,6 @@ export default function baseStateModelFactory(
         }
         return widthPx
       },
-      /**
-       * #getter
-       * On-screen gene features per pixel, which `auto` holds to the same
-       * threshold so gene names outlast a crowd of other features. Undefined
-       * with no gene on screen.
-       */
-      get geneLabelDensityPerPx() {
-        const ids = this.onScreenFeatureIds
-        const widthPx = this.onScreenWidthPx
-        if (!ids || widthPx === 0) {
-          return undefined
-        }
-        const geneIds = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const item of data.flatbushItems) {
-            if (item.gene && ids.has(item.featureId)) {
-              geneIds.add(item.featureId)
-            }
-          }
-        }
-        return geneIds.size > 0 ? geneIds.size / widthPx : undefined
-      },
     }))
     .views(self => ({
       /**
@@ -562,51 +537,10 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * Which of the shown labels draw at the on-screen feature density:
-       * names, descriptions, and whether only gene names survive.
-       */
-      // Gated here rather than only at `renderedShowLabels`, so layout, hit
-      // testing, the DOM overlay and the SVG export agree; otherwise rows
-      // reserve label height nothing uses.
-      get labelVisibility() {
-        return labelVisibility({
-          name: this.showNames,
-          description: this.showDescriptions,
-          collapsed: this.displayMode === 'collapsed',
-          density: self.labelDensityPerPx,
-          geneDensity: () => self.geneLabelDensityPerPx,
-        })
-      },
-
-      /**
-       * #getter
-       */
-      get showLabels() {
-        return this.labelVisibility.showLabels
-      },
-
-      /**
-       * #getter
-       * Past the name threshold, with the gene features alone still under
-       * it: gene names stay and every other name goes.
-       */
-      get geneNamesOnly() {
-        return this.labelVisibility.geneNamesOnly
-      },
-
-      /**
-       * #getter
        * `labels.description.show`, the persisted intent, as `showNames` is.
        */
       get showDescriptions(): boolean {
         return getConf(self, ['labels', 'description', 'show'])
-      },
-
-      /**
-       * #getter
-       */
-      get effectiveShowDescriptions() {
-        return this.labelVisibility.showDescriptions
       },
 
       /**
@@ -724,33 +658,6 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Layout inputs shared by the base layout and every fit rung,
-       * `expandedGeneIds` included: a rung inheriting them without the
-       * exemption re-collapses the gene the user just opened.
-       */
-      get layoutInputs() {
-        const view = containingLgv(self)
-        return {
-          bpPerPx: view.coarseBpPerPx,
-          displayMode: self.displayMode,
-          pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
-          expandedGeneIds: self.expandedGeneIdSet,
-          facet: self.facet,
-          hiddenGroupKeys: self.hiddenGroups,
-          geneNamesOnly: self.geneNamesOnly,
-        }
-      },
-      /**
-       * #getter
-       * The features the ladder measures its rungs and its isoform solve
-       * against: the on-screen set in `fit` and `fixed`, undefined in
-       * `grow` (which measures the whole stack).
-       */
-      get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
-        return self.autoHeight ? undefined : self.onScreenFeatureIds
-      },
-      /**
-       * #getter
        * the tags the worker ranks a gene's isoforms by, which the sequence
        * panel reads to open on the isoform this display draws first
        */
@@ -781,15 +688,6 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * Whether the settings reserve `below` subfeature-label rows, which
-       * the fit ladder's `bare` rung depends on — with nothing
-       * reserved the rung would repack an identical stack.
-       */
-      get reservesBelowLabelRows() {
-        return self.effectiveSubfeatureLabels === 'below'
-      },
-      /**
-       * #getter
        * A feature track squeezes an overflowing stack into its height
        * rather than hide what overflows.
        */
@@ -797,6 +695,7 @@ export default function baseStateModelFactory(
         return false
       },
     }))
+    .views(self => basicDisplayLayoutViews(self))
     .views(featureBandViews)
     .views(self => ({
       /**
@@ -1453,30 +1352,11 @@ export default function baseStateModelFactory(
        * scale's key is its `domain` colors whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
-        const { facet, hiddenGroups, categoricalColorField } = self
-        const sectionOf =
-          facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
-        const onScreen = self.onScreenFeatureIds
-        const regions = [...self.rpcDataMap.values()]
-        return featureColorKey(
-          self,
-          onScreen
-            ? regions.map(data => onScreenColorValues(data, onScreen))
-            : regions,
-          {
-            isHidden:
-              sectionOf &&
-              (section => hiddenGroups.has(sectionOf(section).key)),
-            order:
-              facet && facet.field === categoricalColorField?.field
-                ? scale => ({
-                    ...facetField(facet),
-                    label: scale.label,
-                    unknown: scale.unknown,
-                  })
-                : undefined,
-          },
-        )
+        return featureColorScales(self, [...self.rpcDataMap.values()], {
+          onScreen: self.onScreenFeatureIds,
+          facet: self.facet,
+          hiddenGroups: self.hiddenGroups,
+        })
       },
       /**
        * #method

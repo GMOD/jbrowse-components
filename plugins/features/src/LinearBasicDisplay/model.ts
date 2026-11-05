@@ -14,7 +14,6 @@ import {
   categoryOf,
 } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
-import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
@@ -28,11 +27,9 @@ import {
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import { GENE_LIKE_FIELD } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseStateModelFactory from './baseModel.ts'
+import { basicDisplayGlyphViews } from './basicDisplayLayoutViews.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
-import {
-  GENE_GLYPH_MODE_OPTIONS,
-  resolvedGeneGlyphMode,
-} from './geneGlyphMode.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
@@ -106,12 +103,6 @@ export default function stateModelFactory(
         })
       },
 
-      // Collapsed mode forces 'none' here rather than in the renderer, since
-      // the label is baked in the worker.
-      get effectiveSubfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return self.displayMode === 'collapsed' ? 'none' : this.subfeatureLabels
-      },
-
       get showChevrons(): boolean {
         return getConf(self, ['chevrons', 'show'])
       },
@@ -137,24 +128,9 @@ export default function stateModelFactory(
           GENE_LIKE_FIELD,
         )
       },
-
-      // Off the live zoom: off the debounced one, a region fetched in the
-      // mode the view just left read as current for 500ms, and an export in
-      // that window drew it.
-      get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
-        return resolvedGeneGlyphMode(
-          this.geneGlyphMode,
-          containingLgv(self).bpPerPx,
-        )
-      },
-
-      // Off the raw mode, not `effectiveGeneGlyphMode`: `auto` resolves to
-      // `all` under 100bp/px and its job is to fit the track; only the user
-      // picking "All transcripts" withholds the trim.
-      get showsEveryIsoform() {
-        return this.geneGlyphMode === 'all'
-      },
-
+    }))
+    .views(self => basicDisplayGlyphViews(self))
+    .views(self => ({
       // Shown in every mode, so picking "All transcripts" from the control
       // does not make the control disappear.
       get showGeneGlyphNotice() {
@@ -212,7 +188,7 @@ export default function stateModelFactory(
 
       get geneGlyphCollapsed() {
         return (
-          this.effectiveGeneGlyphMode === 'representative' ||
+          self.effectiveGeneGlyphMode === 'representative' ||
           this.geneGlyphIsoformCap !== undefined
         )
       },

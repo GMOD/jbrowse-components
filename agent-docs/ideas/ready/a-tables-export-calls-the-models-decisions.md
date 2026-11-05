@@ -45,16 +45,28 @@ callback's names (`variantDataColorScales`). Still open:
   and mark sources run the model's own getters, and the wiggle and variants
   rows, row colors and row color key run `TreeSidebarMixin`'s
   ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
-- The features carry-overs in `plugins/features/src/tables.ts`: the collapsed
-  mode's forced `subfeatureLabels` of `'none'`, the `resolvedGeneGlyphMode`
-  call in the fetch args, and the hand-built `layoutInputs` handed to
-  `hostFeatureBand`.
 - Alignments' read colors and read key run the model's own getters
   (`alignmentsColorViews`); the read palette is still built by hand from the
   default theme. `alignmentsReads.parity.test.ts` holds no drift: the read
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title
   and `descending`.
+
+## Closed
+
+- The features carry-overs (collapsed mode's forced `subfeatureLabels`, the
+  `resolvedGeneGlyphMode` call, the `labelVisibility` inputs, the hand-built
+  `FeatureBandHost`, the color key's `isHidden`/`order`) run the model's own
+  getters (`basicDisplayGlyphViews`, `basicDisplayLayoutViews`) and one
+  `featureColorScales`
+  ([a-displays-render-inputs-run-on-a-plain-host](a-displays-render-inputs-run-on-a-plain-host.md)).
+  The export's `fitMeasureFeatureIds` had counted a hidden section's features;
+  the layout never places them and every measure skips an unplaced feature, so
+  that was equivalent. The key was not: the export keyed every value the worker
+  recorded, while the display keys only values an on-screen feature's fetched
+  box paints (`onScreenColorValues`), so a transcript crossing the region on
+  its intron alone put a value in the export's key that nothing drawn paints
+  (pinned in `packages/tables/src/features.test.ts`).
 
 ## Not a defect
 

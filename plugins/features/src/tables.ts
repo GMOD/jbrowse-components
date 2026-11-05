@@ -12,6 +12,10 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { runInAction } from 'mobx'
 
+import {
+  basicDisplayGlyphViews,
+  basicDisplayLayoutViews,
+} from './LinearBasicDisplay/basicDisplayLayoutViews.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
 import {
@@ -22,14 +26,12 @@ import {
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
-import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
+import { featureColorScales } from './LinearBasicDisplay/derivedColorKey.ts'
 import {
-  facetField,
   featureGroupSections,
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
 import { hostFeatureBand } from './LinearBasicDisplay/featureBandViews.ts'
-import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
 import {
   ARROW_LENGTH_PX,
   STEM_HALF_H_PX,
@@ -48,7 +50,6 @@ import {
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
-import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { subfeatureLabelsOf } from './RenderFeatureDataRPC/displayModes.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -361,15 +362,16 @@ export async function featureTables(
     displayId: 'tables',
   })
   const displayMode = readConfObject(conf, 'displayMode')
-  const collapsed = displayMode === 'collapsed'
-  // Collapsed mode forces 'none' as the display does, since the label is baked
-  // in the worker.
-  const subfeatureLabels = collapsed
-    ? 'none'
-    : subfeatureLabelsOf({
-        show: readConfObject(conf, ['labels', 'subfeatures', 'show']),
-        placement: readConfObject(conf, ['labels', 'subfeatures', 'placement']),
-      })
+  const view = { bpPerPx, coarseBpPerPx: bpPerPx }
+  const glyph = basicDisplayGlyphViews({
+    displayMode,
+    subfeatureLabels: subfeatureLabelsOf({
+      show: readConfObject(conf, ['labels', 'subfeatures', 'show']),
+      placement: readConfObject(conf, ['labels', 'subfeatures', 'placement']),
+    }),
+    geneGlyphMode: readConfObject(conf, 'geneGlyphMode'),
+    host: view,
+  })
   const facet = facetSettingOf({
     field: readConfObject(conf, ['facet', 'field']),
     sort: readConfObject(conf, ['facet', 'sort']),
@@ -383,7 +385,7 @@ export async function featureTables(
   const config = fullConfSnapshot(conf)
   const workerConfig = {
     ...pickDisplayConfig(config),
-    subfeatureLabels,
+    subfeatureLabels: glyph.effectiveSubfeatureLabels,
     ...(facet === undefined || facet.field === STRAND_FIELD
       ? {}
       : { facetField: facet.field }),
@@ -400,10 +402,7 @@ export async function featureTables(
           sequenceAdapter,
           region: { assemblyName: '', ...r },
           displayConfig: workerConfig,
-          geneGlyphMode: resolvedGeneGlyphMode(
-            readConfObject(conf, 'geneGlyphMode'),
-            bpPerPx,
-          ),
+          geneGlyphMode: glyph.effectiveGeneGlyphMode,
           bpPerPx,
           colorByFrame,
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
@@ -419,24 +418,13 @@ export async function featureTables(
     }),
   )
   const items = raws.flatMap(raw => raw.flatbushItems)
-  const shown = items.filter(item => !isHidden(item))
   const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
   const widthPx = widthsPx.reduce((a, b) => a + b, 0)
-  // each shown feature once, however many regions it crosses, as the display
-  // counts its on-screen ids (`labelDensityPerPx`)
-  const featureIds = new Set(shown.map(item => item.featureId))
-  const visibility = labelVisibility({
-    name: readConfObject(conf, ['labels', 'name', 'show']),
-    description: readConfObject(conf, ['labels', 'description', 'show']),
-    collapsed,
-    density: featureIds.size / widthPx,
-    geneDensity: () => {
-      const genes = new Set(
-        shown.filter(item => item.gene).map(item => item.featureId),
-      ).size
-      return genes > 0 ? genes / widthPx : undefined
-    },
-  })
+  // every fetched feature is on screen, each once however many regions it
+  // crosses, less those of a hidden section, as the display's on-screen ids
+  const onScreenFeatureIds = new Set(
+    items.filter(item => !isHidden(item)).map(item => item.featureId),
+  )
   const heightMode: string = readConfObject(conf, 'heightMode')
   const trackHeight: number = readConfObject(conf, 'height')
   const fontSize = labelFontSize(displayMode)
@@ -457,29 +445,28 @@ export async function featureTables(
       ]
     }),
   )
-  const band = hostFeatureBand({
+  const host = {
+    host: view,
     rpcDataMap,
-    layoutReady: true,
-    layoutInputs: {
-      bpPerPx,
-      displayMode,
-      pinnedFeatureIds: new Set(),
-      expandedGeneIds: new Set(),
-      facet,
-      hiddenGroupKeys,
-      geneNamesOnly: visibility.geneNamesOnly,
-    },
-    showLabels: visibility.showLabels,
-    effectiveShowDescriptions: visibility.showDescriptions,
+    displayMode,
+    showNames: readConfObject(conf, ['labels', 'name', 'show']),
+    showDescriptions: readConfObject(conf, ['labels', 'description', 'show']),
+    labelDensityPerPx: onScreenFeatureIds.size / widthPx,
+    onScreenFeatureIds,
+    onScreenWidthPx: widthPx,
+    layoutPinnedFeatureIdSet: new Set<string>(),
+    expandedGeneIdSet: new Set<string>(),
     facet,
-    fitMeasureFeatureIds:
-      heightMode === 'grow'
-        ? undefined
-        : new Set(items.map(item => item.featureId)),
-    fitHeightToDisplay: heightMode === 'fit',
+    hiddenGroups: hiddenGroupKeys,
     autoHeight: heightMode === 'grow',
-    showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
-    reservesBelowLabelRows: subfeatureLabels === 'below',
+    effectiveSubfeatureLabels: glyph.effectiveSubfeatureLabels,
+  }
+  const band = hostFeatureBand({
+    ...host,
+    ...basicDisplayLayoutViews(host),
+    layoutReady: true,
+    fitHeightToDisplay: heightMode === 'fit',
+    showsEveryIsoform: glyph.showsEveryIsoform,
     fitTargetHeight: trackHeight,
     labelFontSize: fontSize,
     hidesOverflow: false,
@@ -495,16 +482,10 @@ export async function featureTables(
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
   const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
-  const scales = featureColorKey(colors, raws, {
-    isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
-    order:
-      facet && facet.field === colors.categoricalColorField?.field
-        ? scale => ({
-            ...facetField(facet),
-            label: scale.label,
-            unknown: scale.unknown,
-          })
-        : undefined,
+  const scales = featureColorScales(colors, raws, {
+    onScreen: onScreenFeatureIds,
+    facet,
+    hiddenGroups: hiddenGroupKeys,
   })
   const key = colorKeyTables(scales)
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])

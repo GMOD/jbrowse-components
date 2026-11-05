@@ -159,6 +159,19 @@ since a read past the cap stays in the laid-out map on the overflow row
 (`sortLayout.ts`, the `maxRows` sentinel). Only the overlap rows read layout
 output, and each side keys the overlaps it draws.
 
+## Built: features' label and layout decisions
+
+`plugins/features/src/LinearBasicDisplay/basicDisplayLayoutViews.ts` holds two
+layers. `basicDisplayGlyphViews` (`effectiveSubfeatureLabels`,
+`effectiveGeneGlyphMode`, `showsEveryIsoform`) is installed by
+`LinearBasicDisplay`'s model over the base's hooks; `basicDisplayLayoutViews`
+(`geneLabelDensityPerPx`, `labelVisibility` and its three reads,
+`layoutInputs`, `fitMeasureFeatureIds`, `reservesBelowLabelRows`) is installed
+by the base model in front of `featureBandViews`. `tables.ts` runs both over a
+plain host and spreads the result into `hostFeatureBand`, and the color key is
+one `featureColorScales` both call, which closed a key drift (see
+[a-tables-export-calls-the-models-decisions](a-tables-export-calls-the-models-decisions.md)).
+
 ## Left
 
 - **`renderState`** (`wiggleDisplayViews`) on the static host, then the body.
