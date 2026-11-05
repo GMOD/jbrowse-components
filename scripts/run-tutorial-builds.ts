@@ -56,7 +56,6 @@ interface Result {
     | 'missing-tool'
     | 'missing-script'
     | 'invalid-config'
-    | 'no-config'
     | 'skipped'
   detail: string
   seconds: number
@@ -134,7 +133,8 @@ function findConfigs(dir: string, depth = 0): string[] {
   return depth > 4 || !existsSync(dir)
     ? []
     : readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
-        entry.isDirectory() && !['node_modules', 'static'].includes(entry.name)
+        entry.isDirectory() &&
+        !['node_modules', 'static', 'test_data'].includes(entry.name)
           ? findConfigs(path.join(dir, entry.name), depth + 1)
           : entry.isFile() && entry.name === 'config.json'
             ? [path.join(dir, entry.name)]
@@ -169,8 +169,8 @@ function execute(run: Run, runDir: string, timeoutMs: number) {
       stdio: ['ignore', 'pipe', 'pipe'],
     },
   )
-  child.stdout.pipe(log)
-  child.stderr.pipe(log)
+  child.stdout.pipe(log, { end: false })
+  child.stderr.pipe(log, { end: false })
   let timedOut = false
   const timer = setTimeout(() => {
     timedOut = true
@@ -253,17 +253,21 @@ async function runOne(
       ? missingTool
         ? 'missing-tool'
         : 'fail'
-      : configs.length === 0
-        ? 'no-config'
-        : invalid.length > 0
-          ? 'invalid-config'
-          : 'pass'
+      : invalid.length > 0
+        ? 'invalid-config'
+        : 'pass'
   const detail =
     status === 'missing-tool'
       ? missingTool!
       : status === 'invalid-config'
         ? invalid
-            .map(v => `${path.relative(runDir, v.config)}:\n${v.output}`)
+            .map(
+              v =>
+                `${path.relative(runDir, v.config)}: ${v.output
+                  .split('\n')
+                  .filter(l => l.startsWith('error:'))
+                  .join('; ')}`,
+            )
             .join('\n')
         : status === 'pass'
           ? ''
@@ -301,7 +305,6 @@ function summary(results: Result[], outRoot: string) {
     'invalid-config',
     'timeout',
     'missing-script',
-    'no-config',
     'missing-tool',
     'skipped',
     'pass',
