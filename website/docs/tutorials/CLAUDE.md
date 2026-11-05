@@ -1,19 +1,20 @@
 A tutorial shows a reader how to do a task in JBrowse. Cut a section that only
 convinces us, the authors, that a result is right.
 
-Show rather than tell: informative figures, minimal prose. No em-dashes in
-tutorials, code comments included.
+Put the results in informative figures and keep the prose short. Set an aside
+off with commas or parentheses, or give it its own sentence; tutorials and their
+code comments use no em-dashes.
 
-## Shape
+## Page scope and order
 
 - **A tutorial is one continuous line of work.** Each step consumes what the
   step before produced; if the sections could be reordered without breaking, the
-  page is a user guide. The spine can be a task (`display_settings`,
-  `cli_desktop`) rather than a dataset.
+  page is a user guide. The line of work can follow a task (`display_settings`,
+  `cli_desktop`) as well as a dataset.
 - Keep the preparation before the first figure (150 to 250 lines on most pages);
   payoff-first was declined.
-- One dataset by default. A second belongs only where the first raised the
-  question it answers.
+- Use one dataset by default, and add a second only where the first raised the
+  question the second answers.
 - A closing check against the raw data stays only as a JBrowse step a reader
   would repeat on their own data, such as opening the reads under a call. Cut a
   script that re-derives the figure's claim from the file.
@@ -22,11 +23,11 @@ tutorials, code comments included.
 
 ## Voice
 
-- Explore the data; don't argue. Cut the thesis paragraph (stop at the
-  observation), anticipate-and-correct, and moral framing ("the honest
-  outcome").
-- One sentence of orientation per step, then the mechanics. The goal is
-  unargued, not terse.
+- Describe what the data shows and stop at the observation. Cut a thesis
+  paragraph, a sentence that answers an objection the reader never raised, and
+  moral framing ("the honest outcome").
+- Open each step with one full sentence of orientation that states its goal
+  without arguing for it, then give the mechanics.
 - **The opening paragraph reads to someone who has never used JBrowse**: what
   the page looks at and why, in the reader's terms, before any JBrowse noun or
   display class name. It names the task and lists the loci.
@@ -47,10 +48,10 @@ tutorials, code comments included.
 - A gene symbol is `_italic_` in prose and bare in captions, headings, titles
   and link labels; a protein product is roman. `mappability_qc` is the page to
   copy.
-- A menu path in prose spells the app's label, with the ellipsis a row that
-  opens a dialog carries: `**Color by → Tag...**`. A caption keeps the path
-  bare. `Add track` (FAB menu) and `Add track...` (track hamburger) are both
-  real labels.
+- A menu path in prose spells the app's label, with the ellipsis the app shows
+  on a row that opens a dialog: `**Color by → Tag...**`. Write the path bare in
+  a caption. `Add track` (FAB menu) and `Add track...` (track hamburger) are
+  both real labels.
 
 ## Commands
 
@@ -103,10 +104,10 @@ tutorials, code comments included.
 - A `sidebar_label` leads with the word its kin lead with:
   `Synteny (MCScan anchors)`.
 - **A See also entry is a bare link** with no qualifier.
-- No convenience pitches ("nothing to install"). A genomes.jbrowse.org link is
-  welcome where the story uses it.
+- Describe setup by its steps, and cut a convenience pitch such as "nothing to
+  install". A genomes.jbrowse.org link is welcome where the story uses it.
 - Move a figure off a page and you move its card's crop source in
-  `gen-tutorial-thumbs.ts` too; nothing warns you.
+  `gen-tutorial-thumbs.ts` too, because no check compares the two.
 
 ## Before adding a locus
 

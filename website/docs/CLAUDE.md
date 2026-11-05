@@ -22,22 +22,22 @@
 - **A tagged fence renders app and CLI tabs**, so the prose says what the config
   is, never "add this to `tracks`" or "run the CLI command below". An assembly
   the add-genome form has no input for (`aliases`, `geneticCodes`) gets no app
-  tab, and the page owes that reader a sentence.
-- `config=` on a session fence grows a live link: prefer
+  tab, and the page gives that reader a sentence in its place.
+- `config=` on a session fence adds a live link: prefer
   `config=test_data/<name>/config.json`, relative so `JBROWSE_CODE_BASE`
   retargets it. An addtrack fence takes `loc=` (no spaces) from a locus the page
   already states. **Judge what the session shows**; `check-session-urls` passing
   says only that it opens.
 - **Show what a command prints in a `text output` fence directly under it**,
-  pasted from a real run; it joins the command's box. A file the command writes
-  stays a plain `text` fence.
+  pasted from a real run; the site renders it in the command's box. Put a file
+  the command writes in a plain `text` fence.
 - Write jexl the short way: `feature.rank`, not `get(feature,'rank')`.
 - `user_guides/` drives the UI; `config_guides/` shows the JSON.
 
 ## Voice
 
-Dry and scientific: the figure holds the result, and the prose describes what
-was done and what it means. A page opens with a plain paragraph, under no
-summary label, saying what it shows and what makes it work, without "this page".
-Don't restate the title, close on a superlative, or credit the result to the
-wrong mechanism.
+Write dry, scientific prose: the figure shows the result, and the prose
+describes what was done and what it means. A page opens with a plain paragraph,
+under no summary label, saying what it shows and what makes it work, without
+"this page". Open on something the title does not say, end on the last fact, and
+credit the result to the mechanism that produced it.
