@@ -12,8 +12,8 @@ import {
 import { MafFeatureSink } from './mafFeatureSink.ts'
 import { MafTableSink } from './mafFeatureTable.ts'
 
+import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
   RowSourceLister,
@@ -33,7 +33,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * gate was to write an adapter that simply did not declare `summaryAdapter`.
  */
 export abstract class MafAdapterBase<
-  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  CONF extends MafAdapterConfigModel = MafAdapterConfigModel,
 >
   extends BaseFeatureDataAdapter<CONF>
   implements RowSourceLister
@@ -43,7 +43,8 @@ export abstract class MafAdapterBase<
   })
 
   getSamples = cachedSetup({
-    setup: opts => getSamplesFromAdapter(this, opts.signal),
+    setup: opts =>
+      getSamplesFromAdapter(this.config, this.pluginManager, opts.signal),
   })
 
   /**

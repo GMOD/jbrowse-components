@@ -6,8 +6,8 @@ import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { MafAdapterBase } from './MafAdapterBase.ts'
 
+import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -42,7 +42,7 @@ type SubAdapterLoader = (
  * track.
  */
 export abstract class MafSubAdapterBase<
-  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  CONF extends MafAdapterConfigModel = MafAdapterConfigModel,
 > extends MafAdapterBase<CONF> {
   /** The sub-adapter's config, stated from this adapter's location slots. */
   protected abstract subAdapterConfig(): Record<string, unknown>

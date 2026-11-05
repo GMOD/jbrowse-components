@@ -1,5 +1,7 @@
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+
 /**
  * The slots every MAF adapter has beyond its own file format, the ones
  * `MafAdapterBase` reads. The config-doc generator renders a spread slot's
@@ -51,3 +53,8 @@ export function mafAdapterConfigSchemaFields({
     },
   } as const
 }
+
+/** The node of any MAF adapter, read through the slots all four declare. */
+export type MafAdapterConfigModel = ConfigModelForFields<
+  ReturnType<typeof mafAdapterConfigSchemaFields>
+>

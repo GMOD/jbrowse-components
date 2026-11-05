@@ -32,7 +32,7 @@ export function pickPifPrefix({
 }
 
 export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<PairwiseIndexedPAFAdapterConfig> {
-  private pif = new PifFile(this)
+  private pif = new PifFile(this.config, this.pluginManager)
 
   freeResources() {
     this.pif.clearChunkCache()

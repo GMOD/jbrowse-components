@@ -4,10 +4,10 @@ import { makeSourceResolver } from './parseAssemblyName.ts'
 import { makeRefNameFilter } from './taiIndex.ts'
 import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
+import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
 import type { KeepBlock } from './mafStanzaReader.ts'
 import type { TaiIndex, TaiSlice } from './taiSlice.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, Region } from '@jbrowse/core/util'
 
@@ -18,7 +18,7 @@ import type { FileLocation, Region } from '@jbrowse/core/util'
  * `BgzipTaffyAdapter`.
  */
 export abstract class MafTaiAdapterBase<
-  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  CONF extends MafAdapterConfigModel = MafAdapterConfigModel,
   SETUP extends TaiIndex = TaiIndex,
 > extends MafAdapterBase<CONF> {
   protected abstract configure: (opts?: BaseOptions) => Promise<SETUP>

@@ -1,4 +1,5 @@
 import { TabixIndexedFile } from '@gmod/tabix'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
@@ -8,11 +9,11 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 
 import { parsePifHeader, parsePifLine } from './util.ts'
 
+import type PairwiseIndexedPAFAdapterSchema from './PairwiseIndexedPAFAdapter/configSchema.ts'
 import type { PifLine, PifMeta } from './util.ts'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ConfigModelForSlots } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { LodTierInfo } from '@jbrowse/synteny-core'
 
@@ -23,21 +24,24 @@ import type { LodTierInfo } from '@jbrowse/synteny-core'
  * list whether the file carries a coarse tier, and scanning a range.
  *
  * A collaborator rather than a base class because the two adapters differ in
- * everything else — one is pairwise and one resolves PanSN samples — and
- * because the config reads happen here against the untyped `BaseFeatureDataAdapter`
- * view, leaving each adapter's own slot reads typed. Both adapters had this as
- * four members and a constructor apiece, and the constructors existed for
- * nothing else.
+ * everything else — one is pairwise and one resolves PanSN samples. Both
+ * adapters had this as four members and a constructor apiece, and the
+ * constructors existed for nothing else.
  */
+// the two slots both indexed PIF adapters declare identically
+type PifConfigModel = ConfigModelForSlots<
+  typeof PairwiseIndexedPAFAdapterSchema,
+  'pifGzLocation' | 'index'
+>
+
 export class PifFile {
   private tabix: TabixIndexedFile
-  constructor(adapter: BaseFeatureDataAdapter) {
-    const pm = adapter.pluginManager
+  constructor(conf: PifConfigModel, pm: PluginManager | undefined) {
     this.tabix = new TabixIndexedFile({
-      filehandle: openLocation(adapter.getConf('pifGzLocation'), pm),
+      filehandle: openLocation(readConfObject(conf, 'pifGzLocation'), pm),
       ...openTabixIndexFilehandle(
-        adapter.getConf(['index', 'location']),
-        adapter.getConf(['index', 'indexType']),
+        readConfObject(conf, ['index', 'location']),
+        readConfObject(conf, ['index', 'indexType']),
         pm,
       ),
       chunkCacheBudget: decompressedBytesBudget,

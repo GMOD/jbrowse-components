@@ -1,11 +1,12 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { parseNewick, writeNewick } from '@jbrowse/tree-sidebar'
 import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
 
 import type { MafSource } from '../types.ts'
+import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
 import type { SamplesTsvRow } from '@jbrowse/core/util/samplesTsv'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
@@ -196,23 +197,19 @@ function pruneTree(treeNewick: string, samples: MafSource[]) {
 }
 
 /**
- * {@link getSamplesFromConfig} against an adapter's own slots — what
- * `MafAdapterBase` holds in `getSamples`. A function rather than inline in that
- * class for the reason `ComparativeAdapterBase` hoists no config read at all: a
- * base generic over its config cannot prove a slot name to `getConf`, while a
- * plain `BaseFeatureDataAdapter` parameter resolves them against
- * `AnyConfigurationModel` — how `loadMafSummaryAdapter` already reads
- * `summaryAdapter` for the same four.
+ * {@link getSamplesFromConfig} against a MAF adapter's own slots — what
+ * `MafAdapterBase` holds in `getSamples`.
  */
 export function getSamplesFromAdapter(
-  self: BaseFeatureDataAdapter,
+  conf: MafAdapterConfigModel,
+  pluginManager: PluginManager | undefined,
   signal?: AbortSignal,
 ) {
   return getSamplesFromConfig(
-    self.getConf('nhLocation'),
-    self.getConf('samples'),
-    self.getConf('samplesTsvLocation'),
-    self.pluginManager,
+    readConfObject(conf, 'nhLocation'),
+    readConfObject(conf, 'samples'),
+    readConfObject(conf, 'samplesTsvLocation'),
+    pluginManager,
     signal,
   )
 }

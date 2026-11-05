@@ -45,7 +45,7 @@ function pifSide(line: PifLine): AlignedSide {
 }
 
 export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase<MultiGenomeIndexedPAFAdapterConfig> {
-  private pif = new PifFile(this)
+  private pif = new PifFile(this.config, this.pluginManager)
 
   freeResources() {
     this.pif.clearChunkCache()
