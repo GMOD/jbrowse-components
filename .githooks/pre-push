@@ -142,6 +142,8 @@ eval "$(node -e '
 # already has rather than walking to the root commit.
 zero=0000000000000000000000000000000000000000
 range_files=
+manifest_edited=
+imports_added=
 refspecs=
 found=
 to_main=
@@ -154,12 +156,20 @@ while read -r localref localsha remoteref remotesha; do
   refspecs=$refspecs$localref:$remoteref'
 '
   if [ "$remotesha" = "$zero" ]; then
-    files=$(git diff --name-only "$(git merge-base "$localsha" HEAD@{upstream} 2>/dev/null || echo "$localsha^")" "$localsha" 2>/dev/null || true)
+    range_base=$(git merge-base "$localsha" HEAD@{upstream} 2>/dev/null || echo "$localsha^")
   else
-    files=$(git diff --name-only "$remotesha" "$localsha" 2>/dev/null || true)
+    range_base=$remotesha
   fi
+  files=$(git diff --name-only "$range_base" "$localsha" 2>/dev/null || true)
   range_files=$range_files$files'
 '
+  if printf '%s\n' "$files" | grep -Eq '(^|/)package\.json$|^pnpm-lock\.yaml$'; then
+    manifest_edited=1
+  fi
+  if git diff -U0 "$range_base" "$localsha" -- '*.ts' '*.tsx' 2>/dev/null |
+    grep -Eq "^\+.*(from '|import\(|require\()"; then
+    imports_added=1
+  fi
 done
 
 # No refs on stdin (a hook run by hand) means check anyway rather than silently
@@ -328,6 +338,19 @@ diagrams_pid=$!
 slot_defaults=products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts
 jest "$slot_defaults" --ci --reporters=default >"$tmp/slot-defaults.log" 2>&1 &
 slot_defaults_pid=$!
+
+# The tests that read package.json against the import graph. Neither jb-test nor
+# test-related selects them, so a new import of an undeclared package, or a
+# declared one whose peer is not provided, only showed up on CI. A few seconds
+# together, so they run whenever the push touches a manifest, the lockfile or an
+# import specifier.
+manifest_pid=
+if [ -n "$manifest_edited$imports_added" ]; then
+  jest scripts/declaredDependencies.test.ts scripts/peerDependencies.test.ts \
+    scripts/releaseWorkspaces.test.ts scripts/workspaceLayering.test.ts \
+    --ci --reporters=default >"$tmp/manifest.log" 2>&1 &
+  manifest_pid=$!
+fi
 
 # Each examples-site's `astro check`, the first step of CI's smoke-test legs,
 # since a core type change can break a site's example. The four run at once,
@@ -644,6 +667,17 @@ if [ "$sstatus" != 0 ]; then
   status=$sstatus
 fi
 
+if [ -n "$manifest_pid" ]; then
+  mstatus=0
+  wait "$manifest_pid" || mstatus=$?
+  if [ "$mstatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: a package.json test failed (declared dependencies, peers, release workspaces or layering)" >&2
+    cat "$tmp/manifest.log" >&2
+    status=$mstatus
+  fi
+fi
+
 if [ -n "$validator_pid" ]; then
   vstatus=0
   wait "$validator_pid" || vstatus=$?
@@ -662,6 +696,12 @@ fi
 # compiled as browser source is exactly how main broke on 2026-08-13. It runs
 # last because it compiles what the fixers have just rewritten.
 bstatus=0
+# A dependency edit leaves each package's tsbuildinfo describing the old
+# declarations, and the incremental build then fails on them falsely.
+if [ -n "$manifest_edited" ]; then
+  find packages plugins products example-plugins -name tsconfig.build.esm.tsbuildinfo \
+    -not -path '*/node_modules/*' -delete 2>/dev/null || true
+fi
 eval "$cmd_build_esm" >"$tmp/build.log" 2>&1 || bstatus=$?
 if [ "$bstatus" != 0 ]; then
   echo >&2
