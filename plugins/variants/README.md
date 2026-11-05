@@ -47,25 +47,27 @@ record, a record calling no genotype included:
 ### variantTables
 
 A region of a multi-sample VCF as the variant display fetches, filters and
-paints it, as tables: `variants`, each record the display keeps, with its color
-and its `filter`; `info`, each INFO key's values aligned to `variants`, and
-`infoFields`, the header's declaration of each key; `annotations`, each record's
-SnpEff `ANN` or VEP `CSQ` consequences, a row per record and consequence, which
-then leave `info` (`consequenceTables`); `cells`, each sample's (or under
-`rows.field: 'haplotype'` each haplotype's) cell at each record, with its
-genotype, its `dosage` and the fill the display paints it; `rows`, the rows the
-cells name, top to bottom as the display arranges them by `rows` and stacks them
-in `facet`'s bands, each with its label and band; `bands`, each band's value and
-label, in stacking order; `legend`, `legendTitle` and `ramps`, the key the
-display shows; and `warnings`, the samples file's. With
-`genotypes.reference.show` off, the default, a reference call draws no cell.
-With `genotypes.show` off, and unset on a one-sample VCF, no row draws, so
-`rows` and `cells` are empty and the key is the records'. Several regions share
-the rows and the key, as the display's regions do: a record crossing regions is
-listed in each, under one `key`, every `variants` and `cells` row names its
-`region`'s index, and `cells.variant` indexes the joined `variants`. For a host
-that draws them itself, such as R through V8. The adapters must be registered on
-`pluginManager` (`registerVariantAdapters`).
+paints it, as tables: `variants`, each record the display keeps, with its
+`color` as the records band paints it (its SV class's, else
+`featureDefaultColor`, under no picked `encoding.color` and under `phaseSet`;
+else the alt cells' hue at full dose) and its `filter`; `info`, each INFO key's
+values aligned to `variants`, and `infoFields`, the header's declaration of each
+key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ` consequences, a row
+per record and consequence, which then leave `info` (`consequenceTables`);
+`cells`, each sample's (or under `rows.field: 'haplotype'` each haplotype's)
+cell at each record, with its genotype, its `dosage` and the fill the display
+paints it; `rows`, the rows the cells name, top to bottom as the display
+arranges them by `rows` and stacks them in `facet`'s bands, each with its label
+and band; `bands`, each band's value and label, in stacking order; `legend`,
+`legendTitle` and `ramps`, the key the display shows; and `warnings`, the
+samples file's. With `genotypes.reference.show` off, the default, a reference
+call draws no cell. With `genotypes.show` off, and unset on a one-sample VCF, no
+row draws, so `rows` and `cells` are empty and the key is the records'. Several
+regions share the rows and the key, as the display's regions do: a record
+crossing regions is listed in each, under one `key`, every `variants` and
+`cells` row names its `region`'s index, and `cells.variant` indexes the joined
+`variants`. For a host that draws them itself, such as R through V8. The
+adapters must be registered on `pluginManager` (`registerVariantAdapters`).
 
 ```js
 // type signature

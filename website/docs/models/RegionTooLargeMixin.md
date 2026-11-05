@@ -14,6 +14,9 @@ is over budget; the fetch runners commit what it measured, and
 `regionTooLarge` is derived from that last measurement. While the banner is
 up the fetch runs once per settled viewport and settings, which is the
 re-measure.
+The budget and the verdict are written in `regionTooLargeViews.ts`, over
+the leaves `RegionTooLargeGateHost` names, so a static export installs them
+on a model of its own and gates as the screen does.
 Composed by `MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and
 the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 
@@ -33,19 +36,19 @@ the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 | --- | --- |
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | The opt-in. Overridden with a literal `true` by gated displays, and `check-gated-adapter-budgets` insists on a literal: this mixin returns early on it in an autorun and in `commitFetchBytes`. |
 | <span id="getter-bytegateadapterconfig">**byteGateAdapterConfig**</span><br><code>Record&lt;string, unknown&gt;</code> | The adapter config the gate measures — the one at `byteGateAdapterPath`. Overridable for a display whose adapter config is synthesized rather than read off the track. |
-| <span id="getter-configuredfetchsizelimit">**configuredFetchSizeLimit**</span><br><code>number &#124; undefined</code> | The display's `fetchSizeLimit` slot, from `regionTooLargeConfigSchemaFields`. `number \| undefined`, because `getConf` returns `undefined` for a slot a composing display's schema never declared, which typing it `number` would hide — `resolveByteLimit` falls back closed, and reports why. |
 | <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | The density axis's verdict, and the whole of that axis's opt-in: `FeatureGateMixin` overrides it beside the measurement that fills it, and a byte-only display leaves it false. |
 | <span id="getter-bytegateadapterpath">**byteGateAdapterPath**</span><br><code>ByteGateAdapterPath</code> | Where on the track config the measured adapter sits. A tiered display overrides this one hook (MAF: `['adapter', 'summaryAdapter']` while `showSummary`), and both the measurement and the budget follow it. |
 | <span id="getter-adapterfetchsizelimit">**adapterFetchSizeLimit**</span><br><code>number &#124; undefined</code> | The measured adapter's own `fetchSizeLimit` slot, read off the live track config rather than the `adapterConfig` snapshot, which omits slots at their default. |
-| <span id="getter-configforceload">**configForceLoad**</span><br><code>boolean</code> | The declarative `forceLoad` slot. |
 | <span id="getter-gateviewportspanbp">**gateViewportSpanBp**</span><br><code>number &#124; undefined</code> | The span on screen, or undefined until the view is measured: the half of gateViewport the budget questions need. Split off because the identity half joins a string over `view.visibleRegions`, which rebuilds every gesture frame, and `aboveForceLoadFloor` sits under `regionTooLarge` — every gated display rebuilt it per frame to ask whether the span was 20 kb. |
 | <span id="getter-gateviewport">**gateViewport**</span><br><code>GateViewport &#124; undefined</code> | What a measurement taken now would be about: the span on screen, and a key for the stretch of genome it covers **and the settings it would be taken under**. Undefined until the view is measured, and with gateViewportSpanBp the mixin's only read of the view. Captured before the fetch's round trip, never at commit, so the stamp names the settings the worker actually counted under.<br><br>The settings term is `settingsFetchInputs`, the axis every family invalidates data on. It belongs in the measurement because the worker's density probe counts ADMITTED features (`densityGate`'s `admit`), so a filter admitting almost nothing is a different measurement of the same viewport — and while staleness was viewport-only, the main thread never went back to ask. The byte axis is an index read no `rpcProps` field can move; the rule is one rule rather than one per axis. |
+| <span id="getter-configuredfetchsizelimit">**configuredFetchSizeLimit**</span><br><code>number &#124; undefined</code> | The display's `fetchSizeLimit` slot, from `regionTooLargeConfigSchemaFields`. `number \| undefined`, because `getConf` returns `undefined` for a slot a composing display's schema never declared, which typing it `number` would hide — `resolveByteLimit` falls back closed, and reports why. |
+| <span id="getter-configforceload">**configForceLoad**</span><br><code>boolean</code> | The declarative `forceLoad` slot. |
 | <span id="getter-aboveforceloadfloor">**aboveForceLoadFloor**</span><br><code>boolean</code> | Whether the span on screen is at or above `AUTO_FORCE_LOAD_BP`, the one comparison against that constant. False on an unmeasured view. |
 | <span id="getter-gateexempt">**gateExempt**</span><br><code>boolean</code> | Nothing may gate on either axis: the `forceLoad` slot or the button. |
 | <span id="getter-estimatedfetchbytes">**estimatedFetchBytes**</span><br><code>number &#124; undefined</code> | The stored estimate's bytes; undefined when nothing has been measured. |
-| <span id="getter-gatemeasurementstale">**gateMeasurementStale**</span><br><code>boolean</code> | Whether the last measurement still describes what a fetch issued now would ask: the viewport on screen, under the settings on screen. True before any measurement. The triple's third term, the adapter tier, is not here — a tier swap drops the measurement outright (`ClearGateMeasurementsOnNavOrTierSwap`) rather than marking it stale. |
 | <span id="getter-gatebytelimit">**gateByteLimit**</span><br><code>number</code> | The byte budget: the adapter's limit, else the display's, doubled below `AUTO_FORCE_LOAD_BP`. Read only through `resolvedByteLimit()`. |
 | <span id="getter-gateactive">**gateActive**</span><br><code>boolean</code> | Whether the gate may act right now, on any axis: opted in, not exempt, view measured. The view is read last, so an ungated display never touches it. |
+| <span id="getter-gatemeasurementstale">**gateMeasurementStale**</span><br><code>boolean</code> | Whether the last measurement still describes what a fetch issued now would ask: the viewport on screen, under the settings on screen. True before any measurement. The triple's third term, the adapter tier, is not here — a tier swap drops the measurement outright (`ClearGateMeasurementsOnNavOrTierSwap`) rather than marking it stale. |
 | <span id="getter-densitygateactive">**densityGateActive**</span><br><code>boolean</code> | Whether the density axis may act: `gateActive`, and the span is above the floor — the one axis the floor applies to. Whether it has anything to say is `densityTooLarge`. |
 | <span id="getter-toolargestatus">**tooLargeStatus**</span><br><code>RegionTooLargeStatus</code> | The verdict and its banner text, from the stored estimate against `resolvedByteLimit()` and the density axis when it may act. |
 | <span id="getter-regiontoolarge">**regionTooLarge**</span><br><code>boolean</code> |  |
@@ -58,8 +61,8 @@ the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-resolvedbytelimit">**resolvedByteLimit**</span><br><code>() =&gt; number &#124; undefined</code> | The budget the worker enforces and the banner compares against — the one spelling of that pair. Undefined when the gate may not act. |
 | <span id="method-gatefetchstate">**gateFetchState**</span><br><code>() =&gt; GateFetchState</code> | The gate as it stands for a fetch about to be issued. Calling it is the capture, which is why it is a method. |
+| <span id="method-resolvedbytelimit">**resolvedByteLimit**</span><br><code>() =&gt; number &#124; undefined</code> | The budget the worker enforces and the banner compares against — the one spelling of that pair. Undefined when the gate may not act. |
 
 ## Actions
 

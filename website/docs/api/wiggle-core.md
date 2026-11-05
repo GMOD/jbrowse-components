@@ -181,6 +181,19 @@ the two ends of its value, one array where the packer ships a single scalar.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
+## ungroupedAutoscaleViews
+
+What a static host answers `ScoreAxisMixin` for its group: none, whatever
+`scale.group` names, since it stands in no view and has no peers to union
+with, so its axis autoscales over its own range alone.
+
+```js
+// type signature
+() => { readonly autoscaleGroup: string | undefined; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscaleGroup.ts)
+
 ## visibleStats
 
 The stats of what the settled blocks show, walked once so a display can

@@ -479,6 +479,7 @@ export default [
   '@jbrowse/display-kit/regionTooLargeConfigSchemaFields',
   '@jbrowse/display-kit/RegionTooLargeMixin',
   '@jbrowse/display-kit/regionTooLargeUtils',
+  '@jbrowse/display-kit/regionTooLargeViews',
   '@jbrowse/display-kit/renderDisplaySvg',
   '@jbrowse/display-kit/retiredSettings',
   '@jbrowse/display-kit/rowArrangementConfigSchema',

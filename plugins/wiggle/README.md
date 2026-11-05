@@ -8,6 +8,20 @@ JBrowse 2 wiggle adapters, tracks, etc.
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### staticWiggleSvg
+
+A quantitative track's display as its SVG export draws it, with no session: the
+fetch the display issues over `frame`, then the display's own views on the
+wiggle static host, then its export body in the display shell. The refNames in
+`frame` must be the adapter's, and the adapters registered on `pluginManager`.
+
+```js
+// type signature
+(pluginManager: PluginManager, { adapterConfig, display, frame, id, opts, trackType, }: StaticWiggleSvgArgs) => Promise<Element>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/staticSvg.tsx)
+
 ### wiggleTables
 
 A region, or several, of a quantitative track as the wiggle display fetches,

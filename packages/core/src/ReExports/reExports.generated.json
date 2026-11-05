@@ -4935,6 +4935,18 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/regionTooLargeViews": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "regionTooLargeActiveViews",
+        "regionTooLargeBudgetViews",
+        "regionTooLargeConfigViews",
+        "regionTooLargeFloorViews",
+        "regionTooLargeStatusViews",
+        "regionTooLargeVerdictViews"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/renderDisplaySvg": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4942,6 +4954,7 @@
         "SvgPinnedHighlight",
         "SvgYAxis",
         "renderDisplaySvg",
+        "renderDisplaySvgInFrame",
         "svgLegendGutterWidth"
       ],
       "worker": "stub",

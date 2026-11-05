@@ -26,7 +26,8 @@ A multi-genome synteny track as the multi-way display stacks it under a
 linear genome view, as tables: `lanes`, the anchor first and then each
 mate lane in the order a fresh load stacks it, with the contig, zoom and orientation
 it picked; `segments`, the stretches of each lane's sequence across the
-view, cut where a lane opens a hole for a deletion, each with the px it
+view, cut where a lane opens a hole for a deletion and stopped at the
+ends of its contig where the lane's assembly is given, each with the px it
 spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
 each gutter draws in paint order, a trapezoid from a span on its upper
 lane to a span on its lower one, with its color and the alpha it
@@ -40,7 +41,7 @@ are measured at.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, laneAssemblyOf, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
