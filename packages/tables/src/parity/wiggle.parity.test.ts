@@ -5,15 +5,15 @@ import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
-import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+
+import { encodeWiggleRegions } from '../../../../plugins/wiggle/src/shared/buildSourceRenderData.ts'
+import { scaleTypeCode } from '../../../render-core/src/scoreScale.ts'
 import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
-} from '@jbrowse/render-core/shaders/clipStripConsts'
-import { RENDERING_TYPE_XYPLOT } from '@jbrowse/wiggle-core'
-
-import { encodeWiggleRegions } from '../../../../plugins/wiggle/src/shared/buildSourceRenderData.ts'
+} from '../../../render-core/src/shaders/clipStrip.generated.ts'
+import { clipSide } from '../../../render-core/src/shaders/clipStrip.js.generated.ts'
+import { RENDERING_TYPE_XYPLOT } from '../../../wiggle-core/src/wiggleRenderModes.generated.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   COVERAGE_BIGWIG,
