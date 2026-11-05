@@ -55,12 +55,15 @@ export const DEVELOPER_CATEGORIES = [
 // One category per page, not tags: these are section headings on one page, and
 // `## See also` already links the sibling in another section with the reason.
 // 'Cancer genomics' and 'Structural variation' stay apart because neither is a
-// subset of the other. 'genomes.jbrowse.org' leads because its pages need
-// nothing installed. A section too big to scan splits into
-// TUTORIAL_SUBCATEGORIES rather than into more top-level headings.
+// subset of the other. 'Getting started' leads and 'genomes.jbrowse.org'
+// follows it, by a standing directive: the grant aim is JBrowse
+// running on other groups' websites, so installing and embedding it comes first,
+// even though the genomes.jbrowse.org pages need nothing installed. A section
+// too big to scan splits into TUTORIAL_SUBCATEGORIES rather than into more
+// top-level headings.
 export const TUTORIAL_CATEGORIES = [
-  'genomes.jbrowse.org',
   'Getting started',
+  'genomes.jbrowse.org',
   'Synteny & comparative genomics',
   'Pangenomes',
   'Structural variation',
@@ -100,13 +103,13 @@ export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
 // alphabetically. Includes the root-level and external cards only the landing
 // page shows.
 export const TUTORIAL_ORDER = [
+  'quickstart_web',
+  'quickstart_desktop',
+  'cli_desktop',
   'genomes_basics',
   'genomes_synteny',
   'genomes_proteins',
   'repeatmasker_classes',
-  'quickstart_web',
-  'quickstart_desktop',
-  'cli_desktop',
   'synteny_visualization',
   'allvsall_synteny',
   'hg002_haplotypes',

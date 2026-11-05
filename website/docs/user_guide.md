@@ -71,18 +71,18 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Tutorials
 
+### Getting started
+
+- [](/docs/quickstart_web)
+- [](/docs/quickstart_desktop)
+- [](/docs/tutorials/cli_desktop)
+
 ### genomes.jbrowse.org
 
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/repeatmasker_classes)
-
-### Getting started
-
-- [](/docs/quickstart_web)
-- [](/docs/quickstart_desktop)
-- [](/docs/tutorials/cli_desktop)
 
 ### Synteny & comparative genomics
 
