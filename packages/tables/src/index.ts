@@ -417,6 +417,12 @@ async function featureAndRecordTables(
   const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
   return {
     ...features,
+    warnings:
+      features.truncated > 0
+        ? [
+            `${features.truncated} features in view did not fit the display's rows and are left out of every table; read a smaller region, or a heightMode of fit`,
+          ]
+        : [],
     ...(await featureAttributeTables(pluginManager, {
       adapterConfig: args.adapterConfig,
       sequenceAdapter: args.sequenceAdapter,

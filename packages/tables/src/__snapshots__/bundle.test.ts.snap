@@ -795,6 +795,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "type": "array",
     },
     "truncated": "number",
+    "warnings": "array",
   },
   "multiway": {
     "alignments": {
