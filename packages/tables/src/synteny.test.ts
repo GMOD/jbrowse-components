@@ -416,6 +416,9 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   expect(gaps.segments.op.length).toBeGreaterThan(7)
   expect(new Set(t.segments.color)).toEqual(new Set(['#000000']))
   expect(t.alpha).toBe(1)
+  // no color field keys nothing, as the view's hasLegendKey decides
+  expect(t.legend.label).toEqual([])
+  expect(t.ramps).toEqual([])
   expect(t.config).toMatchObject({
     filter: [],
     indels: { show: true },
