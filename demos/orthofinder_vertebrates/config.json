@@ -6,9 +6,17 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "human-ReferenceSequenceTrack",
         "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "human.chrom.sizes",
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "human.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "human.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "human.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -249,5 +257,27 @@
         "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"]
       }
     }
-  ]
+  ],
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
+  "msa": {
+    "datasets": [
+      {
+        "datasetId": "vertebrates_orthofinder",
+        "name": "Vertebrates orthogroups (OrthoFinder)",
+        "description": "An alignment and gene tree per orthogroup",
+        "adapter": {
+          "type": "OrthoFinderMsaAdapter",
+          "resultsLocation": {
+            "uri": "orthofinder/"
+          }
+        }
+      }
+    ]
+  }
 }
