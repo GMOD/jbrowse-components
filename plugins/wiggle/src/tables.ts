@@ -8,7 +8,17 @@ import {
 import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import { resolveRenderState, resolveSymlogConstant } from '@jbrowse/wiggle-core'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+import {
+  CLIP_STRIP_COLOR,
+  CLIP_STRIP_PX,
+} from '@jbrowse/render-core/shaders/clipStripConsts'
+import {
+  RENDERING_TYPE_XYPLOT,
+  resolveRenderState,
+  resolveSymlogConstant,
+} from '@jbrowse/wiggle-core'
 import { runInAction } from 'mobx'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
@@ -84,7 +94,10 @@ function binInWindow({ start, end }: { start: number; end: number }) {
  * encoder builds from them in paint order (the plotted summary, and under a
  * min-max extent the tinted max and min bands, or a line's min-to-max
  * `band`), each mark in the color it paints and reaching down to `low`, the
- * band's min or the origin bars grow from; `scoreScale`, the score axis the
+ * band's min or the origin bars grow from, and on a bar `clipSide`, 1 where
+ * its score passes the domain's top and -1 its bottom, where the display
+ * paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0;
+ * `scoreScale`, the score axis the
  * display autoscales to under `encoding.y`, its `domain`, `type` and
  * `symlogConstant`; `rules`, the reference lines it draws, none where it
  * rules no band, as a density plot does not; `ramps`, the color bar its key
@@ -216,7 +229,9 @@ export async function wiggleTables(
     color: [] as string[],
     opacity: [] as number[],
     run: [] as number[],
+    clipSide: [] as number[],
   }
+  const scaleCode = scaleTypeCode(scaleType)
   let run = -1
   const { cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(cssColorToHex)
@@ -234,6 +249,7 @@ export async function wiggleTables(
             : bandColors
               ? bandColors[thresholdBandOf(score, cuts)]!
               : own
+      const bar = layer.renderingType === RENDERING_TYPE_XYPLOT && !layer.band
       const push = (i: number, low: number, score: number, color: string) => {
         marks.region.push(regionIndex)
         marks.source.push(source)
@@ -247,6 +263,9 @@ export async function wiggleTables(
         marks.opacity.push(layer.band ? WHISKER_BAND_OPACITY : 1)
         marks.color.push(color)
         marks.run.push(run)
+        marks.clipSide.push(
+          bar ? clipSide(score, domain[0], domain[1], scaleCode) : 0,
+        )
       }
       run++
       const inWindow = binInWindow(regions[regionIndex]!)
@@ -328,6 +347,7 @@ export async function wiggleTables(
     legend: key.legend,
     legendTitle: key.legendTitle,
     scoreScale: { domain, type: scaleType, symlogConstant },
+    clipStrip: { color: abgrToHex(CLIP_STRIP_COLOR), px: CLIP_STRIP_PX },
     summaryField,
     mark,
     interpolate,

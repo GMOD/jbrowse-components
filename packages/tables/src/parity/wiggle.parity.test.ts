@@ -2,10 +2,18 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
-import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+import {
+  CLIP_STRIP_COLOR,
+  CLIP_STRIP_PX,
+} from '@jbrowse/render-core/shaders/clipStripConsts'
+import { RENDERING_TYPE_XYPLOT } from '@jbrowse/wiggle-core'
 
+import { encodeWiggleRegions } from '../../../../plugins/wiggle/src/shared/buildSourceRenderData.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   COVERAGE_BIGWIG,
@@ -38,6 +46,7 @@ const WIGGLE_DECISIONS = [
   'legend',
   'layout',
   'height',
+  'clipped',
 ] as const
 
 type WiggleDecision = (typeof WIGGLE_DECISIONS)[number]
@@ -112,6 +121,36 @@ function wiggleParity(
           origin: m.origin,
         },
         height: m.height,
+        clipped: {
+          strip: { color: abgrToHex(CLIP_STRIP_COLOR), px: CLIP_STRIP_PX },
+          bars: [...encodeWiggleRegions(m).values()]
+            .flatMap(layers =>
+              layers.flatMap(layer =>
+                layer.renderingType === RENDERING_TYPE_XYPLOT && !layer.band
+                  ? Array.from({ length: layer.numFeatures }, (_, i) => {
+                      const start = layer.featurePositions[i * 2]!
+                      const end = layer.featurePositions[i * 2 + 1]!
+                      const side = m.domain
+                        ? clipSide(
+                            layer.featureScores[i]!,
+                            m.domain[0],
+                            m.domain[1],
+                            scaleTypeCode(m.scaleType),
+                          )
+                        : 0
+                      return side !== 0 &&
+                        end > fixture.region.start &&
+                        start < fixture.region.end
+                        ? [
+                            `${m.sources[layer.rowIndex]?.name} ${start}-${end} ${side}`,
+                          ]
+                        : []
+                    }).flat()
+                  : [],
+              ),
+            )
+            .sort(),
+        },
       }
     },
     exportDecisions: t => ({
@@ -136,6 +175,18 @@ function wiggleParity(
         origin: t.origin,
       },
       height: t.height,
+      clipped: {
+        strip: t.clipStrip,
+        bars: t.marks.clipSide
+          .flatMap((side, i) =>
+            side === 0
+              ? []
+              : [
+                  `${t.marks.source[i]} ${t.marks.start[i]}-${t.marks.end[i]} ${side}`,
+                ],
+          )
+          .sort(),
+      },
     }),
   }
 }

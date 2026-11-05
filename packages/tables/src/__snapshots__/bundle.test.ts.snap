@@ -1101,6 +1101,10 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "source": "array",
       "start": "array",
     },
+    "clipStrip": {
+      "color": "string",
+      "px": "number",
+    },
     "config": {
       "data": "object",
       "encoding": "object",
@@ -1122,6 +1126,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "mark": "string",
     "marks": {
       "band": "array",
+      "clipSide": "array",
       "color": "array",
       "end": "array",
       "layer": "array",

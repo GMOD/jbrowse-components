@@ -65,6 +65,35 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
   })
 })
 
+test('a bar past a pinned domain is flagged on the side it leaves, as the display strips it', async () => {
+  const free = await engine.wiggle(SIGNED_BIGWIG)
+  const [lo, hi] = free.scoreScale.domain
+  const scale = { domainMin: lo / 2, domainMax: hi / 2 }
+  expect(new Set(free.marks.clipSide)).toEqual(new Set([0]))
+  const pinned = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    display: { encoding: { y: { scale } } },
+  })
+  const { marks, scoreScale } = pinned
+  const sides = new Set(marks.clipSide)
+  expect(sides).toEqual(new Set([-1, 0, 1]))
+  marks.clipSide.forEach((side, i) => {
+    expect(side).toBe(
+      marks.score[i]! > scoreScale.domain[1]
+        ? 1
+        : marks.score[i]! < scoreScale.domain[0]
+          ? -1
+          : 0,
+    )
+  })
+  expect(pinned.clipStrip).toEqual({ color: '#c62828', px: 2 })
+  const line = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    display: { mark: 'line', encoding: { y: { scale } } },
+  })
+  expect(new Set(line.marks.clipSide)).toEqual(new Set([0]))
+})
+
 test('summaryField names the bin summary encoding.y plots, and scoreScale its axis', async () => {
   const t = await engine.wiggle({
     ...SIGNED_BIGWIG,
