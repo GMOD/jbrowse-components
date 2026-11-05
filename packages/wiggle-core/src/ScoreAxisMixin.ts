@@ -4,7 +4,7 @@ import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { autoscaleGroupMembers, unionRanges } from './autoscaleGroup.ts'
 import { computeYTicks } from './computeYTicks.ts'
 import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
-import { getNiceDomain } from './scale.ts'
+import { autoscaledDomainOf } from './scale.ts'
 import { scoreRuleMarks } from './scoreRuleMarks.ts'
 
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
@@ -154,14 +154,13 @@ export function ScoreAxisMixin() {
                 ),
               ])
             : own
-        return range
-          ? getNiceDomain({
-              domain: range,
-              bounds: [this.resolvedDomainMin, this.resolvedDomainMax],
-              scaleType: self.scaleType,
-              zero: self.axisReachesZero,
-            })
-          : undefined
+        return autoscaledDomainOf({
+          range,
+          pinned: [self.domainMin, self.domainMax],
+          fallback: self.defaultScoreDomain,
+          scaleType: self.scaleType,
+          zero: self.axisReachesZero,
+        })
       },
       /**
        * #getter

@@ -11,6 +11,7 @@ import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { orderAttributeLabels } from './TrackColorsMixin.ts'
 import {
   colorByScales,
+  colorKeyOptions,
   colorByShortLabel,
   getColorBySwatch,
 } from './colorLegend.ts'
@@ -246,17 +247,26 @@ export function unpack(abgr: number) {
 export function comparativeLegend(
   settings: ViewColorSettings,
   {
+    filter,
     pointBased = false,
     cigarOps,
-  }: { pointBased?: boolean; cigarOps?: number } = {},
+  }: {
+    filter: readonly FieldPredicate[]
+    pointBased?: boolean
+    cigarOps?: number
+  },
 ) {
   const opts = {
+    ...colorKeyOptions({
+      field: settings.field,
+      filter,
+      paint: settings.paint,
+      attributeRanges: settings.attributeRanges,
+      names: settings.names,
+      descending: settings.descending,
+    }),
     pointBased,
     cigarOps,
-    attributeRanges: settings.attributeRanges,
-    paint: settings.paint,
-    names: settings.names,
-    descending: settings.descending,
   }
   const swatch = getColorBySwatch(settings.field, opts)
   const title = settings.title ?? colorByShortLabel(settings.field)

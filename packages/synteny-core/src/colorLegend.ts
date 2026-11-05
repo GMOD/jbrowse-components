@@ -19,6 +19,7 @@ import {
   strandLevels,
 } from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
+import { hidesUnlabelled } from './hideUnlabelledFilter.ts'
 
 import type {
   AttributeRange,
@@ -28,6 +29,7 @@ import type {
 } from './colorRamps.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 export interface GradientStop {
   offset: number
@@ -223,6 +225,36 @@ export function colorByFallbackNote(field: string | undefined) {
   return field === 'track'
     ? 'Distinct color per track'
     : 'Distinct color per sequence'
+}
+
+/**
+ * The key options a view's color settings and filter decide, which the view's
+ * key and a static export both hand `getColorBySwatch` and `colorByScales`, so
+ * the two cannot key the same alignments differently.
+ */
+export function colorKeyOptions({
+  field,
+  filter,
+  paint,
+  attributeRanges,
+  names,
+  descending,
+}: {
+  field: string | undefined
+  filter: readonly FieldPredicate[]
+  paint: SyntenyColorPaint
+  attributeRanges: Record<string, AttributeRange>
+  names?: readonly string[]
+  descending?: boolean
+}) {
+  return {
+    attributeRanges,
+    hideUnlabelled: hidesUnlabelled(filter, field),
+    missingColor: paint.invalid,
+    names,
+    descending,
+    paint,
+  }
 }
 
 // Legend spec for a color field: a gradient ramp for a measurement or numeric

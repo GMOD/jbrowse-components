@@ -199,6 +199,7 @@ export {
   SNP_TOOLTIP_SNAP_FLOOR,
   buildCoverageTooltipBin,
   computeCoverageTicks,
+  coverageDefaultDomain,
   coverageDepthDomain,
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,

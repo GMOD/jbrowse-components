@@ -67,6 +67,17 @@ export function coverageDepthDomain(
   return scaleType === 'log' ? [Math.max(1, min), max] : [min, max]
 }
 
+/**
+ * The bounds an unpinned depth axis falls back to: depth has a floor of 0
+ * while the axis reaches it, so an unpinned bottom stays there whatever a rule
+ * below it asks for; with the scale's `zero` off it spans the depths in view.
+ */
+export function coverageDefaultDomain(
+  zero: boolean,
+): [number | undefined, number | undefined] {
+  return [zero ? 0 : undefined, undefined]
+}
+
 // Below this band height the axis drops to its two endpoints: a full ladder's
 // 10px labels need ~15px of vertical room apiece and there isn't any.
 // Deliberately above `COMPACT_AXIS_HEIGHT` (30, where the axis gives up

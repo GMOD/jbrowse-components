@@ -703,6 +703,21 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
   )
 })
 
+test('the coverage ticks fit the band the track height leaves, as the display draws it', async () => {
+  const tallBand = { coverage: { height: 100 } }
+  const roomy = await engine.alignments({
+    ...BAM,
+    display: { ...tallBand, height: 400 },
+  })
+  const squeezed = await engine.alignments({
+    ...BAM,
+    display: { ...tallBand, height: 80 },
+  })
+  expect(roomy.coverageScale.domain).toEqual(squeezed.coverageScale.domain)
+  expect(roomy.coverageScale.ticks.length).toBeGreaterThan(2)
+  expect(squeezed.coverageScale.ticks).toHaveLength(2)
+})
+
 test('the display\u2019s sort object orders the rows', async () => {
   const plain = await engine.alignments(BAM)
   const site = plain.mismatches.position[0]!

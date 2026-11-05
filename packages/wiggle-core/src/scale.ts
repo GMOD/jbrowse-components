@@ -235,6 +235,36 @@ export function getNiceDomain({
 
 /**
  * #api
+ * The domain an autoscaled axis draws: `range`, nice-rounded inside the
+ * pinned bounds, each unpinned end falling back to the display's default
+ * (`defaultScoreDomain`); `undefined` while there is no range. What a
+ * display's `autoscaledDomain` and a static export both answer.
+ */
+export function autoscaledDomainOf({
+  range,
+  pinned,
+  fallback,
+  scaleType,
+  zero,
+}: {
+  range: readonly [number, number] | undefined
+  pinned: readonly [number | undefined, number | undefined]
+  fallback: readonly [number | undefined, number | undefined]
+  scaleType: string
+  zero: boolean
+}) {
+  return range
+    ? getNiceDomain({
+        domain: range,
+        bounds: [pinned[0] ?? fallback[0], pinned[1] ?? fallback[1]],
+        scaleType,
+        zero,
+      })
+    : undefined
+}
+
+/**
+ * #api
  * Returns a niced `{min, max}` domain for a maximum score value.
  * Uses log base-2 when `useLogScale` is true (domain is clamped to [1, max]).
  */

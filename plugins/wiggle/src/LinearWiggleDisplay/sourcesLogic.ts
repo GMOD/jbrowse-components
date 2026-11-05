@@ -45,3 +45,18 @@ export function sourceWarnings(
     ...new Set([...rpcDataMap.values()].flatMap(data => data.warnings ?? [])),
   ]
 }
+
+/**
+ * The bounds the adapter declares its values lie in, from the first loaded
+ * region that declares any (`getValueDomain`): a GC content track's [0, 1].
+ */
+export function declaredValueDomain(
+  results: Iterable<WiggleDataResult>,
+): [number | undefined, number | undefined] {
+  for (const data of results) {
+    if (data.valueDomain) {
+      return data.valueDomain
+    }
+  }
+  return [undefined, undefined]
+}

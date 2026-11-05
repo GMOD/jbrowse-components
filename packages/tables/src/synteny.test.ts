@@ -1,3 +1,11 @@
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+
 import { createTablesEngine } from './index.ts'
 import {
   CONTIG_SWAP,
@@ -362,4 +370,51 @@ test('an axis region on a contig the file lacks says so', async () => {
     x: [''],
     y: ['chrA is not a contig of this file, whose contigs are ctgA'],
   })
+})
+
+// A text column some alignments lack: the first three blocks carry `gr`.
+function partlyLabelled() {
+  const lines = readFileSync(
+    path.resolve('test_data/volvox/volvox_inv_indels.paf'),
+    'utf8',
+  )
+    .trim()
+    .split('\n')
+    .map((line, i) => (i < 3 ? `${line}\tgr:Z:${i % 2 ? 'b' : 'a'}` : line))
+  const paf = path.join(mkdtempSync(path.join(tmpdir(), 'paf-')), 'gr.paf')
+  writeFileSync(paf, `${lines.join('\n')}\n`)
+  return {
+    ...INV_INDELS,
+    adapterConfig: {
+      ...INV_INDELS.adapterConfig,
+      pafLocation: {
+        uri: pathToFileURL(paf).href,
+        locationType: 'UriLocation',
+      },
+      attributeColumns: ['gr'],
+    },
+  }
+}
+
+test('the key keys the unlabelled alignments as the view does: hidden with them, in the invalid color', async () => {
+  const args = partlyLabelled()
+  const color = { field: 'gr' }
+  const plain = await engine.synteny({ ...args, view: { encoding: { color } } })
+  expect(plain.legend.label).toContain(NO_VALUE_LABEL)
+
+  const hidden = await engine.synteny({
+    ...args,
+    view: {
+      encoding: { color },
+      filter: [{ field: 'gr', valid: true }],
+    },
+  })
+  expect(hidden.legend.label).not.toContain(NO_VALUE_LABEL)
+
+  const blue = await engine.synteny({
+    ...args,
+    view: { encoding: { color: { ...color, scale: { invalid: 'blue' } } } },
+  })
+  const noValue = blue.legend.label.indexOf(NO_VALUE_LABEL)
+  expect(blue.legend.color[noValue]).toBe(cssColorToHex('blue'))
 })

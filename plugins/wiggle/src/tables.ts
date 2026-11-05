@@ -21,13 +21,14 @@ import {
   readYMember,
   summaryFieldOf,
   yRuleNodes,
-  getNiceDomain,
+  autoscaledDomainOf,
   resolveRenderState,
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
+import { declaredValueDomain } from './LinearWiggleDisplay/sourcesLogic.ts'
 import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
@@ -246,18 +247,16 @@ export async function wiggleTables(
     ruleValues: views.scoreRuleValues,
   })
   const domain = resolveRenderState(
-    range &&
-      getNiceDomain({
-        domain: range,
-        bounds: [
-          readYMember(conf, WIGGLE_Y_PATHS, 'domainMin') ??
-            data.valueDomain?.[0],
-          readYMember(conf, WIGGLE_Y_PATHS, 'domainMax') ??
-            data.valueDomain?.[1],
-        ],
-        scaleType,
-        zero,
-      }),
+    autoscaledDomainOf({
+      range,
+      pinned: [
+        readYMember(conf, WIGGLE_Y_PATHS, 'domainMin'),
+        readYMember(conf, WIGGLE_Y_PATHS, 'domainMax'),
+      ],
+      fallback: declaredValueDomain(results),
+      scaleType,
+      zero,
+    }),
     d => d,
   )
   const rawConstant: number = readYMember(conf, WIGGLE_Y_PATHS, 'constant')

@@ -4,6 +4,7 @@ import {
   computeCoverageTicks,
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
+  coverageDefaultDomain,
   coverageDepthDomain,
   LABEL_FADE_FLOOR,
   LABEL_FADE_HI_RATIO,
@@ -43,6 +44,7 @@ import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { adapterRefNameText } from '@jbrowse/core/util'
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
   abgrAlpha,
   abgrToHex,
@@ -69,7 +71,7 @@ import {
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 import {
-  getNiceDomain,
+  autoscaledDomainOf,
   readYMember,
   resolveSymlogConstant,
   widenRangeToRules,
@@ -125,6 +127,7 @@ import {
   intronAlpha,
   shouldDrawOverlaps,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { boundCoverageHeight } from './LinearAlignmentsDisplay/sectionLayout.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import {
   appliedPileupSort,
@@ -1344,19 +1347,24 @@ function coverageScale(
       ),
     )
   const domain = coverageDepthDomain(
-    range
-      ? getNiceDomain({
-          domain: range,
-          bounds: [
-            readYMember(conf, COVERAGE_Y_PATHS, 'domainMin') ??
-              (zero ? 0 : undefined),
-            readYMember(conf, COVERAGE_Y_PATHS, 'domainMax'),
-          ],
-          scaleType: type,
-          zero,
-        })
-      : [0, 0],
+    autoscaledDomainOf({
+      range,
+      pinned: [
+        readYMember(conf, COVERAGE_Y_PATHS, 'domainMin'),
+        readYMember(conf, COVERAGE_Y_PATHS, 'domainMax'),
+      ],
+      fallback: coverageDefaultDomain(zero),
+      scaleType: type,
+      zero,
+    }) ?? [0, 0],
     type,
+  )
+  const coverageHeight = boundCoverageHeight(
+    readConfObject(conf, ['coverage', 'height']),
+    {
+      height: readConfObject(conf, 'height'),
+      floor: readConfObject(conf, ['pileup', 'show']) ? MIN_BAND_HEIGHT : 0,
+    },
   )
   const symlogConstant: number = readYMember(conf, COVERAGE_Y_PATHS, 'constant')
   return {
@@ -1365,7 +1373,7 @@ function coverageScale(
     symlogConstant: resolveSymlogConstant(domain[0], domain[1], symlogConstant),
     ticks: computeCoverageTicks(
       domain,
-      readConfObject(conf, ['coverage', 'height']),
+      coverageHeight,
       type,
       symlogConstant,
     ).items.map(tick => tick.value),

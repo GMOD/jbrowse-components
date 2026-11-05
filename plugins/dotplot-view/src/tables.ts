@@ -224,7 +224,10 @@ export async function dotplotTables(
   return {
     alignments,
     segments,
-    ...comparativeLegend(settings, { pointBased: true }),
+    ...comparativeLegend(settings, {
+      filter: config.filter,
+      pointBased: true,
+    }),
     config: { ...config, ...settings.config },
     alpha: level,
     assemblyNames: [h.assemblyName, v.assemblyName],

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import {
   computeCoverageTicks,
+  coverageDefaultDomain,
   coverageDepthDomain,
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
@@ -867,7 +868,7 @@ export default function stateModelFactory(
            * `coverage.encoding.y.scale.zero` off it spans the depths in view.
            */
           get defaultScoreDomain(): [number | undefined, number | undefined] {
-            return [self.scaleZero ? 0 : undefined, undefined]
+            return coverageDefaultDomain(self.scaleZero)
           },
 
           /**

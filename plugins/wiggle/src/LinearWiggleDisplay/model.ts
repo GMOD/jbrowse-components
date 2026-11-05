@@ -86,7 +86,11 @@ import {
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
+import {
+  declaredValueDomain,
+  sourceWarnings,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type {
   LineInterpolation,
@@ -312,12 +316,7 @@ export default function stateModelFactory(
        * reads alike at every locus. Config bounds still win.
        */
       get defaultScoreDomain(): [number | undefined, number | undefined] {
-        for (const data of self.rpcDataMap.values()) {
-          if (data.valueDomain) {
-            return data.valueDomain
-          }
-        }
-        return [undefined, undefined]
+        return declaredValueDomain(self.rpcDataMap.values())
       },
     }))
     .actions(self => ({

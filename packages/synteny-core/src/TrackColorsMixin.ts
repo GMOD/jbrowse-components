@@ -17,7 +17,7 @@ import { compareStructural } from 'mobx'
 import { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
 import { MAX_DISTINCT_VALUES } from './attributeChannels.ts'
 import { DEFAULT_RIBBON_CSS } from './colorFunctions.ts'
-import { colorByScales } from './colorLegend.ts'
+import { colorByScales, colorKeyOptions } from './colorLegend.ts'
 import {
   colorPaintOf,
   isAttributeLabels,
@@ -509,17 +509,19 @@ export function TrackColorsMixin({
         // only a text column's rows are the reader's to order; a track
         // palette, a ramp and bins key what they key
         return colorByScales(field, {
+          ...colorKeyOptions({
+            field,
+            filter: self.predicates,
+            paint: self.colorPaint,
+            attributeRanges: self.attributeRanges,
+            names: scale?.names,
+            descending: legend?.descending,
+          }),
           pointBased: self.colorSurface() === 'points',
           cigarOps: self.legendCigarOps(),
           trackChips: self.colorLegendChips,
-          attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
-          hideUnlabelled: self.hideUnlabelled,
-          missingColor: self.colorPaint.invalid,
-          names: scale?.names,
           title: legend?.title,
-          descending: legend?.descending,
-          paint: self.colorPaint,
         }).map(scale =>
           scale.kind === 'categorical' && scale.id === field && textColumn
             ? { ...scale, domain: [...self.colorDomain] }

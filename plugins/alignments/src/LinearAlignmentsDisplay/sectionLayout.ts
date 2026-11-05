@@ -212,6 +212,17 @@ export function boundBelowCoverageHeights(
   }
 }
 
+// The coverage band's height bound against the plot: it leads the stack, so
+// nothing below it moves its bound, and an export with no arcs or sashimi
+// state answers what the display draws.
+export function boundCoverageHeight(coverageHeight: number, plot: BandPlot) {
+  return boundStackedBands(
+    ['coverage'],
+    { coverage: { active: true, height: coverageHeight } },
+    plot,
+  ).coverage.height
+}
+
 // The legal range for a drag of one band over the pooled stack, which every
 // lane's handle for that band resizes.
 export function belowCoverageDragBounds(
