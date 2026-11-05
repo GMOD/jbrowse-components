@@ -35,7 +35,10 @@ import {
 } from './refNameMaps.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type {
+  ConfigurationLeafSlotName,
+  ConfigurationSlotValue,
+} from '../configuration/index.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
@@ -201,8 +204,12 @@ export default function assemblyFactory(
       /**
        * #method
        */
-      getConf(arg: string) {
-        const conf: AnyConfigurationModel | undefined = self.configuration
+      getConf<
+        const SLOT extends ConfigurationLeafSlotName<BaseAssemblyConfigSchema>,
+      >(
+        arg: SLOT,
+      ): ConfigurationSlotValue<BaseAssemblyConfigSchema, SLOT> | undefined {
+        const conf = self.configuration
         return conf ? readConfObject(conf, arg) : undefined
       },
     }))
@@ -231,7 +238,7 @@ export default function assemblyFactory(
        * #getter
        */
       get refNameColors() {
-        const colors: string[] = self.getConf('refNameColors') ?? []
+        const colors = self.getConf('refNameColors') ?? []
         return colors.length === 0 ? defaultRefNameColors : colors
       },
     }))
@@ -692,7 +699,7 @@ export default function assemblyFactory(
        */
       isCircularRefName(refName: string) {
         const canonical = self.getCanonicalRefName2(refName)
-        const names: string[] = self.getConf('circularRefNames') ?? []
+        const names = self.getConf('circularRefNames') ?? []
         return names.some(name => self.getCanonicalRefName2(name) === canonical)
       },
       /**

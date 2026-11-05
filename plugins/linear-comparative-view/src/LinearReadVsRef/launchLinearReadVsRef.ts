@@ -23,11 +23,8 @@ export async function launchLinearReadVsRef({
   if (!assembly?.configuration) {
     throw new Error('assembly not found')
   }
-  const sequenceTrackConf = readConfObject(
-    assembly.configuration,
-    'sequence',
-  ) as {
-    trackId: string
+  const sequenceTrackConf = {
+    trackId: readConfObject(assembly.configuration, ['sequence', 'trackId']),
   }
 
   const { temporaryAssembly, viewSpec } = buildReadVsRefSpec({

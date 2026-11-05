@@ -13,6 +13,7 @@ import { observer } from 'mobx-react'
 import RefNameAliasesDialog from './RefNameAliasesDialog.tsx'
 
 import type { AboutPanelProps } from './util.ts'
+import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -50,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
  */
 function getAssemblyConf(config: AnyConfigurationModel) {
   const parent = hasParent(config)
-    ? getParent<AnyConfigurationModel & { sequence?: unknown }>(config)
+    ? getParent<BaseAssemblyConfigModel>(config)
     : undefined
   return parent?.sequence === config ? parent : undefined
 }
@@ -60,7 +61,7 @@ const AssemblyCard = observer(function AssemblyCard({
   session,
   hideUris,
 }: {
-  assemblyConf: AnyConfigurationModel
+  assemblyConf: BaseAssemblyConfigModel
   session: AbstractSessionModel
   hideUris?: boolean
 }) {
@@ -94,7 +95,7 @@ const AssemblyCard = observer(function AssemblyCard({
       <Attributes attributes={conf} omit={hideFields} hideUris={hideUris} />
       {showAliases ? (
         <RefNameAliasesDialog
-          assemblyName={readConfObject(assemblyConf, 'name') as string}
+          assemblyName={readConfObject(assemblyConf, 'name')}
           session={session}
           onClose={() => {
             setShowAliases(false)

@@ -62,6 +62,7 @@ import {
 } from './unknownSnapshotKeys.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { BaseAssemblyConfigModel } from '../assemblyManager/assemblyConfigSchema.ts'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
@@ -763,7 +764,7 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf: AnyConfiguration,
-  session: { assemblies: AnyConfigurationModel[] },
+  session: { assemblies: BaseAssemblyConfigModel[] },
 ): string {
   const trackName = isConfigurationModel(conf)
     ? (readConfObject(conf, 'name') as string)
@@ -1667,7 +1668,7 @@ export function allSessionTracks(session: {
  */
 export function trackCatalogEntry(
   conf: AnyTrackConfig,
-  session: { assemblies: AnyConfigurationModel[] },
+  session: { assemblies: BaseAssemblyConfigModel[] },
 ) {
   return {
     trackId: conf.trackId as string,
@@ -1684,7 +1685,7 @@ export function trackCatalogEntry(
 export function trackCatalog(session: {
   tracks: TrackConfigEntry[]
   connectionInstances?: { tracks: AnyConfigurationModel[] }[]
-  assemblies: AnyConfigurationModel[]
+  assemblies: BaseAssemblyConfigModel[]
 }) {
   return allSessionTracks(session).map(conf => trackCatalogEntry(conf, session))
 }

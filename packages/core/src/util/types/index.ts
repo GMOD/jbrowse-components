@@ -5,6 +5,7 @@ import { isSessionServices } from './services.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
+import type { BaseAssemblyConfigModel } from '../../assemblyManager/assemblyConfigSchema.ts'
 import type {
   AnyConfigurationModel,
   AnyTrackConfig,
@@ -146,7 +147,7 @@ export type AnimationMode = 'system' | 'enabled' | 'disabled'
  */
 export interface TrackCatalog {
   tracks: TrackConfigEntry[]
-  assemblies: AnyConfigurationModel[]
+  assemblies: BaseAssemblyConfigModel[]
   connectionInstances?: { tracks: AnyConfigurationModel[] }[]
   getTrackById: (id: string) => AnyTrackConfig | undefined
 }
@@ -229,7 +230,7 @@ export interface AbstractSessionModel
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
   addSessionAssembly?: (conf: Record<string, unknown>) => void
-  sessionAssemblies?: AnyConfigurationModel[]
+  sessionAssemblies?: BaseAssemblyConfigModel[]
   removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]

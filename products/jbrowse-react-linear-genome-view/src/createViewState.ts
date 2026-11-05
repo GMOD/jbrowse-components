@@ -34,7 +34,7 @@ import type {
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
-type Assembly = NonNullable<ConfigSnapshot['assemblies']>[number]
+type Assembly = NonNullable<NonNullable<ConfigSnapshot['assemblies']>[number]>
 type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']

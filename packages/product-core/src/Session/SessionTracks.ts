@@ -23,6 +23,7 @@ import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
@@ -87,13 +88,13 @@ function deltaHasChanges(
 // declares, and the manager also answers for sessionAssemblies, which is the
 // case this exists to catch.
 function assembliesNotInTheCatalog(
-  self: { jbrowse: { assemblies: AnyConfigurationModel[] } },
+  self: { jbrowse: { assemblies: BaseAssemblyConfigModel[] } },
   trackConf: AnyConfiguration,
 ) {
   const catalog = new Set(
     self.jbrowse.assemblies.flatMap(a => [
-      readConfObject(a, 'name') as string,
-      ...((readConfObject(a, 'aliases') as string[] | undefined) ?? []),
+      readConfObject(a, 'name'),
+      ...readConfObject(a, 'aliases'),
     ]),
   )
   return getConfAssemblyNamesOrNone(trackConf).filter(

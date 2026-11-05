@@ -14,12 +14,12 @@ import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
 import { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
   ConfigurationSnapshot,
 } from '@jbrowse/core/configuration'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 // This config model lives at rootModel.jbrowse, so its MST parent is the root
 // model; this is the slice it reaches for. Mirrors app-core's JBrowseModelParent
@@ -55,7 +55,7 @@ export type RootConfigurationSnapshot = ConfigurationSnapshot<
 
 export function createConfigModel(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType: IAnyType,
+  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return (
     types
