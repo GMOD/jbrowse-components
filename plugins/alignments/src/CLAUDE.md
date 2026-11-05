@@ -3,6 +3,9 @@
 Adapter seams and array-shape measurements:
 `agent-docs/reference/BAM_STACK_INTEGRATION.md`.
 
+- **`RenderAlignmentDataRPC/sortLayout.ts` runs on the main thread** (ADR-053);
+  its refNames arrive canonical from the model's `sortColumn` getter.
+
 ## Marks
 
 - **`PILEUP_MARKS` (`LinearAlignmentsDisplay/renderers/pileupMarks.ts`) is the

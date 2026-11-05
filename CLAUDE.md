@@ -12,14 +12,15 @@ the bug.
 
 Rules live here only while nothing in the tree enforces them. Once a check
 exists, the rule leaves this file — lint (`no-restricted-syntax` in
-`eslint.config.mjs`), the build, and `.claude/hooks/refuse-commands.sh` explain
-themselves when they fire.
+`eslint.config.mjs`), the build, `.githooks/` and
+`.claude/hooks/refuse-commands.sh` explain themselves when they fire.
 
 ## Git
 
-Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
-
-- **Never merge a `*.generated.ts` conflict** — regenerate it.
+- **Code work goes in a worktree**; land it from the primary checkout with
+  `git merge --ff-only <branch>`.
+- **Resolve a `*.generated.ts` conflict by regenerating**, with the command its
+  header names.
 
 ## MST
 
@@ -38,37 +39,28 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 
 - **Main thread**: user-supplied refName text goes through
   `getCanonicalRefName`; a display reading its own state uses
-  `canonicalizeViewRefName`.
-- **Worker side: don't** — `renameRegionsIfNeeded` already renamed `regions[]`.
-  Alignments layout looks worker-side and is not (ADR-053).
+  `canonicalizeViewRefName` (`reference/REFNAME_NAMESPACES.md`).
+- **Worker side, use `regions[]` as given** — `renameRegionsIfNeeded` already
+  renamed them.
 - An assembly name off a track config must be canonical
   (`canonicalAssemblyNames`) **and** present (`assemblyManager.has`). Compare
-  two with `isSameAssemblyName`, never `===`.
+  two with `isSameAssemblyName` (`reference/VIEW_INIT.md`).
 - **Resolve an assembly name before the RPC** — a worker has no assembly
   manager.
-- `reference/REFNAME_NAMESPACES.md`, `reference/VIEW_INIT.md`.
 
 ## Tooling
 
-- **`pnpm verify`, then the changed code's own suite** — `npx jest <file>`, one
-  file, since jest skips the machine-wide slots `pnpm typecheck`, lint,
-  `build:esm` and `pnpm test` queue on.
-- **Only `build:esm` raises TS4058** ("cannot be named"): run
-  `pnpm verify --full` after adding a type to an exported surface. A change to a
-  widely read type needs `--all`, or untouched files go red in CI.
-- **`pnpm test-related`** when you cannot name the blast radius. Read
-  `-- --listTests` first. `reference/TEST_INFRASTRUCTURE.md`.
-- **Don't run the `jbrowse-web` jest project locally**, even for a snapshot
-  change — `pnpm test-ci` runs it on push, and a red there gets fixed forward.
-- **An agent's jest run prints nothing for a passing suite**, console noise
-  included. `--reporters=default` shows it.
-- **A memo sabotage green under `pnpm test` proves nothing** — React Compiler
-  stands in. `pnpm test-ci-no-react-compiler`;
-  `reference/COMPILER_TERNARY_FINDING.md`.
-- `pnpm autogen` answers any "X is out of date", and only that. **Don't run it
-  before landing**: pre-push regenerates stale artifacts and commits them.
+- **`pnpm verify`, then the changed code's own suites.** `npx jest <file>` for a
+  named test file or two; `pnpm test-related` when you cannot name the blast
+  radius, reading `-- --listTests` first. `reference/TEST_INFRASTRUCTURE.md`.
+- **The `jbrowse-web` jest project is CI's**, snapshot changes included —
+  `pnpm test-ci` runs it on push, and a red there gets fixed forward.
+- **Prove a memo sabotage with `NO_RC=1 npx jest <file>`** — the React Compiler
+  stands in for a missing memo under `pnpm test`.
+- `pnpm autogen` answers any "X is out of date", and only that. **Land without
+  running it** — pre-push regenerates and commits.
 - Removing a plugin export, session member or extension point fails quietly:
   `reference/PLUGIN_ABI_STABILITY.md`.
-- Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).
-- **Examples, demo configs, tests and CI never fetch from Ensembl** (REST or
-  FTP) — its outages turn main red. Rehost the data on jbrowse.org.
+- Deploy demos with `scripts/deploy-demo.sh`.
+- **Examples, demo configs, tests and CI fetch from copies hosted on
+  jbrowse.org**, Ensembl data included — Ensembl's outages turn main red.

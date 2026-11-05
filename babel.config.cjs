@@ -22,10 +22,9 @@ module.exports = function babelConfig(api) {
     // while jest and every app bundle (babel-loader, `rootMode: 'upward'`) run
     // it compiled. The Push workflow's "Test (no React Compiler)" job closes
     // that gap; `pnpm test` alone cannot, and a memoization sabotage that stays
-    // green under it proves nothing. Jest keys its transform cache on file
-    // content and transformer config, and an env var is neither, so a NO_RC run
-    // needs its own `--cacheDirectory` (or `--no-cache`) to avoid reusing the
-    // compiled entries.
+    // green under it proves nothing. `config/jest/babelTransform.cjs` hashes
+    // NO_RC into every transform cache key, so `NO_RC=1 npx jest <file>` shares
+    // the default cache without reusing compiled entries.
     plugins: process.env.NO_RC ? [] : ['babel-plugin-react-compiler'],
     presets: [
       [

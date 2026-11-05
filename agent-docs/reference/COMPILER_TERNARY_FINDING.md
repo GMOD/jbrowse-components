@@ -62,9 +62,9 @@ the call. Unit tests catch it only if they re-render after mutating the observab
 ## The uncompiled half
 
 `pnpm test` and every app bundle compile; published packages do not, since `build:esm` is
-plain tsc. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, its own `--cacheDirectory` because
-jest keys entries on file content and transformer config, not an env var) is the only run
-exercising that artifact. Its scope is every workspace whose published `main` is
+plain tsc. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, which
+`config/jest/babelTransform.cjs` hashes into the transform cache key) is the only run
+exercising that artifact; `NO_RC=1 npx jest <file>` runs one suite the same way. Its scope is every workspace whose published `main` is
 `build:esm` output.
 
 The compiler memoizes far more than the source's explicit `memo`/`useMemo`, so it stands in

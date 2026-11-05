@@ -9,10 +9,10 @@
 //   --no-cache           reruns gates that already passed on this exact tree
 //                        (`scripts/gatePassCache.ts`)
 //
-// The definition of done in CLAUDE.md § Tooling is typecheck, scoped tests,
-// lint. Three CI jobs are gated by none of those — `check-format`, `check-docs`
-// and the spell check — so a change can be green by every measure an author
-// runs and still land red. On 2026-08-12 all three were red on `main` at once,
+// Typecheck, scoped tests and lint are what an author runs by habit. Three CI
+// jobs are gated by none of those — `check-format`, `check-docs` and the spell
+// check — so a change can be green by every measure an author runs and still
+// land red. On 2026-08-12 all three were red on `main` at once,
 // and the format failures had arrived on three different commits, which is what
 // says it was a gate nobody ran rather than one slip.
 //
