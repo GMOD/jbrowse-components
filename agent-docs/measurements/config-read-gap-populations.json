@@ -1,6 +1,6 @@
 {
   "id": "config-read-gap-populations",
-  "measured": "2026-11-02",
+  "measured": "2026-11-05",
   "published": false,
   "source": {
     "kind": "bench",
@@ -28,21 +28,28 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 31
+        "reads": 14
       }
     },
     {
       "values": {
         "population": "root config",
-        "slots": "`theme`, `extraThemes`, `defaultDriver`, `workerCount`, `shareURL`",
-        "reads": 8
+        "slots": "`shareURL`, `logoPath`, `disableAnalytics`",
+        "reads": 3
+      }
+    },
+    {
+      "values": {
+        "population": "frozen slot, `any` by design",
+        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`",
+        "reads": 9
       }
     },
     {
       "values": {
         "population": "everything else",
-        "slots": "16 other names",
-        "reads": 20
+        "slots": "2 other names",
+        "reads": 2
       }
     }
   ]

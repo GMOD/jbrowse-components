@@ -11,7 +11,7 @@ import {
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getMembers } from '@jbrowse/mobx-state-tree'
+import { getIdentifier, getMembers } from '@jbrowse/mobx-state-tree'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -177,7 +177,7 @@ function activeDisplay(
     displayId === undefined ? undefined : target?.displays
   return Array.isArray(displays)
     ? (displays as AnyConfigurationModel[]).find(
-        display => readConfObject(display, 'displayId') === displayId,
+        display => getIdentifier(display) === displayId,
       )
     : undefined
 }
@@ -208,7 +208,7 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
   return (
     <div
       // remounts the fields for another track, which reuses this widget
-      key={readConfObject(target, 'trackId')}
+      key={getIdentifier(target) ?? undefined}
       className={classes.root}
       data-testid="configEditor"
     >

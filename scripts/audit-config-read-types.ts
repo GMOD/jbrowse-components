@@ -67,7 +67,18 @@ const POPULATIONS: { label: string; slots: string[] }[] = [
   },
   {
     label: 'root config',
-    slots: ['theme', 'extraThemes', 'defaultDriver', 'workerCount', 'shareURL'],
+    slots: ['shareURL', 'logoPath', 'disableAnalytics'],
+  },
+  {
+    label: 'frozen slot, `any` by design',
+    slots: [
+      'theme',
+      'extraThemes',
+      'features',
+      'metadata',
+      'ldAdapter',
+      'assemblyNameToPanSN',
+    ],
   },
 ]
 

@@ -3,10 +3,8 @@ import { capitalizeFirst } from '@jbrowse/core/util'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
-import { withPinnedColors } from './rowColorScale.ts'
-
 import type { RowColorScaleSetting, RowColorSetting } from './rowColorScale.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
 
 /** The `rows.color` object as a config or the dialog writes it. */
 export interface RowColorSnapshot {
@@ -46,7 +44,7 @@ export function liftRowColor(value: unknown): RowColorSetting {
 
 /** A `rows.color` config node read as a `RowColorSetting`. */
 export function rowColorSettingOf(
-  color: AnyConfigurationModel,
+  color: TreeSidebarConfigModel['rows']['color'],
 ): RowColorSetting {
   return liftRowColor({
     field: readConfObject(color, 'field'),
@@ -70,19 +68,6 @@ export function pinnedColorsOf(colors: unknown): ReadonlyMap<string, string> {
         )
       : [],
   )
-}
-
-/**
- * A display's row colors: the pins, `rows.colors` as written, and the
- * `rows.color` node with them folded in (`withPinnedColors`), what a tables
- * export resolves a row's color from as the display does.
- */
-export function rowColorsOfRows(color: AnyConfigurationModel, colors: unknown) {
-  const pinned = pinnedColorsOf(colors)
-  return {
-    pinned,
-    setting: withPinnedColors(rowColorSettingOf(color), pinned),
-  }
 }
 
 /**
