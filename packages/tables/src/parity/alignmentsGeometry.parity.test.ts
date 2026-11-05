@@ -66,13 +66,37 @@ const engine = createTablesEngine()
 
 const sorted = (entries: string[]) => entries.toSorted()
 
-/** Each drawn read's section and row, by its read key. */
-function readRows(sections: LinearAlignmentsDisplayModel['renderSections']) {
+interface Window {
+  start: number
+  end: number
+}
+
+/** How a connector names a read in the margin, which no table lists. */
+const MARGIN = 'margin'
+
+/** Whether a span, its ends in either order, reaches into `window`. */
+const touches = (window: Window, a = 0, b = a) =>
+  Math.max(a, b) > window.start && Math.min(a, b) < window.end
+
+/** Whether read `i` of `d` touches `window`: the reads the window shows. */
+const readShown = (
+  window: Window,
+  d: { readPositions: ArrayLike<number> },
+  i: number,
+) => touches(window, d.readPositions[2 * i], d.readPositions[2 * i + 1])
+
+/** Each drawn read the window shows, its section and row by its read key. */
+function readRows(
+  sections: LinearAlignmentsDisplayModel['renderSections'],
+  window: Window,
+) {
   const rows: Record<string, string> = {}
   for (const sec of sections) {
     for (const d of sec.laidOutPileupMap.values()) {
       for (let i = 0; i < d.readKeys.length; i++) {
-        rows[String(d.readKeys[i])] = `${sec.label}:${d.readYs[i]}`
+        if (readShown(window, d, i)) {
+          rows[String(d.readKeys[i])] = `${sec.label}:${d.readYs[i]}`
+        }
       }
     }
   }
@@ -80,13 +104,15 @@ function readRows(sections: LinearAlignmentsDisplayModel['renderSections']) {
 }
 
 /**
- * What the alignments display draws of its pileup's geometry, read off the
- * model as its renderers read it: each drawn read's section and row, every
- * connector the line pass and the connector mark draw, each section's dip
- * reserve, the junctions the sashimi band draws and their color, the arcs
- * the read-connection band draws, and the color each mismatched base paints.
+ * What the alignments display draws of its pileup's geometry in `window`,
+ * read off the model as its renderers read it: each drawn read's section and
+ * row, every connector the line pass and the connector mark draw, each
+ * section's dip reserve, the junctions the sashimi band draws and their
+ * color, the arcs the read-connection band draws, and the color each
+ * mismatched base paints. The display lays out the view's margin around the
+ * window too, which the window does not show.
  */
-function modelGeometry(m: LinearAlignmentsDisplayModel) {
+function modelGeometry(m: LinearAlignmentsDisplayModel, window: Window) {
   const sections = m.renderSections
   const labelOf = new Map(sections.map(s => [s.groupKey, s.label]))
   const palette = m.themed.colors
@@ -95,13 +121,26 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
   const { displayedRegions } = m.view
   const straightLines = [...m.connectorsByGroup].flatMap(([key, { lines }]) =>
     [...lines.values()].flatMap(l =>
-      Array.from(
-        { length: l.numLinkedReadLines },
-        (_, i) =>
-          `${labelOf.get(key)} ${l.linkedReadLinePositions[2 * i]}-${l.linkedReadLinePositions[2 * i + 1]} ${l.linkedReadLineYs[2 * i]}/${l.linkedReadLineYs[2 * i + 1]} straight`,
-      ),
+      Array.from({ length: l.numLinkedReadLines }, (_, i) =>
+        touches(
+          window,
+          l.linkedReadLinePositions[2 * i],
+          l.linkedReadLinePositions[2 * i + 1],
+        )
+          ? [
+              `${labelOf.get(key)} ${l.linkedReadLinePositions[2 * i]}-${l.linkedReadLinePositions[2 * i + 1]} ${l.linkedReadLineYs[2 * i]}/${l.linkedReadLineYs[2 * i + 1]} straight`,
+            ]
+          : [],
+      ).flat(),
     ),
   )
+  const shownKey = (end: {
+    data: { readKeys: ArrayLike<unknown>; readPositions: ArrayLike<number> }
+    readIdx: number
+  }) =>
+    readShown(window, end.data, end.readIdx)
+      ? String(end.data.readKeys[end.readIdx])
+      : MARGIN
   const marked = m.connectorPairSections.flatMap(sec =>
     sec.pairs.flatMap(pair => {
       const placed = connectorInstance(
@@ -112,11 +151,11 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
         arrows,
       )
       const label = labelOf.get(sec.groupKey)
-      return placed
+      return placed && touches(window, placed.x, placed.x2)
         ? [
             placed.straight
               ? `${label} ${placed.x}-${placed.x2} ${placed.row}/${placed.row2} straight`
-              : `${label} ${pair.e1.data.readKeys[pair.e1.readIdx]}>${pair.e2.data.readKeys[pair.e2.readIdx]} ${placed.row}/${placed.row2} ${placed.loop ? 'loop' : 'curve'} ${placed.bend === CONNECTOR_BOW ? 0 : placed.bend}`,
+              : `${label} ${shownKey(pair.e1)}>${shownKey(pair.e2)} ${placed.row}/${placed.row2} ${placed.loop ? 'loop' : 'curve'} ${placed.bend === CONNECTOR_BOW ? 0 : placed.bend}`,
           ]
         : []
     }),
@@ -125,7 +164,7 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
   const baseColors = effectiveBaseColors(m.renderState)
   return {
     sections: sections.map(s => s.label),
-    rows: m.showPileup ? readRows(sections) : {},
+    rows: m.showPileup ? readRows(sections, window) : {},
     connectors: sorted([...straightLines, ...marked]),
     dipReserve: Object.fromEntries(sections.map(s => [s.label, s.dipReserve])),
     junctions: Object.fromEntries(
@@ -139,11 +178,13 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
     arcs: sorted(
       [...m.arcsResult.byGroup].flatMap(([key, byRegion]) =>
         [...byRegion.values()].flatMap(a =>
-          Array.from(
-            { length: a.numArcs },
-            (_, i) =>
-              `${labelOf.get(key)} ${a.arcX1[i]}-${a.arcX2[i]} ${arcSlotColor[arcColorSlot(a.arcColorTypes[i]!)]}`,
-          ),
+          Array.from({ length: a.numArcs }, (_, i) =>
+            touches(window, a.arcX1[i], a.arcX2[i])
+              ? [
+                  `${labelOf.get(key)} ${a.arcX1[i]}-${a.arcX2[i]} ${arcSlotColor[arcColorSlot(a.arcColorTypes[i]!)]}`,
+                ]
+              : [],
+          ).flat(),
         ),
       ),
     ),
@@ -152,14 +193,16 @@ function modelGeometry(m: LinearAlignmentsDisplayModel) {
         ? Object.fromEntries(
             sections.flatMap(sec =>
               [...sec.laidOutPileupMap.values()].flatMap(d =>
-                Array.from(d.mismatchBases, b => {
+                Array.from(d.mismatchBases, (b, k) => {
                   const base = String.fromCodePoint(b)
                   const rgb =
                     base in baseColors
                       ? baseColors[base as keyof typeof baseColors]
                       : baseColors.N
-                  return [base, normalizedRgbToHex(rgb)]
-                }),
+                  return readShown(window, d, d.mismatchReadIndices[k]!)
+                    ? [[base, normalizedRgbToHex(rgb)]]
+                    : []
+                }).flat(),
               ),
             ),
           )
@@ -184,7 +227,7 @@ function exportGeometry(t: AlignmentTables) {
       c.kind.map((kind, i) =>
         kind === 'straight'
           ? `${c.section[i]} ${c.start[i]}-${c.end[i]} ${c.row[i]}/${c.endRow[i]} straight`
-          : `${c.section[i]} ${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.row[i]}/${c.endRow[i]} ${kind} ${c.dip[i]}`,
+          : `${c.section[i]} ${idOfKey.get(c.key[i]!) ?? MARGIN}>${idOfKey.get(c.mateKey[i]!) ?? MARGIN} ${c.row[i]}/${c.endRow[i]} ${kind} ${c.dip[i]}`,
       ),
     ),
     dipReserve: Object.fromEntries(
@@ -241,7 +284,6 @@ function geometryParity(
           region: fixture.region,
           contigLength: VOLVOX_CONTIG,
           bpPerPx: (fixture.region.end - fixture.region.start) / 1000,
-          settled: m => m.rpcDataMap.size > 0,
         })
       const clipped = model.lanes.filter(
         l => l.clippedBy !== undefined && l.clippedBy !== 'collapse',
@@ -260,7 +302,7 @@ function geometryParity(
         region: fixture.region,
         display,
       }),
-    modelDecisions: modelGeometry,
+    modelDecisions: m => modelGeometry(m, fixture.region),
     exportDecisions: exportGeometry,
   }
 }

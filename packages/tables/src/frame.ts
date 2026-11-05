@@ -33,7 +33,10 @@ async function contigsOf(
       }
 }
 
-/** The whole contig `locus` lies on, unbounded where its length is unknown. */
+/**
+ * The whole contig `locus` lies on; where its length is unknown, as far past
+ * the locus as the locus is wide, more than the view's margin reaches.
+ */
 async function contigHolding<R extends TablesRegion>(
   pluginManager: PluginManager,
   locus: R,
@@ -50,14 +53,14 @@ async function contigHolding<R extends TablesRegion>(
   return {
     ...locus,
     start: Math.min(contig?.start ?? 0, locus.start),
-    end: Math.max(contig?.end ?? Infinity, locus.end),
+    end: Math.max(contig?.end ?? 2 * locus.end - locus.start, locus.end),
   }
 }
 
 /**
  * The regions the browser displays for a read of `regions`. One region is a
  * locus, shown as a window into its whole contig, from the assembly's or the
- * sequence's length, unbounded past the region where neither states one.
+ * sequence's length, or a locus's width past it where neither states one.
  * Several are the displayed regions themselves, as the browser shows several
  * loci.
  */

@@ -909,8 +909,7 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
   expect(chained.connectors.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(
     true,
   )
-  const listed = new Set(chained.reads.id)
-  expect(plain.reads.id.every(id => listed.has(id))).toBe(true)
+  expect(chained.reads.start).toEqual(plain.reads.start)
   const rows = new Map<string, Set<number>>()
   for (let i = 0; i < chained.reads.name.length; i++) {
     const row = rows.get(chained.reads.name[i]!) ?? new Set<number>()
@@ -933,13 +932,18 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
     chained.reads.key.map((key, i) => [key, chained.reads.name[i]!]),
   )
   const joined = new Set<string>()
+  // a connector reaching in from a read in the margin names a key no
+  // listed read holds
+  const listedKeys = new Set(chained.reads.key)
   for (let i = 0; i < chained.connectors.start.length; i++) {
     const key = chained.connectors.key[i]!
     const mateKey = chained.connectors.mateKey[i]!
-    expect(chained.connectors.row[i]).toBe(rowOfKey.get(key))
     expect(chained.connectors.endRow[i]).toBe(chained.connectors.row[i])
-    expect(nameOfKey.get(mateKey)).toBe(nameOfKey.get(key))
-    joined.add(nameOfKey.get(key)!)
+    if (listedKeys.has(key) && listedKeys.has(mateKey)) {
+      expect(chained.connectors.row[i]).toBe(rowOfKey.get(key))
+      expect(nameOfKey.get(mateKey)).toBe(nameOfKey.get(key))
+      joined.add(nameOfKey.get(key)!)
+    }
   }
   for (const at of mates) {
     expect(joined.has(chained.reads.name[at[0]!]!)).toBe(true)

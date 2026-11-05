@@ -49,7 +49,10 @@ import {
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
-import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
+import {
+  windowFetchRegions,
+  windowFrames,
+} from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { connectorPlacement } from '@jbrowse/render-core/marks/connectorPlacement'
 import {
@@ -333,32 +336,22 @@ const BASE_OF_CODE: Record<number, string> = {
 
 /**
  * One section's tables in one region, listing of the reads fetched with the
- * view's margin the ones touching `region`, and the ones a listed connector
- * joins to them, as the display draws them.
+ * view's margin the ones touching `region`, with their marks. A connector
+ * reaching into the region from a read in the margin keeps its own row and
+ * ends, naming a `key` no listed read holds.
  */
-function windowedPart<
-  C extends Record<string, unknown>,
-  T extends {
-    reads: { key: ArrayLike<number> }
-    connectors: { key: readonly number[]; mateKey: readonly number[] }
-  },
->(
+function windowedPart<C extends Record<string, unknown>, T>(
   columns: C,
   d: WorkerPileupData,
   region: { start: number; end: number },
   tables: T,
 ) {
-  const joined = new Set([
-    ...tables.connectors.key,
-    ...tables.connectors.mateKey,
-  ])
   return {
     columns,
     tables,
     keepRead: (read: number) =>
-      (d.readPositions[read * 2]! < region.end &&
-        d.readPositions[read * 2 + 1]! > region.start) ||
-      joined.has(tables.reads.key[read]!),
+      d.readPositions[read * 2]! < region.end &&
+      d.readPositions[read * 2 + 1]! > region.start,
   }
 }
 
@@ -490,12 +483,15 @@ function readLevelOf(colorField: string | undefined) {
 
 /**
  * What `alignmentTables` fetched, the regions it fetched them over (each
- * window and the view's margin around it), and the windows it reads them in.
+ * window and the view's margin around it), the windows it reads them in, and
+ * the displayed region each window is a slice of, which connectors are
+ * placed in.
  */
 interface AlignmentsTablesInputs {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
   fetchedRegions: RegionBounds[]
   regionInfos: RegionInfo[]
+  frames: RegionInfo[]
   sortColumn: SortColumn | undefined
   paintedRefNamePosition: RefNamePosition | undefined
 }
@@ -526,6 +522,7 @@ const AlignmentsTablesHost = types
     rpcDataMap: new Map(),
     fetchedRegions: [],
     regionInfos: [],
+    frames: [],
     sortColumn: undefined,
     paintedRefNamePosition: undefined,
     theme: resolvePalette(),
@@ -535,6 +532,7 @@ const AlignmentsTablesHost = types
       self.rpcDataMap = inputs.rpcDataMap
       self.fetchedRegions = inputs.fetchedRegions
       self.regionInfos = inputs.regionInfos
+      self.frames = inputs.frames
       self.sortColumn = inputs.sortColumn
       self.paintedRefNamePosition = inputs.paintedRefNamePosition
     },
@@ -548,7 +546,7 @@ const AlignmentsTablesHost = types
       return new Map(self.fetchedRegions.map((r, i) => [i, r]))
     },
     get host() {
-      return { displayedRegions: self.regionInfos }
+      return { displayedRegions: self.frames }
     },
     get view(): SettledBlocksView {
       return {
@@ -1149,7 +1147,8 @@ function overlapTables(
  * end.
  */
 function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
-  const regions = host.regionInfos
+  const regions = host.frames
+  const windows = host.regionInfos
   const arrows = connectorArrowPx(host.featureHeight) > 0
   return new Map(
     [...host.laidOutByGroupFramed].map(([key, laid]) => {
@@ -1157,7 +1156,14 @@ function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
       const connectors = host.connectorsByGroup.get(key)
       const byRegion = new Map<number, PlacedConnector[]>()
       const file = (pair: LinkedPair, placed: PlacedConnector['placed']) => {
-        getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
+        const window = windows[placed.region]
+        if (
+          window &&
+          Math.max(placed.x, placed.x2) > window.start &&
+          Math.min(placed.x, placed.x2) < window.end
+        ) {
+          getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
+        }
       }
       for (const pair of connectors?.linePairs ?? []) {
         const placed = linePassInstance(pair, regions, pileupHeight, readPitch)
@@ -1515,6 +1521,7 @@ export async function alignmentTables(
   return runInAction(() =>
     laidOutTables(host, {
       regions,
+      frames: windowFrames(regions, displayedRegions),
       fetchedRegions,
       fetched,
       sortColumn,
@@ -1532,12 +1539,14 @@ function laidOutTables(
   host: AlignmentsTablesHostModel,
   {
     regions,
+    frames,
     fetchedRegions,
     fetched,
     sortColumn,
     paintedRefNamePosition,
   }: {
     regions: TablesRegion[]
+    frames: TablesRegion[]
     fetchedRegions: TablesRegion[]
     fetched: ReadonlyMap<number, GroupedAlignmentsResult>
     sortColumn: SortColumn | undefined
@@ -1549,6 +1558,12 @@ function laidOutTables(
     rpcDataMap: fetched,
     fetchedRegions,
     regionInfos: regions.map((r, i) => ({
+      refName: r.refName,
+      start: r.start,
+      end: r.end,
+      displayedRegionIndex: i,
+    })),
+    frames: frames.map((r, i) => ({
       refName: r.refName,
       start: r.start,
       end: r.end,

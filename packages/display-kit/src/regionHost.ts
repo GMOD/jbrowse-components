@@ -89,28 +89,40 @@ export function bufferedVisibleRegionsOf({
 }
 
 /**
- * What a view fetches for `windows` laid end to end across its width, each a
- * window into the displayed region holding it, `windows` themselves where none
- * does: {@link bufferedVisibleRegionsOf} at any zoom, since its margin is half
- * the windows' bp. A static export fetching through this fetches what the view
- * would, each window keeping its own fields.
+ * The displayed region holding each of `windows`, the window itself where
+ * none does: the frame each window is a slice of.
  */
-export function windowFetchRegions<
+export function windowFrames<
   W extends { refName: string; start: number; end: number },
 >(windows: readonly W[], displayedRegions: readonly W[] = windows) {
-  const holding = windows.map(
+  return windows.map(
     w =>
       displayedRegions.find(
         d => d.refName === w.refName && d.start <= w.start && d.end >= w.end,
       ) ?? w,
   )
+}
+
+/**
+ * What a view fetches for `windows` laid end to end across its width, each a
+ * window into its frame (`windowFrames`): {@link bufferedVisibleRegionsOf} at
+ * any zoom, since its margin is half the windows' bp. A static export
+ * fetching through this fetches what the view would, each window keeping its
+ * own fields.
+ */
+export function windowFetchRegions<
+  W extends { refName: string; start: number; end: number },
+>(windows: readonly W[], displayedRegions: readonly W[] = windows) {
   return bufferedVisibleRegionsOf({
     visibleRegions: windows.map((w, i) => ({
       ...w,
       assemblyName: '',
       displayedRegionIndex: i,
     })),
-    displayedRegions: holding.map(d => ({ ...d, assemblyName: '' })),
+    displayedRegions: windowFrames(windows, displayedRegions).map(d => ({
+      ...d,
+      assemblyName: '',
+    })),
     width: windows.reduce((sum, w) => sum + w.end - w.start, 0),
     bpPerPx: 1,
   }).map(({ region }, i) => ({
