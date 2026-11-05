@@ -6,9 +6,17 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "tauschii-ReferenceSequenceTrack",
         "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "tauschii.chrom.sizes",
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "tauschii.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "tauschii.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "tauschii.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -249,5 +257,27 @@
         "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"]
       }
     }
-  ]
+  ],
+  "plugins": [
+    {
+      "name": "MsaView",
+      "storePlugin": "MsaView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
+    }
+  ],
+  "msa": {
+    "datasets": [
+      {
+        "datasetId": "wheat_orthofinder",
+        "name": "Wheat orthogroups (OrthoFinder)",
+        "description": "An alignment and gene tree per orthogroup",
+        "adapter": {
+          "type": "OrthoFinderMsaAdapter",
+          "resultsLocation": {
+            "uri": "orthofinder/"
+          }
+        }
+      }
+    ]
+  }
 }
