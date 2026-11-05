@@ -2,10 +2,22 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { CONTIG_SWAP, INV_INDELS } from '../synteny.fixture.ts'
-import { fastaAssembly, fileUri } from './comparative/testEnv.ts'
+import {
+  ALL_VS_ALL,
+  CONTIG_SWAP,
+  GENE_BLOCKS,
+  INV_INDELS,
+  STAR,
+  SYRI,
+} from '../synteny.fixture.ts'
+import {
+  chromSizesAssembly,
+  fastaAssembly,
+  fileUri,
+} from './comparative/testEnv.ts'
 
-import type { ComparativeAxis } from './comparative/testEnv.ts'
+import type { AssemblyConfig, ComparativeAxis } from './comparative/testEnv.ts'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 
 export interface ComparativeFixture {
   adapterConfig: Record<string, unknown>
@@ -90,4 +102,67 @@ export const OFFSCREEN: ComparativeFixture = {
   adapterConfig: CONTIG_SWAP.adapterConfig,
   query: { assembly: VOLVOX, regions: [CTGA], width: 800 },
   target: { assembly: VOLVOX, regions: [CTGA], width: 800 },
+}
+
+/** A multi-way track's adapter, the anchor it shows, and every lane's genome. */
+export interface MultiwayFixture {
+  adapterConfig: Record<string, unknown>
+  assemblies: AssemblyConfig[]
+  anchor: { assemblyName: string; regions: TablesRegion[]; width: number }
+}
+
+const VOLVOX_LANES = [
+  VOLVOX,
+  fastaAssembly('volvox_ins', 'test_data/volvox/volvox_ins.fa'),
+  fastaAssembly('volvox_del', 'test_data/volvox/volvox_del.fa'),
+]
+
+/** volvox, an insertion and a deletion, each against the others. */
+export const ALL_VS_ALL_LANES: MultiwayFixture = {
+  adapterConfig: ALL_VS_ALL.adapterConfig,
+  assemblies: VOLVOX_LANES,
+  anchor: { assemblyName: 'volvox', regions: [CTGA], width: 800 },
+}
+
+/** 4 kb of volvox around the insertion, its CIGAR steps wide enough to draw. */
+export const ALL_VS_ALL_ZOOMED: MultiwayFixture = {
+  ...ALL_VS_ALL_LANES,
+  anchor: {
+    assemblyName: 'volvox',
+    regions: [{ refName: 'ctgA', start: 29_000, end: 33_000 }],
+    width: 800,
+  },
+}
+
+/** Two pairwise PAFs, each lane stated against volvox alone. */
+export const STAR_LANES: MultiwayFixture = {
+  adapterConfig: STAR.adapterConfig,
+  assemblies: VOLVOX_LANES,
+  anchor: { assemblyName: 'volvox', regions: [CTGA], width: 800 },
+}
+
+/** SyRI's calls for five accessions under Col-0 Chr1. */
+export const SYRI_LANES: MultiwayFixture = {
+  adapterConfig: SYRI.adapterConfig,
+  assemblies: ['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'].map(name =>
+    chromSizesAssembly(name, `test_data/syri/${name}.chrom.sizes`),
+  ),
+  anchor: {
+    assemblyName: 'Col-0',
+    regions: [{ refName: 'Chr1', start: 0, end: 30_427_671 }],
+    width: 800,
+  },
+}
+
+/** Four grape genes, three placed on peach and three on cacao. */
+export const GENE_BLOCK_LANES: MultiwayFixture = {
+  adapterConfig: GENE_BLOCKS.adapterConfig,
+  assemblies: ['grape', 'peach', 'cacao'].map(name =>
+    chromSizesAssembly(name, `test_data/multiway_blocks/${name}.chrom.sizes`),
+  ),
+  anchor: {
+    assemblyName: 'grape',
+    regions: [{ refName: 'chr1', start: 0, end: 1000 }],
+    width: 800,
+  },
 }

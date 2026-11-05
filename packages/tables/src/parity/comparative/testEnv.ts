@@ -6,13 +6,17 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 
 import { hasDisplayType, until } from '../testEnv.ts'
 
+import type { MultiWayTablesArgs } from '../../index.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
+import type { MultiWaySyntenyDisplayModel } from '@jbrowse/plugin-linear-comparative-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const TRACK_ID = 'parity_synteny'
 export const TRACK_NAME = 'parity synteny'
 const SYNTENY_DISPLAY_ID = `${TRACK_ID}-LinearSyntenyDisplay`
 const DOTPLOT_DISPLAY_ID = `${TRACK_ID}-DotplotDisplay`
+const MULTIWAY_DISPLAY_ID = `${TRACK_ID}-MultiWaySyntenyDisplay`
 
 export const fileUri = (file: string) => ({
   uri: pathToFileURL(path.resolve(file)).href,
@@ -39,6 +43,16 @@ export function fastaAssembly(name: string, fasta: string) {
 }
 
 export type FastaAssembly = ReturnType<typeof fastaAssembly>
+
+/** An assembly config: its name and the sequence adapter it reads. */
+export interface AssemblyConfig {
+  name: string
+  sequence: {
+    type: string
+    trackId: string
+    adapter: Record<string, unknown>
+  }
+}
 
 /** One axis: its assembly, the regions it shows end to end, and its px. */
 export interface ComparativeAxis {
@@ -232,6 +246,137 @@ export async function standUpDotplot(spec: ComparativeViewSpec) {
   }
   assertWindow('horizontal axis', x, view.hview)
   assertWindow('vertical axis', y, view.vview)
+  return {
+    view,
+    display,
+    dispose: () => {
+      session.removeView(view)
+    },
+  }
+}
+
+/** An assembly over a chrom.sizes file, which holds its contigs' lengths. */
+export function chromSizesAssembly(name: string, chromSizes: string) {
+  return {
+    name,
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: `${name}-ReferenceSequenceTrack`,
+      adapter: {
+        type: 'ChromSizesAdapter',
+        chromSizesLocation: fileUri(chromSizes),
+      },
+    },
+  }
+}
+
+export interface MultiwayViewSpec {
+  adapterConfig: Record<string, unknown>
+  /** every lane's genome, the anchor's first */
+  assemblies: readonly AssemblyConfig[]
+  /** the regions the anchor lane shows end to end across `width` px */
+  anchor: { assemblyName: string; regions: TablesRegion[]; width: number }
+  /** the display's config slots, as the export's `display` argument */
+  settings: Record<string, unknown>
+  pins?: MultiWayTablesArgs['pins']
+  hidden?: MultiWayTablesArgs['hidden']
+}
+
+const isLinearGenomeView = (view: unknown): view is LinearGenomeViewModel =>
+  hasDisplayType(view, 'LinearGenomeView')
+
+const isMultiWayDisplay = (
+  display: unknown,
+): display is MultiWaySyntenyDisplayModel =>
+  hasDisplayType(display, 'MultiWaySyntenyDisplay')
+
+// fetched, every lane's dependent fetch landed and no lane mid-motion
+const multiwaySettled = (display: MultiWaySyntenyDisplayModel) =>
+  display.features !== undefined &&
+  !display.awaitingDependentData &&
+  !display.dataSuperseded &&
+  display.lanesBeingDescribed.size === 0
+
+/**
+ * A real `LinearGenomeView` showing the anchor's regions end to end across
+ * its width, holding the track's `MultiWaySyntenyDisplay` with the reader's
+ * pins and hidden lanes, settled once its anchor fetch and every lane fetch
+ * it calls for have landed.
+ */
+export async function standUpMultiway(spec: MultiwayViewSpec) {
+  const { anchor, assemblies } = spec
+  const session = createTestSession({
+    jbrowseConfig: {
+      assemblies,
+      tracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: TRACK_ID,
+          name: TRACK_NAME,
+          assemblyNames: assemblies.map(a => a.name),
+          adapter: spec.adapterConfig,
+          displays: [
+            {
+              type: 'MultiWaySyntenyDisplay',
+              displayId: MULTIWAY_DISPLAY_ID,
+              ...spec.settings,
+            },
+          ],
+        },
+      ],
+    },
+  })
+  session.setPreferenceOverride('animationMode', 'disabled')
+  const typeName: string = 'LinearGenomeView'
+  const bpPerPx = totalBp(anchor.regions) / anchor.width
+  const view = await session.launchView(typeName, {
+    displayedRegions: anchor.regions.map(r => ({
+      ...r,
+      assemblyName: anchor.assemblyName,
+    })),
+    windowWidthBp: totalBp(anchor.regions),
+    windowStartBp: 0,
+    showTrackOutlines: false,
+    tracks: [
+      {
+        type: 'SyntenyTrack',
+        configuration: TRACK_ID,
+        displays: [
+          {
+            type: 'MultiWaySyntenyDisplay',
+            configuration: MULTIWAY_DISPLAY_ID,
+            lanePins: spec.pins,
+            hiddenLaneNames: spec.hidden,
+          },
+        ],
+      },
+    ],
+  })
+  if (!isLinearGenomeView(view)) {
+    throw new Error('the session holds no LinearGenomeView')
+  }
+  view.setWidth(anchor.width)
+  const display = view.tracks[0]?.displays[0]
+  if (!isMultiWayDisplay(display)) {
+    throw new Error('the view holds no MultiWaySyntenyDisplay')
+  }
+  await until(
+    () => multiwaySettled(display),
+    () => 'MultiWaySyntenyDisplay',
+  )
+  if (display.error) {
+    throw new Error(
+      `the MultiWaySyntenyDisplay failed: ${String(display.error)}`,
+    )
+  } else if (
+    view.bpPerPx !== bpPerPx ||
+    view.offsetPx !== 0 ||
+    display.canvasWidthPx !== anchor.width
+  ) {
+    throw new Error(
+      `the view shows ${view.bpPerPx} bp/px from ${view.offsetPx} px over ${display.canvasWidthPx}, not the export's ${bpPerPx} from 0 over ${anchor.width}`,
+    )
+  }
   return {
     view,
     display,
