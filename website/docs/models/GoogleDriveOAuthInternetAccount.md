@@ -62,7 +62,7 @@ From [OAuthInternetAccount](../oauthinternetaccount): <span id="method-retriever
 | Member | Description |
 | --- | --- |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  |
-| <span id="action-chooselocation">**chooseLocation**</span><br><code>() =&gt; Promise&lt;UriLocation &#124; undefined&gt;</code> | The Drive link carries the file's name as its last segment so the add-track form can guess the adapter from the extension; the fetcher reads only the id |
+| <span id="action-chooselocation">**chooseLocation**</span><br><code>() =&gt; Promise&lt;UriLocation &#124; undefined&gt;</code> | The Drive link has the file's name as its last segment so the add-track form can guess the adapter from the extension; the fetcher reads only the id |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited actions from one model</summary>

@@ -1,14 +1,14 @@
 ---
 id: featurecontainers
 title: FeatureContainers
-description: "The feature display's containers: the top-level types whose children always stack on rows of their own, as a proteoform's ORFs do."
+description: "The feature display's containers: the top-level types whose children each always stack on a separate row, as a proteoform's ORFs do."
 sidebar_label: Display setting -> FeatureContainers
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/featureContainersConfigSchema.ts).
 
 The feature display's `containers`: the top-level types whose children
-always stack on rows of their own, as a proteoform's ORFs do.
+each always stack on a separate row, as a proteoform's ORFs do.
 
 ## Example usage
 

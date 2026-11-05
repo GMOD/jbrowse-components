@@ -10,7 +10,7 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 The mark display's `encoding`: the channels every mark reads unless it
 says otherwise, as ggplot2's plot-level aesthetics are each layer's. `y`
 is the value axis every mark's `encoding.y` is read through; `color` is
-the color a mark paints whose own `encoding.color` says nothing.
+the color of a mark whose `encoding.color` is unset.
 
 ## Example usage
 

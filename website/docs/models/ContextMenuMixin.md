@@ -13,7 +13,7 @@ Brings `contextMenuInfo`, `openContextMenu` and `closeContextMenu`; the
 display supplies `contextMenuItems()`, and `DisplayChrome` renders the menu
 for every display composing this.
 
-`Info` is what the display resolves the click to: the multi-row painting
+The display resolves the click to `Info`: the multi-row painting
 holds the feature under it, and multi-wiggle and MAF hold a column. Every
 one of them holds the anchor. The items are built from this value when the
 menu opens, not read inside an item's `onClick`, because `closeContextMenu`

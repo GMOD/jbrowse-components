@@ -325,13 +325,13 @@ export interface BaseOptions {
   // unzip, features for a scan). Adapters wrap the raw byte counts from the
   // index reader (@gmod/tabix, @gmod/bam, @gmod/cram) into this object form.
   statusCallback?: StatusCallback
-  // What the adapter wants a reader told about this answer that the features
+  // What the adapter wants a reader told about this fetch that the features
   // cannot show — an index SNP no LD record names, say — appended here and
-  // carried back on the fetch's result to the display's corner notice.
+  // returned on the fetch's result to the display's corner notice.
   notices?: string[]
   // What the adapter read off the features it answers with that a reader needs
   // beside them — a GWAS region's top hit, say — written here under a name of
-  // the adapter's own and carried back on the fetch's result.
+  // the adapter's own and returned on the fetch's result.
   facts?: Record<string, unknown>
   headers?: Record<string, string>
   // Which side of a pairing to answer getRefNames for; single-assembly
@@ -344,8 +344,8 @@ export interface BaseOptions {
   // This is a *resolved* tier, never the user's 'auto' setting: resolving auto
   // needs a zoom, and it happens on the main thread in a display getter that
   // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
-  // Resolving it here instead hides a fetch input from that key, which is how
-  // a zoom across the threshold came to leave a view holding the wrong tier.
+  // Resolving it here instead hides a fetch input from that key, so a zoom
+  // across the threshold could leave a view holding the wrong tier.
   lodTier?: LodTier
   // The lanes a multi-genome source is asked about, spelled as it spells them.
   // A source that declares its lanes (`headerLanes`) reads only these lanes'
@@ -353,8 +353,8 @@ export interface BaseOptions {
   // every lane.
   haplotypes?: string[]
   // "I read only top-level features", so an adapter may skip work that exists
-  // to complete SUBFEATURE lists. A request, not an instruction: only the
-  // adapter knows whether its format's top-level set is even a function of the
+  // to complete subfeature lists. A request, not an instruction: only the
+  // adapter can tell whether its format's top-level set is even a function of the
   // lines it read — `Gff3TabixAdapter` honours it by dropping the redispatch
   // flanks, `GtfTabixAdapter` declines because it synthesizes genes from the
   // transcripts it fetched, and both say why at the call.
@@ -395,16 +395,16 @@ export interface ComparativeOptions extends BaseOptions {
   // pangenome graph, indexed on its reference alone) asks for this lane and
   // `targetAssemblyName` aligned to each other, read inside that window. The
   // records are on this lane's coordinates. An adapter declares that it
-  // answers these with the `lanePairsOnAnchor` capability.
+  // serves these with the `lanePairsOnAnchor` capability.
   queryAssemblyName?: string
   // Several `queryAssemblyName`/`targetAssemblyName` pairs on one anchor
   // window, answered together: a graph cuts the window once for all of them.
   // Each record's `assemblyName` and `mate.assemblyName` say which pair it
-  // belongs to. An adapter declares that it answers these with the
+  // belongs to. An adapter declares that it serves these with the
   // `lanePairBatches` capability.
   lanePairs?: { queryAssemblyName: string; targetAssemblyName: string }[]
   // A multi-genome adapter answering a no-target query folds the pairs
-  // anchored on one query feature into one feature carrying `mates: [...]`,
+  // anchored on one query feature into one feature with `mates: [...]`,
   // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
   // feature per pair.
   mateShape?: 'grouped'

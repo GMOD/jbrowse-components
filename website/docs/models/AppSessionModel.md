@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [d
 
 The session every full app (desktop, web, react-app) is built on: views in
 a workspace layout, session tracks and assemblies, theme and preferences.
-Each product composes its own connections and track-menu mixins onto it.
+Each product composes a set of connections and track-menu mixins onto it.
 
 AppSessionModel adds no members: it composes the models below, and every member listed here comes from them.
 

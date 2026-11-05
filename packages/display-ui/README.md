@@ -134,9 +134,9 @@ into a context, so every display beneath re-renders with it.
 **The contexts themselves default to `undefined`.** A display rendering outside
 any provider — a unit test, the SVG export, breakpoint-split-view's
 `overlayUtils` — keeps JBrowse's own Material look, because a plain ambient
-default would switch those to plain chrome without anyone asking. Defaulting
-_this component's props_ is different: mounting it is a deliberate act, and the
-act means "not the Material default".
+default would switch those to plain chrome unrequested. Defaulting _this
+component's props_ is different: mounting it is a deliberate act, and the act
+means "not the Material default".
 
 Colors are not a seam and are not here. A display reads `usePalette()` for its
 content colors. The palette is a set of strings, not a UI toolkit, so it arrives
@@ -328,8 +328,8 @@ context comes with the isolation, so floating chrome a display draws (a color
 key, hi-c's overlay panel, maf's row labels) cannot out-z-index anything painted
 over the track stack from outside. The escape is a node mounted _beside_ the
 sandbox rather than inside it, published through `TrackOverlayContext`; this
-component is that node, its context and the paint order between them, in the one
-place they have to agree.
+component defines the node, its context and the paint order between them
+together, so the three agree.
 
 `TrackContainer` uses it, so JBrowse's own layout and an embedder's go through
 the same code rather than two copies of one rule. **An embedder mounting
@@ -351,8 +351,8 @@ under them with nothing to say so.
 this component: JBrowse's own track container passes 100, which is positioned
 above `PaddingBlocks` and below `TrackLabel` at 200, and means nothing to a host
 whose masks sit at 2. A default would be a number that is right in one layout
-and wrong in every other, and the failure — chrome painted under a mask — goes
-unseen until someone looks at the right zoom.
+and wrong in every other, and the failure, chrome painted under a mask, raises
+no error and shows only at some zoom levels.
 
 The node takes no pointer events, so it does not eat the canvas's. Chrome that
 wants them takes them back on its positioned box; that box also has

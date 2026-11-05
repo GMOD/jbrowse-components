@@ -75,9 +75,8 @@ mate position, which is already the direction it keeps: taken as is. So
 sequence below its breakpoint (-1) and the acceptor the sequence above its
 breakpoint (+1).
 
-Split out of `parseSvAlt` because a consumer holding an already-parsed
-`Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
-polarity — the shape that produced 78bb7b84f9.
+A consumer holding an already-parsed `Breakend` can call this instead of
+repeating two adjacent ternaries of opposite polarity.
 
 ```js
 import { breakendKeepsDirections } from '@jbrowse/core/util/svAlt'
@@ -95,10 +94,10 @@ texture both GPU backends upload and the Canvas2D twins index — entry `i` is
 the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
 the table and `rampColor`'s texel mapping cannot disagree.
 
-The table is always straight. A diverging ramp whose middle belongs at a
-value off the centre of the domain reads it through `rampMidT`, the shader's
-rule and its generated twin, so the middle follows a moving domain without a
-new table.
+The table is built without the diverging midpoint. A diverging ramp whose
+middle belongs at a value off the centre of the domain reads it through
+`rampMidT`, the shader's rule and its generated twin, so the middle follows a
+moving domain without a new table.
 
 ```js
 import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
@@ -135,10 +134,9 @@ One categorical field as every channel reads it — a facet's sections, a
 color's range entries, a key's rows. `key` files a value, `compare`
 orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
 after them), `label` names a key in a legend, `sectionLabel` on a chip, and
-`color` paints it. A key's color depends only on the key and the
-declaration, so every region agrees on it, except that a field dealing its
-colors (`categoricalField`'s `held`) also steps a key off the colors of the
-keys met before it.
+`color` gives it a color. A key's color is a function of the key and the
+declaration, so every region agrees on it. A field that deals its colors
+(`categoricalField`'s `held`) also skips the colors of keys met earlier.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
@@ -173,8 +171,8 @@ with no parent answers none.
 ## ChannelReader
 
 A channel read per feature: the compiled form of a FieldRef, and
-what a display's own worker method hands the encoder for a channel no
-field name can say — a join against a second adapter, a lookup table, a
+what a display's worker method passes to the encoder for a channel that no
+field name can express — a join against a second adapter, a lookup table, a
 rule over two fields.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -717,7 +715,7 @@ import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 Each feature's own color: ADR-166's identity scale. With `field`, the CSS
 color the field holds, as Vega-Lite's identity scale reads its field; with
 none, the BED color column under whichever name the file gives it, keyed
-by the `r,g,b` it parses to. A feature carrying none keys as `''`.
+by the `r,g,b` it parses to. A feature without one is keyed as `''`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -782,8 +780,8 @@ import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 ## junctionEnds
 
 Where a paired record's junction is at each of its two ends, and which side
-of it each end keeps — the one answer every launcher, the row menu and the
-chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+of it each end keeps — the junction and kept side that every launcher, the
+row menu and the chain walk use, whether the record is a VCF breakend, a symbolic SV or a
 paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
 them. `undefined` for a record naming no other end. A VCF record is read
 through `alt`, its first ALT unless the caller names another.
@@ -1002,8 +1000,8 @@ import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 ## NOT_A_NUMBER_LABEL
 
 The key a value holding text that is no number files under on a threshold
-scale, painted the misconfiguration grey rather than passing for a missing
-value.
+scale, drawn in the misconfiguration grey, so it is not mistaken for a
+missing value.
 
 ```js
 import { NOT_A_NUMBER_LABEL } from '@jbrowse/core/util/thresholdScale'
@@ -1282,8 +1280,8 @@ holding its hue.
 For extending a categorical palette past its length. Cycling a nine-color
 list over a 24-chromosome karyotype repeats the color outright; cycling it
 with a lightness shift per lap gives the hue back as a variant still told
-apart from the original — tab20's construction, which pairs a light and a
-dark of each hue.
+apart from the original, as tab20 does, pairing a light and a dark of each
+hue.
 
 SHIFT rather than a fixed lightness, and SCALE rather than a fixed chroma,
 because a categorical palette is uneven on purpose: category10's brown and
@@ -1293,7 +1291,7 @@ Each color keeps its relative chroma, so brown stays brown.
 
 In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where
 the same coefficient moves a yellow and a blue by visibly different amounts:
-a lap has to read as one tone across the whole palette or it reads as noise.
+each lap must look like one tone across the whole palette.
 
 ```js
 import { relight } from '@jbrowse/core/util/color'
@@ -1322,8 +1320,8 @@ color.
 ## runTransforms
 
 Run the transform steps over a feature list or a table, in order, in the
-worker. The table a step answers is what the next one reads, and the last
-one is what the encoder walks.
+worker. Each step reads the table the previous step returns, and the
+encoder walks the last one.
 
 ```js
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
@@ -1394,7 +1392,7 @@ Open the feature widget on the feature behind one instance of a
 sends `CoreGetEncodedFeature` the request the instance's region came back
 under, and the worker answers the entry of `layer`'s list that the
 instance's `featureIndex` names: the record as the adapter wrote it, or the
-bin or run the steps made. A second click aborts the first.
+bin or run the steps made. A second click aborts the first request.
 
 ```js
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
@@ -1409,8 +1407,8 @@ import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 
 The `k`th smallest of `a[0, n)`, permuting `a` in place. Exact, where a
 histogram collapses skewed contact counts into its bottom bucket, and O(n)
-where a sort of 4.5M counts measured ~1s. Median-of-three because Hi-C
-contacts arrive nearly sorted.
+where a sort of 4.5M counts measured ~1s. The pivot is the median of three
+because Hi-C contacts arrive nearly sorted.
 
 ```js
 import { selectNth } from '@jbrowse/core/util/quantileExtent'
@@ -1452,16 +1450,15 @@ mount:
 this with a session and nothing else. A page that declares `light dark`
 follows the OS, and a page that declares nothing stays light.
 
-A component rather than a documented pair of calls because the pair has a
-half that can be left out with nothing to show for it. `PaletteProvider` is
-the name a host reaches for, and it colors the React side alone; the session
-write is what reaches the RPC worker, which bakes feature labels into the
-rendered image. So a host that mounts only the provider gets light-mode
-labels on a dark page, from a canvas whose every other pixel is right, and
-nothing errors. See useSessionPalette for the mechanism.
+This is a component because the provider and the session write must both be
+mounted. `PaletteProvider` colors the React side alone; the session write
+reaches the RPC worker, which bakes feature labels into the rendered image.
+A host that mounts only the provider gets light-mode labels on a dark page,
+from a canvas whose every other pixel is right, and no error is raised. See
+useSessionPalette for the mechanism.
 
-The session is the only thing that resolves a palette here, so a host
-with its own palette mounts `PaletteProvider` directly instead.
+This component reads the palette from the session, so a host with its own
+palette mounts `PaletteProvider` directly.
 
 ```js
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'

@@ -52,4 +52,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>35</code> | height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height |
 | <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (up, down) = <code>'down'</code> | where the connections draw: up over the coverage band, or down in a separate band below it |
 | <span id="slot-encoding">**encoding**</span><br>[ReadConnectionsEncoding](../readconnectionsencoding) | The width each connection strokes at, `strokeWidth`. |
-| <span id="slot-ordinarypairs">**ordinaryPairs**</span><br>[ReadConnectionsOrdinaryPairs](../readconnectionsordinarypairs) | The pairs that carry no category, drawn as context: `show`. |
+| <span id="slot-ordinarypairs">**ordinaryPairs**</span><br>[ReadConnectionsOrdinaryPairs](../readconnectionsordinarypairs) | The pairs with no category, drawn as context: `show`. |

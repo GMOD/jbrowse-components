@@ -11,7 +11,7 @@ The alignments display's `normalInsertSize` setting: the insert sizes a
 proper pair counts as `normal`, which every reader of
 `insertSizeAndOrientation` classifies by, the read fills, the connections
 and the hover. Both ends pin the band together; unset, each region's band
-is sampled from its own pairs. The key names the band in bp wherever every
+is sampled from the pairs in that region. The key names the band in bp wherever every
 region in view classifies by one, and the hover names the bound a pair
 crosses. Recoloring a level is `encoding.color`'s.
 
@@ -37,5 +37,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-min">**min**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs |
-| <span id="slot-max">**max**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs |
+| <span id="slot-min">**min**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from the pairs in that region |
+| <span id="slot-max">**max**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from the pairs in that region |

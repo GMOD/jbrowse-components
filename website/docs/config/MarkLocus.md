@@ -32,4 +32,4 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | Slot | Description |
 | --- | --- |
 | <span id="slot-pos">**pos**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'end'</code> | The feature field, or jexl expression over `feature`, giving the position in bp. |
-| <span id="slot-refname">**refName**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field holding the sequence the position lies on. Empty is the feature's own. |
+| <span id="slot-refname">**refName**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field holding the sequence the position lies on. When empty, it is the feature's own. |

@@ -303,7 +303,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       },
     }))
     .views(self => ({
-      // recomputed cheaply every frame without fetching; carries the canvas
+      // recomputed cheaply every frame without fetching; includes the canvas
       // dimensions (required) plus whatever the marks read. The color is
       // resolved to the packed form here, once, so the uniform write and the
       // painter are handed the same number
@@ -318,7 +318,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
     }))
     .views(self => ({
       // the box the hovered bar painted, which DisplayChrome lights: the
-      // display names the instance and the shape's `ink` says where it is
+      // display names the instance and the shape's `ink` gives its rect
       get hoverInk(): HighlightRect[] {
         const hit = self.hoveredFeature
         return hit
@@ -365,7 +365,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // called once by DisplayChrome when the backend is created, and again
       // after a context loss. One installer streams each region into the
       // backend and draws every frame from renderState; it is the only part of
-      // the model that knows a backend exists, and it is the same whether that
+      // the model that references a backend, and it is the same whether that
       // backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installUpload(self, backend, {
@@ -416,7 +416,7 @@ its uniforms. The display needs no other rendering code:
 ```ts
 // Which of the payload's arrays feed which of the shape's lanes, and which
 // render-state values reach its uniforms: two lenses, run once per block per
-// frame. The encoder's payload already carries the shape's lane names, so the
+// frame. The encoder's payload already uses the shape's lane names, so the
 // channel lens is the payload itself. Everything that draws comes from the
 // shape.
 export const SCORE_MARKS = [
@@ -490,7 +490,7 @@ import { SCORE_MARKS } from '../scoreMarks.ts'
 
 import type { LinearScoreDisplayModel } from '../model.ts'
 
-// The only import on the mark path that reaches the HAL. It lives here, on the
+// The only import on the mark path that reaches the HAL. It is imported here, on the
 // lazily loaded component, and not in the model: a state model is eager, so
 // naming the backend there would load the GPU stack at plugin install.
 // createMarkBackend tries WebGPU, then WebGL2, then Canvas2D, and every backend
@@ -539,7 +539,7 @@ const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
       testid="score-display"
       style={{ width: '100%' }}
       // measured against the chrome container, which the canvas fills, so the
-      // pointer lands in canvas px with no offset
+      // pointer position is in canvas px with no offset
       onPointerPosition={state => {
         model.setHoveredFeature(
           state
@@ -629,10 +629,10 @@ the hit it returns:
 ```ts
 // `nearestMarkHit` walks the blocks under the cursor and asks the mark's
 // `hitNearest`, which measures the cursor against the rect its `ink`
-// declares. What the display chooses is the candidates: every instance here,
+// declares. The display chooses the candidates: every instance here,
 // back to front so a tie goes to the box painted on top, which is enough at a
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
-// its `index` lane — a Flatbush over (bp, score) — and answers with what that
+// its `index` lane — a Flatbush over (bp, score) — and returns what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
 // (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(

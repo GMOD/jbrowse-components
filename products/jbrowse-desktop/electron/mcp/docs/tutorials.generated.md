@@ -700,7 +700,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 
 ## Protein domains on gene models
 
-Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw each isoform with its domains on a row of its own
+Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw each isoform with its domains in a separate row
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
 

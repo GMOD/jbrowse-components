@@ -68,7 +68,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMafDisplay",
 | <span id="slot-conservation">**conservation**</span><br>[MafConservation](../mafconservation) | The band of identity to the reference: `show` (default off), `height` and `unit`, `base` or `codon`. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | display height in pixels, the bands above the rows included; the rows divide what is left between them, however many there are |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">1 slot</span> |
-| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.<br>_advanced_ |
 
 ## Retired keys
 

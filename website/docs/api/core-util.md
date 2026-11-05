@@ -56,8 +56,8 @@ a conservation row. The contract is the pair: `active` is
 whether the band exists right now (the display pre-ANDs its settings half,
 `showX`, with its data half, "some lane has ink"), and `height` is the stated
 height when it does. Consumers read pixels through reservedPx or
-stackBands, never by re-combining the pair — the re-combination is
-where the reserver and the painter historically drifted.
+stackBands, never by re-combining the pair, so the reserver and the
+painter use the same pixel values.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
@@ -133,10 +133,8 @@ scrollbar, and takes the band's own handle off-screen with them. Bands that
 share a plot take their ceilings from the stack (`boundStackedBands` in
 `bandLayout`), since one band's ceiling depends on the others.
 
-The bounds differ per band and the rule does not, which is why this takes them
-rather than each band re-deriving the reasoning — that is how the two
-`clampBandHeight`s in this repo drifted apart, each ending up with one half of
-this rule and a doc comment claiming to be the whole of it.
+The bounds differ per band and the rule does not, so this takes the bounds
+and each band does not re-derive the rule.
 
 ```js
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'

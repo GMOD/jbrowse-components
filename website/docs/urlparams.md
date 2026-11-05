@@ -497,8 +497,8 @@ restores natively:
 | [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
 | [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which uses the LinearGenomeViewPlugin config default). The resolved value is the `effectiveTrackLabels` getter. See the LinearGenomeViewPlugin docs at https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ for how the config is used |
-| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
-| [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames rather than the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
+| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
+| [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames. Pixels mean nothing without the width they were measured at, and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
 
 <!-- END GENERATED SPEC_KEYS LinearGenomeView -->
@@ -671,7 +671,7 @@ restores natively:
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
 | [`legend`](/docs/models/circularview#property-legend) | the key naming each track's ring, chords or ribbons in the corner, a [](/docs/config/hiddenlegend) object: `{ show: true }` draws it |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
-| [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far out the circle may zoom, as the smallest radius it shrinks to; it is what caps bpPerPx |
+| [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far out the circle may zoom, as the smallest radius it shrinks to; it caps bpPerPx |
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
 | [`offsetRadians`](/docs/models/circularview#property-offsetradians) | the figure's rotation in radians, the linear view's offsetPx |
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
@@ -679,7 +679,7 @@ restores natively:
 | [`render`](/docs/models/syntenyfademixin#property-render) | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
+| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
 
 <!-- END GENERATED SPEC_KEYS CircularView -->
 
@@ -748,7 +748,7 @@ restores natively:
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`parkedColors`](/docs/models/parkedcolormixin#property-parkedcolors) | By color object, the field the last write away from one left, with its members |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
+| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
 <!-- END GENERATED SPEC_KEYS DotplotView -->
@@ -864,13 +864,13 @@ restores natively:
 | [`levels`](/docs/models/linearsyntenyview#property-levels) | One synteny band per adjacent pair of `views`, each holding one track list. The track-selector and add-track widgets address a band through `trackContainerFor`. |
 | [`mark`](/docs/models/linearsyntenyview#property-mark) | How every band's ribbons draw, a [](/docs/config/syntenymark) object: `{ interpolate: 'bump' }` curves their sides. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
-| [`navigation`](/docs/models/linearsyntenyview#property-navigation) | How a move on one row carries to the others, a [](/docs/config/syntenynavigation) object: `{ follow: true }` has the rows follow the `anchor` row through the alignment. |
+| [`navigation`](/docs/models/linearsyntenyview#property-navigation) | How a move on one row applies to the others, a [](/docs/config/syntenynavigation) object: `{ follow: true }` has the rows follow the `anchor` row through the alignment. |
 | [`offscreen`](/docs/models/linearsyntenyview#property-offscreen) | The marks along both edges of each band for the alignments the view cannot draw a ribbon for, a [](/docs/config/syntenyoffscreen) part: `{ show: false }` removes them and the second query per pair of rows they cost. |
 | [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
 | [`parkedColors`](/docs/models/parkedcolormixin#property-parkedcolors) | By color object, the field the last write away from one left, with its members |
 | [`render`](/docs/models/syntenyfademixin#property-render) | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
+| [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
 
 <!-- END GENERATED SPEC_KEYS LinearSyntenyView -->
 
@@ -1021,7 +1021,7 @@ holds:
 | `baseUri` | what a relative `uri` resolves against. A config loaded from a URL gets this beside every `uri` in it, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `drilldownTracks` | trackIds every view a row or chord opens starts with, beside the callset's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
-| `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
+| `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this makes a chord subset reachable from a link |
 | `svEventFilter` | the rearrangement event to open the sheet narrowed to: a value of the file's `INFO.EVENT`, matched whole |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
 

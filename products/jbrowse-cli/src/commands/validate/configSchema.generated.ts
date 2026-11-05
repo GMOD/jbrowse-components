@@ -4974,7 +4974,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -5603,7 +5603,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 5000000,
           "if": {
             "type": "null"
@@ -5613,7 +5613,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -6098,7 +6098,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -7482,7 +7482,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "min": {
-          "description": "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from its own pairs.",
+          "description": "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from the pairs in that region.",
           "if": {
             "type": "null"
           },
@@ -7491,7 +7491,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "max": {
-          "description": "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from its own pairs.",
+          "description": "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from the pairs in that region.",
           "if": {
             "type": "null"
           },
@@ -7509,7 +7509,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -7519,7 +7519,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -8674,7 +8674,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -8684,7 +8684,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -9050,7 +9050,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -9383,7 +9383,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -10051,7 +10051,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity paints each feature the CSS color its field holds, or with no field its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal assigns each distinct value a color from range; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold compares the value against the domain and gives each interval a range color; identity uses the CSS color its field holds, or with no field its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -10171,7 +10171,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -10314,7 +10314,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
+              "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature.",
               "default": "",
               "if": {
                 "type": "null"
@@ -11523,7 +11523,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -11533,7 +11533,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -11782,7 +11782,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -11792,7 +11792,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -12554,7 +12554,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -13014,7 +13014,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -13024,7 +13024,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -13637,7 +13637,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -14075,7 +14075,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -15272,7 +15272,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "give the reference species a row of its own.",
+          "description": "draw the reference species as a separate row.",
           "default": true,
           "if": {
             "type": "null"
@@ -15404,7 +15404,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 5000000,
           "if": {
             "type": "null"
@@ -15414,7 +15414,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -16347,7 +16347,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -16357,7 +16357,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -16498,7 +16498,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -16508,7 +16508,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -16671,7 +16671,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
           "default": false,
           "if": {
             "type": "null"
@@ -26540,7 +26540,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "grid": {
-          "description": "carry the ruler's ticks down through the tracks.",
+          "description": "extend the ruler's ticks down through the tracks.",
           "default": true,
           "if": {
             "type": "null"
@@ -27324,7 +27324,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale colors along it; a threshold scale that writes cuts gives each interval one color from end to end; an ordinal scale that lists a domain gives each value one color; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -28429,7 +28429,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "grid": {
-          "description": "carry each axis' ruler ticks across the plot.",
+          "description": "extend each axis' ruler ticks across the plot.",
           "default": true,
           "if": {
             "type": "null"
@@ -28460,7 +28460,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "ratio": {
-          "description": "1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom on its own.",
+          "description": "1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom independently.",
           "if": {
             "type": "null"
           },
@@ -28775,7 +28775,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "grid": {
-          "description": "carry each row's ruler ticks down through the ribbons.",
+          "description": "extend each row's ruler ticks down through the ribbons.",
           "default": false,
           "if": {
             "type": "null"

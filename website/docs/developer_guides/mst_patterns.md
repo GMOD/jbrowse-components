@@ -52,14 +52,14 @@ everything else untracked:
 // while the worker still sees the current axes.
 // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
 return untracked(() => ({
-  // the resolved tier, which is what `currentFetchKey` carries —
+  // the resolved tier, which is what `currentFetchKey` holds —
   // `view.resolution` stays 'auto' while the tier flips under it
   lodTier: self.lodTier,
   hViewSnap: makeViewSnap(view.hview),
   vViewSnap: makeViewSnap(view.vview),
   regions: self.fetchRegions,
   // stamped at commit, so it names the order this fetch was laid out
-  // under rather than whatever the axes show when it lands
+  // under rather than whatever the axes show when it completes
   regionSignature: self.regionSignature,
 }))
 ```
@@ -196,11 +196,11 @@ the fetch:
   // the pure "go again" signal, read unconditionally above every gate so a
   // Retry click re-runs the body even when nothing else moved
   const reloadEpoch = self.reloadCounter
-  // Tracked in the same breath and for the same reason, but the mirror
-  // image: this one CLOSES the gate below, so a run that returned before
-  // the counter read would drop the one observable that can reopen it and
-  // Cancel would be a one-way door with a Retry button on it. Order, not
-  // just position: counter first, then this, then the gates.
+  // Tracked for the same reason as the counter, but this one closes the
+  // gate below, so a run that returned before the counter read would drop
+  // the one observable that can reopen the gate, and a Cancel could not be
+  // undone by Retry. Order, not just position: counter first, then this,
+  // then the gates.
   const canceled = self.fetchCanceled === true
   // Above the gate, not only above `prepare`: teardown mutates the
   // observables this body reads before the disposers run, and every `gate`
@@ -210,7 +210,7 @@ the fetch:
   // node; the detached-and-still-alive window (ADR-069) is covered only by
   // the walk's own cache. Nothing is reported for a dead node — there is no
   // Retry button left to be dead, and the check would read three more
-  // members of a corpse to decide it.
+  // members of the destroyed node to decide it.
   if (!isAlive(self)) {
     return false
   }
@@ -226,8 +226,8 @@ the fetch:
   // The freshness gate, and the reload that overrides it. The epoch is
   // stamped at ISSUE where the key is stamped at commit: a fetch that fails
   // leaves nothing current, so this gate is open anyway on the next run and
-  // consuming the retry here costs nothing — while a reload landing
-  // mid-flight is answered by the re-run the counter read above already
+  // consuming the retry here is safe, and a reload landing
+  // mid-flight is handled by the re-run the counter read above already
   // guarantees.
   if (held !== undefined && held(args) && reloadEpoch === issuedEpoch) {
     noteFetchAutorunRun?.('declined')
@@ -237,7 +237,7 @@ the fetch:
   noteFetchAutorunRun?.('fetched')
   // `run` is called synchronously, so its prefix down to its first await
   // executes in this derivation; `FetchPhases.run` promises those reads are
-  // untracked, and unlike the MST flow the LGV side hides behind, nothing
+  // untracked, and unlike the MST flow the LGV side uses, nothing
   // here makes it so. Whatever the run needs tracked belongs in `prepare`.
   // eslint-disable-next-line no-restricted-syntax -- effect input: run's prefix reads are the fetch's, prepare is the trigger list
   untracked(() => {

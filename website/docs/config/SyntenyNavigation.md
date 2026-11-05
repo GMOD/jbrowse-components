@@ -1,14 +1,14 @@
 ---
 id: syntenynavigation
 title: SyntenyNavigation
-description: "The linear synteny view's navigation: how a move on one genome row carries to the others."
+description: "The linear synteny view's navigation: how a move on one genome row applies to the others."
 sidebar_label: View -> SyntenyNavigation
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/navigationConfigSchema.ts).
 
 The linear synteny view's `navigation`: how a move on one genome row
-carries to the others. With `follow` on, the rows follow the `anchor` row
+applies to the others. With `follow` on, the rows follow the `anchor` row
 through the alignment, each moving to whatever region aligns to its window.
 
 ## Example usage

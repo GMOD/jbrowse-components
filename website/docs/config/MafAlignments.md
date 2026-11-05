@@ -31,4 +31,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-bases">**bases**</span><br>[MafBases](../mafbases) | The per-position layer: every base, or each codon's amino-acid change. |
 | <span id="slot-inversions">**inversions**</span><br>[MafPart](../mafpart) | `show` hatches each block a species aligns on the other strand from the rest of its blocks on that source chromosome. |
 | <span id="slot-frames">**frames**</span><br>[MafPart](../mafpart) | `show` draws each species' CDS reading frames from the MAF adapter's `framesAdapter` (UCSC `mafFrames`) as a strip over its row; no effect without one. |
-| <span id="slot-reference">**reference**</span><br>[MafReferenceRow](../mafreferencerow) | `show` gives the reference species, which every other row is scored against, a row of its own; on by default. |
+| <span id="slot-reference">**reference**</span><br>[MafReferenceRow](../mafreferencerow) | `show` draws the reference species, which every other row is scored against, as a separate row; on by default. |

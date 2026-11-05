@@ -454,8 +454,8 @@ function scoreFrame(
 
 // One box per instance: x..x2 wide, grown up from the canvas bottom to its
 // score on the value scale. The painter and the ink both place through here,
-// and the shader owns the geometry: its generated twin (`scoreBarHeightPx`)
-// and constant (`MIN_WIDTH_PX`), so the three cannot drift.
+// and the shader defines the geometry: its generated twin (`scoreBarHeightPx`)
+// and constant (`MIN_WIDTH_PX`), so the three stay consistent.
 function placeScore(c: ScoreChannels, g: ScoreFrame, i: number) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
@@ -477,7 +477,7 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   pass: {
     ...slangPass({ id: 'score', mod: shader }),
     // the generated packInstances interleaves the parallel arrays into the
-    // shader's instance layout; the instance count is the buffer's own
+    // shader's instance layout; the instance count comes from `c.count`
     pack: c => shader.packInstances(c, c.count),
   },
 
@@ -560,7 +560,7 @@ mark declares a 256-entry color ramp that the pass samples.
 ```ts
 // Which of the payload's arrays feed which of the shape's lanes, and which
 // render-state values reach its uniforms: two lenses, run once per block per
-// frame. The encoder's payload already carries the shape's lane names, so the
+// frame. The encoder's payload already uses the shape's lane names, so the
 // channel lens is the payload itself. Everything that draws comes from the
 // shape.
 export const SCORE_MARKS = [
@@ -622,10 +622,10 @@ const channels: ScoreChannels = {
   count: 4,
 }
 
-// The draw-against-hit gate: every point the painter inked answers the box it
-// is on, a hit's ink lies on its box, and no answer is nearer than the box. In
+// The draw-against-hit gate: the hit test returns the box under every point
+// the painter inked, a hit's ink lies on its box, and no other hit is nearer. In
 // both orientations, at containment and with a grab radius.
-describe('score: every drawn box answers its own hit', () => {
+describe('score: every drawn box is its own hit', () => {
   for (const reversed of [false, true]) {
     for (const maxDistSq of [Number.MIN_VALUE, 16]) {
       test(`reversed ${reversed}, bound ${maxDistSq}`, () => {
@@ -675,7 +675,7 @@ touches the backend is:
 // called once by DisplayChrome when the backend is created, and again
 // after a context loss. One installer streams each region into the
 // backend and draws every frame from renderState; it is the only part of
-// the model that knows a backend exists, and it is the same whether that
+// the model that references a backend, and it is the same whether that
 // backend is the GPU or the Canvas2D one.
 startRenderingBackend(backend: ScoreRenderingBackend) {
   installUpload(self, backend, {
@@ -725,7 +725,7 @@ import on the mark path that reaches the HAL:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx#factory -->
 
 ```ts
-// The only import on the mark path that reaches the HAL. It lives here, on the
+// The only import on the mark path that reaches the HAL. It is imported here, on the
 // lazily loaded component, and not in the model: a state model is eager, so
 // naming the backend there would load the GPU stack at plugin install.
 // createMarkBackend tries WebGPU, then WebGL2, then Canvas2D, and every backend
@@ -750,10 +750,10 @@ instance. It passes every instance of every block under the cursor to the mark's
 ```ts
 // `nearestMarkHit` walks the blocks under the cursor and asks the mark's
 // `hitNearest`, which measures the cursor against the rect its `ink`
-// declares. What the display chooses is the candidates: every instance here,
+// declares. The display chooses the candidates: every instance here,
 // back to front so a tie goes to the box painted on top, which is enough at a
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
-// its `index` lane — a Flatbush over (bp, score) — and answers with what that
+// its `index` lane — a Flatbush over (bp, score) — and returns what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
 // (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(
@@ -793,7 +793,7 @@ export function findScoreHit(
 
 ```tsx
 // measured against the chrome container, which the canvas fills, so the
-// pointer lands in canvas px with no offset
+// pointer position is in canvas px with no offset
 onPointerPosition={state => {
   model.setHoveredFeature(
     state
@@ -818,7 +818,7 @@ nothing itself:
 
 ```ts
 // the box the hovered bar painted, which DisplayChrome lights: the
-// display names the instance and the shape's `ink` says where it is
+// display names the instance and the shape's `ink` gives its rect
 get hoverInk(): HighlightRect[] {
   const hit = self.hoveredFeature
   return hit

@@ -134,17 +134,16 @@ export interface InitState {
 // Unlike InitState these need no resolution — they stay on the view snapshot,
 // where MST restores and validates them natively.
 //
-// EVERY declared property of the view, derived, minus the init keys (which mean
+// Every declared property of the view, derived, minus the init keys (which mean
 // something else here: `tracks` is trackIds to open, not built track models)
 // and the view's identity. Nothing is listed, so a property is settable from a
 // spec — and type-checked — from the line that declares it.
 //
-// It used to be a hand-written eight, and the model has grown past it:
-// `hideHeader`, `hideHeaderOverview`, `hideNoTracksActive`, `labelsVisible`,
-// `scalebarOnly`, `showCytobands`, `axis` and `showTrackOutlines` were
-// all declared, all settable from the menu, and all dropped in silence by a
-// spec that named them — which is most of what a figure or an embed wants to
-// say. The partition reads the same set off the model at wrap time.
+// That includes `hideHeader`, `hideHeaderOverview`, `hideNoTracksActive`,
+// `labelsVisible`, `scalebarOnly`, `showCytobands`, `axis` and
+// `showTrackOutlines`, which are settable from the menu and are most of what a
+// figure or an embed wants to say. The partition reads the same set off the
+// model at wrap time.
 export type LinearGenomeViewLaunchProps = Partial<
   Omit<
     SnapshotIn<LinearGenomeViewStateModel>,

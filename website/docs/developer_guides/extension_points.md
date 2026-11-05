@@ -1106,7 +1106,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
     const tracks = model.selection.filter(t => stackKindOf(t.type))
     const leftOut = model.selection.filter(t => !stackKindOf(t.type))
     // contributing nothing is `undefined`, not an empty array to spread into
-    // someone else's — the accumulated items are not this callback's to see
+    // someone else's — this callback never receives the accumulated items
     return isSessionWithAddSessionTrack(session) && tracks.length > 0
       ? {
           label: 'Create multi-row track...',
