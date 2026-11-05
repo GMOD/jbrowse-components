@@ -3932,6 +3932,23 @@ describe('a jump settles the coarse blocks', () => {
       expect(keys(model.coarseDynamicBlocks)).not.toEqual(before)
       expect(model.coarseBpPerPx).toBe(model.bpPerPx)
     })
+
+    // the other half, as for `flyTo`: a settle per frame would wake every
+    // coarse consumer sixty times a second
+    test.each(springs)('%s leaves them alone in flight', (_name, spring) => {
+      const model = makeView()
+      model.setWindow(9600, 2000)
+      const settled = model.coarseDynamicBlocks
+      const start = { bpPerPx: model.bpPerPx, offsetPx: model.offsetPx }
+
+      spring(model)
+      jest.advanceTimersByTime(32)
+
+      expect({ bpPerPx: model.bpPerPx, offsetPx: model.offsetPx }).not.toEqual(
+        start,
+      )
+      expect(model.coarseDynamicBlocks).toBe(settled)
+    })
   })
 })
 
