@@ -126,10 +126,7 @@ export type AnchorsRowParser = (
 // The shared body of both anchors adapters: read the anchors file and its two
 // BEDs together, drop the `###` block separators, and join every row through
 // the BEDs. Only `parseRow` differs between them, so it is the only thing each
-// adapter supplies. Free function rather than a shared base class for the
-// reason util.ts's getAssemblyNamesFromConf documents: a base generic over the
-// config cannot prove its slot names to getConf, and each adapter keeps its own
-// concrete config type this way.
+// adapter supplies.
 export async function readAnchorsPair(
   {
     bed1,

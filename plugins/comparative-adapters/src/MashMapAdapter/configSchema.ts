@@ -5,6 +5,8 @@ import {
 
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'outLocation')
 }
@@ -66,5 +68,7 @@ const MashMapAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface MashMapAdapterConfig extends Instance<typeof MashMapAdapter> {}
 
 export default MashMapAdapter

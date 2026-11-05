@@ -1,3 +1,5 @@
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+
 /**
  * How a pairwise comparative adapter names its two assemblies: the ordered pair,
  * plus the two single-string alternatives.
@@ -33,3 +35,7 @@ export const pairwiseAssemblyFields = {
     description: 'Alternative to assemblyNames: the query assembly name',
   },
 } as const
+
+export type PairwiseAssemblyConfigModel = ConfigModelForFields<
+  typeof pairwiseAssemblyFields
+>

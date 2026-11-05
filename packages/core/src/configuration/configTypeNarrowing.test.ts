@@ -15,6 +15,7 @@ import type {
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
   ConfigModelForFields,
+  ConfigModelForSlots,
   ConfigurationSnapshot,
   HostChecksSlotNames,
 } from './types.ts'
@@ -449,6 +450,44 @@ describe('a mixin host type narrows the slot names, or silently does not', () =>
         false
       >
     >()
+    expect(true).toBe(true)
+  })
+})
+
+const sharedSlotsSchema = ConfigurationSchema('ConfigSharedSlots', {
+  names: { type: 'stringArray', defaultValue: [] },
+  label: { type: 'string', defaultValue: '' },
+  own: { type: 'number', defaultValue: 0 },
+})
+const sharingSchema = ConfigurationSchema('ConfigSharingSlots', {
+  names: { type: 'stringArray', defaultValue: [] },
+  label: { type: 'string', defaultValue: '' },
+  other: { type: 'boolean', defaultValue: false },
+})
+const lackingSchema = ConfigurationSchema('ConfigLackingSlots', {
+  names: { type: 'stringArray', defaultValue: [] },
+})
+
+describe('a read shared by several schemas types through ConfigModelForSlots', () => {
+  it('reads the picked slots typed and takes any schema declaring them', () => {
+    const check = (
+      shared: ConfigModelForSlots<typeof sharedSlotsSchema, 'names' | 'label'>,
+      sharing: Instance<typeof sharingSchema>,
+      lacking: Instance<typeof lackingSchema>,
+      widened: AnyConfigurationModel,
+    ) => {
+      const names = readConfObject(shared, 'names')
+      assertType<Equal<typeof names, string[]>>()
+      // @ts-expect-error -- not one of the picked slots
+      readConfObject(shared, 'own')
+      const fromSharing: typeof shared = sharing
+      // @ts-expect-error -- declares no `label`
+      const fromLacking: typeof shared = lacking
+      // @ts-expect-error -- a widened node proves no slot
+      const fromWidened: typeof shared = widened
+      void [fromSharing, fromLacking, fromWidened]
+    }
+    void check
     expect(true).toBe(true)
   })
 })

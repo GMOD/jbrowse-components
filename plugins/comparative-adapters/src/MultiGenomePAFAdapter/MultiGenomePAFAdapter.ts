@@ -136,8 +136,11 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
   // contig stop at its first drawing side.
   async getRefNames(opts: ComparativeOptions = {}) {
     const { sides, index } = await this.setup(opts)
-    const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
-    const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
+    const anchorPrefix = resolvePanSNPrefix(this.config, opts.assemblyName)
+    const targetPrefix = resolvePanSNPrefix(
+      this.config,
+      opts.targetAssemblyName,
+    )
     const byContig =
       anchorPrefix === undefined ? undefined : index.get(anchorPrefix)
     return [...(byContig ?? [])]
@@ -153,13 +156,13 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
         await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
-      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const asmByPrefix = assemblyByPanSNPrefix(this.config)
 
       // Tested against the inventory rather than the index, because a prefix
       // whose every alignment was a self-diagonal IS in the file and legitimately
       // draws nothing.
       const { anchorPrefix, targetPrefix } = await resolvePanSNQuery({
-        adapter: this,
+        conf: this.config,
         assemblyName,
         targetAssemblyName,
         has: prefix => panSN.prefixes.has(prefix),

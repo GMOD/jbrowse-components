@@ -5,6 +5,8 @@ import {
 
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'deltaLocation')
 }
@@ -67,5 +69,7 @@ const DeltaAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface DeltaAdapterConfig extends Instance<typeof DeltaAdapter> {}
 
 export default DeltaAdapter

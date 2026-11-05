@@ -18,10 +18,10 @@ import type { ComparativeOptions } from '@jbrowse/synteny-core'
  * track out and `getFeatures` is never called at all. Eight adapters carried
  * that method and its three-line explanation verbatim.
  *
- * Only the answers that do not depend on config live here. Anything reading a
- * slot stays in the concrete adapter, for the reason `getAssemblyNamesFromConf`
- * documents: a base generic over the config cannot prove a slot name to
- * `getConf`, so hoisting a read costs the typing that makes it worth having.
+ * Only the answers that do not depend on config live here. A base generic over
+ * the config cannot prove a slot name to `getConf`, so a read shared by several
+ * adapters takes the config typed as `ConfigModelForSlots` of the slots they
+ * all declare, as `getAssemblyNamesFromConf` does.
  */
 export abstract class ComparativeAdapterBase<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,

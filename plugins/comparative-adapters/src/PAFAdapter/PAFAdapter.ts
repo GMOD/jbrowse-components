@@ -12,16 +12,24 @@ import {
   parsePafBuffer,
 } from './util.ts'
 
+import type { PairwiseAssemblyConfigModel } from '../pairwiseAssemblyFields.ts'
+import type { PAFAdapterConfig } from './configSchema.ts'
 import type { PAFRecord } from './util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class PAFAdapter extends PairwiseAdapterBase {
+/**
+ * Every adapter whose file reads as PAF records: PAF itself, and the delta,
+ * chain and MashMap formats, which each supply only `setupPre` and read its
+ * file off their own config.
+ */
+export abstract class PafRecordsAdapter<
+  CONF extends PairwiseAssemblyConfigModel,
+> extends PairwiseAdapterBase<CONF> {
   // One download+parse shared by every display on this track, reporting to
   // whichever of them is currently waiting, plus the per-refName index every
-  // query walks. Subclasses (delta, chain, MashMap) override setupPre alone, so
-  // they are indexed too.
+  // query walks.
   setup = cachedSetup({
     setup: async (opts: BaseOptions) => {
       const records = await this.setupPre(opts)
@@ -30,13 +38,7 @@ export default class PAFAdapter extends PairwiseAdapterBase {
     },
   })
 
-  async setupPre(opts?: BaseOptions): Promise<PAFRecord[]> {
-    return loadPafRecords({
-      file: openLocation(this.getConf('pafLocation'), this.pluginManager),
-      parse: parsePafBuffer,
-      opts,
-    })
-  }
+  abstract setupPre(opts?: BaseOptions): Promise<PAFRecord[]>
 
   async getRefNames(opts: BaseOptions = {}) {
     return this.facingRefNames(
@@ -136,6 +138,16 @@ export default class PAFAdapter extends PairwiseAdapterBase {
       }
 
       observer.complete()
+    })
+  }
+}
+
+export default class PAFAdapter extends PafRecordsAdapter<PAFAdapterConfig> {
+  async setupPre(opts?: BaseOptions) {
+    return loadPafRecords({
+      file: openLocation(this.getConf('pafLocation'), this.pluginManager),
+      parse: parsePafBuffer,
+      opts,
     })
   }
 }

@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -12,25 +13,28 @@ import {
   syntenicDepthOf,
 } from './mcscanUtil.ts'
 
+import type MCScanAnchorsAdapterSchema from './MCScanAnchorsAdapter/configSchema.ts'
 import type { AnchorsRowParser } from './mcscanUtil.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ConfigModelForSlots } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
-// The three slots both anchors formats declare identically. Read through a free
-// function taking the adapter, for the reason getAssemblyNamesFromConf
-// documents: from inside a base generic over the config these are unprovable
-// slot names, while the concrete adapter's own reads stay typed.
-function sharedAnchorsConf(adapter: BaseFeatureDataAdapter) {
-  const pm = adapter.pluginManager
+// The three slots both anchors formats declare identically
+type AnchorsConfigModel = ConfigModelForSlots<
+  typeof MCScanAnchorsAdapterSchema,
+  'assemblyNames' | 'bed1Location' | 'bed2Location'
+>
+
+function sharedAnchorsConf(
+  conf: AnchorsConfigModel,
+  pluginManager: PluginManager | undefined,
+) {
   return {
-    assemblyNames: adapter.getConf('assemblyNames') as string[],
-    bed1: openLocation(adapter.getConf('bed1Location') as FileLocation, pm),
-    bed2: openLocation(adapter.getConf('bed2Location') as FileLocation, pm),
+    assemblyNames: readConfObject(conf, 'assemblyNames'),
+    bed1: openLocation(readConfObject(conf, 'bed1Location'), pluginManager),
+    bed2: openLocation(readConfObject(conf, 'bed2Location'), pluginManager),
   }
 }
 
@@ -53,7 +57,7 @@ export interface AnchorsSource {
  * verbatim.
  */
 export abstract class McscanAnchorsAdapterBase<
-  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  CONF extends AnchorsConfigModel,
 > extends ComparativeAdapterBase<CONF> {
   protected override readonly recordsAreAlignments = false
 
@@ -62,7 +66,10 @@ export abstract class McscanAnchorsAdapterBase<
   protected abstract anchorsSource(): AnchorsSource
 
   async setupPre(opts: BaseOptions) {
-    const { assemblyNames, bed1, bed2 } = sharedAnchorsConf(this)
+    const { assemblyNames, bed1, bed2 } = sharedAnchorsConf(
+      this.config,
+      this.pluginManager,
+    )
     const { anchors, parseRow, genePairs } = this.anchorsSource()
     const rows = await readAnchorsPair({ bed1, bed2, anchors }, opts, parseRow)
     const [assemblyA = '', assemblyB = ''] = assemblyNames
@@ -97,7 +104,7 @@ export abstract class McscanAnchorsAdapterBase<
     // whatever the rows say, so it is answered before the setup rather than
     // after — reading it first downloaded and parsed the anchors file and both
     // BEDs to return [].
-    const { assemblyNames } = sharedAnchorsConf(this)
+    const { assemblyNames } = sharedAnchorsConf(this.config, this.pluginManager)
     if (
       opts.assemblyName === undefined ||
       !assemblyNames.includes(opts.assemblyName)

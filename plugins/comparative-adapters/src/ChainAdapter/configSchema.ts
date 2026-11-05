@@ -5,6 +5,8 @@ import {
 
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'chainLocation')
 }
@@ -62,5 +64,7 @@ const ChainAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface ChainAdapterConfig extends Instance<typeof ChainAdapter> {}
 
 export default ChainAdapter

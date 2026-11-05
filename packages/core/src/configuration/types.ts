@@ -360,6 +360,25 @@ export type ConfigModelForFields<
 >
 
 /**
+ * The node type for a read several schemas share: the slots `SLOTS` as `SCHEMA`
+ * declares them. A helper taking it accepts the node of any schema declaring
+ * those slots the same way, and reads them typed, where a helper taking
+ * `AnyConfigurationModel` or an adapter reads them as `any`.
+ */
+export type ConfigModelForSlots<
+  SCHEMA extends AnyConfigurationSchemaType,
+  SLOTS extends ConfigurationSlotName<SCHEMA>,
+> =
+  SCHEMA extends ConfigurationSchemaType<infer DEFINITION, any>
+    ? Instance<
+        ConfigurationSchemaType<
+          Pick<DEFINITION, SLOTS & keyof DEFINITION>,
+          ConfigurationSchemaOptions<undefined, undefined>
+        >
+      >
+    : never
+
+/**
  * `true` when HOST's `configuration` still narrows slot names, `false` when it
  * has widened them back to `string`. One line per mixin pins it:
  *

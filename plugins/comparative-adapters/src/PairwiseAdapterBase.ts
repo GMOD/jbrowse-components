@@ -1,7 +1,7 @@
 import { ComparativeAdapterBase } from './ComparativeAdapterBase.ts'
 import { getAssemblyNamesFromConf } from './util.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { PairwiseAssemblyConfigModel } from './pairwiseAssemblyFields.ts'
 import type {
   BaseOptions,
   Contig,
@@ -40,10 +40,10 @@ export class AssemblyNotInAdapterError extends Error {
  * sides — see {@link facingSides}.
  */
 export abstract class PairwiseAdapterBase<
-  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  CONF extends PairwiseAssemblyConfigModel = PairwiseAssemblyConfigModel,
 > extends ComparativeAdapterBase<CONF> {
   getAssemblyNames(): string[] {
-    return getAssemblyNamesFromConf(this)
+    return getAssemblyNamesFromConf(this.config)
   }
 
   /**

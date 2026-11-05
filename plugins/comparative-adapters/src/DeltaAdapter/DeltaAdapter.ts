@@ -1,12 +1,13 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
+import { PafRecordsAdapter } from '../PAFAdapter/PAFAdapter.ts'
 import { loadPafRecords } from '../PAFAdapter/util.ts'
 import { paf_delta2paf } from './util.ts'
 
+import type { DeltaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-export default class DeltaAdapter extends PAFAdapter {
+export default class DeltaAdapter extends PafRecordsAdapter<DeltaAdapterConfig> {
   async setupPre(opts?: BaseOptions) {
     return loadPafRecords({
       file: openLocation(this.getConf('deltaLocation'), this.pluginManager),

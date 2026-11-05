@@ -6,6 +6,8 @@ import {
 import { pafAttributeColumns } from '../pafAttributeColumns.ts'
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return expandUriShorthand(snap, 'pafLocation')
 }
@@ -76,5 +78,7 @@ const PAFAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export interface PAFAdapterConfig extends Instance<typeof PAFAdapter> {}
 
 export default PAFAdapter

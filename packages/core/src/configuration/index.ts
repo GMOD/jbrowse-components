@@ -23,6 +23,7 @@ export type {
   AnyConfigurationSnapshot,
   AnyTrackConfig,
   ConfigModelForFields,
+  ConfigModelForSlots,
   ConfigNodeActions,
   ConfigNodeBrand,
   ConfigNodeProps,

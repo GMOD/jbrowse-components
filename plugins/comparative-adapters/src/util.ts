@@ -1,13 +1,16 @@
 import { csToCigar, pafIdentity } from '@jbrowse/cigar-utils'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createStatusFanOut, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { panSNMatchesPrefix, panSNPrefixes } from './pansn.ts'
 
+import type MultiGenomePAFAdapterSchema from './MultiGenomePAFAdapter/configSchema.ts'
 import type { BareFeature } from './mcscanUtil.ts'
+import type { PairwiseAssemblyConfigModel } from './pairwiseAssemblyFields.ts'
+import type { ConfigModelForSlots } from '@jbrowse/core/configuration'
 import type {
-  BaseFeatureDataAdapter,
   BaseOptions,
   LodTier,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -19,33 +22,30 @@ import type { GenericFilehandle } from 'generic-filehandle2'
 // minimap2/nucmer take their inputs. The queryAssembly/targetAssembly config
 // fields are an explicit alternative to the positional array. Do not reorder
 // without updating PAFAdapter and the synteny docs.
-export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
-  const assemblyNames = adapter.getConf('assemblyNames') as string[]
-  if (assemblyNames.length === 0) {
-    return [
-      adapter.getConf('queryAssembly') as string,
-      adapter.getConf('targetAssembly') as string,
-    ]
-  }
-  return assemblyNames
+export function getAssemblyNamesFromConf(conf: PairwiseAssemblyConfigModel) {
+  const assemblyNames = readConfObject(conf, 'assemblyNames')
+  return assemblyNames.length === 0
+    ? [
+        readConfObject(conf, 'queryAssembly'),
+        readConfObject(conf, 'targetAssembly'),
+      ]
+    : assemblyNames
 }
 
 // The two multi-genome PAF adapters (in-memory MultiGenomePAFAdapter and
 // tabix-indexed MultiGenomeIndexedPAFAdapter) share this assembly-name <-> PanSN
-// sample-prefix mapping; only the record fetch differs. Free functions rather
-// than a shared base class so each adapter keeps its own concrete config type
-// and getConf's slot-name typing — a base generic over the config can't prove
-// the shared slot names to getConf.
+// sample-prefix mapping; only the record fetch differs.
+export type MultiGenomeAssemblyConfigModel = ConfigModelForSlots<
+  typeof MultiGenomePAFAdapterSchema,
+  'assemblyNames' | 'assemblyNameToPanSN'
+>
 
 // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
 // unmapped).
-// `?? {}` so an adapter whose schema lacks the slot identity-maps rather than
-// throwing a TypeError deep inside a query, which is how this first surfaced.
-function assemblyNameToPanSN(adapter: BaseFeatureDataAdapter) {
-  return (adapter.getConf('assemblyNameToPanSN') ?? {}) as Record<
-    string,
-    string
-  >
+function assemblyNameToPanSN(
+  conf: MultiGenomeAssemblyConfigModel,
+): Record<string, string> {
+  return readConfObject(conf, 'assemblyNameToPanSN')
 }
 
 // Resolve one assembly name to its PanSN sample prefix; undefined passes through
@@ -53,43 +53,44 @@ function assemblyNameToPanSN(adapter: BaseFeatureDataAdapter) {
 // with a definite name (the query's own assembly) gets a definite prefix back
 // and needn't re-narrow it.
 export function resolvePanSNPrefix(
-  adapter: BaseFeatureDataAdapter,
+  conf: MultiGenomeAssemblyConfigModel,
   name: string,
 ): string
 export function resolvePanSNPrefix(
-  adapter: BaseFeatureDataAdapter,
+  conf: MultiGenomeAssemblyConfigModel,
   name: string | undefined,
 ): string | undefined
 export function resolvePanSNPrefix(
-  adapter: BaseFeatureDataAdapter,
+  conf: MultiGenomeAssemblyConfigModel,
   name: string | undefined,
 ) {
   return name === undefined
     ? undefined
-    : (assemblyNameToPanSN(adapter)[name] ?? name)
+    : (assemblyNameToPanSN(conf)[name] ?? name)
 }
 
-// Memoized per adapter, and safe to be: the map is config-derived, and an edit
-// produces a new snapshot, hence a new cache key and a new adapter (see
-// dataAdapterCache). Both multi-genome adapters call this per getFeatures — per
-// band, per region, per pan/zoom. Weak so the map dies with the adapter.
+// Memoized per config node, and safe to be: the map is config-derived, and an
+// edit produces a new snapshot, hence a new cache key and a new adapter with a
+// new node (see dataAdapterCache). Both multi-genome adapters call this per
+// getFeatures — per band, per region, per pan/zoom. Weak so the map dies with
+// the adapter.
 const asmByPrefixCache = new WeakMap<
-  BaseFeatureDataAdapter,
+  MultiGenomeAssemblyConfigModel,
   Record<string, string>
 >()
 
 // PanSN prefix (in the PAF) -> JBrowse assembly name, for the listed assemblies.
 // The prefix is whatever the config named, so this map can hold sample-level
 // (`grape`) and haplotype-level (`grape#1`) keys at once.
-export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
-  let out = asmByPrefixCache.get(adapter)
+export function assemblyByPanSNPrefix(conf: MultiGenomeAssemblyConfigModel) {
+  let out = asmByPrefixCache.get(conf)
   if (out === undefined) {
-    const map = assemblyNameToPanSN(adapter)
+    const map = assemblyNameToPanSN(conf)
     out = {}
-    for (const asm of adapter.getConf('assemblyNames') as string[]) {
+    for (const asm of readConfObject(conf, 'assemblyNames')) {
       out[map[asm] ?? asm] = asm
     }
-    asmByPrefixCache.set(adapter, out)
+    asmByPrefixCache.set(conf, out)
   }
   return out
 }
@@ -237,13 +238,13 @@ export function noPanSNMatchError({
  * inventory, which is why that one is a thunk taken only on the failing path.
  */
 export async function resolvePanSNQuery({
-  adapter,
+  conf,
   assemblyName,
   targetAssemblyName,
   has,
   inventory,
 }: {
-  adapter: BaseFeatureDataAdapter
+  conf: MultiGenomeAssemblyConfigModel
   assemblyName: string | undefined
   targetAssemblyName: string | undefined
   has: (prefix: string) => boolean
@@ -254,8 +255,8 @@ export async function resolvePanSNQuery({
       'a synteny query must name the assembly it is anchored on; this one named none, so there is no PanSN sample prefix to look its alignments up under',
     )
   }
-  const anchorPrefix = resolvePanSNPrefix(adapter, assemblyName)
-  const targetPrefix = resolvePanSNPrefix(adapter, targetAssemblyName)
+  const anchorPrefix = resolvePanSNPrefix(conf, assemblyName)
+  const targetPrefix = resolvePanSNPrefix(conf, targetAssemblyName)
   // Both ends, so a band naming a mistyped assembly says which end is wrong
   // instead of drawing empty.
   for (const [name, prefix] of [

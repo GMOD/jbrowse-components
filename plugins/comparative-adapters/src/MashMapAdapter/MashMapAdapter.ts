@@ -1,12 +1,13 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
+import { PafRecordsAdapter } from '../PAFAdapter/PAFAdapter.ts'
 import { loadPafRecords, pafBufferParser } from '../PAFAdapter/util.ts'
 import { parsePAFLine } from '../util.ts'
 
+import type { MashMapAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-export default class MashMapAdapter extends PAFAdapter {
+export default class MashMapAdapter extends PafRecordsAdapter<MashMapAdapterConfig> {
   async setupPre(opts?: BaseOptions) {
     return loadPafRecords({
       file: openLocation(this.getConf('outLocation'), this.pluginManager),

@@ -84,7 +84,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     const side = (letter: string) =>
       names.filter(n => n.startsWith(letter)).map(n => n.slice(1))
     const anchorAssemblyName = panSNStarAnchor(
-      assemblyByPanSNPrefix(this),
+      assemblyByPanSNPrefix(this.config),
       side('t'),
       side('q'),
     )
@@ -105,7 +105,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     // adapter this does not pre-cull contigs whose only mate is the same sample
     // (that needs a range scan); hasDataForRefName stays true and getFeatures
     // filters, so over-reporting a ref is harmless.
-    const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
+    const anchorPrefix = resolvePanSNPrefix(this.config, opts.assemblyName)
     const byContig =
       anchorPrefix === undefined
         ? undefined
@@ -117,7 +117,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     const { statusCallback, signal } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
-      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const asmByPrefix = assemblyByPanSNPrefix(this.config)
 
       const coarse = resolveCoarseTier({
         hasCoarseTier: await this.pif.hasCoarseTier(opts),
@@ -138,7 +138,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
       // make-pif warning covers the same ground at build time.
       const seqIndex = await this.seqIndex(opts)
       const { anchorPrefix, targetPrefix } = await resolvePanSNQuery({
-        adapter: this,
+        conf: this.config,
         assemblyName,
         targetAssemblyName: opts.targetAssemblyName,
         has: prefix => seqIndex.has(prefix),
