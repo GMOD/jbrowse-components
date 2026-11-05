@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Upload the somatic-rearrangement demo data + config to jbrowse.org/demos/cancer_sv/,
+# Upload the somatic-rearrangement demo data to jbrowse.org/demos/cancer_sv/,
 # the hosted instance the cancer_sv screenshot specs (website/scripts/specs/cancer_sv.ts)
 # and the tutorial's figure links render against.
 #
@@ -21,6 +21,14 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)   # website/ (holds rclone.conf)
 # bigWig out of scripts/depmap_to_jbrowse.py. The COLO829 tumour CRAM and the
 # matched-normal BAM are NOT here: the config streams those from the ONT
 # open-data bucket rather than rehosting ~100 GB.
+#
+# Data files only. The build writes a config.json beside them, and it is
+# excluded from the upload: the hosted config has a checked-in copy at
+# demos/cancer_sv/config.json and ships with
+# `scripts/deploy-demo.sh cancer_sv/config.json`, which refuses to upload
+# anything that differs from that copy. Pushing a config assembled in a scratch
+# dir is how ecoli_pangenome lost a track, and the bucket has no versioning to
+# restore from.
 EXPECTED=(
   COLO829.somatic-sv.vcf.gz
   COLO829.somatic-sv.vcf.gz.tbi
@@ -40,7 +48,6 @@ EXPECTED=(
   K562_cn.bw
   K562_isoseq.bam
   K562_isoseq.bam.bai
-  config.json
 )
 
 missing=0
@@ -55,9 +62,9 @@ done
 # tracks and started failing with "Could not resolve identifier". `copy` only
 # adds and overwrites; deleting anything here is a deliberate, manual act.
 echo "Copying $SRC/ -> $DEST (dry run first)"
-rclone --config "$HERE/rclone.conf" copy "$SRC" "$DEST" --checksum --fast-list --dry-run
+rclone --config "$HERE/rclone.conf" copy "$SRC" "$DEST" --exclude /config.json --checksum --fast-list --dry-run
 read -r -p "Proceed with the upload above? [y/N] " ok
 [ "$ok" = y ] || { echo "aborted"; exit 1; }
-rclone --config "$HERE/rclone.conf" copy "$SRC" "$DEST" --checksum --fast-list --progress
+rclone --config "$HERE/rclone.conf" copy "$SRC" "$DEST" --exclude /config.json --checksum --fast-list --progress
 aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION" --paths "/demos/cancer_sv/*"
 echo "Done. Regenerate the figures: cd website && pnpm screenshots --filter cancer_sv"
