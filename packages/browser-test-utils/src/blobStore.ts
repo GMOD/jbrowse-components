@@ -326,3 +326,20 @@ export function mergeManifest(
     : []
   return new Map([...carried, ...[...selected].map(e => [e.path, e] as const)])
 }
+
+// A push replays its own changes onto the lock as it reads at write time, so a
+// concurrent push that wrote in between keeps its lines.
+export function applyManifestChanges(
+  manifest: Map<string, BlobEntry>,
+  changes: BlobChange[],
+) {
+  const out = new Map(manifest)
+  for (const change of changes) {
+    if (change.after) {
+      out.set(change.path, change.after)
+    } else {
+      out.delete(change.path)
+    }
+  }
+  return out
+}

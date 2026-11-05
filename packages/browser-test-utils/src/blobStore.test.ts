@@ -1,4 +1,5 @@
 import {
+  applyManifestChanges,
   diffManifests,
   formatManifest,
   hashBuffer,
@@ -166,6 +167,22 @@ describe('diffManifests', () => {
       ['moved.png', 'changed'],
       ['new.png', 'added'],
     ])
+  })
+})
+
+describe('applyManifestChanges', () => {
+  test("replays one push's changes onto a lock another push rewrote", () => {
+    const before = new Map([
+      ['mine.png', entry('mine.png')],
+      ['gone.png', entry('gone.png')],
+    ])
+    const after = new Map([
+      ['mine.png', entry('mine.png', { sha256: 'b'.repeat(64) })],
+    ])
+    const fresh = new Map([...before, ['theirs.png', entry('theirs.png')]])
+    const merged = applyManifestChanges(fresh, diffManifests(before, after))
+    expect([...merged.keys()].sort()).toEqual(['mine.png', 'theirs.png'])
+    expect(merged.get('mine.png')!.sha256).toBe('b'.repeat(64))
   })
 })
 

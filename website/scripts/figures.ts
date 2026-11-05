@@ -27,6 +27,7 @@ import {
   copyFileSync,
   linkSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -49,6 +50,7 @@ import {
 } from './figure-paths.ts'
 import {
   type FigureEntry,
+  applyManifestChanges,
   diffManifests,
   figureContentTypes,
   figureName,
@@ -311,10 +313,11 @@ function readStoreKeys(): Set<string> | undefined {
 // paths. That is what you want here — the pair are copies and must move together
 // — and it is the opposite of what `figurePath` exists for elsewhere.
 /**
- * Returns how many figures the selection matched, so the caller can decide what
- * "matched nothing" means now that a push also drives the media store: a
- * `--filter` naming a tour legitimately matches no figure. `-1` says the corpus
- * was skipped for having nothing on disk at all.
+ * Returns how many figures the selection matched, on disk or as a lock line
+ * being retired, so the caller can decide what "matched nothing" means now that
+ * a push also drives the media store: a `--filter` naming a tour legitimately
+ * matches no figure. `-1` says the corpus was skipped for having nothing on disk
+ * at all.
  */
 function push(): number {
   const dryRun = values['dry-run']
@@ -336,23 +339,27 @@ function push(): number {
   const selected = paths.filter(p =>
     matchesFilterTokens(figureName(p), tokens, values.exact),
   )
-  if (!selected.length) {
-    return 0
-  }
 
   // Only the selection is hashed. Hashing every figure is 62 MB of reads and the
   // most expensive thing this tool does, so a one-figure push is now instant
   // rather than a full sweep that happens to change one line.
-  console.log(`hashing ${selected.length} figure(s)…`)
+  if (selected.length) {
+    console.log(`hashing ${selected.length} figure(s)…`)
+  }
   const entries = selected.map(describeFile)
   const after = mergeManifest(before, entries, tokens, values.exact)
+  const changes = diffManifests(before, after)
+  const removals = changes.filter(c => c.kind === 'removed')
+  const matched = entries.length + removals.length
+  if (!matched) {
+    return 0
+  }
   if (tokens.length) {
     console.log(
       `--filter ${tokens.join(',')}: ${entries.length} figure(s) selected, ` +
         `${after.size - entries.length} figures.lock line(s) left untouched`,
     )
   }
-  const changes = diffManifests(before, after)
 
   // A REMOVAL IS THE ONE CHANGE THIS CANNOT UNDO, so it is the one that has to
   // be asked for.
@@ -374,7 +381,6 @@ function push(): number {
   // Deliberately not gated on `--force`, which pull uses for "discard my local
   // bytes". A flag that means two different destructive things is worse than
   // two flags.
-  const removals = changes.filter(c => c.kind === 'removed')
   if (removals.length > 0 && !values['allow-deletions']) {
     console.error(
       `refusing to drop ${removals.length} figure(s) from figures.lock:\n${removals
@@ -403,50 +409,54 @@ function push(): number {
   console.log(formatTextReport(changes, { base: 'figures.lock' }))
   if (dryRun) {
     console.log('\n--dry-run: nothing uploaded, manifest not written')
-    return selected.length
+    return matched
   }
 
   if (toUpload.size) {
     // Staged into the CAS layout so this is one `cp --recursive` per extension
     // instead of one `aws` process per figure — the CLI parallelizes internally
     // and a 450-blob first push goes from minutes to seconds. Hardlinked where
-    // the filesystem allows, so staging costs no bytes.
-    const staging = join(cacheDir, 'staging')
-    rmSync(staging, { recursive: true, force: true })
-    const extensions = new Set<string>()
-    for (const [key, entry] of toUpload) {
-      const dest = join(staging, key.slice(storePrefix.length + 1))
-      mkdirSync(dirname(dest), { recursive: true })
-      const src = join(repoRoot, entry.path)
-      try {
-        linkSync(src, dest)
-      } catch {
-        copyFileSync(src, dest)
+    // the filesystem allows, so staging costs no bytes. One directory per run,
+    // so a concurrent push never uploads this run's staging or deletes it.
+    mkdirSync(cacheDir, { recursive: true })
+    const staging = mkdtempSync(join(cacheDir, '.staging-'))
+    try {
+      const extensions = new Set<string>()
+      for (const [key, entry] of toUpload) {
+        const dest = join(staging, key.slice(storePrefix.length + 1))
+        mkdirSync(dirname(dest), { recursive: true })
+        const src = join(repoRoot, entry.path)
+        try {
+          linkSync(src, dest)
+        } catch {
+          copyFileSync(src, dest)
+        }
+        extensions.add(key.slice(key.lastIndexOf('.')))
       }
-      extensions.add(key.slice(key.lastIndexOf('.')))
+      for (const ext of [...extensions].sort()) {
+        console.log(`uploading ${ext} blobs…`)
+        aws([
+          's3',
+          'cp',
+          staging,
+          `${storeBucket}/${storePrefix}/`,
+          '--recursive',
+          '--exclude',
+          '*',
+          '--include',
+          `*${ext}`,
+          // Explicit rather than left to the CLI's mimetypes guess, which differs
+          // by platform and has historically not known about webp.
+          '--content-type',
+          figureContentTypes[ext] ?? 'application/octet-stream',
+          '--cache-control',
+          CACHE_CONTROL,
+          '--only-show-errors',
+        ])
+      }
+    } finally {
+      rmSync(staging, { recursive: true, force: true })
     }
-    for (const ext of [...extensions].sort()) {
-      console.log(`uploading ${ext} blobs…`)
-      aws([
-        's3',
-        'cp',
-        staging,
-        `${storeBucket}/${storePrefix}/`,
-        '--recursive',
-        '--exclude',
-        '*',
-        '--include',
-        `*${ext}`,
-        // Explicit rather than left to the CLI's mimetypes guess, which differs
-        // by platform and has historically not known about webp.
-        '--content-type',
-        figureContentTypes[ext] ?? 'application/octet-stream',
-        '--cache-control',
-        CACHE_CONTROL,
-        '--only-show-errors',
-      ])
-    }
-    rmSync(staging, { recursive: true, force: true })
     console.log(`  ${toUpload.size} blob(s) uploaded`)
   }
 
@@ -459,20 +469,22 @@ function push(): number {
   // figures.lock reading as ` M` in `git status` with an empty `git diff` — and
   // in a worktree several agents share, a file that looks modified but has no
   // diff is precisely what gets swept into somebody else's commit.
-  // `after`, not `entries`: under --filter those differ by every line carried
-  // through from the old manifest, and writing the selection alone would delete
-  // the other 450 figures from the store's index in the name of publishing one.
-  const next = formatManifest([...after.values()])
+  // This run's changes, not `entries` or `after`: under --filter `entries`
+  // misses every line carried through, and the lock is re-read here because
+  // another push may have rewritten it during the upload, which `after` would
+  // revert.
+  const written = applyManifestChanges(readManifest(), changes)
+  const next = formatManifest([...written.values()])
   if (readFileSync(manifestPath, 'utf8') === next) {
-    console.log(`figures.lock already matches (${after.size} figures)`)
-    return selected.length
+    console.log(`figures.lock already matches (${written.size} figures)`)
+    return matched
   }
   writeFileSync(manifestPath, next)
   console.log(
-    `wrote figures.lock (${after.size} figures)\n` +
+    `wrote figures.lock (${written.size} figures)\n` +
       'Commit it — that diff is the record of what moved.',
   )
-  return selected.length
+  return matched
 }
 
 // ---------------------------------------------------------------------------

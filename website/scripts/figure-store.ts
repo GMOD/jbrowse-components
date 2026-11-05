@@ -68,6 +68,7 @@ import type {
 } from '@jbrowse/browser-test-utils/blobStore'
 
 export {
+  applyManifestChanges,
   hashBuffer,
   imageSize,
   storeBucket,

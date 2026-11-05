@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 import {
+  applyManifestChanges,
   diffManifests,
   fetchBlob,
   formatManifest,
@@ -160,8 +161,9 @@ function readStoreKeys(): Set<string> | undefined {
 }
 
 /**
- * Returns how many files the selection matched, so a caller driving both stores
- * can decide what "matched nothing" means. `-1` says the corpus was skipped
+ * Returns how many files the selection matched, on disk or as a lock line being
+ * retired, so a caller driving both stores can decide what "matched nothing"
+ * means. `-1` says the corpus was skipped
  * because there is nothing on disk at all.
  */
 export function mediaPush({
@@ -208,15 +210,16 @@ export function mediaPush({
   const selected = onDisk
     .filter(p => matches(name(p), tokens))
     .map(describeFile)
-  if (!selected.length && tokens.length) {
-    return 0
-  }
   const after = mergeManifest(before, selected, tokens, matches, name)
   const changes = diffManifests(before, after)
 
   // The one change this cannot undo, so it is the one that has to be asked for
   // — the same rule, and the same reasoning, as the figure store's.
   const removals = changes.filter(c => c.kind === 'removed')
+  const matched = selected.length + removals.length
+  if (!matched) {
+    return 0
+  }
   // Named, not counted. The figure half prints a report of what moved; this one
   // printed "N media.lock change(s)", so an unpublish read the same as an
   // upload and the one irreversible change was the invisible one.
@@ -246,7 +249,7 @@ export function mediaPush({
   }
   if (dryRun) {
     console.log(`${toUpload.length} media blob(s) would be uploaded`)
-    return selected.length
+    return matched
   }
   // Bytes BEFORE the manifest, always: a manifest line whose blob was never
   // pushed breaks `pull` for everyone else.
@@ -264,18 +267,22 @@ export function mediaPush({
       '--only-show-errors',
     ])
   }
-  const next = formatManifest([...after.values()], MANIFEST_HEADER)
+  // Re-read, so a push that wrote media.lock during the upload keeps its lines.
+  const next = formatManifest(
+    [...applyManifestChanges(readManifest(), changes).values()],
+    MANIFEST_HEADER,
+  )
   if (readFileSync(manifestPath, 'utf8') === next) {
     console.log(
       `${toUpload.length} media blob(s) uploaded, media.lock already matches`,
     )
-    return selected.length
+    return matched
   }
   writeFileSync(manifestPath, next)
   console.log(
     `${toUpload.length} media blob(s) uploaded, ${changes.length} media.lock change(s)`,
   )
-  return selected.length
+  return matched
 }
 
 /** Reports rather than exits, so a combined run says what BOTH stores think. */

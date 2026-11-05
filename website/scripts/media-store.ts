@@ -119,7 +119,10 @@ export function describeFile(relPath: string): BlobEntry {
 export function readManifest(): Map<string, BlobEntry> {
   try {
     return parseManifest(readFileSync(manifestPath, 'utf8'), 'media.lock')
-  } catch {
-    return new Map()
+  } catch (e) {
+    if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
+      return new Map()
+    }
+    throw e
   }
 }
