@@ -1973,6 +1973,9 @@ importers:
       '@gmod/vcf':
         specifier: ^7.4.0
         version: 7.4.0
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core

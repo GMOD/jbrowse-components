@@ -1,4 +1,9 @@
-import { getBpDisplayStr, max, toLocale } from '@jbrowse/core/util'
+import {
+  parseFiniteNumber,
+  vcfRecordEnd,
+  vcfRecordSpan,
+} from '@jbrowse/add-track-core'
+import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { isBreakend, svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
 import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
@@ -11,21 +16,7 @@ import {
 import type VCF from '@gmod/vcf'
 import type { Variant } from '@gmod/vcf'
 
-// Coerce a VCF INFO value (which may be a string like '5', a number, '.', or
-// undefined) to a finite number, or undefined when it isn't numeric. VCF uses
-// '.' for missing values, which would otherwise coerce to NaN and leak into
-// feature coordinates / descriptions. null and '' are excluded before the
-// coercion because Number() calls both 0 rather than NaN, and a missing entry is
-// absent, not zero: @gmod/vcf parses '.' to undefined, which a snapshot
-// round-trip (the feature widget's frozen prop, session storage) hands back as
-// null, and that read as an SVLEN of 0bp / a mate at position 0.
-export function parseFiniteNumber(value: unknown): number | undefined {
-  const n =
-    value === null || value === undefined || value === ''
-      ? Number.NaN
-      : Number(value)
-  return Number.isFinite(n) ? n : undefined
-}
+export { parseFiniteNumber } from '@jbrowse/add-track-core'
 
 // First numeric entry of an INFO field, or undefined when the field is absent
 // or carries only missing/non-numeric values.
@@ -41,46 +32,12 @@ function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
 }
 
-// INFO.END states the span of a record with no ALT (a gVCF reference block) and
-// of one with a symbolic ALT. A translocation is single-breakpoint, and a
-// breakend or a sequence allele takes its length from REF: callers put a
-// mate's position, possibly on another contig, in END. No record draws shorter
-// than its REF. The SVLEN fallback is for symbolic (angle-bracket) ALTs.
 export function getEnd(variant: Variant, start: number) {
-  const { REF = '', ALT = [], INFO } = variant
-  const hasSymbolic = ALT.some(a => a.startsWith('<'))
-  const hasTRA = ALT.includes('<TRA>')
-  const statesSpan = ALT.length === 0 || hasSymbolic
-  if (!hasTRA) {
-    // an END at or before POS describes no span on this contig; real SV
-    // callsets do emit them, and trusting one inserts an inverted interval into
-    // the adapter's IntervalTree. Treat it as absent and keep falling back.
-    const end = firstNumericInfo(INFO, 'END')
-    if (statesSpan && end !== undefined && end > start) {
-      return Math.max(end, start + REF.length)
-    }
-    if (hasSymbolic && Array.isArray(INFO.SVLEN)) {
-      // the END the spec computes, |SVLEN| bases past POS, as core's
-      // spannedEnd places the mate; an insertion consumes no reference, so its
-      // END is POS. Missing ('.') and zero lengths drop out.
-      const ends = INFO.SVLEN.map((len, i) => {
-        if (ALT[i]?.startsWith('<INS')) {
-          return start + 1
-        }
-        const n = parseFiniteNumber(len)
-        return n ? start + 1 + Math.abs(n) : undefined
-      }).filter(v => v !== undefined)
-      if (ends.length > 0) {
-        return Math.max(max(ends), start + REF.length)
-      }
-    }
-  }
-  return start + REF.length
+  return vcfRecordEnd(variant, start)
 }
 
 export function variantSpan(variant: Variant) {
-  const start = variant.POS - 1
-  return { start, end: getEnd(variant, start) }
+  return vcfRecordSpan(variant)
 }
 
 // Render an allele sequence verbatim when short enough to read, otherwise a

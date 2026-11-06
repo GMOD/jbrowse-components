@@ -75,6 +75,21 @@ describe('indexVcf', () => {
     expect(results[1]).toContain(encodeURIComponent('ctgA:200..203'))
   })
 
+  test('a breakend or translocation spans its REF, not the mate position in END', async () => {
+    const file = writeVcf([
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+      'ctgA\t5000\tbnd1\tA\tA]ctgB:300]\t.\t.\tEND=300',
+      'ctgA\t6000\ttra1\tA\t<TRA>\t.\t.\tEND=9000',
+      'ctgA\t7000\tdel1\tA\t<DEL>\t.\t.\tSVLEN=-250',
+    ])
+    const results = await indexToArray(file, tmpDir)
+    expect(results.map(r => decodeURIComponent(r))).toEqual([
+      expect.stringContaining('ctgA:5000..5000'),
+      expect.stringContaining('ctgA:6000..6000'),
+      expect.stringContaining('ctgA:7000..7250'),
+    ])
+  })
+
   test('a semicolon-separated ID emits one record per variant id', async () => {
     const file = writeVcf([
       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',

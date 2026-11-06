@@ -1,3 +1,5 @@
+import { vcfRecordSpan } from '@jbrowse/add-track-core'
+
 import { decodeURIComponentNoThrow, trixLine } from '../util.ts'
 import {
   createReadlineInterface,
@@ -32,7 +34,7 @@ export async function* indexVcf({
       continue
     }
 
-    const [ref, pos, id, refAllele, , , , info] = line.split('\t')
+    const [ref, pos, id, refAllele, alt, , , info] = line.split('\t')
 
     // a valid VCF data row has at least 8 tab-delimited columns; skip blank or
     // malformed/short lines that would otherwise emit garbage records or throw
@@ -41,20 +43,20 @@ export async function* indexVcf({
       pos === undefined ||
       id === undefined ||
       refAllele === undefined ||
+      alt === undefined ||
       info === undefined
     ) {
       continue
     }
 
     const fields = parseAttributes(info, decodeURIComponentNoThrow)
-    // an empty `END=` parses to 0 via Number(''), which is finite; require a
-    // non-empty value before trusting it, else the REF allele spans the record
-    const endNum = Number(fields.END)
-    const end =
-      fields.END && Number.isFinite(endNum)
-        ? endNum
-        : Number(pos) + refAllele.length - 1
-    const locStr = `${ref}:${pos}..${end}`
+    const { start, end } = vcfRecordSpan({
+      POS: Number(pos),
+      REF: refAllele,
+      ALT: alt === '.' ? [] : alt.split(','),
+      INFO: { END: [fields.END], SVLEN: fields.SVLEN?.split(' ') },
+    })
+    const locStr = `${ref}:${start + 1}..${end}`
 
     const infoAttrs = attributesToIndex
       .map(attr => fields[attr])

@@ -33,3 +33,9 @@ export {
   refinesProblem,
   staleKeyedMembers,
 } from './keyedWrites.ts'
+export {
+  type VcfSpanRecord,
+  parseFiniteNumber,
+  vcfRecordEnd,
+  vcfRecordSpan,
+} from './vcfSpan.ts'
