@@ -7,7 +7,6 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import { isLineMode, isScatterMode } from '../../shared/wiggleComponentUtils.ts'
 import {
@@ -141,9 +140,6 @@ export interface WiggleHitModel {
   lineWidth: number
   isOverlay: boolean
   isDensityMode: boolean
-  showTree: boolean
-  hierarchy?: unknown
-  treeAreaWidth: number
 }
 
 // How far past its bases a mark draws: a point its radius, a line half its
@@ -163,13 +159,8 @@ function markRadiusPx({
 // The feature under the cursor, or undefined when the cursor isn't over plotted
 // data. Single entry point for multi-wiggle hit-testing: hover, the vertical
 // guide, and click-to-select all derive from this one answer, so they can't
-// disagree about what the cursor is over.
-//
-// The tree sidebar and its resize handle overlay the left of the same container
-// the mouse handlers are bound to and don't stop propagation, so cursor
-// positions over them are excluded here. Doing it at the hit (rather than hiding
-// the tooltip downstream) is what keeps a click on a tree node from also opening
-// a feature widget behind the node menu.
+// disagree about what the cursor is over. `ScorePlotChrome` asks it only
+// right of the tree sidebar.
 export function findWiggleHit(
   model: WiggleHitModel,
   regions: MouseRegion[],
@@ -185,7 +176,7 @@ export function findWiggleHit(
     isOverlay,
     isDensityMode,
   } = model
-  if (sources.length === 0 || offsetX < treeSidebarRightEdge(model)) {
+  if (sources.length === 0) {
     return undefined
   }
   const hit = hitTestMouse(regions, rpcDataMap, offsetX)
@@ -250,21 +241,14 @@ export interface WiggleContextInfo extends WiggleContextHit {
 }
 
 // The genomic column a right-click names, or undefined when the click wasn't
-// over loaded data. Excludes the tree sidebar for the same reason
-// findWiggleHit does. It resolves a column rather than a feature, so it
-// takes only the data map and the sidebar geometry — the row and score fields
-// of the hit model have no part in it.
+// over loaded data. It resolves a column rather than a feature, so it takes
+// only the data map — the row and score fields of the hit model have no part
+// in it.
 export function findWiggleContextHit(
-  model: Pick<
-    WiggleHitModel,
-    'rpcDataMap' | 'showTree' | 'hierarchy' | 'treeAreaWidth'
-  >,
+  model: Pick<WiggleHitModel, 'rpcDataMap'>,
   regions: MouseRegion[],
   offsetX: number,
 ): WiggleContextHit | undefined {
-  if (offsetX < treeSidebarRightEdge(model)) {
-    return undefined
-  }
   const hit = hitTestMouse(regions, model.rpcDataMap, offsetX)
   return hit ? { refName: hit.region.refName, bp: hit.bp } : undefined
 }

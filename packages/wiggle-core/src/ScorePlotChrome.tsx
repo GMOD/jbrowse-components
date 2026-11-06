@@ -49,6 +49,8 @@ export type ScorePlotChromeModel<
 > = ChromeModel &
   RenderLifecycleModel<PerRegionRenderingBackend<TRegion, TState>> & {
     canvasWidthPx: number
+    // the row sidebar's right edge, past which the plot is not covered
+    dataLeft: number
     scrollableHeight: number
     setHoveredFeature: (hit?: Hit) => void
     selectFeature: (hit: Hit) => void
@@ -61,6 +63,9 @@ export type ScorePlotChromeModel<
  * composes `ContextMenuMixin`. `findHit` takes y from the plot's own top.
  * `findContextHit` is for a display whose menu is about something other than
  * the hovered record (the wiggle's column, which exists where no bin does).
+ * Neither is asked left of `model.dataLeft`: the sidebar there takes its own
+ * clicks, and they bubble here, so a click on a tree node would otherwise
+ * also select the record painted under it.
  */
 export const ScorePlotChrome = observer(function ScorePlotChrome<
   Hit,
@@ -94,7 +99,8 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
     () => (canvas: HTMLCanvasElement) => createMarkBackend(canvas, marks),
     [marks],
   )
-  const hitAt = (x: number, y: number) => findHit(x, y - box.yTop)
+  const hitAt = (x: number, y: number) =>
+    x >= model.dataLeft ? findHit(x, y - box.yTop) : undefined
   const contextMenu = isScorePlotMenuHost<ContextHit>(model) ? model : undefined
   return (
     <DisplayChrome
@@ -116,9 +122,12 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
         contextMenu
           ? event => {
               const { x, y } = eventPoint(event)
-              const hit = findContextHit
-                ? findContextHit(x, y - box.yTop)
-                : (hitAt(x, y) as ContextHit | undefined)
+              const hit =
+                x < model.dataLeft
+                  ? undefined
+                  : findContextHit
+                    ? findContextHit(x, y - box.yTop)
+                    : (hitAt(x, y) as ContextHit | undefined)
               openContextMenuFromEvent(
                 contextMenu,
                 event,

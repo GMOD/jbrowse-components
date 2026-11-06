@@ -324,8 +324,6 @@ describe('findWiggleHit', () => {
       lineWidth: 1,
       isOverlay: false,
       isDensityMode: false,
-      showTree: false,
-      treeAreaWidth: 0,
       ...over,
     }
   }
@@ -344,31 +342,6 @@ describe('findWiggleHit', () => {
   test('returns undefined with no sources', () => {
     const model = makeModel({ markSources: [] })
     expect(findWiggleHit(model, regions, 50, 5)).toBeUndefined()
-  })
-
-  // The tree sidebar overlays the left of the same container the mouse handlers
-  // are bound to and does not stop propagation, so without this gate a click on
-  // a tree node also opens a feature widget behind the node menu.
-  test('ignores cursor positions over the tree sidebar', () => {
-    const model = makeModel({
-      showTree: true,
-      hierarchy: {},
-      treeAreaWidth: 40,
-    })
-    // 40 wide + a resize handle, so 40 is still sidebar and 50 is plot
-    expect(findWiggleHit(model, regions, 10, 5)).toBeUndefined()
-    expect(findWiggleHit(model, regions, 40, 5)).toBeUndefined()
-    expect(findWiggleHit(model, regions, 50, 5)?.rows[0]?.score).toBe(5)
-  })
-
-  test('hit-tests the full width when the tree is hidden', () => {
-    const model = makeModel({ showTree: false, treeAreaWidth: 40 })
-    expect(findWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
-  })
-
-  test('a hierarchy-less model has no sidebar to exclude', () => {
-    const model = makeModel({ showTree: true, treeAreaWidth: 40 })
-    expect(findWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
   })
 
   test('overlay mode collects a row per source at the cursor bp', () => {
