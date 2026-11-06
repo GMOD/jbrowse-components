@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { colorAt } from '@jbrowse/core/util/markEncoding'
 import { rowSlot } from '@jbrowse/render-core/marks'
 import { waitFor } from '@testing-library/react'
@@ -176,6 +177,20 @@ test('a cluster run lands its tree turned towards the seed, and orders the rows'
   expect(sidebar(display)).toMatchSnapshot()
   expect(rowOfEach(display)).toEqual(['9@2', '7@1', '3@1', '2@3', '4@0'])
   expect(display.rowTreeProvenance).toMatchSnapshot()
+})
+
+// The tree outlives a switch to a facet, but with no rows drawn there are no
+// sources to position it against, so no sidebar is reserved at the left.
+test('a facet in the rows place keeps the tree but reserves no sidebar for it', async () => {
+  const display = loaded({ rows: 'source' })
+  await clusterRun(display, '((dad,s2),(mom,s10));')
+  expect(display.dataLeft).toBeGreaterThan(0)
+
+  setConf(display, 'facet', 'source')
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
+  expect(display.drawsRows).toBe(false)
+  expect(display.rowTree).toBe('((dad,s2),(mom,s10));')
+  expect(display.sidebarBounds.right).toBe(0)
 })
 
 test('a focus draws the rows it keeps and leaves the rest out of the plot', () => {
