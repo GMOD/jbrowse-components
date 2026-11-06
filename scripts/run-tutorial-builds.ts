@@ -14,6 +14,8 @@
 //        [--timeout 120] [--out dir] [--list] [--clean] [--min-free-gb 150]
 //        [--cli main|released] [--env <prefix>]
 //
+// `--clean` deletes each run's files after it finishes, keeping run.log.
+//
 // `--env` puts a tool environment's bin first on PATH, the one
 // scripts/tutorial-tools-env.ts builds from the tutorials' install registry.
 
@@ -290,7 +292,7 @@ async function runOne(run: Run, options: RunOptions) {
           ? ''
           : tail
   const bytes = diskBytes(runDir)
-  if (clean && status === 'pass') {
+  if (clean) {
     for (const entry of readdirSync(runDir)) {
       if (entry !== 'run.log') {
         rmSync(path.join(runDir, entry), { recursive: true, force: true })
