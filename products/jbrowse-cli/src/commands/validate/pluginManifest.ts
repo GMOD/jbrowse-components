@@ -5,7 +5,8 @@ type Schema = Record<string, unknown>
 /**
  * The types a plugin registers beside core's, in the manifest's own groups:
  * what `scripts/generateConfigManifest.ts --plugin <bundle> --out <file>`
- * writes from the plugin's built ESM bundle.
+ * writes from the plugin's built ESM bundle, or `--umd-plugin` from its UMD
+ * bundle.
  */
 export interface PluginManifest extends Partial<
   Pick<

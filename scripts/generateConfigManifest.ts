@@ -48,19 +48,25 @@ import type { Migration } from './configMigrationTable.ts'
 const REPO_ROOT = path.resolve(import.meta.dirname, '..')
 
 // `--plugin <bundle> --out <file>` writes a plugin's manifest instead: the
-// types its built ESM bundle registers beside core's, which
-// `jbrowse validate --plugin-manifest` checks a config's slots against.
+// types its built ESM bundle (or `--umd-plugin`, its UMD bundle) registers
+// beside core's, which `jbrowse validate --plugin-manifest` checks a config's
+// slots against.
 const { values: args } = parseArgs({
   options: {
     plugin: { type: 'string', multiple: true, default: [] },
+    'umd-plugin': { type: 'string', multiple: true, default: [] },
     out: { type: 'string' },
     check: { type: 'boolean' },
   },
 })
-const pluginUrls = args.plugin.map(spec =>
-  spec.startsWith('file:') ? spec : pathToFileURL(path.resolve(spec)).href,
-)
-if (pluginUrls.length > 0 && args.out === undefined) {
+const pluginSpecs = [...args.plugin, ...args['umd-plugin']]
+const toUrl = (spec: string) =>
+  spec.startsWith('file:') ? spec : pathToFileURL(path.resolve(spec)).href
+const pluginBundles = [
+  ...args.plugin.map(spec => ({ url: toUrl(spec), umd: false })),
+  ...args['umd-plugin'].map(spec => ({ url: toUrl(spec), umd: true })),
+]
+if (pluginBundles.length > 0 && args.out === undefined) {
   throw new Error('--plugin needs --out, the plugin manifest to write')
 }
 // jbrowse-web's corePlugins is the widest core set that is also plain web —
@@ -94,6 +100,7 @@ const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 // needs to say has to come back as JSON.
 const ENTRY = `
 import { readFileSync } from 'node:fs'
+import { runInThisContext } from 'node:vm'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 import { trackDisplayType } from '@jbrowse/core/util/tracks'
@@ -144,13 +151,30 @@ import { migrationRows } from '../../scripts/configMigrationTable.ts'
 
 // A plugin bundle reads the host's modules off \`JBrowseExports\` at module
 // scope, as PluginLoader.installGlobalReExports publishes it in the browser.
-const PLUGIN_URLS = __PLUGIN_URLS__
-if (PLUGIN_URLS.length > 0) {
+const PLUGIN_BUNDLES = __PLUGIN_BUNDLES__
+if (PLUGIN_BUNDLES.length > 0) {
   const { default: reExports } = await import('./src/reExports.generated.ts')
   globalThis.JBrowseExports = { ...reExports }
 }
+// A UMD bundle runs as a classic script and leaves its plugin on the
+// \`JBrowsePlugin<name>\` global, which PluginLoader.loadUMDPlugin reads. A
+// bundled browser library may look for the page's \`self\` as it loads.
+function loadUmdPlugin(url) {
+  globalThis.self ??= globalThis
+  const before = new Set(Object.keys(globalThis))
+  runInThisContext(readFileSync(new URL(url), 'utf8'), { filename: url })
+  const name = Object.keys(globalThis).find(
+    key => !before.has(key) && key.startsWith('JBrowsePlugin'),
+  )
+  if (name === undefined) {
+    throw new Error(\`\${url} defined no JBrowsePlugin<name> global\`)
+  }
+  return globalThis[name].default
+}
 const pluginClasses = await Promise.all(
-  PLUGIN_URLS.map(async url => (await import(url)).default),
+  PLUGIN_BUNDLES.map(async ({ url, umd }) =>
+    umd ? loadUmdPlugin(url) : (await import(url)).default,
+  ),
 )
 const pm = new PluginManager(
   [...corePlugins, ...pluginClasses].map(P => new P()),
@@ -1385,8 +1409,10 @@ const built = await esbuild.build({
     contents: ENTRY.replace('__SHORTHAND_PROBES__', () =>
       JSON.stringify(collectShorthandProbes()),
     )
-      .replace('__LOCAL_CONFIGS__', () => JSON.stringify(localConfigs()))
-      .replace('__PLUGIN_URLS__', () => JSON.stringify(pluginUrls))
+      .replace('__LOCAL_CONFIGS__', () =>
+        JSON.stringify(pluginBundles.length > 0 ? [] : localConfigs()),
+      )
+      .replace('__PLUGIN_BUNDLES__', () => JSON.stringify(pluginBundles))
       .replace('__SCHEMA_ID__', JSON.stringify(SCHEMA_ID))
       .replace('__VERSION__', JSON.stringify(VERSION)),
     resolveDir: RESOLVE_DIR,
@@ -1484,7 +1510,7 @@ function writePluginManifest(out: string) {
     out,
     `${JSON.stringify(
       {
-        plugins: args.plugin,
+        plugins: pluginSpecs,
         jbrowse: VERSION,
         ...Object.fromEntries(groups),
         schema: { $defs: pluginDefs },

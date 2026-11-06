@@ -90,7 +90,8 @@ between displays.
    (`reference/PLUGIN_ABI_STABILITY.md`).
 3. **Plugin displays are checked only with a plugin manifest.**
    `scripts/generateConfigManifest.ts --plugin <esm bundle> --out <file>`
-   loads a plugin's built bundle beside core, as the browser does, and
+   (`--umd-plugin` for a UMD bundle) loads a plugin's built bundle beside
+   core, as the browser does, and
    writes the types it adds with their slots and schema definitions;
    `jbrowse validate --plugin-manifest <file>` then checks them as it checks
    core's. On the graph plugin (2026-10-30) it found two things core's
@@ -98,10 +99,16 @@ between displays.
    `facet.domain` respelling passes unread, and `RgfaTabixAdapter`'s
    `coarse.uri` and `coarse.format` are shorthand its normalizer applies to
    the nested object, which no probe sees, so they report as unknown slots.
-   Left: UMD bundles and plugin urls (local ESM files only), a way for a
-   plugin's own CI to run the generator without a jbrowse-components
-   checkout, and the manifests themselves for the graph, ARG and Apollo
-   plugins.
+   On 2026-11-06 it ran on the graph plugin 8.8.0, the ARG plugin and
+   Apollo3's `v2` branch (UMD; its `.esm.js` imports bare `@jbrowse/*`, the
+   npm form). The graph and ARG plugins declare a beta.18 floor, so
+   `test_data/hprc2` and ARG's `sim.config.json` write the beta.19 slots
+   (`unit`, `rowGroups`, `rowColor`) that beta.20 respelled; each waits on a
+   floor raise (the graph plugin's `write-linear-variant-display` todo).
+   Apollo's `jbrowse_config.json` carries `google` and `microsoft` blocks its
+   internet account never declares. Left: plugin urls (local files only), a
+   way for a plugin's own CI to run the generator without a
+   jbrowse-components checkout, and where each plugin keeps its manifest.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
