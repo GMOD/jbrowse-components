@@ -208,9 +208,9 @@ Five cases are easy to misread in the lanes:
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
   step on the reference across 150 kb". The row comes from the -f5s walk file's
-  skip rows, so it appears only where the window lies in a 64 kb chunk the skip
-  covers whole, for a skip up to about 2 Mb. A window in the skip's first or
-  last chunk shows no row for that haplotype. Walk rows, which
+  skip rows, so it appears where the window lies in a 64 kb chunk the skip
+  covers whole, for a skip up to about 2 Mb; in the skip's first or last chunk
+  the row can be missing. Walk rows, which
   [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
   haplotype as a row with no step on the reference. At IGH, IGK and IGL such a
   row is often the cell line's deletion, as
