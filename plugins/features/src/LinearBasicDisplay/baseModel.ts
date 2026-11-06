@@ -1211,10 +1211,7 @@ export default function baseStateModelFactory(
          */
         reload() {
           superReload()
-          const view = containingLgv(self)
-          if (view.initialized) {
-            self.fetchNeeded(view.bufferedVisibleRegions)
-          }
+          self.fetchVisibleRegions()
         },
 
         /**

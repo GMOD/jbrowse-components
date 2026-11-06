@@ -66,7 +66,8 @@ empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 `fetchNeeded` override gets there in its synchronous prefix; an override that
 awaits first gets a false report, not silence. `runFetch` also answers the retry
 by itself, because a `reload()` can reach a fetch with no autorun run in
-between (the feature display's clears and calls `fetchNeeded` directly).
+between (the feature display's clears and calls `fetchVisibleRegions`, the
+autorun's plan without its debounce).
 
 **`reloadCounter` is the whole arming mechanism, and MST replaces an action
 outright.** A `reload()` override that neither bumps it nor chains to a captured

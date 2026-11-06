@@ -8,6 +8,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { Region } from '@jbrowse/core/util/types/data'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Canvas makes no other RPC call, so this responder is the whole mock.
@@ -287,6 +288,32 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.error).toBeFalsy()
       expect(display.loadedRegions.size).toBe(1)
     })
+  })
+
+  it("reload fetches only the regions on the track's own genome", async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      extraAssemblyNames: ['volvox2'],
+    })
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 5_000, refName: 'ctgA' },
+      { assemblyName: 'volvox2', start: 0, end: 5_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(20)
+    mockRpcCall.mockResolvedValue(makeFeatureData())
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    mockRpcCall.mockClear()
+
+    display.reload()
+    await jest.runAllTimersAsync()
+
+    const genomes = mockRpcCall.mock.calls.map(
+      ([, , args]: [string, string, { region: Region }]) =>
+        args.region.assemblyName,
+    )
+    expect(genomes.length).toBeGreaterThan(0)
+    expect(new Set(genomes)).toEqual(new Set(['volvox']))
   })
 
   describe('the peptide threshold refetches and no other zoom under 100 bp/px does', () => {

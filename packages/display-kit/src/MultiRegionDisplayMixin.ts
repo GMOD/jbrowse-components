@@ -17,7 +17,10 @@ import {
   onTrackAssembly,
   trackCanvasWidthPx,
 } from './foundationView.ts'
-import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
+import {
+  installPerRegionFetchAutoruns,
+  planVisibleRegionFetch,
+} from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks, payloadServesZoom } from './regionCommit.ts'
 import { subPixelBinBp } from './subPixelBinBp.ts'
@@ -747,6 +750,22 @@ export default function MultiRegionDisplayMixin() {
          */
         fetchNeeded(_needed: IndexedRegion[]) {
           // no-op base
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Fetch what `FetchVisibleRegions` would, now rather than after its
+         * debounce: for a `reload()` that should not wait on a click.
+         */
+        fetchVisibleRegions() {
+          const { host } = self
+          if (host.initialized) {
+            const plan = planVisibleRegionFetch(self, host)
+            if (plan.kind === 'fetch') {
+              self.fetchNeeded(plan.needed)
+            }
+          }
         },
       }))
       .actions(self => {

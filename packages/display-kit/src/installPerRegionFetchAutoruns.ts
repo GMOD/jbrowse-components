@@ -22,8 +22,10 @@ import {
 } from './planRegionFetch.ts'
 
 import type { IndexedRegion } from './planRegionFetch.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * What the per-region fetch autoruns read and call. Duck-typed rather than the
@@ -82,6 +84,56 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
  * `fetchGeneration` already owes, and a longer one costs one idle run of the
  * plan mid-fetch. Two runs per fetch cycle either way, three past the debounce.
  */
+/**
+ * What `FetchVisibleRegions` would fetch now, for that autorun and for a
+ * `reload()` that fetches without waiting out its debounce.
+ */
+export function planVisibleRegionFetch(
+  self: IStateTreeNode &
+    Pick<
+      PerRegionFetchHost,
+      | 'error'
+      | 'fetchCanceled'
+      | 'gateSkipsMeasuredViewport'
+      | 'fetchSuspended'
+      | 'regionTooLarge'
+      | 'isLoading'
+      | 'loadedRegions'
+      | 'isCacheValid'
+    >,
+  view: Pick<RegionHost, 'visibleRegions' | 'bufferedVisibleRegions'>,
+) {
+  return planRegionFetch({
+    error: self.error,
+    fetchCanceled: self.fetchCanceled,
+    gateSkipsMeasuredViewport: self.gateSkipsMeasuredViewport,
+    // tracked: the flip back to false is the fetch's wake
+    suspended: self.fetchSuspended,
+    // tracked, and above the coverage read: while the banner is up this run
+    // owes a re-measure, and the flip back to false has to re-fire the
+    // autorun or the release lands a viewport late
+    gateBlocked: self.regionTooLarge,
+    // tracked: the flip at fetch start costs one idle run, measured
+    // below, and `fetchGeneration` at fetch end is the re-trigger
+    isLoading: () => self.isLoading,
+    // tracked, and behind a thunk: `minimized` is what the display's
+    // `isMinimized` getter resolves to, so un-minimizing re-fires this and
+    // the fetch resumes — while a minimized track stays off the viewport's
+    // dependency set below and so does not wake on every pan.
+    minimized: () => getContainingTrack(self).minimized,
+    sources: () => ({
+      trackAssemblyNames: getConfAssemblyNamesOrNone(
+        getContainingTrack(self).configuration,
+      ),
+      onTrackAssembly: onTrackAssembly(self),
+      visibleRegions: view.visibleRegions,
+      bufferedVisibleRegions: view.bufferedVisibleRegions,
+      loadedRegion: idx => self.loadedRegions.get(idx),
+      isCacheValid: idx => self.isCacheValid(idx),
+    }),
+  })
+}
+
 export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // Dev-only: the contracts no type expresses (`afterAttach` not being chained
   // to super, `isCacheValid`/`rpcProps` being views). Runs before anything is
@@ -199,35 +251,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
       void self.fetchGeneration
       void self.reloadCounter
 
-      const plan = planRegionFetch({
-        error: self.error,
-        fetchCanceled: self.fetchCanceled,
-        gateSkipsMeasuredViewport: self.gateSkipsMeasuredViewport,
-        // tracked: the flip back to false is the fetch's wake
-        suspended: self.fetchSuspended,
-        // tracked, and above the coverage read: while the banner is up this
-        // run owes a re-measure, and the flip back to false has to re-fire
-        // the autorun or the release lands a viewport late
-        gateBlocked: self.regionTooLarge,
-        // tracked: the flip at fetch start costs one idle run, measured
-        // below, and `fetchGeneration` at fetch end is the re-trigger
-        isLoading: () => self.isLoading,
-        // tracked, and behind a thunk: `minimized` is what the display's
-        // `isMinimized` getter resolves to, so un-minimizing re-fires this and
-        // the fetch resumes — while a minimized track stays off the viewport's
-        // dependency set below and so does not wake on every pan.
-        minimized: () => getContainingTrack(self).minimized,
-        sources: () => ({
-          trackAssemblyNames: getConfAssemblyNamesOrNone(
-            getContainingTrack(self).configuration,
-          ),
-          onTrackAssembly: onTrackAssembly(self),
-          visibleRegions: view.visibleRegions,
-          bufferedVisibleRegions: view.bufferedVisibleRegions,
-          loadedRegion: idx => self.loadedRegions.get(idx),
-          isCacheValid: idx => self.isCacheValid(idx),
-        }),
-      })
+      const plan = planVisibleRegionFetch(self, view)
 
       // A fetch is the one plan whose retry answer the plan cannot give:
       // reaching `fetchNeeded` is not reaching a fetch, since an override can
