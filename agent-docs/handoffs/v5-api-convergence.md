@@ -75,9 +75,9 @@ between displays.
      that misses R goes red there on push. `dog10k_lof` keeps its
      `557791197f` knit until the callset host's certificate is renewed.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
-     (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). The Trix adapter's
-     `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
-     dedupes on `ixFilePath`.
+     (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). Its Trix
+     adapters keep writing `textSearchAdapterId`, which v4.3.0 needs to boot
+     and v5 retires; the merge lambda dedupes them by resolved `ixFilePath`.
    - In-tree writers fail loudly on a dead key: `pnpm check-specs` (in
      `website/`) for figure specs, `pnpm verify --full` and the pre-commit
      config check for tutorials and `demos/`. A jexl filter trips none of
