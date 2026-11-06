@@ -27,7 +27,6 @@ import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.t
 import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationField } from '../shared/colorFieldDefs.ts'
-import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
 import {
   drawnInstanceArrays,
   drawnReadLists,
@@ -37,7 +36,6 @@ import {
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
-import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   buildReadBlockLines,
   buildReadTooltipValues,
@@ -48,11 +46,8 @@ import {
 } from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { getFlags } from '../shared/util.ts'
-import {
-  drawnReadMask,
-  mateKey,
-  sampleFeatures,
-} from './filterChainFeatures.ts'
+import { drawnReadMask, mateKey } from './filterChainFeatures.ts'
+import { sampleLanes } from './sampleLanes.ts'
 
 import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { FetchedSegments } from '../features/sashimi/splitJunctions.ts'
@@ -461,8 +456,16 @@ export async function groupsOfFetch({
     signal,
   } = args
   const region = regions[0]!
-  const sample = sampleFeatures(featuresArray, filter)
-  const insertSizeStats = computePairedInsertSizeStats(sample)
+  const {
+    sample,
+    insertSizeStats,
+    lanes: featureGroups,
+  } = sampleLanes({
+    featuresArray,
+    filter,
+    facet,
+    jexl: pluginManager.jexl,
+  })
 
   // Only bisulfite needs the reference sequence (its methylation is
   // read-vs-reference C->T). modBAM modifications/methylation derive
@@ -483,12 +486,6 @@ export async function groupsOfFetch({
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const featureGroups = partitionFeatures(
-    sample,
-    facet,
-    pluginManager.jexl,
-    facet?.pinnedInsertSizeBand ?? insertSizeStats,
-  )
   // One form for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
   const numericKeys = recordIdsAreIds(featuresArray)

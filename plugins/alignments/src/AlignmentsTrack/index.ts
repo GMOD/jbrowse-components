@@ -45,8 +45,9 @@ export default function register(pm: PluginManager) {
               name: 'Coverage (bedGraph)',
               extension: 'bedgraph',
               callback: coverageBedGraphText,
+              featureSet: 'counted',
               helpText:
-                'The depth at each base of the reads this track shows, counted as the coverage band counts it: a deletion or a skipped intron adds no depth. Bases no read covers are left out.',
+                'The depth the coverage band shows at each base, summed over the lanes on screen: every read the filter counts, including those it leaves out of the pileup, and none from a hidden lane. A deletion or a skipped intron adds no depth. Bases no read covers are left out.',
             },
           }
         },

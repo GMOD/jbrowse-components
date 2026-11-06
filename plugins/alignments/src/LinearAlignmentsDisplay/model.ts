@@ -121,7 +121,7 @@ import {
   coverageTicksViews,
 } from './coverageScaleViews.ts'
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
-import { exportedReads } from './exportedReads.ts'
+import { fetchExportedReads } from './exportedReads.ts'
 import {
   attachLinkedReadLinesByGroup,
   fitLaneRows,
@@ -134,7 +134,6 @@ import {
   buildReadIdIndex,
   buildSashimiDownKeys,
   hasNamedGroups,
-  hiddenGroupReadIds,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -223,6 +222,7 @@ import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ExportedFeaturesRequest } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -2139,17 +2139,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * The exported reads this pileup draws: under the same `filter` the
-         * worker applies, and outside the lanes the user hid.
-         */
-        exportedFeatures(features: Feature[]) {
-          const hidden = hiddenGroupReadIds(self.rpcDataMap, self.hiddenGroups)
-          return exportedReads(features, self.readPredicates).filter(
-            f => !hidden.has(f.id()),
-          )
-        },
-        /**
-         * #method
          * Fields that invalidate the fetched data, every one worker-bound.
          * Arc-only fields (`readConnections` and the connection filter) are
          * not here: `arcsResult` reads them and they need no refetch. Non-tag
@@ -2279,6 +2268,17 @@ export default function stateModelFactory(
          */
         zoomFetchArgs() {
           return { perBaseBinBp: self.perBaseBinBp, lodTier: self.lodTier }
+        },
+        /**
+         * #method
+         * Save track data's reads, outside the lanes the user hid: every read
+         * the coverage counts for a depth, the drawn ones for a read format.
+         * The worker samples, lanes and filters them as it does to render, so
+         * the file agrees with the bands and the pileup. After `rpcProps`,
+         * whose filter and facet it sends.
+         */
+        fetchExportedFeatures(request: ExportedFeaturesRequest) {
+          return fetchExportedReads(self, request)
         },
       }))
       .views(self => ({

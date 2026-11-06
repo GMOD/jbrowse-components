@@ -1,4 +1,5 @@
 import GetConsensusSequence from './GetConsensusSequence.ts'
+import GetExportReads from './GetExportReads.ts'
 import GetFeatureDetails from './GetFeatureDetails.ts'
 import GetGlobalValueForTag from './GetGlobalValueForTag.ts'
 import RenderAlignmentData from './RenderAlignmentData.ts'
@@ -10,4 +11,5 @@ export default function PileupDataRPCMethodsF(pm: PluginManager) {
   pm.addRpcMethod(() => new GetFeatureDetails(pm))
   pm.addRpcMethod(() => new GetGlobalValueForTag(pm))
   pm.addRpcMethod(() => new GetConsensusSequence(pm))
+  pm.addRpcMethod(() => new GetExportReads(pm))
 }

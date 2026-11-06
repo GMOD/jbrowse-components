@@ -33,8 +33,10 @@ band must keep their depth.
   read source by index. The render hands it what its extract already holds
   for every read (the category bits and the name block), the consensus,
   exports and the tag dialog read the records (`featureSource`), so the
-  pileup, consensus, `exportedReads.ts` and `GetGlobalValueForTag` share one
-  definition. `svSignal`, `split` and `spliced` read `readCategoryBits`.
+  pileup, consensus, `PileupGetExportReads` and `GetGlobalValueForTag` share
+  one definition. Save track data asks the worker for each counted read's
+  lane and drawn flag: a depth (Coverage bedGraph) writes the counted reads
+  of the visible lanes, a read format the drawn ones. `svSignal`, `split` and `spliced` read `readCategoryBits`.
 - **Chains are judged over every section at once**, after the facet
   partitions the sample, so a strand facet cannot split a chain's verdict.
 - **Every counted read is extracted and counted.** Detail arrays, coverage,

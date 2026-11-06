@@ -29,8 +29,7 @@ function gapsOf(read: Feature): CoverageGap[] {
 
 /**
  * The depth at every base of each exported region, run-length encoded as
- * bedGraph rows, over the reads the track shows and by the coverage band's
- * rule. Bases no read covers are left out, as `bedtools genomecov -bg` does.
+ * bedGraph rows, over the reads the coverage band counts and by its rule. Bases no read covers are left out, as `bedtools genomecov -bg` does.
  * Rows name the assembly's sequence, as the SAM export's records do.
  */
 export function stringifyCoverageBedGraph({
