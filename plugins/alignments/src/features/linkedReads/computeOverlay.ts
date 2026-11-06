@@ -357,6 +357,11 @@ export function loopDipPx(rowPitch: number) {
   return Math.min(LOOP_MAX_DIP_PX, Math.max(LOOP_MIN_DIP_PX, 4 * rowPitch))
 }
 
+/** The lower of the two rows a pair joins, which its dip starts from. */
+export function pairLowerRow({ e1, e2 }: LinkedPair) {
+  return Math.max(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
+}
+
 // Clearance under the deepest apex for the stroke, which a hover thickens.
 const DIP_RESERVE_PAD_PX = 2
 
@@ -404,13 +409,9 @@ export function connectorDipReservePx({
       )
       const depth = loop ? loopDipPx(rowH) : dipPx
       if (depth !== undefined) {
-        const lowerRow = Math.max(
-          e1.data.readYs[e1.readIdx]!,
-          e2.data.readYs[e2.readIdx]!,
-        )
         deepest = Math.max(
           deepest,
-          lowerRow * rowH +
+          pairLowerRow(pair) * rowH +
             featureHeight / 2 +
             Math.min(depth, BEZIER_CONNECTOR_MAX_REACH_PX),
         )

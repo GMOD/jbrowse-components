@@ -1,4 +1,16 @@
+import { PAIR_DIRECTION_NUM, namesToBlock } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+} from '@jbrowse/cigar-utils'
+
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import {
+  connectorDipReservePx,
+  enumerateConnectorPairs,
+  pairLowerRow,
+} from '../features/linkedReads/computeOverlay.ts'
 import {
   MIN_FIT_ROWS,
   buildLaidOutByGroup,
@@ -7,7 +19,10 @@ import {
   fitGroupMaxRows,
   groupMaxY,
   groupRowCaps,
+  layoutGroupsToViewport,
   reclaimFitRows,
+  relayGroups,
+  sizedLaneDipCaps,
 } from './groupLayout.ts'
 
 import type {
@@ -313,4 +328,112 @@ test('collectAcrossGroups: a field the worker did not ship contributes nothing',
 
 test('collectAcrossGroups: no groups is the empty set, not a throw', () => {
   expect(collectAcrossGroups(byGroup([]), d => d.readTagValues).size).toBe(0)
+})
+
+// `rows` overlapping reads, one per row in start order. The one on `pairRow`
+// is the first mate of an RR pair whose second mate sits alone 20 kb on, so
+// the connector between them dips from that row.
+function pairInStackContext(rows: number, pairRow: number) {
+  const n = rows + 1
+  const isPair = (i: number) => i === pairRow || i === rows
+  const readPositions = new Uint32Array(n * 2)
+  for (let i = 0; i < rows; i++) {
+    readPositions[i * 2] = 100 + i
+    readPositions[i * 2 + 1] = 200 + i
+  }
+  readPositions[rows * 2] = 21_000
+  readPositions[rows * 2 + 1] = 21_100
+  const data = makePileupDataResult({
+    ...namesToBlock(
+      Array.from({ length: n }, (_, i) => (isPair(i) ? 'p' : `r${i}`)),
+    ),
+    readKeys: Array.from({ length: n }, (_, i) => `id${i}`),
+    readFlags: Uint16Array.from({ length: n }, (_, i) =>
+      isPair(i)
+        ? SAM_FLAG_PAIRED |
+          (i === rows ? SAM_FLAG_SECOND_IN_PAIR : SAM_FLAG_FIRST_IN_PAIR)
+        : 0,
+    ),
+    readStrands: new Int8Array(n).fill(1),
+    readPairOrientations: Uint8Array.from({ length: n }, (_, i) =>
+      isPair(i) ? PAIR_DIRECTION_NUM.RR : 0,
+    ),
+    readPositions,
+  })
+  const ctx: GroupLayoutContext = {
+    ...overlappingReadsContext(),
+    rawByGroup: new Map([['g', new Map([[0, data]])]]),
+    regions: new Map([[0, { refName: 'chr1', start: 0, end: 30_000 }]]),
+  }
+  return ctx
+}
+
+const pitch = { featureHeight: 10, featureSpacing: 2 }
+const ROW = pitch.featureHeight + pitch.featureSpacing
+const displayedRegions = [{ refName: 'chr1' }]
+
+function pairsOf(laid: LaidOutByGroup) {
+  return enumerateConnectorPairs(laid.get('g')!)
+}
+
+// How far below the lane's top its rows and their deepest curve reach, with
+// each dip sized to the rows' band as the display draws it.
+function reachPx(laid: LaidOutByGroup) {
+  const rowsHeight = groupMaxY(laid.get('g')!) * ROW
+  return (
+    rowsHeight +
+    connectorDipReservePx({
+      ...pitch,
+      displayedRegions,
+      pairs: pairsOf(laid),
+      pileupHeight: rowsHeight,
+    })
+  )
+}
+
+// A lane a drag sized, laid out at its size's cap and then again at the cap
+// its connectors' dip room leaves, as the display lays it out.
+function layOutSized(ctx: GroupLayoutContext, sizePx: number) {
+  const sizes = new Map([['g', sizePx]])
+  const pass = layoutGroupsToViewport(ctx, {
+    maxRows: 1000,
+    defaultCap: ceilingCap(1000),
+    collapsedKeys: new Set(),
+    overrideCaps: groupRowCaps({ sizes, ceilingPx: 12_000, rowHeight: ROW }),
+  })
+  const pairs = pairsOf(pass)
+  return relayGroups(
+    ctx,
+    pass,
+    sizedLaneDipCaps({
+      laidOut: pass,
+      sizes,
+      rowHeight: ROW,
+      reserveUnder: (_key, rows) =>
+        connectorDipReservePx({
+          ...pitch,
+          displayedRegions,
+          pairs: pairs.filter(pair => pairLowerRow(pair) < rows),
+          pileupHeight: rows * ROW,
+        }),
+    }),
+  )
+}
+
+// A 100 px lane holds 8 rows, and the pair's dip from row 4 reached past its
+// bottom edge, where the lane clips.
+test('sizedLaneDipCaps: a sized lane keeps the rows whose curves finish inside it', () => {
+  const laid = layOutSized(pairInStackContext(12, 4), 100)
+  expect(reachPx(laid)).toBeLessThanOrEqual(100)
+  expect(groupMaxY(laid.get('g')!)).toBe(6)
+  // the curve still draws, from the row it was on
+  expect(pairsOf(laid).map(pairLowerRow)).toEqual([4])
+  expect(laid.get('g')!.get(0)!.clippedBy).toBe('override')
+})
+
+test('sizedLaneDipCaps: a lane whose curves already fit keeps every row the size holds', () => {
+  const laid = layOutSized(pairInStackContext(12, 0), 200)
+  expect(groupMaxY(laid.get('g')!)).toBe(12)
+  expect(reachPx(laid)).toBeLessThanOrEqual(200)
+  expect(laid.get('g')!.get(0)!.clippedBy).toBeUndefined()
 })

@@ -1276,7 +1276,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The pairs the connector mark draws, placed on each drawn section's
-         * pileup band.
+         * pileup band, their dips sized to its rows (`rowsHeight`).
          */
         get connectorPairSections() {
           return this.renderSections.flatMap(sec => {
@@ -1286,7 +1286,7 @@ export default function stateModelFactory(
                   {
                     groupKey: sec.groupKey,
                     pileupTop: sec.pileupTop,
-                    pileupHeight: sec.pileupHeight,
+                    pileupHeight: sec.rowsHeight,
                     dipReserve: sec.dipReserve,
                     pairs,
                   },

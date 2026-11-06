@@ -673,7 +673,7 @@ describe('connectorDipReservePx', () => {
     ).toBe(0)
   })
 
-  it('reserves nothing when the dip ends inside a band dragged taller', () => {
+  it('reserves nothing when the dip ends inside a taller band', () => {
     expect(
       connectorDipReservePx({
         ...baseOpts,

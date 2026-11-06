@@ -578,16 +578,99 @@ export function layoutGroupsToViewport(
   })
   // Only the truncated groups get a raised cap; every other group's layout is
   // byte-identical to pass 1, so reuse it and re-lay-out just the changed ones.
-  let result = pass
-  if (bonusCaps) {
-    result = new Map(pass)
-    for (const [key, cap] of bonusCaps) {
-      if (!overrideCaps.has(key)) {
-        result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
+  return bonusCaps
+    ? relayGroups(
+        ctx,
+        pass,
+        new Map([...bonusCaps].filter(([key]) => !overrideCaps.has(key))),
+      )
+    : pass
+}
+
+/**
+ * `pass` with each lane `caps` names laid out again under its new cap, and
+ * every other lane's layout reused.
+ */
+export function relayGroups(
+  ctx: GroupLayoutContext,
+  pass: LaidOutByGroup,
+  caps: ReadonlyMap<string, RowCap>,
+) {
+  const result = caps.size > 0 ? new Map(pass) : pass
+  for (const [key, cap] of caps) {
+    result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
+  }
+  return result
+}
+
+/**
+ * The most of a sized lane's `rows` that fit its size with the room their
+ * connectors dip below them (`reserveUnder`), so the lane stays the height
+ * dragged to and every curve finishes inside it. A smaller cap keeps the first
+ * rows of a larger one's layout, which is what lets the one layout at the
+ * size's own cap answer for every cap under it. At least one row.
+ */
+export function rowsWithinSize({
+  rows,
+  sizePx,
+  rowHeight,
+  reserveUnder,
+}: {
+  rows: number
+  sizePx: number
+  rowHeight: number
+  reserveUnder: (rows: number) => number
+}) {
+  let lo = 1
+  let hi = rows
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if (mid * rowHeight + reserveUnder(mid) <= sizePx) {
+      lo = mid
+    } else {
+      hi = mid - 1
+    }
+  }
+  return lo
+}
+
+/**
+ * The cap each lane sized to a px height takes so its rows and their dip room
+ * fit the size (`rowsWithinSize`), for the lanes whose laid-out rows do not.
+ *
+ * The room is read off the connectors of the uncut layout. In pileup mode a
+ * cut can re-chain them: cutting the middle segment of an A→B→C split read
+ * draws an A–C connector, and a mate whose primary is cut links from its
+ * supplementary, so such a curve can still clip by up to the deepest dip.
+ */
+export function sizedLaneDipCaps({
+  laidOut,
+  sizes,
+  rowHeight,
+  reserveUnder,
+}: {
+  laidOut: LaidOutByGroup
+  sizes: ReadonlyMap<string, GroupSize>
+  rowHeight: number
+  reserveUnder: (key: string, rows: number) => number
+}) {
+  const caps = new Map<string, RowCap>()
+  for (const [key, size] of sizes) {
+    const map = laidOut.get(key)
+    if (typeof size === 'number' && map) {
+      const rows = groupMaxY(map)
+      const kept = rowsWithinSize({
+        rows,
+        sizePx: size,
+        rowHeight,
+        reserveUnder: n => reserveUnder(key, n),
+      })
+      if (kept < rows) {
+        caps.set(key, overrideCap(kept))
       }
     }
   }
-  return result
+  return caps
 }
 
 // A sized lane's outcome under the shared cap, counted rather than laid out: one

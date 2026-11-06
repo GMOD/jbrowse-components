@@ -38,6 +38,9 @@ export interface Section {
   // The laid-out rows, or the height a drag pinned this lane at when that is
   // taller (the surplus draws blank, like a track dragged past its content).
   pileupHeight: number
+  // The laid-out rows alone, the band the dip law sizes a discordant dip to
+  // (`discordantDipPx`), so a drag padding the band deepens no curve.
+  rowsHeight: number
   // Room under the pileup band for the deepest connector that dips below its
   // row, so the last rows' curves finish above the next section. Not part of
   // `pileupHeight`: no read draws or hit-tests there, and the dip law takes the
@@ -259,12 +262,8 @@ export interface SectionStackOpts<L> {
   // How far below a lane's pileup band its deepest dipping connector reaches,
   // given that band's height (`connectorDipReservePx`). Pads only the advance,
   // and never a lane sized by a drag: that lane is the height dragged to, so
-  // its seam follows the pointer, and a curve reaching past it clips at the
-  // seam, as under fit. Its rows fill the size once it truncates, so that is
-  // the last rows' loops and dips. Carving the room out of the size needs the
-  // reserve before the row cap, and the reserve is read off the layout that cap
-  // sets; padding past the size puts the seam below the pointer by a depth that
-  // changes as reads change rows.
+  // its seam follows the pointer, and it keeps only the rows whose dip room
+  // fits inside it (`sizedLaneDipCaps`).
   dipReservePx: (lane: L, pileupHeight: number) => number
 }
 
@@ -306,6 +305,7 @@ export function computeStackedSections<L extends SectionLaneInput>(
       hasSashimiBand: bands.hasSashimiBand,
       pileupTop,
       pileupHeight,
+      rowsHeight,
       dipReserve,
       height: top - coverageTop,
     }

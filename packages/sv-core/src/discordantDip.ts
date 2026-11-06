@@ -25,9 +25,10 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // 900 kb event in a 60 px band asks for 56 px from every row. The pileup
 // reserves that overshoot under the section's last row (`connectorDipReservePx`
 // in plugins/alignments) and still passes the band WITHOUT the reserve here, so
-// the room changes no depth. In fit-to-height mode, and in a lane sized by a
-// drag, it reserves nothing and the clip cuts the lowest rows' curves, as the
-// split view's panel edge does.
+// the room changes no depth. A lane sized by a drag passes its rows, not the
+// size, and keeps only as many rows as leave that room inside the size
+// (`sizedLaneDipCaps`). In fit-to-height mode it reserves nothing and the clip
+// cuts the lowest rows' curves, as the split view's panel edge does.
 //
 // Capping the dip at the room left below the lower read was tried and measured
 // worse. It makes the ink fit, but on cancer_sv/derivative_inserts — 28

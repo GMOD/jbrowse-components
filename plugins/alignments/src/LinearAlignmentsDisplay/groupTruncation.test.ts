@@ -1,5 +1,11 @@
-import { namesToBlock } from '@jbrowse/alignments-core'
+import { PAIR_DIRECTION_NUM, namesToBlock } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+} from '@jbrowse/cigar-utils'
 
+import { connectorDipReservePx } from '../features/linkedReads/computeOverlay.ts'
 import { laneExpandable } from './lanes.ts'
 import {
   bootAlignmentsDisplay,
@@ -73,7 +79,7 @@ function stackedReads(n: number): WorkerPileupData {
 // `facet` is set BEFORE the data, because it is a tier-1 setting: setting it
 // afterwards re-partitions the fetch and clears what was just seeded.
 function seed(
-  groups: { key: string; label: string; n: number }[],
+  groups: { key: string; label: string; n: number; data?: WorkerPileupData }[],
   opts: { grouped?: boolean; collapseRows?: boolean; coverage?: boolean } = {},
 ) {
   const display = createEnv()
@@ -92,7 +98,7 @@ function seed(
       groups: groups.map(g => ({
         key: g.key,
         label: g.label,
-        data: stackedReads(g.n),
+        data: g.data ?? stackedReads(g.n),
       })),
     },
     {
@@ -103,6 +109,36 @@ function seed(
     },
   )
   return display
+}
+
+// `rows` overlapping reads, one per row in start order, the one on `pairRow`
+// the first mate of an RR pair whose second mate sits alone 5 kb on, so the
+// connector between them dips from that row.
+function readsWithPairOnRow(rows: number, pairRow: number): WorkerPileupData {
+  const n = rows + 1
+  const isPair = (i: number) => i === pairRow || i === rows
+  const readPositions = new Uint32Array(n * 2)
+  for (let i = 0; i < n; i++) {
+    readPositions[i * 2] = i === rows ? 6000 : 1000 + i
+    readPositions[i * 2 + 1] = i === rows ? 6100 : 1100 + i
+  }
+  return {
+    ...stackedReads(n),
+    ...namesToBlock(
+      Array.from({ length: n }, (_, i) => (isPair(i) ? 'p' : `read${i}`)),
+    ),
+    readPositions,
+    segmentPositions: readPositions,
+    readFlags: Uint16Array.from({ length: n }, (_, i) =>
+      isPair(i)
+        ? SAM_FLAG_PAIRED |
+          (i === rows ? SAM_FLAG_SECOND_IN_PAIR : SAM_FLAG_FIRST_IN_PAIR)
+        : 0,
+    ),
+    readPairOrientations: Uint8Array.from({ length: n }, (_, i) =>
+      isPair(i) ? PAIR_DIRECTION_NUM.RR : 0,
+    ),
+  }
 }
 
 const rowsIn = (display: ReturnType<typeof seed>, i: number) =>
@@ -459,4 +495,31 @@ test('a lane height floors at its label chip with coverage hidden', () => {
   const section = display.renderSections[0]!
   expect(display.groupSizes.get('1')).toBe(display.minSectionHeight)
   expect(section.pileupHeight).toBe(section.height)
+})
+
+// A sized lane is the height dragged to, so its seam stays under the pointer;
+// the pair's dip from row 6 of the ten rows that size holds reached past that
+// seam, where the lane clips.
+test('a sized lane keeps the rows whose connectors finish inside it', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 0, data: readsWithPairOnRow(14, 6) },
+  ])
+  display.setShowConnectors(true)
+  const size = 10 * display.rowHeight
+  display.setGroupHeight('1', size)
+
+  const section = display.renderSections[0]!
+  expect(section.pileupHeight + section.dipReserve).toBe(size)
+  const [drawn] = display.connectorPairSections
+  expect(drawn!.pairs).toHaveLength(1)
+  const reserve = connectorDipReservePx({
+    pairs: drawn!.pairs,
+    displayedRegions: [{ refName: 'ctgA' }],
+    featureHeight: display.featureHeight,
+    featureSpacing: display.featureSpacing,
+    pileupHeight: drawn!.pileupHeight,
+  })
+  expect(drawn!.pileupHeight + reserve).toBeLessThanOrEqual(size)
+  expect(rowsIn(display, 0)).toBeLessThan(10)
+  expect(clippedBy(display, '1')).toBe('override')
 })
