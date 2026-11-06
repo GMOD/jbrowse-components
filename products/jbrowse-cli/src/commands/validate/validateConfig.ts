@@ -35,11 +35,7 @@ import {
   withImpliedField,
 } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
-import {
-  coreSchemaValidator,
-  hasDeclaredShape,
-  schemaProblems,
-} from './schemaValidate.ts'
+import { coreSchemaValidator, hasDeclaredShape } from './schemaValidate.ts'
 import { didYouMean, didYouMeanKey, suggest } from './suggest.ts'
 
 import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
@@ -229,6 +225,7 @@ interface Ctx {
   // a declared plugin registers slots and creates tracks at runtime, so what
   // only a plugin could supply is a warning here and an error without one
   declaresPlugins: boolean
+  schema: SchemaValidator
 }
 
 function checkTrack(
@@ -326,7 +323,7 @@ function checkTrack(
       }
     }
   }
-  warnDisplayDefaults(track, manifest, where, report)
+  warnDisplayDefaults(track, manifest, where, report, ctx.schema)
 }
 
 // Warns on a display entry whose type its track removes on load, and says
@@ -359,6 +356,7 @@ function warnDisplayDefaults(
   manifest: ConfigManifest,
   where: string,
   report: Report,
+  schema: SchemaValidator,
 ) {
   const trackType = trackTypeOf(track)
   const defaults = track.displayDefaults
@@ -370,7 +368,7 @@ function warnDisplayDefaults(
     const entry = manifest.displays[display]
     if (entry) {
       warnSlots(
-        displayDefaultsReaching(display, defaults),
+        displayDefaultsReaching(display, defaults, schema),
         entry,
         `${where}.displayDefaults`,
         found,
@@ -1103,13 +1101,16 @@ function displaysTaking(
 function displayDefaultsReaching(
   display: string,
   defaults: Record<string, unknown>,
+  schema: SchemaValidator,
 ) {
   return Object.fromEntries(
     Object.entries(defaults).filter(
       ([key, value]) =>
         key !== 'type' &&
-        schemaProblems({ type: display, [key]: value }, `/$defs/${display}`)
-          .length === 0,
+        schema.schemaProblems(
+          { type: display, [key]: value },
+          `/$defs/${display}`,
+        ).length === 0,
     ),
   )
 }
@@ -1119,6 +1120,7 @@ function checkMarkDisplays(
   manifest: ConfigManifest,
   where: string,
   report: Report,
+  schema: SchemaValidator,
   outerAdapterType?: string,
 ) {
   if (Array.isArray(node)) {
@@ -1128,6 +1130,7 @@ function checkMarkDisplays(
         manifest,
         `${where}[${i}]`,
         report,
+        schema,
         outerAdapterType,
       )
     }
@@ -1154,7 +1157,11 @@ function checkMarkDisplays(
         node.displayDefaults,
         manifest,
       )) {
-        const defaults = displayDefaultsReaching(display, node.displayDefaults)
+        const defaults = displayDefaultsReaching(
+          display,
+          node.displayDefaults,
+          schema,
+        )
         checkScaleSlots(
           defaults,
           manifest.displays[display]?.slots ?? [],
@@ -1190,6 +1197,7 @@ function checkMarkDisplays(
         manifest,
         where ? `${where}.${key}` : key,
         report,
+        schema,
         adapterType,
       )
     }
@@ -1283,6 +1291,7 @@ export function validateConfig(
     assemblyCount: assemblies.length,
     seenTrackIds: new Set(),
     declaresPlugins,
+    schema,
     // Both the written trackId and the one the `{name, uri}` shorthand derives,
     // since a config using the shorthand still gets the derived id at runtime.
     sequenceTrackIds: new Set(
@@ -1340,7 +1349,7 @@ export function validateConfig(
   // Tracks are registered before the session is checked, so a session may
   // reference any track in the file regardless of declaration order.
   checkSession(config.defaultSession, manifest, report, ctx)
-  checkMarkDisplays(config, manifest, '', report)
+  checkMarkDisplays(config, manifest, '', report, schema)
 
   return report.result()
 }

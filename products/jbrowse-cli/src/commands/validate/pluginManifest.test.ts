@@ -135,3 +135,25 @@ test('core validation is unchanged without a plugin manifest', () => {
     ),
   )
 })
+
+test("a track's displayDefaults reach the plugin display the manifest lists for it", () => {
+  const feature = configManifest.tracks.FeatureTrack!
+  const plugin: PluginManifest = {
+    ...pluginDisplay('FooDisplay'),
+    tracks: {
+      FeatureTrack: {
+        ...feature,
+        displayTypes: [...(feature.displayTypes ?? []), 'FooDisplay'],
+      },
+    },
+  }
+  const base = configWith({ type: 'FooDisplay' })
+  const config = {
+    ...base,
+    tracks: base.tracks.map(track => ({
+      ...track,
+      displayDefaults: { height: 100 },
+    })),
+  }
+  expect(validateWith(config, [plugin]).problems).toEqual([])
+})
