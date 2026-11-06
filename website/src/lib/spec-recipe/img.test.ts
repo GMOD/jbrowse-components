@@ -28,6 +28,7 @@ test('a linear view is flags, with each track setting in one JSON argument', () 
     1500,
   )!
   expect(recipe.command).toContain("cat > tracks.json <<'JSON'")
+  expect(recipe.command).toContain('--trackConfigs tracks.json')
   expect(recipe.command).toContain(
     `--track mine display:LinearVariantDisplay '{"clusterRegion":"chr2:1-100","height":520}'`,
   )

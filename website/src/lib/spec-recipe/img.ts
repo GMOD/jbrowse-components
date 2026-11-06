@@ -73,7 +73,7 @@ export function imgRecipe(
   const tracks = spec.sessionTracks?.length ? spec.sessionTracks : undefined
   const lines = [
     [`npx @jbrowse/img ${linear ? '' : `${subcommand} `}--config ${quote(configUrl)}`],
-    ...(tracks ? [['--tracks tracks.json']] : []),
+    ...(tracks ? [['--trackConfigs tracks.json']] : []),
     ...(linear ? linearArgs(view) : [['--spec session.json']]),
     [...(width ? [`--width ${width}`] : []), '--out figure.svg'],
   ].map(args => args.join(' '))

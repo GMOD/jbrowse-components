@@ -207,8 +207,8 @@ test('without matchMedia the system mode is light', () => {
   expect(session.effectiveThemeMode).toBe('light')
 })
 
-// The names from before the axis are what every stored selection, share link
-// and `jbrowse-img --theme` carries, and they have to keep meaning their pair.
+// The names from before the axis are what every stored selection and share
+// link carries, and they have to keep meaning their pair.
 test.each([
   ['darkStock', 'stock', 'dark'],
   ['lightStock', 'stock', 'light'],

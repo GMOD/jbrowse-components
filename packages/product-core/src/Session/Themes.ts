@@ -262,8 +262,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       /**
        * #action
        * Pick a palette. A name from before light and dark were an axis sets
-       * the mode it spelled as well, so an old share link, a saved figure spec
-       * and `jbrowse-img --theme darkStock` all still mean what they said.
+       * the mode it spelled as well, so an old share link or a saved figure
+       * spec still means what it said.
        * A palette pinned to one mode also drops a held mode, which would
        * otherwise resurface on the next palette change.
        */
