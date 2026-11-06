@@ -8,7 +8,7 @@ import {
   buildBpRegionIndex,
   clampBlockToRegions,
   createAttributeChannels,
-  createBlockNameLanes,
+  createBlockSideLanes,
   cumBpInEntry,
   declaredAttributes,
   findRegionEntry,
@@ -23,7 +23,7 @@ import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type {
   AttributeRange,
-  BlockNameLanes,
+  BlockSideLanes,
   BpIndexViewSnap,
   ComparativeOptions,
 } from '@jbrowse/synteny-core'
@@ -31,7 +31,7 @@ import type {
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
 // without losing per-base precision. The GPU upload narrows `cumBp - base` to
 // Float32 (instanceInterleave.ts).
-export interface DotplotFeaturesAndPositionsResult extends BlockNameLanes {
+export interface DotplotFeaturesAndPositionsResult extends BlockSideLanes {
   p11: Float64Array
   p12: Float64Array
   p21: Float64Array
@@ -155,7 +155,7 @@ export async function executeDotplotFeaturesAndPositions({
     count,
   )
   const channelList = channels.list
-  const nameLanes = createBlockNameLanes(count)
+  const sideLanes = createBlockSideLanes(count)
   const cigarChunks: Uint32Array[] = []
   let cigarTotal = 0
 
@@ -253,7 +253,7 @@ export async function executeDotplotFeaturesAndPositions({
     strands[n] = strand
     alignmentLengths[n] = Math.abs(end - start)
     writeFeatureChannels(channelList, n, f)
-    nameLanes.write(n, f, refName, mate)
+    sideLanes.write(n, f, { refName, start }, mate)
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.
@@ -308,7 +308,7 @@ export async function executeDotplotFeaturesAndPositions({
     strands: strands.subarray(0, n),
     alignmentLengths: alignmentLengths.subarray(0, n),
     ...channels.finish(n),
-    ...nameLanes.finish(n),
+    ...sideLanes.finish(n),
     cigarData,
     cigarOffsets,
     totalFeatureCount: count,
@@ -328,6 +328,8 @@ export async function executeDotplotFeaturesAndPositions({
     result.mateRefNameIds.buffer,
     result.nameIds.buffer,
     result.mateNameIds.buffer,
+    result.starts.buffer,
+    result.mateStarts.buffer,
     ...Object.values(result.attributes).map(a => a.buffer),
     result.cigarData.buffer,
     result.cigarOffsets.buffer,

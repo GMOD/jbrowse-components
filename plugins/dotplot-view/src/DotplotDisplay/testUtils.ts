@@ -36,6 +36,8 @@ export function fakeDotplotRpcData(
     refNameIds: new Uint32Array([0]),
     mateRefNameDict: ['chr2'],
     mateRefNameIds: new Uint32Array([0]),
+    starts: new Uint32Array([0]),
+    mateStarts: new Uint32Array([0]),
     // A PAF names no feature, so one empty string is the realistic dictionary
     nameDict: [''],
     nameIds: new Uint32Array([0]),

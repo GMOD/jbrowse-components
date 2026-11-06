@@ -60,17 +60,10 @@ function axisSpan(cumBpA: number, cumBpB: number, view: Dotplot1DViewModel) {
 // Every link's x side is on the x axis' assembly and its y side on the y
 // axis', so a gene's assembly picks a whole side or none; a self-comparison
 // pools both
-function axisReaders(
-  axisAssemblyName: string,
-  p1: Float64Array,
-  p2: Float64Array,
-) {
-  return {
-    position: (i: number) => Math.min(p1[i]!, p2[i]!),
-    onAssembly: (assemblyName: string) => {
-      const on = assemblyName === axisAssemblyName
-      return () => on
-    },
+function onAxisAssembly(axisAssemblyName: string) {
+  return (assemblyName: string) => {
+    const on = assemblyName === axisAssemblyName
+    return () => on
   }
 }
 
@@ -118,8 +111,8 @@ export function getDotplotTooltipLines({
       ? genesSharing(
           {
             lanes: rpcData,
-            query: axisReaders(x.assemblyName, p11, p12),
-            mate: axisReaders(y.assemblyName, p21, p22),
+            query: onAxisAssembly(x.assemblyName),
+            mate: onAxisAssembly(y.assemblyName),
           },
           [x, y],
         )

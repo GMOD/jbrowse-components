@@ -53,6 +53,7 @@ function region(assemblyName: string, refName: string): Region {
 
 const human = region('hg38', 'chr10')
 const mouse = region('mm39', 'chr7')
+const mouseReversed = { ...mouse, reversed: true }
 
 function axis(displayed: Region) {
   const view = Dotplot1DView.create({
@@ -64,14 +65,14 @@ function axis(displayed: Region) {
   return view
 }
 
-async function dotplotHover(mateName: string) {
+async function dotplotHover(mateName: string, mouseAxis: Region) {
   const { value } = await executeDotplotFeaturesAndPositions({
     pluginManager: new PluginManager(),
     sessionId: 'dotplot',
     adapterConfig: { type: 'MCScanAnchorsAdapter' },
     regions: [human],
     hViewSnap: { bpPerPx: 1, displayedRegions: [human] },
-    vViewSnap: { bpPerPx: 1, displayedRegions: [mouse] },
+    vViewSnap: { bpPerPx: 1, displayedRegions: [mouseAxis] },
   })
   const featureIdx = [...value.mateNameIds].findIndex(
     id => value.mateNameDict[id] === mateName,
@@ -80,11 +81,11 @@ async function dotplotHover(mateName: string) {
     rpcData: value,
     featureIdx,
     hview: axis(human),
-    vview: axis(mouse),
+    vview: axis(mouseAxis),
   })
 }
 
-async function syntenyHover(id: string) {
+async function syntenyHover(id: string, mouseAxis: Region) {
   const { value } = await executeSyntenyFeaturesAndPositions({
     pluginManager: new PluginManager(),
     sessionId: 'synteny',
@@ -99,8 +100,8 @@ async function syntenyHover(id: string) {
     targetView: {
       bpPerPx: 1,
       offsetPx: 0,
-      displayedRegions: [mouse],
-      windowRegions: [mouse],
+      displayedRegions: [mouseAxis],
+      windowRegions: [mouseAxis],
     },
   })
   const feat = getFeatureAtIndex(value, value.featureIds.indexOf(id))
@@ -108,11 +109,17 @@ async function syntenyHover(id: string) {
 }
 
 test('a dotplot hover over an ortholog row reads as the synteny hover does', async () => {
-  const dotplot = await dotplotHover('Fgfr2')
+  const dotplot = await dotplotHover('Fgfr2', mouse)
   expect(dotplot).toEqual([
     'hg38 FGFR2 chr10:1,001-2,000 (1,000 bp)',
     'mm39 Fgfr2 chr7:5,001-6,000 (1,000 bp)',
     'Shared by 3 genes: Fgfr2c, Fgfr2, Fgfr2b',
   ])
-  expect(dotplot).toEqual(await syntenyHover('fgfr2'))
+  expect(dotplot).toEqual(await syntenyHover('fgfr2', mouse))
+})
+
+test('the genes sharing an ortholog keep genome order on a reversed axis', async () => {
+  const dotplot = await dotplotHover('Fgfr2', mouseReversed)
+  expect(dotplot.at(-1)).toBe('Shared by 3 genes: Fgfr2c, Fgfr2, Fgfr2b')
+  expect(dotplot).toEqual(await syntenyHover('fgfr2', mouseReversed))
 })

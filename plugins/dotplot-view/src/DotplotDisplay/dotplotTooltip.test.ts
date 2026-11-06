@@ -238,6 +238,8 @@ describe('the genes sharing an ortholog', () => {
     refNameIds: new Uint32Array([0, 0]),
     mateRefNameDict: ['1'],
     mateRefNameIds: new Uint32Array([0, 0]),
+    starts: new Uint32Array([100, 500]),
+    mateStarts: new Uint32Array([300, 100]),
     nameDict: ['A', 'C'],
     nameIds: new Uint32Array([0, 1]),
     mateNameDict: ['B', 'A'],

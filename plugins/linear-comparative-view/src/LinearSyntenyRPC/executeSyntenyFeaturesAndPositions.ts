@@ -12,7 +12,7 @@ import {
   buildBpRegionIndex,
   clampBlockToRegions,
   createAttributeChannels,
-  createBlockNameLanes,
+  createBlockSideLanes,
   cumBpAtGenomicCoord,
   clipLargeBlockToWindow,
   clipSyntenyFeature,
@@ -341,14 +341,13 @@ export async function executeSyntenyFeaturesAndPositions({
   // Float64 for the same reason the corners are.
   const queryGridAnchorArray = new Float64Array(count)
   const strandsArray = new Int8Array(count)
-  // These are chromosome-LOCAL feature/mate coords (not cumulative), so they
+  // These, and the starts `createBlockSideLanes` packs below, are
+  // chromosome-LOCAL feature/mate coords (not cumulative), so they
   // fit in uint32 as long as no single reference sequence exceeds 2^32 = 4.29
   // Gbp — an assumption we accept (see agent-docs/reference/BP_PRECISION.md "Genome-size
   // limits"). Used for the feature-detail panel and the min-length cull; the
   // drawn positions use the Float64 cumBp arrays above, not these.
-  const startsArray = new Uint32Array(count)
   const endsArray = new Uint32Array(count)
-  const mateStartsArray = new Uint32Array(count)
   const mateEndsArray = new Uint32Array(count)
   // Every numeric channel a continuous mode can paint, keyed by name: the
   // presets plus whatever the track declares. `identity` is in here too and
@@ -359,8 +358,8 @@ export async function executeSyntenyFeaturesAndPositions({
   // Distinct values per feature, so a dictionary would cost the same clone plus
   // an index array — see `makeStringDict` for where the line is.
   const featureIds: string[] = []
-  // Dictionary-encoded lanes: the names both comparative workers pack
-  // (`createBlockNameLanes`), and twice the one assembly this level draws.
+  // Each side's contig, start and gene, which both comparative workers pack
+  // (`createBlockSideLanes`), and twice the one assembly this level draws.
   //
   // The NAME lanes are worth naming: a PAF puts nothing there, but an MCScan or
   // ortholog-table track puts a distinct gene id on every feature, so their
@@ -371,7 +370,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // high-cardinality case was prototyped and could not be shown to beat this on
   // a loaded box; it also breaks the `dict.indexOf(name)` reading
   // `stringDict.test.ts` pins. Left as it is on purpose, not by oversight.
-  const nameLanes = createBlockNameLanes(count)
+  const sideLanes = createBlockSideLanes(count)
   const assemblyNameIds = new Uint32Array(count)
   const mateAssemblyNameIds = new Uint32Array(count)
   const assemblyNameDict = makeStringDict()
@@ -621,16 +620,14 @@ export async function executeSyntenyFeaturesAndPositions({
       RULER_GRID_ORIGIN,
     )
     strandsArray[validCount] = strand
-    startsArray[validCount] = start
     endsArray[validCount] = end
 
     writeFeatureChannels(channelList, validCount, f)
 
-    mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
 
     featureIds.push(id)
-    nameLanes.write(validCount, f, refName, mate)
+    sideLanes.write(validCount, f, d, mate)
     assemblyNameIds[validCount] = assemblyNameDict.idFor(
       (f.get('assemblyName') as string | undefined) ?? '',
     )
@@ -672,14 +669,12 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const featureData = {
     strands: strandsArray.subarray(0, validCount),
-    starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
     ...channels.finish(validCount),
     featureIds,
-    ...nameLanes.finish(validCount),
+    ...sideLanes.finish(validCount),
     assemblyNameDict: assemblyNameDict.dict,
     assemblyNameIds: assemblyNameIds.subarray(0, validCount),
-    mateStarts: mateStartsArray.subarray(0, validCount),
     mateEnds: mateEndsArray.subarray(0, validCount),
     mateAssemblyNameDict: mateAssemblyNameDict.dict,
     mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),

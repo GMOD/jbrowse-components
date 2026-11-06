@@ -52,17 +52,13 @@ export function getCigarOpAtInstance(
 }
 
 // A payload side's own assembly lane, resolved to an id once per assembly
-function payloadSide(
+function onPayloadAssembly(
   assemblyNameDict: readonly string[],
   assemblyNameIds: Uint32Array,
-  starts: Uint32Array,
 ) {
-  return {
-    position: (i: number) => starts[i]!,
-    onAssembly: (assemblyName: string) => {
-      const id = assemblyNameDict.indexOf(assemblyName)
-      return (i: number) => assemblyNameIds[i] === id
-    },
+  return (assemblyName: string) => {
+    const id = assemblyNameDict.indexOf(assemblyName)
+    return (i: number) => assemblyNameIds[i] === id
   }
 }
 
@@ -70,15 +66,10 @@ export function sharedByOf(data: SyntenyFeatureData, feat: FeatPos) {
   return genesSharing(
     {
       lanes: data,
-      query: payloadSide(
-        data.assemblyNameDict,
-        data.assemblyNameIds,
-        data.starts,
-      ),
-      mate: payloadSide(
+      query: onPayloadAssembly(data.assemblyNameDict, data.assemblyNameIds),
+      mate: onPayloadAssembly(
         data.mateAssemblyNameDict,
         data.mateAssemblyNameIds,
-        data.mateStarts,
       ),
     },
     [feat, feat.mate],

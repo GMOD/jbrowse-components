@@ -250,10 +250,10 @@ export {
 } from './attributeTooltipLines.ts'
 export { blockAttributes, syntenyBlockLines } from './syntenyBlockLines.ts'
 export type { SyntenyBlockSide } from './syntenyBlockLines.ts'
-export { createBlockNameLanes } from './blockNameLanes.ts'
-export type { BlockNameLanes } from './blockNameLanes.ts'
+export { createBlockSideLanes } from './blockSideLanes.ts'
+export type { BlockSideLanes } from './blockSideLanes.ts'
 export { genesSharing } from './genesSharing.ts'
-export type { LinkSideReaders, SharedGene } from './genesSharing.ts'
+export type { LinkSides, OnAssembly, SharedGene } from './genesSharing.ts'
 export {
   SYNTENY_FIELD_PRESETS,
   attributeOf,
