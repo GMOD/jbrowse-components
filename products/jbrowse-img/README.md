@@ -1696,7 +1696,7 @@ Examples:
 
 The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the
 junction and upper-cased mate contigs are handled; reciprocal breakend
-pairs collapse, so each junction is queued once.
+pairs are merged, so each junction is queued once.
 
 Every track is drawn as if given force:true, since a window is only a flank
 wide and a "Region too large" panel cannot be clicked through on an image;
