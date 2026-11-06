@@ -1,15 +1,14 @@
 import { Crosshairs } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
-
 // Above the track content and its overlays, below the app chrome.
 const CROSSHAIR_Z_INDEX = 800
 
 /**
  * Cursor crosshair for a sidebar display, with every dimension derived from the
- * model: the guides span the track, and the vertical one stops at the sidebar's
- * right edge (handle included) where a genomic position means nothing.
+ * model: the guides span the track, and the vertical one stops at `dataLeft`,
+ * the sidebar's right edge (handle included), where a genomic position means
+ * nothing.
  *
  * Lives here because that edge does. Every display that grew a crosshair
  * re-derived the same four props and re-picked the z-index, and they had already
@@ -28,9 +27,7 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
   model: {
     canvasWidthPx: number
     height: number
-    showTree: boolean
-    hierarchy?: unknown
-    treeAreaWidth: number
+    dataLeft: number
   }
   mouseX: number
   // omit for a vertical-only guide
@@ -42,7 +39,7 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
       mouseY={mouseY}
       width={model.canvasWidthPx}
       height={model.height}
-      minLeft={treeSidebarRightEdge(model)}
+      minLeft={model.dataLeft}
       zIndex={CROSSHAIR_Z_INDEX}
     />
   )

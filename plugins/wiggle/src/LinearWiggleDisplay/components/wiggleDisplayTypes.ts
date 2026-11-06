@@ -44,6 +44,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   showTree: boolean
+  dataLeft: number
   showRowSeparators: boolean
   showRowLabels: boolean
   drawsRowLabels: boolean

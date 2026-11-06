@@ -285,6 +285,26 @@ test('a drag released past the top and right edges clamps both', () => {
   })
 })
 
+// The sidebar hides the bases under it, so a selection reaching over it would
+// name, and offer to copy, sequence the user cannot see.
+test('a drag carried left over the sidebar stops at its edge', () => {
+  const { result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(200, 50))
+  })
+  act(() => {
+    result.current.handleMouseMove(mouseEvent(DATA_LEFT - 30, 60))
+  })
+  expect(result.current.selectionRect).toMatchObject({ endX: DATA_LEFT })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(-40, 60))
+  })
+  expect(result.current.contextCoord).toMatchObject({
+    startX: 200,
+    endX: DATA_LEFT,
+  })
+})
+
 test('a cancelled pointer ends the drag without a click', () => {
   const { onClick, result } = setup()
   act(() => {

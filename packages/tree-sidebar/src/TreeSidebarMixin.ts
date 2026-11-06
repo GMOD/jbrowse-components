@@ -49,6 +49,7 @@ import { labelEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 import { buildSpatialIndex } from './spatialIndex.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
+import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 import {
   bandedRowViews,
   bandedSourceViews,
@@ -571,6 +572,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => rowsContentHeightViews(withRowHeight(self)))
     .views(self => hierarchyViews(self))
     .views(self => ({
+      /**
+       * #getter
+       * The display-px left edge of the data area: right of the dendrogram
+       * and its resize handle, 0 with no tree drawn. The canvas runs under
+       * the sidebar, so x maps to bp as anywhere else, but a pointer left of
+       * this is over the sidebar: hover, click, context menu and a drag's
+       * extent all stop here.
+       */
+      get dataLeft(): number {
+        return treeSidebarRightEdge(self)
+      },
       /**
        * #getter
        * Fills `FetchMixin`'s hook: a declared `runClustering` run is due, so

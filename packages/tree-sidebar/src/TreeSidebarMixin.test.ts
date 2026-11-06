@@ -12,7 +12,10 @@ import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
-import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
+import {
+  SIDEBAR_HINT_LINE_PX,
+  TREE_RESIZE_HANDLE_WIDTH,
+} from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
@@ -623,6 +626,17 @@ describe('a tree the config supplies in `rows.tree`', () => {
     expect(display.rowOrderWillDropTree(named(['a', 'c', 'b']))).toBe(true)
     display.setRowOrder(named(['a', 'c', 'b']))
     expect(display.rowTree).toBeUndefined()
+  })
+
+  // the canvas runs under the sidebar, so `dataLeft` is where a pointer
+  // stops being over the dendrogram and its resize handle
+  it('starts the data area past the drawn tree, and at 0 with it off', () => {
+    const display = makeSupplied()
+    display.setTreeAreaWidth(60)
+    expect(display.hierarchy).toBeDefined()
+    expect(display.dataLeft).toBe(60 + TREE_RESIZE_HANDLE_WIDTH)
+    display.setShowTree(false)
+    expect(display.dataLeft).toBe(0)
   })
 })
 

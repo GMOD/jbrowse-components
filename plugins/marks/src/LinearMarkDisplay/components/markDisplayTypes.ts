@@ -45,6 +45,7 @@ export interface MarkDisplayModel
   facetLayout: FacetLayout
   axes: YAxis[]
   drawsRows: boolean
+  dataLeft: number
   svgSidebar: SvgSidebarProps | undefined
   sources: RowSource[]
   effectiveRowHeight: number

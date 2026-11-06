@@ -29,14 +29,18 @@ interface DragState {
   showSelectionBox: boolean
 }
 
-function clamp(value: number, max: number) {
-  return Math.min(Math.max(value, 0), max)
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
 }
 
-function pointInTrack(e: React.MouseEvent) {
+/**
+ * The pointer clamped into the data area: right of `dataLeft`, where the
+ * sidebar stops covering the bases under it, and inside the track.
+ */
+function pointInData(e: React.MouseEvent, dataLeft: number) {
   const { x, y } = eventPoint(e)
   const { width, height } = e.currentTarget.getBoundingClientRect()
-  return { x: clamp(x, width), y: clamp(y, height) }
+  return { x: clamp(x, dataLeft, width), y: clamp(y, 0, height) }
 }
 
 /**
@@ -63,9 +67,10 @@ export function useDragSelection(
     onClick,
   }: {
     /**
-     * Left edge of the data area: a press left of this (the tree sidebar and
-     * its resize handle) neither clicks nor starts a selection, since the
-     * sidebar covers the coordinate under it.
+     * Left edge of the data area, the model's `dataLeft`: a press left of
+     * this (the tree sidebar and its resize handle) neither clicks nor starts
+     * a selection, and a drag carried over the sidebar stops at it, since the
+     * sidebar covers the bases under it.
      */
     dataLeft: number
     onClick: (x: number, y: number) => void
@@ -100,14 +105,14 @@ export function useDragSelection(
   //
   // A press in the data area is captured, so the move and release events keep
   // coming when the drag overshoots the track, even if the first move already
-  // lands outside it, and the selection is clamped to the track. Controls in
-  // the data area (scrollbar, band handles, corner indicators) carry
+  // lands outside it, and the selection is clamped to the data area. Controls
+  // in the data area (scrollbar, band handles, corner indicators) carry
   // `data-gesture-owner`, which `leavesPressToView` honours, and the mouse
   // events that make a click fire on the container either way.
   function handlePointerDown(e: React.PointerEvent) {
     if (e.pointerType !== 'touch' && !leavesPressToView(e)) {
       e.stopPropagation()
-      if (pointInTrack(e).x >= dataLeft) {
+      if (eventPoint(e).x >= dataLeft) {
         e.currentTarget.setPointerCapture(e.pointerId)
       }
     }
@@ -119,7 +124,7 @@ export function useDragSelection(
 
   function handleMouseDown(e: React.MouseEvent) {
     if (!leavesPressToView(e)) {
-      const { x, y } = pointInTrack(e)
+      const { x, y } = eventPoint(e)
       // the view's range select listens for mousedown on the same container
       e.stopPropagation()
       if (x >= dataLeft) {
@@ -140,7 +145,7 @@ export function useDragSelection(
     // `getBoundingClientRect`. The updater re-tests its own state and returns
     // `s` unchanged without a drag, which React bails out of.
     if (state.isDragging) {
-      const { x, y } = pointInTrack(e)
+      const { x, y } = pointInData(e, dataLeft)
       setState(s =>
         s.isDragging && s.drag
           ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
@@ -155,7 +160,7 @@ export function useDragSelection(
     const { drag, isDragging } = state
     const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
-      const { x, y } = pointInTrack(e)
+      const { x, y } = pointInData(e, dataLeft)
       setContextCoord({
         anchor: { clientX: e.clientX, clientY: e.clientY },
         startX: drag.startX,
@@ -167,7 +172,7 @@ export function useDragSelection(
     } else if (isDragging) {
       // Only a release that this display saw the press for is a click:
       // `handleMouseDown` bails on resize handles and the tree sidebar.
-      const { x, y } = pointInTrack(e)
+      const { x, y } = pointInData(e, dataLeft)
       onClick(x, y)
       setState(s => ({
         ...s,

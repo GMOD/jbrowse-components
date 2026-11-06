@@ -2,7 +2,7 @@ import { bandAt } from '@jbrowse/core/util/bandLayout'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
+import { RowsPanel } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from '../matrix/LinesConnectingMatrixToGenomicPosition.tsx'
@@ -49,7 +49,7 @@ function hoverGenomic(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
   if (bandAt(model.topBands, state.y) === 'records') {
     hoverVariantSurface(model, recordsBandSurface(model), state.x, state.y)
-  } else if (state.y < rowsTopOffset || state.x < treeSidebarRightEdge(model)) {
+  } else if (state.y < rowsTopOffset || state.x < model.dataLeft) {
     model.clearHoveredFeature()
   } else {
     hoverVariantSurface(
@@ -65,7 +65,7 @@ function hoverGenomic(model: Model, state: MouseState) {
 // the column origin without re-rendering the chrome.
 function hoverColumns(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
-  if (state.y >= rowsTopOffset && state.x >= treeSidebarRightEdge(model)) {
+  if (state.y >= rowsTopOffset && state.x >= model.dataLeft) {
     hoverVariantSurface(
       model,
       variantMatrixSurface(model),

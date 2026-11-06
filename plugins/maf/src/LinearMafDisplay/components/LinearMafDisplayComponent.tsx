@@ -5,11 +5,7 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import {
-  DisplayCrosshairs,
-  RowsPanel,
-  treeSidebarRightEdge,
-} from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs, RowsPanel } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { MAF_MARKS } from '../../LinearMafRenderer/mafMarks.ts'
@@ -34,7 +30,7 @@ function createMafBackend(canvas: HTMLCanvasElement) {
 function rowUnder(model: LinearMafDisplayModel, x: number, y: number) {
   const { pos, rowIndex, inBands } = mafPointerAt(model, x, y)
   const row =
-    x >= treeSidebarRightEdge(model) && !inBands && !pos.oob
+    x >= model.dataLeft && !inBands && !pos.oob
       ? model.sources[rowIndex]
       : undefined
   return row ? { name: row.name } : undefined
@@ -48,25 +44,26 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
   const drag = useDragSelection(ref, {
-    dataLeft: treeSidebarRightEdge(model),
+    dataLeft: model.dataLeft,
     onClick: (x, y) => {
       openInsertionWidgetOnClick(model, x, y)
     },
   })
   function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
     const { x, y } = eventPoint(e)
+    const overData = x >= model.dataLeft
     // The hit resolves here because `closeContextMenu` runs before an item's
     // onClick.
     const { pos, baseBp, inBands, hover } = resolveMafPointerHit({
       model,
       mouseX: x,
       mouseY: y,
-      resolveRowHover: x >= treeSidebarRightEdge(model),
+      resolveRowHover: overData,
     })
     openContextMenuFromEvent(
       model,
       e,
-      x >= treeSidebarRightEdge(model) && !pos.oob && !inBands
+      overData && !pos.oob && !inBands
         ? {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -149,14 +146,16 @@ const MafBody = observer(function MafBody({
   // `relativeXY` is, so `x`/`y` and the drag rect share a coordinate space.
   const mouse = useMouseState(mouseTracker)
 
-  const dataLeft = treeSidebarRightEdge(model)
-
   // One projection and hit test per mousemove, shared by the cursor style and
   // the tooltip. Row resolution is off mid-drag so the tooltip keeps the
   // selection's range readout.
   const pointer =
     mouse &&
-    showsHoverAt(mouse, { dataLeft, width, height: model.height }, isDragging)
+    showsHoverAt(
+      mouse,
+      { dataLeft: model.dataLeft, width, height: model.height },
+      isDragging,
+    )
       ? {
           mouse,
           hit: resolveMafPointerHit({
