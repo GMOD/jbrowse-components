@@ -145,18 +145,19 @@ The desktop "own apiKey" path (in the plugin dialog) is the pressure valve that
 avoids the shared budget entirely.
 
 A request carrying `Cache-Control: no-cache` skips the cache read (the answer is
-still cached, and still metered). The daily canary
-(`.github/workflows/blat-canary.yml`) sends it, since a probe answered from a
-24h cache would report a broken UCSC as fine.
+still cached, and still metered). The daily canary in GMOD/jbrowse-plugin-blat
+sends it, since a probe answered from a 24h cache would report a broken UCSC as
+fine.
 
 ## Canary alerts
 
-A red `.github/workflows/blat-canary.yml` run publishes to the stack's
-`jbrowse-blat-canary` SNS topic, which mails `AlertEmail` and
-`SecondAlertEmail`. Each email subscription needs a one-time confirmation click
-from that inbox after the first deploy; until then SNS drops the message. The
-berkeley.edu alias never surfaced its confirmation mail, which is why there are
-two.
+The canary is `.github/workflows/canary.yml` in GMOD/jbrowse-plugin-blat, and it
+publishes nothing here: a red run reaches only GitHub's failed-run email. The
+stack's `jbrowse-blat-canary` SNS topic, which mails `AlertEmail` and
+`SecondAlertEmail`, has no publisher since the canary moved out of this repo.
+Each email subscription needs a one-time confirmation click from that inbox
+after the first deploy; until then SNS drops the message. The berkeley.edu alias
+never surfaced its confirmation mail, which is why there are two.
 
 ## Outage notice
 

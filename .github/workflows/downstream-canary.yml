@@ -10,7 +10,7 @@
 # checkout beside it as `jbrowse-components`. Both sit side by side under the
 # workspace rather than one inside the other, or Node resolution from the
 # downstream repo would climb into this repo's node_modules and hide a
-# dependency it forgot to declare. Off the PR path, like blat-canary.yml: a
+# dependency it forgot to declare. Off the PR path: a
 # red run names a downstream repo this commit broke, and the fix goes here or
 # there. On a `v*` tag rather than a release, since a beta's release is a
 # draft and publishes no event. Every push to main runs ggjbrowse alone: R

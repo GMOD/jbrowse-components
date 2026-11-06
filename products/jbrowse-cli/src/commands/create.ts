@@ -8,7 +8,8 @@ import {
   printVersions,
 } from '../utils.ts'
 
-const description = 'Downloads and installs the latest JBrowse 2 release'
+const description =
+  "Downloads and installs the newest JBrowse 2 release of this CLI's major version"
 
 const examples = [
   '# Download latest release from github, and put in specific path',

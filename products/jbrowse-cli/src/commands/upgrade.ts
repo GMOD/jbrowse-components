@@ -9,7 +9,8 @@ import {
   printVersions,
 } from '../utils.ts'
 
-const description = 'Upgrades JBrowse 2 to latest version'
+const description =
+  "Upgrades JBrowse 2 to the newest release of this CLI's major version"
 
 const examples = [
   '# Upgrades current directory to latest jbrowse release',

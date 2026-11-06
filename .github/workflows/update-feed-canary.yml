@@ -8,7 +8,7 @@
 # GitHub picks latest by date and this repo has tags of both shapes. Either
 # takes every existing install offline for updates, silently.
 #
-# Off the PR path, like blat-canary.yml: a red run is a fact about the releases,
+# Off the PR path: a red run is a fact about the releases,
 # not about the commit under test.
 #
 # When it goes red: the named platform is not updating. Upload the missing

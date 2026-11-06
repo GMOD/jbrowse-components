@@ -59,7 +59,8 @@ cd "$OUTDIR"
 # bigWig conversion can overflow it and fail mid-run. Override by exporting
 # TMPDIR yourself before running.
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
-mkdir -p "$TMPDIR"
+# the containers below always write to /data/tmp, which is $PWD/tmp
+mkdir -p "$TMPDIR" tmp
 
 STRAINS="K12 Sakai CFT073 NCTC86 IAI39"
 REF=K12          # the strain the VCF, MAF, and depth are projected onto

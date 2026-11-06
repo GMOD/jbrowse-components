@@ -8,8 +8,9 @@ Parameters:
     Type: String
     Default: jbrowse2@berkeley.edu
     Description: >-
-      Where the daily canary (.github/workflows/blat-canary.yml) reports a red
-      run. The subscription has to be confirmed from that inbox once.
+      Where a red canary run would be mailed. The canary lives in
+      GMOD/jbrowse-plugin-blat and does not publish to this topic yet. The
+      subscription has to be confirmed from that inbox once.
   SecondAlertEmail:
     Type: String
     Default: colin.diesh@gmail.com
