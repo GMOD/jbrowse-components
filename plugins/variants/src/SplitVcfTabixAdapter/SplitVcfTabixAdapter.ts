@@ -121,20 +121,27 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
   }
 
-  // the files share their metadata lines, so any of them answers for the
-  // header's text, an open one first; their sample columns can differ, which
-  // is what allContigs is for
+  // the files share their metadata lines, so the first that opens answers for
+  // the header's text, an already-opened one tried first; their sample columns
+  // can differ, which is what allContigs is for
   private async anyContig(opts?: BaseOptions) {
-    const [refName] = [
+    const refNames = new Set([
       ...this.setups.keys(),
       ...Object.keys(this.locationMap()),
-    ]
-    const contig =
-      refName === undefined ? undefined : await this.configure(refName, opts)
-    if (!contig) {
-      throw this.emptyMapError()
+    ])
+    const failures: unknown[] = []
+    for (const refName of refNames) {
+      try {
+        const contig = await this.configure(refName, opts)
+        if (contig) {
+          return contig
+        }
+      } catch (error) {
+        opts?.signal?.throwIfAborted()
+        failures.push(error)
+      }
     }
-    return contig
+    throw failures.length > 0 ? failures[0] : this.emptyMapError()
   }
 
   // every file in the map, in map order, which opens each one's header. A file

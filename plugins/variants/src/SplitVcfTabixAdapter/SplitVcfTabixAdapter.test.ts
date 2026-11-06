@@ -305,6 +305,36 @@ describe('files whose headers list different samples', () => {
     await expect(makeWithMissing(['ctgA']).getSources([])).rejects.toThrow()
   })
 
+  test('a broken file listed first leaves the header to the next', async () => {
+    const broken = file('ctgA').replace('ctgA', 'noSuchFile')
+    const adapter = new Adapter(
+      configSchema.create({
+        vcfGzLocationMap: {
+          chrM: { localPath: broken, locationType: 'LocalPathLocation' },
+          ctgA: { localPath: file('ctgA'), locationType: 'LocalPathLocation' },
+        },
+        indexLocationMap: {
+          chrM: {
+            localPath: `${broken}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+          ctgA: {
+            localPath: `${file('ctgA')}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+        indexType: 'TBI',
+      }),
+    )
+    await adapter.getSourcesAndWarnings()
+    expect(await adapter.getHeader()).toMatch(/^##fileformat/)
+    expect(await adapter.getMetadata()).toHaveProperty('INFO')
+  })
+
+  test('the header fails when no file opens', async () => {
+    await expect(makeWithMissing(['ctgA']).getHeader()).rejects.toThrow()
+  })
+
   test('an export writes the #CHROM line of the contig it exports', async () => {
     const exported = await makeSplit(['ctgA', 'ctgB']).getExportData(
       [ctgBRegion],
