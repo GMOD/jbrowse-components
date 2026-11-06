@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#0d233f" />
     <meta name="description" content="A fast and flexible genome browser" />
     <!-- for AI browser agents, which read the DOM and never think to probe
          window globals: the page's scripting API and where its contract is -->
@@ -19,10 +19,11 @@
       * {
         overscroll-behavior-x: none;
       }
-      /* the app's first frame in the default light theme, painted before any
-         script runs and removed by src/bootShell.ts when the app renders.
-         Boxes and type are measured off AppToolbar, ViewContainer and
-         ViewLoadingScreen; bootShell.test.tsx pins the logo to LogoFull */
+      /* the app's first frame in the default theme, light or dark as the
+         stored mode resolves, painted before any script runs and removed by
+         src/bootShell.ts when the app renders. Boxes, type and colors are
+         measured off AppToolbar, ViewContainer and ViewLoadingScreen;
+         bootShell.test.tsx pins the logo to LogoFull */
       #boot-shell {
         position: fixed;
         inset: 0;
@@ -31,6 +32,17 @@
       }
       .no-boot-shell #boot-shell {
         display: none;
+      }
+      .boot-shell-dark #boot-shell,
+      .boot-shell-dark .boot-shell-view > div:last-child {
+        background: #121212;
+        color: #fff;
+      }
+      .boot-shell-dark .boot-shell-header {
+        background-image: linear-gradient(
+          rgba(255, 255, 255, 0.09),
+          rgba(255, 255, 255, 0.09)
+        );
       }
       #boot-shell svg {
         fill: currentColor;
@@ -146,13 +158,27 @@
       ;(function () {
         try {
           var themeName = localStorage.getItem('themeName')
-          var themeMode = localStorage.getItem('themeMode')
+          var themeMode = localStorage.getItem('themeMode') || 'light'
+          var override = localStorage.getItem('themeModeOverride')
+          var system =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+          var mode =
+            (override === 'light' || override === 'dark') && override !== system
+              ? override
+              : themeMode === 'system'
+                ? system
+                : themeMode
+          var classes = document.documentElement.classList
           if (
             (themeName && themeName !== 'default') ||
-            (themeMode && themeMode !== 'light') ||
-            localStorage.getItem('themeModeOverride') === 'dark'
+            (mode !== 'light' && mode !== 'dark')
           ) {
-            document.documentElement.classList.add('no-boot-shell')
+            classes.add('no-boot-shell')
+          } else if (mode === 'dark') {
+            classes.add('boot-shell-dark')
           }
         } catch (e) {}
       })()

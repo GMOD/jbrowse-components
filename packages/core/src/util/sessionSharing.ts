@@ -1,5 +1,28 @@
 import { aesDecrypt, aesDecryptBytes, aesEncryptBytes } from './aes.ts'
-import { base64Decode, sha256, toBase64Url } from './crypto.ts'
+import { base64Decode, toBase64Url } from './crypto.ts'
+import {
+  ENCODED_PREFIX,
+  SHARE_KEY_LENGTH,
+  SHARE_PREFIX,
+  sessionParamPayload,
+  shareEndpoint,
+  shareIdForKey,
+  sharedSessionUrl,
+  takePrefetchedSharedSession,
+} from './sessionParam.ts'
+
+export {
+  ENCODED_PREFIX,
+  JSON_PREFIX,
+  LOCAL_PREFIX,
+  SESSION_PARAM_KINDS,
+  SHARE_PREFIX,
+  SPEC_PREFIX,
+  sessionParamKind,
+  sessionParamPayload,
+  shareEndpoint,
+} from './sessionParam.ts'
+export type { SessionParamKind } from './sessionParam.ts'
 
 function getErrorMsg(err: string) {
   try {
@@ -82,61 +105,6 @@ export async function toUrlSafeB64(str: string) {
 }
 
 /**
- * The kinds of `?session=` value, each written `<kind>-<payload>`: a session
- * uploaded behind the link (`share`), carried whole in it (`encoded`, `json`), a
- * session spec to build one from (`spec`), or one saved in this browser
- * (`local`).
- */
-export const SESSION_PARAM_KINDS = [
-  'share',
-  'encoded',
-  'json',
-  'spec',
-  'local',
-] as const
-export type SessionParamKind = (typeof SESSION_PARAM_KINDS)[number]
-
-export const SHARE_PREFIX = 'share-'
-export const ENCODED_PREFIX = 'encoded-'
-export const JSON_PREFIX = 'json-'
-export const SPEC_PREFIX = 'spec-'
-/** @deprecated use `sessionParamKind(value) === 'local'` */
-export const LOCAL_PREFIX = 'local-'
-
-export function sessionParamKind(value: string): SessionParamKind | undefined {
-  return SESSION_PARAM_KINDS.find(kind => value.startsWith(`${kind}-`))
-}
-
-/** The payload after a `?session=` value's kind, or the value itself without one */
-export function sessionParamPayload(value: string) {
-  const kind = sessionParamKind(value)
-  return kind ? value.slice(kind.length + 1) : value
-}
-
-/**
- * Joins a configured `shareURL` with one of the share service's two endpoints.
- * A plain `${shareURL}share` silently produced `https://host/api/v1share` for
- * the (natural) configured value without a trailing slash, and the 404 that
- * followed read as "the share service is down". An empty shareURL is left
- * alone: web honors an explicit empty string as "resolve relative to the page".
- */
-export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
-  return shareURL && !shareURL.endsWith('/')
-    ? `${shareURL}/${path}`
-    : `${shareURL}${path}`
-}
-
-// The key's length in a `share-` value, which is how a reader finds where a
-// server-named id ends
-const SHARE_KEY_LENGTH = 16
-
-// The id a session is offered to the share service under: a hash of the key, so
-// a link holding only the key can find it
-async function shareIdForKey(key: string) {
-  return toBase64Url(await sha256(`jbrowse-share-id:${key}`)).slice(0, 16)
-}
-
-/**
  * writes the encrypted session, current datetime, and referer to DynamoDB
  */
 async function shareSessionToDynamo(
@@ -204,15 +172,9 @@ export async function encodeSessionParam(
   }
 }
 
-async function fetchCiphertext(
-  loadUrl: string,
-  sessionId: string,
-  signal?: AbortSignal,
-) {
-  const response = await fetch(
-    `${loadUrl}?sessionId=${encodeURIComponent(sessionId)}`,
-    { signal },
-  )
+async function fetchCiphertext(url: string, signal?: AbortSignal) {
+  const response = await (takePrefetchedSharedSession(url) ??
+    fetch(url, { signal }))
   if (!response.ok) {
     throw new Error(getErrorMsg(await response.text()))
   }
@@ -223,16 +185,6 @@ async function fetchCiphertext(
     )
   }
   return json.session
-}
-
-// The key never reaches the server, so a link that lost it (a chat client that
-// clipped the URL, a hand-edited link) fetches fine and then fails in the
-// cipher, whose own message is "The operation failed for an
-// operation-specific reason". These say what actually went wrong.
-function missingKeyError() {
-  return new Error(
-    'This shared session link has lost its key, the only thing that can decrypt it. A link cut short in transit arrives like this.',
-  )
 }
 
 async function decrypt<T>(run: () => Promise<T>) {
@@ -257,13 +209,10 @@ export async function readSessionFromDynamo(
   password: string,
   signal?: AbortSignal,
 ) {
-  if (!password) {
-    throw missingKeyError()
-  }
-  const sessionId = sessionQueryParam.startsWith(SHARE_PREFIX)
-    ? sessionQueryParam.slice(SHARE_PREFIX.length)
-    : sessionQueryParam
-  const ciphertext = await fetchCiphertext(loadUrl, sessionId, signal)
+  const ciphertext = await fetchCiphertext(
+    await sharedSessionUrl(loadUrl, sessionQueryParam, password),
+    signal,
+  )
   return decrypt(() => aesDecrypt(ciphertext, password))
 }
 
@@ -284,14 +233,11 @@ export async function readSharedSession(
       await readSessionFromDynamo(loadUrl, value, password, signal),
     )
   }
-  const payload = sessionParamPayload(value)
-  if (payload.length < SHARE_KEY_LENGTH) {
-    throw missingKeyError()
-  }
-  const key = payload.slice(-SHARE_KEY_LENGTH)
-  const sessionId =
-    payload.slice(0, -SHARE_KEY_LENGTH) || (await shareIdForKey(key))
-  const ciphertext = await fetchCiphertext(loadUrl, sessionId, signal)
+  const ciphertext = await fetchCiphertext(
+    await sharedSessionUrl(loadUrl, value),
+    signal,
+  )
+  const key = sessionParamPayload(value).slice(-SHARE_KEY_LENGTH)
   const bytes = await decrypt(() => aesDecryptBytes(ciphertext, key))
   // a wrong key yields valid padding about once in 256 tries, and then garbage
   return decrypt(() => inflate(() => bytes))

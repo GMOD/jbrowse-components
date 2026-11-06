@@ -1,5 +1,9 @@
+import { waitFor } from '@testing-library/react'
+
 import { buildShareUrl } from './components/buildShareUrl.ts'
 import { createSessionLoaderFromUrl } from './createSessionLoader.ts'
+import { prefetchConfig } from './prefetchConfig.ts'
+import { prefetchSharedSession } from './prefetchSharedSession.ts'
 
 import type { SessionShareMode } from '@jbrowse/core/util'
 
@@ -32,6 +36,7 @@ jest.mock('./sessionLoaderHelpers', () => ({
 }))
 
 const SHARE_URL = 'https://share.example/api/v1/'
+const CONFIG = { configuration: { shareURL: SHARE_URL } }
 
 const snap = {
   id: 'original-id',
@@ -69,6 +74,8 @@ function mockShareService() {
       return new Response(JSON.stringify({ sessionId: 'sessId1' }))
     } else if (url === `${SHARE_URL}load?sessionId=sessId1`) {
       return new Response(JSON.stringify({ session: state.uploaded }))
+    } else if (url === 'conf.json') {
+      return new Response(JSON.stringify(CONFIG))
     }
     throw new Error(`unexpected request to ${url}`)
   }
@@ -94,7 +101,7 @@ async function roundTrip(mode: SessionShareMode) {
   const loader = createSessionLoaderFromUrl(Date.now())
   // what fetchConfig would have committed; decodeImportedSession reads the share
   // service's location back out of it
-  await loader.loadConfigAndPlugins({ configuration: { shareURL: SHARE_URL } })
+  await loader.loadConfigAndPlugins(CONFIG)
   await loader.loadSessionByType()
   return { loader, url }
 }
@@ -158,6 +165,39 @@ test('the inline modes need no share service at all', async () => {
     // can't become an HTTP 414
     expect(new URL(url).search).toBe('')
     expect(new URL(url).hash).toContain('session=encoded-')
+  } finally {
+    service.restore()
+  }
+})
+
+test('a short link main.js requested as the config arrived is read once', async () => {
+  const service = mockShareService()
+  try {
+    window.history.replaceState(
+      null,
+      '',
+      await buildShareUrl(
+        'short',
+        snap,
+        SHARE_URL,
+        'http://localhost/app/?config=conf.json',
+      ),
+    )
+    const loads = () => service.state.requests.filter(r => r.includes('load?'))
+    prefetchConfig()
+    prefetchSharedSession()
+    await waitFor(() => {
+      expect(loads()).toHaveLength(1)
+    })
+    const loader = createSessionLoaderFromUrl(Date.now())
+    await loader.loadConfigAndPlugins(CONFIG)
+    await loader.loadSessionByType()
+
+    expect(loader.sessionSource).toMatchObject({
+      type: 'snapshot',
+      snapshot: { name: snap.name },
+    })
+    expect(loads()).toHaveLength(1)
   } finally {
     service.restore()
   }

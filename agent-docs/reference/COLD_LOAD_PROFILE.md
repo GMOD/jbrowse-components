@@ -172,6 +172,25 @@ Declined, each against the change above at 80 ms RTT:
 - **Preloading the worker's own registry chunks** (`workerReExports.generated.ts`
   stubs a module, so seven chunks differ from the page's). Level on one BAM
   track and on four tracks.
+- **Fetching `main.js` ahead of the boot preloads.** Chrome requests the
+  `defer` entry at Low priority and every `<link rel=preload>` at High, so on a
+  capped link `main.js` lands last. All but two preloads (the worker's entry
+  and one 53 KB chunk) are the Loader's own, though, and on a capped link the
+  bytes set the time, not their order. One BAM track at 80 ms RTT, brotli on
+  the wire,
+  medians of 8 interleaved cold loads on ada, 2026-11-06:
+
+  | link | preloads | no worker-only preloads | no preloads | `fetchpriority` |
+  | --- | --- | --- | --- | --- |
+  | no cap | 1.10 s | 1.20 s | 1.22 s | 1.10 s |
+  | 10 Mbps | 2.25 s | 2.28 s | 2.33 s | 2.30 s |
+  | 4 Mbps | 4.40 s | 4.46 s | 4.49 s | 4.35 s |
+
+  Without the preloads `main.js` finished at 536 ms against 952 ms at 10 Mbps.
+  The `fetchpriority` arm (`high` on `main.js`, `low` on the worker-only
+  preloads) cannot be told apart from `preloads` under DevTools throttling,
+  which shares the cap evenly among requests; at the edge it would turn on how
+  the CDN schedules streams.
 
 After it, one BAM track's main thread runs boot, plugin, session and the first
 render back to back until the display mounts (~730 ms), and the render request
@@ -179,6 +198,32 @@ goes out on the mount. CPU over that window is diffuse, as above.
 `probe-coldload-phases.ts capture --latency=80` takes the trace under the same
 round trips as `measure-load-latency.ts`, whose `--page=<name>` A/Bs an HTML-only
 change as a variant page beside `build/index.html`.
+
+## Share links
+
+A `share-` link's session is a request to the share service the config names,
+on its own origin. The session loader made it only once the config's plugins
+had loaded, so it trailed the whole boot. `earlyStart.ts` now makes it as the
+prefetched config arrives (`prefetchSharedSession`), and `sessionSharing.ts`
+takes the response in place of its own request. The share service answered
+jbrowse.org's own probes in 0.19-0.43 s warm and 1.45 s on a first request.
+
+Measured 2026-11-06 on ada, one BAM track from volvox (whose config names a
+plugin) behind a `share-` link, 80 ms RTT, a mock share service on a second
+origin answering after a fixed delay, Chrome pinned to 4 cores, medians of 10
+interleaved cold loads:
+
+| share service delay | main | branch | the HTML's script making it |
+| --- | --- | --- | --- |
+| 150 ms | 1.47 s | 1.32 s | 1.31 s |
+| 600 ms | 1.89 s | 1.72 s | 1.69 s |
+
+The request left at ~540 ms on main and ~350 ms on the branch. Declined:
+making it from `index.html`'s inline script, the last column, which left at
+~280-335 ms. It would copy the share id's derivation into the HTML for 10-30
+ms. The id and URL derivation moved to `util/sessionParam.ts` so `main.js`
+takes it without the cipher: `main.js` grew 2.2 KB gzipped, and the boot's
+named scripts 2.5 KB.
 
 ## Repeat visits
 
@@ -206,9 +251,11 @@ Two changes answer it:
   the logo, a view box with its icons and an animated "Loading") before any
   script runs. `Loading` holds the shell instead of drawing a spinner, and the
   shell goes in the commit that unmounts the last `Loading`
-  (`src/bootShell.ts`). A stored theme or mode other than default light hides
-  it, since an `extraThemes` palette is unknown before the config. A first
-  version drew bare colored bars and read as a page that had failed halfway.
+  (`src/bootShell.ts`). It draws the mode the stored selection resolves to, as
+  `storedThemeArgs` does, and its dark half is measured off the dark app the
+  same way. A stored theme other than default hides it, since an `extraThemes`
+  palette is unknown before the config. A first version drew bare colored bars
+  and read as a page that had failed halfway.
 - **The app's own first frames match it.** Until the IntersectionObserver
   first reports, a view mounts no body, and the box it reserves had been empty
   for ~100 ms on a cold load; it now shows the loading label, not marked busy

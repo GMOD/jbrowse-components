@@ -1,4 +1,5 @@
 import { aesDecrypt, aesDecryptBytes } from './aes.ts'
+import { prefetchSharedSession, sharedSessionUrl } from './sessionParam.ts'
 import {
   b64PadSuffix,
   encodeSessionParam,
@@ -117,6 +118,17 @@ describe('readSharedSession', () => {
     // the service stores and serves the session under a hash of the key
     expect(storedId).not.toContain(key)
     expect(JSON.stringify(fetchMock.mock.calls)).not.toContain(key)
+  })
+
+  it('takes a response requested ahead instead of asking again', async () => {
+    const { sessionParam } = await upload({ takesOffers: true })
+    prefetchSharedSession(await sharedSessionUrl(loadUrl, sessionParam))
+    const requested = fetchMock.mock.calls.length
+
+    expect(JSON.parse(await readSharedSession(loadUrl, sessionParam))).toEqual(
+      session,
+    )
+    expect(fetchMock.mock.calls).toHaveLength(requested)
   })
 
   it('reads a link with its key after the id, sending only the id', async () => {

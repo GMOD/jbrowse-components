@@ -32,6 +32,11 @@ export function prefetchConfig() {
         }
 }
 
+/** The prefetched config, without taking it from the loader */
+export function prefetchedConfig() {
+  return early?.config
+}
+
 /** The prefetched config for `configPath`, once; a plugin reload fetches anew */
 export async function takePrefetchedConfig(configPath: string) {
   const entry = early

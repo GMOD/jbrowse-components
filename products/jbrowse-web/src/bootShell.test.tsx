@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { LogoFull } from '@jbrowse/core/ui/Logo'
+import { storedThemeArgs } from '@jbrowse/product-core'
 import { act, render } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -147,23 +148,55 @@ describe("index.html's theme check", () => {
     expect({ keys: Object.keys(window), name: window.name }).toEqual(before)
   })
 
-  test.each([
-    ['themeName', 'lightStock'],
-    ['themeMode', 'dark'],
-    ['themeMode', 'system'],
-    ['themeModeOverride', 'dark'],
-  ])('%s=%s hides it', (key, value) => {
-    localStorage.setItem(key, value)
-    run()
-    expect(hidden()).toBe(true)
+  const dark = () =>
+    document.documentElement.classList.contains('boot-shell-dark')
+
+  afterEach(() => {
+    document.documentElement.classList.remove('boot-shell-dark')
+    Reflect.deleteProperty(window, 'matchMedia')
   })
 
-  test('the stored default theme in light mode keeps it', () => {
-    localStorage.setItem('themeName', 'default')
-    localStorage.setItem('themeMode', 'light')
-    run()
-    expect(hidden()).toBe(false)
-  })
+  // jsdom ships no matchMedia, and the script and the session both read it
+  const osPrefersDark = (prefersDark: boolean) => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: prefersDark && query === '(prefers-color-scheme: dark)',
+      }),
+    })
+  }
+
+  const cases = [
+    {},
+    { themeName: 'default', themeMode: 'light' },
+    { themeName: 'lightStock' },
+    { themeName: 'darkMinimal' },
+    { themeName: 'stock', themeMode: 'dark' },
+    { themeMode: 'dark' },
+    { themeMode: 'system' },
+    { themeMode: 'sepia' },
+    { themeMode: 'system', themeModeOverride: 'dark' },
+    { themeMode: 'system', themeModeOverride: 'light' },
+    { themeMode: 'light', themeModeOverride: 'dark' },
+    { themeModeOverride: 'dark' },
+  ]
+
+  test.each(cases.flatMap(stored => [false, true].map(os => [stored, os])))(
+    'stored %j with an OS preferring dark %s draws what the session will',
+    (stored, prefersDark) => {
+      osPrefersDark(prefersDark as boolean)
+      for (const [key, value] of Object.entries(stored)) {
+        localStorage.setItem(key, value)
+      }
+      run()
+      const { themeName, mode } = storedThemeArgs()
+      expect({ hidden: hidden(), dark: dark() }).toEqual(
+        themeName === 'default' && (mode === 'light' || mode === 'dark')
+          ? { hidden: false, dark: mode === 'dark' }
+          : { hidden: true, dark: false },
+      )
+    },
+  )
 })
 
 test('a stored non-default theme draws the spinner and drops the hidden shell', async () => {
