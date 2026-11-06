@@ -40,17 +40,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
- * The store's bound, in regions — a bound on **history**, never on the
- * viewport: what the view is buffering is kept whatever the count, and the cap
- * decides only how much of what the reader panned away from is worth keeping
- * for the pan back. So a whole-genome view over a chromosome-level assembly is
- * unaffected however many contigs it shows, and a pan across a fragmented one
- * settles here instead of at the contig count.
- *
- * A count and not a byte budget: a payload's resident size is a display's own
- * question, and asking it would be one more hook on the surface this store
- * exists to shrink. What bounds the bytes per entry is the byte gate, which
- * already refuses a region over `resolvedByteLimit()`.
+ * The store's bound in regions, on history rather than the viewport: what the
+ * view buffers is always kept, and the cap decides how much of what the reader
+ * panned away from stays for the pan back. The byte gate bounds each entry's
+ * size.
  */
 export const MAX_STORED_REGIONS = 32
 
@@ -87,23 +80,18 @@ export default function MultiRegionDisplayMixin() {
       .volatile(() => ({
         /**
          * #volatile
-         * The per-region store, keyed by `displayedRegionIndex`: what a fetch
-         * asked for (the span), what it was issued under (`fetchInputs`) and
-         * what it brought back (`payload`), written as one record by
-         * `ctx.commitRegion`.
-         *
-         * The payload is held in this map, in the same record as the span and
-         * `fetchInputs`, so no hook is needed to keep a separate payload map in
-         * step. A display reads the payload back through `regionPayloads`.
+         * The per-region store, keyed by `displayedRegionIndex`: the span a
+         * fetch asked for, the `fetchInputs` it was issued under and the
+         * `payload` it brought back, written as one record by
+         * `ctx.commitRegion`. Displays read payloads through `regionPayloads`.
          */
         loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
       }))
       .views(self => ({
         /**
          * #getter
-         * The containing LinearGenomeView, typed once for every display in this
-         * family — see `containingHost` for the cast it owns and why both
-         * foundations still declare the name.
+         * The view this display reads regions, viewport and scale from; see
+         * `containingHost`.
          */
         get host(): RegionHost {
           return containingHost(self)
@@ -132,8 +120,7 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overrides `RenderLifecycleMixin`'s default-true hook with the LGV
-         * precondition both foundations share — see `foundationCanRender`.
+         * `RenderLifecycleMixin`'s hook: the view has initialized.
          */
         get canRender() {
           return foundationCanRender(this)
@@ -141,8 +128,7 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Fills `RenderLifecycleMixin`'s hook off `fetchInert`, as
-         * `GlobalFetchMixin` does: a display that will never fetch here shows a
+         * `RenderLifecycleMixin`'s hook: a display that will not fetch shows a
          * placeholder where its canvas would be.
          */
         get rendersCanvas(): boolean {
@@ -162,17 +148,11 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * true when every visible block lies within an already-fetched region —
-         * i.e. the viewport shows data we actually loaded, not the stale fringe
-         * left after a zoom-out/pan. Drives the loading overlay through the
-         * pre-refetch debounce.
-         *
-         * **Spatial only, and it stays that way.** Whether the data held for a
-         * block is still what a fetch would bring back is `isCacheValid`, which
-         * `dataCurrent` conjoins for the export gate. The scrim reads this
-         * getter and `dataSuperseded`, never `isCacheValid`: a phase that went
-         * `loading` on a moved `fetchInputs` would raise the overlay into
-         * every zoom.
+         * Every visible block lies within a fetched region, so the viewport
+         * shows loaded data rather than the fringe a pan or zoom-out leaves.
+         * Spatial only: whether held data is still what a fetch would bring
+         * back is `isCacheValid`, which the export gate reads and the scrim
+         * must not, or the overlay would rise on every zoom.
          */
         get viewportWithinLoadedData() {
           const view = this.host
@@ -188,12 +168,8 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * No content block is on screen, so this display has nothing to fetch
-         * and nothing to paint — see `viewportEmpty.ts` for the one viewport that
-         * reaches it, how narrow that is, and why the state still has to be
-         * terminal rather than a permanent scrim. Both foundations declare it
-         * over that one expression, the same way they each declare `host` and
-         * `paintInert`.
+         * No content block is on screen, so there is nothing to fetch or paint;
+         * see `viewportEmpty.ts`.
          */
         get viewportEmpty(): boolean {
           return viewportEmpty(this.host)
@@ -202,13 +178,10 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * Overridable hook (default false), read by the fetch plan: the display
-         * is drawing something in the features' place and wants no fetch while
-         * it does. `CoarseTierMixin` returns true while its tier stands in, so MAF
-         * never downloads the alignments its summary replaces.
-         *
-         * Not `fetchInert`: that one suppresses the scrim and ends the export
-         * wait, and a display saying this still has its stand-in to load. On
-         * this foundation alone, because only this family's plan reads it.
+         * draws a stand-in and wants no fetch meanwhile, as `CoarseTierMixin`
+         * does while MAF's summary tier stands in. Not `fetchInert`, which also
+         * drops the scrim and ends the export wait while the stand-in still
+         * has to load.
          */
         get fetchSuspended(): boolean {
           return false
@@ -216,41 +189,24 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default false): whether a searchable feature layout
-         * currently exists. Any display defining a feature-lookup method
-         * (`searchFeatureByID`) must override it, so callers can
-         * tell "laid out, but off-display" from "no layout exists yet" — a
-         * distinction only the display can make. See
-         * `agent-docs/reference/DISPLAY_KIT.md` §"Four
-         * readiness axes".
+         * Overridable hook (default false): a searchable feature layout exists.
+         * A display with `searchFeatureByID` must override it, so callers can
+         * tell "laid out, but off-display" from "no layout yet". False by
+         * default so a missing override drops overlays rather than pinning
+         * them to an edge.
          */
         get layoutReady(): boolean {
-          // fail-safe: forgetting the override drops overlays (visibly absent)
-          // rather than pinning them to one edge (a plausible lie)
           return false
         },
 
         /**
          * #method
-         * Overridable hook: whether the display can draw what this region is
-         * marked loaded over, at the zoom the view has.
-         *
-         * The default answers off the store — an entry a fetch committed
-         * holds what the fetch stored — and off the payload's `zoomRange` where the
-         * adapter declared one (`BaseFeatureDataAdapter.getZoomRange`): a
-         * BigWig tier answers a band of zooms, and the region reads as stale
-         * when the view leaves it. A payload with no range answers at
-         * every zoom.
-         *
-         * What survives an override is the question the store cannot answer:
-         * **which of several held payloads answers**. MAF caches a summary tier
-         * and a detail tier side by side under one `displayedRegionIndex`, so
-         * crossing the threshold inside an already-loaded region changes which
-         * map has to answer. The multi-row display's override survives for the
-         * auto-partition reconciliation (`regionHasPinnedData`).
-         *
-         * A view, not an action, so the reads it makes register as
-         * dependencies of `FetchVisibleRegions`.
+         * Overridable hook: whether the display can draw what this region holds
+         * at the view's zoom. The default checks the stored payload against
+         * its `zoomRange` where the adapter declared one
+         * (`BaseFeatureDataAdapter.getZoomRange`). Override it where several
+         * held payloads compete, as MAF's summary and detail tiers do. A view,
+         * so its reads are dependencies of `FetchVisibleRegions`.
          */
         regionHasData(displayedRegionIndex: number): boolean {
           const payload = self.loadedRegions.get(displayedRegionIndex)?.payload
@@ -262,42 +218,14 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default false): the held data is loaded and covers
-         * the viewport, but a fetch input has moved past it, so the data is
-         * about to be refetched. A display sets this hook rather than overriding
-         * `dataCurrent`, for the reason `FetchMixin.fetchInert` is a hook: an
-         * override has to restate the freshness terms and then misses the next
-         * one added.
-         *
-         * Both answers a display gives about being finished read it — the
-         * export gate through `dataCurrent`, the loading scrim through
-         * `displayPhase`. The export gate is the sharper case: `awaitSvgReady`
-         * samples freshness once, and an export that samples it inside this
-         * window renders the data that is about to be replaced. GWAS's LD
-         * auto-index is that case: adopting the top hit as the index SNP is an
-         * `rpcProps` change, so it invalidates the very load that produced the top hit,
-         * and `SettingsInvalidate` runs a tick after the
-         * write, so until it does not even `staleSettingsDrawn` has seen it.
-         *
-         * The window is visible on screen: alignments' per-base
-         * wall spends the debounce plus the RPC painting a 1 px stripe every
-         * 8 px, with nothing in the key having moved yet.
-         *
-         * **The input need not have settled yet.** Alignments counts the
-         * debounce window ahead of its per-base bin, where the bin the data was
-         * fetched under has not moved and the clear is inevitable rather than
-         * committed. That is the half of the window in which an export starts, since a
-         * reader zooms and then reaches for the menu. A change that could still
-         * be taken back must not go in: this fails hung, not stale.
-         *
-         * State the live-vs-settled half as a **value** compare and leave
-         * the stamp alone. The settled half — the stamp a fetch committed under
-         * against the `zoomFetchArgs` a fetch now would send — is the
-         * foundation's already, through the `isCacheValid` term in
-         * `dataCurrent`, and an override restating it gains nothing: a second
-         * derivation misses the field the args gain next, latches this true,
-         * and every export of the display then waits out `awaitSvgReady`'s
-         * backstop instead of failing.
+         * Overridable hook (default false): the held data covers the viewport
+         * but a fetch input has moved past it in a way the key cannot see, so
+         * it is about to be refetched. Both the export gate (`dataCurrent`) and
+         * the scrim (`displayPhase`) read it. Only an inevitable change belongs
+         * here, since a true that never clears hangs the export; and never
+         * restate the stamp-versus-`zoomFetchArgs` compare, which `isCacheValid`
+         * already makes. Cases and rules: DISPLAY_KIT.md, "`dataSuperseded`
+         * covers what `fetchInputs` cannot state".
          */
         get dataSuperseded(): boolean {
           return false
@@ -305,37 +233,26 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Shared cached view for every LGV-based GPU display. A single
-         * displayedRegion may produce multiple render blocks (shared GPU
-         * buffer, different scissor clips on screen). Plugins that want to
-         * suppress rendering in certain states (e.g. no domain yet) can
-         * override this getter to return [] — the autorun lifecycle will
-         * then issue an empty-blocks render that clears the canvas.
+         * The blocks the canvas draws; one displayed region may make several,
+         * sharing a GPU buffer under different scissor clips. Override to
+         * return [] to suppress drawing, which clears the canvas.
          */
         get renderBlocks() {
           return buildRenderBlocks(this.host.visibleRegions)
         },
       }))
-      // A pure read of view/display state, read from the `FetchVisibleRegions`
-      // autorun. It is a **view, not an action**, deliberately: MobX runs an
-      // action inside `untracked`, so as an action its `view.bpPerPx` read
-      // registered no dependency and the caller silently kept a stale answer.
-      // That worked only by accident — the autorun happened to read
-      // `view.visibleRegions`, which moves in lockstep — which made "don't let
-      // this be your only dependency" an unwritten precondition on every
-      // override. `zoomFetchArgs` and `regionHasData` are views for the same
-      // reason.
+      // A view, not an action, as are `zoomFetchArgs` and `regionHasData`:
+      // MobX runs an action untracked, so its reads would register no
+      // dependency of the `FetchVisibleRegions` autorun.
       .views(self => {
         const inputs = makeFetchInputs(self)
         return {
           /**
            * #getter
-           * What a fetch issued right now would stamp on a region: the
-           * settings tier (`FetchMixin.settingsFetchInputs`, the tier
-           * `staleSettingsDrawn` compares alone) and the zoom tier (the
-           * display's `zoomFetchArgs()` object). `fetchRegions` captures it
-           * before the RPC goes out and stamps it beside the loaded region;
-           * `isCacheValid` compares against it.
+           * What a fetch issued now would stamp on a region: the settings tier
+           * (`settingsFetchInputs`) and the zoom tier (`zoomFetchArgs()`).
+           * `fetchRegions` captures it at issue; `isCacheValid` compares
+           * against it.
            */
           get fetchInputs(): FetchInputs {
             return inputs.get()
@@ -346,20 +263,11 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * The store's payloads, keyed by `displayedRegionIndex`. A display
-         * narrows this once — `get rpcDataMap() { return
-         * self.regionPayloads as ReadonlyMap<number, MyResult> }` — and every
-         * reader it already had goes on reading a map.
-         *
-         * MST makes a `.views()` getter a computed, so the Map is built once
-         * per store change and handed back by reference after that — which is
-         * what keeps `installUpload`'s diff a reference compare per key and a
-         * frame that changed no data free of it. **While something observes
-         * it**: MobX suspends an unobserved computed and rebuilds on every
-         * read, so a display whose only reader is a pointer handler needs the
-         * keep-alive canvas and Manhattan both install
-         * (`agent-docs/reference/DISPLAY_KIT.md` §"A hit test's index needs an
-         * observer"). The render lifecycle's
-         * upload autorun is that reader for every display that draws.
+         * narrows it once (`get rpcDataMap() { return self.regionPayloads as
+         * ReadonlyMap<number, MyResult> }`). The Map keeps its identity between
+         * store changes only while something observes it; the render
+         * lifecycle's upload autorun does for every display that draws
+         * (DISPLAY_KIT.md, "A hit test's index needs an observer").
          */
         get regionPayloads(): ReadonlyMap<number, unknown> {
           return new Map(
@@ -371,10 +279,8 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * A fetch has landed: at least one region's payload is in the store.
-         * The render callback's first-paint gate reads this, so an empty frame
-         * before any data cannot flip `canvasDrawn`; an empty but loaded
-         * region counts, and paints its empty frame.
+         * At least one region's payload is in the store. The first-paint gate
+         * reads it, so a frame before any data cannot flip `canvasDrawn`.
          */
         get hasRegionData(): boolean {
           return this.regionPayloads.size > 0
@@ -383,12 +289,10 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #method
-         * Whether the data held for a region still answers the current view.
-         * Not a hook a display fills: a display states its rule as
-         * `zoomFetchArgs` (what a fetch now would send the worker) and
-         * `regionHasData` (does what the last one stored still answer), and
-         * this compares the whole input set against the one the
-         * region was fetched under.
+         * Whether the data held for a region still answers the current view:
+         * `regionHasData`, and the region's stamp equal to `fetchInputs`. Not a
+         * hook; a display states its rule through `zoomFetchArgs` and
+         * `regionHasData`.
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
@@ -400,26 +304,15 @@ export default function MultiRegionDisplayMixin() {
           )
         },
       }))
-      // `dataCurrent` and `svgReady` sit in their own blocks, after everything
-      // they read, so each reads its siblings off `self` rather than `this`.
-      // Same shape as `GlobalFetchMixin`, and for the reason in
-      // reference/DISPLAY_KIT.md ("a super-captured view is called bare"): a
-      // subclass that captures one of these and calls it with no receiver would
-      // get `undefined` for a `this` sibling. Nothing captures them today; the
-      // split is what keeps that true by construction instead of by luck.
+      // Own blocks, after everything they read, so siblings come off `self`:
+      // a super-captured view is called bare (DISPLAY_KIT.md).
       .views(self => ({
         /**
          * #getter
-         * A visible block's held data was fetched under a settings or adapter
-         * key that has since moved: drawn, and wrong for the current settings,
-         * until the refetch `isCacheValid` already owes lands. The loading
-         * scrim's third staleness term, beside spatial coverage and
-         * `dataSuperseded`.
-         *
-         * False on a zoom by construction: it compares the stamp's `settings`
-         * tier alone, so a moved zoom tier raises no scrim.
-         * That is the whole distance from the declined fold, which compared the
-         * whole key and put the overlay 250 ms into every zoom.
+         * A visible block's data was fetched under settings that have since
+         * moved, and is drawn until its refetch lands: the scrim's third
+         * staleness term. It compares the settings tier alone, so a zoom never
+         * raises it.
          */
         get staleSettingsDrawn(): boolean {
           const { host } = self
@@ -437,31 +330,12 @@ export default function MultiRegionDisplayMixin() {
         },
         /**
          * #getter
-         * This family's implementation of the shared freshness check every
-         * display foundation implements (`dataCurrent`): the held data corresponds to
-         * what is on screen right now. Four terms — spatial coverage of every
-         * visible block, `loadedRegions.size` to rule out the vacuously-true
-         * empty viewport, `isCacheValid` per block, and the display's own
-         * `dataSuperseded`. Regions stream in one at a time, so a
-         * multi-region/whole-genome export waits on this getter to be complete;
-         * waiting on the first datum to arrive would export a partial set.
-         *
-         * **`isCacheValid` belongs here and not in the scrim.** Coverage answers
-         * "is the data here", never "is it what a fetch now would bring back", so
-         * a zoom that moves `fetchInputs` leaves every held region covered and
-         * stale at once — and an export sampling `svgReady` across that window
-         * painted bins the worker computed for the previous zoom. `displayPhase`
-         * takes `dataSuperseded` but NOT this term: folding a moved
-         * `fetchInputs` into the phase raises the loading scrim into every
-         * zoom, which is the trade this does not take.
-         *
-         * The term cannot latch, and the reason is structural rather than a case
-         * list: a block reaches `fetchNeeded` unless `planRegionFetch` finds it
-         * ungated, covered AND cache-valid, and it reads that last term tracked.
-         * The `&&` short-circuits ahead of it drop its observables only where the
-         * block is fetched anyway, so the key move that closes this gate is the
-         * same read, in the same dependency set, that wakes the refetch reopening
-         * it.
+         * The held data is what a fetch now would bring back for every visible
+         * block: covered, non-empty, `isCacheValid` per block, and not
+         * `dataSuperseded`. The export gate reads it; the scrim does not take
+         * `isCacheValid`, which would raise it on every zoom. It cannot latch,
+         * because the planner reads the same `isCacheValid` tracked and
+         * refetches any block it fails.
          */
         get dataCurrent(): boolean {
           return (
@@ -476,20 +350,10 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The assembly the data in hand came from, once it can answer about
-         * refNames — `undefined` before that.
-         *
-         * Read off the first loaded region rather than the view's displayed
-         * ones, and defined here for that reason: a display holding fetched
-         * data is asking about the assembly that data is on, and the view's
-         * regions can already have moved on.
-         *
-         * The `initialized` gate is why this returns the assembly rather than
-         * its name. `getCanonicalRefName2` and `refNameToIndex` answer wrongly
-         * rather than throwing before the aliases land — identity, and a miss —
-         * so a caller that skips the gate gets a plausible answer and no signal.
-         * The getter returns `undefined` until the aliases load, so the caller
-         * must write its fallback.
+         * The assembly the loaded data is on, read off the first loaded region,
+         * and `undefined` until its refName aliases load: before then
+         * `getCanonicalRefName2` and `refNameToIndex` answer wrongly rather than
+         * throw, so the caller writes its fallback.
          */
         get loadedAssembly(): Assembly | undefined {
           const firstRegion = self.loadedRegions.values().next().value
@@ -502,12 +366,9 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
-         * The loading scrim's staleness argument: what is drawn answers for
-         * what is on screen. Spatial coverage, `dataSuperseded` and
-         * `staleSettingsDrawn`; not `isCacheValid`, which belongs to `dataCurrent`
-         * and would scrim every zoom. `displayPhase` reads it, and so
-         * does a stand-in phase (`coarseTierDisplayPhase`) — one predicate,
-         * so a term added here reaches both.
+         * The loading scrim's staleness argument: spatial coverage, not
+         * `dataSuperseded`, not `staleSettingsDrawn`. `displayPhase` and
+         * `coarseTierDisplayPhase` both read it.
          */
         get phaseViewportCurrent(): boolean {
           return (
@@ -520,12 +381,8 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
-         * true once an off-screen (SVG) export can safely read this display's
-         * data. Policy single-sourced in `computeSvgReady`; this family supplies
-         * only the freshness half, which `foundationSvgReady` reads as
-         * `dataCurrent` or the vacuous currency of `viewportEmpty`. Off-screen
-         * renderers gate on it via `awaitSvgReady(model)` instead of inlining
-         * the condition.
+         * An SVG export can read this display's data; off-screen renderers wait
+         * on it through `awaitSvgReady(model)`. See `foundationSvgReady`.
          */
         get svgReady(): boolean {
           return foundationSvgReady(self)
@@ -533,21 +390,16 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
-         * failed fetch has to read as finished to the consumers outside the
-         * display, and `foundationPaintInert` for the second such state and why
-         * both fetch families answer it through one function. Overridable, as
-         * the hook is: a display with a third inert state overrides it.
+         * `RenderLifecycleMixin`'s `paintInert` hook; see
+         * `foundationPaintInert`. Overridable for a further inert state.
          */
         get paintInert(): boolean {
           return foundationPaintInert(self)
         },
         /**
          * #getter
-         * Fills `RenderLifecycleMixin`'s hook with `staleSettingsDrawn`, so
-         * `painted` — and `data-display-drawn` through it — reads pending over
-         * a canvas painted under the previous settings until the refetch
-         * lands, without blanking anything.
+         * `RenderLifecycleMixin`'s hook: `painted` reads pending over a canvas
+         * drawn under the previous settings until the refetch lands.
          */
         get paintSuperseded(): boolean {
           return self.staleSettingsDrawn
@@ -555,22 +407,10 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The display's mutually-exclusive visual state, mapped in
-         * `foundationDisplayPhase` — every foundation calls it and supplies only
-         * its staleness argument, so a term added to `computeActivityPhase`
-         * reaches all three without being wired three times.
-         *
-         * This family's argument is `phaseViewportCurrent`: spatial coverage
-         * and `dataSuperseded` (data a settled fetch-input change is drawing
-         * wrong right now — alignments zooming perBaseLetter from 16 bp/px to
-         * 1 stays inside the loaded region and reported `ready` over a wall
-         * drawn as a 1 px stripe every 8 px) and `staleSettingsDrawn`.
-         *
-         * A thunk, so a suppressed or already-loading display doesn't subscribe
-         * to viewport churn.
-         *
-         * A subclass customizes this through `fetchInert` (FetchMixin),
-         * never by overriding the getter — see that hook.
+         * The display's visual state, mapped by `foundationDisplayPhase` from
+         * this family's staleness argument, `phaseViewportCurrent`, passed as
+         * a thunk so a display that is not loading skips the viewport reads.
+         * Customize it through `fetchInert`, never by overriding it.
          */
         get displayPhase(): DisplayPhase {
           return foundationDisplayPhase(
@@ -583,32 +423,17 @@ export default function MultiRegionDisplayMixin() {
       .actions(self => ({
         /**
          * #action
-         * The raw write behind `ctx.commitRegion`, and **not what a fetch should
-         * call**. A display naming its span itself is the bug this family spent
-         * a release fixing, and the context gives a fetch no way to express it
-         * — see {@link RegionFetchContext}. Direct callers are
-         * tests staging an already-loaded display.
-         *
-         * The payload is named on every call, `undefined` included: this write
-         * replaces the whole record, so a re-stamp that left it off dropped the
-         * data a test had staged one line earlier, and the failure surfaced as
-         * a reader throwing three layers away. A test stages a claim with
-         * nothing behind it by saying so.
-         *
-         * An action so callers after an async boundary stay in MST strict mode.
-         * Stamps the region with the fetch key its data came back under.
-         * `fetchRegions` passes the key it captured before issuing the RPC; the
-         * default reads it *now*, which is right for a caller holding the region
-         * already and wrong for anything resuming after an await, where the
-         * viewport may have moved under the fetch.
+         * The raw write behind `ctx.commitRegion`, for tests staging a loaded
+         * display; a fetch commits through the context, which takes no span
+         * (see {@link RegionFetchContext}). It replaces the whole record, so
+         * the payload is named on every call. `fetchInputs` defaults to the
+         * key now, which is wrong for a caller resuming after an await.
          */
         setLoadedRegion(
           displayedRegionIndex: number,
           region: Region,
           payload: RegionPayload | undefined,
-          // annotated, not inferred: `self` here is mid-composition, so the
-          // default's type lands as `any` and the published signature stopped
-          // constraining the one field `isCacheValid` compares
+          // annotated: inferred from mid-composition `self` it would be `any`
           fetchInputs: FetchInputs = self.fetchInputs,
         ) {
           self.loadedRegions.set(displayedRegionIndex, {
@@ -620,17 +445,8 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #action
-         * The store's bound. Drops the entries a fetch can no longer be about:
-         * an index outside the view's buffered viewport, once the store is over
-         * `MAX_STORED_REGIONS`, oldest first.
-         *
-         * One rule for every display, where canvas hand-rolled
-         * `pruneRpcDataMapToVisible` (prune to the buffer on every fetch) and
-         * every other display had no bound at all beyond
-         * `displayedRegions.length`. That count is the contig count, so a
-         * fragmented assembly was effectively unbounded. The cap lets a pan back
-         * onto a recently-visited region draw immediately, which the
-         * prune-to-buffer rule did not.
+         * Once the store is over `MAX_STORED_REGIONS`, drop entries outside
+         * `keep` (the buffered viewport), oldest first.
          */
         evictRegionStore(keep: ReadonlySet<number>) {
           let over = self.loadedRegions.size - MAX_STORED_REGIONS
@@ -660,25 +476,16 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #action
          * Overridable hook (no-op base): drop what this display holds beside
-         * the store — a second store, a verdict about the viewport
-         * that was just dropped. Called by `clearAllRpcData`, which runs on a
-         * displayed-regions change, on a viewport move past an error or a
-         * cancel, and on `reload()`.
+         * the store. Called by `clearAllRpcData`: on a displayed-regions
+         * change, a viewport move past an error or cancel, and `reload()`.
          */
         clearDisplaySpecificData() {},
         /**
          * #action
-         * Overridable hook (no-op base): drop what this display holds that is
-         * wrong under a changed setting rather than merely stale — a payload
-         * whose shape the setting decides. Called by `invalidateSettings`,
-         * where `clearDisplaySpecificData` is deliberately not: bins, reads
-         * and features fetched under the previous setting draw honestly under
-         * the scrim `staleSettingsDrawn` raises until the refetch lands, the
-         * way every display keeps its features (ADR-006).
-         *
-         * The variant matrix overrides it, for a structural reason: it holds
-         * one payload for every visible region and the row set is a setting,
-         * so there is no per-region replacement to wait for.
+         * Overridable hook (no-op base): drop what is wrong, not merely stale,
+         * under a changed setting, such as a payload whose shape the setting
+         * decides. Called by `invalidateSettings`; everything else stays drawn
+         * under the scrim until the refetch lands (ADR-006).
          */
         clearSettingsBakedData() {},
       }))
@@ -687,11 +494,9 @@ export default function MultiRegionDisplayMixin() {
         return {
           /**
            * #action
-           * full reset: cancels fetch, clears error, loadedRegions,
-           * display-specific data, and the canvas-drawn flag. The too-large gate is
-           * derived (a pure function of the cached estimate × viewport), so it needs
-           * no explicit clear here — the fetch autorun re-measures at the new
-           * viewport and the verdict follows.
+           * Full reset: cancel the fetch and clear the error, `loadedRegions`,
+           * display-specific data and the canvas-drawn flag. The too-large
+           * verdict is derived, so it needs no clear.
            */
           clearAllRpcData() {
             self.cancelFetch()
@@ -703,15 +508,10 @@ export default function MultiRegionDisplayMixin() {
 
           /**
            * #action
-           * `SettingsInvalidate`'s reset: the half of `clearAllRpcData` a
-           * settings change still needs now that the settings and adapter
-           * axes are in `fetchInputs`. The in-flight fetch is superseded
-           * now rather than when its payload lands stamped stale, a blocking
-           * error or cancel is cleared so the plan is not `blocked`, and the
-           * display drops its settings-baked data. `loadedRegions` and the
-           * canvas-drawn flag stay: every held region already reads
-           * `!isCacheValid`, so the plan refetches it, and until that lands the
-           * data stays on screen under the scrim `staleSettingsDrawn` raises.
+           * `SettingsInvalidate`'s reset: supersede the in-flight fetch, clear
+           * a blocking error or cancel, and drop settings-baked data.
+           * `loadedRegions` stays, drawn under the scrim, since every held
+           * region already fails `isCacheValid` and is refetched.
            */
           invalidateSettings() {
             self.cancelFetch()
@@ -721,15 +521,8 @@ export default function MultiRegionDisplayMixin() {
 
           /**
            * #action
-           * `FetchMixin.reload` (error, cancel, counter) plus the full reset.
-           * Subclasses with extra teardown override and chain.
-           *
-           * An override must reach this counter, by chaining to super or by
-           * bumping it. Missing it doesn't break the retry, which the
-           * `clearAllRpcData` call drives; it turns the retry contract check off
-           * for that display, and the display still looks healthy.
-           * `reloadReachesCounter.test.ts` reads every `reload()` in the tree to
-           * catch the next override that misses the counter.
+           * `FetchMixin.reload` plus the full reset. An override chains to it,
+           * or the retry contract check goes off for that display.
            */
           reload() {
             superReload()
@@ -740,15 +533,12 @@ export default function MultiRegionDisplayMixin() {
       .actions(_self => ({
         /**
          * #action
-         * Overridable hook (no-op base): override to call one of the three
-         * helpers in `fetchEachRegion.ts` — `fetchEachRegion` (one RPC per
-         * region), `fetchAllRegions` (one RPC per genome, one result per
-         * region) or `fetchRegionsBatched` (one RPC, one payload covering all
-         * of them).
+         * Overridable hook (no-op base): call one of the runners in
+         * `fetchEachRegion.ts`: `fetchEachRegion` (one RPC per region),
+         * `fetchAllRegions` (one per genome) or `fetchRegionsBatched` (one RPC,
+         * one payload for all).
          */
-        fetchNeeded(_needed: IndexedRegion[]) {
-          // no-op base
-        },
+        fetchNeeded(_needed: IndexedRegion[]) {},
       }))
       .actions(self => ({
         /**
@@ -771,18 +561,11 @@ export default function MultiRegionDisplayMixin() {
         return {
           /**
            * #action
-           * Run a per-region fetch. The work callback
-           * calls `ctx.commitRegion` as it stores each region's payload, which is
-           * what marks it loaded — see {@link RegionFetchContext} for why this
-           * function no longer does that itself. Only the three helpers in
-           * `fetchEachRegion.ts` call it, for every display in the family; a display reaching past them owns both
-           * `ctx.isStale()` guards and the commit by hand, and none does.
-           *
-           * The fetch key is captured here, at issue, and carried into every
-           * commit — never re-read after the await. `ctx.isStale()` trips on a
-           * newer fetch or a cancel, not on a viewport that moved under a fetch
-           * that is still current, so a key read at commit time would stamp this
-           * data with a zoom it was not fetched at.
+           * Run a per-region fetch, called by the runners in
+           * `fetchEachRegion.ts`. `work` calls `ctx.commitRegion` as it stores
+           * each payload, which marks the region loaded under the span this
+           * fetch issued and the `fetchInputs` captured here at issue, never
+           * re-read after the await.
            */
           async fetchRegions(
             needed: IndexedRegion[],
@@ -804,12 +587,8 @@ export default function MultiRegionDisplayMixin() {
               await work({
                 ...ctx,
                 commitRegion: (displayedRegionIndex, payload) => {
-                  // The span is the one this fetch asked for, looked up rather
-                  // than taken from the caller — see RegionFetchContext. An
-                  // index that is not in it has no span to be honest about, so
-                  // the commit is dropped: under-claiming costs a refetch, and
-                  // the alternative is the claim this mechanism exists to
-                  // prevent.
+                  // an index this fetch did not issue has no span, so its
+                  // commit is dropped and the region refetches
                   const region = issued.get(displayedRegionIndex)
                   if (region === undefined) {
                     checks.unknownRegion(displayedRegionIndex, issued.keys())
@@ -824,13 +603,8 @@ export default function MultiRegionDisplayMixin() {
                   }
                 },
               })
-              // `|| regionTooLarge` so a refusal batch still reaches the check
-              // — it is stale by then, and the streak this resets counts
-              // fetches that stored nothing with NOTHING gating them. Widening
-              // only ever resets: a gated run cannot increment. It gets there
-              // for a single-region display, or once every sibling landed;
-              // `cancelFetch` rejects `work(...)`, so an aborted sibling skips
-              // the check and only leaves its batch's reset undone.
+              // a refused batch is stale by now but still resets the
+              // empty-fetch streak, which counts ungated fetches only
               if (
                 needed.length > 0 &&
                 (!ctx.isStale() || self.regionTooLarge)
@@ -844,15 +618,13 @@ export default function MultiRegionDisplayMixin() {
       .actions(self => ({
         /**
          * #action
-         * installs the fetch-lifecycle autoruns (DisplayedRegionsChange,
+         * Installs the fetch-lifecycle autoruns (DisplayedRegionsChange,
          * FetchVisibleRegions, SettingsInvalidate,
-         * ClearBlockingStateOnViewportChange)
+         * ClearBlockingStateOnViewportChange).
          */
         afterAttach() {
           installPerRegionFetchAutoruns(
-            // `clearHoveredFeature` is `BaseDisplay`'s and this mixin does not
-            // compose it — the same shape as `WiggleScoreConfigMixin`'s
-            // `confNode(self)`, and the cast names exactly what is read.
+            // `clearHoveredFeature` is BaseDisplay's, which this does not compose
             self as typeof self & { clearHoveredFeature: () => void },
           )
         },
@@ -865,11 +637,8 @@ export type MultiRegionDisplayMixinType = ReturnType<
 >
 
 /**
- * The store as a mixin composed beside `MultiRegionDisplayMixin` reaches it:
- * the payload map and the staging write, taken from the mixin's own instance
- * type. A cast that names this cannot restate either signature, which is how
- * the wiggle mixin's copy kept the old argument order and typechecked while it
- * would have stored the data as the fetch inputs.
+ * The store as a mixin composed beside `MultiRegionDisplayMixin` reaches it,
+ * typed off the mixin itself so a cast cannot restate either signature.
  */
 export type RegionStoreSelf = Pick<
   Instance<ReturnType<typeof MultiRegionDisplayMixin>>,

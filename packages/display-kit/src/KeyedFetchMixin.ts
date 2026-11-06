@@ -9,12 +9,9 @@ import type { AbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * The members a fetch installer reads off a display composing this mixin, the
- * way `GlobalFetchHost` names `FetchMixin`'s: the rotation the installer lends
- * to the skeleton so `cancelFetch` and the Cancel button reach the fetch it
- * installs, the freshness pair the skeleton gates on, and the commit that
- * stamps it. The `Instance` type would be circular from inside a file the
- * mixin composes.
+ * What a fetch installer reads off a display composing this mixin: the
+ * rotation it lends the skeleton, so Cancel reaches the fetch, the freshness
+ * pair it gates on, and the commit that stamps it.
  */
 export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
   fetchRotation: AbortRotation
@@ -24,9 +21,8 @@ export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
 }
 
 /**
- * What a keyed fetch is issued for, as a value `isDataCurrent` compares: the
- * display's `viewSignature` and `FetchMixin.settingsFetchInputs`, the settings
- * axis the per-region family stamps on each region.
+ * What a keyed fetch is issued for, compared by `isDataCurrent`: the display's
+ * `viewSignature` and `settingsFetchInputs`.
  */
 export interface FetchKey {
   view: string
@@ -37,13 +33,10 @@ export interface FetchKey {
  * #stateModel KeyedFetchMixin
  * #category display
  *
- * `FetchMixin` plus the one freshness compare a single-payload fetch runs: the
- * key of what the view, settings and adapter call for (`currentFetchKey`)
- * against the key the held data was committed under (`loadedFetchKey`). The
- * LGV global family composes it under `GlobalFetchMixin` and the comparative
- * family under `ComparativeFetchMixin`; the per-region family answers the same
- * question per region through `isCacheValid`, so it stays on `FetchMixin`
- * (ADR-105).
+ * `FetchMixin` plus the freshness compare a single-payload fetch runs: the key
+ * the view, settings and adapter call for (`currentFetchKey`) against the key
+ * the held data was committed under (`loadedFetchKey`). Composed by
+ * `GlobalFetchMixin` and `ComparativeFetchMixin` (ADR-105).
  */
 export default function KeyedFetchMixin() {
   return types
@@ -51,56 +44,32 @@ export default function KeyedFetchMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * `currentFetchKey` as it stood when the held data was committed — the
-       * loaded half of the freshness compare. Written only by
-       * `commitFetchResult`, so a display cannot stamp data it did not fetch,
-       * and cleared by `reload` for the overlay's sake rather than the
-       * refetch's (the skeleton's reload epoch is what overrides its gate).
-       * The data itself stays display-owned: LD keeps the stale triangle on screen
-       * under the loading overlay, HiC the stale matrix, synteny the stale
-       * ribbons.
+       * `currentFetchKey` as it stood when the held data was committed.
+       * Written only by `commitFetchResult` and cleared by `reload`; the data
+       * itself is the display's and stays on screen under the overlay.
        */
       loadedFetchKey: undefined as FetchKey | undefined,
     }))
     .views(() => ({
       /**
        * #getter
-       * Overridable hook, the one freshness input a display supplies: the
-       * signature of what the current *view* calls for — its block set
-       * (`blockKeySignature`) plus any view-derived fetch tier, like HiC's
-       * binsize; both comparative views' region sets, zoom buckets and LOD
-       * tier. `undefined` means "not computable yet" (view unmeasured, a
-       * prerequisite header still in flight) and holds the fetch off.
-       *
-       * Settings and the adapter are deliberately not the display's half:
-       * `currentFetchKey` below pairs this with `settingsFetchInputs`, so a
-       * field added to `rpcProps()` or a track re-pointed in the config editor
-       * invalidates held data structurally.
-       * HiC hand-folded one settings term in, and a second term would not
-       * have invalidated anything; the comparative family folded the adapter in at its
-       * installer and compared without it at its export gate.
-       *
-       * Default `undefined`, so a display that forgets the override never
-       * fetches and never exports — hung is diagnosable, stale ships wrong
-       * pixels.
+       * Overridable hook, the freshness input a display supplies: what the
+       * current view calls for, such as its block set (`blockKeySignature`)
+       * plus any view-derived tier like HiC's bin size. Leave settings out;
+       * `currentFetchKey` pairs this with `settingsFetchInputs`. `undefined`
+       * holds the fetch off, and is the default, so a missing override hangs
+       * rather than draws stale data.
        */
       get viewSignature(): string | undefined {
         return undefined
       },
       /**
        * #getter
-       * Overridable hook (default false): the held data matches the key, but
-       * the screen will settle on different data — a dependent fetch is still
-       * out, or a fetch input the display writes itself has moved. The same hook
-       * `MultiRegionDisplayMixin` declares, for the same reason: the key compare
-       * cannot see anything the display fetches outside its primary fetch, and
-       * an export sampling `svgReady` in that window paints the half-filled
-       * frame.
-       *
-       * A term of `dataCurrent` and not of the skeleton's freshness gate, so it
-       * holds the export and never re-runs the primary fetch. It fails hung, not
-       * stale: a value that latches true parks `awaitSvgReady` on its backstop,
-       * so state only what a later commit is guaranteed to clear.
+       * Overridable hook (default false): the held data matches the key but
+       * the screen will settle on different data, as when a dependent fetch is
+       * still out. A term of `dataCurrent` only, so it holds the export and
+       * never refetches; state only what a later commit is sure to clear.
+       * See `MultiRegionDisplayMixin.dataSuperseded`.
        */
       get dataSuperseded(): boolean {
         return false
@@ -116,11 +85,9 @@ export default function KeyedFetchMixin() {
       return {
         /**
          * #getter
-         * Key of the fetch the current view, settings and adapter call for.
-         * The fetch skeleton's freshness key: captured at issue, compared
-         * against the stamp above, and written to it at commit. Its identity
-         * survives a recomputation onto equal content, so the idle compare is
-         * `===`.
+         * The key of the fetch the current view, settings and adapter call
+         * for: captured at issue and stamped at commit. Its identity survives
+         * a recomputation onto equal content.
          */
         get currentFetchKey(): FetchKey | undefined {
           return key.get()
@@ -130,17 +97,10 @@ export default function KeyedFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The shared freshness answer every foundation gives: data has been
-       * committed (`loadedFetchKey` is only ever written beside it), it was
-       * fetched for the current view and settings, and the display is not
-       * about to supersede it itself. A pan inside the loaded blocks stays
-       * current; a block entering, a tier step, a settings change or a
-       * `reload()` moves one side of the compare. **What the fetch autorun
-       * gates on is the same compare inside `installFetch`**, not this getter —
-       * the skeleton owns it so a reload can override it. This one is for the
-       * readers outside the fetch, the export gate above all. The per-region
-       * twin is `isCacheValid`: what decides a refetch, and deliberately not
-       * the whole freshness answer.
+       * The held data was committed for the current key and the display is
+       * not about to supersede it. For readers outside the fetch, the export
+       * gate above all; the fetch autorun makes the same compare inside
+       * `installFetch`, where a reload can override it.
        */
       get dataCurrent(): boolean {
         return (
@@ -154,11 +114,9 @@ export default function KeyedFetchMixin() {
       return {
         /**
          * #action
-         * The commit half of a keyed fetch: run the display's own store in the
-         * same transaction as the key stamp, so no observer can see fresh data
-         * under a stale key or the reverse. As the only writer of
-         * `loadedFetchKey`, this action makes `dataCurrent` derivable, because
-         * a display cannot commit without stamping.
+         * The commit half of a keyed fetch: the display's store and the key
+         * stamp in one transaction, so no observer sees fresh data under a
+         * stale key or the reverse.
          */
         commitFetchResult(commit: () => void, key: FetchKey) {
           commit()
@@ -166,16 +124,9 @@ export default function KeyedFetchMixin() {
         },
         /**
          * #action
-         * `FetchMixin.reload` (error, cancel, counter — the shared skeleton's
-         * reload epoch makes that bump override the freshness gate, even
-         * against a fetch that commits mid-reload, so nothing here has to
-         * remember to invalidate for the retry's sake) plus this layer's one
-         * addition, for the export gate rather than the refetch: dropping the
-         * loaded key sends `dataCurrent` false, so an export started after the
-         * click waits for the refetch instead of capturing what the retry is
-         * about to replace. The data itself survives, staying on screen under
-         * that overlay. A subclass whose reload needs extra teardown can
-         * override and chain.
+         * `FetchMixin.reload`, whose counter bump overrides the skeleton's
+         * freshness gate, plus dropping the loaded key so an export started
+         * after the click waits for the refetch. The data stays on screen.
          */
         reload() {
           superReload()

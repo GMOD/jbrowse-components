@@ -22,19 +22,12 @@ export type { FetchContext }
 
 /**
  * Every write to a display's status field, on the console, when
- * `localStorage.debugStatus = true`. For the report this cannot be reproduced
- * from: a status field that flickers between a phase label and the overlay's
- * `'Loading'` fallback says nothing on its own about *why*, and the two causes
- * want opposite fixes. `gen` is the discriminator — a flicker inside one fetch
- * holds one generation, while a fetch being superseded over and over (a pan, a
- * linked view resyncing, an invalidating setting) steps it every time.
- *
- * Read from localStorage on every call rather than once, so it can be switched
- * on mid-session from the console with no reload.
+ * `localStorage.debugStatus = true` (read on every call, so it can be switched
+ * on mid-session). `gen` tells a flicker inside one fetch, which holds one
+ * generation, from a fetch superseded over and over, which steps it.
  */
 function debugStatus(gen: number, event: string, detail = '') {
   if (localStorageGetBoolean('debugStatus', false)) {
-    // a deliberate debug channel, off unless the key is set
     // eslint-disable-next-line no-console
     console.log(
       `[jbrowse-status] ${Math.round(performance.now())}ms gen=${gen} ${event}${detail && ` ${JSON.stringify(detail)}`}`,
@@ -42,10 +35,8 @@ function debugStatus(gen: number, event: string, detail = '') {
   }
 }
 
-// The status field's single writer, which is what the window is opened over.
-// `self` inside a volatile initializer is the empty model the chain starts from
-// and `setStatusMessage` arrives three steps later, so the cast names the one
-// member it calls; the write itself runs long after the chain is finished.
+// `self` in a volatile initializer is the bare model; `setStatusMessage` is
+// declared later in the chain and called long after it is built.
 interface StatusWriter extends IStateTreeNode {
   setStatusMessage: (status?: RpcStatus) => void
 }
@@ -59,12 +50,7 @@ function writeStatus(self: unknown) {
   }
 }
 
-/**
- * The three members {@link fetchMixinLifecycle} calls, as the shape a fetch
- * outside this mixin's own flow needs of its host. `GlobalFetchHost` names them
- * again for the same reason every duck-typed host in the tree does: the mixin's
- * `Instance` type would be circular from inside a file the mixin composes.
- */
+/** The three members {@link fetchMixinLifecycle} calls. */
 export interface FetchLifecycleHost {
   beginFetch: (signal: AbortSignal) => void
   endFetch: (current: boolean) => void
@@ -73,12 +59,8 @@ export interface FetchLifecycleHost {
 
 /**
  * This mixin's begin/end/error bookkeeping as the `FetchLifecycle` the shared
- * skeleton takes, for the two entries that run a fetch over it: `runFetch`
- * below, and the global
- * family's `installFetch` declaration, which lends this mixin's rotation and so
- * owes the same three writes. It was the same object literal in both, which is
- * one drift axis over a trio whose whole value is that a superseded run and a
- * current one are treated differently in exactly one place.
+ * fetch skeleton takes, for `runFetch` and for the global family's
+ * `installFetch`, which lends this mixin's rotation.
  */
 export function fetchMixinLifecycle(self: FetchLifecycleHost) {
   return {
@@ -94,39 +76,15 @@ export function fetchMixinLifecycle(self: FetchLifecycleHost) {
   }
 }
 
-// Cancel-safe fetch lifecycle for any display that loads data over RPC.
-//
-// The mixin owns the entire fetch state machine (abort rotation,
-// staleness tracking, error capture, status reporting). Consumers see
-// only the high-level operations:
-//
-//   self.runFetch(work)   — start a cancellable fetch; cancels any prior.
-//                           Implemented as an MST flow so post-await
-//                           mutations stay inside the action context.
-//   self.cancelFetch()       — cancel any in-flight fetch and bump
-//                              fetchGeneration so observers re-evaluate.
-//   self.isLoading           — true while a fetch is active.
-//   self.error               — last non-abort error (or undefined).
-//   self.statusMessage       — work-in-progress status string.
-//   self.fetchGeneration     — see below.
-//
-// fetchGeneration bumps when a CURRENT fetch ends (success or error — a
-// superseded run must not bump for the run that replaced it) and on
-// `cancelFetch`; `cancelFetchByUser` deliberately does not bump, which is what
-// makes that cancel durable. Autoruns read `void self.fetchGeneration` to
-// re-evaluate after a fetch completes; isLoading is not used as a dependency to
-// avoid an extra fire on fetch start.
-//
-// Composed by the per-region family (MultiRegionDisplayMixin) directly, and
-// by the global and comparative families through KeyedFetchMixin.
 /**
  * #stateModel FetchMixin
  * #category display
  *
- * Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns
- * the entire fetch state machine (abort rotation, staleness tracking,
- * error capture, status reporting); consumers see only `runFetch`,
- * `cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
+ * Cancel-safe fetch lifecycle for any display that loads data over RPC: abort
+ * rotation, staleness, error capture and status reporting. Consumers use
+ * `runFetch`, `cancelFetch`, `isLoading`, `error`, `statusMessage` and
+ * `fetchGeneration`. Every fetch foundation composes it: the per-region family
+ * directly, the global and comparative families through `KeyedFetchMixin`.
  */
 export default function FetchMixin() {
   return types
@@ -139,41 +97,31 @@ export default function FetchMixin() {
       activeSignal: undefined as AbortSignal | undefined,
       /**
        * #volatile
-       * bumps at every fetch end; autoruns read it to re-evaluate, and it
-       * doubles as the staleness epoch inside runFetch
+       * Bumps when a current fetch ends (never for a superseded one) and on
+       * `cancelFetch`, not on `cancelFetchByUser`, which is what makes a user
+       * cancel durable. Fetch autoruns read it to re-evaluate.
        */
       fetchGeneration: 0,
 
       /**
        * #volatile
-       * Bumped by `reload()` and read unconditionally by the fetch autoruns,
-       * so a user retry re-runs the body even where nothing else moved — after
-       * an error every other fetch input is unchanged. It is also the half
-       * that survives a `reload()` override that forgets to invalidate, which
-       * is the dead Retry button `makeRetryContractCheck` reports. Declared
-       * here because this is the one mixin every fetch foundation composes,
-       * the same argument that put `fetchInert` below.
+       * Bumped by `reload()` and read unconditionally by every fetch autorun,
+       * so a retry re-runs the body even when no other input moved, as after
+       * an error. `makeRetryContractCheck` reports a bump that fetches
+       * nothing: a dead Retry button.
        */
       reloadCounter: 0,
 
       /**
        * #volatile
-       * This display's status field, and the only thing that writes it: one
-       * throttle window, one slot per concurrent operation, so N parallel
-       * per-region fetches thin to one stream between them rather than N and a
-       * second operation cannot end the first one's label (ADR-081). Lent whole
-       * to `createAbortRotation` by a display that also runs a bare-autorun
-       * fetch — see `StatusReporter`.
+       * The display's status field's only writer: one throttle window, one
+       * slot per concurrent operation, so parallel per-region fetches thin to
+       * one stream and one operation cannot end another's label (ADR-081).
        */
       statusWindow: createStatusWindow(writeStatus(self)),
 
-      // error / statusMessage / statusProgress below duplicate BaseDisplay's,
-      // so this mixin composes standalone (its own tests) as well as onto a
-      // display. In a real composition one set wins — which is exactly why the
-      // throttle policy lives in the shared `createStatusWindow` and not in
-      // either `setStatusMessage` body. Don't "fix" the duplication by
-      // extracting a mixin: see ADR-041, the compose layer breaks type
-      // inference in unrelated display chains.
+      // error / statusMessage / statusProgress duplicate BaseDisplay's so this
+      // mixin composes standalone; ADR-041 is why no shared mixin holds them.
 
       /**
        * #volatile
@@ -197,33 +145,21 @@ export default function FetchMixin() {
 
       /**
        * #volatile
-       * true after the user explicitly cancels a load (the loading overlay's
-       * cancel button → `cancelFetchByUser`). A durable, blocking state — unlike
-       * `cancelFetch`, it does not retrigger the fetch autoruns — so the load
-       * stays stopped until the user retries (`reload`) or the viewport changes.
-       * Any new fetch clears it (`runFetch` resets it at the start).
+       * True after the user cancels a load from the loading overlay. Unlike
+       * `cancelFetch` it does not retrigger the fetch autoruns, so the load
+       * stays stopped until `reload` or a viewport change; any new fetch
+       * clears it.
        */
       fetchCanceled: false,
     }))
     .volatile(self => ({
       /**
        * #volatile
-       * **The latest-wins machine this mixin is a wrapper around**, and not a
-       * second one: `createAbortRotation` owns abort rotation, the
+       * The latest-wins machine `runFetch` wraps: abort rotation, the
        * `isCurrent` guard, the status slot and the supersede-versus-end rule
-       * (ADR-080, ADR-081), for every fetch in the codebase that has one.
-       * `runFetch` adds the observable bookkeeping a display needs on top —
-       * `isLoading`, `error`, `fetchGeneration`, `fetchCanceled` — and nothing
-       * else.
-       *
-       * A display's *primary* fetch is this wrapper; a second concurrent
-       * fetch on the same node holds a separate rotation, which is why the
-       * primitive is the thing that exists and this is the thing built on it
-       * (ADR-054 §1, the one section ADR-105 keeps).
-       *
-       * It is lent this display's `statusWindow`, so the fetch takes a slot on
-       * the one field rather than opening a second window over it, which is the
-       * purpose of `StatusReporter`.
+       * (ADR-080, ADR-081). A second concurrent fetch on the same display
+       * holds its own rotation (ADR-054 §1). It takes a slot on this
+       * display's `statusWindow` rather than opening a second window.
        */
       fetchRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
@@ -241,10 +177,9 @@ export default function FetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * `isLoading` widened to cover a user-canceled load: what a hover gate
-       * wants, since neither state has a frame on screen that a hit describes.
-       * Not a phase input — `computeActivityPhase` reads the two apart, because
-       * a cancel is finished (`canceled`) where a fetch is not (`loading`).
+       * `isLoading` or a user-canceled load: neither has a frame on screen for
+       * a hover to describe. Not a phase input, since `computeActivityPhase`
+       * tells `loading` from `canceled`.
        */
       get isLoadingOrCanceled() {
         return self.isLoading || self.fetchCanceled
@@ -253,40 +188,15 @@ export default function FetchMixin() {
       /**
        * #getter
        * Overridable hook (default false): the states where this display
-       * deliberately skips fetching, so its data stays empty.
-       * Sequence sets it past base resolution ("Zoom in to see sequence"); LD
-       * sets it with the triangle toggled off.
+       * deliberately fetches nothing, such as sequence past base resolution or
+       * LD with the triangle off. Three readers depend on it: the phase
+       * (`computeActivityPhase`), which would otherwise scrim the placeholder;
+       * the SVG export (`computeSvgReady`), whose unbounded wait would hang the
+       * view's export; and the retry contract check, which would report a dead
+       * Retry. ADR-082.
        *
-       * **One hook has three readers.** A display that gains such a state
-       * declares it once, which covers the reader it would otherwise forget,
-       * always the one outside the display:
-       *
-       * - the phase (`computeActivityPhase`), which otherwise parks a scrim
-       *   over the placeholder, or a canceled overlay once Cancel is clicked;
-       * - the SVG export (`computeSvgReady`'s `extraTerminal`), whose
-       *   `awaitSvgReady` is an unbounded `when`, so one such display hangs the
-       *   whole view's export;
-       * - the retry contract check (`makeRetryContractCheck`), which would
-       *   otherwise report a dead Retry on a display correctly declining to
-       *   load anything.
-       *
-       * `fetchInert` replaces three hooks: `loadingSuppressed`,
-       * `svgReadyExtraTerminal` on each of the two foundations, and
-       * `fetchInert` on the comparative family, which had already collapsed
-       * them. Both LGV displays that override it returned one expression for
-       * all three, and the global family hard-coded one of the three to `false`
-       * for a while, so LD could express only half its state. All three fetch
-       * families declare it here since the comparative one composed this mixin
-       * (ADR-105), so the retry check reads one field everywhere. ADR-082.
-       *
-       * A hook rather than a `displayPhase` override, because overriding the
-       * getter means restating the whole loading condition. Sequence held a
-       * verbatim copy of the other terms that way, and a copy misses any term
-       * added to the condition later.
-       *
-       * `fetchInert` lives **here** because this is the one mixin all three display
-       * foundations compose. Same argument, one level down, that put
-       * `rendersCanvas` on `RenderLifecycleMixin` beside `canvasDrawn`.
+       * Override this rather than `displayPhase`, which would restate the
+       * whole loading condition and miss any term added to it later.
        */
       get fetchInert(): boolean {
         return false
@@ -294,28 +204,15 @@ export default function FetchMixin() {
 
       /**
        * #getter
-       * Overridable hook (default false), read only by the retry contract check
-       * (`makeRetryContractCheck`): "this run declined because a prerequisite
-       * fetch in another autorun has not landed, and its arrival wakes this one
-       * again". It **defers** the retry verdict to that later run rather than
-       * waiving it, so a display cannot spend its retry on a decline it called
-       * preliminary.
-       *
-       * Two displays set it, one per fetch foundation, so it lives beside
-       * `fetchInert` rather than on either: HiC's contacts fetch declines until
-       * `CoreGetInfo` lands, and `LinearVariantDisplay`'s
-       * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
-       * that wakes the prerequisite's autorun as well as the display's.
-       *
-       * **It has to be strictly narrower than the gate it explains.** One that
-       * restates the gate's negation makes every decline a deferred one. No run
-       * is then ever judged, which exempts the display from the check. HiC does
-       * this deliberately, because its gate and
-       * its prerequisite are one condition; what covers its retry instead is
-       * `LinearHicDisplay/infoFetchFailure.test.ts`.
-       *
-       * Not for a display deliberately not fetching at all — that is
-       * `fetchInert` above, which the loading scrim and the export read too.
+       * Overridable hook (default false), read only by the retry contract
+       * check: this run declined because a prerequisite fetch in another
+       * autorun has not landed, and its arrival wakes this one. It defers the
+       * retry verdict to that run rather than waiving it, so it must be
+       * strictly narrower than the gate it explains; one restating the gate's
+       * negation exempts the display from the check. HiC's contacts (waiting
+       * on `CoreGetInfo`) and `LinearVariantDisplay` (waiting on
+       * `sourcesBase`) set it. For a display not fetching at all, use
+       * `fetchInert`.
        */
       get awaitingPrerequisite(): boolean {
         return false
@@ -324,23 +221,12 @@ export default function FetchMixin() {
       /**
        * #getter
        * Overridable hook (default false), read by `computeActivityPhase` and
-       * `foundationSvgReady`: a load this display depends on beyond its primary
-       * fetch has not landed for the first time, so the frame the primary fetch
-       * calls current is still missing something. Multi-way synteny sets it
-       * until its lane genes and lane links first arrive, so an export or a
-       * capture never lands between the ortholog fetch and the gene models that
-       * fill the lanes. `TreeSidebarMixin` sets it while a declared
-       * `runClustering` run is due, so the display draws no rows before clustering
-       * orders them.
-       *
-       * A hook rather than a `displayPhase` override, for the reason
-       * `fetchInert` is one: that display overrode the getter, restating the
-       * foundation's two arguments verbatim to append one term, and a copy like
-       * that misses any term added to the foundation later.
-       *
-       * Not `dataSuperseded`, which holds the export through every later
-       * refetch too: a display saying this wants the scrim on the first landing
-       * only, since later lane fetches redraw over lanes already on screen.
+       * `foundationSvgReady`: a load beyond the primary fetch has not landed
+       * for the first time, so the frame is still missing something. Multi-way
+       * synteny sets it until its lane genes and links first arrive;
+       * `TreeSidebarMixin` sets it while a declared clustering run is due.
+       * Unlike `dataSuperseded`, it holds the scrim and export on the first
+       * landing only.
        */
       get awaitingDependentData(): boolean {
         return false
@@ -351,17 +237,10 @@ export default function FetchMixin() {
       return {
         /**
          * #getter
-         * The settings axis every fetch family invalidates on: this display's
-         * `rpcProps()` payload and its adapter config, as one value compared
-         * structurally. The per-region family watches it from
-         * `SettingsInvalidate` and stamps it on each region, the keyed
-         * families fold it into `currentFetchKey`, and the byte gate measures
-         * under it — one getter, so no two can come to invalidate on
-         * different axes.
-         *
-         * `undefined` inside the payload is a real state and a class instance
-         * compares by its fields, which a serialized key could not say;
-         * `makeSettingsFetchInputs` has why.
+         * The settings axis every fetch family invalidates on: `rpcProps()`
+         * and the adapter config, as one value compared structurally. The
+         * per-region family stamps it on each region, the keyed families fold
+         * it into `currentFetchKey`, and the byte gate measures under it.
          */
         get settingsFetchInputs(): unknown {
           return settings.get()
@@ -377,10 +256,8 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * Unthrottled: a display writing a phase label by hand must see every
-       * write land. The high-frequency RPC stream is thinned one level up, by
-       * the streams `self.statusWindow` hands out — and aggregated across them,
-       * which a write by hand is not.
+       * Unthrottled, so a phase label written by hand always lands; the RPC
+       * stream is thinned by the slots `statusWindow` hands out.
        */
       setStatusMessage(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
@@ -395,52 +272,22 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * Abort the in-flight fetch (if any) and retire its slot. The shared
-       * preamble of both cancel paths; the difference between them is only what
-       * they do to `fetchCanceled` / `fetchGeneration` afterward.
+       * Abort the in-flight fetch, if any, and retire its status slot: the
+       * shared preamble of both cancel paths. It never resets the window,
+       * which would drop a sibling operation's queued status write on every
+       * `clearAllRpcData` (ADR-081); only teardown resets it.
        */
       stopActiveFetch() {
-        // Unconditional, unlike the signal check it replaced: `cancel` is
-        // already a no-op with nothing in flight, and calling it anyway retires
-        // a slot a torn-down fetch left voting.
-        //
-        // It retires this fetch's SLOT and nothing else. The window is not reset
-        // here — `reset` is for teardown, and this runs on every
-        // `clearAllRpcData`, so a display with a second operation reporting
-        // (HiC's header read, the multi-sample sources fetch, a clustering run)
-        // would have that operation's queued write dropped by every settings
-        // change. The write that goes first is the re-derive `clear` queues to
-        // move the field off the fetch's label and onto the sibling's, which is
-        // the ADR-081 failure exactly.
         self.fetchRotation.cancel()
         self.activeSignal = undefined
       },
       /**
        * #action
-       * Open one operation's slot on the display's status field: an RPC
-       * `statusCallback` throttled through the display-wide window and guarded
-       * so a callback that fires after the node is torn down (RPCs resolve
-       * their status stream asynchronously) is a safe no-op, plus the `clear`
-       * that retires the slot when the operation ends.
-       *
-       * **Every operation on the display opens one**, and the two come back
-       * together because an operation that never retires keeps reporting status
-       * for a phase that is over. The viewport fetch (`runFetch`), the clustering run
-       * and a lent `createAbortRotation` are three of them on one field.
-       * Each holds its own slot, so one finishing does not overwrite the
-       * status of the other two (ADR-081).
-       *
-       * `isCurrent` is required and has no "node is alive" default, because
-       * a live node is not enough: a *superseded* fetch is on a live
-       * node, and its late status repainting the overlay of the fetch that
-       * replaced it is the failure this guards. `runFetch` passes `!isStale()`,
-       * and every display gets that through `ctx.statusCallback` unasked;
-       * a caller outside a fetch (the clustering autorun) passes a flag for its
-       * run. Defaulting to `isAlive` made the loose answer the easy one and
-       * five displays took it.
-       *
-       * The rotation opens the slot for `runFetch`; this method is for an
-       * operation outside any fetch, the tree sidebar's clustering run.
+       * Open a slot on the display's status field for an operation outside any
+       * fetch, such as the tree sidebar's clustering run: a throttled RPC
+       * `statusCallback` and the `clear` that retires it. `isCurrent` is
+       * required because a live node is not enough: a superseded run's late
+       * status must not repaint the overlay of the run that replaced it.
        */
       openStatusStream(isCurrent: () => boolean) {
         return self.statusWindow.open({ isCurrent })
@@ -449,10 +296,9 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
-       * callers can retrigger fetch autoruns even when nothing was in flight).
-       * This is the *internal* reset `clearAllRpcData` runs — it clears any
-       * user-cancel flag so the retrigger actually re-fetches.
+       * Cancel any in-flight fetch, clear a user cancel and bump
+       * `fetchGeneration`, so the fetch autoruns re-fetch. The internal reset
+       * `clearAllRpcData` runs.
        */
       cancelFetch() {
         self.stopActiveFetch()
@@ -461,11 +307,9 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * User-initiated cancel from the loading overlay. Stops the in-flight
-       * fetch and sets the durable `fetchCanceled` state. Unlike
-       * `cancelFetch`, it does not bump fetchGeneration, so the fetch autoruns
-       * do not immediately restart the load. The user retries via `reload`
-       * (the overlay's retry button), or it clears on the next viewport change.
+       * The loading overlay's Cancel: stop the fetch and set the durable
+       * `fetchCanceled`, without bumping `fetchGeneration`, so nothing
+       * restarts the load until `reload` or a viewport change.
        */
       cancelFetchByUser() {
         self.stopActiveFetch()
@@ -473,15 +317,12 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * The display's half of the retry contract (DISPLAYCHROME.md), in the
-       * one mixin every fetching LGV display composes: clear the error the
-       * banner is showing, clear the durable user-cancel synchronously so the
-       * overlay flips from "canceled" to "loading" now rather than when the
-       * debounced fetch begins, and bump the counter every fetch trigger reads
-       * unconditionally. Each foundation chains this and adds the one
-       * invalidation its freshness gate needs; a display with extra
-       * teardown chains the foundation's. `reloadReachesCounter.test.ts` reads
-       * every `reload()` in the tree for the override that forgets.
+       * The display's half of the retry contract (DISPLAYCHROME.md): clear
+       * the error, clear a user cancel at once so the overlay flips to
+       * loading, and bump `reloadCounter`. Each foundation chains this and adds
+       * the invalidation its freshness gate needs. An override that neither
+       * chains nor bumps the counter turns the retry check off;
+       * `reloadReachesCounter.test.ts` reads every `reload()` in the tree.
        */
       reload() {
         self.setError(undefined)
@@ -490,34 +331,19 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * Abort an in-flight fetch on teardown. Without this, a
-       * display destroyed mid-fetch (track/view closed while loading) never
-       * signals the worker to abort the now-useless work, and its in-flight HTTP
-       * reads keep downloading. MST auto-chains lifecycle hooks, so a composing
-       * display can still define a beforeDestroy.
+       * Abort an in-flight fetch on teardown, so a closed track stops
+       * downloading, and reset the status window, whose trailing write still
+       * holds a timer after the last fetch ends.
        */
       beforeDestroy() {
         self.stopActiveFetch()
-        // and the window, which nothing short of teardown may reset: a display
-        // destroyed BETWEEN fetches — the common case, since a fetch that
-        // finished retired its own slot — still has a trailing write standing on
-        // a timer. The write itself is already a no-op (the window's sink
-        // re-reads `isAlive`), but the timer is not, and jest reports a worker
-        // that will not exit rather than anything about a display.
-        //
-        // Second of two owners of a window that end it with the thing that owns
-        // it; `useFetch`'s effect cleanup is the other, and the rotation's own
-        // `dispose` is this same call one layer down.
         self.statusWindow.reset()
       },
       /**
        * #action
-       * The `onBegin` half of a fetch's bookkeeping: publish the in-flight
-       * signal (`isLoading`) and clear the durable user-cancel — a load starting
-       * is the single clear point that covers every retrigger path (reload,
-       * viewport change, settings invalidate). A separate action for the
-       * same reason `endFetch` is: `installFetch`'s lifecycle callbacks run
-       * outside any MST flow this mixin owns.
+       * The `onBegin` half of a fetch's bookkeeping: publish the signal
+       * (`isLoading`) and clear a user cancel, the one clear point every
+       * retrigger path passes through.
        */
       beginFetch(signal: AbortSignal) {
         if (self.activeSignal) {
@@ -529,12 +355,9 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * The `finally` half of `runFetch`'s bookkeeping, a separate action
-       * because `runFetchOnce`'s `finally` resumes on a microtask the flow does
-       * not own — a direct volatile write there is outside the action context,
-       * which is the one thing hoisting the sequence into a shared function
-       * costs. The stale branch is a superseded fetch, which must not clear the
-       * loading flag the run that replaced it just set.
+       * The `onEnd` half, an action because `runFetchOnce`'s `finally` runs
+       * outside the flow. A superseded fetch writes nothing, or it would clear
+       * the loading flag of the fetch that replaced it.
        */
       endFetch(current: boolean) {
         if (current) {
@@ -547,36 +370,20 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * Run a cancel-safe fetch (cancels any prior). The work callback gets a
-       * FetchContext with a signal to forward to the RPC and an isStale()
-       * check to short-circuit commits once the user has moved on.
-       *
-       * **The MST-flow wrapper over the shared `runFetchOnce` sequence**, and
-       * only the wrapper: the begin/clear/run/commit/error/end order, and the
-       * rules that keep a superseded run from writing back, are the same
-       * function every other fetch in the tree runs. What this adds is the
-       * observable bookkeeping a display needs — `isLoading` through
-       * `activeSignal`, `fetchGeneration`, the user-cancel clear — and the
-       * flow itself, which is an action, so `work`'s synchronous prefix runs
-       * untracked wherever a fetch autorun calls this.
+       * Run a cancel-safe fetch, superseding any prior one. `work` gets a
+       * `FetchContext` with the signal to forward to the RPC and `isStale()`
+       * to skip commits once the user has moved on. The sequence is the shared
+       * `runFetchOnce`; this adds the observable bookkeeping and the flow,
+       * which runs `work`'s synchronous prefix untracked.
        */
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
-        // Dev-only, and the one place every family's fetches pass through, which
-        // is why the retry check watches here: a fetch answers an outstanding
-        // `reload()` wherever that reload reached it from, including a `reload()`
-        // that fetches directly instead of leaving it to a fetch autorun.
+        // Every family's fetches pass here, so a fetch answers an outstanding
+        // `reload()` wherever that reload reached it from.
         noteFetchStarted(self)
-        // Rotating IS the supersede: it stops the prior signal and opens this
-        // fetch's slot before the run being replaced reaches its `finally`,
-        // which is what keeps the label the overlay is showing alive across the
-        // handover. The guard it hands back closes on a newer fetch, on
-        // `cancel`, on teardown, and on this fetch's own `end` — the four ways a
-        // fetch stops being the answer.
         const active = self.fetchRotation.begin()
         yield runFetchOnce<void, void>(self, active, undefined, {
           run: (_args, ctx) => work(ctx),
-          // the work callback commits through `ctx` as each region's payload
-          // lands, so this family has no single payload to hand a commit phase
+          // the work callback commits through `ctx` as each region lands
           commit: () => {},
           ...fetchMixinLifecycle(self),
         })

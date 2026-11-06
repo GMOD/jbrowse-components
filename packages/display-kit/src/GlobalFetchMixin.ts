@@ -17,36 +17,21 @@ import type { RegionHost } from './regionHost.ts'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
- * The one spelling of "which block set is this" every global display's
- * `viewSignature` builds on. Block keys encode `assembly:refName:start:end` (and
- * orientation), so the joined string moves exactly when the display would
- * refetch — a block entering, a zoom re-snap — and not on a scroll inside the
- * loaded blocks.
+ * A block set as the string every global display's `viewSignature` builds on:
+ * it moves when a block enters or the zoom re-snaps, not on a scroll inside
+ * the loaded blocks.
  */
 export function blockKeySignature(blocks: { key: string }[]) {
   return blocks.map(b => b.key).join(',')
 }
 
 /**
- * **The** foundation for a display holding a single global (non-regional)
- * dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes.
- *
- * Composes:
- *   - RegionTooLargeMixin (regionTooLarge, force-load, …)
- *   - RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …)
- *   - KeyedFetchMixin (FetchMixin's runFetch, cancelFetch, isLoading, error,
- *                      statusMessage, fetchGeneration, plus the
- *                      `currentFetchKey` / `loadedFetchKey` freshness pair
- *                      the comparative family composes too)
- *
- * What remains here is what only an LGV display can supply: the hosting
- * `RegionHost`, the static-block signature every `viewSignature` in this family
- * starts from, and the readiness getters that read the view — `viewportEmpty`,
- * `canRender`, `paintInert`, `svgReady`, `displayPhase`.
- *
- * The mixin installs no autoruns. Each display owns its fetch trigger, using
- * the `installGlobalFetchAutorun` skeleton and supplying its `prepare` /
- * `run` / `commit` phases.
+ * The foundation for a display holding one non-regional dataset: HiC's contact
+ * matrix, the LD triangle, multi-way synteny's lanes. Composes
+ * `RegionTooLargeMixin`, `RenderLifecycleMixin` and `KeyedFetchMixin`, and adds
+ * the host, the block signatures and the readiness getters that read the view.
+ * It installs no autoruns: each display installs its fetch with
+ * `installGlobalFetchAutorun`.
  *
  * #stateModel GlobalFetchMixin
  * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display installs them with `installGlobalFetchAutorun`.
@@ -64,9 +49,8 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The hosting view as the `RegionHost` contract — see `containingHost` for the cast it
-       * owns, why the name is `host` and not `view`, and why both foundations
-       * still declare the name over one body.
+       * The view this display reads regions, viewport and scale from; see
+       * `containingHost`.
        */
       get host(): RegionHost {
         return containingHost(self)
@@ -82,10 +66,9 @@ export default function GlobalFetchMixin() {
       },
       /**
        * #getter
-       * The static-block set as a signature, or `undefined` before the view is
-       * measured — the building block every `viewSignature` in this family
-       * starts from. Multi-way synteny is exactly this; HiC appends
-       * its resolution. Declared here so the initialized gate is spelled once.
+       * The static-block set as a signature, `undefined` before the view is
+       * measured: what a `viewSignature` starts from. HiC appends its
+       * resolution.
        */
       get staticBlockSignature(): string | undefined {
         const { host } = this
@@ -108,31 +91,23 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * No content block is on screen, so this display has nothing to fetch and
-       * nothing to paint — see `viewportEmpty.ts` for the one viewport that
-       * reaches it, how narrow that is, and why the state still has to be
-       * terminal rather than a permanent scrim. Both foundations declare it over
-       * that one expression, the same way they each declare `host` and
-       * `paintInert`.
+       * No content block is on screen, so there is nothing to fetch or paint;
+       * see `viewportEmpty.ts`.
        */
       get viewportEmpty(): boolean {
         return viewportEmpty(self.host)
       },
       /**
        * #getter
-       * Overrides `RenderLifecycleMixin`'s default-true hook with the LGV
-       * precondition both foundations share — see `foundationCanRender`.
+       * `RenderLifecycleMixin`'s hook: the view has initialized.
        */
       get canRender(): boolean {
         return foundationCanRender(self)
       },
       /**
        * #getter
-       * Fills `RenderLifecycleMixin`'s hook off `fetchInert`: a display that
-       * will never fetch here shows a placeholder where its canvas would be, so
-       * `painted` and the pre-first-paint scrim term stop waiting on a paint
-       * that cannot come. This is `fetchInert` negated, so Sequence and LD need no second
-       * override.
+       * `RenderLifecycleMixin`'s hook: a display that will not fetch shows a
+       * placeholder where its canvas would be.
        */
       get rendersCanvas(): boolean {
         return !self.fetchInert
@@ -141,46 +116,26 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
-       * failed fetch has to read as finished to the consumers outside the
-       * display, and `foundationPaintInert` for the second such state and why
-       * both fetch families answer it through one function. Overridable, as the
-       * hook is: a display with a third inert state overrides it.
+       * `RenderLifecycleMixin`'s `paintInert` hook; see
+       * `foundationPaintInert`. Overridable for a further inert state.
        */
       get paintInert(): boolean {
         return foundationPaintInert(self)
       },
       /**
        * #getter
-       * Policy single-sourced in `computeSvgReady`; this family supplies only
-       * the freshness half, which `foundationSvgReady` reads as `dataCurrent`
-       * or the vacuous currency of `viewportEmpty`. Note it requires the dataset
-       * to actually be current, not merely "not currently fetching": the fetch
-       * trigger is a debounced `afterAttach` autorun, so at export time
-       * `isLoading` can still be false with no data yet — a
-       * `displayPhase !== 'loading'` test would then capture an empty render.
-       * Never gates on `canvasDrawn`, which an off-screen export never sets.
-       * Off-screen renderers gate on it via `awaitSvgReady(model)`.
+       * An SVG export can read this display's data; off-screen renderers wait
+       * on it through `awaitSvgReady(model)`. See `foundationSvgReady`.
        */
       get svgReady(): boolean {
         return foundationSvgReady(self)
       },
       /**
        * #getter
-       * The display's mutually-exclusive visual state, mapped in
-       * `foundationDisplayPhase` — every foundation calls it and supplies only
-       * its staleness argument, so a term added to `computeActivityPhase` reaches
-       * all of them without being wired twice.
-       *
-       * This family's argument is the constant `true`, deliberately: a global
-       * display keeps the last frame up through a refetch (worker output is
-       * genomic, so the stale frame draws correctly under the live view
-       * transform), so a pan or zoom shows no scrim beyond the `isLoading`
-       * window. The pre-first-paint scrim it *does* want — the gap between mount
-       * and `isLoading` going true, which on HiC is the `CoreGetInfo` round trip
-       * its first fetch waits on — is `computeActivityPhase`'s shared
-       * `rendersCanvas && !canvasDrawn` term, not anything this family spells
-       * out.
+       * The display's visual state, mapped by `foundationDisplayPhase`. This
+       * family's staleness argument is the constant `true`: the last frame is
+       * genomic and draws correctly under the live view, so a pan or zoom shows
+       * no scrim beyond the `isLoading` window.
        */
       get displayPhase(): DisplayPhase {
         return foundationDisplayPhase(

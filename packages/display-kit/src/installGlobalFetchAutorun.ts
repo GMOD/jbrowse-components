@@ -19,14 +19,9 @@ import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 
 /**
- * This family's spelling of the shared three-phase contract. The rules live on
- * {@link FetchPhases}; the comparative family names the same type over its own
- * context.
- *
- * `run` may answer the worker's refusal marker in place of a payload, which is
- * how the byte gate reaches this family: the RPC takes `resolvedByteLimit()`,
- * measures before it downloads, and the shared commit turns the marker into a
- * byte measurement and no display commit.
+ * This family's spelling of {@link FetchPhases}. `run` may answer the
+ * worker's byte-gate refusal in place of a payload; the shared commit turns it
+ * into a measurement and no display commit.
  */
 export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
   FetchPhases<TArgs, TResult, FetchContext>,
@@ -38,45 +33,20 @@ export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
   ) => Promise<TResult | RegionTooLargeResult | undefined>
 }
 
-// `KeyedFetchHost` is the rotation this family lends the skeleton, the
-// begin/end/error trio, and the freshness pair with the commit that stamps it —
-// the key, not `dataCurrent`: that one also carries `dataSuperseded`, which
-// holds the export and must not refetch. The byte gate's commit is this
-// family's own.
 export interface GlobalFetchHost extends KeyedFetchHost, GateCommitHost {}
 
 export interface GlobalFetchAutorunHost
   extends GlobalFetchHost, FetchSkeletonHost {
-  // `FetchMixin`'s: the durable user-cancel flag the viewport-change clear
-  // reads (required here where the skeleton leaves it optional, since this
-  // family has the Cancel button), and the internal reset that clear runs.
+  // read by the viewport-change clear of a user cancel
   fetchCanceled: boolean
   cancelFetch: () => void
-  // `FetchMixin`'s, read only by the retry contract check the skeleton
-  // installs: "a prerequisite fetch has not landed" defers the verdict.
   awaitingPrerequisite: boolean
-  // The gate's own two, and neither is on the base above: the plan captures and
-  // commits, the trigger judges whether a fetch is owed.
-  // `RegionTooLargeMixin`'s combined skip is not listed as its two terms — this
-  // helper reads only the combined one, and naming the parts here would invite
-  // the expression back. A display that opts into no byte gate reads
-  // `regionTooLarge` as a literal false, which makes it false too.
   isMinimized: boolean
   gateSkipsMeasuredViewport: boolean
-  // The verdict that outranks the committed side of the skeleton's freshness
-  // gate: while the banner holds, the stamp reads as absent, because the banner
-  // is hiding that data and this fetch is the only re-measure.
+  // while the banner holds, held data never answers: this fetch re-measures
   regionTooLarge: boolean
-  // The hosting view, for the not-yet-initialized gate: view-derived getters
-  // (`dynamicBlocks`, `width`) throw before init by design, so the signature
-  // must not be computed until this flips — and it is observable, so flipping
-  // re-runs the body.
+  // view-derived getters throw before init, so the gate waits on this
   host: { initialized: boolean }
-  // The stored-hover clear's inputs — `regionTooLarge` above is the fourth axis
-  // it watches, and `clearHoveredFeature` is
-  // `BaseDisplay`'s no-op default a storer overrides. Installed here for the
-  // reason the per-region foundation installs it: a display that forgets keeps
-  // naming what used to be under the cursor.
   scrollTop?: number
   clearHoveredFeature: () => void
 }
@@ -116,10 +86,8 @@ function globalFetchPlan<TArgs, TResult>(
       return args === undefined ? undefined : { args, signature }
     },
     run: async (issue, ctx) => {
-      // Captured in `run`'s synchronous prefix — at issue, and untracked by the
-      // skeleton's contract — so the measurement the result comes back with is
-      // labelled with the viewport and the tier it was asked for, not a live
-      // re-read at commit.
+      // captured at issue, so the measurement is labelled with the viewport
+      // and tier it was asked for
       const gate = openGateCommit(self)
       const result = await run(issue.args, ctx)
       return result === undefined ? undefined : { result, gate }
@@ -136,53 +104,21 @@ function globalFetchPlan<TArgs, TResult>(
 }
 
 /**
- * Install the fetch for a `GlobalFetchMixin` display: the shared `installFetch`
- * skeleton — which owns the leading-edge debounce, the unconditional
- * `reloadCounter` read, the durable cancel gate, the freshness gate with its
- * reload override, and both contract checks — declared over this family's
- * signature machinery. A display supplies only its own `prepare` / `run` /
- * `commit`.
+ * Install the fetch for a `GlobalFetchMixin` display on the shared
+ * `installFetch` skeleton, which owns the debounce, the `reloadCounter` read,
+ * the cancel gate, the freshness gate and the contract checks. A display
+ * supplies `prepare`, `run` and `commit`.
  *
- * What the declaration states, term by term:
+ * - **gate**: initialized, not minimized, and not a viewport the byte gate
+ *   already measured. A blocked display still fetches once per settled
+ *   viewport, since the RPC's measurement is what releases the banner.
+ * - **heldAnswers**: `currentFetchKey` against the committed stamp, under
+ *   `heldDataAnswers`, the same rule the per-region plan applies.
  *
- * - **gate** — not initialized, minimized, or the byte-gate skip. The last one
- *   is not "don't fetch" but "don't fetch a viewport you have already
- *   measured": a blocked display still runs its fetch once per settled
- *   viewport, because the RPC's measurement is the only thing that releases the
- *   banner, and `gateSkipsMeasuredViewport` (whose own reads move with the
- *   viewport) limits that to one run. Each gate term is an observable that
- *   flips on the transition the autorun should wake on, so a gated decline is
- *   safe — see reference/FETCH_KEYS.md §"The global-fetch trigger list must be read
- *   unconditionally". Liveness is not a term here: `installFetch` checks it
- *   above every gate, because `host` is a parent walk and so is nearly every
- *   other gate in the tree.
- * - **heldAnswers** — `currentFetchKey` (the display's `viewSignature` plus
- *   the `settingsFetchInputs` axis, so the viewport and every user setting are
- *   tracked wherever the compare runs) against the stamp `commitFetchResult`
- *   wrote, under `heldDataAnswers` — **the same function the per-region plan
- *   applies**, so the two families cannot come to disagree about whether held
- *   data answers while the banner is up. It does not: the banner is hiding
- *   that data and this fetch is the only re-measure. This was spelled as a
- *   `loadedKey` answering `undefined` under a refusal, which is the same
- *   precedence written a second way. The skeleton's reload epoch lets Retry
- *   override the gate with nothing to clear — `GlobalFetchMixin.reload()`
- *   still drops the stamp so `dataCurrent` goes false and the overlay shows.
- * - **plan / lifecycle** — {@link globalFetchPlan}'s issue-time capture and
- *   measure-or-commit, over `FetchMixin`'s begin/end bookkeeping and the
- *   mixin's own rotation, so `cancelFetch` and the Cancel button reach the
- *   fetch this installs.
- *
- * `rpcProps()` loop hazard: unlike MultiRegion's `SettingsInvalidate` (which
- * supersedes the fetch in a *separate, undelayed* autorun and so loops
- * synchronously if `rpcProps()` *returns* fetch-derived state — caught by
- * `makeSettingsLoopGuard`),
- * this fetch reads the key and starts the round trip in the *same* debounced
- * body. A fetch-derived value in the payload here loops on the async-fetch
- * cadence (refetch → commit → key changes → reschedule after `delay` →
- * refetch), a slow network thrash rather than a synchronous freeze, so a
- * within-tick counter cannot distinguish it from legitimate rapid interaction.
- * The invariant is the same: `rpcProps()` must return only user-controlled
- * settings, never fetched data (see reference/FETCH_KEYS.md §"rpcProps() loop trap").
+ * `rpcProps()` must return only user-controlled settings, never fetched data:
+ * here a fetch-derived value thrashes on the fetch cadence rather than
+ * freezing, so no loop guard catches it (FETCH_KEYS.md, "rpcProps() loop
+ * trap").
  */
 export function installGlobalFetchAutorun<TArgs, TResult>(
   self: GlobalFetchAutorunHost,
@@ -208,11 +144,8 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     ...fetchMixinLifecycle(self),
   })
 
-  // The other half of the durability rule, and the per-region family's twin
-  // (`ClearBlockingStateOnViewportChange`): a cancel lapses when the user moves
-  // the view, because the thing they stopped is no longer the thing they are
-  // looking at. Undelayed, and the flag is read `untracked` so setting it
-  // cannot fire this autorun and wipe it — only the viewport read may.
+  // A user cancel lapses when the view moves. The flag is read untracked, or
+  // setting it would fire this and wipe it.
   autorunOnReadyView(
     self,
     view => {
@@ -225,10 +158,6 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     { name: 'ClearCancelOnViewportChange' },
   )
 
-  // The per-region foundation's twin, so a global display that stores a hover
-  // owes only the `clearHoveredFeature` override. Until 2026-08-27 only that
-  // family installed it, and the one global display storing a hover
-  // (`MultiWaySyntenyDisplay`) clicked through a zoom onto the gene that used
-  // to be under the cursor.
+  // Drop a stored hover when the content it names moves.
   addDisposer(self, installClearHoverOnViewportChange(self))
 }

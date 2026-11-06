@@ -8,42 +8,19 @@ import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * A region a fetch stored, and which fetch stored it.
- *
- * One value rather than a `Region` map beside a key map: every operation
- * touched both — one `set`, one `delete`, one `clear` — so two maps meant three
- * places to keep in step, with no reader-side check to catch a slip. Two
- * records of one fact also made a refused region read as covered, one level
- * down, and the fix is the same: store the fact once.
- *
- * `LoadedRegion` extends `Region` instead of wrapping one, so the twenty-odd
- * readers that want the span keep reading it directly, and only
- * `isCacheValid` looks at the key.
+ * A region a fetch stored and the inputs it was stored under, as one record so
+ * the span, the stamp and the payload cannot disagree.
  */
 export interface LoadedRegion extends Region {
   /**
-   * The inputs the fetch that stored this region was issued under, as the two
-   * tiers `MultiRegionDisplayMixin.fetchInputs` publishes: the settings and
-   * adapter tier, and the display's zoom-derived worker arguments. Both are
-   * held so `staleSettingsDrawn` can compare the settings tier alone — the
-   * whole set moves on either, and only one of the two raises the scrim.
-   *
-   * The tiers are structural computeds, so every region one fetch stamps holds
-   * the same two objects and the compare short-circuits on identity.
+   * The inputs the storing fetch was issued under, as the two tiers
+   * `MultiRegionDisplayMixin.fetchInputs` publishes, so `staleSettingsDrawn`
+   * can compare the settings tier alone.
    */
   fetchInputs: FetchInputs
   /**
-   * The payload that fetch stored for this region.
-   *
-   * The display's `rpcDataMap` held this field in a second map, written by a
-   * separate action one tick after the span. `regionHasData` checked for that
-   * gap from the reader's side, and the canvas base model's layout grouping
-   * worked around it by re-deriving the region identity it needed out of the
-   * payload. The payload joins the record for the reason this interface fused
-   * the span and the stamp one level up.
-   *
-   * Optional only for the raw `setLoadedRegion` write a test stages a claim
-   * with; `commitRegion` requires it.
+   * The payload that fetch stored. Optional only for the raw
+   * `setLoadedRegion` write a test stages; `commitRegion` requires it.
    */
   payload?: RegionPayload
 }
@@ -83,89 +60,35 @@ export function payloadServesZoom(payload: RegionPayload, bpPerPx: number) {
 }
 
 /**
- * A {@link FetchContext} plus the one thing a per-region fetch can do that a
- * global one cannot: record that a region is loaded.
+ * A {@link FetchContext} plus what only a per-region fetch can do: record that
+ * a region is loaded.
  *
- * **`commitRegion` is called where the payload is stored, and that is the whole
- * rule.** `loadedRegions` is the span `isBlockCovered` judges the viewport
- * against, so it has to describe data that exists. It used to be written by
- * `fetchRegions` from the region list it *asked* for, once the work callback
- * returned — a second writer, working off the request while the display worked
- * off the response, and the two disagree exactly when a fetch stores less than
- * it asked for. A region refused by the in-fetch size gate then read as covered
- * against data it never received: the plan answered `covered` on every later
- * run, so nothing refetched and — because the ordinary fetch IS the gate's
- * re-measure — nothing re-measured either. On the byte axis that is a banner no
- * zoom can release; on the density axis, which falls with `bpPerPx`, the banner
- * goes and the display paints the previous, narrower payload across the whole
- * viewport with nothing on screen to say so.
- *
- * **The span is not a parameter**, and that is the half that makes the rule
- * structural rather than advisory: `commitRegion` names an index, and
- * `fetchRegions` resolves it against the very `needed` list it issued. A fetch
- * writing through this context can say "this region landed" and nothing else —
- * it cannot name a span, so it cannot claim one the fetch never asked for. What
- * is left to get wrong is forgetting the call, which costs a redundant refetch.
- *
- * No display holds one of these any more: the three helpers in
- * `fetchEachRegion.ts` are `fetchRegions`' only callers, and each makes the
- * commit itself at the granularity its shape has. What a display still decides
- * is whether to *store* a refused payload, and it decides it with the same
- * `isRegionRefused` test the helper applies to the same result — so the store
- * and the claim about it cannot come apart.
- *
- * Through this context, and only through it. `setLoadedRegion` is the raw write
- * underneath and does take a span, because the tests that stage an
- * already-loaded display need one. Nothing in production calls it directly, and
- * a display that starts to is precisely the case above — so the boundary is
- * written on that action too, rather than left for a reader to infer from this
- * paragraph being silent about it.
- *
- * The global family reached the same property from the other side.
- * `GlobalFetchPhases.commit` is a phase the skeleton invokes only when `run`
- * produced a result, so nothing is recorded from the request there either.
- * Per-region cannot simply adopt those phases: some displays make a
- * cross-region decision mid-fetch (a batched gate commit, a sample-set union,
- * one RPC serving every region), and a strict per-region `run`/`commit` has
- * nowhere to put it. Same invariant, two shapes, and the reason they differ is
- * that one dataset arrives once and N regions stream.
+ * Call `commitRegion` where the payload is stored. `loadedRegions` is the span
+ * `isBlockCovered` judges the viewport against, so it must describe data that
+ * exists: a region marked loaded that holds nothing (one the size gate
+ * refused, say) reads as covered, nothing refetches, and the gate never
+ * re-measures. The span is not a parameter: `commitRegion` names an index,
+ * resolved against the list `fetchRegions` issued, so a fetch cannot claim a
+ * span it never asked for. The runners in `fetchEachRegion.ts` make the call;
+ * `setLoadedRegion` is the raw write underneath, for tests.
  */
 export interface RegionFetchContext extends FetchContext {
   /**
-   * Store this region's payload. Over the span `fetchRegions` asked for it,
-   * resolved from `needed` — see above for why that is not the caller's to
-   * choose. Ignored once the fetch is stale, which is the same guard the write
-   * has always had, moved to where the write happens.
-   *
-   * The payload is the argument, so storing it and claiming it are one call
-   * and a display cannot do either alone.
+   * Store this region's payload over the span this fetch issued for it.
+   * Ignored once the fetch is stale.
    */
   commitRegion: (displayedRegionIndex: number, payload: RegionPayload) => void
 }
 
 /**
- * The two checks on `commitRegion`'s contract, kept together for the same
- * reason `makeSettingsLoopGuard` in `displayAutoruns` is: the mechanism reads
- * as mechanism, and what a violation costs is stated once where the check is
- * rather than inline where it fires. Both are counters, so they run in a
- * production build too and report through `contractReports`.
+ * The two ways a commit goes wrong, both counted so they report in production
+ * too:
  *
- * They cover the two directions a commit can be wrong, and only one of them is
- * still reachable by construction:
- *
- * - **naming a region the fetch never asked for**, which has no honest span, so
- *   the commit is dropped. Only a display doing its own bookkeeping can manage
- *   it.
- * - **never committing at all**, which spins rather than freezing: nothing reads
- *   as covered, the plan asks again, the fetch ends, `fetchGeneration` bumps,
- *   and the autorun re-fires. Loud in a network tab and invisible in a test,
- *   which is the shape a check is worth having for.
- *
- * The second is counted rather than reported on sight: a fetch can legitimately
- * store nothing while `regionTooLarge` is still false for one settled cycle,
- * because the worker gates on the live `bpPerPx` and the main-thread verdict
- * reads the debounced one. That resolves within a debounce; a missing call does
- * not.
+ * - naming a region the fetch never asked for, whose commit is dropped;
+ * - never committing, which spins: nothing reads as covered, so the plan asks
+ *   again after every fetch. Reported after three ungated empty fetches in a
+ *   row, since the worker's live `bpPerPx` can legitimately refuse one cycle
+ *   before the debounced verdict catches up.
  */
 export function makeCommitChecks(self: IStateTreeNode) {
   let emptyFetchRuns = 0
