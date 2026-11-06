@@ -1,4 +1,5 @@
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
+import { sidebarCovers } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -109,13 +110,21 @@ function getHoveredMatrixCell(
 
 /**
  * The matrix as a pointer surface: hover, click and right-click all resolve
- * through `getHoveredMatrixCell`.
+ * through `getHoveredMatrixCell`, and none hits under the sidebar. `x` runs
+ * from the column origin, `y` from the rows' top.
  */
 export function variantMatrixSurface(
   model: LinearVariantDisplayModel,
 ): VariantSurface<MatrixHit> {
   return {
-    getHit: (x, y) => getHoveredMatrixCell(model, x, y),
+    getHit: (x, y) =>
+      sidebarCovers(
+        model.sidebarBounds,
+        x + model.columnGeometry.left,
+        y + model.rowsTopOffset,
+      )
+        ? undefined
+        : getHoveredMatrixCell(model, x, y),
     getTooltip: hit => hit.fields,
     enrich: hit => enrichCellHit(model, hit),
     onHover: hit => {

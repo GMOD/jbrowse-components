@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { isFromPortal } from '@jbrowse/core/util/pressOwner'
+import { sidebarCovers } from '@jbrowse/tree-sidebar'
 
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type { SidebarBounds } from '@jbrowse/tree-sidebar'
 
 const MIN_DRAG_DISTANCE = 3
 
@@ -45,16 +47,17 @@ function pointInData(e: React.MouseEvent, dataLeft: number) {
 
 /**
  * Whether the hover crosshair and tooltip belong at `mouse` (display-relative
- * px). A captured drag keeps reporting the pointer past the track, where they
- * stop, as they did when leaving the track ended the drag.
+ * px): anywhere the sidebar does not cover, the coverage band above it
+ * included. A captured drag keeps reporting the pointer past the track, where
+ * they stop, as they did when leaving the track ended the drag.
  */
 export function showsHoverAt(
   mouse: { x: number; y: number },
-  track: { dataLeft: number; width: number; height: number },
+  track: { sidebarBounds: SidebarBounds; width: number; height: number },
   isDragging: boolean,
 ) {
   return (
-    mouse.x >= track.dataLeft &&
+    !sidebarCovers(track.sidebarBounds, mouse.x, mouse.y) &&
     (!isDragging ||
       (mouse.x <= track.width && mouse.y >= 0 && mouse.y <= track.height))
   )

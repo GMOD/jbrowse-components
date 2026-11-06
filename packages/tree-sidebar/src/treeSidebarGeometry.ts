@@ -78,8 +78,8 @@ export function treeSidebarOffset(model: TreeSidebarGeometryModel) {
 }
 
 // Right edge of the sidebar including its resize handle, or 0 when no tree is
-// shown. `TreeSidebarMixin` publishes it as `dataLeft`, which every pointer
-// handler on a sidebar display reads.
+// shown. `TreeSidebarMixin` publishes it as `dataLeft` and as the right edge of
+// `sidebarBounds`, which every pointer gate on a sidebar display reads.
 export function treeSidebarRightEdge(model: TreeSidebarGeometryModel) {
   const offset = treeSidebarOffset(model)
   return offset ? offset + TREE_RESIZE_HANDLE_WIDTH : 0

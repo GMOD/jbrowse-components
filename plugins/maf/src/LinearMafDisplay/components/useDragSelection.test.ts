@@ -320,7 +320,12 @@ test('a cancelled pointer ends the drag without a click', () => {
 })
 
 describe('hover while the pointer is captured', () => {
-  const track = { dataLeft: DATA_LEFT, width: WIDTH, height: HEIGHT }
+  const ROWS_TOP = 60
+  const track = {
+    sidebarBounds: { right: DATA_LEFT, top: ROWS_TOP },
+    width: WIDTH,
+    height: HEIGHT,
+  }
 
   test('past the track edge a drag shows no crosshair or tooltip', () => {
     for (const mouse of [
@@ -338,5 +343,12 @@ describe('hover while the pointer is captured', () => {
 
   test('the sidebar never shows them', () => {
     expect(showsHoverAt({ x: DATA_LEFT - 1, y: 100 }, track, false)).toBe(false)
+  })
+
+  // the sidebar covers the rows only, so the coverage band above them hovers
+  // across its full width
+  test('the band above the rows shows them left of the sidebar edge', () => {
+    const mouse = { x: DATA_LEFT - 1, y: ROWS_TOP - 1 }
+    expect(showsHoverAt(mouse, track, false)).toBe(true)
   })
 })

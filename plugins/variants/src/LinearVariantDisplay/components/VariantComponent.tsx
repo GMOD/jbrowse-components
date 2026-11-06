@@ -1,4 +1,5 @@
 import { backingScale, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
+import { sidebarCovers } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
@@ -130,13 +131,17 @@ function getHoveredFeature(
 /**
  * The genotype rows as a pointer surface: hover, click and right-click all
  * resolve through `getHoveredFeature`, so the tooltip, the widget and the menu
- * cannot name different cells.
+ * cannot name different cells. None of them hits under the sidebar, whose own
+ * hit box stacking above the canvas is then not what keeps them off it.
  */
 export function variantRowsSurface(
   model: LinearVariantDisplayModel,
 ): VariantSurface<VariantHit> {
   return {
-    getHit: (x, y) => getHoveredFeature(model, x, y),
+    getHit: (x, y) =>
+      sidebarCovers(model.sidebarBounds, x, y + model.rowsTopOffset)
+        ? undefined
+        : getHoveredFeature(model, x, y),
     getTooltip: hit => hit.fields,
     enrich: hit => enrichCellHit(model, hit),
     onHover: hit => {

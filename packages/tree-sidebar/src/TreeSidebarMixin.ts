@@ -88,6 +88,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
+import type { SidebarBounds } from '@jbrowse/display-ui'
 
 export type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
 
@@ -574,14 +575,23 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The display-px left edge of the data area: right of the dendrogram
-       * and its resize handle, 0 with no tree drawn. The canvas runs under
-       * the sidebar, so x maps to bp as anywhere else, but a pointer left of
-       * this is over the sidebar: hover, click, context menu and a drag's
-       * extent all stop here.
+       * The display-px left edge of the rows' data area: right of the
+       * dendrogram and its resize handle, 0 with no tree drawn. The canvas
+       * runs under the sidebar, so x maps to bp as anywhere else; a drag
+       * over the rows stops here, and a pointer gate reads `sidebarBounds`.
        */
       get dataLeft(): number {
         return treeSidebarRightEdge(self)
+      },
+      /**
+       * #getter
+       * The box the sidebar covers: left of `dataLeft`, from `rowsTopOffset`
+       * down, so a band stacked above the rows stays the display's across
+       * its full width. Every pointer gate reads it through
+       * `sidebarCovers`.
+       */
+      get sidebarBounds(): SidebarBounds {
+        return { right: treeSidebarRightEdge(self), top: self.rowsTopOffset }
       },
       /**
        * #getter

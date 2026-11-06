@@ -1,14 +1,18 @@
 import { Crosshairs } from '@jbrowse/core/ui'
+import { sidebarCovers } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
+
+import type { SidebarBounds } from '@jbrowse/display-ui'
 
 // Above the track content and its overlays, below the app chrome.
 const CROSSHAIR_Z_INDEX = 800
 
 /**
  * Cursor crosshair for a sidebar display, with every dimension derived from the
- * model: the guides span the track, and the vertical one stops at `dataLeft`,
- * the sidebar's right edge (handle included), where a genomic position means
- * nothing.
+ * model: the guides span the track, and the vertical one is dropped over the
+ * sidebar (`sidebarBounds`), where a genomic position means nothing. Over a band
+ * above the rows but left of the sidebar's edge it runs down to the sidebar's
+ * top. A guide without `mouseY` counts the pointer as in the rows.
  *
  * Lives here because that edge does. Every display that grew a crosshair
  * re-derived the same four props and re-picked the z-index, and they had already
@@ -27,19 +31,26 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
   model: {
     canvasWidthPx: number
     height: number
-    dataLeft: number
+    sidebarBounds: SidebarBounds
   }
   mouseX: number
   // omit for a vertical-only guide
   mouseY?: number
 }) {
+  const { sidebarBounds } = model
+  const covered = sidebarCovers(
+    sidebarBounds,
+    mouseX,
+    mouseY ?? sidebarBounds.top,
+  )
+  const aboveSidebar = !covered && mouseX < sidebarBounds.right
   return (
     <Crosshairs
       mouseX={mouseX}
       mouseY={mouseY}
       width={model.canvasWidthPx}
-      height={model.height}
-      minLeft={model.dataLeft}
+      height={aboveSidebar ? sidebarBounds.top : model.height}
+      minLeft={covered ? sidebarBounds.right : 0}
       zIndex={CROSSHAIR_Z_INDEX}
     />
   )

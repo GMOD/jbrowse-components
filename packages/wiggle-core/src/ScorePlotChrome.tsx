@@ -7,7 +7,7 @@ import {
   isContextMenuHost,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
-import { PointerLayer, axisPlotBox } from '@jbrowse/display-ui'
+import { PointerLayer, axisPlotBox, sidebarCovers } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { observer } from 'mobx-react'
 
@@ -18,6 +18,7 @@ import type {
   MouseTracker,
 } from '@jbrowse/core/ui'
 import type { ChromeModel } from '@jbrowse/display-kit/DisplayChrome'
+import type { SidebarBounds } from '@jbrowse/display-ui'
 import type { Mark } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
@@ -49,8 +50,7 @@ export type ScorePlotChromeModel<
 > = ChromeModel &
   RenderLifecycleModel<PerRegionRenderingBackend<TRegion, TState>> & {
     canvasWidthPx: number
-    // the row sidebar's right edge, past which the plot is not covered
-    dataLeft: number
+    sidebarBounds: SidebarBounds
     scrollableHeight: number
     setHoveredFeature: (hit?: Hit) => void
     selectFeature: (hit: Hit) => void
@@ -63,9 +63,9 @@ export type ScorePlotChromeModel<
  * composes `ContextMenuMixin`. `findHit` takes y from the plot's own top.
  * `findContextHit` is for a display whose menu is about something other than
  * the hovered record (the wiggle's column, which exists where no bin does).
- * Neither is asked left of `model.dataLeft`: the sidebar there takes its own
- * clicks, and they bubble here, so a click on a tree node would otherwise
- * also select the record painted under it.
+ * Neither is asked over the row sidebar (`model.sidebarBounds`): the sidebar
+ * takes its own clicks, and they bubble here, so a click on a tree node would
+ * otherwise also select the record painted under it.
  */
 export const ScorePlotChrome = observer(function ScorePlotChrome<
   Hit,
@@ -99,8 +99,10 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
     () => (canvas: HTMLCanvasElement) => createMarkBackend(canvas, marks),
     [marks],
   )
+  const overPlot = (x: number, y: number) =>
+    !sidebarCovers(model.sidebarBounds, x, y)
   const hitAt = (x: number, y: number) =>
-    x >= model.dataLeft ? findHit(x, y - box.yTop) : undefined
+    overPlot(x, y) ? findHit(x, y - box.yTop) : undefined
   const contextMenu = isScorePlotMenuHost<ContextHit>(model) ? model : undefined
   return (
     <DisplayChrome
@@ -122,12 +124,11 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
         contextMenu
           ? event => {
               const { x, y } = eventPoint(event)
-              const hit =
-                x < model.dataLeft
-                  ? undefined
-                  : findContextHit
-                    ? findContextHit(x, y - box.yTop)
-                    : (hitAt(x, y) as ContextHit | undefined)
+              const hit = !overPlot(x, y)
+                ? undefined
+                : findContextHit
+                  ? findContextHit(x, y - box.yTop)
+                  : (hitAt(x, y) as ContextHit | undefined)
               openContextMenuFromEvent(
                 contextMenu,
                 event,

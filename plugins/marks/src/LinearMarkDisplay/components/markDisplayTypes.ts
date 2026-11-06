@@ -11,6 +11,7 @@ import type {
 import type { MarkRenderingBackend } from '../model.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import type { SidebarBounds } from '@jbrowse/display-ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   ClusterProvenance,
@@ -45,7 +46,7 @@ export interface MarkDisplayModel
   facetLayout: FacetLayout
   axes: YAxis[]
   drawsRows: boolean
-  dataLeft: number
+  sidebarBounds: SidebarBounds
   svgSidebar: SvgSidebarProps | undefined
   sources: RowSource[]
   effectiveRowHeight: number

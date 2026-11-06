@@ -5,7 +5,11 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { DisplayCrosshairs, RowsPanel } from '@jbrowse/tree-sidebar'
+import {
+  DisplayCrosshairs,
+  RowsPanel,
+  sidebarCovers,
+} from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { MAF_MARKS } from '../../LinearMafRenderer/mafMarks.ts'
@@ -30,7 +34,7 @@ function createMafBackend(canvas: HTMLCanvasElement) {
 function rowUnder(model: LinearMafDisplayModel, x: number, y: number) {
   const { pos, rowIndex, inBands } = mafPointerAt(model, x, y)
   const row =
-    x >= model.dataLeft && !inBands && !pos.oob
+    !sidebarCovers(model.sidebarBounds, x, y) && !inBands && !pos.oob
       ? model.sources[rowIndex]
       : undefined
   return row ? { name: row.name } : undefined
@@ -51,7 +55,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   })
   function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
     const { x, y } = eventPoint(e)
-    const overData = x >= model.dataLeft
+    const overData = !sidebarCovers(model.sidebarBounds, x, y)
     // The hit resolves here because `closeContextMenu` runs before an item's
     // onClick.
     const { pos, baseBp, inBands, hover } = resolveMafPointerHit({
@@ -153,7 +157,7 @@ const MafBody = observer(function MafBody({
     mouse &&
     showsHoverAt(
       mouse,
-      { dataLeft: model.dataLeft, width, height: model.height },
+      { sidebarBounds: model.sidebarBounds, width, height: model.height },
       isDragging,
     )
       ? {

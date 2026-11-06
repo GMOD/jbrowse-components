@@ -2,6 +2,7 @@ import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextInfo } from './findHit.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { SidebarBounds } from '@jbrowse/display-ui'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -44,7 +45,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   showTree: boolean
-  dataLeft: number
+  sidebarBounds: SidebarBounds
   showRowSeparators: boolean
   showRowLabels: boolean
   drawsRowLabels: boolean

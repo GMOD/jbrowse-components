@@ -15,12 +15,12 @@ interface Hit {
   y: number
 }
 
-function makeModel(dataLeft = 0) {
+function makeModel(sidebarBounds = { right: 0, top: 0 }) {
   const model = {
     configuration: { displayId: 'probe' },
     height: 100,
     canvasWidthPx: 200,
-    dataLeft,
+    sidebarBounds,
     scrollableHeight: 0,
     displayPhase: 'ready' as const,
     painted: false,
@@ -127,11 +127,13 @@ test('a context hit of its own opens the menu where the hover hit is absent', ()
 
 // The tree sidebar draws over the plot's left and takes its own clicks, which
 // bubble to the chrome; a hit there would select the record under a tree node.
-describe('left of dataLeft, over the sidebar', () => {
+// It covers the rows only, so a band above them stays the plot's.
+describe('over the sidebar', () => {
   const DATA_LEFT = 40
+  const ROWS_TOP = 20
 
   function renderBehindSidebar() {
-    const model = makeModel(DATA_LEFT)
+    const model = makeModel({ right: DATA_LEFT, top: ROWS_TOP })
     const findHit = jest.fn((x: number, y: number): Hit => ({ x, y }))
     const findContextHit = jest.fn((x: number, y: number): Hit => ({ x, y }))
     const { getByTestId } = render(
@@ -155,6 +157,15 @@ describe('left of dataLeft, over the sidebar', () => {
     expect(model.selectFeature).toHaveBeenCalledWith({
       x: DATA_LEFT,
       y: 30 - YSCALEBAR_LABEL_OFFSET,
+    })
+  })
+
+  test('a click above the rows, left of the sidebar edge, selects', () => {
+    const { model, chrome } = renderBehindSidebar()
+    fireEvent.click(chrome, { clientX: DATA_LEFT - 1, clientY: ROWS_TOP - 1 })
+    expect(model.selectFeature).toHaveBeenCalledWith({
+      x: DATA_LEFT - 1,
+      y: ROWS_TOP - 1 - YSCALEBAR_LABEL_OFFSET,
     })
   })
 

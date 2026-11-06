@@ -194,7 +194,7 @@ describe('a display supplying the hooks', () => {
 })
 
 describe('the rows start under the display s bands and the focus chip s line', () => {
-  function makeBanded() {
+  function makeBanded(configuration = {}) {
     return types
       .compose(
         'BandedTreeDisplay',
@@ -215,8 +215,19 @@ describe('the rows start under the display s bands and the focus chip s line', (
           self.names = names
         },
       }))
-      .create({ configuration: {} })
+      .create({ configuration })
   }
+
+  it('bounds the sidebar to the rows, so the bands above them are not under it', () => {
+    const display = makeBanded({ rows: { tree: '(a,b);' } })
+    display.setNames(['a', 'b'])
+    display.setTreeAreaWidth(60)
+    expect(display.hierarchy).toBeDefined()
+    expect(display.sidebarBounds).toEqual({
+      right: 60 + TREE_RESIZE_HANDLE_WIDTH,
+      top: 40,
+    })
+  })
 
   it('reserves the line while a subset is kept, and gives it back on clearing', () => {
     const display = makeBanded()

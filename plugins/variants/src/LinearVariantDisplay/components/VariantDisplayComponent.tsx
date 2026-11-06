@@ -43,13 +43,11 @@ const layoutBackends: Record<
     }),
 }
 
-// The sidebar overlays only the rows, so its x-gate applies there alone; the
-// records band spans the full width above.
 function hoverGenomic(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
   if (bandAt(model.topBands, state.y) === 'records') {
     hoverVariantSurface(model, recordsBandSurface(model), state.x, state.y)
-  } else if (state.y < rowsTopOffset || state.x < model.dataLeft) {
+  } else if (state.y < rowsTopOffset) {
     model.clearHoveredFeature()
   } else {
     hoverVariantSurface(
@@ -65,7 +63,7 @@ function hoverGenomic(model: Model, state: MouseState) {
 // the column origin without re-rendering the chrome.
 function hoverColumns(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
-  if (state.y >= rowsTopOffset && state.x >= model.dataLeft) {
+  if (state.y >= rowsTopOffset) {
     hoverVariantSurface(
       model,
       variantMatrixSurface(model),

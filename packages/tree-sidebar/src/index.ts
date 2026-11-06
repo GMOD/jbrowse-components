@@ -5,6 +5,8 @@ export type { NewickNode } from '@gmod/newick'
 export type { TreeSpatialIndex } from './spatialIndex.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
+export { sidebarCovers } from '@jbrowse/display-ui'
+export type { SidebarBounds } from '@jbrowse/display-ui'
 export {
   SIDEBAR_HINT_LINE_PX,
   treeIsShowing,
