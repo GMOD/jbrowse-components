@@ -782,14 +782,19 @@ if [ -n "$MSA" ]; then
   fi
   # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
   RESULTS=$(dirname "$(ls -1dt proteomes/OrthoFinder/Results_*/MultipleSequenceAlignments | sed -n 1p)")
+  ORTHOGROUPS="$RESULTS/Orthogroups/Orthogroups.tsv"
 else
-  if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2>&1; then
+  # 2.5 names the -og table Orthogroups.tsv, 3.x MCL_Orthogroups.tsv; same columns
+  og_table() {
+    # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
+    { ls -1t proteomes/OrthoFinder/Results_*/Orthogroups/{,MCL_}Orthogroups.tsv 2>/dev/null || true; } | sed -n 1p
+  }
+  if [ -z "$(og_table)" ]; then
     orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
   fi
-  # shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
-  RESULTS=$(dirname "$(dirname "$(ls -1dt proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | sed -n 1p)")")
+  ORTHOGROUPS=$(og_table)
+  RESULTS=$(dirname "$(dirname "$ORTHOGROUPS")")
 fi
-ORTHOGROUPS="$RESULTS/Orthogroups/Orthogroups.tsv"
 
 # ── Orthogroups.tsv -> .blocks table ─────────────────────────────────────────
 # One --bed per column, so the script reports how many ids each one resolves
