@@ -1,5 +1,5 @@
+import { sidebarCovers } from '@jbrowse/display-ui'
 import { backingScale, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
-import { sidebarCovers } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { REFERENCE_COLOR } from '../../shared/constants.ts'

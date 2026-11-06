@@ -11,12 +11,16 @@ const WIDTH = 1000
 const HEIGHT = 400
 
 // The events' container sits at the client origin, so these drive
-// display-relative x/y directly.
-function setup() {
+// display-relative x/y directly. The sidebar covers the full height unless a
+// test stacks a band above the rows.
+function setup(rowsTop = 0) {
   const onClick = jest.fn()
   const ref = createRef<HTMLDivElement>()
   const { result } = renderHook(() =>
-    useDragSelection(ref, { dataLeft: DATA_LEFT, onClick }),
+    useDragSelection(ref, {
+      sidebarBounds: { right: DATA_LEFT, top: rowsTop },
+      onClick,
+    }),
   )
   return { onClick, result }
 }
@@ -302,6 +306,30 @@ test('a drag carried left over the sidebar stops at its edge', () => {
   expect(result.current.contextCoord).toMatchObject({
     startX: 200,
     endX: DATA_LEFT,
+  })
+})
+
+// The sidebar covers the rows only, so a press on the band above them takes
+// the display's press across its full width; the selection still starts at the
+// sidebar's edge, as a column over the rows.
+test('a press on a band above the rows, left of the sidebar edge, starts a selection there', () => {
+  const { result } = setup(60)
+  const press = pointerEvent({ x: DATA_LEFT - 30 })
+  result.current.handlePointerDown(press.event)
+  expect(press.setPointerCapture).toHaveBeenCalledWith(7)
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(DATA_LEFT - 30, 40))
+  })
+  act(() => {
+    result.current.handleMouseMove(mouseEvent(300, 200))
+  })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(300, 200))
+  })
+  expect(result.current.contextCoord).toMatchObject({
+    startX: DATA_LEFT,
+    startY: 40,
+    endX: 300,
   })
 })
 

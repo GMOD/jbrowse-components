@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { isFromPortal } from '@jbrowse/core/util/pressOwner'
-import { sidebarCovers } from '@jbrowse/tree-sidebar'
+import { sidebarCovers } from '@jbrowse/display-ui'
 
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
-import type { SidebarBounds } from '@jbrowse/tree-sidebar'
+import type { SidebarBounds } from '@jbrowse/display-ui'
 
 const MIN_DRAG_DISTANCE = 3
 
@@ -66,19 +66,24 @@ export function showsHoverAt(
 export function useDragSelection(
   ref: React.RefObject<HTMLDivElement | null>,
   {
-    dataLeft,
+    sidebarBounds,
     onClick,
   }: {
     /**
-     * Left edge of the data area, the model's `dataLeft`: a press left of
-     * this (the tree sidebar and its resize handle) neither clicks nor starts
-     * a selection, and a drag carried over the sidebar stops at it, since the
-     * sidebar covers the bases under it.
+     * The model's `sidebarBounds`: a press the sidebar covers neither clicks
+     * nor starts a selection, and a selection, a column over the rows, stays
+     * right of its edge from start to end, since the sidebar covers the bases
+     * under it.
      */
-    dataLeft: number
+    sidebarBounds: SidebarBounds
     onClick: (x: number, y: number) => void
   },
 ) {
+  const dataLeft = sidebarBounds.right
+  const covered = (e: React.MouseEvent) => {
+    const { x, y } = eventPoint(e)
+    return sidebarCovers(sidebarBounds, x, y)
+  }
   const [state, setState] = useState<DragState>({
     isDragging: false,
     showSelectionBox: false,
@@ -106,7 +111,7 @@ export function useDragSelection(
   // is stopped here, including over the sidebar. A touch is left to the view so
   // a finger drag over the rows still pans.
   //
-  // A press in the data area is captured, so the move and release events keep
+  // A press the sidebar does not cover is captured, so the move and release events keep
   // coming when the drag overshoots the track, even if the first move already
   // lands outside it, and the selection is clamped to the data area. Controls
   // in the data area (scrollbar, band handles, corner indicators) carry
@@ -115,7 +120,7 @@ export function useDragSelection(
   function handlePointerDown(e: React.PointerEvent) {
     if (e.pointerType !== 'touch' && !leavesPressToView(e)) {
       e.stopPropagation()
-      if (eventPoint(e).x >= dataLeft) {
+      if (!covered(e)) {
         e.currentTarget.setPointerCapture(e.pointerId)
       }
     }
@@ -127,10 +132,10 @@ export function useDragSelection(
 
   function handleMouseDown(e: React.MouseEvent) {
     if (!leavesPressToView(e)) {
-      const { x, y } = eventPoint(e)
       // the view's range select listens for mousedown on the same container
       e.stopPropagation()
-      if (x >= dataLeft) {
+      if (!covered(e)) {
+        const { x, y } = pointInData(e, dataLeft)
         setState({
           isDragging: true,
           showSelectionBox: false,

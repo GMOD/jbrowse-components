@@ -639,15 +639,15 @@ describe('a tree the config supplies in `rows.tree`', () => {
     expect(display.rowTree).toBeUndefined()
   })
 
-  // the canvas runs under the sidebar, so `dataLeft` is where a pointer
+  // the canvas runs under the sidebar, so `sidebarBounds.right` is where a pointer
   // stops being over the dendrogram and its resize handle
   it('starts the data area past the drawn tree, and at 0 with it off', () => {
     const display = makeSupplied()
     display.setTreeAreaWidth(60)
     expect(display.hierarchy).toBeDefined()
-    expect(display.dataLeft).toBe(60 + TREE_RESIZE_HANDLE_WIDTH)
+    expect(display.sidebarBounds.right).toBe(60 + TREE_RESIZE_HANDLE_WIDTH)
     display.setShowTree(false)
-    expect(display.dataLeft).toBe(0)
+    expect(display.sidebarBounds.right).toBe(0)
   })
 })
 

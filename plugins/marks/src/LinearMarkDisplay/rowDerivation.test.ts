@@ -184,7 +184,7 @@ test('a cluster run lands its tree turned towards the seed, and orders the rows'
 test('a facet in the rows place keeps the tree but reserves no sidebar for it', async () => {
   const display = loaded({ rows: 'source' })
   await clusterRun(display, '((dad,s2),(mom,s10));')
-  expect(display.dataLeft).toBeGreaterThan(0)
+  expect(display.sidebarBounds.right).toBeGreaterThan(0)
 
   setConf(display, 'facet', 'source')
   display.setRpcData(0, workerResult(display, FAMILY), REGION)

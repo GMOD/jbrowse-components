@@ -4,12 +4,9 @@ import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
+import { sidebarCovers } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import {
-  DisplayCrosshairs,
-  RowsPanel,
-  sidebarCovers,
-} from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs, RowsPanel } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { MAF_MARKS } from '../../LinearMafRenderer/mafMarks.ts'
@@ -48,7 +45,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
   const drag = useDragSelection(ref, {
-    dataLeft: model.dataLeft,
+    sidebarBounds: model.sidebarBounds,
     onClick: (x, y) => {
       openInsertionWidgetOnClick(model, x, y)
     },

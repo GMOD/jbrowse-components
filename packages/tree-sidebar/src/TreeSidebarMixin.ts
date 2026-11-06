@@ -575,20 +575,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The display-px left edge of the rows' data area: right of the
-       * dendrogram and its resize handle, 0 with no tree drawn. The canvas
-       * runs under the sidebar, so x maps to bp as anywhere else; a drag
-       * over the rows stops here, and a pointer gate reads `sidebarBounds`.
-       */
-      get dataLeft(): number {
-        return treeSidebarRightEdge(self)
-      },
-      /**
-       * #getter
-       * The box the sidebar covers: left of `dataLeft`, from `rowsTopOffset`
-       * down, so a band stacked above the rows stays the display's across
-       * its full width. Every pointer gate reads it through
-       * `sidebarCovers`.
+       * The box the sidebar covers, in display px: left of `right`, the
+       * dendrogram's resize handle's right edge (0 with no tree drawn), and
+       * from `rowsTopOffset` down, so a band stacked above the rows stays the
+       * display's across its full width. The canvas runs under the sidebar,
+       * so x maps to bp as anywhere else. Every pointer gate reads it through
+       * `sidebarCovers`, and a drag over the rows stops at `right`.
        */
       get sidebarBounds(): SidebarBounds {
         return { right: treeSidebarRightEdge(self), top: self.rowsTopOffset }

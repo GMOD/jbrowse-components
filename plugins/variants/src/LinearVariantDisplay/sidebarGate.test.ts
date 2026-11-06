@@ -70,12 +70,12 @@ test.each(['genomic', 'columns'] as const)(
     const surface =
       layout === 'genomic' ? variantRowsSurface : variantMatrixSurface
     const bare = loaded(layout)
-    expect(bare.dataLeft).toBe(0)
+    expect(bare.sidebarBounds.right).toBe(0)
     expect(surface(bare).getHit(10, 25)).toBeDefined()
 
     const treed = loaded(layout, '(S0,S1);')
-    expect(treed.dataLeft).toBeGreaterThan(10)
+    expect(treed.sidebarBounds.right).toBeGreaterThan(10)
     expect(surface(treed).getHit(10, 25)).toBeUndefined()
-    expect(surface(treed).getHit(treed.dataLeft, 25)).toBeDefined()
+    expect(surface(treed).getHit(treed.sidebarBounds.right, 25)).toBeDefined()
   },
 )

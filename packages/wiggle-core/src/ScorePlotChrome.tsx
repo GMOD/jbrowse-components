@@ -124,11 +124,12 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
         contextMenu
           ? event => {
               const { x, y } = eventPoint(event)
+              const plotY = y - box.yTop
               const hit = !overPlot(x, y)
                 ? undefined
                 : findContextHit
-                  ? findContextHit(x, y - box.yTop)
-                  : (hitAt(x, y) as ContextHit | undefined)
+                  ? findContextHit(x, plotY)
+                  : (findHit(x, plotY) as ContextHit | undefined)
               openContextMenuFromEvent(
                 contextMenu,
                 event,
