@@ -93,6 +93,52 @@ describe('RpcManager session lifecycle', () => {
     await Promise.all([straggler, other, freeing])
     expect(events).toEqual(['free unrelated', 'retry landed', 'free closed'])
   })
+
+  test('a session reclaimed while its calls drain is not freed', async () => {
+    const { manager, driver, freedSessions } = makeManager()
+    let finish = () => {}
+    driver.call = () =>
+      new Promise(resolve => {
+        finish = () => {
+          resolve(undefined)
+        }
+      })
+    const slow = manager.call('s', 'CoreGetRegions', { adapterConfig: {} })
+    let claimed = false
+    const freeing = manager.freeSession('s', () => !claimed)
+    claimed = true
+    finish()
+    await Promise.all([slow, freeing])
+    expect(freedSessions).toEqual([])
+  })
+
+  test('a call issued while a free drains is waited on too', async () => {
+    const { manager, driver, freedSessions } = makeManager()
+    const events: string[] = []
+    const finishers: (() => void)[] = []
+    driver.call = () =>
+      new Promise(resolve => {
+        finishers.push(() => {
+          events.push('call landed')
+          resolve(undefined)
+        })
+      })
+    driver.freeSession = async sessionId => {
+      freedSessions.push(sessionId)
+      events.push('free')
+    }
+    const first = manager.call('s', 'CoreGetRegions', { adapterConfig: {} })
+    const freeing = manager.freeSession('s')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const second = manager.call('s', 'CoreGetRegions', { adapterConfig: {} })
+    await new Promise(resolve => setTimeout(resolve, 0))
+    finishers[0]!()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(events).toEqual(['call landed'])
+    finishers[1]!()
+    await Promise.all([first, second, freeing])
+    expect(events).toEqual(['call landed', 'call landed', 'free'])
+  })
 })
 
 describe('RpcManager auth retry', () => {

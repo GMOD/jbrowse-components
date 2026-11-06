@@ -32,7 +32,7 @@
  * adapter-lifetime bookkeeping does not depend on the RPC transport.
  */
 export interface AdapterSessionFreer {
-  freeSession(sessionId: string): Promise<void>
+  freeSession(sessionId: string, unclaimed?: () => boolean): Promise<void>
 }
 
 const refcounts = new WeakMap<AdapterSessionFreer, Map<string, number>>()
@@ -86,12 +86,9 @@ export function retainAdapterSession(
  * already terminated by a session switch is the expected case rather than a
  * fault, and nothing downstream could act on the failure anyway.
  *
- * Closing and immediately reopening the same track can race: the free is in
- * flight while the reopened track re-retains, and the eviction lands on the
- * adapter the new track just claimed. It costs that track one re-setup and
- * heals itself on the next query, because an evicted adapter is only ever a
- * cold cache. Sequencing it away would mean generation counters on a cache,
- * which is a poor trade for a mis-click.
+ * Closing and reopening the same track while its calls drain re-retains the
+ * id, and the free asks `unclaimed` again before it evicts, so the reopened
+ * track keeps its adapter.
  */
 export async function releaseAdapterSession(
   rpcManager: AdapterSessionFreer | undefined,
@@ -110,7 +107,7 @@ export async function releaseAdapterSession(
   }
   counts.delete(sessionId)
   try {
-    await rpcManager.freeSession(sessionId)
+    await rpcManager.freeSession(sessionId, () => !counts.has(sessionId))
   } catch {
     // teardown; see above
   }

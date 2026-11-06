@@ -175,11 +175,18 @@ export default class RpcManager {
    *
    * Waits for the session's calls in flight, auth retries included: one still
    * serializing would otherwise reach the worker after the free and rebuild
-   * the adapter under an id nothing releases again.
+   * the adapter under an id nothing releases again. `unclaimed` is asked again
+   * after every wait, so a track reopened under the same id while the old
+   * calls drain keeps its adapter, and calls it issues meanwhile are waited on
+   * too.
    */
-  async freeSession(sessionId: string) {
-    await Promise.allSettled([...(this.callsInFlight.get(sessionId) ?? [])])
-    if (!this.destroyed) {
+  async freeSession(sessionId: string, unclaimed = () => true) {
+    let calls = this.callsInFlight.get(sessionId)
+    while (unclaimed() && calls) {
+      await Promise.allSettled([...calls])
+      calls = this.callsInFlight.get(sessionId)
+    }
+    if (unclaimed() && !this.destroyed) {
       await this.getDriver().freeSession(sessionId)
     }
   }
