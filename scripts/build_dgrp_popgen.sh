@@ -40,7 +40,9 @@ VCF=DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 # ── Data (skip re-download if present) ───────────────────────────────────────
 [ -f "$VCF" ]     || curl -fLO "$BASE/$VCF"
 [ -f "$VCF.csi" ] || curl -fLO "$BASE/$VCF.csi"
-[ -f In2Lt.tsv ]  || curl -fLo In2Lt.tsv https://dgrpool.epfl.ch/phenotypes/1520/download
+# DGRPool sends the table gzip-encoded whatever the request asks for, so curl
+# has to decode it
+[ -f In2Lt.tsv ]  || curl -fL --compressed -o In2Lt.tsv https://dgrpool.epfl.ch/phenotypes/1520/download
 
 # chrom.sizes from the VCF header (contig names guaranteed to match the scans)
 bcftools view -h "$VCF" \
