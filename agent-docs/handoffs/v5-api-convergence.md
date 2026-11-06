@@ -101,14 +101,17 @@ between displays.
    the nested object, which no probe sees, so they report as unknown slots.
    On 2026-11-06 it ran on the graph plugin 8.8.0, the ARG plugin and
    Apollo3's `v2` branch (UMD; its `.esm.js` imports bare `@jbrowse/*`, the
-   npm form). The graph and ARG plugins declare a beta.18 floor, so
-   `test_data/hprc2` and ARG's `sim.config.json` write the beta.19 slots
-   (`unit`, `rowGroups`, `rowColor`) that beta.20 respelled; each waits on a
-   floor raise (the graph plugin's `write-linear-variant-display` todo).
-   Apollo's `jbrowse_config.json` carries `google` and `microsoft` blocks its
-   internet account never declares. Left: plugin urls (local files only), a
-   way for a plugin's own CI to run the generator without a
-   jbrowse-components checkout, and where each plugin keeps its manifest.
+   npm form). The graph plugin (8.9.0) and the ARG plugin (`94085aa`) then
+   moved their floor and pins to beta.20 and write main's spellings, clean
+   under main's validator with their manifests (Colin, 2026-11-06: plugins
+   target the latest beta). Apollo's `jbrowse_config.json` carries `google`
+   and `microsoft` blocks its internet account never declares; it is a
+   coworker's repo, so that waits on him. A manifest generated on main does
+   not load in beta.20's CLI (`can't resolve reference
+   #/$defs/LGVSyntenyDisplaySlots/properties/tooltip`): generate with the
+   tree whose validator reads it. Left: plugin urls (local files only), a way
+   for a plugin's own CI to run the generator without a jbrowse-components
+   checkout, and where each plugin keeps its manifest.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
