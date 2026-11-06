@@ -209,11 +209,19 @@ import sys
 
 chrom, offset, chrom_len = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 
-exons = sorted({
-    (int(f[3]), int(f[4]))
-    for f in (l.split('\t') for l in gzip.open('ncbiRefSeq.gff.gz', 'rt'))
-    if len(f) > 8 and f[2] == 'exon' and 'gene_id=FGF4' in f[8]
-})
+# Exon rows name only their transcript (Parent=), so FGF4's exons are the ones
+# whose Parent is a row carrying gene_id=FGF4
+fgf4_ids, exon_rows = set(), []
+for line in gzip.open('ncbiRefSeq.gff.gz', 'rt'):
+    f = line.rstrip('\n').split('\t')
+    if len(f) > 8:
+        attrs = dict(kv.split('=', 1) for kv in f[8].split(';') if '=' in kv)
+        if attrs.get('gene_id') == 'FGF4' and 'ID' in attrs:
+            fgf4_ids.add(attrs['ID'])
+        if f[2] == 'exon':
+            exon_rows.append((attrs.get('Parent'), int(f[3]), int(f[4])))
+exons = sorted({(s, e) for parent, s, e in exon_rows if parent in fgf4_ids})
+assert len(exons) > 1, 'ncbiRefSeq.gff.gz has %d FGF4 exons' % len(exons)
 introns = [(a[1] + 1, b[0] - 1) for a, b in zip(exons, exons[1:])]
 print('FGF4 RefSeq introns: ' + ',  '.join(
     '%d-%d (%d bp)' % (a, b, b - a + 1) for a, b in introns))
