@@ -155,12 +155,10 @@ export function staleDocs() {
 // among them. Their marker blocks arrive as raw tables and prose callouts, and
 // nothing else re-wraps them — while the rest of each file is hand-written, so
 // leaving one unformatted puts `pnpm check-format` and the next hand edit at
-// odds. An unchanged doc is not touched, so a dev server watching the tree sees
-// only what moved.
+// odds. A doc is touched only when `staleDocs` names it, the same test
+// `--check` applies, so a dev server watching the tree sees only what moved.
 export async function flushDocs() {
-  const changed = [...written].filter(
-    file => onDisk(file) !== docText.get(file),
-  )
+  const changed = staleDocs()
   for (const file of changed) {
     const target = path.join(repoRoot, file)
     fs.mkdirSync(path.dirname(target), { recursive: true })

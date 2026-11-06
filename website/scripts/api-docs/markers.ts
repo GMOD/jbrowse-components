@@ -53,12 +53,12 @@ const touched = selected.map(({ label, write }) => {
   }
 })
 // The raw splice differs from the committed doc whenever the formatter would
-// reflow the block, so a doc counts as stale only if it still differs once
+// reflow the block, so a doc counts as moved only if it still differs once
 // formatted, the way the write run below commits it.
-const differs = new Set(check ? staleDocs() : [])
+const differs = new Set(staleDocs())
 const stale = new Map<string, string[]>()
 for (const { label, docs } of touched) {
-  const moved = check ? docs.filter(d => differs.has(d)) : docs
+  const moved = docs.filter(d => differs.has(d))
   if (check && moved.length) {
     stale.set(label, moved)
   }
