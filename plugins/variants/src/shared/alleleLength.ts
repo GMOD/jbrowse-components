@@ -1,6 +1,6 @@
+import { parseFiniteNumber } from '@jbrowse/add-track-core'
 import { isBreakend } from '@jbrowse/core/util/svAlt'
 
-import { parseFiniteNumber } from '../VcfFeature/util.ts'
 import { TANDEM_REPEAT, runsBp, tandemAlleles } from './tandemRepeatRuns.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -24,8 +24,8 @@ function statedInsertionBp(
 // sequence can run a base past it. Without one, a sequence ALT measures
 // itself, the padding base REF shares included.
 //
-// `<DEL>`, `<DUP>` and `<INV>` are resolved into the span by `getEnd` and fall
-// through to it. `<INS>` consumes no reference, so `getEnd` pins it at 1 bp and
+// `<DEL>`, `<DUP>` and `<INV>` are resolved into the span by `vcfRecordEnd` and fall
+// through to it. `<INS>` consumes no reference, so `vcfRecordEnd` pins it at 1 bp and
 // only SVLEN says how long it is. Breakend ALTs are mate notation rather than
 // sequence (`G]chr17:198982]` is not 15 bp), and `isBreakend` is the predicate
 // `svClassOfAlt` and `getSOTerm` use. A `<CNV:TR>` allele is its runs summed,

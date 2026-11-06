@@ -21,8 +21,12 @@ export function parseFiniteNumber(value: unknown) {
   return Number.isFinite(n) ? n : undefined
 }
 
-function firstNumericInfo(info: Record<string, unknown>, key: string) {
-  const value = info[key]
+/** The first entry of an INFO field as a number, when it holds one. */
+export function firstNumericInfo(
+  info: Record<string, unknown> | undefined,
+  key: string,
+) {
+  const value = info?.[key]
   return Array.isArray(value) ? parseFiniteNumber(value[0]) : undefined
 }
 
@@ -31,7 +35,7 @@ function firstNumericInfo(info: Record<string, unknown>, key: string) {
 // breakend or a sequence allele takes its length from REF: callers put a
 // mate's position, possibly on another contig, in END. No record draws shorter
 // than its REF. The SVLEN fallback is for symbolic (angle-bracket) ALTs.
-export function vcfRecordEnd(record: VcfSpanRecord, start: number) {
+function vcfRecordEnd(record: VcfSpanRecord, start: number) {
   const { REF = '', ALT = [], INFO } = record
   const hasSymbolic = ALT.some(a => a.startsWith('<'))
   const hasTRA = ALT.includes('<TRA>')

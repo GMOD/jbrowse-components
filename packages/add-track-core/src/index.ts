@@ -35,7 +35,7 @@ export {
 } from './keyedWrites.ts'
 export {
   type VcfSpanRecord,
+  firstNumericInfo,
   parseFiniteNumber,
-  vcfRecordEnd,
   vcfRecordSpan,
 } from './vcfSpan.ts'

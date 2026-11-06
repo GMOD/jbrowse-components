@@ -21,17 +21,17 @@ export function useTranscriptPick(
   feature: SimpleFeatureSerialized,
   canonicalTranscripts?: CanonicalTranscripts,
 ): TranscriptPick {
-  const [picked, setPicked] = useState<{ featureId: string; index: number }>()
-  const featureId = useFeatureKey(feature.uniqueId)
+  const [picked, setPicked] = useState<{ key: string; index: number }>()
+  const key = useFeatureKey(feature.uniqueId)
   const transcripts = getTranscripts(feature)
   const ranked = rankTranscripts(transcripts, canonicalTranscripts)
   const [best] = ranked
   return {
     transcripts,
     ranked,
-    index: picked?.featureId === featureId ? picked.index : (best?.index ?? 0),
+    index: picked?.key === key ? picked.index : (best?.index ?? 0),
     setIndex: index => {
-      setPicked({ featureId, index })
+      setPicked({ key, index })
     },
   }
 }

@@ -24,7 +24,7 @@ test('a multiallelic record takes its longest allele', () => {
   ).toBe(5)
 })
 
-test('a symbolic ALT falls through to the span getEnd resolved', () => {
+test('a symbolic ALT falls through to the span vcfRecordEnd resolved', () => {
   expect(
     getAlleleLength(feature({ start: 100, end: 700, ALT: ['<DEL>'] })),
   ).toBe(600)
@@ -92,7 +92,7 @@ test('a deletion inserts nothing', () => {
 })
 
 // `<INS>` + SVLEN is how every short-read/long-read SV caller spells an
-// insertion, and it is the one symbolic class `getEnd` does not resolve into the
+// insertion, and it is the one symbolic class `vcfRecordEnd` does not resolve into the
 // span — an insertion consumes no reference, so the record is 1 bp wide. Reading
 // only the span called every one of them 1 bp long: no marker, no "Insertion"
 // tooltip row, and dropped by an `alleleLength(feature) >= 50` filter.
@@ -124,9 +124,9 @@ describe('symbolic insertions read their SVLEN', () => {
     expect(getInsertedBp(ins({ SVLEN: ['.'] }))).toBe(0)
   })
 
-  // The other symbolic classes already span what they describe (getEnd resolved
+  // The other symbolic classes already span what they describe (vcfRecordEnd resolved
   // END/SVLEN into it), so adding SVLEN again would double the deletion.
-  it('leaves a symbolic deletion on the span getEnd resolved', () => {
+  it('leaves a symbolic deletion on the span vcfRecordEnd resolved', () => {
     expect(
       getAlleleLength(
         feature({

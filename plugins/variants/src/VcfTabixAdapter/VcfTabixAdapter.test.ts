@@ -134,7 +134,7 @@ describe('an abandoned setup', () => {
 })
 
 // @gmod/tabix reads a record's span as htslib does, so the lines it returns
-// cover the span `getEnd` gives the feature
+// cover the span `vcfRecordEnd` gives the feature
 describe('a symbolic record with no usable END', () => {
   const vcfGz = require.resolve('./test_data/sv_svlen.vcf.gz')
   const names = async (start: number, end: number) => {

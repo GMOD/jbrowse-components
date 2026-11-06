@@ -1,8 +1,8 @@
+import { vcfRecordSpan } from '@jbrowse/add-track-core'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
-import { variantSpan } from '../VcfFeature/util.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
@@ -106,7 +106,7 @@ export async function appendVcfLines(
       vcf.getLines(refName, start, end, {
         lineCallback: (line, fileOffset) => {
           if (!seen.has(fileOffset)) {
-            const span = variantSpan(parser.parseLine(line))
+            const span = vcfRecordSpan(parser.parseLine(line))
             if (overlapsRegion(span, { start, end })) {
               seen.add(fileOffset)
               lines.push(line)

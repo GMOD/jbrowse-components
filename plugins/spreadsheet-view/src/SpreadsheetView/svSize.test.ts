@@ -59,10 +59,10 @@ test('an intrachromosomal breakend spans to its mate', () => {
   ).toBe(279)
 })
 
-// `end` already carries INFO.END for a symbolic allele — VcfFeature's `getEnd`
+// `end` already carries INFO.END for a symbolic allele — VcfFeature's `vcfRecordEnd`
 // resolved it — so the footprint is the answer and re-deriving it from END here
 // would disagree with that resolution by a base
-test('a symbolic allele with no SVLEN keeps the end getEnd resolved', () => {
+test('a symbolic allele with no SVLEN keeps the end vcfRecordEnd resolved', () => {
   expect(
     svSize(
       feat({

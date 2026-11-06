@@ -1,8 +1,4 @@
-import {
-  parseFiniteNumber,
-  vcfRecordEnd,
-  vcfRecordSpan,
-} from '@jbrowse/add-track-core'
+import { firstNumericInfo, parseFiniteNumber } from '@jbrowse/add-track-core'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { isBreakend, svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
@@ -14,30 +10,9 @@ import {
 } from '../shared/tandemRepeatRuns.ts'
 
 import type VCF from '@gmod/vcf'
-import type { Variant } from '@gmod/vcf'
-
-export { parseFiniteNumber } from '@jbrowse/add-track-core'
-
-// First numeric entry of an INFO field, or undefined when the field is absent
-// or carries only missing/non-numeric values.
-function firstNumericInfo(
-  info: Record<string, unknown> | undefined,
-  key: string,
-) {
-  const value = info?.[key]
-  return Array.isArray(value) ? parseFiniteNumber(value[0]) : undefined
-}
 
 function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
-}
-
-export function getEnd(variant: Variant, start: number) {
-  return vcfRecordEnd(variant, start)
-}
-
-export function variantSpan(variant: Variant) {
-  return vcfRecordSpan(variant)
 }
 
 // Render an allele sequence verbatim when short enough to read, otherwise a
@@ -105,7 +80,7 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
 }
 
 // translocations are single-breakpoint, so SVLEN is not a span on this contig
-// (same carve-out as getEnd): name the mate breakpoint instead. Commas are
+// (same carve-out as vcfRecordEnd): name the mate breakpoint instead. Commas are
 // cosmetic — parseLocString strips them, so this stays navigable.
 export function getTraMate(info?: Record<string, unknown>): string | undefined {
   const end = firstNumericInfo(info, 'END')

@@ -1,4 +1,5 @@
 import VcfParser from '@gmod/vcf'
+import { vcfRecordSpan } from '@jbrowse/add-track-core'
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
@@ -9,7 +10,6 @@ import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import VcfFeature from '../VcfFeature/index.ts'
-import { variantSpan } from '../VcfFeature/util.ts'
 import {
   overlapsRegion,
   vcfContigs,
@@ -123,7 +123,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
       for (const line of featureMap[refName] ?? []) {
         // match getFeatures: a variant belongs to a region its full span
         // overlaps, so a deletion that starts before one is still exported
-        const span = variantSpan(parser.parseLine(line))
+        const span = vcfRecordSpan(parser.parseLine(line))
         if (refRegions.some(r => overlapsRegion(span, r))) {
           exportLines.push(line)
         }

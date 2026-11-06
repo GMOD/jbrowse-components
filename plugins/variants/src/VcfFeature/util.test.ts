@@ -1,4 +1,6 @@
-import { getTraMate, parseFiniteNumber } from './util.ts'
+import { parseFiniteNumber } from '@jbrowse/add-track-core'
+
+import { getTraMate } from './util.ts'
 
 describe('parseFiniteNumber', () => {
   test('coerces numeric strings and numbers', () => {
