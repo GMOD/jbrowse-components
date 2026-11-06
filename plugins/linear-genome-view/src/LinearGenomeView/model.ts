@@ -54,6 +54,7 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
+import { sameBlockKeys } from '@jbrowse/display-kit/coarseBlocks'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import {
   bufferedVisibleRegionsOf,
@@ -290,14 +291,6 @@ function offsetBounds(contentPx: number, viewportPx: number) {
   return contentPx > viewportPx
     ? { min: -OVERSCROLL_PX, max: contentPx - viewportPx + OVERSCROLL_PX }
     : { min: centered, max: centered }
-}
-
-// whether two BlockSets cover the same blocks, by key and in order
-function sameBlockKeys(a: BlockSet, b: BlockSet) {
-  return (
-    a.blocks.length === b.blocks.length &&
-    a.blocks.every((block, i) => block.key === b.blocks[i]!.key)
-  )
 }
 
 /**
@@ -1520,8 +1513,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.legacyBpPerPx = 0
         }
         if (unmeasured && self.bpPerPx > 0) {
-          // The debounced coarse autorun is 500ms out; a restored snapshot's
-          // consumers would lay out and fetch at 1 bp/px until then.
+          // The coarse blocks settle once the view initializes, which can be
+          // after the first measure; until then a restored snapshot's consumers
+          // would lay out and fetch at 1 bp/px.
           self.coarseBpPerPx = self.bpPerPx
           self.coarseOffsetPx = self.offsetPx
         }
@@ -2183,7 +2177,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentlyCalculatedStaticBlocks === undefined ||
             bpPerPx !== prevBpPerPx ||
             width !== prevWidth ||
-            !sameBlockKeys(currentlyCalculatedStaticBlocks, newBlocks)
+            !sameBlockKeys(
+              currentlyCalculatedStaticBlocks.blocks,
+              newBlocks.blocks,
+            )
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
           }
@@ -2544,12 +2541,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * debounce intends. **Empty coarse blocks are a different case.** A scan
          * over no blocks yields no entries, and the consumer falls back to the
          * domain `[0,1]`, which draws a line plot blank and a density plot
-         * saturated. The coarse blocks are empty for the 500ms between a view
-         * initializing and the coarse autorun's first run, and data can load
-         * within that window.
+         * saturated. The coarse blocks are empty until the view initializes,
+         * and a consumer running in that same batch can read them before the
+         * settle reaction fills them in.
          *
          * Falling back to the live blocks costs one extra recompute at that
-         * transition, compared with N per frame without the debounce.
+         * transition, compared with N per frame without the throttle.
          */
         get settledDynamicBlocks(): ContentBlock[] {
           return self.coarseDynamicBlocks.length
@@ -2595,15 +2592,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // Consumers diff the coarse blocks by reference (the alignments and
         // wiggle fetch autoruns), so assigning an equivalent array would make
         // them refetch. `settleCoarseBlocks` flushes these on a discrete jump
-        // and the debounced autorun then fires once more with the same blocks —
-        // that follow-up has to cost nothing. A block's key encodes its
-        // assembly/refName/start/end, so keys are enough to compare.
+        // and the throttled autorun then fires once more with the same blocks —
+        // that follow-up has to cost nothing.
         const next = blocks.contentBlocks
-        const same =
-          bpPerPx === self.coarseBpPerPx &&
-          next.length === self.coarseDynamicBlocks.length &&
-          next.every((b, i) => b.key === self.coarseDynamicBlocks[i]!.key)
-        if (!same) {
+        if (
+          bpPerPx !== self.coarseBpPerPx ||
+          !sameBlockKeys(next, self.coarseDynamicBlocks)
+        ) {
           self.coarseDynamicBlocks = next
           self.coarseTotalBp = blocks.totalBp
           self.coarseBpPerPx = bpPerPx

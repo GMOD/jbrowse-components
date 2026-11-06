@@ -1,5 +1,9 @@
 import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import { BlockSet, wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
+import {
+  installCoarseBlocks,
+  sameBlockKeys,
+} from '@jbrowse/display-kit/coarseBlocks'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { ringStripCanvas } from '@jbrowse/render-core/OverlayCanvas'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
@@ -647,11 +651,10 @@ export const RingHost = types
     },
     setCoarseDynamicBlocks(blocks: BlockSet, bpPerPx: number) {
       const next = blocks.contentBlocks
-      const same =
-        bpPerPx === self.coarseBpPerPx &&
-        next.length === self.coarseDynamicBlocks.length &&
-        next.every((b, i) => b.key === self.coarseDynamicBlocks[i]!.key)
-      if (!same) {
+      if (
+        bpPerPx !== self.coarseBpPerPx ||
+        !sameBlockKeys(next, self.coarseDynamicBlocks)
+      ) {
         self.coarseDynamicBlocks = next
         self.coarseBpPerPx = bpPerPx
       }
@@ -688,17 +691,7 @@ export const RingHost = types
   .actions(self => ({
     setView(view: RingHostView) {
       self.view = view
-      addDisposer(
-        self,
-        autorun(
-          () => {
-            if (view.initialized) {
-              self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
-            }
-          },
-          { delay: 500, name: 'CircularRingHostCoarseBlocks' },
-        ),
-      )
+      installCoarseBlocks(self, 'CircularRingHostCoarseBlocks')
       addDisposer(
         self,
         autorun(() => {

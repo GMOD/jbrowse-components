@@ -2,6 +2,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
+import { observable, runInAction } from 'mobx'
 
 import { buildChordAxis, layoutSlices } from '../CircularView/slices.ts'
 import {
@@ -100,6 +101,28 @@ test('each displayed region starts on the strip where its slice does', () => {
   const elided = blocks.blocks[2]!
   expect(offsets[2]).toBeCloseTo(elided.offsetPx)
   expect(offsets[3]).toBeCloseTo(elided.offsetPx + 2 / 0.1)
+})
+
+// A display's density gate and per-base bin read coarseBpPerPx, so a circle
+// left at the placeholder 1 bp/px gates and bins a whole genome as base level
+test('the coarse scale is the strip scale as soon as the view is initialized', () => {
+  const host = RingHost.create({})
+  const view = observable({
+    initialized: false,
+    staticSlices: slices,
+    radiusPx: 100,
+    circumferencePx: TWO_PI * 100,
+    bpPerPx: 0.1,
+    ringDisplays: [],
+  })
+  host.setView(view as unknown as RingHostView)
+  expect(host.coarseBpPerPx).toBe(1)
+
+  runInAction(() => {
+    view.initialized = true
+  })
+  expect(host.coarseBpPerPx).toBe(host.bpPerPx)
+  expect(host.coarseDynamicBlocks).toEqual(host.dynamicBlocks.contentBlocks)
 })
 
 // React may still render a pass the host just let go of (ADR-069)

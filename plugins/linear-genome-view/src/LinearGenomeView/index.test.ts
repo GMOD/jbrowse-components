@@ -24,7 +24,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
-import { autorun } from 'mobx'
+import { autorun, runInAction } from 'mobx'
 
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
@@ -3648,13 +3648,9 @@ describe('coarse dynamic blocks', () => {
     dispose()
   })
 
-  // The window between a view initializing and the coarse autorun's first run.
-  // A debounced scan clipped to an EMPTY block list yields no entries, and no
+  // The batch a restored view initializes in, before the settle reaction has
+  // run. A scan clipped to an EMPTY block list yields no entries, and no
   // entries is not a stale domain but the fallback one — a blank wiggle plot.
-  //
-  // Regions in the SNAPSHOT, which is what a restored session does and the way
-  // the window is still reachable: every placement action settles the coarse
-  // blocks itself now, and a view that was never placed ran none of them.
   test('settledDynamicBlocks is the live set until the coarse one exists', () => {
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({ configuration: {} }).setView(
@@ -3663,13 +3659,37 @@ describe('coarse dynamic blocks', () => {
         displayedRegions: volvoxDisplayedRegions,
       }),
     )
+    runInAction(() => {
+      model.setWidth(800)
+
+      expect(model.initialized).toBe(true)
+      expect(model.coarseDynamicBlocks).toHaveLength(0)
+      expect(model.settledDynamicBlocks).toEqual(
+        model.dynamicBlocks.contentBlocks,
+      )
+      expect(model.settledDynamicBlocks.length).toBeGreaterThan(0)
+    })
+    expect(model.settledDynamicBlocks).toBe(model.coarseDynamicBlocks)
+  })
+
+  test('a restored view settles them the moment it initializes', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: volvoxDisplayedRegions,
+        windowStartBp: 600,
+        windowWidthBp: 1600,
+      }),
+    )
+    expect(model.initialized).toBe(false)
     model.setWidth(800)
 
-    expect(model.coarseDynamicBlocks).toHaveLength(0)
-    expect(model.settledDynamicBlocks).toEqual(
-      model.dynamicBlocks.contentBlocks,
-    )
-    expect(model.settledDynamicBlocks.length).toBeGreaterThan(0)
+    expect(model.initialized).toBe(true)
+    expect(model.coarseVisibleLocStrings).toBe('ctgA:601..2,200')
+    expect(model.coarseVisibleLocStrings).toBe(model.visibleLocStrings)
+    expect(model.coarseBpPerPx).toBe(2)
+    expect(model.coarseOffsetPx).toBe(300)
   })
 
   test('settledDynamicBlocks is the coarse set once it exists', () => {

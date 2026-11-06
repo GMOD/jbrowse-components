@@ -45,15 +45,12 @@ export function createTestEnvironment({
     createDisplay: (
       displaySnapshot?: Record<string, unknown>,
       // `unmeasuredView` leaves the view before `view.initialized`, where
-      // every view-derived getter throws; `unplacedView` carries its regions
-      // in the snapshot like a restored session, the only way to a view with
-      // no coarse blocks.
-      createOpts?: { unmeasuredView?: boolean; unplacedView?: boolean },
+      // every view-derived getter throws
+      createOpts?: { unmeasuredView?: boolean },
     ) =>
       env.createDisplay({
         displaySnapshot,
         skipWidth: createOpts?.unmeasuredView,
-        regionsInSnapshot: createOpts?.unplacedView,
       }),
   }
 }

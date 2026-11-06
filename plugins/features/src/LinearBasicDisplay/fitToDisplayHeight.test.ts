@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
@@ -1540,8 +1541,9 @@ describe('feature display scrolls over the visible window', () => {
 
   it('falls back to the whole pack with no coarse blocks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay(undefined, { unplacedView: true })
+    const { display, view } = createDisplay()
     display.setHeightMode('fixed')
+    view.setCoarseDynamicBlocks(new BlockSet(), view.bpPerPx)
     expect(view.coarseDynamicBlocks).toHaveLength(0)
     display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)

@@ -10,6 +10,7 @@ import {
   normalizeTrackInit,
   warmTrackDisplayGeneric,
 } from '@jbrowse/core/util/tracks'
+import { installCoarseBlocks } from '@jbrowse/display-kit/coarseBlocks'
 import { requestedDisplayType } from '@jbrowse/launch-args/displayAlias'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
@@ -357,30 +358,10 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
 }
 
 /**
- * Autorun that updates coarse dynamic blocks with a delay
- */
-function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
-  addDisposer(
-    self,
-    autorun(
-      function coarseDynamicBlocksAutorun() {
-        if (self.initialized) {
-          self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
-        }
-      },
-      {
-        delay: 500,
-        name: 'LGVCoarseDynamicBlocks',
-      },
-    ),
-  )
-}
-
-/**
  * Sets up all afterAttach autoruns for the LinearGenomeView
  */
 export function doAfterAttach(self: LinearGenomeViewModel) {
   setupInitWarmup(self)
   setupInitAutorun(self)
-  setupCoarseDynamicBlocksAutorun(self)
+  installCoarseBlocks(self, 'LGVCoarseDynamicBlocks')
 }
