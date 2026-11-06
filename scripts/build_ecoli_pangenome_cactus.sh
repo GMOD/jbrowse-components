@@ -70,15 +70,18 @@ REFPATH="K12#0#chr"
 # all ship inside this image, so the projections below reuse it.
 CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
 
-# docker if it is there, else singularity/apptainer, which is what a cluster
-# usually has instead. Only this wrapper differs between the two: every `in_cactus`
+# docker if this user can reach its daemon, else singularity/apptainer, which is
+# what a cluster, or a machine where you have no sudo, usually has instead. Only this wrapper differs between the two: every `in_cactus`
 # call below is unchanged, because `--bind`/`--pwd` are `-v`/`-w` and singularity
 # already runs as the invoking user, so it needs no `-u`. Set CONTAINER to pick
 # one explicitly.
 CONTAINER="${CONTAINER:-}"
 if [ -z "$CONTAINER" ]; then
   for c in docker singularity apptainer; do
-    if command -v "$c" >/dev/null 2>&1; then CONTAINER="$c"; break; fi
+    command -v "$c" >/dev/null 2>&1 || continue
+    [ "$c" = docker ] && ! docker info >/dev/null 2>&1 && continue
+    CONTAINER="$c"
+    break
   done
 fi
 case "$CONTAINER" in
