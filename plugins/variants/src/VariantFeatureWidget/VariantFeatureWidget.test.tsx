@@ -198,9 +198,9 @@ test('a breakend whose ALTs name no mate offers no navigation', async () => {
   expect(container.querySelectorAll('li')).toHaveLength(0)
 })
 
-// The widget is a singleton the drawer reuses, and FeatureDetailsFrame keys
-// its body on the feature to reset the sample grid -- so the swap cue has to be
-// mounted outside that key, or it remounts along with the body and never plays.
+// The widget is a singleton the drawer reuses, and its body is keyed on
+// featureKey to reset the sample grid -- so the swap cue has to be mounted
+// outside that key, or it remounts along with the body and never plays.
 test('swapping to another variant washes the panel', () => {
   const { queryByTestId, widget } = renderWidget({
     uniqueId: 'one',

@@ -1,10 +1,9 @@
-import { Fragment } from 'react'
-
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { ErrorBanner } from '../../ui/index.ts'
 import FeatureWash from './FeatureWash.tsx'
+import { FeatureTrackContext, featureKey } from './featureKey.ts'
 import { isEmpty } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -15,12 +14,6 @@ export interface FeatureDetailsFrameModel {
   featureData?: SimpleFeatureSerialized
   trackId?: string
 }
-
-/**
- * Wraps a feature widget's body, keyed on the shown feature so every
- * per-feature UI state below resets when the reused widget swaps features. A
- * feature id is unique only within its track, so the key names the track too.
- */
 
 const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
   model,
@@ -42,12 +35,12 @@ const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
       </Paper>
     )
   ) : (
-    <FeatureWash uniqueId={`${trackId ?? ''}/${featureData.uniqueId}`}>
-      {error ? <ErrorBanner error={error} /> : null}
-      <Fragment key={`${trackId ?? ''}/${featureData.uniqueId}`}>
+    <FeatureTrackContext value={trackId}>
+      <FeatureWash uniqueId={featureKey(trackId, featureData.uniqueId)}>
+        {error ? <ErrorBanner error={error} /> : null}
         {children}
-      </Fragment>
-    </FeatureWash>
+      </FeatureWash>
+    </FeatureTrackContext>
   )
 })
 

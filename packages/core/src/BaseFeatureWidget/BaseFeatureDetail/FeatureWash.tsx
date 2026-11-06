@@ -43,10 +43,10 @@ const useStyles = makeStyles()(theme => {
  * did. The cue covers the whole panel rather than its title for that reason:
  * a title is off-screen for exactly the reader who cannot tell it updated.
  *
- * **Mount this outside anything keyed on the feature.** FeatureDetailsFrame
- * keys the widget body on the feature to reset per-feature UI state; inside
- * such a key this remounts on every swap and its counter never leaves zero,
- * so it silently never plays.
+ * **Mount this outside anything keyed on the feature.** Some widgets key their
+ * body on `featureKey` to reset per-feature UI state (variants does, for its
+ * sample grid); inside such a key this remounts on every swap and its counter
+ * never leaves zero, so it silently never plays.
  */
 const FeatureWash = observer(function FeatureWash({
   uniqueId,

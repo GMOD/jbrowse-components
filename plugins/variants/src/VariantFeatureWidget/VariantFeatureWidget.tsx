@@ -3,6 +3,7 @@ import { Suspense, lazy, useMemo, useState } from 'react'
 import { parseBreakend } from '@gmod/vcf'
 import {
   FeatureDetailsFrame,
+  featureKey,
   jexlFilterDisplay,
   rawValueFilterActions,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
@@ -192,9 +193,19 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
   model: VariantFeatureWidgetModel
 }) {
   const { featureData } = model
+  // keyed by feature: the widget instance is reused for the next variant clicked
+  // (one widget id per track, and the drawer renders it without a key), so
+  // without this the sample grid's filters and genotype selection carry over and
+  // silently empty the next variant's grid
   return (
     <FeatureDetailsFrame model={model}>
-      {featureData ? <FeatDefined feat={featureData} model={model} /> : null}
+      {featureData ? (
+        <FeatDefined
+          key={featureKey(model.trackId, featureData.uniqueId)}
+          feat={featureData}
+          model={model}
+        />
+      ) : null}
     </FeatureDetailsFrame>
   )
 })

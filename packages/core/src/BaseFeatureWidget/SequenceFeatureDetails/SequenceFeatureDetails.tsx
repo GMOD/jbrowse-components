@@ -3,6 +3,7 @@ import { Suspense, lazy, useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 
 import { LoadingEllipses } from '../../ui/index.ts'
+import { useFeatureKey } from '../BaseFeatureDetail/featureKey.ts'
 import SequenceControls from './dialogs/SequenceControls.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import { featureHasExonOrCDS, resolveMode } from './featureTypeUtil.ts'
@@ -151,7 +152,12 @@ const SequenceFeatureDetailsPanel = observer(
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
   props: SequenceFeatureDetailsProps,
 ) {
-  return <SequenceFeatureDetailsPanel key={props.feature.uniqueId} {...props} />
+  return (
+    <SequenceFeatureDetailsPanel
+      key={useFeatureKey(props.feature.uniqueId)}
+      {...props}
+    />
+  )
 })
 
 export default SequenceFeatureDetails

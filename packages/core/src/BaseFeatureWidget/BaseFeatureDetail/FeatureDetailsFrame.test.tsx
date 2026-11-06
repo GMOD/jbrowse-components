@@ -4,6 +4,7 @@ import { act, render } from '@testing-library/react'
 import { observable, runInAction } from 'mobx'
 
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
+import { useFeatureKey } from './featureKey.ts'
 
 test('a formatDetails error with no feature replaces the panel', () => {
   const { getByText, queryByText } = render(
@@ -58,12 +59,16 @@ function Mounted() {
   return <span>{`mount ${mount}`}</span>
 }
 
+function PerFeature() {
+  return <Mounted key={useFeatureKey('chr1-12')} />
+}
+
 function swapIn(trackId: string) {
   const featureData = { uniqueId: 'chr1-12', refName: 'chr1', start: 0, end: 1 }
   const model = observable({ trackId: 'gencode', featureData })
   const { getByText, queryByTestId } = render(
     <FeatureDetailsFrame model={model}>
-      <Mounted />
+      <PerFeature />
     </FeatureDetailsFrame>,
   )
   const before = getByText(/mount/).textContent

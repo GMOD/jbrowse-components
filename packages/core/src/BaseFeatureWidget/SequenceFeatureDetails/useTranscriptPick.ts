@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { useFeatureKey } from '../BaseFeatureDetail/featureKey.ts'
 import { getTranscripts, rankTranscripts } from './featureTypeUtil.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -21,18 +22,16 @@ export function useTranscriptPick(
   canonicalTranscripts?: CanonicalTranscripts,
 ): TranscriptPick {
   const [picked, setPicked] = useState<{ featureId: string; index: number }>()
+  const featureId = useFeatureKey(feature.uniqueId)
   const transcripts = getTranscripts(feature)
   const ranked = rankTranscripts(transcripts, canonicalTranscripts)
   const [best] = ranked
   return {
     transcripts,
     ranked,
-    index:
-      picked?.featureId === feature.uniqueId
-        ? picked.index
-        : (best?.index ?? 0),
+    index: picked?.featureId === featureId ? picked.index : (best?.index ?? 0),
     setIndex: index => {
-      setPicked({ featureId: feature.uniqueId, index })
+      setPicked({ featureId, index })
     },
   }
 }

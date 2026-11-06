@@ -54,6 +54,7 @@ export { default as BaseCoreDetails } from './BaseCoreDetails.tsx'
 export { default as FeatureDetails } from './FeatureDetails.tsx'
 export { default as FeatureDetailsFrame } from './FeatureDetailsFrame.tsx'
 export { default as FeatureWash } from './FeatureWash.tsx'
+export { FeatureTrackContext, featureKey, useFeatureKey } from './featureKey.ts'
 export {
   filterByValueItems,
   jexlFilterDisplay,
