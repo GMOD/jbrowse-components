@@ -77,7 +77,7 @@ CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
 # one explicitly.
 CONTAINER="${CONTAINER:-}"
 if [ -z "$CONTAINER" ]; then
-  for c in docker singularity apptainer; do
+  for c in docker apptainer singularity; do
     command -v "$c" >/dev/null 2>&1 || continue
     [ "$c" = docker ] && ! docker info >/dev/null 2>&1 && continue
     CONTAINER="$c"
@@ -88,7 +88,9 @@ case "$CONTAINER" in
   docker)
     in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --env TMPDIR=/data/tmp "$CACTUS_IMAGE" "$@"; } ;;
   singularity | apptainer)
-    in_cactus() { "$CONTAINER" exec --cleanenv --bind "$PWD":/data --pwd /data --env TMPDIR=/data/tmp "docker://$CACTUS_IMAGE" "$@"; } ;;
+    # TMPDIR goes in as SINGULARITYENV_/APPTAINERENV_, which --cleanenv passes
+    # and every release reads; `exec --env` arrived only in singularity 3.6
+    in_cactus() { SINGULARITYENV_TMPDIR=/data/tmp APPTAINERENV_TMPDIR=/data/tmp "$CONTAINER" exec --cleanenv --bind "$PWD":/data --pwd /data "docker://$CACTUS_IMAGE" "$@"; } ;;
   *)
     echo "need docker, singularity or apptainer on PATH to run $CACTUS_IMAGE" >&2
     exit 1 ;;
