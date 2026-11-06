@@ -23,6 +23,7 @@ type Entry = Partial<Record<Manager, string>> & {
   npmPrerelease?: string
   bins?: string[]
   modules?: string[]
+  rlibs?: string[]
 }
 
 const PRERELEASE = (

@@ -203,5 +203,30 @@
   },
   "apptainer": {
     "conda": "apptainer"
+  },
+  "R": {
+    "apt": "r-base",
+    "conda": "r-base",
+    "bins": ["R", "Rscript"]
+  },
+  "satuRn": {
+    "conda": "bioconductor-saturn",
+    "bins": [],
+    "rlibs": ["satuRn"]
+  },
+  "SummarizedExperiment": {
+    "conda": "bioconductor-summarizedexperiment",
+    "bins": [],
+    "rlibs": ["SummarizedExperiment"]
+  },
+  "edgeR": {
+    "conda": "bioconductor-edger",
+    "bins": [],
+    "rlibs": ["edgeR"]
+  },
+  "limma": {
+    "conda": "bioconductor-limma",
+    "bins": [],
+    "rlibs": ["limma"]
   }
 }

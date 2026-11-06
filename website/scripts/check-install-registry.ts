@@ -50,7 +50,7 @@ const probes: Record<string, (value: string) => Promise<boolean | undefined>> =
     download: url => exists(url, 'HEAD'),
   }
 
-const NOT_PACKAGES = new Set(['bins', 'modules', 'npmPrerelease'])
+const NOT_PACKAGES = new Set(['bins', 'modules', 'rlibs', 'npmPrerelease'])
 
 const errors: string[] = []
 let checked = 0

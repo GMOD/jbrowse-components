@@ -4,8 +4,8 @@
 // resolve and still ship the wrong thing (conda's `duckdb` is the Python
 // library, the `duckdb` command is `duckdb-cli`); only installing it shows that.
 //
-// An entry's `bins` lists its commands (default: the entry's own name) and
-// `modules` the Python modules it provides. Cargo, npm and download-only tools
+// An entry's `bins` lists its commands (default: the entry's own name),
+// `modules` the Python modules and `rlibs` the R packages it provides. Cargo, npm and download-only tools
 // stay out: the env holds what conda and pip deliver.
 //
 // Run: node scripts/tutorial-tools-env.ts create <prefix>
@@ -21,6 +21,7 @@ interface Entry {
   pip?: string
   bins?: string[]
   modules?: string[]
+  rlibs?: string[]
 }
 
 const registry = JSON.parse(
@@ -87,8 +88,17 @@ function check(prefix: string) {
           stdio: 'ignore',
         }).status !== 0,
     )
+    const missingRlibs = (e.rlibs ?? []).filter(
+      lib =>
+        spawnSync(path.join(bin, 'Rscript'), ['-e', `library(${lib})`], {
+          stdio: 'ignore',
+        }).status !== 0,
+    )
     return [
       ...missingBins.map(b => `${tool}: ${manager} installs no \`${b}\``),
+      ...missingRlibs.map(
+        lib => `${tool}: ${manager} gives no loadable R package \`${lib}\``,
+      ),
       ...missingModules.map(
         m => `${tool}: ${manager} gives no importable \`${m}\``,
       ),
