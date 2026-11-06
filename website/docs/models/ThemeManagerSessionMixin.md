@@ -46,7 +46,7 @@ following the OS, and the themes an admin adds through `extraThemes`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setthemename">**setThemeName**</span><br><code>(name: string) =&gt; void</code> | Pick a palette. A name from before light and dark were an axis sets the mode it spelled as well, so an old share link, a saved figure spec and `jbrowse-img --theme darkStock` all still mean what they said. A palette pinned to one mode also drops a held mode, which would otherwise resurface on the next palette change. |
+| <span id="action-setthemename">**setThemeName**</span><br><code>(name: string) =&gt; void</code> | Pick a palette. A name from before light and dark were an axis sets the mode it spelled as well, so an old share link or a saved figure spec still means what it said. A palette pinned to one mode also drops a held mode, which would otherwise resurface on the next palette change. |
 | <span id="action-notedarkreader">**noteDarkReader**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setsystemprefersdark">**setSystemPrefersDark**</span><br><code>(dark: boolean) =&gt; void</code> |  |
 | <span id="action-setsystemthemeoverride">**setSystemThemeOverride**</span><br><code>(mode?: PaletteMode &#124; undefined) =&gt; void</code> | Hold a session on the mode its setting is not asking for, or `undefined` to return to the setting. The toolbar's sun/moon writes this, so it stays in the toolbar after a click. The OS flipping clears it, since by then the OS has come round to the held mode. The palette is untouched: a reader on Minimal who does this keeps Minimal. |

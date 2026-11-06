@@ -3578,7 +3578,7 @@ export const videoFrames: Record<
   },
   "variants/trio_phased_matrix": {
     "width": 1920,
-    "height": 620
+    "height": 800
   },
   "repeats/painting_display_switch": {
     "width": 1920,

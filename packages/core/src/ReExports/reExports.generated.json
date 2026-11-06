@@ -788,11 +788,14 @@
         "BaseCoreDetails",
         "FeatureDetails",
         "FeatureDetailsFrame",
+        "FeatureTrackContext",
         "FeatureWash",
         "default",
+        "featureKey",
         "filterByValueItems",
         "jexlFilterDisplay",
-        "rawValueFilterActions"
+        "rawValueFilterActions",
+        "useFeatureKey"
       ],
       "worker": "stub",
       "uiVia": [
@@ -4979,6 +4982,7 @@
         "SvgLegend",
         "SvgPinnedHighlight",
         "SvgYAxis",
+        "exportedHeight",
         "renderDisplaySvg",
         "renderDisplaySvgInFrame",
         "svgLegendGutterWidth"
@@ -5275,6 +5279,7 @@
         "plainTrackControl",
         "resolveOverlays",
         "scoreToAxisY",
+        "sidebarCovers",
         "textHalo",
         "tooLargeBannerText",
         "useChromeOverlayOverride",
