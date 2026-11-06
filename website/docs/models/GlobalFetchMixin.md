@@ -1,31 +1,18 @@
 ---
 id: globalfetchmixin
 title: GlobalFetchMixin
-description: "The foundation for a display holding a single global (non-regional) dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes."
+description: "The foundation for a display holding one non-regional dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes."
 sidebar_label: Mixin -> GlobalFetchMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
 
-**The** foundation for a display holding a single global (non-regional)
-dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes.
-
-Composes:
-  - RegionTooLargeMixin (regionTooLarge, force-load, …)
-  - RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …)
-  - KeyedFetchMixin (FetchMixin's runFetch, cancelFetch, isLoading, error,
-                     statusMessage, fetchGeneration, plus the
-                     `currentFetchKey` / `loadedFetchKey` freshness pair
-                     the comparative family composes too)
-
-What remains here is what only an LGV display can supply: the hosting
-`RegionHost`, the static-block signature every `viewSignature` in this family
-starts from, and the readiness getters that read the view — `viewportEmpty`,
-`canRender`, `paintInert`, `svgReady`, `displayPhase`.
-
-The mixin installs no autoruns. Each display owns its fetch trigger, using
-the `installGlobalFetchAutorun` skeleton and supplying its `prepare` /
-`run` / `commit` phases.
+The foundation for a display holding one non-regional dataset: HiC's contact
+matrix, the LD triangle, multi-way synteny's lanes. Composes
+`RegionTooLargeMixin`, `RenderLifecycleMixin` and `KeyedFetchMixin`, and adds
+the host, the block signatures and the readiness getters that read the view.
+It installs no autoruns: each display installs its fetch with
+`installGlobalFetchAutorun`.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 
@@ -49,16 +36,16 @@ From [RegionTooLargeMixin](../regiontoolargemixin): <span id="volatile-forceload
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-host">**host**</span><br><code>RegionHost</code> | The hosting view as the `RegionHost` contract — see `containingHost` for the cast it owns, why the name is `host` and not `view`, and why both foundations still declare the name over one body. |
+| <span id="getter-host">**host**</span><br><code>RegionHost</code> | The view this display reads regions, viewport and scale from; see `containingHost`. |
 | <span id="getter-canvaswidthpx">**canvasWidthPx**</span><br><code>number</code> | The CSS width of this display's on-screen canvas, in px; see `trackCanvasWidthPx`. A heatmap laid out over the whole content reads the content width instead (`TriangleMatrixMixin.canvasWidth`). |
-| <span id="getter-staticblocksignature">**staticBlockSignature**</span><br><code>string &#124; undefined</code> | The static-block set as a signature, or `undefined` before the view is measured — the building block every `viewSignature` in this family starts from. Multi-way synteny is exactly this; HiC appends its resolution. Declared here so the initialized gate is spelled once. |
+| <span id="getter-staticblocksignature">**staticBlockSignature**</span><br><code>string &#124; undefined</code> | The static-block set as a signature, `undefined` before the view is measured: what a `viewSignature` starts from. HiC appends its resolution. |
 | <span id="getter-dynamicblocksignature">**dynamicBlockSignature**</span><br><code>string &#124; undefined</code> | The same over `dynamicBlocks`, for a display whose fetch window is the live viewport rather than the snapped block set (LD). |
-| <span id="getter-viewportempty">**viewportEmpty**</span><br><code>boolean</code> | No content block is on screen, so this display has nothing to fetch and nothing to paint — see `viewportEmpty.ts` for the one viewport that reaches it, how narrow that is, and why the state still has to be terminal rather than a permanent scrim. Both foundations declare it over that one expression, the same way they each declare `host` and `paintInert`. |
-| <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | Overrides `RenderLifecycleMixin`'s default-true hook with the LGV precondition both foundations share — see `foundationCanRender`. |
-| <span id="getter-renderscanvas">**rendersCanvas**</span><br><code>boolean</code> | Fills `RenderLifecycleMixin`'s hook off `fetchInert`: a display that will never fetch here shows a placeholder where its canvas would be, so `painted` and the pre-first-paint scrim term stop waiting on a paint that cannot come. This is `fetchInert` negated, so Sequence and LD need no second override. |
-| <span id="getter-paintinert">**paintInert**</span><br><code>boolean</code> | Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a failed fetch has to read as finished to the consumers outside the display, and `foundationPaintInert` for the second such state and why both fetch families answer it through one function. Overridable, as the hook is: a display with a third inert state overrides it. |
-| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | Policy single-sourced in `computeSvgReady`; this family supplies only the freshness half, which `foundationSvgReady` reads as `dataCurrent` or the vacuous currency of `viewportEmpty`. Note it requires the dataset to actually be current, not merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`. |
-| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | The display's mutually-exclusive visual state, mapped in `foundationDisplayPhase` — every foundation calls it and supplies only its staleness argument, so a term added to `computeActivityPhase` reaches all of them without being wired twice.<br><br>This family's argument is the constant `true`, deliberately: a global display keeps the last frame up through a refetch (worker output is genomic, so the stale frame draws correctly under the live view transform), so a pan or zoom shows no scrim beyond the `isLoading` window. The pre-first-paint scrim it *does* want — the gap between mount and `isLoading` going true, which on HiC is the `CoreGetInfo` round trip its first fetch waits on — is `computeActivityPhase`'s shared `rendersCanvas && !canvasDrawn` term, not anything this family spells out. |
+| <span id="getter-viewportempty">**viewportEmpty**</span><br><code>boolean</code> | No content block is on screen, so there is nothing to fetch or paint; see `viewportEmpty.ts`. |
+| <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | `RenderLifecycleMixin`'s hook: the view has initialized. |
+| <span id="getter-renderscanvas">**rendersCanvas**</span><br><code>boolean</code> | `RenderLifecycleMixin`'s hook: a display that will not fetch shows a placeholder where its canvas would be. |
+| <span id="getter-paintinert">**paintInert**</span><br><code>boolean</code> | `RenderLifecycleMixin`'s `paintInert` hook; see `foundationPaintInert`. Overridable for a further inert state. |
+| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | An SVG export can read this display's data; off-screen renderers wait on it through `awaitSvgReady(model)`. See `foundationSvgReady`. |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | The display's visual state, mapped by `foundationDisplayPhase`. This family's staleness argument is the constant `true`: the last frame is genomic and draws correctly under the live view, so a pan or zoom shows no scrim beyond the `isLoading` window. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>33 inherited getters from 4 models</summary>

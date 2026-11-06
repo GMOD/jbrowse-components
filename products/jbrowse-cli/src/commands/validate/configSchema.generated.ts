@@ -4921,7 +4921,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts, an interval left out sampling the default ramp; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -7865,7 +7865,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp.",
           "if": {
             "type": "null"
           },
@@ -8997,7 +8997,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -9371,7 +9371,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
+          "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing past its end into the scheme where one is set, else the default palette; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
           "if": {
             "type": "null"
           },
@@ -10067,7 +10067,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domain": {
-          "description": "for an ordinal scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
+          "description": "for an ordinal scale, the values in legend order, walking the range from the first entry and continuing past its end into the scheme where one is set, else the default palette (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
           "if": {
             "type": "null"
           },
@@ -10118,7 +10118,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette for ordinal, the scheme, or for a threshold the default ramp sampled per interval.",
+          "description": "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty, or short of the domain, takes the rest from the scheme where one is set, else the default palette for ordinal or the default ramp sampled per interval for threshold.",
           "if": {
             "type": "null"
           },
@@ -12501,7 +12501,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -27312,7 +27312,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
+          "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing past its end into the scheme where one is set, else the default palette; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
           "if": {
             "type": "null"
           },

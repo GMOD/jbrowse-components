@@ -1,19 +1,16 @@
 ---
 id: keyedfetchmixin
 title: KeyedFetchMixin
-description: "FetchMixin plus the one freshness compare a single-payload fetch runs: the key of what the view, settings and adapter call for (currentFetchKey) against the key the held data was committed under…"
+description: "FetchMixin plus the freshness compare a single-payload fetch runs: the key the view, settings and adapter call for (currentFetchKey) against the key the held data was committed under…"
 sidebar_label: Mixin -> KeyedFetchMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/KeyedFetchMixin.ts).
 
-`FetchMixin` plus the one freshness compare a single-payload fetch runs: the
-key of what the view, settings and adapter call for (`currentFetchKey`)
-against the key the held data was committed under (`loadedFetchKey`). The
-LGV global family composes it under `GlobalFetchMixin` and the comparative
-family under `ComparativeFetchMixin`; the per-region family answers the same
-question per region through `isCacheValid`, so it stays on `FetchMixin`
-(ADR-105).
+`FetchMixin` plus the freshness compare a single-payload fetch runs: the key
+the view, settings and adapter call for (`currentFetchKey`) against the key
+the held data was committed under (`loadedFetchKey`). Composed by
+`GlobalFetchMixin` and `ComparativeFetchMixin` (ADR-105).
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 
@@ -22,7 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-loadedfetchkey">**loadedFetchKey**</span><br><code>FetchKey &#124; undefined</code> | `currentFetchKey` as it stood when the held data was committed — the loaded half of the freshness compare. Written only by `commitFetchResult`, so a display cannot stamp data it did not fetch, and cleared by `reload` for the overlay's sake rather than the refetch's (the skeleton's reload epoch is what overrides its gate). The data itself stays display-owned: LD keeps the stale triangle on screen under the loading overlay, HiC the stale matrix, synteny the stale ribbons. |
+| <span id="volatile-loadedfetchkey">**loadedFetchKey**</span><br><code>FetchKey &#124; undefined</code> | `currentFetchKey` as it stood when the held data was committed. Written only by `commitFetchResult` and cleared by `reload`; the data itself is the display's and stays on screen under the overlay. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited volatiles from one model</summary>
@@ -36,10 +33,10 @@ From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSigna
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | Overridable hook, the one freshness input a display supplies: the signature of what the current *view* calls for — its block set (`blockKeySignature`) plus any view-derived fetch tier, like HiC's binsize; both comparative views' region sets, zoom buckets and LOD tier. `undefined` means "not computable yet" (view unmeasured, a prerequisite header still in flight) and holds the fetch off.<br><br>Settings and the adapter are deliberately not the display's half: `currentFetchKey` below pairs this with `settingsFetchInputs`, so a field added to `rpcProps()` or a track re-pointed in the config editor invalidates held data structurally. HiC hand-folded one settings term in, and a second term would not have invalidated anything; the comparative family folded the adapter in at its installer and compared without it at its export gate.<br><br>Default `undefined`, so a display that forgets the override never fetches and never exports — hung is diagnosable, stale ships wrong pixels. |
-| <span id="getter-datasuperseded">**dataSuperseded**</span><br><code>boolean</code> | Overridable hook (default false): the held data matches the key, but the screen will settle on different data — a dependent fetch is still out, or a fetch input the display writes itself has moved. The same hook `MultiRegionDisplayMixin` declares, for the same reason: the key compare cannot see anything the display fetches outside its primary fetch, and an export sampling `svgReady` in that window paints the half-filled frame.<br><br>A term of `dataCurrent` and not of the skeleton's freshness gate, so it holds the export and never re-runs the primary fetch. It fails hung, not stale: a value that latches true parks `awaitSvgReady` on its backstop, so state only what a later commit is guaranteed to clear. |
-| <span id="getter-currentfetchkey">**currentFetchKey**</span><br><code>FetchKey &#124; undefined</code> | Key of the fetch the current view, settings and adapter call for. The fetch skeleton's freshness key: captured at issue, compared against the stamp above, and written to it at commit. Its identity survives a recomputation onto equal content, so the idle compare is `===`. |
-| <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | The shared freshness answer every foundation gives: data has been committed (`loadedFetchKey` is only ever written beside it), it was fetched for the current view and settings, and the display is not about to supersede it itself. A pan inside the loaded blocks stays current; a block entering, a tier step, a settings change or a `reload()` moves one side of the compare. **What the fetch autorun gates on is the same compare inside `installFetch`**, not this getter — the skeleton owns it so a reload can override it. This one is for the readers outside the fetch, the export gate above all. The per-region twin is `isCacheValid`: what decides a refetch, and deliberately not the whole freshness answer. |
+| <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | Overridable hook, the freshness input a display supplies: what the current view calls for, such as its block set (`blockKeySignature`) plus any view-derived tier like HiC's bin size. Leave settings out; `currentFetchKey` pairs this with `settingsFetchInputs`. `undefined` holds the fetch off, and is the default, so a missing override hangs rather than draws stale data. |
+| <span id="getter-datasuperseded">**dataSuperseded**</span><br><code>boolean</code> | Overridable hook (default false): the held data matches the key but the screen will settle on different data, as when a dependent fetch is still out. A term of `dataCurrent` only, so it holds the export and never refetches; state only what a later commit is sure to clear. See `MultiRegionDisplayMixin.dataSuperseded`. |
+| <span id="getter-currentfetchkey">**currentFetchKey**</span><br><code>FetchKey &#124; undefined</code> | The key of the fetch the current view, settings and adapter call for: captured at issue and stamped at commit. Its identity survives a recomputation onto equal content. |
+| <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | The held data was committed for the current key and the display is not about to supersede it. For readers outside the fetch, the export gate above all; the fetch autorun makes the same compare inside `installFetch`, where a reload can override it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited getters from one model</summary>
@@ -53,8 +50,8 @@ From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../f
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-commitfetchresult">**commitFetchResult**</span><br><code>(commit: () =&gt; void, key: FetchKey) =&gt; void</code> | The commit half of a keyed fetch: run the display's own store in the same transaction as the key stamp, so no observer can see fresh data under a stale key or the reverse. As the only writer of `loadedFetchKey`, this action makes `dataCurrent` derivable, because a display cannot commit without stamping. |
-| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | `FetchMixin.reload` (error, cancel, counter — the shared skeleton's reload epoch makes that bump override the freshness gate, even against a fetch that commits mid-reload, so nothing here has to remember to invalidate for the retry's sake) plus this layer's one addition, for the export gate rather than the refetch: dropping the loaded key sends `dataCurrent` false, so an export started after the click waits for the refetch instead of capturing what the retry is about to replace. The data itself survives, staying on screen under that overlay. A subclass whose reload needs extra teardown can override and chain. |
+| <span id="action-commitfetchresult">**commitFetchResult**</span><br><code>(commit: () =&gt; void, key: FetchKey) =&gt; void</code> | The commit half of a keyed fetch: the display's store and the key stamp in one transaction, so no observer sees fresh data under a stale key or the reverse. |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | `FetchMixin.reload`, whose counter bump overrides the skeleton's freshness gate, plus dropping the loaded key so an export started after the click waits for the refetch. The data stays on screen. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>10 inherited actions from one model</summary>
