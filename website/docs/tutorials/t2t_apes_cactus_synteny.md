@@ -34,18 +34,18 @@ one, since its authors publish a chain for every pair of genomes in it. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli,chain2paf,node -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix
+sudo apt install tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib
+conda install -c bioconda -c conda-forge htslib chain2paf nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli,chain2paf,node -->
 
 ## The data
 

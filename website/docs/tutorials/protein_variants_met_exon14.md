@@ -34,16 +34,16 @@ Encyclopedia: NCI-H596, which skips the exon, and EBC-1, which keeps it. We:
   loads them
 - for your own reads, `hisat2` and `samtools`
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL hisat2,samtools -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL hisat2,samtools,sra-tools -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install hisat2 samtools
+sudo apt install hisat2 samtools sra-toolkit
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge hisat2 samtools
+conda install -c bioconda -c conda-forge hisat2 samtools sra-tools
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL hisat2,samtools -->
+<!-- END GENERATED TUTORIAL_INSTALL hisat2,samtools,sra-tools -->
 
 ## The data
 

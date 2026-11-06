@@ -42,18 +42,23 @@ Building your own instance needs:
   - [samtools](http://www.htslib.org/) (v1.21 or later)
   - [minimap2](https://github.com/lh3/minimap2)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli,htslib,bcftools,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools minimap2 nodejs
+sudo apt install samtools minimap2 nodejs tabix bcftools
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools minimap2 nodejs
+conda install -c bioconda -c conda-forge samtools minimap2 nodejs htslib \
+  bcftools ucsc-bedgraphtobigwig
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli,htslib,bcftools,bedGraphToBigWig -->
 
 ## The data
 

@@ -31,19 +31,19 @@ that hybridized to make it, so most of its genes exist three times. We:
 [Selection pressure between two genomes](/docs/tutorials/selection_pressure)
 covers installing jcvi and what dN/dS measures.
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install diamond-aligner nodejs
+sudo apt install diamond-aligner nodejs python-is-python3
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge diamond nodejs
+conda install -c bioconda -c conda-forge diamond nodejs python
 # any platform
 pip install jcvi biopython
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython -->
+<!-- END GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python -->
 
 ## The data
 

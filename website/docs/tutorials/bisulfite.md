@@ -36,14 +36,14 @@ cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
   optional aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,trim-galore,bwameth -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools tabix nodejs
+sudo apt install samtools tabix nodejs trim-galore
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs \
-  ucsc-bedgraphtobigwig ncbi-datasets-cli
+  ucsc-bedgraphtobigwig ncbi-datasets-cli trim-galore bwameth
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
@@ -54,7 +54,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/datasets ~/.local/bin/datafo
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,trim-galore,bwameth -->
 
 ## The data
 

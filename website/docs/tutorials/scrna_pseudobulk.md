@@ -42,6 +42,21 @@ peripheral blood cells (PBMC), one RNA and one ATAC, we:
   [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store). In your own
   JBrowse, load it by the URL that section gives
 
+<!-- BEGIN GENERATED TUTORIAL_INSTALL bedGraphToBigWig,node -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install nodejs
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge ucsc-bedgraphtobigwig nodejs
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
+```
+
+<!-- END GENERATED TUTORIAL_INSTALL bedGraphToBigWig,node -->
+
 ## The data
 
 10x Genomics'

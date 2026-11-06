@@ -1574,11 +1574,19 @@ BASE_TOOLS = {
     "zcat", "apptainer", "singularity", "Rscript", "R",
 }
 _registry = json.load(open("website/scripts/api-docs/tutorialInstall.json"))
-REGISTRY_BINS = {
-    b for tool, entry in _registry.items() for b in entry.get("bins", [tool])
-}
+BINS_OF = {tool: entry.get("bins", [tool]) for tool, entry in _registry.items()}
+REGISTRY_BINS = {b for bins in BINS_OF.values() for b in bins}
 TOOL_LOOP = re.compile(
     r'for (\w+) in ([^;\n]+);\s*do\s*\n\s*command -v "\$\{?\1\}?"')
+
+
+def tool_loops(path):
+    joined = open(path).read().replace("\\\n", " ")
+    defaults = dict(re.findall(r'(\w+)="\$\{\1:-([^}]+)\}"', joined))
+    return [[defaults.get(word.strip('"${}'), word) for word in names.split()]
+            for _, names in TOOL_LOOP.findall(joined)]
+
+
 loopless_file = "scripts/tool-checks-missing.txt"
 loopless_allowed = set()
 if os.path.exists(loopless_file):
@@ -1586,19 +1594,15 @@ if os.path.exists(loopless_file):
                         if ln.strip() and not ln.startswith("#")}
 loopless = set()
 for f in scripts:
-    joined = open(f).read().replace("\\\n", " ")
-    loops = TOOL_LOOP.findall(joined)
-    defaults = dict(re.findall(r'(\w+)="\$\{\1:-([^}]+)\}"', joined))
+    loops = tool_loops(f)
     if not loops:
         loopless.add(f)
-    for _, names in loops:
-        for word in names.split():
-            tool = defaults.get(word.strip('"${}'), word)
-            if tool not in REGISTRY_BINS and tool not in BASE_TOOLS:
-                print(f"FAIL {f}: checks for `{tool}`, which no "
-                      f"tutorialInstall.json entry installs (add one, with "
-                      f"`bins` if its command differs from its name)")
-                failed = True
+    for tool in {t for loop in loops for t in loop}:
+        if tool not in REGISTRY_BINS and tool not in BASE_TOOLS:
+            print(f"FAIL {f}: checks for `{tool}`, which no "
+                  f"tutorialInstall.json entry installs (add one, with "
+                  f"`bins` if its command differs from its name)")
+            failed = True
 for f in sorted(loopless - loopless_allowed):
     print(f'FAIL {f}: no `for tool in ...; do command -v "$tool"` loop naming '
           f"the tools it runs")
@@ -1611,10 +1615,37 @@ if loopless <= loopless_allowed and loopless != loopless_allowed:
             fh.write(f"{f}\n")
     print(f"wrote {loopless_file} ({len(loopless)} scripts)")
 
+# A reader who runs exactly a tutorial's install fence and then its build script
+# has every tool the script's loops check for. The fence is generated from the
+# page's TUTORIAL_INSTALL marker, so the marker names a registry entry for each
+# of them, or the tool is a base system tool.
+RUN_LINE = re.compile(r"^\s*(?:\w+=\S+\s+)*bash\s+(\S+\.sh)\b", re.M)
+INSTALL_MARKER = re.compile(r"<!-- BEGIN GENERATED TUTORIAL_INSTALL (\S+) -->")
+install_checked = 0
+for doc in sorted(glob.glob("website/docs/tutorials/*.md")):
+    page = open(doc).read()
+    fences = re.findall(r"^```(?:bash|sh)\n([\s\S]*?)^```", page, re.M)
+    run = sorted({f"scripts/{os.path.basename(s)}" for fence in fences
+                  for s in RUN_LINE.findall(fence)})
+    installed = {b for group in INSTALL_MARKER.findall(page)
+                 for tool in group.split(",") for b in BINS_OF.get(tool, [])}
+    for f in filter(os.path.exists, run):
+        install_checked += 1
+        missing = sorted({t for loop in tool_loops(f) for t in loop
+                          if t not in BASE_TOOLS and t not in installed})
+        if missing:
+            entries = sorted({e for e, bins in BINS_OF.items()
+                              for t in missing if t in bins})
+            print(f"FAIL {doc}: runs {os.path.basename(f)}, which checks for "
+                  f"{', '.join(missing)}, but the page's TUTORIAL_INSTALL "
+                  f"marker does not install them (add {','.join(entries)})")
+            failed = True
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
       f"{runnable} reader-facing docs run no script out of scripts/, "
       f"{view_objects} authored view objects write only keys a view reads, "
+      f"{install_checked} page-script pairs install every tool checked, "
       f"gfatools bubble contract {'checked' if gfatools_ran else 'SKIPPED'}")

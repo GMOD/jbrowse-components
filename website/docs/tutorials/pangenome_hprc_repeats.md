@@ -52,17 +52,17 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
   libcurl, [`minimap2`](https://github.com/lh3/minimap2), `python3` and Node.js
   with `npm`
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,htslib -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools bcftools minimap2 nodejs
+sudo apt install samtools bcftools minimap2 nodejs tabix
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools bcftools minimap2 \
-  duckdb-cli nodejs trgt
+  duckdb-cli nodejs trgt htslib
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,htslib -->
 
 ## The data
 

@@ -25,13 +25,18 @@ breast tumors we:
   [desktop quickstart](/docs/quickstart_desktop)) and the
   [JBrowse CLI](/docs/cli)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL jbrowse-cli,htslib,node -->
 
 ```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge htslib nodejs
+# any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL jbrowse-cli,htslib,node -->
 
 ## The data
 

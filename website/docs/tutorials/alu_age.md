@@ -37,13 +37,14 @@ where along chromosome 1 the young copies sit. We:
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,samtools -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix nodejs
+sudo apt install tabix nodejs samtools
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig \
+  samtools
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
@@ -52,7 +53,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,samtools -->
 
 ## The data
 

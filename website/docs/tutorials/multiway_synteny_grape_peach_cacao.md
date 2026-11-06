@@ -32,14 +32,14 @@ genomes at once, into one wide table with a column per species. We:
 - [gffread](https://github.com/gpertea/gffread)
 - `samtools`
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools gffread last-align
+sudo apt install samtools gffread last-align python-is-python3
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli \
-  last
+  last python
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
@@ -49,7 +49,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 pip install jcvi
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python -->
 
 ## The data
 

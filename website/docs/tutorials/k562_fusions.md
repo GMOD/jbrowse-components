@@ -38,14 +38,14 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
 ```
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver,node -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools tabix
+sudo apt install samtools tabix nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib \
-  ucsc-bedgraphtobigwig ucsc-liftover
+  ucsc-bedgraphtobigwig ucsc-liftover nodejs
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
@@ -55,7 +55,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/liftOver
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver,node -->
 
 ## The data
 
