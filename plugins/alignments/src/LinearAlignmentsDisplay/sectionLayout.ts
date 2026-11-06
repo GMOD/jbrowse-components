@@ -259,7 +259,12 @@ export interface SectionStackOpts<L> {
   // How far below a lane's pileup band its deepest dipping connector reaches,
   // given that band's height (`connectorDipReservePx`). Pads only the advance,
   // and never a lane sized by a drag: that lane is the height dragged to, so
-  // its seam follows the pointer, and its curves draw inside it.
+  // its seam follows the pointer, and a curve reaching past it clips at the
+  // seam, as under fit. Its rows fill the size once it truncates, so that is
+  // the last rows' loops and dips. Carving the room out of the size needs the
+  // reserve before the row cap, and the reserve is read off the layout that cap
+  // sets; padding past the size puts the seam below the pointer by a depth that
+  // changes as reads change rows.
   dipReservePx: (lane: L, pileupHeight: number) => number
 }
 

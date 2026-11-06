@@ -369,6 +369,11 @@ const DIP_RESERVE_PAD_PX = 2
 // hands the dip law, so reserving room changes no curve's depth. A cubic's
 // extreme is at most its apex depth below the lower endpoint, and exactly that
 // when the two ends share a row.
+//
+// Each dip counts at the depth its bps ask for, not the shallower one the mark
+// draws where its ends sit close on screen (`connectorLiftPx`), so a section
+// holds its height while the reader zooms; zoomed out, the room can stand
+// blank under curves drawn flat.
 export function connectorDipReservePx({
   pairs,
   displayedRegions,
