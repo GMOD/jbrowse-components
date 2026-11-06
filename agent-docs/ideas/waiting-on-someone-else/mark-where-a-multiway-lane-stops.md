@@ -1,6 +1,6 @@
 ---
 name: mark-where-a-multiway-lane-stops
-description: A multi-way lane that stops partway draws nothing at its end, so "the graph stops here" and "the contig ends here" look alike. An end tick with "graph stops; N kb unaligned" or "contig ends" would tell them apart. Waits on graph plugin 9 and the hosted format 6 walk files.
+description: An end tick on a multi-way lane that stops partway, saying "graph stops; N kb unaligned" or "contig ends", where today the two look alike. Waits on graph plugin 9 and the hosted format 6 walk files.
 ---
 
 # Mark where a multi-way lane stops
