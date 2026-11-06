@@ -5,7 +5,6 @@
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/launch-args/tsconfig.build.esm.json" },
-    { "path": "../../packages/tables/tsconfig.build.esm.json" },
     { "path": "../../plugins/breakpoint-split-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/dotplot-view/tsconfig.build.esm.json" },

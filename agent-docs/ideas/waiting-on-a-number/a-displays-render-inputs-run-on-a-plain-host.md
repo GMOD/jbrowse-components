@@ -311,12 +311,13 @@ and highlights are slots only a session fills. `staticLgvSvg` lays out a
 static export's tracks through the same two.
 
 A static frame is in the assembly's names, as a view's is. jb2export's
-`staticLinearSvg` (`products/jbrowse-img/src/staticLinear.ts`) resolves the
-assembly with the tables' `assemblyResolver` before the frame, resolves the
-locString through its aliases, and fetches each wiggle track under the file's
-names (`renameRegions`, the hook `staticWiggleDisplay` takes).
-`staticLinear.test.ts` compares the whole document with `renderRegion`'s byte
-for byte over six wiggle command lines, an aliased contig among them.
+`staticLinearSvg` (29aff2921b) resolved the assembly with the tables'
+`assemblyResolver` before the frame, resolved the locString through its
+aliases, and fetched each wiggle track under the file's names (`renameRegions`,
+the hook `staticWiggleDisplay` takes); its test matched `renderRegion` byte for
+byte over six wiggle command lines. It was deleted on 2026-11-06, since no CLI
+path reached it and it put `@jbrowse/tables` in every `@jbrowse/img` install;
+the CLI switch below would bring it back from that commit.
 
 ## Built: the static mark SVG
 
@@ -341,7 +342,7 @@ refName unchanged, which holds only while its frame is in the adapter's names.
 
 ## Left
 
-- **Marks under `staticLinearSvg`**: its frame is in the assembly's names, so
+- **Marks under a static linear export**: its frame is in the assembly's names, so
   `MarkStaticHost.canonicalRefName` must canonicalize through the resolved
   assembly's aliases before a link mark's far end is matched.
 - **The CLI switch for wiggle-only sessions**: modifiers into display config

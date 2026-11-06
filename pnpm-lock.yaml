@@ -2418,15 +2418,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../../plugins/wiggle
       '@jbrowse/react-app2':
         specifier: workspace:^
         version: link:../jbrowse-react-app
-      '@jbrowse/tables':
-        specifier: workspace:^
-        version: link:../../packages/tables
       '@napi-rs/canvas':
         specifier: ^1.1.0
         version: 1.1.0
@@ -2464,6 +2458,9 @@ importers:
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../../plugins/wiggle
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
