@@ -382,9 +382,8 @@ export default function MatrixRampMixin<F extends string>(
        */
       setColorScheme(scheme: ColorSchemeName) {
         const node = confNode(self)
-        const written = getSnapshot<ColorSlots>(
-          node.configuration.encoding.color,
-        )
+        const { color } = node.configuration.encoding
+        const written = getSnapshot<ColorSlots>(color)
         const next = colorForScheme(
           written,
           scheme,
