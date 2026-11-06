@@ -3,11 +3,19 @@ import {
   featureHasExon,
   featureHasExonOrCDS,
   getTranscripts,
-  pickDefaultTranscriptIndex,
+  rankTranscripts,
   resolveShowCoordinates,
 } from './featureTypeUtil.ts'
 
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
+
+function bestIndex(
+  transcripts: SimpleFeatureSerialized[],
+  canonical?: CanonicalTranscripts,
+) {
+  return rankTranscripts(transcripts, canonical)[0]?.index ?? 0
+}
 
 describe('hasExonOrCDS', () => {
   test('feature with CDS only is true (no exon subfeatures)', () => {
@@ -62,7 +70,7 @@ describe('hasExonOrCDS', () => {
   })
 })
 
-describe('getTranscripts/pickDefaultTranscriptIndex', () => {
+describe('getTranscripts/rankTranscripts', () => {
   test('a gene exposes its mRNA children as transcripts, longest coding wins', () => {
     const gene = {
       uniqueId: 'gene-a',
@@ -94,7 +102,7 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
       'short-isoform',
       'long-isoform',
     ])
-    expect(pickDefaultTranscriptIndex(transcripts)).toBe(1)
+    expect(bestIndex(transcripts)).toBe(1)
   })
 
   test('prefers a coding transcript over a longer non-coding one', () => {
@@ -124,7 +132,7 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
       ],
     }
     const transcripts = getTranscripts(gene)
-    expect(pickDefaultTranscriptIndex(transcripts)).toBe(0)
+    expect(bestIndex(transcripts)).toBe(0)
   })
 
   test('an mRNA has no transcript children of its own', () => {
@@ -138,11 +146,11 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
     }
     const transcripts = getTranscripts(mrna)
     expect(transcripts).toEqual([])
-    expect(pickDefaultTranscriptIndex(transcripts)).toBe(0)
+    expect(bestIndex(transcripts)).toBe(0)
   })
 })
 
-describe('pickDefaultTranscriptIndex ranks like the canvas gene glyph', () => {
+describe('rankTranscripts ranks like the canvas gene glyph', () => {
   function mrna(
     name: string,
     span: [number, number],
@@ -179,7 +187,7 @@ describe('pickDefaultTranscriptIndex ranks like the canvas gene glyph', () => {
     canonical?: CanonicalTranscripts,
   ) => {
     const transcripts = getTranscripts(g)
-    return transcripts[pickDefaultTranscriptIndex(transcripts, canonical)]!.name
+    return transcripts[bestIndex(transcripts, canonical)]!.name
   }
 
   test('a MANE-tagged shorter isoform beats a longer untagged one', () => {

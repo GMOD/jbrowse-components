@@ -81,10 +81,9 @@ test('loadPlugin names the successor for a retired cjsUrl definition', async () 
   )
 })
 
-// Desktop bundles Blat and Web does not, so the same hub config must be treated
-// differently by each: dropping it globally would leave Web with no BLAT at all,
-// and not dropping it on Desktop installs the plugin twice.
-test('drops a per-product vendored plugin only when that product asks', () => {
+// A host that bundles a plugin core does not passes its name, so a config
+// naming that plugin does not install a second copy.
+test('drops a host-vendored plugin only when that host asks', () => {
   const defs = [
     { name: 'Blat', url: 'https://jbrowse.org/plugins/blat.js' },
     { name: 'MsaView', url: 'https://jbrowse.org/plugins/msa.js' },

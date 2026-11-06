@@ -66,14 +66,6 @@ export function rankTranscripts(
   )
 }
 
-export function pickDefaultTranscriptIndex(
-  transcripts: SimpleFeatureSerialized[],
-  canonical?: CanonicalTranscripts,
-) {
-  const [best] = rankTranscripts(transcripts, canonical)
-  return best?.index ?? 0
-}
-
 // the sequence types the selector offers, the first being the default
 export function getAvailableModes(
   feature: SimpleFeatureSerializedNoId,
