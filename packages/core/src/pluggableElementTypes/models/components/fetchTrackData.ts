@@ -8,7 +8,11 @@ import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
 import type { Feature } from '../../../util/simpleFeature.ts'
 import type { TrackConfigModel } from '../baseTrackConfig.ts'
-import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
+import type {
+  ExportedFeatures,
+  ExportedFeaturesRequest,
+  FileTypeExporter,
+} from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -16,7 +20,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * module is behind `BaseTrackModel`'s lazy dialog import, so naming that model
  * type here would close the circle. `exportsDataViaAdapter` and
  * `exportByteLimit` are its getters; `activeDisplay` is the display drawing it,
- * whose filter decides which fetched features the file holds.
+ * whose filter decides which fetched features the file holds. A display whose
+ * filter only its worker can apply answers the whole fetch itself
+ * (`fetchExportedFeatures`), and `exportedFeatures` goes unread.
  */
 export interface ExportableTrack extends IStateTreeNode {
   configuration: TrackConfigModel
@@ -26,6 +32,9 @@ export interface ExportableTrack extends IStateTreeNode {
   activeDisplay: {
     featureNoun: string
     exportedFeatures: (features: Feature[]) => Feature[]
+    fetchExportedFeatures?: (
+      request: ExportedFeaturesRequest,
+    ) => Promise<ExportedFeatures>
   }
 }
 
@@ -121,6 +130,37 @@ export interface TrackDataResult {
 }
 
 /**
+ * The features in `regions` the display keeps, for a display whose filter
+ * reads the fetched features themselves (`exportedFeatures`).
+ */
+async function fetchedThenFiltered({
+  model,
+  regions,
+  adapterConfig,
+  signal,
+  statusCallback,
+}: {
+  model: ExportableTrack
+  regions: Region[]
+  adapterConfig: Record<string, unknown>
+  signal?: AbortSignal
+  statusCallback?: StatusCallback
+}): Promise<ExportedFeatures> {
+  // A feature crossing from one region into the next comes back once per
+  // region; a collapsed-introns view is one region per exon of the same gene.
+  const fetched = dedupe(
+    await getSession(model).rpcManager.call(
+      getRpcSessionId(model),
+      'CoreGetFeatures',
+      { adapterConfig, regions, signal, statusCallback },
+    ),
+    f => f.id(),
+  )
+  const features = model.activeDisplay.exportedFeatures(fetched)
+  return { features, filteredOut: fetched.length - features.length }
+}
+
+/**
  * The data behind the "Save track data" dialog, in the selected format.
  *
  * This reads every feature in the visible region, which on a deep track is the
@@ -191,21 +231,24 @@ export async function fetchTrackData({
     }
   }
 
-  // A feature crossing from one region into the next comes back once per
-  // region; a collapsed-introns view is one region per exon of the same gene.
-  const fetched = dedupe(
-    await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
-      adapterConfig,
-      regions,
-      ...opts,
-    }),
-    f => f.id(),
-  )
-  const features = model.activeDisplay.exportedFeatures(fetched)
+  const exporter = options[type]!
+  const display = model.activeDisplay
+  const { features, filteredOut } = display.fetchExportedFeatures
+    ? await display.fetchExportedFeatures({
+        regions,
+        featureSet: exporter.featureSet ?? 'drawn',
+        ...opts,
+      })
+    : await fetchedThenFiltered({
+        model,
+        regions,
+        adapterConfig,
+        ...opts,
+      })
   // Empty rather than a header with no records under it, so the dialog can
   // say the region holds nothing instead of offering that file for download.
   const str = features.length
-    ? await options[type]!.callback({
+    ? await exporter.callback({
         features: byPosition(features),
         session,
         assemblyName: regions[0]!.assemblyName,
@@ -216,6 +259,6 @@ export async function fetchTrackData({
   return {
     str: endWithNewline(str),
     usedAdapterExport: false,
-    filteredOut: fetched.length - features.length,
+    filteredOut,
   }
 }

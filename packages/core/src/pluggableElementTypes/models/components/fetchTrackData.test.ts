@@ -9,7 +9,11 @@ import {
 } from './fetchTrackData.ts'
 
 import type { Feature, Region } from '../../../util/index.ts'
-import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
+import type {
+  ExportedFeatures,
+  ExportedFeaturesRequest,
+  FileTypeExporter,
+} from '../saveTrackFileTypes/types.ts'
 import type { ExportableTrack } from './fetchTrackData.ts'
 
 // Everything the export reads off the track is a getter on it, so a plain
@@ -52,6 +56,12 @@ const writer = jest.fn(({ features }: { features: Feature[] }) =>
 const options: Record<string, FileTypeExporter> = {
   sam: { name: 'SAM', extension: 'sam', callback: writer },
   bed: { name: 'BED', extension: 'bed', callback: writer },
+  depth: {
+    name: 'Depth',
+    extension: 'bedgraph',
+    callback: writer,
+    featureSet: 'counted',
+  },
 }
 
 const call = jest.fn()
@@ -62,15 +72,23 @@ function setup({
   exportsData = false,
   byteLimit = 5_000_000,
   exportedFeatures = (features: Feature[]) => features,
+  fetchExportedFeatures,
 }: {
   exportsData?: boolean
   byteLimit?: number
   exportedFeatures?: (features: Feature[]) => Feature[]
+  fetchExportedFeatures?: (
+    request: ExportedFeaturesRequest,
+  ) => Promise<ExportedFeatures>
 } = {}) {
   model = {
     exportsDataViaAdapter: exportsData,
     exportByteLimit: byteLimit,
-    activeDisplay: { featureNoun: 'feature', exportedFeatures },
+    activeDisplay: {
+      featureNoun: 'feature',
+      exportedFeatures,
+      fetchExportedFeatures,
+    },
   } as unknown as ExportableTrack
   jest.mocked(getConf).mockReturnValue(adapterConfig)
   jest.mocked(getRpcSessionId).mockReturnValue('session-1')
@@ -381,4 +399,37 @@ test("the display's filter decides what is written, and counts what it left out"
     usedAdapterExport: false,
     filteredOut: 1,
   })
+})
+
+test("a display that answers the export is asked for the format's feature set", async () => {
+  const fetchExportedFeatures = jest.fn(
+    async ({ featureSet }: ExportedFeaturesRequest) => ({
+      features:
+        featureSet === 'counted'
+          ? [feature('drawn'), feature('counted')]
+          : [feature('drawn')],
+      filteredOut: featureSet === 'counted' ? 0 : 1,
+    }),
+  )
+  setup({ fetchExportedFeatures })
+  respond({})
+
+  const sam = await fetchTrackData({ model, regions, type: 'sam', options })
+  const depth = await fetchTrackData({ model, regions, type: 'depth', options })
+
+  expect(sam).toEqual({
+    str: 'drawn\n',
+    usedAdapterExport: false,
+    filteredOut: 1,
+  })
+  expect(depth).toEqual({
+    str: 'drawn,counted\n',
+    usedAdapterExport: false,
+    filteredOut: 0,
+  })
+  expect(fetchExportedFeatures.mock.calls.map(([r]) => r.featureSet)).toEqual([
+    'drawn',
+    'counted',
+  ])
+  expect(callsTo('CoreGetFeatures')).toEqual([])
 })

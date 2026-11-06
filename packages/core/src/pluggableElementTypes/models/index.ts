@@ -33,4 +33,9 @@ export type {
 } from './baseTrackConfig.ts'
 export { migrateRetiredDisplays } from './migrateTrackConfig.ts'
 export type { TrackConfigSnapshot } from './migrateTrackConfig.ts'
-export type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
+export type {
+  ExportedFeatureSet,
+  ExportedFeatures,
+  ExportedFeaturesRequest,
+  FileTypeExporter,
+} from './saveTrackFileTypes/types.ts'
