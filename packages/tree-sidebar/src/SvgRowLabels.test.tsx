@@ -294,3 +294,28 @@ describe('the label bar on screen and in the export', () => {
     }
   })
 })
+
+test('the export sidebar clips to the rows viewport, as the screen does', () => {
+  const sources = ['a', 'b', 'c', 'd'].map(name => ({ name }))
+  const { container } = render(
+    <svg>
+      <SvgTreeSidebar
+        sidebar={{
+          showTree: false,
+          hierarchy: undefined,
+          sources,
+          rowHeight: 20,
+          treeAreaWidth: 0,
+        }}
+        scrollTop={10}
+        availableHeight={40}
+        clipId="rows"
+      />
+    </svg>,
+  )
+  const clip = container.querySelector('clipPath rect')
+  expect(clip?.getAttribute('y')).toBe('0')
+  expect(clip?.getAttribute('height')).toBe('40')
+  const clipped = container.querySelector('g[clip-path]')
+  expect(clipped?.textContent).toContain('a')
+})

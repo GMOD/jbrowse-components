@@ -1,5 +1,6 @@
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { max, measureText, sum } from '@jbrowse/core/util'
+import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import {
   HEADER_BAR_HEIGHT,
@@ -39,7 +40,7 @@ export interface LgvSvgChromeView {
 
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
-type SidebarDisplay = Pick<LgvSvgExportable, 'svgSidebarWidth'>
+type SidebarDisplay = Pick<LgvSvgExportable, 'svgSidebarWidth' | 'svgHeight'>
 
 interface TrackHeights {
   displays: ({ height: number; prefersOffset?: boolean } & SidebarDisplay)[]
@@ -444,7 +445,7 @@ export function trackBoxHeight(
   textHeight: number,
 ) {
   return (
-    track.displays[0]!.height +
+    exportedHeight(track.displays[0]!) +
     labelOffset(track, trackLabels, textHeight) +
     trackSpacing
   )

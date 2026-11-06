@@ -154,6 +154,7 @@ function MafSvgBody({
             sidebar={model.svgSidebar}
             text={opts}
             availableHeight={rowsHeight}
+            clipId={svgNodeId(model)}
           />
         ) : null}
       </g>

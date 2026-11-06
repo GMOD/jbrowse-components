@@ -1,6 +1,7 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { getSession } from '@jbrowse/core/util'
+import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
@@ -100,7 +101,7 @@ export function SVGViewChrome({
       ? [
           {
             top: offsets[i]! + labelOffset(track, trackLabels, textHeight),
-            height: display.height,
+            height: exportedHeight(display),
           },
         ]
       : []

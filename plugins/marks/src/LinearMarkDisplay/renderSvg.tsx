@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -167,6 +168,7 @@ export function MarkSvgBody(
               text={opts}
               scrollTop={model.scrollTop}
               availableHeight={plotHeight}
+              clipId={svgNodeId(model)}
             />
           ) : null}
         </g>

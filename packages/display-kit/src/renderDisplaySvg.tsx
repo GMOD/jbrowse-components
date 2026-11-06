@@ -54,6 +54,16 @@ export interface SvgDisplayBox {
    * measured in the export's text. Absent for a display with no sidebar.
    */
   svgSidebarWidth?: (text?: ExportTextStyle) => number
+  /**
+   * The height the export draws, for a display spending part of `height` on
+   * controls the export leaves out. Absent where the two agree.
+   */
+  svgHeight?: number
+}
+
+/** The height a display's export occupies: {@link SvgDisplayBox.svgHeight}. */
+export function exportedHeight(box: { height: number; svgHeight?: number }) {
+  return box.svgHeight ?? box.height
 }
 
 /**
@@ -338,7 +348,7 @@ export function renderDisplaySvgInFrame<
   opts: ExportSvgDisplayOptions | undefined,
   Body: React.ComponentType<LgvSvgBodyProps<M, V>>,
 ) {
-  const height = model.height
+  const height = exportedHeight(model)
   const overlays = !opts?.plotOnly
   const sidebarWidth = overlays ? (model.svgSidebarWidth?.(opts) ?? 0) : 0
   return (

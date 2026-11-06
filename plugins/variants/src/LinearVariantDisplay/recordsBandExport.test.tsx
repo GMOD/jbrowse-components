@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 import { renderSvg } from './renderSvg.tsx'
+import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -36,7 +37,7 @@ test('the columns layout offers no records band', () => {
   expect(recordsItem(display.trackMenuItems())).toBeUndefined()
 })
 
-test('the export letters the records above rows moved down by the band', async () => {
+test('the export letters the records above rows flush under the band', async () => {
   const { display } = recordsDisplayAt(KIT, 51)
   const { container } = render(<svg>{await renderSvg(display, {})}</svg>)
   const text = container.textContent
@@ -46,7 +47,11 @@ test('the export letters the records above rows moved down by the band', async (
   const rowShifts = [...container.querySelectorAll('g[transform]')].map(g =>
     g.getAttribute('transform'),
   )
-  expect(rowShifts).toContain(`translate(0 ${display.rowsTopOffset})`)
+  const recordsBottom = display.topBands.reserved.records
+  expect(display.rowsTopOffset).toBe(recordsBottom + BAND_CHIPS_HEIGHT)
+  expect(rowShifts).toContain(`translate(0 ${recordsBottom})`)
+  expect(rowShifts).not.toContain(`translate(0 ${display.rowsTopOffset})`)
+  expect(display.svgHeight).toBe(display.height - BAND_CHIPS_HEIGHT)
 })
 
 function labelY(container: HTMLElement, id: string) {
