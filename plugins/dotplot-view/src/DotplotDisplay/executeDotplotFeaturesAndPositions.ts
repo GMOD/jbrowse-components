@@ -8,12 +8,11 @@ import {
   buildBpRegionIndex,
   clampBlockToRegions,
   createAttributeChannels,
+  createBlockNameLanes,
   cumBpInEntry,
   declaredAttributes,
-  UNNAMED,
   findRegionEntry,
-  getRecordName,
-  makeStringDict,
+  getMate,
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
 
@@ -24,6 +23,7 @@ import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type {
   AttributeRange,
+  BlockNameLanes,
   BpIndexViewSnap,
   ComparativeOptions,
 } from '@jbrowse/synteny-core'
@@ -31,7 +31,7 @@ import type {
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
 // without losing per-base precision. The GPU upload narrows `cumBp - base` to
 // Float32 (instanceInterleave.ts).
-export interface DotplotFeaturesAndPositionsResult {
+export interface DotplotFeaturesAndPositionsResult extends BlockNameLanes {
   p11: Float64Array
   p12: Float64Array
   p21: Float64Array
@@ -46,24 +46,6 @@ export interface DotplotFeaturesAndPositionsResult {
   // the presets plus whatever the track declares
   attributes: Record<string, Float32Array>
   attributeRanges: Record<string, AttributeRange>
-  // Per-feature refNames, dictionary-encoded: `refNameIds[i]` indexes
-  // `refNameDict`. An axis holds at most a scaffold count's worth of distinct
-  // names, so the dictionary is negligible and the ids transfer with everything
-  // else — see `makeStringDict` for the measurement and where the line is.
-  //
-  // It is also what the only reader wanted: `nameColorFn` hashed each name and
-  // memoized the result in a Map, i.e. it was rebuilding this dictionary per
-  // colorBy pass. Against ids it is a straight LUT index.
-  refNameDict: string[]
-  refNameIds: Uint32Array
-  mateRefNameDict: string[]
-  mateRefNameIds: Uint32Array
-  // Per-feature names, the same way. Only the hover tooltip reads them, and the
-  // dictionary is what makes shipping them nearly free on the tracks that have
-  // none: a PAF sets no `name` on any feature, so the dictionary is one empty
-  // string and the ids are a zero-filled transfer.
-  nameDict: string[]
-  nameIds: Uint32Array
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
   // with cigarOffsets[i]..cigarOffsets[i+1] delimiting feature i (length n+1).
   // An array-of-arrays would be structured-cloned per feature — the one thing on
@@ -89,13 +71,6 @@ export interface DotplotFeaturesAndPositionsResult {
 // Shared empty slice for features whose CIGAR isn't worth parsing, so the
 // no-detail path allocates nothing.
 const EMPTY_CIGAR = new Uint32Array(0)
-
-interface FeatureMate {
-  start: number
-  end: number
-  refName: string
-  assemblyName?: string
-}
 
 export async function executeDotplotFeaturesAndPositions({
   pluginManager,
@@ -180,12 +155,7 @@ export async function executeDotplotFeaturesAndPositions({
     count,
   )
   const channelList = channels.list
-  const refNameIds = new Uint32Array(count)
-  const mateRefNameIds = new Uint32Array(count)
-  const nameIds = new Uint32Array(count)
-  const hDict = makeStringDict()
-  const vDict = makeStringDict()
-  const nameDict = makeStringDict()
+  const nameLanes = createBlockNameLanes(count)
   const cigarChunks: Uint32Array[] = []
   let cigarTotal = 0
 
@@ -208,7 +178,7 @@ export async function executeDotplotFeaturesAndPositions({
     // A comparative feature without a mate has no vertical-axis location to
     // plot, so skip it — mirrors extractAlignmentData's contract, and avoids
     // dereferencing an undefined mate below.
-    const mate = f.get('mate') as FeatureMate | undefined
+    const mate = getMate(f)
     if (!mate) {
       skippedFeatureCount++
       continue
@@ -283,12 +253,7 @@ export async function executeDotplotFeaturesAndPositions({
     strands[n] = strand
     alignmentLengths[n] = Math.abs(end - start)
     writeFeatureChannels(channelList, n, f)
-    refNameIds[n] = hDict.idFor(refName)
-    mateRefNameIds[n] = vDict.idFor(mateRefName)
-    // '' rather than a missing-value sentinel: an absent name and an empty one
-    // read the same to the only consumer (the tooltip omits its line either
-    // way), and it keeps the dictionary a plain string list.
-    nameIds[n] = nameDict.idFor(getRecordName(f) ?? UNNAMED)
+    nameLanes.write(n, f, refName, mate)
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.
@@ -343,12 +308,7 @@ export async function executeDotplotFeaturesAndPositions({
     strands: strands.subarray(0, n),
     alignmentLengths: alignmentLengths.subarray(0, n),
     ...channels.finish(n),
-    refNameDict: hDict.dict,
-    refNameIds: refNameIds.subarray(0, n),
-    mateRefNameDict: vDict.dict,
-    mateRefNameIds: mateRefNameIds.subarray(0, n),
-    nameDict: nameDict.dict,
-    nameIds: nameIds.subarray(0, n),
+    ...nameLanes.finish(n),
     cigarData,
     cigarOffsets,
     totalFeatureCount: count,
@@ -367,6 +327,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.refNameIds.buffer,
     result.mateRefNameIds.buffer,
     result.nameIds.buffer,
+    result.mateNameIds.buffer,
     ...Object.values(result.attributes).map(a => a.buffer),
     result.cigarData.buffer,
     result.cigarOffsets.buffer,

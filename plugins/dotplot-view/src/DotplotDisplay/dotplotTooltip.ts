@@ -1,9 +1,12 @@
 import { minmax, toLocale } from '@jbrowse/core/util'
-import { featureAttributes, syntenyBlockLines } from '@jbrowse/synteny-core'
+import {
+  featureAttributes,
+  genesSharing,
+  syntenyBlockLines,
+} from '@jbrowse/synteny-core'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { SyntenyBlockSide } from '@jbrowse/synteny-core'
 
 // One axis' span of a feature, from the two absolute cumBp endpoints the
 // geometry was built from.
@@ -41,11 +44,7 @@ import type { SyntenyBlockSide } from '@jbrowse/synteny-core'
 // The side's fields are named explicitly rather than spread from the `pxToBp`
 // result, which carries the region's `reversed`, a fact about the axis rather
 // than the alignment.
-function axisSpan(
-  cumBpA: number,
-  cumBpB: number,
-  view: Dotplot1DViewModel,
-): SyntenyBlockSide {
+function axisSpan(cumBpA: number, cumBpB: number, view: Dotplot1DViewModel) {
   const { bpPerPx, offsetPx } = view
   const midCumBp = (cumBpA + cumBpB) / 2
   const r = view.pxToBp(midCumBp / bpPerPx - offsetPx)
@@ -58,11 +57,28 @@ function axisSpan(
   return { assemblyName: r.assemblyName, refName: r.refName, start, end }
 }
 
+// Every link's x side is on the x axis' assembly and its y side on the y
+// axis', so a gene's assembly picks a whole side or none; a self-comparison
+// pools both
+function axisReaders(
+  axisAssemblyName: string,
+  p1: Float64Array,
+  p2: Float64Array,
+) {
+  return {
+    position: (i: number) => Math.min(p1[i]!, p2[i]!),
+    onAssembly: (assemblyName: string) => {
+      const on = assemblyName === axisAssemblyName
+      return () => on
+    },
+  }
+}
+
 /**
  * The hover tooltip for one dotplot feature, as lines: synteny-core's block
  * description, which the synteny views show too, so one block reads the same
- * in every view, and the CIGAR operator under the cursor. The x side carries
- * the record's name; the dotplot packs no mate name.
+ * in every view, and the CIGAR operator under the cursor. A gene with more than
+ * one partner has them named, as far as the loaded links reach.
  *
  * The two spans are the DRAWN ones (the trimmed cumBp endpoints), not
  * `alignmentLengths` — that is the feature's full reference span, which on a
@@ -85,19 +101,35 @@ export function getDotplotTooltipLines({
   // zoomed-out one.
   cigarOp?: { op: string; length: number }
 }) {
-  const { p11, p12, p21, p22, strands, attributes, nameDict, nameIds } = rpcData
+  const { p11, p12, p21, p22, strands, attributes } = rpcData
+  const { nameDict, nameIds, mateNameDict, mateNameIds } = rpcData
+  const x = {
+    ...axisSpan(p11[featureIdx]!, p12[featureIdx]!, hview),
+    name: nameDict[nameIds[featureIdx]!],
+  }
+  const y = {
+    ...axisSpan(p21[featureIdx]!, p22[featureIdx]!, vview),
+    name: mateNameDict[mateNameIds[featureIdx]!],
+  }
+  const blockAttributes = featureAttributes(attributes, featureIdx)
+  const depth = blockAttributes.syntenicDepth
+  const sharedBy =
+    depth !== undefined && depth > 1
+      ? genesSharing(
+          {
+            lanes: rpcData,
+            query: axisReaders(x.assemblyName, p11, p12),
+            mate: axisReaders(y.assemblyName, p21, p22),
+          },
+          [x, y],
+        )
+      : undefined
   return [
     ...syntenyBlockLines({
-      sides: [
-        {
-          ...axisSpan(p11[featureIdx]!, p12[featureIdx]!, hview),
-          // a PAF names no feature, so this is the empty `UNNAMED`
-          name: nameDict[nameIds[featureIdx]!],
-        },
-        axisSpan(p21[featureIdx]!, p22[featureIdx]!, vview),
-      ],
+      sides: [x, y],
       inverted: strands[featureIdx] === -1,
-      attributes: featureAttributes(attributes, featureIdx),
+      attributes: blockAttributes,
+      sharedBy,
     }),
     ...(cigarOp
       ? [`CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}`]

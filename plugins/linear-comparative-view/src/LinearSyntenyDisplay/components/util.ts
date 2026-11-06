@@ -1,5 +1,5 @@
 import { toLocale } from '@jbrowse/core/util'
-import { syntenyBlockLines } from '@jbrowse/synteny-core'
+import { genesSharing, syntenyBlockLines } from '@jbrowse/synteny-core'
 
 import {
   KIND_CIGAR_D,
@@ -51,55 +51,38 @@ export function getCigarOpAtInstance(
   return { op, length }
 }
 
-// The distinct genes the loaded links pair one gene with, in genome order, read
-// from both sides, since a link may hold the gene on either one; a
-// self-comparison pools both, as the adapter's `partnerCounts` does
-function partnersOf(
-  data: SyntenyFeatureData,
-  assemblyName: string,
-  name: string,
+// A payload side's own assembly lane, resolved to an id once per assembly
+function payloadSide(
+  assemblyNameDict: readonly string[],
+  assemblyNameIds: Uint32Array,
+  starts: Uint32Array,
 ) {
-  const asm = data.assemblyNameDict.indexOf(assemblyName)
-  const gene = data.nameDict.indexOf(name)
-  const mateAsm = data.mateAssemblyNameDict.indexOf(assemblyName)
-  const mateGene = data.mateNameDict.indexOf(name)
-  const partners = new Map<string, { refName: string; start: number }>()
-  for (let i = 0; i < data.featureIds.length; i++) {
-    if (data.assemblyNameIds[i] === asm && data.nameIds[i] === gene) {
-      partners.set(data.mateNameDict[data.mateNameIds[i]!]!, {
-        refName: data.mateRefNameDict[data.mateRefNameIds[i]!]!,
-        start: data.mateStarts[i]!,
-      })
-    }
-    if (
-      data.mateAssemblyNameIds[i] === mateAsm &&
-      data.mateNameIds[i] === mateGene
-    ) {
-      partners.set(data.nameDict[data.nameIds[i]!]!, {
-        refName: data.refNameDict[data.refNameIds[i]!]!,
-        start: data.starts[i]!,
-      })
-    }
+  return {
+    position: (i: number) => starts[i]!,
+    onAssembly: (assemblyName: string) => {
+      const id = assemblyNameDict.indexOf(assemblyName)
+      return (i: number) => assemblyNameIds[i] === id
+    },
   }
-  return [...partners]
-    .sort(
-      ([, a], [, b]) =>
-        a.refName.localeCompare(b.refName, undefined, { numeric: true }) ||
-        a.start - b.start,
-    )
-    .map(([partner]) => partner)
 }
 
-// The genes sharing a link's ortholog: the partners of whichever of its two
-// genes has more, the side its syntenic depth was counted on
 export function sharedByOf(data: SyntenyFeatureData, feat: FeatPos) {
-  const mateName = feat.mate.name
-  const ofGene = partnersOf(data, feat.assemblyName, feat.name)
-  const ofMate =
-    mateName === undefined
-      ? []
-      : partnersOf(data, feat.mate.assemblyName, mateName)
-  return ofMate.length > ofGene.length ? ofMate : ofGene
+  return genesSharing(
+    {
+      lanes: data,
+      query: payloadSide(
+        data.assemblyNameDict,
+        data.assemblyNameIds,
+        data.starts,
+      ),
+      mate: payloadSide(
+        data.mateAssemblyNameDict,
+        data.mateAssemblyNameIds,
+        data.mateStarts,
+      ),
+    },
+    [feat, feat.mate],
+  )
 }
 
 // The hovered ribbon's tooltip, as LINES rather than a `<br/>`-joined HTML

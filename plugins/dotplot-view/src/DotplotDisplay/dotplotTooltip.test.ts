@@ -222,3 +222,39 @@ describe('attributes', () => {
     expect(lines(data)).toContain('ka_ks: 1.5')
   })
 })
+
+// Gene A pairs with B on the hovered link and with C on a link holding A on
+// the y side: one gene's partners on a self-comparison, but on a cross-species
+// one the y side's A is the other genome's gene
+describe('the genes sharing an ortholog', () => {
+  const data = fakeRpcData({
+    p11: new Float64Array([100, 500]),
+    p12: new Float64Array([200, 600]),
+    p21: new Float64Array([300, 100]),
+    p22: new Float64Array([400, 200]),
+    strands: new Int8Array([1, 1]),
+    attributes: { syntenicDepth: new Float32Array([3, 3]) },
+    refNameDict: ['1'],
+    refNameIds: new Uint32Array([0, 0]),
+    mateRefNameDict: ['1'],
+    mateRefNameIds: new Uint32Array([0, 0]),
+    nameDict: ['A', 'C'],
+    nameIds: new Uint32Array([0, 1]),
+    mateNameDict: ['B', 'A'],
+    mateNameIds: new Uint32Array([0, 1]),
+  })
+  const sharedLine = (vAssembly: string) =>
+    lines(
+      data,
+      axis({ assemblyName: 'grape', refName: 'chr1' }),
+      axis({ assemblyName: vAssembly, refName: 'chr1' }),
+    ).at(-1)
+
+  test('a self-comparison reads the gene off both axes', () => {
+    expect(sharedLine('grape')).toBe('Shared by 3 genes: B, C and 1 more')
+  })
+
+  test('a cross-species comparison reads it off its own axis only', () => {
+    expect(sharedLine('peach')).toBe('Shared by 3 genes: B and 2 more')
+  })
+})

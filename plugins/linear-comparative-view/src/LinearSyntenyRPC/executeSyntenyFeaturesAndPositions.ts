@@ -12,8 +12,8 @@ import {
   buildBpRegionIndex,
   clampBlockToRegions,
   createAttributeChannels,
+  createBlockNameLanes,
   cumBpAtGenomicCoord,
-  UNNAMED,
   clipLargeBlockToWindow,
   clipSyntenyFeature,
   cumBpInEntry,
@@ -24,7 +24,7 @@ import {
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
 
-import { getMate, getRecordName } from '../syntenyMate.ts'
+import { getMate } from '../syntenyMate.ts'
 import {
   MIN_CIGAR_PX_WIDTH,
   RULER_GRID_ORIGIN,
@@ -359,30 +359,22 @@ export async function executeSyntenyFeaturesAndPositions({
   // Distinct values per feature, so a dictionary would cost the same clone plus
   // an index array — see `makeStringDict` for where the line is.
   const featureIds: string[] = []
-  // Five dictionary-encoded lanes: a name, a scaffold count, and (twice) the one
-  // assembly this level draws. Ids are written into arrays sized `count` and
-  // transferred; four of the dictionaries ride along as a few dozen strings.
+  // Dictionary-encoded lanes: the names both comparative workers pack
+  // (`createBlockNameLanes`), and twice the one assembly this level draws.
   //
-  // The NAME lane is the exception, and it is worth naming: a PAF puts nothing
-  // there, but an MCScan or ortholog-table track puts a distinct gene id on
-  // every feature, so its dictionary is as long as the fetch. That is the shape
-  // `makeStringDict` says dictionary encoding is NOT worth — it costs the same
-  // clone as a plain `string[]` plus a hash insert per feature, which is ~11% of
-  // this worker's profile on a 14,599-feature grape/peach fetch. An append-only
-  // lane for the high-cardinality case was prototyped and could not be shown to
-  // beat this on a loaded box; it also breaks the `dict.indexOf(name)` reading
+  // The NAME lanes are worth naming: a PAF puts nothing there, but an MCScan or
+  // ortholog-table track puts a distinct gene id on every feature, so their
+  // dictionaries are as long as the fetch. That is the shape `makeStringDict`
+  // says dictionary encoding is NOT worth — it costs the same clone as a plain
+  // `string[]` plus a hash insert per feature, which is ~11% of this worker's
+  // profile on a 14,599-feature grape/peach fetch. An append-only lane for the
+  // high-cardinality case was prototyped and could not be shown to beat this on
+  // a loaded box; it also breaks the `dict.indexOf(name)` reading
   // `stringDict.test.ts` pins. Left as it is on purpose, not by oversight.
-  const nameIds = new Uint32Array(count)
-  const refNameIds = new Uint32Array(count)
+  const nameLanes = createBlockNameLanes(count)
   const assemblyNameIds = new Uint32Array(count)
-  const mateRefNameIds = new Uint32Array(count)
-  const mateNameIds = new Uint32Array(count)
   const mateAssemblyNameIds = new Uint32Array(count)
-  const nameDict = makeStringDict()
-  const refNameDict = makeStringDict()
   const assemblyNameDict = makeStringDict()
-  const mateRefNameDict = makeStringDict()
-  const mateNameDict = makeStringDict()
   const mateAssemblyNameDict = makeStringDict()
   const parsedCigars: Uint32Array[] = []
   let hasCigar = false
@@ -638,13 +630,10 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEndsArray[validCount] = mate.end
 
     featureIds.push(id)
-    nameIds[validCount] = nameDict.idFor(getRecordName(f) ?? UNNAMED)
-    refNameIds[validCount] = refNameDict.idFor(refName)
+    nameLanes.write(validCount, f, refName, mate)
     assemblyNameIds[validCount] = assemblyNameDict.idFor(
       (f.get('assemblyName') as string | undefined) ?? '',
     )
-    mateRefNameIds[validCount] = mateRefNameDict.idFor(mateRefName)
-    mateNameIds[validCount] = mateNameDict.idFor(mate.name ?? UNNAMED)
     mateAssemblyNameIds[validCount] = mateAssemblyNameDict.idFor(
       mate.assemblyName,
     )
@@ -687,18 +676,11 @@ export async function executeSyntenyFeaturesAndPositions({
     ends: endsArray.subarray(0, validCount),
     ...channels.finish(validCount),
     featureIds,
-    nameDict: nameDict.dict,
-    nameIds: nameIds.subarray(0, validCount),
-    refNameDict: refNameDict.dict,
-    refNameIds: refNameIds.subarray(0, validCount),
+    ...nameLanes.finish(validCount),
     assemblyNameDict: assemblyNameDict.dict,
     assemblyNameIds: assemblyNameIds.subarray(0, validCount),
     mateStarts: mateStartsArray.subarray(0, validCount),
     mateEnds: mateEndsArray.subarray(0, validCount),
-    mateRefNameDict: mateRefNameDict.dict,
-    mateRefNameIds: mateRefNameIds.subarray(0, validCount),
-    mateNameDict: mateNameDict.dict,
-    mateNameIds: mateNameIds.subarray(0, validCount),
     mateAssemblyNameDict: mateAssemblyNameDict.dict,
     mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),
     hasCigar,
