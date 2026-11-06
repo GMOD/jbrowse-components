@@ -18,7 +18,7 @@ export const unobservedComponents = [
     selector:
       'VariableDeclarator[id.name=/^[A-Z]/] > CallExpression[callee.name=/^(memo|forwardRef)$/]',
     message:
-      'Wrap the component in `observer`, which memoizes as `memo` does and also tracks MobX reads: `observer(function Name() {…})`, or `observer(forwardRef(…))`.',
+      'Wrap the component in `observer`, which memoizes as `memo` does and also tracks MobX reads: `observer(function Name() {…})`. A ref arrives as an ordinary `ref` prop.',
   },
 ]
 

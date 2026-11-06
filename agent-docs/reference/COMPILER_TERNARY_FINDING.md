@@ -33,6 +33,8 @@ compiler's contract (don't mutate props/state), which MobX violates by design, s
   observers this way, and lint makes every component one, bar those a frozen SVG
   figure draws ([SVG_EXPORT.md](SVG_EXPORT.md)).
 - `function Decl(){}; observer(Decl)` is compiled. Avoid it, or add `'use no memo'`.
+- `observer(forwardRef(function(){}))` is compiled. Take `ref` as an ordinary prop
+  instead; lint enforces it.
 - `use`-prefixed functions are hooks and are compiled, even when every caller is an inline
   observer. A hook wrapping a model method (`useOverlayState` over `getTrackOverlayData()`)
   froze at first-render values; a browser test ("overlay connectors track pan and zoom")

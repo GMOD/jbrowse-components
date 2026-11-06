@@ -84,6 +84,12 @@ const noNamedObserver = {
   message:
     'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read.',
 }
+const noForwardRefObserver = {
+  selector:
+    "CallExpression[callee.name='observer'] > CallExpression.arguments[callee.name='forwardRef']",
+  message:
+    'Take `ref` as an ordinary prop: `observer(function Name({ ref }) {…})`. babel-plugin-react-compiler compiles the function inside `observer(forwardRef(…))`, and a compiled MobX render can serve a stale read.',
+}
 const noSetSlot = {
   selector: 'CallExpression[callee.property.name=/^(setSlot|setSubschema)$/]',
   message:
@@ -144,6 +150,7 @@ const restrictedSyntax = [
   noReadableFromWeb,
   noExportStar,
   noNamedObserver,
+  noForwardRefObserver,
   noAnyStateTreeNode,
 ]
 
