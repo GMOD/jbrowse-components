@@ -245,18 +245,20 @@ allele_line=$(awk -F'\t' \
    } END {printf "%.4f", t/(84041803-83899576)}' tmp_line.bed)
 printf '  allele LINE fraction: %s over %d bp\n' "$allele_line" "$allele_len"
 rank() {
-  awk -v a="$allele_line" -v scope="$1" -v label="$2" -F'\t' '
+  awk -v scope="$1" -F'\t' '
     scope != "genome" && $1 != "chr17" { next }
     scope == "local" {
       m = ($2 + $3) / 2
       if (m < 83970689 - 5000000 || m > 83970689 + 5000000) next
     }
-    { v[++n] = $4; if ($4 > a + 0) above++ }
-    END {
-      asort(v)
-      printf "  %-10s n=%-6d median %.3f   windows above the allele: %d (%.1f%%)\n",
-        label, n, v[int(n/2)], above+0, 100*(above+0)/n
-    }' tmp_frac.bed
+    { print $4 }' tmp_frac.bed |
+    sort -g |
+    awk -v a="$allele_line" -v label="$2" '
+      { v[++n] = $1; if ($1 > a + 0) above++ }
+      END {
+        printf "  %-10s n=%-6d median %.3f   windows above the allele: %d (%.1f%%)\n",
+          label, n, v[int(n/2)], above+0, 100*(above+0)/n
+      }'
 }
 rank genome "genome"
 rank chr17 "chr17"

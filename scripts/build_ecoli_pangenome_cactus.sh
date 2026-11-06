@@ -351,18 +351,33 @@ convert ecoli_cactus_graph.png -fill 'rgba(255,193,7,0.60)' -stroke none \
 # alone. Subsample to ~9x to keep the demo BAM small; drop unmapped reads.
 READS_ACC=DRR063408
 mkdir -p reads
+# -nv not -q, and retries: these are ~90 MB each off a public FTP mirror, and a
+# silent `wget -q` failure here aborts the whole run under `set -e` with no
+# message at all, after the graph has already been built. The .part name keeps
+# a download the mirror dropped from passing for a finished one on a re-run.
+ena_fastq() {
+  local out="reads/${READS_ACC}_$1.fastq.gz"
+  [ -f "$out" ] && return 0
+  rm -f "$out.part"
+  wget -nv --tries=20 -O "$out.part" \
+    "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$1.fastq.gz" &&
+    gzip -t "$out.part" 2>/dev/null &&
+    mv "$out.part" "$out"
+}
+# ENA has served one mate of this run as an empty directory (2026-11), which a
+# wget gets as an HTML listing. SRA holds the same run; both mates come from it
+# then, so the pairs stay in step.
+if ! { ena_fastq 1 && ena_fastq 2; }; then
+  command -v fasterq-dump >/dev/null 2>&1 || {
+    echo "error: ENA has no usable FASTQ for $READS_ACC, and 'fasterq-dump' (sra-tools) is not on PATH to fetch it from SRA" >&2
+    exit 1
+  }
+  rm -f "reads/${READS_ACC}"_[12].fastq*
+  fasterq-dump --split-files -O reads "$READS_ACC"
+  gzip -f "reads/${READS_ACC}_1.fastq" "reads/${READS_ACC}_2.fastq"
+fi
 for r in 1 2; do
   [ -f "reads/sub_$r.fastq.gz" ] && continue
-  # -nv not -q, and retries: these are ~90 MB each off a public FTP mirror, and a
-  # silent `wget -q` failure here aborts the whole run under `set -e` with no
-  # message at all, after the graph has already been built. The .part name keeps
-  # a download the mirror dropped from passing for a finished one on a re-run.
-  if [ ! -f "reads/${READS_ACC}_$r.fastq.gz" ]; then
-    wget -nv --tries=20 --continue -O "reads/${READS_ACC}_$r.fastq.gz.part" \
-      "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
-    gzip -t "reads/${READS_ACC}_$r.fastq.gz.part"
-    mv "reads/${READS_ACC}_$r.fastq.gz.part" "reads/${READS_ACC}_$r.fastq.gz"
-  fi
   # awk does the head: `| head -600000` closes the pipe on gzip, which dies of
   # SIGPIPE, and under `set -o pipefail` that aborts the run after the reads
   # are already downloaded.
