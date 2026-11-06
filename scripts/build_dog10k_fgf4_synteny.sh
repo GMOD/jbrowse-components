@@ -63,7 +63,7 @@ cd "$OUTDIR"
 # on the FASTA description line, and a name is what a synteny row header shows.
 fetch_retrocopy() { # accession name
   [ -f "$2.fa" ] || {
-    curl -fsSG "$EUTILS" --data-urlencode db=nuccore \
+    curl -fsSG --retry 4 --retry-delay 5 "$EUTILS" --data-urlencode db=nuccore \
       --data-urlencode "id=$1" --data-urlencode rettype=fasta \
       --data-urlencode retmode=text -o "$2.raw.fa"
     python3 - "$1" "$2" <<'PY'
@@ -96,7 +96,7 @@ fetch_retrocopy MF040221 FGF4retro-CFA12
 # retrocopy cannot have.
 annotate_retrocopy() { # accession name
   [ -f "$2.gff3.gz" ] || {
-    curl -fsSG "$EUTILS" --data-urlencode db=nuccore \
+    curl -fsSG --retry 4 --retry-delay 5 "$EUTILS" --data-urlencode db=nuccore \
       --data-urlencode "id=$1" --data-urlencode rettype=gb \
       --data-urlencode retmode=text -o "$2.gb"
     python3 - "$1" "$2" <<'PY'
