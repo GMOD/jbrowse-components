@@ -60,12 +60,19 @@ bcftools query -r "$REGION" -f '%POS\t%INFO/END\t%INFO/SVTYPE\t%INFO/SVLEN\n' \
 python3 - <<PY
 import gzip
 
-exons = []
+# Exon rows name only their transcript (Parent=), so FGF4's exons are the ones
+# whose Parent is a row carrying gene_id=FGF4
+fgf4_ids, exon_rows = set(), []
 for line in gzip.open('ncbiRefSeq.gff.gz', 'rt'):
-    f = line.split('\t')
-    if len(f) > 8 and f[2] == 'exon' and 'gene_id=FGF4' in f[8]:
-        exons.append((int(f[3]), int(f[4])))
-exons = sorted(set(exons))
+    f = line.rstrip('\n').split('\t')
+    if len(f) > 8:
+        attrs = dict(kv.split('=', 1) for kv in f[8].split(';') if '=' in kv)
+        if attrs.get('gene_id') == 'FGF4' and 'ID' in attrs:
+            fgf4_ids.add(attrs['ID'])
+        if f[2] == 'exon':
+            exon_rows.append((attrs.get('Parent'), int(f[3]), int(f[4])))
+exons = sorted({(s, e) for parent, s, e in exon_rows if parent in fgf4_ids})
+assert len(exons) > 1, 'ncbiRefSeq.gff.gz has %d FGF4 exons' % len(exons)
 introns = [(a[1] + 1, b[0] - 1) for a, b in zip(exons, exons[1:])]
 print('FGF4 RefSeq exons:  ' + ', '.join('%d-%d' % e for e in exons))
 print('FGF4 RefSeq introns:' + ', '.join(' %d-%d (%d bp)' % (a, b, b - a + 1)
