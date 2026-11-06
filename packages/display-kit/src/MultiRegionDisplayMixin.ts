@@ -727,9 +727,7 @@ export default function MultiRegionDisplayMixin() {
            * An override must reach this counter, by chaining to super or by
            * bumping it. Missing it doesn't break the retry, which the
            * `clearAllRpcData` call drives; it turns the retry contract check off
-           * for that display, and the display still looks healthy. The one
-           * override in the tree chain is plugin-features' `LinearBasicDisplay`, which
-           * `LinearVariantDisplay` inherits.
+           * for that display, and the display still looks healthy.
            * `reloadReachesCounter.test.ts` reads every `reload()` in the tree to
            * catch the next override that misses the counter.
            */

@@ -61,30 +61,6 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
 }
 
 /**
- * Install the per-region fetch lifecycle: `DisplayedRegionsChange`,
- * `FetchVisibleRegions`, `SettingsInvalidate`,
- * `ClearBlockingStateOnViewportChange`, and the stored-hover clear.
- *
- * The third fetch-family installer, beside `installGlobalFetchAutorun` and
- * `installComparativeFetchAutorun`. It is a function rather than an inline
- * `afterAttach` body for the reason those two are: **what this file decides is
- * the MobX dependency set**, and that is the half no pure function can express.
- * `planRegionFetch` owns the decision; this owns which reads are tracked and
- * which sit behind a thunk so an early bail-out does not subscribe to the
- * viewport. `installPerRegionFetchAutoruns.test.ts` is what fails when one of
- * those moves, and its last block states the whole set per state.
- *
- * `untracked` is allowed on two grounds only: a read the body's own effect
- * writes (`ClearBlockingStateOnViewportChange` clears the flags it reads, so
- * tracking them would re-fire it off `setError` and wipe the flag before any
- * viewport change), and a contract check that must not alter the production
- * dependency set. Anything else was a perf guard, and the two this file carried
- * (`isLoading`, `loadedRegions`) were measured on 2026-08-23 and removed: a
- * fetch shorter than the 600 ms debounce coalesces the flip into the run
- * `fetchGeneration` already owes, and a longer one costs one idle run of the
- * plan mid-fetch. Two runs per fetch cycle either way, three past the debounce.
- */
-/**
  * What `FetchVisibleRegions` would fetch now, for that autorun and for a
  * `reload()` that fetches without waiting out its debounce.
  */
@@ -134,6 +110,30 @@ export function planVisibleRegionFetch(
   })
 }
 
+/**
+ * Install the per-region fetch lifecycle: `DisplayedRegionsChange`,
+ * `FetchVisibleRegions`, `SettingsInvalidate`,
+ * `ClearBlockingStateOnViewportChange`, and the stored-hover clear.
+ *
+ * The third fetch-family installer, beside `installGlobalFetchAutorun` and
+ * `installComparativeFetchAutorun`. It is a function rather than an inline
+ * `afterAttach` body for the reason those two are: **what this file decides is
+ * the MobX dependency set**, and that is the half no pure function can express.
+ * `planRegionFetch` owns the decision; this owns which reads are tracked and
+ * which sit behind a thunk so an early bail-out does not subscribe to the
+ * viewport. `installPerRegionFetchAutoruns.test.ts` is what fails when one of
+ * those moves, and its last block states the whole set per state.
+ *
+ * `untracked` is allowed on two grounds only: a read the body's own effect
+ * writes (`ClearBlockingStateOnViewportChange` clears the flags it reads, so
+ * tracking them would re-fire it off `setError` and wipe the flag before any
+ * viewport change), and a contract check that must not alter the production
+ * dependency set. Anything else was a perf guard, and the two this file carried
+ * (`isLoading`, `loadedRegions`) were measured on 2026-08-23 and removed: a
+ * fetch shorter than the 600 ms debounce coalesces the flip into the run
+ * `fetchGeneration` already owes, and a longer one costs one idle run of the
+ * plan mid-fetch. Two runs per fetch cycle either way, three past the debounce.
+ */
 export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // Dev-only: the contracts no type expresses (`afterAttach` not being chained
   // to super, `isCacheValid`/`rpcProps` being views). Runs before anything is

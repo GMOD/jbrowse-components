@@ -290,7 +290,9 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  it("reload fetches only the regions on the track's own genome", async () => {
+  // No timer runs between the click and the assertion, so the fetch is the
+  // reload's own and not the debounced autorun's.
+  it("reload fetches the track's own genome at once, and only that", async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       extraAssemblyNames: ['volvox2'],
     })
@@ -306,7 +308,9 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockClear()
 
     display.reload()
-    await jest.runAllTimersAsync()
+    for (let i = 0; i < 20; i++) {
+      await Promise.resolve()
+    }
 
     const genomes = mockRpcCall.mock.calls.map(
       ([, , args]: [string, string, { region: Region }]) =>

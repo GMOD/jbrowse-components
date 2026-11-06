@@ -124,9 +124,9 @@ interface RetryContractHost {
 // **A fetch answers an outstanding retry wherever `reload()` reached it from**,
 // which is why `noteFetchStarted` tells the ledger rather than only setting a
 // flag for the autorun to read. The feature display's `reload()` fetches directly — it clears
-// and calls `fetchNeeded` itself instead of waiting out `FetchVisibleRegions`'
-// 600ms debounce — so by the time that autorun runs, the blocks are covered and
-// the run reads as a decline. Judging only from the autorun reports a dead button
+// and runs `FetchVisibleRegions`' plan itself (`fetchVisibleRegions`) instead of
+// waiting out its 600ms debounce — so by the time that autorun runs, the blocks
+// are covered and the run reads as a decline. Judging only from the autorun reports a dead button
 // on the display with the liveliest one.
 const fetchStarted = new WeakSet<object>()
 const ledgers = new WeakMap<object, (outcome: FetchAutorunOutcome) => void>()
@@ -186,7 +186,7 @@ export function takeFetchStarted(self: object) {
  *
  * **A fetch also answers the retry on its own** (`noteFetchStarted`), because
  * `reload()` may reach one without an autorun run in between: the feature display's clears and
- * calls `fetchNeeded` directly rather than waiting out the 600ms debounce, and
+ * calls `fetchVisibleRegions` rather than waiting out the 600ms debounce, and
  * the autorun's next run then finds the blocks covered.
  *
  * A display deliberately not fetching at all is the one exempt decline — LD with
