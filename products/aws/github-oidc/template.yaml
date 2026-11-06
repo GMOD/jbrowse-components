@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  GitHub Actions' OIDC provider for this account, and the roles workflows
+  assume through it instead of holding access keys.
+
+Resources:
+  # One per account for this issuer URL, so it lives here rather than in any
+  # one product's stack.
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+
+  # The plugin repo's daily canary mails a red run through the blat-proxy
+  # stack's topic. Only runs on its main branch (the schedule and a manual
+  # dispatch) can assume it, and it can do nothing but publish there. The repo
+  # issues immutable subjects, naming the org and repo by id as well, so a
+  # renamed or re-created repo cannot take the role.
+  BlatCanaryPublisherRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: jbrowse-blat-canary-publisher
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: repo:GMOD@342482/jbrowse-plugin-blat@1444636944:ref:refs/heads/main
+      Policies:
+        - PolicyName: publish-canary-alert
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:jbrowse-blat-canary
+
+Outputs:
+  BlatCanaryPublisherRoleArn:
+    Description: Role GMOD/jbrowse-plugin-blat's canary assumes to publish a red run
+    Value: !GetAtt BlatCanaryPublisherRole.Arn

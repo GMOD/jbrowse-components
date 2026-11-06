@@ -8,9 +8,8 @@ Parameters:
     Type: String
     Default: jbrowse2@berkeley.edu
     Description: >-
-      Where a red canary run would be mailed. The canary lives in
-      GMOD/jbrowse-plugin-blat and does not publish to this topic yet. The
-      subscription has to be confirmed from that inbox once.
+      Where a red run of GMOD/jbrowse-plugin-blat's daily canary is mailed.
+      The subscription has to be confirmed from that inbox once.
   SecondAlertEmail:
     Type: String
     Default: colin.diesh@gmail.com
@@ -247,9 +246,8 @@ Resources:
         Enabled: true
 
   # The canary runs in GitHub Actions, which has no mail of its own, so a red
-  # run publishes here. The policy lets any principal in this account publish:
-  # the CI user is one of several uploader users with no policies of their own,
-  # and an alert topic is not worth a per-user grant.
+  # run publishes here, as the github-oidc stack's publisher role. The policy
+  # lets any principal in this account publish, that role included.
   CanaryAlertTopic:
     Type: AWS::SNS::Topic
     Properties:
