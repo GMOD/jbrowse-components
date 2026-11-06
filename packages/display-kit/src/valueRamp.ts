@@ -13,8 +13,6 @@ import type {
 
 type ContinuousColorScale = ReturnType<typeof continuousColorScale>
 
-const NO_EXTENT: [number, number] = [Infinity, -Infinity]
-
 // Enough to read the ramp's shape without the bar becoming a table of stops.
 const RAMP_KEY_STOPS = 8
 
@@ -104,12 +102,7 @@ export function valueRampOf(
     quantile < 1
       ? quantileExtent(numbers, numbers.length, quantile)
       : [min, max]
-  const ramp = continuousColorScale(
-    encoding,
-    encoding.domainMin !== undefined && encoding.domainMax !== undefined
-      ? NO_EXTENT
-      : extent,
-  )
+  const ramp = continuousColorScale(encoding, extent)
   return {
     colorOf: text => rampTextColor(ramp, text),
     keyScales: (id, title) =>

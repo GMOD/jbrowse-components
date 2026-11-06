@@ -224,23 +224,22 @@ export function colorSnapshotOf<C extends AnyConfigurationModel>(color: C) {
 
 /**
  * What every scale checks on the way in, `name` being its setting's path: a
- * `domain` or `range` is a list, and a `domain`, `names` or `values` written
- * as numbers is carried as strings. No combination of slots is refused, since
- * the config editor writes one slot at a time: a `domain` with no `field`
- * waits unread until a field paints again. The row and facet objects check
- * their own `sort` and `hidden` the same way.
+ * `domain` or `range` is a list, and a `domain` or `names` written as numbers
+ * is carried as strings. No combination of slots is refused, since the config
+ * editor writes one slot at a time: a `domain` with no `field` waits unread
+ * until a field paints again.
  */
 export function normalizeChannel(
   snap: Record<string, unknown> = {},
   name: string,
 ): Record<string, unknown> {
-  for (const key of ['domain', 'sort', 'range', 'hidden']) {
+  for (const key of ['domain', 'range']) {
     if (snap[key] !== undefined && !Array.isArray(snap[key])) {
       throw new Error(`${name}.${key} is a list`)
     }
   }
   const out = { ...snap }
-  for (const key of ['domain', 'sort', 'names', 'values', 'hidden']) {
+  for (const key of ['domain', 'names']) {
     if (Array.isArray(out[key])) {
       out[key] = out[key].map(String)
     }
