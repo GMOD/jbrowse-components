@@ -416,6 +416,7 @@ export default [
   '@jbrowse/display-kit/ChromeHighlight',
   '@jbrowse/display-kit/ChromeLegend',
   '@jbrowse/display-kit/chromeOverlaySlots',
+  '@jbrowse/display-kit/coarseBlocks',
   '@jbrowse/display-kit/coarseTier',
   '@jbrowse/display-kit/CoarseTierMixin',
   '@jbrowse/display-kit/coarseTierPhase',

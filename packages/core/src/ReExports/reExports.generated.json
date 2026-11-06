@@ -4330,6 +4330,14 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-kit/coarseBlocks": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "installCoarseBlocks",
+        "sameBlockKeys"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/coarseTier": {
       "package": "@jbrowse/display-kit",
       "names": [

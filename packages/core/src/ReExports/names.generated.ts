@@ -416,6 +416,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/ChromeHighlight': ['default'],
   '@jbrowse/display-kit/ChromeLegend': ['default'],
   '@jbrowse/display-kit/chromeOverlaySlots': ['BackgroundProgressSlot', 'ErrorBarSlot', 'LoadingSlot', 'TooLargeSlot'],
+  '@jbrowse/display-kit/coarseBlocks': ['installCoarseBlocks', 'sameBlockKeys'],
   '@jbrowse/display-kit/coarseTier': ['coarseTierCovers', 'isSubAdapterConfig'],
   '@jbrowse/display-kit/CoarseTierMixin': ['default'],
   '@jbrowse/display-kit/coarseTierPhase': ['coarseTierDisplayPhase', 'coarseTierSvgReady'],
