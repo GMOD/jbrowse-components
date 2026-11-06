@@ -93,6 +93,17 @@ fetch() {
   [ -f "$2" ] || curl -fsSL -o "$2" "$1"
 }
 
+# A bigBed's rows in a chr5 window. Current kent bigBedToBed fails on a chrom
+# the file lacks (grcExclusions has no chr5), which here means no rows.
+chr5_rows() {
+  if ! bigBedToBed -chrom=chr5 -start="$2" -end="$3" "$1" stdout 2>"$1.err"; then
+    grep -q "not found in bigBed" "$1.err" || {
+      cat "$1.err" >&2
+      return 1
+    }
+  fi
+}
+
 echo "== 1. Umap k100 multi-read mappability"
 bigWigInfo "$UMAP" | awk '/^mean:|^basesCovered:/ {print "   genome " $0}'
 echo "   locus                  has a value    mean where present    below 0.5"
@@ -142,7 +153,7 @@ for bb in problematic/encBlacklist problematic/grcExclusions problematic/comment
   problematic/GIAB/alllowmapandsegdupregions; do
   name=$(basename "$bb")
   fetch "$GBDB/$bb.bb" "$name.bb"
-  hits=$(bigBedToBed -chrom=chr5 -start=70000000 -end=71000000 "$name.bb" stdout)
+  hits=$(chr5_rows "$name.bb" 70000000 71000000)
   if [ -z "$hits" ]; then
     printf "   %-32s no interval here\n" "$name"
   else
