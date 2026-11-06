@@ -653,24 +653,28 @@ function listed(values: readonly string[]) {
 }
 
 /**
- * The colors of a scale that writes a `domain` and no `range`: its `scheme`,
- * the written one or its field preset's, sampled from end to end into
- * `count` colors, one per ordinal value or threshold interval. Without a
- * scheme the display's own default colors stand.
+ * The colors of a scale with a `domain`, one per ordinal value or threshold
+ * interval: each listed `range` color, and where the list runs out, its
+ * `scheme` (the written one or its field preset's) sampled from end to end
+ * into `count` colors. Without a scheme the listed colors stand alone and the
+ * display's own defaults fill the rest.
  */
 function schemeRange(
   scale: Pick<ColorScaleSetting, 'domain' | 'range' | 'scheme' | 'reverse'>,
   count: number,
 ) {
-  const listedRange = listed(scale.range)
-  const { domain, scheme, reverse } = scale
-  return (
-    listedRange ??
-    (domain.length > 0 && scheme !== undefined
+  const { domain, range, scheme, reverse } = scale
+  const sampled =
+    domain.length > 0 && scheme !== undefined
       ? stopsFromRampLut(rampLutOf({ scheme, reverse }), count).map(
           stop => stop.color,
         )
-      : undefined)
+      : []
+  return listed(
+    Array.from(
+      { length: Math.max(range.length, sampled.length) },
+      (_, i) => range[i] ?? sampled[i]!,
+    ),
   )
 }
 

@@ -120,7 +120,7 @@ test('each scale carries the members it reads under the config names', () => {
     field: 'pip',
     scale: 'threshold',
     domain: ['1', '2'],
-    range: ['white', 'red'],
+    range: ['white', 'red', expect.any(String)],
   })
   expect(encodingOf({ field: 'strand', scale: WRITTEN })).toEqual({
     field: 'strand',
@@ -164,6 +164,11 @@ test('a threshold writing cuts and no range spreads its scheme, else leaves the 
   expect(
     rangeOf({ domain: ['1'], scheme: 'viridis', range: ['red', 'blue'] }),
   ).toEqual(['red', 'blue'])
+  const spread = rangeOf({ domain: ['1', '2'], scheme: 'viridis' })!
+  expect(
+    rangeOf({ domain: ['1', '2'], scheme: 'viridis', range: ['red'] }),
+  ).toEqual(['red', ...spread.slice(1)])
+  expect(rangeOf({ domain: ['1', '2'], range: ['red'] })).toEqual(['red'])
 })
 
 test('an ordinal scale listing its domain and no range samples its scheme per value', () => {
