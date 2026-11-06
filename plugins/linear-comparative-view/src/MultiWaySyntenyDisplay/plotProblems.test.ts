@@ -23,7 +23,7 @@ test("the gene color's threshold cuts are judged as every color object's are", (
       },
     }),
   ).toEqual([
-    'encoding.color.scale.range: 2 threshold cuts make 3 intervals, one color each, and range lists 1: a missing color comes from the default palette and an extra one is never read',
+    'encoding.color.scale.range: 2 threshold cuts make 3 intervals, one color each, and range lists 1: a missing color samples the scheme, else the default ramp, and an extra one is never read',
   ])
 })
 

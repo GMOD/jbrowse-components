@@ -163,13 +163,13 @@ export const markColorSchema = ConfigurationSchema(
         }),
         ...colorDomainSlot({
           domain:
-            'for an ordinal scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead',
+            'for an ordinal scale, the values in legend order, walking the range from the first entry and continuing past its end into the scheme where one is set, else the default palette (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead',
         }),
         ...colorDomainEndsSlots,
         ...colorDomainQuantileSlot,
         ...colorRangeSlot({
           range:
-            "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette for ordinal, the scheme, or for a threshold the default ramp sampled per interval",
+            "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty, or short of the domain, takes the rest from the scheme where one is set, else the default palette for ordinal or the default ramp sampled per interval for threshold",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,

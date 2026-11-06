@@ -145,7 +145,7 @@ test('the scale is never read off which output member is written', () => {
   expect(scaleOf({ scheme: 'viridis' })).toBe('ordinal')
 })
 
-test('a threshold writing cuts and no range spreads its scheme, else leaves the display its colors', () => {
+test('a threshold writing cuts spreads its scheme over the intervals its range leaves out, else leaves the display its colors', () => {
   const rangeOf = (scale: Record<string, unknown>) => {
     const encoding = encodingOf({
       field: 'x',

@@ -549,7 +549,7 @@ export function colorProblems(
       problems.push({
         rule: 'threshold-range',
         slot: 'scale.range',
-        message: `${domain.length} threshold ${domain.length === 1 ? 'cut makes' : 'cuts make'} ${domain.length + 1} intervals, one color each, and range lists ${range.length}: a missing color comes from the default palette and an extra one is never read`,
+        message: `${domain.length} threshold ${domain.length === 1 ? 'cut makes' : 'cuts make'} ${domain.length + 1} intervals, one color each, and range lists ${range.length}: a missing color samples the scheme, else the default ramp, and an extra one is never read`,
       })
     }
   }

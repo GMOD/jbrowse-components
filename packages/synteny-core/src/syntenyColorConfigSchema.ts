@@ -72,7 +72,7 @@ export function syntenyColorScaleSlots(scaleName: string) {
     }),
     ...colorRangeSlot({
       range:
-        "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval",
+        "CSS colors a text column's labels or strand's values take, in domain order, continuing past its end into the scheme where one is set, else the default palette; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval",
     }),
     ...colorRampSlots,
     ...colorDomainEndsSlots,

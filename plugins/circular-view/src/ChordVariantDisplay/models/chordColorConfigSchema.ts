@@ -69,7 +69,7 @@ export const chordColorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+            'CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp',
         }),
         ...colorDiscreteSchemeSlots,
         ...colorUnknownSlot,
