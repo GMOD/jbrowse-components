@@ -118,7 +118,7 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * Genomic bp one cell of a per-base pass stands for at the settled
-         * zoom: `subPixelBinBp` off the host's debounced `coarseBpPerPx`, and 1
+         * zoom: `subPixelBinBp` off the host's throttled `coarseBpPerPx`, and 1
          * until the view initializes. A per-base encode or fetch reads this
          * rather than the live zoom so a wheel tick does not redo every region.
          */

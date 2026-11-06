@@ -50,7 +50,7 @@ test('nice-rounds the accumulated range across the settled blocks', () => {
 // against yet", and every caller falls that back to `[0, 1]`. Answering `[0,1]`
 // over an empty coarse block list while the data was already loaded is what
 // drew a bigwig line track blank and a density track solid — the block list is
-// empty for one debounce window, not the data.
+// empty until the view initializes, not the data.
 test('is undefined, not [0, 1], while there is nothing to scale against', () => {
   expect(domainOver(viewWith([], true))).toBeUndefined()
   expect(domainOver(viewWith([block(0, 0, 3)], false))).toBeUndefined()

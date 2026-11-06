@@ -1372,7 +1372,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * At base level each reference base spans at least a pixel (UCSC's
-         * `zoomedToBaseLevel`). Reads the debounced `coarseBpPerPx` so the
+         * `zoomedToBaseLevel`). Reads the throttled `coarseBpPerPx` so the
          * rendering swap does not thrash mid-zoom. False until the view is
          * initialized.
          */

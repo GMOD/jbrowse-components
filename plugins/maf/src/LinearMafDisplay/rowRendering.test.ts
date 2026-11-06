@@ -159,7 +159,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       ...opts,
     })
 
-  // `zoomedToBaseLevel` reads the *debounced* coarse zoom, and the view autorun
+  // `zoomedToBaseLevel` reads the *throttled* coarse zoom, and the view autorun
   // that publishes it doesn't run headless — so a test that only calls zoomTo
   // silently keeps whatever zoom the model was created at.
   function zoomAndSettle(

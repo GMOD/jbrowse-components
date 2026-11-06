@@ -121,7 +121,7 @@ leaves a keep-alive holding nothing.
 **Only hold alive a getter whose dependencies exclude per-frame view geometry.**
 Subscribing moves the rebuild from "the track under the cursor, while hovering"
 to "every such display, on every change to its inputs". The feature display's
-`flatbushIndexes` is safe because it keys off `laidOutDataMap` and the debounced
+`flatbushIndexes` is safe because it keys off `laidOutDataMap` and the throttled
 `coarseBpPerPx`. A getter that walks `visibleRegions` is not (see the previous
 section): holding it buys a per-pan-frame index build on every such track in the
 session. Give a getter the feature display's dependencies before giving it the
@@ -187,10 +187,10 @@ Each lane fetch stamps its key on the display (`loadedKey`), and the hook is
 "specs exist and the stamp is not the current key", which a lane fetch always
 clears, since one failed lane drops out of an otherwise committed map.
 
-**A live window ahead of a debounced input.** Alignments' `perBaseBinBp` reads
-`subPixelBinBp` off the 500ms-debounced `coarseBpPerPx`, and the stamp beside a
+**A live window ahead of a throttled input.** Alignments' `perBaseBinBp` reads
+`subPixelBinBp` off the 500ms-throttled `coarseBpPerPx`, and the stamp beside a
 loaded region is that settled bin, so stamp and `zoomFetchArgs` agree for the
-whole debounce while the wall on screen is already several octaves coarser than
+whole throttle while the wall on screen is already several octaves coarser than
 its zoom. The hook is `perBaseBinBp !== livePerBaseBinBp`.
 
 **Compare values, and never restate the zoom tier.** The foundation compares

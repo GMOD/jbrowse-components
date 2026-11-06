@@ -169,7 +169,8 @@ async function main() {
   })
   // the frames run INSIDE the page, on rAF: one page.evaluate per frame costs a
   // CDP round trip each and stretches a 25-frame drag past a second, which
-  // crosses the 500ms debounce and measures the debounce rather than the region
+  // crosses the 500ms coarse throttle and measures the throttle rather than
+  // the region
   const dragMs = await page.evaluate(async () => {
     const view = (window as any).JBrowseSession?.views?.[0]
     const t0 = performance.now()

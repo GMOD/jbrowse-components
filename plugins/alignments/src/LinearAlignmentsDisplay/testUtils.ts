@@ -557,7 +557,7 @@ export function clickMenuItem(items: MenuItem[], label: string) {
  *
  * `coverageStats` — hence `coverageDomain`, hence every drawn and hit-tested bar
  * height in the coverage band — is computed over `settledDynamicBlocks`, which
- * reads the coarse blocks and those are fed by a 500ms-debounced autorun. A test
+ * reads the coarse blocks and those are fed by a 500ms-throttled autorun. A test
  * that left them describing the previous viewport would hit-test the band as if
  * it had no interbase bars in it at all, which looks like the marks being absent
  * rather than the view not having caught up.

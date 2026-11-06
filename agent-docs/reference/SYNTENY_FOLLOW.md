@@ -12,7 +12,7 @@ below are relative to `plugins/linear-comparative-view/src/SyntenyFollow/`.
 ## Two passes, because the exact answer costs an RPC
 
 A CIGAR walk happens in the worker, so the **exact pass** can only ask once the
-anchor settles, woken by the debounced `coarseDynamicBlocks`. A **frame pass** on
+anchor settles, woken by the throttled `coarseDynamicBlocks`. A **frame pass** on
 live `dynamicBlocks.contentBlocks` does everything except the RPC, so the row
 moves during the drag instead of jumping after it. Exact supplies correctness,
 frame supplies motion.

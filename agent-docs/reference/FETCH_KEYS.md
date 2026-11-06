@@ -17,7 +17,7 @@ every fetch runs on.
 cache mid-gesture, and the profile blames the encoder rather than the key that let it in.
 No `gpuProps()` reads live `bpPerPx`, `offsetPx`, `visibleRegions`, `dynamicBlocks` or
 hover. The one deliberate exception is `LinearMafDisplay`'s `binBp`
-(`encodeBinBp`: `subPixelBinBp` off the **debounced** `coarseBpPerPx`, quantized to a
+(`encodeBinBp`: `subPixelBinBp` off the **throttled** `coarseBpPerPx`, quantized to a
 power of two). The alignments worker's `perBaseBinBp` rides the RPC call site instead
 ([PER_BASE_SUBPIXEL_BIN.md](PER_BASE_SUBPIXEL_BIN.md)).
 

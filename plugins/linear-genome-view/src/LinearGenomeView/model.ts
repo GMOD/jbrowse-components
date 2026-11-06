@@ -2531,14 +2531,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * **The blocks a debounced consumer clips to**: the coarse blocks once
+         * **The blocks a throttled consumer clips to**: the coarse blocks once
          * the view has settled at least once, the live ones before that.
          *
          * The coarse blocks stop a per-bp scan from recomputing on every
          * animation frame during a pan or zoom. Wiggle's autoscale domain, the
          * alignments coverage scale and MAF's coverage band use them. While the
          * coarse blocks are stale the result is a frame or two old, as the
-         * debounce intends. **Empty coarse blocks are a different case.** A scan
+         * throttle intends. **Empty coarse blocks are a different case.** A scan
          * over no blocks yields no entries, and the consumer falls back to the
          * domain `[0,1]`, which draws a line plot blank and a density plot
          * saturated. The coarse blocks are empty until the view initializes,

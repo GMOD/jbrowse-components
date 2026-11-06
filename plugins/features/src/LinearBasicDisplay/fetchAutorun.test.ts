@@ -1300,7 +1300,7 @@ describe('force-load exempts the whole track', () => {
   })
 })
 
-// Settles the debounced `coarseBpPerPx` deterministically rather than pumping
+// Settles the throttled `coarseBpPerPx` deterministically rather than pumping
 // fake timers.
 function zoomAndSettle(view: LinearGenomeViewModel, bpPerPx: number) {
   view.zoomTo(bpPerPx)

@@ -55,7 +55,7 @@ export interface Flight {
 // key buckets on `floor(log2(bpPerPx))` — so a flight crosses ~30 fetch buckets
 // where a pan at constant zoom crosses none. Measured against
 // `demos/grape_peach_cacao` it costs exactly ONE extra RPC over the instant
-// jump (2 against 1), because the 500ms leading-edge debounce absorbs the whole
+// jump (2 against 1), because the 500ms coarse throttle absorbs the whole
 // excursion: one fetch leaving, one on landing.
 // `agent-docs/measurements/synteny-mate-flight.json`.
 const RHO = Math.sqrt(2)

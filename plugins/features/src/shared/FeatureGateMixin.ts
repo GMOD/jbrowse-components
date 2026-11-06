@@ -82,7 +82,7 @@ export default function FeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * Density at the debounced `coarseBpPerPx`, so the verdict shares the
+       * Density at the throttled `coarseBpPerPx`, so the verdict shares the
        * layout cadence.
        */
       get visibleFeatureDensityPerPx() {

@@ -138,13 +138,7 @@ test('click and zoom in and back out', async () => {
     return 0
   }
 
-  // wait for coarseBpPerPx to be set (500ms debounced autorun) so
-  // the zoom buttons become enabled
   const before = view.bpPerPx
-  await waitFor(() => {
-    expect(view.coarseBpPerPx).toBeGreaterThan(0)
-  }, delay)
-
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)

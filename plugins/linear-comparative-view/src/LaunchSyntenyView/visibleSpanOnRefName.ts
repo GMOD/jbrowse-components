@@ -29,7 +29,7 @@ export function visibleSpanOnFeature(
  * window on this alignment's axis to map across.
  *
  * `dynamicBlocks` rather than `coarseDynamicBlocks`: this is read at the
- * moment of the click, so the debounced copy would answer with wherever the
+ * moment of the click, so the throttled copy would answer with wherever the
  * panel was up to a tick ago.
  */
 export function visibleSpanOnRefName(

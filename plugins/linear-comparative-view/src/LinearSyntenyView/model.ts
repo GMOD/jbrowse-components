@@ -1026,7 +1026,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         for (const view of live) {
           view.zoomTo(average)
           // a discrete jump, so the coarse blocks flush rather than waiting out
-          // their debounce
+          // their throttle
           view.settleCoarseBlocks()
         }
       },

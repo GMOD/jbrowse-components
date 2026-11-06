@@ -262,7 +262,7 @@ async function gesture(
     // path that stops a running RPC (a scroll or zoom waits for it instead)
     const btn = await page.$('[data-testid="zoom_in"]')
     await btn?.click()
-    // the bin keys off the debounced zoom, so the refetch lands ~500ms after
+    // the bin keys off the throttled coarse zoom, so the refetch lands ~500ms after
     // the click; in a mode that owes no refetch the wait simply expires
     await page
       .waitForFunction(

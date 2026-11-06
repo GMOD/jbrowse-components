@@ -1394,7 +1394,7 @@ export default function baseStateModelFactory(
           // Holding the hit-test indexes observed is the only reason MobX
           // caches them: MobX suspends an unobserved computed, and every
           // mousemove rebuilt a Flatbush per region. Safe to hold because
-          // `flatbushIndexes` keys off the debounced `coarseBpPerPx`; a
+          // `flatbushIndexes` keys off the throttled `coarseBpPerPx`; a
           // getter reading live `visibleRegions` must not be held this way.
           autorunOnReadyView(
             self,

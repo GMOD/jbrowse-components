@@ -78,7 +78,7 @@ test('a track display carries a name and a role', async () => {
   expect(region.getAttribute('aria-label')).toContain('Volvox genes')
 
   // ...and the "what is on screen" half, which arrives with the coarse blocks
-  // the debounced autorun writes rather than per frame
+  // the throttled autorun writes rather than per frame
   await waitFor(() => {
     expect(model.coarseVisibleLocStrings).toBeTruthy()
   })

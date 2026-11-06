@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
 // The slider tracks live `bpPerPx`, which changes on every animation frame of a
 // zoom. Isolated into its own observer so the surrounding zoom buttons/menu —
 // whose MUI Tooltip/IconButton machinery is comparatively expensive and only
-// depends on the debounced `coarseBpPerPx` — don't re-render every frame.
+// depends on the throttled `coarseBpPerPx` — don't re-render every frame.
 const ZoomSlider = observer(function ZoomSlider({
   model,
 }: {

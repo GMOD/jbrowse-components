@@ -273,7 +273,7 @@ export async function waitForStartScreen(
 // The live session model, published on window by the desktop JBrowse component
 // the same way jbrowse-web does. Reading state from it beats reading rendered
 // text: `visibleLocStrings` is the view's actual position, while the location box
-// shows the debounced `coarseVisibleLocStrings`, and the track and widget lists
+// shows the throttled `coarseVisibleLocStrings`, and the track and widget lists
 // have no faithful DOM equivalent at all.
 export interface SessionProbe {
   locStrings: string[]

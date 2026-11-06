@@ -18,7 +18,7 @@ const ZoomButton = observer(function ZoomButton({
   direction: 'in' | 'out'
   small?: boolean
 }) {
-  // disabled tracks the debounced coarseBpPerPx (not live bpPerPx) so it doesn't
+  // disabled tracks the throttled coarseBpPerPx (not live bpPerPx) so it doesn't
   // flicker disabled during a zoom animation
   const { maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
   const out = direction === 'out'

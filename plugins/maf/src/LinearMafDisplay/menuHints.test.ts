@@ -140,7 +140,7 @@ describe('the right-click sort says when the summary tier has its data', () => {
 const framesEnv = () =>
   createMafTestEnvironment({ framesAdapter: { type: 'BigBedAdapter' } })
 
-// `zoomedToBaseLevel` reads the debounced coarse zoom, which the headless view
+// `zoomedToBaseLevel` reads the throttled coarse zoom, which the headless view
 // only publishes when asked.
 function zoomAndSettle(
   view: ReturnType<

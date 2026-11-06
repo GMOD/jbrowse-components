@@ -25,13 +25,13 @@ function simulateLoaded({ view, display }: Pick<Env, 'view' | 'display'>) {
 }
 
 // Zoom, then flush the 500ms coarse-block throttle the way a discrete jump
-// does, so the fetch's debounced inputs describe the viewport it is issued for.
+// does, so the fetch's throttled inputs describe the viewport it is issued for.
 function settleAt({ view }: Pick<Env, 'view'>, bpPerPx: number) {
   view.zoomTo(bpPerPx)
   view.settleCoarseBlocks()
 }
 
-// The per-base wall is sampled at `subPixelBinBp` off the DEBOUNCED zoom, so
+// The per-base wall is sampled at `subPixelBinBp` off the THROTTLED zoom, so
 // data fetched several octaves out is genuinely too coarse to draw once the
 // user zooms in — the samples stripe rather than tile. `dataSuperseded` is what
 // keeps that window from reading as fresh, and the window it has to cover is
@@ -54,7 +54,7 @@ describe('per-base bin supersession', () => {
     expect(display.svgReady).toBe(true)
     expect(display.displayPhase).toBe('ready')
 
-    // Three octaves in, and NOT settled — this is the debounce window. The
+    // Three octaves in, and NOT settled — this is the throttle window. The
     // viewport stays inside the region it holds, so the spatial check still
     // says covered and only the bin can tell that a wall sampled one base in
     // eight is about to be drawn at one base per pixel.

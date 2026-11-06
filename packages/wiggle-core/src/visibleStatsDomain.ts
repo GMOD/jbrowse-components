@@ -14,7 +14,7 @@ export interface VisibleEntry<T> {
 /**
  * The half of the containing view this reads.
  *
- * `settledDynamicBlocks` — the 500ms-debounced coarse blocks once the view has
+ * `settledDynamicBlocks` — the 500ms-throttled coarse blocks once the view has
  * settled once, the live ones before that — so a per-bp or per-feature scan
  * doesn't recompute on every animation frame during pan/zoom. Not
  * `coarseDynamicBlocks`: over the empty initial coarse list every walker below

@@ -3,7 +3,7 @@ import { spy } from 'mobx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// A row whose debounced window is behind its live one, which is the 500ms
+// A row whose throttled window is behind its live one, which is the 500ms
 // `LGVCoarseDynamicBlocks` autorun still owing a run. `setCoarseDynamicBlocks`
 // compares block keys and bpPerPx and assigns only on a difference, so equality
 // here is exactly "that autorun has run for the viewport as it stands".
@@ -21,7 +21,7 @@ function debouncePending(lgv: LinearGenomeViewModel) {
  * follow suites used to approximate.
  *
  * The exact pass is the `SyntenyFollow` autorun. Two things wake it: the coarse
- * blocks, which a 500ms-debounced autorun writes and every discrete placement
+ * blocks, which a 500ms-throttled autorun writes and every discrete placement
  * flushes, and its own answer landing, since applying one navigates a row. So
  * it is done when no row's debounce is outstanding and the autorun has stopped
  * running — a signal that says the pass ran, where a sleep only ever said time

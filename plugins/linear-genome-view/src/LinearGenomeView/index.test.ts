@@ -3628,7 +3628,7 @@ describe('coarse dynamic blocks', () => {
 
   // the location box reads coarseVisibleLocStrings, so a jump that leaves it to
   // the 500ms autorun shows the previous locus while the view is already there
-  test('a navigation lands on them without waiting for the debounce', async () => {
+  test('a navigation lands on them without waiting for the throttle', async () => {
     const model = makeView()
     await model.navToLocString('ctgA:1000-2000')
     expect(model.coarseVisibleLocStrings).toBe(model.visibleLocStrings)
@@ -3698,7 +3698,7 @@ describe('coarse dynamic blocks', () => {
     expect(model.settledDynamicBlocks).toBe(model.coarseDynamicBlocks)
 
     // and it stays the coarse one through a move, which is the whole point of
-    // the debounce: a stale answer, not a live one
+    // the throttle: a stale answer, not a live one
     model.scrollTo(model.offsetPx + model.width * 3)
     expect(model.settledDynamicBlocks).toBe(model.coarseDynamicBlocks)
   })
@@ -4488,7 +4488,7 @@ describe('resize preserves the genomic window', () => {
     expect(edges(restored)).toEqual(before)
     expect(restored.bpPerPx).toBeCloseTo(20)
     // and the coarse scale the displays lay out and fetch against is seeded at
-    // the measure, not 500ms later by the debounced autorun
+    // the measure, not 500ms later by the throttled autorun
     expect(restored.coarseBpPerPx).toBe(restored.bpPerPx)
   })
 

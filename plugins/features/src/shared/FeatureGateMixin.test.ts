@@ -27,7 +27,7 @@ function gatedDisplay() {
   ])
   // visibleBp 25,400, over AUTO_FORCE_LOAD_BP, so the density axis is live
   view.zoomTo(62.5)
-  // the verdict is a live max at the DEBOUNCED coarse scale, so settle it
+  // the verdict is a live max at the THROTTLED coarse scale, so settle it
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   return { display, view, track }
 }

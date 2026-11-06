@@ -102,7 +102,7 @@ function viewTracks(view: ObservedView) {
 // open, and where each is looking. Deliberately NOT the whole snapshot —
 // depending on that would pull in offsetPx, and a snapshot is kilobytes, so a
 // drag would push one per pointer event across the host's wire.
-// coarseVisibleLocStrings is JBrowse's own debounced location, so this settles
+// coarseVisibleLocStrings is JBrowse's own throttled location, so this settles
 // after a pan rather than firing during it.
 //
 // A plain function, not an action: actions run untracked, and computing this is

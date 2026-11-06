@@ -38,7 +38,7 @@ const WIDTH = 800
 
 // Base1DView is the whole of what the follow reads off a row: the blocks it is
 // showing, the layout it can be placed within, and moveTo's two actions. The
-// debounce the real `coarseDynamicBlocks` carries is the one thing most of
+// throttle the real `coarseDynamicBlocks` carries is the one thing most of
 // these tests do not want — so the two clocks run together until a test calls
 // `holdCoarseBlocks`, which latches them where they are and leaves later
 // placements moving the live ones alone. That is a drag between settles, which

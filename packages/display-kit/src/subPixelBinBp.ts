@@ -16,7 +16,7 @@ export const MIN_BINNED_BP_PER_PX = 4
  * displays floor a cell to 1 CSS px (`pileupCellX`, `pileupCellWidth`), so
  * samples half a pixel apart overlap rather than stripe.
  *
- * Quantized to a power of two, and read off the DEBOUNCED `coarseBpPerPx` by
+ * Quantized to a power of two, and read off the THROTTLED `coarseBpPerPx` by
  * both callers: unquantized, MAF re-encodes every region on every wheel tick
  * and alignments refetches one, and a bin that stays put across a zoom nudge
  * keeps the picture stable.

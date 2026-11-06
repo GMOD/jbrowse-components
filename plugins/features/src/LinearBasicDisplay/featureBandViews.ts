@@ -105,7 +105,7 @@ interface HitIndexSource {
   renderedLabels: LabelPlacementContext
 }
 
-// `bpPerPx` is the layout's, the debounced `coarseBpPerPx` the rows were
+// `bpPerPx` is the layout's, the throttled `coarseBpPerPx` the rows were
 // packed at. Per region, since the incremental layout keeps an unchanged
 // region's object and a Flatbush rebuild costs a Hilbert sort.
 function createHitIndexes(self: FeatureBandHost, band: HitIndexSource) {
