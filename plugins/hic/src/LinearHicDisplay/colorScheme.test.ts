@@ -1,4 +1,5 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -44,4 +45,13 @@ test('picking a scheme from the menu leaves reverse to follow it', () => {
     ]),
   ).toBeUndefined()
   expect(display.colorReverse).toBe(true)
+})
+
+test('picking the scheme already painting writes nothing', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setColorScheme('magma')
+  const patches: unknown[] = []
+  onPatch(display.configuration, patch => patches.push(patch))
+  display.setColorScheme('magma')
+  expect(patches).toEqual([])
 })

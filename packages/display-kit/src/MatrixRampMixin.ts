@@ -13,6 +13,7 @@ import {
   denormalizeScore,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
+import { compareStructural } from 'mobx'
 
 import {
   colorForScheme,
@@ -381,16 +382,17 @@ export default function MatrixRampMixin<F extends string>(
        */
       setColorScheme(scheme: ColorSchemeName) {
         const node = confNode(self)
-        const { color } = node.configuration.encoding
-        setConf(
-          node,
-          ['encoding', 'color'],
-          colorForScheme(
-            getSnapshot<ColorSlots>(color),
-            scheme,
-            presets[self.paintedColorField].scale.scheme,
-          ),
+        const written = getSnapshot<ColorSlots>(
+          node.configuration.encoding.color,
         )
+        const next = colorForScheme(
+          written,
+          scheme,
+          presets[self.paintedColorField].scale.scheme,
+        )
+        if (!compareStructural(next, written)) {
+          setConf(node, ['encoding', 'color'], next)
+        }
       },
     }))
 }

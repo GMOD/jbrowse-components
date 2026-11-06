@@ -6,6 +6,7 @@ import {
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { compareStructural } from 'mobx'
 
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { refNameRankColors } from './components/refNameRanks.ts'
@@ -209,15 +210,15 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * which would win over it.
      */
     setColorScheme(scheme: ColorSchemeName) {
-      setConf(
-        self,
-        ['encoding', 'color'],
-        colorForScheme(
-          getSnapshot<ColorSlots>(self.configuration.encoding.color),
-          scheme,
-          MAF_FIELD_PRESETS.identity.scale.scheme,
-        ),
+      const written = getSnapshot<ColorSlots>(self.configuration.encoding.color)
+      const next = colorForScheme(
+        written,
+        scheme,
+        MAF_FIELD_PRESETS.identity.scale.scheme,
       )
+      if (!compareStructural(next, written)) {
+        setConf(self, ['encoding', 'color'], next)
+      }
     },
     /**
      * #action
