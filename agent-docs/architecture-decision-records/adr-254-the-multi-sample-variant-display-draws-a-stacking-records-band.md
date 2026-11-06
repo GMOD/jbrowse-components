@@ -359,7 +359,10 @@ karyotype strip cut the Records chip, Dog10K's row labels covered both, and
 the chips sat on a clustered track's dendrogram. The chips now take
 `BAND_CHIPS_HEIGHT` between the records band and the rows wherever they draw
 (at genomic positions, with samples), as they already did with the rows
-hidden. The track grows by the strip; the rows keep the slot's height.
+hidden. The track grows by the strip; the rows keep the slot's height. The
+SVG export draws no controls, so it leaves the strip out and its rows sit
+flush under the records (Colin, 2026-11-06: "if its just for buttons... should
+close the gap").
 
 | Alternative | Why not |
 | --- | --- |
@@ -399,3 +402,9 @@ hidden. The track grows by the strip; the rows keep the slot's height.
   `components/hitTesting.ts`, `components/labelPositioning.ts`,
   `components/paintLabels.ts`, `components/paintFeatureBand.ts` and
   `marks/basicFeatureMarks.ts`, with LinearBasicDisplay consuming it too.
+
+## Evidence
+
+Write-ups (claude.ai artifacts): the eight-review decision
+`5FzxxtApj1gxYQEnX1yC6U`, band height `9Y7TGDk8PtSam8g5Rajb7v`, slice one
+`AVbDTzGnE2g4zcFECrMN5U`.

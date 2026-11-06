@@ -1,6 +1,6 @@
 ---
 name: variant-display-links-band
-description: The merged variant display gets a `links` band drawing SVs as arcs through the shared `link` mark, as alignments' `readConnections` band does. A breakend's mate becomes an arc instead of a point and a label, and overlapping SVs could read as nested arcs instead of stacked bars. After the merge (handoffs/variant-display-merge.md).
+description: The merged variant display gets a `links` band drawing SVs as arcs through the shared `link` mark, as alignments' `readConnections` band does. A breakend's mate becomes an arc instead of a point and a label, and overlapping SVs could read as nested arcs instead of stacked bars. After the merge (ADR-254, ADR-255).
 metadata:
   area: variants
   category: visual-call

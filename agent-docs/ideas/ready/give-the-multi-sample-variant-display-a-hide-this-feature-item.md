@@ -25,3 +25,9 @@ The tooltip toggle it used to be taken with is done:
 `LinearVariantDisplay/configSchema.ts` declares the slot, the base model gates
 `hoveredTooltipSource` on it, and `variantShowSubmenuItems` carries the
 checkbox — the same three places a "hide this feature" item would land.
+
+**Since ADR-255 (one `LinearVariantDisplay`)** a right-clicked record on the
+records band takes plugin-features's zoom to, get sequence, copy, read sort and
+Highlight items, but not LinearBasicDisplay's Show/hide rows (pin, show only,
+hide). Hiding wants the record out of the genotype cells as well as the band,
+so it needs a worker-side id filter in the cell fetch.

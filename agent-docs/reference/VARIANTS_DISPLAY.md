@@ -343,7 +343,11 @@ a `recordsOnly` choice in the model belongs there.
   band, `BAND_CHIPS_HEIGHT`, since the rows' tree, facet strip and labels draw
   over the rows' left edge): `Records ×` and `Genotypes ×` while both draw,
   `Show records` or `Show genotypes` for the one hidden, beside the
-  hidden-records count. With `genotypes.show` off on a VCF with samples
+  hidden-records count. The export leaves the strip out, since it holds
+  controls: `svgHeight` and `svgRowsTopOffset` are `height` and
+  `rowsTopOffset` less `reserved.chips`, and the LGV export sizes a track's box
+  by `exportedHeight` (display-kit), so the rows sit flush under the records.
+  With `genotypes.show` off on a VCF with samples
   (`drawsGenotypeRows` false) the rows take 0 px and the track is the band plus
   the chips' strip, the slot `height` kept for the rows' return; the band can't
   hide then (`showRecords`). The worker reads no genotype (an empty
@@ -418,7 +422,10 @@ a `recordsOnly` choice in the model belongs there.
   band, so the rows keep their slot `height` under every `heightMode`
   (`growMaxHeight` is Infinity over rows). In a circular view's ring (`inRing`)
   the display is records-only: the ring samples one canvas of its strip, the
-  band's, so no row draws or is fetched there.
+  band's, so no row draws or is fetched there. Taking the band from the rows
+  instead, or compositing every canvas in the ring host, was declined: rows drew
+  in a ring only by accident (`records.show` off, or in columns), and a whole
+  chromosome trips the byte gate on any real cohort.
 - **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales the
   boxes: `recordsLaidOutDataMap` leaves a record that still ends below
@@ -446,7 +453,8 @@ a `recordsOnly` choice in the model belongs there.
   its first base (a 5 Mb SV's span would be a 5 Mb read), the next click aborting
   one in flight. It keeps the record's `samples`, which the widget's sample grid
   shows, and a genotype cell's sample card (`withClickedSample`); the click's own
-  record opens where the adapter finds none. Dropping the samples where rows draw
+  record opens where the adapter finds none, INFO-less, so a breakpoint split
+  view launched from it stops its junction walk there. Dropping the samples where rows draw
   them left the grid empty. Persistence needs no trim, since the feature widget
   leaves out a feature over 2 MB of JSON.
 - **A record takes its SV class's color, otherwise `featureDefaultColor`**
@@ -466,6 +474,19 @@ a `recordsOnly` choice in the model belongs there.
   writes `records.height` as the drawn height at the press plus the pointer's
   whole travel (`RecordsBandOverlay`'s `BandSeamHandle`), past the stack
   included, so the seam waits at the floor until the pointer comes back to it.
+- **Toggling genotype rows remounts the GPU canvas**, since `VariantBody` moves
+  in and out of `RowsPanel`: one re-upload per toggle, as a layout switch costs.
+- **Mode branches stay few.** `recordsOnly` is read at nine sites outside
+  `recordsBandViews.ts` (2026-11-06), and the menu branches on
+  `drawsGenotypeRows` (15 rows, each its own rule); a count well past that is
+  the band growing a mode switch again (ADR-254's third amendment). Declined, as
+  every site would still branch: a role table (`recordsRole.scrolls`,
+  `.overflow`, `.measures`), which names one fact seven ways; one
+  `'none' | 'hidden' | 'drawn'` getter for `recordsOnly`, `drawsGenotypeRows`
+  and `rowsHidden`, each derived from the other two inputs so no state is
+  impossible today; and splitting `variantDisplayMenuItems.ts` by band. Lifting
+  `recordsOnScreenIds` and `recordsLabelDensityPerPx` beside LinearBasicDisplay's
+  `onScreenFeatureIds` was declined too: the two read different payload shapes.
 
 ## How wide a cell draws
 

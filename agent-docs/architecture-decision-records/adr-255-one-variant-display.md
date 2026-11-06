@@ -8,7 +8,7 @@ summary: "The multi-sample display, records band included, is registered as `Lin
 ## Status
 
 Accepted (2026-10-30), Colin: "i'd like convergence". Sub-slice C1 of the
-merge (handoffs/variant-display-merge.md). Supersedes
+merge (ADR-254 and ADR-255 record its slices). Supersedes
 [ADR-250](adr-250-the-multi-sample-variant-display-draws-no-variant-lane.md),
 whose answer to nested SVs, a `LinearVariantDisplay` track stacked over the
 genotype display, is now the one display's records band

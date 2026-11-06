@@ -539,4 +539,6 @@ empty gutter. Three places decide it: `TreeSidebar`'s early return,
 `svgSidebarWidth(text)` sizes the view's gutter from the same props, so the width
 reserved and the sidebar drawn cannot drift. Both measure in the export's
 `ExportTextStyle`: labels measured in one font and drawn in another run into the
-plot.
+plot. Handed the rows' viewport (`availableHeight`), `SvgTreeSidebar` clips to
+it as the screen's rows box does: unclipped, a scrolled export drew the row
+just above the viewport over the bands above the rows.

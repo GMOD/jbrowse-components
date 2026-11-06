@@ -5,7 +5,7 @@ description: "The variant display is about 9,100 lines for what grammar draws as
 
 # The variant display as a grammar spec
 
-After the merge (handoffs/variant-display-merge.md, ADR-255) the variant display
+After the merge (ADR-254, ADR-255) the variant display
 is about 9,100 lines of source in `plugins/variants/src/LinearVariantDisplay/`,
 2,374 of them `model.ts`, plus the worker RPC and shaders. In ggplot2 the same
 picture is two layers over one table with a shared x. Much of the code pays for

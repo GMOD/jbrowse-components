@@ -27,7 +27,7 @@ export const variantVideos: VideoSpec[] = [
     url: defaultDisplay,
     // the matrix is the tall state, which trio-matrix-phased-clean is captured
     // at; the blank under the opening lane is its room
-    viewportHeight: 620,
+    viewportHeight: 800,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [
