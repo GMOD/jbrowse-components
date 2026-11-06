@@ -46,6 +46,8 @@ between displays.
 
 - 2026-10-15 to 10-26 net: +1754 / −979 shared, +168 / −79 mark display.
   10-22 alone moved about 3000 paths each way in one sub-schema move.
+- 2026-10-30 to 11-05 net: +279 / −319 shared, +30 / −17 mark display, 11-02
+  most of it; 11-03 and 11-04 +31 / −4 shared, 11-05 none.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
@@ -66,9 +68,12 @@ between displays.
    `extent` lift went with that tag.
    - ggjbrowse's closed-schema bundle drops an old key silently, so every
      rename, and every new key, needs an engine re-pin, an R respell and a
-     tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The pin
-     is v5.0.0-beta.20 (`82a76d8be6`, ggjbrowse `77b4b0a`); `dog10k_lof` keeps its `557791197f` knit until the
-     callset host's certificate is renewed.
+     tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The
+     engine now re-pins to main commits (`bccd4b0d5b` on 2026-11-05,
+     ggjbrowse `fc2f1e7`), and the downstream canary runs ggjbrowse on every
+     push to main (`.github/workflows/downstream-canary.yml`), so a rename
+     that misses R goes red there on push. `dog10k_lof` keeps its
+     `557791197f` knit until the callset host's certificate is renewed.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
      (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). The Trix adapter's
      `textSearchAdapterId` and `metaFilePath` stay until the merge lambda

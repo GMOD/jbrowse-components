@@ -42,8 +42,10 @@ rule over rows are marked provisional there (the default is settled: on).
   `records.show` on by default (a SNV-only file spends 0 px); the band's
   members lifted into `recordsBandViews.ts`, which the model composes in
   order. `recordsOnly` is read at nine sites outside the seam on
-  2026-11-01 (`model.ts` 5, `RecordsBandOverlay.tsx` 3,
-  `variantDisplayMenuItems.ts` 1), and the menu branches on `drawsGenotypeRows`
+  2026-11-06 (`model.ts` 3, `RecordsBandOverlay.tsx` 3,
+  `variantDisplayMenuItems.ts` 1, `SvgVariantOverlay.tsx` 1,
+  `renderSvgUtils.ts` 1), its getter now in `variantRowViews.ts` beside
+  `drawsGenotypeRows`, and the menu branches on `drawsGenotypeRows`
   instead, so a count well past that is the accretion the review found
   coming back. Inside `recordsBandViews.ts` the label decision is one
   getter (`recordsLabelPlan`). A role table (`recordsRole.scrolls`,
@@ -75,7 +77,8 @@ rule over rows are marked provisional there (the default is settled: on).
   `shared/components/MultiSampleVariantClusterDialog.tsx`, beside them) stay.
   Left from C2: refilm the `variants/trio_phased_matrix` tour, whose
   Display types steps are gone and whose first caption changed (its
-  script moved on 2026-10-31, `website/media.lock` last on 10-15).
+  script moved on 2026-10-31, and its `website/media.lock` entry was last
+  filmed on 10-15, unchanged by the 11-04 refilm sweep).
 - **D. Outside writers**: every one writes `LinearVariantDisplay` (jb2hubs
   `d4635f657a51`, JBrowseR's bundle from v5.0.0-beta.20, graphgenomeviewer
   8.7.0, ggjbrowse, and the hosted `arg`, `ecoli_pangenome` and `hprc` demo

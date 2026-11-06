@@ -34,8 +34,13 @@ differences under 50 bp inside a structural form.
   (`WalkTabixSyntenyAdapter.ts`) drops `before`/`after` except at crossings.
   Sketch: an end record per lane, drawn as a tick in the multi-way display
   with "graph stops; N kb unaligned" or "contig ends". Format 6's one-ended
-  departures and `missingBp` feed it directly, so build it after format 6.
-  Moderate: plugin plus a new mark here.
+  departures and `missingBp` feed it directly. gfa-to-tabix 3.0.0 and
+  graph-walks 5.0.0 write and read format 6 (released 2026-11-05), but the
+  lanes reach it only through graph plugin 9 and the hosted `-f6` walk
+  files, both still being deployed, so build it after those. The "contig
+  ends" half has its position already: the lane stack hands each lane its
+  contig's extent (`Lane.contig`, `laneStackOn`). Moderate: plugin plus a
+  new mark here.
 - **The VCF parents vcfbub dropped.** The release removed every site with an
   allele over 100 kb and kept the sites nested in it (the vcfbub section of
   `jb2hubs/agent-docs/reference/PANGENOME_PORTAL.md`), so the
@@ -49,16 +54,21 @@ differences under 50 bp inside a structural form.
   so the cell-line caveat appears where it applies. Small, jb2hubs; few
   readers land there.
 - **Part 2's first-or-last-chunk sentence is unverified.** "A window in the
-  deletion's first or last chunk shows no row for that haplotype" may hold only
-  for deletions over about 256 kb: graph-walks reads `FOLLOW_CHUNKS` (4) chunks
+  skip's first or last chunk shows no row for that haplotype"
+  (`pangenome_hprc_haplotypes.md`, the skip-rows bullet) may hold only for
+  skips over about 256 kb: graph-walks reads `FOLLOW_CHUNKS` (4) chunks
   onward (`walkReader.ts:31,469`) and turns a direct jump into a skip
   (`walkRows.ts:630-631`). Inferred, not driven. Open one deletion under and
-  one over 256 kb at a window in its first chunk, then fix the sentence.
+  one over 256 kb at a window in its first chunk, then fix the sentence. The
+  HPRC pages moving to the `-f6` files lifts the 64 kb chunk, so check the
+  sentence against format 5 now or rewrite the bullet at that move.
 
 ## Owned elsewhere
 
 - **Format 6 departures**, which lift the 64 kb chunk and the 2 Mb cap behind
   part 2's deletion-row limit: gfa-to-tabix ADR 0009 and its
-  `docs/handoff/2026-10-31-departures.md`. Step 1 of that handoff, dropping the
-  word "deletion" from jumps, needs no format change; the lane header
-  (`laneHeader.ts`) and the plugin's `walkLanes.ts` record type are done.
+  `docs/handoff/2026-10-31-departures.md`, whose State section tracks the
+  deploy (format 6 released 2026-11-05; the genome-wide `-f6` builds, plugin
+  9, and the `demos/hprc` and `demos/hprc_multiway` configs follow). The lane
+  header (`laneHeader.ts`) and the plugin's `walkLanes.ts` record type already
+  dropped the word "deletion".
