@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  GitHub Actions' OIDC provider for this account, and the roles workflows
-  assume through it instead of holding access keys.
+  GitHub Actions' OIDC provider for this account, and the roles workflows assume
+  through it instead of holding access keys.
 
 Resources:
   # One per account for this issuer URL, so it lives here rather than in any
@@ -48,5 +48,6 @@ Resources:
 
 Outputs:
   BlatCanaryPublisherRoleArn:
-    Description: Role GMOD/jbrowse-plugin-blat's canary assumes to publish a red run
+    Description:
+      Role GMOD/jbrowse-plugin-blat's canary assumes to publish a red run
     Value: !GetAtt BlatCanaryPublisherRole.Arn

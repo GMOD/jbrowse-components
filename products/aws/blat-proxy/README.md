@@ -151,15 +151,15 @@ fine.
 
 ## Canary alerts
 
-The canary is `.github/workflows/canary.yml` in GMOD/jbrowse-plugin-blat. A
-red run publishes its URL to the stack's `jbrowse-blat-canary` SNS topic, which
+The canary is `.github/workflows/canary.yml` in GMOD/jbrowse-plugin-blat. A red
+run publishes its URL to the stack's `jbrowse-blat-canary` SNS topic, which
 mails `AlertEmail` and `SecondAlertEmail`. It publishes as the
-`jbrowse-blat-canary-publisher` role, over GitHub OIDC with no stored keys,
-from the `products/aws/github-oidc` stack. A manual dispatch with `alert_test`
-fails on purpose, to check the path end to end.
-Each email subscription needs a one-time confirmation click from that inbox
-after the first deploy; until then SNS drops the message. The berkeley.edu alias
-never surfaced its confirmation mail, which is why there are two.
+`jbrowse-blat-canary-publisher` role, over GitHub OIDC with no stored keys, from
+the `products/aws/github-oidc` stack. A manual dispatch with `alert_test` fails
+on purpose, to check the path end to end. Each email subscription needs a
+one-time confirmation click from that inbox after the first deploy; until then
+SNS drops the message. The berkeley.edu alias never surfaced its confirmation
+mail, which is why there are two.
 
 ## Outage notice
 

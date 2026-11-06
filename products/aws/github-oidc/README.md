@@ -7,9 +7,9 @@ product's.
 
 - `jbrowse-blat-canary-publisher`: GMOD/jbrowse-plugin-blat's daily canary
   publishes a red run to the blat-proxy stack's `jbrowse-blat-canary` topic.
-  Only that repo's `main` can assume it, matched by the repo's immutable
-  subject (`repo:GMOD@342482/jbrowse-plugin-blat@1444636944:...`), and it can
-  only publish to that topic.
+  Only that repo's `main` can assume it, matched by the repo's immutable subject
+  (`repo:GMOD@342482/jbrowse-plugin-blat@1444636944:...`), and it can only
+  publish to that topic.
 
 ## Deploy
 
