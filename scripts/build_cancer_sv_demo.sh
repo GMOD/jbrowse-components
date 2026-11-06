@@ -115,7 +115,6 @@ DER3=(
   der3_RARB.derivative_segments.bed.gz.csi
   der3_RARB.vs_reference.pif.gz
   der3_RARB.vs_reference.pif.gz.csi
-  der3_RARB.vs_reference.pif.gz.gzi
 )
 for f in "${DER3[@]}"; do
   [ -f "$DEMO/$f" ] || fetch "https://jbrowse.org/demos/cancer_sv/$f" "$DEMO/$f" -fL
