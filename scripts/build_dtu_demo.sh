@@ -50,10 +50,10 @@ cd "$OUTDIR"
 ENCODE=https://www.encodeproject.org/files
 GENCODE=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
 
-# ENCODE 403s a bare curl.
-UA='Mozilla/5.0'
+# Plain curl, no browser User-Agent: ENCODE's firewall answers a bigWig request
+# carrying a bare `Mozilla/5.0` with a 405 captcha page.
 fetch() { # fetch <accession> <ext> <dest>
-  [ -f "$3" ] || curl -fsSL -A "$UA" "$ENCODE/$1/@@download/$1.$2" -o "$3"
+  [ -f "$3" ] || curl -fsSL "$ENCODE/$1/@@download/$1.$2" -o "$3"
 }
 
 # ------------------------------------------------------------------ samples
