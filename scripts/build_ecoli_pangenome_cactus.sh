@@ -406,7 +406,13 @@ in_cactus samtools sort -o /data/ecoli_cactus_reads.bam /data/reads_mapped.bam
 in_cactus samtools index /data/ecoli_cactus_reads.bam
 
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ─────────────────
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 

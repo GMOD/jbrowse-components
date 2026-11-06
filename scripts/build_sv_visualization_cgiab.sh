@@ -107,7 +107,9 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 # ── JBrowse CLI (installed `jbrowse`, else npx) + a local app dir ─────────────
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }

@@ -1641,6 +1641,40 @@ for doc in sorted(glob.glob("website/docs/tutorials/*.md")):
                   f"marker does not install them (add {','.join(entries)})")
             failed = True
 
+# Every build script resolves the JBrowse CLI through this one block, so
+# `run-tutorial-builds --cli main` (which sets JBROWSE_CLI) runs this tree's CLI
+# in every script, and a reader without `jbrowse` on PATH gets it from npx.
+# Scripts call `jb`; any other route to the CLI is refused.
+JB_BLOCK = """if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
+"""
+OTHER_CLI_ROUTE = re.compile(
+    r"\bjb\(\)|@jbrowse/cli\b|\bJBROWSE_CLI\b"
+    r"|(?:^|[;&|({]|\$\(|\b(?:then|do|else|time)\s)\s*jbrowse(?![\w.-])", re.M)
+JB_CALL = re.compile(r"(?:^|[;&|({]|\$\(|\b(?:then|do|else)\s)\s*jb\s", re.M)
+jb_scripts = 0
+for f in scripts:
+    code = "".join(ln for ln in open(f).read().splitlines(keepends=True)
+                   if not ln.lstrip().startswith("#"))
+    blocks = code.count(JB_BLOCK)
+    rest = code.replace(JB_BLOCK, "")
+    stray = OTHER_CLI_ROUTE.search(rest)
+    if stray:
+        print(f"FAIL {f}: reaches the JBrowse CLI through "
+              f"`{stray.group(0).strip()}`; call `jb`, defined by the JB_BLOCK "
+              f"in scripts/check-build-scripts.py, so JBROWSE_CLI is honoured")
+        failed = True
+    if blocks > 1 or (JB_CALL.search(rest) and blocks != 1):
+        print(f"FAIL {f}: calls `jb` with {blocks} copies of the JB_BLOCK in "
+              f"scripts/check-build-scripts.py; it needs exactly one")
+        failed = True
+    jb_scripts += blocks
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
@@ -1648,4 +1682,5 @@ print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, 
       f"{runnable} reader-facing docs run no script out of scripts/, "
       f"{view_objects} authored view objects write only keys a view reads, "
       f"{install_checked} page-script pairs install every tool checked, "
+      f"{jb_scripts} scripts resolve the CLI through JB_BLOCK, "
       f"gfatools bubble contract {'checked' if gfatools_ran else 'SKIPPED'}")

@@ -84,8 +84,13 @@ PLINK="${PLINK:-plink2}"
 
 # The CLI, used for `sort-bed` in build_track below as well as for the instance
 # at the end, so it is resolved before either.
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 for tool in "$PLINK" bgzip tabix samtools curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done

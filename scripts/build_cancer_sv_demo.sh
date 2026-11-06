@@ -53,9 +53,13 @@ APP=jbrowse2
 DEMO=demo
 mkdir -p "$DEMO"
 
-jb() {
-  if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jbrowse "$@"; else npx -y @jbrowse/cli@next "$@"; fi
-}
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 
 # drops rows for the alt/decoy contigs bedGraphToBigWig would otherwise reject
 # as absent from .fai; $1 is a bedGraph or bedGraph.gz, $2 the bigWig to write

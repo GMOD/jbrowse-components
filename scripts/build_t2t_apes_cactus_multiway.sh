@@ -19,7 +19,8 @@
 # contigs by GenBank accession (CM054434.2), which the hub's chromAlias maps.
 #
 # Requires: curl, awk, gzip, chain2paf (github.com/AndreaGuarracino/chain2paf),
-#           jbrowse (@jbrowse/cli), python3
+#           node (the JBrowse CLI, fetched via npx unless `jbrowse` is on PATH,
+#           or JBROWSE_CLI names a command to run in its place), python3
 # Usage:    bash build_t2t_apes_cactus_multiway.sh [outdir]
 #
 set -euo pipefail
@@ -27,12 +28,20 @@ set -euo pipefail
 OUTDIR="${1:-t2t_apes_cactus_build}"
 CHAINS=https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains
 
-for tool in curl awk gzip chain2paf jbrowse python3; do
+for tool in curl awk gzip chain2paf node python3; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
 done
+
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 
 # Lane order, top to bottom: the genome's name in the Cactus alignment, the
 # hub it loads from (also its PanSN sample in the PAF), the lane label. The
@@ -91,7 +100,7 @@ done
 rm chains/pair.chain
 mv apes.paf.tmp apes.paf
 
-jbrowse make-pif apes.paf --out apes.pif.gz
+jb make-pif apes.paf --out apes.pif.gz
 
 # ── The JBrowse config ───────────────────────────────────────────────────────
 python3 - <<'PY'

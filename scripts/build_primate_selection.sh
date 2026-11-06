@@ -57,13 +57,13 @@ cd "$OUTDIR"
 # returns clean, which is what makes the `[ -f ]` guards sound: an interrupted
 # run leaves nothing that looks finished.
 
-jb() {
-  if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
-    jbrowse "$@"
-  else
-    npx -y @jbrowse/cli@next "$@"
-  fi
-}
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 
 APP=jbrowse2
 CPUS=$(getconf _NPROCESSORS_ONLN)

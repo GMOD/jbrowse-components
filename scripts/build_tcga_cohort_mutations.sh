@@ -149,8 +149,13 @@ echo "         $RECURRENCE_ALL.gz ($(du -h "$RECURRENCE_ALL.gz" | cut -f1))"
 # hosted_assembly.py seeds the config with hg38 copied from its hosted UCSC hub
 # (so the reference is never downloaded) plus the gene track, and this appends
 # the cohort track to what it wrote.
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp "$OUT.vcf.gz" "$OUT.vcf.gz.csi" "$CLINICAL" "$APP"/

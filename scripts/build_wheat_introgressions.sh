@@ -35,9 +35,13 @@ done
 mkdir -p "$OUT"
 cd "$OUT"
 
-if [ -n "${JBROWSE_CLI:-}" ]; then jb() { $JBROWSE_CLI "$@"; }
-elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 
 GG=https://avena.pw.usda.gov/GG3pangenome/wheat/jb/jbrowseABD/data
 MANIFEST=$(

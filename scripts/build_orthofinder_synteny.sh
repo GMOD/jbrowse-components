@@ -987,7 +987,9 @@ if [ -n "$MSA" ]; then
 fi
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }

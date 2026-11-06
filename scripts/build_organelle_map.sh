@@ -32,7 +32,6 @@ for tool in curl samtools bgzip tabix node; do
 done
 
 if [ -n "${JBROWSE_CLI:-}" ]; then
-  # shellcheck disable=SC2086
   jb() { $JBROWSE_CLI "$@"; }
 elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }

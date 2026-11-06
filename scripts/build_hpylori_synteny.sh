@@ -61,7 +61,9 @@ minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz    hpylori_chc155.fa.gz > chc155_vs
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz    hpylori_26695.fa.gz  > 26695_vs_j99.paf
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
-if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+if [ -n "${JBROWSE_CLI:-}" ]; then
+  jb() { $JBROWSE_CLI "$@"; }
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }
