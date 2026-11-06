@@ -10,7 +10,7 @@
 // reader's copy does, so a fix that is on main but unreleased still fails there.
 //
 // Run: `pnpm --filter @jbrowse/cli build`, then
-//      node scripts/run-tutorial-builds.ts [--only a,b] [--jobs 2]
+//      node scripts/run-tutorial-builds.ts [--only a,b] [--skip c,d] [--jobs 2]
 //        [--timeout 120] [--out dir] [--list] [--clean] [--min-free-gb 150]
 //        [--cli main|released] [--env <prefix>]
 //
@@ -369,6 +369,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       only: { type: 'string' },
+      skip: { type: 'string' },
       jobs: { type: 'string', default: '2' },
       timeout: { type: 'string', default: '120' },
       out: {
@@ -386,13 +387,16 @@ async function main() {
       env: { type: 'string' },
     },
   })
-  const only = values.only?.split(',').map(s => s.trim().replace(/\.sh$/, ''))
+  const names = (list?: string) =>
+    list?.split(',').map(s => s.trim().replace(/\.sh$/, ''))
+  const matches = (run: Run, list: string[]) =>
+    list.some(
+      o => run.script === `${o}.sh` || run.pages.includes(o) || run.id === o,
+    )
+  const only = names(values.only)
+  const skip = names(values.skip) ?? []
   const runs = collectRuns().filter(
-    run =>
-      !only ||
-      only.some(
-        o => run.script === `${o}.sh` || run.pages.includes(o) || run.id === o,
-      ),
+    run => (!only || matches(run, only)) && !matches(run, skip),
   )
   if (values.list) {
     for (const run of runs) {
