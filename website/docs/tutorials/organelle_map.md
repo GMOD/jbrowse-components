@@ -76,24 +76,25 @@ The annotation comes back as GFF3 from the sequence viewer's export:
 curl -o genes.gff3 "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=$ACC"
 ```
 
-For a circular genome, check two lines of `genes.gff3`: the `##sequence-region`
-pragma near the top, which gives the sequence's length, and the D-loop, the
-control region that spans the origin, which is written as one record whose end
-runs past that length:
+For a circular genome, check two records of `genes.gff3`: the `region` that
+spans the whole sequence, which NCBI marks `Is_circular=true`, and the D-loop,
+the control region that spans the origin, which is written as one record whose
+end runs past the sequence's length:
 
 ```bash
-grep -e '^##sequence-region' -e 'D_loop' genes.gff3
+grep -e 'Is_circular=true' -e 'D_loop' genes.gff3 | cut -f 1-5
 ```
 
 ```text output
-##sequence-region NC_012920.1 1 16569
-NC_012920.1	RefSeq	D_loop	16024	17145	.	-	.	ID=id-NC_012920.1:1..16569;gbkey=D-loop
+NC_012920.1	RefSeq	region	1	16569
+NC_012920.1	RefSeq	D_loop	16024	17145
 ```
 
 GFF3 writes a feature that crosses the origin of a circular sequence this way,
 in coordinates that continue past the end. JBrowse's GFF3 adapters read the
-length off `##sequence-region` and cut such a feature at the origin into a piece
-before it and a piece after, so keep that line in the file you load.
+length off the `Is_circular=true` record and cut such a feature at the origin
+into a piece before it and a piece after, so keep that record in the file you
+load.
 
 ## Loading the genome and the genes
 
@@ -113,6 +114,7 @@ Desktop the assembly loads from a
 ```json addassembly
 {
   "name": "human_mito",
+  "displayName": "Human mitochondrion (NC_012920.1)",
   "uri": "genome.fa",
   "circularRefNames": ["NC_012920.1"],
   "geneticCodes": { "NC_012920.1": 2 }
@@ -121,8 +123,9 @@ Desktop the assembly loads from a
 
 - `circularRefNames` marks the sequence circular, so the circular view closes it
   into a ring with no gap at its origin.
-- `geneticCodes` translates it with NCBI's vertebrate mitochondrial code, table
-  2, wherever JBrowse shows a protein.
+- `geneticCodes` translates the reference sequence track's six frames with
+  NCBI's vertebrate mitochondrial code, table 2. NCBI's CDS records name the
+  same table in their own `transl_table`, which a gene's protein sequence reads.
 
 For your own accession, put your sequence's name in both settings and pick its
 [NCBI genetic code](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
@@ -196,13 +199,13 @@ sequence's name and length in the middle:
 The config sets the track's facet and color, and the track menu offers both too,
 under the circular view menu's **Tracks** item:
 
-- **Group by** with `strand` splits the ring into a row per strand
+- **Group by** with `strand` splits the ring into a section per strand
 - **Color by → Attribute...** with `type` colors each feature by its GFF3 type
 
-The track's `height` sets how much of the circle's radius the track takes. A
-ring takes at most half the radius, and the rows of a taller track are laid out
-in that band. In a circle of one sequence, feature names are drawn outside the
-ruler, each joined to its feature by a line.
+The track's `height` sets how much of the circle's radius the track takes. The
+rings together take at most half the radius, so a tall track is narrowed to fit,
+and its rows are laid out in that band. In a circle of one sequence, feature
+names are drawn outside the ruler, each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 
@@ -222,15 +225,15 @@ thirteen protein-coding genes on one strand and _ND6_ on the other.
 [`build_organelle_map.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_organelle_map.sh)
 wraps every step above. It:
 
-1. fetches the accession's FASTA and GFF3 from NCBI
-2. indexes the sequence, and sorts and indexes the genes
-3. writes a JBrowse with the circular assembly, the gene track and the circle as
-   its default session
+- fetches the accession's FASTA and GFF3 from NCBI
+- indexes the sequence, and sorts and indexes the genes
+- writes a JBrowse with the circular assembly, the gene track and the circle as
+  its default session
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_organelle_map.sh
 bash build_organelle_map.sh                   # builds ./organelle_map_build/jbrowse2
-ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast bash build_organelle_map.sh chloroplast_build
+ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast DISPLAY_NAME="Arabidopsis chloroplast (NC_000932.1)" bash build_organelle_map.sh chloroplast_build
 npx --yes serve organelle_map_build/jbrowse2  # then open the printed URL
 ```
 

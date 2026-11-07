@@ -13,6 +13,7 @@
 #           command to run in its place).
 # Usage:    bash scripts/build_organelle_map.sh [outdir]
 #           ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast \
+#             DISPLAY_NAME="Arabidopsis chloroplast (NC_000932.1)" \
 #             bash scripts/build_organelle_map.sh
 #
 set -euo pipefail
@@ -23,6 +24,7 @@ OUTDIR="${1:-organelle_map_build}"
 ACC="${ACC:-NC_012920.1}"
 GENETIC_CODE="${GENETIC_CODE:-2}"
 NAME="${NAME:-human_mito}"
+DISPLAY_NAME="${DISPLAY_NAME:-Human mitochondrion ($ACC)}"
 
 for tool in curl samtools bgzip tabix node; do
   command -v "$tool" >/dev/null 2>&1 || {
@@ -61,7 +63,8 @@ tabix -f -p gff genes.gff.gz
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
-jb add-assembly genome.fa --name "$NAME" --load copy --out "$APP" --force \
+jb add-assembly genome.fa --name "$NAME" --displayName "$DISPLAY_NAME" \
+  --load copy --out "$APP" --force \
   --config "{\"circularRefNames\":[\"$ACC\"],\"geneticCodes\":{\"$ACC\":$GENETIC_CODE}}"
 jb add-track genes.gff.gz --trackId mito_genes --name "NCBI genes" \
   --assemblyNames "$NAME" --load copy --out "$APP" --force \
