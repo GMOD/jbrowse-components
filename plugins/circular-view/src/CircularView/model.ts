@@ -80,7 +80,7 @@ import { samePointerTarget } from '../chords/shapes.ts'
 import { calloutGutterPx } from '../rings/ringCallouts.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { turnAt } from '../rings/warpRing.ts'
-import { circularLegendSpec } from './circularLegend.ts'
+import { circularKey, circularLegendSpec } from './circularLegend.ts'
 import {
   elideRegions,
   elisionMask,
@@ -1663,12 +1663,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       legendSpecIn(palette?: JBrowsePalette): LegendSpec {
         const { sections } = circularLegendSpec(self, palette)
-        return {
-          sections:
-            self.chordSyntenyDisplays.length > 0 && self.hasLegendKey
-              ? [...sections, ...legendSpecOf(self.colorScales).sections]
-              : sections,
-        }
+        return circularKey(
+          self.chordSyntenyDisplays.length > 0 && self.hasLegendKey
+            ? [...sections, ...legendSpecOf(self.colorScales).sections]
+            : sections,
+        )
       },
       /**
        * #method

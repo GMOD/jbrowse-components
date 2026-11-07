@@ -1,7 +1,7 @@
 import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { circularLegendSpec } from './circularLegend.ts'
+import { circularKey, circularLegendSpec } from './circularLegend.ts'
 
 import type { CircularLegendSource } from './circularLegend.ts'
 
@@ -125,4 +125,41 @@ test('given a palette, a ring keys the colors it paints in that theme', () => {
   expect(circularLegendSpec(view, palette).sections[0]?.items[0]?.color).toBe(
     palette.text.primary,
   )
+})
+
+test("a lone track coloring by a field titles the key with that track's scale", () => {
+  const { sections } = circularLegendSpec(
+    viewWith([
+      {
+        name: 'NCBI genes',
+        display: {
+          legendSpec: {
+            sections: [
+              {
+                id: 'color',
+                title: 'type',
+                items: [
+                  { label: 'gene', color: '#1b9e77' },
+                  { label: 'tRNA', color: '#d95f02' },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ]),
+  )
+  expect(circularKey(sections).title).toBe('NCBI genes: type')
+})
+
+test('a key of several sections, or of single-color rows, has no title', () => {
+  const field = {
+    id: 'genes',
+    title: 'genes: type',
+    items: [{ label: 'gene', color: '#1b9e77' }],
+  }
+  const rows = { id: 'tracks', items: [{ label: 'svs', color: '#ff8500' }] }
+  expect(circularKey([rows, field]).title).toBeUndefined()
+  expect(circularKey([rows]).title).toBeUndefined()
+  expect(circularKey([{ ...field, items: [] }, rows]).title).toBeUndefined()
 })

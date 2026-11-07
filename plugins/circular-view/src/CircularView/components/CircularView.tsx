@@ -412,6 +412,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       <PointerTooltip model={model} />
       {model.showLegend ? (
         <FloatingLegend
+          title={model.legendSpec.title}
           sections={model.legendSpec.sections}
           maxWidth={440}
           onDismiss={() => {

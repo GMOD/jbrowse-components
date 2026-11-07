@@ -1,3 +1,4 @@
+import { nonEmptyLegendSections } from '@jbrowse/core/ui/legendSpec'
 import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
@@ -92,5 +93,19 @@ export function circularLegendSpec(
       ...(rows.length ? [{ id: 'tracks', items: rows }] : []),
       ...keys.flatMap(k => k.sections),
     ],
+  }
+}
+
+/**
+ * The circle's key over `sections`: a lone section's title heads the box, as a
+ * lone scale's does on a linear view, since a section's own title shows only
+ * beside another's.
+ */
+export function circularKey(sections: LegendSection[]): LegendSpec {
+  const drawn = nonEmptyLegendSections(sections)
+  const lone = drawn.length === 1 ? drawn[0] : undefined
+  return {
+    title: lone?.summary === undefined ? lone?.title : undefined,
+    sections,
   }
 }
