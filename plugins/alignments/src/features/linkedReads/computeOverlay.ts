@@ -30,25 +30,6 @@ function isConnectorMarkPair(pair: LinkedPair) {
   return !isGpuLinkedReadLine(pair)
 }
 
-// The two ends sit in different displayed regions, so no per-region pass can
-// join them: each block clips to its own bp range and projects the far end off
-// its edge. This overlay is the only one that resolves each end through its own
-// region index, which is what makes it the fallback in `crossRegion` scope.
-function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
-  return e1.displayedRegionIndex !== e2.displayedRegionIndex
-}
-
-/**
- * Which connections this overlay is responsible for.
- *
- * - `all` — chain layout, or "Pileup connectors" ticked, so it draws every
- *   connection the GPU line pass doesn't own (`isConnectorMarkPair`).
- * - `crossRegion` — only the pairs that straddle a displayed-region boundary.
- *   The display no longer asks for it: chain layout draws every connector.
- * - `none` — no overlay.
- */
-export type ConnectorScope = 'all' | 'crossRegion' | 'none'
-
 /** The connection colors the connectors' color types paint. */
 export function connectorCategories(colorTypes: Iterable<number>) {
   const categories = new Set<ArcCategory>()
@@ -58,22 +39,10 @@ export function connectorCategories(colorTypes: Iterable<number>) {
   return categories
 }
 
-// Enumerate the linked pairs of a laid-out region map, which the connector
-// feed (`buildConnectorFeeds`) turns into the mark's channels. A model getter
-// memoizes it, so it reruns on a relayout and never on a scroll or pan.
-//
-// The `crossRegion` short-circuit is what keeps that scope free where it can buy
-// nothing: a pair needs two regions to straddle, so a section holding one is
-// answered without the O(reads) grouping at all. That is the single-region view,
-// i.e. almost every view — which matters because unlike `all`, this scope is not
-// something the user opted into.
-//
-// Measured, since "not free at depth" was the open question when this scope was
-// added: at 200k reads the short-circuit is 0.0ms, and the multi-region case
-// that does enumerate is ~80ms (2 regions) / ~63ms (8 regions). Against the
-// `buildLaidOutChainMap` relayout it runs beside — 587ms and 1317ms on the same
-// inputs — that is +13% and +5%. So it is real but not the thing to attack in
-// this path, and it did not warrant a cheaper multi-region-name pre-pass.
+// The connector-mark pairs of a laid-out region map, which the connector feed
+// (`buildConnectorFeeds`) turns into the mark's channels: every pair the
+// straight-line pass does not draw. A model getter memoizes it, so it reruns on
+// a relayout and never on a scroll or pan.
 //
 // The SA parse behind `hiddenSegmentsBetween` belongs here for the same reason:
 // it is per read GROUP and scroll-invariant, so the memo pays it once per
@@ -82,33 +51,16 @@ export function connectorCategories(colorTypes: Iterable<number>) {
 // allocates nothing — which is what keeps it off the deep short-read path.
 export function enumerateConnectorPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
-  scope: ConnectorScope = 'all',
   canonicalRefName?: CanonicalRefName,
   refNameAt?: RefNameAt,
 ): LinkedPair[] {
-  if (
-    scope === 'none' ||
-    (scope === 'crossRegion' && laidOutPileupMap.size < 2)
-  ) {
-    return []
-  }
-  // The scope's own predicate, applied HERE rather than at each consumer, so
-  // what this returns is exactly what the overlay draws. Both consumers (the arc
-  // emitter and the legend) used to re-apply `isConnectorMarkPair` themselves, which
-  // left the memoized `connectorPairSections` holding every ordinary within-region
-  // pair — the overwhelming majority at depth under the `all` scope — for both
-  // of them to skip. `crossRegion` needs no second gate: two ends in different
-  // regions can never be the within-region normal pair `isConnectorMarkPair` drops,
-  // so it is the narrower of the two.
-  const predicate =
-    scope === 'crossRegion' ? isCrossRegionPair : isConnectorMarkPair
   const out: LinkedPair[] = []
   for (const pair of iterLinkedPairs(
     laidOutPileupMap,
     canonicalRefName,
     refNameAt,
   )) {
-    if (predicate(pair)) {
+    if (isConnectorMarkPair(pair)) {
       out.push(pair)
     }
   }
@@ -161,8 +113,7 @@ const NO_LINES: ReadonlyMap<number, LinkedReadLinesUploadData> = new Map()
 
 // Every connector of one group, from one walk of its reads: the straight-line
 // pass takes `isGpuLinkedReadLine` pairs when `lines` is on, and the overlay
-// what its scope admits of the rest. `admits` (`connectorFilterOf`) drops a
-// pair from both.
+// the rest. `admits` (`connectorFilterOf`) drops a pair from both.
 //
 // `canonicalRefName` turns on the SA walk that finds hidden segments; without
 // it no pair has any, and a junction across unfetched segments would be drawn
@@ -171,13 +122,11 @@ export function resolveConnectors(
   map: ReadonlyMap<number, LaidOutPileupData>,
   {
     lines,
-    scope,
     canonicalRefName,
     refNameAt,
     admits,
   }: {
     lines: boolean
-    scope: ConnectorScope
     canonicalRefName?: CanonicalRefName
     // what tells a connection crossing chromosomes, which paints
     // inter-chromosomal as its arc does
@@ -186,12 +135,7 @@ export function resolveConnectors(
   },
 ): GroupConnectors {
   if (!lines) {
-    const pairs = enumerateConnectorPairs(
-      map,
-      scope,
-      canonicalRefName,
-      refNameAt,
-    )
+    const pairs = enumerateConnectorPairs(map, canonicalRefName, refNameAt)
     return {
       lines: NO_LINES,
       linePairs: [],
@@ -208,33 +152,27 @@ export function resolveConnectors(
   return {
     lines: linkedReadLinesByRegion(straight),
     linePairs: straight,
-    overlayPairs:
-      scope === 'all'
-        ? rest
-        : scope === 'crossRegion'
-          ? rest.filter(isCrossRegionPair)
-          : [],
+    overlayPairs: rest,
   }
 }
 
-// `resolveConnectors` over every group, and nothing at all when neither the
-// line pass nor the overlay draws. A group whose reads share one row draws no
-// straight lines, which would lie along that row.
+// `resolveConnectors` over every group when the connectors draw, and nothing
+// at all when they do not. A group whose reads share one row draws no straight
+// lines, which would lie along that row.
 export function resolveConnectorsByGroup(
   byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
-  opts: Parameters<typeof resolveConnectors>[1],
+  {
+    draws,
+    ...opts
+  }: Omit<Parameters<typeof resolveConnectors>[1], 'lines'> & {
+    draws: boolean
+  },
   stacksRows: (key: string) => boolean,
 ) {
   const out = new Map<string, GroupConnectors>()
-  if (opts.lines || opts.scope !== 'none') {
+  if (draws) {
     for (const [key, map] of byGroup) {
-      out.set(
-        key,
-        resolveConnectors(map, {
-          ...opts,
-          lines: opts.lines && stacksRows(key),
-        }),
-      )
+      out.set(key, resolveConnectors(map, { ...opts, lines: stacksRows(key) }))
     }
   }
   return out

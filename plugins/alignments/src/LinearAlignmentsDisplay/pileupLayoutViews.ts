@@ -29,7 +29,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { LinkedPair } from '../features/linkedReads/compute.ts'
-import type { ConnectorScope } from '../features/linkedReads/computeOverlay.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type {
   ColorFieldKind,
@@ -226,7 +225,6 @@ export interface PileupLayoutHost {
   bodyColorKind: ColorFieldKind
   unit: AlignmentsUnit
   drawsConnectors: boolean
-  connectorScope: ConnectorScope
   canonicalRefName: CanonicalRefName | undefined
   loadedRegions: ReadonlyMap<number, RegionBounds>
   connectionFilter: ConnectionFilter
@@ -292,7 +290,6 @@ export function pileupLayoutViews(self: PileupLayoutHost) {
               key,
               enumerateConnectorPairs(
                 map,
-                self.connectorScope,
                 self.canonicalRefName,
                 i => self.loadedRegions.get(i)?.refName,
               ).filter(this.connectorFilter),
@@ -381,7 +378,7 @@ export interface ConnectorSettingHost {
   showConnectors: boolean
 }
 
-/** Whether, and over which pairs, the pileup connectors draw. */
+/** Whether the pileup connectors draw. */
 export function connectorSettingViews(self: ConnectorSettingHost) {
   return {
     /**
@@ -393,13 +390,6 @@ export function connectorSettingViews(self: ConnectorSettingHost) {
     get drawsConnectors() {
       return self.unit === 'chain' || self.showConnectors
     },
-    /**
-     * #getter
-     * Which pairs the connector mark draws — see `ConnectorScope`.
-     */
-    get connectorScope(): ConnectorScope {
-      return this.drawsConnectors ? 'all' : 'none'
-    },
   }
 }
 
@@ -410,7 +400,6 @@ export interface ConnectorHost {
   groupRowCaps: ReadonlyMap<string, RowCap>
   collapsedGroups: ReadonlySet<string>
   drawsConnectors: boolean
-  connectorScope: ConnectorScope
   canonicalRefName: CanonicalRefName | undefined
   loadedRegions: ReadonlyMap<number, RegionBounds>
   connectorFilter: (pair: LinkedPair) => boolean
@@ -439,11 +428,10 @@ export function connectorViews(self: ConnectorHost) {
       return resolveConnectorsByGroup(
         self.laidOutByGroupFramed,
         {
-          lines: self.drawsConnectors,
-          scope: self.connectorScope,
+          draws: self.drawsConnectors,
           canonicalRefName: self.canonicalRefName,
           refNameAt: i => self.loadedRegions.get(i)?.refName,
-          admits: self.drawsConnectors ? self.connectorFilter : undefined,
+          admits: self.connectorFilter,
         },
         key =>
           laneLayoutOf(

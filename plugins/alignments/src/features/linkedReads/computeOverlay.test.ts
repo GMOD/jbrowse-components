@@ -131,7 +131,6 @@ function linesOf(
 ) {
   return resolveConnectors(map, {
     lines: true,
-    scope: 'all',
     canonicalRefName,
   }).lines
 }
@@ -967,7 +966,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
   const identity = adapterRefNameText
 
   it('names the hidden loci in read order, once per hop', () => {
-    const pairs = enumerateConnectorPairs(sections, 'all', identity)
+    const pairs = enumerateConnectorPairs(sections, identity)
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
       'chr10:600,001-600,199',
@@ -980,7 +979,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],
-      pairs: enumerateConnectorPairs(sections, 'all', identity),
+      pairs: enumerateConnectorPairs(sections, identity),
     })
     expect(arcs).toHaveLength(1)
     // The same arc as before the dash existed: the connector is real, only its
@@ -996,7 +995,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
   // The SA tag names chromosomes in the BAM's own spelling. Reported raw, a
   // tooltip sends the reader to a refName the view does not have.
   it('reports the loci in the assembly-canonical spelling', () => {
-    const pairs = enumerateConnectorPairs(sections, 'all', refName =>
+    const pairs = enumerateConnectorPairs(sections, refName =>
       adapterRefNameText(refName).replace('chr', ''),
     )
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
@@ -1024,11 +1023,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       ],
       ys: [0, 1],
     })
-    const pairs = enumerateConnectorPairs(
-      new Map([[0, twoSegments]]),
-      'all',
-      identity,
-    )
+    const pairs = enumerateConnectorPairs(new Map([[0, twoSegments]]), identity)
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toBeUndefined()
     expect(
@@ -1051,11 +1046,16 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
 
 // Chain layout puts a chain's alignments on one row across displayed regions but
 // its connecting-line pass is per region, so nothing joins them. This overlay is
-// the only pass that resolves both ends, and `crossRegion` is it doing exactly
-// that job and nothing the per-region pass already covers.
+// the only pass that resolves both ends.
 const chr1chr2 = (i: number) => ['chr1', 'chr2'][i]
 
-describe('enumerateConnectorPairs — crossRegion scope', () => {
+function straddling(...args: Parameters<typeof enumerateConnectorPairs>) {
+  return enumerateConnectorPairs(...args).filter(
+    ({ e1, e2 }) => e1.displayedRegionIndex !== e2.displayedRegionIndex,
+  )
+}
+
+describe('a connector straddling two displayed regions', () => {
   // A split read whose supplementary was fetched in region 1, plus a second read
   // wholly inside region 0 whose junction the per-region line already draws.
   const inRegion0 = makeData({
@@ -1083,25 +1083,12 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
     [1, inRegion1],
   ])
 
-  it('keeps only the pairs that straddle a region boundary', () => {
-    expect(enumerateConnectorPairs(twoRegions, 'all')).toHaveLength(2)
-    const cross = enumerateConnectorPairs(twoRegions, 'crossRegion')
+  it('is enumerated beside the pairs inside one region', () => {
+    expect(enumerateConnectorPairs(twoRegions)).toHaveLength(2)
+    const cross = straddling(twoRegions)
     expect(cross).toHaveLength(1)
     expect(cross[0]!.e1.displayedRegionIndex).toBe(0)
     expect(cross[0]!.e2.displayedRegionIndex).toBe(1)
-  })
-
-  // The short-circuit that makes this scope affordable to turn on by default:
-  // one region can hold no straddling pair, so the O(reads) grouping is skipped.
-  it('answers a single-region section without enumerating', () => {
-    expect(
-      enumerateConnectorPairs(new Map([[0, inRegion0]]), 'crossRegion'),
-    ).toHaveLength(0)
-    expect(enumerateConnectorPairs(new Map([[0, inRegion0]]))).toHaveLength(1)
-  })
-
-  it('none yields nothing at all', () => {
-    expect(enumerateConnectorPairs(twoRegions, 'none')).toHaveLength(0)
   })
 
   it('draws the straddling co-linear split as a straight line', () => {
@@ -1109,7 +1096,7 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
-      pairs: enumerateConnectorPairs(twoRegions, 'crossRegion'),
+      pairs: straddling(twoRegions),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
@@ -1120,12 +1107,7 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateConnectorPairs(
-        twoRegions,
-        'crossRegion',
-        undefined,
-        chr1chr2,
-      ),
+      pairs: straddling(twoRegions, undefined, chr1chr2),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toBe('M 2500 5 L 9000 5')
@@ -1145,12 +1127,11 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateConnectorPairs(
+      pairs: straddling(
         new Map([
           [0, inRegion0],
           [1, inverted],
         ]),
-        'crossRegion',
         undefined,
         chr1chr2,
       ),
@@ -1181,12 +1162,11 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
         { refName: 'chr1' },
         { refName: 'chr2', reversed: true },
       ],
-      pairs: enumerateConnectorPairs(
+      pairs: straddling(
         new Map([
           [0, inRegion0],
           [1, inverted],
         ]),
-        'crossRegion',
         undefined,
         chr1chr2,
       ),
@@ -1229,12 +1209,11 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateConnectorPairs(
+      pairs: straddling(
         new Map([
           [0, chr1],
           [1, chr2],
         ]),
-        'crossRegion',
       ),
     })
     expect(arcs.find(a => a.x1 === 1100)!.d).toBe('M 1100 5 L 5000 5')
@@ -1273,12 +1252,11 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
         { refName: 'chr1', reversed: true },
         { refName: 'chr2', reversed: true },
       ],
-      pairs: enumerateConnectorPairs(
+      pairs: straddling(
         new Map([
           [0, chr1],
           [1, chr2],
         ]),
-        'crossRegion',
       ),
     })
     expect(dips(arcs.find(a => a.x1 === 1100)!.d)).toBe(true)
@@ -1314,7 +1292,7 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
         colors: PALETTE,
         ...baseOpts,
         displayedRegions,
-        pairs: enumerateConnectorPairs(map, 'crossRegion'),
+        pairs: straddling(map),
       })[0]!
     const chr2Reversed = arcFor(
       new Map([
@@ -1342,7 +1320,7 @@ describe('enumerateConnectorPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
-      pairs: enumerateConnectorPairs(twoRegions, 'crossRegion'),
+      pairs: straddling(twoRegions),
     })
     expect(arcs[0]).toMatchObject({
       readName: 'r',
@@ -1386,7 +1364,7 @@ describe('a same-strand junction across segments nothing fetched', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],
-      pairs: enumerateConnectorPairs(sameStrand(ys), 'all', identity),
+      pairs: enumerateConnectorPairs(sameStrand(ys), identity),
     })
 
   it('leaves the straight-line pass for the overlay', () => {
@@ -1506,7 +1484,6 @@ describe('connectorFilterOf', () => {
   ) {
     const { lines, overlayPairs } = resolveConnectors(twoRegions(mInterchrom), {
       lines: true,
-      scope: 'all',
       admits: connectorFilterOf(
         { minInterchromReads: 2, ...filter },
         i => refNames[i],
@@ -1566,7 +1543,6 @@ describe('connectorFilterOf', () => {
       data.get(region)!.readMapqs[readIdx] = 0
       const { overlayPairs } = resolveConnectors(data, {
         lines: true,
-        scope: 'all',
         admits: connectorFilterOf(
           { minInterchromReads: 2 },
           i => ['chr1', 'chr2'][i],
@@ -1588,7 +1564,6 @@ describe('connectorFilterOf', () => {
     data.get(1)!.readMapqs[0] = 0
     const { overlayPairs } = resolveConnectors(data, {
       lines: true,
-      scope: 'all',
       admits: connectorFilterOf(
         { minInterchromReads: 2 },
         () => 'chr1',
@@ -1612,7 +1587,6 @@ describe('connectorFilterOf', () => {
     const curves = (filter: Partial<ConnectionFilter>) =>
       resolveConnectors(twoRegions(1), {
         lines: false,
-        scope: 'all',
         admits: connectorFilterOf(
           { minInterchromReads: 2, ...filter },
           i => ['chr1', 'chr2'][i],

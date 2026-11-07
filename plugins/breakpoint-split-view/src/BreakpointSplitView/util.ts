@@ -40,12 +40,13 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   /** the bands held out of the scroll, on displays that have any */
   stickyBandHeight?: number
   /**
-   * What the display's own connector overlay draws, LinearAlignmentsDisplay's
-   * `connectorScope`: `'all'` in chain layout or under pileup connectors.
-   * Structural, since this plugin has no dependency on plugin-alignments, so a
-   * rename there surfaces as `undefined` here, not as a type error.
+   * Whether the display draws its own read connectors,
+   * LinearAlignmentsDisplay's `drawsConnectors`: in chain layout or under
+   * pileup connectors. Structural, since this plugin has no dependency on
+   * plugin-alignments, so a rename there surfaces as `undefined` here, not as
+   * a type error.
    */
-  connectorScope?: 'all' | 'crossRegion' | 'none'
+  drawsConnectors?: boolean
   /** the "Filter by" contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
   withFeatureById?: (
@@ -296,11 +297,11 @@ export function featureLayoutIn(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
-// Everything that stays inside one row is already connected by the display
-// itself, whether chained onto rows or curved over the pileup: the one scope
-// that draws nothing is the one that leaves the row to this overlay.
+// Everything that stays inside one row is already connected by a display that
+// draws its own connectors, whether chained onto rows or curved over the
+// pileup; one that draws none leaves the row to this overlay.
 export function linksOwnReads(d: OverlayDisplay) {
-  return (d.connectorScope ?? 'none') !== 'none'
+  return d.drawsConnectors ?? false
 }
 
 // A failed `featureLayoutIn` is ambiguous. With a layout, the feature really is off-display

@@ -750,22 +750,21 @@ describe('chain mode is a main-thread tier', () => {
 // Chain layout joins its reads with connectors whether or not "Pileup
 // connectors" is ticked; that setting governs read layout alone.
 describe('chain connectors', () => {
-  test('chain mode draws every connector', () => {
+  test('chain mode draws the connectors', () => {
     const display = createDisplay()
-    expect(display.connectorScope).toBe('none')
+    expect(display.drawsConnectors).toBe(false)
 
     display.setUnit('chain')
-    expect(display.connectorScope).toBe('all')
+    expect(display.drawsConnectors).toBe(true)
   })
 
-  test('ticking curved connectors widens it back to every connection', () => {
+  test('ticking curved connectors draws them in either unit', () => {
     const display = createDisplay()
     display.setShowConnectors(true)
-    expect(display.connectorScope).toBe('all')
+    expect(display.drawsConnectors).toBe(true)
 
-    // and chain mode doesn't narrow an explicit choice
     display.setUnit('chain')
-    expect(display.connectorScope).toBe('all')
+    expect(display.drawsConnectors).toBe(true)
   })
 })
 
@@ -839,10 +838,10 @@ describe('curved connectors', () => {
   test('chain layout draws its connectors whatever the pileup connectors setting says', () => {
     const display = connectorDisplay()
     display.setShowConnectors(false)
-    expect(display.connectorScope).toBe('none')
+    expect(display.drawsConnectors).toBe(false)
 
     display.setUnit('chain')
-    expect(display.connectorScope).toBe('all')
+    expect(display.drawsConnectors).toBe(true)
     expect(display.connectorsByGroup.get('')?.overlayPairs).toHaveLength(1)
     expect(display.laidOutByGroup.get('')!.get(0)!.numLinkedReadLines).toBe(1)
   })

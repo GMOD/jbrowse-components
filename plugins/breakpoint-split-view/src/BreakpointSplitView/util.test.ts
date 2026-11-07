@@ -62,18 +62,12 @@ describe('layoutUnknown', () => {
 })
 
 describe('linksOwnReads', () => {
-  test('chained rows link every read in the row', () => {
-    expect(linksOwnReads({ height: 100, connectorScope: 'crossRegion' })).toBe(
-      true,
-    )
-  })
-
-  test('curved connectors on every pair link them too', () => {
-    expect(linksOwnReads({ height: 100, connectorScope: 'all' })).toBe(true)
+  test('a display drawing its own connectors links every read in the row', () => {
+    expect(linksOwnReads({ height: 100, drawsConnectors: true })).toBe(true)
   })
 
   test('a display drawing no connectors leaves the row to the overlay', () => {
-    expect(linksOwnReads({ height: 100, connectorScope: 'none' })).toBe(false)
+    expect(linksOwnReads({ height: 100, drawsConnectors: false })).toBe(false)
     expect(linksOwnReads({ height: 100 })).toBe(false)
   })
 })

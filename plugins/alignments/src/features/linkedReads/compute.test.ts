@@ -41,7 +41,6 @@ function linesOf(
 ) {
   return resolveConnectors(map, {
     lines: true,
-    scope: 'all',
     canonicalRefName,
   }).lines
 }
@@ -667,7 +666,7 @@ describe('reads past the row cap', () => {
     })
     const { lines, overlayPairs } = resolveConnectors(
       new Map([[0, { ...data, maxY: 1 }]]),
-      { lines: true, scope: 'all' },
+      { lines: true },
     )
     expect(overlayPairs.map(p => readNameAt(p.e1.data, p.e1.readIdx))).toEqual([
       'shown',

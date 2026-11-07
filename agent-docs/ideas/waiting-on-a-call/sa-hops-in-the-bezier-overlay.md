@@ -99,21 +99,15 @@ matters.
   one on-screen segment and an SA tag is exactly the group this skips — which is
   why this half is harder than the TODO half, where both flanking segments are
   fetched and the group clears the gate.
-- **`enumerateConnectorPairs`' `crossRegion` scope short-circuits on
-  `laidOutPileupMap.size < 2`**, and that scope is *not* opt-in — it is what
-  chain mode gets with curved connectors unticked. A one-ended hop in a
-  single-region view is precisely `size < 2` with something to draw. Decide
-  deliberately whether the new marks belong to the `all` scope only.
-- **Cost.** The `crossRegion` short-circuit measures 0.0ms at 200k reads; the
-  multi-region case that does enumerate is ~63–80ms, against the 587–1317ms
-  `buildLaidOutChainMap` relayout beside it. The single-region grouping the
-  lift would newly pay is measured now (`benches/bezierEnumerate.probe.ts`,
+- **`enumerateConnectorPairs` runs whenever the connectors draw**, chain
+  layout included, so a one-ended hop in a single-region view already reaches
+  it.
+- **Cost.** The single-region grouping (`benches/bezierEnumerate.probe.ts`,
   synthetic reads, min of 25 rounds on a quiet box): **~85ms at 200k short
-  reads, 10% paired**, ~108ms at 50% paired, ~5ms at 20k reads. Same order as
-  the multi-region case, so by the standard that accepted `crossRegion` it is
-  affordable — but a first run under a concurrent typecheck reported 375ms,
-  which is BENCHMARKING.md's drift warning in practice: quote the min of a
-  quiet run, and gate the lift on `readSuppAlignments` being present anyway,
+  reads, 10% paired**, ~108ms at 50% paired, ~5ms at 20k reads, against the
+  587–1317ms `buildLaidOutChainMap` relayout beside it. A first run under a
+  concurrent typecheck reported 375ms, which is BENCHMARKING.md's drift
+  warning in practice: quote the min of a quiet run, and gate the lift on `readSuppAlignments` being present anyway,
   since the worker ships it only when some read carries an SA tag and the
   deep short-read view then pays nothing.
 - **A mark on a chain's row has to clear its span.** `buildChainConnectingData`
