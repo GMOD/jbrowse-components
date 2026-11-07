@@ -14,9 +14,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // question it is asking: domainMin/domainMax is what the config really pins
 // (undefined = nothing pinned), which is what the widget's fields show;
 // resolvedDomainMin/resolvedDomainMax is where each end of the axis resolved
-// to (undefined = autoscale this end), which is what a domain computes from.
-// pinsDomain is the third question, and the only one of the three that
-// survives a `defaultScoreDomain` override. All of them come from
+// to with `defaultScoreDomain` filling the unpinned ends (undefined = autoscale
+// this end), the bounds `autoscaledDomain` nice-rounds inside. pinsDomain is
+// the third question: whether the config pins either end at all. All of them come from
 // `ScoreAxisMixin`. Each is named for `encoding.y.scale`'s `domainMin` and
 // `domainMax`, never `minScore`, a stored summary field `encoding.y` can plot.
 export interface ScoreScaleModel extends IStateTreeNode {

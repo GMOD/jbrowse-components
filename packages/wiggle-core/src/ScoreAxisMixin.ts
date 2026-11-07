@@ -4,7 +4,7 @@ import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { autoscaleGroupMembers, unionRanges } from './autoscaleGroup.ts'
 import { computeYTicks } from './computeYTicks.ts'
 import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
-import { autoscaledDomainOf } from './scale.ts'
+import { getNiceDomain } from './scale.ts'
 import { scoreRuleMarks } from './scoreRuleMarks.ts'
 
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
@@ -173,13 +173,27 @@ export function ScoreAxisMixin() {
       get axisReachesZero(): boolean {
         return self.scaleZero
       },
+      /**
+       * #getter
+       * Resolved lower bound; `undefined` means autoscale this end.
+       */
+      get resolvedDomainMin(): number | undefined {
+        return self.domainMin ?? self.defaultScoreDomain[0]
+      },
+      /**
+       * #getter
+       * Resolved upper bound; `undefined` means autoscale this end.
+       */
+      get resolvedDomainMax(): number | undefined {
+        return self.domainMax ?? self.defaultScoreDomain[1]
+      },
     }))
     .views(self => ({
       /**
        * #getter
        * The domain an autoscaled axis draws: `autoscaleRange`, widened to
        * every range its `autoscaleGroup` holds, nice-rounded inside this
-       * display's own bounds. Each member unions the others' own ranges and
+       * display's own `resolvedDomainMin`/`resolvedDomainMax`. Each member unions the others' own ranges and
        * never their domains, so a pinned end stays the display's that pinned
        * it. `undefined` while this display has no `autoscaleRange`.
        */
@@ -195,27 +209,14 @@ export function ScoreAxisMixin() {
                 ),
               ])
             : own
-        return autoscaledDomainOf({
-          range,
-          pinned: [self.domainMin, self.domainMax],
-          fallback: self.defaultScoreDomain,
-          scaleType: self.scaleType,
-          zero: self.axisReachesZero,
-        })
-      },
-      /**
-       * #getter
-       * Resolved lower bound; `undefined` means autoscale this end.
-       */
-      get resolvedDomainMin(): number | undefined {
-        return self.domainMin ?? self.defaultScoreDomain[0]
-      },
-      /**
-       * #getter
-       * Resolved upper bound; `undefined` means autoscale this end.
-       */
-      get resolvedDomainMax(): number | undefined {
-        return self.domainMax ?? self.defaultScoreDomain[1]
+        return range
+          ? getNiceDomain({
+              domain: range,
+              bounds: [self.resolvedDomainMin, self.resolvedDomainMax],
+              scaleType: self.scaleType,
+              zero: self.axisReachesZero,
+            })
+          : undefined
       },
       /**
        * #getter

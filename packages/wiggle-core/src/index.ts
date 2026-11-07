@@ -14,12 +14,7 @@ export type {
 export type { YFieldChannelConfigSchema } from './yFieldChannelConfigSchema.ts'
 export type { YScaleOptions } from './yScaleConfigSchema.ts'
 
-export {
-  autoscaledDomainOf,
-  getNiceDomain,
-  getNiceScale,
-  getScale,
-} from './scale.ts'
+export { getNiceDomain, getNiceScale, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
 export { toP } from './formatNumber.ts'
 
@@ -74,17 +69,11 @@ export { computeYTicks } from './computeYTicks.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 
-export {
-  visibleStats,
-  visibleStatsDomain,
-  visibleStatsRange,
-} from './visibleStatsDomain.ts'
+export { visibleStats } from './visibleStatsDomain.ts'
 export type {
   SettledBlocksView,
   VisibleEntry,
   VisibleStats,
-  VisibleStatsDomainSpec,
-  VisibleStatsRangeSpec,
   VisibleStatsSpec,
 } from './visibleStatsDomain.ts'
 

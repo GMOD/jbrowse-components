@@ -1,5 +1,3 @@
-import { getNiceDomain } from './scale.ts'
-
 /**
  * One visible block's worth of one stats-bearing thing, carrying the block span
  * it is clipped to: a wiggle source's feature arrays, a coverage region, a
@@ -46,33 +44,10 @@ export interface VisibleStatsSpec<Payload, Item, Stats> {
   accumulate: (entries: VisibleEntry<Item>[]) => Stats | undefined
 }
 
-/** {@link VisibleStatsSpec} and what an autoscale mode makes of the stats. */
-export interface VisibleStatsRangeSpec<
-  Payload,
-  Item,
-  Stats,
-> extends VisibleStatsSpec<Payload, Item, Stats> {
-  /** stats to a raw `[min, max]`, before bounds and nice-rounding */
-  range: (stats: Stats, entries: VisibleEntry<Item>[]) => [number, number]
-}
-
 /** What {@link visibleStats} walked: the stats and the entries they reduce. */
 export interface VisibleStats<Item, Stats> {
   stats: Stats
   entries: VisibleEntry<Item>[]
-}
-
-/** {@link VisibleStatsRangeSpec} and what nice-rounds its range into a domain. */
-export interface VisibleStatsDomainSpec<
-  Payload,
-  Item,
-  Stats,
-> extends VisibleStatsRangeSpec<Payload, Item, Stats> {
-  /** `ScoreScaleMixin`'s resolved bounds; `undefined` autoscales that end */
-  bounds: readonly [number | undefined, number | undefined]
-  scaleType: string
-  /** whether a linear or symlog domain reaches 0 (the y scale's `zero`) */
-  zero: boolean
 }
 
 /**
@@ -107,35 +82,4 @@ export function visibleStats<Payload, Item, Stats>({
   })
   const stats = accumulate(entries)
   return stats ? { stats, entries } : undefined
-}
-
-/**
- * #api
- * The raw autoscaled range the displays with a value scale derive
- * identically: {@link visibleStats} reduced to `[min, max]` before any bound
- * or nice-rounding. `undefined` where {@link visibleStats} is.
- */
-export function visibleStatsRange<Payload, Item, Stats>({
-  range,
-  ...spec
-}: VisibleStatsRangeSpec<Payload, Item, Stats>): [number, number] | undefined {
-  const walked = visibleStats(spec)
-  return walked ? range(walked.stats, walked.entries) : undefined
-}
-
-/**
- * #api
- * {@link visibleStatsRange} nice-rounded inside the configured bounds: the
- * domain of a display whose range comes from that display alone.
- */
-export function visibleStatsDomain<Payload, Item, Stats>({
-  bounds,
-  scaleType,
-  zero,
-  ...spec
-}: VisibleStatsDomainSpec<Payload, Item, Stats>) {
-  const range = visibleStatsRange(spec)
-  return range
-    ? getNiceDomain({ domain: range, bounds, scaleType, zero })
-    : undefined
 }
