@@ -4725,6 +4725,7 @@
     "@jbrowse/display-kit/groupLabelStyle": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "CHIPLESS_SECTION_GAP_PX",
         "GROUP_LABEL_FONT_SIZE",
         "GROUP_LABEL_FONT_WEIGHT",
         "GROUP_LABEL_HEIGHT",
@@ -4848,7 +4849,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
-        "legendCheckboxItem"
+        "legendCheckboxItem",
+        "legendMenuItems"
       ],
       "worker": "real"
     },

@@ -93,6 +93,7 @@ From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../basevie
 | <span id="volatile-volatileerror">**volatileError**</span><br><code>unknown</code> |  |
 | <span id="volatile-panx">**panX**</span><br><code>number</code> |  |
 | <span id="volatile-pany">**panY**</span><br><code>number</code> |  |
+| <span id="volatile-dismissedlegendsections">**dismissedLegendSections**</span><br><code>string[]</code> | ids of the key's sections the reader closed, cleared when the key is shown again |
 | <span id="volatile-ringhost">**ringHost**</span><br><code>RingHost</code> | the strip every linear display in this view lays out along, and the rings drawn from it — see `regionHost` |
 | <span id="volatile-hover">**hover**</span><br><code>PointerTarget &#124; undefined</code> | the chord or ribbon under the pointer, which the highlight paths and the tooltip read |
 | <span id="volatile-hoverclientxy">**hoverClientXY**</span><br><code>[number, number] &#124; undefined</code> | where the pointer was on the page while it was on `hover`, which only the tooltip follows |
@@ -234,6 +235,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; number</code> |  |
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(flag: boolean) =&gt; void</code> |  |
+| <span id="action-dismisslegendsection">**dismissLegendSection**</span><br><code>(id: string) =&gt; void</code> | close one section of the key, leaving the others up |
 | <span id="action-rotateclockwisebutton">**rotateClockwiseButton**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-rotatecounterclockwisebutton">**rotateCounterClockwiseButton**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-rotate">**rotate**</span><br><code>(delta: number) =&gt; void</code> |  |
