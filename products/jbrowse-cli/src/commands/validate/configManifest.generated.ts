@@ -3937,7 +3937,7 @@ export const configManifest: ConfigManifest = {
                           "type": "number"
                         },
                         {
-                          "name": "group",
+                          "name": "share",
                           "type": "(string | undefined)"
                         }
                       ],
@@ -5149,7 +5149,7 @@ export const configManifest: ConfigManifest = {
                           "type": "number"
                         },
                         {
-                          "name": "group",
+                          "name": "share",
                           "type": "(string | undefined)"
                         }
                       ],
@@ -7900,7 +7900,7 @@ export const configManifest: ConfigManifest = {
                       "type": "number"
                     },
                     {
-                      "name": "group",
+                      "name": "share",
                       "type": "(string | undefined)"
                     }
                   ],
@@ -8409,7 +8409,7 @@ export const configManifest: ConfigManifest = {
                           "type": "number"
                         },
                         {
-                          "name": "group",
+                          "name": "share",
                           "type": "(string | undefined)"
                         }
                       ],
@@ -9655,7 +9655,7 @@ export const configManifest: ConfigManifest = {
                       "type": "number"
                     },
                     {
-                      "name": "group",
+                      "name": "share",
                       "type": "(string | undefined)"
                     }
                   ],
@@ -10591,7 +10591,7 @@ export const configManifest: ConfigManifest = {
                       "type": "number"
                     },
                     {
-                      "name": "group",
+                      "name": "share",
                       "type": "(string | undefined)"
                     }
                   ],
@@ -11534,7 +11534,7 @@ export const configManifest: ConfigManifest = {
                       "type": "number"
                     },
                     {
-                      "name": "group",
+                      "name": "share",
                       "type": "(string | undefined)"
                     }
                   ],

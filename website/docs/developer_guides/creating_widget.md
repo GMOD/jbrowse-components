@@ -91,7 +91,7 @@ if (!isSessionModelWithWidgets(session)) {
 const track = getContainingTrack(node)
 session.setSelection(
   opts.feature ?? new SimpleFeature(featureData),
-  track.configuration.trackId,
+  opts.sourceTrackId ?? track.configuration.trackId,
 )
 const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
 const widget = session.openWidget(type, id, {

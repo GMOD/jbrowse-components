@@ -148,9 +148,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>14 inherited actions from 4 models</summary>
+<summary>15 inherited actions from 4 models</summary>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-colorbyscheme">[`colorByScheme`](../colorwritesmixin#action-colorbyscheme)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 

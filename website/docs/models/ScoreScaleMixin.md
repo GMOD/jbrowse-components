@@ -45,7 +45,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. |
 | <span id="getter-domainmin">**domainMin**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. |
 | <span id="getter-domainmax">**domainMax**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. |
-| <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | The y scale's autoscale group, `undefined` while it names none. |
+| <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | The y scale's `share`, `undefined` while it names none. |
 | <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | The y axis title, `''` while unset |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | The y axis grid |
 | <span id="getter-showaxis">**showAxis**</span><br><code>boolean</code> | Whether the y axis draws, `axis.show` |
@@ -56,7 +56,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>10 inherited getters from one model</summary>
 
-From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-valuesinview">[`valuesInView`](../scoreaxismixin#getter-valuesinview)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-resolveddomainmin">[`resolvedDomainMin`](../scoreaxismixin#getter-resolveddomainmin)</span>, <span id="getter-resolveddomainmax">[`resolvedDomainMax`](../scoreaxismixin#getter-resolveddomainmax)</span>, <span id="getter-pinsdomain">[`pinsDomain`](../scoreaxismixin#getter-pinsdomain)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
+From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-valuesinview">[`valuesInView`](../scoreaxismixin#getter-valuesinview)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-resolveddomainmin">[`resolvedDomainMin`](../scoreaxismixin#getter-resolveddomainmin)</span>, <span id="getter-resolveddomainmax">[`resolvedDomainMax`](../scoreaxismixin#getter-resolveddomainmax)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-pinsdomain">[`pinsDomain`](../scoreaxismixin#getter-pinsdomain)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
 
 </details>
 

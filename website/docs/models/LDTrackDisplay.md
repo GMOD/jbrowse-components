@@ -92,11 +92,11 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
+From [MatrixRampMixin](../matrixrampmixin): <span id="getter-paintedcolorsetting">[`paintedColorSetting`](../matrixrampmixin#getter-paintedcolorsetting)</span>, <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-schemeramp">[`schemeRamp`](../matrixrampmixin#getter-schemeramp)</span>, <span id="getter-colorbins">[`colorBins`](../matrixrampmixin#getter-colorbins)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
+
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
-
-From [MatrixRampMixin](../matrixrampmixin): <span id="getter-paintedcolorsetting">[`paintedColorSetting`](../matrixrampmixin#getter-paintedcolorsetting)</span>, <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-schemeramp">[`schemeRamp`](../matrixrampmixin#getter-schemeramp)</span>, <span id="getter-colorbins">[`colorBins`](../matrixrampmixin#getter-colorbins)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -135,9 +135,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
-
 From [MatrixRampMixin](../matrixrampmixin): <span id="method-rampcolorscales">[`rampColorScales`](../matrixrampmixin#method-rampcolorscales)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -159,15 +159,15 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>43 inherited actions from 11 models</summary>
+<summary>44 inherited actions from 11 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [MatrixRampMixin](../matrixrampmixin): <span id="action-setcolorscheme">[`setColorScheme`](../matrixrampmixin#action-setcolorscheme)</span>
+
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-colorbyscheme">[`colorByScheme`](../colorwritesmixin#action-colorbyscheme)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
-
-From [MatrixRampMixin](../matrixrampmixin): <span id="action-setcolorscheme">[`setColorScheme`](../matrixrampmixin#action-setcolorscheme)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

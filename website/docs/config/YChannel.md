@@ -51,7 +51,7 @@ Three samples' coverage on one axis that still follows the data:
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  coverage: { encoding: { y: { scale: { group: 'depth' } } } },
+  coverage: { encoding: { y: { scale: { share: 'depth' } } } },
 }
 ```
 

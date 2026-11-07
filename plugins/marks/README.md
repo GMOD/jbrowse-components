@@ -20,7 +20,7 @@ the adapters registered on `pluginManager`.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, display, hiddenCategories, frame, id, opts, }: StaticMarkSvgArgs) => Promise<{ svg: Element; legend: StaticMarkLegend; }>
+(pluginManager: PluginManager, { adapterConfig, display, hiddenCategories, frame, id, opts, byteLimit, }: StaticMarkSvgArgs) => Promise<{ svg: Element; legend: StaticMarkLegend; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/staticSvg.tsx)

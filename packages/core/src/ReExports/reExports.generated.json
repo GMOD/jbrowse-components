@@ -766,7 +766,7 @@
         "canonicalRefNameIn",
         "checkRefName",
         "groupNamesByCanonicalRefName",
-        "isChromosome",
+        "isAssembledMolecule",
         "refNameIndexOf",
         "refNamePositionIn"
       ],
@@ -3111,6 +3111,7 @@
         "DEFAULT_PILEUP_FIELDS",
         "DEFAULT_WINDOW_FRAME",
         "facetLayers",
+        "layerRootRows",
         "layerTables",
         "matedBy",
         "runTransforms",
@@ -3547,6 +3548,7 @@
         "NO_VALUE_ABGR",
         "NO_VALUE_LABEL",
         "colorAt",
+        "colorEntryReader",
         "colorEvaluator",
         "continuousColorScale",
         "encodeFeatures",
@@ -3851,6 +3853,7 @@
         "aggregateFieldName",
         "isFieldPair",
         "isRowwise",
+        "replacesRows",
         "stepWrites",
         "stepsOutput"
       ],

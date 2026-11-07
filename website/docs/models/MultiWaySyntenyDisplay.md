@@ -280,6 +280,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> |  |
 | <span id="method-placelessof">**placelessOf**</span><br><code>(assemblyName: string) =&gt; Placeless &#124; undefined</code> | why a lane the window shows none of draws a row, or undefined where it draws none |
+| <span id="method-laneselectiontrackid">**laneSelectionTrackId**</span><br><code>(assemblyName: string) =&gt; string</code> | the track a lane gene's selection names: the lane's gene track, or one per lane under this display where a described genome brings the genes |
 | <span id="method-anchorstageat">**anchorStageAt**</span><br><code>(originPx: number, bpPerPx: number) =&gt; AnchorStage</code> | the view at `bpPerPx`, laid out against `originPx`, as the lanes decide against it |
 | <span id="method-anchorabsxat">**anchorAbsXAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: numbe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: number; }&gt;</code></pre></dialog></span> | each group's viewport-cut centre, in view px at `bpPerPx` before the scroll offset |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
@@ -354,7 +355,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setribboncolorvalue">**setRibbonColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every ribbon `value`, undefined returning to the strand colors. |
 | <span id="action-openribbonsolidcolordialog">**openRibbonSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the ribbon Color by's Solid color... opens |
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the gene Color by's Solid color... opens |
-| <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |
+| <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature, sourceTrackId?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
 | <span id="action-zoomto">**zoomTo**</span><br><code>(loc: string) =&gt; void</code> |  |
 | <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
@@ -366,13 +367,13 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>42 inherited actions from 11 models</summary>
+<summary>43 inherited actions from 11 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-colorbyscheme">[`colorByScheme`](../colorwritesmixin#action-colorbyscheme)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 

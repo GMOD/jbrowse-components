@@ -54,8 +54,7 @@ names.
 | <span id="getter-namesbycanonicalrefname">**namesByCanonicalRefName**</span><br><code>Map&lt;string, string[]&gt; &#124; undefined</code> | canonical refName -> every name this assembly has for that sequence, canonical first. The inverse of `refNameAliases`, memoized here because the readers that want it want the whole table (the About dialog's alias listing) rather than one row. Undefined until the aliases load. |
 | <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
 | <span id="getter-refnames">**refNames**</span><br><code>string[] &#124; undefined</code> |  |
-| <span id="getter-chromosomes">**chromosomes**</span><br><code>BasicRegion[]</code> | the nuclear chromosomes, in assembly order: the regions whose alias source states them assembled chromosomes or linkage groups. Empty when it states no roles, and before the regions load. |
-| <span id="getter-wholegenomeregions">**wholeGenomeRegions**</span><br><code>BasicRegion[]</code> | what a view of the whole genome shows: the chromosomes where the assembly knows them, else every region. Empty before the regions load. |
+| <span id="getter-wholegenomeregions">**wholeGenomeRegions**</span><br><code>BasicRegion[]</code> | what a view of the whole genome shows, in assembly order: the assembled molecules (chromosomes, linkage groups, plasmids, organelle genomes, segments) where the alias source states each sequence's role, leaving out unplaced, unlocalized, alt and patch scaffolds; else every region. Empty before the regions load. |
 | <span id="getter-refnametoindex">**refNameToIndex**</span><br><code>Map&lt;string, number&gt; &#124; undefined</code> | memoized refName -> first region index, so getRefNameColor is O(1) instead of an O(n) indexOf per call (matters for assemblies with many contigs rendered in overview scalebars/rulers) |
 
 ## Methods

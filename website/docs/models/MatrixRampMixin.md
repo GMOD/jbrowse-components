@@ -7,7 +7,18 @@ sidebar_label: Mixin -> MatrixRampMixin
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/MatrixRampMixin.ts).
 
-A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`). Under a `threshold` scale the intervals (`colorBins`) paint through a table of one band each, the display handing the painters each value at its interval's centre (`binnedColorValues`), and the key lists the intervals. A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
+A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`) through the `ColorWritesMixin` it composes. Under a `threshold` scale the intervals (`colorBins`) paint through a table of one band each, the display handing the painters each value at its interval's centre (`binnedColorValues`), and the key lists the intervals. A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
+
+Each section ends with the members a composed model contributes, linked to the page that documents them.
+
+## Properties
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited property from one model</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
+
+</details>
 
 ## Getters
 
@@ -30,6 +41,15 @@ A matrix display's `encoding.color` as it paints: the painted field through its 
 | <span id="getter-matrixcolor">**matrixColor**</span><br><code>MatrixColorState</code> |  |
 | <span id="getter-colorfieldtitle">**colorFieldTitle**</span><br><code>string</code> | The painted field's own key title, from its preset. |
 
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited getters from 2 models</summary>
+
+From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
+
+</details>
+
 ## Methods
 
 <!-- prettier-ignore -->
@@ -37,9 +57,25 @@ A matrix display's `encoding.color` as it paints: the painted field through its 
 | --- | --- |
 | <span id="method-rampcolorscales">**rampColorScales**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ id, title, extent: { min, max }, }: { id: string; title: str…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ id, title, extent: { min, max }, }: { id: string; title: string; extent: { min?: number &#124; undefined; max: number; }; }) =&gt; ColorScale[]</code></pre></dialog></span> | The legend's ramp, once there is a domain to span: its bottom where the scale paints it, a log scale's floor included, titled by `encoding.color.legend.title` where written, else `title`; under a threshold, its intervals, highest first under `legend.descending`. An end of the domain the loaded values run past reads `≤` or `≥`; an unset `min` is the key's own bottom. |
 
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited method from one model</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
+
+</details>
+
 ## Actions
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme, with `reverse` back to unset so it follows the scheme. The painted field's own scheme writes `scheme` unset, so it keeps following the field. |
+| <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme (`colorByScheme`), the painted field's preset naming the scheme that follows the field. |
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>7 inherited actions from 2 models</summary>
+
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-colorbyscheme">[`colorByScheme`](../colorwritesmixin#action-colorbyscheme)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
+
+</details>

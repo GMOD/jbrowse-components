@@ -5214,7 +5214,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression), or on a row display a row attribute, to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6398,8 +6398,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "group": {
-          "description": "tracks naming one group autoscale together.",
+        "share": {
+          "description": "tracks giving the same name share an autoscaled axis.",
           "if": {
             "type": "null"
           },
@@ -12773,7 +12773,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression), or on a row display a row attribute, to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"
@@ -14321,8 +14321,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "group": {
-          "description": "tracks naming one group autoscale together.",
+        "share": {
+          "description": "tracks giving the same name share an autoscaled axis.",
           "if": {
             "type": "null"
           },
@@ -15903,7 +15903,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression), or on a row display a row attribute, to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"
@@ -16253,8 +16253,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "group": {
-          "description": "tracks naming one group autoscale together.",
+        "share": {
+          "description": "tracks giving the same name share an autoscaled axis.",
           "if": {
             "type": "null"
           },

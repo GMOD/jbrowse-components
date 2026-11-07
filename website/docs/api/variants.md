@@ -31,7 +31,8 @@ every record, a record calling no genotype included:
 - `records`: each one's `ref`, `alt` (its alleles joined by `,`) and
   `filter`, aligned to `ids`.
 - `info` and `infoFields`: its INFO, as `variantTables` gives them.
-- `samples`: a row per record and sample in header order, `feature` (an
+- `samples`: a row per record and each sample its own file lists, in that
+  file's header order (a split VCF's per-contig files may differ), `feature` (an
   index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
   to it, typed as INFO is; and `formatFields`, each key's declaration.
 - `annotations` and `annotationFields`: its ANN or CSQ consequences, as
@@ -64,7 +65,10 @@ each band's value and label, in stacking order; `legend`, `legendTitle`
 and `ramps`, the key the display shows; and `warnings`, the samples file's.
 With `genotypes.reference.show` off, the default, a reference call draws
 no cell. With `genotypes.show` off, and unset on a one-sample VCF, no row
-draws, so `rows` and `cells` are empty and the key is the records'. Several regions share the rows and the key,
+draws, so `rows` and `cells` are empty, the key is the records', and no
+genotype is read, so `minorAlleleFrequency` and `missingness` filter
+nothing, as on a sites-only VCF. The records sit at their genomic
+positions whatever `variantLayout` says. Several regions share the rows and the key,
 as the display's regions do: a record crossing regions is listed in each,
 under one `key`, every `variants` and `cells` row names its `region`'s
 index, and `cells.variant` indexes the joined `variants`. For a host that
