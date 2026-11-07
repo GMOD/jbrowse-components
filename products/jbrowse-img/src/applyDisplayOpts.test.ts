@@ -191,6 +191,18 @@ describe("batch's per-record sort", () => {
     })
   })
 
+  it('yields to a sort= the track writes', async () => {
+    const { view, calls } = sortableView()
+    await applyDisplayOpts(
+      view,
+      't',
+      'LinearAlignmentsDisplay',
+      ['sort=split'],
+      sortAt,
+    )
+    expect(calls[0]).toMatchObject({ sort: 'split' })
+  })
+
   it('leaves a track of another kind alone', async () => {
     const { view, calls } = sortableView()
     await applyDisplayOpts(view, 't', 'LinearVariantDisplay', [], sortAt)
@@ -209,4 +221,13 @@ test('a track the view could not open names the display it was asked for', async
   ).rejects.toThrow(
     'Failed to open track "t" with display "LinearMarkDisplay": no adapter',
   )
+})
+
+test('a failed open quotes no problem the view had before it', async () => {
+  const { view, problems } = fakeView()
+  problems.push({ message: 'an earlier track failed' })
+  ;(view as { launchTrack: unknown }).launchTrack = async () => undefined
+  await expect(
+    applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', []),
+  ).rejects.toThrow(/^Failed to open track "t"$/)
 })

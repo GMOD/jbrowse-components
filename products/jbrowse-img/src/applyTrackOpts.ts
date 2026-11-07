@@ -92,6 +92,7 @@ export async function applyDisplayOpts(
   sortAt?: VariantSortColumn,
   joined = false,
 ) {
+  const seenProblems = view.problems.length
   const entry = await launchTrackWithModifiers(
     view,
     trackId,
@@ -115,7 +116,7 @@ export async function applyDisplayOpts(
         if (sortAt) {
           const [region] = view.displayedRegions
           if (!sort && region) {
-            snap.sort = { ...sortAt, refName: region.refName }
+            snap.sort ??= { ...sortAt, refName: region.refName }
           }
           if (snap.heightMode === undefined && snap.height === undefined) {
             snap.heightMode = 'grow'
@@ -126,7 +127,10 @@ export async function applyDisplayOpts(
     },
   )
   if (!entry) {
-    const reason = view.problems.at(-1)?.message
+    const reason = view.problems
+      .slice(seenProblems)
+      .map(p => p.message)
+      .join('; ')
     const displayType = requestedDisplayType(opts)
     throw new Error(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
