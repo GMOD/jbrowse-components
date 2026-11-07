@@ -133,6 +133,7 @@ interface ViewSelf {
   // what failed and left the view working, as a display's notices are: a
   // plugin view's banner raises no snackbar either
   notices?: readonly unknown[]
+  problems?: readonly { message: string }[]
   visibleRegions?: {
     refName: string
     start: number
@@ -305,10 +306,16 @@ function viewPhase(v: ViewSelf) {
     : {}
 }
 
-function viewState(v: ViewSelf) {
+// `notified` holds the messages this same answer already carries as
+// notifications, every view problem having been raised as a toast too
+function viewState(v: ViewSelf, notified: ReadonlySet<string> = new Set()) {
+  const problems = (v.problems ?? [])
+    .map(p => p.message)
+    .filter(message => !notified.has(message))
   return {
     ...viewPhase(v),
     ...(v.notices?.length ? { notices: v.notices.map(String) } : {}),
+    ...(problems.length ? { problems } : {}),
   }
 }
 
@@ -550,6 +557,7 @@ export async function waitReady(
     }
   }
   const messages = session ? undeliveredNotifications(session) : []
+  const notified = new Set(messages.map(m => m.message))
   // A display that refuses to draw — over the fetch-size gate, or errored —
   // replaces its own subtree instead of raising a snackbar, so notifications
   // alone report a clean settle over a browser with a blank track in it.
@@ -559,9 +567,12 @@ export async function waitReady(
           .map(v => ({
             viewId: v.id,
             type: v.type,
-            ...viewState(viewSelf(v)),
+            ...viewState(viewSelf(v), notified),
           }))
-          .filter(v => 'phase' in v || 'error' in v || 'notices' in v),
+          .filter(
+            v =>
+              'phase' in v || 'error' in v || 'notices' in v || 'problems' in v,
+          ),
         ...allTracks(session)
           .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
           .filter(t => 'phase' in t || 'error' in t || 'notices' in t),

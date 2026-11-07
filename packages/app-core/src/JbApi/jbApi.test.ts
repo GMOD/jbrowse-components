@@ -322,6 +322,30 @@ describe('waitReady', () => {
     })
   })
 
+  it("names a view's problems once their toasts are delivered, and only then", async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const session = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          problems: [{ message: 'track x failed' }],
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [{ message: 'track x failed', level: 'error' }],
+    } as unknown as AbstractSessionModel
+    const first = await drained(waitReady(5000, session))
+    expect(first).toMatchObject({
+      notifications: [{ level: 'error', message: 'track x failed' }],
+    })
+    expect(first).not.toHaveProperty('notReady')
+    expect(await drained(waitReady(5000, session))).toMatchObject({
+      notReady: [{ viewId: 'v1', problems: ['track x failed'] }],
+    })
+  })
+
   // AppReadyMarker holds the app `loading` while a view is still applying its
   // launch blob — `initialized` goes true the moment a linear view's regions
   // land, with the spec's tracks still to attach. This is the half that says so
