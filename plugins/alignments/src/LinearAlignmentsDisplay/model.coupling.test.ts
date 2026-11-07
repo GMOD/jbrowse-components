@@ -34,6 +34,7 @@ import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { declaredLayerFilterState } from './dialogs/layerFilters.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
 import { sectionOrderOf } from './menus/groupByMenu.ts'
+import { sectionRenderState } from './renderers/rendererTypes.ts'
 import {
   bootAlignmentsDisplay,
   clickMenuItem,
@@ -764,7 +765,12 @@ describe('chain connectors', () => {
     display.setShowConnectors(false)
     display.setUnit('chain')
     expect(display.showConnectors).toBe(false)
-    expect(LINKED_READ_LINE_MARK.enabled?.(display.renderState)).toBe(true)
+    const state = display.renderState
+    expect(
+      LINKED_READ_LINE_MARK.enabled?.(
+        sectionRenderState(state, state.sections[0]!),
+      ),
+    ).toBe(true)
   })
 
   test('ticking curved connectors draws them in either unit', () => {
