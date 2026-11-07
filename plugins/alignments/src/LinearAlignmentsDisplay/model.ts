@@ -1901,7 +1901,7 @@ export default function stateModelFactory(
             canvasHeight: self.height,
             colors: palette,
             unit: self.unit,
-            showConnectors: self.drawsConnectors,
+            drawsConnectors: self.drawsConnectors,
             collapseSections: self.collapseSections,
             readConnectionsStrokeScale: self.readConnectionsStrokeScale,
             arcsYDomainBp: this.arcsYDomainBp,

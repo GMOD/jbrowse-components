@@ -110,5 +110,5 @@ export const LINKED_READ_LINE_MARK = defineMark({
   shape: linkedReadLineShape,
   channels: (data: LinkedReadLinesUploadData) => data,
   params: (state: RenderState) => state,
-  enabled: s => s.showConnectors,
+  enabled: s => s.drawsConnectors,
 })

@@ -67,7 +67,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
       colorBaseN: [0, 0, 0],
     } as RenderState['colors'],
     unit: 'read',
-    showConnectors: false,
+    drawsConnectors: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],

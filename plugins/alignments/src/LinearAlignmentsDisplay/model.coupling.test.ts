@@ -20,6 +20,7 @@ import {
   baseWorkerPileupData,
   makePileupDataResult,
 } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { LINKED_READ_LINE_MARK } from '../features/linkedReads/mark.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
@@ -756,6 +757,14 @@ describe('chain connectors', () => {
 
     display.setUnit('chain')
     expect(display.drawsConnectors).toBe(true)
+  })
+
+  test('chain mode turns the linked-read lines on with pileup connectors unticked', () => {
+    const display = createDisplay()
+    display.setShowConnectors(false)
+    display.setUnit('chain')
+    expect(display.showConnectors).toBe(false)
+    expect(LINKED_READ_LINE_MARK.enabled?.(display.renderState)).toBe(true)
   })
 
   test('ticking curved connectors draws them in either unit', () => {

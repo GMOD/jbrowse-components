@@ -66,7 +66,7 @@ function state(): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     pileupTopOffset: 0,
-    showConnectors: true,
+    drawsConnectors: true,
     colors: STOCK,
   } as RenderState
 }
