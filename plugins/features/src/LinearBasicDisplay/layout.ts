@@ -50,10 +50,13 @@ export function computeLaidOutData(
   return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
 }
 
-// The row above each section's first row, spent only while the sections draw
-// chips; ungrouped is the one-section case at 0.
-function sectionChipPx({ facet }: Pick<LayoutInputs, 'facet'>) {
-  return facet ? GROUP_LABEL_HEIGHT : 0
+// The row above each section's first row, spent only while there are
+// sections; ungrouped is the one-section case at 0.
+function sectionChipPx({
+  facet,
+  sectionHeadPx = GROUP_LABEL_HEIGHT,
+}: Pick<LayoutInputs, 'facet' | 'sectionHeadPx'>) {
+  return facet ? sectionHeadPx : 0
 }
 
 function sectionOrder({ facet }: Pick<LayoutInputs, 'facet'>) {
@@ -138,7 +141,7 @@ interface PackedSection extends SectionPrep {
 // its tallest ref group, and the chip row sits above its first row.
 function stackSections(
   refs: readonly PackedSection[][],
-  inputs: Pick<LayoutInputs, 'facet'>,
+  inputs: Pick<LayoutInputs, 'facet' | 'sectionHeadPx'>,
 ) {
   const chipPx = sectionChipPx(inputs)
   const heights = new Map<string, number>()
@@ -522,6 +525,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<keyof LayoutInputs, true> = {
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
   facet: true,
+  sectionHeadPx: true,
   hiddenGroupKeys: true,
   dropBelowLabelRows: true,
   bodyScale: true,

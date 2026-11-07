@@ -1,4 +1,3 @@
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { observable } from 'mobx'
@@ -81,6 +80,7 @@ export interface FeatureBandHost {
     | 'displayMode'
     | 'pinnedFeatureIds'
     | 'facet'
+    | 'sectionHeadPx'
     | 'hiddenGroupKeys'
     | 'geneNamesOnly'
   > &
@@ -88,6 +88,7 @@ export interface FeatureBandHost {
   showLabels: boolean
   effectiveShowDescriptions: boolean
   facet: FeatureFacet | undefined
+  sectionHeadPx: number
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
   autoHeight: boolean
@@ -690,13 +691,13 @@ export function featureBandViews(self: FeatureBandHost) {
         fit ? this.fitMinScale : 1,
         1,
         self.fitMeasureFeatureIds,
-        // The chip rows keep their 16 px under the squeeze, so the scale is
+        // The chip rows keep their height under the squeeze, so the scale is
         // solved over the rows alone.
         layout => {
-          const { facet } = self
+          const { facet, sectionHeadPx } = self
           return facet
-            ? featureGroupSections(layout, facet, GROUP_LABEL_HEIGHT).length *
-                GROUP_LABEL_HEIGHT
+            ? featureGroupSections(layout, facet, sectionHeadPx).length *
+                sectionHeadPx
             : 0
         },
       )
@@ -730,7 +731,7 @@ export function featureBandViews(self: FeatureBandHost) {
           out: scaleLaidOutData(
             layout,
             scale,
-            facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+            facet && { facet, chipPx: self.sectionHeadPx },
           ),
         }
       }
@@ -760,7 +761,7 @@ export function featureBandViews(self: FeatureBandHost) {
     get groupSections(): FeatureGroupSection[] {
       const { facet } = self
       return facet
-        ? featureGroupSections(this.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
+        ? featureGroupSections(this.laidOutDataMap, facet, self.sectionHeadPx)
         : []
     },
     /**

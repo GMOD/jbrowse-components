@@ -25,6 +25,12 @@ export const GROUP_LABEL_INSET_X = 4
 export const GROUP_LABEL_HEIGHT = 16
 
 /**
+ * The gap above each section where the host draws no chips (the circle's
+ * rings), so two sections' rows still part.
+ */
+export const CHIPLESS_SECTION_GAP_PX = 4
+
+/**
  * The list key for a section; the ungrouped section's key is '', so its
  * stable spelling lives here once.
  */

@@ -53,6 +53,8 @@ export interface LayoutInputs {
   // Packs one section per facet value, stacked in `facetOrder` with a chip row
   // above each. Read off the hit items, so no refetch.
   facet?: FeatureFacet
+  // The px above each section's first row; absent, a chip's height.
+  sectionHeadPx?: number
   // A hidden section's features leave the pack. Keys mean nothing outside the
   // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>

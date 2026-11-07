@@ -1,5 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import {
+  CHIPLESS_SECTION_GAP_PX,
+  GROUP_LABEL_HEIGHT,
+} from '@jbrowse/display-kit/groupLabelStyle'
 
 import { subfeatureLabelsOf } from '../RenderFeatureDataRPC/displayModes.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -193,7 +197,11 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
  * nothing is pinned or expanded.
  */
 export interface BasicDisplayLayoutHost {
-  host: { coarseBpPerPx: number; namesFeatures?: boolean }
+  host: {
+    coarseBpPerPx: number
+    namesFeatures?: boolean
+    showsCanvasOnly?: boolean
+  }
   rpcDataMap: ReadonlyMap<
     number,
     { flatbushItems: readonly { featureId: string; gene?: boolean }[] }
@@ -301,6 +309,17 @@ export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
 
     /**
      * #getter
+     * The px above each facet section's first row: its chip's row, or a gap
+     * on a host that draws no chips.
+     */
+    get sectionHeadPx() {
+      return self.host.showsCanvasOnly
+        ? CHIPLESS_SECTION_GAP_PX
+        : GROUP_LABEL_HEIGHT
+    },
+
+    /**
+     * #getter
      * Layout inputs shared by the base layout and every fit rung,
      * `expandedGeneIds` included: a rung inheriting them without the
      * exemption re-collapses the gene the user just opened.
@@ -312,6 +331,7 @@ export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
         pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
         expandedGeneIds: self.expandedGeneIdSet,
         facet: self.facet,
+        sectionHeadPx: this.sectionHeadPx,
         hiddenGroupKeys: self.hiddenGroups,
         geneNamesOnly: this.geneNamesOnly,
       }

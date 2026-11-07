@@ -10,6 +10,7 @@ import { boundBandHeight, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   sameAsLast,
   stableIdentityComputed,
@@ -697,6 +698,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     get facet() {
       return self.recordsFacet
     },
+    sectionHeadPx: GROUP_LABEL_HEIGHT,
     get fitMeasureFeatureIds() {
       return self.recordsMeasureIds
     },

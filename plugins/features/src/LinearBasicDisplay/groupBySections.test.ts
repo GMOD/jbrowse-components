@@ -1,6 +1,10 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import {
+  CHIPLESS_SECTION_GAP_PX,
+  GROUP_LABEL_HEIGHT,
+} from '@jbrowse/display-kit/groupLabelStyle'
+import { getRoot, unprotect } from '@jbrowse/mobx-state-tree'
 
 import {
   makeFeatureData,
@@ -56,6 +60,22 @@ test('grouping by strand stacks two labelled sections', () => {
 
   display.facetByField('')
   expect(display.groupSections).toEqual([])
+})
+
+test('on a host drawing no chips, sections part by a gap in place of the chip row', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.facetByField('strand')
+  const chipTops = display.groupSections.map(s => s.top)
+
+  unprotect(getRoot(display))
+  Object.defineProperty(display.host, 'showsCanvasOnly', { value: true })
+  const gapTops = display.groupSections.map(s => s.top)
+  expect(gapTops[0]).toBe(0)
+  expect(gapTops[1]).toBe(
+    chipTops[1]! - (GROUP_LABEL_HEIGHT - CHIPLESS_SECTION_GAP_PX),
+  )
 })
 
 test('a strand domain reorders the strands', () => {
