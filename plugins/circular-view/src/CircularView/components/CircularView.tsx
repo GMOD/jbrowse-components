@@ -418,6 +418,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
           onDismiss={() => {
             model.setShowLegend(false)
           }}
+          onDismissSection={id => {
+            model.dismissLegendSection(id)
+          }}
         />
       ) : null}
       {hideVerticalResizeHandle ? null : (

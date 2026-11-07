@@ -468,3 +468,15 @@ describe('the height a view opens at', () => {
     expect(view.height).toBe(450)
   })
 })
+
+test('a closed section of the key stays closed until the key is shown again', () => {
+  const view = createView({ regions: [region('chr1', 1000)] })
+  view.setShowLegend(true)
+  view.dismissLegendSection('track0-color')
+  view.dismissLegendSection('tracks')
+  expect(view.dismissedLegendSections).toEqual(['track0-color', 'tracks'])
+  view.setShowLegend(false)
+  expect(view.dismissedLegendSections).toEqual(['track0-color', 'tracks'])
+  view.setShowLegend(true)
+  expect(view.dismissedLegendSections).toEqual([])
+})

@@ -460,6 +460,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       panY: 0,
       /**
        * #volatile
+       * ids of the key's sections the reader closed, cleared when the key is
+       * shown again
+       */
+      dismissedLegendSections: [] as string[],
+      /**
+       * #volatile
        * the strip every linear display in this view lays out along, and the
        * rings drawn from it — see `regionHost`
        */
@@ -1235,6 +1241,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowLegend(flag: boolean) {
         setConf(self.legend, 'show', flag)
+        if (flag) {
+          self.dismissedLegendSections = []
+        }
+      },
+      /**
+       * #action
+       * close one section of the key, leaving the others up
+       */
+      dismissLegendSection(id: string) {
+        self.dismissedLegendSections = [...self.dismissedLegendSections, id]
       },
       /**
        * #action
@@ -1663,10 +1679,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       legendSpecIn(palette?: JBrowsePalette): LegendSpec {
         const { sections } = circularLegendSpec(self, palette)
-        return circularKey(
+        const all =
           self.chordSyntenyDisplays.length > 0 && self.hasLegendKey
             ? [...sections, ...legendSpecOf(self.colorScales).sections]
-            : sections,
+            : sections
+        return circularKey(
+          all.filter(s => !self.dismissedLegendSections.includes(s.id)),
         )
       },
       /**
