@@ -19,9 +19,9 @@ const useStyles = makeStyles()({
 const CHROMOSOME_FILTER_HELP =
   'Sequence names to keep, comma separated. A name may be a glob: *_MATERNAL ' +
   'takes every sequence whose name ends that way, and chr1* every one that ' +
-  "starts with it. chromosomes takes the assembly's chromosomes and * every " +
-  'sequence. Empty shows the chromosomes, or every sequence where the ' +
-  'assembly does not list them.'
+  'starts with it. genome takes the whole genome (the assembled molecules, ' +
+  'where the assembly lists them) and * every sequence. Empty shows the ' +
+  'whole genome.'
 
 /**
  * The subset of an assembly one axis (dotplot) or one row (linear synteny)

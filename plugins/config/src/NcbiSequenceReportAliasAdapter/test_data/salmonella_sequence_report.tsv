@@ -1,0 +1,4 @@
+Assembly Accession	GenBank seq accession	Molecule type	RefSeq seq accession	Role	Sequence name	UCSC style name
+GCF_000006945.2	AE006468.2	Chromosome	NC_003197.2	assembled-molecule	chromosome	
+GCF_000006945.2	AE006471.2	Plasmid	NC_003277.2	assembled-molecule	pSLT	
+GCF_000006945.2				unplaced-scaffold	unplaced_1	

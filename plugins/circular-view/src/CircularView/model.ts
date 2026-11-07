@@ -242,7 +242,7 @@ async function applyInit(
           assemblyName,
           getCanonicalRefName: assembly.getCanonicalRefName2,
           allRefNames: assembly.allRefNames,
-          chromosomes: assembly.chromosomes,
+          genome: whole,
           notify: message => {
             session.notify(message, 'warning')
           },

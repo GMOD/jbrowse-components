@@ -92,8 +92,8 @@ One linear genome view, from a handful of parameters:
 Restricts the whole-genome overview to this subset of the assembly's
 chromosomes, in this order, for dropping unplaced contigs or reordering. Names
 resolve through the assembly's aliases and take [globs](#glob-region-names) and
-[`chromosomes`](#the-chromosomes-entry). It requires `&assembly=`, is ignored
-when `&loc=` is set, and is the simple-URL form of the spec's
+[`genome`](#the-genome-entry). It requires `&assembly=`, is ignored when `&loc=`
+is set, and is the simple-URL form of the spec's
 [`displayedRegionNames`](#fields-every-view-takes).
 
 ### &highlight=
@@ -386,24 +386,23 @@ covers sixteen scaffolds in one entry and survives the assembly being rebuilt.
   `chrUn_GL000195v1` and `chr1_KI270706v1_random`, while `chr1*` takes `chr10`
   through `chr19`. Globs suit name families an assembly separates (`*_hap1`,
   `*_MATERNAL`, `*_alt`); a main-chromosome subset is best written as a list, or
-  as [`chromosomes`](#the-chromosomes-entry).
+  as [`genome`](#the-genome-entry).
 - The dotplot and synteny import forms put the same syntax in a text box beside
   each assembly.
 
-#### The chromosomes entry
+#### The genome entry
 
-The entry `chromosomes` names an assembly's nuclear chromosomes, in assembly
-order, where its `refNameAliases` is an NCBI sequence report
-(`sequence_report.tsv` or `_assembly_report.txt`): the sequences it calls
-assembled molecules of type Chromosome or Linkage Group. Unlocalized and
-unplaced scaffolds, alts, patches and organelles are left out, so
-`["chromosomes", "chrM"]` adds the mitochondrion.
+The entry `genome` names an assembly's whole genome, in assembly order. Where
+its `refNameAliases` is an NCBI sequence report (`sequence_report.tsv` or
+`_assembly_report.txt`), that is the sequences the report calls assembled
+molecules: chromosomes and linkage groups, plasmids, organelle genomes and
+segments. Unlocalized and unplaced scaffolds, alts and patches are left out, so
+`["genome", "chrUn_GL000195v1"]` adds one unplaced scaffold.
 
 - A whole-genome view given no names opens the same set, and `["*"]` opens every
   sequence.
-- On an assembly whose aliases state no roles, `chromosomes` matches no
-  sequence, and JBrowse reports that.
-- A contig really named `chromosomes` wins, as an exact name beats a glob.
+- On an assembly whose aliases state no roles, `genome` names every sequence.
+- A contig really named `genome` wins, as an exact name beats a glob.
 
 #### Advanced track configuration
 

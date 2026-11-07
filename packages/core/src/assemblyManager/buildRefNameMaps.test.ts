@@ -1,4 +1,4 @@
-import { buildRefNameMaps, isChromosome } from './refNameMaps.ts'
+import { buildRefNameMaps, isAssembledMolecule } from './refNameMaps.ts'
 
 // chromAlias-style: refName column matches the FASTA, no override flag
 test('chromAlias-style aliases map every alias to the refName column', () => {
@@ -99,12 +99,17 @@ test('a chromAlias row states no role', () => {
 test.each([
   [{ role: 'assembled-molecule', molecule: 'Chromosome' }, true],
   [{ role: 'assembled-molecule', molecule: 'Linkage Group' }, true],
-  [{ role: 'assembled-molecule', molecule: 'Mitochondrion' }, false],
-  [{ role: 'unlocalized-scaffold', molecule: 'Chromosome' }, false],
+  [{ role: 'assembled-molecule', molecule: 'Plasmid' }, true],
+  [{ role: 'assembled-molecule', molecule: 'Chloroplast' }, true],
+  [{ role: 'assembled-molecule', molecule: 'Mitochondrion' }, true],
+  [{ role: 'assembled-molecule', molecule: 'Segment' }, true],
+  [{ role: 'assembled-molecule' }, true],
   [{ role: 'unplaced-scaffold', molecule: 'Chromosome' }, false],
+  [{ role: 'unlocalized-scaffold', molecule: 'Chromosome' }, false],
   [{ role: 'alt-scaffold', molecule: 'Chromosome' }, false],
-  [{ role: 'assembled-molecule' }, false],
+  [{ role: 'novel-patch', molecule: 'Chromosome' }, false],
+  [{ role: 'fix-patch', molecule: 'Chromosome' }, false],
   [undefined, false],
-])('isChromosome(%o) is %s', (sequence, expected) => {
-  expect(isChromosome(sequence)).toBe(expected)
+])('isAssembledMolecule(%o) is %s', (sequence, expected) => {
+  expect(isAssembledMolecule(sequence)).toBe(expected)
 })

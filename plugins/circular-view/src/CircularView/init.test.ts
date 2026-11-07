@@ -168,3 +168,42 @@ test('returning to the import form drops the tracks and the error', async () => 
   expect(view.error).toBeUndefined()
   expect(view.showImportForm).toBe(true)
 })
+
+test("a bacterium's circle keeps its plasmid and leaves out the unplaced scaffold", async () => {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'LT2',
+    sequence: {
+      trackId: 'LT2_refseq',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: ['chromosome', 'pSLT', 'unplaced_1'].map(refName => ({
+          refName,
+          uniqueId: refName,
+          start: 0,
+          end: 16000,
+        })),
+      },
+    },
+    refNameAliases: {
+      adapter: {
+        type: 'NcbiSequenceReportAliasAdapter',
+        location: {
+          localPath:
+            require.resolve('../../../config/src/NcbiSequenceReportAliasAdapter/test_data/salmonella_sequence_report.tsv'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    },
+  })
+  const view = (await session.launchView('CircularView', {
+    assembly: 'LT2',
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.displayedRegions.length > 0)
+  expect(view.displayedRegions.map(r => r.refName)).toEqual([
+    'chromosome',
+    'pSLT',
+  ])
+})

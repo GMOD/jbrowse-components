@@ -1,6 +1,11 @@
 import { zoomMenuItems } from './menuItems.ts'
 import { showWholeGenomeLabel } from './showWholeGenome.ts'
-import { contigs, openHg38View } from './wholeGenome.fixture.ts'
+import {
+  contigs,
+  openHg38View,
+  openSalmonellaView,
+  salmonellaContigs,
+} from './wholeGenome.fixture.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -33,26 +38,41 @@ function click(items: MenuItem[], label: string) {
   }
 }
 
-test('an assembly whose sequence report states roles shows its chromosomes', async () => {
+test('an assembly whose sequence report states roles shows its assembled molecules', async () => {
   expect(await showWholeGenome(true)).toEqual({
-    shown: ['chr1', 'chr2'],
-    label: 'Show all chromosomes',
+    shown: ['chr1', 'chr2', 'chrM'],
+    label: 'Show whole genome (chromosomes, mitochondrion)',
   })
 })
 
 test('an assembly stating no roles shows every region', async () => {
   expect(await showWholeGenome(false)).toEqual({
     shown: contigs,
-    label: 'Show all regions in assembly',
+    label: 'Show whole genome',
   })
 })
 
-test('the view menu offers every region beside the chromosomes they leave out', async () => {
+test("a bacterium's whole genome keeps its plasmid and leaves out the unplaced scaffold", async () => {
+  const { view, assembly } = await openSalmonellaView()
+  view.showAllRegionsInAssembly('LT2')
+  expect(view.displayedRegions.map(r => r.refName)).toEqual([
+    'chromosome',
+    'pSLT',
+  ])
+  const show = labels(subMenuOf(view.menuItems(), 'Show'))
+  expect(show.slice(0, 2)).toEqual([
+    'Show whole genome (chromosome, plasmid)',
+    `Show all ${salmonellaContigs.length} regions`,
+  ])
+  expect(showWholeGenomeLabel(assembly)).toBe(show[0])
+})
+
+test('the view menu offers every region beside the whole genome that leaves some out', async () => {
   const { view } = await openHg38View({ withReport: true })
   view.showAllRegionsInAssembly('hg38')
   const show = subMenuOf(view.menuItems(), 'Show')
   expect(labels(show).slice(0, 2)).toEqual([
-    'Show all chromosomes',
+    'Show whole genome (chromosomes, mitochondrion)',
     'Show all 6 regions',
   ])
   click(show, 'Show all 6 regions')
@@ -63,15 +83,17 @@ test('the zoom menu offers the same two rows', async () => {
   const { view } = await openHg38View({ withReport: true })
   view.showAllRegionsInAssembly('hg38')
   expect(labels(zoomMenuItems(view))).toEqual(
-    expect.arrayContaining(['Show all chromosomes', 'Show all 6 regions']),
+    expect.arrayContaining([
+      'Show whole genome (chromosomes, mitochondrion)',
+      'Show all 6 regions',
+    ]),
   )
 })
 
-test('with no chromosomes to leave regions out, the view menu keeps one row', async () => {
+test('with a whole genome that is every region, the view menu keeps one row', async () => {
   const { view } = await openHg38View({ withReport: false })
   view.showAllRegionsInAssembly('hg38')
   const show = labels(subMenuOf(view.menuItems(), 'Show'))
-  expect(show).toContain('Show all regions in assembly')
+  expect(show).toContain('Show whole genome')
   expect(show).not.toContain('Show all 6 regions')
-  expect(show).not.toContain('Show all chromosomes')
 })

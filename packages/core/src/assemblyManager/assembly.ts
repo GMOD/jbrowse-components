@@ -27,7 +27,7 @@ import { refNameMapKey } from './refNameMapKey.ts'
 import {
   buildRefNameMaps,
   canonicalRefNameIn,
-  isChromosome,
+  isAssembledMolecule,
   checkRefName,
   groupNamesByCanonicalRefName,
   refNameIndexOf,
@@ -550,25 +550,19 @@ export default function assemblyFactory(
       },
       /**
        * #getter
-       * the nuclear chromosomes, in assembly order: the regions whose alias
-       * source states them assembled chromosomes or linkage groups. Empty when
-       * it states no roles, and before the regions load.
-       */
-      get chromosomes() {
-        const roles = self.sequenceRoles
-        return roles
-          ? (self.regions ?? []).filter(r => isChromosome(roles.get(r.refName)))
-          : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * what a view of the whole genome shows: the chromosomes where the
-       * assembly knows them, else every region. Empty before the regions load.
+       * what a view of the whole genome shows, in assembly order: the assembled
+       * molecules (chromosomes, linkage groups, plasmids, organelle genomes,
+       * segments) where the alias source states each sequence's role, leaving
+       * out unplaced, unlocalized, alt and patch scaffolds; else every region.
+       * Empty before the regions load.
        */
       get wholeGenomeRegions() {
-        return self.chromosomes.length ? self.chromosomes : (self.regions ?? [])
+        const regions = self.regions ?? []
+        const roles = self.sequenceRoles
+        const molecules = roles
+          ? regions.filter(r => isAssembledMolecule(roles.get(r.refName)))
+          : []
+        return molecules.length ? molecules : regions
       },
     }))
     .views(self => ({

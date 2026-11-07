@@ -24,20 +24,24 @@ async function renderButton({
   return { view, ...utils }
 }
 
-test('the dropdown at its end shows every region the chromosomes leave out', async () => {
+test('the dropdown at its end shows every region the whole genome leaves out', async () => {
   const { view, getByText, getByTestId, findByText } = await renderButton({
     withReport: true,
   })
-  getByText('Show all chromosomes')
+  getByText('Show whole genome (chromosomes, mitochondrion)')
   fireEvent.click(getByTestId('show-whole-genome-more'))
   fireEvent.click(await findByText('Show all 6 regions'))
   expect(view.displayedRegions.map(r => r.refName)).toEqual(contigs)
 })
 
-test('the button itself shows the chromosomes', async () => {
+test('the button itself shows the whole genome', async () => {
   const { view, getByText } = await renderButton({ withReport: true })
-  fireEvent.click(getByText('Show all chromosomes'))
-  expect(view.displayedRegions.map(r => r.refName)).toEqual(['chr1', 'chr2'])
+  fireEvent.click(getByText('Show whole genome (chromosomes, mitochondrion)'))
+  expect(view.displayedRegions.map(r => r.refName)).toEqual([
+    'chr1',
+    'chr2',
+    'chrM',
+  ])
 })
 
 test('a disabled button disables its dropdown too', async () => {
@@ -45,12 +49,14 @@ test('a disabled button disables its dropdown too', async () => {
     withReport: true,
     disabled: true,
   })
-  expect(getByText('Show all chromosomes')).toHaveProperty('disabled', true)
+  expect(
+    getByText('Show whole genome (chromosomes, mitochondrion)'),
+  ).toHaveProperty('disabled', true)
   expect(getByTestId('show-whole-genome-more')).toHaveProperty('disabled', true)
 })
 
 test('an assembly stating no roles gets a plain button with no dropdown', async () => {
   const { getByText, queryByTestId } = await renderButton({ withReport: false })
-  getByText('Show all regions in assembly')
+  getByText('Show whole genome')
   expect(queryByTestId('show-whole-genome-more')).toBeNull()
 })

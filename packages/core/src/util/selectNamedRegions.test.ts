@@ -178,38 +178,42 @@ describe('selectNamedRegions', () => {
     ).toEqual(['HLA-A*24:01:01:01'])
   })
 
-  describe('the chromosomes entry', () => {
+  describe('the genome entry', () => {
     const hg38 = [
       region('chr1'),
       region('chr1_KI270706v1_random'),
       region('chr2'),
       region('chrM'),
     ]
-    const [chr1, , chr2] = hg38
+    const [chr1, , chr2, chrM] = hg38
     const pick = (names: string[], regions = hg38) =>
       selectNamedRegions(regions, names, identity, undefined, [
         chr1!,
         chr2!,
+        chrM!,
       ]).map(r => r.refName)
 
-    it('names the assembly chromosomes in assembly order', () => {
-      expect(pick(['Chromosomes'])).toEqual(['chr1', 'chr2'])
+    it('names the whole genome in assembly order', () => {
+      expect(pick(['Genome'])).toEqual(['chr1', 'chr2', 'chrM'])
     })
 
-    it('takes other entries beside it, so organelles are opted in by name', () => {
-      expect(pick(['chromosomes', 'chrM'])).toEqual(['chr1', 'chr2', 'chrM'])
-    })
-
-    it('loses to a contig really named chromosomes', () => {
-      expect(pick(['chromosomes'], [...hg38, region('chromosomes')])).toEqual([
-        'chromosomes',
+    it('takes other entries beside it, so a scaffold is opted in by name', () => {
+      expect(pick(['genome', 'chr1_KI270706v1_random'])).toEqual([
+        'chr1',
+        'chr2',
+        'chrM',
+        'chr1_KI270706v1_random',
       ])
     })
 
-    it('names nothing where the assembly states no roles', () => {
+    it('loses to a contig really named genome', () => {
+      expect(pick(['genome'], [...hg38, region('genome')])).toEqual(['genome'])
+    })
+
+    it('names every region where the caller passes no whole genome', () => {
       expect(
-        selectNamedRegions(hap, ['chromosomes'], identity).map(r => r.refName),
-      ).toEqual([])
+        selectNamedRegions(hap, ['genome'], identity).map(r => r.refName),
+      ).toEqual(hap.map(r => r.refName))
     })
   })
 })
@@ -267,30 +271,6 @@ describe('resolveNamedRegions', () => {
     expect(
       resolve(['chr1_hap1', 'nope'], m => said.push(m))?.map(r => r.refName),
     ).toEqual(['chr1_hap1'])
-    expect(said).toEqual([])
-  })
-
-  it('says why chromosomes named nothing on an assembly with none', () => {
-    const said: string[] = []
-    expect(
-      resolve(['chromosomes', 'chrUn'], m => said.push(m))?.map(r => r.refName),
-    ).toEqual(['chrUn'])
-    expect(said).toEqual([
-      'asm has no sequences its refNameAliases calls chromosomes; an NCBI sequence report states which are',
-    ])
-  })
-
-  it('says nothing when a contig really named chromosomes answered', () => {
-    const said: string[] = []
-    expect(
-      resolveNamedRegions({
-        regions: [...hap, region('chromosomes')],
-        names: ['chromosomes'],
-        assemblyName: 'asm',
-        getCanonicalRefName: identity,
-        notify: m => said.push(m),
-      })?.map(r => r.refName),
-    ).toEqual(['chromosomes'])
     expect(said).toEqual([])
   })
 })

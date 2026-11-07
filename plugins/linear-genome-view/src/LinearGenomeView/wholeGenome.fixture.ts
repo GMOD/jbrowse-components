@@ -2,8 +2,11 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 
 import type { LinearGenomeViewModel } from './index.ts'
 
-const report =
-  require.resolve('../../../config/src/NcbiSequenceReportAliasAdapter/test_data/sequence_report.tsv')
+function testReport(file: string) {
+  return require.resolve(
+    `../../../config/src/NcbiSequenceReportAliasAdapter/test_data/${file}`,
+  )
+}
 
 export const contigs = [
   'chr1',
@@ -14,16 +17,26 @@ export const contigs = [
   'chr1_GL383518v1_alt',
 ]
 
-export async function openHg38View({ withReport }: { withReport: boolean }) {
+export const salmonellaContigs = ['chromosome', 'pSLT', 'unplaced_1']
+
+async function openView({
+  name,
+  refNames,
+  report,
+}: {
+  name: string
+  refNames: string[]
+  report?: string
+}) {
   const session = createTestSession()
   session.addAssemblyConf({
-    name: 'hg38',
+    name,
     sequence: {
-      trackId: 'hg38-seq',
+      trackId: `${name}-seq`,
       type: 'ReferenceSequenceTrack',
       adapter: {
         type: 'FromConfigSequenceAdapter',
-        features: contigs.map(refName => ({
+        features: refNames.map(refName => ({
           refName,
           uniqueId: refName,
           start: 0,
@@ -31,13 +44,13 @@ export async function openHg38View({ withReport }: { withReport: boolean }) {
         })),
       },
     },
-    ...(withReport
+    ...(report
       ? {
           refNameAliases: {
             adapter: {
               type: 'NcbiSequenceReportAliasAdapter',
               location: {
-                localPath: report,
+                localPath: testReport(report),
                 locationType: 'LocalPathLocation',
               },
             },
@@ -45,8 +58,24 @@ export async function openHg38View({ withReport }: { withReport: boolean }) {
         }
       : {}),
   })
-  const assembly = await session.assemblyManager.waitForAssembly('hg38')
+  const assembly = await session.assemblyManager.waitForAssembly(name)
   const view = session.addView('LinearGenomeView', {}) as LinearGenomeViewModel
   view.setWidth(800)
   return { view, assembly }
+}
+
+export function openHg38View({ withReport }: { withReport: boolean }) {
+  return openView({
+    name: 'hg38',
+    refNames: contigs,
+    report: withReport ? 'sequence_report.tsv' : undefined,
+  })
+}
+
+export function openSalmonellaView() {
+  return openView({
+    name: 'LT2',
+    refNames: salmonellaContigs,
+    report: 'salmonella_sequence_report.tsv',
+  })
 }

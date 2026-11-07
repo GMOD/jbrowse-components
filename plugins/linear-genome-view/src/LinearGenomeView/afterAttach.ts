@@ -102,7 +102,7 @@ function showNamedRegions(
       assemblyName,
       getCanonicalRefName: assembly.getCanonicalRefName2,
       allRefNames: assembly.allRefNames,
-      chromosomes: assembly.chromosomes,
+      genome: assembly.wholeGenomeRegions,
       notify: message => {
         session.notify(message, 'warning')
       },

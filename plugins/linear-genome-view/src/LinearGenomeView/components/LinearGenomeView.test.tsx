@@ -75,5 +75,5 @@ test('import form renders before the view width is measured', async () => {
 
   // the assembly selector and Open button render regardless
   await findByText('Open', {}, { timeout: 10000 })
-  await findByText('Show all regions in assembly')
+  await findByText('Show whole genome')
 }, 15000)

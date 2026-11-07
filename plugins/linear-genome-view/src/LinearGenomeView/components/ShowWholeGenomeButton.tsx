@@ -18,8 +18,7 @@ const DropDownHalf = observer(function DropDownHalf(props: ButtonProps) {
 
 /**
  * The import form's way into the whole genome. Where the assembly's whole
- * genome is its chromosomes and leaves regions out, a dropdown at its end
- * shows every region instead.
+ * genome leaves regions out, a dropdown at its end shows every region instead.
  */
 const ShowWholeGenomeButton = observer(function ShowWholeGenomeButton({
   model,

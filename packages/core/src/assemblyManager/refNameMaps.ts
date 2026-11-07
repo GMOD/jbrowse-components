@@ -42,16 +42,12 @@ export interface RefNameMaps {
 }
 
 /**
- * A nuclear chromosome as NCBI states it: an assembled molecule whose type is a
- * chromosome or a linkage group. Unlocalized and unplaced scaffolds, alts,
- * patches and organelles are not.
+ * A sequence NCBI states is an assembled molecule: a chromosome, linkage group,
+ * plasmid, organelle genome or segment. Unlocalized and unplaced scaffolds,
+ * alts and patches are not.
  */
-export function isChromosome(sequence: SequenceRole | undefined) {
-  return (
-    sequence?.role === 'assembled-molecule' &&
-    (sequence.molecule === 'Chromosome' ||
-      sequence.molecule === 'Linkage Group')
-  )
+export function isAssembledMolecule(sequence: SequenceRole | undefined) {
+  return sequence?.role === 'assembled-molecule'
 }
 
 // Build the alias/name lookups used throughout the model from the sequence

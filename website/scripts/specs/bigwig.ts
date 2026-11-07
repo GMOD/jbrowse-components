@@ -274,19 +274,19 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show', 'Show all regions in assembly']),
+          ...menuCascade(['Show', 'Show whole genome']),
         ],
         annotations: [
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show', 'Show all regions in assembly']),
+          ...cascadeBoxes(['Show', 'Show whole genome']),
         ],
       },
       {
         actions: [
-          { type: 'click', text: 'Show all regions in assembly' },
+          { type: 'click', text: 'Show whole genome' },
           {
             type: 'waitForSelector',
             selector: displayPainted('wiggle-display'),

@@ -69,9 +69,13 @@ assembly uses `1`, and JBrowse matches by exact name. `refNameAliases` points at
 a tab-separated file, one row per sequence, primary name first. UCSC
 [chromAlias files](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
 are that format; an NCBI `sequence_report.tsv` or `_assembly_report.txt` goes
-through `NcbiSequenceReportAliasAdapter`.
-[](/docs/developer_guides/refname_aliasing) has the adapters and how to see, in
-the reference track's About dialog, which names resolved.
+through `NcbiSequenceReportAliasAdapter`. A sequence report also states each
+sequence's role, so a whole-genome view of that assembly opens its assembled
+molecules (chromosomes, plasmids, organelle genomes) and leaves out its
+unplaced, unlocalized, alt and patch scaffolds, which **Show all _N_ regions**
+in the view menu adds. [](/docs/developer_guides/refname_aliasing) has the
+adapters and how to see, in the reference track's About dialog, which names
+resolved.
 
 ## Configuring alternative genetic codes (translation tables)
 

@@ -43,7 +43,6 @@ type SyntenyLaunch = LaunchInput<LinearSyntenyViewCommands> & {
 function rowRegions(
   asm: {
     regions?: Region[]
-    chromosomes: Region[]
     wholeGenomeRegions: Region[]
     allRefNames?: string[]
     getCanonicalRefName2: (n: string) => string
@@ -67,7 +66,7 @@ function rowRegions(
       assemblyName,
       getCanonicalRefName: asm.getCanonicalRefName2,
       allRefNames: asm.allRefNames,
-      chromosomes: asm.chromosomes,
+      genome: all,
       notify,
     }) ?? all
   )

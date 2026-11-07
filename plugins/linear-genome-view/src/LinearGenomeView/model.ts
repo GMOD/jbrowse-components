@@ -2954,16 +2954,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #action
-         * the assembly's whole genome: its chromosomes where it knows them,
-         * else every region (`Assembly.wholeGenomeRegions`)
+         * the assembly's whole genome: its assembled molecules where it knows
+         * them, else every region (`Assembly.wholeGenomeRegions`)
          */
         showAllRegionsInAssembly(assemblyName?: string) {
           showRegionsOfAssembly(assemblyName, a => a.wholeGenomeRegions)
         },
         /**
          * #action
-         * every region of the assembly, the alt and unplaced contigs a
-         * chromosome-only whole genome leaves out included
+         * every region of the assembly, the alt and unplaced contigs the whole
+         * genome leaves out included
          */
         showEveryRegionInAssembly(assemblyName?: string) {
           showRegionsOfAssembly(assemblyName, a => a.regions ?? [])

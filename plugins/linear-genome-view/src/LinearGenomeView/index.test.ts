@@ -162,9 +162,6 @@ function initialize() {
       },
       // volvox's aliases state no sequence roles, so its whole genome is every
       // region
-      get chromosomes() {
-        return []
-      },
       get wholeGenomeRegions() {
         return self.regions
       },
