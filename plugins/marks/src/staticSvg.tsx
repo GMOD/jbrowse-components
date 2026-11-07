@@ -1,3 +1,7 @@
+import {
+  DEFAULT_BYTE_LIMIT,
+  overByteLimitError,
+} from '@jbrowse/core/data_adapters/tables'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { executeGetEncodedLayers } from '@jbrowse/core/rpc/methods/executeEncodedLayers'
 import { renderDisplaySvgInFrame } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -42,6 +46,8 @@ export interface StaticMarkSvgArgs {
   /** The id the display's SVG ids are built from, unique in the document. */
   id?: string
   opts?: ExportSvgDisplayOptions
+  /** The most compressed bytes a region may need. 200 MB by default. */
+  byteLimit?: number
 }
 
 /**
@@ -73,6 +79,7 @@ export async function staticMarkSvg(
     frame,
     id = 'static-mark',
     opts,
+    byteLimit = DEFAULT_BYTE_LIMIT,
   }: StaticMarkSvgArgs,
 ) {
   const model = createMarkStaticHost(pluginManager, {
@@ -108,12 +115,18 @@ export async function staticMarkSvg(
           args: {
             ...asked,
             region,
+            byteLimit,
             sessionId: id,
             statusCallback: () => {},
           },
         })
         if (isRegionRefused(result)) {
-          throw new Error(`region ${region.refName} is too large to export`)
+          throw overByteLimitError(
+            [region],
+            result.bytes,
+            byteLimit,
+            'features',
+          )
         }
         const payload: MarkRegionData = {
           ...storedRegionData(result.value),

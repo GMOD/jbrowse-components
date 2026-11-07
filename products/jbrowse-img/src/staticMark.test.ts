@@ -360,3 +360,14 @@ test.each(cases)(
   },
   60000,
 )
+
+test('a region over the byte limit is refused, as the features export refuses it', async () => {
+  await expect(
+    staticMarkSvg(pluginManager, {
+      adapterConfig: vcf.adapter,
+      display: pointsByRef,
+      frame: staticLgvFrame({ displayedRegions: [ctgA], width, ...window }),
+      byteLimit: 1,
+    }),
+  ).rejects.toThrow(/over the 1-byte limit/)
+})
