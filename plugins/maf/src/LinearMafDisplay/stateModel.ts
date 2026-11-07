@@ -1,7 +1,7 @@
 import {
   buildCoverageTooltipBin,
-  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
+  coverageAutoscaleViews,
   coverageDepthDomain,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
@@ -62,7 +62,6 @@ import {
   ScoreScaleMixin,
   resolveSymlogConstant,
   visibleStats,
-  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -1098,42 +1097,8 @@ export default function stateModelFactory(
             accumulate: entries => computeVisibleCoverageStats(entries),
           })
         },
-        /**
-         * #getter
-         * `ScoreScaleMixin`'s hook: the depth range over the visible content
-         * blocks, widened to the `coverage.encoding.y` rules.
-         */
-        get autoscaleRange(): [number, number] | undefined {
-          const walked = this.statsInView
-          return walked
-            ? widenRangeToRules(
-                computeVisibleCoverageDomain({
-                  stats: walked.stats,
-                  quantile: self.fenceQuantile,
-                  entries: walked.entries,
-                }),
-                self.scoreRules.map(rule => rule.value),
-              )
-            : undefined
-        },
-        /**
-         * #getter
-         * The least and greatest depth in view, unfenced.
-         */
-        get valuesInView(): [number, number] | undefined {
-          const walked = this.statsInView
-          return walked
-            ? [walked.stats.scoreMin, walked.stats.scoreMax]
-            : undefined
-        },
-        /**
-         * #getter
-         * Depth floors at 0 while the axis reaches zero.
-         */
-        get defaultScoreDomain(): [number | undefined, number | undefined] {
-          return [self.scaleZero ? 0 : undefined, undefined]
-        },
       }))
+      .views(self => coverageAutoscaleViews(self))
       .views(self => ({
         /**
          * #getter

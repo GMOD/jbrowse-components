@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { coverageAutoscaleViews } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
   coverageBandSlotActions,
@@ -115,7 +116,6 @@ import {
 } from './configSlotViews.ts'
 import {
   bandPlotViews,
-  coverageAutoscaleViews,
   coverageDomainViews,
   coverageStatsViews,
   coverageTicksViews,

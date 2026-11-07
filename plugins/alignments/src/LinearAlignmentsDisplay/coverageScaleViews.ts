@@ -1,16 +1,13 @@
 import {
   computeCoverageTicks,
-  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
-  coverageDefaultDomain,
   coverageDepthDomain,
 } from '@jbrowse/alignments-core'
 import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
-import { visibleStats, widenRangeToRules } from '@jbrowse/wiggle-core'
+import { visibleStats } from '@jbrowse/wiggle-core'
 
 import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
-import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { SettledBlocksView } from '@jbrowse/wiggle-core'
 
 /** What {@link bandPlotViews} reads: the fit target and whether the pileup shows. */
@@ -66,58 +63,6 @@ export function coverageStatsViews(self: CoverageStatsHost) {
             .map(({ data }) => data),
         accumulate: entries => computeVisibleCoverageStats(entries),
       })
-    },
-  }
-}
-
-/** What {@link coverageAutoscaleViews} reads: the stats and the y scale. */
-export interface CoverageAutoscaleHost {
-  statsInView: ReturnType<typeof coverageStatsViews>['statsInView']
-  fenceQuantile: number
-  scoreRules: ValueScaleRule[]
-  scaleZero: boolean
-}
-
-/**
- * `ScoreAxisMixin`'s hooks for the coverage band, from which its
- * `autoscaledDomain` resolves.
- */
-export function coverageAutoscaleViews(self: CoverageAutoscaleHost) {
-  return {
-    /**
-     * #getter
-     * The depth every SHOWN group spans, so stacked sections share a
-     * scale.
-     */
-    get autoscaleRange(): [number, number] | undefined {
-      const walked = self.statsInView
-      return walked
-        ? widenRangeToRules(
-            computeVisibleCoverageDomain({
-              stats: walked.stats,
-              quantile: self.fenceQuantile,
-              entries: walked.entries,
-            }),
-            self.scoreRules.map(rule => rule.value),
-          )
-        : undefined
-    },
-    /**
-     * #getter
-     * The least and greatest depth in view, unfenced.
-     */
-    get valuesInView(): [number, number] | undefined {
-      const walked = self.statsInView
-      return walked ? [walked.stats.scoreMin, walked.stats.scoreMax] : undefined
-    },
-    /**
-     * #getter
-     * Depth has a floor of 0 while the axis reaches it, so an unpinned
-     * bottom stays there whatever a rule below it asks for; with
-     * `coverage.encoding.y.scale.zero` off it spans the depths in view.
-     */
-    get defaultScoreDomain(): [number | undefined, number | undefined] {
-      return coverageDefaultDomain(self.scaleZero)
     },
   }
 }

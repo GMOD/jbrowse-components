@@ -18,6 +18,7 @@ import {
   readNameAt,
   readModCovSegments,
   readSnpSegments,
+  coverageAutoscaleViews,
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
@@ -93,7 +94,6 @@ import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/c
 import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
 import {
   bandPlotViews,
-  coverageAutoscaleViews,
   coverageDomainViews,
   coverageStatsViews,
   coverageTicksViews,

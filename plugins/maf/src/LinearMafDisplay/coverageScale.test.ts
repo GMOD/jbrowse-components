@@ -1,3 +1,4 @@
+import { coverageDefaultDomain } from '@jbrowse/alignments-core'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { COVERAGE_AXIS_LABEL } from '@jbrowse/wiggle-core'
@@ -46,6 +47,18 @@ test('a default band is linear from zero, every mismatch and insertion drawn', (
     showInterbase: true,
   })
   expect(display.axes[0]!.domain).toEqual(domain)
+})
+
+test("the band's default domain and values in view are the alignments coverage band's", () => {
+  const display = displayWith()
+  expect(display.defaultScoreDomain).toEqual(coverageDefaultDomain(true))
+  expect(display.valuesInView).toEqual([10, 16])
+  display.setScaleZero(false)
+  expect(display.defaultScoreDomain).toEqual(coverageDefaultDomain(false))
+  expect(
+    displayWith({ coverage: { encoding: { y: { scale: { zero: false } } } } })
+      .resolvedDomainMin,
+  ).toBeUndefined()
 })
 
 test('the y scale reaches the band, its axis and its marks alike', () => {
