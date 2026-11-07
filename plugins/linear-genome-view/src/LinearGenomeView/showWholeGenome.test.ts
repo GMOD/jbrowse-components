@@ -41,7 +41,7 @@ function click(items: MenuItem[], label: string) {
 test('an assembly whose sequence report states roles shows its assembled molecules', async () => {
   expect(await showWholeGenome(true)).toEqual({
     shown: ['chr1', 'chr2', 'chrM'],
-    label: 'Show whole genome (chromosomes, mitochondrion)',
+    label: 'Show whole genome (chromosomes, mitochondria)',
   })
 })
 
@@ -61,7 +61,7 @@ test("a bacterium's whole genome keeps its plasmid and leaves out the unplaced s
   ])
   const show = labels(subMenuOf(view.menuItems(), 'Show'))
   expect(show.slice(0, 2)).toEqual([
-    'Show whole genome (chromosome, plasmid)',
+    'Show whole genome (chromosomes, plasmids)',
     `Show all ${salmonellaContigs.length} regions`,
   ])
   expect(showWholeGenomeLabel(assembly)).toBe(show[0])
@@ -72,7 +72,7 @@ test('the view menu offers every region beside the whole genome that leaves some
   view.showAllRegionsInAssembly('hg38')
   const show = subMenuOf(view.menuItems(), 'Show')
   expect(labels(show).slice(0, 2)).toEqual([
-    'Show whole genome (chromosomes, mitochondrion)',
+    'Show whole genome (chromosomes, mitochondria)',
     'Show all 6 regions',
   ])
   click(show, 'Show all 6 regions')
@@ -84,7 +84,7 @@ test('the zoom menu offers the same two rows', async () => {
   view.showAllRegionsInAssembly('hg38')
   expect(labels(zoomMenuItems(view))).toEqual(
     expect.arrayContaining([
-      'Show whole genome (chromosomes, mitochondrion)',
+      'Show whole genome (chromosomes, mitochondria)',
       'Show all 6 regions',
     ]),
   )

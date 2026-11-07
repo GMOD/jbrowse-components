@@ -28,7 +28,7 @@ test('the dropdown at its end shows every region the whole genome leaves out', a
   const { view, getByText, getByTestId, findByText } = await renderButton({
     withReport: true,
   })
-  getByText('Show whole genome (chromosomes, mitochondrion)')
+  getByText('Show whole genome (chromosomes, mitochondria)')
   fireEvent.click(getByTestId('show-whole-genome-more'))
   fireEvent.click(await findByText('Show all 6 regions'))
   expect(view.displayedRegions.map(r => r.refName)).toEqual(contigs)
@@ -36,7 +36,7 @@ test('the dropdown at its end shows every region the whole genome leaves out', a
 
 test('the button itself shows the whole genome', async () => {
   const { view, getByText } = await renderButton({ withReport: true })
-  fireEvent.click(getByText('Show whole genome (chromosomes, mitochondrion)'))
+  fireEvent.click(getByText('Show whole genome (chromosomes, mitochondria)'))
   expect(view.displayedRegions.map(r => r.refName)).toEqual([
     'chr1',
     'chr2',
@@ -50,7 +50,7 @@ test('a disabled button disables its dropdown too', async () => {
     disabled: true,
   })
   expect(
-    getByText('Show whole genome (chromosomes, mitochondrion)'),
+    getByText('Show whole genome (chromosomes, mitochondria)'),
   ).toHaveProperty('disabled', true)
   expect(getByTestId('show-whole-genome-more')).toHaveProperty('disabled', true)
 })
