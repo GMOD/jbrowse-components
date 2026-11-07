@@ -54,6 +54,22 @@ test('the export letters the records above rows flush under the band', async () 
   expect(display.svgHeight).toBe(display.height - BAND_CHIPS_HEIGHT)
 })
 
+test('the export leaves out the rows.kept chip line, its rows flush under the band', async () => {
+  const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+    rows: { kept: ['S0'] },
+  })
+  const { container } = render(<svg>{await renderSvg(display, {})}</svg>)
+  const rowShifts = [...container.querySelectorAll('g[transform]')].map(g =>
+    g.getAttribute('transform'),
+  )
+  const recordsBottom = display.topBands.reserved.records
+  const controls = BAND_CHIPS_HEIGHT + display.rowFocusLineHeight
+  expect(display.rowFocusLineHeight).toBeGreaterThan(0)
+  expect(display.rowsTopOffset).toBe(recordsBottom + controls)
+  expect(rowShifts).toContain(`translate(0 ${recordsBottom})`)
+  expect(display.svgHeight).toBe(display.height - controls)
+})
+
 function labelY(container: HTMLElement, id: string) {
   const text = [...container.querySelectorAll('text')].find(
     t => t.textContent === id,

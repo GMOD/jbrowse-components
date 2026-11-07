@@ -10,7 +10,7 @@ import type React from 'react'
 // The frame both variant layouts' SVG exports end in: the row content and
 // the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
 // translated below `svgRowsTopOffset` together — the on-screen canvas's offset
-// less the chips' strip, which holds controls — so a display with bands above its rows can't
+// less the lines holding only controls (`svgControlsHeight`) — so a display with bands above its rows can't
 // export its rows 20px high while its labels stay put. `records` and
 // `connectors` draw in those bands, in that stacking order (variantTopBands.ts).
 // The color key is the export shell's, off the same `colorScales` the screen

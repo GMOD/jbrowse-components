@@ -671,6 +671,7 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   rowsContentHeight: number
   availableHeight: number
   rowsTopOffset: number
+  rowFocusLineHeight: number
 }
 
 export function recordsLayoutViews(self: RecordsLayoutHost) {
@@ -845,18 +846,27 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     },
     /**
      * #getter
-     * The export's height: the chips' strip holds controls, which the
-     * export leaves out, so its rows sit flush under the records.
+     * The lines on screen that hold only controls, which the export leaves
+     * out: the chips' strip and the "Showing N of M rows" chip's line.
      */
-    get svgHeight() {
-      return self.height - this.topBands.reserved.chips
+    get svgControlsHeight() {
+      return this.topBands.reserved.chips + self.rowFocusLineHeight
     },
     /**
      * #getter
-     * Where the export's rows start, `rowsTopOffset` without the chips.
+     * The export's height, less `svgControlsHeight`, so its rows sit flush
+     * under the records and connectors.
+     */
+    get svgHeight() {
+      return self.height - this.svgControlsHeight
+    },
+    /**
+     * #getter
+     * Where the export's rows start, `rowsTopOffset` less
+     * `svgControlsHeight`.
      */
     get svgRowsTopOffset() {
-      return self.rowsTopOffset - this.topBands.reserved.chips
+      return self.rowsTopOffset - this.svgControlsHeight
     },
     /**
      * #getter
