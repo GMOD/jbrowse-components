@@ -157,6 +157,11 @@ export interface RegionHost extends AbstractViewModel, IStateTreeNode {
    * them (the circular view's strip); absent, they abut.
    */
   readonly displayedRegionOffsetsPx?: readonly number[]
+  /**
+   * Whether the host names the features itself, outside its displays' rows
+   * (a circle of one contig), so no row keeps room for a name or description.
+   */
+  readonly namesFeatures?: boolean
   readonly staticBlocks: BlockSet
   readonly dynamicBlocks: BlockSet
   readonly settledDynamicBlocks: ContentBlock[]

@@ -74,6 +74,7 @@ export interface RingHostView {
   assemblyNames: string[]
   tracks: { displays: { id: string; type: string }[] }[]
   ringDisplays: RingDisplay[]
+  namesFeaturesOutside: boolean
 }
 
 /** One ring: a display and the annulus it is drawn on, in CSS px. */
@@ -386,6 +387,9 @@ export const RingHost = types
     },
     get offsetPx() {
       return 0
+    },
+    get namesFeatures() {
+      return self.view.namesFeaturesOutside
     },
     /**
      * The strip's scale against the circle: 1 until the circumference outruns

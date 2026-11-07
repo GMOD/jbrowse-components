@@ -781,7 +781,7 @@ export default function baseStateModelFactory(
        * places the names itself.
        */
       get namedFeatures(): NamedFeature[] {
-        return namedFeatureInk(self)
+        return self.showNames ? namedFeatureInk(self) : []
       },
       /**
        * #method

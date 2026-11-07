@@ -193,7 +193,7 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
  * nothing is pinned or expanded.
  */
 export interface BasicDisplayLayoutHost {
-  host: { coarseBpPerPx: number }
+  host: { coarseBpPerPx: number; namesFeatures?: boolean }
   rpcDataMap: ReadonlyMap<
     number,
     { flatbushItems: readonly { featureId: string; gene?: boolean }[] }
@@ -266,9 +266,10 @@ export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
     // testing, the DOM overlay and the SVG export agree; otherwise rows
     // reserve label height nothing uses.
     get labelVisibility() {
+      const rowsCarryLabels = !self.host.namesFeatures
       return labelVisibility({
-        name: self.showNames,
-        description: self.showDescriptions,
+        name: self.showNames && rowsCarryLabels,
+        description: self.showDescriptions && rowsCarryLabels,
         collapsed: self.displayMode === 'collapsed',
         density: this.labelDensityPerPx,
         geneDensity: () => this.geneLabelDensityPerPx,
