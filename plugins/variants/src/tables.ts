@@ -1,19 +1,17 @@
-import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   DEFAULT_BYTE_LIMIT,
   overByteLimitError,
 } from '@jbrowse/core/data_adapters/tables'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
+import { isObject } from '@jbrowse/core/util'
 import { abgrToHex } from '@jbrowse/core/util/colorBits'
-import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
-import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
 import {
   bandedRowViews,
   bandedSourceViews,
@@ -43,10 +41,7 @@ import {
   densityRung,
   recordDensityAlpha,
 } from './LinearVariantDisplay/densityFade.ts'
-import {
-  NO_KEYED_VARIANTS,
-  keyedVariantsFetched,
-} from './LinearVariantDisplay/keyedVariants.ts'
+import { keyedVariantViews } from './LinearVariantDisplay/keyedVariants.ts'
 import {
   recordColorViews,
   recordsColorScaleViews,
@@ -55,6 +50,7 @@ import {
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
+  variantFetchViews,
   variantGenotypeRowViews,
   variantGenotypesShowViews,
   variantRowConfigViews,
@@ -71,23 +67,23 @@ import {
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
-import { entryAliasOf, resolveSampleName } from './shared/getSources.ts'
-import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 
-import type { KeyedVariants } from './LinearVariantDisplay/keyedVariants.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
+import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 
 /**
  * The variant display reduced to what its tables read: the display's config,
- * the samples the adapter lists, and the payload and keyed variants the
- * fetch reports, under the row views the display installs, its row hooks,
- * its cell coloring, whether it draws its genotype rows and what it keys. No
- * session, no view.
+ * the samples the adapter lists, the windows the regions show and the
+ * payload the fetch reports, under the row views the display installs, its
+ * row hooks, what it fetches, its cell coloring, whether it draws its
+ * genotype rows and what it keys. No session, no view; its env holds the
+ * `pluginManager` the jexl filters evaluate through.
  */
 const VariantTablesHost = types
   .compose(
@@ -99,21 +95,23 @@ const VariantTablesHost = types
   .volatile(
     (): {
       adapterSamples: Source[] | undefined
+      keyWindows: readonly KeyWindow[]
       cellData: CellDataResult | undefined
-      keyedVariants: KeyedVariants
     } => ({
       adapterSamples: undefined,
+      keyWindows: [],
       cellData: undefined,
-      keyedVariants: NO_KEYED_VARIANTS,
     }),
   )
   .actions(self => ({
     setAdapterSamples(samples: Source[]) {
       self.adapterSamples = samples
     },
-    setFetched(cellData: CellDataResult, keyedVariants: KeyedVariants) {
+    setKeyWindows(windows: readonly KeyWindow[]) {
+      self.keyWindows = windows
+    },
+    setCellData(cellData: CellDataResult) {
       self.cellData = cellData
-      self.keyedVariants = keyedVariants
     },
   }))
   .views(self => ({
@@ -135,9 +133,11 @@ const VariantTablesHost = types
   .views(self => cellHueValuesReadViews(self))
   .views(self => cellHueViews(self))
   .views(self => variantGenotypeRowViews(self))
+  .views(self => keyedVariantViews(self))
   .views(self => treeSidebarRowsConfigViews(self))
   .views(() => treeSidebarRowHookDefaults<ProcessedSource>())
   .views(self => variantDrawnRowViews(self))
+  .views(self => variantFetchViews(self))
   .views(self => expandedRowViews<ProcessedSource>(self))
   .views(self => rowAliasViews<ProcessedSource>(self))
   .views(self => rowTreeViews<ProcessedSource>(self))
@@ -215,7 +215,10 @@ export interface VariantTablesArgs {
  * and `ramps`, the key the display shows; and `warnings`, the samples file's.
  * With `genotypes.reference.show` off, the default, a reference call draws
  * no cell. With `genotypes.show` off, and unset on a one-sample VCF, no row
- * draws, so `rows` and `cells` are empty and the key is the records'. Several regions share the rows and the key,
+ * draws, so `rows` and `cells` are empty, the key is the records', and no
+ * genotype is read, so `minorAlleleFrequency` and `missingness` filter
+ * nothing, as on a sites-only VCF. The records sit at their genomic
+ * positions whatever `variantLayout` says. Several regions share the rows and the key,
  * as the display's regions do: a record crossing regions is listed in each,
  * under one `key`, every `variants` and `cells` row names its `region`'s
  * index, and `cells.variant` indexes the joined `variants`. For a host that
@@ -236,16 +239,17 @@ export async function variantTables(
   if (regions.length === 0) {
     throw new Error('variantTables reads a region, or regions')
   }
-  const host = VariantTablesHost.create({
-    configuration: {
-      ...display,
-      type: 'LinearVariantDisplay',
-      displayId: 'tables',
+  const host = VariantTablesHost.create(
+    {
+      configuration: {
+        ...display,
+        variantLayout: 'genomic',
+        type: 'LinearVariantDisplay',
+        displayId: 'tables',
+      },
     },
-  })
-  const conf = host.configuration
-  const predicates = predicatesOf(conf.filter)
-  const filters = predicates.filter(p => !isSiteField(p.field))
+    { pluginManager },
+  )
   const adapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,
@@ -260,37 +264,30 @@ export async function variantTables(
     throw tooLarge(bytes)
   }
   const listing = await sourcesAndWarnings(adapter, fetchRegions, {})
-  const sources: ProcessedSource[] = listing.sources.map(source => ({
-    ...source,
-    sampleName: resolveSampleName(source),
-  }))
   host.setAdapterSamples(listing.sources)
-  const { rowsField, cellHueRead, narrowing } = runInAction(() => ({
-    rowsField: host.rowsField,
-    cellHueRead: host.cellHueRead,
-    narrowing: {
-      kept: host.rowFocus ?? [],
-      filter: host.rowFilter,
-      rowAlias: entryAliasOf(sources),
-    },
-  }))
-  const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
-    sessionId: 'tables',
-    adapterConfig,
-    regions: fetchRegions,
-    layout: 'genomic',
-    rowsField,
-    color: cellHueRead,
-    sampleFilter: narrows(narrowing)
-      ? narrowRows(sources, narrowing).map(resolveSampleName).sort()
-      : undefined,
-    showReference: readConfObject(conf, ['genotypes', 'reference', 'show']),
-    siteFilter: predicates.filter(p => isSiteField(p.field)),
-    filters: filters.length
-      ? new SerializableFilterChain({ filters, jexl: pluginManager.jexl })
-      : undefined,
-    statusCallback: () => {},
-  }
+  host.setKeyWindows(
+    regions.map(({ refName, start, end }, i) => ({
+      regionIndex: i,
+      refName,
+      start,
+      end,
+    })),
+  )
+  const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = runInAction(
+    () => ({
+      sessionId: 'tables',
+      adapterConfig,
+      regions: fetchRegions,
+      layout: host.variantLayout,
+      rowsField: host.rowsField,
+      color: host.cellHueRead,
+      sampleFilter: host.sampleFilter,
+      showReference: host.showReference,
+      siteFilter: host.siteFilter,
+      filters: host.filters,
+      statusCallback: () => {},
+    }),
+  )
   const result = await variantCellData({ pluginManager, args })
   if ('regionTooLarge' in result) {
     throw tooLarge(result.bytes)
@@ -319,8 +316,7 @@ export async function variantTables(
   )
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
-  const keyed = keyedVariantsFetched(perRegion.map(({ data }) => data))
-  host.setFetched(value, keyed)
+  host.setCellData(value)
   const fetched = new Set(value.rowNames)
   const {
     drawn,
@@ -421,7 +417,7 @@ export async function variantTables(
         cellDosage(
           cells.genotype[cells.genotype.length - 1]!,
           data.featureInfo[f]!.alt.length,
-          rowsField === 'haplotype' ? rows.haplotype[row]! - 1 : undefined,
+          args.rowsField === 'haplotype' ? rows.haplotype[row]! - 1 : undefined,
           rows.ploidy[row]!,
         ),
       )
@@ -432,7 +428,7 @@ export async function variantTables(
 
   return {
     variants,
-    ...infoColumns(records, (await vcfHeaderOf(adapter)).info, 'variant'),
+    ...infoColumns(records, (await vcfDeclarationsOf(adapter)).info, 'variant'),
     cells,
     rows,
     ...colorKeyTables(scales),
@@ -445,7 +441,7 @@ export async function variantTables(
       key: rowBands.map(b => b.key),
       label: rowBands.map(b => b.label),
     },
-    config: fullConfSnapshot(conf),
+    config: fullConfSnapshot(host.configuration),
     warnings: listing.warnings,
   }
 }
@@ -459,46 +455,40 @@ function filterOf(record: Feature) {
   return Array.isArray(filter) ? filter.join(';') : (filter ?? null)
 }
 
-interface FieldDeclaration {
-  Number?: unknown
-  Type?: unknown
-  Description?: unknown
-}
-
+/**
+ * A section's keys the header declares, in its order, and the parser's
+ * declaration of each, which holds the VCF spec's reserved keys too.
+ */
 interface Declarations {
   declared: string[]
-  meta: Record<string, FieldDeclaration | undefined>
+  meta: Record<string, unknown>
 }
 
-interface VcfHeader {
-  info: Declarations
-  format: Declarations
-  samples: string[]
+function declarationOf(
+  meta: Record<string, unknown>,
+  key: string,
+  field: 'Number' | 'Type' | 'Description',
+) {
+  const declaration = meta[key]
+  return isObject(declaration) ? declaration[field] : undefined
 }
 
-async function vcfHeaderOf(adapter: object): Promise<VcfHeader> {
-  const vcf = adapter as {
-    getHeader?: () => Promise<string>
-    getMetadata?: () => Promise<
-      Partial<Record<'INFO' | 'FORMAT', Declarations['meta']>>
-    >
+async function vcfDeclarationsOf(adapter: BaseFeatureDataAdapter) {
+  const header = await adapter.getHeader()
+  const metadata = await adapter.getMetadata()
+  const section = (field: 'INFO' | 'FORMAT'): Declarations => {
+    const meta = isObject(metadata) ? metadata[field] : undefined
+    return {
+      declared:
+        typeof header === 'string'
+          ? [
+              ...header.matchAll(new RegExp(`^##${field}=<ID=([^,>]+)`, 'gm')),
+            ].map(m => m[1]!)
+          : [],
+      meta: isObject(meta) ? meta : {},
+    }
   }
-  const header = (await vcf.getHeader?.()) ?? ''
-  const metadata = await vcf.getMetadata?.()
-  const declared = (field: string) =>
-    [...header.matchAll(new RegExp(`^##${field}=<ID=([^,>]+)`, 'gm'))].map(
-      m => m[1]!,
-    )
-  const columns = header
-    .split('\n')
-    .find(line => line.startsWith('#CHROM'))
-    ?.trimEnd()
-    .split('\t')
-  return {
-    info: { declared: declared('INFO'), meta: metadata?.INFO ?? {} },
-    format: { declared: declared('FORMAT'), meta: metadata?.FORMAT ?? {} },
-    samples: columns?.slice(9) ?? [],
-  }
+  return { info: section('INFO'), format: section('FORMAT') }
 }
 
 type FieldValue = true | (string | number | undefined)[] | undefined
@@ -532,16 +522,21 @@ function typedColumns(
   const columns: Record<string, unknown[]> = {}
   for (const key of keys) {
     const values = rows.map(row => row?.[key])
-    const declaration = meta[key]
     const bare =
       values.includes(true) && values.every(v => v === undefined || v === true)
-    const type = String(declaration?.Type ?? (bare ? 'Flag' : 'String'))
-    const number = String(declaration?.Number ?? (type === 'Flag' ? 0 : '.'))
+    const type = String(
+      declarationOf(meta, key, 'Type') ?? (bare ? 'Flag' : 'String'),
+    )
+    const number = String(
+      declarationOf(meta, key, 'Number') ?? (type === 'Flag' ? 0 : '.'),
+    )
     const numeric = type === 'Integer' || type === 'Float'
     fields.key.push(key)
     fields.number.push(number)
     fields.type.push(type)
-    fields.description.push(String(declaration?.Description ?? ''))
+    fields.description.push(
+      String(declarationOf(meta, key, 'Description') ?? ''),
+    )
     columns[key] = values.map(v =>
       type === 'Flag' || number === '0'
         ? v !== undefined
@@ -620,7 +615,9 @@ function consequenceTables(
   const columns: Record<string, (string | null)[]> = {}
   const annotationFields = { key: [] as string[], field: [] as string[] }
   for (const key of CONSEQUENCE_KEYS) {
-    const names = consequenceFieldNames(String(meta[key]?.Description ?? ''))
+    const names = consequenceFieldNames(
+      String(declarationOf(meta, key, 'Description') ?? ''),
+    )
     if (names.length < 2) {
       continue
     }
@@ -669,7 +666,8 @@ export const VCF_ADAPTER_TYPES = [
  * - `records`: each one's `ref`, `alt` (its alleles joined by `,`) and
  *   `filter`, aligned to `ids`.
  * - `info` and `infoFields`: its INFO, as `variantTables` gives them.
- * - `samples`: a row per record and sample in header order, `feature` (an
+ * - `samples`: a row per record and each sample its own file lists, in that
+ *   file's header order (a split VCF's per-contig files may differ), `feature` (an
  *   index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
  *   to it, typed as INFO is; and `formatFields`, each key's declaration.
  * - `annotations` and `annotationFields`: its ANN or CSQ consequences, as
@@ -707,20 +705,20 @@ export async function variantRecordTables(
     }
     return record
   })
-  const header = await vcfHeaderOf(adapter)
+  const declarations = await vcfDeclarationsOf(adapter)
   const samples = { feature: [] as number[], sample: [] as string[] }
-  const sampleValues: (Record<string, FieldValue> | undefined)[] = []
+  const sampleValues: Record<string, FieldValue>[] = []
   records.forEach((record, f) => {
     const values = record.get('samples') as
       | Record<string, Record<string, FieldValue>>
       | undefined
-    for (const sample of header.samples) {
+    for (const [sample, value] of Object.entries(values ?? {})) {
       samples.feature.push(f)
       samples.sample.push(sample)
-      sampleValues.push(values?.[sample])
+      sampleValues.push(value)
     }
   })
-  const format = typedColumns(sampleValues, header.format)
+  const format = typedColumns(sampleValues, declarations.format)
   return {
     records: {
       ref: records.map(r => String(r.get('REF') ?? '')),
@@ -729,7 +727,7 @@ export async function variantRecordTables(
       ),
       filter: records.map(filterOf),
     },
-    ...infoColumns(records, header.info, 'feature'),
+    ...infoColumns(records, declarations.info, 'feature'),
     samples,
     format: format.columns,
     formatFields: format.fields,

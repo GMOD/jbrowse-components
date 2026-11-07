@@ -1,16 +1,21 @@
 import { getConf } from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { getEnv } from '@jbrowse/core/util'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 
 import { cellColorEncodingOf } from '../shared/cellHue.ts'
 import {
+  entryAliasOf,
   expandPhasedRows,
   finerHaplotypeRows,
   haplotypeRowParent,
   resolveSampleName,
 } from '../shared/getSources.ts'
+import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { ProcessedSource, Source } from '../shared/types.ts'
@@ -18,7 +23,7 @@ import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { RowBanding, RowParent } from '@jbrowse/tree-sidebar/arrangeRows'
 
 /** What {@link variantRowConfigViews} reads: the display's config. */
@@ -301,6 +306,92 @@ export function variantRowHookViews(self: VariantRowHookHost) {
      */
     get finerRows(): ProcessedSource[] {
       return finer.get()
+    },
+  }
+}
+
+/**
+ * What {@link variantFetchViews} reads: the samples, whether rows draw and
+ * what narrows them, on a node whose env holds the `pluginManager`.
+ */
+export interface VariantFetchHost extends VariantDrawnRowHost, IStateTreeNode {
+  rowFocus: readonly string[] | undefined
+  rowFilter: readonly FieldPredicate[]
+}
+
+/**
+ * What a variant display asks its cell-data fetch for, which the display and
+ * a static export install alike, so both fetch the same records and rows.
+ */
+export function variantFetchViews(self: VariantFetchHost) {
+  return {
+    /**
+     * #getter
+     * The adapter's samples narrowed by `rows.filter` over their samplesTsv
+     * attributes and then `rows.kept`, none while no row draws: the row set
+     * the fetch asks for, so it must not read `samplePloidy`. The attributes
+     * arrive with the sample list, so the filter never runs ahead of them.
+     * `undefined` until the samples land; that transition wakes the fetch
+     * autorun (reference/FETCH_KEYS.md).
+     */
+    get sourcesBase(): Source[] | undefined {
+      const sources = self.adapterSamples
+      return (
+        sources &&
+        (self.drawsGenotypeRows
+          ? narrowRows(sources, {
+              kept: self.rowFocus ?? [],
+              filter: self.rowFilter,
+              rowAlias: entryAliasOf(sources),
+            })
+          : [])
+      )
+    },
+    /**
+     * #getter
+     * Which samples the worker emits rows for, as a sorted set: row order
+     * is not a fetch input (reference/FETCH_KEYS.md). Empty while no row
+     * draws, so the worker reads no genotype and tests no site field, as
+     * for a sites-only VCF. `undefined` means the sources haven't loaded
+     * and is never reused for "all of them", or the fetch would not wake
+     * when they land. Reads `sourcesBase`, never `sources`, which reads the
+     * fetch-derived `samplePloidy`.
+     */
+    get sampleFilter(): string[] | undefined {
+      return this.sourcesBase?.map(resolveSampleName).sort()
+    },
+    /**
+     * #getter
+     * The `filter` list's site fields, `minorAlleleFrequency` and
+     * `missingness`, which the worker tests off each site's allele summary.
+     */
+    get siteFilter(): FieldPredicate[] {
+      return predicatesOf(self.configuration.filter).filter(p =>
+        isSiteField(p.field),
+      )
+    },
+    /**
+     * #getter
+     * The `filter` list's other entries as the RPC's `filters` arg.
+     */
+    get filters() {
+      const filters = predicatesOf(self.configuration.filter).filter(
+        p => !isSiteField(p.field),
+      )
+      return filters.length
+        ? new SerializableFilterChain({
+            filters,
+            jexl: getEnv(self).pluginManager.jexl,
+          })
+        : undefined
+    },
+    /**
+     * #getter
+     * `genotypes.reference.show`: each reference call draws as a cell,
+     * rather than the rows' grey fill standing in for it.
+     */
+    get showReference(): boolean {
+      return getConf(self, ['genotypes', 'reference', 'show'])
     },
   }
 }

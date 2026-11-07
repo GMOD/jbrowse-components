@@ -445,6 +445,39 @@ test('SnpEff’s ANN parses into a row per record and consequence, out of INFO',
   }
 })
 
+test("a split VCF's records list the samples their own contig's file lists", async () => {
+  const split = (contig: string) =>
+    pathToFileURL(
+      path.resolve(
+        `plugins/variants/src/SplitVcfTabixAdapter/test_data/${contig}.vcf.gz`,
+      ),
+    ).href
+  const { vcf } = await engine.features({
+    adapterConfig: {
+      type: 'SplitVcfTabixAdapter',
+      vcfGzLocationMap: {
+        ctgA: { uri: split('ctgA') },
+        ctgB: { uri: split('ctgB') },
+      },
+      indexLocationMap: {
+        ctgA: { uri: `${split('ctgA')}.tbi` },
+        ctgB: { uri: `${split('ctgB')}.tbi` },
+      },
+      indexType: 'TBI',
+    },
+    regions: [
+      { refName: 'ctgA', start: 0, end: 1000 },
+      { refName: 'ctgB', start: 0, end: 1000 },
+    ],
+    bpPerPx: 1,
+  })
+  expect(vcf!.samples).toEqual({
+    feature: [0, 0, 1, 1],
+    sample: ['onlyA', 'shared', 'shared', 'onlyB'],
+  })
+  expect(vcf!.format.GT).toEqual(['0/1', '1/1', '0/1', '1/1'])
+})
+
 test('a samples file leaving out a VCF sample warns, as the display does', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'samples-'))
   const vcf = path.join(dir, 'two.vcf')

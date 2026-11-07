@@ -113,10 +113,40 @@ export function keyedVariantsInWindows(
 
 /**
  * Every variant fetched, for a fetch that is already what is shown: the
- * columns fetch only the visible span, and the tables their own regions.
+ * columns fetch only the visible span.
  */
 export function keyedVariantsFetched(payloads: Iterable<KeyPayload>) {
   return collect([...payloads].map(data => ({ data, spans: EVERYWHERE })))
 }
 
-export const NO_KEYED_VARIANTS = keyedVariantsFetched([])
+const NO_KEYED_VARIANTS = keyedVariantsFetched([])
+
+/** What {@link keyedVariantViews} reads: the payload and where it shows. */
+export interface KeyedVariantHost {
+  cellData: { perRegionCellData: Record<string, KeyPayload> } | undefined
+  atGenomicPositions: boolean
+  keyWindows: readonly KeyWindow[]
+}
+
+/**
+ * What a variant display keys, which the display and a static export install
+ * alike over the windows each shows.
+ */
+export function keyedVariantViews(self: KeyedVariantHost) {
+  return {
+    /**
+     * #getter
+     * What the key lists, read off the variants in `keyWindows` at genomic
+     * positions (the fetch is wider than what shows) and off every fetched
+     * variant in columns, which fetch only what is shown.
+     */
+    get keyedVariants() {
+      const { cellData } = self
+      return cellData
+        ? self.atGenomicPositions
+          ? keyedVariantsInWindows(cellData.perRegionCellData, self.keyWindows)
+          : keyedVariantsFetched(Object.values(cellData.perRegionCellData))
+        : NO_KEYED_VARIANTS
+    },
+  }
+}

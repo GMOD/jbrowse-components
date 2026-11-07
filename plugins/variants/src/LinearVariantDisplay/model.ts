@@ -4,11 +4,9 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   canonicalizeViewRefName,
   getDialogHost,
-  getEnv,
   getSession,
   SimpleFeature,
 } from '@jbrowse/core/util'
@@ -66,7 +64,6 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   loadedRegionIndexAt,
-  narrowRows,
 } from '@jbrowse/tree-sidebar'
 
 import { cellHueField } from '../shared/cellHue.ts'
@@ -81,13 +78,11 @@ import {
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
 import {
-  entryAliasOf,
   haplotypeNameCollisions,
   parseRowName,
   resolveSampleName,
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
-import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -106,11 +101,7 @@ import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { densityRung, recordDensityAlpha } from './densityFade.ts'
-import {
-  NO_KEYED_VARIANTS,
-  keyedVariantsFetched,
-  keyedVariantsInWindows,
-} from './keyedVariants.ts'
+import { keyedVariantViews } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
@@ -136,6 +127,7 @@ import {
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
+  variantFetchViews,
   variantGenotypeRowViews,
   variantGenotypesShowViews,
   variantRowConfigViews,
@@ -167,7 +159,6 @@ import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
@@ -1058,25 +1049,15 @@ export function stateModelFactory(
         }
       })
       .actions(recordsBandActions)
+      .views(self => variantFetchViews(self))
       .views(self => ({
-        /**
-         * #getter
-         * The `filter` list's site fields, `minorAlleleFrequency` and
-         * `missingness`, which the worker tests off each site's allele summary.
-         */
-        get siteFilter(): FieldPredicate[] {
-          return predicatesOf(self.configuration.filter).filter(p =>
-            isSiteField(p.field),
-          )
-        },
-
         /**
          * #getter
          * The floor the filter puts on `minorAlleleFrequency`, 0 for none: the
          * slider's value
          */
         get minMinorAlleleFrequency(): number {
-          return lowerBoundOf(this.siteFilter, 'minorAlleleFrequency') ?? 0
+          return lowerBoundOf(self.siteFilter, 'minorAlleleFrequency') ?? 0
         },
 
         /**
@@ -1085,32 +1066,7 @@ export function stateModelFactory(
          * slider's value
          */
         get maxMissingness(): number {
-          return upperBoundOf(this.siteFilter, 'missingness') ?? 1
-        },
-
-        /**
-         * #getter
-         * The `filter` list's other entries as the RPC's `filters` arg.
-         */
-        get filters() {
-          const filters = predicatesOf(self.configuration.filter).filter(
-            p => !isSiteField(p.field),
-          )
-          return filters.length
-            ? new SerializableFilterChain({
-                filters,
-                jexl: getEnv(self).pluginManager.jexl,
-              })
-            : undefined
-        },
-
-        /**
-         * #getter
-         * `genotypes.reference.show`: each reference call draws as a cell,
-         * rather than the rows' grey fill standing in for it.
-         */
-        get showReference(): boolean {
-          return getConf(self, ['genotypes', 'reference', 'show'])
+          return upperBoundOf(self.siteFilter, 'missingness') ?? 1
         },
 
         /**
@@ -1155,31 +1111,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The adapter's samples narrowed by `rowNarrowing`, `rows.filter`
-         * over their samplesTsv attributes and then `rows.kept`: the row set
-         * the fetch asks for, so it must not read `samplePloidy`. The
-         * attributes arrive with the sample list, so the filter never runs
-         * ahead of them. `undefined`
-         * until the samples land; that transition wakes the fetch autorun
-         * (reference/FETCH_KEYS.md).
-         */
-        get sourcesBase(): Source[] | undefined {
-          const sources = self.adapterSamples
-          return (
-            sources &&
-            (self.drawsGenotypeRows
-              ? narrowRows(sources, {
-                  kept: self.rowFocus ?? [],
-                  filter: self.rowFilter,
-                  rowAlias: entryAliasOf(sources),
-                })
-              : [])
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
          * Whether the rows are at the granularity they draw, which clustering
          * and the arrangement dialog need: phased mode draws haplotypes, which
          * needs the `samplePloidy` a fetch brings.
@@ -1205,20 +1136,6 @@ export function stateModelFactory(
          */
         get autoClusterReady() {
           return this.clusteringReady && this.hasClusterableRows
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Which samples the worker emits rows for, as a sorted set: row order
-         * is not a fetch input (reference/FETCH_KEYS.md). `undefined` means the
-         * sources haven't loaded and is never reused for "all of them", or the
-         * fetch would not wake when they land. Reads `sourcesBase`, never
-         * `sources`, which reads the fetch-derived `samplePloidy`.
-         */
-        get sampleFilter(): string[] | undefined {
-          const base = self.sourcesBase
-          return base?.map(resolveSampleName).sort()
         },
       }))
       .views(self => cellHueInputViews(self))
@@ -1258,27 +1175,9 @@ export function stateModelFactory(
           get keyWindows() {
             return keyWindows.get()
           },
-          /**
-           * #getter
-           * What the key lists, read off the variants on screen at genomic
-           * positions (the fetch is wider than the view) and off every
-           * fetched variant in columns, which fetch only what is shown.
-           */
-          get keyedVariants() {
-            const { cellData } = self
-            return cellData
-              ? self.atGenomicPositions
-                ? keyedVariantsInWindows(
-                    cellData.perRegionCellData,
-                    this.keyWindows,
-                  )
-                : keyedVariantsFetched(
-                    Object.values(cellData.perRegionCellData),
-                  )
-              : NO_KEYED_VARIANTS
-          },
         }
       })
+      .views(self => keyedVariantViews(self))
       .views(self => cellKeyViews(self))
       .views(self => recordColorViews(self))
       .views(recordsRenderViews)

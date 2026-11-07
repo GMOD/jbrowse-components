@@ -246,6 +246,13 @@ describe('39 dogs genotyped at SNVs, a few phased', () => {
       config: { genotypes: { show: false } },
     },
     {
+      name: 'genotypes hidden, a site filter testing nothing',
+      config: {
+        genotypes: { show: false },
+        filter: [{ field: 'minorAlleleFrequency', gte: 0.3 }],
+      },
+    },
+    {
       name: 'encoding.color a callback through an identity scale',
       config: {
         encoding: {
@@ -429,6 +436,22 @@ describe('two loci of the dog SNVs on chr30, end to end', () => {
         config: {
           rows: { tree: '((GHND000004:1,GHND000002:1):1,GHND000001:2);' },
         },
+      },
+    ],
+  )
+})
+
+describe('a kilobase of the dog SNVs whose margin holds a type it lacks', () => {
+  parityCases(
+    variantParity({
+      adapterConfig: DOG_VCF.adapterConfig,
+      regions: [{ refName: 'chr30', start: 38_259_000, end: 38_260_000 }],
+      contigLengths: { chr30: CONTIG_LENGTH },
+    }),
+    [
+      {
+        name: 'encoding.color by a field',
+        config: { encoding: { color: { field: 'type' } } },
       },
     ],
   )
