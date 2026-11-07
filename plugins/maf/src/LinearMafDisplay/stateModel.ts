@@ -105,6 +105,7 @@ import {
   unionSources,
 } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
+import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { mafTopBands } from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
@@ -146,6 +147,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
@@ -319,6 +321,13 @@ export default function stateModelFactory(
       .views(coverageBandSlotViews)
       .actions(coverageBandSlotActions)
       .actions(self => ({
+        /**
+         * #action
+         * Paint identity along a named ramp (`colorByScheme`).
+         */
+        setColorScheme(scheme: ColorSchemeName) {
+          self.colorByScheme(scheme, MAF_FIELD_PRESETS.identity.scale.scheme)
+        },
         /**
          * #action
          * Receive the worker's `samples` and serialized Newick tree.

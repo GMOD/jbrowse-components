@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { canonicalizeViewRefName } from '@jbrowse/core/util'
-import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin, {
@@ -91,7 +90,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       GlobalFetchMixin(),
       LegendMixin(),
       MatrixRampMixin(LD_FIELD_PRESETS),
-      ColorWritesMixin(),
       TriangleMatrixMixin<LDDataResult>(),
       types.model({
         /**

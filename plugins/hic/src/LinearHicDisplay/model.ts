@@ -12,7 +12,6 @@ import {
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
-import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
@@ -112,7 +111,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       GlobalFetchMixin(),
       LegendMixin(),
       MatrixRampMixin(HIC_FIELD_PRESETS),
-      ColorWritesMixin(),
       TriangleMatrixMixin<HicDataResult>(),
       PointerHoverMixin<HicContactItem>(
         (a, b) =>

@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
@@ -6,25 +6,21 @@ import {
   thresholdCuts,
   thresholdKeyEntries,
 } from '@jbrowse/core/util/thresholdScale'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import {
   SCALE_TYPE_LINEAR,
   denormalizeScore,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
-import { compareStructural } from 'mobx'
 
-import {
-  colorForScheme,
-  colorSettingOf,
-  matrixColorEncodingOf,
-} from './colorConfigSchema.ts'
+import ColorWritesMixin from './ColorWritesMixin.ts'
+import { colorSettingOf, matrixColorEncodingOf } from './colorConfigSchema.ts'
 
 import type { ColorLegendSetting } from './colorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ColorSlots, FieldPreset } from '@jbrowse/core/util/colorScale'
+import type { FieldPreset } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -132,13 +128,13 @@ export function binnedColorValues(
 /**
  * #stateModel MatrixRampMixin
  * #category display
- * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`). Under a `threshold` scale the intervals (`colorBins`) paint through a table of one band each, the display handing the painters each value at its interval's centre (`binnedColorValues`), and the key lists the intervals. A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
+ * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`) through the `ColorWritesMixin` it composes. Under a `threshold` scale the intervals (`colorBins`) paint through a table of one band each, the display handing the painters each value at its interval's centre (`binnedColorValues`), and the key lists the intervals. A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
  */
 export default function MatrixRampMixin<F extends string>(
   presets: MatrixFieldPresets<F>,
 ) {
   return types
-    .model('MatrixRampMixin', {})
+    .compose('MatrixRampMixin', ColorWritesMixin(), types.model({}))
     .views(self => ({
       /**
        * #getter
@@ -376,22 +372,11 @@ export default function MatrixRampMixin<F extends string>(
     .actions(self => ({
       /**
        * #action
-       * The scheme, with `reverse` back to unset so it follows the scheme.
-       * The painted field's own scheme writes `scheme` unset, so it keeps
-       * following the field.
+       * The scheme (`colorByScheme`), the painted field's preset naming the
+       * scheme that follows the field.
        */
       setColorScheme(scheme: ColorSchemeName) {
-        const node = confNode(self)
-        const { color } = node.configuration.encoding
-        const written = getSnapshot<ColorSlots>(color)
-        const next = colorForScheme(
-          written,
-          scheme,
-          presets[self.paintedColorField].scale.scheme,
-        )
-        if (!compareStructural(next, written)) {
-          setConf(node, ['encoding', 'color'], next)
-        }
+        self.colorByScheme(scheme, presets[self.paintedColorField].scale.scheme)
       },
     }))
 }

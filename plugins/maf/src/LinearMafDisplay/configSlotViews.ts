@@ -2,11 +2,8 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
   colorEncodingOf,
-  colorForScheme,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { compareStructural } from 'mobx'
 
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { refNameRankColors } from './components/refNameRanks.ts'
@@ -15,7 +12,6 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafBasesField, MafColorField, MafYField } from './rowPlan.ts'
-import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorSetting,
@@ -203,22 +199,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setRowProportion(n: number) {
       setConf(self, ['alignments', 'mark', 'height', 'band'], n)
-    },
-    /**
-     * #action
-     * Paint identity along a named ramp, clearing a written `scale.range`,
-     * which would win over it.
-     */
-    setColorScheme(scheme: ColorSchemeName) {
-      const written = getSnapshot<ColorSlots>(self.configuration.encoding.color)
-      const next = colorForScheme(
-        written,
-        scheme,
-        MAF_FIELD_PRESETS.identity.scale.scheme,
-      )
-      if (!compareStructural(next, written)) {
-        setConf(self, ['encoding', 'color'], next)
-      }
     },
     /**
      * #action

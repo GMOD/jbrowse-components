@@ -1,4 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import { createMafTestEnvironment, zoomPastBaseLevel } from './testEnv.ts'
 
@@ -85,6 +86,17 @@ describe('the rows are a fill, a bar height and the layers over them', () => {
       scheme: 'viridis',
       range: undefined,
     })
+  })
+
+  it('picking the scheme already painting writes nothing', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { encoding: { color: { field: 'identity' } } },
+    }).createDisplay()
+    display.setColorScheme('magma')
+    const patches: unknown[] = []
+    onPatch(display.configuration, patch => patches.push(patch))
+    display.setColorScheme('magma')
+    expect(patches).toEqual([])
   })
 })
 

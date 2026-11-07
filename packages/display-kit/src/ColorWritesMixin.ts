@@ -8,12 +8,14 @@ import ParkedColorMixin from './ParkedColorMixin.ts'
 import {
   colorForField,
   colorForIdentity,
+  colorForScheme,
   colorForValue,
   impliedFieldOf,
 } from './colorConfigSchema.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 /** The whole of what `ColorWritesMixin` needs a composing display to be. */
 export interface ColorWritesHost {
@@ -103,6 +105,16 @@ export default function ColorWritesMixin() {
          */
         colorByIdentity() {
           write(colorForIdentity(self.writtenColor, self.parkedIdentity))
+        },
+        /**
+         * #action
+         * Paint along `scheme`, with `reverse` back to unset so it follows
+         * the scheme and a written `scale.range`, which would win over it,
+         * cleared; `fieldScheme`, the painted field's own scheme, is written
+         * unset so the channel keeps following the field.
+         */
+        colorByScheme(scheme: ColorSchemeName, fieldScheme?: string) {
+          write(colorForScheme(self.writtenColor, scheme, fieldScheme))
         },
         /**
          * #action
