@@ -32,7 +32,7 @@ import {
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
-import { glyphsKey } from './multiwayGeometry.ts'
+import { boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -1217,6 +1217,17 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
   )
   expect(display.selectionInk).not.toEqual([])
   expect(display.laneGlyphCells).toBe(before)
+
+  const [box] = display.laneStack.lanes.flatMap((_lane, row) => {
+    const cell = display.laneGlyphCells.get(boxesKey(row))
+    return cell?.kind === 'glyphs' ? cell.data.hits : []
+  })
+  expect(
+    display.hitTest(
+      (box!.x1 + box!.x2) / 2 + display.dragOffsetPx,
+      (box!.y1 + box!.y2) / 2 - display.scrollTop,
+    )?.trackId,
+  ).toBe(display.parentTrack.configuration.trackId)
   stop()
 })
 

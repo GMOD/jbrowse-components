@@ -2430,7 +2430,8 @@ export function stateModelFactory(
       let memo = {
         text: getFeatureName,
         fontFamily: '' as string | undefined,
-        labels: new WeakMap<Feature, GeneLabel | null>(),
+        genes: undefined as unknown,
+        labels: new Map<Feature, GeneLabel | null>(),
       }
       return {
         /**
@@ -2447,8 +2448,12 @@ export function stateModelFactory(
           }
           const text = self.geneTextOf
           const genes = self.laneGenes.held
-          if (memo.text !== text || memo.fontFamily !== fontFamily) {
-            memo = { text, fontFamily, labels: new WeakMap() }
+          if (
+            memo.text !== text ||
+            memo.fontFamily !== fontFamily ||
+            memo.genes !== genes
+          ) {
+            memo = { text, fontFamily, genes, labels: new Map() }
           }
           const { labels } = memo
           const { lanes, glyphHeight } = self.laneStack
