@@ -206,7 +206,7 @@ ctgA\t1100\tr_0_0\tA\tA[ctgB:200[\t.\tPASS\tSVTYPE=BND;MATEID=r_0_1\tDP:AD:NAD\t
 ctgA\t3000\td_1\tC\t<DEL>\t.\tToo_low_VAF\tSVTYPE=DEL;END=3400\tDP:AD:NAD\t35:2:0
 `
 
-test('a calls VCF with no GT reads as records with their FILTER, INFO and FORMAT, which the genotype matrix has no row for', async () => {
+test('a one-sample calls VCF with no GT lists the records the display draws, with their FILTER, INFO and FORMAT, and no genotype row', async () => {
   const callsFile = path.join(dir, 'calls.vcf')
   writeFileSync(callsFile, CALLS_VCF)
   const adapterConfig = {
@@ -218,7 +218,7 @@ test('a calls VCF with no GT reads as records with their FILTER, INFO and FORMAT
   }
   const region = { refName: 'ctgA', start: 0, end: 50000 }
   const matrix = await engine.variants({ adapterConfig, region })
-  expect(matrix.variants.start).toHaveLength(0)
+  expect(matrix.variants.start).toEqual([1099, 2999])
   expect(matrix.rows.name).toHaveLength(0)
 
   const { features, vcf } = await engine.features({
