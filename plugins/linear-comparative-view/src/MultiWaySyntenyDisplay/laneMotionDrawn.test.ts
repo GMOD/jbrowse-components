@@ -280,7 +280,9 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
     display.hitTest((hit.x1 + hit.x2) / 2 + display.dragOffsetPx, y)?.feature,
   ).not.toBe(hit.feature)
 
-  session.setSelection(hit.feature, display.parentTrack.configuration.trackId)
+  const trackId = display.laneSelectionTrackId(C)
+  expect(display.hitTest(x, y)?.trackId).toBe(trackId)
+  session.setSelection(hit.feature, trackId)
   const [selected] = display.selectionInk
   expect(selected!.left).toBeCloseTo(rect[0]!, 0)
   expect(selected!.left + selected!.width).toBeCloseTo(rect[1]!, 0)
@@ -289,6 +291,7 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
     label: 'g4',
     feature: hit.feature,
     groupKey: 'g4',
+    trackId,
   })
   const box = display.laneStack.lanes[1]!.placements.get('g4')!.spans[0]!
   const [ink] = display.hoverInk.filter(

@@ -47,6 +47,7 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
     label: target.label,
     feature: target.feature,
     groupKey: 'g1',
+    trackId: 'multiway_track',
   })
   expect(display.renderState.hoveredFeatureId).toBeGreaterThan(0)
   const boxes = display.laneStack.lanes.map(lane => ({

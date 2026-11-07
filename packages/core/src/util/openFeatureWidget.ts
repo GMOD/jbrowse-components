@@ -78,6 +78,10 @@ export function openFeatureWidget(
     // with the label and the hover for the same gene. Nothing is derived here
     // from the feature's parent handle for that reason.
     parentFeature?: ParentFeatureSummary
+    // The track the feature's id is unique within, when that is not the
+    // containing track: a display drawing several sources' features under one
+    // track names the source the selection came from.
+    sourceTrackId?: string
   } = {},
 ): Widget | undefined {
   // #region openWidget
@@ -88,7 +92,7 @@ export function openFeatureWidget(
   const track = getContainingTrack(node)
   session.setSelection(
     opts.feature ?? new SimpleFeature(featureData),
-    track.configuration.trackId,
+    opts.sourceTrackId ?? track.configuration.trackId,
   )
   const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
   const widget = session.openWidget(type, id, {

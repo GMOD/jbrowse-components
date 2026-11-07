@@ -56,7 +56,7 @@ function hoverDirectLink(display: MultiWaySyntenyDisplayModel) {
   const target = display.ribbonGeometry.targets.find(
     t => t.linkId !== undefined,
   )!
-  display.setHoverTarget(target)
+  display.setHoverTarget({ ...target, trackId: 'multiway_track' })
   return target.linkId!
 }
 

@@ -1005,7 +1005,12 @@ test('a ribbon click holds its key until a click on empty canvas', () => {
     start: 100,
     end: 300,
   })
-  display.setHoverTarget({ label: 'link', feature, linkId: 'f1' })
+  display.setHoverTarget({
+    label: 'link',
+    feature,
+    linkId: 'f1',
+    trackId: 'multiway_track',
+  })
   display.selectHovered()
   expect(display.clickedTarget).toEqual({ groupKey: undefined, linkId: 'f1' })
 
@@ -1016,7 +1021,12 @@ test('a ribbon click holds its key until a click on empty canvas', () => {
   expect(display.clickedTarget).toBeUndefined()
 
   // the click's own widget resizes the view, and that refetches
-  display.setHoverTarget({ label: 'g', feature, groupKey: 'g1' })
+  display.setHoverTarget({
+    label: 'g',
+    feature,
+    groupKey: 'g1',
+    trackId: 'multiway_track',
+  })
   display.selectHovered()
   display.setFeatures([])
   expect(display.clickedTarget).toEqual({ groupKey: 'g1', linkId: undefined })
@@ -1208,6 +1218,79 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
   expect(display.selectionInk).not.toEqual([])
   expect(display.laneGlyphCells).toBe(before)
   stop()
+})
+
+test('two lanes whose gene tracks share an id select, ink and name their own gene', async () => {
+  const geneOf = (name: string) =>
+    new SimpleFeature({
+      uniqueId: 'ctgA-0',
+      name,
+      type: 'gene',
+      refName: 'ctgA',
+      start: 300,
+      end: 500,
+      strand: 1,
+    })
+  const { display, session } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random'],
+    geneTracks: [
+      { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'random_genes', assemblyNames: ['volvox_random'] },
+    ],
+    rpc: async (name, args) => {
+      const [region] = (args.regions ?? []) as { assemblyName: string }[]
+      return name === 'MultiWayGetFeatures'
+        ? [
+            new SimpleFeature({
+              uniqueId: 'pair',
+              refName: 'ctgA',
+              start: 100,
+              end: 700,
+              strand: 1,
+              assemblyName: 'volvox',
+              mate: {
+                assemblyName: 'volvox_random',
+                refName: 'ctgA',
+                start: 100,
+                end: 700,
+              },
+            }),
+          ]
+        : name === 'CoreGetFeatures'
+          ? [geneOf(region!.assemblyName === 'volvox' ? 'A' : 'B')]
+          : []
+    },
+  })
+  await until(
+    () =>
+      display.laneGenes.held.get('volvox')?.genes.length === 1 &&
+      display.laneGenes.held.get('volvox_random')?.genes.length === 1,
+  )
+  const { lanes } = display.laneStack
+  expect(lanes.map(l => l.assemblyName)).toEqual(['volvox', 'volvox_random'])
+
+  const labels = display.laneGeneLabels('sans-serif')
+  expect(labels.filter(l => l.row === 0).map(l => l.text)).toEqual(['A'])
+  expect(labels.filter(l => l.row === 1).map(l => l.text)).toEqual(['B'])
+
+  const cell = display.laneGlyphCells.get(glyphsKey(1))
+  const [hit] = cell?.kind === 'glyphs' ? cell.data.hits : []
+  display.setHoverTarget(
+    display.hitTest(
+      (hit!.x1 + hit!.x2) / 2 + display.dragOffsetPx,
+      (hit!.y1 + hit!.y2) / 2 - display.scrollTop,
+    ),
+  )
+  display.selectHovered()
+  expect(session.selectionTrackId).toBe('random_genes')
+  expect(display.selectedGlyphHits.map(hits => hits.length)).toEqual([0, 1])
+  expect(display.selectionInk).toHaveLength(1)
+
+  session.setSelection(hit!.feature, display.parentTrack.configuration.trackId)
+  expect(display.selectionInk).toEqual([])
+
+  session.setSelection(geneOf('A'), 'volvox_genes')
+  expect(display.selectedGlyphHits.map(hits => hits.length)).toEqual([1, 0])
 })
 
 test('a lane-genes commit leaves the stack and the ribbons where they were', () => {

@@ -24,6 +24,7 @@ import {
   morphClockMs,
   openFeatureWidget,
   persistTrackConfigNow,
+  selectedFeatureIdFor,
 } from '@jbrowse/core/util'
 import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
@@ -295,10 +296,14 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type { AttributeRange, DeclaredLane } from '@jbrowse/synteny-core'
 import type React from 'react'
 
-/** `loci`: where the glyph, or each end of the ribbon, sits on its lane */
+/**
+ * `loci`: where the glyph, or each end of the ribbon, sits on its lane;
+ * `trackId`: the track the feature's id is unique within
+ */
 export interface HoverTarget extends RibbonRef {
   label: string
   feature: Feature
+  trackId: string
   loci?: LaneEnd[]
 }
 
@@ -1474,6 +1479,17 @@ export function stateModelFactory(
         }
         return out
       },
+      /**
+       * #method
+       * the track a lane gene's selection names: the lane's gene track, or one
+       * per lane under this display where a described genome brings the genes
+       */
+      laneSelectionTrackId(assemblyName: string) {
+        return (
+          self.laneGeneTracks.get(assemblyName)?.trackId ??
+          `${self.id}:${self.laneKey(assemblyName)}`
+        )
+      },
     }))
     .views(self => ({
       /** #getter */
@@ -2414,8 +2430,7 @@ export function stateModelFactory(
       let memo = {
         text: getFeatureName,
         fontFamily: '' as string | undefined,
-        genes: undefined as unknown,
-        byId: new Map<string, GeneLabel | null>(),
+        labels: new WeakMap<Feature, GeneLabel | null>(),
       }
       return {
         /**
@@ -2432,14 +2447,10 @@ export function stateModelFactory(
           }
           const text = self.geneTextOf
           const genes = self.laneGenes.held
-          if (
-            memo.text !== text ||
-            memo.fontFamily !== fontFamily ||
-            memo.genes !== genes
-          ) {
-            memo = { text, fontFamily, genes, byId: new Map() }
+          if (memo.text !== text || memo.fontFamily !== fontFamily) {
+            memo = { text, fontFamily, labels: new WeakMap() }
           }
-          const { byId } = memo
+          const { labels } = memo
           const { lanes, glyphHeight } = self.laneStack
           const boxNames = self.laneBoxNames
           return placeLaneLabels({
@@ -2447,8 +2458,7 @@ export function stateModelFactory(
             genesOf: assemblyName => genes.get(assemblyName)?.genes ?? [],
             boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
             labelOf: feature => {
-              const id = feature.id()
-              let label = byId.get(id)
+              let label = labels.get(feature)
               if (label === undefined) {
                 const name = text(feature)
                 label = name
@@ -2457,7 +2467,7 @@ export function stateModelFactory(
                       width: measureText(name, GENE_LABEL_FONT_PX, fontFamily),
                     }
                   : null
-                byId.set(id, label)
+                labels.set(feature, label)
               }
               return label ?? undefined
             },
@@ -2701,17 +2711,23 @@ export function stateModelFactory(
        * the selected feature's glyph hits per row, which a pan leaves alone
        */
       get selectedGlyphHits() {
-        const id = self.selectedFeatureId
-        return id === undefined
-          ? []
-          : self.laneStack.lanes.map((_lane, row) =>
-              [boxesKey(row), glyphsKey(row)].flatMap(key => {
-                const cell = self.laneGlyphCells.get(key)
-                return cell?.kind === 'glyphs'
-                  ? cell.data.hits.filter(hit => hit.feature.id() === id)
-                  : []
-              }),
-            )
+        const session = getSession(self)
+        const boxId = self.selectedFeatureId
+        return self.laneStack.lanes.map((lane, row) => {
+          const geneId = selectedFeatureIdFor(
+            session,
+            self.laneSelectionTrackId(lane.assemblyName),
+          )
+          return [
+            { key: boxesKey(row), id: boxId },
+            { key: glyphsKey(row), id: geneId },
+          ].flatMap(({ key, id }) => {
+            const cell = self.laneGlyphCells.get(key)
+            return id !== undefined && cell?.kind === 'glyphs'
+              ? cell.data.hits.filter(hit => hit.feature.id() === id)
+              : []
+          })
+        })
       },
     }))
     .views(self => ({
@@ -3014,6 +3030,10 @@ export function stateModelFactory(
               return {
                 label: hit.label,
                 feature: hit.feature,
+                trackId:
+                  key === glyphsKey(row)
+                    ? self.laneSelectionTrackId(lanes[row]!.assemblyName)
+                    : self.parentTrack.configuration.trackId,
                 groupKey: hit.groupKey,
                 loci: [
                   { ...hit.locus, assemblyName: lanes[row]!.assemblyName },
@@ -3040,6 +3060,7 @@ export function stateModelFactory(
           ? {
               ...target,
               feature: record,
+              trackId: self.parentTrack.configuration.trackId,
               label: ribbonTooltip(
                 target.label,
                 record,
@@ -3094,8 +3115,8 @@ export function stateModelFactory(
     }))
     .actions(self => ({
       /** #action */
-      selectFeature(feature: Feature) {
-        openFeatureWidget(self, feature.toJSON(), { feature })
+      selectFeature(feature: Feature, sourceTrackId?: string) {
+        openFeatureWidget(self, feature.toJSON(), { feature, sourceTrackId })
       },
       /** #action */
       openInNewView(assemblyName: string, loc: string) {
@@ -3232,7 +3253,7 @@ export function stateModelFactory(
           linkId: hoverTarget.linkId,
         }
         if (hoverTarget) {
-          self.selectFeature(hoverTarget.feature)
+          self.selectFeature(hoverTarget.feature, hoverTarget.trackId)
         }
       },
     }))
