@@ -186,10 +186,11 @@ its only value scale is `coverage.encoding.y`.
     object had no second member, no longer holds once `scale`, `axis` and
     `rules` share it. Colin chose this shape (2026-10-22).
 - **`scale`** holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`,
-  `constant` (was `symlogConstant`) and `group` (was `autoscaleGroup`), as
-  ADR-240 spells them. **`axis`** holds `title` and `grid`, and from
-  2026-10-30 `show`, as every other guide turns off: off, the value axis, its
-  short-band caption and its grid go and the `rules` stay. This removes
+  `constant` (was `symlogConstant`) and `group` (was `autoscaleGroup`, and
+  `share` from 2026-11-07), as ADR-240 spells them. **`axis`** holds `title`
+  and `grid`, and from 2026-10-30 `show`, as every other guide turns off:
+  off, the value axis, its short-band caption and its grid go and the
+  `rules` stay. This removes
   `tickCount` and `tree` from the Axis bullet below and overrides ADR-240's
   `tickCount: 4` sample.
 - **The fence:** `scale.fenceQuantile` replaces `scales.y.domainQuantile`, so
@@ -430,6 +431,7 @@ predicate in the layer's own `filter`:
 | `splitStrands` kept as a switch, or as a `yOffset` channel on reading direction | One layout reads better at every lane height it fits, and a short lane already falls back to one row |
 | The row sidebar's `axis` as Vega-Lite's `header`, since the multi-way lanes' `axis` is an x ruler (2026-11-01 cold read) | Both are guides on a positional channel, the band y's and the lanes' x; `header` labels facet panels, and these rows are positions on one scale |
 | `rows.labels` as a `scale.names` list | `names` runs parallel to a declared `domain`; rows have none, their order being `rows.sort` over whatever the source lists, so a label is keyed by row name |
+| `tooltip` as Vega-Lite's `encoding.tooltip` (2026-11-07) | The part carries `show`, and a channel cannot turn off, `null` resetting it; Vega-Lite itself spells hover twice, `mark.tooltip` on or off and `encoding.tooltip` its fields. The part's `field` names the hover's first line |
 
 ## Consequences
 

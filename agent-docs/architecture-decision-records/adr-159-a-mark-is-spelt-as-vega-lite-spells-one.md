@@ -86,7 +86,10 @@ shipped only in v5 betas.
   read by the people and agents who write configs.
 - **`type` for the kind, as Vega spells `marks[i].type`.** A JBrowse config
   already reads `type` as a pluggable element's name, so a mark's `type`
-  would read as one.
+  would read as one. The entry is still `{ mark, encoding, transform }`
+  (2026-11-07): the `mark.type` that `MarkDef` (`markDefConfigSchema.ts`)
+  takes is Vega-Lite's `mark: { type, ... }` object, not the entry-level
+  `type` this row declined.
 - **Rename the lane and render-core's painter too.** The painter's vocabulary
   is `glyph` from the shader constants to the hit test, and the lane is its
   input; renaming it buys no reader anything.

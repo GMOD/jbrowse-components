@@ -85,23 +85,27 @@ file's own colors) are in the [cookbook](/docs/cookbook#colors).
 
 `encoding.y.scale` sets how a plotted value maps to height: its `type`
 (`linear`, `log` or `symlog`), and `domainMin` and `domainMax` to pin its ends,
-which otherwise follow the loaded data. A display has one value scale, shared by
-everything it plots and read by its axis.
-[](/docs/config_guides/quantitative_track) covers it in full.
+which otherwise follow the loaded data. Tracks giving the same name in `share`
+autoscale on one axis. A display has one value scale, shared by everything it
+plots and read by its axis. [](/docs/config_guides/quantitative_track) covers it
+in full.
 
 ## Facet
 
 `facet` names the field whose values split features into sections, and its
 `sort` list names the sections that stack first. A `sort` orders sections and
-never creates them. [](/docs/config_guides/grouping_and_ordering) works it
-through on gene, alignments, variant and synteny tracks.
+never creates them. On a row display the field is a row attribute, such as a
+sample sheet's `population`, and each section is a band of rows.
+[](/docs/config_guides/grouping_and_ordering) works it through on gene,
+alignments, variant and synteny tracks.
 
 ## Rows
 
 A row display, such as a multi-sample variant track or a multi-signal
 quantitative track, describes its rows in one `rows` object: the `field` that
-names them, their `sort`, their `labels`, a clustering `tree`, a row `color`
-read off sample metadata, and `step`, the row height or `"fit"`. The
+names them, their `sort`, their `labels`, a clustering `tree` and a row `color`
+read off sample metadata. On the variant and mark displays, where rows scroll,
+`step` sets the row height or `"fit"`. The
 [variant track guide](/docs/config_guides/variant_track) shows rows read from a
 sample sheet.
 

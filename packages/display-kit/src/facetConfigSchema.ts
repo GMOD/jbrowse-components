@@ -42,13 +42,13 @@ export const facetConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * The feature field whose values each get a labelled section of the
-     * track: a field name, a dotted path into a structured field
-     * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
-     * `strand`. A feature with no value stacks last, under `field: none`
+     * A feature field, or on a row display a row attribute, whose values each
+     * get a labelled section of the track: a field name, a dotted path into a
+     * structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:`
+     * expression, or `strand`. A feature with no value stacks last, under `field: none`
      * (`(no value)` for a `jexl:` field, whose sections show the value alone).
-     * The variant display reads a sample attribute instead, and
-     * the mark displays `group`, their `rows.groups`.
+     * The variant display's row attribute is a sample attribute, and the
+     * mark displays' is `group`, their `rows.groups`.
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`,
      * `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"`
@@ -58,7 +58,7 @@ export const facetConfigSchema = ConfigurationSchema(
       type: 'featureField',
       defaultValue: '',
       description:
-        'feature field (or jexl expression) to facet over, one labelled section per value; `strand` for one per strand, and empty for no sections',
+        'feature field (or jexl expression), or on a row display a row attribute, to facet over, one labelled section per value; `strand` for one per strand, and empty for no sections',
     },
     /**
      * #slot sort
