@@ -92,6 +92,35 @@ export abstract class FannedTable extends DerivedTable {
  * bin, an aggregate, a cell) or fanned out a record of its own.
  */
 export function rootRowOf(table: FeatureTable, i: number, root: FeatureTable) {
+  return rowUnder(
+    table,
+    i,
+    root,
+    (at, row) =>
+      !at.madeFrom ||
+      (at instanceof FannedTable && (at.isKept(row) || at.isChildFeature(row))),
+  )
+}
+
+/**
+ * The row of `root` that row `i` of `table` came out of, whole, as a child
+ * feature, a fanned-out entry or a cell of it, or undefined where a step made
+ * the row out of several (an aggregate, a coverage).
+ */
+export function sourceRowOf(
+  table: FeatureTable,
+  i: number,
+  root: FeatureTable,
+) {
+  return rowUnder(table, i, root, () => true)
+}
+
+function rowUnder(
+  table: FeatureTable,
+  i: number,
+  root: FeatureTable,
+  passes: (at: DerivedTable, row: number) => boolean,
+) {
   let at = table
   let row = i
   while (at !== root) {
@@ -100,13 +129,7 @@ export function rootRowOf(table: FeatureTable, i: number, root: FeatureTable) {
       at = at.from.table
       continue
     }
-    if (!(at instanceof DerivedTable)) {
-      return undefined
-    }
-    if (
-      at.madeFrom &&
-      !(at instanceof FannedTable && (at.isKept(row) || at.isChildFeature(row)))
-    ) {
+    if (!(at instanceof DerivedTable) || !passes(at, row)) {
       return undefined
     }
     row = at.parentOf(row)

@@ -217,6 +217,11 @@ export function isRowwise(step: StepOutline) {
   return outputOf(step)?.rowwise ?? false
 }
 
+/** Whether a step makes its rows anew, as an aggregate or a coverage does. */
+export function replacesRows(step: StepOutline) {
+  return outputOf(step)?.replacesRows ?? false
+}
+
 /**
  * What a run of steps leaves: every field written, the last write of each
  * winning, and, where a step made the rows anew, the only fields that survive

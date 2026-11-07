@@ -1,6 +1,7 @@
 import { ColumnTable, asTable } from './featureTable.ts'
 import {
   facetLayers as facetTables,
+  layerRootRows,
   layerTables,
   matedBy,
   runTransforms as runTables,
@@ -1519,4 +1520,71 @@ test('unreadStepFields names a leading filter field no row holds, and none a for
       jexl,
     ),
   ).toEqual(['scroe'])
+})
+
+describe('layerRootRows', () => {
+  const plotted = [
+    feature(0, 10, { score: 1, kind: 'bar' }),
+    feature(10, 20, {
+      score: 3,
+      kind: 'bar',
+      samples: { x: { gt: 1 }, y: { gt: 0 } },
+    }),
+    feature(20, 30, { score: 4, kind: 'point' }),
+    feature(30, 40, { score: 5, kind: 'line' }),
+  ]
+  const transform = [
+    {
+      type: 'formula' as const,
+      expr: "jexl:get(feature,'score') * 2",
+      as: 's2',
+    },
+    { type: 'filter' as const, predicates: [{ field: 's2', gte: 6 }] },
+  ]
+  const kindIs = (kind: string) => ({
+    type: 'filter' as const,
+    expr: `jexl:get(feature,'kind') == '${kind}'`,
+  })
+  const layers = [
+    { transform: [kindIs('bar')] },
+    { transform: [kindIs('point')] },
+    {
+      transform: [
+        { type: 'bin' as const, step: 100 },
+        { type: 'aggregate' as const, ops: [{ op: 'count' as const }] },
+        { type: 'filter' as const, predicates: [{ field: 'count', gte: 9 }] },
+      ],
+    },
+    {
+      transform: [
+        { type: 'flatten' as const, field: 'samples', key: 'sample' },
+      ],
+    },
+  ]
+  const inputRows = (layer: ReturnType<typeof layerRootRows>[number]) =>
+    Array.from({ length: layer.table.length }, (_, i) => layer.inputRow(i))
+
+  test('each layer answers the input rows its whole chain keeps, a row-replacing step cut', () => {
+    expect(
+      layerRootRows(plotted, { transform, layers }, jexl).map(inputRows),
+    ).toEqual([[1], [2], [1, 2, 3], [1, 1]])
+  })
+
+  test('under a facet each row names the section the worker stacked it in', () => {
+    const [layer] = layerRootRows(
+      plotted,
+      { transform, facet: { field: 'kind' }, layers: [{}] },
+      jexl,
+    )
+    expect(
+      Array.from({ length: layer!.table.length }, (_, i) => [
+        layer!.inputRow(i),
+        layer!.section?.(i),
+      ]),
+    ).toEqual([
+      [1, 'bar'],
+      [3, 'line'],
+      [2, 'point'],
+    ])
+  })
 })

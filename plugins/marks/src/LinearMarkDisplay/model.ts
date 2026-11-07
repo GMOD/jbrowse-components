@@ -327,22 +327,6 @@ export function stateModelFactory(
       .views(self => markRequestViews(self))
       .views(self => ({
         /**
-         * #method
-         * The exported features this display draws: those its `filter`
-         * keeps, outside the sections the user hid.
-         */
-        exportedFeatures(features: Feature[]) {
-          return exportedMarkFeatures({
-            features,
-            filterSteps: self.filterSteps,
-            facetField: self.facet?.field,
-            hidden: self.hiddenGroups,
-            jexl: getEnv(self).pluginManager.jexl,
-          })
-        },
-      }))
-      .views(self => ({
-        /**
          * #getter
          * The layers as they came back, keyed by displayedRegionIndex: the
          * foundation's per-region store.
@@ -770,6 +754,28 @@ export function stateModelFactory(
          */
         showAllCategories() {
           self.hiddenCategories = undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * The exported features this display draws: those a mark drawing at
+         * this zoom reaches through the worker's steps, in a section or row
+         * shown, outside the categories the key hides.
+         */
+        exportedFeatures(features: Feature[]) {
+          const hidden = self.hiddenGroups
+          const rows = self.drawsRows
+            ? new Set(self.sources.map(row => row.name))
+            : undefined
+          return exportedMarkFeatures({
+            features,
+            request: self.plotRequest(),
+            drawing: self.drawingMarkIndices,
+            colors: self.markColors,
+            sectionShown: key => !hidden.has(key) && (rows?.has(key) ?? true),
+            jexl: getEnv(self).pluginManager.jexl,
+          })
         },
       }))
       .views(self => ({

@@ -1,43 +1,84 @@
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { runTransforms } from '@jbrowse/core/util/featureTransforms'
-import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { layerRootRows } from '@jbrowse/core/util/featureTransforms'
+import { colorEntryReader } from '@jbrowse/core/util/markEncoding'
 
+import { wireColorOf } from './markColor.ts'
+
+import type { ColorSource } from './markColor.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
-import type { TransformStep } from '@jbrowse/core/util/markEncoding'
+import type {
+  FacetSpec,
+  LayerRequest,
+  TransformStep,
+} from '@jbrowse/core/util/markEncoding'
 
 /**
- * The features a mark display draws out of a fetch: through the `filter`
- * steps the worker runs, by the same transform code, then outside the
- * sections the user hid, each feature keyed the way `facetLayers` keys it.
+ * The features a mark display draws out of a fetch: each one a mark drawing
+ * at this zoom reaches through the steps the worker runs (`layerRootRows`),
+ * in a section or row `sectionShown` keeps, outside the categories its color's
+ * key hides. Each keeps its place in `features`.
  */
 export function exportedMarkFeatures({
   features,
-  filterSteps,
-  facetField,
-  hidden,
+  request,
+  drawing,
+  colors,
+  sectionShown,
   jexl,
 }: {
   features: Feature[]
-  filterSteps: readonly TransformStep[]
-  facetField: string | undefined
-  hidden: ReadonlySet<string>
+  request: {
+    layers: readonly LayerRequest[]
+    transform: readonly TransformStep[]
+    facet?: FacetSpec
+  }
+  drawing: readonly number[]
+  colors: readonly ColorSource[]
+  sectionShown: (key: string) => boolean
   jexl: JexlInstance
 }) {
-  const kept = runTransforms(features, filterSteps, jexl)
-  const shown = Array.from({ length: kept.length }, (_, i) => kept.row(i))
-  return facetField === undefined || hidden.size === 0
-    ? shown
-    : withoutHiddenSections(shown, facetField, hidden, jexl)
+  const layers = layerRootRows(
+    features,
+    {
+      ...request,
+      layers: request.layers.map(l => ({
+        transform: l.transform,
+        row: l.encoding.row,
+      })),
+    },
+    jexl,
+  )
+  const drawn = new Uint8Array(features.length)
+  for (const l of drawing) {
+    const { table, inputRow, section } = layers[l]!
+    const shownColor = colorShown(table, colors[l], jexl)
+    for (let i = 0; i < table.length; i++) {
+      if ((!section || sectionShown(section(i))) && shownColor(i)) {
+        const row = inputRow(i)
+        if (row !== undefined) {
+          drawn[row] = 1
+        }
+      }
+    }
+  }
+  return features.filter((_, i) => drawn[i])
 }
 
-function withoutHiddenSections(
-  features: Feature[],
-  facetField: string,
-  hidden: ReadonlySet<string>,
+// Whether a row's color is one its key shows.
+function colorShown(
+  table: FeatureTable,
+  color: ColorSource | undefined,
   jexl: JexlInstance,
 ) {
-  const read = fieldReader(facetField, jexl)
-  const { key } = categoricalField(facetField)
-  return features.filter(f => !hidden.has(key(read(f))))
+  const listed: readonly (string | number)[] =
+    color?.kind === 'categories' || color?.kind === 'identity'
+      ? (color.hidden ?? [])
+      : []
+  const hidden = new Set(listed)
+  const read =
+    color && hidden.size > 0
+      ? colorEntryReader(table, wireColorOf(color), jexl)
+      : undefined
+  return read ? (i: number) => !hidden.has(read(i)) : () => true
 }

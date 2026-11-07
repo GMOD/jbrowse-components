@@ -44,6 +44,7 @@ import type {
   Encoded,
   EncodedChannels,
   FieldRef,
+  IdentityRef,
   LocusRef,
   MarkColorEncoding,
   ShapeEncoding,
@@ -1004,20 +1005,54 @@ function categoryColors(
   return { entries, channel: keyed ? { colorKey: lane } : { color: lane } }
 }
 
+// The field an identity color reads and how it keys each value.
+function identityKeying(table: FeatureTable, { field }: IdentityRef) {
+  return field === undefined
+    ? { ref: bedColorFieldOf(table), categories: ownColorField() }
+    : { ref: field, categories: cssColorField() }
+}
+
+function identityKeyColor(key: string) {
+  return key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)
+}
+
+/**
+ * #api
+ * What a categorical color's key lists each row of `table` under, as the
+ * encoder lists it: an ordinal color's category, an identity color's packed
+ * color. Undefined for a color whose key lists no categories.
+ */
+export function colorEntryReader(
+  table: FeatureTable,
+  color: MarkColorEncoding,
+  jexl?: JexlInstance,
+): ((i: number) => string | number) | undefined {
+  if (typeof color === 'object' && color.scale === 'identity') {
+    const { ref, categories } = identityKeying(table, color)
+    const read = channelReader(table, ref, jexl)
+    return i => identityKeyColor(categories.key(read(i)))
+  } else if (typeof color === 'object' && color.scale === 'ordinal') {
+    const categories = categoricalField(color.field)
+    const read = channelReader(table, color.field, jexl)
+    return i => categories.key(read(i))
+  } else {
+    return undefined
+  }
+}
+
 function identityColors(
   walk: LaneContext,
   identity: Extract<MarkColorEncoding, { scale: 'identity' }>,
   keyed: boolean,
 ) {
-  const { field, labelField } = identity
-  const colorRef = field ?? bedColorFieldOf(walk.table)
-  const categories = field === undefined ? ownColorField() : cssColorField()
+  const { labelField } = identity
+  const { ref: colorRef, categories } = identityKeying(walk.table, identity)
   const { entries, channel } = categoryColors(
     walk,
     colorRef,
     categories,
     keyed,
-    key => (key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)),
+    identityKeyColor,
   )
   const labels = labelField
     ? colorLabels(walk.table, colorRef, labelField, categories, walk, walk.jexl)

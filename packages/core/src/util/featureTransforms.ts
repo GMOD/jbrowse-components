@@ -28,6 +28,7 @@ import {
   DEFAULT_COVERAGE_AS,
   DEFAULT_PILEUP_AS,
   isRowwise,
+  replacesRows,
   stepWrites,
 } from './stepOutputs.ts'
 import {
@@ -44,6 +45,7 @@ import {
   isWeighted,
   madeGroups,
   sortByStart,
+  sourceRowOf,
   stepNumberReader,
   stepReader,
 } from './stepTables.ts'
@@ -1612,4 +1614,81 @@ export function layerTables(
     layers: split.layers.map(({ table, rows }) => ({ table, row: rows })),
     sections: split.sections,
   }
+}
+
+// Each run of steps in a chain up to the chain's first step that makes its
+// rows anew, the runs after it empty.
+function untilRowsReplaced(
+  chain: readonly (readonly TransformStep[] | undefined)[],
+) {
+  let replaced = false
+  return chain.map((steps = []) => {
+    const at = replaced ? 0 : steps.findIndex(replacesRows)
+    replaced = replaced || at !== -1
+    return at === -1 ? steps : steps.slice(0, at)
+  })
+}
+
+// Each stacked row's section key, read by a layer row's stacked row.
+function sectionKeyReader(
+  rows: Uint32Array,
+  sections: readonly FacetSection[],
+) {
+  const keyOfRow = sections.flatMap(({ key, rowCount }) =>
+    Array.from({ length: rowCount }, () => key),
+  )
+  return (i: number) => keyOfRow[rows[i]!]!
+}
+
+/**
+ * #api
+ * The rows of `input` each layer of a {@link layerTables} request draws: the
+ * request run with each chain — the shared steps, the facet's, the layer's
+ * own — cut ahead of its first step that makes its rows anew (an aggregate,
+ * a coverage), so a bin or a depth answers the rows it was made of, as a
+ * depth exports the reads it counts (ADR-259). Each layer's `table` holds its
+ * rows as the cut chain leaves them; `inputRow` maps one to the row of
+ * `input` it came out of, and under a facet `section` names its section's
+ * key.
+ */
+export function layerRootRows(
+  input: readonly Feature[] | FeatureTable,
+  request: {
+    transform?: readonly TransformStep[]
+    facet?: FacetSpec
+    layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
+  },
+  jexl?: JexlInstance,
+) {
+  const root = asTable(input)
+  const { transform, facet, layers } = request
+  const [shared = [], sectionSteps = []] = untilRowsReplaced([
+    transform,
+    facet?.transform,
+  ])
+  const cut = layerTables(
+    root,
+    {
+      transform: shared,
+      ...(facet ? { facet: { ...facet, transform: [...sectionSteps] } } : {}),
+      layers: layers.map(layer => ({
+        transform: untilRowsReplaced([
+          transform,
+          facet?.transform,
+          layer.transform,
+        ])[2],
+        row: layer.row,
+      })),
+    },
+    jexl,
+  )
+  const { sections } = cut
+  return cut.layers.map(({ table, row }) => ({
+    table,
+    inputRow: (i: number) => sourceRowOf(table, i, root),
+    section:
+      sections && row instanceof Uint32Array
+        ? sectionKeyReader(row, sections)
+        : undefined,
+  }))
 }
