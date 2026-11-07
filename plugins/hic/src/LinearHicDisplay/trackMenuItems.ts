@@ -1,7 +1,7 @@
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import { fitToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
@@ -81,7 +81,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 }
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
-  return [legendCheckboxItem(self)]
+  return legendMenuItems(self)
 }
 
 function layoutMenuItem(self: HicMenuSelf): MenuItem {

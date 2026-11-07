@@ -10,7 +10,7 @@ import { getDialogHost, pluralize } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
   solidColorItem,
@@ -273,7 +273,7 @@ function variantShowSubmenuItems(self: LinearVariantDisplayModel): MenuItem[] {
         self.setShowTooltips(!self.showTooltips)
       },
     },
-    legendCheckboxItem(self),
+    ...legendMenuItems(self),
   ]
 }
 

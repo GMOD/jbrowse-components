@@ -1,6 +1,6 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import { fitToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
@@ -64,7 +64,7 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
     toggleItem('Variant labels', self.showNames, self.setShowNames),
-    legendCheckboxItem(self),
+    ...legendMenuItems(self),
   ]
 }
 

@@ -7,7 +7,7 @@ import { getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
   resetSectionOrderItems,
@@ -182,7 +182,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
           self.setFacetSort(domain)
         },
       }),
-      legendCheckboxItem(self),
+      ...legendMenuItems(self),
     ]),
     ...editPlotMenuItems(self),
   ]

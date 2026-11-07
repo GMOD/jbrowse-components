@@ -1,3 +1,4 @@
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import { getRoot, unprotect } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -15,4 +16,16 @@ test('a host naming the features itself leaves no name or description in the row
   expect(display.effectiveShowDescriptions).toBe(false)
   expect(display.showNames).toBe(true)
   expect(display.showDescriptions).toBe(true)
+})
+
+test("a host showing only the canvas offers no display key's Legend row", () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(legendMenuItems(display).map(i => 'label' in i && i.label)).toEqual([
+    'Legend',
+  ])
+
+  unprotect(getRoot(display))
+  Object.defineProperty(display.host, 'showsCanvasOnly', { value: true })
+  expect(legendMenuItems(display)).toEqual([])
 })

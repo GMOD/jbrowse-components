@@ -1,7 +1,7 @@
 import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 
 import {
   collapseSectionsItems,
@@ -130,6 +130,6 @@ export function getReadsMenuItems(model: ReadsModel) {
     // spend its life greyed.
     interbaseIndicatorsMenuItem(model),
     ...sashimiShowItems(model),
-    legendCheckboxItem(model),
+    ...legendMenuItems(model),
   ] satisfies MenuItem[])
 }

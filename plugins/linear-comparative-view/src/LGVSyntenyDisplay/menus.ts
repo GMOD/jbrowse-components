@@ -1,6 +1,6 @@
 import { resolveSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   collapseSectionsItems,
   groupByRadioMenuItem,
@@ -145,6 +145,6 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
           ),
         ]
       : []),
-    legendCheckboxItem(model),
+    ...legendMenuItems(model),
   ] satisfies MenuItem[])
 }

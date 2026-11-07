@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
   colorSchemeMenuItem,
@@ -325,7 +325,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     ),
     ...frameMenuItems(self),
     // Only where a key exists: a constant fill and the bases key nothing.
-    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
+    ...(self.hasLegendKey ? legendMenuItems(self) : []),
   ]
 }
 

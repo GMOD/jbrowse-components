@@ -391,6 +391,9 @@ export const RingHost = types
     get namesFeatures() {
       return self.view.namesFeaturesOutside
     },
+    get showsCanvasOnly() {
+      return true
+    },
     /**
      * The strip's scale against the circle: 1 until the circumference outruns
      * the widest canvas a backing store holds, then the fraction that fits.

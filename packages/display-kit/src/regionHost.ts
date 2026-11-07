@@ -162,6 +162,11 @@ export interface RegionHost extends AbstractViewModel, IStateTreeNode {
    * (a circle of one contig), so no row keeps room for a name or description.
    */
   readonly namesFeatures?: boolean
+  /**
+   * Whether the host shows only its displays' canvases, none of their page
+   * chrome (a display's own key, its section chips), as the circle's rings do.
+   */
+  readonly showsCanvasOnly?: boolean
   readonly staticBlocks: BlockSet
   readonly dynamicBlocks: BlockSet
   readonly settledDynamicBlocks: ContentBlock[]

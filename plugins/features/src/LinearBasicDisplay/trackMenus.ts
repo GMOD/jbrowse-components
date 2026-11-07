@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
   colorFieldMenuItems,
@@ -189,7 +189,7 @@ export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
 }
 
 export function showSubmenuLegendItems(self: ShowSubmenuSelf): MenuItem[] {
-  return self.hasLegendKey ? [legendCheckboxItem(self)] : []
+  return self.hasLegendKey ? legendMenuItems(self) : []
 }
 
 // Collapsed wins over the fit note, since collapsed mode strips labels before

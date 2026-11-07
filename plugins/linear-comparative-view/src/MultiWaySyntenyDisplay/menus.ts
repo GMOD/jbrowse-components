@@ -7,7 +7,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
   solidColorItem,
@@ -339,7 +339,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
       model.showHiddenLanes()
     }),
-    ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
+    ...(model.hasLegendKey ? legendMenuItems(model) : []),
   ]
 }
 

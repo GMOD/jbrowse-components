@@ -3,6 +3,8 @@ import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { containingHost } from './foundationView.ts'
+
 import type { legendConfigSchema } from './legendConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -130,6 +132,14 @@ export default function LegendMixin() {
       get hasLegendKey(): boolean {
         return self.colorScales.some(scale => !colorScaleIsEmpty(scale))
       },
+      /**
+       * #getter
+       * Whether the host draws this display's key in place of the display,
+       * as the circle does for its rings.
+       */
+      get keyDrawnByHost(): boolean {
+        return !!containingHost(self).showsCanvasOnly
+      },
     }))
     .actions(self => ({
       /**
@@ -157,10 +167,26 @@ export default function LegendMixin() {
  * The "Legend" row of a display's "Show" submenu, for a display composing
  * `LegendMixin`. A display with no key to show (`hasLegendKey`) leaves the row
  * out, and every display lists it last.
+ *
+ * @deprecated use `legendMenuItems`, which leaves the row out where the host
+ * draws no display key
  */
 export function legendCheckboxItem(self: {
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
 }) {
   return toggleItem('Legend', self.showLegend, self.setShowLegend)
+}
+
+/**
+ * The "Legend" row of a display's "Show" submenu, or none where the host draws
+ * the key (`keyDrawnByHost`): the circle draws one key for every track, which
+ * its own menu toggles.
+ */
+export function legendMenuItems(self: {
+  showLegend: boolean
+  setShowLegend: (arg: boolean) => void
+  keyDrawnByHost?: boolean
+}) {
+  return self.keyDrawnByHost ? [] : [legendCheckboxItem(self)]
 }

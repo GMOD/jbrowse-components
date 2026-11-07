@@ -14,9 +14,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import LegendMixin, {
-  legendCheckboxItem,
-} from '@jbrowse/display-kit/LegendMixin'
+import LegendMixin, { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
@@ -582,7 +580,7 @@ export default function stateModelFactory(
                 showRowSeparatorsMenuItem(self),
                 showRowLabelsMenuItem(self),
               ]),
-          ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
+          ...(self.hasLegendKey ? legendMenuItems(self) : []),
         ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_PLOTS),
