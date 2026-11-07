@@ -36,14 +36,14 @@ test('an autoscale group is the axis widget of the display it is on', () => {
   expect(
     stepPaths(
       'coverage.encoding.y',
-      { scale: { group: 'depth' } },
+      { scale: { share: 'depth' } },
       'LinearAlignmentsDisplay',
     ),
   ).toEqual(['Track menu → Advanced → Coverage axis... → Share axis with'])
   expect(
     stepPaths(
       'encoding.y',
-      { scale: { group: 'depth' } },
+      { scale: { share: 'depth' } },
       'LinearWiggleDisplay',
     ),
   ).toEqual(['Track menu → Y axis... → Share axis with'])

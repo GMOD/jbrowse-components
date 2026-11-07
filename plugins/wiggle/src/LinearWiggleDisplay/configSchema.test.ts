@@ -2,7 +2,9 @@ import {
   readConfObject,
   refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
+import { readYMember } from '@jbrowse/wiggle-core'
 
+import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import configSchema from './configSchema.ts'
 
 function create(snap: Record<string, unknown>) {
@@ -135,6 +137,11 @@ test('a bare encoding.y is the field, and the fence starts at 0.99', () => {
   const conf = create({ encoding: { y: 'minScore' } })
   expect(readConfObject(conf, [...Y, 'field'])).toBe('minScore')
   expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(0.99)
+})
+
+test('the shared axis name reads where the score menu writes it', () => {
+  const conf = create({ encoding: { y: { scale: { share: 'depth' } } } })
+  expect(readYMember(conf, WIGGLE_Y_PATHS, 'share')).toBe('depth')
 })
 
 test.each([

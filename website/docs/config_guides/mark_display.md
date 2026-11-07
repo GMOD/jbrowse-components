@@ -83,7 +83,7 @@ one.
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"encoding": {"y": {"scale": {"type": "symlog", "constant"}}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `encoding.y.scale` |
 | one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `encoding.y` |
-| one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `encoding.y.scale.group` |
+| one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `encoding.y.scale.share` |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `encoding.y.axis.title` |
 | a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `legend.title` on the color |
 | which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `legend.values` on the color or shape |
@@ -169,8 +169,8 @@ Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair
 (below) only one mark draws, so the axis is that mark's.
 
-`scale.group` shares the axis across tracks: every track in the view naming the
-same group autoscales over all of their data, so a plot and a wiggle or coverage
+`scale.share` puts tracks on one axis: every track in the view giving it the
+same name autoscales over all of their data, so a plot and a wiggle or coverage
 track stay comparable as the view moves. An end pinned on one track applies to
 that track alone. **Share axis with** in the **Y axis...** panel writes it.
 

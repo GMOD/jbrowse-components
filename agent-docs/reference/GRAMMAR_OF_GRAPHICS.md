@@ -153,7 +153,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   display per mousemove.
 - **A quantitative heatmap's ramp reads the y scale.** Under the
   quantitative display's `rect` nothing sits on y, and the ramp's ends,
-  placement, fence and group are still `encoding.y.scale`'s: the plotted
+  placement, fence and share are still `encoding.y.scale`'s: the plotted
   value has one scale whichever mark places it, so a Plot type switch keeps
   a pinned range (ADR-251). Don't re-propose a color-owned domain there.
 - **No per-layer data on the mark display, and no `lookup` join.** No measurement

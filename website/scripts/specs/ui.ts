@@ -634,7 +634,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // One autoscale group puts the three genotypes on one axis; per-row
+  // One shared axis puts the three genotypes on one scale; per-row
   // autoscale draws them at almost the same height.
   {
     mode: 'url',
@@ -673,7 +673,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               pileup: { show: false },
               coverage: {
                 height: 190,
-                encoding: { y: { scale: { group: 'depth' } } },
+                encoding: { y: { scale: { share: 'depth' } } },
               },
               readConnections: {
                 // No mate-pair band: the RHD deletion is NAHR between the

@@ -97,7 +97,7 @@ export type ValueScaleRuleConfig = Instance<
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   coverage: { encoding: { y: { scale: { group: 'depth' } } } },
+ *   coverage: { encoding: { y: { scale: { share: 'depth' } } } },
  * }
  * ```
  */

@@ -14,7 +14,7 @@ export interface YScaleOptions {
  * #config YScale
  * #category display
  * A [YChannel](../ychannel)'s `scale`: its type, its pinned ends, the outlier
- * fence an unpinned end follows, and the group it autoscales with. An end
+ * fence an unpinned end follows, and the tracks it shares an axis with. An end
  * left unset autoscales over the loaded regions.
  *
  * #example
@@ -109,12 +109,12 @@ export function yScaleSchema({
        * #slot
        * A name shared by the tracks whose axes autoscale together: each
        * unpinned end spans the data of every track in the view naming the
-       * same group. A pinned end stays this track's own. The axis panel's
+       * same one. A pinned end stays this track's own. The axis panel's
        * "Share axis with" writes it.
        */
-      group: {
+      share: {
         type: 'maybeString',
-        description: 'tracks naming one group autoscale together',
+        description: 'tracks giving the same name share an autoscaled axis',
       },
     },
     { closed: true, scaleFence: 'fenceQuantile' },

@@ -311,7 +311,7 @@ Add the four coverage tracks below and open them with the transcript track at
 By default each coverage track fits its y axis to the track's peak. To compare
 the tissues by height, choose **Y axis... → Share axis with** on one track and
 tick the other; the two then share one axis that follows the view. In a config,
-each track names the same group:
+each track gives `encoding.y.scale.share` the same name:
 
 ```json addtrack loc=chr10:7,787,600-7,812,400
 {
@@ -320,7 +320,7 @@ each track names the same group:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "encoding": { "y": { "scale": { "group": "coverage" } } }
+    "encoding": { "y": { "scale": { "share": "coverage" } } }
   }
 }
 ```
@@ -334,7 +334,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "encoding": { "y": { "scale": { "group": "coverage" } } }
+    "encoding": { "y": { "scale": { "share": "coverage" } } }
   }
 }
 ```
@@ -346,7 +346,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "encoding": { "y": { "scale": { "group": "coverage" } } }
+    "encoding": { "y": { "scale": { "share": "coverage" } } }
   }
 }
 ```
@@ -358,7 +358,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "encoding": { "y": { "scale": { "group": "coverage" } } }
+    "encoding": { "y": { "scale": { "share": "coverage" } } }
   }
 }
 ```

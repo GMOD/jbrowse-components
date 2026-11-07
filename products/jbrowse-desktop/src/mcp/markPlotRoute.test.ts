@@ -107,7 +107,7 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
     minBpPerPx: 100,
   })
   plot.encoding = {
-    y: { scale: { group: 'shared' }, axis: { title: 'Score' } },
+    y: { scale: { share: 'shared' }, axis: { title: 'Score' } },
   }
   expect(a.plotProblems(plot)).toEqual([])
   a.applyPlot(plot)
@@ -115,7 +115,7 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
   expect(b.plot).toEqual(a.plot)
   expect(a.plot).toMatchObject({
     marks: [{ encoding: { y: 'score' } }, { minBpPerPx: 100 }],
-    encoding: { y: { scale: { group: 'shared' }, axis: { title: 'Score' } } },
+    encoding: { y: { scale: { share: 'shared' }, axis: { title: 'Score' } } },
   })
   expect(a.autoscaleGroup).toBe('shared')
 })

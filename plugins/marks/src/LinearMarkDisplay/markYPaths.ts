@@ -14,7 +14,7 @@ export const MARK_Y_PATHS = {
     domainMax: [...Y, 'scale', 'domainMax'],
     fence: [...Y, 'scale', 'fenceQuantile'],
     constant: [...Y, 'scale', 'constant'],
-    group: [...Y, 'scale', 'group'],
+    share: [...Y, 'scale', 'share'],
     title: [...Y, 'axis', 'title'],
     show: [...Y, 'axis', 'show'],
     grid: [...Y, 'axis', 'grid'],

@@ -785,12 +785,12 @@ sets how the scores are drawn: `bar`, `point`, `line` or `span`.
 | `color:purple`                                                  | Fill color (any CSS color)               |
 
 Two tracks read against each other need one axis, and an image has no menu to
-open, so give both the same `encoding.y.scale.group` and they share a domain:
+open, so give both the same `encoding.y.scale.share` and they share a domain:
 
 ```bash
 jb2export --fasta ref.fa \
-  --bigwig tumor.bw encoding.y.scale.group=cov height:120 \
-  --bigwig normal.bw encoding.y.scale.group=cov height:120 \
+  --bigwig tumor.bw encoding.y.scale.share=cov height:120 \
+  --bigwig normal.bw encoding.y.scale.share=cov height:120 \
   --loc chr17:7,660,000-7,690,000 --out pair.svg
 ```
 

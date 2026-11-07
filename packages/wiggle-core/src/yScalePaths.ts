@@ -5,7 +5,7 @@ export type YMember =
   | 'domainMax'
   | 'fence'
   | 'constant'
-  | 'group'
+  | 'share'
   | 'title'
   | 'show'
   | 'grid'

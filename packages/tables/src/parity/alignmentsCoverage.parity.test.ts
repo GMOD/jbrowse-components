@@ -144,8 +144,8 @@ describe('the coverage band over volvox reads', () => {
       },
     },
     {
-      name: 'encoding.y a group, alone in its view',
-      config: { coverage: { encoding: { y: { scale: { group: 'shared' } } } } },
+      name: 'encoding.y a share, alone in its view',
+      config: { coverage: { encoding: { y: { scale: { share: 'shared' } } } } },
     },
     { name: 'v4 autoscale local', config: { autoscale: 'local' } },
     { name: 'v4 autoscale global', config: { autoscale: 'global' } },

@@ -773,7 +773,7 @@ interface YMembers {
   domainMax?: unknown
   zero?: unknown
   fence?: unknown
-  group?: unknown
+  share?: unknown
   grid?: unknown
   rules?: unknown
 }
@@ -824,10 +824,10 @@ function yStep(
             path: `${axis} → Clip extreme outliers (${checked(y.fence < 1)})`,
           }
         : undefined,
-      typeof y.group === 'string'
+      typeof y.share === 'string'
         ? {
             path: `${axis} → Share axis with`,
-            note: `Tick the tracks that share this axis, here every one in group "${y.group}".`,
+            note: `Tick the tracks that share this axis, here every one naming "${y.share}".`,
           }
         : undefined,
       typeof y.grid === 'boolean'

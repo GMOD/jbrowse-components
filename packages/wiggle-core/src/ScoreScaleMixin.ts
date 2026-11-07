@@ -140,10 +140,10 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       },
       /**
        * #getter
-       * The y scale's autoscale group, `undefined` while it names none.
+       * The y scale's `share`, `undefined` while it names none.
        */
       get autoscaleGroup(): string | undefined {
-        return readY(self, paths, 'group') || undefined
+        return readY(self, paths, 'share') || undefined
       },
       /**
        * #getter
@@ -262,7 +262,7 @@ export function ScoreScaleMixin(paths: YScalePaths) {
        * #action
        */
       setAutoscaleGroup(group?: string) {
-        writeAxis(self, paths, 'group', group)
+        writeAxis(self, paths, 'share', group)
       },
       /**
        * #action

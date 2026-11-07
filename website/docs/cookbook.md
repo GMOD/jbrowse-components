@@ -527,8 +527,8 @@ its ends with `scale.domainMin` and `scale.domainMax`.
 | `encoding.color`      | a CSS color as `{ "value" }`, or `{ "field", "scale": { "domain", "range" } }` painting by a field, with a key ([Colors](#colors))                                | feature, variant, alignments, quantitative, synteny, mark display (per mark) |
 | `facet`               | one labelled section per value of a field; `sort` stacks the listed values first                                                                                  | feature, variant, alignments, synteny, mark display                          |
 | `rows`                | one row per source or sample; `sort` puts the listed rows first                                                                                                   | quantitative, multi-row feature, multi-sample variant, MAF, mark display     |
-| `encoding.y`          | the value axis: `scale` (`type`, `domainMin`/`domainMax`, `fenceQuantile`, `group`), `axis` (`title`, `grid`) and `rules`, beside `field` on a quantitative track | quantitative, mark display, GWAS                                             |
-| `coverage.encoding.y` | the coverage band's depth axis: `scale` (`type`, `domainMin`/`domainMax`, `fenceQuantile`, `group`), `axis` (`title`, `grid`) and `rules`                         | alignments, synteny, MAF                                                     |
+| `encoding.y`          | the value axis: `scale` (`type`, `domainMin`/`domainMax`, `fenceQuantile`, `share`), `axis` (`title`, `grid`) and `rules`, beside `field` on a quantitative track | quantitative, mark display, GWAS                                             |
+| `coverage.encoding.y` | the coverage band's depth axis: `scale` (`type`, `domainMin`/`domainMax`, `fenceQuantile`, `share`), `axis` (`title`, `grid`) and `rules`                         | alignments, synteny, MAF                                                     |
 
 A `coverage.encoding.y` channel captions an alignments track's coverage band,
 rules it at every tick and draws a labelled line at 20x:

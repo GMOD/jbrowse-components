@@ -536,7 +536,7 @@ Manhattan now is, at `encoding.y`, and the coverage band of the alignments,
 LGVSynteny and MAF displays at `coverage.encoding.y`.
 
 - `scale` holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`,
-  `constant` and `group`; `axis` holds `title` and `grid`; `rules` sits beside
+  `constant` and `share`; `axis` holds `title` and `grid`; `rules` sits beside
   them.
 - The wiggle display's plotted field is `encoding.y.field` (was `y`), and a bare
   string there is the field. MAF's `y` is `encoding.y`. The mark display's
@@ -545,10 +545,7 @@ LGVSynteny and MAF displays at `coverage.encoding.y`.
   `scale.domainMin` and `scale.domainMax`, and `autoscale` is one number,
   `scale.fenceQuantile`: `localpercentile` is `0.99` and every other value is
   `1`, the extremes. `displayCrossHatches` is `axis.grid`.
-- Earlier v5 betas wrote `scales.y`, with `domainQuantile` for `fenceQuantile`,
-  `symlogConstant` for `constant`, `autoscaleGroup` for `group`, and `title` and
-  `grid` beside the scale members.
-- **A config or session in any of these spellings is converted when it loads.**
+- **A v4 config or session in these spellings is converted when it loads.**
   `minimalTicks`, `numStdDev`, `inverted` and `numQuantile` have no successor
   and are dropped. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels went away: an
   end left unset autoscales.

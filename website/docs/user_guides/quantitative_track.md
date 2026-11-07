@@ -59,8 +59,8 @@ axis...**, and on a density plot, which maps score to color, **Score range...**.
   A config takes any quantile, `0.95` for a tighter fence.
 - **Share axis with** ticks the other tracks in the view that share this one's
   axis, which then autoscales over all of their data as you pan and zoom
-  ([`encoding.y.scale.group`](/docs/config/yscale/#slot-group)). A coverage
-  band, a mark display and a Manhattan plot take the same group.
+  ([`encoding.y.scale.share`](/docs/config/yscale/#slot-share)). A coverage
+  band, a mark display and a Manhattan plot take the same `share`.
 - **Grid lines** rule the plot at every tick, and **Reference lines** draw a
   dashed line at each value you add, each with an optional label and color.
 

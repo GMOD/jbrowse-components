@@ -17,7 +17,7 @@ interface YMemberPathInChannel {
   domainMax: ['scale', 'domainMax']
   fence: ['scale', 'fenceQuantile']
   constant: ['scale', 'constant']
-  group: ['scale', 'group']
+  share: ['scale', 'share']
   title: ['axis', 'title']
   show: ['axis', 'show']
   grid: ['axis', 'grid']

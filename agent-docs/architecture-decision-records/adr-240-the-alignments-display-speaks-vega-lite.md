@@ -54,6 +54,12 @@ block description in place of a read's lines (each side's assembly and span,
 the other side's name, `Inverted`, the block's identity, mapping quality and
 syntenic depth), rather than LGVSyntenyDisplay defaulting `tooltip.field` to
 `mate.name`; its color line stays only in chain mode.
+Amended 2026-11-07: call 5's `scale.group` is `scale.share`. `group` already
+names the row-group attribute (`rows.groups[].group`, which `facet: "group"`
+and `rows.color` read, and the multi-wiggle subadapter's v4 `group`), and both
+sit on one mark-display plot. Vega-Lite's word is `resolve.scale: 'shared'`,
+and the axis panel says "Share axis with". The key was beta-only, so it goes
+with no lift. The model's `autoscaleGroup` getters keep their names.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -166,9 +172,10 @@ hand, and Colin's rulings on the calls they split.
   `axis.tree` (ADR-238), it is ggplot2's discrete `labels`, a value-to-text
   map, and `names` there would read as the row names every other `rows`
   member lists.
-- **`scale.group`** shares one autoscaled domain across tracks, as
-  `autoscaleGroup` does. ggplot2's scale `name` is the axis title, and a ggplot
-  reader writing `name: "Depth"` would join a share group.
+- **`scale.group`** (`scale.share` from 2026-11-07) shares one autoscaled
+  domain across tracks, as `autoscaleGroup` does. ggplot2's scale `name` is
+  the axis title, and a ggplot reader writing `name: "Depth"` would join a
+  share group.
 - **`legend.show` is display-wide and the only legend switch.** `false` hides
   the whole key and skips its scans. A channel's `legend` holds `title` and
   `descending`, which label and order its rows.

@@ -181,7 +181,7 @@ the two ends of its value, one array where the packer ships a single scalar.
 ### ungroupedAutoscaleViews
 
 What a static host answers `ScoreAxisMixin` for its group: none, whatever
-`scale.group` names, since it stands in no view and has no peers to union with,
+`scale.share` names, since it stands in no view and has no peers to union with,
 so its axis autoscales over its own range alone.
 
 ```js
