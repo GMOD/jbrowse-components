@@ -327,7 +327,10 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   )
   const hoverGroup = (groupKey: string) => {
     const { targets, groupTarget } = display.ribbonGeometry
-    display.setHoverTarget(targets[groupTarget.get(groupKey)!])
+    display.setHoverTarget({
+      ...targets[groupTarget.get(groupKey)!]!,
+      trackId: display.parentTrack.configuration.trackId,
+    })
   }
 
   expect(display.hoverInk).toHaveLength(0)
