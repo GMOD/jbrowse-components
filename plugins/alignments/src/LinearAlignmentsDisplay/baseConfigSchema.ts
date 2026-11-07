@@ -138,7 +138,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot readConnections
      * The connections between mates and split segments: `show` (default
      * off), `mark` (`link`, the arcs, or `rule`, the read cloud), `height`, `placement`, `encoding`
-     * (`color` and `strokeWidth`) and `ordinaryPairs`; the `connection` and
+     * (`strokeWidth`) and `ordinaryPairs`; the `connection` and
      * `breakpoint` filter fields filter the connections drawn.
      */
     readConnections: readConnectionsConfigSchema,

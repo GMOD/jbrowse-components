@@ -50,9 +50,9 @@ export async function executeGetGlobalValueForTag({
     // statusCallback as well as the signal: this reads every feature of every
     // visible region to enumerate a tag's values, the longest thing the
     // group-by-tag dialog does.
-    // The adapter applies the flag, name and tag filters; the proper-pair,
-    // singleton and split filters need whole chains, so they run here as
-    // they do in the render fetch.
+    // The adapter applies the flag and tag filters, and `filterChainFeatures`
+    // the rest as the render fetch does: `mapq`, then `name` and `spliced`
+    // per record and `svSignal`, `split` and `alone` per chain.
     const features = filterChainFeatures(
       await dataAdapter.getFeaturesArray(region, fetchOpts),
       filter,
