@@ -102,11 +102,9 @@ export interface ActiveFetch {
    */
   isCurrent: () => boolean
   /**
-   * RPC `statusCallback` pre-gated by `isCurrent`: forwards progress to
-   * `setStatusMessage` only while this is still the latest fetch, so a
-   * superseded fetch's late status update can't flicker the overlay, and
-   * throttled to the same leading edge as `FetchMixin`'s callbacks. Pass it
-   * straight as the RPC `statusCallback` arg.
+   * RPC `statusCallback` for this fetch's slot on the status window, gated by
+   * `isCurrent` so a superseded fetch's late status can't repaint the field.
+   * Pass it straight as the RPC `statusCallback` arg.
    */
   statusCallback: (status: RpcStatus) => void
   /**

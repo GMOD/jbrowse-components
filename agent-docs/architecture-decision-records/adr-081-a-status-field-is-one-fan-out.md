@@ -7,7 +7,8 @@ summary: 'A status field aggregates across the concurrent OPERATIONS that share 
 
 ## Status
 
-Accepted
+Accepted. Amended 2026-09-25 on when a superseded run retires its slot: at the
+`begin()` that replaces it, not in its own `finally`. The rest stands.
 
 ## Context
 
@@ -72,13 +73,18 @@ had to remember:
 
 - `FetchMixin.supersedeStatus` is gone. Superseding was the one case where the
   display does not stop loading, and it needed its own action to keep the label
-  while dropping the token. Now the superseded fetch's slot simply goes on
-  voting until its `finally` retires it, and `runFetch` opens the replacement's
-  slot **before** superseding, so the handover has no gap. Same in
-  `createStopTokenRotation.begin`.
-- A superseded run must retire its slot, so `runFetch`'s `stream.clear()` and
-  the rotation's `end()` are unconditional — where the old rotation asked
-  `isCurrent()` first, precisely to avoid wiping the replacement's label.
+  while dropping the token. ~~Now the superseded fetch's slot simply goes on
+  voting until its `finally` retires it.~~ **Amended 2026-09-25: the `begin()`
+  that supersedes a run retires its slot.** A superseded run's `finally` waits
+  on work that may ignore the abort — a CRAM record read, a shared
+  `createSharedSetup` parse the replacement rejoins — and until then its last
+  reading was summed into the replacement's bar, so a load at 60% read 40%
+  after one pan. `begin()` opens the replacement's slot **before** retiring the
+  old one, so the window is never idle across the handover and the label
+  survives it. `createAbortRotation.test.ts` pins both halves.
+- ~~A superseded run must retire its slot, so `runFetch`'s `stream.clear()` and
+  the rotation's `end()` are unconditional.~~ Retiring is idempotent, so a
+  superseded run's `end()` still calls `clear()` and it is a no-op.
 - `makeStatusCallback` became `openStatusStream`, returning the callback and the
   clear together. A caller taking the callback alone was taking a slot it had no
   way to retire.
