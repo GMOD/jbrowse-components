@@ -119,11 +119,14 @@ export type {
 export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapters } from './prepareDiagonalizeAdapter.ts'
 export {
+  LEGEND_CHIP_ALPHA_FLOOR,
+  blendOverGround,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,
   hashString,
   isInstanceInvisible,
+  legendChipAlpha,
   legendChipColor,
   strandCigarColors,
 } from './colorUtils.ts'

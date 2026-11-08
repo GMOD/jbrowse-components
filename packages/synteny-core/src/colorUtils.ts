@@ -83,15 +83,19 @@ export const LEGEND_CHIP_ALPHA_FLOOR = 0.45
 
 /**
  * #api
- * {@link blendOverGround} for a legend chip, floored at
- * {@link LEGEND_CHIP_ALPHA_FLOOR}.
+ * The alpha a legend chip blends at for a view drawing at `alpha`: `alpha`,
+ * floored at {@link LEGEND_CHIP_ALPHA_FLOOR}.
+ */
+export function legendChipAlpha(alpha: number) {
+  return Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR)
+}
+
+/**
+ * #api
+ * {@link blendOverGround} for a legend chip, at {@link legendChipAlpha}.
  */
 export function legendChipColor(color: string, alpha: number, ground: string) {
-  return blendOverGround(
-    color,
-    Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR),
-    ground,
-  )
+  return blendOverGround(color, legendChipAlpha(alpha), ground)
 }
 
 /**

@@ -1,5 +1,6 @@
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
-import { unpack } from '@jbrowse/synteny-core'
+import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { bandGroundColor, blendOverGround, unpack } from '@jbrowse/synteny-core'
 
 import { ribbonThinFade } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { KIND_BASE_TILE } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyKinds.ts'
@@ -344,7 +345,13 @@ function multiwayParity(
           title: t.legendTitle,
           chips: t.legend.label.map((label, i) => ({
             label,
-            color: t.legend.color[i],
+            color: cssColorToHex(
+              blendOverGround(
+                t.legend.color[i] ?? '',
+                t.legendAlpha,
+                bandGroundColor(),
+              ),
+            ),
           })),
           ramps: t.ramps,
         },

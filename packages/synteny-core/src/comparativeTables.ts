@@ -16,6 +16,7 @@ import {
   getColorBySwatch,
 } from './colorLegend.ts'
 import { colorPaintOf, hasColorKey, isAttributeLabels } from './colorRamps.ts'
+import { legendChipAlpha } from './colorUtils.ts'
 import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
@@ -306,8 +307,10 @@ export function unpack(abgr: number) {
 /**
  * The key the view shows for its color field: the chips the legend lists,
  * each in the color its alignments paint before the band's opacity, and a
- * ramp's bar as `ramps` (`rampKeyOf`), its no-value row a chip. A host
- * composites the chips as it composites the ribbons.
+ * ramp's bar as `ramps` (`rampKeyOf`), its no-value row a chip.
+ * `legendAlpha` is the alpha the view composites the chips over the band's
+ * ground at: the band's opacity, floored at `LEGEND_CHIP_ALPHA_FLOOR` so a
+ * faint band's key still tells its colors apart.
  */
 export function comparativeLegend(
   settings: ViewColorSettings,
@@ -358,6 +361,7 @@ export function comparativeLegend(
       color: chips.map(c => c.color),
     },
     legendTitle: title,
+    legendAlpha: legendChipAlpha(settings.level),
     ramps: keyed
       ? colorByScales(settings.field, { ...opts, title })
           .filter(scale => scale.kind === 'ramp')

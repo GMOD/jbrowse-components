@@ -72,11 +72,14 @@ const OP_NAMES: Record<number, string> = {
  * lines the plot draws in paint order, one per block, or one per CIGAR step
  * where a block is wide enough on screen for its CIGAR to show, each from
  * (`xStart`, `yStart`) to (`xEnd`, `yEnd`) in genomic coordinates on the
- * axis's region named by `xRegion` and `yRegion`; `legend`, the key; and
- * `config`, the view's settings with their defaults filled, `encoding.color` and
- * `encoding.opacity` as config objects.
- * `skipped` counts the blocks neither axis places. For a host that draws
- * them itself, such as R through V8.
+ * axis's region named by `xRegion` and `yRegion`; `legend`, the key, and
+ * `legendAlpha`, the alpha the view composites its chips at, `alpha` floored
+ * for legibility; and `config`, the view's settings with their defaults
+ * filled, `encoding.color` and `encoding.opacity` as config objects.
+ * `skipped` is the blocks the plot cannot place: `count` of the `total`
+ * fetched, each with no mate or on a contig an axis does not show, and those
+ * contigs, `xChroms` the x axis's and `yChroms` the y axis's. For a host
+ * that draws them itself, such as R through V8.
  */
 export async function dotplotTables(
   pluginManager: PluginManager,

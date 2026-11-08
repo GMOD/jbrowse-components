@@ -97,6 +97,63 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
     'Same orientation as lane above',
     'Inverted vs lane above',
   ])
+  expect(t.legendAlpha).toBe(1)
+})
+
+test('each segment, block and ribbon foot names the anchor region it is drawn on, in the order the regions are given', async () => {
+  const early = { refName: 'ctgA', start: 0, end: 10_000 }
+  const late = { refName: 'ctgA', start: 25_000, end: 50_001 }
+  for (const regions of [
+    [early, late],
+    [late, early],
+  ]) {
+    const t = await engine.multiway({
+      ...ALL_VS_ALL,
+      anchor: { ...ALL_VS_ALL.anchor, regions },
+    })
+    const holds = (region: number, start: number, end: number) =>
+      regions[region]!.start <= Math.min(start, end) &&
+      Math.max(start, end) <= regions[region]!.end
+    const onAnchor = (lanes: number[]) => indexes(lanes, lane => lane === 0)
+    const offAnchor = (lanes: number[]) => indexes(lanes, lane => lane > 0)
+
+    expect(onAnchor(t.segments.lane).map(i => t.segments.region[i])).toEqual([
+      0, 1,
+    ])
+    const blocks = onAnchor(t.blocks.lane)
+    expect(new Set(blocks.map(i => t.blocks.region[i]))).toEqual(
+      new Set([0, 1]),
+    )
+    for (const i of blocks) {
+      expect(
+        holds(t.blocks.region[i]!, t.blocks.start[i]!, t.blocks.end[i]!),
+      ).toBe(true)
+    }
+    const feet = onAnchor(t.ribbons.upperLane)
+    expect(feet.length).toBeGreaterThan(0)
+    for (const i of feet) {
+      expect(
+        holds(
+          t.ribbons.upperRegion[i]!,
+          t.ribbons.upperStart[i]!,
+          t.ribbons.upperEnd[i]!,
+        ),
+      ).toBe(true)
+    }
+    expect(
+      new Set([
+        ...offAnchor(t.segments.lane).map(i => t.segments.region[i]),
+        ...offAnchor(t.blocks.lane).map(i => t.blocks.region[i]),
+        ...offAnchor(t.ribbons.upperLane).map(i => t.ribbons.upperRegion[i]),
+        ...t.ribbons.lowerRegion,
+      ]),
+    ).toEqual(new Set([0]))
+  }
+  const crossing = await engine.multiway({
+    ...ALL_VS_ALL,
+    anchor: { ...ALL_VS_ALL.anchor, regions: [early, late] },
+  })
+  expect(new Set(crossing.ribbons.upperRegion)).toEqual(new Set([0, 1]))
 })
 
 test("a lane's genome stops its line at the end of its contig", async () => {

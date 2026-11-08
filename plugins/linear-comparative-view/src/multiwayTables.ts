@@ -267,7 +267,10 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
   }
 }
 
-/** The key the display shows for its ribbons: chips, and each ramp's bar. */
+/**
+ * The key the display shows for its ribbons: chips, and each ramp's bar. The
+ * display's legend draws its chips opaque, so `legendAlpha` is 1.
+ */
 function ribbonKey(scales: ColorScale[]) {
   const legend = { label: [] as string[], color: [] as string[] }
   let legendTitle = ''
@@ -285,18 +288,22 @@ function ribbonKey(scales: ColorScale[]) {
       ramps.push(rampKeyOf(scale))
     }
   }
-  return { legend, legendTitle, ramps }
+  return { legend, legendTitle, legendAlpha: 1, ramps }
 }
+
+/** Which of the anchor's regions a lane's px span lies on; 0 on a mate lane. */
+type RegionOn = (lane: Lane, x1: number, x2: number) => number
 
 /**
  * Each lane, and each stretch of its sequence across the view with the px it
- * spans: the anchor's regions end to end, or a mate lane's frame cut at the
- * holes it opens.
+ * spans and the region it lies on: the anchor's regions end to end, or a
+ * mate lane's frame cut at the holes it opens.
  */
 function laneTables(
   { lanes, glyphHeight }: LaneStack,
   axis: ComparativeAxis,
   width: number,
+  regionOn: RegionOn,
 ) {
   const lane = {
     lane: [] as number[],
@@ -312,6 +319,7 @@ function laneTables(
   }
   const segments = {
     lane: [] as number[],
+    region: [] as number[],
     chrom: [] as string[],
     start: [] as number[],
     end: [] as number[],
@@ -326,6 +334,7 @@ function laneTables(
     [x1, x2]: Span,
   ) => {
     segments.lane.push(i)
+    segments.region.push(regionOn(lanes[i]!, x1, x2))
     segments.chrom.push(chrom)
     segments.start.push(start)
     segments.end.push(end)
@@ -374,13 +383,14 @@ function laneTables(
       }
     }
   })
-  return { lanes: lane, segments, ...blockRows(lanes) }
+  return { lanes: lane, segments, ...blockRows(lanes, regionOn) }
 }
 
 /** Each run of each group on each lane: the boxes the ribbons join. */
-function blockRows(lanes: Lane[]) {
+function blockRows(lanes: Lane[], regionOn: RegionOn) {
   const blocks = {
     lane: [] as number[],
+    region: [] as number[],
     group: [] as string[],
     name: [] as (string | null)[],
     chrom: [] as string[],
@@ -395,6 +405,7 @@ function blockRows(lanes: Lane[]) {
       intervals.forEach((interval, j) => {
         const [x1, x2] = spans[j]!
         blocks.lane.push(i)
+        blocks.region.push(regionOn(lane, x1, x2))
         blocks.group.push(key)
         blocks.name.push(interval.name ?? null)
         blocks.chrom.push(interval.refName)
@@ -461,8 +472,13 @@ function alignmentRows(
  * each gutter draws in paint order, a trapezoid from a span on its upper
  * lane to a span on its lower one, with its color and the alpha it
  * composites at; `alignments`, the records the ribbons draw; `legend`, the
- * key; and `config`, the display's config with its defaults filled. Positions are genomic on each lane, and px across the view's
- * `width`, where a lane's own frame puts them. Heights are px down from the
+ * key, and `legendAlpha`, the alpha the display draws its chips at; and
+ * `config`, the display's config with its defaults filled. Positions are
+ * genomic on each lane, and px across the view's `width`, where a lane's
+ * own frame puts them. A segment's and a block's `region`, and a ribbon
+ * foot's `upperRegion` and `lowerRegion`, is the 0-based index of the
+ * anchor's region it is drawn on, read from its px; 0 on a mate lane, whose
+ * frame is one stretch of one contig. Heights are px down from the
  * stack's top as the display lays it out over `display.height`: `height` is
  * the whole stack, each lane's `yTop` and `yBottom` bound its gene boxes,
  * and each ribbon's bound its gutter, the height its `thin` flag and fade
@@ -735,21 +751,33 @@ export async function multiwayTables(
     rowsVsAnchor,
   })
 
-  const onLane = (lane: Lane, px: number) => {
-    if (lane.isAnchor) {
-      const at = locateCum(anchorFrame, (px + offsetPx) * bpPerPx)
-      return {
-        refName: anchorFrame.regions[at.region]!.refName,
-        coord: at.coord,
-      }
-    }
-    const frame = lane.frame!
-    return { refName: frame.refName, coord: laneBpAt(frame, px, width) }
+  const onAnchor = (px: number, hint: number) =>
+    locateCum(
+      anchorFrame,
+      (px + offsetPx) * bpPerPx,
+      (hint + offsetPx) * bpPerPx,
+    )
+  const regionOn: RegionOn = (lane, x1, x2) =>
+    lane.isAnchor ? onAnchor(x1, x2).region : 0
+  const onLane = (lane: Lane, px: number, hint: number) => {
+    const at = lane.isAnchor ? onAnchor(px, hint) : undefined
+    return at
+      ? {
+          region: at.region,
+          refName: anchorFrame.regions[at.region]!.refName,
+          coord: at.coord,
+        }
+      : {
+          region: 0,
+          refName: lane.frame!.refName,
+          coord: laneBpAt(lane.frame!, px, width),
+        }
   }
   const footOn = (lane: Lane, a: number, b: number) => {
-    const from = onLane(lane, a)
-    const to = onLane(lane, b)
+    const from = onLane(lane, a, b)
+    const to = onLane(lane, b, a)
     return {
+      region: from.region,
       refName: from.refName,
       start: wholeBp(from.coord),
       end: wholeBp(to.coord),
@@ -763,9 +791,11 @@ export async function multiwayTables(
     gutter: [] as number[],
     upperLane: [] as number[],
     lowerLane: [] as number[],
+    upperRegion: [] as number[],
     upperChrom: [] as string[],
     upperStart: [] as number[],
     upperEnd: [] as number[],
+    lowerRegion: [] as number[],
     lowerChrom: [] as string[],
     lowerStart: [] as number[],
     lowerEnd: [] as number[],
@@ -819,9 +849,11 @@ export async function multiwayTables(
       ribbons.gutter.push(row)
       ribbons.upperLane.push(upperRow)
       ribbons.lowerLane.push(toRow)
+      ribbons.upperRegion.push(top.region)
       ribbons.upperChrom.push(top.refName)
       ribbons.upperStart.push(top.start)
       ribbons.upperEnd.push(top.end)
+      ribbons.lowerRegion.push(bottom.region)
       ribbons.lowerChrom.push(bottom.refName)
       ribbons.lowerStart.push(bottom.start)
       ribbons.lowerEnd.push(bottom.end)
@@ -839,7 +871,7 @@ export async function multiwayTables(
   }
 
   return {
-    ...laneTables(stack, axis, width),
+    ...laneTables(stack, axis, width, regionOn),
     ribbons,
     alignments: alignmentRows(
       geometry.targets.map(t => t.feature),

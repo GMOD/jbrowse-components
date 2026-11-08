@@ -447,7 +447,8 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * that row's edge paints them, `offscreenContigs`, the count and aligned bp
  * of each contig the strip's marks name and the line its hover prints, and `offscreenStrip`, the marks and
  * labels the strips along the band's edges paint, in px;
- * `legend` and `ramps`, the key; and `config`, the view's settings with
+ * `legend` and `ramps`, the key, and `legendAlpha`, the alpha the view
+ * composites its chips at, `alpha` floored for legibility; and `config`, the view's settings with
  * their defaults filled, `encoding.color` and `encoding.opacity` as config objects. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`; a ribbon's

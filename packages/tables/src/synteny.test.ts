@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { LEGEND_CHIP_ALPHA_FLOOR } from '@jbrowse/synteny-core'
 
 import { createTablesEngine } from './index.ts'
 import {
@@ -441,6 +442,25 @@ test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
       })
     ).ramps,
   )
+})
+
+test("the key's chips composite at the view's opacity, floored where the band is faint", async () => {
+  const faint = await engine.synteny(INV_INDELS)
+  expect(faint.alpha).toBe(0.25)
+  expect(faint.legendAlpha).toBe(LEGEND_CHIP_ALPHA_FLOOR)
+  const strong = await engine.synteny({
+    ...INV_INDELS,
+    view: { encoding: { color: { field: 'strand' }, opacity: 0.6 } },
+  })
+  expect(strong.legendAlpha).toBe(0.6)
+  const opaque = await engine.dotplot(INV_INDELS_DOTPLOT)
+  expect(opaque.legendAlpha).toBe(1)
+  const dim = await engine.dotplot({
+    ...INV_INDELS_DOTPLOT,
+    view: { encoding: { color: { field: 'strand' }, opacity: 0.2 } },
+  })
+  expect(dim.alpha).toBe(0.2)
+  expect(dim.legendAlpha).toBe(LEGEND_CHIP_ALPHA_FLOOR)
 })
 
 test('a PAF comes back as the dotplot lays out and colors it', async () => {

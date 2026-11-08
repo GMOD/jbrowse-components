@@ -2,8 +2,8 @@ import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
   bandGroundColor,
+  blendOverGround,
   isInstanceInvisible,
-  legendChipColor,
   unpack,
 } from '@jbrowse/synteny-core'
 
@@ -99,19 +99,23 @@ export function viewKey(scales: Parameters<typeof colorKeyTables>[0]) {
 }
 
 /**
- * The export's key as a host draws it: each chip composited by the level
- * over the band's ground, as the export's doc tells a host to.
+ * The export's key as a host draws it: each chip composited by its
+ * `legendAlpha` over the band's ground, as the export's doc tells a host to.
  */
 export function exportKey(t: {
   legend: { label: string[]; color: string[] }
   legendTitle: string
+  legendAlpha: number
   ramps: ReturnType<typeof rampKeyOf>[]
-  alpha: number
 }) {
   const chips = t.legend.label.map((label, i) => ({
     label,
     color: cssColorToHex(
-      legendChipColor(t.legend.color[i] ?? '', t.alpha, bandGroundColor()),
+      blendOverGround(
+        t.legend.color[i] ?? '',
+        t.legendAlpha,
+        bandGroundColor(),
+      ),
     ),
   }))
   return {
