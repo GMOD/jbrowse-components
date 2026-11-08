@@ -236,3 +236,4 @@ shaders are [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md).
 | Opening a view from a spec or URL | [VIEW_INIT.md](reference/VIEW_INIT.md), [SESSION_SPEC_FORMAT.md](reference/SESSION_SPEC_FORMAT.md) |
 | Removing or renaming a plugin-facing name | [PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md) |
 | Tests and their harnesses | [TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md) |
+| Rebasing, landing, pushing or removing a worktree | [WORKTREES.md](reference/WORKTREES.md) |

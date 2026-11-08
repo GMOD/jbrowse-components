@@ -82,6 +82,8 @@
 # number swings by a factor of two with what else is running.
 # On 2026-10-28 at load ~60 the whole hook took 4m12s, and 6m36s once it
 # also linted the whole tree and ran the four `astro check`s.
+# git opens the SSH connection before this hook runs, so a run that long lets
+# GitHub close it: exit 141 and nothing pushed. WORKTREES.md has the keepalive.
 #
 # THE FIXERS RUN IN SEQUENCE, because they write to the same files: autogen
 # emits sources the linters then lint, and both linters rewrite the same `.ts`.
@@ -374,9 +376,9 @@ fi
 # which is the kind of false positive that gets a hook switched off.
 #
 #   - No corpora at all. They are gitignored, so a fresh worktree has none
-#     (`pnpm figures:pull`, or the two symlinks in CLAUDE.md), and the
-#     jbrowse-img generators then report OUT OF DATE rather than failing
-#     outright.
+#     (`pnpm figures:pull`, or the symlinks in
+#     agent-docs/reference/WORKTREES.md), and the jbrowse-img generators then
+#     report OUT OF DATE rather than failing outright.
 #   - Corpora ahead of figures.lock. A regen someone has not pushed yet is
 #     invisible to git and to CI: CI pulls the lock's sources, derives the
 #     committed thumb and agrees, while the same generators here derive from
