@@ -24,13 +24,13 @@ const CHR3 = `${BAND} ~ ${BAND}`
 const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
-  fontSize: 72,
+  fontSize: 88,
   anchor: {
     selector: `[data-part="${part}"]`,
     alignX: 'left',
     alignY: 'top',
     dx: -100,
-    dy: 96,
+    dy: 112,
   },
 })
 
