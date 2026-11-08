@@ -221,6 +221,9 @@ eight figures, a blinded ideator given a capability sheet, a landscape survey.
   so an `encodings: [{ channel: 'featureFill', field: 'name', domain, range }]`
   on the MsaView snapshot in a temporary spec copy recolors all three against
   the hosted plugins.
+- Give a session `highlights[].color` an opaque hex (`#e0218a`): an alpha below
+  1 renders protein3d's spheres dark maroon or black. The opaque genome band
+  then covers the codon, so keep a GWAS label clear of it.
 - A protein3d capture with a hover can keep Mol*'s default element colors
   (lime carbons) around the hovered residue; re-shoot before reading it as a
   palette effect.

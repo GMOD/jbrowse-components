@@ -448,6 +448,8 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
         ]
       : []),
     resetOrderItem(model, 'lane'),
+    // Freeze lanes stays by Colin's call (2026-11-03): a menu review may tidy
+    // this row but not cut it.
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
       helpText:
         'Keep every lane where it is as you pan and zoom, instead of re-fitting it to each new window. While frozen, drag or side-scroll a lane to slide it. The lanes unfreeze once the view leaves the window they froze on.',

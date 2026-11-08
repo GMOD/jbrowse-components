@@ -57,6 +57,21 @@ format traps.
   `samtools view --input-fmt-option required_fields=0x87F -F 1540 <url> <region>`.
 - **ASW trio ancestry** is deliberately not an AMR trio: 1000G has no unadmixed
   Native American reference.
+- **1000 Genomes 30x CRAMs stream from S3**:
+  `https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/<ERR>/<sample>.final.cram`
+  plus `.crai`, with range requests and CORS `*`; map sample to ERR through the
+  `*.sequence.index` files. A `CramAdapter` with only `uri` works on the hg38
+  hub. Genotypes come from EBI's `20220422_3202_phased_SNV_INDEL_SV` panel,
+  since the S3 copy of the 2020 release is 0-byte keys.
+- **FinnGen R12 slices for Manhattan tracks** live under
+  `jbrowse.org/demos/<topic>/` (`apoe/finngen_r12_ad_apoe.bed.gz`,
+  `factor_v/finngen_r12_vte_f5.bed.gz`). FinnGen's bucket has no CORS, Pan-UKB
+  is hg19, and GWAS Catalog harmonised files lack tabix, so a new locus gets its
+  own slice: `tabix <R12 url> <range>`, rewritten to `#chrom chromStart chromEnd
+  name neg_log_pvalue beta nearest_genes` (score is `mlogp`), then `bgzip`,
+  `tabix -C -p bed`, and `scripts/deploy-demo.sh <dir> <topic>` with
+  `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. Run the remote `tabix` from a scratch dir,
+  since it leaves the remote `.tbi` in cwd.
 - **A third-party URL in `demos/*/config.json` has nothing watching it.** The
   same URL in `website/scripts/specs/` fails a figure in the weekly sweep; in a
   hosted demo config it degrades to broken tracks silently. Name the gate that

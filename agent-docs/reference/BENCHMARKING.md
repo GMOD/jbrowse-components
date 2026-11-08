@@ -82,6 +82,11 @@ specific to benchmarking the inflate pool.
   `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`, while typecheck, `build:esm` and jest
   pass the file. In a module a bench can reach, declare the field and assign it
   in the constructor body.
+- **`page.screenshot()` cannot measure a flash of unstyled content**: it forces
+  a paint the real load would hold, which once read as Firefox painting before
+  its CSS on jbrowse.org/jb2. Read `performance.getEntriesByType('paint')` or
+  sample `getBoundingClientRect()` once per rAF. Firefox BiDi interception has
+  no `request.resourceType()`, so match requests on URL.
 
 ## Measuring on a contended box
 
@@ -174,7 +179,11 @@ Gate probes on a `?gpu-perf=1` URL flag and strip them before landing.
   every neighbour at or above 120 is a hole). For cost, time ten frames from
   `submit` to `onSubmittedWorkDone` on a 64 px canvas, min over interleaved
   rounds. Judge an MSAA render against an exact supersampled reference. It
-  finds seams and vertex costs that a JS model of the `.slang` cannot.
+  finds seams and vertex costs that a JS model of the `.slang` cannot. To
+  validate the app's own pipelines under Deno instead, import render-core's
+  `hal/webgpuHal.ts`, `gpuDevice.ts` and `slangPass.ts` by `file://` URL and
+  hand `WebGPUHal.create` a fake canvas over an offscreen texture; wgpu's spec
+  validation errors are real ones.
 
 ## Whole-app benchmarks against released JBrowse
 
