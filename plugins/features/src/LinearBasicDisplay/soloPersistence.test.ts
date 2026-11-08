@@ -134,9 +134,9 @@ describe('seedSoloInTracks', () => {
   it('injects solo onto the solo-capable display of the matching track', () => {
     const { createDisplay } = createTestEnvironment()
     const { view } = createDisplay()
-    const snap = getSnapshot(view) as {
+    const snap = getSnapshot<{
       tracks: { id: string; displays: { id: string }[] }[]
-    }
+    }>(view)
 
     const seeded = seedSoloInTracks(snap.tracks, view, 'test_track', 'gene1')
 
@@ -148,9 +148,9 @@ describe('seedSoloInTracks', () => {
   it('returns tracks unchanged when the trackId does not match', () => {
     const { createDisplay } = createTestEnvironment()
     const { view } = createDisplay()
-    const snap = getSnapshot(view) as {
+    const snap = getSnapshot<{
       tracks: { id: string; displays: { id: string }[] }[]
-    }
+    }>(view)
 
     const seeded = seedSoloInTracks(snap.tracks, view, 'no_such_track', 'gene1')
 

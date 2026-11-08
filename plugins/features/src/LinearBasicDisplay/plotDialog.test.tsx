@@ -12,7 +12,7 @@ function open(seed?: Record<string, unknown>) {
   const { display } = createTestEnvironment().createDisplay()
   display.setGenesFilter('only')
   render(<PlotDialog model={display} seed={seed} handleClose={() => {}} />)
-  const field = screen.getByTestId('plot-json') as HTMLTextAreaElement
+  const field = screen.getByTestId<HTMLTextAreaElement>('plot-json')
   return {
     display,
     field,

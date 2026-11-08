@@ -14,7 +14,7 @@ import { resolveCategoricalMode } from './colorRamps.ts'
 import type { AttributeRange } from './colorRamps.ts'
 
 const snapColor = (view: { encoding: object }) =>
-  (getSnapshot(view.encoding) as { color?: unknown } | undefined)?.color
+  getSnapshot<{ color?: unknown } | undefined>(view.encoding)?.color
 
 // The floating legend is one box for the whole view, so the domain it labels a
 // column's ramp with has to be one answer for every loaded display.

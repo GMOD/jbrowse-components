@@ -44,7 +44,7 @@ function setup({
   }
   const handleClose = jest.fn()
   render(<PlotDialog model={model} seed={seed} handleClose={handleClose} />)
-  const field = screen.getByTestId('plot-json') as HTMLTextAreaElement
+  const field = screen.getByTestId<HTMLTextAreaElement>('plot-json')
   return {
     model,
     handleClose,

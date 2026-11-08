@@ -110,7 +110,7 @@ function setup() {
   return posted
 }
 
-const noteBox = () => screen.getByLabelText('note') as HTMLTextAreaElement
+const noteBox = () => screen.getByLabelText<HTMLTextAreaElement>('note')
 const type = (text: string) => {
   fireEvent.change(noteBox(), { target: { value: text } })
 }

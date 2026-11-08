@@ -3,6 +3,7 @@ import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { isObject } from '@jbrowse/core/util'
 import { cast, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -183,7 +184,7 @@ export function createEmbeddedRootModel<
       InternetAccountsRootModelMixin(pluginManager),
     )
     .preProcessSnapshot(snap =>
-      snap && typeof snap === 'object' && 'session' in snap
+      isObject(snap) && 'session' in snap
         ? { ...snap, session: migrated(snap.session, pluginManager) }
         : snap,
     )

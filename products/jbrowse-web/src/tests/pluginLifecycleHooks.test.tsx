@@ -20,9 +20,9 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // evaluated from a URL.
 jest.mock('../corePlugins.ts', () => {
   const actual = jest.requireActual('../corePlugins.ts')
-  const { apolloShapedPlugin: make } = jest.requireActual(
-    './apolloShapedPlugin.ts',
-  ) as typeof ApolloShapedFixture
+  const { apolloShapedPlugin: make } = jest.requireActual<
+    typeof ApolloShapedFixture
+  >('./apolloShapedPlugin.ts')
   return {
     __esModule: true,
     default: [...actual.default, make()],

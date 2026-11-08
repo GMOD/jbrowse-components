@@ -62,7 +62,7 @@ export function displayForms(pluginManager: PluginManager): DisplayForms {
 }
 
 function snapshotThrough<T>(schema: IAnyType, pluginManager: PluginManager) {
-  return (conf: T) => getSnapshot(schema.create(conf, { pluginManager })) as T
+  return (conf: T) => getSnapshot<T>(schema.create(conf, { pluginManager }))
 }
 
 export function hydratedTrackForm(pluginManager: PluginManager) {

@@ -335,10 +335,9 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
         const session = getSession(self)
         if (isSessionModelWithConfigEditing(session)) {
           session.updateTrackConfiguration(
-            getSnapshot(self.configuration) as {
-              trackId: string
-              [key: string]: unknown
-            },
+            getSnapshot<{ trackId: string; [key: string]: unknown }>(
+              self.configuration,
+            ),
           )
         }
       }

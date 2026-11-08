@@ -276,9 +276,9 @@ async function measureLocus(page: Page, loc: string) {
     const w = window as any
     const view = w.JBrowseSession.views[0]
     const display = view.tracks[0].displays[0]
-    const canvas = document.querySelector(
+    const canvas = document.querySelector<HTMLCanvasElement>(
       '[data-testid="hic_canvas"]',
-    ) as HTMLCanvasElement | null
+    )
     return {
       binsize: display.binSize,
       bpPerPx: view.bpPerPx,

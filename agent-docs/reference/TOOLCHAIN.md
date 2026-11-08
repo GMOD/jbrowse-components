@@ -41,12 +41,14 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 
 - **Type-aware oxlint runs tsgolint by name.** Given no `OXLINT_TSGOLINT_PATH`,
   oxlint prefers `tsrs-lint` to `tsgolint`, and the `tsrs` package that `pnpm
-  typecheck` uses installs it. With `no-unnecessary-type-assertion` also on,
-  tsgolint is silent on `querySelector(...) as HTMLElement` and tsrs-lint 0.23
-  reports `non-nullable-type-assertion-style`, whose `!` fix does not compile
-  (oxc-project/tsrs#943). So `pnpm lint`, the pre-commit hook, `verify.ts` and
-  `check-unsafe-any.ts` each set the variable; drop it with the four sites once
-  that is fixed.
+  typecheck` uses installs it. On 2026-11-08 the two disagreed on 23 sites and an
+  `any`: generic calls cast with `as` where tsrs-lint wants the type argument
+  (`getSnapshot<T>(x)`, `querySelector<HTMLElement>(s)!`), and a DataGrid cell
+  value tsgolint missed (its type-argument check, tsgolint#1333, is merged but
+  not in 7.0.2006). typescript-eslint agreed with tsrs-lint on each, the
+  sites are fixed, and both report nothing. The pin keeps lint on the released
+  tool while tsrs is a beta; switching is deleting the variable from `pnpm
+  lint`, the pre-commit hook, `verify.ts` and `check-unsafe-any.ts`.
 - **`.oxlintrc.json` cannot carry comments.** `eslint.config.mjs` imports it with
   `with { type: 'json' }`, a strict `JSON.parse`, so a `//` comment breaks `pnpm
   lint:eslint` with an error that does not name the comment. A `"//key"` entry fails

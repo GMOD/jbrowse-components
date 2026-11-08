@@ -121,7 +121,7 @@ test('a row display on a session track resets to the arrangement it was added wi
   const track = await shownIn(session, 'subtracks')
   const display = track.displays[0]!
   const arrangement = () =>
-    getSnapshot(display.configuration.rows) as Record<string, unknown>
+    getSnapshot<Record<string, unknown>>(display.configuration.rows)
 
   expect(
     session

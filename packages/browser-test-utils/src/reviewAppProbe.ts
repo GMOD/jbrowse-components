@@ -195,7 +195,7 @@ const cardMessage = (page: Page) =>
   await wait(700)
   await page.keyboard.type('XYZ')
   const box = await page.evaluate(() => {
-    const note = document.querySelector('.note') as HTMLTextAreaElement | null
+    const note = document.querySelector<HTMLTextAreaElement>('.note')
     return {
       text: note?.value ?? '',
       focused: document.activeElement === note,

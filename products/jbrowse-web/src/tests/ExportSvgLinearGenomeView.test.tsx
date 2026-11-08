@@ -42,9 +42,9 @@ test('export svg of lgv', async () => {
 // download landing in ~/Downloads under a name it did not choose is a second
 // file it cannot account for.
 test('save: false returns the markup and writes nothing', async () => {
-  const { saveAs } = jest.requireMock('@jbrowse/core/util/FileSaver') as {
-    saveAs: jest.Mock
-  }
+  const { saveAs } = jest.requireMock<{ saveAs: jest.Mock }>(
+    '@jbrowse/core/util/FileSaver',
+  )
   const { view, findByTestId } = await createView(config)
 
   view.setNewView(0.1, 1)

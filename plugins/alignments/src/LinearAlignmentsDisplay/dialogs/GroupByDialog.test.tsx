@@ -55,7 +55,7 @@ function renderDialog(state: {
   return { applyGroupBy, groupByPlot, openPlotDialog, handleClose }
 }
 
-const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
+const checkbox = () => screen.getByRole<HTMLInputElement>('checkbox')
 
 const applyButton = () => screen.getByText('Apply').closest('button')!
 

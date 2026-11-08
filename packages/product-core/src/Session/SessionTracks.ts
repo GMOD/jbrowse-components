@@ -61,7 +61,7 @@ function baseTracks(self: {
 }
 
 function sessionEntries(self: { sessionTracks: IAnyStateTreeNode }) {
-  return getSnapshot(self.sessionTracks) as TrackConfigEntry[]
+  return getSnapshot<TrackConfigEntry[]>(self.sessionTracks)
 }
 
 // Not a key count: every delta keeps its trackId, and one can hold nothing but

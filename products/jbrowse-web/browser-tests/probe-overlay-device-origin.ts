@@ -349,9 +349,9 @@ async function main() {
         (sel, frac) => {
           const display = document.querySelector(sel)!
           const canvas = display.querySelector('canvas')!
-          const container = display.closest(
+          const container = display.closest<HTMLElement>(
             '[data-testid^="trackRenderingContainer"]',
-          ) as HTMLElement
+          )!
           const dpr = window.devicePixelRatio
           const top = canvas.getBoundingClientRect().top
           const target = (Math.floor(top * dpr) + 1 + frac) / dpr

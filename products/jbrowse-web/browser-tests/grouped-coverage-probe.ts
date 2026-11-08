@@ -74,9 +74,9 @@ try {
   const info = await page.evaluate(bps => {
     const view = (window as any).JBrowseSession.views[0]
     const display = view.tracks[0].displays[0]
-    const canvas = document.querySelector(
+    const canvas = document.querySelector<HTMLCanvasElement>(
       '[data-testid="pileup-display"] canvas',
-    ) as HTMLCanvasElement
+    )!
     const rect = canvas.getBoundingClientRect()
     const cols = bps.map(bp => {
       const px = view.bpToPx({ refName: 'ctgA', coord: bp })

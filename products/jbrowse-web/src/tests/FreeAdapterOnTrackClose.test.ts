@@ -43,10 +43,7 @@ test('a track in two views frees its adapter only when the last view closes it',
 
   const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const sessionId = track.rpcSessionId
-  const conf = getSnapshot(track.configuration.adapter) as Record<
-    string,
-    unknown
-  >
+  const conf = getSnapshot<Record<string, unknown>>(track.configuration.adapter)
   const load = () => getAdapter(pluginManager, sessionId, conf)
 
   const first = await load()
@@ -69,10 +66,7 @@ test('closing the only view holding a track frees its adapter', async () => {
 
   const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const sessionId = track.rpcSessionId
-  const conf = getSnapshot(track.configuration.adapter) as Record<
-    string,
-    unknown
-  >
+  const conf = getSnapshot<Record<string, unknown>>(track.configuration.adapter)
   const load = () => getAdapter(pluginManager, sessionId, conf)
 
   const first = await load()

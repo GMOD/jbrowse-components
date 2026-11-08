@@ -407,11 +407,11 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
     {},
     { timeout: 10000 },
   )
-  const input = (await form.findByPlaceholderText(
+  const input = await form.findByPlaceholderText<HTMLInputElement>(
     'Search for location',
     {},
     { timeout: 10000 },
-  )) as HTMLInputElement
+  )
 
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value

@@ -471,7 +471,7 @@ test('the splitter resizes from the keyboard, in both directions', () => {
   session.splitPanel(session.panels[0]!.id, 'row')
   const { container } = renderLayout(session)
 
-  const splitter = container.querySelector('[data-splitter]') as HTMLElement
+  const splitter = container.querySelector<HTMLElement>('[data-splitter]')!
   expect(splitter.tabIndex).toBe(0)
 
   // 2% of the pair, moved from the right pane to the left
@@ -498,7 +498,7 @@ test('a vertical split takes the vertical arrows and ignores the others', () => 
   session.splitPanel(session.panels[0]!.id, 'column')
   const { container } = renderLayout(session)
 
-  const splitter = container.querySelector('[data-splitter]') as HTMLElement
+  const splitter = container.querySelector<HTMLElement>('[data-splitter]')!
   expect(splitter.getAttribute('aria-orientation')).toBe('horizontal')
 
   fireEvent.keyDown(splitter, { key: 'ArrowRight' })
@@ -529,7 +529,7 @@ function splitterOverPanes(session: ReturnType<typeof TestSession.create>) {
     el.getBoundingClientRect = () =>
       ({ left: 0, top: 0, width: 500, height: 500 }) as DOMRect
   }
-  return container.querySelector('[data-splitter]') as HTMLElement
+  return container.querySelector<HTMLElement>('[data-splitter]')!
 }
 
 function twoPanes() {
@@ -598,7 +598,7 @@ test('pointercancel ends the resize', () => {
 test('a mouse wheel over the strip scrolls it sideways', () => {
   const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
-  const list = container.querySelector('[role="tablist"]') as HTMLElement
+  const list = container.querySelector<HTMLElement>('[role="tablist"]')!
 
   list.scrollLeft = 0
   fireEvent.wheel(list, { deltaY: 120, deltaX: 0 })
@@ -612,7 +612,7 @@ test('a mouse wheel over the strip scrolls it sideways', () => {
 test('a wheel reporting lines or pages is converted to pixels', () => {
   const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
-  const list = container.querySelector('[role="tablist"]') as HTMLElement
+  const list = container.querySelector<HTMLElement>('[role="tablist"]')!
 
   // one Firefox mouse-wheel notch
   list.scrollLeft = 0
@@ -633,7 +633,7 @@ test('a wheel reporting lines or pages is converted to pixels', () => {
 test('a horizontal gesture is left to the browser', () => {
   const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
-  const list = container.querySelector('[role="tablist"]') as HTMLElement
+  const list = container.querySelector<HTMLElement>('[role="tablist"]')!
 
   list.scrollLeft = 50
   fireEvent.wheel(list, { deltaX: 200, deltaY: 5 })

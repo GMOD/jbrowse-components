@@ -103,10 +103,10 @@ async function launched(entry: { trackId: string } & Record<string, unknown>) {
     view,
     session: model.session,
     display: () =>
-      getSnapshot(
+      getSnapshot<Record<string, unknown>>(
         (view.tracks[0]!.displays[0] as { configuration: object })
           .configuration,
-      ) as Record<string, unknown>,
+      ),
     messages: () =>
       model.session.snackbarMessages.map((m: { message: string }) => m.message),
   }

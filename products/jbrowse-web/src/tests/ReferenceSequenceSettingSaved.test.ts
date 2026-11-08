@@ -69,10 +69,10 @@ test('a setting toggled on a reference sequence track is saved in its assembly',
   display.toggleShowForward()
 
   expect(display.showForward).toBe(false)
-  const saved = getSnapshot(jbrowse) as {
+  const saved = getSnapshot<{
     assemblies: {
       sequence: { displays: { forward?: { show?: boolean } }[] }
     }[]
-  }
+  }>(jbrowse)
   expect(saved.assemblies[0]!.sequence.displays[0]!.forward?.show).toBe(false)
 })

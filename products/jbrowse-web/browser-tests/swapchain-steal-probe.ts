@@ -56,7 +56,7 @@ const CANVAS = '[data-testid="synteny_canvas"]'
 // can, because every reading here is taken across a pan.
 const readCanvas = async (page: Page) =>
   page.evaluate(sel => {
-    const canvas = document.querySelector(sel) as HTMLCanvasElement
+    const canvas = document.querySelector<HTMLCanvasElement>(sel)!
     const probe = document.createElement('canvas')
     probe.width = canvas.width
     probe.height = canvas.height
@@ -118,7 +118,7 @@ try {
 
   // The steal itself.
   await page.evaluate(sel => {
-    const canvas = document.querySelector(sel) as HTMLCanvasElement
+    const canvas = document.querySelector<HTMLCanvasElement>(sel)!
     const ctx = canvas.getContext('webgpu')!
     ;(ctx as unknown as { unconfigure: () => void }).unconfigure()
   }, CANVAS)

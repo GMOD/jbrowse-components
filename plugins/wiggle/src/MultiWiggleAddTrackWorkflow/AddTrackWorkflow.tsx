@@ -178,8 +178,8 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         size="small"
         exclusive
         value={inputMode}
-        onChange={(_event, val) => {
-          if (val) {
+        onChange={(_event, val: unknown) => {
+          if (val === 'paste' || val === 'upload') {
             update({ inputMode: val })
           }
         }}
@@ -242,7 +242,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
                   headerName: 'Name',
                   flex: 1,
                   editable: true,
-                  renderCell: ({ value }) => <SanitizedHTML html={value} />,
+                  renderCell: ({ row }) => <SanitizedHTML html={row.name} />,
                 },
                 {
                   field: 'kind',
