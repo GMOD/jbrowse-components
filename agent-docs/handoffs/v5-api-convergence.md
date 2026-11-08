@@ -48,6 +48,10 @@ between displays.
   10-22 alone moved about 3000 paths each way in one sub-schema move.
 - 2026-10-30 to 11-05 net: +279 / −319 shared, +30 / −17 mark display, 11-02
   most of it; 11-03 and 11-04 +31 / −4 shared, 11-05 none.
+- 2026-11-06 to 11-08: one respell, `encoding.y.scale.group` to `share`
+  (3cc17821fb, 11-07, +6 / −6 shared, +1 / −1 mark display). The key was
+  beta-only, no writer outside the tree spelled it, and ggjbrowse's engine pin
+  includes it.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
@@ -69,11 +73,10 @@ between displays.
    - ggjbrowse's closed-schema bundle drops an old key silently, so every
      rename, and every new key, needs an engine re-pin, an R respell and a
      tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The
-     engine now re-pins to main commits (`bccd4b0d5b` on 2026-11-05,
-     ggjbrowse `fc2f1e7`), and the downstream canary runs ggjbrowse on every
+     engine now re-pins to main commits (`77dab43537` on 2026-11-08,
+     ggjbrowse `1c3cdfc`), and the downstream canary runs ggjbrowse on every
      push to main (`.github/workflows/downstream-canary.yml`), so a rename
-     that misses R goes red there on push. `dog10k_lof` keeps its
-     `557791197f` knit until the callset host's certificate is renewed.
+     that misses R goes red there on push.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
      (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). Its Trix
      adapters keep writing `textSearchAdapterId`, which v4.3.0 needs to boot
@@ -101,8 +104,8 @@ between displays.
    the nested object, which no probe sees, so they report as unknown slots.
    On 2026-11-06 it ran on the graph plugin 8.8.0, the ARG plugin and
    Apollo3's `v2` branch (UMD; its `.esm.js` imports bare `@jbrowse/*`, the
-   npm form). The graph plugin (8.9.0) and the ARG plugin (`94085aa`) then
-   moved their floor and pins to beta.20 and write main's spellings, clean
+   npm form). The graph plugin (8.9.0, now 9.0.0) and the ARG plugin
+   (`94085aa`) then moved their floor and pins to beta.20 and write main's spellings, clean
    under main's validator with their manifests (Colin, 2026-11-06: plugins
    target the latest beta). Apollo's `jbrowse_config.json` carries `google`
    and `microsoft` blocks its internet account never declares; it is a
