@@ -19,6 +19,7 @@ import type {
   LineInterpolation,
   WiggleMark,
   WiggleMarkObject,
+  WiggleRendering,
 } from '../renderingTypes.ts'
 import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
 import type { Extent } from './wiggleMarkConfigSchema.ts'
@@ -41,13 +42,13 @@ const LAYOUTS = [
 // `prefersOffset`). A menu change is the wrong place to retire a rendering.
 export function makeRenderingTypeSubMenu(
   self: {
-    renderingType: string
+    renderingType: WiggleRendering
     setMark: (mark: WiggleMark, interpolate?: LineInterpolation) => void
     isRowLayout: boolean
     setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
     discoveredRows: readonly unknown[]
   },
-  plots: readonly (readonly [string, WiggleMarkObject, string])[],
+  plots: readonly (readonly [WiggleRendering, WiggleMarkObject, string])[],
 ): MenuItem {
   // One source has no layout axis to drill through, so it meets the five plots
   // flat. It also cannot go on rows usefully — a lone row raises the tree and
@@ -84,7 +85,7 @@ export function makeRenderingTypeSubMenu(
 }
 
 export function makeMarkSizeMenuItems(self: {
-  renderingType: string
+  renderingType: WiggleRendering
   size: number
   lineWidth: number
   setPointSize: (n?: number) => void

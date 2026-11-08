@@ -32,7 +32,7 @@ function makeModel(symlogConstant: number, scheme?: 'viridis') {
     domain: DOMAIN,
     scaleType: 'symlog',
     symlogConstant,
-    renderingType: 'density',
+    renderingType: 'density' as const,
     size: 2,
     lineWidth: 1,
     origin: 0,

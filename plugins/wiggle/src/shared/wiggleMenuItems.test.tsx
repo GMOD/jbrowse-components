@@ -98,7 +98,7 @@ function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
   const writes: unknown[] = []
   return {
     writes,
-    renderingType: 'xyplot',
+    renderingType: 'xyplot' as const,
     setMark: (mark: string, interpolate?: string) => {
       writes.push({ mark, interpolate })
     },

@@ -89,7 +89,7 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
 
   // A line plot draws its range as one band spanning both signs, split at the
   // pivot by the painter rather than here, with the mean stroke on top.
-  test.each(['line', 'linecenter'])(
+  test.each(['line', 'linecenter'] as const)(
     'a min-max extent is a band and a mean stroke for %s',
     renderingType => {
       const out = buildSourceRenderData(makeData(), {

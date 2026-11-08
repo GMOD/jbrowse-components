@@ -48,10 +48,9 @@ describe('renderingTypeToInt', () => {
     expect(renderingTypeToInt('scatter')).toBe(RENDERING_TYPE_SCATTER)
   })
 
-  test('unknown types throw', () => {
-    expect(() => renderingTypeToInt('unknown')).toThrow(
-      /Unknown wiggle rendering type/,
-    )
+  test('a name outside the five renderings is a type error', () => {
+    // @ts-expect-error not a rendering
+    expect(renderingTypeToInt('unknown')).toBeUndefined()
   })
 })
 

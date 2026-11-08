@@ -7,6 +7,7 @@ import {
 import { renderingTypeToInt } from './wiggleComponentUtils.ts'
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
+import type { WiggleRendering } from '../renderingTypes.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { SourceRenderData, WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -31,7 +32,7 @@ export interface WiggleGpuProps {
   // no min-max presentation and resolves to 'none'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
   effectiveExtent: string
-  renderingType: string
+  renderingType: WiggleRendering
 }
 
 export function encodeWiggleRegions(model: {

@@ -319,7 +319,7 @@ describe('findWiggleHit', () => {
         ],
       ]),
       tooltipShowsMinMax: false,
-      renderingType: 'xyplot',
+      renderingType: 'xyplot' as const,
       size: 2,
       lineWidth: 1,
       isOverlay: false,
@@ -417,7 +417,7 @@ describe('findWiggleHit', () => {
     })
 
     test('a point reaches its radius', () => {
-      const points = { renderingType: 'scatter', size: 10 }
+      const points = { renderingType: 'scatter', size: 10 } as const
       expect(scoreAt(sparse([1000], points), 24)).toBe(1000)
       expect(scoreAt(sparse([1000], points), 26)).toBeUndefined()
     })
@@ -427,7 +427,7 @@ describe('findWiggleHit', () => {
     })
 
     test('a line reaches half its stroke', () => {
-      const line = { renderingType: 'line', lineWidth: 10 }
+      const line = { renderingType: 'line', lineWidth: 10 } as const
       expect(scoreAt(sparse([1000], line), 24)).toBe(1000)
       expect(scoreAt(sparse([1000], line), 26)).toBeUndefined()
     })

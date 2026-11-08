@@ -1,3 +1,4 @@
+import type { WiggleRendering } from '../../renderingTypes.ts'
 import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextInfo } from './findHit.ts'
@@ -29,7 +30,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
   tooltipShowsMinMax: boolean
-  renderingType: string
+  renderingType: WiggleRendering
   size: number
   lineWidth: number
   isRowLayout: boolean

@@ -17,6 +17,7 @@ import {
 } from '../../shared/wiggleHitTest.ts'
 import { WIGGLE_MIN_PX } from '../../util.ts'
 
+import type { WiggleRendering } from '../../renderingTypes.ts'
 import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -135,7 +136,7 @@ export interface WiggleHitModel {
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean
-  renderingType: string
+  renderingType: WiggleRendering
   size: number
   lineWidth: number
   isOverlay: boolean

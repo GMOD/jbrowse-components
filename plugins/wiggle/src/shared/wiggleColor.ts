@@ -17,6 +17,7 @@ import {
   WIGGLE_IMPLIED_FIELD,
 } from './wiggleColorConfigSchema.ts'
 
+import type { WiggleRendering } from '../renderingTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -226,7 +227,10 @@ export function paintedWiggleColor<C extends ColorSetting>(
  * on a heatmap, which paints it flat, and a `source` color's own scale, which
  * the row colors replace.
  */
-export function wiggleColorProblems(color: ColorSetting, rendering: string) {
+export function wiggleColorProblems(
+  color: ColorSetting,
+  rendering: WiggleRendering,
+) {
   if (color.field === 'source') {
     return [
       ...(wiggleColorWritten(color)

@@ -59,6 +59,7 @@ import {
   packStepLine24,
 } from './prototypePackers.ts'
 
+import type { WiggleRendering } from '../src/renderingTypes.ts'
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
 import type { RawFeatureArrays } from '../src/util.ts'
 import type { SourceRenderData, WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -156,7 +157,7 @@ function payload(summary: boolean): WiggleDataResult {
 const data = payload(true)
 const dataAvg = payload(false)
 
-function props(renderingType: string, extent: string): WiggleGpuProps {
+function props(renderingType: WiggleRendering, extent: string): WiggleGpuProps {
   return {
     sources: sourceList,
     rowLayout: true,

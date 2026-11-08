@@ -14,6 +14,7 @@ import {
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
+import type { WiggleRendering } from '../renderingTypes.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type {
   WiggleGPURenderState,
@@ -32,17 +33,17 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
-export function isScatterMode(renderingType: string) {
+export function isScatterMode(renderingType: WiggleRendering) {
   return renderingType === 'scatter'
 }
 
 // Both line renderings — the stepped bar-tops and the interpolated
 // point-to-point one — the ones `encoding.strokeWidth` applies to.
-export function isLineMode(renderingType: string) {
+export function isLineMode(renderingType: WiggleRendering) {
   return renderingType === 'line' || renderingType === 'linecenter'
 }
 
-const renderingTypeMap: Record<string, WiggleRenderingType> = {
+const renderingTypeMap: Record<WiggleRendering, WiggleRenderingType> = {
   xyplot: RENDERING_TYPE_XYPLOT,
   density: RENDERING_TYPE_DENSITY,
   line: RENDERING_TYPE_LINE,
@@ -50,12 +51,8 @@ const renderingTypeMap: Record<string, WiggleRenderingType> = {
   scatter: RENDERING_TYPE_SCATTER,
 }
 
-export function renderingTypeToInt(type: string): WiggleRenderingType {
-  const result = renderingTypeMap[type]
-  if (result === undefined) {
-    throw new Error(`Unknown wiggle rendering type: ${type}`)
-  }
-  return result
+export function renderingTypeToInt(type: WiggleRendering) {
+  return renderingTypeMap[type]
 }
 
 // Everything in a wiggle-family render state except the canvas box comes off
@@ -66,7 +63,7 @@ export interface WiggleRenderStateModel {
   domain: [number, number] | undefined
   scaleType: string
   symlogConstant: number
-  renderingType: string
+  renderingType: WiggleRendering
   size: number
   lineWidth: number
   origin: number

@@ -48,7 +48,12 @@ test('a gradient is no problem on any mark', () => {
     field: 'score',
     scale: { type: 'linear', scheme: 'viridis' },
   })
-  for (const rendering of ['line', 'linecenter', 'xyplot', 'density']) {
+  for (const rendering of [
+    'line',
+    'linecenter',
+    'xyplot',
+    'density',
+  ] as const) {
     expect(wiggleColorProblems(ramp, rendering)).toEqual([])
   }
 })
