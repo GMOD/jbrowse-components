@@ -100,17 +100,17 @@ Only the adapter-review subagent traced these.
 
 - **The plot type keeps one name per shader**, declined at `renderingOf`
   (`renderingTypes.ts`); reconsider with ADR-227's conditions.
-- **Layer + stat** is filed as
-  `ideas/waiting-on-a-call/a-wiggle-layer-earns-its-place-with-a-window-stat.md`.
+- **Layer + stat** is live on the mark display (`marks` with a `window`
+  transform, the methylation tutorial's recipe), and the `extent` band is
+  wiggle's single-source default. What remains, the frame's unit and whether
+  the wiggle display offers a trend line, is in
+  `ideas/waiting-on-a-call/a-window-frame-reaches-past-the-fetch.md`.
 - **Facet by `group` with sources overlaid in a row.** Gated on row
   attributes (`ideas/waiting-on-a-call/row-attributes-have-one-home.md`,
   ADR-143). Not a wiggle change.
 - **Already declined, don't re-propose:**
   - a free y per row (ADR-141, GRAMMAR_OF_GRAPHICS.md)
-  - stack and area (ADR-184)
-  - size mapped from a field (ADR-216)
   - render-core marks as the renderer (ADR-227)
-  - more color scale types (ADR-251)
   - `numRows` vs `rowCount` (parked in `one-spelling-for-the-drawn-row-count`)
 - **The one place the grammar is knowingly bent** is ADR-251: a subtrack with
   no color falls back to the score's pair, two fields in one channel. It is

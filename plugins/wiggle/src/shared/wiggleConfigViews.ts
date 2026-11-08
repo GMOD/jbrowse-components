@@ -69,9 +69,6 @@ export function wiggleConfigViews(self: WiggleConfigHost) {
     get extent(): Extent {
       return getConf(self, ['mark', 'extent'])
     },
-    /**
-     * #getter
-     */
     get renderingType(): WiggleRendering {
       return renderingOf(
         getConf(self, ['mark', 'type']),

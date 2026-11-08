@@ -1,9 +1,15 @@
 ---
 name: a-window-frame-reaches-past-the-fetch
-description: A `window` step's frame, counted in rows, is cut at the fetch edge, so near the view's edges a wide average covers fewer rows and redraws differently on each refetch while panning.
+description: A `window` step's frame (a smoothed trend, rolling mean, moving average over a QuantitativeTrack on the mark display) counts rows, so it is cut at the fetch edge and its reach in bases follows the zoom over a BigWig summary tier. Read before proposing a trend line or a bp-unit frame on wiggle.
 ---
 
 # A window frame reaches past the fetch
+
+A smoothed trend over raw values is live: the mark display runs on a
+`QuantitativeTrack`, and a `marks` list can draw points under a line whose
+`transform` is a `window` step (the methylation tutorial's bedMethyl recipe,
+`frame: [-50, 50]` with a coverage `weight`). The questions below are what that
+step still gets wrong at the edges and across zooms.
 
 The mark display fetches each displayed region's buffered span
 (`planRegionFetch`, `bufferedVisibleRegions`) and the worker runs the steps
@@ -33,3 +39,16 @@ a cut frame the same way as a whole one.
 Which of the three, and whether a cut frame is a rendering concern or a notice.
 `pathSeries.ts`'s `frameSpanBp` already measures the bases a frame spans per
 row, which either option can read.
+
+## Two more questions the step raises
+
+- **The frame's unit.** `frame` counts rows. Over a BigWig, whose rows are
+  summary bins that widen as the view zooms out, the same frame covers more
+  bases at every zoom step, so the curve's smoothness follows the zoom. A
+  frame in bases would hold it; `frameSpanBp` is the measure either way. Shoot a
+  phyloP or ChIP BigWig with a bar mark and a windowed line before deciding.
+- **The default wiggle display.** A trend line today means switching the track
+  to the mark display, which is still experimental in v5. Offering it on the
+  wiggle display moves its plots toward render-core's marks, so that is a call
+  under ADR-227's reconsider conditions, not a new design: wiggle's one plot
+  family per region (`wiggleParams` reads `sources[0]`) is what it would undo.

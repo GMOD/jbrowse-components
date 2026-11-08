@@ -41,6 +41,9 @@ them: `encoding.size`, a point's diameter, and `encoding.strokeWidth`, a line's
 width, each a `WiggleSize` whose bare number is its `value`. Neither maps a
 field. `size` and `lineWidth` shipped only in v5 betas (v4.3.0 has neither), so
 neither lifts.
+Amended 2026-10-24 by
+[ADR-238](adr-238-every-display-speaks-vega-lite.md): the density strip's mark
+is spelled `rect`, not `span`.
 
 ## Context
 

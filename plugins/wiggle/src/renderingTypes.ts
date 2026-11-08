@@ -34,10 +34,13 @@ export const DEFAULT_POINT_SIZE_PX = 2
 export const DEFAULT_LINE_WIDTH_PX = 1
 
 /**
- * The rendering a mark's `type` and a line's `interpolate` draw with. The
- * display keeps this one name per shader rather than carrying the pair through
- * (declined 2026-11-08): three of the pair's combinations draw nothing, and
- * `buildSourceRenderData` stamps one shader per source.
+ * The plot a mark's `type` and a line's `interpolate` draw. The display keys on
+ * this name, not the pair (declined 2026-11-08): the schema admits eight pairs
+ * for five plots, since `interpolate` is unread off a line, so the Plot type
+ * radio, `renderingTypeMap` and the shader int `buildSourceRenderData` stamps
+ * would each need this collapse anyway, and the names are v4's
+ * `defaultRendering` (`markOf`). Reconsider when the plots move onto
+ * render-core's marks (ADR-227).
  */
 export function renderingOf(
   mark: string,
