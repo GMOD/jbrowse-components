@@ -523,3 +523,27 @@ test('a sized lane keeps the rows whose connectors finish inside it', () => {
   expect(rowsIn(display, 0)).toBeLessThan(10)
   expect(clippedBy(display, '1')).toBe('override')
 })
+
+// jbrowse-img's `sortAt` counts the reads it keys; a hidden lane's are not drawn
+// and leave its count
+test('nonReferenceAt counts only the lanes not hidden', () => {
+  const withSnp = (n: number): WorkerPileupData => ({
+    ...stackedReads(n),
+    coverageStartPos: 1000,
+    coverageDepths: new Float32Array(100).fill(n),
+    mismatchPositions: new Uint32Array(n).fill(1050),
+    mismatchBases: new Uint8Array(n).fill(67),
+  })
+  const display = seed(
+    [
+      { key: '1', label: 'HP: 1', n: 3, data: withSnp(3) },
+      { key: '2', label: 'HP: 2', n: 5, data: withSnp(5) },
+    ],
+    { grouped: true },
+  )
+  const at = () => display.nonReferenceAt({ field: 'base', pos: 1050 })
+  expect(at()).toEqual({ count: 8, depth: 8 })
+
+  display.hideGroup('2')
+  expect(at()).toEqual({ count: 3, depth: 3 })
+})

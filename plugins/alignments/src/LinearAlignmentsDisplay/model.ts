@@ -133,6 +133,7 @@ import {
 import {
   buildReadIdIndex,
   buildSashimiDownKeys,
+  eachGroup,
   hasNamedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
@@ -531,18 +532,20 @@ export default function stateModelFactory(
            * #method
            * The loaded reads differing from the reference at a variant's sort
            * column, or with `allele` only those with it, over the reads
-           * spanning it. Undefined until a fetch reaching the column completes.
+           * spanning it in the lanes not hidden. Undefined until a fetch
+           * reaching the column completes.
            */
           nonReferenceAt(column: VariantSortColumn, allele?: VariantAllele) {
             let total: { count: number; depth: number } | undefined
-            for (const { groups } of self.rpcDataMap.values()) {
-              for (const { data } of groups) {
-                const at = nonReferenceAt(column, data, allele)
-                if (at) {
-                  total = {
-                    count: (total?.count ?? 0) + at.count,
-                    depth: (total?.depth ?? 0) + at.depth,
-                  }
+            for (const { data } of eachGroup(
+              self.rpcDataMap,
+              self.hiddenGroups,
+            )) {
+              const at = nonReferenceAt(column, data, allele)
+              if (at) {
+                total = {
+                  count: (total?.count ?? 0) + at.count,
+                  depth: (total?.depth ?? 0) + at.depth,
                 }
               }
             }
