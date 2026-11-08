@@ -46,9 +46,15 @@ Writes one <name>.bed per genome, plus <sp1>.<sp2>.anchors and
 its genes, named PanSN-style (`grape#1#chr1`), with `--chrom-sizes` giving the
 sequence lengths. Several pairs' files concatenated are one file
 MultiGenomePAFAdapter reads for every band of a stack, in any row order.
+
+`--drop-overlapped-blocks` thins the blocks before anything is written: densest
+first, a block is kept unless more than half its span on either genome lies
+inside a block already kept. Density is the anchor count over the mean number of
+genes the block's two spans hold.
 """
 
 import argparse
+import bisect
 import gzip
 import itertools
 import math
@@ -61,6 +67,7 @@ import sys
 # prefix stripped.
 ID_ATTRS = ("ID", "Name", "gene_id", "transcript_id", "protein_id", "locus_tag")
 HEADER = re.compile(r"^## Alignment .*\b(plus|minus)\s*$")
+OVERLAP_FRACTION = 0.5
 
 
 def opener(path):
@@ -180,6 +187,39 @@ def convert_blocks(blocks, genes, tags):
     return out, counts
 
 
+def block_sides(cross, genes):
+    """[(chrom, start, end), ...] per column, 1-based inclusive."""
+    sides = []
+    for i in (0, 1):
+        placed = [genes[r[i]] for r in cross]
+        sides.append((placed[0][0], min(min(g[1], g[2]) for g in placed),
+                      max(max(g[1], g[2]) for g in placed)))
+    return sides
+
+
+def drop_overlapped_blocks(converted, genes):
+    starts = {}
+    for chrom, start, end in genes.values():
+        starts.setdefault(chrom, []).append(min(start, end))
+    for v in starts.values():
+        v.sort()
+
+    def held(chrom, start, end):
+        return (bisect.bisect_right(starts[chrom], end)
+                - bisect.bisect_left(starts[chrom], start))
+
+    sides = [block_sides(cross, genes) for cross, _ in converted]
+    density = [2 * len(cross) / sum(held(*side) for side in s)
+               for (cross, _), s in zip(converted, sides)]
+    kept = []
+    for i in sorted(range(len(converted)), key=lambda i: -density[i]):
+        if not any(a[0] == b[0] and min(a[2], b[2]) - max(a[1], b[1])
+                   > OVERLAP_FRACTION * (a[2] - a[1])
+                   for k in kept for a, b in zip(sides[i], sides[k])):
+            kept.append(i)
+    return [converted[i] for i in sorted(kept)]
+
+
 def build_table(blocks, genes, tags, with_score=False):
     """([row, ...], counts) for the reference-anchored ortholog table.
 
@@ -234,12 +274,11 @@ def paf_rows(converted, genes, tags, names, refname, sizes):
     rows = []
     for cross, simple_row in converted:
         sides = []
-        for i, (tag, name) in enumerate(zip(tags, names)):
-            placed = [genes[r[i]] for r in cross]
-            chrom = refname(placed[0][0], tag, name)
+        for (chrom, start, end), tag, name in zip(
+                block_sides(cross, genes), tags, names):
+            chrom = refname(chrom, tag, name)
             sides.append((f"{name}#1#{chrom}", sizes[name].get(chrom, 0),
-                          min(min(g[1], g[2]) for g in placed) - 1,
-                          max(max(g[1], g[2]) for g in placed)))
+                          start - 1, end))
         (q, qlen, qs, qe), (t, tlen, ts, te) = sides
         rows.append([q, qlen, qs, qe, simple_row[5], t, tlen, ts, te, len(cross),
                      max(qe - qs, te - ts), 255, f"genes:i:{len(cross)}"])
@@ -288,6 +327,9 @@ def main():
                         "weakest pairing in each row, for the adapter's "
                         "attributeColumns to name. off by default, since jcvi's "
                         "own .blocks is gene ids and nothing else")
+    p.add_argument("--drop-overlapped-blocks", action="store_true",
+                   help="of blocks that overlap on either genome, keep the "
+                        "densest; one or two genomes only")
     p.add_argument("--paf", help="also write the blocks as PanSN PAF, two genomes only")
     p.add_argument("--chrom-sizes", action="append", default=[], metavar="NAME=FILE",
                    help="that assembly's chrom.sizes, for the PAF's lengths")
@@ -295,6 +337,8 @@ def main():
     args = p.parse_args()
     if args.paf and len(args.species) != 2:
         sys.exit("--paf needs exactly two --species")
+    if args.drop_overlapped_blocks and len(args.species) > 2:
+        sys.exit("--drop-overlapped-blocks needs one or two --species")
 
     species = parse_kv(args.species, "species")
     tags, names = list(species), list(species.values())
@@ -340,6 +384,11 @@ def main():
             trailer = '\nthe trailing column is attributeColumns: ["score"]'
     else:
         converted, counts = convert_blocks(blocks, genes, tags)
+        if args.drop_overlapped_blocks:
+            thinned = drop_overlapped_blocks(converted, genes)
+            counts["overlapped"] = len(converted) - len(thinned)
+            counts["kept"] = len(thinned)
+            converted = thinned
         stem = os.path.join(args.outdir, f"{names[0]}.{names[-1]}")
         with open(f"{stem}.anchors", "w") as anchors, \
                 open(f"{stem}.anchors.simple", "w") as simple:
@@ -363,6 +412,8 @@ def main():
             written.append(args.paf)
         summary = (f"{counts['kept']} blocks kept, {counts['skipped']} blocks "
                    f"not joining {' and '.join(dict.fromkeys(names))} skipped")
+        if args.drop_overlapped_blocks:
+            summary += f", {counts['overlapped']} overlapped blocks dropped"
 
     print(f"wrote {' '.join(written)}\n{summary}, {counts['unknown']} pairs on "
           f"unlisted genomes skipped{trailer}", file=sys.stderr)

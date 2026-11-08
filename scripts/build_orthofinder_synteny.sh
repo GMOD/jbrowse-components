@@ -165,6 +165,10 @@ MSA="${MSA:-}"
 # A mammals set (human, mouse, dog, cow, pig) was scoped and not built: it sits
 # between vertebrates' deep time and drosophila's shallow time and shows
 # nothing either does not.
+#
+# CHAIN_FLAGS go to every mcscanx_to_anchors.py call on the chained blocks; only
+# the wheat set sets one.
+CHAIN_FLAGS=""
 case "$SET" in
 vertebrates)
   # LepOcu1, the gar assembly Braasch et al. (2016) compared against zebrafish,
@@ -197,6 +201,7 @@ durum    GCA_900231445.1
 emmer    GCF_002162155.2
 EOF
   )
+  CHAIN_FLAGS=--drop-overlapped-blocks
   ;;
 drosophila)
   SPECIES=$(cat <<'EOF'
@@ -839,7 +844,8 @@ for pair in $PAIRS; do
   awk -v OFS='\t' '{ print "aa" $1, $4, $2 + 1, $3 }' "$a.bed" > "chain/$pair/x.gff"
   awk -v OFS='\t' '{ print "bb" $1, $4, $2 + 1, $3 }' "$b.bed" >> "chain/$pair/x.gff"
   MCScanX_h "chain/$pair/x" -a -b 2 -s 10 -m 24 -g 0 > /dev/null
-  python3 "$SCRIPT_DIR/mcscanx_to_anchors.py" --gff "chain/$pair/x.gff" \
+  # shellcheck disable=SC2086  # CHAIN_FLAGS is empty or one flag
+  python3 "$SCRIPT_DIR/mcscanx_to_anchors.py" $CHAIN_FLAGS --gff "chain/$pair/x.gff" \
     --collinearity "chain/$pair/x.collinearity" \
     --species aa="$a" --species bb="$b" --outdir "chain/$pair" \
     --paf "chain/$pair/x.paf" \

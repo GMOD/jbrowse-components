@@ -1490,6 +1490,33 @@ try:
 except SystemExit as e:
     check("an ambiguous --species tag is rejected", "is a prefix of" in str(e), True)
 
+# --drop-overlapped-blocks: block 1 lies wholly inside the denser block 0 on vv1
+# and goes; block 2 is sparser still but only a third of it overlaps block 0
+gff = os.path.join(d, "overlap.gff")
+with open(gff, "w") as fh:
+    fh.writelines(f"{chrom}\t{gene}{i}\t{1000 * i}\t{1000 * i + 500}\n"
+                  for chrom, gene, n in (("vv1", "v", 10), ("pp1", "p", 4),
+                                         ("pp2", "q", 5), ("pp3", "r", 10))
+                  for i in range(1, n + 1))
+coll = os.path.join(d, "overlap.collinearity")
+with open(coll, "w") as fh:
+    for i, pairs in enumerate(([(1, "p1"), (2, "p2"), (3, "p3"), (4, "p4")],
+                               [(1, "q1"), (2, "q3"), (4, "q5")],
+                               [(1, "r1"), (4, "r4"), (7, "r7"), (10, "r10")])):
+        fh.write(f"## Alignment {i}: score=1 e_value=1e-10 N={len(pairs)} vv1&pp1 plus\n")
+        fh.writelines(f"  {i}-  {j}:\tv{v}\t{g}\t  1e-10\n"
+                      for j, (v, g) in enumerate(pairs))
+run_mcx("--species", "vv=grape", "--species", "pp=peach",
+        "--outdir", os.path.join(d, "overlap_off"))
+run_mcx("--species", "vv=grape", "--species", "pp=peach",
+        "--drop-overlapped-blocks", "--outdir", os.path.join(d, "overlap_on"))
+check("without --drop-overlapped-blocks every block is written",
+      [l.split("\t")[2] for l in lines("overlap_off", "grape.peach.anchors.simple")],
+      ["p1", "q1", "r1"])
+check("--drop-overlapped-blocks drops the block inside a denser one only",
+      [l.split("\t")[2] for l in lines("overlap_on", "grape.peach.anchors.simple")],
+      ["p1", "r1"])
+
 # syri_to_paf.py: the SyRI tutorial's every figure is drawn from its two outputs.
 # A top-level region of each kept type becomes one PAF record between PanSN
 # names, 1-based inclusive SyRI coordinates turned 0-based half-open, a query
