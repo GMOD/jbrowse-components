@@ -728,6 +728,42 @@ describe('chain mode is a main-thread tier', () => {
     expect(display.readIdsByChainName.size).toBe(0)
   })
 
+  test('a right-click keeps lighting the chain the hover lit', () => {
+    const display = matesDisplay()
+    display.setUnit('chain')
+    display.setHoverState({
+      overCigarItem: true,
+      featureIdUnderMouse: 'id0',
+      mouseoverExtraInformation: undefined,
+    })
+    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+
+    display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'id0' })
+    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+
+    display.closeContextMenu()
+    display.setUnit('read')
+    display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'id0' })
+    expect(display.hoverChainReadIds).toEqual([])
+  })
+
+  test("a connector's hover lights its ends, or their chain in chain mode", () => {
+    const display = matesDisplay()
+    const hoverConnector = () => {
+      display.setHoverState({
+        overCigarItem: true,
+        featureIdUnderMouse: undefined,
+        mouseoverExtraInformation: undefined,
+        hoveredConnectorReadIds: ['id1', 'other'],
+      })
+    }
+    hoverConnector()
+    expect(display.hoverChainReadIds).toEqual(['id1', 'other'])
+    display.setUnit('chain')
+    hoverConnector()
+    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+  })
+
   test('the toggle leaves the chain-free tier alone', () => {
     const display = matesDisplay()
     const raw = display.rawDataByGroup
@@ -2168,7 +2204,6 @@ describe('setHoverState', () => {
           end: 500,
           split: 'splitBack',
         },
-        highlightedChainReadIds: [],
       })
       return display.hoveredJunction
     }

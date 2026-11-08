@@ -353,15 +353,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // Keeping it keyed off the read (rather than only the bare-body branch) is what
   // stops the previous read's highlight going stale while the cursor sits on a
   // mismatch or modified base.
-  function hoveredChainReadIds(
-    featureHit: FeatureHit | undefined,
-    resolved: ResolvedBlock,
-  ) {
-    return model.unit === 'chain' && featureHit
-      ? model.readIdsSharingChain(resolved.rpcData, featureHit.index)
-      : []
-  }
-
   // Hover, resolved at most once per frame — `useCoalescedPointer` owns the
   // frame discipline and the two cancels (leave, unmount); the guards below are
   // this display's own.
@@ -413,12 +404,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             end,
             split,
           },
-          highlightedChainReadIds: [],
         }
       }
       case 'connector': {
         const { id1, id2 } = result.hit
-        const chain = model.readIdsSharingChainWith(id1)
         return {
           overCigarItem: true,
           featureIdUnderMouse: undefined,
@@ -426,7 +415,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             model.getFeatureInfoById(id),
           ),
           hoveredArcHighlight: result.highlight,
-          highlightedChainReadIds: chain.length > 0 ? chain : [id1, id2],
+          hoveredConnectorReadIds: [id1, id2],
         }
       }
       case 'arc':
@@ -441,7 +430,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: result.tooltip,
           hoveredArcHighlight: result.highlight,
-          highlightedChainReadIds: [],
         }
       case 'indicator':
       case 'coverage': {
@@ -466,7 +454,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           overCigarItem: tooltip !== undefined,
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: tooltip,
-          highlightedChainReadIds: [],
         }
       }
       case 'modification':
@@ -478,20 +465,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             result.resolved.refName,
             snpBaseFromCigar(result.cigarHit),
           ),
-          highlightedChainReadIds: hoveredChainReadIds(
-            result.featureHit,
-            result.resolved,
-          ),
         }
       case 'cigar':
         return {
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatCigarTooltip(result.hit),
-          highlightedChainReadIds: hoveredChainReadIds(
-            result.featureHit,
-            result.resolved,
-          ),
         }
       case 'feature': {
         const { hit, resolved } = result
@@ -504,7 +483,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             resolved.refName,
             model.readCategoryLabel,
           ),
-          highlightedChainReadIds: hoveredChainReadIds(hit, resolved),
         }
       }
       case 'none':
@@ -514,7 +492,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           overCigarItem: false,
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: undefined,
-          highlightedChainReadIds: [],
         }
     }
   }

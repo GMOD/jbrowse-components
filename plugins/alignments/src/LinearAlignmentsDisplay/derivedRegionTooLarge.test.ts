@@ -189,7 +189,6 @@ describe('alignments derived regionTooLarge', () => {
       overCigarItem: false,
       featureIdUnderMouse: 'read-123',
       mouseoverExtraInformation: undefined,
-      highlightedChainReadIds: [],
     })
     expect(display.featureIdUnderMouse).toBe('read-123')
 
@@ -210,7 +209,6 @@ describe('alignments derived regionTooLarge', () => {
       overCigarItem: false,
       featureIdUnderMouse: 'read-123',
       mouseoverExtraInformation: undefined,
-      highlightedChainReadIds: [],
     })
     display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)

@@ -167,7 +167,6 @@ test('a hover queued before a right-click does not land on the open menu', () =>
     overCigarItem: false,
     featureIdUnderMouse: undefined,
     mouseoverExtraInformation: undefined,
-    highlightedChainReadIds: [],
     hoverCoverageBand: undefined,
   })
   expect(display.featureIdUnderMouse).toBe('r0')

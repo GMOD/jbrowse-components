@@ -180,7 +180,6 @@ import {
 } from './sectionLayout.ts'
 
 import type {
-  ChainedPileupData,
   GroupedAlignmentsResult,
   RowCap,
   WorkerPileupData,
@@ -427,10 +426,9 @@ export default function stateModelFactory(
           fittedHeightPx: 0,
           /**
            * #volatile
-           * Read ids of the chain under the cursor, not chain ids; see
-           * `readIdsByChainName`, which is where they come from.
+           * The two read ids at the ends of the connector under the cursor.
            */
-          highlightedChainReadIds: [] as string[],
+          hoveredConnectorReadIds: [] as string[],
           /**
            * #volatile
            * The sashimi junction under the cursor, whose supporting reads the
@@ -1010,7 +1008,7 @@ export default function stateModelFactory(
            * Chain name → the ids of the READS in it; empty outside chain mode.
            * The key is a chain's own identity and the values are read ids,
            * which consumers resolve through `readIdToIndex` / `readIdIndexMap`
-           * (hence `highlightedChainReadIds`, `selectedChainReadIds`).
+           * (hence `hoverChainReadIds`, `selectedChainReadIds`).
            */
           get readIdsByChainName(): ReadonlyMap<string, string[]> {
             const chained = self.chainAttachment
@@ -1466,26 +1464,19 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Read ids sharing a chain with the read at `index` in `rpcData`, the
-         * read's own included. Empty when the read is in no chain. Shared by
-         * hover-highlight and click-select.
-         */
-        readIdsSharingChain(rpcData: ChainedPileupData, index: number) {
-          return chainReadIdsAt(rpcData, index, self.readIdsByChainName)
-        },
-
-        /**
-         * #method
-         * `readIdsSharingChain` from a read id alone, for a caller holding no
-         * block — the connector mark, whose arcs have ids. Empty outside chain
-         * mode and for an id no fetched region holds.
+         * Read ids sharing a chain with the named read, its own included. Empty
+         * outside chain mode, for a read in no chain, and for an id no fetched
+         * region holds. The hover, the right-click pin and the selection all
+         * light a chain through it.
          */
         readIdsSharingChainWith(featureId: string) {
           const hit =
             self.unit === 'chain'
               ? self.findFeatureInRpcData(featureId)
               : undefined
-          return hit ? this.readIdsSharingChain(hit.rpcData, hit.idx) : []
+          return hit
+            ? chainReadIdsAt(hit.rpcData, hit.idx, self.readIdsByChainName)
+            : []
         },
 
         /**
@@ -1495,6 +1486,18 @@ export default function stateModelFactory(
         get selectedChainReadIds() {
           const id = self.selectedFeatureId
           return id === undefined ? [] : this.readIdsSharingChainWith(id)
+        },
+
+        /**
+         * #getter
+         * Read ids the hover lights as one: the chain of the read or connector
+         * under the cursor, else a connector's two ends.
+         */
+        get hoverChainReadIds() {
+          const ends = self.hoveredConnectorReadIds
+          const id = self.featureIdUnderMouse ?? ends[0]
+          const chain = id === undefined ? [] : this.readIdsSharingChainWith(id)
+          return chain.length > 0 ? chain : ends
         },
 
         /**
@@ -2007,7 +2010,7 @@ export default function stateModelFactory(
           }
           const { ids, strong } = readsToLight({
             unit: self.unit,
-            chainReadIds: self.highlightedChainReadIds,
+            chainReadIds: self.hoverChainReadIds,
             readId: self.featureIdUnderMouse,
           })
           return this.readInk(ids, strong)
@@ -2348,8 +2351,8 @@ export default function stateModelFactory(
           self.hoverCoverageBand = undefined
           self.hoveredArcHighlight = undefined
           self.hoveredJunction = undefined
-          if (self.highlightedChainReadIds.length > 0) {
-            self.highlightedChainReadIds = []
+          if (self.hoveredConnectorReadIds.length > 0) {
+            self.hoveredConnectorReadIds = []
           }
         }
         function writeSort(sort: SortSetting) {
@@ -2701,8 +2704,7 @@ export default function stateModelFactory(
            * The whole hover state in one action, so no branch of the mousemove
            * handler leaves a field stale. Refused while the right-click menu is
            * open, since `openContextMenu` pins the hover to the read the menu
-           * acts on. `highlightedChainReadIds` is a chain's reads in chain
-           * mode, and outside it the two ends of a hovered connector.
+           * acts on.
            */
           setHoverState(state: {
             overCigarItem: boolean
@@ -2713,7 +2715,7 @@ export default function stateModelFactory(
             // with no arc clears the highlight by not mentioning one.
             hoveredArcHighlight?: ArcHighlight
             hoveredJunction?: LaneJunction
-            highlightedChainReadIds: string[]
+            hoveredConnectorReadIds?: string[]
           }) {
             if (self.contextMenuInfo) {
               return
@@ -2730,13 +2732,9 @@ export default function stateModelFactory(
             ) {
               self.hoveredJunction = state.hoveredJunction
             }
-            if (
-              !sameStrings(
-                self.highlightedChainReadIds,
-                state.highlightedChainReadIds,
-              )
-            ) {
-              self.highlightedChainReadIds = state.highlightedChainReadIds
+            const ends = state.hoveredConnectorReadIds ?? []
+            if (!sameStrings(self.hoveredConnectorReadIds, ends)) {
+              self.hoveredConnectorReadIds = ends
             }
           },
 
