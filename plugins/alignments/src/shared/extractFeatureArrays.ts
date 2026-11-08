@@ -110,6 +110,8 @@ export function extractFeatureArrays<T extends FeatureData>(
   // the read itself: a record of a chimeric alignment is clipped, so a read
   // with no clip at either end (`hasEndClip`) is not walked — 27 ms to 4 ms on
   // that fixture, where 1,430 of the reads are clipped (saClipGate.probe.ts).
+  // CRAM reads have no `hasEndClip` on purpose: their tag lookup is a map probe,
+  // and the gate measured slower there (`CramSlightlyLazyFeature.getTag`).
   //
   // What the gate was really buying was the CLONE, and `hasSuppAlignment` keeps
   // that half: structured clone is priced by object count, and on that fixture
