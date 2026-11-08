@@ -298,6 +298,12 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
 ```
 
+[GrainGenes](https://wheat.pw.usda.gov) publishes MCScanX runs in this form, a
+`.collinearity` and a `.gff` per pair: between the varieties of its
+[wheat pangenome](https://avena.pw.usda.gov/GG3pangenome/wheat/ABD/pan_synteny.php),
+and of each against the three
+[_Aegilops tauschii_ references](https://avena.pw.usda.gov/GG3pangenome/wheat/D/taus_synteny.php).
+
 The track configs [above](#loading-both-tracks) load the converted files,
 gzipped as before or with `.gz` dropped from each `uri`. `--species` order is
 the anchors column order, so it has to match the track's `assemblyNames`. Two
