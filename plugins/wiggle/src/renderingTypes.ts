@@ -37,6 +37,13 @@ export type WiggleRendering = (typeof WIGGLE_PLOTS)[number][0]
 export const DEFAULT_POINT_SIZE_PX = 2
 
 /**
+ * `encoding.strokeWidth` in px while unset, as plugins/marks'
+ * `DEFAULT_LINE_WIDTH_PX` is. Not shared: the mark rule list `jbrowse
+ * validate` copies imports nothing outside its plugin (declined 2026-11-08).
+ */
+export const DEFAULT_LINE_WIDTH_PX = 1
+
+/**
  * The plot a mark's `type` and a line's `interpolate` draw. The display keys on
  * this name, not the pair (declined 2026-11-08): the schema admits eight pairs
  * for five plots, since `interpolate` is unread off a line, so the Plot type
