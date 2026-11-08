@@ -113,10 +113,14 @@ Smaller grammar items, each independent:
   nothing; a key with label and color columns needs a decision on what that
   row is. If a third fix lands on both keys, give `getAlignmentsColorScales`
   an unmerged per-layer form the tables call per layer.
-- **Group by dialogs.** Alignments' and features' each own scan, verdict and
-  color rule; "a hand-picked color stays" landed on features 2026-10-18 and on
-  alignments 2026-10-26 (`33371390fb`). A display-kit shell with the scan and
-  verdict passed in. About a day. Independent of the registry.
+- **Group by dialogs share `@jbrowse/display-kit/GroupByDialog`** and one
+  default rule (`colorsWithGrouping`). Open, Colin's call: what unticking
+  does. Alignments' `groupByColor` undoes only coloring by the field in the
+  box; features' also clears a color by the previous grouping's field, so
+  regrouping from A to B at the box's default drops color A unasked. The
+  recommendation is alignments' rule for both, which changes
+  `groupBySections.test.ts`. The `haplotype_groupby` figure shows Submit
+  where the dialog now says Apply and Edit plot...
 - **Coverage log ticks.** Power-of-2 against wiggle's power-of-10 since
   `85732820a4` touched wiggle-core only. ADR-109 lets the band keep its own
   ladder, and log-scale coverage is rare: leave it.
