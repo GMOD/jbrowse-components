@@ -102,34 +102,10 @@ Only the adapter-review subagent traced these.
 
 ## Grammar direction
 
-- **The plot type moving to `(mark, interpolate)` throughout: recommended
-  decline.** `renderingType` is derived once from the config's `mark`
-  (`renderingOf`) and is the display's name for its five shaders; the pair
-  has three meaningless combinations, and `buildSourceRenderData` stamps the
-  shader int per source on purpose (the stale-frame case in `wiggleMarks.ts`).
-  The union closed the type hole and the config word is already `mark`, so
-  the respelling is about 100 sites of churn for no visible change.
-  Reconsider with ADR-227's conditions.
-- **Layer + stat is one design question, not two.** Layering alone (`extent`
-  as an `errorband`, bar + line) earns little without a stat. With a `window`
-  stat it tells a story: raw bars under a smoothed trend. Its obstacles:
-  - The nesting order flips at the origin: the positive side paints max→min,
-    the negative side min→max (`stackSides` in `shared/wiggleLayers.ts`). A
-    plain layer list cannot say that, which is ADR-227's own objection.
-  - `wiggleParams` reads the plot type off `sources[0]`, so a region holds one
-    type (`shared/wiggleMarks.ts`).
-  - Wiggle has no `transform` slot; `featureTransforms` is core's mark-display
-    step. A `window` stat is new machinery over `RawFeatureArrays` (a 1-D
-    rolling mean, cheap in the worker), not a bypassed path. `data.resolution`
-    is points per pixel, not a bin width (ADR-238 kept it).
-  - ADR-227's nesting objection is against a flat mark; a layer item that is
-    a whole one-plot spec keeps `stackSides` inside it. The real blocker is
-    one plot family per region and one GPU pass structure per family.
-  - It reopens ADR-216's rejected `marks[]` alternative at the spelling level.
-
-  Recommended: file to `ideas/` rather than review now. If reviewed, use real
-  tracks (phyloP, a CNV cohort, bedMethyl). Memories:
-  `grammar-over-a-maze-of-booleans`, `a-new-dimension-should-refine-an-existing-one`.
+- **The plot type keeps one name per shader**, declined at `renderingOf`
+  (`renderingTypes.ts`); reconsider with ADR-227's conditions.
+- **Layer + stat** is filed as
+  `ideas/waiting-on-a-call/a-wiggle-layer-earns-its-place-with-a-window-stat.md`.
 - **Facet by `group` with sources overlaid in a row.** Gated on row
   attributes (`ideas/waiting-on-a-call/row-attributes-have-one-home.md`,
   ADR-143). Not a wiggle change.
@@ -143,13 +119,3 @@ Only the adapter-review subagent traced these.
 - **The one place the grammar is knowingly bent** is ADR-251: a subtrack with
   no color falls back to the score's pair, two fields in one channel. It is
   accepted. Note it; don't relitigate it.
-
-## Open calls for Colin
-
-Colin, 2026-11-08: "do whatever you think is best". The two below are
-recommended declines and filings; take them as decided unless he says
-otherwise.
-
-- **Decline the plot-type respelling** (recommended above)?
-- **Layer + stat: file to `ideas/waiting-on-a-call/`** (recommended, naming
-  phyloP and a CNV cohort as the review tracks), or a review now?

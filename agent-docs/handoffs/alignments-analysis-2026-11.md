@@ -25,23 +25,8 @@ means read in the code on 2026-11-07; re-read against main first.
 adapter, and `packages/alignments-core` beyond what callers touch. A
 review of those starts cold.
 
-## Bugs (small, none on a default path)
+## Bugs
 
-- **`readLayoutRecord` boxes reads the display does not draw.** Verified.
-  `LinearAlignmentsDisplay/model.ts` `readLayoutRecord` never checks the
-  section draws a pileup, so the BreakpointSplitView overlay
-  (`plugins/breakpoint-split-view/src/BreakpointSplitView/readChains.ts`)
-  curves to a 0 px band under Show → Pileup off or a chip-collapsed lane.
-  Return `undefined` when the section's rows height is 0, and add the
-  overlay test. Not seen on screen yet: drive it once before and after.
-  - Bigger version, measure first: lay every lane out coverage-only while
-    `!showPileup`, as collapsed lanes are (`pileupLayoutViews.ts`
-    `groupLayoutContext`), which also skips the bake and connector passes.
-    Costs one relayout on re-show.
-- **`nonReferenceAt` counts hidden lanes.** Verified that it walks every
-  group. ADR-259's Save track data writes "the counted reads of the visible
-  lanes", so skip `hiddenGroups`. The only reader is jbrowse-img `sortAt`;
-  lowest priority.
 - Declined: `clearHoveredFeature` ignoring the pin (no trigger found);
   `setUnit` replacing a solid color (reversible, intent unclear; ask before
   touching); the height-mode word "Fixed" against display-kit's "Scroll"
@@ -49,6 +34,11 @@ review of those starts cold.
   fitted track does not scroll, `f0df3b34c0`); a read-mode connector's
   right-click lighting one end where its hover lit both (the pin lights the
   read the menu acts on, as chain mode lights the chain).
+- Open, measure first: lay every lane out coverage-only while `!showPileup`,
+  as collapsed lanes are (`pileupLayoutViews.ts` `groupLayoutContext`), which
+  would skip the bake and connector passes for reads nothing draws. Costs one
+  relayout on re-show. The overlay no longer needs it: `readLayoutRecord`
+  gives a 0-row lane's reads no rect.
 
 ## CRAM parity (needs a bench)
 
@@ -120,11 +110,17 @@ Smaller grammar items, each independent:
   session's held slots (ADR-205's amendment). Goldens recolor only where two
   values on screen collided or sat near-twin (HP:4 steps off HP:3's), and for
   HP:0 and integers past 10, which no longer wrap onto the first ten.
-- **The tables key.** `tables.ts` builds its legend by hand from
-  `legendItems` where every other display calls `colorKeyTables`;
-  `977b8d5d1f` and `9caaafd09c` each fixed both keys. Independent of the tag
-  step: `colorKeyTables(colorScalesIn(theme))`, about a day, best in the same
-  pass. Reaches the R reader.
+- **The tables key: declined as written.** `colorKeyTables(colorScalesIn(theme))`
+  flattens every categorical scale into one `legend`, and
+  `getAlignmentsColorScales` empties the arc scale into the read one under a
+  shared color, which is the merge `4799413495` reverted for ggjbrowse's
+  separate layers. The one real divergence, the arc key not folding a split
+  class into its pair twin (`oneRowPerSplitTwin`), is fixed in the tables.
+  Still open: the display's overlap-tint row (`getOverlapLegendItem`) has
+  swatches and no color, so the export keys ggjbrowse's `overlaps` layer with
+  nothing; a key with label and color columns needs a decision on what that
+  row is. If a third fix lands on both keys, give `getAlignmentsColorScales`
+  an unmerged per-layer form the tables call per layer.
 - **Group by dialogs.** Alignments' and features' each own scan, verdict and
   color rule; "a hand-picked color stays" landed on features 2026-10-18 and on
   alignments 2026-10-26 (`33371390fb`). A display-kit shell with the scan and
