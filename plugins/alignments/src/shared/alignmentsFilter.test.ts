@@ -3,6 +3,7 @@ import {
   compileMapqFilter,
   compileRecordFilter,
   connectionEntries,
+  drawnPredicatesOf,
   connectionFilterOf,
   filterProblems,
   flagEntries,
@@ -14,11 +15,14 @@ import {
   readFieldsEntries,
   readFieldsFormOf,
   readNameOf,
+  readPredicatesOf,
   tagEntries,
   tagFiltersOf,
   withField,
   withFields,
+  withMateRefNameSpellings,
 } from './alignmentsFilter.ts'
+import { DIMENSION_FIELDS } from './filterFields.ts'
 
 import type { FilterableRead } from './alignmentsFilter.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -391,6 +395,82 @@ describe('problems', () => {
       'junction.source takes equal or oneOf of gap',
       'svSignal takes equal: true or false',
       'spliced takes equal: true or false',
+    ])
+  })
+})
+
+describe('the read dimensions', () => {
+  const ENTRIES: FieldPredicate[] = [
+    { field: 'pairOrientation', oneOf: ['LL', 'RR'] },
+    { field: 'pairing', equal: 'discordant' },
+    { field: 'svKind', equal: 'inversion' },
+    { field: 'firstOfPairStrand', equal: -1 },
+    { field: 'mateRefName', equal: 'chr9' },
+  ]
+
+  test('are every facet dimension the filter reads no other way', () => {
+    expect([...DIMENSION_FIELDS].sort()).toEqual([
+      'firstOfPairStrand',
+      'mateAssembly',
+      'mateRefName',
+      'pairOrientation',
+      'pairing',
+      'svKind',
+    ])
+  })
+
+  test('reach the worker at the drawn tier, past the adapters', () => {
+    expect(readPredicatesOf(ENTRIES)).toEqual(ENTRIES)
+    expect(drawnPredicatesOf(ENTRIES)).toEqual(ENTRIES)
+    expect(compileRecordFilter(ENTRIES)).toBeUndefined()
+    expect(filterProblems(ENTRIES)).toEqual([])
+  })
+
+  test('take their own levels and no bound, and valid for the reads with none', () => {
+    expect(
+      filterProblems([
+        { field: 'pairOrientation', equal: 'FR' },
+        { field: 'svKind', oneOf: ['inversion', 'inversions'] },
+        { field: 'pairing', equal: true },
+        { field: 'firstOfPairStrand', gte: 0 },
+        { field: 'mateRefName', lt: 3 },
+        { field: 'pairOrientation', valid: false },
+        { field: 'mateRefName', oneOf: ['chr9', 1] },
+      ]).map(p => p.split(', not')[0]),
+    ).toEqual([
+      'pairOrientation takes equal or oneOf of LR, RL, RR, LL, or valid',
+      'svKind takes equal or oneOf of deletionType, duplicationType, inversion, elsewhere, insertion, none, or valid',
+      'pairing takes equal or oneOf of concordant, discordant, unpaired, nonPrimary, or valid',
+      'firstOfPairStrand takes equal or oneOf of 1, -1, or valid',
+      'mateRefName takes equal or oneOf, or valid',
+    ])
+  })
+
+  // strand is SAM flag 0x10, which the adapters answer and coverage counts by
+  test('strand names the flag that asks it', () => {
+    expect(filterProblems([{ field: 'strand', equal: -1 }])).toEqual([
+      'no field "strand" to filter by; flags.REVERSE asks the same',
+    ])
+    expect(readPredicatesOf([{ field: 'strand', equal: -1 }])).toEqual([])
+  })
+
+  test('a mate reference is listed beside its other spelling', () => {
+    const fileName = (name: string) => (name === 'chr9' ? '9' : name)
+    expect(
+      withMateRefNameSpellings(
+        [
+          { field: 'mateRefName', equal: 'chr9' },
+          { field: 'mateRefName', oneOf: ['9', 'ctgB', true] },
+          { field: 'mateRefName', valid: false },
+          { field: 'pairing', equal: 'chr9' },
+        ],
+        fileName,
+      ),
+    ).toEqual([
+      { field: 'mateRefName', oneOf: ['chr9', '9'] },
+      { field: 'mateRefName', oneOf: ['9', 'ctgB', true] },
+      { field: 'mateRefName', valid: false },
+      { field: 'pairing', equal: 'chr9' },
     ])
   })
 })

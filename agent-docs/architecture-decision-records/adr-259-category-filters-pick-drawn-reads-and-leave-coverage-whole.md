@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments `filter`'s flags, `mapq` and tags decide which reads count toward coverage; `name` and the read categories (`spliced`, `svSignal`, `split`, `alone`) only pick which counted reads are drawn, leaving coverage whole"
+summary: "The alignments `filter`'s flags, `mapq` and tags decide which reads count toward coverage; `name`, the read categories (`spliced`, `svSignal`, `split`, `alone`) and the facet's read fields only pick which counted reads are drawn, leaving coverage whole"
 ---
 
 # ADR-259: Category filters pick drawn reads and leave coverage whole
@@ -12,6 +12,17 @@ this replaces (its Idea 1 landed as ADR-229 and ADR-230 declined its Idea 3).
 The SV channels redesign (ADR-258's second 2026-11-04 amendment) needed it
 built: its filter hides the reads without evidence and its "No SV evidence"
 band must keep their depth.
+
+Amended 2026-11-08: the facet's read fields (`pairOrientation`, `pairing`,
+`svKind`, `firstOfPairStrand`, `mateRefName`, `mateAssembly`) filter at the
+drawn tier, each read by the section a facet by read files it under, through
+the facet's own keys (`FACET_DIMENSIONS`, `svKind` by its chain). The set is
+`READ_DIMENSIONS` less the fields the filter reads its own way, so a new
+dimension filters without a list edit. `strand` is refused, naming
+`flags.REVERSE`: it is flag 0x10, which counts. A `pairing` entry is a plain
+category, judged per record, and leaves ADR-229's `svSignal` the SV-evidence
+test. A `mateRefName` value is listed in the adapter's spelling beside its own
+where the regions are renamed (`adapterSpelledFilter`).
 
 ## Context
 
@@ -27,7 +38,7 @@ band must keep their depth.
 
 | Which reads count (thins coverage) | Which reads are drawn (leaves it whole) |
 | --- | --- |
-| `flags.*` and `tags.*` (the adapters), `mapq` (the worker, after dedupe) | `name`, `spliced` per record; `svSignal`, `split`, `alone` per chain |
+| `flags.*` and `tags.*` (the adapters), `mapq` (the worker, after dedupe) | `name`, `spliced` and the facet's read fields per record (`svKind` by its chain); `svSignal`, `split`, `alone` per chain |
 
 - **One drawn-read rule** (`drawnReadMask`, `filterChainFeatures.ts`) over a
   read source by index. The render hands it what its extract already holds

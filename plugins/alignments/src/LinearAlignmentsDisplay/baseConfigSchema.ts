@@ -74,8 +74,14 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * which of those reads the pileup, the arcs, the consensus and an export
      * draw, and leave coverage whole: `spliced` per alignment, and
      * `svSignal`, `alone` and `split` over a read, its mate and its split
-     * segments together, each taking `equal: true` or `false`. A facet on a
-     * category gives its own coverage. `junction.reads`,
+     * segments together, each taking `equal: true` or `false`. The `facet`
+     * read fields `pairOrientation`, `pairing`, `svKind`,
+     * `firstOfPairStrand` (`1` or `-1`), `mateRefName` and `mateAssembly`
+     * pick drawn reads too, each read by the section a facet by read files it
+     * under (`svKind` by its whole chain's), with `equal` or `oneOf` of their
+     * values, or `valid: false` for the reads with none; a read's strand is
+     * `flags.REVERSE`. A facet on a category gives its own coverage.
+     * `junction.reads`,
      * `junction.canonical` (a split junction reads no motif and counts as
      * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
      * split read's `deletion`, `duplication` or `inversion`) and

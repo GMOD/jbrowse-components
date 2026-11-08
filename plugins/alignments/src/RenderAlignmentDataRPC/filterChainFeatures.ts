@@ -12,10 +12,14 @@ import {
   drawnPredicatesOf,
 } from '../shared/alignmentsFilter.ts'
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
-import { CHAIN_FIELDS, DRAWN_RECORD_FIELDS } from '../shared/filterFields.ts'
+import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
+import { CHAIN_FIELDS, DIMENSION_FIELDS } from '../shared/filterFields.ts'
+import { FACET_DIMENSIONS, isReadDimension } from '../shared/groupFeatures.ts'
 import { readCategoryBitsOf } from '../shared/splitAlignment.ts'
-import { getFlags, getMappingQuality } from '../shared/util.ts'
+import { getFlags, getMappingQuality, getOrCreate } from '../shared/util.ts'
 
+import type { FacetDimension } from '../shared/groupFeatures.ts'
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 import type {
@@ -123,15 +127,24 @@ export interface DrawnReadSource {
   name: (i: number) => string | undefined
   chainKey: (i: number) => string
   mateKey: (i: number) => string
+  // the records themselves, which a read dimension keys
+  features: Feature[]
+  // the band `svKind` files a too-close LR pair by, the facet's
+  insertSizeBand: () => InsertSizeBand | undefined
 }
 
-export function featureSource(features: Feature[]): DrawnReadSource {
+export function featureSource(
+  features: Feature[],
+  insertSizeBand = () => computePairedInsertSizeStats(features),
+): DrawnReadSource {
   return {
     length: features.length,
     categoryBits: i => readCategoryBitsOf(features[i]!),
     name: i => features[i]!.get('name'),
     chainKey: i => featureChainKey(features[i]!),
     mateKey: i => mateKey(features[i]!),
+    features,
+    insertSizeBand,
   }
 }
 
@@ -157,6 +170,45 @@ function recordLane(source: DrawnReadSource) {
       return undefined
     }
   }
+}
+
+// A read dimension's key for every read, dictionary-coded so a predicate
+// decides once per key: each read's own, or its chain's where the facet keys
+// the whole fetch (`keyAll`)
+function keyLane(
+  { key, keyAll }: FacetDimension,
+  features: Feature[],
+  insertSizeBand: InsertSizeBand | undefined,
+): PredicateLane {
+  const keys = keyAll?.(features, insertSizeBand)
+  const labels: string[] = []
+  const idOf = new Map<string, number>()
+  const ids = new Uint32Array(features.length)
+  for (let i = 0; i < features.length; i++) {
+    const k = (keys ? keys[i]! : key(features[i]!, insertSizeBand)).key
+    let id = idOf.get(k)
+    if (id === undefined) {
+      id = labels.push(k) - 1
+      idOf.set(k, id)
+    }
+    ids[i] = id
+  }
+  return { kind: 'labels', ids, labels }
+}
+
+// One lane per read dimension, keyed once however many entries name it
+function dimensionLane(source: DrawnReadSource) {
+  const lanes = new Map<string, PredicateLane>()
+  return (field: string) =>
+    DIMENSION_FIELDS.has(field) && isReadDimension(field)
+      ? getOrCreate(lanes, field, () =>
+          keyLane(
+            FACET_DIMENSIONS[field],
+            source.features,
+            source.insertSizeBand(),
+          ),
+        )
+      : undefined
 }
 
 function tally(keys: readonly string[]) {
@@ -216,9 +268,11 @@ function chainLane(source: DrawnReadSource) {
 // is about what is on screen.
 function maskPassing(source: DrawnReadSource, predicates: FieldPredicate[]) {
   const chainPredicates = predicates.filter(p => CHAIN_FIELDS.has(p.field))
+  const recordLaneOf = recordLane(source)
+  const dimensionLaneOf = dimensionLane(source)
   const keepsRecord = compilePredicates(
-    predicates.filter(p => DRAWN_RECORD_FIELDS.has(p.field)),
-    recordLane(source),
+    predicates.filter(p => !CHAIN_FIELDS.has(p.field)),
+    field => recordLaneOf(field) ?? dimensionLaneOf(field),
   )
   const keepsChain =
     chainPredicates.length === 0
@@ -237,9 +291,9 @@ function maskPassing(source: DrawnReadSource, predicates: FieldPredicate[]) {
 
 /**
  * Which reads of a fetch the filter draws, 1 each, or undefined while it
- * draws every one: `name` and `spliced` per record, `svSignal`, `split` and
- * `alone` per chain grouped by name. Coverage still counts the reads it
- * leaves out.
+ * draws every one: `name` and `spliced` per record, a read dimension by the
+ * key a facet by read files the read under, `svSignal`, `split` and `alone`
+ * per chain grouped by name. Coverage still counts the reads it leaves out.
  */
 export function drawnReadMask(
   source: DrawnReadSource,

@@ -19,6 +19,7 @@ import {
 } from '../CramAdapter/CramTestAdapters.fixture.ts'
 import { getCoverageBin } from '../LinearAlignmentsDisplay/components/positionStats.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
+import { SV_KIND_LEVELS } from '../shared/readFieldLevels.ts'
 import { readCategoryBitsOf } from '../shared/splitAlignment.ts'
 import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
@@ -141,6 +142,17 @@ const DRAWN_FILTERS: [string, FieldPredicate[]][] = [
   ['alone', [{ field: 'alone', equal: true }]],
   ['spliced', [{ field: 'spliced', equal: true }]],
   ['name', [{ field: 'name', equal: 'ctgA_1041_1553_0:0:0_1:0:0_255' }]],
+  [
+    'pairOrientation',
+    [{ field: 'pairOrientation', oneOf: ['RL', 'RR', 'LL'] }],
+  ],
+  ['pairing', [{ field: 'pairing', equal: 'discordant' }]],
+  [
+    'svKind',
+    [{ field: 'svKind', oneOf: SV_KIND_LEVELS.filter(k => k !== 'none') }],
+  ],
+  ['firstOfPairStrand', [{ field: 'firstOfPairStrand', equal: -1 }]],
+  ['mateRefName', [{ field: 'mateRefName', equal: 'ctgB' }]],
 ]
 
 let reads: Feature[]

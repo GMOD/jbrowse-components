@@ -7,6 +7,7 @@ import type {
   JunctionSource,
 } from '../features/sashimi/junctionClass.ts'
 import type { InsertSizeBand } from './insertSizeStats.ts'
+import type { ReadDimension } from './readFieldLevels.ts'
 import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
@@ -192,24 +193,7 @@ export const READ_CATEGORY_KEYS = [
 
 export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
-// The read dimensions a facet names, each with its own partitioner
-// (shared/groupFeatures.ts). Any other `field` is a tag (`tags.HP`) or a
-// feature field. `alone` filters but sections nothing: each window judges it
-// on its own, so a read can be alone in two windows and its section would move
-// as regions load.
-export const READ_DIMENSIONS = [
-  'strand',
-  'firstOfPairStrand',
-  'pairOrientation',
-  'pairing',
-  'split',
-  'spliced',
-  'svKind',
-  'mapq',
-  'mateRefName',
-  'mateAssembly',
-] as const
-export type ReadDimension = (typeof READ_DIMENSIONS)[number]
+export type { ReadDimension }
 
 // The read categories only a facet answers: reads keep the colors their arcs
 // paint (ADR-230), so `encoding.color` names none of them.

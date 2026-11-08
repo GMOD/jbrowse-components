@@ -121,7 +121,10 @@ interface Section {
 }
 
 // Every section's reads in order, as the drawn-read fields test them
-function sectionsSource(sections: Section[]): DrawnReadSource {
+function sectionsSource(
+  sections: Section[],
+  insertSizeBand: InsertSizeBand | undefined,
+): DrawnReadSource {
   const features = sections.flatMap(s => s.features)
   const sectionOf = new Uint32Array(features.length)
   const starts = new Uint32Array(sections.length)
@@ -149,6 +152,8 @@ function sectionsSource(sections: Section[]): DrawnReadSource {
         getFlags(features[i]!),
       ),
     mateKey: i => mateKey(features[i]!),
+    features,
+    insertSizeBand: () => insertSizeBand,
   }
 }
 
@@ -459,6 +464,7 @@ export async function groupsOfFetch({
   const {
     sample,
     insertSizeStats,
+    insertSizeBand,
     lanes: featureGroups,
   } = sampleLanes({
     featuresArray,
@@ -582,7 +588,7 @@ export async function groupsOfFetch({
   }))
   const drawnMasks = sectionMasks(
     sections,
-    drawnReadMask(sectionsSource(sections), filter),
+    drawnReadMask(sectionsSource(sections, insertSizeBand), filter),
   )
   const fetchedSegments = junctions
     ? fetchedSplitSegments(

@@ -32,13 +32,13 @@ import {
 } from './facetLabels.ts'
 import { pairingOf } from './pairing.ts'
 import {
+  DIMENSION_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
   PAIRING_LEVELS,
   READ_LEVEL_LABELS,
   SPLICED_LEVELS,
   SPLIT_LEVELS,
   SV_KIND_LEVELS,
-  levelOrder,
 } from './readFieldLevels.ts'
 import {
   chainIsSplit,
@@ -121,9 +121,16 @@ const STRAND_VALUED: ReadonlySet<string> = new Set([
   'firstOfPairStrand',
 ] satisfies ReadDimension[])
 
-export function sectionOrder(field: string, domain?: readonly string[]) {
+const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
+  ...DIMENSION_LEVELS,
+  mapq: [...MAPQ_BINS.map(b => b.key), MAPQ_UNAVAILABLE_LEVEL],
+}
+
+// A read field's sections in its own level order, after the values `domain`
+// lists
+export function sectionOrder(field: string, domain: readonly string[] = []) {
   return categoricalField(STRAND_VALUED.has(field) ? STRAND_FIELD : field, {
-    domain: levelOrder(field, domain),
+    domain: [...domain, ...(LEVEL_ORDER[field] ?? [])],
   }).compare
 }
 

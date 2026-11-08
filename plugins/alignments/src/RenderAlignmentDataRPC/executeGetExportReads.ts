@@ -36,7 +36,7 @@ export async function executeGetExportReads({
       statusCallback,
       signal,
     })
-    const { lanes } = sampleLanes({
+    const { insertSizeBand, lanes } = sampleLanes({
       featuresArray,
       filter,
       facet,
@@ -46,7 +46,10 @@ export async function executeGetExportReads({
       features.map(feature => ({ feature, lane: key })),
     )
     const drawn = drawnReadMask(
-      featureSource(laned.map(r => r.feature)),
+      featureSource(
+        laned.map(r => r.feature),
+        () => insertSizeBand,
+      ),
       filter,
     )
     for (const [i, { feature, lane }] of laned.entries()) {

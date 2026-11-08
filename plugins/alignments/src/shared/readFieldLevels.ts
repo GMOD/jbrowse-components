@@ -1,21 +1,41 @@
-import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
-
-import type { PairDirection } from '@jbrowse/alignments-core'
+/**
+ * The read dimensions a facet names, each with its own partitioner
+ * (`groupFeatures.ts`), and the filter tests by the same keys
+ * (`filterFields.ts`). Any other `field` is a tag (`tags.HP`) or a feature
+ * field. `alone` filters but sections nothing: each window judges it on its
+ * own, so a read can be alone in two windows and its section would move as
+ * regions load. This module imports nothing, so `jbrowse validate` carries it
+ * with the filter's rules.
+ */
+export const READ_DIMENSIONS = [
+  'strand',
+  'firstOfPairStrand',
+  'pairOrientation',
+  'pairing',
+  'split',
+  'spliced',
+  'svKind',
+  'mapq',
+  'mateRefName',
+  'mateAssembly',
+] as const
+export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 
 /**
  * The values a categorical read field takes, in its own order, shared by
- * every channel naming the field: a `facet` section is keyed by one and
- * `encoding.color.scale.domain` names one, so `domain: ['RR']` over
- * `pairOrientation` means the same thing under both. A domain lists its values first and the
- * rest follow this order. Strand's values are core's universal `strand`
- * vocabulary.
+ * every channel naming the field: a `facet` section is keyed by one,
+ * `encoding.color.scale.domain` and a `filter` entry name one, so `domain:
+ * ['RR']` over `pairOrientation` means the same thing under each. A domain
+ * lists its values first and the rest follow this order. These are
+ * alignments-core's `PairDirection`s.
  */
-export const PAIR_ORIENTATION_LEVELS = [
-  'LR',
-  'RL',
-  'RR',
-  'LL',
-] as const satisfies readonly PairDirection[]
+export const PAIR_ORIENTATION_LEVELS = ['LR', 'RL', 'RR', 'LL'] as const
+
+/**
+ * A forward and a reverse read: core's universal `strand` keys, less the
+ * unstranded `0`, which a read's section never takes.
+ */
+export const STRAND_LEVELS = ['1', '-1'] as const
 
 export const INSERT_SIZE_LEVELS = ['short', 'normal', 'long'] as const
 
@@ -88,17 +108,17 @@ export const READ_LEVEL_LABELS: {
   },
 }
 
-const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
+/**
+ * Each closed read dimension's levels. `mapq`'s are core's bins, which the
+ * facet adds (`sectionOrder`), and the data names `mateRefName`'s and
+ * `mateAssembly`'s.
+ */
+export const DIMENSION_LEVELS: Readonly<Record<string, readonly string[]>> = {
+  strand: STRAND_LEVELS,
+  firstOfPairStrand: STRAND_LEVELS,
   pairOrientation: PAIR_ORIENTATION_LEVELS,
   pairing: PAIRING_LEVELS,
-  mapq: [...MAPQ_BINS.map(b => b.key), MAPQ_UNAVAILABLE_LEVEL],
   split: SPLIT_LEVELS,
   spliced: SPLICED_LEVELS,
   svKind: SV_KIND_LEVELS,
-}
-
-/** A read field's own value order, after the values `domain` lists. */
-export function levelOrder(field: string, domain: readonly string[] = []) {
-  const own = LEVEL_ORDER[field]
-  return own ? [...domain, ...own] : domain
-}
+} satisfies Partial<Record<ReadDimension, readonly string[]>>

@@ -1,6 +1,9 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import { adapterSpelledFilter } from './adapterSpelledFilter.ts'
+
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
+import type { RenameRegionsArgs } from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -32,6 +35,16 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 
 export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRenameRegions<'GetConsensusSequence'> {
   name = 'GetConsensusSequence' as const
+
+  // the filter's mate references in the file's spelling, beside the regions
+  protected override async renameRegions<T extends RenameRegionsArgs>(args: T) {
+    return super.renameRegions(
+      await adapterSpelledFilter(
+        this.pluginManager.rootModel?.session?.assemblyManager,
+        args,
+      ),
+    )
+  }
 
   async execute(args: RpcExecuteArgs<'GetConsensusSequence'>) {
     const { executeGetConsensusSequence } =

@@ -62,17 +62,17 @@ review of those starts cold.
 
 The field vocabulary is restated per role: `COLOR_FIELDS`, `READ_DIMENSIONS`,
 `COLUMN_SORT_FIELDS`, and the filter's `isAdapterField` / `isDrawnField` /
-`isReadField` (`shared/filterFields.ts` says so on purpose).
-`readFieldLevels.ts` already shares the levels. A registry entry per field
-(name, measurement type, levels, per-read reader, the tier that computes it)
-would let each role accept a field by type and derive `filterProblems`,
-`sortProblems` and the More filters rows.
+`isReadField` (`shared/filterFields.ts` says so on purpose). The filter's read
+dimensions are derived: `READ_DIMENSIONS` and each closed dimension's levels
+(`DIMENSION_LEVELS`) live in the import-free `readFieldLevels.ts`, which
+`jbrowse validate` carries, and `DIMENSION_FIELDS` is `READ_DIMENSIONS` less
+the fields the filter reads its own way (ADR-259's 2026-11-08 amendment). A
+registry entry per field (name, measurement type, levels, per-read reader,
+the tier that computes it) would let the other roles accept a field by type
+and derive `sortProblems` and the More filters rows.
 
 What it makes sayable, verified as unsayable today:
 
-- `filter` on `pairOrientation`, `pairing`, `svKind`, `mateRefName`,
-  `firstOfPairStrand` (facet and color take them). Real asks: mate on chr9,
-  only inversion evidence, stranded RNA-seq.
 - `sort` by any field for the whole window (`tags.HP`, `mapq`), with
   `order`. Today a tag without `pos` keeps position order with a
   `sortProblems` warning, so it is not silent, as one review claimed.
@@ -83,34 +83,20 @@ What it makes sayable, verified as unsayable today:
 
 The registry is a table whose columns are roles, not one flat list every
 role accepts: `COLOR_FIELD_DEFS` carries a shader path and a menu slot, and a
-column sort needs a per-position reader.
+column sort needs a per-position reader. `readFieldLevels.ts` is where its
+import-free columns would go.
 
 Open before any code:
 
-- **Tier collision.** ADR-259 puts read categories at the drawn tier
-  (coverage whole) and flags at the counted tier (coverage thinned). A
-  drawn `strand` filter would sit beside the counted `flags.REVERSE`: one
-  question, two spellings, two coverage reaches. Recommended ruling (a
-  2026-11-08 review): ADR-259 draws the line by what is asked, so categories
-  (`pairOrientation`, `pairing`, `svKind`, `mateRefName`,
-  `firstOfPairStrand`) filter at the drawn tier beside `svSignal`, record
-  quality (flags, tags, mapq) counts, and `strand`, which is flag 0x10, is
-  refused as a filter field with `filterProblems` naming `flags.REVERSE`.
-  Decide this first.
-- **Speed.** Each role compiles to a per-field kernel once per fetch, reusing
-  the facet's `keyAll`; no reader call per read per role. Bench
-  `drawnReadFilter.bench.ts` with a facet-field entry against today.
-- **Closed neighbors:** ADR-229 rejected `pairing` as the SV-evidence filter
-  (a plain `pairing` entry differs; get a ruling). ADR-240 keeps
-  `facet.hidden` off the predicate list, and the registry does not need it
-  there.
 - Process: a draft of the end state, then an adversarial review of the whole
   surface (memory `alignments-vocabulary-is-grammar-of-graphics`). Writers to
   update are in ADR-240's Order of work.
-- First step, not an interim: `shared/readFields.ts` holding the table, the
-  four lists derived from it (a missing role is a compile error), and
-  `filterProblems`/`sortProblems` reading it. New filter fields land after,
-  through the facet's `keyAll` kernel, benched on ada.
+- First step, not an interim: the table, the remaining lists derived from it
+  (a missing role is a compile error), and `sortProblems` reading it.
+- `normalInsertSize`'s pinned band reaches the worker on `WorkerFacet` alone,
+  so an `svKind` filter without an `svKind` facet files a too-close LR pair by
+  the sampled band. Moving the band to a top-level RPC arg, sent when either
+  reads `svKind`, needs `tables.ts`'s `workerFacet` call changed with it.
 
 Smaller grammar items, each independent:
 

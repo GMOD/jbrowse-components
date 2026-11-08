@@ -66,6 +66,10 @@ const arms: Record<string, { filter: FieldPredicate[]; facet?: WorkerFacet }> =
     'this read': { filter: [{ field: 'name', equal: firstName }] },
     'SV evidence': { filter: SV_EVIDENCE },
     'not split': { filter: [{ field: 'split', equal: false }] },
+    'not LR': {
+      filter: [{ field: 'pairOrientation', oneOf: ['RL', 'RR', 'LL'] }],
+    },
+    'mate here': { filter: [{ field: 'mateRefName', equal: REFNAME }] },
     'SV kind facet': { filter: [], facet: SV_CHANNEL },
     'SV channels': { filter: SV_EVIDENCE, facet: SV_CHANNEL },
   }

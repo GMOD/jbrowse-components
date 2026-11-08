@@ -398,3 +398,153 @@ describe('filterChainFeatures minMapq', () => {
     )
   })
 })
+
+describe('filterChainFeatures read dimensions', () => {
+  const FIRST = 0x40
+  const SECOND = 0x80
+  const PROPER = PAIRED | PROPER_PAIR
+
+  // read1 on `strand` and read2 on the other, so both name one fragment strand
+  function mates(
+    name: string,
+    orientation: string,
+    flags: number,
+    { strand = 1, mate = 'ctgA' }: { strand?: number; mate?: string } = {},
+  ) {
+    const common = {
+      refName: 'ctgA',
+      name,
+      pair_orientation: orientation,
+      next_ref: mate,
+      CIGAR: '100M',
+    }
+    return [
+      new SimpleFeature({
+        ...common,
+        uniqueId: `${name}-1`,
+        start: 0,
+        end: 100,
+        strand,
+        flags: flags | FIRST,
+      }),
+      new SimpleFeature({
+        ...common,
+        uniqueId: `${name}-2`,
+        start: 300,
+        end: 400,
+        strand: -strand,
+        flags: flags | SECOND,
+      }),
+    ]
+  }
+
+  const reads = [
+    ...mates('normal', 'F1R2', PROPER),
+    ...mates('outward', 'R1F2', PAIRED),
+    ...mates('forward', 'F1F2', PAIRED),
+    ...mates('reverse', 'R1R2', PAIRED, { strand: -1 }),
+    ...mates('fragmentReverse', 'F2R1', PROPER, { strand: -1 }),
+    ...mates('elsewhere', '', PAIRED, { mate: 'ctgB' }),
+    new SimpleFeature({
+      uniqueId: 'single',
+      refName: 'ctgA',
+      start: 500,
+      end: 600,
+      name: 'single',
+      strand: 1,
+      flags: 0,
+      CIGAR: '100M',
+    }),
+  ]
+  const kept = (filter: FieldPredicate[]) =>
+    names(filterChainFeatures(reads, filter))
+
+  test('pairOrientation keeps the pairs a facet by read files under its values', () => {
+    expect(kept([{ field: 'pairOrientation', oneOf: ['LL', 'RR'] }])).toEqual([
+      'forward',
+      'reverse',
+    ])
+    expect(kept([{ field: 'pairOrientation', valid: false }])).toEqual([
+      'elsewhere',
+      'single',
+    ])
+  })
+
+  test('pairing keeps each record by where it stands in its pair', () => {
+    expect(kept([{ field: 'pairing', equal: 'concordant' }])).toEqual([
+      'fragmentReverse',
+      'normal',
+    ])
+    expect(kept([{ field: 'pairing', equal: 'unpaired' }])).toEqual(['single'])
+    expect(kept([{ field: 'pairing', equal: 'discordant' }])).toEqual([
+      'elsewhere',
+      'forward',
+      'outward',
+      'reverse',
+    ])
+  })
+
+  test('firstOfPairStrand keeps both mates of a reverse fragment', () => {
+    const drawn = filterChainFeatures(reads, [
+      { field: 'firstOfPairStrand', equal: -1 },
+    ])
+    expect(drawn.map(f => f.id())).toEqual([
+      'reverse-1',
+      'reverse-2',
+      'fragmentReverse-1',
+      'fragmentReverse-2',
+    ])
+  })
+
+  test('mateRefName keeps the reads whose mate is on the named reference', () => {
+    expect(kept([{ field: 'mateRefName', equal: 'ctgB' }])).toEqual([
+      'elsewhere',
+    ])
+    expect(kept([{ field: 'mateRefName', valid: false }])).toEqual(['single'])
+  })
+
+  test('svKind judges a read by its chain', () => {
+    const splitMate = [
+      mates('splitMate', 'F1R2', PROPER)[0]!,
+      new SimpleFeature({
+        uniqueId: 'splitMate-2',
+        refName: 'ctgA',
+        start: 300,
+        end: 400,
+        name: 'splitMate',
+        strand: -1,
+        flags: PROPER | SECOND,
+        pair_orientation: 'F1R2',
+        CIGAR: '40S60M',
+        tags: { SA: 'chr4,5000,+,60S40M,60,0;' },
+      }),
+    ]
+    const features = [...reads, ...splitMate]
+    expect(
+      names(
+        filterChainFeatures(features, [
+          { field: 'svKind', equal: 'inversion' },
+        ]),
+      ),
+    ).toEqual(['forward', 'reverse'])
+    expect(
+      filterChainFeatures(features, [
+        { field: 'svKind', equal: 'elsewhere' },
+      ]).map(f => f.id()),
+    ).toEqual(['elsewhere-1', 'elsewhere-2', 'splitMate-1', 'splitMate-2'])
+  })
+
+  test('the entries on one dimension read each record once', () => {
+    const get = jest.spyOn(SimpleFeature.prototype, 'get')
+    const drawn = kept([
+      { field: 'pairOrientation', oneOf: ['LL', 'RR'] },
+      { field: 'pairOrientation', equal: 'LL' },
+    ])
+    const orientationReads = get.mock.calls.filter(
+      ([field]) => field === 'pair_orientation',
+    ).length
+    get.mockRestore()
+    expect(drawn).toEqual(['forward'])
+    expect(orientationReads).toBe(reads.length)
+  })
+})
