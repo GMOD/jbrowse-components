@@ -26,32 +26,6 @@ overrides:
   # is a second puller and the one the commit that added this blamed, but
   # removing it does not make the override droppable — jest alone is enough.
   '@babel/core': 'catalog:'
-  # nwsapi 2.2.26 rewrote the display-state pseudo-classes (:modal,
-  # :fullscreen, :picture-in-picture, :popover-open) to fall back to a "native"
-  # matches() when its own portable check can't answer — a real browser's
-  # native matches() terminates there, but jsdom's *is* nwsapi, so the
-  # fallback calls straight back into nwsapi's own :modal handler, which calls
-  # the fallback again: unbounded self-recursion, caught by matchesNative's
-  # own try/catch once the stack overflows, silently returning `false` after
-  # burning the whole stack. `@floating-ui/dom` calls `matches(':modal')` on
-  # every tooltip/popover reposition, so any suite mounting one paid a full
-  # stack exhaustion (measured ~800ms-1.3s) per reposition. An earlier fix
-  # (config/jest/topLayer.js, a jest setupFile patching matches() for just the
-  # affected pseudo-classes) is gone now that this override removes the
-  # regression at the source, for every jsdom consumer rather than only
-  # jest's.
-  #
-  # Upstream: github.com/dperini/nwsapi issues #171 and #172 (both filed
-  # 2026-08-30/31, same root cause, hit independently by other floating-ui +
-  # jsdom users), fix in open PR #170 ("Prevent recursive state pseudo-class
-  # matching in jsdom"). 2.2.25 is the last version before the rewrite.
-  #
-  # TO UNDO: once nwsapi publishes a release with #170 (or an equivalent fix)
-  # merged, delete this override, run `pnpm install`, and confirm
-  # packages/display-ui/src/tooltip/Tooltip.test.tsx and
-  # plugins/variants/src/LDDisplay/components/hoverGate.test.tsx still pass
-  # fast (a few seconds, not tens).
-  nwsapi: '2.2.25'
 blockExoticSubdeps: true
 # A workspace cycle is a warning by default, and the tree carried 127 of them
 # unread. They all came from two edges that had a way out: three plugins taking
@@ -81,7 +55,6 @@ minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'
   - 'ixixx'
-  - '@gmod/gff-nostream'
   - 'electron'
   # Same publisher and same release train as `electron` above, so the two have
   # to clear the age gate together: the E2E jobs drive the packaged app through
@@ -97,16 +70,3 @@ minimumReleaseAgeExclude:
   - '@typescript/*'
   - 'astro'
   - '@astrojs/*'
-  - 'mobx@7.0.0'
-  - 'mobx-react@10.0.0'
-  - 'mobx-react-lite@5.0.0'
-  - '@bruits/satteri-darwin-arm64@0.10.3'
-  - '@bruits/satteri-darwin-x64@0.10.3'
-  - '@bruits/satteri-linux-arm64-gnu@0.10.3'
-  - '@bruits/satteri-linux-arm64-musl@0.10.3'
-  - '@bruits/satteri-linux-x64-gnu@0.10.3'
-  - '@bruits/satteri-linux-x64-musl@0.10.3'
-  - '@bruits/satteri-wasm32-wasi@0.10.3'
-  - '@bruits/satteri-win32-arm64-msvc@0.10.3'
-  - '@bruits/satteri-win32-x64-msvc@0.10.3'
-  - satteri@0.10.3

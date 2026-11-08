@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@babel/core': ^8.1.0
-  nwsapi: 2.2.25
 
 importers:
 
