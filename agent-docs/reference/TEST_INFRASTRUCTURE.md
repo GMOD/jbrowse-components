@@ -298,6 +298,18 @@ but needs a fully green whole-repo run.
 
 ## Troubleshooting
 
+- **A test counting an adapter's reads passes or fails by test order.**
+  `dataAdapterCache` keys an adapter by its config and only adds a new
+  `sessionId` to the entry, so two tests in a file building one config share an
+  instance and whatever the first left in its private caches. Call
+  `clearAdapterCache()` first in a test that counts reads or asserts a cold
+  cache.
+- **`nanoid()` returns the same ids in every test of a file**:
+  `config/jest/deterministicIds.js` resets its PRNG before each test, so
+  module-global state keyed on one collides across tests. In
+  `ExportSession.test.tsx`, which mocks `nanoid` with a counter, a snapshot diff
+  of nothing but sliding `test-id-N` ordinals means a `nanoid()` call was added
+  or removed upstream.
 - **A `waitFor` burning its full 30s, blamed on a line that never ran.** In
   `products/jbrowse-web/src/tests`, `view.tracks[0].displays[0]` is **`any`**, so
   a getter that does not exist typechecks and fails at runtime, and jest prints

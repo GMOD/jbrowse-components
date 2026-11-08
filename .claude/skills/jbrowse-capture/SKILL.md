@@ -185,6 +185,11 @@ no failure but is not the picture either.
 - `--dpr 2` is the default and is what a figure wants; `--dpr 1` for a
   screenshot you only intend to read.
 - Raise `--timeout` for a slow remote file.
+- In your own Puppeteer script, pass `captureBeyondViewport: false` to every
+  `page.screenshot`. Puppeteer's default resizes the page for a clipped shot,
+  JBrowse re-lays out, and the frame comes back empty with every readiness gate
+  green. Identical file sizes across loci are the tell, so view every capture (a
+  `montage` contact sheet) before trusting any of them.
 - Downscale before reading a large PNG:
   `convert out.png -resize 1400x /tmp/shot.png`.
 

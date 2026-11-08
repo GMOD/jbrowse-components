@@ -11,6 +11,23 @@ kind: operations
 
 Origin `s3://jbrowse.org`, fronted by CloudFront `E13LGELJOT4GQO`.
 
+- **The distribution keys through the cache policy
+  `jbrowse-org-cors-all-querystrings`** (`42ae4ec5-e759-43d8-be2a-b014f56a82cd`):
+  all query strings, the `Origin` and `Access-Control-Request-*` headers, no
+  cookies, TTL 0/86400/31536000, plus Brotli, which CloudFront serves only
+  through a cache policy. `HttpVersion` is `http2and3`. To roll back,
+  `update-distribution` with `DefaultCacheBehavior.ForwardedValues` holding that
+  key and those TTLs, no `CachePolicyId`, and `HttpVersion` `http2`.
+- **Run CloudFront commands as `uvx --from awscli aws cloudfront …`**: an old
+  aws CLI lacks `create-cache-policy`, and its `get-distribution-config` can
+  drop newer fields.
+- genomes.jbrowse.org (`E12EBG02P68TDO`, nginx on EC2, TTLs 0) serves only the
+  catalog site and keeps the legacy settings.
+- **An rclone upload of a key the bucket has never held** needs `rclone copyto
+  --s3-no-check-bucket`.
+- **CloudFront allows 15 wildcard invalidations in progress**, so a bulk upload
+  invalidates exact paths.
+
 **An upload is not a publish.** After `aws s3 cp` the plain URL keeps serving the
 cached object, and the app and screenshot generator use the plain URL, so the old
 config loads silently ("Could not resolve identifier `<new_trackId>`" over an empty

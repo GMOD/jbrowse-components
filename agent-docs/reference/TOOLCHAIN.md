@@ -1,6 +1,6 @@
 ---
 name: toolchain
-description: How do the TypeScript 6/7 split, the oxlint/eslint split, project references, worktree installs and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a tsconfig references array, a lint rule or a disable comment.
+description: How do the TypeScript 6/7 split, the oxlint/eslint split, project references, incremental builds, worktree installs and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a tsconfig references array, a lint rule or a disable comment.
 audience: internal
 kind: operations
 ---
@@ -25,6 +25,56 @@ The dev loop runs three TypeScript versions and two linters on purpose. Don't
 
 The versions write **incompatible** `.tsbuildinfo` and each discards the
 other's, so don't share a `.tsbuildinfo` CI cache between them.
+
+Measured on ada (24 cores, idle) on 2026-11-07, cold medians of 3: typecheck of
+`.` takes tsgo 7.0.2 9.2 s and 6.0 GB, tsgo 7.1-beta 5.5 s and 3.8 GB, tsrs
+1.9 s and 1.6 GB (`--fast` 1.2 s); `oxlint --type-aware` 9.0 s and 6.8 GB with
+tsgolint, 3.8 s and 3.4 GB with tsrs-lint; oxlint alone 0.5 s; eslint about
+31 s and 360 CPU-s. **`oxlint --type-check` cannot stand in for `pnpm
+typecheck`**: it also checks loose files outside the root tsconfig (website,
+examples-site).
+
+## Incremental builds trust `.tsbuildinfo`
+
+Incremental tsc's up-to-date check reads `.tsbuildinfo`, never the output tree
+or `package.json`, and an error it replays names the stale type, not the cache.
+
+- **Is the build current?** `pnpm build:esm --dry` answers it. A rebuild that
+  says up to date while a run still fails on a deleted or truncated emitted
+  `.js` needs `pnpm build:esm --force` (~25 s for the workspace).
+- **An `exports`-map edit or a new dependency**, anything module resolution
+  reads rather than compiles, leaves the build replaying the old resolution.
+  Delete the tsbuildinfos before believing the result
+  (`find packages plugins products example-plugins -maxdepth 2 -name
+  "tsconfig.build.esm.tsbuildinfo" -delete`), and confirm the dependency did
+  the work by hiding its `node_modules` symlink and watching the error return.
+- **A typecheck that overlapped an edit** can keep printing the old type on
+  reruns, so launch `pnpm typecheck` after the edits it reads; when it
+  contradicts the file on disk, `rm tsconfig.tsbuildinfo`.
+- **A signature change can pass `pnpm verify` stale**: a newly required
+  parameter once left 25 callers to be found later. After changing an exported
+  signature, `rm tsconfig.tsbuildinfo` and run `pnpm typecheck` before landing.
+
+## TS7056 names the factory, not the cause
+
+`build:esm` failing with TS7056 ("the inferred type of this node exceeds the
+maximum length the compiler will serialize") names the exported model factory
+where declaration emit gave up. The usual cause is an `export type X =
+Instance<…>` alias a factory member mentions: an alias has no referenceable
+name, so the emitter inlines the whole model. Make it `interface X extends
+Instance<…> {}` (ADR-055).
+
+- **Locate it in one run**: beside the factory put `declare const x:
+  TheStateModel; export const y: number = x`, run `pnpm typecheck
+  <package>/tsconfig.build.esm.json --noErrorTruncation` (a bare `tsc` is
+  refused), and find each member name's offset in the error. The gap between consecutive names is that member's
+  serialized cost, and the largest names the alias.
+- **`pnpm typecheck` cannot see it**: `--noEmit` serializes no declaration, so
+  the error exists only in `build:esm` and only for an exported factory.
+- **A typed `session.addView(self.type, …)` inside a view's own factory** makes
+  the model circular: typecheck explodes across packages, and one TS7023 on the
+  new action is the real error. Put the helper outside the factory
+  (`openSpanInNewView` in `LinearGenomeView/menuItems.ts`).
 
 ## Project references
 
@@ -102,3 +152,16 @@ When one goes:
   removed dep only once its per-package `node_modules` symlink is gone. `ls -d` the
   removed link and a kept dep as a control; an empty first result means nothing unless
   the control is still linked.
+
+A dep with no textual mention in its package is still needed in four cases:
+
+- **`@mui/system` in `packages/core`**: `ReExports/MuiStylesReExports.ts`'s
+  inferred type reaches into it, and with `declaration: true` the name must
+  resolve off a direct dependency or tsc raises TS2883. Any `ReExports/*` file
+  can do this, and only declaration emit shows it.
+- **`mobx` in about 14 plugins**, supplied to the bundle as an external.
+- **`@emotion/react`, `@emotion/cache` and `@emotion/styled` in the embedded
+  products**: MUI's peers, supplied by the app.
+- **`.astro` consumers** (`astro`, `@astrojs/react`, `react-dom` in the
+  examples-sites), invisible to a `.ts`/`.tsx` scanner; likewise `react` under
+  `jsx: react-jsx`, imported through `react/jsx-runtime`.

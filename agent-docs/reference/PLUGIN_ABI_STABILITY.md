@@ -200,6 +200,12 @@ gave a clean control.
   It recurred at beta.18: core moved to `@jbrowse/mobx-state-tree@^6.10.0`,
   Apollo's `v2` lockfile kept 6.9.0 beside it, and its typecheck went from 0
   errors to about 400 until Apollo raised its own range.
+- **pnpm keys MST's directory by its mobx peer**
+  (`@jbrowse+mobx-state-tree@6.5.1_mobx@7.0.0` and `…_mobx@7.0.3` are two
+  copies), so a plugin checkout symlinked against this one needs both `mobx`
+  and `@jbrowse/mobx-state-tree` at core's versions. Compare `readlink -f
+  node_modules/@jbrowse/mobx-state-tree` in both trees before reading a single
+  type error.
 
 ## Ledger: behavior changes external plugins inherit
 

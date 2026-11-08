@@ -68,3 +68,11 @@ version string.
 - **Bump to generation 3 for the dropped key:** a generation-2 reader would read
   a generation-3 file as headerless (`pifVersionKnown`), losing the coarse bound,
   for no change in the rows.
+- **A `#sq` contig-length line per seqid** (landed 2026-10-30, reverted in
+  d21117ada6): every row already states both contigs' lengths (`qlen`/`tlen`),
+  and the header grows with contig count, to about 30 MB raw on jb2hubs' most
+  fragmented UCSC pairs. A build-mismatch check reads lengths off the rows the
+  first draw fetches instead, which needs a hook outside `loadRefNameMap`.
+- **Capping make-pif's output**, e.g. to the longest N contigs: make-pif
+  describes the PAF it is given, and a fragmented assembly's PAF is filtered
+  before it.

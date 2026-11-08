@@ -69,6 +69,13 @@ nothing was pinned; the comment there has the numbers. It is not a
 decision would leave the About widget and bug reports unable to tell the two
 apart.
 
+**A pin in a URL goes in the hash when the hash holds params.** `paramLocation`
+(`packages/app-core/src/queryParams.ts`) reads the hash or the search, never
+both, so `?renderer=webgl` beside `#config=…` is never read. WebGL2 under
+headless Chrome also needs `--enable-unsafe-swiftshader --use-angle=swiftshader`.
+Read `globalThis.__jbrowseRenderCoreGpuDeviceV1.builtRenderer` off the page
+before calling a capture a GPU check.
+
 **A pin always wins, because two consumers render on SwiftShader:**
 
 - **The cross-backend gate.** Headless Chrome is SwiftShader with or without

@@ -67,6 +67,12 @@ specific to benchmarking the inflate pool.
 - **Every `*.bench.ts` runs under node**, naming its own `node <path>` command in
   its header. A bench that grows a `test()` for a runner is a different and wrong
   measurement.
+- **Plain `node <file>.ts` strips types and transforms nothing**, so a
+  parameter property (`constructor(private readonly x: T)`), an enum or a
+  namespace in ANY module a bench imports throws
+  `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`, while typecheck, `build:esm` and jest
+  pass the file. In a module a bench can reach, declare the field and assign it
+  in the constructor body.
 
 ## Measuring on a contended box
 

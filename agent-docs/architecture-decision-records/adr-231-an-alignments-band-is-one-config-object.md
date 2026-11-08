@@ -115,6 +115,8 @@ track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
 | `facet.collapse` for `collapseSections` | `facet` has a string shorthand, so a share link writing `facet: 'HP'` replaces it whole and would reset the collapse |
 | `pileup.sort` | The top level holds the read-level grammar, `filter`, `unit`, `facet`, `sort` and `color`; `sort` orders the reads the pileup stacks as `unit` decides what one of its rows is, and the two stay together |
 | `readConnections.color.field` unset in place of `''` | Every color object spells an absent field `''` (display-kit's color schema, `baseColor`), so the arcs keep it |
+| Moving split reads out of `readConnections`, renaming the bands `junctions` and `pairs`, or one merged arc band | Sashimi counts joins per cut point (CIGAR `N` splices and split-read joins), read connections draw one molecule's whole path (mates and supplementary pieces), so one split read belongs in both, as coverage and pileup share reads. With the split arcs staying, the rename lost its reason |
+| Split-read junctions in sashimi for RNA only | A circHIPK3 window holds no spliced read, so the gate hid the back-splices it was for |
 | A jexl expression in place of the `show` booleans | Each toggles a layer for the whole display, so an expression reading no datum is a constant. Where a datum exists, a band's `filter` over junctions or connections, an opt-in expression could join the members at no cost when unnamed, as the canvas and mark displays' `filter` takes jexl; no figure has asked for a predicate the members cannot state |
 
 ## Consequences

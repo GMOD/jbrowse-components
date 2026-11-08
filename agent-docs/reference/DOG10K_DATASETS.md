@@ -26,6 +26,11 @@ coordinate from a paper as canFam3.1 until proven otherwise.**
   only `GT`, so the callset-`DP` copy-number scripts need kiddlabshare's
   397 GB `AutoAndXPAR.SNPs.vqsr99.vcf.gz`, whose host let its TLS certificate
   expire in October 2026 (`curl -k` still reads it).
+- **ada mirrors kiddlabshare** at `/mnt/sdb/cdiesh/dog10k-mirror`:
+  `sample-information/`, `Manta-SV_2022-03-28/`, `phased-imputation-panel/` and
+  `SNP_and_indel_calls_2021-10-17/`, the 397 GB VCF included, but not
+  `cram-share/`, whose two consumers' outputs are hosted. If the share goes
+  offline, point a build script's `SHARE` at it.
 - **Kidd lab bigBeds** (`github.com/KiddLab/dog-long-read-sv`): Ohana selection
   output and two SV sets, bed9 with no names or scores. An overlay under a
   computed track, not a substitute.
