@@ -37,7 +37,7 @@ for tool in curl awk sort gzip datasets unzip python3; do
   }
 done
 
-HELPERS=(symbols_to_blocks.py)
+HELPERS=(symbols_to_blocks.py hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
@@ -62,19 +62,6 @@ cd "$OUTDIR"
 echo "$SPECIES" > species.tsv
 ANCHOR=$(head -1 species.tsv | awk '{print $1}')
 NAMES=$(awk '{print $1}' species.tsv)
-
-# ── The hub each lane is taken from ──────────────────────────────────────────
-# hg38 is a UCSC hub at jbrowse.org/ucsc/<db>; a GenArk hub's path is its
-# accession cut into GCF/000/001/405/<accession>.
-mkdir -p hubs
-while read -r _ _ hub _; do
-  case "$hub" in
-    GC[AF]_*) base="https://jbrowse.org/hubs/genark/${hub:0:3}/${hub:4:3}/${hub:7:3}/${hub:10:3}/$hub" ;;
-    *) base="https://jbrowse.org/ucsc/$hub" ;;
-  esac
-  echo "$base" > "hubs/$hub.base"
-  [ -s "hubs/$hub.config.json" ] || curl -fsS -o "hubs/$hub.config.json" "$base/config.json"
-done < species.tsv
 
 # ── GFF3 and sequence report per genome, in one archive ──────────────────────
 mkdir -p ncbi
@@ -126,45 +113,21 @@ gzip -kf primates.blocks
 for n in $NAMES; do gzip -kf "$n.bed"; done
 
 # ── The JBrowse config ───────────────────────────────────────────────────────
-python3 - "$BLOCK_COLUMNS" <<'PY'
+python3 - "$SCRIPT_DIR" "$BLOCK_COLUMNS" <<'PY'
 import json, sys
 
-columns = sys.argv[1].split()
+sys.path.insert(0, sys.argv[1])
+from hosted_assembly import hub_parts
+
+columns = sys.argv[2].split()
 species = {}
 with open('species.tsv') as fh:
     for line in fh:
         name, _, hub, label = line.rstrip('\n').split(None, 3)
         species[name] = (hub, label)
 
-uri_keys = {'uri', 'chromSizes'}
-gene_track_order = ['ncbiRefSeq', 'ncbiRefSeqCurated', 'refGene']
 
-
-def absolutize(node, base):
-    if isinstance(node, dict):
-        return {
-            k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
-            else v if k == 'metadata'
-            else absolutize(v, base)
-            for k, v in node.items()
-        }
-    return [absolutize(x, base) for x in node] if isinstance(node, list) else node
-
-
-# The hub's assembly entry and gene track, verbatim but for the lane label, and
-# the short name as an alias so a session can say `human` or `chimp`.
-def hub_parts(name):
-    hub, label = species[name]
-    config = json.load(open(f'hubs/{hub}.config.json'))
-    base = open(f'hubs/{hub}.base').read().strip()
-    assembly = next(a for a in config['assemblies'] if a['name'] == hub)
-    by_id = {t['trackId']: t for t in config['tracks']}
-    gene_id = next(f'{hub}-{k}' for k in gene_track_order if f'{hub}-{k}' in by_id)
-    assembly = {**absolutize(assembly, base), 'displayName': label, 'aliases': [name]}
-    return assembly, absolutize(by_id[gene_id], base)
-
-
-parts = {n: hub_parts(n) for n in columns}
+parts = {n: hub_parts(*species[n], n) for n in columns}
 order = [parts[n][0]['name'] for n in columns]
 
 

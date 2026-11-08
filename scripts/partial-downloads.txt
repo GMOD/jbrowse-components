@@ -24,8 +24,6 @@ scripts/build_dog10k_wolfdog_ancestry.sh 3
 scripts/build_dtu_demo.sh 2
 scripts/build_fly_agent_synteny.sh 2
 scripts/build_gene_density.sh 3
-scripts/build_grape_peach_anchors.sh 1
-scripts/build_grape_peach_cacao_synteny.sh 1
 scripts/build_hprc_multiway_synteny.sh 2
 scripts/build_hsv1_demo.sh 3
 scripts/build_khv_trio_hapibd.sh 2
@@ -36,7 +34,6 @@ scripts/build_lct_population_af.sh 2
 scripts/build_mouse_pangenome.sh 2
 scripts/build_omia_cattle_variants.sh 1
 scripts/build_omia_dog_variants.sh 2
-scripts/build_primate_orthologs.sh 1
 scripts/build_quickstart_web.sh 1
 scripts/build_rnaseq_junctions.sh 4
 scripts/build_scrna_pseudobulk.sh 1

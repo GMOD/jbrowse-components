@@ -22,6 +22,14 @@
 #
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+HELPERS=(hosted_assembly.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
+done
+
 OUTDIR="${1:-grape_peach_cacao_build}"
 
 for tool in datasets unzip samtools gffread lastal lastdb python python3 awk gzip curl; do
@@ -168,17 +176,6 @@ fi
 gzip -kf grape.blocks "${COLUMNS[@]/%/.bed}" \
   grape.peach.anchors grape.peach.anchors.simple
 
-# ── The hub each assembly is taken from ──────────────────────────────────────
-# A RefSeq genome is a GenArk hub on genomes.jbrowse.org under its accession,
-# whose path is the accession cut into GCF/000/346/465/<accession>.
-mkdir -p hubs
-while read -r name acc; do
-  [ -z "$name" ] && continue
-  base="https://jbrowse.org/hubs/genark/${acc:0:3}/${acc:4:3}/${acc:7:3}/${acc:10:3}/$acc"
-  echo "$base" > "hubs/$acc.base"
-  [ -s "hubs/$acc.config.json" ] || curl -fsS -o "hubs/$acc.config.json" "$base/config.json"
-done <<<"$ASSEMBLY_SPECIES"
-
 # ── The JBrowse config ───────────────────────────────────────────────────────
 # Each assembly and its gene track are the hub's, verbatim but for the lane
 # label, with the short name as an alias so a session can still say `grape`.
@@ -186,38 +183,17 @@ done <<<"$ASSEMBLY_SPECIES"
 # on an assembly the config does not define comes up "No tracks active". The
 # blocks-only mates live in the adapter, which draws their lanes from the table
 # and their BEDs alone.
-python3 - "${COLUMNS[*]}" "$ASSEMBLY_SPECIES" <<'PY'
+python3 - "$SCRIPT_DIR" "${COLUMNS[*]}" "$ASSEMBLY_SPECIES" <<'PY'
 import json, sys
 
-names = sys.argv[1].split()
-accession = dict(line.split() for line in sys.argv[2].strip().splitlines())
+sys.path.insert(0, sys.argv[1])
+from hosted_assembly import hub_parts
 
-uri_keys = {'uri', 'chromSizes'}
-gene_track_order = ['ncbiRefSeq', 'ncbiRefSeqCurated', 'ncbiGene']
-
-
-def absolutize(node, base):
-    if isinstance(node, dict):
-        return {
-            k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
-            else absolutize(v, base)
-            for k, v in node.items()
-        }
-    return [absolutize(x, base) for x in node] if isinstance(node, list) else node
+names = sys.argv[2].split()
+accession = dict(line.split() for line in sys.argv[3].strip().splitlines())
 
 
-def hub_parts(name):
-    acc = accession[name]
-    config = json.load(open(f'hubs/{acc}.config.json'))
-    base = open(f'hubs/{acc}.base').read().strip()
-    assembly = next(a for a in config['assemblies'] if a['name'] == acc)
-    by_id = {t['trackId']: t for t in config['tracks']}
-    gene_id = next(f'{acc}-{k}' for k in gene_track_order if f'{acc}-{k}' in by_id)
-    assembly = {**absolutize(assembly, base), 'displayName': name, 'aliases': [name]}
-    return assembly, absolutize(by_id[gene_id], base)
-
-
-parts = {n: hub_parts(n) for n in accession}
+parts = {n: hub_parts(accession[n], n, n) for n in accession}
 declared = [accession[n] for n in accession]
 columns = [accession.get(n, n) for n in names]
 

@@ -1136,6 +1136,37 @@ check("--homology drops a gene family and an unplaced gene as the table does",
 # copies are the genes sharing one symbol. Expanding them is what draws a
 # duplication as a ribbon per copy; taking the first hid the second copy of the
 # ANCHOR too, which left that gene joined to nothing in either direction.
+# hosted_assembly.hub_parts: three build scripts take each genome's assembly
+# and gene track from its hub through it, so the hub path, the relative-uri
+# resolution and the gene-track pick are pinned here, offline, from a cached
+# hub config.
+ha = load("scripts/hosted_assembly.py", "hosted_assembly")
+check("an accession names a GenArk hub cut into threes, anything else a UCSC hub",
+      (ha.hub_base("GCF_000346465.2"), ha.hub_base("hg38")),
+      ("https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2",
+       "https://jbrowse.org/ucsc/hg38"))
+with tempfile.TemporaryDirectory() as d:
+    acc = "GCF_000346465.2"
+    with open(os.path.join(d, f"{acc}.config.json"), "w") as fh:
+        json.dump({
+            "assemblies": [{"name": acc, "sequence": {"adapter": {
+                "uri": f"{acc}.2bit", "chromSizes": "https://x/sizes"}}}],
+            "tracks": [{"trackId": f"{acc}-ncbiGene", "adapter": {"uri": "g.bb"}},
+                       {"trackId": f"{acc}-ncbiRefSeq", "adapter": {"uri": "r.bb"}}],
+        }, fh)
+    assembly, track = ha.hub_parts(acc, "peach", "peach", cache_dir=d)
+    base = ha.hub_base(acc)
+    check("hub_parts relabels the assembly, aliases it, resolves its uris and "
+          "takes ncbiRefSeq over ncbiGene",
+          (assembly["displayName"], assembly["aliases"],
+           assembly["sequence"]["adapter"], track["trackId"], track["adapter"]["uri"]),
+          ("peach", ["peach"],
+           {"uri": f"{base}/{acc}.2bit", "chromSizes": "https://x/sizes"},
+           f"{acc}-ncbiRefSeq", f"{base}/r.bb"))
+    check("hub_parts leaves the cached hub config as it was",
+          json.load(open(os.path.join(d, f"{acc}.config.json")))["tracks"][1]["adapter"]["uri"],
+          "r.bb")
+
 sy = load("scripts/symbols_to_blocks.py", "symbols_to_blocks")
 # Each converter is curled alone, so the two copies of pick/--max-copies/
 # index-pairing stay two copies; this holds them to the same answer.

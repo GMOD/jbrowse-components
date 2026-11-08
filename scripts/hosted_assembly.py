@@ -26,15 +26,47 @@ Usage:
 Writes the assembly and any named hub tracks, leaving `tracks` otherwise empty
 for the caller to append its own to. Existing content is preserved except for
 the two keys it sets, so it is safe to re-run.
+
+A build script writing several genomes' entries into its own config imports
+`hub_parts(hub, label, alias)` instead: the hub's assembly entry, relabelled and
+given a short-name alias, and its gene track. `hub` is a UCSC name (`hg38`) or
+an NCBI accession, which names a GenArk hub on genomes.jbrowse.org.
 """
 
+import copy
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
 
-HUB = 'https://jbrowse.org/ucsc/{genome}/config.json'
+GENE_TRACKS = ('ncbiRefSeq', 'ncbiRefSeqCurated', 'ncbiGene', 'refGene')
+
+
+def hub_base(hub):
+    """A GenArk hub's path is its accession cut into threes; any other name is a
+    UCSC hub."""
+    if re.fullmatch(r'GC[AF]_\d{9}\.\d+', hub):
+        return ('https://jbrowse.org/hubs/genark/'
+                f'{hub[:3]}/{hub[4:7]}/{hub[7:10]}/{hub[10:13]}/{hub}')
+    return f'https://jbrowse.org/ucsc/{hub}'
+
+
+def fetch_hub(hub, cache_dir=None):
+    """(hub config, its url), kept in `cache_dir` so a re-run reads no network."""
+    url = f'{hub_base(hub)}/config.json'
+    cached = os.path.join(cache_dir, f'{hub}.config.json') if cache_dir else None
+    if cached and os.path.exists(cached) and os.path.getsize(cached):
+        return json.load(open(cached)), url
+    with urllib.request.urlopen(url) as fh:
+        text = fh.read().decode()
+    if cached:
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(f'{cached}.part', 'w') as fh:
+            fh.write(text)
+        os.replace(f'{cached}.part', cached)
+    return json.loads(text), url
 
 
 def absolutize(node, base):
@@ -50,11 +82,24 @@ def absolutize(node, base):
             absolutize(v, base)
 
 
+def hub_parts(hub, label, alias, cache_dir='hubs'):
+    """The hub's assembly entry, shown as `label` and also named `alias`, and the
+    first of its gene tracks GENE_TRACKS names."""
+    config, url = fetch_hub(hub, cache_dir)
+    assembly = copy.deepcopy(next(a for a in config['assemblies'] if a['name'] == hub))
+    by_id = {t['trackId']: t for t in config['tracks']}
+    gene_id = next((f'{hub}-{k}' for k in GENE_TRACKS if f'{hub}-{k}' in by_id), None)
+    if gene_id is None:
+        raise SystemExit(f'{hub} hub has none of the gene tracks {", ".join(GENE_TRACKS)}')
+    track = copy.deepcopy(by_id[gene_id])
+    absolutize(assembly, url)
+    absolutize(track, url)
+    return {**assembly, 'displayName': label, 'aliases': [alias]}, track
+
+
 def seed(path, genome, track_ids=()):
     """Point `path` at `genome`'s hosted hub assembly plus the named hub tracks."""
-    hub_url = HUB.format(genome=genome)
-    with urllib.request.urlopen(hub_url) as fh:
-        hub = json.load(fh)
+    hub, hub_url = fetch_hub(genome)
 
     cfg = json.load(open(path)) if os.path.exists(path) else {}
     cfg['assemblies'] = hub['assemblies']
