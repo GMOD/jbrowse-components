@@ -45,8 +45,10 @@ review of those starts cold.
 - Declined: `clearHoveredFeature` ignoring the pin (no trigger found);
   `setUnit` replacing a solid color (reversible, intent unclear; ask before
   touching); the height-mode word "Fixed" against display-kit's "Scroll"
-  (the alignments submenu asks "Track height", display-kit's radios ask what
-  happens on overflow).
+  (they name different things: "Fixed" is ticked under `fit` too, and a
+  fitted track does not scroll, `f0df3b34c0`); a read-mode connector's
+  right-click lighting one end where its hover lit both (the pin lights the
+  read the menu acts on, as chain mode lights the chain).
 
 ## CRAM parity (needs a bench)
 
@@ -79,13 +81,22 @@ What it makes sayable, verified as unsayable today:
 - `scale.type: 'log'` for quantitative fields (`ALIGNMENTS_COLOR_SCALES` is
   ordinal, linear, threshold).
 
+The registry is a table whose columns are roles, not one flat list every
+role accepts: `COLOR_FIELD_DEFS` carries a shader path and a menu slot, and a
+column sort needs a per-position reader.
+
 Open before any code:
 
 - **Tier collision.** ADR-259 puts read categories at the drawn tier
   (coverage whole) and flags at the counted tier (coverage thinned). A
   drawn `strand` filter would sit beside the counted `flags.REVERSE`: one
-  question, two spellings, two coverage reaches. The registry must give
-  each field one tier and refuse or lower the duplicate. Decide this first.
+  question, two spellings, two coverage reaches. Recommended ruling (a
+  2026-11-08 review): ADR-259 draws the line by what is asked, so categories
+  (`pairOrientation`, `pairing`, `svKind`, `mateRefName`,
+  `firstOfPairStrand`) filter at the drawn tier beside `svSignal`, record
+  quality (flags, tags, mapq) counts, and `strand`, which is flag 0x10, is
+  refused as a filter field with `filterProblems` naming `flags.REVERSE`.
+  Decide this first.
 - **Speed.** Each role compiles to a per-field kernel once per fetch, reusing
   the facet's `keyAll`; no reader call per read per role. Bench
   `drawnReadFilter.bench.ts` with a facet-field entry against today.
@@ -96,6 +107,10 @@ Open before any code:
 - Process: a draft of the end state, then an adversarial review of the whole
   surface (memory `alignments-vocabulary-is-grammar-of-graphics`). Writers to
   update are in ADR-240's Order of work.
+- First step, not an interim: `shared/readFields.ts` holding the table, the
+  four lists derived from it (a missing role is a compile error), and
+  `filterProblems`/`sortProblems` reading it. New filter fields land after,
+  through the facet's `keyAll` kernel, benched on ada.
 
 Smaller grammar items, each independent:
 
@@ -120,15 +135,28 @@ Smaller grammar items, each independent:
   into 30 slots (7 values collide about 53% of the time) and wraps integers
   mod 10 (NM 0 = NM 10), and the key is built by hand (`shared/legendUtils.ts`
   `bakedValueLegend`). ADR-205 records "alignments tag colors keep their own
-  hash copy" as a consequence, with no Rejected row. The deal's held slots
-  live in the session, so a reload reproduces them, which answers the
-  reproducibility reason `colorTagUtils.ts` gives for hashing. What stays:
-  HP:1 as the first color (a value's own-color hook in `categoricalField`),
-  the CPU bake ordering (deal before `buildReadFillColors`), figures recolor
-  where pairs collided. 2–3 days. Recommended next; Colin's call.
-- **The tables key.** `tables.ts` emits five ad-hoc label/color tables where
-  every other display calls `colorKeyTables`; `977b8d5d1f` and `9caaafd09c`
-  each fixed both keys. Follows the tag-color step. Reaches the R reader.
+  hash copy" as a consequence, with no Rejected row. The deal answers the
+  reproducibility reason `colorTagUtils.ts` gives for hashing, though not by
+  storage: held slots are in memory (`heldSlotsOf`, never persisted; ADR-205
+  rejected session state). A value nothing collides with paints its hashed
+  color everywhere, and each region deals in `field.compare` order, so a
+  reload at the same locus reproduces; elsewhere only a collided pair can
+  swap, which today would be one color.
+  - HP:1 stays the leading blue through a `slotOf` preference option on
+    `categoricalScale` (default the hash), which alignments passes its integer
+    rule; core learns no SAM tag.
+  - Per-read cost is unchanged: `makeColorResolver` already caches one pack per
+    distinct value. The deal runs per region before `buildReadFillColors`.
+  - `bakedColorScale`'s declared-domain branch already routes through
+    `categoricalColorScale`, without `held`.
+  - Goldens recolor where pairs collided. A bench on a 10k-value tag
+    (`tags.RG` on a merged cohort) would show whether the deal's per-value
+    work is visible. 2–3 days. Recommended next; Colin's call.
+- **The tables key.** `tables.ts` builds its legend by hand from
+  `legendItems` where every other display calls `colorKeyTables`;
+  `977b8d5d1f` and `9caaafd09c` each fixed both keys. Independent of the tag
+  step: `colorKeyTables(colorScalesIn(theme))`, about a day, best in the same
+  pass. Reaches the R reader.
 - **Group by dialogs.** Alignments' and features' each own scan, verdict and
   color rule; "a hand-picked color stays" landed on features 2026-10-18 and on
   alignments 2026-10-26 (`33371390fb`). A display-kit shell with the scan and

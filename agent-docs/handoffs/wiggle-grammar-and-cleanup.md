@@ -1,15 +1,16 @@
 ---
 name: wiggle-grammar-and-cleanup
-description: "What remains of the 2026-11-07 plugins/wiggle analysis after its bug batch landed on 2026-11-08: cleanups, sharing with sibling displays, and the grammar calls (plot type as IR, layer + stat) still waiting on Colin. Read before fixing a wiggle bug, respelling its color or plot type, or proposing layers, transforms or facets on the quantitative display."
+description: "What remains of the 2026-11-07 plugins/wiggle analysis after its bug batch landed on 2026-11-08: cleanups, sharing with sibling displays, and the calls (threshold palette, plot type as IR, layer + stat) still waiting on Colin. Read before fixing a wiggle bug, respelling its color or plot type, or proposing layers, transforms or facets on the quantitative display."
 ---
 
 # plugins/wiggle: grammar and cleanup
 
 - **In:** a ranked findings list over `plugins/wiggle` and a grammar
   direction, each checked against the ADRs and parked ideas. Its verified
-  bugs and dead code landed on 2026-11-08 (the score matrix's adapter
-  options, the plot type typed `WiggleRendering`, the multi-wiggle
-  `getSources` fallback).
+  bugs landed on 2026-11-08 (the score matrix's adapter options, the plot
+  type typed `WiggleRendering`). The multi-wiggle `getSources` fallback is
+  not dead: jbrowse-plugin-zarr's `MultiWiggleZarrAdapter` lists through it,
+  pinned in `executeRenderMultiWiggleData.test.ts`.
 - **Out:** the cleanups below landed or declined, and layer + stat put to a
   review or filed under `ideas/`.
 
@@ -20,8 +21,11 @@ it.
 
 ## Declined on 2026-11-08
 
-- **±Infinity in the array path.** No producer is known to write one, and
-  dropping it would hide a p = 0 peak that the GPU now clamps to the top
+- **±Infinity in the array path.** No common producer writes one: C, Python
+  and R print `inf`, which BedGraph's `+value` reads as NaN and drops, and
+  MACS2, ENCODE and deeptools defaults stay finite. The draw clamps it to the
+  top and autoscale skips it; only clustering would fail, loudly, in hclust.
+  If a trigger appears, `Number.isFinite` in `addValues` alone is the fix
   (memory `trust-the-data-dont-build-malformed-checks`).
 - **The BedGraph export on a numeric `source`.** Every adapter yields a
   string: BedGraph splits its columns and the render path keys groups by
@@ -37,11 +41,6 @@ it.
 - **The right-click label "drift" against plugins/marks.** Each display names
   its own measure (MAF "by identity", variants "by genotype"), so "by score"
   and "by value" both stand.
-- **Filling a missing threshold band from the default ramp** (recommended
-  decline, Colin's to confirm). Wiggle's default is a diverging pair, and a
-  grey neutral middle is that pair's idiom, documented in
-  `wiggleColorConfigSchema.ts`. The key already takes its colors from the
-  painted `wiggleColor`, so key and paint agree.
 
 ## Unverified
 
@@ -86,20 +85,25 @@ Only the adapter-review subagent traced these.
   `autoClusterReady`, `hasResolution`) have to move out. It fits
   `ideas/waiting-on-a-number/a-displays-render-inputs-run-on-a-plain-host.md`.
 - **Small duplicates:**
-  - `LINE_INTERPOLATIONS` and `DEFAULT_LINE_WIDTH_PX` repeat
-    plugins/marks `markVocabulary.ts`.
+  - `DEFAULT_LINE_WIDTH_PX` repeats plugins/marks `markVocabulary.ts`
+    (`LINE_INTERPOLATIONS` is a subset of marks' `MARK_INTERPOLATIONS`, not
+    a copy).
   - `WiggleSize` is a subset of `MarkSize`.
   - A point's unset size is 2 px here (`DEFAULT_POINT_SIZE_PX`) and 4 px there
     (`DEFAULT_POINT_DIAMETER_PX`), and nothing says why.
-  - The source-listing fallback repeats variants' `MultiSampleVariantGetSources`.
+  - The source-listing fallback repeats variants' `sourcesAndWarnings`
+    (`MultiSampleVariantGetSources.ts`); one shared helper serves both.
 
 ## Grammar direction
 
-- **The plot type moves to `(mark, interpolate)` throughout**, with the shader
-  int made only at the uniform write. `WiggleRendering` stays only for v4
-  lifts and the menu/spec-recipe table. The typing landed; this respelling
-  moves `website/src/lib/spec-recipe/fields.ts` (`plotTypeStep`), which
-  imports `WIGGLE_PLOTS`. Colin's call.
+- **The plot type moving to `(mark, interpolate)` throughout: recommended
+  decline.** `renderingType` is derived once from the config's `mark`
+  (`renderingOf`) and is the display's name for its five shaders; the pair
+  has three meaningless combinations, and `buildSourceRenderData` stamps the
+  shader int per source on purpose (the stale-frame case in `wiggleMarks.ts`).
+  The union closed the type hole and the config word is already `mark`, so
+  the respelling is about 100 sites of churn for no visible change.
+  Reconsider with ADR-227's conditions.
 - **Layer + stat is one design question, not two.** Layering alone (`extent`
   as an `errorband`, bar + line) earns little without a stat. With a `window`
   stat it tells a story: raw bars under a smoothed trend. Its obstacles:
@@ -108,9 +112,13 @@ Only the adapter-review subagent traced these.
     plain layer list cannot say that, which is ADR-227's own objection.
   - `wiggleParams` reads the plot type off `sources[0]`, so a region holds one
     type (`shared/wiggleMarks.ts`).
-  - Transforms run in `featureTransforms`, which the BigWig array fast path
-    bypasses. ADR-152 keeps wiggle off the column encoder. `data.resolution`
+  - Wiggle has no `transform` slot; `featureTransforms` is core's mark-display
+    step. A `window` stat is new machinery over `RawFeatureArrays` (a 1-D
+    rolling mean, cheap in the worker), not a bypassed path. `data.resolution`
     is points per pixel, not a bin width (ADR-238 kept it).
+  - ADR-227's nesting objection is against a flat mark; a layer item that is
+    a whole one-plot spec keeps `stackSides` inside it. The real blocker is
+    one plot family per region and one GPU pass structure per family.
   - It reopens ADR-216's rejected `marks[]` alternative at the spelling level.
 
   Recommended: file to `ideas/` rather than review now. If reviewed, use real
@@ -132,7 +140,17 @@ Only the adapter-review subagent traced these.
 
 ## Open calls for Colin
 
-- **Confirm the threshold-palette decline** above.
-- **Spec-as-IR for the plot type**, including the `website/` spec-recipe
-  consumer?
-- **Layer + stat: file to `ideas/`** (recommended), or a review now?
+- **A threshold with fewer `range` colors than bands.** Wiggle paints a
+  missing middle band in `NO_CATEGORY_COLOR` and missing end bands in the
+  pos/neg defaults (`resolveWiggleColor`); feature, marks, synteny and
+  alignments fill every gap from the default ramp (`thresholdPalette`).
+  `NO_CATEGORY_COLOR` is documented as the no-value grey and keys as such in
+  synteny. Recommended: converge on `thresholdPalette` and
+  `thresholdKeyEntries` (memory `one-meaning-per-config-word`), moving
+  `wiggleColorConfigSchema.ts`'s text and its doc page. No in-repo config
+  writes a short range, so nothing on screen moves today. The case for
+  keeping it: wiggle's default is a diverging pair, and a grey neutral middle
+  is that pair's idiom.
+- **Decline the plot-type respelling** (recommended above)?
+- **Layer + stat: file to `ideas/waiting-on-a-call/`** (recommended, naming
+  phyloP and a CNV cohort as the review tracks), or a review now?
