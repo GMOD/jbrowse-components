@@ -57,9 +57,9 @@ pip install jcvi
 
 ## The data
 
-Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
-RefSeq assemblies and annotations, each fetched by accession with the `datasets`
-CLI: the same two genomes [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+Grape ([Shi et al. 2023](https://doi.org/10.1093/hr/uhad061)) and peach RefSeq
+assemblies and annotations, each fetched by accession with the `datasets` CLI:
+the same two genomes [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 stacks with cacao.
 
 The tracks below read hosted copies of the files the
@@ -173,9 +173,9 @@ beside it:
 ```
 
 Each genome also gets a gene track, which the
-[close-up](#what-an-anchor-looks-like-up-close) below turns to **Show only
-genes**. The figures use each genome's **NCBI RefSeq - RefSeq All** track from
-its GenArk hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
+[close-up](#what-an-anchor-looks-like-up-close) below filters to genes. The
+figures use each genome's **NCBI RefSeq - RefSeq All** track from its GenArk
+hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
 ([prep](/docs/quickstart_web)):
 
 ```json addtrack
@@ -322,9 +322,10 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
 ```
 
-The track configs [above](#loading-both-tracks) load the converted files
-unchanged. `--species` order is the anchors column order, so it has to match the
-track's `assemblyNames`. Two options decide whether JBrowse can draw the result:
+The track configs [above](#loading-both-tracks) load the converted files,
+gzipped as before or with `.gz` dropped from each `uri`. `--species` order is
+the anchors column order, so it has to match the track's `assemblyNames`. Two
+options decide whether JBrowse can draw the result:
 
 - `--chr-prefix peach=chrG` prepends to the refNames, and `--keep-chr-tag` keeps
   MCScanX's tag, stripped by default (`vv1` becomes `1`)
@@ -377,5 +378,6 @@ npx --yes serve grape_peach_anchors_build  # then open config.json there
 - Tang et al. (2008).
   [Unraveling ancient hexaploidy through multiply-aligned angiosperm gene maps](https://doi.org/10.1101/gr.080978.108),
   the MCScan method jcvi implements
-- Jaillon et al. (2007).
-  [The grapevine genome sequence suggests ancestral hexaploidization in major angiosperm phyla](https://doi.org/10.1038/nature06148)
+- Shi et al. (2023).
+  [The complete reference genome for grapevine (Vitis vinifera L.) genetics and breeding](https://doi.org/10.1093/hr/uhad061),
+  the PN40024 T2T assembly the page loads

@@ -56,10 +56,10 @@ pip install jcvi
 Seven RefSeq assemblies, one per species, each fetched by accession with the
 `datasets` CLI.
 
-The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing grape.blocks and the BEDs with jcvi_ on a GFF3 and a FASTA per
-genome of your own. The script fetches everything itself.
+You don't need these files to follow the sessions, which read hosted copies. The
+track configs name local files that the [build script](#reproduce-it-end-to-end)
+writes, so run it first, or follow [the jcvi steps](#producing-the-data) on a
+GFF3 and a FASTA per genome of your own.
 
 | What it is  | File                                                                                                                                          |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -448,8 +448,8 @@ tracks, synteny track and default session:
 4. Print, per column pair, the rows where both cells resolve, and write the
    config from the grape, peach and cacao hubs.
 
-`BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs only CDS
-and GFF3.
+`BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs an NCBI
+accession with an annotation, and gets a lane but no row of its own.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh

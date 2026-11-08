@@ -12,10 +12,10 @@
 # The tables are the ones odp plotted for the paper: one per species pair, every
 # reciprocal best hit between the two proteomes, each row carrying the BCnS
 # linkage group odp's HMM search assigned it and the color the paper draws that
-# group in. A run of odp over any two genomes writes the same files under
-# odp/step2-figures/synteny_coloredby_BCnS_LGs/ (synteny_analysis/ in the older
-# odp that made the deposit), so the JBrowse half below works unchanged on your
-# own species.
+# group in. A run of odp over any two genomes writes the same columns under
+# odp/step2-figures/synteny_coloredby_BCnSSimakov2022/ (synteny_analysis/ and
+# BCnS_LGs in the older odp that made the deposit), so the JBrowse half below
+# works unchanged on your own species.
 #
 # Requires: python3, samtools, curl, tar, awk, gzip, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
@@ -151,8 +151,6 @@ while read -r a b; do
     "tables/$(table_of "$a" "$b")" -o "blocks/$pair.blocks" --bed-dir "blocks/$pair" \
     --species "$a" "$b" --chrom "$a=$a.chrom" "$b=$b.chrom" \
     --attributes gene_group color break_FET
-  gzip -kf "blocks/$pair.blocks"
-  gzip -kf "blocks/$pair/$a.bed" "blocks/$pair/$b.bed"
 done <<<"$PAIRS"
 
 if [ -n "${JBROWSE_CLI:-}" ]; then
@@ -173,9 +171,8 @@ done <<<"$SPECIES"
 while read -r a b; do
   [ -z "$a" ] && continue
   pair="${a}_${b}"
-  cp "blocks/$pair.blocks.gz" "$APP/$pair.blocks.gz"
-  cp "blocks/$pair/$a.bed.gz" "$APP/$pair.$a.bed.gz"
-  cp "blocks/$pair/$b.bed.gz" "$APP/$pair.$b.bed.gz"
+  cp "blocks/$pair.blocks" "$APP/"
+  cp -r "blocks/$pair" "$APP/"
   python3 - "$a" "$b" > "$pair.track.json" <<'PY'
 import json, sys
 a, b = sys.argv[1:3]
@@ -187,9 +184,9 @@ print(json.dumps({
     'assemblyNames': [a, b],
     'adapter': {
         'type': 'MCScanBlocksAdapter',
-        'uri': f'{pair}.blocks.gz',
+        'uri': f'{pair}.blocks',
         'blockAssemblies': [a, b],
-        'bedLocations': [f'{pair}.{a}.bed.gz', f'{pair}.{b}.bed.gz'],
+        'bedLocations': [f'{pair}/{a}.bed', f'{pair}/{b}.bed'],
         # the label column and the color odp put beside it, what
         # Color by -> gene_group paints, and the pair's test, what the
         # stack's opacity reads

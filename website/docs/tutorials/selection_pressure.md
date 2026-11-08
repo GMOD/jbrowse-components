@@ -60,10 +60,11 @@ npm install -g @jbrowse/cli@next
 Each genome is an NCBI RefSeq assembly, and the script fetches its GFF3, CDS
 FASTA and sequence report together with `datasets download genome accession`.
 
-The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing the human-rhesus ortholog table and its rates_ on a GFF3 and a
-CDS FASTA per genome of your own. The script fetches everything itself.
+You don't need these files to follow the session, which reads a hosted copy. The
+track configs name local files that the [build script](#reproduce-it-end-to-end)
+writes, so run it first (it needs about 3 GB of memory), or follow
+[the same steps](#producing-the-human-rhesus-ortholog-table-and-its-rates) on a
+GFF3 and a CDS FASTA per genome of your own.
 
 | What it is                   | File                                                                               |
 | ---------------------------- | ---------------------------------------------------------------------------------- |
@@ -94,8 +95,10 @@ from the GFF3, one transcript per gene on the assembled chromosomes, and the
 adapter reads the same file. jcvi writes one from any GFF3:
 
 ```bash
-# --primary_only keeps one mRNA per gene
-python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
+# --primary_only keeps one mRNA per gene; --key=ID names it by its GFF3 ID,
+# which every GFF3 has and which gffread -x names its CDS by, so the BED, the
+# proteome and the CDS share ids
+python -m jcvi.formats.gff bed --type=mRNA --key=ID \
   --primary_only genes.gff3 -o genes.bed
 ```
 
@@ -244,7 +247,7 @@ Two view settings matter for a view this sparse:
 
 The session below opens, from the hosted copy, the stretch around lysozyme
 (_LYZ_) on human chromosome 12 where gene order matches rhesus, colored by
-dN/dS. In your own build, pick **Color by value → dN/dS**.
+dN/dS. The build script's default session is the same view.
 
 ```json session config=https://jbrowse.org/demos/primate_selection/config.json
 {

@@ -151,8 +151,8 @@ def reading_order(genes):
 def symbol_rows(copies, pick, max_copies, counts=None):
     """The table rows one symbol contributes, given each column's copies."""
     if counts is not None:
-        counts['families'] += sum(1 for c in copies if len(c) > max_copies)
-    copies = [[] if len(c) > max_copies else c for c in copies]
+        counts['families'] += sum(1 for c in copies if max_copies and len(c) > max_copies)
+    copies = [[] if max_copies and len(c) > max_copies else c for c in copies]
     if pick == 'first':
         copies = [c[:1] for c in copies]
     elif pick == 'single':
@@ -223,7 +223,7 @@ def main(argv):
     p.add_argument('--pick', choices=['expand', 'single', 'first'], default='expand',
                    help='a symbol with several copies in a column: expand emits a row per copy, single empties the cell, first takes the first copy')
     p.add_argument('--max-copies', type=int, default=4, metavar='N',
-                   help='a column offering more than N copies of a symbol is a gene family, and its cell is emptied')
+                   help='a column offering more than N copies of a symbol is a gene family, and its cell is emptied; 0 keeps every cell')
     a = p.parse_args(argv)
 
     paths = OrderedDict()

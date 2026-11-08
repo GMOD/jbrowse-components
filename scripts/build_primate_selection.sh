@@ -408,12 +408,12 @@ cat > session.json <<'JSON'
       "views": [
         {
           "assembly": "human",
-          "loc": "12:68,790,000-69,880,000",
+          "loc": "12:67,835,000-70,835,000",
           "tracks": ["human_genes"]
         },
         {
           "assembly": "rhesus",
-          "loc": "11:75,927,000-77,010,000",
+          "loc": "11:74,978,000-77,959,000",
           "tracks": ["rhesus_genes"]
         }
       ],

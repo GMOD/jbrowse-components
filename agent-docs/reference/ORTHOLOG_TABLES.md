@@ -38,6 +38,24 @@ copy number: one region against two or three copies, which the OrthoFinder
 tutorial is built on. Subgenome origin needs sequence identity (a PAF track),
 not a gene-id table.
 
+**Between two multi-copy genomes, `--pick expand` pairs copies arbitrarily.**
+`orthogroups_to_blocks.py` index-pairs a cell's copies (row i takes copy
+i mod n), which is every link where one side has one gene and OrthoFinder's
+listing order where both have several. On the hosted wheat table (2026-11-08)
+the share of links joining different subgenome letters was:
+
+| Band         | Cross-subgenome links |
+| ------------ | --------------------- |
+| wheat–durum  | 48% of 69,812         |
+| wheat–emmer  | 44% of 77,092         |
+| durum–emmer  | 20% of 52,756         |
+
+That is near chance for two against two, so those bands of the build script's
+five-row default session are noise at the subgenome level. Tauschii and urartu
+are single-copy against wheat, so the page's figures are unaffected. The
+`wheat_blocks` track (MCScanX_h over `--homology` pairs) picks the collinear
+copy by gene order and is the right evidence for a band between two polyploids.
+
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out to
 every pair anchored on the queried assembly, one `mate`-carrying feature per
 (anchor gene × mate assembly). `MultiWaySyntenyDisplay` regroups per anchor, so

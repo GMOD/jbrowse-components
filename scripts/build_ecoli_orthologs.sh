@@ -297,7 +297,6 @@ config = {
             'mcscanBlocksLocation': uri('ecoli.blocks.gz'),
             'blockAssemblies': order,
             'bedLocations': [uri(f'{n}.bed.gz') for n in order],
-            'assemblyNames': order,
         },
         # Coloring a gene by its ortholog group runs one color down the whole
         # stack for a conserved gene and breaks the column where a lane lacks

@@ -345,19 +345,12 @@ fi
 # the largest ratios in this table came off dS values near 0.002. Counting is
 # the right unit because dS is per site, so the same rate means very different
 # evidence in a short gene and a long one.
-if [ ! -f oat.kaks.tsv ]; then
-  python3 "$SCRIPT_DIR/kaks_from_pairs.py" oat.pairs.tsv oat.cds.fa.gz \
-    --key record --min-syn-subs 3 -o oat.kaks.tsv.part
-  mv oat.kaks.tsv.part oat.kaks.tsv
-fi
-
-# The pair table the adapter loads: the two transcript ids, then dN, dS, the
-# synonymous substitution count and the Fisher p.
-# A pair with no measurement is dropped rather than written, since it would
-# otherwise draw with no color, indistinguishable from one whose ratio happens
-# to sit at the ramp's bottom.
+#
+# The output is the pair table the adapter loads: the two transcript ids, then
+# dN, dS, the synonymous substitution count and the Fisher p.
 if [ ! -f oat.homoeologs.blocks ]; then
-  cp oat.kaks.tsv oat.homoeologs.blocks.part
+  python3 "$SCRIPT_DIR/kaks_from_pairs.py" oat.pairs.tsv oat.cds.fa.gz \
+    --key record --min-syn-subs 3 -o oat.homoeologs.blocks.part
   mv oat.homoeologs.blocks.part oat.homoeologs.blocks
 fi
 
@@ -441,7 +434,6 @@ cat > track.json <<'JSON'
     "uri": "oat.homoeologs.blocks.gz",
     "blockAssemblies": ["oat", "oat"],
     "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
-    "assemblyNames": ["oat", "oat"],
     "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }

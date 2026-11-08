@@ -3,7 +3,7 @@ import fs from 'fs'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { codeCell, markdownTable, tableCell } from './markdown.ts'
 
-// The three species sets `build_orthofinder_synteny.sh` knows, and the two cuts
+// The species sets `build_orthofinder_synteny.sh` knows, and the two cuts
 // it makes, rendered into the OrthoFinder tutorial from the script itself.
 //
 // The page used to state all of this in prose: "the script keeps 30 sequences

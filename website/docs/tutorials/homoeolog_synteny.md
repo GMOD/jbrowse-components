@@ -121,8 +121,9 @@ Two flags matter here:
 - `--no_strip_names` keeps the ids byte-identical to the BED the adapter joins
   on
 
-The alignment is the long step. Run separately as above, DIAMOND uses its
-default sensitivity, which finds homoeologs this recent, and jcvi picks up
+The alignment is the long step: budget over an hour on every core, since the
+whole proteome is aligned against itself. Run separately as above, DIAMOND uses
+its default sensitivity, which finds homoeologs this recent, and jcvi picks up
 `oat.oat.last` by name and skips its own alignment.
 
 Three choices decide which pairs survive:
@@ -163,7 +164,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
-  --key record --min-syn-subs 3 -o oat.kaks.tsv
+  --key record --min-syn-subs 3 -o oat.homoeologs.blocks
 ```
 
 `--key record` reads the CDS by transcript id, and `--min-syn-subs` drops pairs
@@ -173,12 +174,12 @@ method and the filters.
 
 ## Loading the homoeolog table as a dotplot track
 
-`oat.kaks.tsv` lists gene pairs, then dN, dS, the synonymous substitution count
-and a Fisher exact p, which is the `.blocks` layout
+`oat.homoeologs.blocks` lists gene pairs, then dN, dS, the synonymous
+substitution count and a Fisher exact p, which is the `.blocks` layout
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads. The script
-copies it to `oat.homoeologs.blocks` and gzips that and `oat.bed` for the track.
-A self-comparison names one assembly twice: in `blockAssemblies`, in the track's
-`assemblyNames` and in both entries of `bedLocations`:
+gzips it and `oat.bed` for the track. A self-comparison names one assembly
+twice: in `blockAssemblies`, in the track's `assemblyNames` and in both entries
+of `bedLocations`:
 
 ```json addtrack
 {

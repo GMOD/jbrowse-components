@@ -359,7 +359,9 @@ Each strain then takes a gene track like the chimpanzee one above, and the
 `SyntenyTrack` lists strains where the primate track lists primates. The
 O-antigen cluster between _galF_ and _gnd_ holds the genes that build a strain's
 surface sugar chain, a different set in each serotype. The session opens it on
-the hosted config, which has every strain, with `height` set to fit the stack:
+the hosted config, which has every strain, with `height` set to fit the stack
+and the ribbons grey, since their strand color here mostly shows which way each
+genome was deposited:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -374,7 +376,10 @@ the hosted config, which has every strain, with `height` set to fit the stack:
           {
             "trackId": "ecoli_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "height": 1500
+            "height": 1500,
+            "ribbons": {
+              "encoding": { "color": { "value": "rgb(130,130,130)" } }
+            }
           }
         ]
       }

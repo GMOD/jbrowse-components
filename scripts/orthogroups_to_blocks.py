@@ -14,11 +14,14 @@ gene, so a cell with two genes has no single correct answer. Taking the first
 one listed picks by whatever order OrthoFinder wrote and hides the duplication,
 which in a polyploid is the thing worth seeing: one rice gene against two maize
 copies should draw two ribbons. So `--pick expand` (the default) emits one row
-per copy, and every direct link (column 0 to another column) is written. Rows
-are index-paired across columns rather than multiplied out, so an orthogroup
-costs rows equal to its largest cell, not their product. A cell with more than
-`--max-copies` genes is a gene family rather than a duplication and is left
-empty.
+per copy. Rows are index-paired across columns rather than multiplied out, so
+an orthogroup costs rows equal to its largest cell, not their product. A pair
+with one gene on either side gets every link; between two duplicated columns
+(wheat's A, B and D against durum's A and B) the copies pair by OrthoFinder's
+listing order, which says nothing about which copies correspond, so about half
+those links join different subgenomes. `--homology` and MCScanX_h pick the
+collinear copy instead. A cell with more than `--max-copies` genes is a gene
+family rather than a duplication and is left empty; 0 keeps every cell.
 
 Each expanded row carries the un-duplicated columns' genes too, since the later
 copies would otherwise have nothing to link to, so a pair not touching the
@@ -117,7 +120,7 @@ def cell_genes(cell, known, max_copies):
     genes = [g.strip() for g in cell.split(",") if g.strip()]
     if known is not None:
         genes = [known[g] for g in genes if g in known]
-    return ([], True) if len(genes) > max_copies else (genes, False)
+    return ([], True) if max_copies and len(genes) > max_copies else (genes, False)
 
 
 def orthogroup_rows(cells, pick, max_copies, beds, counts=None):
@@ -218,13 +221,18 @@ def main():
                         "FILE, as MCScanX_h input")
     p.add_argument("--max-copies", type=int, default=4, metavar="N",
                    help="a cell with more genes than this is a gene family, "
-                        "and contributes nothing")
+                        "and contributes nothing; 0 keeps every cell")
     args = p.parse_args()
 
     assemblies = parse_kv(args.assembly, "assembly")
     bed_files = parse_kv(args.bed, "bed")
     with opener(args.orthogroups) as fh:
-        columns = column_names(fh.readline().rstrip("\n").split("\t")[1:], assemblies)
+        header = fh.readline().rstrip("\n").split("\t")[1:]
+        known = set(column_names(header, {})) | {h.strip() for h in header}
+        for name in assemblies:
+            if name not in known:
+                sys.exit(f"--assembly {name!r} is not one of the columns {sorted(known)}")
+        columns = column_names(header, assemblies)
         for name in bed_files:
             if name not in columns:
                 sys.exit(f"--bed {name!r} is not one of the columns {columns}")

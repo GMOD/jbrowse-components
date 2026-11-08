@@ -66,13 +66,13 @@ npm install -g @jbrowse/cli@next
 ## The data
 
 Each genome is an NCBI assembly, and the script fetches its protein FASTA, GFF3
-and sequence report together with `datasets download genome accession`.
+and sequence report, which names the chromosomes, together with
+`datasets download genome accession`.
 
-The page's commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. _Running
-OrthoFinder and building the blocks table_ takes a proteome per genome of your
-own.
+You don't need these files to follow the sessions, which read hosted copies. Run
+the [build script](#reproduce-it-end-to-end) first for the local files the track
+configs name, or follow the same commands on
+[your own genomes](#your-own-genomes).
 
 | What it is                                                               | File                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -121,8 +121,7 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
 ```
 
 `blockAssemblies` must match the column order the script prints.
-`--assembly COLUMN=NAME` renames a column; a misspelled column there renames
-nothing and raises no error, while a typo in `--bed` is an error:
+`--assembly COLUMN=NAME` renames a column:
 
 ```bash
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
@@ -251,7 +250,10 @@ The same view as a session over the hosted wheat config:
           }
         ],
         "tracks": ["wheat_orthogroups"],
-        "encoding": { "color": "query", "opacity": 0.15 }
+        "encoding": { "color": "query", "opacity": 0.15 },
+        "mark": { "interpolate": "linear" },
+        "levelHeights": [430],
+        "collapseEmptyRows": true
       }
     ]
   }
@@ -433,9 +435,14 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o melanogaster.blocks \
   --homology melanogaster:simulans=x.homology
 ```
 
-`MCScanX_h` reads those pairs and `x.gff`, four columns per gene (chromosome,
-gene id, start, end) with each chromosome name prefixed by a two-letter code for
-its genome:
+`MCScanX_h` also reads `x.gff`, four columns per gene (chromosome, gene id,
+start, end) with each chromosome name prefixed by a two-letter code for its
+genome, written from the two BEDs:
+
+```bash
+awk -v OFS='\t' '{ print "aa" $1, $4, $2 + 1, $3 }' melanogaster.bed > x.gff
+awk -v OFS='\t' '{ print "bb" $1, $4, $2 + 1, $3 }' simulans.bed >> x.gff
+```
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -546,13 +553,13 @@ orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 ```
 
 For the five flies that took 15 minutes on 24 threads. The demos ran OrthoFinder
-3.2 for four sets and the 2.5.5 container for wheat: 3.2 split wheat's homoeolog
-families into about 71,000 orthogroups where 2.5.5 kept about 45,000, which cut
-the tauschii-wheat gene pairs by 40% and the collinear blocks by half. The other
-sets came out alike under either. The plugin finds the clicked gene's row in the
-alignment by translating its transcript, so the top genome (`MSA_GENOMES` names
-others) is downloaded and cut to the sequences in its chrom.sizes, and becomes
-the assembly in their place:
+3.2 for four sets and the 2.5.5 container for wheat, since 3.2 splits wheat's
+homoeolog families into many more orthogroups (the build script's header has the
+counts).
+
+The plugin finds the clicked gene's row in the alignment by translating its
+transcript, so the top genome (`MSA_GENOMES` names others) is downloaded and cut
+to the sequences in its chrom.sizes, and becomes the assembly in their place:
 
 ```json addassembly
 {
@@ -655,9 +662,6 @@ Two environment variables set the cuts:
 ```bash
 MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 ```
-
-The NCBI `datasets` CLI names chromosomes that a GFF3 gives as INSDC accessions,
-each from its [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
 ## Your own genomes
 

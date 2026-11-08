@@ -223,8 +223,8 @@ each.
 `attributeColumns` exposes the last three columns of the `.blocks` file:
 
 - `gene_group` becomes a color-by mode named after it.
-- `color` holds the palette odp chose for each group, so JBrowse leaves it out
-  of the color-by modes.
+- `color` holds the color odp chose for each group, which that mode paints the
+  group with, so it is not a mode of its own.
 - `break_FET` is odp's test of the row's chromosome pair, which sets opacity in
   the stack below.
 
@@ -236,9 +236,9 @@ each.
   "assemblyNames": ["RES", "EMU"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "uri": "RES_EMU.blocks.gz",
+    "uri": "RES_EMU.blocks",
     "blockAssemblies": ["RES", "EMU"],
-    "bedLocations": ["RES_EMU.RES.bed.gz", "RES_EMU.EMU.bed.gz"],
+    "bedLocations": ["RES_EMU/RES.bed", "RES_EMU/EMU.bed"],
     "attributeColumns": ["gene_group", "color", "break_FET"]
   }
 }
@@ -257,8 +257,8 @@ We'll open the jellyfish-against-sponge table as a dotplot, then:
   turns one block per group into a diagonal.
 
 As a session, the same dotplot with the sponge's unplaced scaffolds left off its
-axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the
-session's `encoding.color` is a color scale, a `field` mapped to colors:
+axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` maps the `gene_group` field to colors:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {

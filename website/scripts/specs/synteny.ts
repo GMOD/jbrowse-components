@@ -1592,7 +1592,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The rhesus window is the human span scaled by 0.994, the assemblies' local
   // length ratio, on LYZ's partner; otherwise the ribbons shear. The
-  // 0.2 default alpha washes out a dozen ribbons.
+  // the default alpha washes out a dozen ribbons.
   {
     mode: 'url',
     name: 'selection_pressure/lysozyme',
@@ -1931,12 +1931,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             tracks: ['grasses_orthogroups'],
             // 'target' colors the bottom band by maize chromosome; 'reference'
-            // paints one color when each row holds one or two chromosomes
+            // paints one color when each row holds one or two chromosomes. At
+            // opacity 1 a crossing shows only the last ribbon; at 0.35 the top
+            // band washes out
             encoding: { color: 'target', opacity: 0.65 },
             // curves knot where the two fans meet on maize 5's side
             mark: { interpolate: 'linear' },
-            // at 1 a crossing shows only the last ribbon; at 0.35 the top band
-            // washes out
             // the bottom band's crossings are unavoidable and need the room
             levelHeights: [190, 500],
           },
@@ -2033,14 +2033,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             tracks: [['wheat_orthogroups']],
             // 'reference' paints the whole figure one color: every link lands
-            // on 4A
+            // on 4A. At opacity 0.15 the two translocated bundles read as smoke
             encoding: { color: 'query', opacity: 0.5 },
             // the order along 4A is the finding; diagonalizing rewrites it
             autoDiagonalize: false,
             // no coord.ratio: a shared bp/px draws 4A a sixth of the frame wide
             collapseEmptyRows: true,
             levelHeights: [430],
-            // at 0.15 the two translocated bundles read as smoke
             mark: { interpolate: 'linear' },
           },
         ],
