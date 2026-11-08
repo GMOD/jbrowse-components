@@ -238,3 +238,5 @@ shaders are [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md).
 | Tests and their harnesses | [TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md) |
 | Rebasing, landing, pushing or removing a worktree | [WORKTREES.md](reference/WORKTREES.md) |
 | Landing a stale branch, calling something uncovered, or a rename/removal sweep | [VERIFYING_CLAIMS.md](reference/VERIFYING_CLAIMS.md) |
+| Seeing or probing a change in the running app | [DRIVING_THE_APP.md](reference/DRIVING_THE_APP.md), then [FIGURE_CAPTURE.md](reference/FIGURE_CAPTURE.md) or [VIDEO_TOURS.md](reference/VIDEO_TOURS.md) |
+| Measuring performance or bytes | [BENCHMARKING.md](reference/BENCHMARKING.md) |

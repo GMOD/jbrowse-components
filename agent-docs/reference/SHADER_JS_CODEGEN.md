@@ -211,3 +211,21 @@ The trigger is passing an element to a **cross-module function**
 help, `[ForceInline]` on the callee emits invalid WGSL, and **GLSL compiles the
 same source fine**, so everything is green until the WebGPU backend.
 
+
+## Probing one function in real float32
+
+A JS model with `Math.fround` at every step (`glyphEdgeAlpha.test.ts`) answers
+for the model, not the file. To ask whether float32 loses something on chosen
+inputs, compile the real `.slang` the way `packages/shader-tools/src/check-oracle.ts`
+does: blank its `module x;` line, append a scalar wrapper and a
+`[shader("compute")] [numthreads(1,1,1)]` entry that calls it (Slang drops
+anything unreached; `-target cpp` segfaults on a vertex entry and errors on a
+fragment one), run `.cache/slangc/bin/slangc <probe>.slang -target cpp -entry
+<name> -I packages/render-core/src/shaders`, strip `^#line`, resolve the mangled
+name from the C++, append a `main` reading your tuples, and build with
+`c++ -O0 -std=c++17`. Chasing a speckled link stroke, this turned a modelled
+3.9e-4 px into a compiled 7.6e-5 px over 12,431 samples.
+
+In a file carrying `//! js-export`, `pnpm check-shader-oracle` already sweeps
+every other function with an emittable scalar signature, exported or not,
+unless `//! oracle-skip` names it; a `float2` parameter keeps a function out.

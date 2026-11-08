@@ -216,3 +216,11 @@ eight figures, a blinded ideator given a capability sheet, a landscape survey.
 - Capture with `TMPDIR=/var/tmp/<dir>`: `/tmp` is a 16 GB tmpfs. Screen outputs
   under `/var/tmp/` (`hero2/`, `hero-figures/`, `proto-shots/`, `sge-screen/`,
   `r01-*/`) are deleted after 30 days untouched.
+- A palette previews on all three views before a release: msaview's domain
+  colors feed the genome domain track and protein3d through one color object,
+  so an `encodings: [{ channel: 'featureFill', field: 'name', domain, range }]`
+  on the MsaView snapshot in a temporary spec copy recolors all three against
+  the hosted plugins.
+- A protein3d capture with a hover can keep Mol*'s default element colors
+  (lime carbons) around the hovered residue; re-shoot before reading it as a
+  palette effect.

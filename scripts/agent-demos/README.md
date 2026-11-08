@@ -28,7 +28,12 @@ awaiting a verdict; delete it when the clip lands.
 
 `recordDemoTui.mjs` writes `clip.mp4` and `clip.jpg` with the static stretches
 collapsed; `encode.mjs` / `encodeBrowser.mjs` do that for the other harnesses.
-`readTranscript.mjs <outdir>/transcript.json` prints what each turn did. A
+`readTranscript.mjs <outdir>/transcript.json` prints what each turn did, from
+the harness summary, which drops tool results. Claude Code keeps each take's
+whole session, tool results included, as
+`~/.claude/projects/<take cwd with / as ->/<session>.jsonl`: read those for the
+stumble before proposing an agent-facing change to `jb`, the instructions or the
+docs (`claude plugin eval` mocks MCP servers, so it cannot grade them). A
 finished clip reaches the media store as in `website/CLAUDE.md` § Figure and
 media store.
 

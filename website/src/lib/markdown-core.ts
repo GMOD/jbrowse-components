@@ -39,7 +39,10 @@ export interface RenderedMarkdown {
 // The whole pipeline as a function of its inputs — no astro:content and no
 // astro:config/client anywhere in the module graph below this file, which is
 // what lets markdown-worker.ts run it off the main thread. src/lib/markdown.ts
-// is the binding that supplies both from Astro.
+// is the binding that supplies both from Astro. It also lets a plain node
+// script render every website/docs page (ids from doc-slug.ts's docId, again
+// with `{ feed: true }`) in a base and a branch checkout and diff the HTML, in
+// about 40 s with no astro build.
 export function createRenderMarkdown({
   baseUrl,
   docs,

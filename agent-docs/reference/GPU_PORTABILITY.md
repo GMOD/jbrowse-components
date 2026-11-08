@@ -76,6 +76,16 @@ headless Chrome also needs `--enable-unsafe-swiftshader --use-angle=swiftshader`
 Read `globalThis.__jbrowseRenderCoreGpuDeviceV1.builtRenderer` off the page
 before calling a capture a GPU check.
 
+**SwiftShader truncates huge quads.** A 10-50 Mbp dotplot segment at 50 px/bp
+(a quad ~5e8 px long) drew as a ~10 px stub under SwiftShader both before and
+after a precision fix, while headless Chrome on the real GPU
+(`--use-gl=angle --use-angle=gl-egl --ignore-gpu-blocklist`) drew the whole
+line, within 0.05 px of Canvas2D. That is the rasterizer, not float32: judge a
+shader precision fix on the real GPU against Canvas2D at the same view, and
+answer the arithmetic question with the compiled shader
+([SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) §"Probing one function in real
+float32").
+
 **A pin always wins, because two consumers render on SwiftShader:**
 
 - **The cross-backend gate.** Headless Chrome is SwiftShader with or without

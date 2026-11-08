@@ -46,6 +46,13 @@ costs more than the removals it catches. Only `preservedExports` survives.
 once the plugin releases without the read. `pnpm check-published-plugins --write`
 refreshes the list from the store, so a plugin published since the last refresh
 is not covered, and neither is a UMD bundle or a plugin outside the store.
+For those, grep the bundle itself: `JBrowseExports["key"]` per module,
+`getPlugin("X").exports.Y` per plugin export, and
+`grep -oE '\.jbrequire\("[^"]+"\)|\.lib\["[^"]+"\]'` for jbrequire. An
+extension point's name greps the same way. A built plugin's source map
+`sources`, filtered to `node_modules/@jbrowse/`, lists the workspace files it
+carries as second copies (ADR-128's 84 files), so a core-internal token in a
+bundle is often that copy, not a host reach.
 
 **The members an external display reads are pinned by hand.** A name check
 cannot see `display.regionPayloads`, so

@@ -65,6 +65,10 @@ function leaves(tree: IDependencyTree, out: Set<string>) {
  * names (`Model.prop`), computeds flattened to what they read. This is the
  * dependency set MobX rebuilt on the reaction's last run, so it answers, for
  * that state, the question no pure function can: which reads are tracked.
+ *
+ * A new `Session.x?` leaf is an `'x' in node` probe run inside the reaction,
+ * usually a session guard (`isSessionServices`) meeting a cold parent-walk
+ * cache. To name its caller, `jest.mock` the guard to log `new Error().stack`.
  */
 export function reactionDependencies(self: object, name: string) {
   const disposer = registry.get(self)?.get(name)

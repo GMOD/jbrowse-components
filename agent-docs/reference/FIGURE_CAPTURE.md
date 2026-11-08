@@ -52,6 +52,56 @@ Each of these produces a plausible figure rather than an error:
 - `--cover` proves every type still paints, never that a figure is current.
   After rebuilding hosted data, `python3 website/scripts/report-stale-figures.py`
   lists the figures shot before a file they draw changed.
+- **A staleness entry can close without naming a figure**, when a bulk publish
+  rewrites `figures.lock` wholesale. Before spending the pipeline on one,
+  compare three dates: the entry's last commit, the figure's lock line
+  (`git log -1 -S<hash> -- figures.lock`), and its `reviewedAt` in
+  `website/scripts/screenshot-review.json`. A re-shoot newer than the entry
+  leaves a look, not a capture.
+- **A renamed UI string leaves stale figures no grep finds**: a figure shows a
+  menu row because its capture left the menu open. Every figure is shot at
+  `DEVICE_SCALE_FACTOR` 2 against one stylesheet, so template-match the old
+  label: binarise its crop (from a store copy still carrying it) and each
+  figure at mid-grey, cross-correlate the ±1 masks (`scipy.signal.fftconvolve`)
+  and score at ~97% of the template's pixel count, not 100%, since sub-pixel
+  glyph placement moves a few pixels. Sabotage the scanner before believing a
+  zero. For tours, grep `website/static/media/**/*.vtt`.
+- **Regenerating that figure needs `--filter`**, which is what sets
+  `forceCommit`: an unfiltered sweep's 0.5% diff gate is wider than one word in
+  a 3000 px figure. A `mode: 'compose'` figure recomposes from its parts, so
+  filter on the parts.
+- **Recapture after any fix that changes the screen**, and read `git status`
+  after a green suite: a golden shot mid-fix keeps the bug as the reference,
+  and one a run keeps rewriting no longer matches intent.
+
+### Reading a reshoot
+
+- **Review the PNG the run wrote**, never `website/static/img/` in the primary,
+  which holds the last published copy, and never write or check a caption
+  against a figure whose Read came back "[media removed]". Fetch the figure it replaced from the
+  store by its `figures.lock` hash ([HOSTING.md](HOSTING.md) has the URL
+  scheme; `git show <ref>:figures.lock` reaches further back) and read the two
+  side by side. On a shared primary install landed figures by hash rather
+  than `figures:pull --force`, which discards other sessions' unpushed ones.
+- **A run's `updated` list is relative to that run's disk**, not to the store,
+  so a figure an earlier run already wrote there drops off it. Build a publish
+  list from every name shot and let `figures:push --filter … --exact` skip the
+  unchanged bytes.
+- **A whole view captured as its title bar over white**, with the model loaded
+  and no page error, is usually a flaky capture. Retake once and record
+  `page.on('console')` as well as `pageerror`; only a blank that repeats with
+  an error is a bug.
+- **To prove a setting paints nothing**, capture one spec with and without it
+  against one build and compare `sha256sum`s; an identical hash is the whole
+  argument. Put each arm in its own session or trackId, since a display config
+  slot lives on the shared track config.
+- **A `type` step aimed at a MUI Autocomplete by its label text types nowhere**
+  and the run reports ✓ over an empty field: the text lookup takes the smallest
+  element carrying the text, which takes no focus. Give the input a testid
+  through `slotProps.htmlInput` and type by selector (`group-by-attribute` in
+  `videos/ui.ts`); `press Escape` folds the suggestion list without closing a
+  dialog. A `hover: { text }` on a canvas feature captures a blank canvas the
+  same way; anchor it with `track` + `locus`.
 
 ### Verifying
 
@@ -162,3 +212,15 @@ the load fell. `openVolvoxGenome` logs whether `window.JBrowseRootModel` and
   indexes through the `indexFasta` IPC handler, and that step hangs silently. The
   figures send `volvox.2bit`, which needs no index; `openVolvoxGenome` gates on the
   assembly manager.
+- **`sendKeys` appends to what the app already put in a field.** `UrlChooser`
+  is uncontrolled, so once add-track filled a sibling index itself the typed
+  URL concatenated onto it and the track 404'd every run. `clearInput` first,
+  or stop typing what the app now fills. An input the app swaps as soon as the
+  text classifies can unmount mid-word (`AddGenomePane` once cut `.fa.gz` to
+  `.fa`).
+- **In puppeteer, a triple-click does not replace a controlled MUI
+  `TextField`'s value**: the re-render drops the selection and the next key
+  inserts mid-string. Click, press End, then Backspace per character.
+- A track that cannot load says so in the view and nowhere else;
+  `assertNoErrorBanners` (`test/harness.ts`) is the backstop, and a doubled URL
+  in a 404 is the tell.

@@ -74,3 +74,27 @@ see.
   the run disagree.
 - Keep tours on light tracks: data volume, not display type, starves
   swiftshader. `--headed` uses the real GPU.
+- A `type` into an Autocomplete or a `hover: { text }` on a canvas can report
+  success and act on nothing: [FIGURE_CAPTURE.md](FIGURE_CAPTURE.md)
+  §"Reading a reshoot".
+- **A route that leaves JBrowse gets a harness step, not a UX change**: the
+  JBrowseMSA Gene Explorer's new tab is filmed with an `opensTab` step. A tour
+  is evidence about the product, so changing the product to suit it removes
+  the evidence.
+
+## Filming the hosted release
+
+A spec whose `url` is absolute (`RELEASED_CODE_BASE`) drives the hosted
+release, which publishes no `data-display-*` attributes, so every display gate
+in `waitForReady` passes with nothing to read, and its layout can differ from the local
+build (`videos/proteins.ts` records one case).
+
+- Gate a release tour on a positive `readyText`, the thing the tour acts on
+  drawn, never an absence like `waitForText 'Loading' hidden`, which an app
+  that has not started satisfies.
+- Prefer a relative `url` with the remote config
+  (`sessionSpec(UCSC_HG38_CONFIG, …)`): the hosted config's plugins and menus
+  on the local app, which publishes its readiness attributes. Use the absolute
+  url only when the release's own behaviour is the subject.
+- Tours are filmed on demand, so a hosted-target tour can sit broken unseen;
+  film a suspect at the old parameter before believing a change caused it.
