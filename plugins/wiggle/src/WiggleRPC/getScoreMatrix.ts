@@ -78,7 +78,15 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const { sources, regions, bpPerPx, yField = 'score', scale, signal } = args
+  const {
+    sources,
+    regions,
+    bpPerPx,
+    yField = 'score',
+    scale,
+    signal,
+    statusCallback,
+  } = args
   const field = summaryFieldOf(yField)
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
@@ -96,9 +104,14 @@ export async function getScoreMatrix({
   }
 
   const valuesBySource = new Map(
-    (await fetchSourceRaws(dataAdapter, regions, args, pluginManager.jexl)).map(
-      p => [p.source, p.raws],
-    ),
+    (
+      await fetchSourceRaws(
+        dataAdapter,
+        regions,
+        { bpPerPx, sources, yField, signal, statusCallback },
+        pluginManager.jexl,
+      )
+    ).map(p => [p.source, p.raws]),
   )
 
   // One sums and one counts array reused across sources, not one per row: each

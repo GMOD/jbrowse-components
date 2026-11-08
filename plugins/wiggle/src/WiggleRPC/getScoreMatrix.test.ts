@@ -395,4 +395,31 @@ describe('the clustering run', () => {
     })
     expect(Array.from(rows.get('a')!)).toEqual([0, 0.5, 1, 0, 0])
   })
+
+  // bbi reads `opts.scale` as its zoom when it gets no `basesPerSpan`.
+  it('hands the adapter fetch options, not the RPC args', async () => {
+    const getFeaturesArray = jest.fn().mockResolvedValue([])
+    jest
+      .mocked(getFeatureAdapterOrThrow)
+      .mockResolvedValue({ getFeaturesArray } as never)
+    await getScoreMatrix({
+      pluginManager: pm,
+      args: {
+        ...callArgs({
+          regions: [region('chr1', 0, 50)],
+          sources: ['a'],
+          bpPerPx: 10,
+        }),
+        scale: {
+          scaleType: SCALE_TYPE_LOG,
+          domain: [1, 100],
+          symlogConstant: 1,
+        },
+      },
+    })
+    const [[, opts]] = getFeaturesArray.mock.calls
+    expect(opts).toMatchObject({ bpPerPx: 10, yField: 'score' })
+    expect(opts).not.toHaveProperty('scale')
+    expect(opts).not.toHaveProperty('sessionId')
+  })
 })
