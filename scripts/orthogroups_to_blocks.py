@@ -19,9 +19,9 @@ an orthogroup costs rows equal to its largest cell, not their product. A pair
 with one gene on either side gets every link; between two duplicated columns
 (wheat's A, B and D against durum's A and B) the copies pair by OrthoFinder's
 listing order, which says nothing about which copies correspond, so about half
-those links join different subgenomes. `--homology` and MCScanX_h pick the
-collinear copy instead. A cell with more than `--max-copies` genes is a gene
-family rather than a duplication and is left empty; 0 keeps every cell.
+those links join different subgenomes. A cell with more than `--max-copies`
+genes is a gene family rather than a duplication and is left empty; 0 keeps
+every cell.
 
 Each expanded row carries the un-duplicated columns' genes too, since the later
 copies would otherwise have nothing to link to, so a pair not touching the
@@ -33,9 +33,9 @@ table; `--pick first` is the arbitrary choice, if you want the coverage.
 
 `--homology A:B=FILE` also writes every A-B gene pair an orthogroup holds, the
 product of the two cells rather than the index-paired rows, as MCScanX_h's
-`.homology` input. Pairing copies by OrthoFinder's listing order decides which
-copy is collinear before anything has looked; MCScanX_h decides it from gene
-order.
+`.homology` input. MCScanX_h then chains the pairs that keep their order;
+between two polyploids the homoeologs keep theirs too, so it chains every copy
+rather than picking one.
 
 `--bed NAME=FILE` reports what share of each column's ids the BED resolves and
 drops the rest. OrthoFinder ids come from the protein FASTA headers, so they are

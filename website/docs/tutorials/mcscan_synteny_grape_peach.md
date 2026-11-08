@@ -243,31 +243,9 @@ We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
 
 <Figure caption="Peach and grape with both MCScan tracks: .anchors.simple blocks as wide ribbons, the per-gene .anchors pairs over them. Marks along the top of the band are pairs whose grape gene is on a chromosome not shown." src="/img/mcscan_anchors.png" />
 
-The bars in each panel come from the block track's `LGVSyntenyDisplay`, which
-draws synteny as features in an ordinary linear genome view row. Selecting it by
-name needs the full `displays` array:
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors_simple",
-  "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
-  "adapter": {
-    "type": "MCScanSimpleAnchorsAdapter",
-    "uri": "grape.peach.anchors.simple.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
-  },
-  "displays": [
-    {
-      "type": "LGVSyntenyDisplay",
-      "height": 60
-    }
-  ]
-}
-```
+The bars in each panel are the block track's `LGVSyntenyDisplay`, the display a
+synteny track opens as in a linear genome view, which draws synteny as features
+in an ordinary row.
 
 <Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="MCScan blocks on grape chr9 against peach chrG3. Top: .anchors alone. Bottom: both files on one band." />
 

@@ -30,8 +30,8 @@ done
 # fetched on demand so a bare `curl -O` of this one script still works
 HELPERS=(igf1_site_fst.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$HERE/$h" ] || { curl -fsSL -o "$HERE/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$HERE/$h.part" "$HERE/$h"; }
 done
 
 SHARE=https://kiddlabshare.med.umich.edu/dog10K

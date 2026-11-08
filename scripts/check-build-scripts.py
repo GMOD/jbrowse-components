@@ -1137,6 +1137,22 @@ check("--homology drops a gene family and an unplaced gene as the table does",
 # duplication as a ribbon per copy; taking the first hid the second copy of the
 # ANCHOR too, which left that gene joined to nothing in either direction.
 sy = load("scripts/symbols_to_blocks.py", "symbols_to_blocks")
+# Each converter is curled alone, so the two copies of pick/--max-copies/
+# index-pairing stay two copies; this holds them to the same answer.
+grid = [
+    [["a1"], ["b1", "b2"], ["c1"]],
+    [["a1", "a2"], ["b1", "b2", "b3"], []],
+    [["a1", "a2", "a3"], ["b1"], ["c1", "c2"]],
+    [[], ["b1"], []],
+    [["a1"], [], ["c1", "c2", "c3", "c4", "c5"]],
+]
+check("symbol_rows and orthogroup_rows agree on every pick and --max-copies",
+      [sy.symbol_rows(cells, pick, mc)
+       for cells in grid for pick in ("expand", "first", "single")
+       for mc in (0, 1, 2, 4)],
+      [og.orthogroup_rows([", ".join(c) for c in cells], pick, mc, [None] * 3)
+       for cells in grid for pick in ("expand", "first", "single")
+       for mc in (0, 1, 2, 4)])
 sdup = [["h1"], ["c1a", "c1b"], ["g1"]]
 check("expand emits a row per copy of the symbol",
       sy.symbol_rows(sdup, "expand", 4),
@@ -1524,6 +1540,22 @@ with tempfile.TemporaryDirectory() as d:
     check("an --attributes column the table lacks fails instead of writing '.'",
           (misspelt.returncode != 0, "break_fet" in misspelt.stderr),
           (True, True))
+
+    # The odp build skips a pair whose .blocks exists, so a failed run must
+    # leave none behind, or the re-run loads a blank genome.
+    chrom = os.path.join(d, "B.chrom")
+    with open(chrom, "w") as fh:
+        fh.write("other\tB1\t+\t1\t100\n")
+    dead_dir = os.path.join(d, "dead")
+    dead_out = os.path.join(d, "dead.blocks")
+    dead = subprocess.run(
+        [sys.executable, "scripts/rbh_to_blocks.py", rbh, "-o", dead_out,
+         "--bed-dir", dead_dir, "--species", "A", "B", "--chrom", f"B={chrom}"],
+        capture_output=True, text=True)
+    check("a genome whose ids resolve nowhere fails and writes nothing",
+          (dead.returncode != 0, "B: none of its ids resolve" in dead.stderr,
+           os.path.exists(dead_out), os.path.exists(dead_dir)),
+          (True, True, False, False))
 
 # `[ -f x ] || wget -O x url` takes a download the mirror dropped for a finished
 # one: every re-run skips the truncated file and fails reading it. Download to

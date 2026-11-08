@@ -59,8 +59,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-lct_ld_build}"

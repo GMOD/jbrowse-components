@@ -34,8 +34,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(alu_young_share.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 for tool in bgzip tabix samtools bedGraphToBigWig curl awk python3 node; do

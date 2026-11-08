@@ -286,8 +286,7 @@ primate lysozyme.
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
 divergence time, and its blue ribbon is the control. Click it for the same
-fields at the other end of the ramp: synonymous change accumulates while
-non-synonymous change stays near zero.
+fields at the other end of the ramp.
 
 ## Reproduce it end to end
 

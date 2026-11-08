@@ -78,7 +78,7 @@ configs name, or follow the same commands on
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`vertebrates`**: human, chicken, frog, gar, zebrafish                  | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/), [GCF_016699485.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016699485.2/), [GCF_000004195.4](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000004195.4/), [GCF_000242695.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000242695.1/), [GCF_000002035.6](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000002035.6/) |
 | **`grasses`**: rice, sorghum, maize, brachypodium, setaria               | [GCF_001433935.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_001433935.1/), [GCF_000003195.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000003195.3/), [GCF_902167145.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_902167145.1/), [GCF_000005505.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000005505.3/), [GCF_000263155.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000263155.2/)   |
-| **`wheat`**: tauschii, wheat, durum, emmer, urartu                       | [GCF_002575655.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002575655.3/), [GCF_018294505.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_018294505.1/), [GCA_900231445.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900231445.1/), [GCF_002162155.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002162155.2/), [GCF_003073215.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_003073215.2/)   |
+| **`wheat`**: tauschii, wheat, urartu, durum, emmer                       | [GCF_002575655.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002575655.3/), [GCF_018294505.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_018294505.1/), [GCF_003073215.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_003073215.2/), [GCA_900231445.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900231445.1/), [GCF_002162155.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002162155.2/)   |
 | **`drosophila`**: melanogaster, simulans, yakuba, pseudoobscura, virilis | [GCF_000001215.4](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001215.4/), [GCF_016746395.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746395.2/), [GCF_016746365.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746365.2/), [GCF_009870125.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009870125.1/), [GCF_030788295.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_030788295.1/)   |
 | **`solanaceae`**: tomato, potato, pepper, tobacco, coffee                | [GCF_036512215.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_036512215.1/), [GCA_020169535.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_020169535.1/), [GCF_002878395.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002878395.1/), [GCF_001879085.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_001879085.1/), [GCA_900059795.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900059795.1/)   |
 
@@ -88,9 +88,9 @@ The `wheat` set is the genomes of wheat's polyploid history:
 
 - **Aegilops tauschii**, diploid D donor
 - **bread wheat**, hexaploid, A+B+D
+- **Triticum urartu**, diploid A donor
 - **durum**, domesticated tetraploid, A+B
 - **wild emmer**, durum's wild tetraploid ancestor
-- **Triticum urartu**, diploid A donor
 
 ## Running OrthoFinder and building the blocks table {#producing-the-blocks-table}
 
@@ -141,11 +141,10 @@ treatments:
 | `expand` (default) | two ribbons, one per maize copy                              | the duplication is part of what you are looking at        |
 | `single`           | no ribbon                                                    | you want a strictly one-to-one table                      |
 
-Where both genomes of a band hold copies, such as wheat over durum, `expand`
-pairs them in the order OrthoFinder listed them, which says nothing about which
-copies correspond; the [collinear blocks](#collinear-blocks) pick the copy by
-gene order. A cell over `--max-copies` counts as a family and contributes no row
-(`0` keeps every cell):
+Where both genomes of a band hold copies, `expand` pairs them in the order
+OrthoFinder listed them, so the build script's wheat stack keeps a diploid
+between bread wheat and the tetraploids. A cell over `--max-copies` counts as a
+family and contributes no row (`0` keeps every cell):
 
 ```bash
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
@@ -169,7 +168,7 @@ One track backs each pair of adjacent rows in the stack:
   "type": "SyntenyTrack",
   "trackId": "wheat_orthogroups",
   "name": "Wheat orthogroups (OrthoFinder)",
-  "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
+  "assemblyNames": ["tauschii", "wheat", "urartu", "durum", "emmer"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "uri": "tauschii.blocks.gz",
@@ -434,7 +433,7 @@ pair an orthogroup holds between two flies:
 
 ```bash
 # every melanogaster-simulans pair in an orthogroup, each copy of a duplicated
-# gene included, so MCScanX_h picks the collinear copy by gene order
+# gene included, so MCScanX_h chains whichever copies keep their order
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o melanogaster.blocks \
   --homology melanogaster:simulans=x.homology
 ```
@@ -645,7 +644,7 @@ The sets the script accepts, and what each costs to build:
 | --- | --- | --- | --- |
 | <code>vertebrates</code> | human, chicken, frog, gar, zebrafish | 25 | RefSeq |
 | <code>grasses</code> | rice, sorghum, maize, brachypodium, setaria | 25 | RefSeq |
-| <code>wheat</code> | tauschii, wheat, durum, emmer, urartu | 25 | RefSeq and GenBank |
+| <code>wheat</code> | tauschii, wheat, urartu, durum, emmer | 25 | RefSeq and GenBank |
 | <code>drosophila</code> | melanogaster, simulans, yakuba, pseudoobscura, virilis | 25 | RefSeq |
 | <code>solanaceae</code> | tomato, potato, pepper, tobacco, coffee | 25 | RefSeq and GenBank |
 

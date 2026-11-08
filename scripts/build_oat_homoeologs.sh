@@ -64,8 +64,8 @@ done
 
 HELPERS=(kaks_from_pairs.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-oat_homoeologs_build}"
@@ -355,65 +355,6 @@ if [ ! -f oat.homoeologs.blocks ]; then
 fi
 
 gzip -kf oat.homoeologs.blocks oat.bed
-
-# ── What the table says, printed rather than asserted ────────────────────────
-python3 - oat.bed oat.homoeologs.blocks <<'PY'
-import collections
-import statistics
-import sys
-
-chrom = {}
-with open(sys.argv[1]) as fh:
-    for line in fh:
-        f = line.split("\t")
-        chrom[f[3]] = f[0]
-
-pairs = []
-with open(sys.argv[2]) as fh:
-    for line in fh:
-        f = line.rstrip("\n").split("\t")
-        pairs.append((chrom[f[0]], chrom[f[1]], float(f[2]), float(f[3])))
-
-# dS by subgenome pair: the control. A and D descend from closely related
-# diploids, C from a more distant one, so A-D has to come out lowest.
-by_subgenome = collections.defaultdict(list)
-for ca, cb, dn, ds in pairs:
-    by_subgenome[tuple(sorted((ca[-1], cb[-1])))].append((dn / ds, ds))
-print(f"\n{len(pairs)} homoeolog pairs, dN and dS measured on each\n")
-print("  subgenomes     pairs   median dS   median dN/dS")
-for key in sorted(by_subgenome):
-    values = by_subgenome[key]
-    print(f"  {key[0]} vs {key[1]}      {len(values):6d}      "
-          f"{statistics.median(ds for _, ds in values):.4f}       "
-          f"{statistics.median(r for r, _ in values):.3f}")
-
-ratios = sorted(r for _, _, dn, ds in pairs for r in [dn / ds])
-above = sum(1 for r in ratios if r > 1)
-print(f"\n  dN/dS median {statistics.median(ratios):.3f}, "
-      f"quartiles {ratios[len(ratios) // 4]:.3f} and "
-      f"{ratios[3 * len(ratios) // 4]:.3f}")
-print(f"  {above} pairs ({above * 100 / len(ratios):.2f}%) above 1, "
-      f"which is the ramp's pivot and the only warm color in the plot")
-
-# The mosaic. A link between two chromosomes of the same homoeologous group
-# (1A-1C, 1A-1D, 1C-1D) is the collinear case; anything else is a segment that
-# moved.
-counts = collections.Counter()
-for ca, cb, _, _ in pairs:
-    counts[tuple(sorted((ca, cb)))] += 1
-between = {k: v for k, v in counts.items() if k[0][0] != k[1][0]}
-inside = sum(v for k, v in counts.items() if k[0][0] == k[1][0])
-blocks = sorted(((v, k) for k, v in between.items()), reverse=True)
-noise = sorted(v for v, _ in blocks if v <= 100)
-print(f"\n  {inside} links inside a homoeologous group, "
-      f"{sum(between.values())} between "
-      f"({sum(between.values()) * 100 / len(pairs):.0f}%)")
-print(f"  {sum(1 for v, _ in blocks if v > 100)} chromosome pairs from "
-      f"different groups carry more than 100 links, against a median of "
-      f"{noise[len(noise) // 2] if noise else 0} for the rest:")
-for v, k in blocks[:10]:
-    print(f"    {k[0]} - {k[1]}: {v}")
-PY
 
 # ── Set up JBrowse ───────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main

@@ -56,8 +56,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # `curl -fO` of this one file behaves the same as a repo checkout.
 HELPERS=(cnv_recurrence.py tcga_clinical_tsv.py hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 PROJECT=${1:-TCGA-BRCA}

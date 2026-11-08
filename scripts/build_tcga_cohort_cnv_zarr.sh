@@ -55,7 +55,7 @@ done
 # only on the --samples path, so --bed mode below needs no npm install.
 HELPERS=(build_signal_zarr.ts)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" "$RAW/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" "$RAW/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 PROJECT=${1:-TCGA-BRCA}

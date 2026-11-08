@@ -18,11 +18,13 @@
 #                whole-genome duplication puts two maize genes against one rice
 #                gene, which is the case the .blocks conversion has to expand
 #                rather than resolve.
-#   wheat        wheat's own polyploidy history, stacked in evolutionary order:
-#                Aegilops tauschii (the diploid D-genome donor) - bread wheat
-#                (hexaploid ABD) - durum (domesticated tetraploid AB) - wild
-#                emmer (durum's wild tetraploid ancestor) - Triticum urartu (the
-#                diploid A-genome donor).
+#   wheat        wheat's own polyploidy history: Aegilops tauschii (the
+#                diploid D-genome donor) - bread wheat (hexaploid ABD) -
+#                Triticum urartu (the diploid A-genome donor) - durum
+#                (domesticated tetraploid AB) - wild emmer (durum's wild
+#                tetraploid ancestor). A diploid sits between bread wheat and
+#                the tetraploids because two polyploids side by side pair their
+#                copies arbitrarily (agent-docs/reference/ORTHOLOG_TABLES.md).
 #   drosophila   melanogaster and four relatives, one copy of each genome.
 #   solanaceae   tomato, potato, pepper and Nicotiana attenuata, which share a
 #                whole-genome triplication, with coffee as the outgroup.
@@ -119,8 +121,8 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(orthogroups_to_blocks.py mcscanx_to_anchors.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 SET="${1:-vertebrates}"
@@ -190,9 +192,9 @@ wheat)
   SPECIES=$(cat <<'EOF'
 tauschii GCF_002575655.3
 wheat    GCF_018294505.1
+urartu   GCF_003073215.2
 durum    GCA_900231445.1
 emmer    GCF_002162155.2
-urartu   GCF_003073215.2
 EOF
   )
   ;;

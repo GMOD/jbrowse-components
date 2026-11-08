@@ -50,11 +50,23 @@ the share of links joining different subgenome letters was:
 | wheat–emmer  | 44% of 77,092         |
 | durum–emmer  | 20% of 52,756         |
 
-That is near chance for two against two, so those bands of the build script's
-five-row default session are noise at the subgenome level. Tauschii and urartu
-are single-copy against wheat, so the page's figures are unaffected. The
-`wheat_blocks` track (MCScanX_h over `--homology` pairs) picks the collinear
-copy by gene order and is the right evidence for a band between two polyploids.
+That is near chance for two against two. The `wheat_blocks` track (MCScanX_h
+over the full product of each cell, `--homology`) does not fix it: homoeologs
+keep their gene order too, so MCScanX_h chains the true block and the homoeolog
+block at nearly every locus. Its A/B-only blocks on the same hosted build:
+
+| Band         | Same-letter share of drawn length | Off-letter length a same-letter block also covers |
+| ------------ | --------------------------------- | ------------------------------------------------- |
+| wheat–durum  | 53%                               | about 54% (wheat D has no same-letter partner)    |
+| wheat–emmer  | 55%                               | about 54%                                         |
+| durum–emmer  | 53%                               | 98%                                               |
+
+The true block is the denser one (about 1.3 times the genes per bp) and is the
+densest block in 83–92% of 1 Mb windows, so a keep-the-densest-block filter in
+`mcscanx_to_anchors.py` would mostly separate them; none exists. The build
+script orders the wheat rows tauschii, wheat, urartu, durum, emmer instead, so
+the only band between two polyploids is durum–emmer, the lowest of the three
+rates above.
 
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out to
 every pair anchored on the queried assembly, one `mate`-carrying feature per

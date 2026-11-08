@@ -282,8 +282,7 @@ and a dotplot session:
    with `--self_remove 100` so the A-D homoeologs survive.
 3. Keep the chained anchors whose two genes sit on different subgenomes, and
    measure dN and dS on each.
-4. Print the median dS per subgenome pair, the control the figure is read
-   against, and write the config.
+4. Write the config, with oat on both axes of the dotplot session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_oat_homoeologs.sh

@@ -217,18 +217,16 @@ def main():
     # distinction the polyploid case is about into the bottom twentieth of the
     # ramp. Dropped rather than clamped, so the count stays a count.
     counts["families"] = 0
-    written = collections.Counter()
+    tables = {}
     for other, table in rows.items():
-        with open(os.path.join(args.outdir,
-                               f"{ref_name}.{other}.blocks"), "w") as out:
-            for cells in table:
-                n = copies[other, cells[0]]
-                if args.max_copies and n > args.max_copies:
-                    counts["families"] += 1
-                    continue
-                # the count goes on last, once every row for the gene was read
-                out.write("\t".join([*cells, str(n)]) + "\n")
-                written[other] += 1
+        tables[other] = []
+        for cells in table:
+            n = copies[other, cells[0]]
+            if args.max_copies and n > args.max_copies:
+                counts["families"] += 1
+                continue
+            # the count goes on last, once every row for the gene was read
+            tables[other].append("\t".join([*cells, str(n)]) + "\n")
 
     def share(name):
         if name not in beds:
@@ -263,12 +261,19 @@ def main():
     # wrong picture --max-copies exists to prevent — so an emptied table is
     # named, and an entirely emptied run is fatal rather than an exit 0 over
     # files nothing will report on again.
-    empty = [n for n in rows if not written[n]]
+    empty = [n for n in rows if not tables[n]]
     if len(empty) == len(rows):
         sys.exit(f"--max-copies {args.max_copies} dropped every row: each of "
                  f"{', '.join(sorted(empty))} has more than {args.max_copies} "
                  f"orthologs per reference gene throughout. Raise it, or pass "
                  f"0 to keep every copy.")
+
+    # Written only once every check above has passed, so a failed run leaves no
+    # table behind for a re-run to mistake for a finished one.
+    for other, lines in tables.items():
+        with open(os.path.join(args.outdir,
+                               f"{ref_name}.{other}.blocks"), "w") as out:
+            out.writelines(lines)
 
     # only when the filter is on: "0 dropped for a gene with more than 0
     # orthologs" is what `--max-copies 0` otherwise reports, which reads as a
@@ -282,7 +287,7 @@ def main():
                if empty else "")
     print(f"wrote {len(rows)} table(s) from {counts['rows']} rows: "
           f"{counts['kept'] - counts['families']} links kept, "
-          f"{counts['unresolved']} dropped for an id neither BED places"
+          f"{counts['unresolved']} dropped for an id its BED does not place"
           f"{families}{emptied}"
           f"\ngenes placed per assembly:\n{placed_report}",
           file=sys.stderr)

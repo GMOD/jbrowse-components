@@ -92,7 +92,7 @@ BW_BASE=https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv
 # both are already there.
 HELPERS=(build_signal_zarr.ts)
 for h in "${HELPERS[@]}"; do
-  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" "$RAW/$h"
+  [ -f "$HERE/$h" ] || { curl -fsSL -o "$HERE/$h.part" "$RAW/$h" && mv "$HERE/$h.part" "$HERE/$h"; }
 done
 
 # The converter imports two npm packages and nothing else. A checkout resolves

@@ -58,8 +58,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # this single file behaves the same as a repo checkout.
 HELPERS=(gfa_paths_to_rgfa.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-bovine_pangenome_build}"

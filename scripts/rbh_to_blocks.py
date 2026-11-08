@@ -132,50 +132,60 @@ def main():
         sys.exit(f"{args.rbh} has no {', '.join(absent)} column for --attributes")
     attr_col = {a: header.index(a) for a in args.attributes if a in header}
 
-    os.makedirs(args.bed_dir, exist_ok=True)
     beds = {sp: {} for sp in species}
-    seen = {sp: 0 for sp in species}
-    resolved = {sp: 0 for sp in species}
+    seen = {sp: set() for sp in species}
     joined = 0
-    with open(args.out, "w") as out:
-        for row in rows:
-            genes = [cell(row, gene_col[sp]) for sp in species]
-            attrs = {a: cell(row, attr_col[a]) for a in attr_col}
-            if lookup:
-                sp, table = lookup
-                group, color = table.get(cell(row, gene_col[sp]), ("", ""))
-                joined += bool(group)
-                attrs.update(gene_group=group, color=color)
-            for sp, gene in zip(species, genes):
-                if gene:
-                    seen[sp] += 1
-                    if sp in chroms:
-                        hit = chroms[sp].get(gene)
-                        if hit:
-                            resolved[sp] += 1
-                            beds[sp][gene] = hit
-                    else:
-                        scaf, pos = cell(row, scaf_col[sp]), cell(row, pos_col[sp])
-                        if scaf and pos:
-                            resolved[sp] += 1
-                            beds[sp][gene] = (scaf, int(float(pos)) - 1, int(float(pos)), "+")
-            out.write(
-                "\t".join([g or "." for g in genes] + [attrs.get(a) or "." for a in args.attributes])
-                + "\n"
-            )
+    lines = []
+    for row in rows:
+        genes = [cell(row, gene_col[sp]) for sp in species]
+        attrs = {a: cell(row, attr_col[a]) for a in attr_col}
+        if lookup:
+            sp, table = lookup
+            group, color = table.get(cell(row, gene_col[sp]), ("", ""))
+            joined += bool(group)
+            attrs.update(gene_group=group, color=color)
+        for sp, gene in zip(species, genes):
+            if gene:
+                seen[sp].add(gene)
+                if sp in chroms:
+                    hit = chroms[sp].get(gene)
+                    if hit:
+                        beds[sp][gene] = hit
+                else:
+                    scaf, pos = cell(row, scaf_col[sp]), cell(row, pos_col[sp])
+                    if scaf and pos:
+                        beds[sp][gene] = (scaf, int(float(pos)) - 1, int(float(pos)), "+")
+        lines.append(
+            "\t".join([g or "." for g in genes] + [attrs.get(a) or "." for a in args.attributes])
+            + "\n"
+        )
 
+    # Checked before anything is written: a build script skips a conversion
+    # whose .blocks already exists, so a partial output left by a failed run
+    # would load on the next run as a track with a blank genome.
+    dead = []
+    for sp in species:
+        how = "from its .chrom" if sp in chroms else "as 1 bp points from _pos, no --chrom given"
+        print(f"{sp}: {len(beds[sp])}/{len(seen[sp])} ids resolved {how}", file=sys.stderr)
+        if seen[sp] and not beds[sp]:
+            dead.append(sp)
+    if dead:
+        sys.exit("\n".join(
+            f"{sp}: none of its ids resolve; "
+            + ("the .chrom and the table name genes differently" if sp in chroms
+               else f"no row has both {sp}_scaf and {sp}_pos")
+            for sp in dead))
+
+    os.makedirs(args.bed_dir, exist_ok=True)
+    with open(args.out, "w") as out:
+        out.writelines(lines)
     for sp in species:
         with open(os.path.join(args.bed_dir, f"{sp}.bed"), "w") as fh:
             for gene, (scaf, start, end, strand) in sorted(beds[sp].items(), key=lambda kv: (kv[1][0], kv[1][1])):
                 fh.write(f"{scaf}\t{start}\t{end}\t{gene}\t0\t{strand}\n")
-        how = "from its .chrom" if sp in chroms else "as 1 bp points from _pos, no --chrom given"
-        print(f"{sp}: {resolved[sp]}/{seen[sp]} ids resolved {how}", file=sys.stderr)
-        if seen[sp] and not resolved[sp]:
-            sys.exit(f"{sp}: none of its ids resolve; the .chrom and the table name genes differently")
     if lookup:
         print(f"gene_group joined on {lookup[0]}: {joined}/{len(rows)} rows", file=sys.stderr)
     print(" ".join(species))
-
 
 if __name__ == "__main__":
     main()

@@ -25,8 +25,8 @@ done
 
 HELPERS=(omia_sql_to_bed.py omia_bed_to_gff.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$HERE/$h" ] || { curl -fsSL -o "$HERE/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$HERE/$h.part" "$HERE/$h"; }
 done
 
 mkdir -p "$OUTDIR"
