@@ -852,7 +852,7 @@ what they build, so a change here fires no event there.
 - ggbandage and ggtubemap follow bandage-core and tubemap-core, not this repo; their
   upstreams are where the same canary would go.
 - **A display slot or jb2export flag rename reaches ggjbrowse** without a red
-  here: its R docs, tutorials and `scripts/gallery.R` write the old spelling,
+  here: its R docs, tutorials and gallery script write the old spelling,
   and a closed schema drops an unknown key with a console line. After landing
   one, run its `check-against-jbrowse.sh` with `JBROWSE_COMPONENTS=<this
   checkout>` rather than waiting for the nightly canary.

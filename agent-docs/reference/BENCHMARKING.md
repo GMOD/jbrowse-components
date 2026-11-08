@@ -56,6 +56,15 @@ specific to benchmarking the inflate pool.
   equals zero. **Print the count of whatever the code under test emits on every
   row**, and treat zero as a broken fixture.
 
+- **A latency fix that removes one serial round trip can A/B as zero at one
+  RTT** when a parallel chain is as long: moving the BAM header read beside its
+  index (CRAM's beside `.crai`) measured nothing at 80 ms and 195–200 ms at 200
+  ms, because the main thread's chain (the `.2bit` fetch plus ~117 ms CPU) met
+  the shortened worker chain. Read `--waterfall` for what the critical request
+  waited on, and rerun `measure-load-latency.ts --latency=200` before calling it
+  worthless; on the laptop a 100 ms difference flipped sign with run order, so
+  A/B on ada and swap the order once.
+
 ### Tools that cannot see what you are asking
 
 - **A jest probe is not a timing harness for typed-array code.** Jest inflates

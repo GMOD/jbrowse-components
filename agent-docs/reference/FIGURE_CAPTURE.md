@@ -41,6 +41,14 @@ Each of these produces a plausible figure rather than an error:
 - Put a click that changes state in the session spec, since the figure's recipe
   command clicks nothing; `clicksOpen` / `clicksChange` name the exceptions.
 
+- **A spec anchor that lands on the wrong thing: sweep the coordinate before
+  tuning it.** ~20 lines on `website/scripts/probe-app-settled.ts`'s scaffold
+  (`createTestServer` + `captureUrl` + capture's `resolveAnchor`), dumping
+  `[role="menuitem"]` per step; if no value works the hit test is wrong, not the
+  anchor. Read `display.contextMenuHit` (`genomicPos`, the block's `rpcData`): a
+  non-integer `genomicPos` beside integer `mismatchPositions` was a `bpAtPx`
+  regression.
+
 ## Sizing, readiness and staleness
 
 - Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` /
@@ -103,6 +111,33 @@ Each of these produces a plausible figure rather than an error:
   dialog. A `hover: { text }` on a canvas feature captures a blank canvas the
   same way; anchor it with `track` + `locus`.
 
+- **Judge a reshoot against a baseline shoot, not the published copy.** A
+  published figure is as old as its last publish, so a diff against it mixes
+  every commit and hosted-data change since. `git worktree add --detach <path>
+  <pre-change-sha>`, shoot the same names there (`jb-shoot --get <names>` on
+  ada, own `SCRATCH`), pair with `convert … +append`, rank with `compare -metric
+  AE -fuzz 5%` (8% for the highlight map; the store PNGs are 256-colour, so zero
+  fuzz flags palette re-quantisation). A multi-region pileup's row order can
+  differ between two shoots of one build (13.6% on
+  `cancer_sv/derivative_synteny`): shoot the baseline twice before blaming a row
+  shuffle. A graph pane differing between shoots minutes apart usually means the
+  hosted plugin's `latest/` moved. A baseline `--get` including a
+  `jbrowse-img/*` spec runs `build:esm` first; if that fails it shoots nothing
+  yet still fetches the published copies (log says `pnpm build:esm failed`). A
+  hosted-UCSC-hub spec needing hg38 sequence stalls on hgdownload's hg38.2bit;
+  put it on a demo config whose sequence jbrowse.org serves (demos/cancer_sv's
+  assembly block).
+- **`figures.ts status` "modified" is not stale.** `--filter` implies `--force`
+  (`screenshot-options.ts`), so every matched PNG is rewritten and listed as
+  modified. Copy the published set aside after `figures pull`, shoot, `compare
+  -metric AE -fuzz 5% old new null:` per file; under ~30,000 differing pixels on
+  a 3000 px figure was antialiasing, real changes run to millions. Publish only
+  what moved, `push --exact --filter`. The primary checkout's `static/img` stays
+  stale after a worktree publish until a plain `node website/scripts/figures.ts
+  pull`, which replaces figures whose bytes are published (pre-push's "figures
+  on disk differ from figures.lock"); `--force` also discards figures that exist
+  only on disk.
+
 ### Verifying
 
 `node --experimental-strip-types website/scripts/generate-screenshots.ts --check
@@ -116,6 +151,21 @@ silent.
 Don't regenerate a figure to prove a conversion. A worktree carries other agents'
 unlanded display edits; land the spec change and let the weekly sweep render it
 on a clean runner.
+
+- **Before a bulk publish, grep `agent-docs/handoffs/` for each figure name**
+  and drop any another session declined; a diff gate says a figure changed, not
+  that it is right. When main moved a figure after your base, main's line wins
+  in the `figures.lock` merge.
+- **A figure red at its ready gate missed every reshoot and fixture bump
+  meanwhile** (`maf_hprc_pangenome` missed the HPRC 2.1 move that renumbered
+  every rGFA segment). After repairing one, check what landed while it was red,
+  especially commits saying "every X reshot".
+- **A spec track's `filter` replaces the config's whole list** (`plot.test.ts`,
+  "a plot's filter list is written whole"). A spec adding one jexl rule to a
+  `geneLike` track drew the hg19 RefSeq region features for a month; write the
+  config's entries too (`['geneLike', "jexl:…"]`, as
+  `website/scripts/specs/ui.ts` now does). Nothing compares a spec's filter with
+  its track's.
 
 ## An empty capture is the generator's readiness race
 
@@ -170,6 +220,24 @@ BUILD` with the files that differ.
   started from another checkout reports `DEV SERVER FROM ANOTHER CHECKOUT`.
 - An edit under `products/jbrowse-web/test_data` leaves the build current: the
   capture server serves test_data from the checkout, not from `build/`.
+
+- **A `website/scripts/probe-*.ts` or ad-hoc puppeteer script checks no build
+  staleness**, unlike the generator. It draws whatever its URL serves: some
+  probes (`probe-rows.ts`) open the hosted build, others a local
+  `products/jbrowse-web/build`, which needs `pnpm --filter @jbrowse/web build`
+  (~7 min) after a source change; a `pnpm start` dev server needs none. A
+  changed default or threshold renders a plausible old picture and nothing
+  errors. If a sweep ran stale anyway, `node website/scripts/figures.ts pull
+  --force` restores the corpus from `figures.lock` (never in a primary checkout
+  others share: it discards their unpublished figures).
+- **Graph figures render the hosted plugin, not the checkout.** They load
+  `jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/`, and `pnpm
+  check-live-configs` refuses any other URL; a release reaches `latest/` only
+  through the store step, so check the hosted `latest/package.json` before
+  calling a fix unreleased. A store step that moves the graph plugin stales ~40
+  figures at once with nothing reporting it: sweep the figures whose session
+  holds `GraphGenomeView` (`liveLinks.generated.ts`) intersected with
+  `figures.lock`.
 
 ## Desktop figures
 

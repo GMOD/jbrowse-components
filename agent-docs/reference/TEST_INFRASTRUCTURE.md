@@ -420,6 +420,21 @@ Fixtures:
   MD tags need `getSubAdapter: async () => ({ dataAdapter: {} })` plus any
   sequence config.
 
+- **A throw inside an `autorun` or `observer` body fails no test**: MobX logs
+  `[mobx] Encountered an uncaught exception… in 'Reaction[Name]'` to
+  `console.error` and swallows it (a jbrowse-web suite printed it every run
+  while reporting `3 passed`). Assert with `onReactionError` from `mobx`: push
+  errors from its callback, run the action, call the returned disposer,
+  `expect(errors).toEqual([])`. Reach for it whenever the symptom is console
+  output.
+- **A fixed sleep after `createDisplay()` in a `createDisplayTestEnvironment`
+  test rides the first fetch's late settle**, which bumps `fetchGeneration` and
+  reruns the fetch autorun, so the assertion passes on that run rather than the
+  one the action provoked: deleting the autorun's `void self.reloadCounter` once
+  left all six tests green. Poll for quiet (no fetch in flight and no new RPC
+  across a full debounce window) and set an explicit `jest.setTimeout`; that
+  made the sabotage red and cut the file from 48 s to 19 s.
+
 ## Troubleshooting
 
 - **A test counting an adapter's reads passes or fails by test order.**

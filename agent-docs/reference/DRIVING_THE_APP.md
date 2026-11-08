@@ -33,9 +33,9 @@ screen. The same rung makes the better live link for a tour.
 
 ## The dev server serves current source
 
-`NODE_ENV=development node scripts/start.ts` in `products/jbrowse-web` (with
-`PORT=<n> BROWSER=none`, and `--experimental-strip-types` from a worktree)
-serves the app from source, `test_data` included, and rebuilds on edit, so a
+`products/jbrowse-web/scripts/start.ts`, run with `NODE_ENV=development node`
+from that package (with `PORT=<n> BROWSER=none`, and
+`--experimental-strip-types` from a worktree), serves the app from source, `test_data` included, and rebuilds on edit, so a
 puppeteer check of a source change skips the build. `openJBrowse` from
 `products/jbrowse-capture/src/index.ts` takes it as `instance`
 (`instance: 'http://localhost:3000/'`,
