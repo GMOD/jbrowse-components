@@ -86,7 +86,7 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "tauschii - wheat - durum - emmer - urartu (OrthoFinder orthogroups)",
+        "displayName": "tauschii - wheat - urartu - durum - emmer (OrthoFinder orthogroups)",
         "views": [
           {
             "assembly": "tauschii"
@@ -95,13 +95,13 @@
             "assembly": "wheat"
           },
           {
+            "assembly": "urartu"
+          },
+          {
             "assembly": "durum"
           },
           {
             "assembly": "emmer"
-          },
-          {
-            "assembly": "urartu"
           }
         ],
         "tracks": ["wheat_orthogroups"],
@@ -221,7 +221,7 @@
       "type": "SyntenyTrack",
       "trackId": "wheat_orthogroups",
       "name": "Wheat orthogroups (OrthoFinder)",
-      "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
+      "assemblyNames": ["tauschii", "wheat", "urartu", "durum", "emmer"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "tauschii.blocks.gz",
@@ -243,18 +243,18 @@
             "uri": "wheat.bed.gz"
           }
         ],
-        "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"]
+        "assemblyNames": ["tauschii", "wheat", "urartu", "durum", "emmer"]
       }
     },
     {
       "type": "SyntenyTrack",
       "trackId": "wheat_blocks",
       "name": "Wheat collinear blocks (MCScanX)",
-      "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
+      "assemblyNames": ["tauschii", "wheat", "urartu", "durum", "emmer"],
       "adapter": {
         "type": "MultiGenomePAFAdapter",
         "uri": "wheat.blocks.paf.gz",
-        "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"]
+        "assemblyNames": ["tauschii", "wheat", "urartu", "durum", "emmer"]
       }
     }
   ],
