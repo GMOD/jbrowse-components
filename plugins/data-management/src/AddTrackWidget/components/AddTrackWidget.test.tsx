@@ -82,7 +82,6 @@ function getSession() {
         },
       ],
     },
-    filterAttributes: ['type', 'start', 'end'],
   })
 
   const view = session.addView('LinearGenomeView', {

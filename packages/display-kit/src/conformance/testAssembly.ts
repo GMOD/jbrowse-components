@@ -8,6 +8,7 @@ export interface TestAssembly {
   refNameToIndex: Map<string, number> | undefined
   getCanonicalRefName: (refName: string) => string
   getCanonicalRefName2: (refName: string) => string
+  getRegionForRefName: (refName: string) => Region | undefined
   getGeneticCodeId: () => number | undefined
   configuration: { sequence: undefined }
 }
@@ -53,14 +54,21 @@ export function testAssembly({
 } = {}): TestAssembly {
   const canonical = (refName: string) =>
     aliases[refName.toLowerCase()] ?? refName
+  const refNameToIndex = new Map(
+    regions.map((region, i) => [region.refName, i]),
+  )
   return {
     initialized: true,
     displayName,
     allAliases,
     regions,
-    refNameToIndex: new Map(regions.map((region, i) => [region.refName, i])),
+    refNameToIndex,
     getCanonicalRefName: canonical,
     getCanonicalRefName2: canonical,
+    getRegionForRefName: (refName: string) => {
+      const idx = refNameToIndex.get(refName)
+      return idx === undefined ? undefined : regions[idx]
+    },
     getGeneticCodeId: () => undefined,
     configuration: { sequence: undefined },
   }

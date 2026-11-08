@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
+import { cellDataOf } from '../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // The declarative `runClustering: true` path, which a session spec and a figure
@@ -35,7 +36,9 @@ async function runWith(names: string[]) {
             sources: names.map(name => ({ name })),
             warnings: [],
           })
-        : Promise.resolve([]),
+        : method === 'MultiSampleVariantGetCellData'
+          ? Promise.resolve(cellDataOf())
+          : Promise.resolve([]),
   )
   display.setSources(names.map(name => ({ name })))
 

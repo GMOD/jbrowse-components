@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { observable } from 'mobx'
+import { observable, runInAction } from 'mobx'
 
 import { SearchPicker } from './searchPicker.tsx'
 
@@ -17,24 +17,26 @@ function fakeView(pick = jest.fn(() => Promise.resolve())) {
     pick,
     raise() {
       act(() => {
-        view.searchPicker = {
-          query: 'BRC',
-          pick,
-          rows: [
-            {
-              id: 'a',
-              label: 'BRCA1',
-              location: 'chr17:43,044,295..43,125,364',
-              trackName: 'RefSeq',
-            },
-            {
-              id: 'b',
-              label: 'BRCA1P1',
-              location: 'chr17:43,000..44,000',
-              trackName: '',
-            },
-          ],
-        }
+        runInAction(() => {
+          view.searchPicker = {
+            query: 'BRC',
+            pick,
+            rows: [
+              {
+                id: 'a',
+                label: 'BRCA1',
+                location: 'chr17:43,044,295..43,125,364',
+                trackName: 'RefSeq',
+              },
+              {
+                id: 'b',
+                label: 'BRCA1P1',
+                location: 'chr17:43,000..44,000',
+                trackName: '',
+              },
+            ],
+          }
+        })
       })
     },
   }

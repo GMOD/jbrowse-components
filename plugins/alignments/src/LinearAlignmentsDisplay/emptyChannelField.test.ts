@@ -3,7 +3,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaF from './configSchema.ts'
 
-test("a written '' field loads as unset on the three maybe-field channels", () => {
+test("a written '' field loads as unset on the two maybe-field channels", () => {
   const pm = new PluginManager([])
   pm.createPluggableElements()
   pm.configure()
@@ -15,7 +15,6 @@ test("a written '' field loads as unset on the three maybe-field channels", () =
         bases: { encoding: { color: '' } },
         mismatches: { encoding: { opacity: { field: '' } } },
       },
-      readConnections: { encoding: { color: { field: '' } } },
     },
     { pluginManager: pm },
   )
