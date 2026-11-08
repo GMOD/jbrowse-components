@@ -45,7 +45,16 @@ const run = spawnSync(
     'plugins',
     'products',
   ],
-  { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
+  {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024,
+    // tsgolint, not the tsrs-lint oxlint would prefer (TOOLCHAIN.md)
+    env: {
+      ...process.env,
+      OXLINT_TSGOLINT_PATH: join(root, 'node_modules/.bin/tsgolint'),
+    },
+  },
 )
 if (run.error) {
   throw run.error

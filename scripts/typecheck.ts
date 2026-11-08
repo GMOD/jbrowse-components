@@ -1,16 +1,20 @@
-// Picks tsc's checker count. Whole-repo cold --noEmit with
-// tsconfig.tsbuildinfo cleared (incremental:true means an uncleared run
-// measures the cache):
+// Typechecks with tsrs, the Rust port of tsc (TypeScript 7.1), which takes
+// tsgo's flags. `build:esm` stays on the `typescript7` (7.0) devDependency,
+// since this script only checks and that one emits.
 //
-//   checkers   1      2      4 (tsgo 7 default)   8      16
-//   seconds    14.4    9.6    8.5                 9.1    10.8
-//   peak RSS   2.9GB  3.1GB  3.7GB               5.0GB   6.6GB
+// Picks the checker count. Whole-repo cold --noEmit with tsconfig.tsbuildinfo
+// cleared (incremental:true means an uncleared run measures the cache), on ada
+// on 2026-11-08:
+//
+//   checkers   1      2      4 (default)
+//   seconds    4.0    2.8    1.8
+//   peak RSS   1.3GB  1.4GB  1.6GB
+//
+// tsgo 7.0 took 8.7s and 5.7GB at 4 on the same tree.
 //
 // Agent runs take 2. Several agents typecheck at once, so the cores are already
 // taken and extra checkers mostly queue for them, while each run still pays for
-// them: 3.7GB peak at 2 against 4.4GB at 4 on 2026-09-24's tree. A human at a
-// terminal keeps 4, the knee.
-// A warm no-op is ~1.0s at any of them.
+// them. A human at a terminal keeps 4.
 import { spawn, spawnSync } from 'node:child_process'
 
 // Reports the source actually used, not merely set: TSC_CHECKERS=abc falls back
@@ -53,7 +57,7 @@ const projects = (named.length > 0 ? named : Object.keys(GROUPS)).flatMap(
 )
 
 const tscArgs = (project: string) => [
-  'node_modules/typescript7/bin/tsc',
+  'node_modules/tsrs/bin/tsrs',
   '--noEmit',
   '-p',
   project,

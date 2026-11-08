@@ -7,20 +7,23 @@ kind: operations
 
 # Toolchain
 
-The dev loop runs two TypeScript versions and two linters on purpose. Don't "fix"
-either by unifying them.
+The dev loop runs three TypeScript versions and two linters on purpose. Don't
+"fix" either by unifying them.
 
-## Why two TypeScript versions
+## Why three TypeScript versions
 
 - **The eslint backstop needs 6.x.** `pnpm lint` is oxlint, type-aware through
   tsgolint, which uses its own TS7-based checker and ignores the ambient
   `typescript`. `pnpm lint:eslint` parses with `@typescript-eslint`, whose
   `ts-api-utils` peer range is `<6.1.0`, so bumping the ambient `typescript` breaks it.
-- **Typecheck and `build:esm` want 7.x for speed.** Both call the aliased
-  `typescript7` devDependency by path (`scripts/typecheck.ts`). Use `pnpm
+- **Typecheck and `build:esm` want 7.x for speed.** `pnpm typecheck` runs tsrs,
+  the Rust port of tsc at TypeScript 7.1, by path (`scripts/typecheck.ts`);
+  `build:esm` emits with the aliased `typescript7` (7.0) devDependency. Use `pnpm
   typecheck`, never a bare `tsc`. `products/jbrowse-cli` still builds with ambient 6.x.
+  The two 7.x versions differ in `lib.dom`, so DOM API typing has to compile
+  under both (`SanitizedHTML.tsx`'s `canSetHTML`).
 
-The two versions write **incompatible** `.tsbuildinfo` and each discards the
+The versions write **incompatible** `.tsbuildinfo` and each discards the
 other's, so don't share a `.tsbuildinfo` CI cache between them.
 
 ## Project references
@@ -36,6 +39,13 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 
 ## Linting: who owns what
 
+- **Type-aware oxlint runs tsgolint by name.** Given no `OXLINT_TSGOLINT_PATH`,
+  oxlint prefers `tsrs-lint` to `tsgolint`, and the `tsrs` package that `pnpm
+  typecheck` uses installs it. tsrs-lint 0.23 reports `querySelector(...) as
+  HTMLElement` under `non-nullable-type-assertion-style`, and its `!` fix fails
+  to compile, so `pnpm lint`, the pre-commit hook, `verify.ts` and
+  `check-unsafe-any.ts` each set the variable. Drop it with the four sites once
+  tsrs-lint agrees with tsgolint over the tree.
 - **`.oxlintrc.json` cannot carry comments.** `eslint.config.mjs` imports it with
   `with { type: 'json' }`, a strict `JSON.parse`, so a `//` comment breaks `pnpm
   lint:eslint` with an error that does not name the comment. A `"//key"` entry fails

@@ -218,6 +218,11 @@ function run(argv: string[], held: boolean) {
     const output: Buffer[] = []
     const child = spawn(argv[0]!, argv.slice(1), {
       cwd: root,
+      // tsgolint, not the tsrs-lint oxlint would prefer (TOOLCHAIN.md)
+      env: {
+        ...process.env,
+        OXLINT_TSGOLINT_PATH: join(root, 'node_modules/.bin/tsgolint'),
+      },
       stdio: held ? 'pipe' : 'inherit',
       shell: process.platform === 'win32',
     })

@@ -201,6 +201,8 @@ if [ "${SKIP_LINT:-}" = 1 ] || [ -z "$whole" ]; then
 fi
 
 oxlint=$root/node_modules/.bin/oxlint
+# tsgolint, not the tsrs-lint oxlint would prefer (TOOLCHAIN.md)
+export OXLINT_TSGOLINT_PATH=$root/node_modules/.bin/tsgolint
 if [ ! -x "$oxlint" ]; then
   echo "pre-commit: no $oxlint, skipping lint (run pnpm install)" >&2
   exit 0

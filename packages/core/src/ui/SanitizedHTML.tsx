@@ -6,10 +6,12 @@ import { escapeHTML, looksLikeHTML } from '../util/htmlText.ts'
 import { linkify } from '../util/index.ts'
 import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
 
-declare global {
-  interface Element {
-    setHTML?(html: string): void
-  }
+// The Sanitizer API ships in some browsers only. TypeScript 7.0's DOM lib has
+// no setHTML and 7.1's declares it on every Element, so it is found by looking.
+function canSetHTML(
+  el: Element,
+): el is Element & { setHTML: (html: string) => void } {
+  return 'setHTML' in el && typeof el.setHTML === 'function'
 }
 
 const DOMPurifySanitizedHTML = lazy(
@@ -32,7 +34,9 @@ const SetHTML = observer(function SetHTML({
     const el = spanRef.current
     if (el) {
       try {
-        el.setHTML?.(value)
+        if (canSetHTML(el)) {
+          el.setHTML(value)
+        }
         rewriteExternalAnchors(el)
       } catch (e) {
         console.error(e)
@@ -57,7 +61,7 @@ const SanitizedHTML = observer(function SanitizedHTML({
   const html = linkify(str)
   const value = looksLikeHTML(html) ? html : escapeHTML(html)
 
-  if (typeof Element !== 'undefined' && Element.prototype.setHTML) {
+  if (typeof Element !== 'undefined' && canSetHTML(Element.prototype)) {
     return <SetHTML value={value} className={className} />
   }
 
