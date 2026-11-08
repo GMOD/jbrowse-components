@@ -1910,6 +1910,16 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/LabeledCheckbox": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/legendSpec": {
       "package": "@jbrowse/core",
       "names": [
@@ -4691,9 +4701,21 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/GroupByDialog": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/display-kit/groupByMenu": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "colorsWithGrouping",
+        "groupByPlotOf",
         "groupByRadioMenuItem",
         "hiddenGroupsItems",
         "mergeDomain",
@@ -5352,7 +5374,9 @@
         "DEFAULT_RULE_COLOR",
         "SCORE_CAPTION_HEIGHT",
         "TICK_LABEL_X_PX",
-        "YSCALEBAR_LABEL_OFFSET"
+        "VALUE_SCALE_TYPES",
+        "YSCALEBAR_LABEL_OFFSET",
+        "isScaleType"
       ],
       "worker": "real"
     },

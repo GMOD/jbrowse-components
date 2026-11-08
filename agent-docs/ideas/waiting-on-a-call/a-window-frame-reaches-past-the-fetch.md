@@ -1,6 +1,6 @@
 ---
 name: a-window-frame-reaches-past-the-fetch
-description: A `window` step's frame (a smoothed trend, rolling mean, moving average over a QuantitativeTrack on the mark display) counts rows, so it is cut at the fetch edge and its reach in bases follows the zoom over a BigWig summary tier. Read before proposing a trend line or a bp-unit frame on wiggle.
+description: A `window` step's frame (a smoothed trend, rolling mean or moving average on the mark display) counts rows, so it is cut at the fetch edge and its reach in bases follows the zoom. Read before proposing a trend line or bp-unit frame on wiggle.
 ---
 
 # A window frame reaches past the fetch
