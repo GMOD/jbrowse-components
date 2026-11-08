@@ -20,6 +20,8 @@ function print(level, sink, args) {
 // - React's act() warnings. About 120 suites, nearly all jbrowse-web's, render
 //   a tree that MobX re-renders as data arrives; React's test mode asks for
 //   every such update to sit inside act(), which an async model update cannot.
+//   Running MobX's reactions inside act() (`configure({ reactionScheduler })`)
+//   was tried on 2026-11-08: 284 suites failed and two never finished.
 // - The GPU backend ladder's once-per-device diagnostics. jsdom has neither
 //   WebGPU nor WebGL2, so every suite that mounts a display steps down to
 //   Canvas2D and says so, and every suite that installs a fake or Dawn device
