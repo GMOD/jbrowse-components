@@ -80,6 +80,7 @@ import {
   overflowSplitNotices,
   sectionOrder,
   workerFacet,
+  workerInsertSizeBand,
 } from '../shared/groupFeatures.ts'
 import {
   LEGEND_MAX_WIDTH,
@@ -2191,9 +2192,10 @@ export default function stateModelFactory(
             // so chain mode sends neither and "Show soft clipping" stays live
             // there.
             sortTag: self.unit === 'chain' ? undefined : self.sortTag,
-            facet: workerFacet(
+            facet: workerFacet(self.effectiveFacet, self.unit),
+            pinnedInsertSizeBand: workerInsertSizeBand(
               self.effectiveFacet,
-              self.unit,
+              self.readPredicates,
               self.pinnedInsertSizeBand,
             ),
             showSoftClips: self.unit === 'chain' ? false : self.showSoftClips,

@@ -25,7 +25,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     PileupGetExportReads: {
       args: Pick<
         RenderAlignmentDataArgs,
-        'adapterConfig' | 'regions' | 'filter' | 'facet'
+        | 'adapterConfig'
+        | 'regions'
+        | 'filter'
+        | 'facet'
+        | 'pinnedInsertSizeBand'
       >
       return: ExportRead[]
       // deserializeReturn rebuilds each feature into a SimpleFeature

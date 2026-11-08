@@ -6,7 +6,6 @@ import type {
   JunctionClass,
   JunctionSource,
 } from '../features/sashimi/junctionClass.ts'
-import type { InsertSizeBand } from './insertSizeStats.ts'
 import type { ReadDimension } from './readFieldLevels.ts'
 import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
@@ -217,11 +216,9 @@ export interface Facet {
 // What the worker partitions by. `unit` is the observation a section keeps
 // whole: a read, or a chain (a read's mates and split segments, one QNAME).
 // The domain stays behind, since ordering the sections is the main thread's.
-// `pinnedInsertSizeBand` is `normalInsertSize`'s, sent only under `svKind`.
 export interface WorkerFacet {
   field: string
   unit?: 'read' | 'chain'
-  pinnedInsertSizeBand?: InsertSizeBand
 }
 
 // Names in code order (index = code - 1). Single source for turning the numeric

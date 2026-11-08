@@ -21,6 +21,7 @@ export async function executeGetExportReads({
     regions,
     filter,
     facet,
+    pinnedInsertSizeBand,
     statusCallback,
     signal,
   } = args
@@ -40,6 +41,7 @@ export async function executeGetExportReads({
       featuresArray,
       filter,
       facet,
+      pinnedInsertSizeBand,
       jexl: pluginManager.jexl,
     })
     const laned = lanes.flatMap(({ key, features }) =>

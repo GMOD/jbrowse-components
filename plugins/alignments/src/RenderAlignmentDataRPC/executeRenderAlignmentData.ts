@@ -452,6 +452,7 @@ export async function groupsOfFetch({
     baseLayer,
     sortTag,
     facet,
+    pinnedInsertSizeBand,
     showSoftClips = false,
     showCoverage = true,
     interbaseIndicators,
@@ -470,6 +471,7 @@ export async function groupsOfFetch({
     featuresArray,
     filter,
     facet,
+    pinnedInsertSizeBand,
     jexl: pluginManager.jexl,
   })
 

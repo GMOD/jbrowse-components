@@ -15,6 +15,7 @@ import {
   partitionFeatures,
   sectionOrder,
   workerFacet,
+  workerInsertSizeBand,
 } from './groupFeatures.ts'
 
 import type { Facet } from './types.ts'
@@ -712,16 +713,22 @@ test('chain mode sends the chain as the unit only when there is a facet', () => 
   expect(workerFacet(undefined, 'chain')).toBeUndefined()
 })
 
-test('only an svKind facet carries the pinned insert-size band', () => {
+test('the pinned insert-size band goes wherever svKind is read, and nowhere else', () => {
   const band = { lower: 150, upper: 600 }
-  expect(workerFacet({ field: 'svKind' }, 'chain', band)).toEqual({
-    field: 'svKind',
-    unit: 'chain',
-    pinnedInsertSizeBand: band,
-  })
-  expect(workerFacet({ field: 'tags.HP' }, 'read', band)).toEqual({
-    field: 'tags.HP',
-  })
+  const svKind = [{ field: 'svKind', oneOf: ['deletionType'] }]
+  expect(workerInsertSizeBand({ field: 'svKind' }, [], band)).toBe(band)
+  expect(workerInsertSizeBand(undefined, svKind, band)).toBe(band)
+  expect(workerInsertSizeBand({ field: 'tags.HP' }, svKind, band)).toBe(band)
+  expect(
+    workerInsertSizeBand(
+      { field: 'tags.HP' },
+      [{ field: 'mapq', gte: 20 }],
+      band,
+    ),
+  ).toBeUndefined()
+  expect(
+    workerInsertSizeBand({ field: 'svKind' }, [], undefined),
+  ).toBeUndefined()
 })
 
 test('facetForUnit degrades a per-read dimension in chain mode only', () => {

@@ -56,6 +56,10 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // groups and returns one WorkerPileupData per group, keeping each `unit`
   // whole. In rpcProps, since changing it re-partitions.
   facet?: WorkerFacet
+  // `normalInsertSize`'s band, by which `svKind` files a too-close LR pair,
+  // sent only while the facet or the filter reads `svKind`; unset, each
+  // region's sampled band decides.
+  pinnedInsertSizeBand?: InsertSizeBand
   // Which detail tier a tiered adapter should serve. Set only by the synteny
   // displays, whose PIF adapters carry a coarse no-CIGAR tier for zoomed-out
   // views; read adapters have no tiers and ignore it. A call-site argument

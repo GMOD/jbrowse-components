@@ -85,7 +85,10 @@ export interface ExportedReadsSelf extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   hiddenGroups: ReadonlySet<string>
   loadedRegions: { values: () => Iterable<Region> }
-  rpcProps: () => Pick<RenderAlignmentDataArgs, 'filter' | 'facet'>
+  rpcProps: () => Pick<
+    RenderAlignmentDataArgs,
+    'filter' | 'facet' | 'pinnedInsertSizeBand'
+  >
 }
 
 /**
@@ -99,7 +102,7 @@ export async function fetchExportedReads(
   const { rpcManager, assemblyManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const { adapterConfig, hiddenGroups } = self
-  const { filter, facet } = self.rpcProps()
+  const { filter, facet, pinnedInsertSizeBand } = self.rpcProps()
   const fetches = exportFetches(
     regions,
     [...self.loadedRegions.values()],
@@ -113,6 +116,7 @@ export async function fetchExportedReads(
         regions: [region],
         filter,
         facet,
+        pinnedInsertSizeBand,
         signal,
         statusCallback,
       }),

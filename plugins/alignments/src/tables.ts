@@ -190,7 +190,11 @@ import {
 } from './shared/colorFieldDefs.ts'
 import { countedEventsOf } from './shared/drawnReads.ts'
 import { fieldTag } from './shared/facetLabels.ts'
-import { facetUnitNotices, workerFacet } from './shared/groupFeatures.ts'
+import {
+  facetUnitNotices,
+  workerFacet,
+  workerInsertSizeBand,
+} from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import {
   arcLegendTitle,
@@ -1612,9 +1616,10 @@ export async function alignmentTables(
         colorField: host.colorField,
         baseLayer: host.baseLayer,
         sortTag: chain ? undefined : fieldTag(sorted.sortColumn?.field),
-        facet: workerFacet(
+        facet: workerFacet(host.effectiveFacet, host.unit),
+        pinnedInsertSizeBand: workerInsertSizeBand(
           host.effectiveFacet,
-          host.unit,
+          host.readPredicates,
           host.pinnedInsertSizeBand,
         ),
         showSoftClips: !chain && host.showSoftClips,

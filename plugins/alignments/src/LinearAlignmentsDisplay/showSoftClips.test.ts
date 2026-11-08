@@ -619,6 +619,22 @@ describe('alignments colorField', () => {
     })
   })
 
+  // The colors read the pinned band on the main thread; an svKind filter
+  // files a too-close pair by the same band in the worker, facet or none.
+  it('sends the pinned band to the worker for an svKind filter alone', () => {
+    const { display } = createDisplay({
+      normalInsertSize: { min: 150, max: 600 },
+      filter: [{ field: 'svKind', oneOf: ['deletionType'] }],
+    })
+    expect(display.effectiveFacet).toBeUndefined()
+    expect(display.rpcProps().pinnedInsertSizeBand).toEqual({
+      lower: 150,
+      upper: 600,
+    })
+    display.setFilterFields({ svKind: [] })
+    expect(display.rpcProps().pinnedInsertSizeBand).toBeUndefined()
+  })
+
   it('an insert-size color domain names levels and pins nothing', () => {
     const { display } = createDisplay({
       encoding: {

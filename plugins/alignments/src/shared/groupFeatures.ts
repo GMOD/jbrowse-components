@@ -63,6 +63,7 @@ import type { Pairing, SvKind } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export {
@@ -687,25 +688,33 @@ export function pickFacetOptions(...fields: ReadDimension[]) {
 }
 
 /**
- * What the worker partitions by: the field, in chain mode the chain as the
- * unit a section keeps whole, and under `svKind` the band `normalInsertSize`
- * pins, which the insert-size colors read in place of the sampled one. The
- * domain only orders the sections, which the main thread does, so a reorder
- * refetches nothing — and ungrouped sends no facet at all, so toggling chain
- * mode over ungrouped data refetches nothing either.
+ * What the worker partitions by: the field, and in chain mode the chain as the
+ * unit a section keeps whole. The domain only orders the sections, which the
+ * main thread does, so a reorder refetches nothing — and ungrouped sends no
+ * facet at all, so toggling chain mode over ungrouped data refetches nothing
+ * either.
  */
 export function workerFacet(
   facet: Facet | undefined,
   unit: AlignmentsUnit,
-  pinnedInsertSizeBand?: InsertSizeBand,
 ): WorkerFacet | undefined {
   return facet === undefined
     ? undefined
-    : {
-        field: facet.field,
-        ...(unit === 'chain' ? { unit } : {}),
-        ...(facet.field === 'svKind' && pinnedInsertSizeBand
-          ? { pinnedInsertSizeBand }
-          : {}),
-      }
+    : { field: facet.field, ...(unit === 'chain' ? { unit } : {}) }
+}
+
+/**
+ * The band `normalInsertSize` pins, which the insert-size colors read in place
+ * of the sampled one, for the worker while the facet or the filter reads
+ * `svKind`, the one worker read of it; otherwise none, so editing the band
+ * refetches nothing the worker would compute alike.
+ */
+export function workerInsertSizeBand(
+  facet: Facet | undefined,
+  filter: readonly FieldPredicate[],
+  pinned: InsertSizeBand | undefined,
+) {
+  return facet?.field === 'svKind' || filter.some(p => p.field === 'svKind')
+    ? pinned
+    : undefined
 }
