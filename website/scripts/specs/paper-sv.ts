@@ -30,7 +30,7 @@ const partLabel = (part: number, text: string): Annotation => ({
     alignX: 'left',
     alignY: 'top',
     dx: -100,
-    dy: 80,
+    dy: 96,
   },
 })
 
@@ -57,8 +57,8 @@ export const paperSvSpecs: ScreenshotSpec[] = [
         STYLE,
       ),
       junction(1, STYLE),
-      bandLabel('SV calls', 'draft benchmark somatic SVs', 31, FONT),
-      bandLabel('aggregate\nread links', READS, 101, FONT),
+      bandLabel('SV calls', 'draft benchmark somatic SVs', 37, FONT),
+      bandLabel('aggregate\nread links', READS, 93, FONT),
       bandLabel('split reads', READS, 259, FONT),
       bandLabel('unsplit reads', READS, 619, FONT),
     ],

@@ -131,8 +131,8 @@ const callouts: Annotation[] = [
     leader: true,
     fontSize: 26,
     anchor: { graphNode: DELETION_NODE },
-    // under the backbone, clear of the gene chips to the node's left
-    dx: 30,
+    // under the backbone, between the gene chips and the detour past the node
+    dx: -30,
     dy: 85,
   },
 ]
