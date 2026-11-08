@@ -61,6 +61,7 @@ test('a default session gets the link’s sessionTracks', async () => {
 })
 
 test('a hub that fails to set up falls back to a session that says so', async () => {
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
   const pluginManager = await createPluginManager(
     {
       configSnapshot: {
@@ -83,6 +84,8 @@ test('a hub that fails to set up falls back to a session that says so', async ()
   expect(session.snackbarMessages.map(m => m.message)).toEqual([
     'Error: hub broke',
   ])
+  expect(error).toHaveBeenCalledWith(new Error('hub broke'))
+  error.mockRestore()
 })
 
 describe('a spec session', () => {

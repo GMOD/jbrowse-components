@@ -1,5 +1,18 @@
 const originalError = console.error
 const originalWarn = console.warn
+const originalLog = console.log
+const originalInfo = console.info
+const originalDebug = console.debug
+
+// What got past the filters below, for consoleGate.js to fail the test on.
+// It is printed as well, so the gate's failure sits under the usual location.
+const printed = []
+globalThis.takePrintedConsole = () => printed.splice(0)
+
+function print(level, sink, args) {
+  printed.push(`console.${level}: ${args.map(a => `${a}`).join(' ')}`)
+  sink.call(console, ...args)
+}
 
 // Contract reports never reach this: `contractGate.js` (setupFilesAfterEnv)
 // wraps console.error after this file does and buffers them first.
@@ -17,7 +30,7 @@ console.error = (...args) => {
   ) {
     return undefined
   }
-  originalError.call(console, ...args)
+  print('error', originalError, args)
 }
 
 console.warn = (...args) => {
@@ -38,5 +51,15 @@ console.warn = (...args) => {
   ) {
     return undefined
   }
-  originalWarn.call(console, ...args)
+  print('warn', originalWarn, args)
+}
+
+console.log = (...args) => {
+  print('log', originalLog, args)
+}
+console.info = (...args) => {
+  print('info', originalInfo, args)
+}
+console.debug = (...args) => {
+  print('debug', originalDebug, args)
 }

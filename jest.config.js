@@ -220,6 +220,7 @@ const baseConfig = {
   // opting out. A project that overrides this key has to spread it back in —
   // see jsdomConfig below.
   setupFilesAfterEnv: [
+    '<rootDir>/config/jest/consoleGate.js',
     '<rootDir>/config/jest/contractGate.js',
     '<rootDir>/config/jest/testingLibraryTimeout.js',
   ],
