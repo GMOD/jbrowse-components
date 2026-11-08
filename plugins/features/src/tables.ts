@@ -993,4 +993,7 @@ export async function featureAttributeTables(
   }
 }
 
-export type FeatureTables = Awaited<ReturnType<typeof featureTables>>
+export type FeatureTables = Omit<
+  Awaited<ReturnType<typeof featureTables>>,
+  'fetchRegions'
+>

@@ -24,8 +24,9 @@ function rowsOf<T extends Record<string, unknown[]>>(
 const column = (table: object, name: string) =>
   (table as Record<string, unknown[]>)[name]!
 
-const indexes = (values: unknown[], test: (v: unknown) => boolean) =>
-  values.flatMap((v, i) => (test(v) ? [i] : []))
+function indexes<T>(values: T[], test: (v: T) => boolean) {
+  return values.flatMap((v, i) => (test(v) ? [i] : []))
+}
 
 const fasta = (name: string) => ({
   name,
@@ -351,7 +352,7 @@ test('a gene table joins a gene across a lane that lacks it', async () => {
     'p2',
     'p4',
   ])
-  const bridged = indexes(t.ribbons.bridge, b => b === true)
+  const bridged = indexes(t.ribbons.bridge, b => b)
   expect(bridged.map(i => t.ribbons.group[i])).toEqual(['g3'])
   expect(t.ribbons.lowerLane[bridged[0]!]).toBe(2)
   expect(t.ribbons.alpha[bridged[0]!]).toBeLessThan(t.ribbons.alpha[0]!)
