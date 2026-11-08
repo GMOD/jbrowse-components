@@ -130,28 +130,10 @@ Smaller grammar items, each independent:
 
 ## Convergences: a guide comes from its scale (ADR-108/109)
 
-- **Tag-value colors and their key.** Re-verified 2026-11-08:
-  `tagValueColor` (`LinearAlignmentsDisplay/colorTagUtils.ts`) hashes strings
-  into 30 slots (7 values collide about 53% of the time) and wraps integers
-  mod 10 (NM 0 = NM 10), and the key is built by hand (`shared/legendUtils.ts`
-  `bakedValueLegend`). ADR-205 records "alignments tag colors keep their own
-  hash copy" as a consequence, with no Rejected row. The deal answers the
-  reproducibility reason `colorTagUtils.ts` gives for hashing, though not by
-  storage: held slots are in memory (`heldSlotsOf`, never persisted; ADR-205
-  rejected session state). A value nothing collides with paints its hashed
-  color everywhere, and each region deals in `field.compare` order, so a
-  reload at the same locus reproduces; elsewhere only a collided pair can
-  swap, which today would be one color.
-  - HP:1 stays the leading blue through a `slotOf` preference option on
-    `categoricalScale` (default the hash), which alignments passes its integer
-    rule; core learns no SAM tag.
-  - Per-read cost is unchanged: `makeColorResolver` already caches one pack per
-    distinct value. The deal runs per region before `buildReadFillColors`.
-  - `bakedColorScale`'s declared-domain branch already routes through
-    `categoricalColorScale`, without `held`.
-  - Goldens recolor where pairs collided. A bench on a 10k-value tag
-    (`tags.RG` on a merged cohort) would show whether the deal's per-value
-    work is visible. 2–3 days. Recommended next; Colin's call.
+- **Tag-value colors landed 2026-11-08**: dealt over `TAG_PALETTE` into the
+  session's held slots (ADR-205's amendment). Goldens recolor only where two
+  values on screen collided or sat near-twin (HP:4 steps off HP:3's), and for
+  HP:0 and integers past 10, which no longer wrap onto the first ten.
 - **The tables key.** `tables.ts` builds its legend by hand from
   `legendItems` where every other display calls `colorKeyTables`;
   `977b8d5d1f` and `9caaafd09c` each fixed both keys. Independent of the tag

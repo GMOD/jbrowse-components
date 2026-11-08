@@ -1,6 +1,6 @@
 ---
 name: wiggle-grammar-and-cleanup
-description: "What remains of the 2026-11-07 plugins/wiggle analysis: cleanups, sharing with sibling displays, and the calls (threshold palette, plot type as IR, layer + stat) waiting on Colin. Read before fixing a wiggle bug or proposing layers, transforms or facets on it."
+description: "What remains of the 2026-11-07 plugins/wiggle analysis: cleanups, sharing with sibling displays, and the calls (plot type as IR, layer + stat) waiting on Colin. Read before fixing a wiggle bug or proposing layers, transforms or facets on it."
 ---
 
 # plugins/wiggle: grammar and cleanup
@@ -38,6 +38,12 @@ it.
 - **`listRowSources` dropping `group`.** That is core's `ListedRowSource`
   contract, not a wiggle bug. Filed as a gap in
   `ideas/waiting-on-a-call/row-attributes-have-one-home.md`.
+- **Filling a threshold's unwritten bands from core's `thresholdPalette`.**
+  Colin, 2026-11-08, shown the two rules side by side
+  (https://claude.ai/artifact/5yshDLfRzA35JytnvfCxE3): "dont want to use
+  viridis by default for wiggle stuff". Wiggle keeps its red/grey/blue
+  diverging default for a threshold with fewer `range` colors than bands
+  (`resolveWiggleColor`), though the other displays fill from viridis.
 - **The right-click label "drift" against plugins/marks.** Each display names
   its own measure (MAF "by identity", variants "by genotype"), so "by score"
   and "by value" both stand.
@@ -140,17 +146,10 @@ Only the adapter-review subagent traced these.
 
 ## Open calls for Colin
 
-- **A threshold with fewer `range` colors than bands.** Wiggle paints a
-  missing middle band in `NO_CATEGORY_COLOR` and missing end bands in the
-  pos/neg defaults (`resolveWiggleColor`); feature, marks, synteny and
-  alignments fill every gap from the default ramp (`thresholdPalette`).
-  `NO_CATEGORY_COLOR` is documented as the no-value grey and keys as such in
-  synteny. Recommended: converge on `thresholdPalette` and
-  `thresholdKeyEntries` (memory `one-meaning-per-config-word`), moving
-  `wiggleColorConfigSchema.ts`'s text and its doc page. No in-repo config
-  writes a short range, so nothing on screen moves today. The case for
-  keeping it: wiggle's default is a diverging pair, and a grey neutral middle
-  is that pair's idiom.
+Colin, 2026-11-08: "do whatever you think is best". The two below are
+recommended declines and filings; take them as decided unless he says
+otherwise.
+
 - **Decline the plot-type respelling** (recommended above)?
 - **Layer + stat: file to `ideas/waiting-on-a-call/`** (recommended, naming
   phyloP and a CNV cohort as the review tracks), or a review now?
