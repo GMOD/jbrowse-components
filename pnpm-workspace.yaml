@@ -8,24 +8,6 @@ packages:
   # third-party plugin actually resolves @jbrowse/* packages.
   - 'example-plugins/*'
   - 'website'
-# One spec read by the root devDependency and the override below, so a bump
-# cannot split them; a split fails every frozen-lockfile install.
-catalog:
-  '@babel/core': ^8.1.0
-overrides:
-  # Load-bearing for `pnpm test`, not a tidiness pin. jest reaches babel-jest
-  # through babel-preset-jest -> babel-preset-current-node-syntax, whose
-  # @babel/plugin-syntax-* are all 7.x with a `@babel/core: ^7.0.0-0` peer, so
-  # autoInstallPeers materialises a second core 7 and babel-jest's own
-  # `^7.11.0 || ^8.0.0-0` peer settles onto *that* rather than the root's 8.
-  # babel-jest then runs Babel 7 against our 8.x presets and stops stripping TS
-  # types: every suite dies at the first type annotation with a bare
-  # `SyntaxError: Unexpected token ']'` from `new Map<string, X[]>()`, which
-  # looks nothing like a resolution problem. Verified still true 2026-08-11.
-  # eslint-plugin-react-compiler (dead at 19.1.0-rc.2, hard dep on core ^7.24.4)
-  # is a second puller and the one the commit that added this blamed, but
-  # removing it does not make the override droppable — jest alone is enough.
-  '@babel/core': 'catalog:'
 blockExoticSubdeps: true
 # A workspace cycle is a warning by default, and the tree carried 127 of them
 # unread. They all came from two edges that had a way out: three plugins taking

@@ -2,6 +2,11 @@ const { createHash } = require('node:crypto')
 const { readFileSync } = require('node:fs')
 const { join, relative } = require('node:path')
 
+// The root's babel-jest, bound to the root's Babel 8. jest-config's own copy is
+// bound to a Babel 7 that babel-preset-current-node-syntax's 7.x plugins pull
+// in, and falling back to jest's default transform runs that one: it stops
+// stripping TS types, and every suite dies at its first annotation with a bare
+// `SyntaxError: Unexpected token`.
 const transformer = require('babel-jest').default.createTransformer({
   rootMode: 'upward',
   plugins: [require.resolve('./muiPathImports.cjs')],
