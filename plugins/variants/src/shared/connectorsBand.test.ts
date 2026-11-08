@@ -102,6 +102,21 @@ test('a drag stops at the handle floor and where the plot keeps its own', () => 
   expect(ld.connectorsHeight).toBe(ld.height - MIN_BAND_HEIGHT)
 })
 
+// at genomic positions neither display reserves the band, and a resize there
+// still keeps the handle's floor for when the band comes back
+test('a band reserving nothing keeps its floor on both displays', () => {
+  const m = variantDisplay()
+  const { display: ld } = createTestEnvironment().createDisplay()
+  ld.setVariantLayout('genomic')
+  expect(m.connectorsHeight).toBe(0)
+  expect(ld.connectorsHeight).toBe(0)
+
+  m.setConnectorsHeight(0)
+  ld.setConnectorsHeight(0)
+  expect(m.configuration.connectors.height).toBe(10)
+  expect(ld.configuration.connectors.height).toBe(10)
+})
+
 // a fixed 1000 px ceiling let a drag below the track's edge, or a config taller
 // than it, take the genotype rows to 0 px with the handle out of reach
 test('a stated height past the plot leaves the rows their floor', () => {

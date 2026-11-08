@@ -60,8 +60,9 @@ export function boundBandHeight(
  *
  * @param current - the band's height right now, in px
  * @param target - the height this resize is asking for, in px
- * @param bounds - the band's legal range; for a band in a stack, `max` is
- *   `bandDragBounds` (`bandLayout`), so the plot below keeps its floor
+ * @param bounds - the band's legal range; a band in a stack drags through
+ *   `dragBandHeight` (`bandLayout`), which passes the stack's
+ *   `bandDragBounds`, so the plot below keeps its floor
  */
 export function clampBandHeight(
   current: number,

@@ -72,8 +72,8 @@ import {
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
-  clampConnectorsHeight,
   connectorsBandStack,
+  dragConnectorsHeight,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
@@ -773,16 +773,22 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The `connectors` band's height above the columns, taken from the
-         * rows' slot height so they keep their floor; 0 at genomic
-         * positions, where nothing needs connecting.
+         * The `connectors` band above the columns, taken from the rows' slot
+         * height so they keep their floor; nothing at genomic positions,
+         * where nothing needs connecting.
          */
-        get connectorsHeight(): number {
+        get connectorsStack() {
           return connectorsBandStack(self.fitTargetHeight, {
             active:
               !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
             height: getConf(self, ['connectors', 'height']),
-          }).reserved.connectors
+          })
+        },
+        /**
+         * #getter
+         */
+        get connectorsHeight(): number {
+          return this.connectorsStack.reserved.connectors
         },
         /**
          * #getter
@@ -1003,9 +1009,9 @@ export function stateModelFactory(
             setConf(
               self,
               ['connectors', 'height'],
-              clampConnectorsHeight(
+              dragConnectorsHeight(
+                self.connectorsStack,
                 self.fitTargetHeight,
-                self.connectorsHeight,
                 n,
               ),
             )

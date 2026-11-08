@@ -302,7 +302,7 @@ describe('a band keeps its height', () => {
 
 describe('a resized band outlives the display instance', () => {
   test('a resize lands on the config', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = recordsDisplayAt(KIT, 51)
     display.setRecordsHeight(64)
 
     expect(display.recordsHeight).toBe(64)
@@ -311,7 +311,7 @@ describe('a resized band outlives the display instance', () => {
   })
 
   test('a resize is floored by the shared band rule, and has no ceiling', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = recordsDisplayAt(KIT, 51)
 
     display.setRecordsHeight(0)
     expect(display.recordsHeight).toBe(MIN_RECORDS_HEIGHT)

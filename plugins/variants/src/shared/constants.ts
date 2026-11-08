@@ -1,11 +1,11 @@
-import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
-  bandDragBounds,
   boundStackedBands,
+  dragBandHeight,
   stackBands,
 } from '@jbrowse/core/util/bandLayout'
 
-import type { Band, BandPlot } from '@jbrowse/core/util/bandLayout'
+import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 
 export const GENOTYPE_SPLITTER = /[/|]/
 
@@ -47,22 +47,21 @@ function connectorsPlot(plotHeight: number): BandPlot {
 }
 
 /**
- * A drag of the `connectors` band, from `current` px: down to the handle's
- * floor and up to where the plot under it keeps its own.
+ * A drag of the `connectors` band folded by {@link connectorsBandStack}: down
+ * to the handle's floor and up to where the plot under it keeps its own.
  */
-export function clampConnectorsHeight(
+export function dragConnectorsHeight(
+  stack: BandStack<'connectors'>,
   plotHeight: number,
-  current: number,
   target: number,
 ) {
-  const stack = connectorsBandStack(plotHeight, {
-    active: true,
-    height: current,
-  })
-  return clampBandHeight(current, target, {
-    min: MIN_CONNECTORS_HEIGHT,
-    ...bandDragBounds(stack, 'connectors', connectorsPlot(plotHeight)),
-  })
+  return dragBandHeight(
+    stack,
+    'connectors',
+    connectorsPlot(plotHeight),
+    target,
+    MIN_CONNECTORS_HEIGHT,
+  )
 }
 
 // Screen row a worker row maps to when the display isn't drawing it (see

@@ -24,8 +24,8 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { bandDepthFraction, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import {
-  clampConnectorsHeight,
   connectorsBandStack,
+  dragConnectorsHeight,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { ldMetricLabel } from './components/ldValueLabel.ts'
@@ -116,20 +116,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       setIndexSnp(snp: LDSnp | undefined) {
         self.indexSnpLocus = snp ? snpKey(snp) : undefined
-      },
-      /**
-       * #action
-       */
-      setConnectorsHeight(n: number) {
-        setConf(
-          self,
-          ['connectors', 'height'],
-          clampConnectorsHeight(
-            self.height,
-            getConf(self, ['connectors', 'height']),
-            n,
-          ),
-        )
       },
       /**
        * #action
@@ -424,6 +410,16 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setConnectorsHeight(n: number) {
+        setConf(
+          self,
+          ['connectors', 'height'],
+          dragConnectorsHeight(self.connectorsStack, self.height, n),
+        )
+      },
       /**
        * #action
        */

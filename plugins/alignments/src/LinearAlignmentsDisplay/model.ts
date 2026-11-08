@@ -28,7 +28,6 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin, {
@@ -178,10 +177,10 @@ import { connectorBandState } from './renderers/connectorMarks.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
-  belowCoverageDragBounds,
   boundBelowCoverageHeights,
   buildSectionRenders,
   computeStackedSections,
+  dragBelowCoverageBand,
   laneBandOverheads,
 } from './sectionLayout.ts'
 
@@ -2691,14 +2690,11 @@ export default function stateModelFactory(
             setConf(
               self,
               ['coverage', 'height'],
-              clampBandHeight(
-                self.coverageHeight,
+              dragBelowCoverageBand(
+                self.belowCoverageBandsInput,
+                'coverage',
+                self.bandPlot,
                 height,
-                belowCoverageDragBounds(
-                  self.belowCoverageBandsInput,
-                  'coverage',
-                  self.bandPlot,
-                ),
               ),
             )
           },
@@ -2710,14 +2706,11 @@ export default function stateModelFactory(
             setConf(
               self,
               ['readConnections', 'height'],
-              clampBandHeight(
-                self.readConnectionsHeight,
+              dragBelowCoverageBand(
+                self.belowCoverageBandsInput,
+                'arcs',
+                self.bandPlot,
                 height,
-                belowCoverageDragBounds(
-                  self.belowCoverageBandsInput,
-                  'arcs',
-                  self.bandPlot,
-                ),
               ),
             )
           },
@@ -2729,14 +2722,11 @@ export default function stateModelFactory(
             setConf(
               requireReadsConf(self),
               ['sashimi', 'height'],
-              clampBandHeight(
-                self.sashimiHeight,
+              dragBelowCoverageBand(
+                self.belowCoverageBandsInput,
+                'sashimi',
+                self.bandPlot,
                 height,
-                belowCoverageDragBounds(
-                  self.belowCoverageBandsInput,
-                  'sashimi',
-                  self.bandPlot,
-                ),
               ),
             )
           },

@@ -1,8 +1,8 @@
-import { clampBandHeight } from './bandHeight.ts'
 import {
   bandAt,
   bandDragBounds,
   boundStackedBands,
+  dragBandHeight,
   reservedPx,
   stackBands,
 } from './bandLayout.ts'
@@ -37,6 +37,7 @@ test('the fold states the order once and every top reads it', () => {
     order: ['coverage', 'arcs', 'sashimi'],
     top: { coverage: 0, arcs: 45, sashimi: 75 },
     reserved: { coverage: 45, arcs: 30, sashimi: 0 },
+    stated: { coverage: 45, arcs: 30, sashimi: 30 },
     bottom: 75,
   })
 })
@@ -148,11 +149,7 @@ describe('a drag in a bound stack', () => {
   test('writes nothing the read-time bound cuts, whichever band moves', () => {
     for (const key of order) {
       const before = stackOf(45, 40)
-      const dragged = clampBandHeight(
-        before.reserved[key],
-        5000,
-        bandDragBounds(before, key, plot),
-      )
+      const dragged = dragBandHeight(before, key, plot, 5000)
       const after = stackOf(
         key === 'coverage' ? dragged : 45,
         key === 'conservation' ? dragged : 40,
@@ -163,17 +160,34 @@ describe('a drag in a bound stack', () => {
   })
 
   test('two bands dragged to the limit in turn keep the plot its floor', () => {
-    const coverage = clampBandHeight(
-      45,
+    const coverage = dragBandHeight(stackOf(45, 40), 'coverage', plot, 5000)
+    const conservation = dragBandHeight(
+      stackOf(coverage, 40),
+      'conservation',
+      plot,
       5000,
-      bandDragBounds(stackOf(45, 40), 'coverage', plot),
-    )
-    const conservation = clampBandHeight(
-      40,
-      5000,
-      bandDragBounds(stackOf(coverage, 40), 'conservation', plot),
     )
     expect([coverage, conservation]).toEqual([240, 40])
     expect(stackOf(coverage, conservation).bottom).toBe(280)
+  })
+
+  test('a band declared under its floor stays put', () => {
+    const stack = stackOf(5, 40)
+    expect(dragBandHeight(stack, 'coverage', plot, 6)).toBe(6)
+    expect(dragBandHeight(stack, 'coverage', plot, 2)).toBe(5)
+  })
+
+  test('a band that draws nothing drags from its stated height', () => {
+    const stackOff = (coverage: number) =>
+      stackBands(order, {
+        coverage: { active: false, height: coverage },
+        conservation: { active: true, height: 40 },
+      })
+    expect(dragBandHeight(stackOff(45), 'coverage', plot, 10)).toBe(20)
+    expect(dragBandHeight(stackOff(5), 'coverage', plot, 6)).toBe(6)
+  })
+
+  test('a band brings its own floor', () => {
+    expect(dragBandHeight(stackOf(45, 40), 'coverage', plot, 0, 10)).toBe(10)
   })
 })

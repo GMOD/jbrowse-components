@@ -1,4 +1,4 @@
-import { boundBandHeight } from './bandHeight.ts'
+import { boundBandHeight, clampBandHeight } from './bandHeight.ts'
 
 import type { BandBounds } from './bandHeight.ts'
 
@@ -44,6 +44,11 @@ export interface BandStack<K extends string> {
   top: Record<K, number>
   /** Each band's {@link reservedPx}. */
   reserved: Record<K, number>
+  /**
+   * Each band's height as it was folded, reserving or not: the stated height,
+   * bound when the bands came through {@link boundStackedBands}.
+   */
+  stated: Record<K, number>
   /** Where the content below the stack begins — the sum of every reserved px. */
   bottom: number
 }
@@ -66,13 +71,15 @@ export function stackBands<K extends string>(
 ): BandStack<K> {
   const top = {} as Record<K, number>
   const reserved = {} as Record<K, number>
+  const stated = {} as Record<K, number>
   let y = 0
   for (const key of order) {
     top[key] = y
     reserved[key] = reservedPx(bands[key])
+    stated[key] = bands[key].height
     y += reserved[key]
   }
-  return { order, top, reserved, bottom: y }
+  return { order, top, reserved, stated, bottom: y }
 }
 
 /**
@@ -137,8 +144,8 @@ export function boundStackedBands<K extends string>(
  * The legal range for a drag of band `key` in a stack folded from
  * {@link boundStackedBands}: up to the room the plot leaves less every other
  * band's reserved px, so a drag stops where the stack meets the plot's floor
- * and never writes a height the read-time bound would cut. Pass it to
- * {@link clampBandHeight}, whose floor it leaves at the default.
+ * and never writes a height the read-time bound would cut. A drag reads it
+ * through {@link dragBandHeight}.
  */
 export function bandDragBounds<K extends string>(
   stack: BandStack<K>,
@@ -148,4 +155,25 @@ export function bandDragBounds<K extends string>(
   return {
     max: Math.max(0, stackRoom(plot) - (stack.bottom - stack.reserved[key])),
   }
+}
+
+/**
+ * #api core/util
+ * One resize of band `key` in a stack folded from {@link boundStackedBands},
+ * up to {@link bandDragBounds}: {@link clampBandHeight} from the band's
+ * folded height, so a band a config declared under its floor stays where it
+ * is, whether or not it draws. `min` is the band's drag floor,
+ * `MIN_BAND_HEIGHT` by default.
+ */
+export function dragBandHeight<K extends string>(
+  stack: BandStack<K>,
+  key: K,
+  plot: BandPlot,
+  target: number,
+  min?: number,
+) {
+  return clampBandHeight(stack.stated[key], target, {
+    min,
+    ...bandDragBounds(stack, key, plot),
+  })
 }

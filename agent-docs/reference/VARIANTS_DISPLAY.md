@@ -307,7 +307,9 @@ filling it and the pointer dispatching on it read that one fold**
   and alignments stacks, and the `connectors` band over the variant columns or
   the LD triangle (`connectorsBandStack`) — bind as one stack
   (`boundStackedBands`, top-down) and drag to the room the others leave
-  (`bandDragBounds`), so a band at its ceiling still leaves the plot its floor.
+  (`dragBandHeight`), so a band at its ceiling still leaves the plot its floor.
+- **The records band has one resize path**: its seam handle goes through
+  `resizeRecordsBand`, as the track handle does, from the height it draws.
 
 **The container the rows are offset into is 0x0**, everything in it being
 absolutely positioned. So it is the right parent for a child placed by

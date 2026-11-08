@@ -1,6 +1,6 @@
 import {
-  bandDragBounds,
   boundStackedBands,
+  dragBandHeight,
   reservedPx,
   stackBands,
 } from '@jbrowse/core/util/bandLayout'
@@ -147,15 +147,18 @@ export function arcsOverlayCoverage(s: BelowCoverageBandsSettings) {
   )
 }
 
+function arcsDrawn(s: BelowCoverageBandsSettings, lane: LaneBandData) {
+  return s.drawnReadConnections !== 'off' && lane.hasArcs
+}
+
 function bandStackOf(
   s: BelowCoverageBandsSettings,
   lane: LaneBandData,
 ): Record<BandKey, Band> {
-  const arcsOn = s.drawnReadConnections !== 'off' && lane.hasArcs
   return {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
     arcs: {
-      active: arcsOn && !arcsOverlayCoverage(s),
+      active: arcsDrawn(s, lane) && !arcsOverlayCoverage(s),
       height: s.readConnectionsHeight,
     },
     sashimi: {
@@ -175,7 +178,6 @@ export function laneBands(
 ): LaneBands {
   const bands = bandStackOf(s, lane)
   const stack = stackBands(BAND_ORDER, bands)
-  const arcsOn = s.drawnReadConnections !== 'off' && lane.hasArcs
   return {
     coverageHeight: stack.reserved.coverage,
     hasArcsBand: stack.reserved.arcs > 0,
@@ -189,7 +191,7 @@ export function laneBands(
           height: stack.reserved.arcs,
           down: s.readConnectionsDown,
         }
-      : arcsOn
+      : arcsDrawn(s, lane)
         ? coverageOverlayBand(stack)
         : undefined,
   }
@@ -226,14 +228,20 @@ export function boundCoverageHeight(coverageHeight: number, plot: BandPlot) {
   ).coverage.height
 }
 
-// The legal range for a drag of one band over the pooled stack, which every
-// lane's handle for that band resizes.
-export function belowCoverageDragBounds(
+// One drag of one band over the pooled stack, which every lane's handle for
+// that band resizes.
+export function dragBelowCoverageBand(
   s: BelowCoverageBandsInput,
   key: BandKey,
   plot: BandPlot,
+  target: number,
 ) {
-  return bandDragBounds(stackBands(BAND_ORDER, bandStackOf(s, s)), key, plot)
+  return dragBandHeight(
+    stackBands(BAND_ORDER, bandStackOf(s, s)),
+    key,
+    plot,
+    target,
+  )
 }
 
 // What each lane's band stack costs the fit-to-viewport row budget, in

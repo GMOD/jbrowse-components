@@ -258,9 +258,9 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   pileup's floor, over the pooled answer of which strips draw. A lane reserves a
   subset of that stack, so each grouped lane's stack stays inside the plot too;
   the fit budget still charges every lane's stack. A drag clamps to the room the
-  other bands leave (`belowCoverageDragBounds`), and a strip bound to 0 px is not
-  reserved (`hasArcsBand`/`hasSashimiBand` false), so it gets no handle on top of
-  the one above it.
+  other bands leave (`dragBelowCoverageBand`), and a strip bound to 0 px is not
+  reserved (`coverageHeight` 0, `hasArcsBand`/`hasSashimiBand` false), so it
+  gets no handle on top of the one above it.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the
   coverage histogram in up mode. `computeStackedSections`, the fit budget

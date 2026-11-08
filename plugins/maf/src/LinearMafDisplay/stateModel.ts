@@ -27,8 +27,8 @@ import {
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
-import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
-import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
+import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
@@ -931,33 +931,30 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * The coverage band's height, clamped as every band drag is
-         * (`clampBandHeight`) to the room the other band and the rows' floor
-         * leave (`bandDragBounds`).
+         * The coverage band's height, dragged as every band in a stack is
+         * (`dragBandHeight`) to the room the other band and the rows' floor
+         * leave.
          */
         setCoverageHeight(height: number) {
           setConf(
             self,
             ['coverage', 'height'],
-            clampBandHeight(
-              self.coverageHeight,
-              height,
-              bandDragBounds(self.topBands, 'coverage', self.bandPlot),
-            ),
+            dragBandHeight(self.topBands, 'coverage', self.bandPlot, height),
           )
         },
         /**
          * #action
-         * The conservation band's height, clamped as `setCoverageHeight` is.
+         * The conservation band's height, dragged as `setCoverageHeight` is.
          */
         setConservationHeight(height: number) {
           setConf(
             self,
             ['conservation', 'height'],
-            clampBandHeight(
-              self.conservationHeight,
+            dragBandHeight(
+              self.topBands,
+              'conservation',
+              self.bandPlot,
               height,
-              bandDragBounds(self.topBands, 'conservation', self.bandPlot),
             ),
           )
         },

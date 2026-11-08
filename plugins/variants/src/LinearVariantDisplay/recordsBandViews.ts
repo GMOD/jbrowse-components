@@ -367,18 +367,6 @@ export function recordsBandActions(self: RecordsActionsHost) {
     showAllRecordsGroups() {
       setConf(self, ['records', 'facet', 'hidden'], [])
     },
-    /**
-     * #action
-     * Set the records band's height, clamped here because a drag can
-     * deliver any number and a band dragged shut has to stay grabbable.
-     */
-    setRecordsHeight(arg: number) {
-      setConf(
-        self,
-        ['records', 'height'],
-        clampBandHeight(self.recordsHeight, arg, RECORDS_BAND_BOUNDS),
-      )
-    },
   }
 }
 
@@ -951,6 +939,13 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * since it is empty for want of records, not set below the floor.
      */
     resizeRecordsBand,
+    /**
+     * #action
+     * The seam handle's drag: `resizeRecordsBand` to `height`.
+     */
+    setRecordsHeight(height: number) {
+      resizeRecordsBand(height - self.topBands.reserved.records)
+    },
     /**
      * #action
      * Hold the band's height over rows from its first layout of a fetched

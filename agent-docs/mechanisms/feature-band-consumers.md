@@ -106,8 +106,9 @@ sabotage tests keep the enforcement honest.
 - **A resize and a stated height are different reads.** `clampBandHeight` for a
   drag (a band dragged shut has to stay grabbable), `boundBandHeight` for a
   config, menu or slider value. Bands sharing a plot bind as a stack
-  (`boundStackedBands`, `bandDragBounds`): a ceiling per band lets two bands
-  at their ceilings take the plot to nothing.
+  (`boundStackedBands`) and drag through `dragBandHeight`, which stops where
+  the plot keeps its floor: a ceiling per band lets two bands at their
+  ceilings take the plot to nothing.
 - **The probe and the commit pack through one builder.** A fit that measures one
   stack and commits another overflows the height it just fit, descends to the
   last rung, and every label vanishes — on the tallest bands only.
@@ -122,8 +123,9 @@ sabotage tests keep the enforcement honest.
   a band hit with its row fields left empty, never a second slot. Alignments
   writes `hoverCoverageBand` on every branch because one branch once forgot it
   (`useAlignmentsBase.ts`).
-- **Every band with a height slot drags.** The slot, the `clampBandHeight`
-  setter and a handle at the band's seam arrive together; a band that only a
+- **Every band with a height slot drags.** The slot, a clamped setter
+  (`dragBandHeight` in a stack) and a handle at the band's seam arrive
+  together; a band that only a
   menu can size is the odd one out the next reader files as a bug.
 
 A tenth, learned by one plugin so far and owed by any display that runs the

@@ -154,31 +154,28 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
 // including collapsed groups), scrolling with its band. Ungrouped is the single
 // sticky section, reproducing the prior lone handle at `coverageHeight`.
 //
-// Every section carries a coverage band, so the handle on the Nth one sits below
-// N of them and moves N px per px of height — its `gain`. The title says the
+// Gated and geared like the arc and sashimi handles below: a section whose
+// coverage band reserves no px has none to resize, and the handle on the Nth
+// band sits below N of them, moving N px per px of height. The title says the
 // drag is display-wide, since the bands the user is NOT pointing at move too.
-const CoverageResizeHandle = observer(function CoverageResizeHandle({
+export const CoverageResizeHandle = observer(function CoverageResizeHandle({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  if (!model.showCoverage) {
-    return null
-  }
-  const { height, scrollModel: scroll, isGrouped } = model
+  const { height, scrollModel: scroll, isGrouped, renderSections } = model
   return (
     <>
-      {model.renderSections.map((section, i) => {
-        const bottom = bandScreenTop(
-          section.coverageTop + section.coverageHeight,
-          scroll,
-        )
-        return (
+      {renderSections.map((section, i) =>
+        section.coverageHeight > 0 ? (
           <PileupResizeHandle
             key={sectionKey(section.groupKey)}
-            seam={bottom}
+            seam={bandScreenTop(
+              section.coverageTop + section.coverageHeight,
+              scroll,
+            )}
             canvasHeight={height}
-            gain={i + 1}
+            gain={stackedBandGain(renderSections, i, s => s.coverageHeight > 0)}
             value={model.bandHeights.coverageHeight}
             onChange={h => {
               model.setCoverageHeight(h)
@@ -189,8 +186,8 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
                 : 'Drag to resize coverage track'
             }
           />
-        )
-      })}
+        ) : null,
+      )}
     </>
   )
 })
