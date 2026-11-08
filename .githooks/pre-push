@@ -541,7 +541,7 @@ if [ -n "$(changed_since "$tmp/before")" ]; then
 fi
 
 # Both linters, because they catch different things and CI runs both: oxlint is
-# the fast pass, `lint:eslint` the backstop for the react-compiler and
+# the fast pass, `lint:eslint` the backstop for the @eslint-react and
 # import/unicorn rules oxlint has no equivalent for. The 2026-08-13 batch was
 # entirely eslint-only rules, so oxlint alone would have caught none of it.
 #

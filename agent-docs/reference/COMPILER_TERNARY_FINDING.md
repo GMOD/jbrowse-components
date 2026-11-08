@@ -55,9 +55,7 @@ discriminates.
 ## Writing or auditing a hook that reads MobX
 
 Pass already-read values in, or keep the read a plain property access. To call a model
-method that reads observables, add `'use no memo'` with
-`// eslint-disable-next-line react-compiler/react-compiler` above it; the ESLint plugin
-wrongly calls the directive unused. To check a suspicion, compile the file with
+method that reads observables, add `'use no memo'`. To check a suspicion, compile the file with
 `babel.transformSync` and `babel-plugin-react-compiler` and look for a `_c(n)` cache around
 the call. Unit tests catch it only if they re-render after mutating the observable.
 

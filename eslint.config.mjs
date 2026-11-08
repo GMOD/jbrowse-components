@@ -1,7 +1,6 @@
 import eslintReact from '@eslint-react/eslint-plugin'
 import eslintPluginAstro from 'eslint-plugin-astro'
 import { importX } from 'eslint-plugin-import-x'
-import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import { defineConfig } from 'eslint/config'
@@ -15,9 +14,9 @@ import tseslint from 'typescript-eslint'
 // formatting + import ordering. This config runs ONLY the rules oxlint can't
 // yet do, and deliberately carries NO type information (no
 // `parserOptions.project`) so it stays fast and needs only one TypeScript
-// version — the things it enforces (react-compiler, the unicorn denylist,
-// @eslint-react, react-refresh, the no-restricted-syntax guards, astro) are all
-// syntactic. See agent-docs and .oxlintrc.json for the division of labor.
+// version — the things it enforces (the unicorn denylist, @eslint-react,
+// react-refresh, the no-restricted-syntax guards, astro) are all syntactic. The
+// React Compiler diagnostics are oxlint's `react/*` rules. See agent-docs and .oxlintrc.json for the division of labor.
 //
 // This import is why .oxlintrc.json must stay strict JSON. oxlint reads it as
 // JSONC and a `//` comment there lints clean, but node's JSON module loader
@@ -264,7 +263,7 @@ export default defineConfig(
     // nothing and was skipped without a word. 461 files of ~4900.
     //
     // The rules this config exists for are exactly the ones that needed the
-    // missing 90%: `react-compiler`, `@eslint-react`, `react-refresh`, and the
+    // missing 90%: `@eslint-react`, `react-refresh`, and the
     // `useEffectEvent` import guard whose message begins "nearly every JBrowse
     // component is an observer". None of them had ever run on a component.
     //
@@ -287,7 +286,6 @@ export default defineConfig(
   },
   {
     plugins: {
-      'react-compiler': reactCompiler,
       'react-refresh': eslintPluginReactRefresh,
       'import-x': importX,
       // Registered (rules left off) purely so the ~84 inline
@@ -300,7 +298,6 @@ export default defineConfig(
       local: localRules,
     },
     rules: {
-      'react-compiler/react-compiler': 'error',
       'local/region-data-map-names-its-field': 'error',
     },
   },
@@ -826,7 +823,6 @@ export default defineConfig(
   {
     files: ['website/src/**/*.ts', 'website/scripts/**/*.ts'],
     rules: {
-      'react-compiler/react-compiler': 'off',
       'react-refresh/only-export-components': 'off',
       // reads a WebGL `gl.useProgram` override as a misnamed hook
       '@eslint-react/no-unnecessary-use-prefix': 'off',
