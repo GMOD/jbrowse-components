@@ -54,6 +54,10 @@ color) land in the script header.
   R, and the browser already gives an instant figure (Export SVG); what R adds
   happens in the user's own session. No in-browser R (webR) unless ggjbrowse
   users ask for it. Decided with Colin, 2026-10-11.
+- **R is the point, not an implementation choice.** No Python or Vega-Lite
+  output in its place; judge a change by whether the emitted script gets more
+  useful inside R (a `geom_*` added, a theme, a joined table, patchwork), not by
+  toolchain weight.
 - **Readers plus one composing call.** The script holds no layers, scales or
   patchwork of its own: an earlier exporter spelled every panel out in
   TypeScript, reached 100+ lines for three tracks and drifted from

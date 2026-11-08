@@ -63,7 +63,9 @@ function spread(side: Candidate[], labelPx: number) {
  * names its features. Each half of the screen stacks its labels a line apart
  * nearest the height of their features; past what the half holds, the widest
  * features keep theirs. Points are in the screen's frame, centred on the
- * circle, so the caller draws them unrotated.
+ * circle, so the caller draws them unrotated. A feature cut at the origin
+ * anchors on its head piece: anchoring on the whole arc was declined, since it
+ * lands on the busy "1".
  */
 export function ringCallouts({
   rings,

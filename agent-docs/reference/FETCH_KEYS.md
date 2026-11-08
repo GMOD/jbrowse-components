@@ -29,6 +29,13 @@ adapter never reads still forks the cache: the decorating display gets its own a
 instance and file parse, and nothing raises an error. Pass a worker-side value that is
 not the adapter's as a sibling RPC arg, the way `sequenceAdapter` is passed.
 
+**A fetch key needs a reader.** When a setting splits in two, re-check every
+"X is a fetch key because Y" comment beside it, and grep the adapter and its
+options type for X. Splitting whiskers into `aggregate` + `extent` left
+`aggregate` keying the wiggle fetch "so an adapter can skip min/max under
+mean", which the new default made false and no adapter read: a refetch on every
+menu click.
+
 ## The cache key is the return value, not the reads
 
 The compare is structural, not a serialized string: `JSON.stringify` drops an

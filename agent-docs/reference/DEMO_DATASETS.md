@@ -62,6 +62,14 @@ format traps.
   hosted demo config it degrades to broken tracks silently. Name the gate that
   catches a break before proposing a demo on dated upstream paths (C-GIAB's
   callsets live in dated FTP directories, and that contact sheet was declined).
+- **HG002 per-haplotype methylation** is ONT's modkit bedMethyl,
+  `ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.{1,2}.bedmethyl.gz`
+  (HP1/HP2, ~20x each, 610 MB, no `.tbi`). Slice a region by streaming it
+  through `gzip -dc | awk` (`$4=="m"` for 5mC), then `bgzip` and `tabix -p bed`,
+  from a scratchpad script, since the worktree guard refuses an inline `curl |
+  gzip` chain; chr15 sorts early, so a slice takes about a minute.
+  chr15:22–27 Mb shows the imprinting: HP1 methylated at the SNRPN promoter, HP2
+  across the SNHG14 gene body. The hosted `HG002_SNRPN_hp{1,2}` cover 200 kb.
 
 ## Where a new demo's annotation comes from
 

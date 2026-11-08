@@ -52,7 +52,9 @@ export function latestYml({
  * downloaded; without it `verifySignature` returns null and skips the check. It
  * is a list because the check runs against the installed app's copy of this
  * file, so the release that changes publisher has to be preceded by one that
- * already names the new certificate.
+ * already names the new certificate. An unsigned build passes none: once an
+ * installed copy names publishers, every later installer not signed by one of
+ * them is refused, while v4.3.0's copy names none and accepts any.
  */
 export function appUpdateYml({
   owner,

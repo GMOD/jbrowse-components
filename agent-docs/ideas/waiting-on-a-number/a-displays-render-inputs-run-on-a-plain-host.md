@@ -375,6 +375,9 @@ and the factories' declarations are the same size.
   whose tracks share one needs the union across their static hosts.
 - **What the session did around the body**: a static consumer of the byte
   gate (above), and rasterized layers (the parity tests are vector).
+- **Held unlanded**: branch `matrix-ramp-views` (worktree of the same name)
+  runs `MatrixRampMixin`'s ramp chain on a plain host, and waits for a static
+  matrix consumer.
 
 ## The long tail
 

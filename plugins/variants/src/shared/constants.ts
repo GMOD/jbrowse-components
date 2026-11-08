@@ -80,7 +80,10 @@ export function dragConnectorsHeight(
 // float32 — the GPU paths carry the row index through a `float()` cast.
 export const HIDDEN_ROW = 0x00ffffff
 
-// Variant rendering colors
+// Variant rendering colors. Known clashes, declined 2026-10-23 and re-raised
+// only on request: OTHER black matches UNPHASED_COLOR in phased mode colored by
+// SV type, and the no-call yellow nears INV orange under deutan and CPX green
+// under protan.
 export const REFERENCE_COLOR = '#ccc'
 // The row-separator hairline's alpha over the theme divider: the cells fill
 // their rows edge to edge, so the line needs the same weight the multi-row

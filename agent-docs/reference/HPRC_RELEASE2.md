@@ -156,3 +156,13 @@ Four VCFs sit beside each build. Measured at MHC class II, C4 and HP (2026-10-02
 
 `pgbi` records carry only `AT` and `ID` in INFO, so an allele frequency comes
 from the genotypes, not from `AF`.
+
+**The portal's SV callset is `hprc-v2.1-mc-grch38.sv.v3.vcf.gz`, built
+offline** by jb2hubs' `buildHprcSvCallset.sh` (under its pangenome configs):
+it splits `wave.vcf.gz` with `bcftools norm -m -any` (a merged record mixing C4's deletion
+and insertion drew "Other / mixed"), then collapses same-site alleles of one SV
+type within 5% in size (`collapseSiteAlleles.py`, audited by
+`checkSiteAlleles.py`), 696,361 records; the FLNA/EMD inversion went from 64
+records to 2. `truvari collapse` skipped inversions and dropped carriers when
+merging phased genotypes. v1 and the split-only v2 (1.46 M records) stay
+hosted.

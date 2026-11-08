@@ -54,6 +54,17 @@ issues and papers. There is deliberately no `gc`.
   … chromAlias.txt").
 - **`&loc=` accepts a gene name; a session spec's `init.loc` does not.** The URL
   param routes through text search; `navToLocString` rejects a non-locstring.
+- **A rebuilt UCSC aggregate index (`jbrowse.org/ucsc/<asm>/trix/`) ships only
+  once FANCS and BRCA search clean.** The CLI indexes each GFF3 value on the
+  feature that owns it (hg38 FANCS 369 records to 2); a build from a CLI older
+  than 5.0.0-beta.20 brings the transcript-repeated synonyms back.
+  `products/jbrowse-web/browser-tests/suites/text-search-hg38.ts` asserts both.
+- **Each RefSeqFE element on the hosted NCBI RefSeq GFF (`hg38-ncbiRefSeqGff`)
+  is three top-level rows sharing a `Dbxref=GeneID`:** a `biological_region`
+  whose `standard_name` is the label, one or more class rows (`enhancer`,
+  `silencer`, …) and a `match` (`Target=NG_…`) padded 100 bp each side. None
+  has a Parent, so all three draw as plain boxes. Grouping them is a jb2hubs
+  data-shape question (`hubtools/src/ncbiGff.ts`), not a gene-glyph one.
 
 ## Hosted PIFs and the coarse tier
 

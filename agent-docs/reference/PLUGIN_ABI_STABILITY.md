@@ -71,6 +71,14 @@ or path, and a prop is neither. Dropping `slotProps` from `CascadingMenuProps`
 is a compile error for a rebuilt plugin and a silently ignored prop for a
 prebuilt bundle.
 
+**The GPU stack is not ABI until v5.0.0 ships.** render-core, display-kit, the
+fetch mixins, the display hook table, `RenderLifecycleMixin`, `installUpload`,
+the `GpuXxxRenderer` / `Canvas2DXxxRenderer` pairs and the `rpcProps` /
+`zoomFetchKey` stamps are on npm only under the `next` beta tag, and only our
+own plugins (jb2plugins included) build against them. Weigh a redesign there on
+in-tree cost alone, and prefer the design that would be right to publish over
+the one that keeps what is there.
+
 ## What has already left the re-export surface
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
