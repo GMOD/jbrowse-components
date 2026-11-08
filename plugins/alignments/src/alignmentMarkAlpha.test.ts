@@ -1,5 +1,10 @@
 import { insertionSizeAlpha } from '../../../packages/alignments-core/src/insertionSizeAlpha.generated.ts'
 import { insertionBarWidthPx } from '../../../packages/alignments-core/src/insertionWidth.generated.ts'
+import {
+  LABEL_FADE_FLOOR,
+  labelFadeOpacity,
+  labelFont,
+} from '../../../packages/alignments-core/src/labelConstants.ts'
 import { DEFAULT_QUALITY_FADE } from './features/mismatch/qualityOpacity.ts'
 import {
   frequencyFadeGate,
@@ -183,4 +188,57 @@ test('a missing column, columns of two lengths and a bad pxPerBp are refused', (
     expect(call({ pxPerBp })).toThrow(`pxPerBp is ${pxPerBp}`)
   }
   expect(call({ pxPerBp: 0 })).not.toThrow()
+})
+
+test('a deletion’s length label fades by the px of it inside its region against its digits, and shows on no read too short for text', () => {
+  const digitsPx = labelFont(10).measure('12')
+  const t = alignmentMarkAlpha({
+    pxPerBp: 1,
+    featureHeight: 10,
+    deletions: {
+      length: [12, 12, 12, 12],
+      fade: [0, 0, 0, 0],
+      visibleLength: [digitsPx * 2, digitsPx, digitsPx * 1.5, 1],
+    },
+  })
+  expect(t.deletions.labelAlpha).toEqual(
+    [digitsPx * 2, digitsPx, digitsPx * 1.5, 1].map(bp =>
+      labelFadeOpacity(bp, digitsPx),
+    ),
+  )
+  expect(t.deletions.labelAlpha[0]).toBe(1)
+  expect(t.deletions.labelAlpha[1]).toBe(0)
+  expect(t.deletions.labelAlpha[2]).toBeGreaterThan(LABEL_FADE_FLOOR)
+  expect(t.deletions.labelAlpha[3]).toBe(0)
+  const whole = alignmentMarkAlpha({
+    pxPerBp: 2,
+    featureHeight: 10,
+    deletions: { length: [30], fade: [0] },
+  })
+  expect(whole.deletions.labelAlpha).toEqual([
+    labelFadeOpacity(60, labelFont(10).measure('30')),
+  ])
+  const short = alignmentMarkAlpha({
+    pxPerBp: 2,
+    featureHeight: 3,
+    deletions: { length: [30], fade: [0] },
+  })
+  expect(short.deletions.labelAlpha).toEqual([0])
+})
+
+test('a mismatch’s letter takes its quality fade alone, and none under the letter floor', () => {
+  const { mismatches } = alignmentMarkAlpha({
+    pxPerBp: 0.1,
+    fadeLowFrequency: true,
+    mismatchOpacity: {
+      field: 'baseQuality',
+      scale: { domainMin: 0, domainMax: 50, range: [0, 1] },
+    },
+    mismatches: { fade: [1, 1, 1, 0], quality: [1, 3, 10, 255] },
+  })
+  expect(mismatches.letterAlpha[0]).toBe(0)
+  expect(mismatches.letterAlpha[1]).toBeCloseTo(0.06, 10)
+  expect(mismatches.letterAlpha[2]).toBeCloseTo(0.2, 10)
+  expect(mismatches.letterAlpha[3]).toBe(1)
+  expect(mismatches.alpha[3]).toBeLessThan(1)
 })

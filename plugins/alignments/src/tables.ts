@@ -8,9 +8,11 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   MIN_HEIGHT_FOR_TEXT,
   MIN_PX_PER_BP_FOR_TEXT,
+  MIN_QUALITY_LETTER_OPACITY,
   insertionBarWidth,
   insertionSizeAlpha,
   interbaseEdgePx,
+  labelFadeOpacity,
   labelFont,
   pairDirectionOfNum,
   readIdAt,
@@ -111,10 +113,19 @@ import {
 } from './LinearAlignmentsDisplay/pileupLayoutViews.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
+  arcBandScale,
+  readCloudDomainBp,
+} from './LinearAlignmentsDisplay/renderers/arcMarks.ts'
+import {
   intronAlpha,
   shouldDrawOverlaps,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { boundCoverageHeight } from './LinearAlignmentsDisplay/sectionLayout.ts'
+import {
+  arcsOverlayCoverage,
+  boundBelowCoverageHeights,
+  boundCoverageHeight,
+  laneBands,
+} from './LinearAlignmentsDisplay/sectionLayout.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { appliedPileupSort } from './RenderAlignmentDataRPC/sortLayout.ts'
 import { UNCAPPED } from './RenderAlignmentDataRPC/types.ts'
@@ -1152,7 +1163,46 @@ function readConnectionTables(
     },
     arcLegendTitle: arcLegendTitle(mode),
     arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
+    arcScale: arcScaleOf(host, result?.maxFlatArcSpanBp ?? 0),
   }
+}
+
+/**
+ * The read-connection band's y scale as the display draws it
+ * (`arcBandScale`), and where: `band` 'arcs', a band of its own, or under
+ * placement 'up' with coverage shown 'coverage', whose top `heightPx` of
+ * the coverage band's height, above the depth axis' baseline, the
+ * connections draw in. Null while the band is off.
+ */
+function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
+  const mode = host.drawnReadConnections
+  const stated = {
+    showCoverage: host.showCoverage,
+    coverageHeight: host.coverageHeight,
+    drawnReadConnections: mode,
+    readConnectionsDown: host.readConnectionsPlacement === 'down',
+    readConnectionsHeight: host.readConnectionsHeight,
+    showSashimi: false,
+    sashimiHeight: 0,
+    hasArcs: true,
+    hasSashimiDownArcs: false,
+  }
+  const bound = {
+    ...stated,
+    ...boundBelowCoverageHeights(stated, host.bandPlot),
+  }
+  const { arcBand } = laneBands(bound, stated)
+  return arcBand
+    ? {
+        band: arcsOverlayCoverage(bound) ? 'coverage' : 'arcs',
+        heightPx: arcBand.height,
+        ...arcBandScale(
+          arcBand,
+          Math.max(...host.readConnectionsStrokeScale.range),
+          mode === 'rule' ? readCloudDomainBp(maxFlatArcSpanBp) : undefined,
+        ),
+      }
+    : null
 }
 
 /**
@@ -1482,8 +1532,11 @@ function coverageScale(host: AlignmentsTablesHostModel) {
  * ungrouped, there is one section, labelled `''`. Several regions lay out as
  * the display lays out a view's regions, on one set of rows: a read crossing
  * regions is listed in each, under one `key` and on one `row`, and every row
- * names its `region`'s index. `warnings` names what the config asked for
- * that the tables dropped. For a host that draws them itself, such as R
+ * names its `region`'s index. `arcScale` is the read-connection band's y
+ * scale (`arcBandScale`): the read cloud's log `domain`, or for arcs none,
+ * as their linear domain is `[0, reachPx / pxPerBp]` at the host's own
+ * scale, and the band they draw in. `warnings` names what the config asked
+ * for that the tables dropped. For a host that draws them itself, such as R
  * through V8. The adapters must be registered on `pluginManager`
  * (`registerAlignmentsAdapters`).
  */
@@ -1776,6 +1829,7 @@ function laidOutTables(
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
+    arcScale: connections.arcScale,
     coverageScale: coverageScale(host),
     glyph: {
       intronAlpha: intronAlpha(featureHeight),
@@ -2203,10 +2257,15 @@ let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined
  *   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
  *   `frequencyFadeGate` over `pxPerBp` squared.
  * - A deletion's `alpha` is `sizeAlpha` of its width in px times
- *   `frequencyFadeGate` over that width squared.
+ *   `frequencyFadeGate` over that width squared. Its `labelAlpha`, its
+ *   length label's, is `labelFadeOpacity` of `visibleLength`, the bp of it
+ *   inside its region (`length` when left out), in px against the width its
+ *   digits need, and 0 on a read under `MIN_HEIGHT_FOR_TEXT`.
  * - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
  *   `pxPerBp`, and a clip's that gate alone. `quality` may be left out
- *   while `mismatchOpacity` is a constant.
+ *   while `mismatchOpacity` is a constant. Its `letterAlpha`, its base
+ *   letter's, is `qualityFade` alone, 0 under
+ *   `MIN_QUALITY_LETTER_OPACITY`, where the display writes no letter.
  */
 export function alignmentMarkAlpha({
   pxPerBp,
@@ -2223,7 +2282,11 @@ export function alignmentMarkAlpha({
   fadeLowFrequency?: boolean
   mismatchOpacity?: PileupMismatchesOpacitySnapshot
   insertions?: { length: MarkColumn; fade: MarkColumn }
-  deletions?: { length: MarkColumn; fade: MarkColumn }
+  deletions?: {
+    length: MarkColumn
+    fade: MarkColumn
+    visibleLength?: MarkColumn | null
+  }
   mismatches?: { fade: MarkColumn; quality?: MarkColumn }
   clips?: { fade: MarkColumn }
 }) {
@@ -2262,7 +2325,14 @@ export function alignmentMarkAlpha({
   const byQuality = setting.field === 'baseQuality'
   const { zero, slope, min, max } = qualityOpacityOf(setting)
   const ins = markColumns('insertions', insertions, ['length', 'fade'])
-  const del = markColumns('deletions', deletions, ['length', 'fade'])
+  const del = markColumns(
+    'deletions',
+    deletions && {
+      ...deletions,
+      visibleLength: deletions.visibleLength ?? deletions.length,
+    },
+    ['length', 'fade', 'visibleLength'],
+  )
   const mis = markColumns(
     'mismatches',
     mismatches,
@@ -2272,6 +2342,10 @@ export function alignmentMarkAlpha({
   const clip = markColumns('clips', clips, ['fade'])
   const gate = (base: number, fade: number) =>
     frequencyFadeGate(base, fade, byFrequency)
+  const font = labelFont(height)
+  const qualityFades = mis.quality.map(quality =>
+    qualityFade(quality, zero, slope, min, max),
+  )
   return {
     insertions: {
       widthPx: ins.length.map(length =>
@@ -2290,12 +2364,19 @@ export function alignmentMarkAlpha({
         const widthPx = length * pxPerBp
         return sizeAlpha(widthPx) * gate(widthPx * widthPx, del.fade[i]!)
       }),
+      labelAlpha: del.length.map((length, i) =>
+        height >= MIN_HEIGHT_FOR_TEXT
+          ? labelFadeOpacity(
+              del.visibleLength[i]! * pxPerBp,
+              font.measure(String(length)),
+            )
+          : 0,
+      ),
     },
     mismatches: {
-      alpha: mis.fade.map(
-        (fade, i) =>
-          qualityFade(mis.quality[i]!, zero, slope, min, max) *
-          gate(pxPerBp, fade),
+      alpha: mis.fade.map((fade, i) => qualityFades[i]! * gate(pxPerBp, fade)),
+      letterAlpha: qualityFades.map(q =>
+        q >= MIN_QUALITY_LETTER_OPACITY ? q : 0,
       ),
     },
     clips: {

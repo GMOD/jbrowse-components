@@ -19,6 +19,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "label": "array",
     },
     "arcLegendTitle": "string",
+    "arcScale": "null",
     "arcSpanMax": "number",
     "arcTicks": {
       "color": "array",
@@ -295,6 +296,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "label": "array",
     },
     "arcLegendTitle": "string",
+    "arcScale": "null",
     "arcSpanMax": "number",
     "arcTicks": {
       "color": "array",

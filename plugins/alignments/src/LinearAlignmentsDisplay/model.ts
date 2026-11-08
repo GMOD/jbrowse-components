@@ -173,6 +173,7 @@ import {
   pileupLayoutViews,
 } from './pileupLayoutViews.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
+import { readCloudDomainBp } from './renderers/arcMarks.ts'
 import { connectorBandState } from './renderers/connectorMarks.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
@@ -2093,7 +2094,7 @@ export default function stateModelFactory(
           // the largest drawn Y: the insert-size scale in `valueScales` labels
           // its top tick with this number, and the cloud's ±8% jitter would
           // print a template length no read has.
-          return Math.max(1000, self.arcsResult.maxFlatArcSpanBp)
+          return readCloudDomainBp(self.arcsResult.maxFlatArcSpanBp)
         },
 
         /**

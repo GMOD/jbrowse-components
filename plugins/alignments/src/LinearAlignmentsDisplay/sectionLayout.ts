@@ -140,7 +140,7 @@ function coverageOverlayBand(stack: BandStack<BandKey>) {
 // overlay the coverage histogram when there is one to overlay, and take a
 // strip of their own otherwise. Either strip is active only for a lane with
 // something to put in it.
-function arcsOverlayCoverage(s: BelowCoverageBandsSettings) {
+export function arcsOverlayCoverage(s: BelowCoverageBandsSettings) {
   return (
     !s.readConnectionsDown &&
     reservedPx({ active: s.showCoverage, height: s.coverageHeight }) > 0

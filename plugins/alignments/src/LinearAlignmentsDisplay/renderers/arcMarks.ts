@@ -40,37 +40,68 @@ export const ARC_MARKER_PX = 5
 export const ARC_BAND_INSET_PX = ARC_MARKER_PX / 2
 
 /**
- * The band's y scale. The read cloud plots |TLEN| on a log axis; arc mode
- * plots an arc's genomic radius at the view's own px per bp, so a pair inside
- * one region rises as high as it is wide, up to the band's far edge less half
- * the widest stroke so the band's clip leaves its apex whole. `down` hangs the
- * band from its top.
+ * The read cloud's |TLEN| axis tops out at the widest insert, floored at
+ * 1000bp so an all-concordant set never divides by near zero.
  */
+export function readCloudDomainBp(maxFlatArcSpanBp: number) {
+  return Math.max(1000, maxFlatArcSpanBp)
+}
+
+/**
+ * The band's y scale short of the view's px per bp. The read cloud plots
+ * |TLEN| on a log axis `insetPx` inside the band's edges; arc mode plots an
+ * arc's genomic radius on a linear axis whose top, `reachPx`, stops short of
+ * the band's far edge by `marginPx`, half the widest stroke, so the band's
+ * clip leaves its apex whole. Its domain is `reachPx` over the view's px per
+ * bp, so a pair inside one region rises as high as it is wide. `down` hangs
+ * the band from its top.
+ */
+export function arcBandScale(
+  band: { height: number; down: boolean },
+  maxStrokePx: number,
+  cloudDomainBp: number | undefined,
+) {
+  const marginPx = Math.min(band.height, maxStrokePx / 2)
+  return cloudDomainBp === undefined
+    ? {
+        type: 'linear' as const,
+        reverse: band.down,
+        marginPx,
+        reachPx: band.height - marginPx,
+        insetPx: 0,
+        domain: null,
+      }
+    : {
+        type: 'log' as const,
+        reverse: band.down,
+        marginPx: 0,
+        reachPx: band.height,
+        insetPx: ARC_BAND_INSET_PX,
+        domain: [1, Math.max(2, cloudDomainBp)] satisfies [number, number],
+      }
+}
+
+/** The band's y scale at the view's own px per bp. */
 export function arcBandYScale(state: ArcBandState) {
-  const { arcBand, arcsYDomainBp, linkRegions } = state
-  if (arcsYDomainBp !== undefined) {
-    return {
-      reverse: arcBand.down,
-      rowOffsetPx: arcBand.top,
-      rowHeight: arcBand.height,
-      domain: [1, Math.max(2, arcsYDomainBp)] as [number, number],
-      scaleType: 'log' as const,
-      insetPx: ARC_BAND_INSET_PX,
-    }
-  }
-  const pxPerBp = Math.abs(linkRegions[0]?.signedPxPerBp ?? 0)
-  const margin = Math.min(
-    arcBand.height,
-    Math.max(...state.readConnectionsStrokeScale.range) / 2,
+  const { arcBand, linkRegions } = state
+  const scale = arcBandScale(
+    arcBand,
+    Math.max(...state.readConnectionsStrokeScale.range),
+    state.arcsYDomainBp,
   )
-  const reach = arcBand.height - margin
+  const pxPerBp = Math.abs(linkRegions[0]?.signedPxPerBp ?? 0)
   return {
-    reverse: arcBand.down,
-    rowOffsetPx: arcBand.down ? arcBand.top : arcBand.top + margin,
-    rowHeight: reach,
-    domain: [0, pxPerBp > 0 ? reach / pxPerBp : 1] as [number, number],
-    scaleType: 'linear' as const,
-    insetPx: 0,
+    reverse: scale.reverse,
+    rowOffsetPx: arcBand.down ? arcBand.top : arcBand.top + scale.marginPx,
+    rowHeight: scale.reachPx,
+    domain:
+      scale.domain ??
+      ([0, pxPerBp > 0 ? scale.reachPx / pxPerBp : 1] satisfies [
+        number,
+        number,
+      ]),
+    scaleType: scale.type,
+    insetPx: scale.insetPx,
   }
 }
 
