@@ -281,18 +281,13 @@ dN/dS. The build script's default session is the same view.
 
 Gene order is the same in both genomes here, so color is the only thing that
 varies. Click the orange _LYZ_ ribbon for its synonymous count and Fisher p in
-the detail panel. Messier and Stewart reported adaptive evolution of primate
-lysozyme in 1997; the published result rests on codon models across many primate
-lineages.
-
-## YEATS4, a conserved neighbour, as the control for LYZ
+the detail panel; Messier and Stewart (1997) reported adaptive evolution of
+primate lysozyme.
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
-divergence time. Click the blue _YEATS4_ ribbon beside _LYZ_ for the same
-evidence at the other end of the ramp. A conserved gene accumulates measurable
-synonymous change while its non-synonymous change stays near zero, so its
-synonymous count clears the floor and the Fisher test reaches significance at
-the low end too.
+divergence time, and its blue ribbon is the control. Click it for the same
+fields at the other end of the ramp: synonymous change accumulates while
+non-synonymous change stays near zero.
 
 ## Reproduce it end to end
 

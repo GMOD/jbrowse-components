@@ -168,42 +168,6 @@ fi
 gzip -kf grape.blocks "${COLUMNS[@]/%/.bed}" \
   grape.peach.anchors grape.peach.anchors.simple
 
-# ── What the reference column costs the non-reference bands ──────────────────
-# The tutorial's "direct vs transitive pairs" section, read off the table
-# instead of asserted: a band between two mates can only draw a row where BOTH
-# of them resolve, and this table has a row only where GRAPE had an ortholog to
-# anchor it. So for each pair the count below is an upper bound the reference
-# imposed, not a measurement of the two genomes. Grape's own pairs are the
-# control: they are direct MCScan alignments, so they are what the same table
-# looks like when nothing is lost in the middle.
-python3 - "${COLUMNS[*]}" <<'PY'
-import gzip
-import itertools
-import sys
-
-names = sys.argv[1].split()
-resolved = [0] * len(names)
-both = {}
-with gzip.open('grape.blocks.gz', 'rt') as fh:
-    for line in fh:
-        cols = line.rstrip('\n').split('\t')
-        present = [i for i, c in enumerate(cols[:len(names)]) if c and c != '.']
-        for i in present:
-            resolved[i] += 1
-        for pair in itertools.combinations(present, 2):
-            both[pair] = both.get(pair, 0) + 1
-
-print()
-print('rows per genome, and rows per pair (what each band can draw):')
-for i, name in enumerate(names):
-    print(f'  {name:12s} {resolved[i]:6d} rows')
-for (i, j), n in sorted(both.items(), key=lambda kv: -kv[1]):
-    direct = ' (direct)' if 0 in (i, j) else ''
-    share = n / min(resolved[i], resolved[j]) if min(resolved[i], resolved[j]) else 0
-    print(f'  {names[i]:12s} {names[j]:12s} {n:6d} rows, '
-          f'{share:.0%} of the smaller column{direct}')
-PY
-
 # ── The hub each assembly is taken from ──────────────────────────────────────
 # A RefSeq genome is a GenArk hub on genomes.jbrowse.org under its accession,
 # whose path is the accession cut into GCF/000/346/465/<accession>.

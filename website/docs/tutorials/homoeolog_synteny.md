@@ -28,9 +28,6 @@ that hybridized to make it, so most of its genes exist three times. We:
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-[Selection pressure between two genomes](/docs/tutorials/selection_pressure)
-covers installing jcvi and what dN/dS measures.
-
 <!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python -->
 
 ```bash
@@ -53,10 +50,11 @@ assembled and annotated by the PanOat consortium
 ([Avni et al. 2025](https://doi.org/10.1038/s41586-025-09676-7)), from its
 release on [GrainGenes](https://graingenes.org/GG3/PanOat).
 
-The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing the homoeolog table_ on the gene models, CDS and chromosome sizes
-of a genome of your own. The script fetches everything itself, about 3.3 GB.
+You don't need these files to follow the session, which reads a hosted copy. The
+track configs name local files that the [build script](#reproduce-it-end-to-end)
+writes from these, about 3.3 GB of downloads, so run it first, or follow
+[the same steps](#producing-the-homoeolog-table) on the gene models, CDS and
+chromosome sizes of a genome of your own.
 
 | What it is                                                    | File                                                                                                                                                                                         |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -202,9 +200,9 @@ becomes a feature attribute in the detail panel. The palette button's **dN/dS**
 uses `dn` and `ds`.
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
-the session [below](#checking-the-rates-against-the-raw-data) does the same.
+the session [below](#coloring-by-ds) does the same.
 
-## Coloring homoeolog pairs by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
+## Coloring homoeolog pairs by dS, with A-D pairs as the control {#coloring-by-ds}
 
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid

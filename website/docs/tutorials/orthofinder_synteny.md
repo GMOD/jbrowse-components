@@ -141,7 +141,11 @@ treatments:
 | `expand` (default) | two ribbons, one per maize copy                              | the duplication is part of what you are looking at        |
 | `single`           | no ribbon                                                    | you want a strictly one-to-one table                      |
 
-A cell over `--max-copies` counts as a family and contributes no row:
+Where both genomes of a band hold copies, such as wheat over durum, `expand`
+pairs them in the order OrthoFinder listed them, which says nothing about which
+copies correspond; the [collinear blocks](#collinear-blocks) pick the copy by
+gene order. A cell over `--max-copies` counts as a family and contributes no row
+(`0` keeps every cell):
 
 ```bash
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
@@ -620,7 +624,7 @@ tracks, the synteny track and a stacked default session:
 2. Run OrthoFinder to the orthogroups only, or with `MSA=1` on to an alignment
    and gene tree per orthogroup.
 3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
-   as gene families, and print how one-to-one each adjacent pair of genomes is.
+   as gene families.
 4. Chain every pair of genomes into collinear blocks with `MCScanX_h`, and
    collect the blocks into one PAF.
 5. Write the assemblies, gene tracks, the orthogroups and blocks tracks and a

@@ -55,8 +55,9 @@ npm install -g @jbrowse/cli@next
 The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 2023, released CC0.
 
-Dryad has no direct download URL, so download the two tarballs by hand. The
-[build script](#reproduce-it-end-to-end) fetches the _Ephydatia_ assembly.
+Dryad has no direct download URL, so download the two tarballs by hand, 2.6 GB
+and 5.7 GB. The [build script](#reproduce-it-end-to-end) extracts only the
+genomes and tables the page uses, and fetches the _Ephydatia_ assembly.
 
 | What it is                                                                             | File                                                                                                       |
 | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |

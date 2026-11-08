@@ -10,8 +10,8 @@ tutorial_subcategory: Ortholog tables
 MCScan, from the jcvi toolkit, lines up orthologous genes across more than two
 genomes at once, into one wide table with a column per species. We:
 
-- load the `.blocks` file with `MCScanBlocksAdapter` and stack grape, peach and
-  cacao as rows of one synteny view, zoomed to a conserved block
+- load the `.blocks` file as a synteny track and stack grape, peach and cacao as
+  rows of one synteny view, zoomed to a conserved block
 - tell direct gene pairs from transitive ones
 - open one grape locus against all the genomes as a multi-way track, one lane
   per genome
@@ -325,7 +325,7 @@ each other genome) at once in a linear genome view on grape:
   blocks)**, which draws every mate in one pileup.
 - Pick **Group by → Mate assembly** to facet the track into one lane per genome.
 
-<Figure caption="One grape locus against six other plants, the blocks track grouped by mate assembly, one lane per genome." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against the other plants, the blocks track grouped by mate assembly, one lane per genome." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Lanes in per-genome coordinates {#each-genome-in-its-own-coordinates}
 
@@ -445,8 +445,8 @@ tracks, synteny track and default session:
    block per grape gene.
 3. Join the six per-pair tables on the grape column into one seven-column
    `grape.blocks`.
-4. Print, per column pair, the rows where both cells resolve, and write the
-   config from the grape, peach and cacao hubs.
+4. Write the config from the grape, peach and cacao hubs, with the other four
+   genomes as lanes of the blocks track.
 
 `BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs an NCBI
 accession with an annotation, and gets a lane but no row of its own.

@@ -51,28 +51,30 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 
 ## The data
 
-Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
-current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
-et al. 2025) and the telomere-to-telomere rhesus macaque. The E. coli section
-uses E. coli and Shigella assemblies anchored on K-12 MG1655, all pinned by
-accession in its build script.
+The annotations and sequence reports of eight RefSeq assemblies, each fetched by
+accession with the `datasets` CLI: the current human reference, the six NHGRI
+telomere-to-telomere ape assemblies (Yoo et al. 2025) and the
+telomere-to-telomere rhesus macaque. The E. coli section uses E. coli and
+Shigella annotations anchored on K-12 MG1655, all pinned by accession in its
+build script.
 
-The tracks below read local files that the
-[build scripts](#reproduce-it-end-to-end) write, so run them first, or run _An
-ortholog table joined on gene names_ over RefSeq accessions of your own. Each
-script fetches the annotations and reports it needs for every genome itself.
+You don't need these files to follow the sessions, which read hosted copies. The
+track configs name local files that the
+[build scripts](#reproduce-it-end-to-end) write, so run them first, or build
+[the same join](#an-ortholog-table-joined-on-gene-names) over RefSeq accessions
+of your own.
 
-| What it is                   | File                                                                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Human, GRCh38.p14            | [GCF_000001405.40_GRCh38.p14/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/)                         |
-| Chimpanzee                   | [GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/775/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/) |
-| Bonobo                       | [GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/289/425/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/) |
-| Gorilla                      | [GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/281/585/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/) |
-| Sumatran orangutan           | [GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/655/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/) |
-| Bornean orangutan            | [GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/625/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/) |
-| Siamang                      | [GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/) |
-| Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2_T2T-MMU8v2.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/)                       |
-| E. coli K-12 MG1655          | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)                               |
+| What it is                              | File                                                                                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Human, GRCh38.p14                       | [GCF_000001405.40_GRCh38.p14/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/)                         |
+| Chimpanzee                              | [GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/775/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/) |
+| Bonobo                                  | [GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/289/425/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/) |
+| Gorilla                                 | [GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/281/585/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/) |
+| Sumatran orangutan                      | [GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/655/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/) |
+| Bornean orangutan                       | [GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/625/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/) |
+| Siamang                                 | [GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/) |
+| Rhesus macaque, T2T-MMU8v2.0            | [GCF_049350105.2_T2T-MMU8v2.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/)                       |
+| E. coli K-12 MG1655, the E. coli anchor | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)                               |
 
 ## An ortholog table joined on gene names
 
@@ -262,7 +264,7 @@ human axis, each in that genome's coordinates. Each lane's header names the
 chromosome and span, with `[rev]` where the lane runs against human
 ([lane headers](/docs/user_guides/multiway_synteny_display#reading-a-lane-header)).
 The ribbons color by strand by default (**Color by → Strand**, under **Ribbons**
-on the track menu): each ribbon shows whether its two lanes agree in
+on the track menu), so each ribbon shows whether its two lanes agree in
 orientation. The session below opens the _TP53_ neighbourhood:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
@@ -278,7 +280,6 @@ orientation. The session below opens the _TP53_ neighbourhood:
           {
             "trackId": "primate_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "ribbons": { "encoding": { "color": "strand" } },
             "height": 620
           }
         ]
@@ -288,12 +289,12 @@ orientation. The session below opens the _TP53_ neighbourhood:
 }
 ```
 
-<Figure caption="TP53 on human chr17 over seven primate lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="TP53 on human chr17 over the other primates' lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.
 
-<Figure caption="17q over the seven primate lanes, ribbons colored by strand. Blue marks a block read backwards from the lane above." src="/img/multiway_synteny/primate_chr17_inversions.png" />
+<Figure caption="17q over the other primates' lanes, ribbons colored by strand. Blue marks a block read backwards from the lane above." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
 ## Human chromosome 2 as two fused ape chromosomes
 
@@ -403,9 +404,7 @@ Read the lanes from the top:
 `symbols_to_blocks.py` gives each symbol K-12 lacks a separate row, so _vioB_ is
 one color down IAI39 and the BL21 lanes. A gene PGAP left under its locus tag,
 such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of the grey is
-each serotype's sugar genes, which have no K-12 counterpart to join by name;
-[OrthoFinder](/docs/tutorials/orthofinder_synteny) groups genes by protein
-sequence, which joins the ones the annotations named differently.
+each serotype's sugar genes, which have no K-12 counterpart to join by name.
 
 ## Reproduce it end to end
 

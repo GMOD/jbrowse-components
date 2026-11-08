@@ -62,10 +62,11 @@ assemblies and annotations, each fetched by accession with the `datasets` CLI:
 the same two genomes [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 stacks with cacao.
 
-The tracks below read hosted copies of the files the
-[build script](#reproduce-it-end-to-end) writes from these, so you don't need
-these files to follow the page; run _Producing the BEDs and anchor files with
-jcvi_ on a GFF3 and a genome FASTA per genome of your own.
+You don't need these files to follow the figures, which come from the hosted
+grape, peach and cacao build. The track configs name local files that the
+[build script](#reproduce-it-end-to-end) writes, so run it first, or follow
+[the jcvi steps](#producing-the-data) on a GFF3 and a genome FASTA per genome of
+your own.
 
 | What it is | File                                                                                                                                      |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -95,9 +96,6 @@ rna-XM_019221872.2	rna-XM_010651102.3	rna-XM_007225348.2	rna-XM_007222072.2	86	-
 rna-XM_002279913.5	rna-XM_002285264.5	rna-XM_007227461.2	rna-XM_007222578.2	370	+
 rna-XM_002281938.5	rna-XM_010652331.3	rna-XM_007222787.2	rna-XM_020562574.1	39	+
 ```
-
-JBrowse draws one ribbon per block from `.anchors.simple` and one per gene pair
-from `.anchors`. The BED files supply the coordinates for both.
 
 ### BED files mapping gene ids to coordinates
 

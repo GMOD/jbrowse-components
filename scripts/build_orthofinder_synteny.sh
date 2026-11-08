@@ -823,67 +823,6 @@ BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS"
 gzip -kf "$TABLE"
 for name in $NAMES; do gzip -kf "$name.bed"; done
 
-# ── How one-to-one is each adjacent pair? ────────────────────────────────────
-# Read this before deciding a stacked band renders badly. Every band draws one
-# line per ortholog, so a band is only going to resolve into clean wedges where
-# a chromosome's orthologs mostly land on ONE chromosome of the row below it.
-# For each adjacent pair this prints that share: per chromosome, the fraction of
-# its links going to its single best partner, averaged over chromosomes weighted
-# by link count.
-#
-# Near 100% is a one-to-one map and diagonalizing it produces a diagonal. Near a
-# third means the typical chromosome's orthologs are spread over three or more
-# partners, so no left-to-right ordering of either row can make that band
-# diagonal and a dense band is the correct answer rather than a rendering
-# problem. Chromosomes under 100 links (unplaced scaffolds) are left out.
-python3 - "$BLOCK_ASSEMBLIES" "$TABLE" $NAMES <<'PY'
-import collections
-import sys
-
-cols = sys.argv[1].split()
-table = sys.argv[2]
-names = sys.argv[3:]
-beds = {}
-for n in names:
-    with open(f'{n}.bed') as fh:
-        beds[n] = {p[3].strip(): p[0] for p in (l.split('\t') for l in fh)}
-with open(table) as fh:
-    rows = [l.rstrip('\n').split('\t') for l in fh]
-
-
-def share(a, b):
-    ia, ib = cols.index(a), cols.index(b)
-    # DISTINCT gene pairs, not rows. --pick expand gives an orthogroup a row per
-    # copy, so a pair not touching that duplication is named on every one of
-    # them, and counting rows would weight this by how duplicated some THIRD
-    # genome is. The view draws each pair once, which is what this describes.
-    links = {(p[ia], p[ib]) for p in rows if p[ia] != '.' and p[ib] != '.'}
-    pair = collections.Counter()
-    tot = collections.Counter()
-    for ga, gb in links:
-        ca, cb = beds[a].get(ga), beds[b].get(gb)
-        if ca and cb:
-            pair[(ca, cb)] += 1
-            tot[ca] += 1
-    kept = {c: n for c, n in tot.items() if n >= 100}
-    if not kept:
-        return None
-    best = collections.Counter()
-    for (ca, _), n in pair.items():
-        best[ca] = max(best[ca], n)
-    return sum(best[c] for c in kept) / sum(kept.values()), len(kept)
-
-
-print()
-print('chromosome-level correspondence, each row against the next:')
-for a, b in zip(names, names[1:]):
-    r = share(a, b)
-    if r:
-        print(f'  {a:12s} -> {b:12s} best partner holds '
-              f'{r[0] * 100:3.0f}% of a chromosome\'s links '
-              f'({r[1]} chromosomes)')
-PY
-
 # ── Collinear blocks: MCScanX_h over every within-orthogroup pair ────────────
 # Every pair of genomes, not just neighbouring rows, so the one blocks track
 # backs a band between any two rows the way the orthogroups track does.
