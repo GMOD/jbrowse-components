@@ -65,21 +65,17 @@ Only the adapter-review subagent traced these.
 
 ## Cleanups
 
-- **`scaleType`, `summaryField` and `extent` are typed `string`** in about 25
-  signatures across wiggle, wiggle-core (`autoscale.ts`, `scale.ts`,
-  `computeYTicks.ts`) and marks (`markAutoscale.ts`). `SummaryField` and
-  `Extent` exist; `scaleType` has no union yet. Same pass as the plot type
-  (memory `teach-bug-classes-through-the-type-system`).
 - **Canvas2D fill choice is written three times.** `drawXYPlot`,
   `drawDensity` and `drawScatter` each choose ramp vs per-instance ABGR vs
   flat. `rampAsBands` and `drawMinMaxBand` each scan low/high
   (`shared/wiggleDrawFunctions.ts`).
-- **`RawFeatureArrays` min/max are separately optional, but every producer
-  sets both.** A `summary?: { minScores, maxScores }` field drops the pair
-  checks.
-- **Casts:** `LinearWiggleDisplay/model.ts` (`regionPayloads as`,
-  `conf as Instance<…>`), `wiggleColor.ts` (`as ColorSetting`) and
-  `MultiWiggleAdapter.ts` (`as AdapterConfig[]`, `as BaseFeatureDataAdapter`).
+- **Casts that stay, each for a reason:** `regionPayloads as` (the display
+  mixin hands payloads back as `unknown`, and every display narrows them so);
+  `conf as Instance<…>` (`configProblemsOf` takes an untyped draft);
+  `as AdapterConfig[]` (`subadapters` is a `frozen` slot). `as
+  BaseFeatureDataAdapter` in `MultiWiggleAdapter.ts` can go through
+  `isFeatureAdapter`, as maf's does, once the ~38 mocks in its test stub
+  `getFeatures`.
 
 ## Sharing with sibling displays
 
