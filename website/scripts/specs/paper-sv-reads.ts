@@ -54,7 +54,7 @@ const illuminaPairs = {
 
 // The paper prints these at its full text width
 const VIEWPORT_WIDTH = 1200
-const LABEL_FONT = 24
+const LABEL_FONT = 22
 
 // What a band of a track is, hung from the track's own label as the
 // translocation figure's are (`cgiab-junction.ts`).
@@ -208,15 +208,15 @@ const readEvidence = ({
     ],
   }),
   annotations: [
-    bandLabel('SV calls', 'draft benchmark somatic SVs', 60),
-    bandLabel('SV call arcs', CALL_ARCS_NAME, 44),
-    bandLabel('PacBio: coverage', HIFI_COV_NAME, 44),
-    bandLabel('PacBio: split-read arcs', HIFI_NAME, 46),
-    bandLabel('PacBio: split reads', HIFI_NAME, 90),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, 276),
-    bandLabel('Illumina: coverage', ARCS_NAME, 52),
-    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 108),
-    bandLabel('Illumina: read cloud', PAIRS_NAME, 48),
+    bandLabel('SV calls', 'draft benchmark somatic SVs', 58),
+    bandLabel('SV call arcs', CALL_ARCS_NAME, 42),
+    bandLabel('PacBio: coverage', HIFI_COV_NAME, 42),
+    bandLabel('PacBio: split-read arcs', HIFI_NAME, 44),
+    bandLabel('PacBio: split reads', HIFI_NAME, 88),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 274),
+    bandLabel('Illumina: coverage', ARCS_NAME, 50),
+    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 106),
+    bandLabel('Illumina: read cloud', PAIRS_NAME, 46),
   ],
   hideSelectors: [APP_BAR],
   readyText: 'read cloud',

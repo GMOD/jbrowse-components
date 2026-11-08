@@ -93,7 +93,8 @@ const view = (
 // The backbone segment the 84.7 kb deletion rejoins. s621558, where it leaves,
 // merges into its neighbours when the cut folds.
 const DELETION_NODE = 's621574'
-const DELETION_LOCUS = 'chr1:196,810,000'
+// left of the deletion's middle, so the label centres in the lanes' gap
+const DELETION_LOCUS = 'chr1:196,778,000'
 
 const session = (
   layoutMode: 'auto' | 'force',
@@ -122,7 +123,7 @@ const callouts: Annotation[] = [
     type: 'text',
     text: '84.7 kb deletion',
     fontSize: 26,
-    anchor: { trackId: LANES_TRACK, loc: DELETION_LOCUS, fracY: 0.56 },
+    anchor: { trackId: LANES_TRACK, loc: DELETION_LOCUS, fracY: 0.75 },
   },
   {
     type: 'text',
@@ -130,8 +131,9 @@ const callouts: Annotation[] = [
     leader: true,
     fontSize: 26,
     anchor: { graphNode: DELETION_NODE },
-    dx: -230,
-    dy: 60,
+    // under the backbone, clear of the gene chips to the node's left
+    dx: 30,
+    dy: 85,
   },
 ]
 

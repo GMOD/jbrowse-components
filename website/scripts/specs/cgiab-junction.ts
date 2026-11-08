@@ -8,7 +8,7 @@ import { CGIAB_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const PIF = 'HG008T_v3.2_pif'
-const READS = 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'
+export const READS = 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'
 const CALLS = 'hg008t_benchmark_sv'
 const GRCH38 = 'GRCh38_GIABv3'
 const HG008T = 'HG008T_v3.2'
@@ -18,14 +18,14 @@ const FONT = 19
 const APP_BAR = 'header.MuiAppBar-root'
 const APP_BAR_HEIGHT = 48
 const BLUE = 'rgba(31,119,180,0.45)'
-const BAND = '[data-testid="highlight-band"]'
+export const BAND = '[data-testid="highlight-band"]'
 
-// A figure printed narrower than the tutorial's page takes a narrower viewport
-// and larger callouts, so both grow on paper
+// A figure printed narrower than the tutorial's page brings its own width and
+// callouts
 interface Chrome {
   hideAppBar?: boolean
   width?: number
-  fontSize?: number
+  annotations?: Annotation[]
 }
 
 const chrome = (height: number, { hideAppBar, width = WIDTH }: Chrome) => ({
@@ -50,16 +50,19 @@ const band = (
   end: number,
 ) => ({ assemblyName, refName, start, end, color: BLUE })
 
-const callout = (
+type CalloutStyle = Pick<Annotation, 'fontSize' | 'maxWidth'>
+
+export const callout = (
   text: string,
   anchor: Annotation['anchor'],
   dx: number,
   dy: number,
-  fontSize = FONT,
+  { fontSize = FONT, maxWidth }: CalloutStyle = {},
 ): Annotation => ({
   type: 'text',
   text,
   fontSize,
+  maxWidth,
   color: '#1f77b4',
   background: '#dceaf6',
   leader: true,
@@ -68,9 +71,9 @@ const callout = (
   dy,
 })
 
-// Anchored on the track label, the one element a band shares a row with. A
-// label's dy is its baseline, so a larger font moves down by its growth.
-const bandLabel = (
+// Anchored on the track label, the one element a band shares a row with. Its
+// dy places the text's baseline.
+export const bandLabel = (
   text: string,
   trackLabel: string,
   dy: number,
@@ -79,16 +82,14 @@ const bandLabel = (
   type: 'text',
   text,
   fontSize,
-  anchor: {
-    text: trackLabel,
-    alignX: 'left',
-    alignY: 'bottom',
-    dx: -50,
-    dy: dy + fontSize - FONT,
-  },
+  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: -50, dy },
 })
 
-const rowLabel = (text: string, row: number, fontSize = FONT): Annotation => ({
+export const rowLabel = (
+  text: string,
+  row: number,
+  fontSize = FONT,
+): Annotation => ({
   type: 'text',
   text,
   fontSize,
@@ -102,13 +103,13 @@ const rowLabel = (text: string, row: number, fontSize = FONT): Annotation => ({
   },
 })
 
-const junction = (row: number, fontSize = FONT) =>
+export const junction = (row: number, style: CalloutStyle = {}) =>
   callout(
     'junction',
     { selector: BAND, view: [0, row], alignY: 'center' },
     170,
     8,
-    fontSize,
+    style,
   )
 
 const splitPanel = (loc: string) => ({
@@ -213,28 +214,26 @@ export const junctionScaffold = (
       },
     ],
   }),
-  annotations: [
-    rowLabel('hap1', 1, opts.fontSize),
+  annotations: opts.annotations ?? [
+    rowLabel('hap1', 1),
     // dy keeps these clear of the read curves
     callout(
       'chr13 breakend',
       { selector: BAND, view: [0, 0], alignY: 'top' },
       190,
       70,
-      opts.fontSize,
     ),
     callout(
       'chr3 breakend',
       { selector: `${BAND} ~ ${BAND}`, view: [0, 0], alignY: 'top' },
       140,
       70,
-      opts.fontSize,
     ),
-    junction(1, opts.fontSize),
-    bandLabel('SV calls', 'draft benchmark somatic SVs', 22, opts.fontSize),
-    bandLabel('aggregate read links', READS, 92, opts.fontSize),
-    bandLabel('split reads', READS, 250, opts.fontSize),
-    bandLabel('unsplit reads', READS, 610, opts.fontSize),
+    junction(1),
+    bandLabel('SV calls', 'draft benchmark somatic SVs', 22),
+    bandLabel('aggregate read links', READS, 92),
+    bandLabel('split reads', READS, 250),
+    bandLabel('unsplit reads', READS, 610),
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
@@ -287,25 +286,23 @@ export const scaffoldOverview = (
       },
     ],
   }),
-  annotations: [
-    rowLabel('hap2', 0, opts.fontSize),
-    rowLabel('GRCh38', 1, opts.fontSize),
-    rowLabel('hap1', 2, opts.fontSize),
+  annotations: opts.annotations ?? [
+    rowLabel('hap2', 0),
+    rowLabel('GRCh38', 1),
+    rowLabel('hap1', 2),
     callout(
       'chr13 breakend',
       { selector: BAND, view: [0, 1], alignY: 'top' },
       -150,
       40,
-      opts.fontSize,
     ),
     callout(
       'chr3 breakend',
       { selector: `${BAND} ~ ${BAND}`, view: [0, 1], alignY: 'top' },
       -150,
       40,
-      opts.fontSize,
     ),
-    junction(2, opts.fontSize),
+    junction(2),
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,

@@ -6,7 +6,11 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { CLUSTERED_READY, CN_HEATMAP_SETTINGS } from './cnv1000g.ts'
 import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  AnnotationAnchor,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
 
 const SV_TRACK = {
   type: 'VariantTrack',
@@ -36,21 +40,18 @@ const HGSVC3_SV_TRACK = {
 // one nested in it, which the callset does not record and the heatmap shows
 const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 
-// Beside the track's name, where the window has no deletion calls
-const panelLabel = (trackId: string, text: string, dy = 8): Annotation => ({
-  type: 'text',
-  text,
-  fontSize: 36,
-  anchor: {
-    trackId,
-    loc: 'chr3:162,750,500',
-    fracY: 0,
-    alignX: 'left',
-    dy,
-  },
+const BLURB_FONT = 24
+const LETTER_FONT = 36
+
+// Left of the first deletion call, where every track is clear of calls, the
+// blurb indented past its panel's letter
+const blurbAnchor = (trackId: string, fracY: number): AnnotationAnchor => ({
+  trackId,
+  loc: 'chr3:162,655,000',
+  fracY,
+  alignX: 'left',
 })
 
-// Left of the first deletion call, where every track is clear of calls
 const trackBlurb = (
   trackId: string,
   fracY: number,
@@ -59,13 +60,19 @@ const trackBlurb = (
   type: 'text',
   text,
   textAlign: 'start',
-  fontSize: 24,
-  anchor: {
-    trackId,
-    loc: 'chr3:162,655,000',
-    fracY,
-    alignX: 'left',
-  },
+  fontSize: BLURB_FONT,
+  anchor: { ...blurbAnchor(trackId, fracY), dx: 52 },
+})
+
+const panelLabel = (
+  trackId: string,
+  fracY: number,
+  text: string,
+): Annotation => ({
+  type: 'text',
+  text,
+  fontSize: LETTER_FONT,
+  anchor: { ...blurbAnchor(trackId, fracY), dy: LETTER_FONT - BLURB_FONT },
 })
 
 export const paperCohortSpecs: ScreenshotSpec[] = [
@@ -123,15 +130,14 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     // the paper prints it at its full text width
     viewportWidth: 1200,
-    viewportHeight: 1172,
+    viewportHeight: 1232,
     hideSelectors: ['header.MuiAppBar-root'],
     tooltip: 'hide',
     diffThreshold: 0.02,
     annotations: [
-      panelLabel(SV_TRACK.trackId, 'a'),
-      panelLabel('cnv_1000g_zarr', 'b'),
-      // Below the graph's reference strip
-      panelLabel('hprc_minigraph_segments', 'c', 48),
+      panelLabel(SV_TRACK.trackId, 0.55, 'a'),
+      panelLabel('cnv_1000g_zarr', 0.55, 'b'),
+      panelLabel('hprc_minigraph_segments', 0.17, 'c'),
       trackBlurb(
         SV_TRACK.trackId,
         0.55,
@@ -139,7 +145,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
       ),
       trackBlurb(
         HGSVC3_SV_TRACK.trackId,
-        0.75,
+        0.52,
         'HGSVC long-read\nassembly calls',
       ),
       trackBlurb(
@@ -147,7 +153,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         0.55,
         '1000 Genomes\ncopy number\n(QuicK-mer2)',
       ),
-      trackBlurb('hprc_minigraph_segments', 0.3, 'HPRC v2.1\npangenome graph'),
+      // between the graph's reference strip and its backbone
+      trackBlurb('hprc_minigraph_segments', 0.17, 'HPRC v2.1\npangenome graph'),
     ],
   },
 ]
