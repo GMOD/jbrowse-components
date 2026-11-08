@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1256)
+# model members with no description (1252)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -956,12 +956,9 @@ LinearVariantDisplay.showRowSeparators
 LinearVariantDisplay.svgSidebar
 LinearVariantDisplay.trackMenuItems
 LinearVariantDisplay.view
-LinearWiggleDisplay.domain
 LinearWiggleDisplay.extent
 LinearWiggleDisplay.fetchNeeded
 LinearWiggleDisplay.isDensityMode
-LinearWiggleDisplay.numSources
-LinearWiggleDisplay.renderState
 LinearWiggleDisplay.renderSvg
 LinearWiggleDisplay.renderingType
 LinearWiggleDisplay.selectFeature
@@ -973,7 +970,6 @@ LinearWiggleDisplay.setShowRowSeparators
 LinearWiggleDisplay.setStrokeWidth
 LinearWiggleDisplay.showRowSeparators
 LinearWiggleDisplay.startRenderingBackend
-LinearWiggleDisplay.svgSidebar
 LinearWiggleDisplay.trackMenuItems
 LodTierInfoMixin.setAdapterHeader
 MafSequenceWidget.adapterConfig
@@ -1310,8 +1306,54 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (7)
+# member tags in a file that documents no #stateModel (86)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
+packages/tree-sidebar/src/treeSidebarRowViews.ts bandedRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts bandedSources
+packages/tree-sidebar/src/treeSidebarRowViews.ts clusterableSources
+packages/tree-sidebar/src/treeSidebarRowViews.ts dealtValueColors
+packages/tree-sidebar/src/treeSidebarRowViews.ts dealtValueColorsFor
+packages/tree-sidebar/src/treeSidebarRowViews.ts discoveredRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts drawsTree
+packages/tree-sidebar/src/treeSidebarRowViews.ts editableSources
+packages/tree-sidebar/src/treeSidebarRowViews.ts expandRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts expandedRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts finerRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts guideTree
+packages/tree-sidebar/src/treeSidebarRowViews.ts guideTreeHonoursDomain
+packages/tree-sidebar/src/treeSidebarRowViews.ts guideTreeNewick
+packages/tree-sidebar/src/treeSidebarRowViews.ts narrowRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts parsedTree
+packages/tree-sidebar/src/treeSidebarRowViews.ts resolvedRowColors
+packages/tree-sidebar/src/treeSidebarRowViews.ts root
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowAlias
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowBand
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowBanding
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowBands
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorDealRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorDeclaredValues
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorField
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorKeyInputs
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorPaintsMarks
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorScales
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorSetting
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowFocusLineHeight
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowForks
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowNarrowing
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowNarrowingShows
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowNoun
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowOrder
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowPaletteDeals
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowParent
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowTree
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowsHeaderControlsHeight
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowsHeaderHeight
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowsTopOffset
+packages/tree-sidebar/src/treeSidebarRowViews.ts sharesPanel
+packages/tree-sidebar/src/treeSidebarRowViews.ts sources
+packages/tree-sidebar/src/treeSidebarRowViews.ts svgControlsStrip
+packages/tree-sidebar/src/treeSidebarRowViews.ts treeRoot
+packages/tree-sidebar/src/treeSidebarRowViews.ts unlistedRowsSort
 plugins/gccontent/src/GCContentTrack/index.ts gcAdapter
 plugins/gccontent/src/GCContentTrack/index.ts op
 plugins/gccontent/src/GCContentTrack/index.ts setOp
@@ -1319,6 +1361,39 @@ plugins/gccontent/src/GCContentTrack/index.ts setStep
 plugins/gccontent/src/GCContentTrack/index.ts setWindow
 plugins/gccontent/src/GCContentTrack/index.ts step
 plugins/gccontent/src/GCContentTrack/index.ts window
+plugins/wiggle/src/shared/wiggleAxisViews.ts drawsRowLabels
+plugins/wiggle/src/shared/wiggleAxisViews.ts sidebarPanel
+plugins/wiggle/src/shared/wiggleAxisViews.ts svgSidebar
+plugins/wiggle/src/shared/wiggleAxisViews.ts valueScales
+plugins/wiggle/src/shared/wiggleDisplayViews.ts renderState
+plugins/wiggle/src/shared/wiggleKeyViews.ts colorScales
+plugins/wiggle/src/shared/wiggleKeyViews.ts scoreColorScale
+plugins/wiggle/src/shared/wiggleKeyViews.ts thresholdColorScale
+plugins/wiggle/src/shared/wigglePlotViews.ts autoscaleRange
+plugins/wiggle/src/shared/wigglePlotViews.ts defaultScoreDomain
+plugins/wiggle/src/shared/wigglePlotViews.ts domain
+plugins/wiggle/src/shared/wigglePlotViews.ts effectiveRowHeight
+plugins/wiggle/src/shared/wigglePlotViews.ts numRows
+plugins/wiggle/src/shared/wigglePlotViews.ts plotGeometry
+plugins/wiggle/src/shared/wigglePlotViews.ts rowsHeight
+plugins/wiggle/src/shared/wigglePlotViews.ts scoreRampReplacesAxis
+plugins/wiggle/src/shared/wigglePlotViews.ts statsInView
+plugins/wiggle/src/shared/wigglePlotViews.ts valuesInView
+plugins/wiggle/src/shared/wiggleResolveViews.ts autoscaleSourceNames
+plugins/wiggle/src/shared/wiggleResolveViews.ts colorEncoding
+plugins/wiggle/src/shared/wiggleResolveViews.ts effectiveColor
+plugins/wiggle/src/shared/wiggleResolveViews.ts effectiveExtent
+plugins/wiggle/src/shared/wiggleResolveViews.ts gpuProps
+plugins/wiggle/src/shared/wiggleResolveViews.ts markColoring
+plugins/wiggle/src/shared/wiggleResolveViews.ts markSources
+plugins/wiggle/src/shared/wiggleResolveViews.ts rowColorPaintsMarks
+plugins/wiggle/src/shared/wiggleResolveViews.ts scoreGradientPaints
+plugins/wiggle/src/shared/wiggleResolveViews.ts scoreRuleValues
+plugins/wiggle/src/shared/wiggleResolveViews.ts wiggleColor
+plugins/wiggle/src/shared/wiggleRowHookViews.ts discoveredRows
+plugins/wiggle/src/shared/wiggleRowHookViews.ts drawsTree
+plugins/wiggle/src/shared/wiggleRowHookViews.ts rowNoun
+plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code
