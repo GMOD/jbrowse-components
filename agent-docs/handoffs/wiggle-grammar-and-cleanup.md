@@ -1,6 +1,6 @@
 ---
 name: wiggle-grammar-and-cleanup
-description: "What remains of the 2026-11-07 plugins/wiggle analysis after its bug batch landed on 2026-11-08: cleanups, sharing with sibling displays, and the calls (threshold palette, plot type as IR, layer + stat) still waiting on Colin. Read before fixing a wiggle bug, respelling its color or plot type, or proposing layers, transforms or facets on the quantitative display."
+description: "What remains of the 2026-11-07 plugins/wiggle analysis: cleanups, sharing with sibling displays, and the calls (threshold palette, plot type as IR, layer + stat) waiting on Colin. Read before fixing a wiggle bug or proposing layers, transforms or facets on it."
 ---
 
 # plugins/wiggle: grammar and cleanup

@@ -1,6 +1,6 @@
 ---
 name: alignments-analysis-2026-11
-description: "What remains of the 2026-11-07 plugins/alignments analysis after its chain-mode right-click fix and dead-code pass landed on 2026-11-08: two small bugs, a CRAM bench, the read-field registry and the guide-from-scale convergences (tag colors first), each with what waits on Colin. Read before a cleanup or grammar pass on the alignments display."
+description: "What remains of the 2026-11-07 plugins/alignments analysis: two small bugs, a CRAM bench, the read-field registry and the guide-from-scale convergences, each with what waits on Colin. Read before a cleanup or grammar pass on the alignments display."
 ---
 
 # Alignments analysis, 2026-11-07
