@@ -62,6 +62,10 @@ value }` column form covers without a second grammar.
   With attributes in one table, a `rows.field` naming a column would be the
   same question as `facet` naming one, though a row then draws several
   subtracks, which the wiggle display does not do today.
+- **The mark display over a multi-wiggle cannot facet by a file's `group`.**
+  `MultiWiggleAdapter.listRowSources` lists name, label and color, all that
+  core's `ListedRowSource` carries, so the subadapter's `group` never reaches
+  a row display reading the listing.
 
 ## What it waits on
 
