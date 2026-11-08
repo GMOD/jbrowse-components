@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { SimpleFeature } from '@jbrowse/core/util'
 import BedPlugin from '@jbrowse/plugin-bed'
-import { of } from 'rxjs'
+import { EMPTY, of } from 'rxjs'
 
 import WigglePlugin from '../index.ts'
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
@@ -143,7 +143,11 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
         })),
       }),
       jest.fn().mockImplementation(async (conf: { source: string }) => ({
-        dataAdapter: { id: conf.source, ...members[conf.source] },
+        dataAdapter: {
+          id: conf.source,
+          getFeatures: () => EMPTY,
+          ...members[conf.source],
+        },
       })),
     )
   }

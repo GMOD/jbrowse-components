@@ -202,6 +202,17 @@ describe('syntheticReductionLevels', () => {
 })
 
 describe('binRawRegion', () => {
+  test('a row in every bin of the extent fills it, and still bins', () => {
+    const records = Array.from({ length: 10 }, (_, i) => ({
+      start: i * 10 + 1,
+      end: i * 10 + 2,
+      score: i,
+    }))
+    expect(bin(records, 0, 100, 10)).toEqual(
+      records.map(r => ({ ...r, min: r.score, max: r.score })),
+    )
+  })
+
   test('a record crossing a boundary counts in each bin by its overlapping bases', () => {
     const records = [
       { start: 5, end: 15, score: 1 },

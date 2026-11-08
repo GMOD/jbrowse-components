@@ -105,6 +105,10 @@ function makeScoreToY(
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
+// drawXYPlot, drawDensity and drawScatter each pick a feature's fill (ramp,
+// per-feature ABGR, flat) inline: one shared chooser would be a per-feature
+// call in three hot loops, and scatter's change also flushes its path
+// (declined 2026-11-08).
 function makeRampFill({
   domainY,
   scaleType,
@@ -455,6 +459,8 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     path.flush()
   }
 
+  // Not rampAsBands' scan: that one spans the line's scores, its band and gap
+  // score, skipping non-finite ones; this is the band's own extremes.
   let low = Number.POSITIVE_INFINITY
   let high = Number.NEGATIVE_INFINITY
   for (let i = 0; i < n; i++) {

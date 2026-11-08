@@ -229,14 +229,19 @@ describe('processFeaturesFromArrays', () => {
 
   // The display's `yField` slot names which field a fallback adapter's
   // features plot; `score` stays the default so every existing config reads
-  // as before, and a feature with nothing in the named field plots at 0.
-  test('featuresToRaw plots the named yField, a missing one as 0', () => {
+  // as before. A feature with nothing in the named field holds no value, as
+  // for a mark's encoding.y, and leaves a gap rather than plotting at 0.
+  test('featuresToRaw plots the named yField, leaving a gap where it is empty', () => {
     const features = [
       feature({ start: 0, end: 10, score: 5, fst: 0.25 }, 0),
       feature({ start: 10, end: 20, score: 7 }, 1),
+      feature({ start: 20, end: 30, score: 7, fst: null }, 2),
+      feature({ start: 30, end: 40, score: 7, fst: '' }, 3),
     ]
-    expect(Array.from(featuresToRaw(features).scores)).toEqual([5, 7])
-    expect(Array.from(featuresToRaw(features, 'fst').scores)).toEqual([0.25, 0])
+    expect(Array.from(featuresToRaw(features).scores)).toEqual([5, 7, 7, 7])
+    const fst = featuresToRaw(features, 'fst')
+    expect(Array.from(fst.starts)).toEqual([0])
+    expect(Array.from(fst.scores)).toEqual([0.25])
   })
 
   // `y` is a featureField, so it reads what a mark's encoding.y reads
@@ -245,9 +250,7 @@ describe('processFeaturesFromArrays', () => {
       feature({ start: 0, end: 10, score: 5, INFO: { DP: 3 } }, 0),
       feature({ start: 10, end: 20, score: 7 }, 1),
     ]
-    expect(Array.from(featuresToRaw(features, 'INFO.DP').scores)).toEqual([
-      3, 0,
-    ])
+    expect(Array.from(featuresToRaw(features, 'INFO.DP').scores)).toEqual([3])
     expect(
       Array.from(
         featuresToRaw(features, 'jexl:feature.score * 2', createJexlInstance())
@@ -263,8 +266,8 @@ describe('processFeaturesFromArrays', () => {
   })
 
   // The hand-written loop this replaced stored a NaN for a non-numeric score;
-  // the encoder drops the feature, and the summary band follows `featureIndex`
-  // through the drop.
+  // the encoder drops the feature, as it drops one with no score, and the
+  // summary band follows `featureIndex` through the drops.
   test('featuresToRaw is the encoder plus the summary band, index-aligned', () => {
     const raw = featuresToRaw([
       feature({ start: 0, end: 10, score: 1.5 }, 0),
@@ -287,12 +290,12 @@ describe('processFeaturesFromArrays', () => {
       ),
     ])
 
-    expect(raw.count).toBe(4)
-    expect(Array.from(raw.starts)).toEqual([0, 20, 30, 40])
-    expect(Array.from(raw.ends)).toEqual([10, 30, 40, 50])
-    expect(Array.from(raw.scores)).toEqual([1.5, 2.5, 0, 4.5])
-    expect(Array.from(raw.summary!.minScores)).toEqual([1.5, 1, 0, 3])
-    expect(Array.from(raw.summary!.maxScores)).toEqual([1.5, 2.5, 0, 6])
+    expect(raw.count).toBe(3)
+    expect(Array.from(raw.starts)).toEqual([0, 20, 40])
+    expect(Array.from(raw.ends)).toEqual([10, 30, 50])
+    expect(Array.from(raw.scores)).toEqual([1.5, 2.5, 4.5])
+    expect(Array.from(raw.summary!.minScores)).toEqual([1.5, 1, 3])
+    expect(Array.from(raw.summary!.maxScores)).toEqual([1.5, 2.5, 6])
   })
 
   test('empty input produces empty arrays', () => {

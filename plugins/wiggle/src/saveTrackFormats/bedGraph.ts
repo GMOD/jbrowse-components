@@ -29,6 +29,9 @@ export function scoreText(score: number) {
   return `${score}`
 }
 
+// A string, since every adapter yields one: BedGraph splits its columns and
+// the render path keys groups by `${source}` (declined a non-string guard
+// 2026-11-08).
 function sourceOf(feature: Feature) {
   const source = feature.get('source')
   return source ? source.replaceAll(/[\t\r\n]/g, ' ') : ''

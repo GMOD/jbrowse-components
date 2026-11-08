@@ -7,20 +7,21 @@ import {
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { of } from 'rxjs'
+import { EMPTY, of } from 'rxjs'
 
 import bigWigConfigSchema from '../BigWigAdapter/configSchema.ts'
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, StatusCallback } from '@jbrowse/core/util'
 
+// A member must serve features; these tests read nothing from most of them.
+const getFeatures = () => EMPTY
+
 // getSources strips dataAdapter before returning — these tests only exercise
-// metadata flow, never call into dataAdapter. One named stub avoids per-call
-// casts.
-const stubDataAdapter = {} as BaseFeatureDataAdapter
+// metadata flow, never call into dataAdapter.
+const stubDataAdapter = { getFeatures }
 
 describe('MultiWiggleAdapter.getZoomRange', () => {
   function adapterOver(
@@ -31,7 +32,10 @@ describe('MultiWiggleAdapter.getZoomRange', () => {
         bigWigs: ranges.map((_, i) => `https://x/${i}.bw`),
       }),
       jest.fn().mockImplementation(async (conf: { source: string }) => ({
-        dataAdapter: { getZoomRange: async () => ranges[Number(conf.source)] },
+        dataAdapter: {
+          getFeatures,
+          getZoomRange: async () => ranges[Number(conf.source)],
+        },
       })),
     )
   }
@@ -51,6 +55,33 @@ describe('MultiWiggleAdapter.getZoomRange', () => {
     ).toEqual({ minBpPerPx: 20, maxBpPerPx: 80 })
   })
 
+  it('aborts the subtracks still reading when one fails', async () => {
+    const aborted: string[] = []
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ['https://x/0.bw', 'https://x/1.bw', 'https://x/2.bw'],
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: {
+          getFeatures,
+          getZoomRange: ({ signal }: { signal: AbortSignal }) =>
+            conf.source === '1'
+              ? Promise.reject(new Error('404'))
+              : new Promise((_, reject) => {
+                  signal.addEventListener('abort', () => {
+                    aborted.push(conf.source)
+                    reject(new Error('aborted'))
+                  })
+                }),
+        },
+      })),
+    )
+    await expect(adapter.getZoomRange({ bpPerPx: 30 })).rejects.toThrow(
+      'Subtrack "1": Error: 404',
+    )
+    expect(aborted.sort()).toEqual(['0', '2'])
+  })
+
   it('answers none when no source declares one', async () => {
     expect(
       await adapterOver([undefined, undefined]).getZoomRange({ bpPerPx: 30 }),
@@ -66,6 +97,7 @@ describe('MultiWiggleAdapter.getZoomRange', () => {
       }),
       jest.fn().mockImplementation(async () => ({
         dataAdapter: {
+          getFeatures,
           getZoomRange: async () => {
             inFlight++
             peak = Math.max(peak, inFlight)
@@ -106,7 +138,7 @@ describe('MultiWiggleAdapter.getContigs', () => {
         bigWigs: subadapters.map((_, i) => `https://x/${i}.bw`),
       }),
       jest.fn().mockImplementation(async (conf: { source: string }) => ({
-        dataAdapter: subadapters[Number(conf.source)],
+        dataAdapter: { getFeatures, ...subadapters[Number(conf.source)] },
       })),
     )
     expect(await adapter.getContigs()).toEqual([
@@ -122,7 +154,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
@@ -142,7 +174,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({ bigWigs: ['https://example.com/data/noext'] }),
@@ -156,7 +188,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
@@ -176,7 +208,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const local = (localPath: string) => ({
       type: 'BigWigAdapter',
@@ -204,7 +236,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
@@ -236,7 +268,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const mockGetSubAdapter = jest
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
@@ -256,7 +288,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
           'https://h/cond2/sample.bw?token=a/b',
         ],
       }),
-      jest.fn().mockResolvedValue({ dataAdapter: { id: 'mock' } }),
+      jest.fn().mockResolvedValue({ dataAdapter: { id: 'mock', getFeatures } }),
     )
     const adapters = await adapter.getAdapters()
     expect(adapters.map(a => a.source)).toEqual([
@@ -287,7 +319,9 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
           },
         ],
       }),
-      jest.fn().mockResolvedValue({ dataAdapter: { id: 'adapter-hash' } }),
+      jest.fn().mockResolvedValue({
+        dataAdapter: { id: 'adapter-hash', getFeatures },
+      }),
     )
     const adapters = await adapter.getAdapters()
     expect(adapters.map(a => a.source)).toEqual(['dropped', 'opened'])
@@ -302,7 +336,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
       .fn()
       .mockRejectedValueOnce(new Error('adapter type not registered yet'))
       .mockImplementation(async (conf: { source?: string }) => ({
-        dataAdapter: { id: conf.source ?? 'mock' },
+        dataAdapter: { id: conf.source ?? 'mock', getFeatures },
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({ bigWigs: ['https://example.com/path/sample.bw'] }),
@@ -313,6 +347,18 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     )
     const adapters = await adapter.getAdapters()
     expect(adapters[0]!.source).toBe('sample')
+  })
+
+  it('refuses a member whose adapter serves no features, naming its type', async () => {
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [{ type: 'IndexedFastaAdapter', source: 'seq' }],
+      }),
+      jest.fn().mockResolvedValue({ dataAdapter: { id: 'seq' } }),
+    )
+    await expect(adapter.getAdapters()).rejects.toThrow(
+      'Subtrack adapter IndexedFastaAdapter does not serve features',
+    )
   })
 
   it('resolves relative bigWigs against the config location (#3562)', async () => {
@@ -760,7 +806,7 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
     const mockGetSubAdapter = jest.fn().mockImplementation(
       async (conf: { source?: string }) =>
         ({
-          dataAdapter: { id: conf.source ?? 'mock', ...inner },
+          dataAdapter: { id: conf.source ?? 'mock', getFeatures, ...inner },
         }) as any,
     )
     return new MultiWiggleAdapter(
@@ -816,6 +862,7 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
         ({
           dataAdapter: {
             id: conf.source,
+            getFeatures,
             getFeatureArrays: conf.source === 'a' ? fastA : fastB,
           },
         }) as any,
@@ -1025,6 +1072,7 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti concurrency', () =
       .fn()
       .mockImplementation(async (conf: { source?: string }) => ({
         dataAdapter: {
+          getFeatures,
           getFeatureArrays: async () => {
             started.push(conf.source!)
             inFlight++
@@ -1195,7 +1243,7 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
         },
       }),
       jest.fn().mockImplementation(async (conf: { source: string }) => ({
-        dataAdapter: { id: conf.source, getFeatureArrays },
+        dataAdapter: { id: conf.source, getFeatures, getFeatureArrays },
       })),
       {
         getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
@@ -1265,7 +1313,9 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
 })
 
 test("a subadapter's row metadata stays off the config its adapter is created from", async () => {
-  const getSubAdapter = jest.fn().mockResolvedValue({ dataAdapter: {} })
+  const getSubAdapter = jest
+    .fn()
+    .mockResolvedValue({ dataAdapter: { getFeatures } })
   const adapter = new MultiWiggleAdapter(
     configSchema.create({
       subadapters: [
@@ -1312,7 +1362,7 @@ test('a member written by the uri shorthand lists no location as a row attribute
         { type: 'BigWigAdapter', uri: 'https://x/b.bw' },
       ],
     }),
-    jest.fn().mockResolvedValue({ dataAdapter: {} }),
+    jest.fn().mockResolvedValue({ dataAdapter: { getFeatures } }),
     {
       getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
     } as unknown as PluginManager,

@@ -19,20 +19,14 @@ describe('mapWithConcurrency', () => {
     expect(out).toEqual([30, 10, 20])
   })
 
-  it('passes the index', async () => {
-    const out = await mapWithConcurrency(['a', 'b', 'c'], 2, (s, i) =>
-      Promise.resolve(`${s}${i}`),
-    )
-    expect(out).toEqual(['a0', 'b1', 'c2'])
-  })
-
   it('never exceeds the limit, and does start that many', async () => {
     const gates = Array.from({ length: 10 }, gate)
     let inFlight = 0
     let peak = 0
     const started: number[] = []
 
-    const all = mapWithConcurrency(gates, 3, async (g, i) => {
+    const all = mapWithConcurrency(gates, 3, async g => {
+      const i = gates.indexOf(g)
       started.push(i)
       inFlight++
       peak = Math.max(peak, inFlight)
@@ -87,5 +81,43 @@ describe('mapWithConcurrency', () => {
     ).rejects.toThrow('boom')
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(started).toEqual([0, 1])
+  })
+
+  it('aborts the calls in flight on the first rejection, and rejects with its error', async () => {
+    const signals: AbortSignal[] = []
+    await expect(
+      mapWithConcurrency([0, 1, 2], 3, (i, signal) => {
+        signals.push(signal)
+        return i === 1
+          ? Promise.reject(new Error('boom'))
+          : new Promise((_, reject) => {
+              signal.addEventListener('abort', () => {
+                reject(new Error(`aborted ${i}`))
+              })
+            })
+      }),
+    ).rejects.toThrow('boom')
+    expect(signals.map(s => s.aborted)).toEqual([true, true, true])
+  })
+
+  it('aborts its calls when the parent signal aborts', async () => {
+    const parent = new AbortController()
+    let seen: AbortSignal | undefined
+    const all = mapWithConcurrency(
+      [0],
+      1,
+      (_, signal) => {
+        seen = signal
+        return new Promise((_, reject) => {
+          signal.addEventListener('abort', () => {
+            reject(new Error('cancelled'))
+          })
+        })
+      },
+      parent.signal,
+    )
+    parent.abort()
+    await expect(all).rejects.toThrow('cancelled')
+    expect(seen?.aborted).toBe(true)
   })
 })

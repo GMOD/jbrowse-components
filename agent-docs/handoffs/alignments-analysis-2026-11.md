@@ -13,9 +13,7 @@ description: "What remains of the 2026-11-07 plugins/alignments analysis: two sm
 - **Out:** the steps below landed, filed to `ideas/`, or declined with a
   sentence at the site.
 
-Shares its convergence pattern with
-[wiggle-grammar-and-cleanup](wiggle-grammar-and-cleanup.md): a key built by
-hand where core has one. Claim a step here before starting it. "Verified"
+Its convergence pattern is a key built by hand where core has one. Claim a step here before starting it. "Verified"
 means read in the code on 2026-11-07; re-read against main first.
 
 ## Not covered

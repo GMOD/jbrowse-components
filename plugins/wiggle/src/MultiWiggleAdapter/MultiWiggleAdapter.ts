@@ -7,6 +7,7 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
   isContigSource,
+  isFeatureAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
@@ -180,8 +181,13 @@ export default class MultiWiggleAdapter
       : undefined
     const subConf = schema ? declaredSnapshot(schema, conf) : conf
     const { dataAdapter } = await getSubAdapter(subConf)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error(
+        `Subtrack adapter ${String(conf.type)} does not serve features`,
+      )
+    }
     return {
-      dataAdapter: dataAdapter as BaseFeatureDataAdapter,
+      dataAdapter,
       stamped: !!conf.source && subConf.source === conf.source,
     }
   }
@@ -264,18 +270,22 @@ export default class MultiWiggleAdapter
   // its own createStatusFanOut slot, taken when it starts: the subtracks all
   // report the same phase, so on one shared callback the first to finish would
   // blank the label while the rest still read, where N slots aggregate into one
-  // bar.
+  // bar. One failing subtrack aborts the rest, whose rows the render discards.
   private eachSource<T>(
     adapters: AdapterEntry[],
     opts: WiggleOptions,
     work: (entry: AdapterEntry, opts: WiggleOptions) => Promise<T>,
   ) {
     const slot = createStatusFanOut(opts.statusCallback)
-    return mapWithConcurrency(adapters, SUBTRACK_FETCH_CONCURRENCY, entry =>
-      namingSource(
-        entry.source,
-        work(entry, { ...opts, statusCallback: slot() }),
-      ),
+    return mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      (entry, signal) =>
+        namingSource(
+          entry.source,
+          work(entry, { ...opts, signal, statusCallback: slot() }),
+        ),
+      opts.signal,
     )
   }
 
@@ -323,7 +333,11 @@ export default class MultiWiggleAdapter
   }
 
   // Streams each subtrack's features as they arrive, so two calls may
-  // interleave them differently; `getFeaturesArray` is the ordered list.
+  // interleave them differently; `getFeaturesArray` is the ordered list. The
+  // inner subscription outlives an unsubscribe that comes without an abort,
+  // which no consumer sends: an RPC cancel aborts the signal. Closing it means
+  // `ObservableCreate` keeping a teardown the async body hands back (declined
+  // 2026-11-08).
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getFilteredAdapters(opts)

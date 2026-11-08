@@ -304,6 +304,10 @@ export function resolveWiggleColor(
     case 'threshold': {
       const declared = declaredCuts(encoding)
       const cuts = declared.length > 0 ? declared : [origin]
+      // Too few `range` colors keep wiggle's red/grey/blue, not core's
+      // viridis `thresholdPalette` the other displays fill from: Colin,
+      // 2026-11-08, "dont want to use viridis by default for wiggle stuff".
+      // The middle band is the "(no value)" grey other keys use.
       const range = encoding.range ?? []
       return {
         negColor: range[0] ?? WIGGLE_NEG_COLOR_DEFAULT,

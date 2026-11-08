@@ -29,9 +29,12 @@ export const WIGGLE_PLOTS = [
 
 export type WiggleRendering = (typeof WIGGLE_PLOTS)[number][0]
 
-/** `encoding.size` and `encoding.strokeWidth` in px while unset. */
+/**
+ * `encoding.size` in px while unset: half a mark display's 4, since a scatter
+ * puts a point in every bin, where a mark's points are sparse features, and
+ * at 2 px each draws as a crisp square rather than an antialiased disc.
+ */
 export const DEFAULT_POINT_SIZE_PX = 2
-export const DEFAULT_LINE_WIDTH_PX = 1
 
 /**
  * The plot a mark's `type` and a line's `interpolate` draw. The display keys on

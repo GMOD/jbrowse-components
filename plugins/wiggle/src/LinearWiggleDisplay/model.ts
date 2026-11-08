@@ -642,6 +642,9 @@ export default function stateModelFactory(
           ...(self.isOverlay
             ? []
             : [
+                // Each display names its own measure here (MAF "by
+                // identity", variants "by genotype", marks the field it
+                // compares), so "by score" stands.
                 sortRowsHereMenuItem({
                   label: 'Sort rows by score here',
                   rowCount: self.editableSources.length,

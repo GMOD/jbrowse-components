@@ -354,6 +354,13 @@ refName unchanged, which holds only while its frame is in the adapter's names.
   whose tracks share one needs the union across their static hosts.
 - **What the session did around the body**: a static consumer of the byte
   gate (above), and rasterized layers (the parity tests are vector).
+- **The chains are restated per host**: `shared/wiggleStaticHost.ts` repeats
+  `LinearWiggleDisplay`'s wiggle views in order, and tree-sidebar's row steps
+  are listed four times (`TreeSidebarMixin`, the wiggle and mark static hosts,
+  `plugins/variants/src/tables.ts`). The fix is one installer per chain, which
+  both a model and a host call. Try it against TS7056 first: the model's
+  inline views (`liveNotices`, `rpcProps`, `autoClusterReady`,
+  `hasResolution`) have to move out of the way.
 
 ## The long tail
 

@@ -35,6 +35,9 @@ function addValues(
 ) {
   const { starts, ends, count } = raw
   const scores = summaryScores(raw, field)
+  // ±Infinity passes: no common producer writes one (C, Python and R print
+  // `inf`, which BedGraph reads as NaN), and hclust then fails loudly. If one
+  // appears, `Number.isFinite` here is the fix (declined 2026-11-08).
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
     if (!Number.isNaN(score)) {

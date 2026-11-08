@@ -1,5 +1,6 @@
+import { DEFAULT_LINE_WIDTH_PX } from '@jbrowse/wiggle-core/constants'
+
 import {
-  DEFAULT_LINE_WIDTH_PX,
   DEFAULT_LINK_STROKE_PX,
   DEFAULT_POINT_DIAMETER_PX,
 } from './markVocabulary.ts'

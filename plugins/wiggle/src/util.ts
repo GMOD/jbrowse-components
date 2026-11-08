@@ -1,5 +1,6 @@
 import { fieldReader, isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 import { encodeFeatures, featureIndexAt } from '@jbrowse/core/util/markEncoding'
+import { numericValue } from '@jbrowse/core/util/numericValue'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 import { isSummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
@@ -234,7 +235,9 @@ function summaryChannels(
 // The score lane and nothing else: wiggle draws from arrays and never hovers
 // through the encoder, so the hit index — most of the encoder's cost after
 // the walk — is declined. A `y` naming a stored summary reads `score` and its
-// min and max, the arrays a BigWig ships, and the main thread picks one.
+// min and max, the arrays a BigWig ships, and the main thread picks one. A
+// feature holding no number in the field drops out, a gap, as it does from a
+// mark's encoding.y (`numericValue`).
 export function featuresToRaw(
   features: readonly Feature[],
   yField = 'score',
@@ -246,7 +249,7 @@ export function featuresToRaw(
   const read = isPlainFieldRef(field)
     ? (f: Feature) => f.get(field)
     : fieldReader(field, jexl)
-  const encoded = encodeFeatures(features, { y: f => Number(read(f) ?? 0) }, [
+  const encoded = encodeFeatures(features, { y: f => numericValue(read(f)) }, [
     'y',
   ])
   const { x, x2, y, count } = encoded

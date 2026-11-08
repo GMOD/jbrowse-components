@@ -273,7 +273,8 @@ export function binRawRegion(
     binBp,
   )
   // A record adds at most three rows: its start bin, a run of whole bins, and
-  // the bin its tail shares with the next record
+  // the bin its tail shares with the next record. Each row also covers bins no
+  // other row does, so neither bound can be passed.
   const capacity = Math.min(3 * (hi - lo), (extentEnd - extentStart) / binBp)
   if (capacity <= 0) {
     return sliceRows({ starts, ends, scores }, rawLo, rawHi)
@@ -317,9 +318,6 @@ export function binRawRegion(
     if (last >= 0 && outEnds[last]! <= regionStart) {
       n = last
     }
-    if (n === capacity) {
-      return -1
-    }
     outStarts[n] = s
     outEnds[n] = e
     outMeans[n] = mean
@@ -353,9 +351,6 @@ export function binRawRegion(
       if (s >= windowEnd) {
         if (windowEnd >= 0) {
           n = emit(n, coveredStart, coveredEnd, sum, covered, min, max)
-          if (n < 0) {
-            return sliceRows({ starts, ends, scores }, rawLo, rawHi)
-          }
         }
         const bin = s - (s % binBp)
         windowEnd =
@@ -381,9 +376,6 @@ export function binRawRegion(
   }
   if (windowEnd >= 0) {
     n = emit(n, coveredStart, coveredEnd, sum, covered, min, max)
-    if (n < 0) {
-      return sliceRows({ starts, ends, scores }, rawLo, rawHi)
-    }
   }
   if (n > 0 && outEnds[n - 1]! <= regionStart) {
     n--

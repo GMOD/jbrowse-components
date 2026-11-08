@@ -1,10 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { DEFAULT_LINE_WIDTH_PX } from '@jbrowse/wiggle-core/constants'
 
-import {
-  DEFAULT_LINE_WIDTH_PX,
-  DEFAULT_POINT_SIZE_PX,
-  renderingOf,
-} from '../renderingTypes.ts'
+import { DEFAULT_POINT_SIZE_PX, renderingOf } from '../renderingTypes.ts'
 import { clampResolution } from './resolution.ts'
 import { colorKeyTitleOf } from './scoreRampScale.ts'
 import { wiggleColorSettingOf } from './wiggleColor.ts'
