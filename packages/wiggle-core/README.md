@@ -33,7 +33,7 @@ reaches 0 under `zero`.
 
 ```js
 // type signature
-(quantile: number, field: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: string) => [number, number] | undefined
+(quantile: number, field: "maxScore" | "minScore" | "score", visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: "min-max" | "none") => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -45,7 +45,7 @@ stored extremes, anything else `score`, the bins' mean.
 
 ```js
 // type signature
-(data: { featureScores: Float32Array; featureMinScores: Float32Array; featureMaxScores: Float32Array; }, field: string) => Float32Array<ArrayBufferLike>
+(data: { featureScores: Float32Array; featureMinScores: Float32Array; featureMaxScores: Float32Array; }, field: "maxScore" | "minScore" | "score") => Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -65,7 +65,7 @@ itself, so no consumer has to guess what a backwards or a flat domain means.
 
 ```js
 // type signature
-({ scaleType, domain, bounds, zero, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
+({ scaleType, domain, bounds, zero, }: { scaleType: "linear" | "log" | "symlog"; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

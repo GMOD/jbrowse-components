@@ -38,7 +38,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  |
+| <span id="getter-scaletype">**scaleType**</span><br><code>"linear" &#124; "log" &#124; "symlog"</code> |  |
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | The y scale's `zero`: whether an autoscaled linear or symlog axis reaches 0. |
 | <span id="getter-fencequantile">**fenceQuantile**</span><br><code>number</code> | The y scale's fence quantile: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. |
 | <span id="getter-clipfencequantile">**clipFenceQuantile**</span><br><code>number</code> | The quantile "Clip extreme outliers" fences at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. |
@@ -65,7 +65,7 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  |
+| <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: "linear" &#124; "log" &#124; "symlog") =&gt; void</code> |  |
 | <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  |
 | <span id="action-setfencequantile">**setFenceQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  |
 | <span id="action-setdomainmin">**setDomainMin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |

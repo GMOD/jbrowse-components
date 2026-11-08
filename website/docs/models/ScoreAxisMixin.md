@@ -30,7 +30,7 @@ composer owns the declaration — one owner, whichever it is.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-scaletype">**scaleType**</span><br><code>string</code> | Overridable: where this display's scale type is written down. |
+| <span id="getter-scaletype">**scaleType**</span><br><code>"linear" &#124; "log" &#124; "symlog"</code> | Overridable: where this display's scale type is written down. |
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | Overridable: where the y scale's `zero` is written down, whether an autoscaled linear or symlog axis reaches 0. |
 | <span id="getter-domainmin">**domainMin**</span><br><code>number &#124; undefined</code> | Overridable: the lower bound the config really pins, `undefined` where nothing does. |
 | <span id="getter-domainmax">**domainMax**</span><br><code>number &#124; undefined</code> | Overridable: the upper bound the config really pins. |
