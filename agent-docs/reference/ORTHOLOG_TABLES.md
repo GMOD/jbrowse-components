@@ -41,8 +41,9 @@ not a gene-id table.
 **Between two multi-copy genomes, `--pick expand` pairs copies arbitrarily.**
 `orthogroups_to_blocks.py` index-pairs a cell's copies (row i takes copy
 i mod n), which is every link where one side has one gene and OrthoFinder's
-listing order where both have several. On the hosted wheat table (2026-11-08)
-the share of links joining different subgenome letters was:
+listing order where both have several. On the OrthoFinder 2.5.5 wheat table
+hosted until 2026-11-08 the share of links joining different subgenome letters
+was:
 
 | Band         | Cross-subgenome links |
 | ------------ | --------------------- |
@@ -83,6 +84,19 @@ rice covered by two or more maize blocks from 58.9% to 12.3%, and on
 coffee–tomato coffee covered by three or more tomato blocks from 11.1% to 0.3%,
 the multi-copy pairings the grasses and nightshade figures show. The hosted
 wheat PAF changes only when the set is rebuilt.
+
+**The hosted wheat set runs OrthoFinder 3.2 since 2026-11-08**, like the other
+four. 3.2 puts homoeologs into separate orthogroups more often (70,922 wheat
+orthogroups against 2.5.5's 44,921), so on the same downloads:
+
+| Measure                                     | 2.5.5  | 3.2    |
+| ------------------------------------------- | ------ | ------ |
+| tauschii–wheat orthogroup links             | 67,855 | 40,303 |
+| durum–emmer orthogroup links, same letter   | 79%    | 92%    |
+| tauschii–wheat links on wheat D (same group) | 39%    | 55%    |
+| polyploid-pair blocks, same letter, filtered | 96–100% | 100%  |
+
+The wheat 4A window still draws runs from tauschii 5 and 7 under 3.2.
 
 **GrainGenes' own MCScanX runs show the same shape, and our converter reads
 them.** GrainGenes publishes a `.collinearity` and `.gff` pair (MCScanX tags

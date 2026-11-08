@@ -40,21 +40,13 @@
 #           also needs wget, and one whose column 2 is a genome rather than a
 #           proteome needs gffread, which is what derives one from the other.
 #           MSA=1 also needs samtools, and OrthoFinder's MAFFT and FastTree,
-#           which its container and its bioconda package both carry.
+#           which its bioconda package carries.
 #
-# Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
-# so the project's container covers the first requirement without root. It
-# runs 2.5.5, which the wheat set needs: OrthoFinder 3.2 (bioconda's) split
-# wheat's homoeolog families into 70,922 orthogroups against 2.5.5's 44,921,
-# losing 40% of the tauschii-wheat gene pairs and half the collinear blocks.
-# The other four sets come out alike under either. As an Apptainer shim:
-#
-#   apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
-#   mkdir -p ~/.local/bin && cat > ~/.local/bin/orthofinder <<'EOF'
-#   #!/usr/bin/env bash
-#   exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
-#   EOF
-#   chmod +x ~/.local/bin/orthofinder
+# Nothing below calls orthofinder by any path other than `orthofinder` on PATH.
+# The demos run OrthoFinder 3.2. 2.5 also runs, and puts more of wheat's
+# homoeologs into one orthogroup (44,921 wheat orthogroups against 3.2's
+# 70,922), so its tauschii-wheat band draws more links, more of them between
+# subgenomes (agent-docs/reference/ORTHOLOG_TABLES.md).
 # Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat|drosophila|solanaceae] [outdir]
 #           bash scripts/build_orthofinder_synteny.sh my_genomes.tsv [outdir]
 #
@@ -777,7 +769,7 @@ done
 #
 # MSA=1 runs on past the orthogroups instead, and the alignments it writes are
 # what its glob waits for. -M msa says so outright: OrthoFinder 3 aligns by
-# default, while 2.5, which the container above runs, writes no alignments
+# default, while 2.5 writes no alignments
 # without it. -z keeps every column: OrthoFinder otherwise trims mostly-gap
 # columns from a long alignment, which takes residues out of the rows (10 of
 # human ADAM32's 787), so MsaView can neither find a gene's row by its protein
