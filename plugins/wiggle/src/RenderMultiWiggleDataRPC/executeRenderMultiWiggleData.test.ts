@@ -58,14 +58,14 @@ describe('multi-source adapter (batched)', () => {
       { source: 'a', raws: [raw([1, 2]), raw([3])] },
       { source: 'b', raws: [raw([-4]), raw([5])] },
     ])
-    const getSources = jest
+    const getSourcesAndWarnings = jest
       .fn()
-      .mockResolvedValue([{ name: 'a' }, { name: 'b' }])
+      .mockResolvedValue({ sources: [{ name: 'a' }, { name: 'b' }] })
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => ({ minBpPerPx: 2, maxBpPerPx: 8 }),
       getValueDomain: async () => undefined,
       getMultiSourceFeatureArraysMulti,
-      getSources,
+      getSourcesAndWarnings,
     } as never)
 
     const results = await run({})
@@ -77,7 +77,7 @@ describe('multi-source adapter (batched)', () => {
     // one fan-out for the whole view, not one per region
     expect(getMultiSourceFeatureArraysMulti).toHaveBeenCalledTimes(1)
     expect(getMultiSourceFeatureArraysMulti.mock.calls[0]![0]).toEqual(regions)
-    expect(getSources).toHaveBeenCalledWith(regions)
+    expect(getSourcesAndWarnings).toHaveBeenCalledTimes(1)
 
     expect(results).toHaveLength(2)
     expect(scoresOf(results[0]!, 'a')).toEqual([1, 2])
@@ -93,7 +93,7 @@ describe('multi-source adapter (batched)', () => {
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([1]), raw([2])] }]),
-      getSources: jest.fn(),
+      getSourcesAndWarnings: async () => ({ sources: [{ name: 'a' }] }),
     } as never)
 
     // caller's list wins for a multi-source adapter, so 'ghost' must still be
@@ -115,7 +115,7 @@ describe('multi-source adapter (batched)', () => {
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([3, -2]), raw([1])] }]),
-      getSources: jest.fn().mockResolvedValue([{ name: 'a' }]),
+      getSourcesAndWarnings: async () => ({ sources: [{ name: 'a' }] }),
     } as never)
 
     const results = await run({})
@@ -130,8 +130,10 @@ it("carries the source listing's warnings on every region", async () => {
     getMultiSourceFeatureArraysMulti: async () => [
       { source: 'a', raws: [raw([1]), raw([2])] },
     ],
-    getSources: async () => [{ name: 'a' }],
-    getSourcesAndWarnings: async () => ({ warnings: ['2 samples unmatched'] }),
+    getSourcesAndWarnings: async () => ({
+      sources: [{ name: 'a' }],
+      warnings: ['2 samples unmatched'],
+    }),
   } as never)
 
   const results = await run({})

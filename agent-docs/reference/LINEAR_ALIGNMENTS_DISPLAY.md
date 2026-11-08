@@ -26,7 +26,9 @@ handed unlaid data and the worker cannot state a field it has no answer for.
 **Chain mode is not a tier-1 setting.** The worker knows no chains;
 `chainAttachment` joins chain identity across every region and lane
 (`attachChainFields`), and `chainedByGroup` is the layout's input. So the pairs
-toggle relayouts, and refetches only under a facet, whose unit it changes.
+toggle relayouts, and refetches only where chain mode drops a fetch input:
+under a facet, whose unit it changes, and with soft clips shown or a tag sort,
+which chain layout reads neither of (ADR-188).
 `rawDataByGroup` stays chain-free: the arcs, sashimi and a split view overlaying
 the display read it and must not recompute on the toggle.
 

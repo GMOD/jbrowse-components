@@ -33,14 +33,13 @@ import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 /**
- * Runs the full coverage-area computation pipeline as a single named operation.
- * Both pileup and chain executors call this so that the coverage step order
- * (compute → freqs → SNP → interbase → mod → mod-tooltip → pack → sashimi) cannot
- * drift between them.
+ * Runs the full coverage-area computation pipeline as a single named operation,
+ * in step order: compute → freqs → SNP → interbase → mod → mod-tooltip → pack →
+ * sashimi.
  *
  * Mod coverage runs under a `modCoverage` kind (the modification color modes);
- * chain mode passes none, so `packCoverageAreaForGpu` emits a 0-byte mod-cov
- * pass. The modBAM modifiable/detectable denominator comes from a read-base
+ * a fetch with no modification layer passes none, so `packCoverageAreaForGpu`
+ * emits a 0-byte mod-cov pass. The modBAM modifiable/detectable denominator comes from a read-base
  * pileup (`modBaseCounts`, IGV-style), so no reference sequence is needed here;
  * bisulfite divides by `bisulfiteCallCounts` instead, which the extractor
  * tallies because only it knows which reads called which cytosine.

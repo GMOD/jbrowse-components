@@ -23,9 +23,7 @@ import type { StatusCallback } from '@jbrowse/core/util'
 
 /**
  * Build the gap / mismatch / interbase / modification / segment /
- * softclip-base TypedArrays for a region. Single shared call site so the set
- * of detail arrays produced (and the order in which they're built) cannot
- * drift between the pileup and chain executors.
+ * softclip-base TypedArrays for a region.
  *
  * `showSoftClips=false` (the default) produces zero-length softclip-base
  * arrays — chain mode uses this so softclip fields are still present in the

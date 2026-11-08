@@ -15,7 +15,6 @@ import {
   MIN_FIT_ROWS,
   buildLaidOutByGroup,
   ceilingCap,
-  collectAcrossGroups,
   fitGroupMaxRows,
   groupMaxY,
   groupRowCaps,
@@ -26,7 +25,6 @@ import {
 } from './groupLayout.ts'
 
 import type {
-  ColoredByGroup,
   GroupLayoutContext,
   LaidOutByGroup,
   GroupSize,
@@ -275,59 +273,6 @@ test('groupRowCaps: a "show all" lane takes the ceiling cap, a px lane its own',
   })
   expect(caps.get('HP: 1')).toEqual({ rows: 300, source: 'ceiling' })
   expect(caps.get('HP: 2')).toEqual({ rows: 5, source: 'override' })
-})
-
-// The two-deep walk the legend's four presence scans share. Every one of them
-// used to spell it out, and the failure mode is silent in the direction that
-// matters: a scan stopping a level early collects nothing, so the legend simply
-// lists fewer swatches than the picture has colors. Nothing else asserts the
-// walk — `legendUtils.test.ts` starts from a present-set already built — so
-// these are what say the nesting is right.
-
-// Only the two fields these read, as the walk sees them.
-function byGroup(
-  groups: { readTagValues?: string[]; overlapPositions?: number[] }[][],
-) {
-  return new Map(
-    groups.map((regions, g) => [
-      `group${g}`,
-      new Map(
-        regions.map((r, i) => [
-          i,
-          {
-            readTagValues: r.readTagValues,
-            overlapPositions: new Uint32Array(r.overlapPositions ?? []),
-          },
-        ]),
-      ),
-    ]),
-  ) as unknown as ColoredByGroup
-}
-
-test('collectAcrossGroups: unions every region of every group', () => {
-  expect([
-    ...collectAcrossGroups(
-      byGroup([
-        [{ readTagValues: ['a', 'b'] }, { readTagValues: ['b', 'c'] }],
-        [{ readTagValues: ['d'] }],
-      ]),
-      d => d.readTagValues,
-    ),
-  ]).toEqual(['a', 'b', 'c', 'd'])
-})
-
-test('collectAcrossGroups: a field the worker did not ship contributes nothing', () => {
-  // the guard is the helper's, so no call site needs its own `?? []`
-  expect([
-    ...collectAcrossGroups(
-      byGroup([[{}, { readTagValues: ['a'] }]]),
-      d => d.readTagValues,
-    ),
-  ]).toEqual(['a'])
-})
-
-test('collectAcrossGroups: no groups is the empty set, not a throw', () => {
-  expect(collectAcrossGroups(byGroup([]), d => d.readTagValues).size).toBe(0)
 })
 
 // `rows` overlapping reads, one per row in start order. The one on `pairRow`

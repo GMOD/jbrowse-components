@@ -13,7 +13,6 @@ import {
   colorEncodingOf,
   colorForField,
   colorSettingOf,
-  colorSnapshotOf,
   definedColor,
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -79,16 +78,6 @@ export function alignmentsColorSettingOf(
 ): AlignmentsColorSetting {
   return withImpliedField(
     colorSettingOf(color) as AlignmentsColorSetting,
-    impliedFieldOf(color),
-  )
-}
-
-/** {@link alignmentsColorSettingOf} with the key's `scale.names` and `legend`. */
-export function alignmentsColorSnapshotOf(
-  color: AnyConfigurationModel,
-): AlignmentsColorSetting {
-  return withImpliedField(
-    colorSnapshotOf(color) as AlignmentsColorSetting,
     impliedFieldOf(color),
   )
 }

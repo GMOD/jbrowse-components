@@ -67,11 +67,7 @@ async function groupsOf(
   facet?: WorkerFacet,
   tooltipField?: string,
 ) {
-  jest
-    .mocked(fetchFeaturesFromAdapter)
-    .mockResolvedValue({ featuresArray } as unknown as Awaited<
-      ReturnType<typeof fetchFeaturesFromAdapter>
-    >)
+  jest.mocked(fetchFeaturesFromAdapter).mockResolvedValue({ featuresArray })
   const result = await executeRenderAlignmentData({
     pluginManager: new PluginManager(),
     args: {

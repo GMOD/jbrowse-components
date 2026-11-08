@@ -12,10 +12,8 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
- * Resolve the data adapter, attach the sequence adapter (if any), fetch all
- * features for the region, and return them alongside the adapter and the
- * abort checker. Both pileup and chain executors begin with this exact
- * sequence; centralising it prevents drift in the adapter wiring contract.
+ * Resolve the data adapter, attach the sequence adapter (if any), and fetch
+ * every feature in the region: the read fetch each alignments RPC starts with.
  */
 export async function fetchFeaturesFromAdapter({
   pluginManager,
@@ -68,8 +66,5 @@ export async function fetchFeaturesFromAdapter({
 
   checkAbortSignal(signal)
 
-  return {
-    featuresArray,
-    dataAdapter,
-  }
+  return { featuresArray }
 }

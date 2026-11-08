@@ -1852,7 +1852,7 @@ export default function stateModelFactory(
               overhead: overheads[i]!,
             })),
             fitTargetHeight: self.fitTargetHeight,
-            minLaneHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+            minLaneHeight: self.minSectionHeight,
           })
         },
 

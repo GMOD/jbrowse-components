@@ -82,20 +82,20 @@ export async function executeRenderMultiWiggleData({
   checkAbortSignal(signal)
 
   const rawsBySource = new Map(perSource.map(p => [p.source, p.raws]))
-  // A multi-source adapter's getSources is authoritative and static, so the
-  // caller's list (or getSources) is the whole story. A plain fallback adapter
+  // A multi-source adapter's listing is authoritative and static, so the
+  // caller's list (or the listing) is the whole story. A plain fallback adapter
   // has no source list — its sources are discovered per region — so union the
   // caller's list with whatever sources these regions actually contain.
   // Otherwise a source with zero features in the fetched regions would be
   // absent from the payload, get echoed back on every later fetch, and stay
   // invisible even after navigating to where it has data.
   const listing = isMulti
-    ? await dataAdapter.getSourcesAndWarnings?.(opts)
+    ? await dataAdapter.getSourcesAndWarnings(opts)
     : undefined
-  const orderedSources: SourceInfo[] = isMulti
+  const orderedSources: SourceInfo[] = listing
     ? sourcesArg?.length
       ? sourcesArg
-      : (listing?.sources ?? (await dataAdapter.getSources(regions)))
+      : listing.sources
     : unionSourcesByName(
         sourcesArg ?? [],
         perSource.map(({ source }) => ({ name: source })),

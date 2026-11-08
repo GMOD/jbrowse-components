@@ -27,7 +27,7 @@ interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
     regions: Region[],
     opts: MultiSourceFetchOpts,
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]>
-  getSourcesAndWarnings?(
+  getSourcesAndWarnings(
     opts?: BaseOptions,
   ): Promise<{ sources: SourceInfo[]; warnings: string[] }>
 }
