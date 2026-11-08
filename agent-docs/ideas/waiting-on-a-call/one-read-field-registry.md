@@ -1,6 +1,6 @@
 ---
 name: one-read-field-registry
-description: "The alignments read fields are listed once per role (color, facet, column sort, filter). One table with a column per role would let sort, filter and ramps accept a field by its type: whole-window sort by a tag or `mapq`, `insertSize` as a quantity, a log color scale. Waits on Colin, then a review."
+description: "The alignments read fields are listed once per role (color, facet, column sort, filter). One table with a column per role would let each role accept a field by type: whole-window sort by a tag, `insertSize` as a quantity, a log color scale."
 ---
 
 # One read-field registry

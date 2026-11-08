@@ -1,6 +1,6 @@
 ---
 name: facet-reads-by-their-base-at-a-column
-description: "A column facet, `{ field: 'base', pos, refName }`, would section an alignments track by the allele each read carries at one position: allele-specific expression or phasing without HP tags. Unverified whether the facet key can read the sorted column's base without a second CIGAR walk."
+description: "A column facet, `{ field: 'base', pos, refName }`, would section an alignments track by the allele each read carries at one position, for allele-specific expression without HP tags. Open: whether the key needs a second CIGAR walk."
 ---
 
 # Facet reads by their base at a column
