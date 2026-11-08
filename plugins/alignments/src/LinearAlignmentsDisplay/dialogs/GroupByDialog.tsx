@@ -1,15 +1,11 @@
 import { useState } from 'react'
 
-import {
-  ErrorBanner,
-  LabeledCheckbox,
-  LoadingEllipses,
-  SubmitDialog,
-  TagTextField,
-} from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses, TagTextField } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import GroupByDialogShell from '@jbrowse/display-kit/GroupByDialog'
+import { colorsWithGrouping } from '@jbrowse/display-kit/groupByMenu'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -21,109 +17,48 @@ import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 import type { BaseLayer, Facet } from '../../shared/types.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { GroupByPlotHost } from '@jbrowse/display-kit/GroupByDialog'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
-// radio-building fields (GroupByMenuModel in ../menus/sortGroup.ts) and hands the
-// same node straight through, so the two can't disagree about the tag/color
-// surface while the dialog stays free of menu-only state.
-export interface GroupByDialogModel extends IStateTreeNode {
+export interface GroupByDialogModel extends IStateTreeNode, GroupByPlotHost {
   id: string
-  // Both read by `getUniqueTags`, not here: they describe the fetch its tag scan
-  // runs, and it has to be the same read set the worker will partition — the
-  // display's filter is in `rpcProps`, so a value only filtered-out reads carry
-  // never becomes a section.
+  // `getUniqueTags` reads these three: its scan is the render fetch's
+  // download, over the same read set the worker partitions and under the same
+  // byte budget.
   adapterConfig: Record<string, unknown>
   readPredicates: FieldPredicate[]
-  // Read by `getUniqueTags` too, and the reason its scan can be refused: that
-  // scan IS the render fetch's download, so it is measured against the render
-  // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
   colorField: string | undefined
   writtenColor: ColorSlots
   baseLayer: BaseLayer | undefined
   facet?: Facet
-  facetByField: (field: string) => void
-  colorByField: (field: string | undefined) => void
 }
 
-// Reads are currently colored by exactly this tag.
-function isColoringByTag(colorField: string | undefined, tag: string) {
-  return fieldTag(colorField) === tag
-}
-
-// Whether "also color by this tag" should be ticked, absent an explicit click:
-// yes over a bare plain fill, where grouping by a tag usually pairs with
-// coloring by it, and yes when the reads already carry that same tag's colors.
-// No over any other fill or a solid color, which ticking REPLACES, and no under
-// a per-base layer, whose calls read against the plain fill and share the tag
-// palette's blue.
-//
-// Derived from the tag in the box rather than seeded once from the model: the
-// box is where the tag is chosen, so a state read at open time describes a tag
-// the user hasn't typed yet. Typing the tag the reads are already colored by
-// then left the box unticked over colors that were on — and, since unticking
-// means "don't color by this tag", submitting turned those colors off.
-function defaultColorByTag(model: GroupByDialogModel, tag: string) {
-  return (
-    (model.colorField === undefined &&
-      model.writtenColor.value === undefined &&
-      !model.baseLayer) ||
-    isColoringByTag(model.colorField, tag)
-  )
-}
-
-// After grouping by `tag`: color by the tag when checked; when unchecked, undo
-// only the coloring this dialog set (same tag), else leave the fill alone.
-function applyColorByTag(
-  model: GroupByDialogModel,
-  tag: string,
-  alsoColorByTag: boolean,
-) {
-  if (alsoColorByTag) {
-    model.colorByField(`${TAG_FIELD_PREFIX}${tag}`)
-  } else if (isColoringByTag(model.colorField, tag)) {
-    model.colorByField(undefined)
-  }
-}
-
-// Group reads into stacked sections by a tag value (HP, RG, ...). Tag is the one
-// group-by dimension needing extra input, so it gets a dialog; every other
-// dimension is a direct radio in the Group-by menu. Tag is fragment-level, so
-// this works in linked-read mode too (no per-mode gating needed).
-const GroupByDialog = observer(function GroupByDialog(props: {
+// Group reads into stacked sections by a tag value (HP, RG, ...). Tag is
+// fragment-level, so this works in linked-read mode too.
+const GroupByDialog = observer(function GroupByDialog({
+  model,
+  handleClose,
+}: {
   model: GroupByDialogModel
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
-  // Pre-fill from the active grouping so reopening tweaks it rather than resets.
   const [groupByTag, setGroupByTag] = useState(
     fieldTag(model.facet?.field) ?? '',
   )
-  // Undefined until the box is actually clicked, so until then it tracks the tag
-  // being typed (`defaultColorByTag`); a click pins the answer, since from then
-  // on it is the user's and not a default.
-  const [colorByTagChoice, setColorByTagChoice] = useState<boolean>()
-  const colorByTag = colorByTagChoice ?? defaultColorByTag(model, groupByTag)
-  // Short, because the field emits only a VALID two-letter tag (or undefined),
-  // so the half-typed keystrokes a long debounce exists to swallow never reach
-  // here — a second of it was dead time on every open, and on every quick-pick
-  // chip click, which lands its tag in one go.
+  const field = groupByTag ? `${TAG_FIELD_PREFIX}${groupByTag}` : undefined
+  // Short: the box emits only a valid two-letter tag, so there are no
+  // half-typed keystrokes to swallow.
   const debouncedTag = useDebounce(groupByTag, 300)
-  // Keyed by the display's id, never the node itself: useFetch JSON-stringifies
-  // its key, and an MST node stringifies to its whole snapshot — so the key both
-  // cost a full serialization per render and changed on any unrelated model edit,
-  // re-running this RPC over the visible blocks.
+  // Keyed by the display's id: useFetch stringifies its key, and an MST node
+  // stringifies to its whole snapshot.
   const {
     data: tagSet,
     error,
-    isLoading: loadingTags,
+    isLoading,
     status,
   } = useFetch(
     debouncedTag ? (['getUniqueTags', model.id, debouncedTag] as const) : null,
-    // this is a full scan of every visible block, re-issued on every settled
-    // keystroke, so forwarding the signal is what keeps a superseded tag's scan
-    // from running to completion behind the one the user actually wants
     (_name, _id, _tag, signal, statusCallback) =>
       getUniqueTags({
         self: model,
@@ -131,48 +66,34 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         opts: { signal, statusCallback },
       }),
   )
-
-  // The fetch lags the field by the debounce AND by its own round trip, so
-  // nothing describes the tag Submit would apply until both have caught up. One
-  // term, because it is also what Submit is held on: the cardinality guard this
-  // dialog exists for is `verdict`, and a click landing before the scan settled
-  // bypassed it outright.
+  // The scan lags the box by the debounce and its own round trip; Apply is
+  // held until it describes the tag in the box, or the verdict's refusal
+  // could be clicked past.
   const scanPending =
-    groupByTag !== '' && (loadingTags || debouncedTag !== groupByTag)
-  // What the scan says about the grouping, and whether Submit is refused — one
-  // answer, in `tagGroupingVerdict`, which says why both ends of the count are
-  // decided here rather than left to the worker, and what a refused region
-  // means.
+    groupByTag !== '' && (isLoading || debouncedTag !== groupByTag)
   const verdict = tagGroupingVerdict(
     groupByTag,
     scanPending ? undefined : tagSet,
   )
 
-  const handleSubmit = () => {
-    model.facetByField(`${TAG_FIELD_PREFIX}${groupByTag}`)
-    applyColorByTag(model, groupByTag, colorByTag)
-    handleClose()
-  }
-
   return (
-    <SubmitDialog
-      open
+    <GroupByDialogShell
+      model={model}
+      handleClose={handleClose}
       title="Group by tag"
-      // Worker only needs a valid tag name; groupByTag holds a valid tag or ''.
-      // A failed scan leaves this enabled: the verdict is advice the data
-      // supplies, and without it the grouping is the one the menu would have
-      // applied anyway.
-      submitDisabled={groupByTag === '' || scanPending || !!verdict?.blocks}
-      onCancel={handleClose}
-      onSubmit={handleSubmit}
+      blurb="Renders the reads as stacked sections — one per distinct value of the tag — inside this track, sharing one coverage scale."
+      colorLabel="Also color reads by this tag"
+      field={field}
+      colorsByDefault={colorsWithGrouping({
+        value: model.writtenColor.value,
+        colorField: model.colorField,
+        field,
+        underBaseLayer: !!model.baseLayer,
+      })}
+      pending={scanPending}
+      blocks={verdict?.blocks}
     >
-      <Typography color="text.secondary">
-        Renders the reads as stacked sections — one per distinct value of the
-        tag — inside this track, sharing one coverage scale.
-      </Typography>
       <TagTextField
-        // Seed from `groupByTag` (parent state) so it stays in lockstep with
-        // what Submit reads.
         defaultValue={groupByTag}
         quickPicks={COMMON_READ_TAG_PICKS}
         onValueChange={value => {
@@ -194,16 +115,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           {verdict.text}
         </Typography>
       ) : null}
-      <div>
-        <LabeledCheckbox
-          checked={colorByTag}
-          onChange={val => {
-            setColorByTagChoice(val)
-          }}
-          label="Also color reads by this tag"
-        />
-      </div>
-    </SubmitDialog>
+    </GroupByDialogShell>
   )
 })
 

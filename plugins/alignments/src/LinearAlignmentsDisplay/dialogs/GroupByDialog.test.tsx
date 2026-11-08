@@ -18,20 +18,23 @@ afterEach(() => {
   cleanup()
 })
 
-// Only the tag/color surface is exercised here. The distinct-value scan needs a
-// containing view and an RPC manager, which a bare model object is neither, so
-// `settleScan` lands it in its error state — which is exactly the state Submit
-// is deliberately left enabled in, since the verdict is advice the data supplies
-// and without it the grouping is the one the menu would have applied anyway. The
-// verdict itself is unit-tested below.
+// The distinct-value scan needs a containing view and an RPC manager, which a
+// bare model object is neither, so `settleScan` lands it in its error state,
+// where Apply is left enabled: the verdict is advice the data supplies. The
+// verdict itself is unit-tested below, and what Apply writes in
+// `../groupByPlot.test.ts`.
+const PLOT = { facet: { field: 'tags.HP' } }
+
 function renderDialog(state: {
   colorField?: string
   solidColor?: string
   baseLayer?: BaseLayer
   facet?: Facet
 }) {
-  const facetByField = jest.fn()
-  const colorByField = jest.fn()
+  const applyGroupBy = jest.fn()
+  const groupByPlot = jest.fn(() => PLOT)
+  const openPlotDialog = jest.fn()
+  const handleClose = jest.fn()
   const model = {
     id: 'display1',
     colorField: state.colorField,
@@ -40,20 +43,21 @@ function renderDialog(state: {
     facet: state.facet,
     readFilter: {},
     resolvedByteLimit: () => undefined,
-    facetByField,
-    colorByField,
+    applyGroupBy,
+    groupByPlot,
+    openPlotDialog,
   } as unknown as GroupByDialogModel
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <GroupByDialog model={model} handleClose={() => {}} />
+      <GroupByDialog model={model} handleClose={handleClose} />
     </ThemeProvider>,
   )
-  return { facetByField, colorByField }
+  return { applyGroupBy, groupByPlot, openPlotDialog, handleClose }
 }
 
 const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
 
-const submitButton = () => screen.getByText('Submit').closest('button')!
+const applyButton = () => screen.getByText('Apply').closest('button')!
 
 function typeTag(tag: string) {
   fireEvent.change(screen.getByTestId('group-tag-name-input'), {
@@ -61,113 +65,94 @@ function typeTag(tag: string) {
   })
 }
 
-// Past the debounce and through the scan's settle. Submit is held for the whole
-// of it: the cardinality guard this dialog exists for reads the scan's answer,
-// and a click landing before it arrived bypassed the guard outright.
+// Past the debounce and through the scan's settle.
 async function settleScan() {
   await act(async () => {
     jest.advanceTimersByTime(500)
   })
 }
 
-function submit() {
-  fireEvent.click(screen.getByText('Submit'))
+function apply() {
+  fireEvent.click(screen.getByText('Apply'))
 }
 
-// The box is a default until it is clicked, and the tag it defaults against is
-// the one in the box — not the one the model held when the dialog opened. Reads
-// already colored by HP, grouped by nothing: the box used to open unticked
-// (there was no facet to compare against), and unticked means "don't color by
-// this tag", so submitting reset the HP coloring the user could see.
+// The box defaults against the tag in the box, not the one the model held
+// when the dialog opened: reads colored by HP and grouped by nothing opened
+// unticked, and applying reset the HP coloring.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
-  const { facetByField, colorByField } = renderDialog({
-    colorField: 'tags.HP',
-  })
+  const { applyGroupBy } = renderDialog({ colorField: 'tags.HP' })
   expect(checkbox().checked).toBe(false)
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
-  submit()
-  expect(facetByField).toHaveBeenCalledWith('tags.HP')
-  expect(colorByField).toHaveBeenCalledWith('tags.HP')
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', true)
 })
 
-// A different tag's colors are in force, so the box stays a genuine offer to
-// replace them and does nothing unless taken.
-test('a different tag coloring leaves the box unticked and untouched', async () => {
-  const { colorByField } = renderDialog({
-    colorField: 'tags.RG',
-  })
+test('a different tag coloring leaves the box unticked', async () => {
+  const { applyGroupBy } = renderDialog({ colorField: 'tags.RG' })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
-  submit()
-  expect(colorByField).not.toHaveBeenCalled()
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', false)
 })
 
-// Every field but the plain fill PAINTS something the checkbox would replace, so
-// grouping by HP over an insert-size view used to turn that picture off on
-// Submit.
 test('a non-tag color field is not replaced by default', async () => {
-  const { colorByField } = renderDialog({
+  const { applyGroupBy } = renderDialog({
     colorField: 'insertSizeAndOrientation',
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
-  submit()
-  expect(colorByField).not.toHaveBeenCalled()
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', false)
 })
 
-// A solid color leaves `colorField` unset, as the plain fill does, and the box
-// ticked itself over it, so Submit replaced the color the user picked.
+// A solid color leaves `colorField` unset, as the plain fill does.
 test('a solid color is not replaced by default', async () => {
-  const { colorByField } = renderDialog({ solidColor: 'red' })
+  const { applyGroupBy } = renderDialog({ solidColor: 'red' })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
-  submit()
-  expect(colorByField).not.toHaveBeenCalled()
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', false)
 })
 
 // The plain fill under a per-base layer is the backdrop its calls read
 // against, and the tag palette's blue and pink collide with the calls'.
 test('the plain fill under a per-base layer is not replaced by default', async () => {
-  const { colorByField } = renderDialog({
+  const { applyGroupBy } = renderDialog({
     baseLayer: layerForTest({ field: 'modifications' }),
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
-  submit()
-  expect(colorByField).not.toHaveBeenCalled()
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', false)
 })
 
-// The guard this dialog exists for reads a scan that has not landed yet, so a
-// click before it settles applied a grouping nothing had vetted.
-test('Submit is held until the scan settles', async () => {
+// The guard this dialog exists for reads a scan that has not landed yet.
+test('Apply is held until the scan settles', async () => {
   renderDialog({})
   typeTag('HP')
-  expect(submitButton().disabled).toBe(true)
+  expect(applyButton().disabled).toBe(true)
   await settleScan()
-  expect(submitButton().disabled).toBe(false)
+  expect(applyButton().disabled).toBe(false)
 })
 
-// Grouping by a tag usually pairs with coloring by it, so an uncolored track
-// opts in by default.
 test('an uncolored track defaults to coloring by the grouped tag', async () => {
-  const { colorByField } = renderDialog({})
+  const { applyGroupBy } = renderDialog({})
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
-  submit()
-  expect(colorByField).toHaveBeenCalledWith('tags.HP')
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', true)
 })
 
-// Unticking is still how you drop the coloring this dialog would set, and it
-// pins: the default no longer re-ticks the box as the tag is edited.
-test('unticking drops the matching coloring and stays unticked', async () => {
-  const { colorByField } = renderDialog({
+// Unticking pins: the default no longer re-ticks the box as the tag is edited.
+test('unticking stays unticked as the tag is edited', async () => {
+  const { applyGroupBy } = renderDialog({
     colorField: 'tags.HP',
     facet: { field: 'tags.HP' },
   })
@@ -177,8 +162,19 @@ test('unticking drops the matching coloring and stays unticked', async () => {
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
-  submit()
-  expect(colorByField).toHaveBeenCalledWith(undefined)
+  apply()
+  expect(applyGroupBy).toHaveBeenCalledWith('tags.HP', false)
+})
+
+test('Edit plot... hands over the unapplied choice as a plot and applies nothing', () => {
+  const { applyGroupBy, groupByPlot, openPlotDialog, handleClose } =
+    renderDialog({})
+  typeTag('HP')
+  fireEvent.click(screen.getByText('Edit plot...'))
+  expect(groupByPlot).toHaveBeenCalledWith('tags.HP', true)
+  expect(openPlotDialog).toHaveBeenCalledWith(PLOT)
+  expect(handleClose).toHaveBeenCalled()
+  expect(applyGroupBy).not.toHaveBeenCalled()
 })
 
 // The scan's verdict, unit-tested rather than driven through the dialog: the

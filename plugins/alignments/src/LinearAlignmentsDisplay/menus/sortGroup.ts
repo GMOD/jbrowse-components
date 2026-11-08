@@ -211,6 +211,7 @@ const GROUP_OPTIONS = pickFacetOptions(
 // passed on to GroupByDialog, so it has to be a superset.
 export interface GroupByMenuModel extends GroupByDialogModel {
   unit: AlignmentsUnit
+  facetByField: (field: string) => void
 }
 
 // The sort-by-tag dialog both sort surfaces open: the track menu sorts at the

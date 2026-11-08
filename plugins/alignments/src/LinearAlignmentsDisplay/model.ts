@@ -44,9 +44,13 @@ import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
-import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import {
+  editPlotMenuItems,
+  openPlotDialog as queuePlotDialog,
+} from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
@@ -220,7 +224,7 @@ import type {
 import type { SashimiLabel } from './renderers/sashimiMarks.ts'
 import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ExportedFeaturesRequest } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
@@ -2327,6 +2331,59 @@ export default function stateModelFactory(
             [...self.collapsedGroups].sort((a, b) => a.localeCompare(b)),
             Object.fromEntries(self.groupSizes),
           ]
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * The color the Group by dialog's choice of field writes: a color by
+         * the field when ticked, left alone while it already paints; and,
+         * unticked, the plain fill only where the reads paint that field.
+         * Undefined where the color stays as it is.
+         */
+        groupByColor(field: string | undefined, colorByGroup: boolean) {
+          return field === undefined
+            ? undefined
+            : colorByGroup
+              ? field === self.colorField
+                ? undefined
+                : colorForField(self.writtenColor, field, self.parkedColor)
+              : field === self.colorField
+                ? colorForField(self.writtenColor, undefined)
+                : undefined
+        },
+        /**
+         * #method
+         * The Group by dialog's choice of field as plot settings, which its
+         * Apply writes and its Edit plot button shows.
+         */
+        groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
+          return groupByPlotOf(
+            self.writtenFacet,
+            field,
+            this.groupByColor(field, colorByGroup),
+          )
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * What the Group by dialog applies: `groupByPlot`, the draft its Edit
+         * plot button shows, as one write.
+         */
+        applyGroupBy(field: string | undefined, colorByGroup: boolean) {
+          const color = self.groupByColor(field, colorByGroup)
+          if (color) {
+            self.parkColor('color', self.writtenColor, color)
+          }
+          self.applyPlot(self.groupByPlot(field, colorByGroup))
+        },
+        /**
+         * #action
+         * "Edit plot...", seeded with a draft a dialog has not applied.
+         */
+        openPlotDialog(seed?: Plot) {
+          queuePlotDialog(self, seed)
         },
       }))
       .actions(self => ({

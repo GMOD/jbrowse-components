@@ -122,7 +122,7 @@ export const methylationVideos: VideoSpec[] = [
         timeout: 120000,
         hold: 2500,
       },
-      { type: 'click', text: 'Submit' },
+      { type: 'click', text: 'Apply' },
       // Grouping REFETCHES rather than re-laying-out what is loaded -- the frame
       // says "Downloading alignments.." -- so this is off camera for the reason
       // every slow step here is. `displayPainted` alone would not hold it: the

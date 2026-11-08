@@ -35,9 +35,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import FacetWritesMixin, {
-  facetForField,
-} from '@jbrowse/display-kit/FacetWritesMixin'
+import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -47,6 +45,7 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
+import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -1279,11 +1278,11 @@ export default function baseStateModelFactory(
        * domain while the field is the one already set, and `groupByColor`.
        */
       groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
-        const color = this.groupByColor(field, colorByGroup)
-        return {
-          facet: field ? facetForField(self.writtenFacet, field) : null,
-          ...(color ? { encoding: { color } } : {}),
-        }
+        return groupByPlotOf(
+          self.writtenFacet,
+          field,
+          this.groupByColor(field, colorByGroup),
+        )
       },
       /**
        * #method

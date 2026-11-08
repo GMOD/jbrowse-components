@@ -13,6 +13,7 @@ import {
   colorFieldMenuItems,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
+  colorsWithGrouping,
   groupByRadioMenuItem,
   hiddenGroupsItems,
   resetSectionOrderItems,
@@ -22,7 +23,6 @@ import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { colorsWithGrouping } from './groupByColor.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureFacet } from './facet.ts'
@@ -111,7 +111,11 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       onSelect: strand => {
         self.applyGroupBy(
           strand,
-          colorsWithGrouping(self.colorSetting.value, self.colorField, strand),
+          colorsWithGrouping({
+            value: self.colorSetting.value,
+            colorField: self.colorField,
+            field: strand,
+          }),
         )
       },
       onNone: () => {

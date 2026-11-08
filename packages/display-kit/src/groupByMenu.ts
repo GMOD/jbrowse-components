@@ -2,7 +2,12 @@ import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
+import { facetForField } from './FacetWritesMixin.ts'
+
+import type { WrittenFacet } from './FacetWritesMixin.ts'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 /**
  * A directly selectable dimension: picking it calls `onSelect(type)`. No help
@@ -119,6 +124,45 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
       // open, which leaves both menus standing over the dialog it just opened.
       ...extras.map(extraRadio),
     ] satisfies MenuItem[],
+  }
+}
+
+/**
+ * Whether grouping by `field` also colors by it, absent the user's say: yes
+ * over the track's own color, and yes where the color already paints `field`.
+ * A hand-picked constant or another field stays, and so does the plain fill
+ * under a per-base layer (`underBaseLayer`), whose marks read against it.
+ */
+export function colorsWithGrouping({
+  value,
+  colorField,
+  field,
+  underBaseLayer = false,
+}: {
+  value: unknown
+  colorField: string | undefined
+  field: string | undefined
+  underBaseLayer?: boolean
+}) {
+  return (
+    (value === undefined && colorField === undefined && !underBaseLayer) ||
+    (colorField !== undefined && colorField === field)
+  )
+}
+
+/**
+ * A Group by choice as plot settings, which its Apply writes and its Edit plot
+ * button shows: the facet by `facetForField`, none for no field, and `color`
+ * where the choice writes one.
+ */
+export function groupByPlotOf(
+  written: WrittenFacet,
+  field: string | undefined,
+  color: ColorSlots | undefined,
+): Plot {
+  return {
+    facet: field ? facetForField(written, field) : null,
+    ...(color ? { encoding: { color } } : {}),
   }
 }
 

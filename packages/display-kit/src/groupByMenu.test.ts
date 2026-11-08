@@ -1,6 +1,8 @@
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 
 import {
+  colorsWithGrouping,
+  groupByPlotOf,
   groupByRadioMenuItem,
   mergeDomain,
   moveSectionOnto,
@@ -99,4 +101,46 @@ test('a stored field no radio offers shows checked and disabled, one not honored
   expect(ticked('superpopulation', type => type === 'population')).toEqual([
     ['None', false],
   ])
+})
+
+describe('colorsWithGrouping', () => {
+  const rule = (
+    value: string | undefined,
+    colorField: string | undefined,
+    underBaseLayer?: boolean,
+  ) => colorsWithGrouping({ value, colorField, field: 'HP', underBaseLayer })
+
+  test("the track's own color pairs grouping with coloring", () => {
+    expect(rule(undefined, undefined)).toBe(true)
+  })
+
+  test('a color already painting the field stays ticked, even over a constant', () => {
+    expect(rule('purple', 'HP')).toBe(true)
+    expect(rule(undefined, 'HP', true)).toBe(true)
+  })
+
+  test('a hand-picked constant or another field stays', () => {
+    expect(rule('purple', undefined)).toBe(false)
+    expect(rule(undefined, 'RG')).toBe(false)
+  })
+
+  test('the plain fill under a per-base layer stays', () => {
+    expect(rule(undefined, undefined, true)).toBe(false)
+  })
+
+  test('no field names nothing to color by', () => {
+    expect(
+      colorsWithGrouping({ value: 'red', colorField: 'HP', field: undefined }),
+    ).toBe(false)
+  })
+})
+
+test('a Group by plot keeps the facet order while the field stays, and resets it for none', () => {
+  const written = { field: 'HP', sort: ['2', '1'] }
+  expect(groupByPlotOf(written, 'HP', undefined)).toEqual({ facet: written })
+  expect(groupByPlotOf(written, 'RG', { field: 'RG' })).toEqual({
+    facet: { field: 'RG' },
+    encoding: { color: { field: 'RG' } },
+  })
+  expect(groupByPlotOf(written, undefined, undefined)).toEqual({ facet: null })
 })
