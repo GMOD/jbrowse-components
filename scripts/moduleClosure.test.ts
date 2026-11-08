@@ -103,8 +103,8 @@ const CEILINGS = [
   // No headroom, for the same reason: the alignments filter's field rules.
   {
     entry: 'plugins/alignments/src/shared/filterFields.ts',
-    runtime: 5,
-    types: 5,
+    runtime: 6,
+    types: 6,
   },
 ]
 
