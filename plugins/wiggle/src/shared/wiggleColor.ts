@@ -18,17 +18,19 @@ import {
 } from './wiggleColorConfigSchema.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * The `encoding.color` channel as written, the key's `scale.names` and
  * `legend.title` with it. `field` is `''` while unwritten, until
  * `paintedWiggleColor` implies `score`.
  */
-export function wiggleColorSettingOf(color: AnyConfigurationModel) {
-  const setting = colorSnapshotOf(color)
-  return { ...setting, field: setting.field ?? '' } as ColorSetting
+export function wiggleColorSettingOf(
+  color: Instance<typeof wiggleColorSchema>,
+) {
+  return colorSnapshotOf(color)
 }
 
 function lutColor(lut: Uint8Array, entry: number) {
