@@ -99,6 +99,10 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
   sites are fixed, and both report nothing. The pin keeps lint on the released
   tool while tsrs is a beta; switching is deleting the variable from `pnpm
   lint`, the pre-commit hook, `verify.ts` and `check-unsafe-any.ts`.
+- **`non-nullable-type-assertion-style`'s `!` fix breaks
+  `querySelector(...) as HTMLElement`** (TS2339). tsgolint leaves that cast
+  alone only while `no-unnecessary-type-assertion` is also on; with the rule
+  alone both backends flag it (oxc-project/tsrs#943).
 - **`.oxlintrc.json` cannot carry comments.** `eslint.config.mjs` imports it with
   `with { type: 'json' }`, a strict `JSON.parse`, so a `//` comment breaks `pnpm
   lint:eslint` with an error that does not name the comment. A `"//key"` entry fails
