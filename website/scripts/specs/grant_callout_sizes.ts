@@ -9,7 +9,7 @@ import {
   junctionReads,
   scaffoldOverview,
 } from './cgiab-junction.ts'
-import { paperSvReadsSpecs } from './paper-sv-reads.ts'
+import { SCREEN_PRINT, readEvidenceSpecs } from './paper-sv-reads.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 import { proteinVariantSpecs } from './protein_variants.ts'
 
@@ -219,12 +219,13 @@ interface SvReads {
 }
 
 function svReadsFrame({ base, key, viewportHeight }: SvReads) {
-  const spec = byName(paperSvReadsSpecs, base) as Annotated & { url: string }
+  const spec = byName(readEvidenceSpecs(SCREEN_PRINT), base) as Annotated & {
+    url: string
+  }
   return {
     ...spec,
     name: `grant/${key}_frame`,
     annotations: [],
-    viewportWidth: FRAME_WIDTH / 2,
     url: editSpecSession(spec.url, session => {
       const [lgv] = session.views as [ViewJson]
       const tracks = lgv.tracks as { trackId: string; pileup?: object }[]

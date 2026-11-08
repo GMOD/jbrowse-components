@@ -62,13 +62,13 @@ export const callout = (
   type: 'text',
   text,
   fontSize,
-  maxWidth,
   color: '#1f77b4',
   background: '#dceaf6',
   leader: true,
   anchor,
   dx,
   dy,
+  maxWidth,
 })
 
 // Anchored on the track label, the one element a band shares a row with. Its

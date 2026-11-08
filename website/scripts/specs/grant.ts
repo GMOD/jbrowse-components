@@ -9,7 +9,7 @@ import {
   drosophilaBlocksSpec,
   drosophilaBlocksUrl,
 } from './paper-drosophila.ts'
-import { paperSvReadsSpecs } from './paper-sv-reads.ts'
+import { SCREEN_PRINT, readEvidenceSpecs } from './paper-sv-reads.ts'
 import { proteinHbbE6vPocketSpecs } from './protein_figure_hbb_e6v_pocket.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 
@@ -157,7 +157,7 @@ const junction = urlSpec(
 const overview = urlSpec(
   scaffoldOverview('grant/sv_row_overview', HIDE_APP_BAR),
 )
-const inversion = urlSpec(paperSvReadsSpecs[1]!)
+const inversion = urlSpec(readEvidenceSpecs(SCREEN_PRINT)[1]!)
 const stackHeight =
   junction.viewportHeight! + overview.viewportHeight! + STACK_GUTTER_2X / 2
 const inversionScale = stackHeight / inversion.viewportHeight!

@@ -52,21 +52,34 @@ const illuminaPairs = {
   encoding: { color: 'insertSizeAndOrientation' },
 }
 
-// The paper prints these at its full text width
-const VIEWPORT_WIDTH = 1200
-const LABEL_FONT = 22
+// The frame's width and its band labels' size: the paper prints these figures
+// at its full text width, while the grant's derive from them at screen size
+interface Print {
+  viewportWidth: number
+  labelFont: number
+}
+const PAPER_PRINT = { viewportWidth: 1200, labelFont: 22 }
+export const SCREEN_PRINT = { viewportWidth: 1500, labelFont: 16 }
 
 // What a band of a track is, hung from the track's own label as the
-// translocation figure's are (`cgiab-junction.ts`).
+// translocation figure's are (`cgiab-junction.ts`). The dy is the label's
+// baseline at screen size, which a larger font moves down by its growth.
 const bandLabel = (
   text: string,
   trackLabel: string,
   dy: number,
+  fontSize: number,
 ): Annotation => ({
   type: 'text',
   text,
-  fontSize: LABEL_FONT,
-  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: 8, dy },
+  fontSize,
+  anchor: {
+    text: trackLabel,
+    alignX: 'left',
+    alignY: 'bottom',
+    dx: 8,
+    dy: dy + fontSize - SCREEN_PRINT.labelFont,
+  },
 })
 
 const callsTrack = (trackId: string, name: string) => ({
@@ -99,6 +112,7 @@ const readEvidence = ({
   arcsHeight,
   coverageMax,
   viewportHeight,
+  print,
 }: {
   name: string
   loc: string
@@ -106,6 +120,7 @@ const readEvidence = ({
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
+  print: Print
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
@@ -208,35 +223,39 @@ const readEvidence = ({
     ],
   }),
   annotations: [
-    bandLabel('SV calls', 'draft benchmark somatic SVs', 58),
-    bandLabel('SV call arcs', CALL_ARCS_NAME, 42),
-    bandLabel('PacBio: coverage', HIFI_COV_NAME, 42),
-    bandLabel('PacBio: split-read arcs', HIFI_NAME, 44),
-    bandLabel('PacBio: split reads', HIFI_NAME, 88),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, 274),
-    bandLabel('Illumina: coverage', ARCS_NAME, 50),
-    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 106),
-    bandLabel('Illumina: read cloud', PAIRS_NAME, 46),
+    bandLabel('SV calls', 'draft benchmark somatic SVs', 52, print.labelFont),
+    bandLabel('SV call arcs', CALL_ARCS_NAME, 36, print.labelFont),
+    bandLabel('PacBio: coverage', HIFI_COV_NAME, 36, print.labelFont),
+    bandLabel('PacBio: split-read arcs', HIFI_NAME, 38, print.labelFont),
+    bandLabel('PacBio: split reads', HIFI_NAME, 82, print.labelFont),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 268, print.labelFont),
+    bandLabel('Illumina: coverage', ARCS_NAME, 44, print.labelFont),
+    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100, print.labelFont),
+    bandLabel('Illumina: read cloud', PAIRS_NAME, 40, print.labelFont),
   ],
   hideSelectors: [APP_BAR],
   readyText: 'read cloud',
   readyTimeout: 300000,
-  viewportWidth: VIEWPORT_WIDTH,
+  viewportWidth: print.viewportWidth,
   viewportHeight,
 })
 
-export const paperSvReadsSpecs: ScreenshotSpec[] = [
+export const readEvidenceSpecs = (print: Print): ScreenshotSpec[] => [
   readEvidence({
     name: 'paper/sv_read_evidence',
     loc: 'chr17:31,937,000-32,030,000',
     coverageMax: 200,
     arcsHeight: 80,
     viewportHeight: 1386,
+    print,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
     viewportHeight: 1416,
+    print,
   }),
 ]
+
+export const paperSvReadsSpecs = readEvidenceSpecs(PAPER_PRINT)
