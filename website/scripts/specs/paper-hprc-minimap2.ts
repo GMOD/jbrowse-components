@@ -67,7 +67,6 @@ const ROW_ORDER = [
 
 const lanes = (trackId: string) => ({
   trackId,
-  type: 'MultiWaySyntenyDisplay',
   rows: { sort: ROW_ORDER },
   height: 300,
   labels: { lanes: { placement: 'overlay' } },
