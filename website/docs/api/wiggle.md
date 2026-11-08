@@ -24,6 +24,25 @@ them in the file's names for the fetch. The adapters must be registered on
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/staticSvg.tsx)
 
+## wiggleScoreMatrix
+
+The matrix the multi-row wiggle display's "Cluster rows" clusters, over
+`regions` at `bpPerPx` as `wiggleTables` reads them (`getScoreMatrix`):
+`rows`, a source each, named as `wiggleTables`' `sources` names them and in
+its order; `columns`, a pixel each, the regions end to end, with its
+`region`'s index, the 0-based `start` of the base at its left edge, and its
+`name`, that base 1-based after the region's contig as the call names it
+(`ctgA:1001`); and `values`, row-major, each pixel's mean of the summary
+the display plots over the bins covering it, placed where a log or symlog
+axis draws it, NaN where no bin covers it.
+
+```js
+// type signature
+(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ rows: string[]; columns: { region: number[]; start: number[]; name: string[]; }; values: Float32Array<ArrayBuffer>; }>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)
+
 ## wiggleTables
 
 A region, or several, of a quantitative track as the wiggle display
@@ -50,7 +69,7 @@ R through V8. The adapters must be registered on `pluginManager`
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, regions, displayedRegions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: {…}; ramps: {…}[]; legend: {…}; legendTitle: string; scoreScale: {…}; clipStrip: { color: string; px: number; }; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; warnings: string[]; }>
+(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: {…}; ramps: {…}[]; legend: { label: string[]; color: string[]; section: string[]; }; legendTitle: string; scoreScale: { domain: [number, number]; type: "linear" | "log" | "symlog"; symlogConstant: number; }; clipStrip: { color: string; px: number; }; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; warnings: string[]; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

@@ -78,7 +78,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the statistic's own 0 to 1, not the loaded values, so one r² paints one color on every track. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
 | <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
-| <span id="getter-connectorsstack">**connectorsStack**</span><br><code>BandStack&lt;"connectors"&gt;</code> | The `connectors` band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing; taken from the display's height so the triangle keeps its floor. |
+| <span id="getter-connectorsband">**connectorsBand**</span><br><code>Band</code> | The `connectors` band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing; taken from the display's height so the triangle keeps its floor. |
+| <span id="getter-connectorsstack">**connectorsStack**</span><br><code>BandStack&lt;"connectors"&gt;</code> |  |
 | <span id="getter-connectorsheight">**connectorsHeight**</span><br><code>number</code> |  |
 | <span id="getter-drawslabels">**drawsLabels**</span><br><code>boolean</code> | Whether the SNP labels draw: on, in a `connectors` band that reserves room for them, so they never paint over the triangle. |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Where the triangle begins, under the `connectors` band. |
@@ -153,9 +154,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setindexsnp">**setIndexSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setconnectorsheight">**setConnectorsHeight**</span><br><code>(n: number) =&gt; void</code> |  |
 | <span id="action-setshownames">**setShowNames**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  |
+| <span id="action-setconnectorsheight">**setConnectorsHeight**</span><br><code>(n: number) =&gt; void</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

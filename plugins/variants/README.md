@@ -22,6 +22,26 @@ alone. For a host that draws the cells at its own scale.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
 
+### variantGenotypeMatrix
+
+The matrix the variant display's "Cluster rows by genotype" clusters, over the
+records and rows `variantTables` gives for the same args (`genotypeMatrixOf`):
+`rows`, named and ordered as its `rows`; `columns`, each record in
+`variants.key` order, its key as `variant`, and its `name`, that key 1-based.
+With a row per sample, a record takes a column per ALT, `allele` its 1-based
+index and named `<key>.<allele>` where it has several, scored 0 to 2 as twice
+that allele's share of the called alleles (`readAltDosages`); with a row per
+haplotype, one column, `allele` 0, 1 where the haplotype carries any ALT.
+`values` holds them row-major, NaN for a no-call, an unphased call's haplotype,
+and a sample the record's file does not list.
+
+```js
+// type signature
+(pluginManager: PluginManager, variantArgs: VariantTablesArgs) => Promise<{ rows: string[]; columns: { name: string[]; variant: number[]; allele: number[]; }; values: Float32Array<ArrayBuffer>; }>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
+
 ### variantRecordTables
 
 The VCF columns of the records a feature table lists, by its `features.id`, for
@@ -37,6 +57,10 @@ record, a record calling no genotype included:
   typed as INFO is; and `formatFields`, each key's declaration.
 - `annotations` and `annotationFields`: its ANN or CSQ consequences, as
   `variantTables` gives them, `feature` an index into `ids`.
+
+A record `ids` lists more than once, as a feature table lists one crossing
+regions in each, has its `samples` and `annotations` rows once, `feature` its
+first index.
 
 ```js
 // type signature
@@ -60,22 +84,28 @@ cell at each record, with its genotype, its `dosage` and the fill the display
 paints it; `rows`, the rows the cells name, top to bottom as the display
 arranges them by `rows` and stacks them in `facet`'s bands, each with its label
 and band; `bands`, each band's value and label, in stacking order; `legend`,
-`legendTitle` and `ramps`, the key the display shows; and `warnings`, the
-samples file's. With `genotypes.reference.show` off, the default, a reference
-call draws no cell. With `genotypes.show` off, and unset on a one-sample VCF, no
-row draws, so `rows` and `cells` are empty, the key is the records', and no
-genotype is read, so `minorAlleleFrequency` and `missingness` filter nothing, as
-on a sites-only VCF. The records sit at their genomic positions whatever
-`variantLayout` says. Several regions share the rows and the key, as the
-display's regions do: a record crossing regions is listed in each, under one
-`key`, every `variants` and `cells` row names its `region`'s index, and
-`cells.variant` indexes the joined `variants`. For a host that draws them
-itself, such as R through V8. The adapters must be registered on `pluginManager`
+`legendTitle` and `ramps`, the key the display shows; `rowBackground`, the fill
+the display paints behind its rows; `height`, the px the rows' slot takes
+(`height` as written, else the display's default), the records band above it
+apart; `rowHeight`, the px each row draws at, `rows.step` or the slot divided
+between the rows, as the display resolves it; and `warnings`, the samples
+file's. With `genotypes.reference.show` off, the default, a reference call draws
+no cell, and `rowBackground` is the reference call's color, standing in for
+every one; on, `rowBackground` is `''`. With `genotypes.show` off, and unset on
+a one-sample VCF, no row draws, so `rows` and `cells` are empty, the key is the
+records', and no genotype is read, so `minorAlleleFrequency` and `missingness`
+filter nothing, as on a sites-only VCF. The records sit at their genomic
+positions whatever `variantLayout` says. Several regions share the rows and the
+key, as the display's regions do: a record crossing regions is listed in each,
+under one `key`, with its `annotations` once, under its first listing; every
+`variants` and `cells` row names its `region`'s index, and `cells.variant`
+indexes the joined `variants`. For a host that draws them itself, such as R
+through V8. The adapters must be registered on `pluginManager`
 (`registerVariantAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, byteLimit, }: VariantTablesArgs) => Promise<{ rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: never[] | string[]; legend: {…}; legendTitle: string; ramps: {…}[]; cells: {…}; rows: {…}; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
+(pluginManager: PluginManager, variantArgs: VariantTablesArgs) => Promise<{ rowLegend: {…}; rowLegendTitle: string; bands: {…}; rowBackground: string; height: number; rowHeight: number; config: Record<…>; warnings: never[] | string[]; legend: {…}; legendTitle: string; ramps: {…}[]; cells: {…}; rows: {…}; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

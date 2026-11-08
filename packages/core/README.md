@@ -163,10 +163,7 @@ import { bandAt } from '@jbrowse/core/util/bandLayout'
 ### bandDragBounds
 
 The legal range for a drag of band `key` in a stack folded from
-boundStackedBands: up to the room the plot leaves less every other band's
-reserved px, so a drag stops where the stack meets the plot's floor and never
-writes a height the read-time bound would cut. Pass it to clampBandHeight, whose
-floor it leaves at the default.
+boundStackedBands.
 
 ```js
 import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
@@ -792,6 +789,23 @@ import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
+### dragBandHeight
+
+One resize of band `key` in a stack folded from boundStackedBands:
+clampBandHeight from the band's folded height, so a band a config declared under
+its floor stays where it is, whether or not it draws, up to the room the other
+bands leave the plot above its floor. `min` is the band's drag floor,
+`MIN_BAND_HEIGHT` by default.
+
+```js
+import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
+
+// type signature
+<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot, target: number, min?: number | undefined) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ### electronRenderer
 

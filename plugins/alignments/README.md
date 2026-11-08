@@ -42,14 +42,19 @@ it; each of the three takes the pileup config's default when left out.
   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
   `frequencyFadeGate` over `pxPerBp` squared.
 - A deletion's `alpha` is `sizeAlpha` of its width in px times
-  `frequencyFadeGate` over that width squared.
+  `frequencyFadeGate` over that width squared. Its `labelAlpha`, its length
+  label's, is `labelFadeOpacity` of `visibleLength`, the bp of it inside its
+  region (`length` when left out), in px against the width its digits need, and
+  0 on a read under `MIN_HEIGHT_FOR_TEXT`.
 - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
   `pxPerBp`, and a clip's that gate alone. `quality` may be left out while
-  `mismatchOpacity` is a constant.
+  `mismatchOpacity` is a constant. Its `letterAlpha`, its base letter's, is
+  `qualityFade` alone, 0 under `MIN_QUALITY_LETTER_OPACITY`, where the display
+  writes no letter.
 
 ```js
 // type signature
-({ pxPerBp, featureHeight, fadeLowFrequency, mismatchOpacity, insertions, deletions, mismatches, clips, }: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; mismatchOpacity?: PileupMismatchesOpacitySnapshot | undefined; insertions?: {…} | undefined; deletions?: {…} | undefined; mismatches?: {…} | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
+({ pxPerBp, featureHeight, fadeLowFrequency, mismatchOpacity, insertions, deletions, mismatches, clips, }: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; mismatchOpacity?: PileupMismatchesOpacitySnapshot | undefined; insertions?: {…} | undefined; deletions?: {…} | undefined; mismatches?: {…} | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; labelAlpha: number[]; }; mismatches: { alpha: number[]; letterAlpha: number[]; }; clips: { alpha: number[]; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
@@ -66,10 +71,12 @@ section lays out separately, every row has a `section`, and `sections` lists
 them in stacking order; ungrouped, there is one section, labelled `''`. Several
 regions lay out as the display lays out a view's regions, on one set of rows: a
 read crossing regions is listed in each, under one `key` and on one `row`, and
-every row names its `region`'s index. `warnings` names what the config asked for
-that the tables dropped. For a host that draws them itself, such as R through
-V8. The adapters must be registered on `pluginManager`
-(`registerAlignmentsAdapters`).
+every row names its `region`'s index. `arcScale` is the read-connection band's y
+scale (`arcBandScale`): the read cloud's log `domain`, or for arcs none, as
+their linear domain is `[0, reachPx / pxPerBp]` at the host's own scale, and the
+band they draw in. `warnings` names what the config asked for that the tables
+dropped. For a host that draws them itself, such as R through V8. The adapters
+must be registered on `pluginManager` (`registerAlignmentsAdapters`).
 
 ```js
 // type signature

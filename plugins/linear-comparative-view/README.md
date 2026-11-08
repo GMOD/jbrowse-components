@@ -31,16 +31,20 @@ lane's assembly is given, each with the px it spans; `blocks`, each alignment's
 placement on each lane; `ribbons`, what each gutter draws in paint order, a
 trapezoid from a span on its upper lane to a span on its lower one, with its
 color and the alpha it composites at; `alignments`, the records the ribbons
-draw; `legend`, the key; and `config`, the display's config with its defaults
-filled. Positions are genomic on each lane, and px across the view's `width`,
-where a lane's own frame puts them. Heights are px down from the stack's top as
-the display lays it out over `display.height`: `height` is the whole stack, each
-lane's `yTop` and `yBottom` bound its gene boxes, and each ribbon's bound its
-gutter, the height its `thin` flag and fade are measured at.
+draw; `legend`, the key, and `legendAlpha`, the alpha the display draws its
+chips at; and `config`, the display's config with its defaults filled. Positions
+are genomic on each lane, and px across the view's `width`, where a lane's own
+frame puts them. A segment's and a block's `region`, and a ribbon foot's
+`upperRegion` and `lowerRegion`, is the 0-based index of the anchor's region it
+is drawn on, read from its px; 0 on a mate lane, whose frame is one stretch of
+one contig. Heights are px down from the stack's top as the display lays it out
+over `display.height`: `height` is the whole stack, each lane's `yTop` and
+`yBottom` bound its gene boxes, and each ribbon's bound its gutter, the height
+its `thin` flag and fade are measured at.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, laneAssemblyOf, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, laneAssemblyOf, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; legendAlpha: number; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; region: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
@@ -114,17 +118,18 @@ contig the other row is not showing or past its window and overdraw, in the
 color the strip along that row's edge paints them, `offscreenContigs`, the count
 and aligned bp of each contig the strip's marks name and the line its hover
 prints, and `offscreenStrip`, the marks and labels the strips along the band's
-edges paint, in px; `legend` and `ramps`, the key; and `config`, the view's
-settings with their defaults filled, `encoding.color` and `encoding.opacity` as
-config objects. For a host that draws them itself, such as R through V8.
-Positions are genomic, on the axis's region named by `queryRegion` and
-`targetRegion`; a ribbon's `queryX1`/`queryX2` and `targetX1`/`targetX2` are its
-feet in px across the row's `width`, the regions end to end with no gap, each
-foot clamped to its region, X1 joining X1 along one edge and X2 joining X2.
+edges paint, in px; `legend` and `ramps`, the key, and `legendAlpha`, the alpha
+the view composites its chips at, `alpha` floored for legibility; and `config`,
+the view's settings with their defaults filled, `encoding.color` and
+`encoding.opacity` as config objects. For a host that draws them itself, such as
+R through V8. Positions are genomic, on the axis's region named by `queryRegion`
+and `targetRegion`; a ribbon's `queryX1`/`queryX2` and `targetX1`/`targetX2` are
+its feet in px across the row's `width`, the regions end to end with no gap,
+each foot clamped to its region, X1 joining X1 along one edge and X2 joining X2.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, trackName, query, target, view: written, }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
+(pluginManager: PluginManager, { adapterConfig, trackName, query, target, view: written, }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; legendAlpha: number; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

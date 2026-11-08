@@ -11499,7 +11499,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "type": "number",
+            "exclusiveMinimum": 0
           }
         },
         "marks": {

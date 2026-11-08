@@ -2773,6 +2773,7 @@
         "bandAt",
         "bandDragBounds",
         "boundStackedBands",
+        "dragBandHeight",
         "reservedPx",
         "stackBands"
       ],

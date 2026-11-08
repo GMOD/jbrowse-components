@@ -49,12 +49,15 @@ as the display packs them, so a feature crossing them is listed in each on the
 same row. The layout is the display's under its `heightMode` and `height`: `fit`
 (the default) runs the display's fit ladder, so the labels, isoforms and row
 heights the browser gives up to fit the track are given up here too, and `grow`
-places every feature at full size. The layout packs what `fetchRegions` fetched,
-and the tables list the features touching `regions`, each with every mark of its
-glyph, as the view draws them before its edges clip them. A feature in view the
-packer could not place within its 10000 px row ceiling is left out of every
-table and counted in `truncated`; the legend keys what the worker painted, such
-a feature included, as the browser's key does.
+places every feature at full size. The layout packs what was fetched over
+`fetchRegions`, each of `regions` and the view's margin around it, a region
+apiece, and the tables list the features touching `regions`, or a margin feature
+whose label reaches into one, each with every mark of its glyph, as the view
+draws them before its edges clip them. A read of the file's own fields for the
+features listed reads over `fetchRegions`. A feature in view the packer could
+not place within its 10000 px row ceiling is left out of every table and counted
+in `truncated`; the legend keys what the worker painted, such a feature
+included, as the browser's key does.
 
 Under a `facet` the display packs a section per value, each under its
 `sectionLabelHeight` chip row, and `sections` lists them in stacking order:
@@ -64,7 +67,7 @@ section's `label`. A section `facet.hidden` lists leaves every table.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; lines: {…} & {…}; rects: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; fetchRegions: (TablesRegion & {…})[]; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; lines: {…} & {…}; rects: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/tables.ts)

@@ -281,10 +281,21 @@ at the real alpha.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
+## legendChipAlpha
+
+The alpha a legend chip blends at for a view drawing at `alpha`: `alpha`,
+floored at LEGEND_CHIP_ALPHA_FLOOR.
+
+```js
+// type signature
+(alpha: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
 ## legendChipColor
 
-blendOverGround for a legend chip, floored at
-LEGEND_CHIP_ALPHA_FLOOR.
+blendOverGround for a legend chip, at legendChipAlpha.
 
 ```js
 // type signature
