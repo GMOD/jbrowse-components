@@ -237,3 +237,4 @@ shaders are [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md).
 | Removing or renaming a plugin-facing name | [PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md) |
 | Tests and their harnesses | [TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md) |
 | Rebasing, landing, pushing or removing a worktree | [WORKTREES.md](reference/WORKTREES.md) |
+| Landing a stale branch, calling something uncovered, or a rename/removal sweep | [VERIFYING_CLAIMS.md](reference/VERIFYING_CLAIMS.md) |

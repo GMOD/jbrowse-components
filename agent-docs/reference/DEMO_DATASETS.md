@@ -57,6 +57,11 @@ format traps.
   `samtools view --input-fmt-option required_fields=0x87F -F 1540 <url> <region>`.
 - **ASW trio ancestry** is deliberately not an AMR trio: 1000G has no unadmixed
   Native American reference.
+- **A third-party URL in `demos/*/config.json` has nothing watching it.** The
+  same URL in `website/scripts/specs/` fails a figure in the weekly sweep; in a
+  hosted demo config it degrades to broken tracks silently. Name the gate that
+  catches a break before proposing a demo on dated upstream paths (C-GIAB's
+  callsets live in dated FTP directories, and that contact sheet was declined).
 
 ## Where a new demo's annotation comes from
 
@@ -76,6 +81,11 @@ assembly needs for aliases.
   `hgdownload.soe.ucsc.edu/hubs/GCF/...` before hosting your own.
 - **Don't take a repeat's identity from the Ensembl REST API**: it returned the
   right interval under a chr4 id on chr1. Use the assembly's own annotation.
+- **The T2T apes Cactus chains (`demos/t2t_apes_cactus/apes.pif.gz`) are
+  unnetted and nest**: hg38 vs chimp has one chain over all of chr17 and a
+  reversed one in its gap at 17q12, so a `tabix | awk` span census reports both
+  strands for every ape. Count CIGAR-aligned bases in the window (the display
+  already clips by CIGAR).
 
 ## "Make this figure on better data" is often a claim the data cannot make
 

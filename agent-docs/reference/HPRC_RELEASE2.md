@@ -30,6 +30,15 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
   2.1's graph and callsets. Sites move between the two: the CFHR3/CFHR1 deletion
   is `chr1:196753075` in the 2.0 wave VCF and `196758726` in 2.1's. At C4, a
   copy-number variable locus, no build is the single correct projection.
+- **Two hosted HPRC configs come from two repos.**
+  `https://jbrowse.org/demos/hprc/config.json` (tutorial figures and sessions)
+  is built from `test_data/graphgenomeview/*.json` here;
+  `https://jbrowse.org/pangenome/hprc-grch38/config.json` (the portal's
+  pangenome explorer) is `jb2hubs/website/pangenome-config/hprc-grch38.json`.
+  GRCh38 coordinates agree between builds and segment ids do not, and no gate
+  here sees one go stale from the other's push. Fetch the live config and grep
+  `hprc-v2.` before calling either out of date; hub trackIds spelling `v2.0`
+  keep saved sessions working.
 
 ## Measured findings
 
