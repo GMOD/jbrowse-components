@@ -1,8 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { waitFor } from '@testing-library/react'
 
 import corePlugins from '../corePlugins.ts'
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
+import { doBeforeEach } from './util.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -82,6 +84,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
 // remapped by the model's own preProcessSnapshot for the union to resolve it.
 // This exercises that session-restore path so old saved sessions keep loading.
 test('old MultiLinearVariantDisplay instance resolves on session restore', async () => {
+  doBeforeEach()
   const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
@@ -148,4 +151,10 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
   const displays = view.tracks[0]!.displays
   expect(displays.length).toBe(1)
   expect(displays[0]!.type).toBe('LinearVariantDisplay')
+  // the restored display fetches; the test ends once that has landed
+  await waitFor(() => {
+    expect(
+      'isLoadingOrCanceled' in displays[0]! && displays[0].isLoadingOrCanceled,
+    ).toBe(false)
+  })
 })

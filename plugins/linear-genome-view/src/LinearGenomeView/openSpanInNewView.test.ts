@@ -7,6 +7,14 @@ import type { LinearGenomeViewModel } from './index.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// a display that fetches has landed its fetch for the region on screen
+function displaySettled(display: object) {
+  return (
+    !('isLoadingOrCanceled' in display && display.isLoadingOrCanceled) &&
+    (!('phaseViewportCurrent' in display) || !!display.phaseViewportCurrent)
+  )
+}
+
 function setup() {
   const session = createTestSession()
   session.addAssemblyConf({
@@ -81,6 +89,11 @@ test('the new view carries the tracks the view is showing', async () => {
   const copy = openSpan(view)!
   expect(copy.tracks.map(t => t.configuration.trackId)).toEqual(['genes'])
   expect(copy.tracks[0]!.id).not.toBe(view.tracks[0]!.id)
+  await when(() =>
+    [view, copy].every(v =>
+      v.tracks.every(t => t.displays.every(displaySettled)),
+    ),
+  )
 })
 
 test('no selection opens nothing', () => {

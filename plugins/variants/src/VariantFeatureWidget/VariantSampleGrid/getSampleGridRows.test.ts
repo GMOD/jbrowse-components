@@ -43,10 +43,13 @@ test('filter applies a case-insensitive regex per column', () => {
 })
 
 test('an invalid regex surfaces an error but keeps the rows', () => {
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
   const rows = getSampleGridRows(samples, 'A', ['T'])
   const { rows: filtered, error } = filterSampleRows(rows, { sample: '[' })
-  expect(error).toBeDefined()
+  expect(error).toBeInstanceOf(SyntaxError)
+  expect(consoleError).toHaveBeenCalledWith(error)
   expect(filtered).toBe(rows)
+  consoleError.mockRestore()
 })
 
 test('allele frequencies count called alleles, excluding missing', () => {

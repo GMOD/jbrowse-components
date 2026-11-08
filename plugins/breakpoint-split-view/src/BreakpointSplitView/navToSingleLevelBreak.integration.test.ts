@@ -5,7 +5,7 @@ import {
   singleLevelFocusedSnapshotFromBreakendFeature,
 } from '@jbrowse/sv-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import type { BreakpointViewModel } from './model.ts'
 
@@ -390,6 +390,26 @@ function panelTrackIds(view: unknown) {
   )
 }
 
+// The panels' feature tracks fetch after the views settle, so a test that
+// ends first leaves the fetch to land on a torn-down environment
+function displaysSettled(session: ReturnType<typeof createTestSession>) {
+  return when(() =>
+    splitViews(session).every(view =>
+      (view as unknown as BreakpointViewModel).views.every(panel =>
+        panel.tracks.every(track => track.displays.every(displaySettled)),
+      ),
+    ),
+  )
+}
+
+// a display that fetches has landed its fetch for the region on screen
+function displaySettled(display: object) {
+  return (
+    !('isLoadingOrCanceled' in display && display.isLoadingOrCanceled) &&
+    (!('phaseViewportCurrent' in display) || !!display.phaseViewportCurrent)
+  )
+}
+
 const threeStops = [
   { refName: 'ctgA', pos: 60_000 },
   { refName: 'ctgB', pos: 20_000 },
@@ -426,6 +446,7 @@ test('a chain of a different length keeps the tracks the reader opened', async (
     ['calls', 'reads'],
     ['calls', 'reads'],
   ])
+  await displaysSettled(session)
 })
 
 test('a default track the reader closed stays closed across a rebuild', async () => {
@@ -440,6 +461,7 @@ test('a default track the reader closed stays closed across a rebuild', async ()
   )
 
   expect(panelTrackIds(splitViews(session)[0])).toEqual([[], [], []])
+  await displaysSettled(session)
 })
 
 test('a one-row relaunch of a stacked view rebuilds it with its tracks', async () => {
@@ -450,6 +472,7 @@ test('a one-row relaunch of a stacked view rebuilds it with its tracks', async (
   await launch(session, args)
 
   expect(panelTrackIds(splitViews(session)[0])).toEqual([['calls']])
+  await displaysSettled(session)
 })
 
 test('every stop opens a panel centred on it at the window the reader set', async () => {

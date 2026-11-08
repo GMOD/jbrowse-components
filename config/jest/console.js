@@ -14,44 +14,38 @@ function print(level, sink, args) {
   sink.call(console, ...args)
 }
 
+// Run-wide on purpose, because no one test is the cause and a spy in every
+// suite that hits them would assert nothing about that suite:
+//
+// - React's act() warnings. About 120 suites, nearly all jbrowse-web's, render
+//   a tree that MobX re-renders as data arrives; React's test mode asks for
+//   every such update to sit inside act(), which an async model update cannot.
+// - The GPU backend ladder's once-per-device diagnostics. jsdom has neither
+//   WebGPU nor WebGL2, so every suite that mounts a display steps down to
+//   Canvas2D and says so, and every suite that installs a fake or Dawn device
+//   reports what it got.
+//
+// Everything else a test prints is that test's to spy on and assert.
+const actWarning = /not wrapped in act\(/
+const gpuLadder = [
+  '[GPU] WebGPU not supported in this browser',
+  '[GPU] WebGL2 unavailable, falling back to Canvas2D',
+  '[GPU] WebGPU device ready',
+]
+
 // Contract reports never reach this: `contractGate.js` (setupFilesAfterEnv)
 // wraps console.error after this file does and buffers them first.
 console.error = (...args) => {
-  const message = args.map(a => `${a}`).join(' ')
-  if (
-    message.includes('popupState') ||
-    message.includes('Unterminated') ||
-    message.includes('Cannot update a component') ||
-    message.includes('was not wrapped in act') ||
-    message.includes('Only HTTP(S) protocols are supported') ||
-    message.includes(
-      'You are trying to `require` a file outside of the scope of the test code',
-    )
-  ) {
-    return undefined
+  if (!actWarning.test(`${args[0]}`)) {
+    print('error', originalError, args)
   }
-  print('error', originalError, args)
 }
 
 console.warn = (...args) => {
-  const r = String(args)
-  if (
-    r.includes('The `anchorEl` prop provided to the component is invalid') ||
-    r.includes('[GPU] WebGPU initialization failed') ||
-    r.includes('[GPU] WebGPU device ready') ||
-    r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D') ||
-    r.includes('[GPU] WebGPU not supported in this browser') ||
-    r.includes('] init (live=') ||
-    // add-track.test.ts: 'adds bam track with all the custom fields' passes an
-    // unregistered --assemblyNames value on purpose to exercise custom-field handling
-    r.includes('assembly name(s) not found in config') ||
-    // applyTrackOpts.test.ts: 'an unknown heightMode is ignored' passes
-    // heightMode:bogus on purpose to verify it's ignored
-    r.includes('unknown heightMode')
-  ) {
-    return undefined
+  const message = `${args[0]}`
+  if (!gpuLadder.some(line => message.startsWith(line))) {
+    print('warn', originalWarn, args)
   }
-  print('warn', originalWarn, args)
 }
 
 console.log = (...args) => {
