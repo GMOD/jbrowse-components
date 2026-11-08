@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import { toP } from '../formatNumber.ts'
 
 import type { ScoreAxisDisplay } from './types.ts'
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 const DEBOUNCE_MS = 300
 
@@ -21,7 +22,7 @@ function parse(text: string) {
 function problem(
   min: number | undefined,
   max: number | undefined,
-  scaleType: string,
+  scaleType: ScaleType,
 ) {
   if (Number.isNaN(min) || Number.isNaN(max)) {
     return 'Enter a number, or leave the field empty to follow the data'

@@ -22,9 +22,9 @@ import type {
   WiggleRendering,
 } from '../renderingTypes.ts'
 import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
-import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
+import type { Extent } from '@jbrowse/wiggle-core'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 const LAYOUTS = [

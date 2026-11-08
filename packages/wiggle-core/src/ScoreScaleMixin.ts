@@ -14,6 +14,7 @@ import { confNodeAt, readYMember, yRuleNodes } from './yScaleRead.ts'
 import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ValueScale, ValueScaleRule } from '@jbrowse/display-ui'
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 // The mixin composes onto a display that declares the scale, not the other way
 // round, so its own `self` isn't typed with it.
@@ -80,7 +81,7 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       /**
        * #getter
        */
-      get scaleType(): string {
+      get scaleType(): ScaleType {
         return readY(self, paths, 'type')
       },
       /**
@@ -212,7 +213,7 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       /**
        * #action
        */
-      setScaleType(scaleType: string) {
+      setScaleType(scaleType: ScaleType) {
         writeAxis(self, paths, 'type', scaleType)
       },
       /**

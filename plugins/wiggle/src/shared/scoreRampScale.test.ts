@@ -30,7 +30,7 @@ const RAMP = {
 function makeModel(symlogConstant: number, scheme?: 'viridis') {
   return {
     domain: DOMAIN,
-    scaleType: 'symlog',
+    scaleType: 'symlog' as const,
     symlogConstant,
     renderingType: 'density' as const,
     size: 2,

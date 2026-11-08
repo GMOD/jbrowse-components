@@ -3,12 +3,12 @@ import { computeCoverageTicks } from '@jbrowse/alignments-core'
 import { conservationTicks } from './components/conservationBand.ts'
 
 import type { MafTopBands } from './mafTopBands.ts'
-import type { ValueScale } from '@jbrowse/wiggle-core'
+import type { ScaleType, ValueScale } from '@jbrowse/wiggle-core'
 
 export interface MafValueScaleInputs {
   topBands: Pick<MafTopBands, 'rects'>
   coverageDomain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   symlogConstant: number
   guide: Pick<ValueScale, 'caption' | 'rules' | 'grid' | 'showAxis'>
 }

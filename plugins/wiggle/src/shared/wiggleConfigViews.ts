@@ -11,9 +11,9 @@ import { wiggleColorSettingOf } from './wiggleColor.ts'
 
 import type { LinearWiggleDisplayConfigSchema } from '../LinearWiggleDisplay/configSchema.ts'
 import type { WiggleRendering } from '../renderingTypes.ts'
-import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Extent } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleConfigViews} reads: the display's config. */
 export interface WiggleConfigHost {

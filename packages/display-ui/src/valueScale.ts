@@ -1,4 +1,5 @@
 import type { ScoreRuleMark } from './ScoreRules.tsx'
+import type { ScaleType } from './yAxisConstants.ts'
 import type { YScaleTicks } from './yScaleTicks.ts'
 
 export type AxisSide = 'left' | 'right'
@@ -53,7 +54,7 @@ export interface ValueScaleRule {
  */
 export interface ValueScale {
   domain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   height: number
   offset?: number
   symlogConstant?: number

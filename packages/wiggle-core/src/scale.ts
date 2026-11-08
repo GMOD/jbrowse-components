@@ -7,6 +7,8 @@ import {
   scaleValue,
 } from './vendor/d3-scale.ts'
 
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
+
 /**
  * What `getScale` hands back: callable, plus the domain and ticks its callers
  * read. The scales underneath are pure functions over a {@link ScaleSpec}, so
@@ -49,7 +51,7 @@ function buildScale(spec: ScaleSpec): Scale {
 export interface ScaleOpts {
   domain: number[]
   range: number[]
-  scaleType: string
+  scaleType: ScaleType
   /**
    * symlog's linear-region width. `0` (the config default) resolves from the
    * domain — see {@link resolveSymlogConstant}. Ignored by the other scales.
@@ -67,30 +69,25 @@ export interface ScaleOpts {
 }
 
 function specForType(
-  scaleType: string,
+  scaleType: ScaleType,
   domain: readonly [number, number],
   symlogConstant = 0,
 ): ScaleSpec {
   const range = [0, 1] as const
-  if (scaleType === 'linear') {
-    return { kind: 'linear', domain, range }
-  }
-  if (scaleType === 'log') {
-    return { kind: 'log', base: 2, domain, range }
-  }
-  if (scaleType === 'symlog') {
-    // The axis has to be built with the same constant the renderer normalizes
-    // with, or the ticks label positions the bars are not drawn at. Both
-    // resolve through resolveSymlogConstant from the same domain.
-    const [min, max] = domain
-    return {
-      kind: 'symlog',
-      constant: resolveSymlogConstant(min, max, symlogConstant),
-      domain,
-      range,
-    }
-  }
-  throw new Error(`undefined scaleType: ${scaleType}`)
+  const [min, max] = domain
+  // The axis has to be built with the same constant the renderer normalizes
+  // with, or the ticks label positions the bars are not drawn at. Both resolve
+  // through resolveSymlogConstant from the same domain.
+  return scaleType === 'linear'
+    ? { kind: 'linear', domain, range }
+    : scaleType === 'log'
+      ? { kind: 'log', base: 2, domain, range }
+      : {
+          kind: 'symlog',
+          constant: resolveSymlogConstant(min, max, symlogConstant),
+          domain,
+          range,
+        }
 }
 
 /**
@@ -152,7 +149,7 @@ export function getNiceDomain({
   bounds,
   zero,
 }: {
-  scaleType: string
+  scaleType: ScaleType
   domain: readonly [number, number]
   bounds: readonly [number | undefined, number | undefined]
   zero: boolean

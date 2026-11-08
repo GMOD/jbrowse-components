@@ -1,5 +1,7 @@
 import { getNiceDomain } from './scale.ts'
 
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
+
 const noBounds = [undefined, undefined] as const
 
 function isFiniteDomain([min, max]: [number, number]) {
@@ -106,7 +108,7 @@ test.each([
 ] as const)(
   'a pin the data lies wholly past widens the free end away from it: $bounds over $domain',
   ({ domain, bounds, expected }) => {
-    for (const scaleType of ['linear', 'symlog']) {
+    for (const scaleType of ['linear', 'symlog'] as const) {
       expect(getNiceDomain({ zero: false, scaleType, domain, bounds })).toEqual(
         expected,
       )
@@ -223,7 +225,7 @@ describe('an explicitly bounded end keeps its exact value', () => {
     ['linear', [1, 999]],
     ['symlog', [-7, 97]],
     ['log', [2, 900]],
-  ] as [string, [number, number]][])(
+  ] as [ScaleType, [number, number]][])(
     '%s bounds %j survive nicing',
     (scaleType, bounds) => {
       expect(

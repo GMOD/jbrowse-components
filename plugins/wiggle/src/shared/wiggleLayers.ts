@@ -11,8 +11,10 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import type {
+  Extent,
   FeatureArrays,
   SourceRenderData,
+  SummaryField,
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
 
@@ -103,8 +105,8 @@ interface ScoreBand {
 // other two bands would paint the same values twice more.
 function summaryBands(
   data: FeatureArrays,
-  summaryField: string,
-  extent: string,
+  summaryField: SummaryField,
+  extent: Extent,
 ): ScoreBand[] {
   const value = {
     scores: getEffectiveScores(data, summaryField),
@@ -226,8 +228,8 @@ export function makeSummaryLayers({
   gradient,
 }: {
   data: FeatureArrays
-  summaryField: string
-  extent: string
+  summaryField: SummaryField
+  extent: Extent
   posColor: [number, number, number]
   negColor: [number, number, number]
   origin: number
@@ -328,8 +330,8 @@ export function makeSummaryLayers({
 // which chorded the positive line across every negative stretch.
 export function lineLayers(
   data: FeatureArrays,
-  summaryField: string,
-  extent: string,
+  summaryField: SummaryField,
+  extent: Extent,
   posColor: [number, number, number],
   negColor: [number, number, number],
 ): WiggleLayer[] {

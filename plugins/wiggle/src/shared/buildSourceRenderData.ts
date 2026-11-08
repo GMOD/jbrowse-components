@@ -9,7 +9,12 @@ import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
-import type { SourceRenderData, WiggleDataResult } from '@jbrowse/wiggle-core'
+import type {
+  Extent,
+  SourceRenderData,
+  SummaryField,
+  WiggleDataResult,
+} from '@jbrowse/wiggle-core'
 
 // The shape of `model.gpuProps` — single source of truth for "settings that
 // affect the per-instance GPU buffer encoding". buildSourceRenderData
@@ -27,11 +32,11 @@ export interface WiggleGpuProps {
   wiggleColor: ResolvedWiggleColor
   // The score filled bars grow from, which orders a band's layers.
   origin: number
-  summaryField: string
+  summaryField: SummaryField
   // The extent actually drawn, never the raw config slot, since density has
   // no min-max presentation and resolves to 'none'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
-  effectiveExtent: string
+  effectiveExtent: Extent
   renderingType: WiggleRendering
 }
 

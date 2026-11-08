@@ -3,6 +3,8 @@ import {
   quantileExtent,
 } from '@jbrowse/core/util/quantileExtent'
 
+import type { Extent, SummaryField } from './summaryFields.ts'
+
 export interface FeatureArrays {
   featurePositions: Uint32Array
   featureScores: Float32Array
@@ -60,8 +62,8 @@ export interface ScoreSpan {
 /** The wiggle packer's arrays as a span, under a summary field and an extent. */
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
-  field: string,
-  extent: string,
+  field: SummaryField,
+  extent: Extent,
 ): ScoreSpan {
   const { low, high } = boundArrays(field, extent)
   return {
@@ -89,7 +91,7 @@ export function getEffectiveScores(
     featureMinScores: Float32Array
     featureMaxScores: Float32Array
   },
-  field: string,
+  field: SummaryField,
 ) {
   return field === 'minScore'
     ? data.featureMinScores
@@ -112,7 +114,7 @@ function overlaps(
 // spreads the two ends across the min/max summary arrays; without one both come
 // from the plotted field's single array. One table because the data's span and the
 // clipped bound have to read the same arrays, or a domain clips its own data.
-function boundArrays(field: string, extent: string) {
+function boundArrays(field: SummaryField, extent: Extent) {
   const minMax = extent === 'min-max'
   return {
     low: (data: FeatureArrays) =>
@@ -209,9 +211,9 @@ export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
 
 /** `computeSpanStats` over the wiggle packer's datasets. */
 export function computeScoreStats(
-  field: string,
+  field: SummaryField,
   datasets: Dataset[],
-  extent: string,
+  extent: Extent,
 ): ScoreStats | undefined {
   return computeSpanStats(datasets.map(d => datasetSpan(d, field, extent)))
 }
@@ -274,8 +276,8 @@ export function autoscaleDomainFromStats({
   stats: ScoreStats
   quantile: number
   zero: boolean
-  field: string
-  extent: string
+  field: SummaryField
+  extent: Extent
   visibleEntries: Dataset[]
 }): [number, number] {
   return autoscaleDomainFromSpans({
@@ -294,14 +296,14 @@ export function autoscaleDomainFromStats({
  */
 export function computeAutoscaleDomain(
   quantile: number,
-  field: string,
+  field: SummaryField,
   visibleEntries: {
     data: FeatureArrays
     visStart: number
     visEnd: number
   }[],
   zero: boolean,
-  extent = 'none',
+  extent: Extent = 'none',
 ): [number, number] | undefined {
   const spans = visibleEntries.map(d => datasetSpan(d, field, extent))
   const stats = computeSpanStats(spans)

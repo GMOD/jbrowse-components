@@ -84,7 +84,12 @@ import type {
   RowSource,
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
-import type { ValueScale, ValueScaleRule, YAxis } from '@jbrowse/wiggle-core'
+import type {
+  ScaleType,
+  ValueScale,
+  ValueScaleRule,
+  YAxis,
+} from '@jbrowse/wiggle-core'
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
@@ -626,7 +631,7 @@ export function markStatsViews(self: MarkDrawnHost) {
 export type MarkStatsHost = MarkDrawnHost &
   ReturnType<typeof markStatsViews> & {
     fenceQuantile: number
-    scaleType: string
+    scaleType: ScaleType
     scoreRules: ValueScaleRule[]
     axisReachesZero: boolean
   }
@@ -880,11 +885,9 @@ export function markScaleViews(self: MarkSidebarHost) {
       const canvasWidth = self.canvasWidthPx
       const canvasHeight = self.plotBox.plotHeight
       const { scaleType, paintScales: colorScales } = self
-      const scaleTypeY =
-        scaleType === 'log' || scaleType === 'symlog' ? scaleType : 'linear'
       return resolveRenderState(self.domain, domainY => ({
         domainY,
-        scaleTypeY,
+        scaleTypeY: scaleType,
         symlogConstantY: resolveSymlogConstant(
           domainY[0],
           domainY[1],

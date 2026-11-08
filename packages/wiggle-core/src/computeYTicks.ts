@@ -3,6 +3,7 @@ import { axisPlotBox } from '@jbrowse/display-ui/yScaleTicks'
 
 import { getScale } from './scale.ts'
 
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 import type { YScaleTicks } from '@jbrowse/display-ui/yScaleTicks'
 
 function logTickLabel(v: number) {
@@ -18,7 +19,7 @@ function logTickLabel(v: number) {
 export function computeYTicks(opts: {
   height: number
   domain: [number, number] | number[] | undefined
-  scaleType: string
+  scaleType: ScaleType
   offset?: number
   /**
    * Raw config value for symlog; `0` means "derive from the domain". Passed

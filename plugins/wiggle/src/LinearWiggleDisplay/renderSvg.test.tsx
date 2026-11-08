@@ -75,7 +75,7 @@ function axes({ left = 0, density = false, grid = false } = {}) {
   return [
     {
       domain: [0, 10] as [number, number],
-      scaleType: 'linear',
+      scaleType: 'linear' as const,
       height: 50,
       offset: 0,
       ticks,

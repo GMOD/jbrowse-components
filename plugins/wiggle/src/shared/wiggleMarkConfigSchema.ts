@@ -1,10 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { EXTENTS } from '@jbrowse/wiggle-core'
 
 import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES } from '../renderingTypes.ts'
-
-export const EXTENTS = ['min-max', 'none'] as const
-export type Extent = (typeof EXTENTS)[number]
 
 /**
  * #config WiggleMark

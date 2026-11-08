@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { VALUE_SCALE_TYPES } from '@jbrowse/display-ui/yAxisConstants'
 import { types } from '@jbrowse/mobx-state-tree'
-
-export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
 
 export interface YScaleOptions {
   /** `scale.fenceQuantile`'s default: 1 follows the extremes, 0.99 fences a spike */

@@ -4,6 +4,17 @@
 // from index.ts would close a cycle.
 export const YSCALEBAR_LABEL_OFFSET = 5
 
+// The value scale types a y axis places values by, which the y scale config's
+// `type` slot enumerates.
+export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
+export type ScaleType = (typeof VALUE_SCALE_TYPES)[number]
+
+const SCALE_TYPE_SET: ReadonlySet<string> = new Set(VALUE_SCALE_TYPES)
+
+export function isScaleType(value: string): value is ScaleType {
+  return SCALE_TYPE_SET.has(value)
+}
+
 // A tick label's font size and how far from the spine it ends, and a
 // caption's font size.
 export const AXIS_FONT_PX = 10

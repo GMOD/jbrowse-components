@@ -8,6 +8,7 @@ import { formatScore } from '../util.ts'
 import { makeDensityLutFillFn } from './getDensityColor.ts'
 
 import type { RampScale } from '@jbrowse/core/ui/colorScale'
+import type { ScaleType } from '@jbrowse/wiggle-core'
 
 // A gradient spends color on the score, so `[min, max]` alone says which
 // numbers are in play but not which end is which color, nor where the middle
@@ -39,7 +40,7 @@ export function colorKeyTitleOf(
  */
 export function scoreRampFill(
   [min, max]: [number, number],
-  scaleType: string,
+  scaleType: ScaleType,
   symlogConstant: number,
   ramp: ScoreRamp,
 ) {
@@ -68,7 +69,7 @@ export function scoreRampFill(
  */
 export function scoreRampScale(
   domain: [number, number],
-  scaleType: string,
+  scaleType: ScaleType,
   symlogConstant: number,
   ramp: ScoreRamp,
   title: string,

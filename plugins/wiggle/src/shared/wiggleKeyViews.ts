@@ -11,11 +11,12 @@ import type {
   RampScale,
 } from '@jbrowse/core/ui/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ScaleType } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleScoreKeyViews} reads: the score scale and its colors. */
 export interface WiggleScoreKeyHost {
   domain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   symlogConstant: number
   isDensityMode: boolean
   colorSetting: ColorSetting

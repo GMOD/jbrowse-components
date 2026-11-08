@@ -5,6 +5,7 @@ import { SCORE_AXIS_WIDGET } from './ScoreAxisWidget/constants.ts'
 
 import type { NormalMenuItem } from '@jbrowse/core/ui'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Canonical "thing that has a value scale" — every display with one (wiggle,
@@ -20,7 +21,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // `ScoreAxisMixin`. Each is named for `encoding.y.scale`'s `domainMin` and
 // `domainMax`, never `minScore`, a stored summary field `encoding.y` can plot.
 export interface ScoreScaleModel extends IStateTreeNode {
-  scaleType: string
+  scaleType: ScaleType
   scaleZero: boolean
   fenceQuantile: number
   clipFenceQuantile: number
@@ -32,7 +33,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   autoscaleRange: [number, number] | undefined
   valuesInView: [number, number] | undefined
   autoscaledDomain: [number, number] | undefined
-  setScaleType: (v: string) => void
+  setScaleType: (v: ScaleType) => void
   setScaleZero: (zero: boolean) => void
   setDomainMin: (n?: number) => void
   setDomainMax: (n?: number) => void

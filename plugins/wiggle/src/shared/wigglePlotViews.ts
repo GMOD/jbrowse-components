@@ -9,8 +9,8 @@ import { getRowHeight } from './wiggleComponentUtils.ts'
 import { wiggleAutoscaleRange } from './wiggleResolveViews.ts'
 
 import type { WigglePlotGeometry } from './wiggleDisplayViews.ts'
-import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type {
+  Extent,
   SettledBlocksView,
   SummaryField,
   WiggleDataResult,

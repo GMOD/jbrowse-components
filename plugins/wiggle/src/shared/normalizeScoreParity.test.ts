@@ -12,6 +12,8 @@ import {
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
+import type { ScaleType } from '@jbrowse/wiggle-core'
+
 // The two backends' score normalizers, swept against each other.
 //
 // The shader half is `scoreScale.slang`'s, in render-core: the wiggle renderer
@@ -35,7 +37,7 @@ import {
 const noBounds: [undefined, undefined] = [undefined, undefined]
 
 function nice(
-  scaleType: string,
+  scaleType: ScaleType,
   domain: [number, number],
   bounds: [number | undefined, number | undefined] = noBounds,
 ) {
@@ -202,17 +204,20 @@ describe('a degenerate domain', () => {
 // now agree on a descending domain, but a display should never be handed one in
 // the first place, because a descending domain has no ticks either.
 describe('a bound that would invert the domain', () => {
-  test.each(['linear', 'symlog', 'log'])('%s stays ascending', scaleType => {
-    for (const bounds of [
-      [200, undefined],
-      [undefined, -100],
-      [200, 60],
-      [-1, -40],
-    ] as [number | undefined, number | undefined][]) {
-      const [min, max] = nice(scaleType, [-40, 60], bounds)
-      expect(max).toBeGreaterThan(min)
-    }
-  })
+  test.each(['linear', 'symlog', 'log'] as const)(
+    '%s stays ascending',
+    scaleType => {
+      for (const bounds of [
+        [200, undefined],
+        [undefined, -100],
+        [200, 60],
+        [-1, -40],
+      ] as [number | undefined, number | undefined][]) {
+        const [min, max] = nice(scaleType, [-40, 60], bounds)
+        expect(max).toBeGreaterThan(min)
+      }
+    },
+  )
 
   test('the end the user pinned is the one that survives', () => {
     // min only: the autoscaled top moves above it

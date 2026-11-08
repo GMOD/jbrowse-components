@@ -10,6 +10,7 @@ import { computeYTicks } from './computeYTicks.ts'
 import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
 import { getNiceDomain } from './scale.ts'
 
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 import type { MarkValueScaleType } from '@jbrowse/render-core/marks'
 
 // The invariant `YScaleTicks` documents, over the pair that broke it: the axis
@@ -30,7 +31,7 @@ const noBounds: [undefined, undefined] = [undefined, undefined]
 
 // Every wiggle-family domain reaches both sides through getNiceDomain, so nice
 // it here too rather than testing a domain the app can't produce.
-function niced(scaleType: string, domain: [number, number]) {
+function niced(scaleType: ScaleType, domain: [number, number]) {
   return getNiceDomain({ zero: true, scaleType, domain, bounds: noBounds })
 }
 
@@ -233,23 +234,26 @@ describe('a raw, un-niced domain', () => {
     }
   })
 
-  test.each(['linear', 'log'])('%s ticks still land on the data', scaleType => {
-    const ticks = computeYTicks({
-      height: 200,
-      domain,
-      scaleType,
-    })!
-    const box = axisPlotBox(200, 5)
-    const normalize = makeScoreNormalizer(
-      domain[0],
-      domain[1],
-      scaleTypeCode(scaleType),
-      resolveSymlogConstant(domain[0], domain[1], 0),
-    )
-    for (const { value, y } of ticks.items) {
-      expect(y).toBeCloseTo(scoreToAxisY(normalize(value), box), 9)
-    }
-  })
+  test.each(['linear', 'log'] as const)(
+    '%s ticks still land on the data',
+    scaleType => {
+      const ticks = computeYTicks({
+        height: 200,
+        domain,
+        scaleType,
+      })!
+      const box = axisPlotBox(200, 5)
+      const normalize = makeScoreNormalizer(
+        domain[0],
+        domain[1],
+        scaleTypeCode(scaleType),
+        resolveSymlogConstant(domain[0], domain[1], 0),
+      )
+      for (const { value, y } of ticks.items) {
+        expect(y).toBeCloseTo(scoreToAxisY(normalize(value), box), 9)
+      }
+    },
+  )
 })
 
 // The renderer draws `plotHeight` tall from `yTop`; the axis labels

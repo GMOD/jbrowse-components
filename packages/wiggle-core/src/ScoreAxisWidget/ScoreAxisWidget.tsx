@@ -3,6 +3,10 @@ import { useState } from 'react'
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  VALUE_SCALE_TYPES,
+  isScaleType,
+} from '@jbrowse/display-ui/yAxisConstants'
+import {
   FormControlLabel,
   FormHelperText,
   Radio,
@@ -11,7 +15,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { VALUE_SCALE_TYPES } from '../yScaleConfigSchema.ts'
 import RangeFields from './RangeFields.tsx'
 import ReferenceLines from './ReferenceLines.tsx'
 import ResetAxisButton from './ResetAxisButton.tsx'
@@ -20,6 +23,7 @@ import ShareAxisWith from './ShareAxisWith.tsx'
 
 import type { ScoreAxisWidgetModel } from './stateModel.ts'
 import type { ScoreAxisDisplay } from './types.ts'
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -29,7 +33,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SCALE_TYPE_LABELS: Record<(typeof VALUE_SCALE_TYPES)[number], string> = {
+const SCALE_TYPE_LABELS: Record<ScaleType, string> = {
   linear: 'Linear',
   log: 'Log',
   symlog: 'Signed log',
@@ -64,7 +68,10 @@ const AxisEditor = observer(function AxisEditor({
           row
           value={scaleType}
           onChange={event => {
-            display.setScaleType(event.target.value)
+            const { value } = event.target
+            if (isScaleType(value)) {
+              display.setScaleType(value)
+            }
           }}
         >
           {VALUE_SCALE_TYPES.map(type => (

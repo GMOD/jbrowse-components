@@ -91,7 +91,6 @@ import { sourceWarnings } from './sourcesLogic.ts'
 
 import type { LineInterpolation, WiggleMark } from '../renderingTypes.ts'
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { Extent } from '../shared/wiggleMarkConfigSchema.ts'
 import type { Source, WiggleHoveredFeature, WiggleMarkObject } from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
@@ -104,6 +103,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  Extent,
   WiggleDataResult,
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'

@@ -7,7 +7,7 @@ import {
 
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
-import type { WiggleRenderingType } from '@jbrowse/wiggle-core'
+import type { SummaryField, WiggleRenderingType } from '@jbrowse/wiggle-core'
 
 describe('makeSummaryLayers', () => {
   const positions = new Uint32Array([0, 10, 10, 20])
@@ -41,8 +41,8 @@ describe('makeSummaryLayers', () => {
     cuts: [0],
     innerColors: [],
     origin: 0,
-    summaryField: 'score',
-    extent: 'min-max',
+    summaryField: 'score' as const,
+    extent: 'min-max' as const,
     gradient: false,
   }
 
@@ -199,7 +199,7 @@ describe('makeSummaryLayers', () => {
       featureMinScores: atCut,
       featureMaxScores: atCut,
     }
-    const opts = { data, ...base, extent: 'none', cuts: [0.7] }
+    const opts = { data, ...base, extent: 'none' as const, cuts: [0.7] }
     const [bars] = makeSummaryLayers({
       ...opts,
       renderingType: RENDERING_TYPE_XYPLOT,
@@ -244,7 +244,7 @@ describe('makeSummaryLayers', () => {
 
   // min/max are the one-band case of the same machinery: the band the user
   // picked, colored by its own sign.
-  const bandOnly = (summaryField: string) =>
+  const bandOnly = (summaryField: SummaryField) =>
     makeSummaryLayers({
       data: summaryData,
       ...base,

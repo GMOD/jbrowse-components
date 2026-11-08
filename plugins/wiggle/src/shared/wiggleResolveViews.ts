@@ -14,9 +14,13 @@ import {
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
-import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { Dataset, ScoreStats, SummaryField } from '@jbrowse/wiggle-core'
+import type {
+  Dataset,
+  Extent,
+  ScoreStats,
+  SummaryField,
+} from '@jbrowse/wiggle-core'
 
 /**
  * What the resolve views read: the settings and rows a wiggle display has
@@ -190,8 +194,8 @@ export function wiggleAutoscaleRange(
   }: {
     quantile: number
     zero: boolean
-    field: string
-    extent: string
+    field: SummaryField
+    extent: Extent
     ruleValues: number[]
   },
 ) {

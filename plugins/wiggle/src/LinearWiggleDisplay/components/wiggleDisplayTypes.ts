@@ -9,6 +9,7 @@ import type {
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
 import type {
+  ScaleType,
   WiggleDataResult,
   WiggleGpuDisplayModel,
   YAxis,
@@ -25,7 +26,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   markSources: { name: string; color?: string }[]
   discoveredRows: { name: string }[]
   domain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   // where the plot canvas sits inside the display's height — the same value
   // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry

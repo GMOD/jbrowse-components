@@ -62,7 +62,11 @@ import {
 import type { WiggleRendering } from '../src/renderingTypes.ts'
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
 import type { RawFeatureArrays } from '../src/util.ts'
-import type { SourceRenderData, WiggleDataResult } from '@jbrowse/wiggle-core'
+import type {
+  Extent,
+  SourceRenderData,
+  WiggleDataResult,
+} from '@jbrowse/wiggle-core'
 
 const flag = (name: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1]
@@ -157,7 +161,7 @@ function payload(summary: boolean): WiggleDataResult {
 const data = payload(true)
 const dataAvg = payload(false)
 
-function props(renderingType: WiggleRendering, extent: string): WiggleGpuProps {
+function props(renderingType: WiggleRendering, extent: Extent): WiggleGpuProps {
   return {
     sources: sourceList,
     rowLayout: true,

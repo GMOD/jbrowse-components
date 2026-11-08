@@ -3,7 +3,7 @@ import { getEffectiveScores } from '@jbrowse/wiggle-core'
 
 import { findFeatureAtBp } from '../shared/wiggleHitTest.ts'
 
-import type { WiggleDataResult } from '@jbrowse/wiggle-core'
+import type { SummaryField, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // Rows ordered by the score each source carries at genomic `bp` — the wiggle
 // analogue of the multi-row feature display's "sort rows by color here" and of
@@ -34,7 +34,7 @@ export function sortSourcesByScoreAt<T extends { name: string }>(
   sources: T[],
   data: WiggleDataResult,
   bp: number,
-  summaryField: string,
+  summaryField: SummaryField,
 ): T[] {
   const scoreByName = new Map<string, number>()
   for (const s of data.sources) {

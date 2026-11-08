@@ -9,7 +9,7 @@ import type {
   RowLabelSource,
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
-import type { ValueScale, YAxis } from '@jbrowse/wiggle-core'
+import type { ScaleType, ValueScale, YAxis } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleRowLabelViews} reads: the rows and the sidebar toggle. */
 export interface WiggleRowLabelHost {
@@ -71,7 +71,7 @@ export interface WiggleAxisHost {
   scoreRampReplacesAxis: boolean
   isDensityMode: boolean
   domain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   symlogConstant: number
   axisGuide: Pick<ValueScale, 'caption' | 'rules' | 'grid' | 'showAxis'>
   axes: YAxis[]

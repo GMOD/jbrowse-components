@@ -17,6 +17,7 @@ import {
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type {
+  ScaleType,
   WiggleGPURenderState,
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
@@ -61,7 +62,7 @@ export function renderingTypeToInt(type: WiggleRendering) {
 // edge-to-edge over the full height.
 export interface WiggleRenderStateModel {
   domain: [number, number] | undefined
-  scaleType: string
+  scaleType: ScaleType
   symlogConstant: number
   renderingType: WiggleRendering
   size: number

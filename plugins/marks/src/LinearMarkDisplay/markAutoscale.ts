@@ -1,5 +1,5 @@
 import type { StoredLayer } from './markList.ts'
-import type { ScoreSpan, VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ScaleType, ScoreSpan, VisibleEntry } from '@jbrowse/wiggle-core'
 
 /** A layer as the autoscale folds it: the region it was fetched into, and its lanes. */
 export interface RegionLayer {
@@ -68,6 +68,6 @@ export function layerSpans(
  * Whether a bar's baseline trains the axis, as ggplot2's does: only where the
  * scale can reach it, and a log axis has no 0.
  */
-export function baselineReached(origin: number, scaleType: string) {
+export function baselineReached(origin: number, scaleType: ScaleType) {
   return scaleType !== 'log' || origin > 0
 }

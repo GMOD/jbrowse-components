@@ -1,7 +1,7 @@
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { makeSource } from './testEnv.ts'
 
-import type { WiggleDataResult } from '@jbrowse/wiggle-core'
+import type { SummaryField, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // One source with [start, end, score] features, in the shape the RPC ships.
 function withFeatures(
@@ -41,7 +41,7 @@ function order(
   sources: { name: string }[],
   d: WiggleDataResult,
   bp: number,
-  summaryField = 'score',
+  summaryField: SummaryField = 'score',
 ) {
   return sortSourcesByScoreAt(sources, d, bp, summaryField).map(s => s.name)
 }

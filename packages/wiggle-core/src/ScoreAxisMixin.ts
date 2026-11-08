@@ -8,6 +8,7 @@ import { getNiceDomain } from './scale.ts'
 import { scoreRuleMarks } from './scoreRuleMarks.ts'
 
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
+import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 /**
  * The axes of `scales`, one per scale whose domain resolved: the position of
@@ -79,7 +80,7 @@ export function ScoreAxisMixin() {
        * #getter
        * Overridable: where this display's scale type is written down.
        */
-      get scaleType(): string {
+      get scaleType(): ScaleType {
         return 'linear'
       },
       /**

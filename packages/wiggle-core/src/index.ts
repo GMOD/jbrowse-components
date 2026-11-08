@@ -13,6 +13,7 @@ export type {
 } from './yChannelConfigSchema.ts'
 export type { YFieldChannelConfigSchema } from './yFieldChannelConfigSchema.ts'
 export type { YScaleOptions } from './yScaleConfigSchema.ts'
+export type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 export { getNiceDomain, getNiceScale, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
@@ -105,11 +106,12 @@ export { YFieldConfigMixin } from './YFieldConfigMixin.ts'
 export type { YFieldConfigHost } from './YFieldConfigMixin.ts'
 export {
   DEFAULT_SCORE_FIELD,
+  EXTENTS,
   SUMMARY_FIELDS,
   isSummaryField,
   summaryFieldOf,
 } from './summaryFields.ts'
-export type { SummaryField } from './summaryFields.ts'
+export type { Extent, SummaryField } from './summaryFields.ts'
 
 export {
   MAX_WIGGLE_CUTS,

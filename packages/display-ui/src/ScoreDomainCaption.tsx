@@ -5,6 +5,8 @@ import { stripAlpha } from '@jbrowse/core/util/svgColorProps'
 
 import { SCORE_CAPTION_HEIGHT } from './yAxisConstants.ts'
 
+import type { ScaleType } from './yAxisConstants.ts'
+
 /**
  * The one-line `[min, max]` caption that stands in for a y axis where none can
  * be drawn — a scale whose bands are too short for tick labels, and a density
@@ -22,7 +24,7 @@ export default function ScoreDomainCaption({
   caption,
 }: {
   domain: [number, number]
-  scaleType: string
+  scaleType: ScaleType
   canvasWidth: number
   caption?: string
 }) {
