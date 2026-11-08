@@ -8,7 +8,7 @@ Adapter seams and array-shape measurements:
   refNames arrive canonical from the model's `sortColumn` getter.
 - **A mark added to `gapTypes` has to pick a pass.** Each gap mark's `channels`
   takes its own kind out of that array, so a kind neither packs is drawn by
-  nothing, silently.
+  nothing.
 - **Hand the interbase marks the one merged array the worker ships**, not
   pre-sliced views; each declares its slice (`channels`' `start`/`end`).
 
@@ -20,12 +20,10 @@ Adapter seams and array-shape measurements:
   "Could not load details".
 - **Read a name with `readNameAt(data, i)`**, not `readNameBlock.slice`. Keep
   anything feeding the block allocation-free (`copyNameInto`, not a `nameBytes`
-  view). `groupReadsByName` hashing slices is a priced-in cost; materialising a
-  `string[]` is not the fix.
+  view). `groupReadsByName` hashing slices is a priced-in cost.
 - **Walk the SA tags whatever `readConnections` says.** Linked reads, curved
   connectors and the breakpoint split view read the same tags under their own
   settings; `readConnections` stays out of `rpcProps` (`fetchAutorun.test.ts`).
-  Enumerate the consumers before making a shape cheaper.
 
 ## BAM/CRAM hot path
 

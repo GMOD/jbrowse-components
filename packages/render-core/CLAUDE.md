@@ -10,11 +10,10 @@ pin an exact version.
 - **The WebGL→Canvas2D ladder runs at backend construction only.** Later loss is
   `renderError`; `setGpuOverride` is the page-wide escape.
 - **A backend subclass implements `draw`, never `render`/`renderBlocks`.** The
-  bases own the frame scaffold and the "did content reach the canvas" answer
-  `canvasDrawn` reads; a display must not re-derive it from its own data.
-- **HAL parity**: land a behavior change to one HAL in the other and in
-  `MockHal`, including in the per-backend leaf hooks under `GpuHalBase`. Gates:
-  `browser-tests/compare-backends.ts`, `hal/regionRegistry.test.ts`.
+  bases own the frame scaffold and the `canvasDrawn` answer; a display never
+  re-derives it from its own data.
+- **Land a behavior change to one HAL in the other and in `MockHal`**, including
+  the per-backend leaf hooks under `GpuHalBase`.
 - Put `//! coverage: analytic` only on a shader whose fragments compute their
   own edge coverage; it drops the display's MSAA to 1 sample.
 
@@ -28,9 +27,8 @@ a worker strand → `flipX` before it becomes left/right; `bpRangeX` →
 ## Upload
 
 - **A cell keyed on a value reads that value from its own computed**, not
-  through render state. Synteny's outline cell read `clickedFeatureId` off
-  `renderParams` and re-uploaded per pointermove; only an upload-count test
-  (`outlineUploadSchedule.test.ts`) sees that.
+  through render state, or it re-uploads on every render-state change; only an
+  upload-count test (`outlineUploadSchedule.test.ts`) sees that.
 - **Observe a `createEncodeMemo` that the hit test or SVG export reads from an
   `afterAttach` autorun**, or it re-encodes every region per read.
 - **Upload an empty pack unguarded** — an empty pack is the release.
@@ -42,8 +40,8 @@ a worker strand → `flipX` before it becomes left/right; `bpRangeX` →
 - **Take the pixel ratio from `getDpr()`** (capped at 2), not bare
   `devicePixelRatio`.
 - **Write uniforms with the `writeUniforms` packer, or offset-pokes** where
-  writes are incremental (alignments only). A poke left out silently redraws
-  last frame's value.
+  writes are incremental (alignments only). A poke left out redraws last frame's
+  value.
 - **Clip Canvas2D per block through `forEachClippedBlock`.**
 - **A sampled color ramp is `textures` on `defineMark`**; a textured pass
   missing a texture draws nothing on either GPU HAL.

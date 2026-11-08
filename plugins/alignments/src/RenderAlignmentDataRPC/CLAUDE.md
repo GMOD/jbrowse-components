@@ -1,9 +1,7 @@
 # RenderAlignmentDataRPC
 
-The worker knows no chains: chain identity is joined on the main thread
-(`attachChainFields`). Row-instanced passes are packed on the main thread after
-layout; position-aggregate passes are packed in the worker and uploaded
-verbatim.
+What runs in the worker and what on the main thread, and the invalidation tiers:
+`agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md`.
 
 ## Group-by
 
@@ -16,18 +14,15 @@ verbatim.
   tag are an answer users look for.
 - **`fragmentLevel` is not "every read yields the same key"**: a supplementary
   carries its own strand and pair orientation, and the primary read1 answers for
-  the fragment. A chain can therefore sit in two sections across regions, which
-  is why `attachChainFields` unions by name across lanes too.
+  the fragment, so a chain can sit in two sections across regions.
 
-## Types per invalidation tier
+## Types and fixtures
 
-`WorkerPileupData` → `ChainedPileupData` → layout → color bakes →
-`PileupDataResult`. Type a function by the narrowest tier it reads; the worker
-never ships placeholders for fields a later tier produces.
-
-**Build fixtures on `testPileupData` (`baseWorkerPileupData`,
-`basePileupDataResult`), not `as unknown as`.** The optional fields are left out
-on purpose: `isChainData` narrows on them.
+- Type a function by the narrowest tier it reads; the worker never ships
+  placeholders for fields a later tier produces.
+- **Build fixtures on `testPileupData` (`baseWorkerPileupData`,
+  `basePileupDataResult`), not `as unknown as`.** The optional fields are left
+  out on purpose: `isChainData` narrows on them.
 
 ## Placement and sort
 

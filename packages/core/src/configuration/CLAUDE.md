@@ -18,7 +18,8 @@ resolution.
 - **Lift both sides' shorthands and retired spellings before combining two raw
   bags** — `canonicalSpelling`, or member by member as `mergeConfSettings` does.
   Merged raw, a bare `mark: "line"` replaces the whole `mark` object instead of
-  its `type`. Add a new merge path to `schemaTests/ShorthandMerges.test.ts`.
+  its `type`. Add a new merge path to
+  `products/jbrowse-web/src/schemaTests/ShorthandMerges.test.ts`.
 - **Wrap a new write path's `create` in `refusingUndeclaredKeys`**, or a typo
   becomes a console line.
 - **Type a config snapshot as `ConfigurationSnapshot<SCHEMA>`**, which checks an
