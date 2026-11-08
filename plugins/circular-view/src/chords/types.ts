@@ -12,6 +12,8 @@ export interface ChordDisplayFrameModel {
   id: string
   error: unknown
   displayError: unknown
+  statusMessage?: string
+  statusProgress?: number
   view: {
     offsetRadians: number
     chordDisplays: readonly { id: string; displayPhase: DisplayStatusPhase }[]

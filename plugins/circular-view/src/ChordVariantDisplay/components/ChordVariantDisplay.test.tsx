@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 
 import ChordVariantDisplay from '../../chords/ShapeDisplay.tsx'
 import ShapePaths from '../../chords/ShapePaths.tsx'
@@ -136,6 +136,79 @@ test('a second failing track adds a line under the first, not another disc', () 
   expect(second!.querySelector('circle')).toBeNull()
   expect(first!.querySelector('text')?.getAttribute('y')).toBe('0em')
   expect(second!.querySelector('text')?.getAttribute('y')).toBe('3em')
+})
+
+function renderPastLoadingDelay(ui: React.ReactElement) {
+  jest.useFakeTimers()
+  try {
+    const result = render(ui)
+    act(() => {
+      jest.advanceTimersByTime(400)
+    })
+    return result
+  } finally {
+    jest.useRealTimers()
+  }
+}
+
+test('a loading chord track says which phase it is in, and how far', () => {
+  const { container } = renderPastLoadingDelay(
+    <svg>
+      <ChordVariantDisplay
+        display={chordModel('loading', {
+          statusMessage: 'Downloading variants',
+          statusProgress: 0.42,
+        })}
+      />
+    </svg>,
+  )
+  expect(container.querySelector('text')?.textContent).toBe(
+    'Downloading variants 42%',
+  )
+})
+
+test('an indeterminate phase reads as its label, and no status as Loading', () => {
+  const textOf = (overrides: Partial<ShapeDisplayModel>) =>
+    renderPastLoadingDelay(
+      <svg>
+        <ChordVariantDisplay display={chordModel('loading', overrides)} />
+      </svg>,
+    ).container.querySelector('text')?.textContent
+  expect(textOf({ statusMessage: 'Processing features' })).toBe(
+    'Processing features…',
+  )
+  expect(textOf({})).toBe('Loading…')
+})
+
+test('a second loading track adds a line under the first, not another spinner', () => {
+  const chordDisplays = [
+    { id: 'a', displayPhase: 'loading' as const },
+    { id: 'b', displayPhase: 'loading' as const },
+  ]
+  const loading = (id: string, statusMessage: string) =>
+    chordModel('loading', {
+      id,
+      statusMessage,
+      view: {
+        offsetRadians: 0,
+        chordDisplays,
+        chordPass: { drew: () => true, renderError: undefined },
+      },
+    })
+  const { container } = renderPastLoadingDelay(
+    <svg>
+      <ChordVariantDisplay display={loading('a', 'Downloading variants')} />
+      <ChordVariantDisplay display={loading('b', 'Downloading features')} />
+    </svg>,
+  )
+  const [first, second] = container.querySelectorAll('[data-display-phase]')
+  expect(first!.querySelectorAll('circle').length).toBeGreaterThan(0)
+  expect(second!.querySelector('circle')).toBeNull()
+  expect(first!.querySelector('text')?.getAttribute('y')).toBe('0em')
+  expect(second!.querySelector('text')?.getAttribute('y')).toBe('3em')
+  expect(second!.querySelector('text')?.textContent).toBe(
+    'Downloading features…',
+  )
 })
 
 function bnd(uniqueId: string, start: number, mate: number) {

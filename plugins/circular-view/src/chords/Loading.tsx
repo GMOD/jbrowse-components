@@ -1,6 +1,6 @@
 import { useDelayedFlag } from '@jbrowse/core/ui/LoadingOverlay'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { radToDeg } from '@jbrowse/core/util'
+import { progressLabel, radToDeg } from '@jbrowse/core/util'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -31,31 +31,44 @@ const useStyles = makeStyles()(() => ({
 
 const Loading = observer(function Loading({
   model,
+  line,
 }: {
-  model: { radiusPx: number; view: { offsetRadians: number } }
+  model: {
+    radiusPx: number
+    statusMessage?: string
+    statusProgress?: number
+    view: { offsetRadians: number }
+  }
+  line: number
 }) {
   const { classes } = useStyles()
   const palette = usePalette()
 
   const shown = useDelayedFlag(true, 400)
+  const { statusMessage, statusProgress } = model
+  const label = progressLabel(statusMessage || 'Loading', statusProgress)
 
   return !shown ? null : (
     <HatchCircle
       radius={model.radiusPx}
       fill={palette.action.hover}
       hatchColor={palette.action.disabledBackground}
+      discOpacity={line === 0 ? 1 : 0}
+      textLine={line}
       textRotationDeg={-radToDeg(model.view.offsetRadians)}
-      text="Loading…"
+      text={statusProgress === undefined ? `${label}…` : label}
     >
-      <circle
-        className={classes.path}
-        fill="none"
-        strokeWidth="4"
-        strokeLinecap="round"
-        cx="0"
-        cy="0"
-        r="60"
-      />
+      {line === 0 ? (
+        <circle
+          className={classes.path}
+          fill="none"
+          strokeWidth="4"
+          strokeLinecap="round"
+          cx="0"
+          cy="0"
+          r="60"
+        />
+      ) : null}
     </HatchCircle>
   )
 })

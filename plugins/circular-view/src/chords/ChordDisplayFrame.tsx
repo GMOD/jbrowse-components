@@ -4,7 +4,17 @@ import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
 
 import type { ChordDisplayFrameModel } from './types.ts'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ReactNode } from 'react'
+
+function lineAmong(display: ChordDisplayFrameModel, phase: DisplayStatusPhase) {
+  return Math.max(
+    0,
+    display.view.chordDisplays
+      .filter(d => d.displayPhase === phase)
+      .findIndex(d => d.id === display.id),
+  )
+}
 
 const ChordDisplayFrame = observer(function ChordDisplayFrame({
   display,
@@ -39,12 +49,7 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
       {phase === 'error' ? (
         <DisplayError
           model={display}
-          line={Math.max(
-            0,
-            display.view.chordDisplays
-              .filter(d => d.displayPhase === 'error')
-              .findIndex(d => d.id === display.id),
-          )}
+          line={lineAmong(display, 'error')}
           onClick={() => {
             display.openErrorDialog()
           }}
@@ -53,7 +58,7 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
           }}
         />
       ) : phase === 'loading' ? (
-        <Loading model={display} />
+        <Loading model={display} line={lineAmong(display, 'loading')} />
       ) : (
         children
       )}
