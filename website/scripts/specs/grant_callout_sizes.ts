@@ -224,6 +224,7 @@ function svReadsFrame({ base, key, viewportHeight }: SvReads) {
     ...spec,
     name: `grant/${key}_frame`,
     annotations: [],
+    viewportWidth: FRAME_WIDTH / 2,
     url: editSpecSession(spec.url, session => {
       const [lgv] = session.views as [ViewJson]
       const tracks = lgv.tracks as { trackId: string; pileup?: object }[]

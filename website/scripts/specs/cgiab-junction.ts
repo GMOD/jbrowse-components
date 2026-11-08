@@ -14,17 +14,22 @@ const GRCH38 = 'GRCh38_GIABv3'
 const HG008T = 'HG008T_v3.2'
 const SCAFFOLD = 'chr3_chr13_hap1'
 const WIDTH = 1800
+const FONT = 19
 const APP_BAR = 'header.MuiAppBar-root'
 const APP_BAR_HEIGHT = 48
 const BLUE = 'rgba(31,119,180,0.45)'
 const BAND = '[data-testid="highlight-band"]'
 
+// A figure printed narrower than the tutorial's page takes a narrower viewport
+// and larger callouts, so both grow on paper
 interface Chrome {
   hideAppBar?: boolean
+  width?: number
+  fontSize?: number
 }
 
-const chrome = (height: number, { hideAppBar }: Chrome) => ({
-  viewportWidth: WIDTH,
+const chrome = (height: number, { hideAppBar, width = WIDTH }: Chrome) => ({
+  viewportWidth: width,
   viewportHeight: hideAppBar ? height : height + APP_BAR_HEIGHT,
   ...(hideAppBar ? { hideSelectors: [APP_BAR] } : {}),
 })
@@ -50,10 +55,11 @@ const callout = (
   anchor: Annotation['anchor'],
   dx: number,
   dy: number,
+  fontSize = FONT,
 ): Annotation => ({
   type: 'text',
   text,
-  fontSize: 19,
+  fontSize,
   color: '#1f77b4',
   background: '#dceaf6',
   leader: true,
@@ -62,38 +68,47 @@ const callout = (
   dy,
 })
 
-// Anchored on the track label, the one element a band shares a row with
+// Anchored on the track label, the one element a band shares a row with. A
+// label's dy is its baseline, so a larger font moves down by its growth.
 const bandLabel = (
   text: string,
   trackLabel: string,
   dy: number,
+  fontSize = FONT,
 ): Annotation => ({
   type: 'text',
   text,
-  fontSize: 19,
-  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: -50, dy },
+  fontSize,
+  anchor: {
+    text: trackLabel,
+    alignX: 'left',
+    alignY: 'bottom',
+    dx: -50,
+    dy: dy + fontSize - FONT,
+  },
 })
 
-const rowLabel = (text: string, row: number): Annotation => ({
+const rowLabel = (text: string, row: number, fontSize = FONT): Annotation => ({
   type: 'text',
   text,
-  fontSize: 19,
+  fontSize,
   anchor: {
     selector: '[data-testid="refLabel-prefix"]',
     view: [0, row],
     alignX: 'left',
     alignY: 'bottom',
     dx: 4,
-    dy: 26,
+    dy: fontSize + 7,
   },
 })
 
-const junction = (row: number) =>
+const junction = (row: number, fontSize = FONT) =>
   callout(
     'junction',
     { selector: BAND, view: [0, row], alignY: 'center' },
     170,
     8,
+    fontSize,
   )
 
 const splitPanel = (loc: string) => ({
@@ -199,25 +214,27 @@ export const junctionScaffold = (
     ],
   }),
   annotations: [
-    rowLabel('hap1', 1),
+    rowLabel('hap1', 1, opts.fontSize),
     // dy keeps these clear of the read curves
     callout(
       'chr13 breakend',
       { selector: BAND, view: [0, 0], alignY: 'top' },
       190,
       70,
+      opts.fontSize,
     ),
     callout(
       'chr3 breakend',
       { selector: `${BAND} ~ ${BAND}`, view: [0, 0], alignY: 'top' },
       140,
       70,
+      opts.fontSize,
     ),
-    junction(1),
-    bandLabel('SV calls', 'draft benchmark somatic SVs', 22),
-    bandLabel('aggregate read links', READS, 92),
-    bandLabel('split reads', READS, 250),
-    bandLabel('unsplit reads', READS, 610),
+    junction(1, opts.fontSize),
+    bandLabel('SV calls', 'draft benchmark somatic SVs', 22, opts.fontSize),
+    bandLabel('aggregate read links', READS, 92, opts.fontSize),
+    bandLabel('split reads', READS, 250, opts.fontSize),
+    bandLabel('unsplit reads', READS, 610, opts.fontSize),
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
@@ -271,22 +288,24 @@ export const scaffoldOverview = (
     ],
   }),
   annotations: [
-    rowLabel('hap2', 0),
-    rowLabel('GRCh38', 1),
-    rowLabel('hap1', 2),
+    rowLabel('hap2', 0, opts.fontSize),
+    rowLabel('GRCh38', 1, opts.fontSize),
+    rowLabel('hap1', 2, opts.fontSize),
     callout(
       'chr13 breakend',
       { selector: BAND, view: [0, 1], alignY: 'top' },
       -150,
       40,
+      opts.fontSize,
     ),
     callout(
       'chr3 breakend',
       { selector: `${BAND} ~ ${BAND}`, view: [0, 1], alignY: 'top' },
       -150,
       40,
+      opts.fontSize,
     ),
-    junction(2),
+    junction(2, opts.fontSize),
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,

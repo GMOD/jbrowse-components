@@ -40,7 +40,7 @@ const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 const panelLabel = (trackId: string, text: string, dy = 8): Annotation => ({
   type: 'text',
   text,
-  fontSize: 20,
+  fontSize: 36,
   anchor: {
     trackId,
     loc: 'chr3:162,750,500',
@@ -59,7 +59,7 @@ const trackBlurb = (
   type: 'text',
   text,
   textAlign: 'start',
-  fontSize: 18,
+  fontSize: 24,
   anchor: {
     trackId,
     loc: 'chr3:162,655,000',
@@ -121,8 +121,10 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     }),
     readySelector: `body:has(${displaySettled('variant-display')}):has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
-    viewportWidth: 1500,
-    viewportHeight: 1220,
+    // the paper prints it at its full text width
+    viewportWidth: 1200,
+    viewportHeight: 1172,
+    hideSelectors: ['header.MuiAppBar-root'],
     tooltip: 'hide',
     diffThreshold: 0.02,
     annotations: [
@@ -133,17 +135,17 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
       trackBlurb(
         SV_TRACK.trackId,
         0.55,
-        '1000 Genomes\nshort-read deletion calls',
+        '1000 Genomes\nshort-read\ndeletion calls',
       ),
       trackBlurb(
         HGSVC3_SV_TRACK.trackId,
         0.75,
-        'HGSVC long-read assembly calls',
+        'HGSVC long-read\nassembly calls',
       ),
       trackBlurb(
         'cnv_1000g_zarr',
         0.55,
-        '1000 Genomes estimated\ncopy number (QuicK-mer2)',
+        '1000 Genomes\ncopy number\n(QuicK-mer2)',
       ),
       trackBlurb('hprc_minigraph_segments', 0.3, 'HPRC v2.1\npangenome graph'),
     ],
