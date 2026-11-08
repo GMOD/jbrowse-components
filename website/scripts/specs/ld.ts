@@ -345,9 +345,9 @@ export const ldSpecs: ScreenshotSpec[] = [
     // The anoGam3 hub's chrom.sizes off hgdownload often times out and
     // refetches.
     readyTimeout: 180000,
-    // Undersized, the lower rows crop silently. The Gabon heterozygotes against
-    // the bottom border are the lane's last rows, not a crop.
-    viewportHeight: 1395,
+    // Undersized, the Gabon heterozygotes, the lane's last rows, crop away
+    // silently from the picture; the shoot's clip report gives the shortfall.
+    viewportHeight: 1445,
     annotations: [
       ...(
         [
