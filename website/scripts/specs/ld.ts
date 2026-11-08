@@ -49,24 +49,21 @@ const LCT_HIGHLIGHT = [
 //
 // r², not D': D' also tints the region outside the span.
 //
-// anoGam3 is AgamP3 and the LD is on AgamP4; the arms are byte-identical
-// between the two. The hub's chromAlias maps the file's `2L` to `chr2L`.
+// anoGam3 is AgamP3 and the LD is on AgamP4; the five arms are the same
+// sequence, soft-masking aside. The hub's chromAlias maps the file's `2L` to
+// `chr2L`.
 const ANOGAM3_HUB = 'https://jbrowse.org/ucsc/anoGam3/config.json'
 
 type AgPopulation = 'CMgam' | 'GAgam'
-// The page loads its own AgamP4 assembly; the figure moves its tracks onto the
-// anoGam3 hub.
 function agPageTrack(
   cameroonTrackId: string,
   pop: AgPopulation,
 ): PageTrackConfig {
-  const cameroon = pageTrack('tutorials/ld_mosquitoes.md', cameroonTrackId)
-  const track = JSON.parse(
-    JSON.stringify(cameroon)
+  return JSON.parse(
+    JSON.stringify(pageTrack('tutorials/ld_mosquitoes.md', cameroonTrackId))
       .replaceAll('CMgam', pop)
       .replaceAll('cmgam', pop.toLowerCase()),
-  ) as typeof cameroon
-  return { ...track, assemblyNames: ['anoGam3'] }
+  ) as PageTrackConfig
 }
 
 // An unsquashed LD panel puts its apex half the drawn width down. 2La draws

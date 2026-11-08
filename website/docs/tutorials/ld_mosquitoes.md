@@ -58,36 +58,62 @@ slice.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | The phased haplotypes and their sample list for chromosome arm 2L, which the commands subset to one population at a time                                                                               | [shapeit/](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/)                    |
 | The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                                             | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
-| The AgamP4 reference and its gene models, which the gene track reads                                                                                                                                   | [genome/](https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/)                                          |
+| The AgamP4 reference and its gene models, which the build script's own JBrowse loads                                                                                                                   | [genome/](https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/)                                          |
 | The 2La tag SNPs, the ~200 positions whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
 
-## Loading the AgamP4 assembly and genes
+## Loading the anoGam3 assembly and genes
 
-The LD table and the inversion calls use 2L coordinates of the AgamP4 reference,
-so we load that assembly and its `AgamP4.12` gene models first.
+The Ag1000G calls are on the AgamP4 reference, whose arms 2L, 2R, 3L, 3R and X
+have the same sequence as UCSC's anoGam3 (AgamP3), so the tracks go on anoGam3.
+The
+[anoGam3 page on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/anoGam3/)
+opens that assembly with its Ensembl gene track, ready for the tracks below. On
+another JBrowse, load the hub's assembly:
 
-```json addassembly
+```json
 {
-  "name": "AgamP4",
+  "name": "anoGam3",
+  "displayName": "A. gambiae (anoGam3)",
   "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "anoGam3-refseq",
     "adapter": {
-      "type": "BgzipFastaAdapter",
-      "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.fa.bgz"
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/anoGam3/bigZips/anoGam3.2bit",
+      "chromSizes": "https://jbrowse.org/ucsc/anoGam3/anoGam3.chrom.sizes"
     }
-  }
+  },
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "uri": "https://jbrowse.org/ucsc/anoGam3/anoGam3.chromAlias.txt"
+    }
+  },
+  "circularRefNames": ["chrM"],
+  "geneticCodes": { "chrM": 5 }
 }
 ```
+
+The LD table and the inversion calls name the arm `2L`, and the alias table maps
+that to anoGam3's `chr2L`. The gene track is the hub's too:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "agamp4_genes",
-  "name": "AgamP4.12 genes",
-  "assemblyNames": ["AgamP4"],
+  "trackId": "anoGam3-ensGene",
+  "name": "Ensembl Genes",
+  "assemblyNames": ["anoGam3"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.sorted.gff3.gz",
-    "csi": true
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz.csi"
+      }
+    }
   }
 }
 ```
@@ -148,7 +174,7 @@ the two metric columns, as its input:
   "type": "LDTrack",
   "trackId": "ag1000g_2l_cmgam",
   "name": "Cameroon, both arrangements segregating (r²)",
-  "assemblyNames": ["AgamP4"],
+  "assemblyNames": ["anoGam3"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz",
@@ -191,7 +217,7 @@ with a `LinearVariantDisplay`:
   "type": "VariantTrack",
   "trackId": "ag1000g_2la_karyotype_cmgam",
   "name": "Cameroon, one row per mosquito",
-  "assemblyNames": ["AgamP4"],
+  "assemblyNames": ["anoGam3"],
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz",
@@ -240,8 +266,8 @@ trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 
 ## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
-Open `2L` with the r² track of each population over the karyotype track of the
-same population.
+Open `chr2L` with the r² track of each population over the karyotype track of
+the same population.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
