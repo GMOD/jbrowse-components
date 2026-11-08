@@ -162,10 +162,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     opts: WiggleOptions = {},
   ): Promise<ArrayFeatureView> {
     const [arrays] = await this.getFeatureArrays([region], opts)
-    const { starts, ends, scores, minScores, maxScores } = arrays!
+    const { starts, ends, scores, summary } = arrays!
     return new ArrayFeatureView(
-      minScores && maxScores
-        ? { starts, ends, scores, minScores, maxScores, isSummary: true }
+      summary
+        ? { starts, ends, scores, ...summary, isSummary: true }
         : { starts, ends, scores, isSummary: false },
       this.getConf('source'),
       region.refName,

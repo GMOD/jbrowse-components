@@ -371,8 +371,6 @@ async function bigwigFixture(): Promise<SourceColumns[]> {
     starts,
     ends,
     scores,
-    minScores: undefined,
-    maxScores: undefined,
     count,
   }
   return [{ name: 's0', raw, table: makeTable(raw) }]
@@ -391,8 +389,6 @@ function syntheticSource(name: string, n: number, phase: number) {
     starts,
     ends,
     scores,
-    minScores: undefined,
-    maxScores: undefined,
     count: n,
   }
   return { name, raw, table: makeTable(raw) }
@@ -424,8 +420,6 @@ function multiFixture(): SourceColumns[] {
       starts,
       ends,
       scores,
-      minScores: undefined,
-      maxScores: undefined,
       count: rows,
     }
     out.push({ name: `s${s}`, raw, table: makeTable(raw) })

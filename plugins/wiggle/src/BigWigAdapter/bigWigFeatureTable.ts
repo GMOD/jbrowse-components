@@ -1,13 +1,11 @@
 import { ColumnTable, readerOf } from '@jbrowse/core/util/featureTable'
 
-import type { RawFeatureArrays } from '../util.ts'
+import type { RawFeatureArrays, RawSummary } from '../util.ts'
 import type { ArrayFeatureView } from '@gmod/bbi'
 import type { Column, NumberLane } from '@jbrowse/core/util/featureTable'
 
-interface SummarizedRows extends RawFeatureArrays {
-  minScores: Float32Array
-  maxScores: Float32Array
-}
+interface SummarizedRows
+  extends Omit<RawFeatureArrays, 'summary'>, RawSummary {}
 
 function lane(values: NumberLane): Column {
   return { kind: 'number', values, at: undefined, nanIsAbsent: false }

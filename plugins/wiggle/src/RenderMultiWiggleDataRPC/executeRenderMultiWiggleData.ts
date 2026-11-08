@@ -39,8 +39,6 @@ const EMPTY_RAW: RawFeatureArrays = {
   starts: new Int32Array(0),
   ends: new Int32Array(0),
   scores: new Float32Array(0),
-  minScores: undefined,
-  maxScores: undefined,
   count: 0,
 }
 

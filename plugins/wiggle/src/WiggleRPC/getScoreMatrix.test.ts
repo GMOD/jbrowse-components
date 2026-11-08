@@ -215,8 +215,6 @@ describe('getScoreMatrix multi-source adapter', () => {
       starts: new Int32Array(spans.map(s => s[0])),
       ends: new Int32Array(spans.map(s => s[1])),
       scores: new Float32Array(spans.map(s => s[2])),
-      minScores: undefined,
-      maxScores: undefined,
       count: spans.length,
     }
   }
@@ -257,8 +255,10 @@ describe('getScoreMatrix multi-source adapter', () => {
       starts: new Int32Array([0, 50]),
       ends: new Int32Array([50, 100]),
       scores: new Float32Array([2, Number.NaN]),
-      minScores: new Float32Array([1, Number.NaN]),
-      maxScores: new Float32Array([9, Number.NaN]),
+      summary: {
+        minScores: new Float32Array([1, Number.NaN]),
+        maxScores: new Float32Array([9, Number.NaN]),
+      },
       count: 2,
     }
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
@@ -319,8 +319,6 @@ describe('MultiWiggleGetScoreMatrix.execute', () => {
               starts: new Int32Array([0]),
               ends: new Int32Array([100]),
               scores: new Float32Array([3]),
-              minScores: undefined,
-              maxScores: undefined,
               count: 1,
             },
           ],

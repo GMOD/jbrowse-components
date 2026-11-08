@@ -20,9 +20,9 @@ import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 function summaryScores(raw: RawFeatureArrays, field: SummaryField) {
   return field === 'minScore'
-    ? (raw.minScores ?? raw.scores)
+    ? (raw.summary?.minScores ?? raw.scores)
     : field === 'maxScore'
-      ? (raw.maxScores ?? raw.scores)
+      ? (raw.summary?.maxScores ?? raw.scores)
       : raw.scores
 }
 

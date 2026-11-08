@@ -12,8 +12,10 @@ function makeData(): WiggleDataResult {
     starts: new Int32Array([0, 10]),
     ends: new Int32Array([10, 20]),
     scores: new Float32Array([5, -5]),
-    minScores: new Float32Array([2, -8]),
-    maxScores: new Float32Array([9, -1]),
+    summary: {
+      minScores: new Float32Array([2, -8]),
+      maxScores: new Float32Array([9, -1]),
+    },
     count: 2,
   })
   return { sources: [{ name: 'default', ...arrays }] }
@@ -26,8 +28,10 @@ function makePositiveData(): WiggleDataResult {
     starts: new Int32Array([0, 10]),
     ends: new Int32Array([10, 20]),
     scores: new Float32Array([5, 7]),
-    minScores: new Float32Array([2, 4]),
-    maxScores: new Float32Array([9, 11]),
+    summary: {
+      minScores: new Float32Array([2, 4]),
+      maxScores: new Float32Array([9, 11]),
+    },
     count: 2,
   })
   return { sources: [{ name: 'default', ...arrays }] }
@@ -343,8 +347,6 @@ describe('buildSourceRenderData gapScore', () => {
       starts: new Int32Array([0, 100, 200]),
       ends: new Int32Array([10, 110, 210]),
       scores: new Float32Array([1, 2, 3]),
-      minScores: undefined,
-      maxScores: undefined,
       count: 3,
     })
     return { sources: [{ name: 'default', ...arrays }] }
@@ -378,8 +380,10 @@ describe('buildSourceRenderData gapScore', () => {
       starts: new Int32Array([0, 100, 200]),
       ends: new Int32Array([10, 110, 210]),
       scores: new Float32Array([105, 105, 105]),
-      minScores: new Float32Array([100, 100, 100]),
-      maxScores: new Float32Array([110, 110, 110]),
+      summary: {
+        minScores: new Float32Array([100, 100, 100]),
+        maxScores: new Float32Array([110, 110, 110]),
+      },
       count: 3,
     })
     const data = { sources: [{ name: 'default', ...arrays }] }

@@ -24,9 +24,7 @@ export function multiWiggleFeatureTable(
   for (const { raw } of members) {
     count += raw.count
   }
-  const summarized = members.map(
-    ({ raw }) => raw.minScores !== undefined && raw.maxScores !== undefined,
-  )
+  const summarized = members.map(({ raw }) => raw.summary !== undefined)
   const starts = new Uint32Array(count)
   const ends = new Uint32Array(count)
   const scores = new Float32Array(count)
@@ -39,8 +37,8 @@ export function multiWiggleFeatureTable(
     starts.set(raw.starts.subarray(0, n), offset)
     ends.set(raw.ends.subarray(0, n), offset)
     scores.set(raw.scores.subarray(0, n), offset)
-    minScores.set((raw.minScores ?? raw.scores).subarray(0, n), offset)
-    maxScores.set((raw.maxScores ?? raw.scores).subarray(0, n), offset)
+    minScores.set((raw.summary?.minScores ?? raw.scores).subarray(0, n), offset)
+    maxScores.set((raw.summary?.maxScores ?? raw.scores).subarray(0, n), offset)
     codes.fill(code, offset, offset + n)
     offset += n
   }

@@ -93,8 +93,6 @@ function makeRegionData() {
     starts: new Int32Array([0]),
     ends: new Int32Array([500]),
     scores: new Float32Array([5]),
-    minScores: undefined,
-    maxScores: undefined,
     count: 1,
   })
   return {

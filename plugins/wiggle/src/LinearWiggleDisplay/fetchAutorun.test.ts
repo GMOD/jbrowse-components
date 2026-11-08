@@ -314,8 +314,10 @@ function makeSignedWiggleData(): WiggleDataResult {
           starts: new Int32Array([0, 10]),
           ends: new Int32Array([10, 20]),
           scores: new Float32Array([5, -5]),
-          minScores: new Float32Array([2, -8]),
-          maxScores: new Float32Array([9, -1]),
+          summary: {
+            minScores: new Float32Array([2, -8]),
+            maxScores: new Float32Array([9, -1]),
+          },
           count: 2,
         }),
       },

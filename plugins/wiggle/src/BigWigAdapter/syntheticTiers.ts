@@ -217,8 +217,13 @@ export function sliceRows(
     starts: rows.starts.subarray(lo, hi),
     ends: rows.ends.subarray(lo, hi),
     scores: rows.scores.subarray(lo, hi),
-    minScores: rows.minScores?.subarray(lo, hi),
-    maxScores: rows.maxScores?.subarray(lo, hi),
+    summary:
+      rows.minScores && rows.maxScores
+        ? {
+            minScores: rows.minScores.subarray(lo, hi),
+            maxScores: rows.maxScores.subarray(lo, hi),
+          }
+        : undefined,
     count: hi - lo,
   }
 }
@@ -388,8 +393,10 @@ export function binRawRegion(
     starts: outStarts.subarray(0, n),
     ends: outEnds.subarray(0, n),
     scores: outMeans.subarray(0, n),
-    minScores: outMins.subarray(0, n),
-    maxScores: outMaxs.subarray(0, n),
+    summary: {
+      minScores: outMins.subarray(0, n),
+      maxScores: outMaxs.subarray(0, n),
+    },
     count: n,
   }
 }

@@ -752,8 +752,6 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
       starts: new Int32Array([10]),
       ends: new Int32Array([20]),
       scores: new Float32Array([score]),
-      minScores: undefined,
-      maxScores: undefined,
       count: 1,
     }
   }
@@ -892,8 +890,6 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
         starts: new Int32Array([0, 10]),
         ends: new Int32Array([5, 15]),
         scores: new Float32Array([3, -2]),
-        minScores: undefined,
-        maxScores: undefined,
         count: 2,
       },
     ])
@@ -1042,8 +1038,6 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti concurrency', () =
                 starts: new Int32Array(1),
                 ends: new Int32Array(1),
                 scores: new Float32Array(1),
-                minScores: undefined,
-                maxScores: undefined,
                 count: 1,
               },
             ]
@@ -1189,8 +1183,6 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
         starts: new Int32Array(0),
         ends: new Int32Array(0),
         scores: new Float32Array(0),
-        minScores: undefined,
-        maxScores: undefined,
         count: 0,
       },
     ])

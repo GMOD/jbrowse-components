@@ -37,8 +37,8 @@ function bin(
     start: out.starts[i]!,
     end: out.ends[i]!,
     score: out.scores[i]!,
-    min: out.minScores?.[i],
-    max: out.maxScores?.[i],
+    min: out.summary?.minScores[i],
+    max: out.summary?.maxScores[i],
   }))
 }
 
@@ -593,8 +593,8 @@ describe('against a real file', () => {
       if (j === undefined || shifted.ends[j]! + offset !== zoom.ends[i]) {
         continue
       }
-      expect(shifted.minScores![j]).toBe(zoom.minScores[i])
-      expect(shifted.maxScores![j]).toBe(zoom.maxScores[i])
+      expect(shifted.summary!.minScores[j]).toBe(zoom.minScores[i])
+      expect(shifted.summary!.maxScores[j]).toBe(zoom.maxScores[i])
       expect(shifted.scores[j]).toBeCloseTo(zoom.scores[i]!, 4)
       compared++
     }
@@ -623,8 +623,8 @@ describe('against a real file', () => {
     const [file] = await adapter.getFeatureArrays([region], {
       bpPerPx: 20,
     })
-    expect(raw!.minScores).toBeUndefined()
-    expect(synthetic!.minScores).toBeDefined()
+    expect(raw!.summary).toBeUndefined()
+    expect(synthetic!.summary).toBeDefined()
     expect(synthetic!.count).toBeLessThan(raw!.count / 10)
 
     const integral = (a: typeof raw, lo: number, hi: number) => {
@@ -641,8 +641,8 @@ describe('against a real file', () => {
       let max = -Infinity
       for (let i = 0; i < a!.count; i++) {
         if (a!.ends[i]! > lo && a!.starts[i]! < hi) {
-          min = Math.min(min, a!.minScores?.[i] ?? a!.scores[i]!)
-          max = Math.max(max, a!.maxScores?.[i] ?? a!.scores[i]!)
+          min = Math.min(min, a!.summary?.minScores[i] ?? a!.scores[i]!)
+          max = Math.max(max, a!.summary?.maxScores[i] ?? a!.scores[i]!)
         }
       }
       return [min, max]
@@ -678,8 +678,8 @@ describe('against a real file', () => {
         r!.starts[i],
         r!.ends[i],
         r!.scores[i],
-        r!.minScores?.[i],
-        r!.maxScores?.[i],
+        r!.summary?.minScores[i],
+        r!.summary?.maxScores[i],
       ])
     }
     const wide = await rowsAt(0, 20000)
@@ -729,7 +729,7 @@ describe('against a real file', () => {
       [{ refName: 'ctgA', start: 0, end: 50000, assemblyName: 'v' }],
       { bpPerPx: 100 },
     )
-    expect(raw!.minScores).toBeUndefined()
+    expect(raw!.summary).toBeUndefined()
     expect(await posneg.getZoomRange({ bpPerPx: 300 })).toEqual({
       minBpPerPx: 256,
       maxBpPerPx: 792,
@@ -801,15 +801,15 @@ describe('the browser-test fixture', () => {
         [{ refName: 'ctgA', start, end, assemblyName: 'volvox' }],
         { bpPerPx },
       )
-      const { starts, ends, scores, minScores, maxScores, count } = rows!
+      const { starts, ends, scores, summary, count } = rows!
       expect(count).toBeGreaterThan(0)
       // the data runs 1000-17000, off the 16bp grid at both ends
       const spans = Array.from(starts, (s, i) => ends[i]! - s).slice(1, -1)
       expect(starts.slice(1).every(s => s % bin === 0)).toBe(true)
       expect(spans.every(s => s % bin === 0)).toBe(true)
       expect(spans.filter(s => s === bin).length).toBeGreaterThan(count * 0.9)
-      expect(Math.max(...maxScores!)).toBe(120)
-      expect(Math.min(...minScores!)).toBe(-110)
+      expect(Math.max(...summary!.maxScores)).toBe(120)
+      expect(Math.min(...summary!.minScores)).toBe(-110)
       expect(Math.max(...scores)).toBeLessThan(120)
       expect(Math.min(...scores)).toBeGreaterThan(-110)
     },

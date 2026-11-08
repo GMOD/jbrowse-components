@@ -162,8 +162,6 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         starts: n < capacity ? starts.subarray(0, n) : starts,
         ends: n < capacity ? ends.subarray(0, n) : ends,
         scores: n < capacity ? scores.subarray(0, n) : scores,
-        minScores: undefined,
-        maxScores: undefined,
         count: n,
       }
     })

@@ -22,8 +22,6 @@ function raw(scores: number[]): RawFeatureArrays {
     starts: new Int32Array(scores.map((_s, i) => i * 10)),
     ends: new Int32Array(scores.map((_s, i) => i * 10 + 5)),
     scores: new Float32Array(scores),
-    minScores: undefined,
-    maxScores: undefined,
     count: scores.length,
   }
 }

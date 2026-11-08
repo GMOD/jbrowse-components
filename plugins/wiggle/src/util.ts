@@ -94,19 +94,25 @@ export function groupFeaturesBySource<
   return groups
 }
 
-// Raw per-feature typed arrays returned by adapters' fast path.
+/** Each bin's stored extremes, beside `scores` the bins' means. */
+export interface RawSummary {
+  minScores: Float32Array
+  maxScores: Float32Array
+}
+
+// Raw per-feature typed arrays returned by adapters' fast path. `summary` is
+// absent where no row is a zoom bin.
 export interface RawFeatureArrays {
   starts: Int32Array | Uint32Array
   ends: Int32Array | Uint32Array
   scores: Float32Array
-  minScores: Float32Array | undefined
-  maxScores: Float32Array | undefined
+  summary?: RawSummary
   count: number
 }
 
 // The rare file: `processFeaturesFromArrays` calls this only where a NaN may be.
 function withoutNaNScores(raw: RawFeatureArrays): RawFeatureArrays {
-  const { starts, ends, scores, minScores, maxScores, count } = raw
+  const { starts, ends, scores, summary, count } = raw
   const keep: number[] = []
   for (let i = 0; i < count; i++) {
     if (!Number.isNaN(scores[i]!)) {
@@ -117,8 +123,10 @@ function withoutNaNScores(raw: RawFeatureArrays): RawFeatureArrays {
     starts: Uint32Array.from(keep, i => starts[i]!),
     ends: Uint32Array.from(keep, i => ends[i]!),
     scores: Float32Array.from(keep, i => scores[i]!),
-    minScores: minScores && Float32Array.from(keep, i => minScores[i]!),
-    maxScores: maxScores && Float32Array.from(keep, i => maxScores[i]!),
+    summary: summary && {
+      minScores: Float32Array.from(keep, i => summary.minScores[i]!),
+      maxScores: Float32Array.from(keep, i => summary.maxScores[i]!),
+    },
     count: keep.length,
   }
 }
@@ -134,7 +142,7 @@ function withoutNaNScores(raw: RawFeatureArrays): RawFeatureArrays {
 export function processFeaturesFromArrays(
   raw: RawFeatureArrays,
 ): WiggleFeatureArrays {
-  const { starts, ends, scores, minScores, maxScores, count } = raw
+  const { starts, ends, scores, summary, count } = raw
   const featurePositions = new Uint32Array(count * 2)
   const featureScores = new Float32Array(count)
   // A sum is the check with no branch in the copy; it is also NaN for a file
@@ -157,13 +165,14 @@ export function processFeaturesFromArrays(
   let featureMinScores = featureScores
   let featureMaxScores = featureScores
   let hasSummaryScores = false
-  if (minScores !== undefined || maxScores !== undefined) {
+  if (summary) {
+    const { minScores, maxScores } = summary
     const mins = new Float32Array(count)
     const maxs = new Float32Array(count)
     for (let i = 0; i < count; i++) {
       const score = featureScores[i]!
-      const minScore = minScores ? (minScores[i] ?? score) : score
-      const maxScore = maxScores ? (maxScores[i] ?? score) : score
+      const minScore = minScores[i] ?? score
+      const maxScore = maxScores[i] ?? score
       mins[i] = minScore
       maxs[i] = maxScore
       if (minScore !== score || maxScore !== score) {
@@ -200,10 +209,10 @@ function summaryChannels(
   features: readonly Feature[],
   encoded: { featureIndex?: Uint32Array; y: Float32Array },
   field: string,
-) {
+): RawSummary | undefined {
   const scores = encoded.y
   if (field !== 'score' || !features.some(f => f.get('summary'))) {
-    return { minScores: undefined, maxScores: undefined }
+    return undefined
   }
   const n = scores.length
   const minScores = new Float32Array(n)
@@ -245,7 +254,7 @@ export function featuresToRaw(
     starts: x,
     ends: x2,
     scores: y,
-    ...summaryChannels(features, encoded, field),
+    summary: summaryChannels(features, encoded, field),
     count,
   }
 }

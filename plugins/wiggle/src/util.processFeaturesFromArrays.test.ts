@@ -34,8 +34,6 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0, 10]),
       ends: new Int32Array([10, 20]),
       scores: new Float32Array([Infinity, -Infinity]),
-      minScores: undefined,
-      maxScores: undefined,
       count: 2,
     })
     expect([...out.featureScores]).toEqual([Infinity, -Infinity])
@@ -46,8 +44,10 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0, 10, 20]),
       ends: new Int32Array([10, 20, 30]),
       scores: new Float32Array([1, Number.NaN, -2]),
-      minScores: new Float32Array([0, Number.NaN, -3]),
-      maxScores: new Float32Array([2, Number.NaN, -1]),
+      summary: {
+        minScores: new Float32Array([0, Number.NaN, -3]),
+        maxScores: new Float32Array([2, Number.NaN, -1]),
+      },
       count: 3,
     })
     expect(out.numFeatures).toBe(2)
@@ -65,8 +65,6 @@ describe('processFeaturesFromArrays', () => {
       starts,
       ends,
       scores,
-      minScores: undefined,
-      maxScores: undefined,
       count: 3,
     })
 
@@ -89,8 +87,10 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0, 100]),
       ends: new Int32Array([100, 200]),
       scores: new Float32Array([5, 10]),
-      minScores: new Float32Array([2, 7]),
-      maxScores: new Float32Array([8, 15]),
+      summary: {
+        minScores: new Float32Array([2, 7]),
+        maxScores: new Float32Array([8, 15]),
+      },
       count: 2,
     })
 
@@ -105,8 +105,6 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0, 100]),
       ends: new Int32Array([100, 200]),
       scores: new Float32Array([5, 10]),
-      minScores: undefined,
-      maxScores: undefined,
       count: 2,
     })
 
@@ -120,8 +118,10 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0]),
       ends: new Int32Array([100]),
       scores: new Float32Array([5]),
-      minScores: new Float32Array([2]),
-      maxScores: new Float32Array([8]),
+      summary: {
+        minScores: new Float32Array([2]),
+        maxScores: new Float32Array([8]),
+      },
       count: 1,
     })
 
@@ -138,8 +138,10 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([0, 100]),
       ends: new Int32Array([100, 200]),
       scores: new Float32Array([5, 10]),
-      minScores: new Float32Array([5, 10]),
-      maxScores: new Float32Array([5, 10]),
+      summary: {
+        minScores: new Float32Array([5, 10]),
+        maxScores: new Float32Array([5, 10]),
+      },
       count: 2,
     })
 
@@ -157,8 +159,7 @@ describe('processFeaturesFromArrays', () => {
       feature({ start: 10, end: 20, score: 7 }, 1),
     ])
 
-    expect(raw.minScores).toBeUndefined()
-    expect(raw.maxScores).toBeUndefined()
+    expect(raw.summary).toBeUndefined()
     const result = processFeaturesFromArrays(raw)
     expect(result.featureMinScores).toBe(result.featureScores)
   })
@@ -180,8 +181,8 @@ describe('processFeaturesFromArrays', () => {
     ])
 
     // the non-summary feature backfills from its own score, not zero
-    expect(Array.from(raw.minScores!)).toEqual([5, 3])
-    expect(Array.from(raw.maxScores!)).toEqual([5, 9])
+    expect(Array.from(raw.summary!.minScores)).toEqual([5, 3])
+    expect(Array.from(raw.summary!.maxScores)).toEqual([5, 9])
   })
 
   test('featuresToRaw drops a summary min/max when y reads another field', () => {
@@ -194,11 +195,10 @@ describe('processFeaturesFromArrays', () => {
       'jexl:log(get(feature,"score"))',
       createJexlInstance(),
     )
-    expect(logged.minScores).toBeUndefined()
-    expect(logged.maxScores).toBeUndefined()
-    expect(Array.from(featuresToRaw([summary], 'score').maxScores!)).toEqual([
-      9,
-    ])
+    expect(logged.summary).toBeUndefined()
+    expect(
+      Array.from(featuresToRaw([summary], 'score').summary!.maxScores),
+    ).toEqual([9])
   })
 
   // A raw record is its own bin, so `maxScore` on one is its score; reading
@@ -220,8 +220,8 @@ describe('processFeaturesFromArrays', () => {
     ]
     const raw = featuresToRaw(features, 'maxScore')
     expect(Array.from(raw.scores)).toEqual([5, 7])
-    expect(Array.from(raw.maxScores!)).toEqual([5, 9])
-    expect(Array.from(raw.minScores!)).toEqual([5, 3])
+    expect(Array.from(raw.summary!.maxScores)).toEqual([5, 9])
+    expect(Array.from(raw.summary!.minScores)).toEqual([5, 3])
   })
 
   // The display's `yField` slot names which field a fallback adapter's
@@ -288,8 +288,8 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(raw.starts)).toEqual([0, 20, 30, 40])
     expect(Array.from(raw.ends)).toEqual([10, 30, 40, 50])
     expect(Array.from(raw.scores)).toEqual([1.5, 2.5, 0, 4.5])
-    expect(Array.from(raw.minScores!)).toEqual([1.5, 1, 0, 3])
-    expect(Array.from(raw.maxScores!)).toEqual([1.5, 2.5, 0, 6])
+    expect(Array.from(raw.summary!.minScores)).toEqual([1.5, 1, 0, 3])
+    expect(Array.from(raw.summary!.maxScores)).toEqual([1.5, 2.5, 0, 6])
   })
 
   test('empty input produces empty arrays', () => {
@@ -297,8 +297,6 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array(0),
       ends: new Int32Array(0),
       scores: new Float32Array(0),
-      minScores: undefined,
-      maxScores: undefined,
       count: 0,
     })
 
@@ -310,8 +308,6 @@ describe('processFeaturesFromArrays', () => {
       starts: new Int32Array([50]),
       ends: new Int32Array([100]),
       scores: new Float32Array([5]),
-      minScores: undefined,
-      maxScores: undefined,
       count: 1,
     })
 

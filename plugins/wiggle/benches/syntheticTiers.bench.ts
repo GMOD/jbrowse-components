@@ -82,8 +82,6 @@ async function readRaw() {
     starts: res.starts,
     ends: res.ends,
     scores: res.scores,
-    minScores: undefined,
-    maxScores: undefined,
     count: res.starts.length,
   }
 }
@@ -100,6 +98,14 @@ function sameRows(a: RawFeatureArrays, b: RawFeatureArrays, what: string) {
   if (a.count !== b.count) {
     throw new Error(`${what}: ${a.count} rows vs ${b.count}`)
   }
+  const lanes = (r: RawFeatureArrays) => ({
+    starts: r.starts,
+    ends: r.ends,
+    scores: r.scores,
+    minScores: r.summary?.minScores,
+    maxScores: r.summary?.maxScores,
+  })
+  const [left, right] = [lanes(a), lanes(b)]
   for (let i = 0; i < a.count; i++) {
     for (const key of [
       'starts',
@@ -108,9 +114,9 @@ function sameRows(a: RawFeatureArrays, b: RawFeatureArrays, what: string) {
       'minScores',
       'maxScores',
     ] as const) {
-      if (!Object.is(a[key]?.[i], b[key]?.[i])) {
+      if (!Object.is(left[key]?.[i], right[key]?.[i])) {
         throw new Error(
-          `${what}: row ${i} ${key} ${a[key]?.[i]} vs ${b[key]?.[i]}`,
+          `${what}: row ${i} ${key} ${left[key]?.[i]} vs ${right[key]?.[i]}`,
         )
       }
     }
@@ -149,8 +155,6 @@ const arms: Record<string, () => Promise<void>> = {
       starts: r.starts,
       ends: r.ends,
       scores: r.scores,
-      minScores: undefined,
-      maxScores: undefined,
       count: r.starts.length,
     }).numFeatures
   },
@@ -162,8 +166,6 @@ const arms: Record<string, () => Promise<void>> = {
       starts: r.starts,
       ends: r.ends,
       scores: r.scores,
-      minScores: undefined,
-      maxScores: undefined,
       count: r.starts.length,
     }).numFeatures
   },

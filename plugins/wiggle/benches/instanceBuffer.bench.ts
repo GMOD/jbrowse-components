@@ -114,8 +114,8 @@ function applySign(raw: RawFeatureArrays): RawFeatureArrays {
     return raw
   }
   const scores = Float32Array.from(raw.scores)
-  const mins = raw.minScores ? Float32Array.from(raw.minScores) : undefined
-  const maxs = raw.maxScores ? Float32Array.from(raw.maxScores) : undefined
+  const mins = raw.summary && Float32Array.from(raw.summary.minScores)
+  const maxs = raw.summary && Float32Array.from(raw.summary.maxScores)
   if (sign === 'positive') {
     for (let i = 0; i < raw.count; i++) {
       scores[i] = Math.abs(scores[i]!)
@@ -136,7 +136,11 @@ function applySign(raw: RawFeatureArrays): RawFeatureArrays {
       }
     }
   }
-  return { ...raw, scores, minScores: mins, maxScores: maxs }
+  return {
+    ...raw,
+    scores,
+    summary: mins && maxs && { minScores: mins, maxScores: maxs },
+  }
 }
 
 const fetched = await Promise.all(files.map(fetchRaw))
@@ -153,7 +157,7 @@ function payload(summary: boolean): WiggleDataResult {
     sources: raws.map((raw, i) => ({
       name: `s${i}`,
       ...processFeaturesFromArrays(
-        summary ? raw : { ...raw, minScores: undefined, maxScores: undefined },
+        summary ? raw : { ...raw, summary: undefined },
       ),
     })),
   }

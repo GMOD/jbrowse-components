@@ -37,7 +37,11 @@ export default class WigglePlugin extends Plugin {
   }
 }
 
-export type { RawFeatureArrays, WiggleHoveredFeature } from './util.ts'
+export type {
+  RawFeatureArrays,
+  RawSummary,
+  WiggleHoveredFeature,
+} from './util.ts'
 
 // The state model factory is deliberately NOT re-exported here: a value edge
 // from this barrel would keep the display model subgraph eager, which is the

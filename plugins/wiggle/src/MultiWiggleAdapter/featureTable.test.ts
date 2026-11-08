@@ -125,8 +125,10 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
       starts: Int32Array.from(starts),
       ends: Int32Array.from(starts, s => s + 10),
       scores: Float32Array.from(scores),
-      minScores: summary && Float32Array.from(summary.min),
-      maxScores: summary && Float32Array.from(summary.max),
+      summary: summary && {
+        minScores: Float32Array.from(summary.min),
+        maxScores: Float32Array.from(summary.max),
+      },
       count: starts.length,
     }
   }
