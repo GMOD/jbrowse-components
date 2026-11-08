@@ -58,14 +58,16 @@ describe('multi-source adapter (batched)', () => {
       { source: 'a', raws: [raw([1, 2]), raw([3])] },
       { source: 'b', raws: [raw([-4]), raw([5])] },
     ])
-    const getSourcesAndWarnings = jest
+    // a plugin's multi-source adapter with only the base `getSources`
+    // (jbrowse-plugin-zarr's MultiWiggleZarrAdapter)
+    const getSources = jest
       .fn()
-      .mockResolvedValue({ sources: [{ name: 'a' }, { name: 'b' }] })
+      .mockResolvedValue([{ name: 'a' }, { name: 'b' }])
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => ({ minBpPerPx: 2, maxBpPerPx: 8 }),
       getValueDomain: async () => undefined,
       getMultiSourceFeatureArraysMulti,
-      getSourcesAndWarnings,
+      getSources,
     } as never)
 
     const results = await run({})
@@ -77,7 +79,7 @@ describe('multi-source adapter (batched)', () => {
     // one fan-out for the whole view, not one per region
     expect(getMultiSourceFeatureArraysMulti).toHaveBeenCalledTimes(1)
     expect(getMultiSourceFeatureArraysMulti.mock.calls[0]![0]).toEqual(regions)
-    expect(getSourcesAndWarnings).toHaveBeenCalledTimes(1)
+    expect(getSources).toHaveBeenCalledWith(regions)
 
     expect(results).toHaveLength(2)
     expect(scoresOf(results[0]!, 'a')).toEqual([1, 2])
