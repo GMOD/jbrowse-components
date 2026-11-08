@@ -14,6 +14,7 @@ import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
 } from '@jbrowse/render-core/shaders/clipStripConsts'
+import { columnSegments } from '@jbrowse/tree-sidebar/binColumns'
 import {
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
@@ -26,6 +27,8 @@ import { runInAction } from 'mobx'
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
+import { getScoreMatrix } from './WiggleRPC/getScoreMatrix.ts'
+import { matrixScale } from './WiggleRPC/matrixScale.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
 import { scoreRampFill } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
@@ -87,6 +90,60 @@ function binInWindow({ start, end }: { start: number; end: number }) {
 }
 
 /**
+ * The display's static host over the scores it fetched for `regions` at
+ * `bpPerPx`, and the fetch's result for each region.
+ */
+async function fetchedWiggleHost(
+  pluginManager: PluginManager,
+  {
+    adapterConfig,
+    regions,
+    displayedRegions,
+    display = {},
+    bpPerPx,
+    trackType = wiggleTrackTypeOf(adapterConfig),
+  }: WiggleTablesArgs,
+) {
+  const model = createWiggleStaticHost({ trackType, id: 'tables', display })
+  const fetchInputs = runInAction(() => ({
+    resolution: model.resolution,
+    yField: model.yField,
+  }))
+  const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
+    sessionId: 'tables',
+    adapterConfig,
+    regions: windowFetchRegions(regions, displayedRegions).map(r => ({
+      assemblyName: '',
+      ...r,
+    })),
+    bpPerPx,
+    ...fetchInputs,
+    statusCallback: () => {},
+  }
+  if (args.regions.length === 0) {
+    throw new Error('wiggleTables needs a region or regions')
+  }
+  const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
+    .value
+  model.setFetched(
+    {
+      initialized: true,
+      settledDynamicBlocks: regions.map((r, i) => ({
+        start: r.start,
+        end: r.end,
+        displayedRegionIndex: i,
+      })),
+      trackWidthPx: regions.reduce(
+        (sum, r) => sum + (r.end - r.start) / bpPerPx,
+        0,
+      ),
+    },
+    new Map(results.entries()),
+  )
+  return { model, results }
+}
+
+/**
  * #api
  * A region, or several, of a quantitative track as the wiggle display
  * fetches, scales and colors it, as tables: `bins`, each source's scores as
@@ -112,53 +169,12 @@ function binInWindow({ start, end }: { start: number; end: number }) {
  */
 export async function wiggleTables(
   pluginManager: PluginManager,
-  {
-    adapterConfig,
-    regions,
-    displayedRegions,
-    display = {},
-    bpPerPx,
-    trackType = wiggleTrackTypeOf(adapterConfig),
-  }: WiggleTablesArgs,
+  args: WiggleTablesArgs,
 ) {
-  const model = createWiggleStaticHost({ trackType, id: 'tables', display })
+  const { regions } = args
+  const { model, results } = await fetchedWiggleHost(pluginManager, args)
   const conf = model.configuration
-  const fetchInputs = runInAction(() => ({
-    resolution: model.resolution,
-    yField: model.yField,
-  }))
-  const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
-    sessionId: 'tables',
-    adapterConfig,
-    regions: windowFetchRegions(regions, displayedRegions).map(r => ({
-      assemblyName: '',
-      ...r,
-    })),
-    bpPerPx,
-    ...fetchInputs,
-    statusCallback: () => {},
-  }
-  if (args.regions.length === 0) {
-    throw new Error('wiggleTables needs a region or regions')
-  }
-  const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
-    .value
   const data = results[0]!
-  model.setFetched(
-    {
-      initialized: true,
-      settledDynamicBlocks: regions.map((r, i) => ({
-        start: r.start,
-        end: r.end,
-        displayedRegionIndex: i,
-      })),
-      trackWidthPx: regions.reduce(
-        (sum, r) => sum + (r.end - r.start) / bpPerPx,
-        0,
-      ),
-    },
-    new Map(results.entries()),
-  )
 
   const {
     sources,
@@ -371,3 +387,62 @@ export async function wiggleTables(
 }
 
 export type WiggleTables = Awaited<ReturnType<typeof wiggleTables>>
+
+/**
+ * #api
+ * The matrix the multi-row wiggle display's "Cluster rows" clusters, over
+ * `regions` at `bpPerPx` as `wiggleTables` reads them (`getScoreMatrix`):
+ * `rows`, a source each, named as `wiggleTables`' `sources` names them and in
+ * its order; `columns`, a pixel each, the regions end to end, with its
+ * `region`'s index, the 0-based `start` of the base at its left edge, and its
+ * `name`, that base 1-based after the region's contig as the call names it
+ * (`ctgA:1001`); and `values`, row-major, each pixel's mean of the summary
+ * the display plots over the bins covering it, placed where a log or symlog
+ * axis draws it, NaN where no bin covers it.
+ */
+export async function wiggleScoreMatrix(
+  pluginManager: PluginManager,
+  args: WiggleTablesArgs,
+) {
+  const { adapterConfig, regions, bpPerPx } = args
+  const { model } = await fetchedWiggleHost(pluginManager, args)
+  const { sources, yField, scale } = runInAction(() => ({
+    sources: model.sources,
+    yField: model.yField,
+    scale: matrixScale(model),
+  }))
+  const matrix = await getScoreMatrix({
+    pluginManager,
+    args: {
+      sessionId: 'tables',
+      adapterConfig,
+      regions: regions.map(r => ({ assemblyName: '', ...r })),
+      bpPerPx,
+      sources,
+      yField,
+      scale,
+    },
+  })
+  const { segments, width } = columnSegments(regions, bpPerPx)
+  const columns = {
+    region: [] as number[],
+    start: [] as number[],
+    name: [] as string[],
+  }
+  segments.forEach((segment, i) => {
+    const { refName, originalRefName = refName } = regions[i]!
+    for (let x = 0; x < segment.width; x++) {
+      const start = segment.regionStart + Math.floor(x * bpPerPx)
+      columns.region.push(i)
+      columns.start.push(start)
+      columns.name.push(`${originalRefName}:${start + 1}`)
+    }
+  })
+  const values = new Float32Array(sources.length * width)
+  sources.forEach(({ name }, row) => {
+    values.set(matrix.get(name)!, row * width)
+  })
+  return { rows: sources.map(s => s.name), columns, values }
+}
+
+export type WiggleScoreMatrix = Awaited<ReturnType<typeof wiggleScoreMatrix>>

@@ -64,12 +64,15 @@ import {
 } from './LinearVariantDisplay/variantRowViews.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
+import { genotypeMatrixOf } from './VariantRPC/buildGenotypeMatrix.ts'
 import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
 import { fetchVariantFeatures } from './VariantRPC/fetchVariantFeatures.ts'
 import {
   readAltDosages,
   readPhasedAlleleIndicators,
 } from './VariantRPC/genotypeMatrixEncoding.ts'
+import { altColumnCount } from './VariantRPC/getGenotypeMatrix.ts'
+import { matrixWalkOf } from './VariantRPC/matrixWalk.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
@@ -209,43 +212,11 @@ export interface VariantTablesArgs {
 }
 
 /**
- * #api
- * A region of a multi-sample VCF as the variant display fetches,
- * filters and paints it, as tables: `variants`, each record the display
- * keeps, with its `color` as the records band paints it (its SV class's,
- * else `featureDefaultColor`, under no picked `encoding.color` and under
- * `phaseSet`; else the alt cells' hue at full dose) and its `filter`;
- * `info`, each INFO key's
- * values aligned to `variants`, and `infoFields`, the header's declaration
- * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
- * consequences, a row per record and consequence, which then leave `info`
- * (`consequenceTables`); `cells`, each sample's (or under
- * `rows.field: 'haplotype'` each haplotype's) cell at each record, with its
- * genotype, its `dosage` and the fill the display paints it; `rows`, the
- * rows the cells name, top to bottom as the display arranges them by `rows`
- * and stacks them in `facet`'s bands, each with its label and band; `bands`,
- * each band's value and label, in stacking order; `legend`, `legendTitle`
- * and `ramps`, the key the display shows; `rowBackground`, the fill the
- * display paints behind its rows; `height`, the px the rows' slot takes
- * (`height` as written, else the display's default), the records band above
- * it apart; `rowHeight`, the px each row draws at, `rows.step` or the slot
- * divided between the rows, as the display resolves it; and `warnings`, the
- * samples file's. With `genotypes.reference.show` off, the default, a
- * reference call draws no cell, and `rowBackground` is the reference call's
- * color, standing in for every one; on, `rowBackground` is `''`. With
- * `genotypes.show` off, and unset on a one-sample VCF, no row draws, so
- * `rows` and `cells` are empty, the key is the records', and no genotype is
- * read, so `minorAlleleFrequency` and `missingness` filter nothing, as on a
- * sites-only VCF. The records sit at their genomic positions whatever
- * `variantLayout` says. Several regions share the rows and the key, as the
- * display's regions do: a record crossing regions is listed in each, under
- * one `key`, with its `annotations` once, under its first listing; every
- * `variants` and `cells` row names its `region`'s index, and `cells.variant`
- * indexes the joined `variants`. For a host that draws them itself, such as
- * R through V8. The adapters must be registered on `pluginManager`
- * (`registerVariantAdapters`).
+ * The variant display's host over what it fetched for `regions`: each
+ * region's records its window shows (`perRegion`, their features in
+ * `records`), and the rows it draws (`drawn`), top to bottom.
  */
-export async function variantTables(
+async function fetchedVariantHost(
   pluginManager: PluginManager,
   {
     adapterConfig,
@@ -335,11 +306,69 @@ export async function variantTables(
     shown.map(f => recordOf.get(data.featureInfo[f]!.featureId)!),
   )
 
-  const sampleIndex = buildSampleIndex(value.sampleNames)
   host.setCellData(value)
   const fetched = new Set(value.rowNames)
-  const {
+  const drawn = runInAction(() =>
+    host.sources.filter(row => fetched.has(row.name)),
+  )
+  return {
+    host,
+    adapter,
+    listing,
+    args,
+    value,
+    perRegion,
+    recordOf,
+    records,
     drawn,
+  }
+}
+
+/**
+ * #api
+ * A region of a multi-sample VCF as the variant display fetches,
+ * filters and paints it, as tables: `variants`, each record the display
+ * keeps, with its `color` as the records band paints it (its SV class's,
+ * else `featureDefaultColor`, under no picked `encoding.color` and under
+ * `phaseSet`; else the alt cells' hue at full dose) and its `filter`;
+ * `info`, each INFO key's
+ * values aligned to `variants`, and `infoFields`, the header's declaration
+ * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
+ * consequences, a row per record and consequence, which then leave `info`
+ * (`consequenceTables`); `cells`, each sample's (or under
+ * `rows.field: 'haplotype'` each haplotype's) cell at each record, with its
+ * genotype, its `dosage` and the fill the display paints it; `rows`, the
+ * rows the cells name, top to bottom as the display arranges them by `rows`
+ * and stacks them in `facet`'s bands, each with its label and band; `bands`,
+ * each band's value and label, in stacking order; `legend`, `legendTitle`
+ * and `ramps`, the key the display shows; `rowBackground`, the fill the
+ * display paints behind its rows; `height`, the px the rows' slot takes
+ * (`height` as written, else the display's default), the records band above
+ * it apart; `rowHeight`, the px each row draws at, `rows.step` or the slot
+ * divided between the rows, as the display resolves it; and `warnings`, the
+ * samples file's. With `genotypes.reference.show` off, the default, a
+ * reference call draws no cell, and `rowBackground` is the reference call's
+ * color, standing in for every one; on, `rowBackground` is `''`. With
+ * `genotypes.show` off, and unset on a one-sample VCF, no row draws, so
+ * `rows` and `cells` are empty, the key is the records', and no genotype is
+ * read, so `minorAlleleFrequency` and `missingness` filter nothing, as on a
+ * sites-only VCF. The records sit at their genomic positions whatever
+ * `variantLayout` says. Several regions share the rows and the key, as the
+ * display's regions do: a record crossing regions is listed in each, under
+ * one `key`, with its `annotations` once, under its first listing; every
+ * `variants` and `cells` row names its `region`'s index, and `cells.variant`
+ * indexes the joined `variants`. For a host that draws them itself, such as
+ * R through V8. The adapters must be registered on `pluginManager`
+ * (`registerVariantAdapters`).
+ */
+export async function variantTables(
+  pluginManager: PluginManager,
+  variantArgs: VariantTablesArgs,
+) {
+  const { host, adapter, listing, args, value, perRegion, records, drawn } =
+    await fetchedVariantHost(pluginManager, variantArgs)
+  const sampleIndex = buildSampleIndex(value.sampleNames)
+  const {
     band,
     color,
     rowKey,
@@ -351,12 +380,10 @@ export async function variantTables(
     height,
     rowHeight,
   } = runInAction(() => {
-    const shown = host.sources.filter(row => fetched.has(row.name))
     const rowColors = host.resolvedRowColors
     return {
-      drawn: shown,
-      band: shown.map(row => host.rowBand(row)),
-      color: shown.map(row => rowColors.get(row.name) ?? ''),
+      band: drawn.map(row => host.rowBand(row)),
+      color: drawn.map(row => rowColors.get(row.name) ?? ''),
       rowKey: host.rowColorScales[0],
       rowBands: host.rowBands,
       recordColors: host.regionRecordColors,
@@ -841,3 +868,72 @@ export function variantDensityAlpha({
 }
 
 export type VariantTables = Awaited<ReturnType<typeof variantTables>>
+
+/**
+ * #api
+ * The matrix the variant display's "Cluster rows by genotype" clusters, over
+ * the records and rows `variantTables` gives for the same args
+ * (`genotypeMatrixOf`): `rows`, named and ordered as its `rows`; `columns`,
+ * each record in `variants.key` order, its key as `variant`, and its `name`,
+ * that key 1-based. With a row per sample, a record takes a column per ALT,
+ * `allele` its 1-based index and named `<key>.<allele>` where it has several,
+ * scored 0 to 2 as twice that allele's share of the called alleles
+ * (`readAltDosages`); with a row per haplotype, one column, `allele` 0, 1
+ * where the haplotype carries any ALT. `values` holds them row-major, NaN for
+ * a no-call, an unphased call's haplotype, and a sample the record's file
+ * does not list.
+ */
+export async function variantGenotypeMatrix(
+  pluginManager: PluginManager,
+  variantArgs: VariantTablesArgs,
+) {
+  const { args, value, perRegion, recordOf, drawn } = await fetchedVariantHost(
+    pluginManager,
+    variantArgs,
+  )
+  const keyed = new Map<string, Feature>()
+  for (const { data, shown } of perRegion) {
+    for (const f of shown) {
+      const id = data.featureInfo[f]!.featureId
+      if (!keyed.has(id)) {
+        keyed.set(id, recordOf.get(id)!)
+      }
+    }
+  }
+  const records = [...keyed.values()]
+  const phased = args.rowsField === 'haplotype'
+  const matrix = await genotypeMatrixOf(matrixWalkOf(records, {}), {
+    sources: drawn,
+    rowsField: args.rowsField,
+    samplePloidy: value.samplePloidy,
+  })
+  const columns = {
+    name: [] as string[],
+    variant: [] as number[],
+    allele: [] as number[],
+  }
+  records.forEach((record, key) => {
+    const alleles = phased ? 0 : altColumnCount(record)
+    if (alleles < 2) {
+      columns.name.push(String(key + 1))
+      columns.variant.push(key)
+      columns.allele.push(alleles)
+    } else {
+      for (let allele = 1; allele <= alleles; allele++) {
+        columns.name.push(`${key + 1}.${allele}`)
+        columns.variant.push(key)
+        columns.allele.push(allele)
+      }
+    }
+  })
+  const width = columns.name.length
+  const values = new Float32Array(drawn.length * width)
+  drawn.forEach(({ name }, row) => {
+    values.set(matrix.get(name)!, row * width)
+  })
+  return { rows: drawn.map(row => row.name), columns, values }
+}
+
+export type VariantGenotypeMatrix = Awaited<
+  ReturnType<typeof variantGenotypeMatrix>
+>

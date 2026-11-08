@@ -1,7 +1,9 @@
-import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
-import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
+import { dosageMatrixOf } from './getGenotypeMatrix.ts'
+import { phasedMatrixOf } from './getPhasedGenotypeMatrix.ts'
+import { prepareMatrixWalk } from './matrixWalk.ts'
 
-import type { MatrixWalkArgs } from './matrixWalk.ts'
+import type { MatrixWalk, MatrixWalkArgs } from './matrixWalk.ts'
+import type { GetGenotypeMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // The one place that decides which matrix a rendering mode wants: one row per
@@ -18,11 +20,22 @@ export async function buildGenotypeMatrix({
   pluginManager: PluginManager
   args: MatrixWalkArgs
 }) {
-  const { rowsField, samplePloidy } = args
+  return genotypeMatrixOf(
+    await prepareMatrixWalk({ pluginManager, args }),
+    args,
+  )
+}
+
+/** {@link buildGenotypeMatrix} over the features `walk` already holds. */
+export function genotypeMatrixOf(
+  walk: MatrixWalk,
+  {
+    sources,
+    rowsField,
+    samplePloidy,
+  }: Pick<GetGenotypeMatrixArgs, 'sources' | 'rowsField' | 'samplePloidy'>,
+) {
   return rowsField === 'haplotype' && samplePloidy
-    ? getPhasedGenotypeMatrix({
-        pluginManager,
-        args: { ...args, samplePloidy },
-      })
-    : getGenotypeMatrix({ pluginManager, args })
+    ? phasedMatrixOf(walk, sources, samplePloidy)
+    : dosageMatrixOf(walk, sources)
 }

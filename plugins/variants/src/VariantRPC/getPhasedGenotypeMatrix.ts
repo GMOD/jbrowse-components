@@ -6,7 +6,8 @@ import {
 } from './genotypeMatrixEncoding.ts'
 import { prepareMatrixWalk } from './matrixWalk.ts'
 
-import type { MatrixWalkArgs } from './matrixWalk.ts'
+import type { Source } from '../shared/types.ts'
+import type { MatrixWalk, MatrixWalkArgs } from './matrixWalk.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export async function getPhasedGenotypeMatrix({
@@ -16,21 +17,34 @@ export async function getPhasedGenotypeMatrix({
   pluginManager: PluginManager
   args: MatrixWalkArgs & { samplePloidy: Record<string, number> }
 }) {
-  const { sources, samplePloidy } = args
-  // One entry per output row, through the `expandSourcesToHaplotypes` the cell
-  // computation and the model's `sources` use, so the returned `order` lines up
-  // with the caller's rows. A source already naming one haplotype contributes
-  // that row alone.
-  const rowSpecs = expandSourcesToHaplotypes({ sources, samplePloidy })
+  return phasedMatrixOf(
+    await prepareMatrixWalk({ pluginManager, args }),
+    args.sources,
+    args.samplePloidy,
+  )
+}
 
-  const {
-    filteredVariants,
+/**
+ * A row per haplotype of `sources` of whether it carries an ALT at each of
+ * `walk`'s features (`readPhasedAlleleIndicators`).
+ */
+export async function phasedMatrixOf(
+  {
+    features,
     sampleIdxByKey,
     samplesLen,
     headerRemapOf,
     breakpoint,
     report,
-  } = await prepareMatrixWalk({ pluginManager, args })
+  }: MatrixWalk,
+  sources: Source[],
+  samplePloidy: Record<string, number>,
+) {
+  // One entry per output row, through the `expandSourcesToHaplotypes` the cell
+  // computation and the model's `sources` use, so the returned `order` lines up
+  // with the caller's rows. A source already naming one haplotype contributes
+  // that row alone.
+  const rowSpecs = expandSourcesToHaplotypes({ sources, samplePloidy })
 
   // Float32 because a haplotype with nothing to say is NaN
   // (genotypeMatrixEncoding.ts)
@@ -40,7 +54,7 @@ export async function getPhasedGenotypeMatrix({
   // (2026-10-14): of the HPRC callset's 140,926 split sites, 18,506 mix
   // insertions and deletions the merged column could no longer tell apart.
   // Collapsing alleles that are one event belongs in the data build.
-  const numFeatures = filteredVariants.length
+  const numFeatures = features.length
   // Map, keyed in `rowSpecs` order — see getGenotypeMatrix.
   const rows = new Map<string, Float32Array>()
   const rowArrays = rowSpecs.map(spec => {
@@ -72,7 +86,7 @@ export async function getPhasedGenotypeMatrix({
   const scratch = new Float32Array(maxPloidy)
 
   for (let f = 0; f < numFeatures; f++) {
-    const feature = filteredVariants[f]!.feature
+    const feature = features[f]!
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
       // @gmod/vcf skips the callback for a sample whose FORMAT fields stop
       // before GT

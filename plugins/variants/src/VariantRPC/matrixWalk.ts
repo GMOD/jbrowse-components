@@ -13,7 +13,7 @@ import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { GetGenotypeMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { StatusCallback } from '@jbrowse/core/util'
+import type { Feature, StatusCallback } from '@jbrowse/core/util'
 
 export interface MatrixWalkArgs extends GetGenotypeMatrixArgs {
   signal?: AbortSignal
@@ -23,11 +23,8 @@ export interface MatrixWalkArgs extends GetGenotypeMatrixArgs {
 
 /**
  * What both genotype matrices start from: the fetch's features through the
- * filters, and the canonical sample columns their genotypes are read into.
- *
- * `sampleIdxByKey` is the union of every header in the fetch, not feature 0's
- * list: a SplitVcfTabixAdapter opens one header per refName, and `headerRemapOf`
- * lines each feature's own header up against the union.
+ * filters, and the canonical sample columns their genotypes are read into
+ * (`matrixWalkOf`).
  */
 export async function prepareMatrixWalk({
   pluginManager,
@@ -60,20 +57,41 @@ export async function prepareMatrixWalk({
     }
   }
 
-  const sampleIdxByKey = buildSampleIndex(
-    collectSampleNames(filteredVariants.map(v => v.feature)),
+  return matrixWalkOf(
+    filteredVariants.map(v => v.feature),
+    args,
   )
+}
+
+/**
+ * The genotype matrices' walk over `features`: the canonical sample columns
+ * their genotypes are read into, and its progress.
+ *
+ * `sampleIdxByKey` is the union of every header in `features`, not feature
+ * 0's list: a SplitVcfTabixAdapter opens one header per refName, and
+ * `headerRemapOf` lines each feature's own header up against the union.
+ */
+export function matrixWalkOf(
+  features: Feature[],
+  {
+    signal,
+    statusCallback,
+  }: { signal?: AbortSignal; statusCallback?: StatusCallback },
+) {
+  const sampleIdxByKey = buildSampleIndex(collectSampleNames(features))
   return {
-    filteredVariants,
+    features,
     sampleIdxByKey,
     samplesLen: sampleIdxByKey.size,
     headerRemapOf: makeHeaderRemapper(sampleIdxByKey),
-    breakpoint,
+    breakpoint: createAbortBreakpoint(signal),
     report: createProgressReporter({
       label: 'Building genotype matrix',
-      total: filteredVariants.length,
+      total: features.length,
       statusCallback,
       signal,
     }),
   }
 }
+
+export type MatrixWalk = ReturnType<typeof matrixWalkOf>

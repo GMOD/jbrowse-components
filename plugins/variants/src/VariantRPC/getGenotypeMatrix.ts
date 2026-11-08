@@ -3,8 +3,10 @@ import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
 import { prepareMatrixWalk } from './matrixWalk.ts'
 
-import type { MatrixWalkArgs } from './matrixWalk.ts'
+import type { Source } from '../shared/types.ts'
+import type { MatrixWalk, MatrixWalkArgs } from './matrixWalk.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature } from '@jbrowse/core/util'
 
 export async function getGenotypeMatrix({
   pluginManager,
@@ -13,33 +15,50 @@ export async function getGenotypeMatrix({
   pluginManager: PluginManager
   args: MatrixWalkArgs
 }) {
-  // resolved once per source, not per (source, feature)
-  const resolved = args.sources.map(s => ({
-    name: s.name,
-    key: resolveSampleName(s),
-  }))
-  const {
-    filteredVariants,
+  return dosageMatrixOf(
+    await prepareMatrixWalk({ pluginManager, args }),
+    args.sources,
+  )
+}
+
+/**
+ * The columns a record takes in the dosage matrix, one per ALT allele, and at
+ * least one even for a record with no ALT listed: the genotypes are still
+ * readable and an all-ref column is a real observation.
+ */
+export function altColumnCount(feature: Feature) {
+  const alt = feature.get('ALT') as string[] | undefined
+  return Math.max(1, alt?.length ?? 1)
+}
+
+/** A row per source of `walk`'s features' ALT dosages (`readAltDosages`). */
+export async function dosageMatrixOf(
+  {
+    features,
     sampleIdxByKey,
     samplesLen,
     headerRemapOf,
     breakpoint,
     report,
-  } = await prepareMatrixWalk({ pluginManager, args })
+  }: MatrixWalk,
+  sources: Source[],
+) {
+  // resolved once per source, not per (source, feature)
+  const resolved = sources.map(s => ({
+    name: s.name,
+    key: resolveSampleName(s),
+  }))
 
   // A site contributes one column per ALT allele (`readAltDosages`), so a
   // pre-pass sums the offsets and each row stays one pre-sized Float32Array.
   // Float32 because a no-call is NaN (genotypeMatrixEncoding.ts).
-  const numFeatures = filteredVariants.length
+  const numFeatures = features.length
   const altCounts = new Int32Array(numFeatures)
   const colOffsets = new Int32Array(numFeatures)
   let numCols = 0
   let maxAlts = 1
   for (let f = 0; f < numFeatures; f++) {
-    const alt = filteredVariants[f]!.feature.get('ALT') as string[] | undefined
-    // At least one column even for a record with no ALT listed: the genotypes
-    // are still readable and an all-ref column is a real observation.
-    const k = Math.max(1, alt?.length ?? 1)
+    const k = altColumnCount(features[f]!)
     altCounts[f] = k
     colOffsets[f] = numCols
     numCols += k
@@ -72,7 +91,7 @@ export async function getGenotypeMatrix({
   })
 
   for (let f = 0; f < numFeatures; f++) {
-    const feature = filteredVariants[f]!.feature
+    const feature = features[f]!
     const numAlts = altCounts[f]!
     const col = colOffsets[f]!
     if (hasProcessGenotypes(feature) && samplesLen > 0) {

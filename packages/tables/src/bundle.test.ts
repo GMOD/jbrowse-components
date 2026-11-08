@@ -81,6 +81,8 @@ let jbrowse: {
   features: (args: string) => Promise<string>
   wiggle: (args: string) => Promise<string>
   variants: (args: string) => Promise<string>
+  scoreMatrix: (args: string) => Promise<string>
+  genotypeMatrix: (args: string) => Promise<string>
   alignmentMarkAlpha: (args: string) => Promise<string>
   alignmentConnectorCurves: (args: string) => Promise<string>
   synteny: (args: string) => Promise<string>
@@ -618,6 +620,35 @@ test('each call answers the tables and columns a host reads by name', async () =
     shapes[name] = keysOf(read(await call(JSON.stringify(args))))
   }
   expect(shapes).toMatchSnapshot()
+})
+
+test('a matrix crosses as its rows, its columns and its values row-major, NA where the display has none', async () => {
+  const scores = read(
+    await jbrowse.scoreMatrix(
+      JSON.stringify({
+        ...COVERAGE_BIGWIG,
+        region: { refName: 'ctgA', start: 49_000, end: 52_000 },
+      }),
+    ),
+  )
+  const genotypes = read(await jbrowse.genotypeMatrix(JSON.stringify(DOG_VCF)))
+  expect(keysOf(scores)).toEqual({
+    columns: { name: 'array', region: 'array', start: 'array' },
+    missingContigs: 'array',
+    readAs: { originalRefName: 'array', refName: 'array' },
+    rows: 'array',
+    values: 'array',
+  })
+  expect(keysOf(genotypes.columns)).toEqual({
+    allele: 'array',
+    name: 'array',
+    variant: 'array',
+  })
+  for (const m of [scores, genotypes]) {
+    expect(m.values).toHaveLength(m.rows.length * m.columns.name.length)
+    expect(m.values).toContain(null)
+  }
+  expect(genotypes.rows).toHaveLength(39)
 })
 
 describe('a remote host whose reads fail', () => {

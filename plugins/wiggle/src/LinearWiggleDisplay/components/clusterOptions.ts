@@ -1,8 +1,7 @@
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
-import { resolveSymlogConstant } from '@jbrowse/wiggle-core'
 
+import { matrixScale } from '../../WiggleRPC/matrixScale.ts'
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
@@ -47,18 +46,4 @@ export function clusterScoreMatrixArgs(
     bpPerPx: span / width / density,
     scale: matrixScale(model),
   }
-}
-
-function matrixScale({ scaleType, domain, symlogConstant }: ReducedModel) {
-  return domain && scaleType !== 'linear'
-    ? {
-        scaleType: scaleTypeCode(scaleType),
-        domain,
-        symlogConstant: resolveSymlogConstant(
-          domain[0],
-          domain[1],
-          symlogConstant,
-        ),
-      }
-    : undefined
 }

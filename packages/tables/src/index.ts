@@ -30,10 +30,12 @@ import {
   registerVariantAdapters,
   variantDensityAlpha,
   variantRecordTables,
+  variantGenotypeMatrix,
   variantTables,
 } from '@jbrowse/plugin-variants/tables'
 import {
   registerWiggleAdapters,
+  wiggleScoreMatrix,
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
 import { adapterAssemblyNames } from '@jbrowse/synteny-core'
@@ -72,8 +74,14 @@ export type {
   MultiWayTables,
   SyntenyTables,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
-export type { VariantTables } from '@jbrowse/plugin-variants/tables'
-export type { WiggleTables } from '@jbrowse/plugin-wiggle/tables'
+export type {
+  VariantGenotypeMatrix,
+  VariantTables,
+} from '@jbrowse/plugin-variants/tables'
+export type {
+  WiggleScoreMatrix,
+  WiggleTables,
+} from '@jbrowse/plugin-wiggle/tables'
 export { assemblyResolver, renameRegions } from './assembly.ts'
 export type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
@@ -278,9 +286,15 @@ const REGIONS_ARGS = { assembly: true } as const
 
 const CANONICAL_NAMES_ARGS = { assembly: true, refNames: true } as const
 
-/** The longest column of each table in `result`, a table being an object of arrays. */
+/**
+ * The longest column of each table in `result`, a table being an object of
+ * arrays, or a typed array alone, as a matrix's values are.
+ */
 function tableRows(result: object, path = ''): [string, number][] {
   return Object.entries(result).flatMap(([name, value]) => {
+    if (value instanceof Float32Array) {
+      return [[`${path}${name}`, value.length]]
+    }
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return []
     }
@@ -606,6 +620,28 @@ export function createTablesEngine() {
     features: regionRead('features', FEATURES_ARGS, featureAndRecordTables),
     wiggle: regionRead('wiggle', WIGGLE_ARGS, wiggleTables),
     variants: regionRead('variants', VARIANTS_ARGS, variantTables),
+    /**
+     * The matrix the multi-row wiggle display's "Cluster rows" clusters, for
+     * the args `wiggle` takes: `rows`, its sources' names in `sources`'
+     * order; `columns`, a pixel each, the regions end to end, with its
+     * `region`, the 0-based `start` of the base at its left edge and its
+     * `name`, `refName:start + 1`; and `values`, the rows' scores end to
+     * end, NaN where no bin covers a pixel (`wiggleScoreMatrix`).
+     */
+    scoreMatrix: regionRead('scoreMatrix', WIGGLE_ARGS, wiggleScoreMatrix),
+    /**
+     * The matrix the variant display's "Cluster rows by genotype" clusters,
+     * for the args `variants` takes and over its rows and records: `rows`,
+     * its `rows.name`; `columns`, a record's ALT each (a record each under
+     * haplotype rows), its `variant` key, `allele` and `name`; and `values`,
+     * the rows' dosages end to end, NaN for a no-call
+     * (`variantGenotypeMatrix`).
+     */
+    genotypeMatrix: regionRead(
+      'genotypeMatrix',
+      VARIANTS_ARGS,
+      variantGenotypeMatrix,
+    ),
     /**
      * Each contig a file lists, from 0 to the end of the contig: the regions
      * a read of the whole file reads, under the file's own spelling. The end

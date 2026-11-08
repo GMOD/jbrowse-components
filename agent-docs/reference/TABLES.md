@@ -603,6 +603,29 @@ not order the rows by the `rows` arrangement. A categorical `encoding.color` dea
 its values into slots the browser keeps per session; the table deals afresh on every
 call, so one value can take two colors across two calls.
 
+**The clustering matrices come from the display's own builders.** `scoreMatrix`
+takes `wiggle`'s args and `genotypeMatrix` takes `variants`', so a host passes the
+same args to both.
+
+- Each returns `rows` (names), `columns` (a table, `name` among its columns) and
+  `values`, the matrix row-major as one `Float32Array`, NaN where the display has
+  no value, which crosses the wire as `NA`. A whole-file read counts `values`
+  against `rowLimit`.
+- `scoreMatrix` (`wiggleScoreMatrix`) runs `getScoreMatrix` over `regions` at
+  `bpPerPx`, the matrix the multi-row display's "Cluster rows" clusters. It has a
+  row per source of the `wiggle` read's `sources`, in their order, and a column per
+  pixel, the regions end to end. A score on a log or symlog axis sits where the
+  axis draws it, through the same `matrixScale` the dialog sends. Each column gives
+  its `region`, the 0-based `start` of the base at its left edge, and its `name`,
+  `<refName>:<start + 1>`.
+- `genotypeMatrix` (`variantGenotypeMatrix`) builds the matrix "Cluster rows by
+  genotype" clusters (`genotypeMatrixOf`), over the `variants` read's own rows and
+  records: its `rows.name`, and its records in `variants.key` order. With a row per
+  sample, a record takes a column per ALT, named `<key + 1>.<allele>` where it has
+  several and `<key + 1>` where it has one. With a row per haplotype, a record takes
+  one column, `allele` 0. A no-call, an unphased call's haplotype and a sample the
+  record's file does not list are NaN.
+
 **The comparative tables place a block differently on each view.**
 
 - An axis read through its `assembly` with one region is a window into its contig
