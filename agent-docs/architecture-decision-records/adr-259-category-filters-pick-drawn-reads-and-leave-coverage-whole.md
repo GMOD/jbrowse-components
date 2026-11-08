@@ -83,6 +83,12 @@ where the regions are renamed (`adapterSpelledFilter`).
   reads into chains by name, which the filter paid before too (`groupBy` over
   the same fetch cost 40 ms; the per-section key array and answer sets that
   replaced it cost a third of that).
+- A read-field entry costs its facet key per read, then one compare per
+  distinct key. Same bench and window (2026-11-08, ada, load ~3, min of five
+  alternating runs of 11): `pairOrientation` not LR (draws none) 69.4 ms and
+  `mateRefName` (draws every read, its key allocating per read) 72.7 ms,
+  against 68.9 unfiltered; the existing arms matched the parent commit's
+  within its run-to-run spread.
 - `sampleEvents` holds the sample's three instance arrays beside the drawn
   ones while a filter leaves reads out: little extra under `svSignal`, where
   few reads draw, and close to double under a filter that hides few.
