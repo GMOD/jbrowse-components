@@ -4,6 +4,7 @@ import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { isBakedField } from '../shared/alignmentsColor.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
+import { bakedValueOrder } from './colorTagUtils.ts'
 
 import type {
   LaidOutPileupData,
@@ -33,65 +34,33 @@ type ColorResolver = (val: string, strand: number) => number
 // recolor that didn't happen.
 const NO_FILL_COLORS = new Uint32Array(0)
 
-// Build the per-read color resolver once for a given field. The kind
-// dispatch and the value→pack cache happen here, so both leave the per-read hot
-// loop and the cache is reused across every region rather than rebuilt per
-// region.
-function makeColorResolver(
+// The strand tags are tags like any other but encode a strand rather than a
+// categorical value, so they take the fixed strand colors instead of a
+// per-value one. A value that is neither strand packs 0, the neutral fallback.
+function strandResolver(
   colorField: string | undefined,
   scale: BakedColorScale,
-): ColorResolver {
-  // The strand tags first, and they have to be: they are tags like any
-  // other, but encode a strand rather than a categorical value, so they take
-  // the fixed strand colors instead of a per-value one. A value that is neither
-  // strand packs 0, the same neutral fallback as an absent tag below.
+): ColorResolver | undefined {
   const tag = scale.declared ? undefined : fieldTag(colorField)
-  if (tag === 'XS' || tag === 'TS') {
-    return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : 0)
-  }
-  if (tag === 'ts') {
-    return (val, strand) =>
-      val === '-'
-        ? strand === -1
-          ? fwdStrand
-          : revStrand
-        : val === '+'
-          ? strand === -1
-            ? revStrand
-            : fwdStrand
-          : 0
-  }
-  // A read the field resolved no value for — no mate, or the tag absent, both
-  // arriving as the empty string — and a value the scale has no bin for pack 0.
-  // That is "no color", the shader's palette fallback, and it is also what
-  // `readColorCategory` reads to file the read under `noTagValue`. Values repeat
-  // across reads and regions, so the pack is cached per distinct value.
-  const cache = new Map<string, number>()
-  return value => {
-    if (value === '') {
-      return 0
-    }
-    let color = cache.get(value)
-    if (color === undefined) {
-      const css = scale.color(value)
-      color = css === undefined ? 0 : packRgb(cssColorToRgb(css))
-      cache.set(value, color)
-    }
-    return color
-  }
+  return tag === 'XS' || tag === 'TS'
+    ? val => (val === '-' ? revStrand : val === '+' ? fwdStrand : 0)
+    : tag === 'ts'
+      ? (val, strand) =>
+          val === '-'
+            ? strand === -1
+              ? fwdStrand
+              : revStrand
+            : val === '+'
+              ? strand === -1
+                ? revStrand
+                : fwdStrand
+              : 0
+      : undefined
 }
 
-function applyResolver(
-  data: WorkerPileupData,
-  resolve: ColorResolver,
-): Uint32Array {
+function applyResolver(data: WorkerPileupData, resolve: ColorResolver) {
   const tagValues = data.readTagValues
   const strands = data.readStrands
-  // No values to bake from — a region fetched under a field that extracts none,
-  // which the mid-switch window leaves laid out while the new field is already
-  // applied. Shares NO_FILL_COLORS rather than minting an empty array, for the
-  // reason that constant exists: a fresh one reports a recolor by identity and
-  // rewrites the read pass.
   if (tagValues === undefined) {
     return NO_FILL_COLORS
   }
@@ -101,6 +70,63 @@ function applyResolver(
     out[i] = resolve(tagValues[i]!, strands[i]!)
   }
   return out
+}
+
+// No packed color has a zero alpha byte except "no color" itself.
+const PENDING = 1
+
+// A read the field resolved no value for (no mate, or the tag absent, both
+// arriving as the empty string) and a value the scale has no bin for pack 0:
+// "no color", the shader's palette fallback, which `readColorCategory` also
+// reads to file the read under `noTagValue`. The pack is cached per distinct
+// value across every region. The values the deal has yet to place are dealt
+// together after the walk, in `bakedValueOrder`, so which read comes first does
+// not pick a collided pair's colors and the key, dealing in that order too,
+// agrees (ADR-205); a settled value packs at its first read.
+function valueBaker(scale: BakedColorScale) {
+  const cache = new Map<string, number>()
+  const pack = (value: string) => {
+    const css = scale.color(value)
+    return css === undefined ? 0 : packRgb(cssColorToRgb(css))
+  }
+  const settled = scale.kind === 'categorical' ? scale.settled : () => true
+  return (data: WorkerPileupData) => {
+    const tagValues = data.readTagValues
+    if (tagValues === undefined) {
+      return NO_FILL_COLORS
+    }
+    const n = tagValues.length
+    const out = new Uint32Array(n)
+    const unseen = new Set<string>()
+    for (let i = 0; i < n; i++) {
+      const value = tagValues[i]!
+      if (value !== '') {
+        let color = cache.get(value)
+        if (color === undefined) {
+          if (settled(value)) {
+            color = pack(value)
+          } else {
+            unseen.add(value)
+            color = PENDING
+          }
+          cache.set(value, color)
+        }
+        out[i] = color
+      }
+    }
+    if (unseen.size > 0) {
+      const values = [...unseen]
+      for (const value of values.sort(bakedValueOrder(values))) {
+        cache.set(value, pack(value))
+      }
+      for (let i = 0; i < n; i++) {
+        if (out[i] === PENDING) {
+          out[i] = cache.get(tagValues[i]!)!
+        }
+      }
+    }
+    return out
+  }
 }
 
 // Bake one ABGR u32 per read from the worker-reported per-read strings
@@ -141,8 +167,10 @@ function bakerFor(colorField: string | undefined, scale: BakedColorScale) {
     const table = mapqColorTable(scale)
     return (data: WorkerPileupData) => applyMapqTable(data, table)
   }
-  const resolve = makeColorResolver(colorField, scale)
-  return (data: WorkerPileupData) => applyResolver(data, resolve)
+  const strand = strandResolver(colorField, scale)
+  return strand
+    ? (data: WorkerPileupData) => applyResolver(data, strand)
+    : valueBaker(scale)
 }
 
 // Overlay freshly-baked `readFillColors` onto each laid-out region. Baking here

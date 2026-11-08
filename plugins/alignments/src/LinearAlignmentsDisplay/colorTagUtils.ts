@@ -1,6 +1,8 @@
-import { hashString, refNameColor } from '@jbrowse/core/ui/colors'
+import { categoricalColorScale, refNameColor } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
 import { relight } from '@jbrowse/core/util/color'
+
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 
 /**
  * Where a refName sits in its assembly's own chromosome order, for chromosome
@@ -11,86 +13,60 @@ import { relight } from '@jbrowse/core/util/color'
  */
 export type RefNamePosition = (refName: string) => number | undefined
 
-// Each lap around the palette re-lights the same ten hues, giving a hashed value
-// 30 positions to land in. Laps only darken: tol_light has no room to go lighter
-// against the track background.
+// Laps only darken: tol_light has no room to go lighter against the track
+// background.
 const TAG_PALETTE_LAP_TONES = [
   undefined,
   { lightnessShift: -0.18, chromaScale: 1.35 },
   { lightnessShift: -0.36, chromaScale: 1.7 },
 ]
 
-const TAG_PALETTE_POSITIONS =
-  tagColorPalette.length * TAG_PALETTE_LAP_TONES.length
-
-function tagPaletteColorAt(position: number) {
-  const hex = tagColorPalette[position % tagColorPalette.length]!
-  const lap =
-    TAG_PALETTE_LAP_TONES[
-      Math.floor(position / tagColorPalette.length) %
-        TAG_PALETTE_LAP_TONES.length
-    ]
-  return lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex
-}
-
-// Palette slot for a tag value, derived from the VALUE rather than from the
-// order it was discovered in. Values stream in as regions load, so
-// discovery-order slots meant a track's colors depended on which read happened
-// to arrive first: HP:1 could paint blue in one session and pink in the next,
-// and a figure wasn't reproducible from its session file.
-//
-// A non-negative integer indexes the palette anchored at 1, so HP:1 takes the
-// leading blue and HP:2 the pink — every tool that writes the tag (whatshap,
-// HiPhase, Clair3, longshot, PEPPER-margin) numbers haplotypes from 1, and
-// indexing straight through instead left the first haplotype pink and the second
-// green. HP:0 means unphased where it appears at all, and lands at the far end of
-// the palette rather than sharing the leading color with a real haplotype.
-// Adjacent haplotypes stay adjacent and distinct, and discovering a new value
-// never shifts an existing one. The integer branch stays on the ten base slots,
-// where adjacency is the point; anything else hashes into the lap-extended
-// positions, stable for the same reason at the cost of occasional collisions.
-function tagValueColor(value: string) {
-  const n = tagColorPalette.length
-  const num = Number(value)
-  return Number.isInteger(num) && num >= 0
-    ? tagColorPalette[(num + n - 1) % n]!
-    : tagPaletteColorAt(hashString(value) % TAG_PALETTE_POSITIONS)
-}
+/**
+ * The 30 colors a tag value is dealt from: the pale tag palette, so a read stays
+ * lighter than the mismatches drawn over it, then two darker laps of its ten
+ * hues. A non-negative integer takes the slot it names anchored at 1, so HP:1 is
+ * the leading blue and HP:0, unphased where it appears, the far end.
+ */
+export const TAG_PALETTE = TAG_PALETTE_LAP_TONES.flatMap(lap =>
+  tagColorPalette.map(hex =>
+    lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex,
+  ),
+)
 
 /**
- * The color one CPU-baked value paints, for whichever field is active. The
- * paint path (`buildReadFillColors`) and the legend's swatch list both resolve
- * through this, so a swatch is the color drawn by construction.
+ * The color a value of a field with no declared colors paints, read by the bake
+ * and the key alike so a swatch is the color drawn.
  *
- * A pure function of the value, which is what lets the display hold no
- * discovered-value map at all. There used to be one — `colorTagMap`, a volatile
- * the fetch added to — and every rule around it existed to manage the cache
- * rather than to decide a color: clear it when the field changes, do NOT clear
- * it when the field is merely re-picked, assign only when a value was actually
- * added or every already-loaded region rebakes, and narrow it at the legend
- * because it never shrank on navigation. All four are gone with the map. The
- * colors are unchanged: this is the same pair of functions the map's entries
- * were filled from.
+ * A tag or attribute value is dealt a slot of `TAG_PALETTE` on first sight into
+ * `held` (ADR-205), so values on screen together take colors that read apart
+ * while the palette has room, and a value nothing collides with keeps the slot
+ * its own hash names.
  *
- * Chromosome painting goes through `refNameColor` — the same rule and the same
- * palette the synteny and dotplot views paint a query contig with, so one contig
- * takes one color wherever it is drawn. A tag value takes a palette slot. Both
- * are stable across sessions, so a figure is reproducible from its session file.
- *
- * `refNamePosition` is what makes the chromosome case hand the palette out
- * rather than hash into it. It used to hash unconditionally (`getQueryColor`),
- * which on hg38 painted chr1, chr12, chr21 and chrY one color and left every
- * other human chromosome sharing with at least one more — so from a chr1 view a
- * translocation to chr12 was invisible against the reads around it. Synteny had
- * already been moved off the hash for the same collision on rice; the comment
- * here claiming the two matched was written before that.
+ * A mate reference takes `refNameColor`, the palette handed out by assembly
+ * position, which is how the synteny and dotplot views paint a query contig, so
+ * one contig takes one color wherever it is drawn. Hashing the name instead
+ * painted chr1, chr12, chr21 and chrY one color on hg38, hiding a translocation
+ * to chr12 from a chr1 view.
  */
-export function bakedValueColor(
+export function undeclaredValueColor(
   colorField: string | undefined,
-  value: string,
   refNamePosition?: RefNamePosition,
-) {
+  held?: HeldSlots,
+): (value: string) => string {
   return colorField === 'mateRefName'
-    ? refNameColor(value, refNamePosition?.(value))
-    : tagValueColor(value)
+    ? value => refNameColor(value, refNamePosition?.(value))
+    : categoricalColorScale(undefined, TAG_PALETTE, held)
+}
+
+const INTEGER_VALUE = /^-?\d+$/
+
+/**
+ * The order a set of baked values is listed and dealt in: "1, 2, 10" and not
+ * "1, 10, 2", as HP, NM and cluster ids are numbers written as text, but only
+ * when every value is an integer, so a mixed vocabulary keeps one order.
+ */
+export function bakedValueOrder(values: readonly string[]) {
+  return values.every(value => INTEGER_VALUE.test(value))
+    ? (a: string, b: string) => Number(a) - Number(b)
+    : (a: string, b: string) => a.localeCompare(b)
 }

@@ -1,4 +1,4 @@
-import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
+import { hashString, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
@@ -6,10 +6,11 @@ import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.t
 import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import { colorSettingOf } from '../shared/colorSettingFixture.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
-import { bakedValueColor } from './colorTagUtils.ts'
+import { TAG_PALETTE, undeclaredValueColor } from './colorTagUtils.ts'
 import { buildReadFillColors, overlayReadFillColors } from './readFillColors.ts'
 
 import type { RefNamePosition } from './colorTagUtils.ts'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { ColorScaleSlots } from '@jbrowse/core/util/colorScale'
 
 const TAG = 'tags.HP'
@@ -34,12 +35,14 @@ function scaleFor(
   field: string | undefined,
   declared: ColorScaleSlots = {},
   position?: RefNamePosition,
+  held: HeldSlots = new Map(),
 ) {
   return bakedColorScale(
     field,
     encodingFor(field, declared),
     position,
     undefined,
+    held,
   )
 }
 
@@ -61,13 +64,13 @@ describe('mateRefName (chromosome painting) colors', () => {
 
   test('bakes each mate refName the color its own value resolves', () => {
     expect([...build(['chr1', 'chr2'])]).toEqual([
-      packed(bakedValueColor('mateRefName', 'chr1')),
-      packed(bakedValueColor('mateRefName', 'chr2')),
+      packed(undeclaredValueColor('mateRefName')('chr1')),
+      packed(undeclaredValueColor('mateRefName')('chr2')),
     ])
   })
 
   // The bake is the only caller that can supply the assembly order, so it is
-  // the one that has to pass it through — bakedValueColor's own test covers
+  // the one that has to pass it through — colorTagUtils' own test covers
   // what the order then does to the color. A pileup on hg38 without it puts
   // chr1 and chr12 on one color.
   test('an assembly position reaches the resolver', () => {
@@ -89,7 +92,7 @@ describe('mateRefName (chromosome painting) colors', () => {
 
   test('a feature with no mate falls back to the palette rather than coloring an empty name', () => {
     expect([...build([''])]).toEqual([0])
-    expect(packed(bakedValueColor('mateRefName', ''))).not.toBe(0)
+    expect(packed(undeclaredValueColor('mateRefName')(''))).not.toBe(0)
   })
 
   test('every read is colored', () => {
@@ -101,21 +104,40 @@ describe('categorical tag colors', () => {
   const build = (values: string[]) =>
     buildReadFillColors(pileupWith(values), TAG, scaleFor(TAG))
 
-  // The color comes from the value itself (`bakedValueColor`), so a read paints
-  // the moment its value is known rather than once some earlier fetch had
-  // discovered it into a table.
-  test('paints each value the color its own value resolves', () => {
+  test('paints each value the slot it names while nothing collides', () => {
     expect([...build(['1', '2'])]).toEqual([
-      packed(bakedValueColor(TAG, '1')),
-      packed(bakedValueColor(TAG, '2')),
+      packed(TAG_PALETTE[0]!),
+      packed(TAG_PALETTE[1]!),
     ])
   })
 
-  // Nothing has to have seen the value before. Under the discovered-value map
-  // this packed 0 and the read painted the neutral fallback until the fetch
-  // that found it had assigned a color.
   test('a value no earlier fetch saw still paints', () => {
-    expect([...build(['3'])]).toEqual([packed(bakedValueColor(TAG, '3'))])
+    expect([...build(['3'])]).toEqual([packed(TAG_PALETTE[2]!)])
+  })
+
+  // RG1 and HG005 hash to one slot. The region's new values are dealt in value
+  // order, so HG005 keeps the hashed slot whichever read comes first.
+  test('a collided pair is dealt in value order, not read order', () => {
+    const hashed = TAG_PALETTE[hashString('HG005') % TAG_PALETTE.length]!
+    expect(TAG_PALETTE[hashString('RG1') % TAG_PALETTE.length]).toBe(hashed)
+    const [rg1, hg005, again] = build(['RG1', 'HG005', 'RG1'])
+    expect(hg005).toBe(packed(hashed))
+    expect(rg1).not.toBe(hg005)
+    expect(again).toBe(rg1)
+  })
+
+  test('two bakes over one held map agree', () => {
+    const held: HeldSlots = new Map()
+    const bake = (values: string[]) =>
+      buildReadFillColors(
+        pileupWith(values),
+        TAG,
+        scaleFor(TAG, {}, undefined, held),
+      )
+    const [hg005] = bake(['HG005'])
+    const [rg1, hg005Again] = bake(['RG1', 'HG005'])
+    expect(hg005Again).toBe(hg005)
+    expect(rg1).not.toBe(hg005)
   })
 
   // "No color", so the shader and the Canvas2D twin both fall back to

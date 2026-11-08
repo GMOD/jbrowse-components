@@ -1,5 +1,4 @@
 import { categoricalColorScale } from '@jbrowse/core/ui/colors'
-import { tagColorPalette } from '@jbrowse/core/ui/palette'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   buildColorRampLut,
@@ -17,7 +16,7 @@ import {
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { colorFieldKindOf } from '../shared/colorFieldDefs.ts'
-import { bakedValueColor } from './colorTagUtils.ts'
+import { TAG_PALETTE, undeclaredValueColor } from './colorTagUtils.ts'
 import {
   mapqExtentAcrossGroups,
   mapqQuantileExtentAcrossGroups,
@@ -27,6 +26,7 @@ import type { AlignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
 import type { LaidOutByGroup } from './groupLayout.ts'
 import type { RampStop } from '@jbrowse/core/ui'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type {
   ContinuousRef,
   ThresholdRef,
@@ -36,12 +36,14 @@ export type NumericExtent = readonly [number, number]
 
 interface CategoricalBakedScale {
   kind: 'categorical'
-  /** false while a value's color is its own function and the config says nothing */
+  /** false while the config names no domain, range or unknown */
   declared: boolean
   domain: readonly string[]
   /** `scale.unknown`, the color of every value `domain` leaves out */
   unknown?: string
   color: (value: string) => string | undefined
+  /** false only for a value the deal has yet to place, whose color then depends on what is dealt before it */
+  settled: (value: string) => boolean
 }
 
 interface ThresholdBakedScale {
@@ -146,9 +148,10 @@ function withoutNoValue(
 
 /**
  * The scale the tag, attribute, MAPQ and mate-reference fields bake through,
- * read off the resolved `encoding.color`. With nothing declared a value's color is a
- * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
- * the listed values their colors in order, over the same tag palette. `''`
+ * read off the resolved `encoding.color`. With nothing declared a value is dealt
+ * its color into `held` (`undeclaredValueColor`); a `domain` or `range` hands
+ * the listed values their colors in order, over the same tag palette, and deals
+ * the rest into `held`. `''`
  * in `domain` names a read with no value, which the category table colors
  * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
  * A set `scale.unknown` paints every value `domain` leaves out, as d3's
@@ -162,6 +165,7 @@ export function bakedColorScale(
   encoding: AlignmentsColorEncoding,
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
+  held?: HeldSlots,
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
   const numeric =
@@ -187,17 +191,21 @@ export function bakedColorScale(
   const unknown =
     written === undefined ? undefined : written || NO_CATEGORY_COLOR
   if (domain.length > 0 || range?.length || unknown !== undefined) {
-    const color = categoricalColorScale(domain, range ?? tagColorPalette)
+    const color = categoricalColorScale(domain, range ?? TAG_PALETTE, held)
     const listed = new Set(domain)
     return {
       kind: 'categorical',
       declared: true,
       domain,
       ...(unknown === undefined
-        ? { color }
+        ? {
+            color,
+            settled: value => listed.has(value) || isHeld(held, value),
+          }
         : {
             unknown,
             color: value => (listed.has(value) ? color(value) : unknown),
+            settled: () => true,
           }),
     }
   }
@@ -205,8 +213,13 @@ export function bakedColorScale(
     kind: 'categorical',
     declared: false,
     domain,
-    color: value => bakedValueColor(colorField, value, refNamePosition),
+    color: undeclaredValueColor(colorField, refNamePosition, held),
+    settled: value => colorField === 'mateRefName' || isHeld(held, value),
   }
+}
+
+function isHeld(held: HeldSlots | undefined, value: string) {
+  return held === undefined || held.has(value)
 }
 
 /**

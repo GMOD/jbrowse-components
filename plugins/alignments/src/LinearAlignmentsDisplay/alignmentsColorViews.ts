@@ -1,3 +1,5 @@
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
+
 import {
   isBakedField,
   declaredReadLabels,
@@ -184,8 +186,9 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
     /**
      * #getter
      * The scale a tag, attribute or mate reference bakes through, read by
-     * the per-read bake and the key alike. Undefined for the fields the
-     * category table paints.
+     * the per-read bake and the key alike, dealing values into the session's
+     * slots for the field (ADR-205). Undefined for the fields the category
+     * table paints.
      */
     get bakedColorScale() {
       return isBakedField(self.colorField)
@@ -194,6 +197,7 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
             self.colorEncoding,
             self.paintedRefNamePosition,
             this.bakedColorExtent,
+            heldColorSlots(self, self.colorEncoding),
           )
         : undefined
     },

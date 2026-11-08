@@ -16,7 +16,10 @@ import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
-import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
+import {
+  bakedValueOrder,
+  undeclaredValueColor,
+} from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -894,17 +897,13 @@ function modificationLegend(
 
 // One swatch per value of a CPU-baked field (tag values, or mate refNames
 // under chromosome painting) that the rendered reads actually carry, colored
-// through the same `bakedValueColor` the paint path resolves each read with —
-// so a swatch is the color drawn by construction, rather than by a table both
-// sides agree to read. Sorted by value, so the order is a property of the
-// vocabulary rather than of which region streamed in first.
+// through the same scale the paint path resolves each read with, so a swatch is
+// the color drawn by construction. Sorted by value, so the order is a property
+// of the vocabulary rather than of which region streamed in first, and a value
+// met here first is dealt in the order the bake deals.
 //
-// The values are `presentTagValues` and nothing else. There used to be a second
-// source — `colorTagMap`, the display's discovered-value map — which this
-// intersected with, because that map only ever grew: pan to chr1 under
-// chromosome painting and the key still named chr7 and every scaffold visited
-// on the way. With the color a pure function of the value, the map has no
-// reason to exist and what is ON SCREEN is the whole answer.
+// The values are `presentTagValues` and nothing else: what is ON SCREEN is the
+// whole answer, so panning away from chr7 under chromosome painting drops it.
 //
 // The empty string is what the worker reports for a read the field resolved no
 // value for (no mate, or the tag absent). Dropped, because it paints the
@@ -931,6 +930,7 @@ function bakedValueLegend(
   }
   const unknown = scale?.unknown
   const listed = new Set(scale?.domain)
+  const colorOf = scale?.color ?? undeclaredValueColor(field, refNamePosition)
   const values = [...(present ?? [])].filter(
     value => value !== '' && (unknown === undefined || listed.has(value)),
   )
@@ -944,8 +944,7 @@ function bakedValueLegend(
     [...(present ?? [])].some(value => value !== '' && !listed.has(value))
   return [
     ...sorted.map(value => ({
-      color:
-        scale?.color(value) ?? bakedValueColor(field, value, refNamePosition),
+      color: colorOf(value),
       label: names.get(value) ?? value,
     })),
     ...(others ? [{ color: unknown, label: OTHER_VALUES_LABEL }] : []),
@@ -1007,17 +1006,6 @@ export function colorRampScales({
   ]
 }
 
-const INTEGER_VALUE = /^-?\d+$/
-
-// "1, 2, 10" and not "1, 10, 2": HP, NM and cluster ids are numbers written as
-// text. Only when every value is an integer, so a mixed vocabulary keeps one
-// order rather than two.
-function valueCompare(values: string[]) {
-  return values.every(value => INTEGER_VALUE.test(value))
-    ? (a: string, b: string) => Number(a) - Number(b)
-    : (a: string, b: string) => a.localeCompare(b)
-}
-
 // Chromosome painting lists in the assembly's own chromosome order — the order
 // the reads are colored in (`refNameColor` hands the palette out by position),
 // so the swatch column reads down the karyotype. A name the assembly cannot
@@ -1028,7 +1016,7 @@ function sortedBakedValues(
   field: string,
   refNamePosition: RefNamePosition | undefined,
 ) {
-  const compare = valueCompare(values)
+  const compare = bakedValueOrder(values)
   const position = field === 'mateRefName' ? refNamePosition : undefined
   return position === undefined
     ? [...values].sort(compare)

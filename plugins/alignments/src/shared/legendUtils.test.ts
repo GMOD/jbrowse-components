@@ -2,7 +2,7 @@ import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
-import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
+import { undeclaredValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
   buildReadColorCategories,
@@ -324,9 +324,8 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['First-of-pair reverse', 'First-of-pair forward'])
   })
 
-  // The swatch resolves through the same `bakedValueColor` the paint path runs
-  // per read, so it is the color drawn rather than a second table agreeing with
-  // it. There used to be that second table (`colorTagMap`).
+  // The swatch resolves through the same scale the paint path runs per read, so
+  // it is the color drawn rather than a second table agreeing with it.
   test('a declared scale keys its own order, ramp and bins in the painted colors', () => {
     const HP = 'tags.HP'
     const ordered = bakedColorScale(
@@ -426,8 +425,8 @@ describe('getReadDisplayLegendItems', () => {
       presentTagValues: new Set(['1', '2']),
     })
     expect(items).toEqual([
-      { color: bakedValueColor('tags.HP', '1'), label: '1' },
-      { color: bakedValueColor('tags.HP', '2'), label: '2' },
+      { color: undeclaredValueColor('tags.HP')('1'), label: '1' },
+      { color: undeclaredValueColor('tags.HP')('2'), label: '2' },
     ])
   })
 
@@ -550,11 +549,11 @@ describe('getReadDisplayLegendItems', () => {
       }),
     ).toEqual([
       {
-        color: bakedValueColor('mateRefName', 'ctgA'),
+        color: undeclaredValueColor('mateRefName')('ctgA'),
         label: 'ctgA',
       },
       {
-        color: bakedValueColor('mateRefName', 'ctgB'),
+        color: undeclaredValueColor('mateRefName')('ctgB'),
         label: 'ctgB',
       },
     ])

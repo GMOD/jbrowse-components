@@ -1,66 +1,42 @@
-// Did deleting `colorTagMap` move work onto the main thread?
+// Does dealing a region's new tag values after the walk cost the bake?
 //
-//   node --expose-gc plugins/alignments/benches/fillColorBake.bench.ts
+//   node --expose-gc --experimental-strip-types plugins/alignments/benches/tagColorBake.bench.ts
 //
 // Flags: --rounds=<n> (default 40), --reads=<n> (default 200000)
 //
-// The harness rules — interleave, min-of-rounds, run a control, check identity
-// before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
+// The harness rules (interleave, min-of-rounds, run a control, check identity
+// before believing timing) are in `agent-docs/reference/BENCHMARKING.md`.
 //
 // THE QUESTION. `buildReadFillColors` bakes one packed ABGR per read on the main
 // thread, per region, whenever the layout re-runs under a CPU-baked color
-// field (tag values, or mate refNames under chromosome painting). It used to
-// resolve each read through a model-held `colorTagMap` of every value the track
-// had ever seen; it now computes the color from the value itself and memoizes
-// per bake. That deletes state, but it also moves a `hashString` +
-// `cssColorToRgb` + `packAbgr` off a once-per-session path and onto a
-// once-per-distinct-value-per-bake one — so the question is whether the bake
-// got slower, and by how much at real depth.
+// field. Tag values are dealt colors (ADR-205), so a collided pair's colors
+// depend on the order values are dealt in. The bake deals a region's unseen
+// values together after its walk, in value order, so read order cannot decide
+// them: each unseen read is marked and filled in a second pass. The question is
+// what that second pass costs against resolving each value at its first read.
 //
-// ARMS. Each is a full bake — resolver construction AND the per-read loop —
-// because that is the unit the layout actually pays for. Written out longhand,
-// one function literal per arm, because a shared driver goes polymorphic and
-// puts the control off 1.00 (see the catalogue in BENCHMARKING.md).
+// ARMS. Each is a full bake, written longhand, one function literal per arm,
+// because a shared driver goes polymorphic and puts the control off 1.00.
 //
-//   pure     what ships: `bakedValueColor` behind a per-bake Map cache
-//   map      what it replaced: prebuild `packedByValue` from the whole
-//            colorTagMap, then `get(val) ?? 0` per read
-//   control  a second, separately-declared copy of `pure`
+//   deferred   what ships: a value the deal has yet to place is marked and
+//              dealt in value order after the walk; a settled one packs at once
+//   immediate  resolve a value at its first read, in read order
+//   control    a second, separately-declared copy of `deferred`
 //
-// FIXTURES vary the two axes that decide the answer: how many DISTINCT values
-// the reads carry (the miss path runs once each) and how big the accumulated
-// map had grown (the `map` arm parses every entry of it, every bake). The third
-// fixture is the one the old shape was worst at and the reason the map existed
-// at all — a track panned around for a while, whose map holds hundreds of
-// contigs while twenty-odd are on screen.
+// Every arm reads one `held` map dealt before timing, so the outputs agree and
+// the timing is the steady state a pan or relayout pays; the deal itself runs
+// once per value per session.
 //
-// ---------------------------------------------------------------------------
-// WHAT IT SAYS at 200k reads, two runs (--rounds=40 and 60), control bracketed:
-//
-//   HP, 3 values, map 3          pure 1.20/1.27 ms   map 1.92x/1.87x  [0.97/1.07]
-//   mateRefName, 24, map 24      pure 1.80/2.03 ms   map 1.43x/1.24x  [1.01/1.00]
-//   mateRefName, 24, map 500     pure 1.91/2.26 ms   map 1.79x/1.66x  [1.01/1.01]
-//
-// The bake did NOT get slower for computing colors per value: it got faster in
-// every fixture, and more so the longer the track had been panned, because the
-// arm it replaced re-parsed the whole accumulated map on every bake while this
-// one only ever touches values that are on screen. The `=== ''` fast path is
-// the rest of it — a read the field resolved no value for skips the map lookup
-// entirely, which is why the HP fixture (one read in three untagged) separates
-// most.
-//
-// The absolute numbers are the real headline though: 1-4 ms per 200,000 reads,
-// on a path that runs per region per layout. This was never a hot spot in
-// either shape, and the reason to have made the change is the four cache-
-// management rules it deleted, not the milliseconds.
-//
-// NOT measured here, because it is not a loop: the change also deleted a
-// rebake CASCADE. Assigning `colorTagMap` invalidated `readColorContext`, so
-// every fetch that turned up a new value re-baked every region already loaded.
-// That is gone — the bake is now a function of each region's own data.
+// WHAT IT SAYS on ada at 200k reads, 60 rounds. Deferring every unseen read
+// (the first cut, with no settled check) cost 1.6-2.0x: HP 1.06 vs 0.59 ms,
+// RG 1.84 vs 1.17, mateRefName 1.90 vs 0.97, control 0.99-1.01. That is why a
+// value already held packs at its first read.
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { bakedValueColor } from '../src/LinearAlignmentsDisplay/colorTagUtils.ts'
+import {
+  bakedValueOrder,
+  undeclaredValueColor,
+} from '../src/LinearAlignmentsDisplay/colorTagUtils.ts'
 
 const arg = (name: string, dflt: string) =>
   process.argv
@@ -69,68 +45,100 @@ const arg = (name: string, dflt: string) =>
 
 const ROUNDS = Number(arg('rounds', '40'))
 const READS = Number(arg('reads', '200000'))
+const PENDING = 1
+
+type Color = (value: string) => string
+type Settled = (value: string) => boolean
 
 function packRgb(color: string) {
   const [r, g, b] = cssColorToRgb(color)
   return packAbgr(r, g, b, 255)
 }
 
-// ARM 1: pure — what ships. The `=== ''` test and the miss branch are the two
-// things this arm pays per read that the map arm does not.
-function bakePure(values: string[], colorBy: string) {
+function bakeDeferred(values: string[], color: Color, settled: Settled) {
   const cache = new Map<string, number>()
-  const out = new Uint32Array(values.length)
-  for (let i = 0; i < values.length; i++) {
+  const n = values.length
+  const out = new Uint32Array(n)
+  const unseen = new Set<string>()
+  for (let i = 0; i < n; i++) {
     const value = values[i]!
-    if (value === '') {
-      out[i] = 0
-      continue
+    if (value !== '') {
+      let c = cache.get(value)
+      if (c === undefined) {
+        if (settled(value)) {
+          c = packRgb(color(value))
+        } else {
+          unseen.add(value)
+          c = PENDING
+        }
+        cache.set(value, c)
+      }
+      out[i] = c
     }
-    let color = cache.get(value)
-    if (color === undefined) {
-      color = packRgb(bakedValueColor(colorBy, value))
-      cache.set(value, color)
+  }
+  if (unseen.size > 0) {
+    const sorted = [...unseen]
+    for (const value of sorted.sort(bakedValueOrder(sorted))) {
+      cache.set(value, packRgb(color(value)))
     }
-    out[i] = color
+    for (let i = 0; i < n; i++) {
+      if (out[i] === PENDING) {
+        out[i] = cache.get(values[i]!)!
+      }
+    }
   }
   return out
 }
 
-// ARM 2: map — what it replaced. The setup walks the WHOLE accumulated map,
-// including values no read on screen carries, because it cannot know which.
-function bakeMap(
-  values: string[],
-  colorTagMap: Record<string, string>,
-): Uint32Array {
-  const packedByValue = new Map<string, number>()
-  for (const [k, v] of Object.entries(colorTagMap)) {
-    packedByValue.set(k, packRgb(v))
-  }
-  const out = new Uint32Array(values.length)
-  for (let i = 0; i < values.length; i++) {
-    out[i] = packedByValue.get(values[i]!) ?? 0
+function bakeImmediate(values: string[], color: Color) {
+  const cache = new Map<string, number>()
+  const n = values.length
+  const out = new Uint32Array(n)
+  for (let i = 0; i < n; i++) {
+    const value = values[i]!
+    if (value !== '') {
+      let c = cache.get(value)
+      if (c === undefined) {
+        c = packRgb(color(value))
+        cache.set(value, c)
+      }
+      out[i] = c
+    }
   }
   return out
 }
 
-// ARM 3: control — a separately-declared copy of `bakePure`. Whatever this
-// scores against arm 1 is what the harness could resolve; a row whose control
-// is far from 1.00 measured nothing. The duplication is deliberate.
-function bakeControl(values: string[], colorBy: string) {
+function bakeControl(values: string[], color: Color, settled: Settled) {
   const cache = new Map<string, number>()
-  const out = new Uint32Array(values.length)
-  for (let i = 0; i < values.length; i++) {
+  const n = values.length
+  const out = new Uint32Array(n)
+  const unseen = new Set<string>()
+  for (let i = 0; i < n; i++) {
     const value = values[i]!
-    if (value === '') {
-      out[i] = 0
-      continue
+    if (value !== '') {
+      let c = cache.get(value)
+      if (c === undefined) {
+        if (settled(value)) {
+          c = packRgb(color(value))
+        } else {
+          unseen.add(value)
+          c = PENDING
+        }
+        cache.set(value, c)
+      }
+      out[i] = c
     }
-    let color = cache.get(value)
-    if (color === undefined) {
-      color = packRgb(bakedValueColor(colorBy, value))
-      cache.set(value, color)
+  }
+  if (unseen.size > 0) {
+    const sorted = [...unseen]
+    for (const value of sorted.sort(bakedValueOrder(sorted))) {
+      cache.set(value, packRgb(color(value)))
     }
-    out[i] = color
+    for (let i = 0; i < n; i++) {
+      if (out[i] === PENDING) {
+        out[i] = cache.get(values[i]!)!
+      }
+    }
   }
   return out
 }
@@ -154,43 +162,21 @@ function firstDifference(a: Uint32Array, b: Uint32Array) {
   return ''
 }
 
-interface Fixture {
-  name: string
-  colorBy: string
-  // the values the reads on screen carry, cycled
-  onScreen: string[]
-  // how many values the accumulated map had grown to, on-screen ones included
-  mapSize: number
-}
-
-const HP = 'tags.HP'
-const MATE = 'mateRefName'
-
-const chrom = (i: number) => `chr${i + 1}`
-
-const fixtures: Fixture[] = [
-  // Haplotype coloring: two values plus untagged reads, and the map never
-  // grows past them. The case where the old shape had least to lose.
+const fixtures = [
   {
-    name: 'HP, 3 values, map 3',
-    colorBy: HP,
+    name: 'HP, 2 values and untagged',
+    field: 'tags.HP',
     onScreen: ['1', '2', ''],
-    mapSize: 3,
   },
-  // Chromosome painting at one locus: mates spread over the karyotype.
   {
-    name: 'mateRefName, 24 values, map 24',
-    colorBy: MATE,
-    onScreen: Array.from({ length: 24 }, (_, i) => chrom(i)),
-    mapSize: 24,
+    name: 'RG, 12 read groups',
+    field: 'tags.RG',
+    onScreen: Array.from({ length: 12 }, (_, i) => `HG00${i + 1}`),
   },
-  // …and after panning. Same reads on screen; the map holds every contig the
-  // track ever loaded, and the old arm re-parses all of them every bake.
   {
-    name: 'mateRefName, 24 values, map 500 (panned)',
-    colorBy: MATE,
-    onScreen: Array.from({ length: 24 }, (_, i) => chrom(i)),
-    mapSize: 500,
+    name: 'mateRefName, 24 chromosomes',
+    field: 'mateRefName',
+    onScreen: Array.from({ length: 24 }, (_, i) => `chr${i + 1}`),
   },
 ]
 
@@ -206,36 +192,32 @@ function main() {
       { length: READS },
       (_, i) => fx.onScreen[i % fx.onScreen.length]!,
     )
-    // Every value the map had accumulated, colored exactly as the old code
-    // filled it — through the same function, so the two arms cannot disagree
-    // about what a value paints.
-    const colorTagMap: Record<string, string> = {}
-    for (const v of fx.onScreen) {
-      if (v !== '') {
-        colorTagMap[v] = bakedValueColor(fx.colorBy, v)
-      }
-    }
-    for (let i = fx.onScreen.length; i < fx.mapSize; i++) {
-      const v = `scaffold_${i}`
-      colorTagMap[v] = bakedValueColor(fx.colorBy, v)
-    }
-
-    const outPure = bakePure(values, fx.colorBy)
-    const outMap = bakeMap(values, colorTagMap)
-    const outControl = bakeControl(values, fx.colorBy)
-    const diffMap = firstDifference(outPure, outMap)
-    const diffControl = firstDifference(outPure, outControl)
+    const held = new Map<string, number>()
+    const color = undeclaredValueColor(fx.field, undefined, held)
+    const settled = (value: string) =>
+      fx.field === 'mateRefName' || held.has(value)
+    const outDeferred = bakeDeferred(values, color, settled)
+    const diffImmediate = firstDifference(
+      outDeferred,
+      bakeImmediate(values, color),
+    )
+    const diffControl = firstDifference(
+      outDeferred,
+      bakeControl(values, color, settled),
+    )
     if (diffControl) {
       throw new Error(
-        `the control disagrees with the arm it was copied from (${diffControl}) — the harness is broken`,
+        `the control disagrees with the arm it was copied from (${diffControl}): the harness is broken`,
       )
     }
-
-    const best = { pure: Infinity, map: Infinity, ctl: Infinity }
+    const best = { deferred: Infinity, immediate: Infinity, ctl: Infinity }
     const sides = [
-      { k: 'pure' as const, run: () => bakePure(values, fx.colorBy) },
-      { k: 'map' as const, run: () => bakeMap(values, colorTagMap) },
-      { k: 'ctl' as const, run: () => bakeControl(values, fx.colorBy) },
+      {
+        k: 'deferred' as const,
+        run: () => bakeDeferred(values, color, settled),
+      },
+      { k: 'immediate' as const, run: () => bakeImmediate(values, color) },
+      { k: 'ctl' as const, run: () => bakeControl(values, color, settled) },
     ]
     for (let round = 0; round < ROUNDS; round++) {
       for (let i = 0; i < sides.length; i++) {
@@ -243,13 +225,13 @@ function main() {
         best[side.k] = Math.min(best[side.k], time(side.run))
       }
     }
-    const x = (v: number) => `${(v / best.pure).toFixed(3)}x`
+    const x = (v: number) => `${(v / best.deferred).toFixed(3)}x`
     console.log(
       `${fx.name}\n` +
-        `  pure (ships)  ${best.pure.toFixed(3).padStart(8)} ms\n` +
-        `  map (was)     ${best.map.toFixed(3).padStart(8)} ms   ${x(best.map)}   ` +
-        `output ${diffMap ? `DIFFERS — ${diffMap}` : 'identical'}\n` +
-        `  control       ${best.ctl.toFixed(3).padStart(8)} ms   ${x(best.ctl)}   <- noise floor\n`,
+        `  deferred (ships)  ${best.deferred.toFixed(3).padStart(8)} ms\n` +
+        `  immediate         ${best.immediate.toFixed(3).padStart(8)} ms   ${x(best.immediate)}   ` +
+        `output ${diffImmediate ? `DIFFERS: ${diffImmediate}` : 'identical'}\n` +
+        `  control           ${best.ctl.toFixed(3).padStart(8)} ms   ${x(best.ctl)}   <- noise floor\n`,
     )
   }
 }

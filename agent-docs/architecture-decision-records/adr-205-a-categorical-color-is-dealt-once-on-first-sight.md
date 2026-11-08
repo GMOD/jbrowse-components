@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A categorical value missing from `domain` is dealt a palette slot once, on first sight, and keeps it, held per field in the session's `heldColorSlots`; the color \"Pin distinct colors\" items are removed. Amended by ADR-233"
+summary: "A categorical value missing from `domain` is dealt a palette slot once, on first sight, and keeps it, held per field in the session's `heldColorSlots`; the color \"Pin distinct colors\" items are removed. Amended by ADR-233; alignments tag colors joined 2026-11-08"
 ---
 
 # ADR-205: A categorical color is dealt once, on first sight
@@ -93,8 +93,11 @@ color, once on screen, does not move.
   over, so a track past 30 values starts sharing again, then hashes.
 - Multi-row hide-by-color keys on the packed color, which no longer moves,
   so a hidden category stays hidden as regions arrive.
-- Alignments tag colors keep their own hash copy (`bakedColorScale`) and are
-  not dealt.
+- Alignments tag colors kept their own hash copy until 2026-11-08, when they
+  joined: `undeclaredValueColor` deals over `TAG_PALETTE`, the pale tag
+  palette and two darker laps of it, and the bake deals a region's unseen
+  values after its walk in value order. A mate reference keeps `refNameColor`,
+  which hands colors out by assembly position.
 
 ## Rejected alternatives
 

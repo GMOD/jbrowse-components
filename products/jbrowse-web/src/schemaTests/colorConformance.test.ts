@@ -208,7 +208,7 @@ const EXCEPTIONS: readonly Exception[] = [
   ),
   ...listed(
     'alignments',
-    'a tag or attribute with no domain, range or unknown colors each value by a function of the value alone (bakedValueColor), where canvas deals colors into held slots',
+    'a tag or attribute with no domain, range or unknown deals its values over the pale tag palette (TAG_PALETTE), so a read stays lighter than the mismatches drawn over it, where canvas deals over the wide palette',
     'numeric field, no scale',
     'numeric field other than score, no scale',
     'text field, no scale',

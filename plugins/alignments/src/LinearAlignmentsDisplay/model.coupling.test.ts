@@ -209,13 +209,11 @@ describe('alignments display cross-feature coupling', () => {
 })
 
 // Color by used to also manage a discovered-value map: clear it when
-// the field changed, and — a second rule patching the first — NOT clear it
-// when the radio already showing was re-picked, since that refetches nothing
-// and an emptied map left the legend blank until the next pan. Both rules went
-// with the map, the value's color being a pure function of the value
-// (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
-// field picks which function runs). What has to survive is that re-picking the
-// field in use is still inert.
+// the field changed, and NOT clear it when the radio already showing was
+// re-picked, since that refetches nothing and an emptied map left the legend
+// blank until the next pan. Both rules went with the map; a value's color is
+// now dealt into the session's held slots (`colorTagUtils.test.ts`). What has
+// to survive is that re-picking the field in use is still inert.
 describe('colorByField', () => {
   test('re-picking the field in use changes nothing', () => {
     const display = createDisplay()
