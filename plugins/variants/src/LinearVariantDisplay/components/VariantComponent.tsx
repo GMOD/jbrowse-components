@@ -2,7 +2,6 @@ import { sidebarCovers } from '@jbrowse/display-ui'
 import { backingScale, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { buildVariantHit } from './buildVariantHit.ts'
 import { enrichCellHit } from './enrichFeatureFromClick.ts'
@@ -181,7 +180,7 @@ const VariantBody = observer(function VariantBody({
         position: 'absolute',
         left: 0,
         top: 0,
-        backgroundColor: model.showReference ? undefined : REFERENCE_COLOR,
+        backgroundColor: model.rowBackground || undefined,
       }}
       {...variantSurfaceHandlers(model, variantRowsSurface(model))}
     />

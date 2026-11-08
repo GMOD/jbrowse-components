@@ -8,6 +8,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 
 import { cellColorEncodingOf } from '../shared/cellHue.ts'
+import { REFERENCE_COLOR } from '../shared/constants.ts'
 import {
   entryAliasOf,
   expandPhasedRows,
@@ -16,6 +17,7 @@ import {
   resolveSampleName,
 } from '../shared/getSources.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
+import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { ProcessedSource, Source } from '../shared/types.ts'
@@ -392,6 +394,92 @@ export function variantFetchViews(self: VariantFetchHost) {
      */
     get showReference(): boolean {
       return getConf(self, ['genotypes', 'reference', 'show'])
+    },
+    /**
+     * #getter
+     * The fill behind the rows, standing in for every reference call that
+     * draws no cell: '' under `showReference`.
+     */
+    get rowBackground(): string {
+      return this.showReference ? '' : REFERENCE_COLOR
+    },
+  }
+}
+
+/** What {@link variantHeightViews} reads: the config and whether records alone draw. */
+export interface VariantHeightHost extends VariantRowConfigHost {
+  recordsOnly: boolean
+  openingHeight?: number
+}
+
+/**
+ * The height a variant display's slot asks for, which the display and a
+ * static export install alike.
+ */
+export function variantHeightViews(self: VariantHeightHost) {
+  return {
+    /**
+     * #getter
+     * Whether a config, a session or a user's act wrote `height`.
+     */
+    get heightWritten() {
+      return getConf(self, 'height') !== undefined
+    },
+    /**
+     * #getter
+     * `height` as written, else, with no rows, the height the track
+     * opened at, else the default. Overrides
+     * `TrackHeightMixin.configuredHeight`, so a drag, `fit` and the
+     * grow-exit bake start from the height on screen.
+     */
+    get configuredHeight(): number {
+      return (
+        getConf(self, 'height') ??
+        (self.recordsOnly ? self.openingHeight : undefined) ??
+        DEFAULT_VARIANT_DISPLAY_HEIGHT
+      )
+    },
+  }
+}
+
+/** What {@link variantRowsHeightViews} reads: the display's height and its rows. */
+export interface VariantRowsHeightHost {
+  drawsGenotypeRows: boolean
+  height: number
+  rowsTopOffset: number
+  sources: readonly unknown[]
+}
+
+/**
+ * The height a variant display's rows divide, which the display and a
+ * static export install alike, so `RowHeightMixin.effectiveRowHeight`
+ * resolves in both from one rule.
+ */
+export function variantRowsHeightViews(self: VariantRowsHeightHost) {
+  return {
+    /**
+     * #getter
+     * Height left for the rows under the bands above them, floored at 0:
+     * every consumer treats it as a pixel dimension. 0 while no row
+     * draws.
+     */
+    get availableHeight() {
+      return self.drawsGenotypeRows
+        ? Math.max(0, self.height - self.rowsTopOffset)
+        : 0
+    },
+    /**
+     * #getter
+     */
+    get nrow() {
+      return Math.max(1, self.sources.length)
+    },
+    /**
+     * #getter
+     * What fit-to-display-height divides between the rows.
+     */
+    get autoRowHeight() {
+      return this.availableHeight / this.nrow
     },
   }
 }

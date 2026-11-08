@@ -6,6 +6,8 @@ import { pathToFileURL } from 'node:url'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 
+import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from '../../../plugins/variants/src/LinearVariantDisplay/configSchema.ts'
+import { REFERENCE_COLOR } from '../../../plugins/variants/src/shared/constants.ts'
 import { createTablesEngine } from './index.ts'
 import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
 
@@ -668,4 +670,78 @@ test('a variant spanning two regions is listed in each under one key, and cells 
     expect(genotypes(t, k)).toEqual(genotypes(one, i))
   }
   expect(t.rows).toEqual(one.rows)
+})
+
+test('a record crossing two regions lists its samples and consequences once, under its first row', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'crossing-'))
+  const vcf = path.join(dir, 'crossing.vcf')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence">',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1\ts2',
+      `ctgA\t100\t.\t${'A'.repeat(200)}\tA\t50\tPASS\tCSQ=A|frameshift_variant,A|intron_variant\tGT\t0/1\t1/1`,
+    ].join('\n'),
+  )
+  const adapterConfig = {
+    type: 'VcfAdapter',
+    vcfLocation: { uri: pathToFileURL(vcf).href },
+  }
+  const regions = [
+    { refName: 'ctgA', start: 0, end: 200 },
+    { refName: 'ctgA', start: 200, end: 400 },
+  ]
+  const { features, vcf: records } = await engine.features({
+    adapterConfig,
+    regions,
+    bpPerPx: 1,
+  })
+  expect(features.region).toEqual([0, 1])
+  expect(records!.samples).toEqual({ feature: [0, 0], sample: ['s1', 's2'] })
+  expect(records!.format.GT).toEqual(['0/1', '1/1'])
+  expect(records!.annotations.feature).toEqual([0, 0])
+  expect(records!.annotations.Consequence).toEqual([
+    'frameshift_variant',
+    'intron_variant',
+  ])
+
+  const t = await engine.variants({ adapterConfig, regions })
+  expect(t.variants.region).toEqual([0, 1])
+  expect(t.annotations.variant).toEqual([0, 0])
+  expect(t.annotations.Consequence).toEqual([
+    'frameshift_variant',
+    'intron_variant',
+  ])
+})
+
+test('the rows sit on the reference calls’ grey unless those draw as cells', async () => {
+  const hidden = await engine.variants(DOG_VCF)
+  expect(hidden.rowBackground).toBe(REFERENCE_COLOR)
+  const shown = await engine.variants({
+    ...DOG_VCF,
+    display: { genotypes: { reference: { show: true } } },
+  })
+  expect(shown.rowBackground).toBe('')
+})
+
+test('the rows divide the display’s default height, or draw at rows.step', async () => {
+  const fit = await engine.variants(DOG_VCF)
+  expect(fit.height).toBe(DEFAULT_VARIANT_DISPLAY_HEIGHT)
+  expect(fit.rowHeight).toBeCloseTo(
+    DEFAULT_VARIANT_DISPLAY_HEIGHT / fit.rows.name.length,
+  )
+  const written = await engine.variants({
+    ...DOG_VCF,
+    display: { height: 500 },
+  })
+  expect(written.height).toBe(500)
+  expect(written.rowHeight).toBeCloseTo(500 / written.rows.name.length)
+  const stepped = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { step: 3 } },
+  })
+  expect(stepped.height).toBe(DEFAULT_VARIANT_DISPLAY_HEIGHT)
+  expect(stepped.rowHeight).toBe(3)
 })

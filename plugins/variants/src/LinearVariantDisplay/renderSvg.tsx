@@ -5,7 +5,6 @@ import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
-import { REFERENCE_COLOR } from '../shared/constants.ts'
 import SvgVariantOverlay from './components/SvgVariantOverlay.tsx'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import {
@@ -24,7 +23,7 @@ import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 interface RenderSvgModel extends RenderSvgBaseModel, RecordsBandPaintModel {
-  showReference: boolean
+  rowBackground: string
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
@@ -46,7 +45,7 @@ function VariantSvgBody({
 }: LgvSvgBodyProps<RenderSvgModel>) {
   // the model's own block set and region map, so the export draws what the
   // live canvas does
-  const { showReference, renderBlocks, perRegionCellMap, renderState } = model
+  const { rowBackground, renderBlocks, perRegionCellMap, renderState } = model
   const { canvasHeight } = renderState
   const recordsHeight = model.topBands.reserved.records
   const palette = usePalette()
@@ -88,13 +87,9 @@ function VariantSvgBody({
       }
     >
       {/* the screen's canvas background, under the cells */}
-      {showReference ? null : (
-        <rect
-          width={canvasWidth}
-          height={canvasHeight}
-          fill={REFERENCE_COLOR}
-        />
-      )}
+      {rowBackground ? (
+        <rect width={canvasWidth} height={canvasHeight} fill={rowBackground} />
+      ) : null}
       <MarkSvgLayer
         marks={VARIANT_MARKS}
         regions={perRegionCellMap}

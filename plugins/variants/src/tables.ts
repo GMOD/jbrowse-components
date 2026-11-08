@@ -12,6 +12,7 @@ import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
+import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
 import {
   bandedRowViews,
   bandedSourceViews,
@@ -20,8 +21,11 @@ import {
   expandedRowViews,
   resolvedRowColorViews,
   rowAliasViews,
+  rowFocusLineViews,
+  rowNarrowingShowsViews,
   rowOrderViews,
   rowTreeViews,
+  rowsTopOffsetViews,
   sourceViews,
   treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
@@ -53,8 +57,10 @@ import {
   variantFetchViews,
   variantGenotypeRowViews,
   variantGenotypesShowViews,
+  variantHeightViews,
   variantRowConfigViews,
   variantRowHookViews,
+  variantRowsHeightViews,
 } from './LinearVariantDisplay/variantRowViews.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
@@ -82,14 +88,16 @@ import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
  * the samples the adapter lists, the windows the regions show and the
  * payload the fetch reports, under the row views the display installs, its
  * row hooks, what it fetches, its cell coloring, whether it draws its
- * genotype rows and what it keys. No session, no view; its env holds the
- * `pluginManager` the jexl filters evaluate through.
+ * genotype rows, the height its rows divide and what it keys. No session, no
+ * view and no records band, so its `height` is the rows' slot; its env holds
+ * the `pluginManager` the jexl filters evaluate through.
  */
 const VariantTablesHost = types
   .compose(
     'VariantTablesHost',
     TrackHeightMixin(),
     ParkedColorMixin(),
+    RowHeightMixin(),
     types.model({ configuration: configSchemaFactory() }),
   )
   .volatile(
@@ -149,6 +157,11 @@ const VariantTablesHost = types
   .views(self => bandedSourceViews<ProcessedSource>(self))
   .views(self => sourceViews<ProcessedSource>(self))
   .views(self => variantRowHookViews(self))
+  .views(self => rowNarrowingShowsViews<ProcessedSource>(self))
+  .views(self => rowFocusLineViews(self))
+  .views(self => rowsTopOffsetViews(self))
+  .views(self => variantHeightViews(self))
+  .views(self => variantRowsHeightViews(self))
   .views(self => recordsKeyViews(self))
   .views(self => cellKeyViews(self))
   .views(self => recordColorViews(self))
@@ -212,18 +225,25 @@ export interface VariantTablesArgs {
  * rows the cells name, top to bottom as the display arranges them by `rows`
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
  * each band's value and label, in stacking order; `legend`, `legendTitle`
- * and `ramps`, the key the display shows; and `warnings`, the samples file's.
- * With `genotypes.reference.show` off, the default, a reference call draws
- * no cell. With `genotypes.show` off, and unset on a one-sample VCF, no row
- * draws, so `rows` and `cells` are empty, the key is the records', and no
- * genotype is read, so `minorAlleleFrequency` and `missingness` filter
- * nothing, as on a sites-only VCF. The records sit at their genomic
- * positions whatever `variantLayout` says. Several regions share the rows and the key,
- * as the display's regions do: a record crossing regions is listed in each,
- * under one `key`, every `variants` and `cells` row names its `region`'s
- * index, and `cells.variant` indexes the joined `variants`. For a host that
- * draws them itself, such as R through V8. The adapters must be registered on
- * `pluginManager` (`registerVariantAdapters`).
+ * and `ramps`, the key the display shows; `rowBackground`, the fill the
+ * display paints behind its rows; `height`, the px the rows' slot takes
+ * (`height` as written, else the display's default), the records band above
+ * it apart; `rowHeight`, the px each row draws at, `rows.step` or the slot
+ * divided between the rows, as the display resolves it; and `warnings`, the
+ * samples file's. With `genotypes.reference.show` off, the default, a
+ * reference call draws no cell, and `rowBackground` is the reference call's
+ * color, standing in for every one; on, `rowBackground` is `''`. With
+ * `genotypes.show` off, and unset on a one-sample VCF, no row draws, so
+ * `rows` and `cells` are empty, the key is the records', and no genotype is
+ * read, so `minorAlleleFrequency` and `missingness` filter nothing, as on a
+ * sites-only VCF. The records sit at their genomic positions whatever
+ * `variantLayout` says. Several regions share the rows and the key, as the
+ * display's regions do: a record crossing regions is listed in each, under
+ * one `key`, with its `annotations` once, under its first listing; every
+ * `variants` and `cells` row names its `region`'s index, and `cells.variant`
+ * indexes the joined `variants`. For a host that draws them itself, such as
+ * R through V8. The adapters must be registered on `pluginManager`
+ * (`registerVariantAdapters`).
  */
 export async function variantTables(
   pluginManager: PluginManager,
@@ -327,6 +347,9 @@ export async function variantTables(
     recordColors,
     cellColors,
     scales,
+    rowBackground,
+    height,
+    rowHeight,
   } = runInAction(() => {
     const shown = host.sources.filter(row => fetched.has(row.name))
     const rowColors = host.resolvedRowColors
@@ -339,6 +362,9 @@ export async function variantTables(
       recordColors: host.regionRecordColors,
       cellColors: host.regionCellColors,
       scales: host.dataColorScales,
+      rowBackground: host.rowBackground,
+      height: host.height,
+      rowHeight: host.effectiveRowHeight,
     }
   })
   const rows = {
@@ -441,6 +467,9 @@ export async function variantTables(
       key: rowBands.map(b => b.key),
       label: rowBands.map(b => b.label),
     },
+    rowBackground,
+    height,
+    rowHeight,
     config: fullConfSnapshot(host.configuration),
     warnings: listing.warnings,
   }
@@ -598,8 +627,23 @@ function consequenceFieldNames(description: string) {
 }
 
 /**
+ * Each record's index at its first listing in `records`, which list a record
+ * crossing regions once per region.
+ */
+function firstListings(records: readonly Feature[]) {
+  const first = new Map<string, number>()
+  records.forEach((record, r) => {
+    if (!first.has(record.id())) {
+      first.set(record.id(), r)
+    }
+  })
+  return [...first.values()]
+}
+
+/**
  * Each record's ANN or CSQ consequences as a table, a row per record and
- * consequence: `index` names the record, `key` the INFO key, then a column per
+ * consequence, once per record however many regions list it: `index` names
+ * the record's first listing, `key` the INFO key, then a column per
  * field the key's header line names, in its order, each value as the record
  * writes it and null where empty. The header names the fields and types none,
  * so every one is text. `annotationFields` lists each key's fields. A key whose
@@ -614,6 +658,7 @@ function consequenceTables(
   const keys: string[] = []
   const columns: Record<string, (string | null)[]> = {}
   const annotationFields = { key: [] as string[], field: [] as string[] }
+  const listed = firstListings(records)
   for (const key of CONSEQUENCE_KEYS) {
     const names = consequenceFieldNames(
       String(declarationOf(meta, key, 'Description') ?? ''),
@@ -626,8 +671,10 @@ function consequenceTables(
       annotationFields.key.push(key)
       annotationFields.field.push(name)
     }
-    records.forEach((record, r) => {
-      const info = record.get('INFO') as Record<string, unknown> | undefined
+    for (const r of listed) {
+      const info = records[r]!.get('INFO') as
+        | Record<string, unknown>
+        | undefined
       const entries = info?.[key]
       for (const entry of Array.isArray(entries) ? entries : []) {
         if (typeof entry === 'string' && entry !== '') {
@@ -643,7 +690,7 @@ function consequenceTables(
           })
         }
       }
-    })
+    }
   }
   return {
     annotations: { [index]: rows, key: keys, ...columns },
@@ -672,6 +719,10 @@ export const VCF_ADAPTER_TYPES = [
  *   to it, typed as INFO is; and `formatFields`, each key's declaration.
  * - `annotations` and `annotationFields`: its ANN or CSQ consequences, as
  *   `variantTables` gives them, `feature` an index into `ids`.
+ *
+ * A record `ids` lists more than once, as a feature table lists one crossing
+ * regions in each, has its `samples` and `annotations` rows once, `feature`
+ * its first index.
  */
 export async function variantRecordTables(
   pluginManager: PluginManager,
@@ -708,8 +759,8 @@ export async function variantRecordTables(
   const declarations = await vcfDeclarationsOf(adapter)
   const samples = { feature: [] as number[], sample: [] as string[] }
   const sampleValues: Record<string, FieldValue>[] = []
-  records.forEach((record, f) => {
-    const values = record.get('samples') as
+  for (const f of firstListings(records)) {
+    const values = records[f]!.get('samples') as
       | Record<string, Record<string, FieldValue>>
       | undefined
     for (const [sample, value] of Object.entries(values ?? {})) {
@@ -717,7 +768,7 @@ export async function variantRecordTables(
       samples.sample.push(sample)
       sampleValues.push(value)
     }
-  })
+  }
   const format = typedColumns(sampleValues, declarations.format)
   return {
     records: {

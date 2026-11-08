@@ -99,7 +99,6 @@ import { cellGlyphs } from './components/cellGlyphs.ts'
 import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
-import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { densityRung, recordDensityAlpha } from './densityFade.ts'
 import { keyedVariantViews } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
@@ -130,8 +129,10 @@ import {
   variantFetchViews,
   variantGenotypeRowViews,
   variantGenotypesShowViews,
+  variantHeightViews,
   variantRowConfigViews,
   variantRowHookViews,
+  variantRowsHeightViews,
 } from './variantRowViews.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
@@ -1244,31 +1245,6 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * Height left for the rows under the bands above them, floored at 0:
-           * every consumer treats it as a pixel dimension. 0 while no row
-           * draws.
-           */
-          get availableHeight() {
-            return self.drawsGenotypeRows
-              ? Math.max(0, self.height - self.rowsTopOffset)
-              : 0
-          },
-          /**
-           * #getter
-           */
-          get nrow() {
-            return Math.max(1, self.sources.length)
-          },
-
-          /**
-           * #getter
-           * What fit-to-display-height divides between the rows.
-           */
-          get autoRowHeight() {
-            return this.availableHeight / this.nrow
-          },
-          /**
-           * #getter
            */
           get svgSidebar(): SvgSidebarProps {
             return {
@@ -1283,29 +1259,10 @@ export function stateModelFactory(
           },
         }
       })
+      .views(self => variantRowsHeightViews(self))
       .views(recordsLayoutViews)
+      .views(self => variantHeightViews(self))
       .views(self => ({
-        /**
-         * #getter
-         * Whether a config, a session or a user's act wrote `height`.
-         */
-        get heightWritten() {
-          return getConf(self, 'height') !== undefined
-        },
-        /**
-         * #getter
-         * `height` as written, else, with no rows, the height the track
-         * opened at, else the default. Overrides
-         * `TrackHeightMixin.configuredHeight`, so a drag, `fit` and the
-         * grow-exit bake start from the height on screen.
-         */
-        get configuredHeight(): number {
-          return (
-            getConf(self, 'height') ??
-            (self.recordsOnly ? self.openingHeight : undefined) ??
-            DEFAULT_VARIANT_DISPLAY_HEIGHT
-          )
-        },
         /**
          * #getter
          * Genotype rows hidden on a VCF with samples: the band and its chip
