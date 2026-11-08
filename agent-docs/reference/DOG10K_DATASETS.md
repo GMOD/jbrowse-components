@@ -10,7 +10,7 @@ kind: dataset
 The `local_ancestry`, `dog10k_svs`, `dog10k_lof` and `dog10k_selection` tutorials
 rest on `test_data/dog10k/config.json`, remote slicing, and a breed-labeled
 `layout`. Each figure has a `scripts/build_dog10k_*.sh` recipe; point an existing
-one at a new locus. Editorial rules: `website/CLAUDE.md`.
+one at a new locus. Editorial rules: [WEBSITE_WRITING.md](WEBSITE_WRITING.md).
 
 ## Assembly and callsets
 

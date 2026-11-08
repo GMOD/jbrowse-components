@@ -40,7 +40,7 @@ needs the phase read first.
 
 ## Draft page
 
-Opening, to follow `website/docs/tutorials/CLAUDE.md`:
+Opening, to follow `reference/WEBSITE_WRITING.md` §"Tutorials":
 
 > A 32-base deletion in _CCR5_ (rs333, Δ32) shifts the reading frame and stops
 > the receptor early. People with two copies resist the R5 strains of HIV,

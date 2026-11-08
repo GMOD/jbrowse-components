@@ -83,7 +83,7 @@ the group to copy.
 
 ### The rule exists; nothing enforces it
 
-`website/CLAUDE.md` §"Prose, captions, cards" already draws the line:
+`reference/WEBSITE_WRITING.md` §"Prose, captions, cards" already draws the line:
 
 > **Few numbers in prose, and none that assert a result.** A number that _names_
 > something (a variant's size, a coordinate, a published cohort size) is fine; a
@@ -167,7 +167,7 @@ saying so.
 
 From a ten-agent read of all 43 pages, 2026-08-21. The factual findings
 landed; this is the structural half, which is a set of editorial calls
-rather than fixes. `website/docs/tutorials/CLAUDE.md` states the test: "the
+rather than fixes. `reference/WEBSITE_WRITING.md` §"Tutorials" states the test: "the
 test is whether the sections could be reordered without the page breaking.
 If they could, it is a user guide wearing a tutorial's clothes."
 
@@ -248,6 +248,6 @@ cannot separate" is the sentence that would make the second page arrive.
 ## Order
 
 §4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
-in `docs/tutorials/CLAUDE.md`. §2 is the only real work. §5-6 are editorial calls
+in `reference/WEBSITE_WRITING.md` §"Tutorials". §2 is the only real work. §5-6 are editorial calls
 on pages that already work, so they wait on someone deciding to take a page
 apart; §6 is the cheaper of the two, because each cut is at a line number.

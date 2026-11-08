@@ -254,7 +254,7 @@ export function guideRank(dirName: string, slug: string): number {
 // which is enough categorization. The grouping the sidebar does have comes from
 // the labels themselves: a tutorial's sidebar_label leads with the word its kin
 // lead with ("Synteny (…)", "SVs (…)", "Pangenome (…)"), so sorting them
-// alphabetically puts each family in one run. docs/tutorials/CLAUDE.md is where
+// alphabetically puts each family in one run. agent-docs/reference/WEBSITE_WRITING.md is where
 // that convention is written for authors.
 export const GUIDE_CATEGORY_ORDER: Record<string, string[]> = {
   user_guides: USER_CATEGORIES,

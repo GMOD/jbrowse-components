@@ -32,6 +32,26 @@ Each of these produces a plausible figure rather than an error:
   converting one.
 - **A caption parked in a corner or margin points at nothing**; anchoring
   relocates it. Anchor a caption and its tail both or neither.
+- **A callout or click on a feature, record or row names it**
+  (`{ trackId, feature }`, `{ trackId, row }`, `{ chord: '<label>' }`) rather
+  than a `fracY`, which lands on another row once a band is added above it. A
+  chord's feature id is parse order and drifts; its label does not.
+- Prefer a session `highlights` entry to a callout: its `label` lands in every
+  linked view and travels with the figure's live link.
+- Put a click that changes state in the session spec, since the figure's recipe
+  command clicks nothing; `clicksOpen` / `clicksChange` name the exceptions.
+
+## Sizing, readiness and staleness
+
+- Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` /
+  `blank below the last content` report, not off the PNG. Neither sees a display
+  overflowing its own fixed height; `heightMode: 'grow'` exposes a pileup's.
+- A spec timing out at readiness is slow or broken: raise `readyTimeout` or fix
+  the display, never add a sleep. `DISPLAYS NOT PAINTED AT CAPTURE` names a
+  frame that may be blank.
+- `--cover` proves every type still paints, never that a figure is current.
+  After rebuilding hosted data, `python3 website/scripts/report-stale-figures.py`
+  lists the figures shot before a file they draw changed.
 
 ### Verifying
 
@@ -69,7 +89,8 @@ DisplayChrome element has height 0. Pick a drawn element.
 To regenerate a slow figure use `--headed` (or `xvfb-run`); capture geometry is
 unaffected. Don't raise timeouts first. `tcga/cohort_cnv_genome.png` is the only
 GPU-rendered committed figure, and switching the default would rewrite every PNG
-once.
+once. A spec dying on data volume says something about SwiftShader, not the
+product, and stays out of captions.
 
 ## A build older than the checkout draws the old app
 

@@ -9,7 +9,7 @@
 // command is in `scripts/build_*.sh`, running in CI's shellcheck pass.
 //
 // Generating those fences from the script is still wrong, though, and the
-// reason is the rule that put them there (`docs/tutorials/CLAUDE.md`): the page
+// reason is the rule that put them there (`agent-docs/reference/WEBSITE_WRITING.md` §"Tutorials"): the page
 // carries the GENERAL form, `bwameth.py --reference ref.fa R1.fq.gz`, where the
 // script carries the pinned one, `"$REF" "$FQ1"` against a fixed SRA run. A
 // verbatim include would drag `$OUTDIR`, `$CHROM` and the accessions back onto

@@ -8,7 +8,7 @@
 # Removing a line is the win. The way is to put the command that produces the
 # page's subject file in the prose in the general form a reader would run on
 # their own data, and mark that fence `<!-- from: -->` so check-script-commands
-# holds it to the script. website/docs/tutorials/CLAUDE.md has the rules.
+# holds it to the script. agent-docs/reference/WEBSITE_WRITING.md has the rules.
 #
 # The one line left is here because the check cannot tell it apart from a page
 # that owes something, rather than because it owes anything: population_cnv

@@ -162,7 +162,7 @@ function text(value: string) {
 }
 
 // The one line atop the Config file and CLI tabs saying which config.json the
-// JSON lands in, which the page prose is told not to say (docs/CLAUDE.md).
+// JSON lands in, which the page prose is told not to say (agent-docs/reference/WEBSITE_WRITING.md).
 // `{ code }` parts render as code.
 function placement(
   parts: (string | { code: string })[],

@@ -1,7 +1,7 @@
 // Ratchets the number of over-length `<Figure caption="...">` strings in the
 // hand-written docs.
 //
-// website/CLAUDE.md: "Captions name the tracks and the one visual takeaway. If a
+// agent-docs/reference/WEBSITE_WRITING.md (once website/CLAUDE.md): "Captions name the tracks and the one visual takeaway. If a
 // caption needs a paragraph of background, fix the figure." That rule had no
 // enforcement, and captions are the one thing every new figure adds, so the long
 // ones accumulated: a sweep found 37 past 400 characters, the two worst ~790,
