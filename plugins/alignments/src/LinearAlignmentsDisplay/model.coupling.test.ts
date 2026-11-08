@@ -736,15 +736,16 @@ describe('chain mode is a main-thread tier', () => {
       featureIdUnderMouse: 'id0',
       mouseoverExtraInformation: undefined,
     })
-    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+    const chain = { ids: ['id0', 'id1'], strong: true }
+    expect(display.hoverReads).toEqual(chain)
 
     display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'id0' })
-    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+    expect(display.hoverReads).toEqual(chain)
 
     display.closeContextMenu()
     display.setUnit('read')
     display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'id0' })
-    expect(display.hoverChainReadIds).toEqual([])
+    expect(display.hoverReads).toEqual({ ids: ['id0'], strong: false })
   })
 
   test("a connector's hover lights its ends, or their chain in chain mode", () => {
@@ -758,10 +759,10 @@ describe('chain mode is a main-thread tier', () => {
       })
     }
     hoverConnector()
-    expect(display.hoverChainReadIds).toEqual(['id1', 'other'])
+    expect(display.hoverReads).toEqual({ ids: ['id1', 'other'], strong: false })
     display.setUnit('chain')
     hoverConnector()
-    expect(display.hoverChainReadIds).toEqual(['id0', 'id1'])
+    expect(display.hoverReads).toEqual({ ids: ['id0', 'id1'], strong: true })
   })
 
   test('the toggle leaves the chain-free tier alone', () => {

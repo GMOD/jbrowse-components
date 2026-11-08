@@ -347,12 +347,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Hit test processing helpers ---
 
-  // The reads of the chain a hovered read belongs to, for the chain highlight.
-  // Empty outside chain mode, and empty for a cigar/modification hit that
-  // resolved no read.
-  // Keeping it keyed off the read (rather than only the bare-body branch) is what
-  // stops the previous read's highlight going stale while the cursor sits on a
-  // mismatch or modified base.
   // Hover, resolved at most once per frame — `useCoalescedPointer` owns the
   // frame discipline and the two cancels (leave, unmount); the guards below are
   // this display's own.

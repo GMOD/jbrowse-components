@@ -2008,12 +2008,20 @@ export default function stateModelFactory(
               false,
             )
           }
-          const { ids, strong } = readsToLight({
+          const { ids, strong } = this.hoverReads
+          return this.readInk(ids, strong)
+        },
+
+        /**
+         * #getter
+         * The reads `hoverInk` boxes, and whether it boxes them as one chain.
+         */
+        get hoverReads() {
+          return readsToLight({
             unit: self.unit,
             chainReadIds: self.hoverChainReadIds,
             readId: self.featureIdUnderMouse,
           })
-          return this.readInk(ids, strong)
         },
 
         /**

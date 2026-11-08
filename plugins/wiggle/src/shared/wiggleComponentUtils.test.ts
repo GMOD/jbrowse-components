@@ -48,9 +48,13 @@ describe('renderingTypeToInt', () => {
     expect(renderingTypeToInt('scatter')).toBe(RENDERING_TYPE_SCATTER)
   })
 
-  test('a name outside the five renderings is a type error', () => {
+  // Typecheck-only: an unused `@ts-expect-error` fails `pnpm typecheck`.
+  function onlyTheFiveRenderingsAreNames() {
     // @ts-expect-error not a rendering
-    expect(renderingTypeToInt('unknown')).toBeUndefined()
+    renderingTypeToInt('unknown')
+  }
+  test('a name outside the five renderings is a type error', () => {
+    expect(typeof onlyTheFiveRenderingsAreNames).toBe('function')
   })
 })
 
