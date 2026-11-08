@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Wild-experiment: standalone ntSynt-viz-style ribbon plot for a UCSC chain
-// file, rendered to PNG via node-canvas. No JBrowse dependencies.
+// file, rendered to PNG via @napi-rs/canvas. No JBrowse dependencies.
 //
 // Usage: node scripts/ribbon-plot.mjs <chain.gz> [out.png] [minBp]
 //
@@ -16,7 +16,7 @@ import { spawn } from 'child_process'
 import fs from 'fs'
 import readline from 'readline'
 
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 const CHAIN_FILE = process.argv[2]
 const OUT_PNG = process.argv[3] || 'ribbon.png'

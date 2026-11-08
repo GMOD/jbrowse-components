@@ -13,7 +13,7 @@ import { spawn } from 'child_process'
 import fs from 'fs'
 import readline from 'readline'
 
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 const PIF_FILE = process.argv[2]
 const OUT_PREFIX = process.argv[3] || 'ribbon-pif'

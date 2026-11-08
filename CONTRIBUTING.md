@@ -17,11 +17,6 @@ pnpm start
 
 - **Package Manager**: [pnpm](https://pnpm.io/)
 - **Windows**: Use `git clone -c core.symlinks=true`
-- **Native Deps**: `node-canvas` (tests) requires system libs:
-  - **macOS**: `brew install pkg-config cairo pango libpng jpeg giflib librsvg`
-  - **Ubuntu**:
-    `sudo apt install python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
-  - If it fails, run `pnpm rebuild canvas`.
 
 ## Development
 

@@ -495,9 +495,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
         with:
-          apt-packages:
-            tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev
-            librsvg2-dev
+          apt-packages: tabix
       - name: Pack artifacts for component tests
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
@@ -511,10 +509,9 @@ jobs:
       # 39 end-to-end jb2export renders (BAM/CRAM/VCF, dotplot, synteny,
       # circular, track modifiers, the failure paths) that gated nothing until
       # now. Lives here rather than in `test` because it runs the CLI from
-      # source against the workspace's BUILT esm — which the pack step above
-      # has just produced — and because this job already installs the cairo/
-      # pango/rsvg headers node-canvas needs. Fully offline: every fixture is
-      # local, including the --genome config.
+      # source against the workspace's BUILT esm, which the pack step above
+      # has just produced. Fully offline: every fixture is local, including
+      # the --genome config.
       - name: Test @jbrowse/img end-to-end renders
         run: pnpm --filter @jbrowse/img test:integration
       - name: Upload packed artifacts for component tests

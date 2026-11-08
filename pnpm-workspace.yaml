@@ -32,13 +32,16 @@ allowBuilds:
   # outright — and so every `pnpm <script>`, since they all run a deps check
   # first.
   '@parcel/watcher': true
-  canvas: true
   electron: true
   electron-chromedriver: true
   esbuild: true
   puppeteer: true
   sharp: true
   unrs-resolver: true
+  # Installed only as jest's jsdom environment's optional peer, a leftover of
+  # jsdom 30; jsdom 31 draws through @napi-rs/canvas, so nothing loads it and
+  # its native build would be wasted.
+  canvas: false
   # Its postinstall only clears macOS quarantine, which an npm tarball never
   # carries; the prebuilt dawn.node needs no build step.
   webgpu: false

@@ -1,4 +1,4 @@
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 import { KIND_BASE, KIND_CIGAR_D } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { offscreenMateColors } from './drawOffscreenMates.ts'

@@ -28,7 +28,7 @@ function mulberry32(seed: number) {
   }
 }
 
-// jsdom draws through node-canvas, which takes isPointInPath's point in user
+// jsdom draws through @napi-rs/canvas, which takes isPointInPath's point in user
 // space: with the identity in place that is the canvas's own pixels
 function canvasFill(angles: RibbonAngles) {
   const ctx = document.createElement('canvas').getContext('2d')!
@@ -54,7 +54,7 @@ function randomRibbon(rand: () => number, maxSpan: number): RibbonAngles {
 // winding test and the canvas's own fill of the painter's path agree on every
 // point: forward and reverse, arcs either side of the first angle, a span wider
 // than the other, and a span past half the circle, which turns in y twice.
-// node-canvas counts half a pixel past the rim as filled, so the rim's pixel
+// The canvas counts half a pixel past the rim as filled, so the rim's pixel
 // either side is left out
 test.each([
   ['spans up to 0.6 rad', 7, 0.6, 8000],
