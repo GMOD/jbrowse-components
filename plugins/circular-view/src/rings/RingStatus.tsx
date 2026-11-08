@@ -1,5 +1,6 @@
+import { useDelayedFlag } from '@jbrowse/core/ui/LoadingOverlay'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { measureText } from '@jbrowse/core/util'
+import { measureText, progressLabel } from '@jbrowse/core/util'
 import { tooLargeBannerText } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
@@ -10,12 +11,16 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 const FONT_SIZE_PX = 11
 
+const LOADING_DELAY_MS = 250
+
 interface StatusDisplay {
   displayPhase: DisplayPhase
   regionTooLargeReason?: string
   zoomCanReleaseGate?: boolean
   error?: unknown
   renderError?: unknown
+  statusMessage?: string
+  statusProgress?: number
   forceLoad?: () => void
   reload?: () => void
 }
@@ -26,6 +31,19 @@ function hasPhase(display: object): display is StatusDisplay {
 
 function ringStatus(display: StatusDisplay) {
   const phase = display.displayPhase
+  if (phase === 'loading') {
+    const label = progressLabel(
+      display.statusMessage || 'Loading',
+      display.statusProgress,
+    )
+    return {
+      text: label,
+      short: label,
+      action: undefined,
+      actionLabel: '',
+      isError: false,
+    }
+  }
   if (phase === 'tooLarge') {
     return {
       text: tooLargeBannerText(display.regionTooLargeReason ?? '', {
@@ -72,8 +90,11 @@ const RingStatusLine = observer(function RingStatusLine({
 }) {
   const palette = usePalette()
   const { display, innerPx, outerPx } = ring
-  const status = hasPhase(display) ? ringStatus(display) : undefined
-  if (!status) {
+  const phased = hasPhase(display)
+  const loading = phased && display.displayPhase === 'loading'
+  const loadingShown = useDelayedFlag(loading, LOADING_DELAY_MS)
+  const status = phased ? ringStatus(display) : undefined
+  if (!status || (loading && !loadingShown)) {
     return null
   }
   const { text, short, action, actionLabel, isError } = status
@@ -130,10 +151,10 @@ const RingStatusLine = observer(function RingStatusLine({
 })
 
 /**
- * A ring whose display is gated or failed says so in its band, read level at
- * the top of the screen, where the linear track would show its banner: the
- * banner lives in the hidden strip the ring is warped from, so its message and
- * its Force load button never reach the circle.
+ * A ring whose display is loading, gated or failed says so in its band, read
+ * level at the top of the screen, where the linear track would show its scrim
+ * or banner: both live in the hidden strip the ring is warped from, so neither
+ * reaches the circle.
  */
 export const RingStatus = observer(function RingStatus({
   model,

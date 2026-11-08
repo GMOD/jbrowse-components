@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import { RingStatus } from './RingStatus.tsx'
 
@@ -61,4 +61,37 @@ test('a failed ring shows its error and retries on a click', () => {
 test('a ring showing its data draws no status', () => {
   const { queryByTestId } = renderStatus({ displayPhase: 'ready' })
   expect(queryByTestId('ring-status')).toBeNull()
+})
+
+test('a loading ring names its phase and progress once the load is not instant', () => {
+  jest.useFakeTimers()
+  try {
+    const { queryByTestId, getByTestId } = renderStatus({
+      displayPhase: 'loading',
+      statusMessage: 'Downloading features',
+      statusProgress: 0.42,
+    })
+    expect(queryByTestId('ring-status')).toBeNull()
+    act(() => {
+      jest.advanceTimersByTime(250)
+    })
+    expect(getByTestId('ring-status').textContent).toContain(
+      'Downloading features 42%',
+    )
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
+test('a loading ring with no status yet says Loading', () => {
+  jest.useFakeTimers()
+  try {
+    const { getByTestId } = renderStatus({ displayPhase: 'loading' })
+    act(() => {
+      jest.advanceTimersByTime(250)
+    })
+    expect(getByTestId('ring-status').textContent).toContain('Loading')
+  } finally {
+    jest.useRealTimers()
+  }
 })
