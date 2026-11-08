@@ -22,17 +22,17 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             data-display-phase="ready"
             data-testid="circular-chord-canvas"
             height="400"
-            style="width: 808px; height: 400px; max-width: 808px; min-width: 808px; max-height: 400px; min-height: 400px;"
+            style="width: 808px; height: 400px; max-size: 808px 400px; min-size: 808px 400px;"
             width="808"
           />
           <div
             class="css-HASH"
-            style="transform: translate(204.00000000007628px,7.628386811120436e-11px);"
+            style="transform: translate(204px, 7.62839e-11px);"
           >
             <svg
               class="css-HASH css-HASH"
               height="399.99999999984743"
-              style="transform: rotate(-1.5707963267948966rad); transform-origin: 199.99999999992372px 199.99999999992372px;"
+              style="transform: rotate(-1.5708rad); transform-origin: 200px 200px;"
               width="399.99999999984743"
             >
               <g

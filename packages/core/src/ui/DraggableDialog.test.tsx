@@ -21,7 +21,7 @@ test('renders title and content, paper starts un-translated', () => {
   )
   expect(getByText('My dialog')).toBeTruthy()
   expect(getByText('content')).toBeTruthy()
-  expect(getPaper()?.style.transform).toBe('translate(0px, 0px)')
+  expect(getPaper()?.style.transform).toBe('translate(0px)')
 })
 
 test('dragging the title translates the paper by the mouse delta', () => {
@@ -68,7 +68,7 @@ test('dragging from the content does not move the paper', () => {
     button: 0,
   })
   fireEvent.pointerMove(body, { clientX: 90, clientY: 90, pointerId: 1 })
-  expect(getPaper()?.style.transform).toBe('translate(0px, 0px)')
+  expect(getPaper()?.style.transform).toBe('translate(0px)')
 })
 
 test('the close button carries the dialog-close testid, calls onClose and does not start a drag', () => {
@@ -86,7 +86,7 @@ test('the close button carries the dialog-close testid, calls onClose and does n
     button: 0,
   })
   fireEvent.pointerMove(close, { clientX: 90, clientY: 90, pointerId: 1 })
-  expect(getPaper()?.style.transform).toBe('translate(0px, 0px)')
+  expect(getPaper()?.style.transform).toBe('translate(0px)')
   fireEvent.click(close)
   expect(onClose).toHaveBeenCalledWith(expect.anything(), 'closeButtonClick')
 })

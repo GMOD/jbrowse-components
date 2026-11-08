@@ -208,7 +208,9 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
   // same body, so an unscoped query finds the other one's bar
   expect(container.querySelector('header')?.textContent).toContain('File')
   const box = await findByTestId('embedded-view-box')
-  expect(box.parentElement?.style.gridTemplateRows).toBe('auto minmax(0, 1fr)')
+  expect(box.parentElement?.style.gridTemplateRows).toBe(
+    'auto minmax(0px, 1fr)',
+  )
 
   // and the row goes with the bar, rather than being declared and left empty:
   // grid auto-placement fills an empty first row with the next children in DOM
@@ -227,7 +229,7 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
       '[data-testid="embedded-view-box"]',
     )?.parentElement
   expect(bareRender.container.querySelector('header')).toBeNull()
-  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0, 1fr)')
+  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0px, 1fr)')
 
   bare.session.view.activateTrackSelector()
 
@@ -239,7 +241,7 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
     },
     { timeout },
   )
-  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0, 1fr)')
+  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0px, 1fr)')
 }, 40000)
 
 test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {

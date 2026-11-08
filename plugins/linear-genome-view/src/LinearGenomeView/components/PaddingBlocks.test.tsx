@@ -88,7 +88,7 @@ test('a zoom repositions the same divs rather than rebuilding them', () => {
   const zoomed = spans.map((s, i) => ({
     ...s,
     key: `frame2-${i}`,
-    x: s.x * 1.15,
+    x: s.x * 2,
   }))
   act(() => {
     runInAction(() => {

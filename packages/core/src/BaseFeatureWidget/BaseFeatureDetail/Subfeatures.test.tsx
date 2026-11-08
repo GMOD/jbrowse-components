@@ -148,7 +148,7 @@ test('a transcript groups its exons into one table, with what each exon has of i
   const grids = within(exons)
     .getAllByText('exon_number')
     .map(key => key.parentElement!.style.gridTemplateColumns)
-  expect(new Set(grids)).toEqual(new Set(['21ch minmax(0, 1fr)']))
+  expect(new Set(grids)).toEqual(new Set(['21ch minmax(0px, 1fr)']))
 
   const evidence = within(exons).getByText(
     'experimental_evidence',
