@@ -1,4 +1,4 @@
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 import { barMark } from './barMark.ts'
 import { spanMark } from './spanMark.ts'

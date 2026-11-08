@@ -5,8 +5,8 @@ import path from 'node:path'
 
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getStrokeProps } from '@jbrowse/core/util/svgColorProps'
+import { createCanvas as nodeCreateCanvas } from '@napi-rs/canvas'
 import { fireEvent } from '@testing-library/react'
-import { createCanvas as nodeCreateCanvas } from 'canvas'
 
 import {
   createView,

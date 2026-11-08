@@ -28,7 +28,7 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 import { makeDensityLutFillFn } from '../src/shared/getDensityColor.ts'
 import { drawDensity } from '../src/shared/wiggleDrawFunctions.ts'

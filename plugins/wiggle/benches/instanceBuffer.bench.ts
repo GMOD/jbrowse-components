@@ -24,7 +24,7 @@ import { performance } from 'node:perf_hooks'
 
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/render-core/scoreScale'
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 import BigWigAdapter from '../src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../src/BigWigAdapter/configSchema.ts'

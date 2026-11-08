@@ -9,7 +9,7 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 
 import { WIGGLE_MIN_PX } from '../../util.ts'
 import { makeDensityLutFillFn } from '../getDensityColor.ts'

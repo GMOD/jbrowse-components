@@ -6,8 +6,8 @@ import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { createCanvas } from '@napi-rs/canvas'
 import { fireEvent, render, waitFor, within } from '@testing-library/react'
-import { createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -122,7 +122,7 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
     d[i + 3] = 255
   }
   flatCtx.putImageData(dst, 0, 0)
-  return flat.toBuffer()
+  return flat.toBuffer('image/png')
 }
 
 export const RECOLOR_THRESHOLD = 0.00005
