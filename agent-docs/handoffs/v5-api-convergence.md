@@ -137,7 +137,8 @@ between displays.
 - `jbrowse validate` reports no warning outside plugin-registered types on
   hosted configs, `demos/` and the tutorials (step 3). On an adapter that
   derives no `svType`, validate reads `svtype` as the file's own column, so
-  the gnomAD-SV bigBeds no longer warn. `demos/` held on 2026-10-30.
+  the gnomAD-SV bigBeds no longer warn. `demos/` held on 2026-11-08
+  (`scripts/validate-built-config.ts --schema-only`).
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`. Held on 2026-10-30: the draft
   quotes no retired key, and the display's config page and guide say
