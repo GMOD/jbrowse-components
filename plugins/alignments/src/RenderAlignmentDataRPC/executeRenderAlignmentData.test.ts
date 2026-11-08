@@ -63,11 +63,7 @@ function run(
   },
   featuresArray: Feature[] = spliced,
 ) {
-  jest
-    .mocked(fetchFeaturesFromAdapter)
-    .mockResolvedValue({ featuresArray } as unknown as Awaited<
-      ReturnType<typeof fetchFeaturesFromAdapter>
-    >)
+  jest.mocked(fetchFeaturesFromAdapter).mockResolvedValue({ featuresArray })
   jest.mocked(fetchReferenceSequence).mockResolvedValue({
     regionSequence: 'a'.repeat(400),
     regionSequenceStart: 0,
