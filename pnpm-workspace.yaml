@@ -8,6 +8,15 @@ packages:
   # third-party plugin actually resolves @jbrowse/* packages.
   - 'example-plugins/*'
   - 'website'
+# astro2tsx pins @emnapi/core but takes @emnapi/runtime as a peer, and the two
+# must be the same release. Left to the peer, pnpm dedupes it onto the 2.0
+# beta that rolldown's wasm32 binding brings in, and `astro check` dies loading
+# astro2tsx with `this.bridge.setLastError is not a function`. Drop this once
+# astro2tsx depends on the runtime itself.
+packageExtensions:
+  '@astrojs/astro2tsx@0.1':
+    dependencies:
+      '@emnapi/runtime': 1.11.3
 blockExoticSubdeps: true
 # A workspace cycle is a warning by default, and the tree carried 127 of them
 # unread. They all came from two edges that had a way out: three plugins taking
