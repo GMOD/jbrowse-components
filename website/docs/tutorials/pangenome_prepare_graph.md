@@ -33,9 +33,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.4.0 or later, for the
-  graph's files in format 2, which the configs below read, and the walk index
-  (walk format 5, the only one the plugin reads)
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 4.0.0 or later, for the
+  graph's files in format 2, which the configs below read, and the walk files
+  (walk format 7, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -61,9 +61,9 @@ npm install -g @jbrowse/cli@next
 ## Download the data
 
 The input is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s
-Minigraph-Cactus graph. `gfa-to-tabix build` reads the rGFA, and the walk index
-reads the base-level GFA, both as local files. Fetch the rGFA first and the
-base-level GFA when you reach [the walks](#haplotype-walks-tabix):
+Minigraph-Cactus graphs. `gfa-to-tabix build` reads the rGFA, and the walk files
+come from the base-level GFAs, all as local files. Fetch the rGFA first and the
+base-level GFAs when you reach [the walks](#haplotype-walks-tabix):
 
 ```bash
 B=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38
@@ -71,6 +71,9 @@ B=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release
 wget -c $B.sv.gfa.gz
 # base-level GFA with every haplotype's walk, 64 GB
 wget -c $B.gfa.gz
+C=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-chm13/hprc-v2.1-mc-chm13
+# the same graph built on T2T-CHM13, for walks on hs1, 66 GB
+wget -c $C.gfa.gz
 ```
 
 <details>
@@ -369,62 +372,79 @@ separately.
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
-writes every walk to one tabix-indexed file per reference, which the graph track
-and the haplotype lanes read one range at a time:
+writes every walk to one walk file per reference, which the graph track and the
+haplotype lanes read one range at a time:
 
-- each walk is cut into pieces, one for each stretch it spends in a 64 kb chunk
-  of the reference, and each piece is filed under its chunk
-- a chunk holds the reference's path through it once, each distinct route a
+- each walk is cut into pieces, one for each stretch it spends in a 64 kb tile
+  of the reference, and each piece is filed under its tile
+- a tile holds the reference's path through it once, each distinct route a
   haplotype takes off that path once, and every other walk's piece as the list
   of routes it takes
+- a departure record gives each place a walk leaves the reference and rejoins it
+  in another piece, and is filed over the whole stretch between, so a window
+  inside a deletion still reads the haplotype that skips it
 
-The base-level GFA holds each walk as a W line. Index it against both of HPRC's
-references:[^walks-cost]
+The base-level GFA holds each walk as a W line. Index the GRCh38 graph against
+GRCh38:[^walks-cost]
 
 ```bash
-# --refs: one walk file per reference sample, in its coordinates
-gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38,CHM13 \
+# --refs: the reference sample whose coordinates the walk file is in
+gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38 \
   -o hprc-v2.1-mc-grch38
+```
+
+A Minigraph-Cactus graph's own reference passes no node twice, so its walk file
+places every step exactly. On another reference, a step on a node that reference
+passes more than once takes the pass the tool picks, so a track on T2T-CHM13
+reads the walks of the graph built on CHM13, indexed the same way:
+
+```bash
+gfa-to-tabix hprc-v2.1-mc-chm13.gfa.gz --walks --refs CHM13 -o hprc-v2.1-mc-chm13
 ```
 
 `vg convert -f graph.gbz` writes the same GFA for a graph published only as a
 GBZ.
 
-The tool writes one file and its `.tbi` index for each sample in `--refs`, named
-`<prefix>.<sample>.walks.bed.gz`, so a track on GRCh38 reads an index that
-covers GRCh38 alone:
+The tool writes a walk file and its directory for each sample in `--refs`, named
+`<prefix>.<sample>.walks.gz` and `<prefix>.<sample>.walks.gz.idx`, so a track on
+GRCh38 reads files that cover GRCh38 alone:
 
-| file                   | what it holds                                    |
-| ---------------------- | ------------------------------------------------ |
-| `.GRCh38.walks.bed.gz` | every walk through each 64 kb chunk of GRCh38    |
-| `.CHM13.walks.bed.gz`  | every walk through each 64 kb chunk of T2T-CHM13 |
+| file                                      | what it holds                                                                                             |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `hprc-v2.1-mc-grch38.GRCh38.walks.gz`     | a header, then for each GRCh38 sequence its tiles, its departure records and a table of their byte ranges |
+| `hprc-v2.1-mc-grch38.GRCh38.walks.gz.idx` | the byte range of the header and of each sequence's table                                                 |
+| `hprc-v2.1-mc-chm13.CHM13.walks.gz`       | the same for T2T-CHM13, with its own `.idx`                                                               |
 
-The file opens with header lines, which `tabix -H` prints:
+A browser reads the directory, then fetches the tiles and departure records over
+a window by range request. `gzip -dc` prints the whole file as text, header
+first:
 
 ```bash
-tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
+gzip -dc hprc-v2.1-mc-grch38.GRCh38.walks.gz | head -4
 ```
 
 ```text output
-#walks	format:i:5	chunk:i:65536	maxnode:i:1024	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000
-#reference	CHM13
-#haplotype	GRCh38#0
+#walks	format:i:7	tile:i:65536	revisited:i:0	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000
+#reference	GRCh38
+#haplotype	CHM13#0
 #haplotype	HG00097#1
 ```
 
-- **`#walks`** gives the file's format, the chunk size, the longest node in bp
-  and the `--stay` the tool ran with
+- **`#walks`** gives the file's format, the tile size, `revisited`, the number
+  of nodes the reference passes more than once (0 when every step is placed
+  exactly), and the `--stay` the tool ran with
 - **`abridge` and `abridgebytes`** are the `--abridge-steps` and
-  `--abridge-bytes` budgets. Where a chunk's walks cost more, usually in a
-  satellite array, gfa-to-tabix moves the costliest walks to detail rows that a
-  window read skips
+  `--abridge-bytes` budgets. Where a tile's walks cost more, usually in a
+  satellite array, gfa-to-tabix moves the costliest walks to detail records that
+  a window read skips
 - **`#reference` and `#haplotype`** list the reference sample, then every other
   haplotype with rows in the file, the other reference included
 
-A track's `walksUri` names one reference's set by its prefix,
-`<prefix>.<sample>`. The track below draws the graph and, as a second display,
-one lane per haplotype. Each haplotype in `assemblyNames` is an assembly whose
-aliases include its `sample#haplotype` name, as
+A track's `walksUri` names one reference's walk file by its prefix,
+`<prefix>.<sample>`, and reads `<walksUri>.walks.gz` with the `.idx` beside it.
+The track below draws the graph and, as a second display, one lane per
+haplotype. Each haplotype in `assemblyNames` is an assembly whose aliases
+include its `sample#haplotype` name, as
 [the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 declares one; `assemblyNameToPanSN` covers the reference, which has none:
 
@@ -450,8 +470,8 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
 The track aligns each walk to the reference walk at the nodes both pass through,
 so it needs no sequence beyond the walk file.
 
-A graph track with no lanes names the same set through `RgfaTabixAdapter`, here
-T2T-CHM13's:
+A graph track with no lanes names a walk file through `RgfaTabixAdapter`, here
+the CHM13 graph's:
 
 ```json addtrack
 {
@@ -461,7 +481,7 @@ T2T-CHM13's:
   "assemblyNames": ["hs1"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "walksUri": "hprc-v2.1-mc-grch38.CHM13",
+    "walksUri": "hprc-v2.1-mc-chm13.CHM13",
     "assemblyNameToPanSN": { "hs1": "CHM13" },
     "defaultHaplotypes": [
       "HG00097#1",
@@ -477,16 +497,16 @@ T2T-CHM13's:
 }
 ```
 
-- `assemblyNameToPanSN` maps the assembly name to the set's reference sample,
-  here `hs1` to `CHM13`
+- `assemblyNameToPanSN` maps the assembly name to the walk file's reference
+  sample, here `hs1` to `CHM13`
 - `defaultHaplotypes` lists the haplotypes the track draws until the reader
   picks others, as `sample#haplotype`, or a bare sample for both of its
   haplotypes
 
 The HPRC tracks built this way open at chr22:20,000,000-20,100,000 on
-[hs1, from the CHM13 set](https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks_hs1%22%5D%7D%5D%7D)
+[hs1, from the CHM13 graph's walk file](https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks_hs1%22%5D%7D%5D%7D)
 and
-[hg38, from the GRCh38 set](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks%22%5D%7D%5D%7D).
+[hg38, from the GRCh38 graph's walk file](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks%22%5D%7D%5D%7D).
 
 The track menu's **Haplotypes** submenu switches the track between **The track's
 default haplotypes**, **Every haplotype in the graph** and **Chosen in Graph
@@ -499,9 +519,9 @@ Two budgets in the
 [adapter's config](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/src/RgfaTabixAdapter/configSchema.ts)
 set when a window is refused with a notice to zoom in:
 
-- **`walkByteBudget`** caps the compressed bytes the three indexes estimate a
-  window would fetch. The browser downloads every haplotype's rows and drops the
-  unwanted ones by name, so the estimate is the same for any set of haplotypes.
+- **`walkByteBudget`** caps the compressed bytes a window would fetch from the
+  walk file, which its directory gives before any row is read. A tile holds
+  every haplotype's rows, so the bytes are the same for any set of haplotypes.
 - **`walkStepBudget`** caps the walk steps a window keeps, counting only the
   haplotypes the track draws, so with fewer haplotypes the track can draw a
   wider window.
@@ -559,7 +579,7 @@ To rebuild the coarse tier alone, at another threshold, run
 gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
 ```
 
-The walk files come from the command under
+The walk files come from the commands under
 [Indexing haplotype walks](#haplotype-walks-tabix).
 
 ## See also
@@ -592,5 +612,6 @@ The walk files come from the command under
   example here.
 
 [^walks-cost]:
-    On a 24-core machine `gfa-to-tabix` took 39 minutes and 13 GB of memory, and
-    wrote 2.5 GB for the two references.
+    On a shared 24-core machine `gfa-to-tabix` took 90 minutes and 8 GB of
+    memory for GRCh38's 1.6 GB walk file, and 50 minutes and 9 GB for CHM13's
+    1.8 GB.

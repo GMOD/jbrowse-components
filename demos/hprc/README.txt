@@ -3,12 +3,15 @@ HPRC release 2 graph, indexed for JBrowse 2
 
 These files are a redistribution, not original data. They are tabix-indexed BED
 projections of a graph published by the Human Pangenome Reference Consortium,
-built so that JBrowse can query a locus without downloading the graph.
+and walk files of its haplotypes' paths, built so that JBrowse can query a
+locus without downloading the graph.
 
-The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
-other demos' files, which have their own provenance: hprc_cfhr_*.genes.gff3.gz
-is eight haplotypes' CAT annotation from HPRC, which the walk lanes draw as
-each haplotype's gene row; hprc_abca7_trgt.vcf.gz is PacBio's
+The hprc-v2.*-mc-grch38.* files below are that set, with
+hprc-v2.1-mc-chm13.CHM13.walks.gz from the release's CHM13-referenced graph.
+This prefix also serves two other demos' files, which have their own
+provenance: hprc_cfhr_*.genes.gff3.gz is eight haplotypes' CAT annotation from
+HPRC, which the walk lanes draw as each haplotype's gene row;
+hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
 repeat track, hprc_kiv2_copies.vcf and hprc_kiv2_copies_all.vcf.gz its KIV-2
@@ -197,68 +200,78 @@ Haplotype walks
   hprc-v2.1-mc-chm13.CHM13.walks.gz                1,760,248,336
   hprc-v2.1-mc-chm13.CHM13.walks.gz.idx                      886
 
-  Every haplotype's path through the base-level v2.1 graph in walk format 7
-  (gfa-to-tabix 4.0.0, docs/walks-container/ there), one file per reference
-  with its directory in the .idx beside it, built on 2026-11-07 and hosted on
-  2026-11-08 after graph-walks 6.0.0's release check passed 28 of 28 windows
-  on each hosted file. The configs name a file by its prefix in walksUri,
+  What the configs read. Every haplotype's path through a base-level v2.1
+  graph in walk format 7 (gfa-to-tabix 4.0.0, docs/walks-format.md there),
+  one file per reference with its directory in the .idx beside it, built on
+  2026-11-07 and hosted on 2026-11-08 after graph-walks 6.0.0's release check
+  passed 28 of 28 windows on each hosted file. The GRCh38 file comes from the
+  GRCh38-referenced graph and the CHM13 file from HPRC's CHM13-referenced one
+  (hprc-v2.1-mc-chm13, in the directory beside the release directory above),
+  so each reference passes none of its graph's nodes twice and the header's
+  revisited:i:0 holds: every position and departure in the file is the
+  graph's own, not a placement choice.
+
+  A file is a series of gzip units: a header, then per reference sequence a
+  unit per 64 kb tile, its departure records in blocks of 64 kb to 32 Mb,
+  each record in every block its stretch covers, and a table of the units'
+  byte ranges; the .idx gives the byte range of the header and of each
+  table. A tile holds the reference's path through it once, each distinct
+  route a haplotype takes off that path once, and each haplotype's piece as
+  the list of routes it takes. A departure record gives each place a path
+  leaves the reference and rejoins it in another piece, with the bp of its
+  own sequence between and the part of it the graph lacks. A graph track
+  reads the directory, then the tiles and departure blocks over a window by
+  range request, and decodes only the haplotypes it is asked for. Tiles too
+  costly to read whole, mostly repeat arrays, keep a summary row per
+  costliest haplotype and its steps in a detail unit, which the graph track
+  loads on request.
+
+  The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
+  it aligns each haplotype's walk to the reference's, and each lane to the
+  next, on the nodes both visit, with no base compared. It reads no gbz.db
+  and no haplotype index. Its walksUri names the file by its prefix,
   hprc-v2.1-mc-grch38.GRCh38, and the plugin resolves <prefix>.walks.gz and
-  its .idx. The format 5 files below stay hosted for sessions saved before
-  the swap.
+  its .idx; defaultHaplotypes names the lanes it draws unless the haplotype
+  menu says otherwise. test_data/graphgenomeview/hprc.json's hs1 track reads
+  hprc-v2.1-mc-chm13.CHM13.
+
+  GRCh38: 19,933,602 pieces, 1,797,769 departure records in 3,813,809 rows,
+  97,164,719 lines in 159,038 units; 1,698 paths visit no GRCh38 node and
+  have no row.
+  CHM13: 20,237,742 pieces, 1,750,312 departure records in 3,743,089 rows,
+  111,337,174 lines in 154,936 units; 3,312 paths have no row.
+
+  Built on ada with gfa-to-tabix 4.0.0 (commit 1e698f4), from the GFAs
+  vg convert -f wrote from HPRC's hprc-v2.1-mc-grch38.gbz and
+  hprc-v2.1-mc-chm13.gbz, so node ids match each GBZ, and the GRCh38 file's
+  match the gbz.db:
+
+    gfa-to-tabix grch38.gfa --walks --refs GRCh38 -o hprc-v2.1-mc-grch38
+                                                     # 1:30:04, 7.3 GiB peak
+    gfa-to-tabix chm13.gfa --walks --refs CHM13 -o hprc-v2.1-mc-chm13
+                                                     # 50:10, 8.6 GiB peak
+
+  The defaults --tile 65536 and --stay 311 apply.
 
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz      1,550,816,162 bytes
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz.tbi    1,332,701
   hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz       1,463,176,959
   hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz.tbi     1,010,636
 
-  Every haplotype's path through the base-level v2.1 graph, in walk format 5
-  (gfa-to-tabix 1.4, docs/walks-format.md): one file per reference, filed under
-  64 kb chunks of it. A chunk holds the reference's path through it once, each
-  distinct route a haplotype takes off that path once, the lengths of the
-  nodes those routes visit, and each haplotype's piece as the list of routes
-  it takes. A graph track reads one range of one file per window and decodes
-  only the haplotypes it is asked for. Where Minigraph-Cactus clips a contig
-  into several W lines, the first and last piece of each line give the bp the
-  graph lacks before the next, so walk rows say which of a gap's bases are
-  not in the graph. In the 1% of chunks too costly to read whole, mostly
-  repeat arrays, the file keeps a summary row per costliest haplotype and its
-  steps in a detail record, which the graph track loads on request.
-
-  The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
-  it aligns each haplotype's walk to the reference's, and each lane to the
-  next, on the nodes both visit, with no base compared. It reads no gbz.db
-  and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38-f5s.GRCh38, and defaultHaplotypes names the lanes it
-  draws unless the haplotype menu says otherwise.
-
-  Each file's first header line gives format:i:5; chunk:i:65536, the chunk
-  size; maxnode:i:1024, the longest node, which sets how far before a window
-  a reader queries; stay:i:311, the --stay it was written with; and abridge and
-  abridgebytes, the cost past which a chunk keeps summary rows. The file
-  then names its reference on one #reference line and the 463 other
-  haplotypes, the other reference included, on #haplotype lines.
-
-  GRCh38: 49,333,469 route rows and 19,886,162 walk rows from 19,933,602
-  pieces; 1,698 paths visit no GRCh38 node and have no row.
-  CHM13: 49,134,471 route rows and 23,653,408 walk rows from 23,696,899
-  pieces; 3,736 paths have no row.
-
-  Built 2026-10-20 on ada with gfa-to-tabix 1.4.0, from HPRC's
-  hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes, the release directory above),
-  so node ids match the GBZ and the gbz.db:
+  Still hosted, read by no config since 2026-11-08, and slated for deletion:
+  the walk format 5 set the configs read before the format 7 files, kept for
+  sessions saved before the swap. The plugin from 9.0.0 reads format 7 only,
+  so these open only in a plugin before 9.0.0. Both files come from the
+  GRCh38-referenced graph, bgzip + Tabix BED filed under 64 kb chunks, with
+  skip rows, one per haplotype and chunk that its deletion jumps over (ADR
+  0006 in gfa-to-tabix): 24,795 on GRCh38 and 86,958 on CHM13. Built
+  2026-10-28 with gfa-to-tabix 2.0.0 from hprc-v2.1-mc-grch38.gbz (2:25:03,
+  13.1 GB RSS):
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      -o hprc-v2.1-mc-grch38-f5                      # 39:10, 13.1 GB RSS
-
-  The defaults --chunk 65536 and --stay 311 apply.
-
-  The -f5s set is the same command with gfa-to-tabix 2.0.0, built 2026-10-28
-  (-o hprc-v2.1-mc-grch38-f5s; 2:25:03, 13.1 GB RSS). It adds skip rows, one
-  per haplotype and chunk that its deletion jumps over (ADR 0006 in
-  gfa-to-tabix): 24,795 on GRCh38 and 86,958 on CHM13. Every other row
-  matches the -f5 set's. The configs read -f5s.
+      -o hprc-v2.1-mc-grch38-f5s
 
   The -f5 set was retired on 2026-10-30 (see Retired files below), and the
   -f3 set (gfa-to-tabix 1.1.0) is gone too. The format 1 and format 2 sets

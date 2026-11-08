@@ -76,15 +76,9 @@ const PREFIXES: [string, string][] = [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored',
     '.graph.bed.gz',
   ],
-  // walk-file stems, which walksUri extends with .walks.bed.gz
-  [
-    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5s.GRCh38',
-    '.walks.bed.gz',
-  ],
-  [
-    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5s.CHM13',
-    '.walks.bed.gz',
-  ],
+  // walk-file stems, which walksUri extends with .walks.gz and .walks.gz.idx
+  ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38', '.walks.gz'],
+  ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-chm13.CHM13', '.walks.gz'],
   [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
     '.segs.bed.gz',
@@ -97,6 +91,10 @@ const PREFIXES: [string, string][] = [
   ],
   [
     'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38',
+    '.gfa.gz',
+  ],
+  [
+    'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-chm13/hprc-v2.1-mc-chm13',
     '.gfa.gz',
   ],
   // zarr store roots — the adapter reads objects inside

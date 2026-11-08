@@ -305,8 +305,8 @@ as you browse ([Route 1](#route-1-a-graph-track-browsable-by-locus)):
      `<prefix>.graph.bed.gz`, for an rGFA or a plain GFA, or the
      `<prefix>.segs.bed.gz` of a format 1 pair. The form also reads
      `<prefix>.graph.json`, so the track gets the coarse tier
-   - **Haplotype walks (.walks.bed.gz):** `<prefix>.<sample>.walks.bed.gz`, from
-     `gfa-to-tabix --walks`
+   - **Haplotype walks (.walks.gz):** `<prefix>.<sample>.walks.gz`, from
+     `gfa-to-tabix --walks` 4.0 or later, with its `.walks.gz.idx` beside it
    - **GBZ database (.gbz.db):** the database, with the haplotype index from
      `gbz-haplotype-index` beside it, and optionally reads aligned to the graph
      as GAF

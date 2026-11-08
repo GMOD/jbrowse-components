@@ -60,17 +60,17 @@ graph.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                                  | File                                                    |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Our tabix index files of the graph's haplotype walks and bubbles, with the exact build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
+| What it is                                                                                              | File                                                    |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Our indexed files of the graph's haplotype walks and bubbles, with the exact build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
 
 </details>
 
 ## Configuring the haplotype lanes track
 
-One track draws the lanes, reading each haplotype's walk from tabix-indexed
-files we built from the release's graph. The HPRC page's **Haplotypes** launch
-adds it, and the config below is the one to adapt for your own graph:
+One track draws the lanes, reading each haplotype's walk from indexed files we
+built from the release's graph. The HPRC page's **Haplotypes** launch adds it,
+and the config below is the one to adapt for your own graph:
 
 - **A lane** is one haplotype's walk, which lists in order the nodes that
   haplotype passes through.
@@ -93,7 +93,7 @@ adds it, and the config below is the one to adapt for your own graph:
   "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
   "adapter": {
     "type": "WalkTabixSyntenyAdapter",
-    "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5s.GRCh38",
+    "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38",
     "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": { "hg38": "GRCh38#0" }
   },
@@ -127,7 +127,7 @@ not lift GRCh38's genes across the graph.
   - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
   - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
     _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
-    there, in the -f5s walk file the lanes read.
+    there.
   - CAT misses genes that only GRCh38's alternate contigs hold. We splice
     GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
     onto each haplotype's assembly instead, where its walk crosses them.
@@ -207,10 +207,10 @@ Five cases are easy to misread in the lanes:
 - **A stretch the haplotype skips across the window is a row with no ribbons.**
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
-  step on the reference across 150 kb". The row comes from the -f5s walk file's
-  skip rows, so it appears where the window lies in a 64 kb chunk the skip
-  covers whole, for a skip up to about 2 Mb; in the skip's first or last chunk
-  the row can be missing. Walk rows, which
+  step on the reference across 150 kb". The row comes from the walk file's
+  departure record for where the walk leaves the reference and rejoins it, which
+  the file keeps over the whole stretch between, so every window inside the
+  stretch reads it. Walk rows, which
   [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
   haplotype as a row with no step on the reference. At IGH, IGK and IGL such a
   row is often the cell line's deletion, as
@@ -226,7 +226,7 @@ Five cases are easy to misread in the lanes:
 **Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
 not place in a lane. At IGL, from any **Haplotypes** launch, type
 `chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
-`HG002.2` and `HG01074.1`, which puts two skip rows at the foot.
+`HG002.2` and `HG01074.1`, which puts two such rows at the foot.
 
 <Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 

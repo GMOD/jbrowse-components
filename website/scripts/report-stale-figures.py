@@ -25,7 +25,7 @@ root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 min_days = float(sys.argv[sys.argv.index("--min-days") + 1]) if "--min-days" in sys.argv else 1
 
 # A walk or graph adapter names a prefix that its files extend
-SUFFIXES = ["", ".walks.bed.gz", ".graph.bed.gz", ".segs.bed.gz"]
+SUFFIXES = ["", ".walks.gz", ".graph.bed.gz", ".segs.bed.gz"]
 URI_KEYS = {"uri", "walksUri"}
 # every main deploy rewrites this tree, so its dates say nothing about the data
 DEPLOYED = "jbrowse.org/code/jb2/"
