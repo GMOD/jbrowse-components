@@ -166,6 +166,14 @@ export default class CramSlightlyLazyFeature
    * wins, and a nonconforming encoder's `RG` left in the tag block with no @RG
    * line is the fallback, as htslib-family tools show it. The fallback is
    * `super`'s — `this.getTag` is this method.
+   *
+   * No `hasEndClip` gate on the SA lookup, unlike BAM and SAM: this lookup is
+   * a key-id map probe and a scan of the read's ~13 key ids, not a byte walk,
+   * so computing both end clips costs what it saves. Over 401,152 reads on ada
+   * the gate took the SA pass from 9.6 to 12.5 ms on a CRAM with no SA, broke
+   * even at 13.5 ms with SA on its clipped reads, and slowed the extract 1-6%.
+   * A one-pass `getTagAlt` would save one map probe per read, too little to add
+   * for the same reason.
    */
   override getTag(tagName: string) {
     return tagName === 'RG'

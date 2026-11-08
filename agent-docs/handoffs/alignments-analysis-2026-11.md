@@ -1,6 +1,6 @@
 ---
 name: alignments-analysis-2026-11
-description: "What remains of the 2026-11-07 plugins/alignments analysis: two small bugs, a CRAM bench, the read-field registry and the guide-from-scale convergences, each with what waits on Colin. Read before a cleanup or grammar pass on the alignments display."
+description: "What remains of the 2026-11-07 plugins/alignments analysis: two small bugs, the read-field registry and the guide-from-scale convergences, each with what waits on Colin. Read before a cleanup or grammar pass on the alignments display."
 ---
 
 # Alignments analysis, 2026-11-07
@@ -39,14 +39,6 @@ review of those starts cold.
   would skip the bake and connector passes for reads nothing draws. Costs one
   relayout on re-show. The overlay no longer needs it: `readLayoutRecord`
   gives a 0-row lane's reads no rect.
-
-## CRAM parity (needs a bench)
-
-- `CramSlightlyLazyFeature` has no `hasEndClip`, so `saTagOf`
-  (`shared/splitAlignment.ts`) walks every CRAM read's tags; BAM's gate
-  measured 27 ms → 4 ms. Add the getter from the leading and trailing clip
-  lengths and bench on ada before claiming a win. `getTagAlt` (MM/Mm, XS/TS
-  in one pass) is the same shape, lower value.
 
 ## Grammar: one read-field registry (Colin's call, then a review)
 
