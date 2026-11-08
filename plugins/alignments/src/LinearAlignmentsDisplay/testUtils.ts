@@ -122,6 +122,10 @@ export type TestRenderStateOverrides = Omit<
  * `as unknown as RenderState` fixture silently stops covering a field the type
  * gains, and the renderers read this straight through to `drawSection`, where
  * an array the fixture forgot is dereferenced unconditionally.
+ *
+ * "Everything off" includes each mark's own `enabled(state)` flag, so a mark
+ * driven over these defaults paints nothing and answers no hit: pair a
+ * "draws nothing" assertion with a positive case on the same state.
  */
 export function makeTestRenderState(
   overrides: TestRenderStateOverrides = {},

@@ -40,5 +40,12 @@ export const TOOLTIP_Z_INDEX = 100000
  * something the user just asked for, so nothing may cover it. Handlers still
  * drop the hover when opening a menu — this is what keeps a tooltip that
  * outlives that clear (a neighbouring display's, say) from landing on top.
+ *
+ * A portal opened from inside the menu stays on MUI's 1300, under the menu's
+ * invisible backdrop: visible and inert (`elementFromPoint` returns
+ * `MuiBackdrop-root`). Submenus are fixed (ContextMenu.test.tsx). A disabled
+ * row's tooltip there takes no clicks and needs nothing; the help "?" dialog
+ * is unreachable while no `contextMenuItems` row carries `helpText`, and its
+ * fix is then on `CascadingMenuHelpDialog`, not a z-index provider.
  */
 export const CONTEXT_MENU_Z_INDEX = TOOLTIP_Z_INDEX + 1

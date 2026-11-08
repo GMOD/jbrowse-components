@@ -1,6 +1,6 @@
 ---
 name: toolchain
-description: How do the TypeScript 6/7 split, the oxlint/eslint split, project references, incremental builds, worktree installs and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a tsconfig references array, a lint rule or a disable comment.
+description: How do the TypeScript 6/7 split, the oxlint/eslint split, incremental builds, the pre-push fixers, pnpm autogen, worktree installs and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a lint rule, or a docstring autogen reads.
 audience: internal
 kind: operations
 ---
@@ -54,6 +54,17 @@ or `package.json`, and an error it replays names the stale type, not the cache.
 - **A signature change can pass `pnpm verify` stale**: a newly required
   parameter once left 25 callers to be found later. After changing an exported
   signature, `rm tsconfig.tsbuildinfo` and run `pnpm typecheck` before landing.
+
+## What `pnpm typecheck` does not check
+
+- **A removed workspace dependency.** Typecheck is one program over the root
+  and jest resolves through root `node_modules`, so both stay green; only `pnpm
+  build:esm` compiles each package against its own deps, and only with the
+  dependent's `tsconfig.build.esm.tsbuildinfo` deleted.
+- **`website/`.** The docs generators check under `pnpm typecheck
+  website/scripts/api-docs` (its own stricter tsconfig, which pulls in what it
+  imports), and `.oxlintrc.json` ignores that directory too. Run it after
+  editing anything under `website/scripts`.
 
 ## TS7056 names the factory, not the cause
 
@@ -114,6 +125,37 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 - **`eslint-disable-next-line` means the next line.** A directive followed by more
   comment lines applies to the comment and fails silently. Put the prose first and the
   directive last.
+- **`gate(s) failed: lint` in `pnpm verify` names the type-aware oxlint gate**;
+  eslint's is `lint (eslint)`. Read the failed gate's own `=== <name>` section,
+  and the exit code rather than a piped tail.
+- **A rebase or `merge --ff-only` runs no pre-commit hook**, so lint green on
+  every original commit can be red on the result (an unused import left by a
+  conflict). Run `pnpm verify` after the last rebase, and `pnpm verify --all`
+  after changing a widely read type: type-aware oxlint then flags redundant
+  casts in files you never opened.
+- **Whole-tree type-aware typescript-eslint dies near 17 GB** on the default
+  `vm.max_map_count` (65530), whatever `--max-old-space-size` says, and
+  `--concurrency` workers share that one process. Shard the file list into
+  separate processes (`xargs -P`).
+
+## The pre-push hook's fixes are checked by `build:esm` only
+
+`.githooks/pre-push` commits what its linters, formatter and `autogen
+--fix-stale` rewrote, and only `build:esm` runs after them. A fix that breaks
+website types or a jsdom test lands unread: `.dataset` on a `querySelector`
+`Element` failed CI's website build, and `CSS.escape` is a ReferenceError in
+jsdom. After a push whose hook reported fixes, re-run the touched suites and
+`pnpm --filter @jbrowse/website-astro typecheck`, then repair so the rule has
+nothing left to fix (`querySelector<HTMLElement>`), since a revert is re-fixed
+on the next push.
+
+**It commits by pathspec, so it cannot add a new generated file.** A schema
+change that creates a `website/docs/config` page blocks the push with
+"pathspec … did not match any file(s) known to git". Regenerate first
+(`scripts/generateConfigManifest.ts`, then `website/scripts/api-docs/generate.ts`,
+then `scripts/check-docs.ts`, each under `node --experimental-strip-types`) and
+commit `website/docs/config`, `website/docs/models`, `typeDocs.generated.json`
+and `coverage-gaps.txt` before pushing.
 
 ## Worktrees
 
@@ -138,10 +180,61 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 `pnpm format` is safe bare. But `agent-docs` is on `.prettierignore` and **naming it
 explicitly overrides that**, rewrapping thousands of lines of prose.
 
-**`pnpm autogen` needs a clean tree.** `pnpm gendocs` resolves sources through the
+**oxfmt strips the `<T,>` comma from a generic arrow in a `.ts` file**, and
+babel parses `.ts` with JSX on, so the suite then fails to parse. Write generic
+helpers as `function f<T>(x: T)` declarations, and run tests after `pnpm
+format`, not before.
+
+## `pnpm autogen`
+
+**It needs a clean tree.** `pnpm gendocs` resolves sources through the
 `@jbrowse/*` workspace links, so a dirty shared tree leaks into the output and then
 fails the CI check. A temp worktree with symlinked `node_modules` does not escape it.
-Run it clean and commit the output by itself.
+Run it clean and commit the output by itself. Don't stage while it runs: the
+standalone generators write as they go. During a rebase, `git add` every
+resolution first.
+
+**What stales it**, which typecheck, jest, lint and `build:esm` all pass over:
+
+- An `#api` docstring (`packages/core/README.md`, `website/docs/api/core.md`),
+  a config slot (the config manifest and the config pages together), doc
+  frontmatter or a `todo/` entry.
+- A change to what a documented `#getter`, `#method` or `#action` returns or
+  accepts, with no docstring touched: the model pages and
+  `typeDocs.generated.json` print each inferred type.
+- Re-indenting a model body: the tables embed initializers as literal source.
+- Moving or editing a `// #region` that `sync-doc-snippets` quotes: the
+  pre-commit oxfmt reformats the snippet at the doc's shallower indent, so a
+  line wrapped only because it sat deep re-stales it on every commit. Keep its
+  lines short enough to fit at both indents.
+
+**Shapes the generator misreads:**
+
+- An untagged MST member still gets a row with an empty description.
+- A `/** … */` block between a `#stateModel` docstring and its factory is
+  absorbed into the page, and the generator stops following the mixin (one
+  above `TrackHeightMixin()` dropped its members from 22 display pages). Use
+  `//` there.
+- A shared slot builder spread into an inline sub-schema drops its slots from
+  the parent page, since only slots with a `#slot` tag at the call site are
+  inlined. It is free inside a schema with its own `#config` page; elsewhere
+  keep the slots hand-written or split the sub-schema into its own file.
+- A sub-schema built by a factory fails with "N config slot(s) in a #config
+  schema have no #slot tag", naming the property, not the factory, because only
+  a literal `ConfigurationSchema(` initializer is skipped. Follow
+  `FormatAbout`: `#config` and `#category` on the factory, `/** #slot */` at
+  each call site.
+
+**Reading a red one:** a generated diff that deletes far more than it adds
+means your tree, not main's staleness, so revert it; a stack-trace path with no
+worktree segment means the generator ran against the primary checkout.
+`scripts/chromeBundleSizes.json` moves raw `gzipBytes` on every run and its
+checker gates only the rounded `*Kb` fields, so revert it unless one moved.
+
+**The CLI README is regenerated at pack time.** A local `generate_readme.sh`
+run adds whitespace churn around the `--help` block, and `autogen` mirrors the
+README into `website/docs/cli.md`. Fix CLI prose in `commands/*`, not the
+README.
 
 ## A `dependencies` entry can be load-bearing without being imported
 

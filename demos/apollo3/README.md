@@ -60,3 +60,7 @@ Frank list, so nobody rediscovers these by being surprised.
   The repo's validator cannot check either and warns about both. Both were
   checked in a browser: the ontology loads from the pinned URL and not from
   GitHub, and the track opens from the session spec, with nothing logged.
+- **Driving it from a script:** Apollo's dialog buttons render in caps by CSS,
+  so the DOM says `CREATE` and `YES` and a match on the source spelling does
+  nothing; and the UMD global exports only `default`, so a page script cannot
+  reach the change classes. Drive edits through the UI.

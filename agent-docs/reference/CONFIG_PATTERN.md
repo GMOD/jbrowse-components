@@ -73,3 +73,16 @@ that adds config slots must redeclare
 `configuration: ConfigurationReference(configSchema)` in its `types.compose`**,
 or `getConf` types against the base schema. Compose overrides props, so this
 costs nothing at runtime.
+
+## Shared slot kits stay object spreads
+
+A slot kit other packages `...spread` (`colorNamesSlot`,
+`regionTooLargeConfigSchemaFields`) **must stay an object**: turned into a
+function, it spreads as `{}` at every site with no error. The schema surface is
+also read statically: `generateConfigDocs.ts` takes `#config` only off a literal
+`ConfigurationSchema(` call, and `scripts/gatedBudgets.ts` regex-reads a literal
+`fetchSizeLimit: { … defaultValue: N`. So a whole-schema factory changes the
+generated docs even when the runtime schema is identical; diff
+`website/docs/config` before proposing one. To change a shared slot's default on
+one display, redeclare only `{ defaultValue }`, and `mergeSchemaDefinition`
+keeps the shared type and description.

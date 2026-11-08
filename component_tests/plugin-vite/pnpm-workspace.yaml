@@ -2,6 +2,9 @@
 # attaching it to the repo-root workspace. The overrides below pin the whole
 # @jbrowse/* closure to packed tarballs; they live here rather than in
 # package.json because pnpm 11 dropped that field and ignores it silently.
+# So a green run says the subpaths resolve, not that npm serves them. A check
+# that each packed package is in the publish set was declined: publish.yml runs
+# `pnpm publish -r`, which ships every non-private package.
 allowBuilds:
   esbuild: true
   puppeteer: true
