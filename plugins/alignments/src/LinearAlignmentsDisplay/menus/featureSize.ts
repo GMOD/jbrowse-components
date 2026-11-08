@@ -128,7 +128,8 @@ const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
 
 /**
  * The track-sizing rows for "Advanced": fixed or autogrow, and the row cap. A
- * fit keeps the track's height, so it ticks Fixed.
+ * fit keeps the track's height, so it ticks Fixed, which is why it is not
+ * display-kit's "Scroll": a fitted track does not scroll.
  * Autogrow is offered without content, since grow still fits the track to a
  * pileup-less stack (`growTargetHeight` collapses to the coverage bands); the
  * row cap only while there are rows.

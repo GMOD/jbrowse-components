@@ -397,6 +397,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           },
         }
       }
+      // Hover lights both ends; a right-click's pin lights the one read its
+      // menu acts on, as chain mode lights the chain (declined 2026-11-08).
       case 'connector': {
         const { id1, id2 } = result.hit
         return {

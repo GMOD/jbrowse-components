@@ -47,7 +47,12 @@ export function sashimiArcHeightFraction(genomicSpan: number) {
 /** The widest stroke the size scale passes through unclamped. */
 export const SASHIMI_MAX_STROKE_PX = 16
 
-/** A junction's stroke in CSS px: a thinner one can be neither seen nor hovered. */
+/**
+ * A junction's stroke in CSS px: a thinner one can be neither seen nor hovered.
+ * Not configurable as `readConnections.encoding.strokeWidth` is: no reader has
+ * asked, and the 1 px floor would stay under any written scale (declined
+ * 2026-11-08).
+ */
 export function sashimiStrokeWidth(count: number) {
   return Math.min(SASHIMI_MAX_STROKE_PX, Math.max(1, Math.log(count + 1)))
 }

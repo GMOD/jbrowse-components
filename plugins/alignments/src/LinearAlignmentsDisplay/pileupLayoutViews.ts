@@ -193,7 +193,10 @@ export function groupLayoutViews(self: GroupLayoutHost) {
      * The layout mechanics (grouping, sort, soft-clip) shared by the
      * viewport fit pass and ad-hoc layouts such as `fittedFeatureHeight`.
      * Excludes the fit policy (row caps) and the color inputs, which
-     * invalidate a later tier.
+     * invalidate a later tier. Lanes lay out in full under a hidden pileup,
+     * not coverage-only as collapsed lanes do: skipping the bake for reads
+     * nothing draws waits on a measurement that it costs seconds, and costs a
+     * relayout on re-show (declined 2026-11-08).
      */
     get groupLayoutContext(): GroupLayoutContext {
       return {

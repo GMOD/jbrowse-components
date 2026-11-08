@@ -2351,19 +2351,20 @@ export default function stateModelFactory(
          * #method
          * The color the Group by dialog's choice of field writes: a color by
          * the field when ticked, left alone while it already paints; and,
-         * unticked, the plain fill only where the reads paint that field.
-         * Undefined where the color stays as it is.
+         * unticked, the plain fill only where the reads paint the field
+         * chosen, or for None the field it leaves, so regrouping keeps a
+         * color by another field. The feature display's rule too. Undefined
+         * where the color stays as it is.
          */
         groupByColor(field: string | undefined, colorByGroup: boolean) {
-          return field === undefined
-            ? undefined
-            : colorByGroup
-              ? field === self.colorField
-                ? undefined
-                : colorForField(self.writtenColor, field, self.parkedColor)
-              : field === self.colorField
-                ? colorForField(self.writtenColor, undefined)
-                : undefined
+          const grouping = field ?? self.facet?.field
+          return colorByGroup && field !== undefined
+            ? field === self.colorField
+              ? undefined
+              : colorForField(self.writtenColor, field, self.parkedColor)
+            : grouping !== undefined && grouping === self.colorField
+              ? colorForField(self.writtenColor, undefined)
+              : undefined
         },
         /**
          * #method
@@ -2759,8 +2760,10 @@ export default function stateModelFactory(
             clearMouseoverState()
             // The toggle swaps the plain fill and the SV-signal fill only: a
             // first-of-pair strand picked for RNA-seq survives a trip through
-            // pairs. Under a per-base layer the plain fill is the backdrop its
-            // marks read against, so neither direction swaps.
+            // pairs. A solid color is the plain fill here, so pairs paint over
+            // it and it comes back on leaving (kept by Colin, 2026-11-08).
+            // Under a per-base layer the plain fill is the backdrop its marks
+            // read against, so neither direction swaps.
             const [from, to] =
               unit === 'read'
                 ? (['insertSizeAndOrientation', undefined] as const)
@@ -3037,6 +3040,8 @@ export default function stateModelFactory(
          * the highlight and tooltip would keep naming the read that was there.
          */
         clearHoveredFeature() {
+          // A pinned hover goes too: no route was found where a pan under an
+          // open menu needs the pin kept (declined 2026-11-08).
           self.clearMouseoverState()
         },
 
@@ -3076,6 +3081,7 @@ export default function stateModelFactory(
 // Re-exported so LGVSyntenyDisplay's emitted .d.ts can name every type the
 // inferred model mentions; without it the ESM build reports TS2883.
 export type { ArcCategory } from '../shaders/palettes.ts'
+export type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 export type { OverlapLegendRow } from '../shared/legendUtils.ts'
 export type { DeclaredFilters } from './dialogs/layerFilters.ts'
 export type { GroupLayoutContext, GroupSize } from './groupLayout.ts'

@@ -690,6 +690,8 @@ function colorReads(host: AlignmentsTablesHostModel) {
       ),
     ]),
   )
+  // A swatch-only row (collapsed lanes' overlap tint) has no color, and no
+  // table carries the tint it keys, so the key leaves it out.
   const legend = host
     .legendItems(palette)
     .filter(item => item.color !== undefined)

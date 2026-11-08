@@ -54,7 +54,8 @@ pair now files as `insertion` where `classifyInsertSize` calls its |TLEN|
 short, against the band the insert-size colors read: the worker's sample
 (`computePairedInsertSizeStats`, whose short bound is at most half the band's
 center, so it follows the library rather than the window's tail) or the band
-`normalInsertSize` pins, which `workerFacet` sends under `svKind` only. Every
+`normalInsertSize` pins, which `workerInsertSizeBand` sends while the facet
+or the filter reads `svKind`. Every
 other discordant LR pair stays deletion-type. `svSignal` is untouched, so
 "No SV evidence" still holds exactly what the filter hides. ADR-229 rejected
 the insert-size band as the test for *whether* a read is evidence; this uses

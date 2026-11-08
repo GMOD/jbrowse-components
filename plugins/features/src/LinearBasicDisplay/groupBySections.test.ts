@@ -180,6 +180,16 @@ test('grouping with its color writes the grouping color, and unticking takes it 
   expect(display.colorByMode).toBe('default')
 })
 
+// The alignments display's rule too (model.coupling.test.ts)
+test('regrouping without the color keeps a color by the field left', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.applyGroupBy('strand', true)
+  display.applyGroupBy('biotype', false)
+  expect(display.facet?.field).toBe('biotype')
+  expect(display.colorByMode).toBe('strand')
+})
+
 test('a color picked by hand survives regrouping without the color', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

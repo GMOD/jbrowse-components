@@ -1252,17 +1252,19 @@ export default function baseStateModelFactory(
        * #method
        * The color the Group by dialog's choice of field writes: a color by
        * the field when ticked, left alone while it already paints through any
-       * scale; and unticked over a categorical color that was the facet's own,
-       * no field. Both keep a written constant, as Color by does. Undefined
-       * where the color stays as it is.
+       * scale; and unticked, no field over a categorical color by the field
+       * chosen, or for None the field it leaves, so regrouping keeps a color
+       * by another field. The alignments display's rule too. Both keep a
+       * written constant, as Color by does. Undefined where the color stays
+       * as it is.
        */
       groupByColor(field: string | undefined, colorByGroup: boolean) {
         const groupColor = self.categoricalColorField?.field
         const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = self.writtenColor
+        const grouping = field ?? current?.field
         const wasGroupColor =
-          groupColor !== undefined &&
-          (groupColor === current?.field || groupColor === field)
+          groupColor !== undefined && groupColor === grouping
         return colorByGroup && field
           ? field === self.colorField
             ? undefined

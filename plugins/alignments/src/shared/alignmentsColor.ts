@@ -91,7 +91,8 @@ export function baseLayerOfField(field: string | undefined) {
 }
 
 // The read categories reads take no color from (ADR-230), each with what
-// answers it instead.
+// answers it instead. `svKind` stays one: its bands already show it, and a
+// color by it would compete with the arcs' (declined by Colin, 2026-11-08).
 const COLORLESS_FIELDS = new Map<string, string>([
   ...FACET_ONLY_DIMENSIONS.map(
     field => [field, `facet: "${field}" sections the reads by it`] as const,

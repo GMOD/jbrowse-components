@@ -181,6 +181,8 @@ function coverageTickValues(
   if (coverageHeight < FULL_LADDER_MIN_HEIGHT) {
     return endpointTickValues(baseline, max)
   }
+  // Octaves, not wiggle's decades: ADR-109 lets the band keep its own ladder,
+  // and log-scale coverage is rare (declined 2026-11-08).
   return scaleType === 'log'
     ? octaveTickValues(baseline, max)
     : scaleType === 'symlog'

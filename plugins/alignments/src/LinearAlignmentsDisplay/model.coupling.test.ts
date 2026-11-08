@@ -234,6 +234,23 @@ describe('colorByField', () => {
   })
 })
 
+// The feature display's rule too (groupBySections.test.ts)
+describe('Group by without its color', () => {
+  test('regrouping keeps a color by the field left, None clears it', () => {
+    const display = createDisplay()
+    display.applyGroupBy('tags.HP', true)
+    expect(display.colorField).toBe('tags.HP')
+    display.applyGroupBy('tags.RG', false)
+    expect(display.facet?.field).toBe('tags.RG')
+    expect(display.colorField).toBe('tags.HP')
+    display.applyGroupBy('tags.HP', false)
+    display.applyGroupBy('tags.HP', true)
+    display.applyGroupBy(undefined, false)
+    expect(display.facet).toBeUndefined()
+    expect(display.colorField).toBeUndefined()
+  })
+})
+
 describe('colorKeyTitle', () => {
   test("a preset field's title heads the key until one is written", () => {
     const display = createDisplay()

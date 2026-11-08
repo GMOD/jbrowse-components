@@ -731,3 +731,13 @@ test('the interbase filter reaches the worker, each field over its default', () 
     readConfObject(display.configuration, ['coverage', 'alleles', 'filter']),
   ).toMatchObject([{ field: 'fraction', gte: 0.05 }])
 })
+
+test('pairs paint over a solid color, which comes back on leaving them', () => {
+  const { display } = createDisplay({
+    encoding: { color: { value: '#8844cc' } },
+  })
+  display.setUnit('chain')
+  expect(display.colorField).toBe('insertSizeAndOrientation')
+  display.setUnit('read')
+  expect(display.colorEncoding).toBe('#8844cc')
+})
