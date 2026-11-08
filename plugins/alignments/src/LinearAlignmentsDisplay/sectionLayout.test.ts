@@ -101,6 +101,7 @@ test('laneBands: coverage only => pileup right below coverage', () => {
     hasSashimiBand: false,
     arcsBandTop: 45,
     sashimiBandTop: 45,
+    sashimiBandHeight: 0,
     bottom: 45,
     arcBand: undefined,
   })
@@ -283,6 +284,7 @@ test('a strip that is off spends none of its height on the stack', () => {
     hasSashimiBand: false,
     arcsBandTop: 45,
     sashimiBandTop: 45,
+    sashimiBandHeight: 0,
     bottom: 45,
     arcBand: undefined,
   })
@@ -305,6 +307,7 @@ test('arc band then sashimi band stack below coverage', () => {
     hasSashimiBand: true,
     arcsBandTop: 45,
     sashimiBandTop: 245,
+    sashimiBandHeight: 100,
     bottom: 345,
     arcBand: { top: 45, height: 200, down: true },
   })
@@ -601,7 +604,7 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and clips the pileup 
       connectorClipTop: 45,
       connectorClipHeight: 3,
       arcBand: undefined,
-      sashimiBandTop: undefined,
+      sashimiBand: undefined,
     },
   ])
 })
@@ -639,7 +642,7 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       connectorClipTop: 10,
       connectorClipHeight: 30,
       arcBand: undefined,
-      sashimiBandTop: undefined,
+      sashimiBand: undefined,
     },
     {
       pileupTopOffset: 70,
@@ -651,7 +654,7 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       connectorClipTop: 60,
       connectorClipHeight: 50,
       arcBand: undefined,
-      sashimiBandTop: undefined,
+      sashimiBand: undefined,
     },
   ])
 })

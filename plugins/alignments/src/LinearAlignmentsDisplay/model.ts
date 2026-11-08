@@ -1403,6 +1403,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The px the coverage band reserves, the same in every section: 0
+         * while it is off or the plot leaves it no room. What paints it, its
+         * axis and its rules all read this.
+         */
+        get coverageBandHeight() {
+          return this.sections.sections[0]!.coverageHeight
+        },
+
+        /**
+         * #getter
          * Read `stickyBandHeight`: the pooled band stack this named had no
          * meaning once lanes stack.
          * @deprecated
@@ -1884,7 +1894,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             coverage: {
-              height: self.sections.sections[0]!.coverageHeight,
+              height: self.coverageBandHeight,
               domainMin: self.coverageDepthDomain?.[0] ?? 0,
               domainMax: self.coverageDepthDomain?.[1],
               scaleType: self.coverageScaleType,
@@ -1900,7 +1910,6 @@ export default function stateModelFactory(
               showAlleles: self.showCoverageAlleles,
               showInterbase: self.showInterbase,
             },
-            sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequency: self.fadeLowFrequency,
             qualityOpacity: self.mismatchQualityOpacity,
@@ -2099,10 +2108,10 @@ export default function stateModelFactory(
         /**
          * #getter
          * Overrides `ScoreScaleMixin`'s: `coverage.encoding.y.rules` are depths, so they
-         * draw on the coverage band.
+         * draw on the coverage band, while it reserves px.
          */
         get scoreRulesDrawn(): boolean {
-          return self.showCoverage
+          return self.coverageBandHeight > 0
         },
 
         /**
@@ -2116,11 +2125,11 @@ export default function stateModelFactory(
         get valueScales(): ValueScale[] {
           const { scrollModel: scroll, renderSections } = self
           const scales: ValueScale[] = []
-          if (self.showCoverage && self.coverageDepthDomain) {
+          if (self.coverageBandHeight > 0 && self.coverageDepthDomain) {
             scales.push({
               domain: self.coverageDepthDomain,
               scaleType: self.scaleType,
-              height: self.bandHeights.coverageHeight,
+              height: self.coverageBandHeight,
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
               symlogConstant: self.symlogConstant,

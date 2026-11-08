@@ -1122,10 +1122,11 @@ export default function stateModelFactory(
         /**
          * #getter
          * Overrides `ScoreScaleMixin`'s: `coverage.encoding.y.rules` are depths, so they
-         * draw on the coverage band, never on the fixed conservation scale.
+         * draw on the coverage band while it reserves px, never on the fixed
+         * conservation scale.
          */
         get scoreRulesDrawn(): boolean {
-          return self.coverageBandActive
+          return self.topBands.reserved.coverage > 0
         },
         /**
          * #getter

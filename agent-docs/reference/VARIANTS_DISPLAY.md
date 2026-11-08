@@ -293,19 +293,22 @@ filling it and the pointer dispatching on it read that one fold**
   line and is where rows begin.
 - **The records band and the chips add to the track; the connectors come out of
   the rows' slot.** `addedHeight` is the first two, which the model's `height`
-  adds to the slot.
+  adds to the slot. The order decides it: a band placed before `connectors` in
+  `VARIANT_BAND_ORDER` adds to the track, and one from `connectors` on is
+  taken from the rows and binds against their plot.
 - **A band a layout cannot paint answers 0 there** (`connectorsHeight` at
   genomic positions), whatever the config says.
 - A drag-resized height goes on a config slot, clamped via `clampBandHeight`
-  (`@jbrowse/core/util/bandHeight`, shared with the alignments and MAF bands).
-  `boundBandHeight` is its read-time twin: a _stated_ height — config, menu,
-  slider — takes the bounds alone, while a resize additionally leaves a band a
-  config declared below the floor where it is.
+  (`@jbrowse/core/util/bandHeight`; the connectors through `dragBandHeight`,
+  as the alignments and MAF bands are). `boundBandHeight` is its read-time
+  twin: a _stated_ height — config, menu, slider — takes the bounds alone,
+  while a resize additionally leaves a band a config declared below the floor
+  where it is.
 - **A stated height is bound before the fold, never inside it.** The records
   band is added above the rows, so it takes a floor and no ceiling
   (`recordsBandHeightOverRows`). Bands taken from a plot they share — the MAF
   and alignments stacks, and the `connectors` band over the variant columns or
-  the LD triangle (`connectorsBandStack`) — bind as one stack
+  the LD triangle (`boundConnectorsBand`) — bind as one stack
   (`boundStackedBands`, top-down) and drag to the room the others leave
   (`dragBandHeight`), so a band at its ceiling still leaves the plot its floor.
 - **The records band has one resize path**: its seam handle goes through

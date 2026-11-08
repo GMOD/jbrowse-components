@@ -24,6 +24,7 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { bandDepthFraction, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import {
+  boundConnectorsBand,
   connectorsBandStack,
   dragConnectorsHeight,
 } from '../shared/constants.ts'
@@ -258,13 +259,19 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * nothing; taken from the display's height so the triangle keeps its
        * floor.
        */
-      get connectorsStack() {
-        return connectorsBandStack(self.height, {
+      get connectorsBand() {
+        return boundConnectorsBand(self.height, {
           active:
             getConf(self, ['connectors', 'show']) &&
             (!self.atGenomicPositions || self.showNames),
           height: getConf(self, ['connectors', 'height']),
         })
+      },
+      /**
+       * #getter
+       */
+      get connectorsStack() {
+        return connectorsBandStack(this.connectorsBand)
       },
       /**
        * #getter

@@ -515,7 +515,7 @@ export function hitCoverageBand(
     band.height <= 0 ||
     !band.showInterbase ||
     yPx < band.top ||
-    yPx > band.top + band.height
+    yPx >= band.top + band.height
   ) {
     return undefined
   }

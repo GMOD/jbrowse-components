@@ -160,6 +160,7 @@ describe('the interbase histogram bars', () => {
   })
 
   it.each([
+    ['on the band bottom, the first row of what lies below', COV_HEIGHT],
     ['just past the band bottom', 100],
     ['deep in the pileup', 400],
   ])('misses %s, where nothing is drawn', (_name, yPx) => {

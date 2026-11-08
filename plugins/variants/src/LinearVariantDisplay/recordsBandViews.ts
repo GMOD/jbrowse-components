@@ -63,6 +63,7 @@ import type { KeyedVariants } from './keyedVariants.ts'
 import type { RecordCarriers } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { Band } from '@jbrowse/core/util/bandLayout'
 import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -652,7 +653,7 @@ export function recordsColorScaleViews(self: RecordsColorScaleHost) {
 interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   height: number
   atGenomicPositions: boolean
-  connectorsHeight: number
+  connectorsBand: Band
   fitHeightToDisplay: boolean
   autoHeight: boolean
   fitTargetHeight: number
@@ -726,7 +727,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
             recordsContentHeight: fullStackHeight.get(),
           }),
       showChips: self.atGenomicPositions && !self.recordsOnly,
-      connectorsHeight: self.connectorsHeight,
+      connectors: self.connectorsBand,
     }),
   )
   return {

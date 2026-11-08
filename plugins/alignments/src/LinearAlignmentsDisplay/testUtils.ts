@@ -132,7 +132,6 @@ export function makeTestRenderState(
     scrollTop: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    sashimiHeight: 0,
     showMismatches: false,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,

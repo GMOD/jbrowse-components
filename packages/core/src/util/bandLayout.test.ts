@@ -37,7 +37,7 @@ test('the fold states the order once and every top reads it', () => {
     order: ['coverage', 'arcs', 'sashimi'],
     top: { coverage: 0, arcs: 45, sashimi: 75 },
     reserved: { coverage: 45, arcs: 30, sashimi: 0 },
-    stated: { coverage: 45, arcs: 30, sashimi: 30 },
+    height: { coverage: 45, arcs: 30, sashimi: 30 },
     bottom: 75,
   })
 })

@@ -313,6 +313,21 @@ describe('priority: coverage area beats pileup at any zoom', () => {
     const result = performHitTest(100, 30, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('coverage')
   })
+
+  // the band paints [top, top + height), so its bottom edge is the pileup's
+  // first pixel row
+  it('hands the pixel row at the band bottom to the pileup', () => {
+    const resolved = makeResolved({
+      coverageDepths: new Float32Array(200).fill(10),
+      coverageStartPos: 9900,
+    })
+    expect(performHitTest(100, 49, resolved, ZOOMED_OUT_OPTS).type).toBe(
+      'coverage',
+    )
+    expect(performHitTest(100, 50, resolved, ZOOMED_OUT_OPTS).type).not.toBe(
+      'coverage',
+    )
+  })
 })
 
 // "no block under the cursor" is no longer a case here — the caller resolves the

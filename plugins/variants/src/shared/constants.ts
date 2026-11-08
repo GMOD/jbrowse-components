@@ -32,14 +32,22 @@ const MIN_CONNECTORS_HEIGHT = 10
  * The `connectors` band, the connector lines over the plot they tie to the
  * genome (the genotype rows' columns, the LD triangle), taking its height
  * from that plot: the stated height bound so the plot keeps
- * `MIN_BAND_HEIGHT`, and folded.
+ * `MIN_BAND_HEIGHT`.
  */
-export function connectorsBandStack(plotHeight: number, band: Band) {
-  const plot = connectorsPlot(plotHeight)
-  return stackBands(
+export function boundConnectorsBand(plotHeight: number, band: Band) {
+  return boundStackedBands(
     ['connectors'],
-    boundStackedBands(['connectors'], { connectors: band }, plot),
-  )
+    { connectors: band },
+    connectorsPlot(plotHeight),
+  ).connectors
+}
+
+/**
+ * The bound `connectors` band folded alone, the stack its drag is clamped
+ * against.
+ */
+export function connectorsBandStack(band: Band) {
+  return stackBands(['connectors'], { connectors: band })
 }
 
 function connectorsPlot(plotHeight: number): BandPlot {

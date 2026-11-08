@@ -33,7 +33,6 @@ export interface DisplayRenderState {
   // section's top and the palette. `height` is the RESERVED height, 0 while
   // the band is off, so nothing re-derives the gate from a flag beside it.
   coverage: CoverageBandSettings
-  sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequency: boolean
   qualityOpacity: QualityOpacity
@@ -98,9 +97,9 @@ export interface SectionRender {
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);
   // grouped scrolls with its section, matching coverage.
   arcBand?: ArcBand
-  // Screen-space top of the strip this section reserved for its down-bound
-  // splice junctions, undefined where it reserved none.
-  sashimiBandTop?: number
+  // Screen-space strip this section reserved for its down-bound splice
+  // junctions, at its reserved height, undefined where it reserved none.
+  sashimiBand?: { top: number; height: number }
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex

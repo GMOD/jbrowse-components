@@ -18,11 +18,13 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   height,
   setHeight,
   seam,
+  title,
 }: {
   model: LinearMafDisplayModel
   height: number
   setHeight: (height: number) => void
   seam: number
+  title: string
 }) {
   // Same flag as the track's resize handle; it lives on the track so two
   // handles share one gesture state.
@@ -31,6 +33,7 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   return (
     <BandSeamHandle
       seam={seam}
+      title={title}
       value={height}
       onChange={h => {
         setHeight(h)

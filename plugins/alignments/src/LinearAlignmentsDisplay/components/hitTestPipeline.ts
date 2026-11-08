@@ -468,7 +468,7 @@ export function performHitTest(
 
   // The band's reserved height is 0 when the band is off, so an off band
   // answers nothing without a flag to consult beside it.
-  if (coverage.height > 0 && coverageY >= 0 && coverageY <= coverage.height) {
+  if (coverage.height > 0 && coverageY >= 0 && coverageY < coverage.height) {
     const { rpcData } = resolved
     const position = coverageBinAt(
       { ...rpcData, ...countedEventsOf(rpcData) },

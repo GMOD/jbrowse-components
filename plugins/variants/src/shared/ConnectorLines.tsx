@@ -228,6 +228,7 @@ export const ConnectorZoneResizeHandle = observer(
     return (
       <BandSeamHandle
         seam={top}
+        title="Drag to resize the connectors band"
         // from where the handle is drawn, not from the slot: in LD's genomic
         // mode the zone is only as tall as what is switched on, and dragging
         // the slot up from under it would eat the first N pixels doing nothing

@@ -83,7 +83,6 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     canvasWidth: opts.viewWidthPx,
     canvasHeight: 400,
     coverage: { height: opts.coverageHeight },
-    sashimiHeight: opts.sashimiHeight,
     linkRegions: linkRegionsOf(displayed),
     sections: [
       {
@@ -95,7 +94,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         pileupClipHeight: 200,
         connectorClipTop: 0,
         connectorClipHeight: 0,
-        sashimiBandTop: opts.coverageHeight,
+        sashimiBand: { top: opts.coverageHeight, height: opts.sashimiHeight },
       },
     ],
   })

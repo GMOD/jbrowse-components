@@ -58,8 +58,8 @@ export interface SashimiSidesOpts {
 // `junctionKey`. Two questions come off this one scan, and sharing the set is
 // what makes them agree: the LAYOUT asks whether a lane needs the strip reserved
 // at all (a non-empty set), and the OVERLAY asks which side to draw each arc on.
-// The down sub-band renders at `sashimiHeight` whether or not the layout
-// reserved it, so any under-reserving disagreement paints arcs over the pileup.
+// The down sub-band draws only in a strip the layout reserved, so any
+// under-reserving disagreement drops those arcs.
 //
 // Genomic-bp over every *loaded* region, so the layout keeps depending only on
 // `rpcDataMap`: projecting to screen px would re-lay-out the pileup on every pan

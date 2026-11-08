@@ -6,7 +6,7 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
 afterEach(cleanup)
 
-const TITLE = 'Drag to resize the coverage track of every group'
+const TITLE = 'Drag to resize the coverage band of every group'
 
 function renderHandles(coverageHeight: number) {
   const model = {

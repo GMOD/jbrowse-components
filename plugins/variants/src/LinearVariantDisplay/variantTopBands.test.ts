@@ -25,7 +25,7 @@ function geometry(
     showRecords: true,
     recordsHeight: 40,
     showChips: false,
-    connectorsHeight: 0,
+    connectors: { active: false, height: 20 },
     ...over,
   })
 }
@@ -34,7 +34,9 @@ describe('the band stack', () => {
   // the connector lines end at genomic positions, which is where the records
   // draw, so the records sit above the zone
   test('stacks the records above the connector zone', () => {
-    expect(geometry({ connectorsHeight: 30 })).toMatchObject({
+    expect(
+      geometry({ connectors: { active: true, height: 30 } }),
+    ).toMatchObject({
       top: { records: 0, chips: 40, connectors: 40 },
       reserved: { records: 40, chips: 0, connectors: 30 },
       addedHeight: 40,
@@ -55,7 +57,10 @@ describe('the band stack', () => {
 
   test('a band that is off costs zero px, not its floor', () => {
     expect(
-      geometry({ showRecords: false, connectorsHeight: 30 }),
+      geometry({
+        showRecords: false,
+        connectors: { active: true, height: 30 },
+      }),
     ).toMatchObject({
       reserved: { records: 0, chips: 0, connectors: 30 },
       addedHeight: 0,

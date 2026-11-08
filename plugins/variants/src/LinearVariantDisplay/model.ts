@@ -72,6 +72,7 @@ import {
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
+  boundConnectorsBand,
   connectorsBandStack,
   dragConnectorsHeight,
 } from '../shared/constants.ts'
@@ -777,12 +778,18 @@ export function stateModelFactory(
          * height so they keep their floor; nothing at genomic positions,
          * where nothing needs connecting.
          */
-        get connectorsStack() {
-          return connectorsBandStack(self.fitTargetHeight, {
+        get connectorsBand() {
+          return boundConnectorsBand(self.fitTargetHeight, {
             active:
               !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
             height: getConf(self, ['connectors', 'height']),
           })
+        },
+        /**
+         * #getter
+         */
+        get connectorsStack() {
+          return connectorsBandStack(this.connectorsBand)
         },
         /**
          * #getter

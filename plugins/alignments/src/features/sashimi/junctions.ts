@@ -12,9 +12,9 @@
 // loaded region for the layout, a screen-space one over the visible ones for the
 // geometry — that were only *argued* to agree ("it only ever over-reserves").
 // Nothing enforced it, and under-reservation is the bad direction: the down
-// sub-band renders at `sashimiHeight` whether or not the layout reserved it,
-// so an arc sent down into an unreserved strip paints over the top of the
-// pileup. One decision, read by both, cannot disagree with itself.
+// sub-band draws only in a strip the layout reserved, so an arc sent down in a
+// lane that reserved none drew nowhere. One decision, read by both, cannot
+// disagree with itself.
 //
 // Genomic bp rather than screen px is also the more stable answer: interleaving
 // survives any monotonic projection, so within a region it matches what a

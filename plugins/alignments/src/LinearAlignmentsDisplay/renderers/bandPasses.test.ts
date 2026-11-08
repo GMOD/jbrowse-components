@@ -30,7 +30,7 @@ const SECTION: SectionRender = {
   connectorClipTop: 100,
   connectorClipHeight: 220,
   arcBand: { top: 60, height: 40, down: true },
-  sashimiBandTop: 300,
+  sashimiBand: { top: 300, height: 40 },
 }
 
 function source(over: Partial<SectionSource> = {}): SectionSource {
@@ -50,7 +50,6 @@ function passesOf(
 ) {
   const state = makeTestRenderState({
     coverage: { height: 60 },
-    sashimiHeight: 40,
     sections: sectionRenders,
   })
   const passes: Recorded[] = []
@@ -104,7 +103,7 @@ test('a band with no feed or no strip draws nothing', () => {
     ...SECTION,
     connectorClipHeight: 0,
     arcBand: undefined,
-    sashimiBandTop: undefined,
+    sashimiBand: undefined,
   }
   expect(passesOf([source()], [noStrips]).map(p => p.spanning)).toEqual([
     [SASHIMI_MARK.up],

@@ -1703,7 +1703,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'number' && isAlignmentsOnlyField(displayType)
       ? {
           path: `Drag the handle at the edge of the arc band to resize it (${value}px here).`,
-          note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
+          note: 'Its tooltip reads "Drag to resize the read connections band"; there is no menu entry for the height.',
         }
       : undefined,
   sort: (value, { displayType, noun }) => {

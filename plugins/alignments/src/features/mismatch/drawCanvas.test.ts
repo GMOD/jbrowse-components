@@ -46,7 +46,6 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     featureHeight: 10,
     featureSpacing: 0,
     coverage: TEST_COVERAGE,
-    sashimiHeight: 0,
     showMismatches: true,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,

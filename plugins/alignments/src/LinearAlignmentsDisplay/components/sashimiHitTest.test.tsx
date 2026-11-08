@@ -59,7 +59,6 @@ function scene(
     canvasWidth: 1000,
     canvasHeight: 300,
     coverage: { height: 100 },
-    sashimiHeight: 40,
     linkRegions: layout.linkRegions,
     sections: [
       {
@@ -71,7 +70,7 @@ function scene(
         pileupClipHeight: 160,
         connectorClipTop: 0,
         connectorClipHeight: 0,
-        sashimiBandTop: 100,
+        sashimiBand: { top: 100, height: 40 },
       },
     ],
   })
@@ -119,17 +118,17 @@ describe('sashimiBandsOf', () => {
   // room and draws nothing, where a negative one flipped every arc through the
   // neighbouring band.
   it('draws no side whose band has no height', () => {
-    const base = makeTestRenderState({
-      coverage: { height: 4 },
-      sashimiHeight: 3,
-    })
+    const base = makeTestRenderState({ coverage: { height: 4 } })
     expect(
-      sashimiBandsOf(base, { ...base.sections[0]!, sashimiBandTop: 10 }),
+      sashimiBandsOf(base, {
+        ...base.sections[0]!,
+        sashimiBand: { top: 10, height: 3 },
+      }),
     ).toEqual({ up: undefined, down: undefined })
   })
 
   it('draws no down side in a section that reserved no strip', () => {
-    const base = makeTestRenderState({ sashimiHeight: 40 })
+    const base = makeTestRenderState()
     expect(sashimiBandsOf(base, base.sections[0]!).down).toBeUndefined()
   })
 })

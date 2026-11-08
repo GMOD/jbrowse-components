@@ -33,6 +33,7 @@ export interface Section {
   // — it would land on the coverage handle's pixel.
   hasArcsBand: boolean
   sashimiBandTop: number
+  sashimiBandHeight: number
   hasSashimiBand: boolean
   pileupTop: number
   // The laid-out rows, or the height a drag pinned this lane at when that is
@@ -118,6 +119,8 @@ export interface LaneBands {
   hasSashimiBand: boolean
   arcsBandTop: number
   sashimiBandTop: number
+  // The sashimi strip's reserved height, 0 where the lane reserves none.
+  sashimiBandHeight: number
   // Where the pileup begins, relative to the lane's coverage top.
   bottom: number
   // Where the arcs draw, relative to the lane's coverage top, or undefined
@@ -184,6 +187,7 @@ export function laneBands(
     hasSashimiBand: stack.reserved.sashimi > 0,
     arcsBandTop: stack.top.arcs,
     sashimiBandTop: stack.top.sashimi,
+    sashimiBandHeight: stack.reserved.sashimi,
     bottom: stack.bottom,
     arcBand: bands.arcs.active
       ? {
@@ -310,6 +314,7 @@ export function computeStackedSections<L extends SectionLaneInput>(
       arcDown: bands.arcBand?.down ?? false,
       hasArcsBand: bands.hasArcsBand,
       sashimiBandTop: coverageTop + bands.sashimiBandTop,
+      sashimiBandHeight: bands.sashimiBandHeight,
       hasSashimiBand: bands.hasSashimiBand,
       pileupTop,
       pileupHeight,
@@ -357,8 +362,11 @@ export function buildSectionRenders(
               down: sec.arcDown,
             }
           : undefined,
-      sashimiBandTop: sec.hasSashimiBand
-        ? bandScreenTop(sec.sashimiBandTop, scroll)
+      sashimiBand: sec.hasSashimiBand
+        ? {
+            top: bandScreenTop(sec.sashimiBandTop, scroll),
+            height: sec.sashimiBandHeight,
+          }
         : undefined,
     }
   })

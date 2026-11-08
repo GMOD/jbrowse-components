@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's band stack is data, `Band {active, height, bounds?}` folded by `stackBands` in `core/util/bandLayout.ts`, while allocators stay per-display functions; paint and pick payloads carry reserved heights, never a flag beside a raw height"
+summary: "A display's band stack is data, `Band {active, height}` bound by `boundStackedBands`, folded by `stackBands` and dragged by `dragBandHeight` in `core/util/bandLayout.ts`, while allocators stay per-display functions; paint and pick payloads carry reserved heights, never a flag beside a raw height"
 ---
 
 # ADR-096: A band's contract is a type; its allocator is a function
@@ -112,6 +112,21 @@ Each of these was declined before, on grounds this ADR does not disturb:
   bound before the fold, as a stack (`boundStackedBands`, with
   `bandDragBounds` for a drag); `Band.bounds` is deprecated and still
   honored by `reservedPx`.
+- **Amended**: every band drag goes through `dragBandHeight`, which clamps
+  from the band's folded height (`BandStack.height`) to the room the other
+  bands leave; `bandDragBounds` is deprecated. The surface is now `Band`,
+  `BandStack`, `BandPlot`, `reservedPx`, `stackBands`, `bandAt`,
+  `boundStackedBands` and `dragBandHeight`, beside `bandHeight`'s
+  `boundBandHeight`, `clampBandHeight` and `scaleBandHeights`.
+- **Amended**: the variant display folds `records`, `chips` and `connectors`.
+  The records band is bound before the fold (`RECORDS_BAND_BOUNDS`, no
+  ceiling, since it adds to the track); `VARIANT_LANE_BOUNDS` is gone. The
+  connectors band has its own `show` and binds against the rows' plot
+  (`boundConnectorsBand`) before both folds read it, so "off" is its `active`
+  half, not a height zeroed in advance.
+- **Amended**: alignments folds each lane through `laneBands`;
+  `belowCoverageBandsGeometry` and `computeArcBand` are gone. MAF's stack is
+  `mafTopBands`, pinned by `mafTopBands.test.ts`.
 - Alignments' `coverageDisplayHeight` keeps its historical meaning (the stack
   bottom) and its cross-plugin name collision with MAF's; renaming it is a
   separate decision this ADR only flags.

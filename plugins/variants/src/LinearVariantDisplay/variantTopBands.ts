@@ -5,7 +5,7 @@
  * - the **records band**, the VCF's records laid out and stacked as a
  *   `LinearVariantDisplay` lays them out (`records.show`);
  * - the **connectors band**, which ties a matrix column to its genomic
- *   position (`connectorsHeight`, non-zero only in columns).
+ *   position (`connectorsBand`, active only in columns).
  *
  * The records sit on top, where the connector lines end. The layout reserving
  * a strip and the painter filling it both read this, or the painter overdraws
@@ -16,7 +16,7 @@ import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
-import type { BandStack } from '@jbrowse/core/util/bandLayout'
+import type { Band, BandStack } from '@jbrowse/core/util/bandLayout'
 
 /** Where a record stops reading as a mark: the drag floor. */
 export const MIN_RECORDS_HEIGHT = 8
@@ -82,18 +82,18 @@ export function variantTopBandsGeometry({
   showRecords,
   recordsHeight,
   showChips,
-  connectorsHeight,
+  connectors,
 }: {
   showRecords: boolean
   recordsHeight: number
   showChips: boolean
-  /** 0 at genomic positions. */
-  connectorsHeight: number
+  /** Bound against the rows' plot (`boundConnectorsBand`). */
+  connectors: Band
 }) {
   const stack = stackBands(VARIANT_BAND_ORDER, {
     records: { active: showRecords, height: recordsHeight },
     chips: { active: showChips, height: BAND_CHIPS_HEIGHT },
-    connectors: { active: true, height: connectorsHeight },
+    connectors,
   })
   return { ...stack, addedHeight: stack.top.connectors }
 }

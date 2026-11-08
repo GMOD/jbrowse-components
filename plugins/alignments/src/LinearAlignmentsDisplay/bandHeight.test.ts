@@ -181,3 +181,21 @@ describe('two bands at their ceilings', () => {
     expect(display.sections.sections[0]!.hasArcsBand).toBe(false)
   })
 })
+
+// the band's axis and rules follow the px it reserves, not the setting: a
+// shown band bound to 0 px has no axis to rule
+describe('the coverage rules follow the band', () => {
+  it('draws them while the band reserves px', () => {
+    const display = createDisplay()
+    expect(display.coverageBandHeight).toBe(45)
+    expect(display.scoreRulesDrawn).toBe(true)
+  })
+
+  it('draws none over a shown band that reserves nothing', () => {
+    const display = createDisplay()
+    setConf(display, ['coverage', 'height'], 0)
+    expect(display.showCoverage).toBe(true)
+    expect(display.coverageBandHeight).toBe(0)
+    expect(display.scoreRulesDrawn).toBe(false)
+  })
+})

@@ -148,6 +148,12 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
   )
 })
 
+// A band height is display-global, so a grouped handle's title says the drag
+// resizes the band in every group, not only the one under the pointer.
+function groupScope(isGrouped: boolean) {
+  return isGrouped ? ' of every group' : ''
+}
+
 // Coverage-band resize handle at each section's coverage bottom. `coverageHeight`
 // is display-global, so every handle resizes all bands together; grouped mode
 // still gets one affordance per group (each section keeps its own coverage band,
@@ -180,11 +186,7 @@ export const CoverageResizeHandle = observer(function CoverageResizeHandle({
             onChange={h => {
               model.setCoverageHeight(h)
             }}
-            title={
-              isGrouped
-                ? 'Drag to resize the coverage track of every group'
-                : 'Drag to resize coverage track'
-            }
+            title={`Drag to resize the coverage band${groupScope(isGrouped)}`}
           />
         ) : null,
       )}
@@ -212,7 +214,7 @@ const ConnectionBandResizeHandles = observer(
     model: LinearAlignmentsDisplayModel
   }) {
     const { height, scrollModel: scroll, renderSections } = model
-    const scope = model.isGrouped ? ' of every group' : ''
+    const scope = groupScope(model.isGrouped)
     return (
       <>
         {renderSections.map((section, i) => {
@@ -227,7 +229,7 @@ const ConnectionBandResizeHandles = observer(
                   onChange={h => {
                     model.setReadConnectionsHeight(h)
                   }}
-                  title={`Drag to resize the read connections area${scope}`}
+                  title={`Drag to resize the read connections band${scope}`}
                 />
               ) : null}
 
@@ -244,7 +246,7 @@ const ConnectionBandResizeHandles = observer(
                   onChange={h => {
                     model.setSashimiHeight(h)
                   }}
-                  title={`Drag to resize the sashimi arcs area${scope}`}
+                  title={`Drag to resize the sashimi band${scope}`}
                 />
               ) : null}
             </Fragment>
