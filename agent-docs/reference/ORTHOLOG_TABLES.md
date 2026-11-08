@@ -61,12 +61,28 @@ block at nearly every locus. Its A/B-only blocks on the same hosted build:
 | wheat–emmer  | 55%                               | about 54%                                         |
 | durum–emmer  | 53%                               | 98%                                               |
 
-The true block is the denser one (about 1.3 times the genes per bp) and is the
-densest block in 83–92% of 1 Mb windows, so a keep-the-densest-block filter in
-`mcscanx_to_anchors.py` would mostly separate them; none exists. The build
-script orders the wheat rows tauschii, wheat, urartu, durum, emmer instead, so
-the only band between two polyploids is durum–emmer, the lowest of the three
-rates above.
+The build script orders the wheat rows tauschii, wheat, urartu, durum, emmer,
+so the only band between two polyploids is durum–emmer, and the wheat set alone
+passes `mcscanx_to_anchors.py --drop-overlapped-blocks`: densest first, a block
+is dropped when more than half its own span on either genome lies inside one
+already kept, density being anchors over the mean gene count of the two spans.
+Measured on the same hosted PAF (A/B only):
+
+| Band        | Same-letter share, before | After | A/B covered by same-letter blocks, after |
+| ----------- | ------------------------- | ----- | ---------------------------------------- |
+| wheat–durum | 52.6%                     | 96.4% | 95.2%                                    |
+| wheat–emmer | 54.8%                     | 99.7% | 96.1%                                    |
+| durum–emmer | 52.5%                     | 98.3% | 96.7%                                    |
+
+Two first tries failed: overlap measured against the shorter block let a short
+dense block knock out the long block around it (coverage fell to about 31%),
+and genes per bp let a D homoeolog block win on its physically shorter
+chromosome. Wheat D's blocks against the tetraploids mostly go, since D has no
+same-letter partner there. The flag stays off elsewhere: on rice–maize it cuts
+rice covered by two or more maize blocks from 58.9% to 12.3%, and on
+coffee–tomato coffee covered by three or more tomato blocks from 11.1% to 0.3%,
+the multi-copy pairings the grasses and nightshade figures show. The hosted
+wheat PAF changes only when the set is rebuilt.
 
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out to
 every pair anchored on the queried assembly, one `mate`-carrying feature per
