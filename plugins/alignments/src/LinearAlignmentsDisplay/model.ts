@@ -1545,8 +1545,9 @@ export default function stateModelFactory(
          * #getter
          * The reads a view overlaying this display may connect — the
          * BreakpointSplitView's curves — by lane and region index, with hidden
-         * lanes dropped. Empty while no pileup is laid out, so an overlay draws
-         * no read this display does not.
+         * lanes dropped. Empty while no pileup is laid out; a lane drawing no
+         * rows stays in, and `readLayoutRecord` gives its reads no rect, so an
+         * overlay draws no read this display does not.
          */
         get readArraysByGroup(): ReadonlyMap<
           string,

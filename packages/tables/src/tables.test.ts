@@ -1197,7 +1197,10 @@ test('read connections come back as the display’s band draws them', async () =
     expect(arcs.arcLegend.color).toContain(arcs.arcs.color[i])
   })
   expect(new Set(arcs.arcs.color)).toEqual(new Set(arcs.arcLegend.color))
-  expect(arcs.arcLegend.label).toHaveLength(4)
+  // the LL pairs and the inversion splits they mirror paint one color, keyed
+  // once, as the display's key folds them
+  expect(arcs.arcLegend.color).toHaveLength(new Set(arcs.arcLegend.color).size)
+  expect(arcs.arcLegend.label).toContain('LL pair or inversion split')
   expect(arcs.arcLegendTitle).toBe('Arc colors')
   expect(new Set(arcs.arcs.width)).toEqual(new Set([1]))
 

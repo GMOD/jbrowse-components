@@ -155,7 +155,7 @@ function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
 // A split-read arc row joins its pair twin's row where both are keyed in one
 // color, under a label naming both. Matched on the default labels, so a pair
 // row the user renamed or recolored keeps the split row beside it.
-function oneRowPerSplitTwin(items: LegendItem[]) {
+export function oneRowPerSplitTwin(items: LegendItem[]) {
   let rows = items
   for (const split of Object.keys(
     ARC_SPLIT_MERGED_LABELS,

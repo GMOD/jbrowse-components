@@ -184,6 +184,7 @@ import { joinSections } from './shared/joinSections.ts'
 import {
   arcLegendTitle,
   getArcLegendItems,
+  oneRowPerSplitTwin,
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
@@ -1129,15 +1130,19 @@ function readConnectionTables(
       ),
     ]),
   )
-  const legend = getArcLegendItems(
-    new Set(
-      [
-        ...(result ? arcSlotsInWindows(result, keyWindowsOf(regionInfos)) : []),
-        ...connectorSlots,
-      ].map(slot => arcSlotCategory(slot)),
+  const legend = oneRowPerSplitTwin(
+    getArcLegendItems(
+      new Set(
+        [
+          ...(result
+            ? arcSlotsInWindows(result, keyWindowsOf(regionInfos))
+            : []),
+          ...connectorSlots,
+        ].map(slot => arcSlotCategory(slot)),
+      ),
+      colors.palette,
+      colors.keyLabels.categories,
     ),
-    colors.palette,
-    colors.keyLabels.categories,
   ).filter(item => item.color !== undefined)
   return {
     bySection,
