@@ -406,14 +406,18 @@ async function axisMissingContigs(
  * A feature table, and for a VCF, as `vcf`, the plain variant display's
  * records under it: their alleles, FILTER, INFO and each sample's FORMAT
  * values, as `variantRecordTables` gives them, so a calls VCF whose FORMAT has no GT
- * reads with its columns, which the genotype matrix has no row for.
+ * reads with its columns, which the genotype matrix has no row for. The
+ * file's fields are read over the regions `featureTables` fetched, the view's
+ * margin included, so a feature listed from the margin has them too.
  */
 async function featureAndRecordTables(
   pluginManager: PluginManager,
   args: FeatureReadArgs,
 ) {
-  const features = await featureTables(pluginManager, args)
-  const { regions } = args
+  const { fetchRegions: regions, ...features } = await featureTables(
+    pluginManager,
+    args,
+  )
   const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
   return {
     ...features,

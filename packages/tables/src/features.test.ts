@@ -92,6 +92,31 @@ test('a window inside a contig indexes only the features and transcripts it list
   }
 })
 
+test('a feature listed off the margin keeps the fields its file writes, and a VCF record there reads', async () => {
+  const t = await engine.features({
+    ...GFF3,
+    region: { refName: 'ctgA', start: 1002, end: 1400 },
+    bpPerPx: 0.27,
+    display: GROW,
+  })
+  const snp = t.features.name.indexOf('FakeSNP')
+  expect(t.features.end[snp]).toBeLessThanOrEqual(1002)
+  expect(t.attributes.ID![snp]).toBe('FakeSNP1')
+  expect(t.attributes.Name![snp]).toBe('FakeSNP')
+  expect(t.attributes.source![snp]).toBe('example')
+
+  const { features, vcf } = await engine.features({
+    adapterConfig: DOG_VCF.adapterConfig,
+    region: { refName: 'chr30', start: 38258003, end: 38258203 },
+    bpPerPx: 0.14,
+    display: GROW,
+  })
+  const margin = features.start.indexOf(38258001)
+  expect(margin).toBeGreaterThanOrEqual(0)
+  expect(vcf!.records.ref[margin]).toBe('T')
+  expect(vcf!.records.alt[margin]).toBe('G')
+})
+
 test("the display filter's gene category splits the features", async () => {
   const all = await engine.features({ ...GFF3, display: GROW })
   const genes = await engine.features({
