@@ -119,8 +119,7 @@ Smaller grammar items, each independent:
   box; features' also clears a color by the previous grouping's field, so
   regrouping from A to B at the box's default drops color A unasked. The
   recommendation is alignments' rule for both, which changes
-  `groupBySections.test.ts`. The `haplotype_groupby` figure shows Submit
-  where the dialog now says Apply and Edit plot...
+  `groupBySections.test.ts`.
 - **Coverage log ticks.** Power-of-2 against wiggle's power-of-10 since
   `85732820a4` touched wiggle-core only. ADR-109 lets the band keep its own
   ladder, and log-scale coverage is rare: leave it.
