@@ -87,7 +87,7 @@ const session = sessionSpec(CONFIG, {
           height: 50,
         },
         lanes(GRAPH_ROWS),
-        lanes(MINIMAP2_ROWS),
+        { ...lanes(MINIMAP2_ROWS), type: 'MultiWaySyntenyDisplay' },
       ],
     },
   ],
