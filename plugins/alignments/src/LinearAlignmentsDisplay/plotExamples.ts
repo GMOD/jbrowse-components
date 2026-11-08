@@ -20,6 +20,19 @@ export const ALIGNMENTS_PLOT_EXAMPLES: PlotExample[] = [
       'split reads stacked first, colored by insert size and orientation',
   },
   {
+    plot: '{ "pileup": { "bases": { "show": true, "encoding": { "color": "modifications" } } } }',
+    description: 'base modifications such as 5mC from the MM/ML tags',
+  },
+  {
+    plot: '{ "sashimi": { "show": true, "labels": { "show": true } } }',
+    description: 'splice junctions as arcs labeled with their read counts',
+  },
+  {
+    plot: '{ "readConnections": { "show": true } }',
+    description:
+      'arcs joining each pair and split read, for structural variants',
+  },
+  {
     plot: '{ "facet": null, "encoding": null }',
     description: 'one pileup, default colors',
   },
