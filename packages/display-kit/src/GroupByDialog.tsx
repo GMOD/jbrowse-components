@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
+import LabeledCheckbox from '@jbrowse/core/ui/LabeledCheckbox'
+import SubmitDialog from '@jbrowse/core/ui/SubmitDialog'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
