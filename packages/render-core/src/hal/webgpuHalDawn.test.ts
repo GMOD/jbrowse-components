@@ -104,8 +104,15 @@ beforeAll(async () => {
   device = got
 })
 
-afterAll(() => {
+afterAll(async () => {
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
   device.destroy()
+  await device.lost
+  expect(error).toHaveBeenCalledWith(
+    '[GPU] Device lost:',
+    expect.stringContaining('destroyed'),
+  )
+  error.mockRestore()
 })
 
 test('finds the tree’s shaders', () => {

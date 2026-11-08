@@ -242,10 +242,15 @@ describe('taking the socket', () => {
       s.end('other app')
     })
     await new Promise<void>(resolve => other.listen(socketPath, resolve))
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     const stop = startAt(socketPath)
     await settle(100)
     expect(await answers(socketPath)).toBe('other app')
+    expect(error).toHaveBeenCalledWith(
+      `MCP bridge not started: another JBrowse Desktop is serving ${socketPath}`,
+    )
+    error.mockRestore()
     stop()
     expect(fs.existsSync(socketPath)).toBe(true)
     expect(await answers(socketPath)).toBe('other app')

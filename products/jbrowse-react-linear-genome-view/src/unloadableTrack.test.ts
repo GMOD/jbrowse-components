@@ -50,6 +50,7 @@ test.each(['session', 'defaultSession'] as const)(
   'a track whose config cannot load costs that track, through %s',
   async key => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { session } = await createViewStateAsync({
       assembly,
       tracks: [track('good'), track('bad', { heightMode: 'shrink' })],
@@ -71,6 +72,8 @@ test.each(['session', 'defaultSession'] as const)(
     expect(
       session.snackbarMessages.map((m: { message: string }) => m.message),
     ).toContainEqual(expect.stringContaining('could not be loaded: bad'))
+    expect(String(error.mock.calls[0]?.[0])).toContain('/displays/0/heightMode')
+    error.mockRestore()
     warn.mockRestore()
   },
 )

@@ -190,11 +190,14 @@ describe('processFeaturesFromArrays', () => {
       { start: 0, end: 10, score: 7, summary: true, minScore: 3, maxScore: 9 },
       0,
     )
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {})
     const logged = featuresToRaw(
       [summary],
       'jexl:log(get(feature,"score"))',
       createJexlInstance(),
     )
+    expect(log).toHaveBeenCalledWith(7)
+    log.mockRestore()
     expect(logged.summary).toBeUndefined()
     expect(
       Array.from(featuresToRaw([summary], 'score').summary!.maxScores),

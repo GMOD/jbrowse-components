@@ -91,7 +91,12 @@ describe('a session holding a view the subcommand cannot draw', () => {
 
   it('names the held type and the subcommand that draws it', async () => {
     await expect(
-      renderRegion({ ...opts, mode: 'dotplot', session: lgvSession() }),
+      renderRegion({
+        ...opts,
+        assembly: undefined,
+        mode: 'dotplot',
+        session: lgvSession(),
+      }),
     ).rejects.toThrow(
       /--session holds a LinearGenomeView; render it with "jb2export lgv"/,
     )
@@ -99,7 +104,12 @@ describe('a session holding a view the subcommand cannot draw', () => {
 
   it('says the same for synteny rather than adding a second view', async () => {
     await expect(
-      renderRegion({ ...opts, mode: 'synteny', session: lgvSession() }),
+      renderRegion({
+        ...opts,
+        assembly: undefined,
+        mode: 'synteny',
+        session: lgvSession(),
+      }),
     ).rejects.toThrow(/holds a LinearGenomeView/)
   }, 60000)
 

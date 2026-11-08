@@ -176,7 +176,6 @@ test('a long list can be narrowed, and Enter lands on the one row left', async (
       new BaseResult({
         label: `HOXA${i + 1}`,
         locString: `ctgA:${i * 50 + 1}..${i * 50 + 20}`,
-        trackId: 'genes',
       }),
   )
   model.setSearchResults(many, 'HOXA', 'volvox')
