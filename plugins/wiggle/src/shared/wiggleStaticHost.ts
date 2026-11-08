@@ -3,26 +3,11 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  bandedRowViews,
-  bandedSourceViews,
-  clusterableRowViews,
-  editableRowViews,
-  expandedRowViews,
   hierarchyViews,
-  resolvedRowColorViews,
-  rowAliasViews,
-  rowFocusLineViews,
-  rowNarrowingShowsViews,
-  rowOrderViews,
-  rowTreeRootViews,
-  rowTreeViews,
   rowsContentHeightViews,
-  rowsTopOffsetViews,
-  sourceViews,
   treeSidebarAxisConfigViews,
-  treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
-  treeSidebarTreeHookDefaults,
+  treeSidebarRowStages,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import {
   YFieldConfigMixin,
@@ -32,27 +17,11 @@ import {
 import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
 import { multiQuantitativeWiggleConfigSchema } from '../MultiQuantitativeTrack/displaySchema.ts'
 import {
-  wiggleAxisViews,
-  wiggleRowLabelViews,
-  wiggleSidebarViews,
-} from './wiggleAxisViews.ts'
-import {
   wiggleConfigViews,
   wiggleLabelViews,
   wiggleModeViews,
 } from './wiggleConfigViews.ts'
-import { wiggleDisplayViews } from './wiggleDisplayViews.ts'
-import { wiggleColorScaleViews, wiggleScoreKeyViews } from './wiggleKeyViews.ts'
-import {
-  wiggleAutoscaleViews,
-  wiggleDomainViews,
-  wigglePlotViews,
-  wiggleRowHeightViews,
-  wiggleRowsBoxViews,
-  wiggleStatsViews,
-} from './wigglePlotViews.ts'
-import { wiggleResolveViews } from './wiggleResolveViews.ts'
-import { wiggleRowHookViews } from './wiggleRowHookViews.ts'
+import { wiggleScoreStages, wiggleSidebarStages } from './wiggleStages.ts'
 import { WIGGLE_Y_PATHS } from './wiggleYPaths.ts'
 
 import type { Source } from '../util.ts'
@@ -85,7 +54,7 @@ function wiggleStaticHost(
     | typeof linearWiggleDisplayConfigSchema
     | typeof multiQuantitativeWiggleConfigSchema,
 ) {
-  return types
+  const base = types
     .compose(
       'WiggleStaticHost',
       TrackHeightMixin(),
@@ -117,40 +86,12 @@ function wiggleStaticHost(
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
     .views(self => wiggleLabelViews(self))
-    .views(self => treeSidebarRowsConfigViews(self))
-    .views(() => treeSidebarRowHookDefaults<Source>())
-    .views(self => expandedRowViews<Source>(self))
-    .views(self => rowAliasViews<Source>(self))
-    .views(self => rowTreeViews<Source>(self))
-    .views(self => rowOrderViews<Source>(self))
-    .views(self => resolvedRowColorViews<Source>(self))
-    .views(self => editableRowViews<Source>(self))
-    .views(self => clusterableRowViews<Source>(self))
-    .views(self => bandedRowViews<Source>(self))
-    .views(self => bandedSourceViews<Source>(self))
-    .views(self => sourceViews<Source>(self))
-    .views(self => rowNarrowingShowsViews<Source>(self))
-    .views(self => rowFocusLineViews(self))
-    .views(self => rowsTopOffsetViews(self))
     .views(self => treeSidebarAxisConfigViews(self))
-    .views(self => rowTreeRootViews<Source>(self))
-    .views(self => treeSidebarTreeHookDefaults(self))
-    .views(self => wiggleRowHookViews(self))
-    .views(self => wiggleDomainViews(self))
-    .views(self => wiggleResolveViews(self))
-    .views(self => wiggleStatsViews(self))
-    .views(self => wiggleAutoscaleViews(self))
-    .views(self => wiggleRowsBoxViews(self))
-    .views(self => wiggleRowHeightViews(self))
-    .views(self => wigglePlotViews(self))
-    .views(self => wiggleScoreKeyViews(self))
-    .views(self => wiggleDisplayViews(self))
+    .views(self => treeSidebarRowsConfigViews(self))
+  const scored = wiggleScoreStages(treeSidebarRowStages<Source>()(base))
     .views(self => rowsContentHeightViews(self))
     .views(self => hierarchyViews(self))
-    .views(self => wiggleRowLabelViews(self))
-    .views(self => wiggleSidebarViews(self))
-    .views(self => wiggleAxisViews(self))
-    .views(self => wiggleColorScaleViews(self))
+  return wiggleSidebarStages(scored)
 }
 
 const QuantitativeStaticHost = wiggleStaticHost(linearWiggleDisplayConfigSchema)

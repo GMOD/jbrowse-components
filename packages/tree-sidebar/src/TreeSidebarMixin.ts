@@ -51,27 +51,12 @@ import { buildSpatialIndex } from './spatialIndex.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 import {
-  bandedRowViews,
-  bandedSourceViews,
-  clusterableRowViews,
-  editableRowViews,
-  expandedRowViews,
   hierarchyViews,
   listsInOrder,
-  resolvedRowColorViews,
-  rowAliasViews,
-  rowFocusLineViews,
-  rowNarrowingShowsViews,
-  rowOrderViews,
-  rowTreeRootViews,
-  rowTreeViews,
   rowsContentHeightViews,
-  rowsTopOffsetViews,
-  sourceViews,
   treeSidebarAxisConfigViews,
-  treeSidebarRowHookDefaults,
+  treeSidebarRowStages,
   treeSidebarRowsConfigViews,
-  treeSidebarTreeHookDefaults,
 } from './treeSidebarRowViews.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
@@ -262,7 +247,7 @@ export interface ClusterRun {
  * `rows.field`.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
-  return types
+  const base = types
     .model({
       /**
        * #property
@@ -331,7 +316,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
     }))
     .views(self => treeSidebarRowsConfigViews(host(self)))
-    .views(() => treeSidebarRowHookDefaults<S>())
+
+  return treeSidebarRowStages<S>()(base)
     .views(self => ({
       /**
        * #getter
@@ -365,19 +351,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return undefined
       },
     }))
-    .views(self => expandedRowViews<S>(self))
-    .views(self => rowAliasViews<S>(self))
-    .views(self => rowTreeViews<S>(self))
-    .views(self => rowOrderViews<S>(self))
-    .views(self => resolvedRowColorViews<S>(self))
-    .views(self => editableRowViews<S>(self))
-    .views(self => clusterableRowViews<S>(self))
-    .views(self => bandedRowViews<S>(self))
-    .views(self => bandedSourceViews<S>(self))
-    .views(self => sourceViews<S>(self))
-    .views(self => rowNarrowingShowsViews<S>(self))
-    .views(self => rowFocusLineViews(self))
-    .views(self => rowsTopOffsetViews(self))
     .views(self => ({
       /**
        * #method
@@ -547,7 +520,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           : orderDropsTree(self.rowTree, self.rowSort, order)
       },
     }))
-    .views(self => rowTreeRootViews<S>(self))
     .views(self => ({
       /**
        * #method
@@ -569,7 +541,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return self.clusterableSources.length > 1
       },
     }))
-    .views(self => treeSidebarTreeHookDefaults(self))
     .views(self => rowsContentHeightViews(withRowHeight(self)))
     .views(self => hierarchyViews(self))
     .views(self => ({

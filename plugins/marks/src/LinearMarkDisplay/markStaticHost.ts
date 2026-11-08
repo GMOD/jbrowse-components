@@ -5,26 +5,11 @@ import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar'
 import {
-  clusterableRowViews,
-  bandedRowViews,
-  bandedSourceViews,
-  editableRowViews,
-  expandedRowViews,
   hierarchyViews,
-  resolvedRowColorViews,
-  rowAliasViews,
-  rowFocusLineViews,
-  rowNarrowingShowsViews,
-  rowOrderViews,
-  rowTreeRootViews,
-  rowTreeViews,
   rowsContentHeightViews,
-  rowsTopOffsetViews,
-  sourceViews,
   treeSidebarAxisConfigViews,
-  treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
-  treeSidebarTreeHookDefaults,
+  treeSidebarRowStages,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import { ScoreScaleMixin, ungroupedAutoscaleViews } from '@jbrowse/wiggle-core'
 
@@ -81,7 +66,7 @@ const NO_FRAME: MarkStaticFrame = {
   trackWidthPx: 0,
 }
 
-const MarkStaticHostModel = types
+const base = types
   .compose(
     'MarkStaticHost',
     TrackHeightMixin(),
@@ -131,22 +116,8 @@ const MarkStaticHostModel = types
   .views(ungroupedAutoscaleViews)
   .views(self => treeSidebarAxisConfigViews(self))
   .views(self => treeSidebarRowsConfigViews(self))
-  .views(() => treeSidebarRowHookDefaults<RowSource>())
-  .views(self => expandedRowViews<RowSource>(self))
-  .views(self => rowAliasViews<RowSource>(self))
-  .views(self => rowTreeViews<RowSource>(self))
-  .views(self => rowOrderViews<RowSource>(self))
-  .views(self => resolvedRowColorViews<RowSource>(self))
-  .views(self => editableRowViews<RowSource>(self))
-  .views(self => clusterableRowViews<RowSource>(self))
-  .views(self => bandedRowViews<RowSource>(self))
-  .views(self => bandedSourceViews<RowSource>(self))
-  .views(self => sourceViews<RowSource>(self))
-  .views(self => rowNarrowingShowsViews<RowSource>(self))
-  .views(self => rowFocusLineViews(self))
-  .views(self => rowsTopOffsetViews(self))
-  .views(self => rowTreeRootViews<RowSource>(self))
-  .views(self => treeSidebarTreeHookDefaults(self))
+
+const MarkStaticHostModel = treeSidebarRowStages<RowSource>()(base)
   .views(self => rowsContentHeightViews(self))
   .views(self => hierarchyViews(self))
   .views(self => markConfigViews(self))

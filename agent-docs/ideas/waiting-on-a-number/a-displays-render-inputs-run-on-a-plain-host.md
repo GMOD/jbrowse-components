@@ -340,6 +340,27 @@ one session read, the assembly manager's canonical refName for a link mark's
 far end, is the display's `canonicalRefName`; the static host answers the
 refName unchanged, which holds only while its frame is in the adapter's names.
 
+## Built: one installer per chain
+
+A chain a display model and a static host both run is installed by one
+function taking and returning `IModelType<P, O, C, S>`, each layer still its
+own `.views()` and so its own computed: `treeSidebarRowStages<S>()`
+(`treeSidebarRowViews.ts`: the row hook defaults through `rowsTopOffset`, then
+`root` and the tree's hook defaults), called by `TreeSidebarMixin` and the
+wiggle, mark and variants hosts; and `wiggleScoreStages` (the row hooks
+through `renderState`) and `wiggleSidebarStages` (row labels, sidebar, axis,
+key) in `plugins/wiggle/src/shared/wiggleStages.ts`, called by
+`LinearWiggleDisplay` and `wiggleStaticHost`. A host's hook overrides go after
+the installer. The wiggle host puts `rowsContentHeightViews` and
+`hierarchyViews` between its two installers, since they read
+`effectiveRowHeight` from the score stages, where the display has them from
+`TreeSidebarMixin`. Still listed in both: `wiggleConfigViews`,
+`wiggleModeViews` and `wiggleLabelViews`, which read `configuration`, a prop
+rather than a view, so an installer would have to constrain the model's props.
+The display's inline views (`liveNotices`, `rpcProps`, `autoClusterReady`)
+moved only so the installers sit where the layers were; TS7056 never came up,
+and the factories' declarations are the same size.
+
 ## Left
 
 - **Marks under a static linear export**: its frame is in the assembly's names, so
@@ -354,13 +375,6 @@ refName unchanged, which holds only while its frame is in the adapter's names.
   whose tracks share one needs the union across their static hosts.
 - **What the session did around the body**: a static consumer of the byte
   gate (above), and rasterized layers (the parity tests are vector).
-- **The chains are restated per host**: `shared/wiggleStaticHost.ts` repeats
-  `LinearWiggleDisplay`'s wiggle views in order, and tree-sidebar's row steps
-  are listed four times (`TreeSidebarMixin`, the wiggle and mark static hosts,
-  `plugins/variants/src/tables.ts`). The fix is one installer per chain, which
-  both a model and a host call. Try it against TS7056 first: the model's
-  inline views (`liveNotices`, `rpcProps`, `autoClusterReady`,
-  `hasResolution`) have to move out of the way.
 
 ## The long tail
 

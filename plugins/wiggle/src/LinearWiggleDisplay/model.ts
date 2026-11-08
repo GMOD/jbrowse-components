@@ -50,11 +50,6 @@ import { renderingOf } from '../renderingTypes.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { clampResolution } from '../shared/resolution.ts'
 import {
-  wiggleAxisViews,
-  wiggleRowLabelViews,
-  wiggleSidebarViews,
-} from '../shared/wiggleAxisViews.ts'
-import {
   wiggleColorProblems,
   wiggleColorSettingOf,
 } from '../shared/wiggleColor.ts'
@@ -63,27 +58,16 @@ import {
   wiggleLabelViews,
   wiggleModeViews,
 } from '../shared/wiggleConfigViews.ts'
-import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import { wiggleFeatureWidgetData } from '../shared/wiggleHitTest.ts'
-import {
-  wiggleColorScaleViews,
-  wiggleScoreKeyViews,
-} from '../shared/wiggleKeyViews.ts'
 import {
   makeMarkSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import {
-  wiggleAutoscaleViews,
-  wiggleDomainViews,
-  wigglePlotViews,
-  wiggleRowHeightViews,
-  wiggleRowsBoxViews,
-  wiggleStatsViews,
-} from '../shared/wigglePlotViews.ts'
-import { wiggleResolveViews } from '../shared/wiggleResolveViews.ts'
-import { wiggleRowHookViews } from '../shared/wiggleRowHookViews.ts'
+  wiggleScoreStages,
+  wiggleSidebarStages,
+} from '../shared/wiggleStages.ts'
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
@@ -183,7 +167,7 @@ export default function stateModelFactory(
   _pluginManager: PluginManager,
   configSchema: LinearWiggleDisplayConfigSchema,
 ) {
-  return types
+  const base = types
     .compose(
       'LinearWiggleDisplay',
       BaseDisplay,
@@ -243,7 +227,6 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => wiggleDomainViews(self))
     .actions(self => ({
       /**
        * #action
@@ -316,7 +299,8 @@ export default function stateModelFactory(
         setConf(self, ['encoding', 'strokeWidth', 'value'], val)
       },
     }))
-    .views(self => wiggleRowHookViews(self))
+
+  return wiggleSidebarStages(wiggleScoreStages(base))
     .views(self => ({
       /**
        * #getter
@@ -344,7 +328,6 @@ export default function stateModelFactory(
         ]
       },
     }))
-    .views(self => wiggleResolveViews(self))
     .views(self => ({
       /**
        * #getter
@@ -367,13 +350,6 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => wiggleStatsViews(self))
-    .views(self => wiggleAutoscaleViews(self))
-    .views(self => wiggleRowsBoxViews(self))
-    .views(self => wiggleRowHeightViews(self))
-    .views(self => wigglePlotViews(self))
-    .views(self => wiggleScoreKeyViews(self))
-    .views(self => wiggleDisplayViews(self))
     .views(self => ({
       /**
        * #getter
@@ -393,9 +369,6 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => wiggleRowLabelViews(self))
-    .views(self => wiggleSidebarViews(self))
-    .views(self => wiggleAxisViews(self))
     .views(self => ({
       /**
        * #method
@@ -412,7 +385,6 @@ export default function stateModelFactory(
         }
       },
     }))
-    .views(self => wiggleColorScaleViews(self))
     .views(self => {
       const superConfigProblemsOf = self.configProblemsOf
       return {

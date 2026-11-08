@@ -49,6 +49,7 @@ import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { SvgControlsStrip } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import type { IModelType, ModelProperties } from '@jbrowse/mobx-state-tree'
 
 /**
  * The `rows` every display composing `TreeSidebarMixin` declares: MAF's
@@ -938,4 +939,38 @@ export function listsInOrder(
     }
   }
   return true
+}
+
+/**
+ * Installs the row chain on `model` in its one order: the hook defaults, each
+ * stage from `expandedRows` through `rowsTopOffset`, and the tree's `root`
+ * and its hook defaults. `TreeSidebarMixin` and each static host call it
+ * after the row config views, and install their hook overrides after it.
+ */
+export function treeSidebarRowStages<S extends RowSource>() {
+  return <
+    P extends ModelProperties,
+    O extends ReturnType<typeof treeSidebarRowsConfigViews>,
+    C,
+    Sn,
+  >(
+    model: IModelType<P, O, C, Sn>,
+  ) =>
+    model
+      .views(() => treeSidebarRowHookDefaults<S>())
+      .views(self => expandedRowViews<S>(self))
+      .views(self => rowAliasViews<S>(self))
+      .views(self => rowTreeViews<S>(self))
+      .views(self => rowOrderViews<S>(self))
+      .views(self => resolvedRowColorViews<S>(self))
+      .views(self => editableRowViews<S>(self))
+      .views(self => clusterableRowViews<S>(self))
+      .views(self => bandedRowViews<S>(self))
+      .views(self => bandedSourceViews<S>(self))
+      .views(self => sourceViews<S>(self))
+      .views(self => rowNarrowingShowsViews<S>(self))
+      .views(self => rowFocusLineViews(self))
+      .views(self => rowsTopOffsetViews(self))
+      .views(self => rowTreeRootViews<S>(self))
+      .views(self => treeSidebarTreeHookDefaults(self))
 }

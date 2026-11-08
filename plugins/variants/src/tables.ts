@@ -14,21 +14,8 @@ import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
 import {
-  bandedRowViews,
-  bandedSourceViews,
-  clusterableRowViews,
-  editableRowViews,
-  expandedRowViews,
-  resolvedRowColorViews,
-  rowAliasViews,
-  rowFocusLineViews,
-  rowNarrowingShowsViews,
-  rowOrderViews,
-  rowTreeViews,
-  rowsTopOffsetViews,
-  sourceViews,
-  treeSidebarRowHookDefaults,
   treeSidebarRowsConfigViews,
+  treeSidebarRowStages,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
 import { runInAction } from 'mobx'
 
@@ -86,16 +73,7 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 
-/**
- * The variant display reduced to what its tables read: the display's config,
- * the samples the adapter lists, the windows the regions show and the
- * payload the fetch reports, under the row views the display installs, its
- * row hooks, what it fetches, its cell coloring, whether it draws its
- * genotype rows, the height its rows divide and what it keys. No session, no
- * view and no records band, so its `height` is the rows' slot; its env holds
- * the `pluginManager` the jexl filters evaluate through.
- */
-const VariantTablesHost = types
+const base = types
   .compose(
     'VariantTablesHost',
     TrackHeightMixin(),
@@ -146,23 +124,20 @@ const VariantTablesHost = types
   .views(self => variantGenotypeRowViews(self))
   .views(self => keyedVariantViews(self))
   .views(self => treeSidebarRowsConfigViews(self))
-  .views(() => treeSidebarRowHookDefaults<ProcessedSource>())
+
+/**
+ * The variant display reduced to what its tables read: the display's config,
+ * the samples the adapter lists, the windows the regions show and the
+ * payload the fetch reports, under the row views the display installs, its
+ * row hooks, what it fetches, its cell coloring, whether it draws its
+ * genotype rows, the height its rows divide and what it keys. No session, no
+ * view and no records band, so its `height` is the rows' slot; its env holds
+ * the `pluginManager` the jexl filters evaluate through.
+ */
+const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => variantDrawnRowViews(self))
   .views(self => variantFetchViews(self))
-  .views(self => expandedRowViews<ProcessedSource>(self))
-  .views(self => rowAliasViews<ProcessedSource>(self))
-  .views(self => rowTreeViews<ProcessedSource>(self))
-  .views(self => rowOrderViews<ProcessedSource>(self))
-  .views(self => resolvedRowColorViews<ProcessedSource>(self))
-  .views(self => editableRowViews<ProcessedSource>(self))
-  .views(self => clusterableRowViews<ProcessedSource>(self))
-  .views(self => bandedRowViews<ProcessedSource>(self))
-  .views(self => bandedSourceViews<ProcessedSource>(self))
-  .views(self => sourceViews<ProcessedSource>(self))
   .views(self => variantRowHookViews(self))
-  .views(self => rowNarrowingShowsViews<ProcessedSource>(self))
-  .views(self => rowFocusLineViews(self))
-  .views(self => rowsTopOffsetViews(self))
   .views(self => variantHeightViews(self))
   .views(self => variantRowsHeightViews(self))
   .views(self => recordsKeyViews(self))
