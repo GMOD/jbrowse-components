@@ -3,30 +3,25 @@
 // Where every haplotype's walk crosses a reference window, read from a
 // gfa-to-tabix --walks file by range request: one line per walk, its PanSN
 // name, the first and last base it covers in its own contig's coordinates, and
-// the strand of its first step. The cut reads each walk the file abridged
-// (walk format 5) in full from its detail records.
+// the strand of its first step. The cut reads each walk the file abridged in
+// full from its detail records.
 //
-//   npm install @jbrowse/graph-walks @gmod/tabix generic-filehandle2
-//   node walk_spans.mjs <prefix>.<sample>.walks.bed.gz GRCh38#0#chr1 103540000 103541000
+//   npm install @jbrowse/graph-walks@6 generic-filehandle2@2
+//   node walk_spans.mjs <prefix>.<sample>.walks.gz GRCh38#0#chr1 103540000 103541000
 //
-// The file is a path or a URL, with its .tbi beside it.
-import { TabixIndexedFile } from '@gmod/tabix'
+// The file is a path or a URL, with its .idx directory beside it. graph-walks 6
+// reads walk format 7, which gfa-to-tabix 4.0 and later write.
 import { WalkReader } from '@jbrowse/graph-walks'
-import { LocalFile, RemoteFile } from 'generic-filehandle2'
+import { LocalFile } from 'generic-filehandle2'
 
 const [file, refName, start, end] = process.argv.slice(2)
 if (!file || !refName || !start || !end) {
-  console.error('usage: walk_spans.mjs walks.bed.gz refName start end')
+  console.error('usage: walk_spans.mjs walks.gz refName start end')
   process.exit(1)
 }
-const open = path =>
-  /^https?:\/\//.test(path) ? new RemoteFile(path) : new LocalFile(path)
-const reader = new WalkReader(
-  new TabixIndexedFile({
-    filehandle: open(file),
-    tbiFilehandle: open(`${file}.tbi`),
-  }),
-)
+const reader = /^https?:\/\//.test(file)
+  ? WalkReader.open(file)
+  : WalkReader.open(file, path => new LocalFile(path))
 const { fragments } = await reader.cut(
   refName,
   { start: Number(start), end: Number(end) },

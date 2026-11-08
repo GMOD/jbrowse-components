@@ -455,7 +455,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 # the majors walk_spans.mjs is written against; a new major can change the API
-npm install @jbrowse/graph-walks@4 @gmod/tabix@3 generic-filehandle2@2
+npm install @jbrowse/graph-walks@6 generic-filehandle2@2
 ```
 
 Where a haplotype's walk crosses a single-copy window on either side of the
@@ -464,8 +464,8 @@ structures above. Get where every walk crosses one window, one line per walk
 with its contig coordinates:
 
 ```bash
-# the walk file is a path or a URL, with its .tbi beside it
-node walk_spans.mjs graph.GRCh38.walks.bed.gz 'GRCh38#0#chr1' 103540000 103541000 > left.tsv
+# the walk file is a path or a URL, with its .walks.gz.idx beside it
+node walk_spans.mjs graph.GRCh38.walks.gz 'GRCh38#0#chr1' 103540000 103541000 > left.tsv
 ```
 
 Fetch one haplotype's copy of the locus:

@@ -43,12 +43,12 @@ cd "$OUT"
 
 HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
-WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz
+WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38.walks.gz
 
 echo "== every haplotype's span across the locus, from the walk file"
 [ -s walk_spans.mjs ] || curl -fsSLO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
 [ -d node_modules/@jbrowse/graph-walks ] ||
-  npm install --no-save --silent @jbrowse/graph-walks@4.4.0 @gmod/tabix@3 generic-filehandle2@2
+  npm install --no-save --silent @jbrowse/graph-walks@6.0.0 generic-filehandle2@2
 # One window inside RNPC3 and one past AMY1C, both single-copy, so each
 # haplotype crosses each exactly once
 for side in left:103540000:103541000 right:103800000:103801000; do
@@ -56,10 +56,6 @@ for side in left:103540000:103541000 right:103800000:103801000; do
   [ -s "$name.tsv" ] || node walk_spans.mjs "$WALKS" 'GRCh38#0#chr1' "$start" "$end" >"$name.tsv"
 done
 python3 - <<'PY'
-# GRCh38's own distance between the two windows
-REFERENCE = 103800000 - 103540000
-
-
 def positions(path):
     found = {}
     for line in open(path):
@@ -70,6 +66,9 @@ def positions(path):
 
 
 left, right = positions('left.tsv'), positions('right.tsv')
+# GRCh38's own span between the windows, measured from the same cuts, so a
+# reader's trimming to node edges cancels
+REFERENCE = right['GRCh38#0'][1] - left['GRCh38#0'][1]
 with open('locus_spans.tsv', 'w') as fh:
     fh.write('haplotype\tcontig\tstrand\tleft\tright\tspan\tspan_minus_GRCh38\n')
     for name in sorted(left):
