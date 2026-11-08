@@ -593,6 +593,11 @@ function trackTypeGuesserFor(pluginManager: PluginManager) {
   )
 }
 
+/**
+ * Without `model` this answers UNKNOWN, and `guessTrackType` 'FeatureTrack': a
+ * caller with no model (worker, Node export, converter, test) uses
+ * `matchFormat` and `trackTypeForAdapter` from `@jbrowse/add-track-core`.
+ */
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,

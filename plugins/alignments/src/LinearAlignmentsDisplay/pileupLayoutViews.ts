@@ -391,6 +391,9 @@ export function connectorSettingViews(self: ConnectorSettingHost) {
      * `pileup.connectors.show` says.
      */
     get drawsConnectors() {
+      // A chain-layout off switch was tried and removed: all it did was turn
+      // the gold split connector into a grey hairline, a recolor that read as
+      // a bug
       return self.unit === 'chain' || self.showConnectors
     },
   }

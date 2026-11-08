@@ -48,6 +48,9 @@ static const float CONNECTOR_MAX_BOW_PX = 30.0;
 public static const float CONNECTOR_MAX_REACH_PX = 110.0;
 // A dip reaches no deeper than a quarter of its ends' screen separation, so
 // zoomed out it flattens toward a line rather than drawing a U or a spike.
+// Every kind, maps-back loops and inversion hooks included, with no floor: an
+// exemption for loops was tried and reverted, since a deep curve a few px wide
+// reads as a misshapen spike.
 static const float CONNECTOR_DIP_PER_WIDTH = 0.25;
 
 // The `bits` lane.

@@ -28,6 +28,8 @@ const useStyles = makeStyles()({
   },
 })
 
+// A redesign folding these buttons into one view menu and moving each row's
+// locate box and name onto the row was built and declined
 const Header = observer(function Header({
   model,
 }: {

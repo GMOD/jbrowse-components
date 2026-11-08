@@ -50,6 +50,8 @@ const Controls = observer(function Controls({
   const [ref, { width }] = useMeasure('width')
   const highlighted = highlightedDisplays(model)
   const viewMenu = getSession(model).viewTitleBars === false
+  // headless Chrome matches `(pointer: none)` and no `any-pointer`, so a test
+  // for the absence of a fine pointer read every figure capture as a phone
   const touch = useMediaQuery('(pointer: coarse)', {
     noSsr: true,
   })

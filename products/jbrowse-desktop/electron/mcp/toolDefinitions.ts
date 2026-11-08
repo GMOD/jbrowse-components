@@ -47,7 +47,11 @@ export function clientShowsInstructions(params: Record<string, unknown>) {
 export const GUIDANCE_PREFIX =
   'Guidance from the jbrowse server (repeated here because some clients do not show the server instructions):'
 
-// Sent in the initialize response; see CLIENT_TEXT_CAP_CHARS.
+// Sent in the initialize response; see CLIENT_TEXT_CAP_CHARS. It names many of
+// the run_javascript description's `jb` members on purpose: the description
+// carries signatures and this the sequence, and some clients show only one. A
+// dedup against the other client texts measured 94 characters of verbatim
+// overlap (five-word shingles), not the ~800 that counting shared names gave.
 export const SERVER_INSTRUCTIONS = `JBrowse Desktop genome browser control. One interface: run_javascript runs your code against the live session, with the helper library "jb" passed in as an argument (not a global). open, screenshot and docs cover what code cannot.
 
 FIRST call docs topic "live-model": short — every jb member, what a call answers with, and a contents of the deep dives. "recipes" has a verified snippet for most asks, and "hosted-data" the config URL for any UCSC or GenArk assembly when nothing is open. Orient with jb.sessionSummary(); never assume state carried between calls.

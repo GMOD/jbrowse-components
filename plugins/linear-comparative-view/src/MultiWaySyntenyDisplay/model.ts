@@ -3264,6 +3264,10 @@ export function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
+        // The cast stays: the `Omit<Model, 'afterAttach' | 'beforeDestroy'>`
+        // parameter the synteny and dotplot siblings take gave 8 TS errors
+        // here, since `renderSvg` is declared below and the lane installs take
+        // the full model
         runLazyAfterAttach(
           self as MultiWaySyntenyDisplayModel,
           async () => (await import('./afterAttach.ts')).doAfterAttach,

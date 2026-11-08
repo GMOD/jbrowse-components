@@ -163,6 +163,11 @@ export interface StackedGeneSpec {
   childHeightsPx?: number[]
 }
 
+// Every field is hand-written, so a test over this pins what the main thread
+// does with a field, never that the worker writes it: `childOrdinal` went
+// unstamped in glyphEmitters.ts with all 1444 tests green. Pin an emitted field
+// through `layoutSubfeatures` and `collectRenderData`, as
+// LinearBasicDisplay/belowLabelRows.test.ts does
 export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
   const rects: RectData[] = []
   const flatbushItems: FlatbushItem[] = []

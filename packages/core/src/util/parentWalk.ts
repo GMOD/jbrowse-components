@@ -65,6 +65,10 @@ export function cachedParent<T>(
   errorMsg: string,
 ) {
   const cached = cache.get(node)
+  // mobx tracks `isAlive`, so closing a track stales every display computed
+  // that walked to it and logs ~9 dead-node warnings whose values nothing
+  // uses. `untracked` here took them to 0 but needed a fourth ground beside
+  // `noUnexplainedUntracked`'s three, so it was declined
   if (cached && isAlive(cached)) {
     return cached
   }

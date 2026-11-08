@@ -159,7 +159,9 @@ function serializeCoarseOps(ops: CoarseOp[]) {
 }
 
 // N keeps its axis as well as its letter, matching `swapIndelCigar`, which
-// swaps only D<->I
+// swaps only D<->I. A spliced row seen from the other axis therefore walks the
+// wrong length; left so, since the whole-genome aligners synteny reads
+// (minimap2 asm modes, wfmash, chains) never write N
 function swapAxes({ own, mate, op }: CoarseOp): CoarseOp {
   return op === 'N'
     ? { own, mate, op }

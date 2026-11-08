@@ -3598,7 +3598,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // Also the path for the several places that BUILD a view from a
         // snapshot naming bpPerPx/offsetPx (a synteny row, a split view) —
         // they get the same treatment as a saved session, so none of them had
-        // to change.
+        // to change. A snapshot that also carries `windowWidthBp` keeps it and
+        // ignores the pair, so `{ ...getSnapshot(view), bpPerPx }` opens
+        // at the source's zoom: build a viewport with `fitAllRegionsWindow`
+        // or `setWindow` instead.
         ...(typeof bpPerPx === 'number' &&
         bpPerPx > 0 &&
         rest.windowWidthBp === undefined
