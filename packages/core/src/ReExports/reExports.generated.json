@@ -4988,6 +4988,7 @@
         "SvgPinnedHighlight",
         "SvgYAxis",
         "exportedHeight",
+        "exportedY",
         "renderDisplaySvg",
         "renderDisplaySvgInFrame",
         "svgLegendGutterWidth"

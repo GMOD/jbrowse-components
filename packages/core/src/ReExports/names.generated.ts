@@ -482,7 +482,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/RegionTooLargeMixin': ['default'],
   '@jbrowse/display-kit/regionTooLargeUtils': ['AUTO_FORCE_LOAD_BP', 'BASE_FETCH_SIZE_LIMIT', 'SUB_FLOOR_BYTE_BUDGET_FACTOR', 'TOO_MANY_FEATURES_REASON', 'bytesTooLargeReason', 'evaluateRegionTooLarge', 'heldDataAnswers', 'nextByteEstimate', 'nextGateState', 'resolveByteLimit'],
   '@jbrowse/display-kit/regionTooLargeViews': ['regionTooLargeActiveViews', 'regionTooLargeBudgetViews', 'regionTooLargeConfigViews', 'regionTooLargeFloorViews', 'regionTooLargeStatusViews', 'regionTooLargeVerdictViews'],
-  '@jbrowse/display-kit/renderDisplaySvg': ['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'exportedHeight', 'renderDisplaySvg', 'renderDisplaySvgInFrame', 'svgLegendGutterWidth'],
+  '@jbrowse/display-kit/renderDisplaySvg': ['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'exportedHeight', 'exportedY', 'renderDisplaySvg', 'renderDisplaySvgInFrame', 'svgLegendGutterWidth'],
   '@jbrowse/display-kit/retiredSettings': ['RETIRED_ROW_STATE_KEYS', 'liftRetiredRowState', 'moveDisplayDefaults'],
   '@jbrowse/display-kit/rowArrangementConfigSchema': ['ROW_ARRANGEMENT_MEMBERS', 'rowArrangementConfigSchema', 'stringList'],
   '@jbrowse/display-kit/rowAxisConfigSchema': ['rowAxisConfigSchema'],
