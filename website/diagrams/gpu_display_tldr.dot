@@ -66,7 +66,7 @@ digraph gpu_display_tldr {
   // 571x812, which needs no scaling at all.
   //
   // No sentence on the image: the takeaway (panning and zooming do not refetch)
-  // is the Figure caption's job. See agent-docs/reference/WEBSITE_WRITING.md -- on-image text is a
+  // is the Figure caption's job. See website/CLAUDE.md -- on-image text is a
   // label, not a paragraph.
   //
   // THE REDRAW EXAMPLES ARE THE THREE THAT ARE ONLY A FRAME. `recolor` was the
