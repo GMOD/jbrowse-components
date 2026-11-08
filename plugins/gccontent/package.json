@@ -35,7 +35,7 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
-    "mobx": "^7.1.4",
+    "mobx": "^7.1.5",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {

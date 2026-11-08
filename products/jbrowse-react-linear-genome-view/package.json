@@ -65,7 +65,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@mui/material": "^9.5.0",
-    "mobx": "^7.1.4",
+    "mobx": "^7.1.5",
     "mobx-react": "^10.0.3"
   },
   "devDependencies": {

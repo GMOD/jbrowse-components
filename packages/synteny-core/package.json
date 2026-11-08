@@ -43,7 +43,7 @@
     "@jbrowse/render-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
-    "mobx": "^7.1.4",
+    "mobx": "^7.1.5",
     "mobx-react": "^10.0.3"
   },
   "peerDependencies": {
