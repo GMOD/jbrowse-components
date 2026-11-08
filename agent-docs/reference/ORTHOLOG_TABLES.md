@@ -84,6 +84,22 @@ coffee–tomato coffee covered by three or more tomato blocks from 11.1% to 0.3%
 the multi-copy pairings the grasses and nightshade figures show. The hosted
 wheat PAF changes only when the set is rebuilt.
 
+**GrainGenes' own MCScanX runs show the same shape, and our converter reads
+them.** GrainGenes publishes a `.collinearity` and `.gff` pair (MCScanX tags
+`Cb` and `Tb`) for each wheat-pangenome variety against the three _Ae.
+tauschii_ lineage references, at
+`https://avena.pw.usda.gov/GG3pangenome/wheat/D/tauschii_files/zip/<ref>-<variety>.zip`
+(the list is in `taus_synteny.php`; `pan_synteny.php` has the variety-by-variety
+set). On `TA10171_L1-CS2.zip` (Chinese Spring v2.1 against TA10171, 2026-11-08)
+the anchors split A 32%, B 31%, D 37% by Chinese Spring subgenome, against 34% on
+D in our tauschii–wheat blocks, so the homoeolog chaining is MCScanX's and not
+our orthogroup input's. `mcscanx_to_anchors.py --species Cb=CS2 --species
+Tb=TA10171` converts the pair unchanged; with `--drop-overlapped-blocks` 237 of
+1,092 blocks stay and the D share is 85%, keeping about 27k of the 28k D anchors.
+The three tauschii references are not NCBI assemblies; their FASTA and
+annotation are on Dryad and Ag Data Commons (Cavalet-Giorsa et al. 2024,
+https://doi.org/10.1038/s41586-024-07808-z).
+
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out to
 every pair anchored on the queried assembly, one `mate`-carrying feature per
 (anchor gene × mate assembly). `MultiWaySyntenyDisplay` regroups per anchor, so
