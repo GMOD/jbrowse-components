@@ -1432,7 +1432,7 @@
   },
   "WiggleSize": {
    "category": "Display setting",
-   "text": "# WiggleSize (Display setting config, wiggle plugin)\n\nA quantitative mark's width in px, as `color` is its color: a point's `size`, its diameter, or a line's `strokeWidth`, its thickness. A number is the constant every point or line takes, and is written to `value`.\n\n```js\n{ type: 'LinearWiggleDisplay', mark: 'point', encoding: { size: 4 } }\n```\n```js\n{ type: 'LinearWiggleDisplay', mark: 'line', encoding: { strokeWidth: 2 } }\n```\n\n## Slots\n- `value: maybeNumber`: The px every point or line takes. Unset is the mark's own, 2 for a point and 1 for a line. Writing `size: 4` lands here."
+   "text": "# WiggleSize (Display setting config, wiggle plugin)\n\nA quantitative mark's width in px, as `color` is its color: a point's `size`, its diameter, or a line's `strokeWidth`, its thickness. A number is the constant every point or line takes, and is written to `value`. It is MarkSize's `value` alone: a row draws its points or line at one width, so a `field` would have nothing to vary.\n\n```js\n{ type: 'LinearWiggleDisplay', mark: 'point', encoding: { size: 4 } }\n```\n```js\n{ type: 'LinearWiggleDisplay', mark: 'line', encoding: { strokeWidth: 2 } }\n```\n\n## Slots\n- `value: maybeNumber`: The px every point or line takes. Unset is the mark's own, 2 for a point and 1 for a line. Writing `size: 4` lands here."
   },
   "YAxis": {
    "category": "Display setting",

@@ -3636,6 +3636,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/numericValue": {
+      "package": "@jbrowse/core",
+      "names": [
+        "numericValue"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/offscreenCanvasPonyfill": {
       "package": "@jbrowse/core",
       "names": [

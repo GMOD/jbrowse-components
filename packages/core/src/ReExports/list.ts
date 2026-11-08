@@ -355,6 +355,7 @@ export default [
   '@jbrowse/core/util/mstUtils',
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/util/numericUtils',
+  '@jbrowse/core/util/numericValue',
   '@jbrowse/core/util/offscreenCanvasPonyfill',
   '@jbrowse/core/util/openViews',
   '@jbrowse/core/util/originCut',

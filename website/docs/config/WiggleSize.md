@@ -9,7 +9,9 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 
 A quantitative mark's width in px, as `color` is its color: a point's
 `size`, its diameter, or a line's `strokeWidth`, its thickness. A number
-is the constant every point or line takes, and is written to `value`.
+is the constant every point or line takes, and is written to `value`. It
+is MarkSize's `value` alone: a row draws its points or line at one width,
+so a `field` would have nothing to vary.
 
 ## Example usage
 

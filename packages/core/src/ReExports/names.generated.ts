@@ -355,6 +355,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/mstUtils': ['canonicalizeViewRefName', 'findParentThat', 'findParentThatIs', 'getAssemblyHost', 'getContainingDisplay', 'getContainingTrack', 'getContainingView', 'getEnv', 'getRenderingServices', 'getRpcSessionId', 'getSession', 'hashCode', 'launchOrReplaceView', 'objectHash', 'persistTrackConfigNow'],
   '@jbrowse/core/util/nanoid': ['nanoid'],
   '@jbrowse/core/util/numericUtils': ['avg', 'clamp', 'formatScore', 'getDisplayStr', 'getNumberGrouping', 'max', 'maxFinite', 'min', 'minmax', 'polarToCartesian', 'radToDeg', 'reducePrecision', 'setNumberGrouping', 'sum', 'toLocale', 'toPrecision'],
+  '@jbrowse/core/util/numericValue': ['numericValue'],
   '@jbrowse/core/util/offscreenCanvasPonyfill': ['drawImageOntoCanvasContext'],
   '@jbrowse/core/util/openViews': ['openTracks', 'openViews', 'viewAndNested'],
   '@jbrowse/core/util/originCut': ['originHeadId', 'originTailCandidates', 'originTailId', 'wholeSubfeatureId'],
