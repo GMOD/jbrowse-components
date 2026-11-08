@@ -30,6 +30,10 @@ const OPEN_FILTERS = [
   { name: 'All Files', extensions: ['*'] },
 ]
 
+// separates two indexes of one FASTA started inside one millisecond, which
+// would otherwise share a name and have the second overwrite the first
+let faiNameCounter = 0
+
 export function registerFileHandlers(paths: AppPaths) {
   ipcHandle('quit', () => {
     app.quit()
@@ -54,7 +58,7 @@ export function registerFileHandlers(paths: AppPaths) {
       // getFaiPath appends the .fai extension
       const faiPath = getFaiPath(
         paths,
-        `${path.basename(filename)}-${Date.now()}`,
+        `${path.basename(filename)}-${Date.now()}-${faiNameCounter++}`,
       )
       // opened before anything can fail, so the cleanup below never runs ahead
       // of a stream still creating the file

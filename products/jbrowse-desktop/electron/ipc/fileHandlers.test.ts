@@ -190,7 +190,7 @@ test.each([
   expect(path.basename(faiPath)).not.toMatch(/[<>:"/\\|?*]/)
 })
 
-// The name arrives as `<basename>-<Date.now()>`, so its length is the user's to
+// The name arrives as `<basename>-<Date.now()>-<n>`, so its length is the user's to
 // choose. Percent-encoding was what bounded it before, and it does the opposite
 // for anything non-ASCII: nine characters out per character in, which is
 // ENAMETOOLONG at ~28 characters of Japanese and well inside what a real file is
