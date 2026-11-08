@@ -192,6 +192,20 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
+  hprc-v2.1-mc-grch38.GRCh38.walks.gz              1,562,313,167 bytes
+  hprc-v2.1-mc-grch38.GRCh38.walks.gz.idx                  8,109
+  hprc-v2.1-mc-chm13.CHM13.walks.gz                1,760,248,336
+  hprc-v2.1-mc-chm13.CHM13.walks.gz.idx                      886
+
+  Every haplotype's path through the base-level v2.1 graph in walk format 7
+  (gfa-to-tabix 4.0.0, docs/walks-container/ there), one file per reference
+  with its directory in the .idx beside it, built on 2026-11-07 and hosted on
+  2026-11-08 after graph-walks 6.0.0's release check passed 28 of 28 windows
+  on each hosted file. The configs name a file by its prefix in walksUri,
+  hprc-v2.1-mc-grch38.GRCh38, and the plugin resolves <prefix>.walks.gz and
+  its .idx. The format 5 files below stay hosted for sessions saved before
+  the swap.
+
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz      1,550,816,162 bytes
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz.tbi    1,332,701
   hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz       1,463,176,959
