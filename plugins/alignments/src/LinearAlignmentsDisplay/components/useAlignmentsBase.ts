@@ -498,7 +498,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       hoverCoverageBand: picked
         ? {
             topOffset: picked.coverageTopOffset,
-            coverageHeight: picked.section.coverageHeight,
+            coverageHeight: picked.section.bands.reserved.coverage,
           }
         : undefined,
     })

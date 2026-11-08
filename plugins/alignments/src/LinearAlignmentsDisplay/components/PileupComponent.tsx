@@ -9,7 +9,11 @@ import {
 import { groupSectionLabel } from '@jbrowse/display-kit/groupLabelStyle'
 import { observer } from 'mobx-react'
 
-import { stackedBandGain } from '../sectionLayout.ts'
+import {
+  LANE_BAND_ORDER,
+  laneBandBottom,
+  stackedBandGain,
+} from '../sectionLayout.ts'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
@@ -18,6 +22,7 @@ import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { bandScreenTop, contentScreenY, sectionKey } from './sectionScreen.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
+import type { LaneBandKey } from '../sectionLayout.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type React from 'react'
 
@@ -83,9 +88,7 @@ const PileupBody = observer(function PileupBody({
 
       <VisibleLabelsHost model={model} width={width} height={height} />
 
-      <CoverageResizeHandle model={model} />
-
-      <ConnectionBandResizeHandles model={model} />
+      <LaneBandResizeHandles model={model} />
 
       <GroupResizeHandles model={model} />
 
@@ -148,114 +151,70 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
   )
 })
 
-// A band height is display-global, so a grouped handle's title says the drag
-// resizes the band in every group, not only the one under the pointer.
-function groupScope(isGrouped: boolean) {
-  return isGrouped ? ' of every group' : ''
+const BAND_NAMES: Record<LaneBandKey, string> = {
+  coverage: 'coverage',
+  readConnections: 'read connections',
+  sashimi: 'sashimi',
 }
 
-// Coverage-band resize handle at each section's coverage bottom. `coverageHeight`
-// is display-global, so every handle resizes all bands together; grouped mode
-// still gets one affordance per group (each section keeps its own coverage band,
-// including collapsed groups), scrolling with its band. Ungrouped is the single
-// sticky section, reproducing the prior lone handle at `coverageHeight`.
+const SET_BAND_HEIGHT: Record<
+  LaneBandKey,
+  (model: LinearAlignmentsDisplayModel, height: number) => void
+> = {
+  coverage: (model, height) => {
+    model.setCoverageHeight(height)
+  },
+  readConnections: (model, height) => {
+    model.setReadConnectionsHeight(height)
+  },
+  sashimi: (model, height) => {
+    model.setSashimiHeight(height)
+  },
+}
+
+// A resize handle at the bottom seam of every band each section reserves, in
+// the stack's own order. A band height is display-global, so every handle for
+// a band resizes it in every section, and grouped mode still gets one
+// affordance per group, scrolling with its section and culled off-screen;
+// ungrouped is the single sticky section.
 //
-// Gated and geared like the arc and sashimi handles below: a section whose
-// coverage band reserves no px has none to resize, and the handle on the Nth
-// band sits below N of them, moving N px per px of height. The title says the
-// drag is display-wide, since the bands the user is NOT pointing at move too.
-export const CoverageResizeHandle = observer(function CoverageResizeHandle({
+// Gated per section on the px the band reserves: a lane that reserves no strip
+// has none to resize, and its handle would land on the pixel of the one above
+// it. The same count gears each handle, since the Nth band of a kind sits
+// below N of them and moves N px per px of height, while a lane without one
+// passes the drag straight through. The title says the drag is display-wide,
+// since the bands the user is NOT pointing at move too.
+export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
   const { height, scrollModel: scroll, isGrouped, renderSections } = model
+  const scope = isGrouped ? ' of every group' : ''
   return (
     <>
-      {renderSections.map((section, i) =>
-        section.coverageHeight > 0 ? (
-          <PileupResizeHandle
-            key={sectionKey(section.groupKey)}
-            seam={bandScreenTop(
-              section.coverageTop + section.coverageHeight,
-              scroll,
-            )}
-            canvasHeight={height}
-            gain={stackedBandGain(renderSections, i, s => s.coverageHeight > 0)}
-            value={model.bandHeights.coverageHeight}
-            onChange={h => {
-              model.setCoverageHeight(h)
-            }}
-            title={`Drag to resize the coverage band${groupScope(isGrouped)}`}
-          />
-        ) : null,
-      )}
+      {renderSections.map((section, i) => (
+        <Fragment key={sectionKey(section.groupKey)}>
+          {LANE_BAND_ORDER.map(key =>
+            section.bands.reserved[key] > 0 ? (
+              <PileupResizeHandle
+                key={key}
+                seam={bandScreenTop(laneBandBottom(section, key), scroll)}
+                canvasHeight={height}
+                gain={stackedBandGain(renderSections, i, key)}
+                value={section.bands.height[key]}
+                onChange={h => {
+                  SET_BAND_HEIGHT[key](model, h)
+                }}
+                title={`Drag to resize the ${BAND_NAMES[key]} band${scope}`}
+              />
+            ) : null,
+          )}
+        </Fragment>
+      ))}
     </>
   )
 })
-
-// Arc + sashimi band resize handles, one per group. The heights are
-// display-global, so every handle resizes all sections' bands together; each
-// still gets an affordance at its own band bottom (arc band ends at the sashimi
-// band top; the sashimi band ends at the pileup top), scrolling with its
-// section and culled off-screen. Ungrouped is the single sticky section.
-//
-// Both handles are gated per section (`hasArcsBand` / `hasSashimiBand`), not on
-// the global geometry: a lane that reserves no strip has none to resize, and its
-// handle would land on the pixel of the handle above it.
-//
-// Which is also why their `gain` counts the strips actually reserved above each
-// handle rather than the sections: an arc-less lane passes the drag straight
-// through, so it moves nothing the handle below it stacks on.
-const ConnectionBandResizeHandles = observer(
-  function ConnectionBandResizeHandles({
-    model,
-  }: {
-    model: LinearAlignmentsDisplayModel
-  }) {
-    const { height, scrollModel: scroll, renderSections } = model
-    const scope = groupScope(model.isGrouped)
-    return (
-      <>
-        {renderSections.map((section, i) => {
-          return (
-            <Fragment key={sectionKey(section.groupKey)}>
-              {section.hasArcsBand ? (
-                <PileupResizeHandle
-                  seam={bandScreenTop(section.sashimiBandTop, scroll)}
-                  canvasHeight={height}
-                  gain={stackedBandGain(renderSections, i, s => s.hasArcsBand)}
-                  value={model.bandHeights.readConnectionsHeight}
-                  onChange={h => {
-                    model.setReadConnectionsHeight(h)
-                  }}
-                  title={`Drag to resize the read connections band${scope}`}
-                />
-              ) : null}
-
-              {section.hasSashimiBand ? (
-                <PileupResizeHandle
-                  seam={bandScreenTop(section.pileupTop, scroll)}
-                  canvasHeight={height}
-                  gain={stackedBandGain(
-                    renderSections,
-                    i,
-                    s => s.hasSashimiBand,
-                  )}
-                  value={model.bandHeights.sashimiHeight}
-                  onChange={h => {
-                    model.setSashimiHeight(h)
-                  }}
-                  title={`Drag to resize the sashimi band${scope}`}
-                />
-              ) : null}
-            </Fragment>
-          )
-        })}
-      </>
-    )
-  },
-)
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a
 // non-collapsed section's bottom edge, below any room it reserves for a

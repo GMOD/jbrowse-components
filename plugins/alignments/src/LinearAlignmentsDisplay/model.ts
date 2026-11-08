@@ -1408,7 +1408,7 @@ export default function stateModelFactory(
          * axis and its rules all read this.
          */
         get coverageBandHeight() {
-          return this.sections.sections[0]!.coverageHeight
+          return this.sections.sections[0]!.bands.reserved.coverage
         },
 
         /**
@@ -2140,24 +2140,26 @@ export default function stateModelFactory(
             })
           }
           const arcsYDomainBp = this.arcsYDomainBp
-          const banded = renderSections.filter(s => s.arcBandHeight > 0)
+          const banded = renderSections.flatMap(s =>
+            s.arcBand && s.arcBand.height > 0 ? [s.arcBand] : [],
+          )
           const band = banded[0]
           if (arcsYDomainBp !== undefined && band) {
             const down = self.readConnectionsPlacement === 'down'
             const ticks = computeInsertSizeTicks({
-              band: { top: 0, height: band.arcBandHeight, down },
+              band: { top: 0, height: band.height, down },
               arcsYDomainBp,
             })
             if (ticks) {
               scales.push({
                 domain: [1, arcsYDomainBp],
                 scaleType: 'log',
-                height: band.arcBandHeight,
+                height: band.height,
                 ticks,
                 side: down ? 'left' : 'right',
                 caption: 'TLEN',
-                bandTops: banded.map(section =>
-                  bandScreenTop(section.arcBandTop, scroll),
+                bandTops: banded.map(arcBand =>
+                  bandScreenTop(arcBand.top, scroll),
                 ),
               })
             }
@@ -2717,7 +2719,7 @@ export default function stateModelFactory(
               ['readConnections', 'height'],
               dragBelowCoverageBand(
                 self.belowCoverageBandsInput,
-                'arcs',
+                'readConnections',
                 self.bandPlot,
                 height,
               ),

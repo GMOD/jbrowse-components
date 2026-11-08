@@ -14,27 +14,26 @@ import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
 import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
-// pileup, top to bottom.
-const BAND_ORDER = ['coverage', 'arcs', 'sashimi'] as const
-type BandKey = (typeof BAND_ORDER)[number]
+// pileup, top to bottom, named as the config objects that size them.
+export const LANE_BAND_ORDER = [
+  'coverage',
+  'readConnections',
+  'sashimi',
+] as const
+export type LaneBandKey = (typeof LANE_BAND_ORDER)[number]
 
 // The geometry of one stacked lane, in content space. The lane's own identity
 // and data ride beside it on `LaneSection`.
 export interface Section {
   coverageTop: number
-  coverageHeight: number
-  // The arcs' DRAW band, which is not the same question as `hasArcsBand`:
-  // up-mode arcs reserve nothing and draw over the coverage histogram.
-  arcBandTop: number
-  arcBandHeight: number
-  arcDown: boolean
-  // Whether this lane reserved a strip of its own for arcs. Drives the
-  // arc-resize handle, which must not appear on a lane whose strip was dropped
-  // — it would land on the coverage handle's pixel.
-  hasArcsBand: boolean
-  sashimiBandTop: number
-  sashimiBandHeight: number
-  hasSashimiBand: boolean
+  // The lane's band stack above its pileup (`laneBands`), its tops relative
+  // to `coverageTop`. A band reserving 0 px has no strip, so it draws nothing
+  // and gets no handle.
+  bands: BandStack<LaneBandKey>
+  // Where the read connections DRAW, which is not the same question as what
+  // `bands` reserves for them: up-mode arcs reserve nothing and draw over the
+  // coverage histogram. Undefined where they draw nothing.
+  arcBand: ArcBand | undefined
   pileupTop: number
   // The laid-out rows, or the height a drag pinned this lane at when that is
   // taller (the surplus draws blank, like a track dragged past its content).
@@ -77,18 +76,27 @@ export interface SectionLaneInput {
 // DISPLAY-GLOBAL band height: its own band, plus every band of that kind stacked
 // above it, since those grow by the same px and push it down. Dividing a drag by
 // it keeps the handle under the pointer.
-export function stackedBandGain<T>(
-  sections: readonly T[],
+export function stackedBandGain(
+  sections: readonly Pick<Section, 'bands'>[],
   index: number,
-  reservesBand: (section: T) => boolean,
+  key: LaneBandKey,
 ) {
   let gain = 1
   for (const section of sections.slice(0, index)) {
-    if (reservesBand(section)) {
+    if (section.bands.reserved[key] > 0) {
       gain += 1
     }
   }
   return gain
+}
+
+/** Content-space y of band `key`'s bottom seam in a section. */
+export function laneBandBottom(
+  section: Pick<Section, 'coverageTop' | 'bands'>,
+  key: LaneBandKey,
+) {
+  const { top, reserved } = section.bands
+  return section.coverageTop + top[key] + reserved[key]
 }
 
 // The settings half of every lane's band stack: whether each strip MAY be
@@ -113,25 +121,18 @@ export interface LaneBandData {
 export type BelowCoverageBandsInput = BelowCoverageBandsSettings & LaneBandData
 
 export interface LaneBands {
-  // The coverage band's reserved height, 0 when off.
-  coverageHeight: number
-  hasArcsBand: boolean
-  hasSashimiBand: boolean
-  arcsBandTop: number
-  sashimiBandTop: number
-  // The sashimi strip's reserved height, 0 where the lane reserves none.
-  sashimiBandHeight: number
-  // Where the pileup begins, relative to the lane's coverage top.
-  bottom: number
-  // Where the arcs draw, relative to the lane's coverage top, or undefined
-  // where they draw nothing.
+  // The fold, tops relative to the lane's coverage top; `bottom` is where the
+  // pileup begins.
+  stack: BandStack<LaneBandKey>
+  // Where the read connections draw, relative to the lane's coverage top, or
+  // undefined where they draw nothing.
   arcBand: ArcBand | undefined
 }
 
 // Up-mode arcs overlay the coverage histogram, so their zero anchor is its
 // BASELINE, the scalebar inset above the band bottom. Floored here: a stated
 // coverage height below the inset is an honored state.
-function coverageOverlayBand(stack: BandStack<BandKey>) {
+function coverageOverlayBand(stack: BandStack<LaneBandKey>) {
   return {
     top: stack.top.coverage,
     height: Math.max(0, stack.reserved.coverage - YSCALEBAR_LABEL_OFFSET),
@@ -157,10 +158,10 @@ function arcsDrawn(s: BelowCoverageBandsSettings, lane: LaneBandData) {
 function bandStackOf(
   s: BelowCoverageBandsSettings,
   lane: LaneBandData,
-): Record<BandKey, Band> {
+): Record<LaneBandKey, Band> {
   return {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
-    arcs: {
+    readConnections: {
       active: arcsDrawn(s, lane) && !arcsOverlayCoverage(s),
       height: s.readConnectionsHeight,
     },
@@ -180,19 +181,13 @@ export function laneBands(
   lane: LaneBandData,
 ): LaneBands {
   const bands = bandStackOf(s, lane)
-  const stack = stackBands(BAND_ORDER, bands)
+  const stack = stackBands(LANE_BAND_ORDER, bands)
   return {
-    coverageHeight: stack.reserved.coverage,
-    hasArcsBand: stack.reserved.arcs > 0,
-    hasSashimiBand: stack.reserved.sashimi > 0,
-    arcsBandTop: stack.top.arcs,
-    sashimiBandTop: stack.top.sashimi,
-    sashimiBandHeight: stack.reserved.sashimi,
-    bottom: stack.bottom,
-    arcBand: bands.arcs.active
+    stack,
+    arcBand: bands.readConnections.active
       ? {
-          top: stack.top.arcs,
-          height: stack.reserved.arcs,
+          top: stack.top.readConnections,
+          height: stack.reserved.readConnections,
           down: s.readConnectionsDown,
         }
       : arcsDrawn(s, lane)
@@ -209,14 +204,14 @@ export function boundBelowCoverageHeights(
   s: BelowCoverageBandsInput,
   plot: BandPlot,
 ) {
-  const { coverage, arcs, sashimi } = boundStackedBands(
-    BAND_ORDER,
+  const { coverage, readConnections, sashimi } = boundStackedBands(
+    LANE_BAND_ORDER,
     bandStackOf(s, s),
     plot,
   )
   return {
     coverageHeight: coverage.height,
-    readConnectionsHeight: arcs.height,
+    readConnectionsHeight: readConnections.height,
     sashimiHeight: sashimi.height,
   }
 }
@@ -236,12 +231,12 @@ export function boundCoverageHeight(coverageHeight: number, plot: BandPlot) {
 // that band resizes.
 export function dragBelowCoverageBand(
   s: BelowCoverageBandsInput,
-  key: BandKey,
+  key: LaneBandKey,
   plot: BandPlot,
   target: number,
 ) {
   return dragBandHeight(
-    stackBands(BAND_ORDER, bandStackOf(s, s)),
+    stackBands(LANE_BAND_ORDER, bandStackOf(s, s)),
     key,
     plot,
     target,
@@ -261,7 +256,7 @@ export function laneBandOverheads(
       laneBands(settings, {
         hasArcs: arcLanes.has(key),
         hasSashimiDownArcs: sashimiDownLanes.has(key),
-      }).bottom,
+      }).stack.bottom,
   )
 }
 
@@ -289,9 +284,9 @@ export function computeStackedSections<L extends SectionLaneInput>(
 ): SectionsLayout<L> {
   let top = 0
   const sections = lanes.map(lane => {
-    const bands = laneBands(settings, lane)
+    const { stack, arcBand } = laneBands(settings, lane)
     const coverageTop = top
-    const pileupTop = coverageTop + bands.bottom
+    const pileupTop = coverageTop + stack.bottom
     const rowsHeight = lane.maxY * opts.rowHeight
     const pileupHeight =
       lane.heightOverridePx !== undefined && rowsHeight > 0
@@ -308,14 +303,8 @@ export function computeStackedSections<L extends SectionLaneInput>(
     return {
       ...lane,
       coverageTop,
-      coverageHeight: bands.coverageHeight,
-      arcBandTop: coverageTop + (bands.arcBand?.top ?? bands.arcsBandTop),
-      arcBandHeight: bands.arcBand?.height ?? 0,
-      arcDown: bands.arcBand?.down ?? false,
-      hasArcsBand: bands.hasArcsBand,
-      sashimiBandTop: coverageTop + bands.sashimiBandTop,
-      sashimiBandHeight: bands.sashimiBandHeight,
-      hasSashimiBand: bands.hasSashimiBand,
+      bands: stack,
+      arcBand: arcBand && { ...arcBand, top: coverageTop + arcBand.top },
       pileupTop,
       pileupHeight,
       rowsHeight,
@@ -352,19 +341,19 @@ export function buildSectionRenders(
       pileupClipHeight: clipHeightTo(pileupBottom),
       connectorClipHeight: clipHeightTo(pileupBottom + sec.dipReserve),
       arcBand:
-        sec.arcBandHeight > 0
+        sec.arcBand && sec.arcBand.height > 0
+          ? { ...sec.arcBand, top: bandScreenTop(sec.arcBand.top, scroll) }
+          : undefined,
+      sashimiBand:
+        sec.bands.reserved.sashimi > 0
           ? {
-              top: bandScreenTop(sec.arcBandTop, scroll),
-              height: sec.arcBandHeight,
-              down: sec.arcDown,
+              top: bandScreenTop(
+                sec.coverageTop + sec.bands.top.sashimi,
+                scroll,
+              ),
+              height: sec.bands.reserved.sashimi,
             }
           : undefined,
-      sashimiBand: sec.hasSashimiBand
-        ? {
-            top: bandScreenTop(sec.sashimiBandTop, scroll),
-            height: sec.sashimiBandHeight,
-          }
-        : undefined,
     }
   })
 }

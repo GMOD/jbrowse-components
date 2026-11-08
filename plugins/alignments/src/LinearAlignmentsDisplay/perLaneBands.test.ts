@@ -118,7 +118,9 @@ test('only the lane with arcs reserves the arc band', () => {
   const { display } = twoLanes()
   const layout = display.sections
   const sections = layout.sections
-  expect(sections.map(s => [s.groupKey, s.hasArcsBand])).toEqual([
+  expect(
+    sections.map(s => [s.groupKey, s.bands.reserved.readConnections > 0]),
+  ).toEqual([
     ['notsplit', false],
     ['split', true],
   ])
@@ -149,7 +151,9 @@ test('the reserved band tracks the arc feed, not just the setting', () => {
     display.view.displayedRegions[0]!,
   )
   const layout = display.sections
-  expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
+  expect(
+    layout.sections.every(s => s.bands.reserved.readConnections === 0),
+  ).toBe(true)
   expect(display.sections.contentHeight).toBe(
     withArcs - display.readConnectionsHeight,
   )
@@ -174,7 +178,9 @@ test('turning read connections off drops the band from the lane that had one', (
     display.view.displayedRegions[0]!,
   )
   const layout = display.sections
-  expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
+  expect(
+    layout.sections.every(s => s.bands.reserved.readConnections === 0),
+  ).toBe(true)
   expect(display.sections.contentHeight).toBe(
     withArcs - display.readConnectionsHeight,
   )
@@ -220,7 +226,9 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
   test('one band per banded lane, in lane order', () => {
     const { display } = twoCloudLanes()
     const layout = display.sections
-    expect(layout.sections.every(s => s.hasArcsBand)).toBe(true)
+    expect(
+      layout.sections.every(s => s.bands.reserved.readConnections > 0),
+    ).toBe(true)
     expect(tlen(display)?.bandTops).toHaveLength(2)
   })
 
@@ -233,7 +241,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     // sit — and each band's top is its lane's own.
     expect(scale.ticks!.items[0]!.value).toBe(1)
     expect(scale.ticks!.items[0]!.y).toBe(ARC_BAND_INSET_PX)
-    expect(scale.bandTops).toEqual(bands.map(b => b.arcBandTop))
+    expect(scale.bandTops).toEqual(bands.map(b => b.arcBand?.top))
   })
 
   test('the second lane’s band is genuinely lower than the first', () => {
@@ -266,7 +274,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
       },
     )
     const bands = display.renderSections
-    expect(tlen(display)?.bandTops).toEqual([bands[0]!.arcBandTop])
+    expect(tlen(display)?.bandTops).toEqual([bands[0]!.arcBand?.top])
   })
 
   test('arc mode has no |TLEN| axis to rule', () => {
@@ -301,13 +309,15 @@ describe('the sticky band and the fit budget follow the lanes', () => {
 
   test('an unpaired ungrouped pileup reserves no arc strip', () => {
     const display = ungrouped()
-    expect(display.sections.sections[0]!.hasArcsBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.readConnections).toBe(0)
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
   test('a paired ungrouped pileup reserves it', () => {
     const display = ungrouped(2000)
-    expect(display.sections.sections[0]!.hasArcsBand).toBe(true)
+    expect(
+      display.sections.sections[0]!.bands.reserved.readConnections,
+    ).toBeGreaterThan(0)
     expect(display.stickyBandHeight).toBe(
       display.coverageHeight + display.readConnectionsHeight,
     )
@@ -392,14 +402,16 @@ describe('the sticky band and the fit budget follow the lanes', () => {
     const bothPaired = seed(3000)
     const onePaired = seed(undefined)
     // The premise: two strips drawn against one.
-    expect(bothPaired.sections.sections.map(s => s.hasArcsBand)).toEqual([
-      true,
-      true,
-    ])
-    expect(onePaired.sections.sections.map(s => s.hasArcsBand)).toEqual([
-      true,
-      false,
-    ])
+    expect(
+      bothPaired.sections.sections.map(
+        s => s.bands.reserved.readConnections > 0,
+      ),
+    ).toEqual([true, true])
+    expect(
+      onePaired.sections.sections.map(
+        s => s.bands.reserved.readConnections > 0,
+      ),
+    ).toEqual([true, false])
     // So the lane without one hands its strip's height back to the rows. Both
     // stacks have the same 40 rows, so the pitch grows by exactly the strip
     // spread over them.

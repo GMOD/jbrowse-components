@@ -87,7 +87,7 @@ try {
       return {
         groupKey: s.groupKey,
         coverageTop: s.coverageTop,
-        coverageHeight: s.coverageHeight,
+        coverageHeight: s.bands.reserved.coverage,
         pileupTop: s.pileupTop,
         depths: bps.map(bp => {
           const i = bp - data.coverageStartPos

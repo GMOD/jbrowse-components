@@ -259,11 +259,15 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   subset of that stack, so each grouped lane's stack stays inside the plot too;
   the fit budget still charges every lane's stack. A drag clamps to the room the
   other bands leave (`dragBelowCoverageBand`), and a strip bound to 0 px is not
-  reserved (`coverageHeight` 0, `hasArcsBand`/`hasSashimiBand` false), so it
-  gets no handle on top of the one above it.
+  reserved (`section.bands.reserved[key]` 0), so it gets no handle on top of
+  the one above it. `LaneBandResizeHandles` maps over `LANE_BAND_ORDER`, so
+  every band gets its handle, gate and `gain` by the same rule.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the
-  coverage histogram in up mode. `computeStackedSections`, the fit budget
+  coverage histogram in up mode. Each `Section` carries that fold as `bands`,
+  a core `BandStack` keyed `coverage`, `readConnections` and `sashimi`, rather
+  than a copy of it in named fields, so a new key fails to compile wherever a
+  consumer does not handle it. `computeStackedSections`, the fit budget
   (`laneBandOverheads`) and the binders all read the same band description. The
   fit budget reads fetch-tier inputs only, since re-deriving it from `sections`
   routes the fit volatile back through the layout it feeds.

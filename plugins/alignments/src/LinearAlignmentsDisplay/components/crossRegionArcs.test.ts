@@ -81,7 +81,7 @@ test('and the band is still reserved for it', () => {
   // The regression this file exists for: the strip is reserved from the ink a
   // lane has, and after the split that lane's ink is entirely in the overlay.
   const display = twoRegionDisplay()
-  expect(display.renderSections[0]!.arcBandHeight).toBeGreaterThan(0)
+  expect(display.renderSections[0]!.arcBand?.height).toBeGreaterThan(0)
 })
 
 test('and its color still keys a legend swatch', () => {
@@ -136,7 +136,7 @@ test('a single-region view has none of this', () => {
   expect(
     display.themed.sourceSections[0]!.arcFeeds.get(0)!.links.x2Region[0],
   ).toBe(0)
-  expect(display.renderSections[0]!.arcBandHeight).toBeGreaterThan(0)
+  expect(display.renderSections[0]!.arcBand?.height).toBeGreaterThan(0)
 })
 
 // Two windows with the mate between them, on no displayed region: the view a

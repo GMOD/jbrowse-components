@@ -1486,14 +1486,16 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
+    expect(
+      display.sections.sections[0]!.bands.reserved.sashimi,
+    ).toBeGreaterThan(0)
     expect(display.stickyBandHeight).toBe(
       display.coverageHeight + display.sashimiHeight,
     )
 
     // drops the 2-read junction => nothing left to cross => nothing goes down
     display.setJunctionFilter({ minReads: 5 })
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
@@ -1505,10 +1507,12 @@ describe('sashimi score filter releases the reserved band', () => {
     seedCrossingJunctions(display)
 
     // the 20-read junction survives and still draws below coverage
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
+    expect(
+      display.sections.sections[0]!.bands.reserved.sashimi,
+    ).toBeGreaterThan(0)
 
     display.setJunctionFilter({ minReads: 50 })
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
   })
 
   test('up: arcs overlay coverage, so the strip is never reserved', () => {
@@ -1518,7 +1522,7 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
@@ -1586,7 +1590,7 @@ describe('sashimi score filter releases the reserved band', () => {
       },
     )
 
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
 
     // the same two spans on ONE chromosome do interleave and claim the strip
     display.setRpcData(
@@ -1594,7 +1598,9 @@ describe('sashimi score filter releases the reserved band', () => {
       { groups: [{ key: '', label: '', data: junction(30_000, 70_000) }] },
       { refName: 'ctgA', start: 0, end: 100_000, assemblyName: 'volvox' },
     )
-    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
+    expect(
+      display.sections.sections[0]!.bands.reserved.sashimi,
+    ).toBeGreaterThan(0)
   })
 })
 

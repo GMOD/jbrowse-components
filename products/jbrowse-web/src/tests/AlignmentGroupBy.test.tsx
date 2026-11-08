@@ -356,7 +356,7 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
     // collapsed section's pileup band is 0; coverage band remains.
     const sec = display.sections.sections[0]!
     expect(sec.pileupHeight).toBe(0)
-    expect(sec.coverageHeight).toBeGreaterThan(0)
+    expect(sec.bands.reserved.coverage).toBeGreaterThan(0)
     // fit-to-viewport hands the collapsed group's pileup slice to the group
     // still showing a pileup, so that section's band grows to fill the space.
     expect(display.sections.sections[1]!.pileupHeight).toBeGreaterThan(

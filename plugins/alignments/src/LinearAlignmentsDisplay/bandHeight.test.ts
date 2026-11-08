@@ -103,7 +103,7 @@ describe('a stated band height past its ceiling', () => {
       sashimiHeight: ceiling,
       readConnectionsHeight: ceiling,
     })
-    expect(display.sections.sections[0]!.coverageHeight).toBe(ceiling)
+    expect(display.sections.sections[0]!.bands.reserved.coverage).toBe(ceiling)
   })
 })
 
@@ -148,7 +148,9 @@ describe('two bands at their ceilings', () => {
       { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
       region,
     )
-    expect(display.sections.sections[0]!.hasArcsBand).toBe(true)
+    expect(
+      display.sections.sections[0]!.bands.reserved.readConnections,
+    ).toBeGreaterThan(0)
     return display
   }
 
@@ -178,7 +180,7 @@ describe('two bands at their ceilings', () => {
     expect(display.bandHeights.coverageHeight).toBe(slot - 20)
     expect(display.bandHeights.readConnectionsHeight).toBe(0)
     expect(display.sections.sections[0]!.pileupTop).toBe(slot - 20)
-    expect(display.sections.sections[0]!.hasArcsBand).toBe(false)
+    expect(display.sections.sections[0]!.bands.reserved.readConnections).toBe(0)
   })
 })
 
