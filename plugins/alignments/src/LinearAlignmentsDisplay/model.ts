@@ -1556,7 +1556,8 @@ export default function stateModelFactory(
          * #method
          * Layout rect of one read of `readArraysByGroup`, Y in content space:
          * subtract `scrollTop` for the screen. A read past the row cap sits on
-         * the cap's overflow row.
+         * the cap's overflow row. None while its lane draws no rows (Show →
+         * Pileup off, or a collapsed lane).
          */
         readLayoutRecord(
           groupKey: string,
@@ -1571,7 +1572,7 @@ export default function stateModelFactory(
           const end = data?.readPositions[idx * 2 + 1]
           const section = self.renderSections.find(s => s.groupKey === groupKey)
           const top =
-            section && yRow !== undefined
+            section && section.rowsHeight > 0 && yRow !== undefined
               ? section.pileupTop + yRow * self.rowHeight
               : undefined
           return top !== undefined && start !== undefined && end !== undefined

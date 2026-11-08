@@ -85,3 +85,17 @@ test('readLayoutRecord answers when called detached', () => {
     expect.any(Number),
   ])
 })
+
+// The breakpoint split view curves only to reads the pileup draws: with no
+// rows on screen, a rect would pin the curve to a 0 px band.
+test('a lane drawing no rows gives its reads no rect', () => {
+  const display = seed(2)
+  expect(display.readLayoutRecord('', 0, 1)).toBeDefined()
+
+  display.setShowPileup(false)
+  expect(display.readLayoutRecord('', 0, 1)).toBeUndefined()
+
+  display.setShowPileup(true)
+  display.toggleGroupCollapsed('')
+  expect(display.readLayoutRecord('', 0, 1)).toBeUndefined()
+})
