@@ -33,7 +33,12 @@ export type WiggleRendering = (typeof WIGGLE_PLOTS)[number][0]
 export const DEFAULT_POINT_SIZE_PX = 2
 export const DEFAULT_LINE_WIDTH_PX = 1
 
-/** The rendering a mark's `type` and a line's `interpolate` draw with. */
+/**
+ * The rendering a mark's `type` and a line's `interpolate` draw with. The
+ * display keeps this one name per shader rather than carrying the pair through
+ * (declined 2026-11-08): three of the pair's combinations draw nothing, and
+ * `buildSourceRenderData` stamps one shader per source.
+ */
 export function renderingOf(
   mark: string,
   interpolate: string,
