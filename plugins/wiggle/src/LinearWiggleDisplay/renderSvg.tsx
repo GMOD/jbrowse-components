@@ -1,5 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  exportedY,
+  renderDisplaySvg,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
@@ -71,6 +74,7 @@ export function WiggleSvgBody(
   props: LgvSvgBodyProps<WiggleSvgBodyModel, SvgViewFrame>,
 ) {
   const { model, canvasWidth, overlays, opts } = props
+  const { plotGeometry } = model
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
@@ -78,13 +82,16 @@ export function WiggleSvgBody(
   return (
     <ScorePlotSvgFrame
       {...props}
-      plotGeometry={model.plotGeometry}
+      plotGeometry={{
+        ...plotGeometry,
+        yTop: exportedY(model, plotGeometry.yTop),
+      }}
       marks={WIGGLE_MARKS}
       regions={encodeWiggleRegions(model)}
       renderState={model.renderState}
     >
       {overlays ? (
-        <g transform={`translate(0,${model.rowsTopOffset})`}>
+        <g transform={`translate(0,${exportedY(model, model.rowsTopOffset)})`}>
           {wiggleRowSeparators(model, canvasWidth)}
           <SvgTreeSidebar sidebar={model.svgSidebar} text={opts} />
         </g>

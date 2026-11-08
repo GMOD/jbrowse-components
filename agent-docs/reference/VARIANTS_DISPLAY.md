@@ -344,9 +344,10 @@ a `recordsOnly` choice in the model belongs there.
   over the rows' left edge): `Records ×` and `Genotypes ×` while both draw,
   `Show records` or `Show genotypes` for the one hidden, beside the
   hidden-records count. The export leaves the strip out, since it holds
-  controls: `svgHeight` and `svgRowsTopOffset` are `height` and
-  `rowsTopOffset` less `reserved.chips`, and the LGV export sizes a track's box
-  by `exportedHeight` (display-kit), so the rows sit flush under the records.
+  controls: the display's `rowsHeaderControlsHeight` hook names it, and
+  tree-sidebar's `svgControlsStrip` joins it to the focus chip's line, which
+  the export shell drops (`exportedHeight`, `exportedY`), so the rows sit
+  flush under the records.
   With `genotypes.show` off on a VCF with samples
   (`drawsGenotypeRows` false) the rows take 0 px and the track is the band plus
   the chips' strip, the slot `height` kept for the rows' return; the band can't

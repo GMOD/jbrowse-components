@@ -55,15 +55,36 @@ export interface SvgDisplayBox {
    */
   svgSidebarWidth?: (text?: ExportTextStyle) => number
   /**
-   * The height the export draws, for a display spending part of `height` on
-   * controls the export leaves out. Absent where the two agree.
+   * The lines holding only controls the export leaves out, for a display
+   * spending part of `height` on them. Absent for a display with none.
    */
-  svgHeight?: number
+  svgControlsStrip?: SvgControlsStrip
 }
 
-/** The height a display's export occupies: {@link SvgDisplayBox.svgHeight}. */
-export function exportedHeight(box: { height: number; svgHeight?: number }) {
-  return box.svgHeight ?? box.height
+/**
+ * A horizontal strip of a display's box, `top` and `height` in the screen's
+ * px, holding only controls: the export draws everything under it `height`
+ * higher, and is that much shorter.
+ */
+export interface SvgControlsStrip {
+  top: number
+  height: number
+}
+
+type ControlsBox = Pick<SvgDisplayBox, 'svgControlsStrip'>
+
+/** The height a display's export occupies: `height` less its controls. */
+export function exportedHeight(box: ControlsBox & { height: number }) {
+  return box.height - (box.svgControlsStrip?.height ?? 0)
+}
+
+/**
+ * Where the export draws what the screen draws at `y`: at or under the
+ * controls strip's top, that much higher.
+ */
+export function exportedY(box: ControlsBox, y: number) {
+  const strip = box.svgControlsStrip
+  return strip && y >= strip.top ? y - strip.height : y
 }
 
 /**
@@ -225,18 +246,21 @@ export function SvgYAxis({
   view,
   width,
 }: {
-  model: AxisHost
+  model: AxisHost & ControlsBox
   view: { offsetPx: number }
   width: number
 }) {
-  const { axes, height } = model
+  const { axes } = model
+  const height = exportedHeight(model)
   const contentLeft = Math.max(-view.offsetPx, 0)
   return (
     <>
       {axes.map((axis, i) => {
         const fits = axisDrawn(axis)
         const { ruleMarks = [] } = axis
-        const bandTops = bandsOnScreen(axis, height)
+        const bandTops = bandsOnScreen(axis, model.height).map(top =>
+          exportedY(model, top),
+        )
         const gutterLeft = axisGutterLeft(
           axis,
           width,

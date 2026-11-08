@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -114,3 +115,53 @@ test('under rows the export places labels through the row table, a focused-out r
   expect(svg).toContain('fromMom')
   expect(svg).not.toContain('fromDad')
 })
+
+const FOUR_ROWS = features(
+  ['a', 'b', 'c', 'd'].map((source, i) => ({
+    source,
+    start: 0,
+    end: 10_000,
+    score: i + 1,
+  })),
+)
+
+function narrowedTo(kept: string[]) {
+  const { display } = createTestEnvironment({
+    rows: 'source',
+    height: 120,
+    marks: [{ mark: 'point', encoding: { y: 'score' } }],
+  }).createDisplay()
+  display.setRpcData(0, workerResult(display, FOUR_ROWS), REGION)
+  display.setRowFocus(kept)
+  return display
+}
+
+function translateYs(svg: string) {
+  return [
+    ...svg.matchAll(/transform="translate\(-?[\d.]+[ ,](-?[\d.]+)\)"/g),
+  ].map(m => Number(m[1]))
+}
+
+// The "Showing N of M rows" chip is a screen control the export leaves out,
+// so its line goes too, rather than sitting blank above the rows.
+test.each([
+  ['rows', ['a', 'b']],
+  ['one plot', ['a']],
+])(
+  'a narrowed %s export leaves out the focus chip line',
+  async (_name, kept) => {
+    const display = narrowedTo(kept)
+    const line = display.rowFocusLineHeight
+    expect(line).toBeGreaterThan(0)
+    const bandTops = display.valueScales[0]!.bandTops!
+    expect(bandTops.length).toBeGreaterThan(0)
+    const ys = translateYs(draw(await renderSvg(display, {})))
+    expect(ys).toContain(display.rowsTopOffset - line)
+    expect(ys).not.toContain(display.rowsTopOffset)
+    for (const top of bandTops) {
+      expect(ys).toContain(top - line)
+      expect(ys).not.toContain(top)
+    }
+    expect(exportedHeight(display)).toBe(display.height - line)
+  },
+)

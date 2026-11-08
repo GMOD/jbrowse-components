@@ -2,7 +2,10 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
-import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  exportedY,
+  renderDisplaySvg,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText } from '@jbrowse/display-ui'
 import {
   FILLED_ROW_SEPARATOR_OPACITY,
@@ -116,7 +119,8 @@ export function MarkSvgBody(
   props: LgvSvgBodyProps<MarkSvgBodyModel, SvgViewFrame>,
 ) {
   const { model, canvasWidth, overlays, opts, renderBlocks } = props
-  const plotGeometry = model.plotBox
+  const { plotBox } = model
+  const plotGeometry = { ...plotBox, yTop: exportedY(model, plotBox.yTop) }
   const { yTop, plotHeight } = plotGeometry
   const { sections, rows } = model.facetLayout
   const rowHeight = model.effectiveRowHeight

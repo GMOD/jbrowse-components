@@ -365,7 +365,11 @@ the `SIDEBAR_HINT_LINE_PX` the "Showing N of M rows" chip sits in while somethin
 narrows the rows and the rows are known (`rowNarrowingShows`), so no "0 of 0"
 flashes before the first region lands. A display overrides `rowsHeaderHeight`,
 never `rowsTopOffset` (MST shadows a redefined getter silently), and places every
-row painter, hit test, label and export from `rowsTopOffset`.
+row painter, hit test, label and export from `rowsTopOffset`. The SVG export
+leaves the chip's line out, with any controls-only px a display names at the foot
+of its header (`rowsHeaderControlsHeight`): `svgControlsStrip` is that strip, and
+an export body places each y through display-kit's `exportedY`, as the shell's
+axes do, so a narrowed track exports its rows flush under its bands.
 
 ## Newick
 

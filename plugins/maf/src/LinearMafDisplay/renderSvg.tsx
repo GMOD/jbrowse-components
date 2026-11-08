@@ -5,7 +5,10 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
-import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  exportedY,
+  renderDisplaySvg,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
@@ -105,7 +108,7 @@ function MafSvgBody({
           />
         </g>
       ) : null}
-      <g transform={`translate(0, ${rowsTopOffset})`}>
+      <g transform={`translate(0, ${exportedY(model, rowsTopOffset)})`}>
         {/* The row painters cull by row, not by pixel, so a band floored past
             its row overhangs the box; on screen its canvas clips it, and a
             vector layer has no canvas edge to do that. */}

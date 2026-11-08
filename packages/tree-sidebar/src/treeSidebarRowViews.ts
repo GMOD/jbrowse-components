@@ -47,6 +47,7 @@ import type {
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { SvgControlsStrip } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 
 /**
@@ -249,6 +250,15 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      * display stacks above its rows, 0 by default.
      */
     get rowsHeaderHeight(): number {
+      return 0
+    },
+    /**
+     * #getter
+     * Overridable hook: the px at the foot of `rowsHeaderHeight`, directly
+     * above the focus chip's line, holding only controls, which an export
+     * leaves out with that line. 0 by default.
+     */
+    get rowsHeaderControlsHeight(): number {
       return 0
     },
     /**
@@ -724,6 +734,7 @@ export function rowFocusLineViews(self: { rowNarrowingShows: boolean }) {
 /** Where the rows start in the display's box. */
 export function rowsTopOffsetViews(self: {
   rowsHeaderHeight: number
+  rowsHeaderControlsHeight: number
   rowFocusLineHeight: number
 }) {
   return {
@@ -735,6 +746,16 @@ export function rowsTopOffsetViews(self: {
      */
     get rowsTopOffset(): number {
       return self.rowsHeaderHeight + self.rowFocusLineHeight
+    },
+    /**
+     * #getter
+     * The lines directly above the rows that hold only controls, which the
+     * SVG export leaves out: `rowsHeaderControlsHeight` and the focus
+     * chip's line.
+     */
+    get svgControlsStrip(): SvgControlsStrip {
+      const height = self.rowsHeaderControlsHeight + self.rowFocusLineHeight
+      return { top: this.rowsTopOffset - height, height }
     },
   }
 }

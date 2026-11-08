@@ -15,9 +15,10 @@ export interface RenderSvgBaseModel extends LgvSvgExportable {
   showRowSeparators: boolean
   recordsOnly: boolean
   canvasWidthPx: number
-  // Px the export's rows sit below: the records band and the columns
-  // layout's connector-line zone. See variantTopBands.ts.
-  svgRowsTopOffset: number
+  // Px the rows sit below on screen: the records band, the chips, the
+  // columns layout's connector-line zone and the focus chip's line. See
+  // variantTopBands.ts.
+  rowsTopOffset: number
   topBands: VariantTopBands
   svgSidebar: SvgSidebarProps
 }

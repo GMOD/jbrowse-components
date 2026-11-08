@@ -207,6 +207,13 @@ const cases: Case[] = [
     trackOpts: ['height:200'],
     display: { height: 200 },
   },
+  {
+    name: 'a multi-wiggle narrowed to two sources, its chip line left out',
+    ...ctgAWindow,
+    track: ['multiwig', multiwig],
+    trackOpts: ['height:200', 'rows.kept=v1.cram,v2.cram'],
+    display: { height: 200, rows: { kept: ['v1.cram', 'v2.cram'] } },
+  },
 ]
 
 test.each(cases)(

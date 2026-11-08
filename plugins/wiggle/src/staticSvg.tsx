@@ -151,6 +151,7 @@ export async function staticWiggleDisplay(
       effectiveRowHeight: model.effectiveRowHeight,
       numRows: model.numRows,
       rowsTopOffset: model.rowsTopOffset,
+      svgControlsStrip: model.svgControlsStrip,
       prefersOffset: model.prefersOffset,
       showLegend: model.showLegend,
       legendSpec: model.legendSpec,

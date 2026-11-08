@@ -1,7 +1,10 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  SvgLegend,
+  exportedHeight,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -201,4 +204,24 @@ test('the exported key is in the export palette', async () => {
   expect(dark.svg).toContain('Codon change')
   expect(dark.svg).toContain(dark.stop)
   expect(dark.svg).not.toContain(light.stop)
+})
+
+// The "Showing N of M rows" chip is a screen control the export leaves out,
+// so the rows sit flush under the bands rather than a blank line below them.
+test('a narrowed export leaves out the focus chip line under the bands', async () => {
+  const { display, view } = createMafTestEnvironment().createDisplay()
+  view.zoomTo(1)
+  display.setSamples({
+    samples: ['hg38', 'mm10', 'panTro'].map(name => ({ name, label: name })),
+    treeNewick: undefined,
+    samplesCanonical: true,
+  })
+  display.setRowFocus(['hg38', 'mm10'])
+  const line = display.rowFocusLineHeight
+  expect(line).toBeGreaterThan(0)
+  const svg = draw(await renderSvg(display, {}))
+  expect(svg).toContain(`translate(0, ${display.topBands.rects.coverage.top})`)
+  expect(svg).toContain(`translate(0, ${display.rowsTopOffset - line})`)
+  expect(svg).not.toContain(`translate(0, ${display.rowsTopOffset})`)
+  expect(exportedHeight(display)).toBe(display.height - line)
 })

@@ -1,4 +1,5 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { SEPARATOR_OPACITY } from '../../shared/constants.ts'
@@ -9,9 +10,9 @@ import type React from 'react'
 
 // The frame both variant layouts' SVG exports end in: the row content and
 // the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
-// translated below `svgRowsTopOffset` together — the on-screen canvas's offset
-// less the lines holding only controls (`svgControlsHeight`) — so a display with bands above its rows can't
-// export its rows 20px high while its labels stay put. `records` and
+// translated together to `rowsTopOffset` as the export draws it (`exportedY`,
+// less the lines holding only controls), so a display with bands above its rows
+// can't export its rows 20px high while its labels stay put. `records` and
 // `connectors` draw in those bands, in that stacking order (variantTopBands.ts).
 // The color key is the export shell's, off the same `colorScales` the screen
 // keys by.
@@ -47,17 +48,19 @@ const SvgVariantOverlay = ({
     scrollTop,
     showRowSeparators,
     availableHeight,
-    svgRowsTopOffset,
+    rowsTopOffset,
   } = model
   return (
     <>
       {overlays || model.recordsOnly ? records : null}
       {overlays && connectors ? (
-        <g transform={`translate(0 ${model.topBands.top.connectors})`}>
+        <g
+          transform={`translate(0 ${exportedY(model, model.topBands.top.connectors)})`}
+        >
           {connectors}
         </g>
       ) : null}
-      <g transform={`translate(0 ${svgRowsTopOffset})`}>
+      <g transform={`translate(0 ${exportedY(model, rowsTopOffset)})`}>
         {children}
         {overlays && showRowSeparators ? (
           <RowSeparatorLines

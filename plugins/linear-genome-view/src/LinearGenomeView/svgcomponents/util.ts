@@ -40,7 +40,10 @@ export interface LgvSvgChromeView {
 
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
-type SidebarDisplay = Pick<LgvSvgExportable, 'svgSidebarWidth' | 'svgHeight'>
+type SidebarDisplay = Pick<
+  LgvSvgExportable,
+  'svgSidebarWidth' | 'svgControlsStrip'
+>
 
 interface TrackHeights {
   displays: ({ height: number; prefersOffset?: boolean } & SidebarDisplay)[]

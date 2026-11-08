@@ -1,4 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
+import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
 import { render } from '@testing-library/react'
 
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
@@ -51,7 +52,7 @@ test('the export letters the records above rows flush under the band', async () 
   expect(display.rowsTopOffset).toBe(recordsBottom + BAND_CHIPS_HEIGHT)
   expect(rowShifts).toContain(`translate(0 ${recordsBottom})`)
   expect(rowShifts).not.toContain(`translate(0 ${display.rowsTopOffset})`)
-  expect(display.svgHeight).toBe(display.height - BAND_CHIPS_HEIGHT)
+  expect(exportedHeight(display)).toBe(display.height - BAND_CHIPS_HEIGHT)
 })
 
 test('the export leaves out the rows.kept chip line, its rows flush under the band', async () => {
@@ -67,7 +68,7 @@ test('the export leaves out the rows.kept chip line, its rows flush under the ba
   expect(display.rowFocusLineHeight).toBeGreaterThan(0)
   expect(display.rowsTopOffset).toBe(recordsBottom + controls)
   expect(rowShifts).toContain(`translate(0 ${recordsBottom})`)
-  expect(display.svgHeight).toBe(display.height - controls)
+  expect(exportedHeight(display)).toBe(display.height - controls)
 })
 
 function labelY(container: HTMLElement, id: string) {
