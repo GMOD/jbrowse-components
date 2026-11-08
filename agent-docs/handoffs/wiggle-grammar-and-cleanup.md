@@ -44,6 +44,10 @@ it.
   viridis by default for wiggle stuff". Wiggle keeps its red/grey/blue
   diverging default for a threshold with fewer `range` colors than bands
   (`resolveWiggleColor`), though the other displays fill from viridis.
+  Its middle band stays `NO_CATEGORY_COLOR`, the grey other keys label
+  "(no value)": Colin, 2026-11-08, shown the overlap
+  (https://claude.ai/artifact/TLc3ZupBwC7WWzzKi5B8WU), "we dont need a
+  custom grey". A wiggle no-data run draws as a gap, never grey.
 - **The right-click label "drift" against plugins/marks.** Each display names
   its own measure (MAF "by identity", variants "by genotype"), so "by score"
   and "by value" both stand.
