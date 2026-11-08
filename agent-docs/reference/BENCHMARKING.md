@@ -58,12 +58,12 @@ specific to benchmarking the inflate pool.
 
 - **A latency fix that removes one serial round trip can A/B as zero at one
   RTT** when a parallel chain is as long: moving the BAM header read beside its
-  index (CRAM's beside `.crai`) measured nothing at 80 ms and 195–200 ms at 200
-  ms, because the main thread's chain (the `.2bit` fetch plus ~117 ms CPU) met
-  the shortened worker chain. Read `--waterfall` for what the critical request
-  waited on, and rerun `measure-load-latency.ts --latency=200` before calling it
-  worthless; on the laptop a 100 ms difference flipped sign with run order, so
-  A/B on ada and swap the order once.
+  index measured nothing at 80 ms and 195–200 ms at 200 ms, because the main
+  thread's chain (the `.2bit` fetch plus its CPU) met the shortened worker
+  chain. Read `--waterfall` for what the critical request waited on, rerun
+  `measure-load-latency.ts --latency=200` before calling it worthless, and A/B
+  on ada with the order swapped once, since run order can flip a 100 ms
+  difference on a loaded box.
 
 ### Tools that cannot see what you are asking
 
@@ -91,16 +91,19 @@ change as a 2.2x win that an interleaved A/B put at zero.
 
 - Check `uptime` before believing anything, and again after.
 - `website/scripts/ab-compare.ts` interleaves two prebuilt `build/` trees. For a
-  source A/B, `git worktree add --detach <dir> <sha>` with symlinked `node_modules`
-  runs jest in both trees.
+  source A/B, `git worktree add --detach <dir> <sha>` and install it
+  (`CI=true pnpm install --frozen-lockfile`) to run jest in
+  both trees; a symlinked root `node_modules` resolves every `@jbrowse/*` import
+  to the primary's sources ([WORKTREES.md](WORKTREES.md) §"A fresh worktree").
 - **Production functions at two commits, no second install**: `git archive`
   the base's `plugins/<plugin>/src` into a scratch dir, write one entry per arm
   re-exporting the functions under test, and esbuild-bundle `base`, `control`
   (base again with a distinct banner, so it is its own module) and `branch`
   with `platform: 'node'` and `nodePaths` at the worktree's plugin and root
   `node_modules`. Each arm builds its fixture with its own test helpers, so a
-  field rename between commits costs nothing. A 1.33 outlier the control does
-  not share happens on a loaded laptop; rerun three times before believing one.
+  field rename between commits costs nothing. On a loaded laptop an arm can
+  jump 1.33x where the control does not; rerun three times before believing
+  one.
 - **Load latency**: `products/jbrowse-web/browser-tests/measure-load-latency.ts`
   serves HTTP/2 over a trusted cert (`--http1` opts out). Interleave the arms
   per rep; one arm moved 2x between batches as the load rose. Once the network
@@ -119,20 +122,19 @@ Gate probes on a `?gpu-perf=1` URL flag and strip them before landing.
 **Shrinking the RPC worker pool is not a win; don't retry it.** Forcing
 `rpc.workerCount: 1` was a wash, because worker boots overlap off the critical path.
 
-- **An in-page polling sampler times itself.** A `setTimeout(tick, 5)` loop
-  reading every display's `displayPhase` reported 1.3-2.0 s gaps and a 200-650
-  ms model-to-DOM lag; a MutationObserver on the marker measured 4-19 ms. Each
-  tick pays the getters on the main thread it is timing. Time app state with a
-  MutationObserver (one rAF loop at most), read the model once at the change,
-  and cross-check a gap against `waitForAppSettled`'s own outcome.
+- **An in-page polling sampler times itself**: each tick pays the getters on
+  the main thread it is timing. A `setTimeout(tick, 5)` loop reading every
+  display's `displayPhase` reported 1.3-2.0 s gaps where a MutationObserver on
+  the marker measured 4-19 ms. Time app state with a MutationObserver (one rAF
+  loop at most), read the model once at the change, and cross-check a gap
+  against `waitForAppSettled`'s own outcome.
 - **A page that reads idle on every in-page instrument can be inside one
-  multi-minute layout-and-paint task.** The SV inspector's circle for 66,709
-  records took ~4 minutes painting 55,782 SVG `<path>` nodes while long tasks,
-  the worker profile and the network all said idle: a long-task entry arrives
-  after the task, a CDP `Profiler.start` queues behind it, and native raster
-  shows as `(program)`. Time it from Node with a `page.evaluate` poll, which
-  cannot return mid-task, wrap `jb.session.rpcManager.call` to log each RPC's
-  duration, then count DOM nodes.
+  multi-minute layout-and-paint task** (tens of thousands of SVG `<path>`
+  nodes): a long-task entry arrives after the task, a CDP `Profiler.start`
+  queues behind it, and native raster shows as `(program)`. Time it from Node
+  with a `page.evaluate` poll, which cannot return mid-task, wrap
+  `jb.session.rpcManager.call` to log each RPC's duration, then count DOM
+  nodes.
 - **A/B a canvas packer change** with a temporary flag read in `packRef.ts`,
   forcing the repack with `view.zoomTo(bpPerPx * 1.5)` and back in both arms.
   `d.setHeight()` repacks nothing, since height is not one of the layout's
@@ -171,9 +173,8 @@ Gate probes on a `?gpu-perf=1` URL flag and strip them before landing.
   alpha back (at draw alpha 0.5, above 130 is blended twice; under 120 with
   every neighbour at or above 120 is a hole). For cost, time ten frames from
   `submit` to `onSubmittedWorkDone` on a 64 px canvas, min over interleaved
-  rounds. Judge an MSAA render against an exact supersampled reference. This
-  found a 445-pixel band/cap seam and a 13 ms vertex cost in `ribbon.slang`
-  that a JS model of the `.slang` could not.
+  rounds. Judge an MSAA render against an exact supersampled reference. It
+  finds seams and vertex costs that a JS model of the `.slang` cannot.
 
 ## Whole-app benchmarks against released JBrowse
 

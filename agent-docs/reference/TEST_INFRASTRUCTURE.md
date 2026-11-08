@@ -126,6 +126,10 @@ selected**, by `test-related` or `jb-test`. Run these by name:
   not documented "Overridable hook".
 - **An import moved through a barrel**: `scripts/moduleClosure.test.ts`, which
   `pnpm verify` does not run either.
+- **A new module**: its package's whole `src`, since a package guard reads
+  every file. `packages/display-ui/src/muiFree.test.ts` and
+  `packages/core/src/util/tss-react/muiFree.test.ts` refuse a
+  `@jbrowse/core/ui` barrel import in a new module.
 - **A color object, preset, mark rule or key**: the whole plugin directory and
   `products/jbrowse-cli/src/commands/validate`
   (`jb-test -- <plugin dir> products/jbrowse-cli/src/commands/validate`).
@@ -249,10 +253,9 @@ asserted against `any`.
   into the track config's own `displays` entry and references it by id, because
   a slot name on a display's *session* snapshot is dropped silently
   (ARCHITECTURE.md, "where a display's state lives"). `displaySnapshot` on
-  `createDisplay` is the MST-property half.
-- **A slot passed to `createDisplay({...})` is dropped**: its argument is the
-  state snapshot, so MST discards the undeclared key and a test expecting the
-  slot unset passes with nothing exercised. Write it with `setConf`.
+  `createDisplay` is the MST-property half: a slot name there is discarded, so
+  a test expecting the slot unset passes with nothing exercised. Change a slot
+  after creation with `setConf`.
 - **`baseLinearDisplayConfigSchema` is a default export.** A named import hands
   `ConfigurationSchema` an undefined base, so slots read `undefined` (the byte
   gate's budget is `NaN`) and the lost `displayId` identifier surfaces as
@@ -261,6 +264,12 @@ asserted against `any`.
 - **A counter for `isCacheValid`** lives in a closure the model factory
   captures, since a view may not write a volatile (`PerRegionTestControl` in
   `perRegionTestEnv.ts`).
+- **A fixed sleep after `createDisplay()` rides the first fetch's late
+  settle**, which bumps `fetchGeneration` and reruns the fetch autorun, so the
+  assertion passes on that run rather than the one the action provoked, and a
+  sabotage of the autorun's own reads stays green. Poll for quiet (no fetch in
+  flight and no new RPC across a full debounce window) and set an explicit
+  `jest.setTimeout`.
 
 ### An export parity suite runs the real display beside its tables export
 
@@ -408,6 +417,12 @@ MST and MobX:
 - **`view.setNewView` is a jump**: it settles the coarse blocks on every call,
   so a pan driven by it re-fires anything keyed on `settledDynamicBlocks` each
   frame. Drive pan frames with `view.scrollTo`.
+- **A throw inside an `autorun` or `observer` body fails no test**: MobX logs
+  `[mobx] Encountered an uncaught exception… in 'Reaction[Name]'` to
+  `console.error`, swallows it, and the suite reports passed. Assert with
+  `onReactionError` from `mobx`: push errors from its callback, run the action,
+  call the returned disposer, `expect(errors).toEqual([])`. Reach for it
+  whenever the symptom is console output.
 
 Fixtures:
 
@@ -419,21 +434,6 @@ Fixtures:
   is mocked), so download the slice and use `LocalPathLocation`; reads without
   MD tags need `getSubAdapter: async () => ({ dataAdapter: {} })` plus any
   sequence config.
-
-- **A throw inside an `autorun` or `observer` body fails no test**: MobX logs
-  `[mobx] Encountered an uncaught exception… in 'Reaction[Name]'` to
-  `console.error` and swallows it (a jbrowse-web suite printed it every run
-  while reporting `3 passed`). Assert with `onReactionError` from `mobx`: push
-  errors from its callback, run the action, call the returned disposer,
-  `expect(errors).toEqual([])`. Reach for it whenever the symptom is console
-  output.
-- **A fixed sleep after `createDisplay()` in a `createDisplayTestEnvironment`
-  test rides the first fetch's late settle**, which bumps `fetchGeneration` and
-  reruns the fetch autorun, so the assertion passes on that run rather than the
-  one the action provoked: deleting the autorun's `void self.reloadCounter` once
-  left all six tests green. Poll for quiet (no fetch in flight and no new RPC
-  across a full debounce window) and set an explicit `jest.setTimeout`; that
-  made the sabotage red and cut the file from 48 s to 19 s.
 
 ## Troubleshooting
 

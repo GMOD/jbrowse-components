@@ -40,7 +40,11 @@ Each of these produces a plausible figure rather than an error:
   linked view and travels with the figure's live link.
 - Put a click that changes state in the session spec, since the figure's recipe
   command clicks nothing; `clicksOpen` / `clicksChange` name the exceptions.
-
+- **A spec track's `filter` replaces the config's whole list** (`plot.test.ts`,
+  "a plot's filter list is written whole"), so a spec adding one jexl rule to a
+  `geneLike` track draws everything the config filtered out. Write the config's
+  entries too (`['geneLike', "jexl:…"]`, as `website/scripts/specs/ui.ts`
+  does); nothing compares a spec's filter with its track's.
 - **A spec anchor that lands on the wrong thing: sweep the coordinate before
   tuning it.** ~20 lines on `website/scripts/probe-app-settled.ts`'s scaffold
   (`createTestServer` + `captureUrl` + capture's `resolveAnchor`), dumping
@@ -48,6 +52,20 @@ Each of these produces a plausible figure rather than an error:
   anchor. Read `display.contextMenuHit` (`genomicPos`, the block's `rpcData`): a
   non-integer `genomicPos` beside integer `mismatchPositions` was a `bpAtPx`
   regression.
+
+### Steps that report success and act on nothing
+
+- **A `type` step aimed at a MUI Autocomplete by its label text types nowhere**
+  and the run reports ✓ over an empty field: the text lookup takes the smallest
+  element carrying the text, which takes no focus. Give the input a testid
+  through `slotProps.htmlInput` and type by selector (`group-by-attribute` in
+  `videos/ui.ts`); `press Escape` folds the suggestion list without closing a
+  dialog.
+- **A `hover: { text }` on a canvas feature captures a blank canvas** the same
+  way; anchor it with `track` + `locus`.
+- **A triple-click does not replace a controlled MUI `TextField`'s value** in
+  puppeteer: the re-render drops the selection and the next key inserts
+  mid-string. Click, press End, then Backspace per character.
 
 ## Sizing, readiness and staleness
 
@@ -84,13 +102,12 @@ Each of these produces a plausible figure rather than an error:
 
 ### Reading a reshoot
 
-- **Review the PNG the run wrote**, never `website/static/img/` in the primary,
-  which holds the last published copy, and never write or check a caption
-  against a figure whose Read came back "[media removed]". Fetch the figure it replaced from the
-  store by its `figures.lock` hash ([HOSTING.md](HOSTING.md) has the URL
-  scheme; `git show <ref>:figures.lock` reaches further back) and read the two
-  side by side. On a shared primary install landed figures by hash rather
-  than `figures:pull --force`, which discards other sessions' unpushed ones.
+- **Review the PNG the run wrote**, not `website/static/img/` in the primary,
+  which holds the last published copy, and write or check a caption only
+  against a figure whose Read showed the image, not "[media removed]". Fetch
+  the figure it replaced from the store by its `figures.lock` hash
+  ([HOSTING.md](HOSTING.md) §"Figure and media stores", which also says why a
+  shared primary takes a plain `pull`) and read the two side by side.
 - **A run's `updated` list is relative to that run's disk**, not to the store,
   so a figure an earlier run already wrote there drops off it. Build a publish
   list from every name shot and let `figures:push --filter … --exact` skip the
@@ -103,40 +120,29 @@ Each of these produces a plausible figure rather than an error:
   against one build and compare `sha256sum`s; an identical hash is the whole
   argument. Put each arm in its own session or trackId, since a display config
   slot lives on the shared track config.
-- **A `type` step aimed at a MUI Autocomplete by its label text types nowhere**
-  and the run reports ✓ over an empty field: the text lookup takes the smallest
-  element carrying the text, which takes no focus. Give the input a testid
-  through `slotProps.htmlInput` and type by selector (`group-by-attribute` in
-  `videos/ui.ts`); `press Escape` folds the suggestion list without closing a
-  dialog. A `hover: { text }` on a canvas feature captures a blank canvas the
-  same way; anchor it with `track` + `locus`.
-
-- **Judge a reshoot against a baseline shoot, not the published copy.** A
-  published figure is as old as its last publish, so a diff against it mixes
-  every commit and hosted-data change since. `git worktree add --detach <path>
-  <pre-change-sha>`, shoot the same names there (`jb-shoot --get <names>` on
-  ada, own `SCRATCH`), pair with `convert … +append`, rank with `compare -metric
-  AE -fuzz 5%` (8% for the highlight map; the store PNGs are 256-colour, so zero
-  fuzz flags palette re-quantisation). A multi-region pileup's row order can
-  differ between two shoots of one build (13.6% on
-  `cancer_sv/derivative_synteny`): shoot the baseline twice before blaming a row
-  shuffle. A graph pane differing between shoots minutes apart usually means the
-  hosted plugin's `latest/` moved. A baseline `--get` including a
-  `jbrowse-img/*` spec runs `build:esm` first; if that fails it shoots nothing
-  yet still fetches the published copies (log says `pnpm build:esm failed`). A
-  hosted-UCSC-hub spec needing hg38 sequence stalls on hgdownload's hg38.2bit;
-  put it on a demo config whose sequence jbrowse.org serves (demos/cancer_sv's
-  assembly block).
+- **Judge a reshoot against a baseline shoot, not the published copy**, which
+  mixes every commit and hosted-data change since its last publish. `git
+  worktree add --detach <path> <pre-change-sha>` and shoot the same names there
+  (`jb-shoot --get <names>` on ada, own `SCRATCH`).
+  - Pair with `convert … +append` and rank with `compare -metric AE -fuzz 5%`
+    (8% for the highlight map; the store PNGs are 256-colour, so zero fuzz
+    flags palette re-quantisation).
+  - A multi-region pileup's row order can differ between two shoots of one
+    build, so shoot the baseline twice before blaming a row shuffle. A graph
+    pane differing between shoots minutes apart usually means the hosted
+    plugin's `latest/` moved.
+  - A baseline `--get` including a `jbrowse-img/*` spec runs `build:esm` first;
+    if that fails it shoots nothing yet still fetches the published copies (log
+    says `pnpm build:esm failed`).
+  - A hosted-UCSC-hub spec needing hg38 sequence stalls on hgdownload's
+    hg38.2bit; put it on a demo config whose sequence jbrowse.org serves
+    (demos/cancer_sv's assembly block).
 - **`figures.ts status` "modified" is not stale.** `--filter` implies `--force`
   (`screenshot-options.ts`), so every matched PNG is rewritten and listed as
-  modified. Copy the published set aside after `figures pull`, shoot, `compare
-  -metric AE -fuzz 5% old new null:` per file; under ~30,000 differing pixels on
-  a 3000 px figure was antialiasing, real changes run to millions. Publish only
-  what moved, `push --exact --filter`. The primary checkout's `static/img` stays
-  stale after a worktree publish until a plain `node website/scripts/figures.ts
-  pull`, which replaces figures whose bytes are published (pre-push's "figures
-  on disk differ from figures.lock"); `--force` also discards figures that exist
-  only on disk.
+  modified. Copy the published set aside after `figures pull`, shoot, and
+  `compare -metric AE -fuzz 5% old new null:` per file: under ~30,000 differing
+  pixels on a 3000 px figure is antialiasing, a real change runs to millions.
+  Publish only what moved, `push --exact --filter`.
 
 ### Verifying
 
@@ -157,15 +163,8 @@ on a clean runner.
   that it is right. When main moved a figure after your base, main's line wins
   in the `figures.lock` merge.
 - **A figure red at its ready gate missed every reshoot and fixture bump
-  meanwhile** (`maf_hprc_pangenome` missed the HPRC 2.1 move that renumbered
-  every rGFA segment). After repairing one, check what landed while it was red,
-  especially commits saying "every X reshot".
-- **A spec track's `filter` replaces the config's whole list** (`plot.test.ts`,
-  "a plot's filter list is written whole"). A spec adding one jexl rule to a
-  `geneLike` track drew the hg19 RefSeq region features for a month; write the
-  config's entries too (`['geneLike', "jexl:…"]`, as
-  `website/scripts/specs/ui.ts` now does). Nothing compares a spec's filter with
-  its track's.
+  meanwhile.** After repairing one, check what landed while it was red (a
+  renumbering data move, commits saying "every X reshot").
 
 ## An empty capture is the generator's readiness race
 
@@ -210,10 +209,9 @@ BUILD` with the files that differ.
 - The run rebuilds a stale local build before capturing; `--allow-stale` skips
   that. An app behind `--port` cannot be rebuilt from here, so the run reports
   it and keeps going, and `--strict-build` stops it instead.
-- The loud version of the bug fails the spec: a build from 2026-10-20 answered
-  a session written against the renamed alignments `sort` key with
-  "AlignmentsSort takes type, pos, refName, tag and within, not field". The
-  quiet version draws the old behavior and commits it.
+- The loud version of the bug fails the spec: a build older than a respelling
+  rejects the new key ("AlignmentsSort takes type, pos, refName, tag and
+  within, not field"). The quiet version draws the old behavior and commits it.
 - `--port <n>` proxies to a server this run did not start, so the report is
   `NO BUILD PROVENANCE` unless that server serves a stamped build. A
   `pnpm start` dev server serves the current source and needs no rebuild; one
@@ -228,8 +226,8 @@ BUILD` with the files that differ.
   (~7 min) after a source change; a `pnpm start` dev server needs none. A
   changed default or threshold renders a plausible old picture and nothing
   errors. If a sweep ran stale anyway, `node website/scripts/figures.ts pull
-  --force` restores the corpus from `figures.lock` (never in a primary checkout
-  others share: it discards their unpublished figures).
+  --force` in your worktree restores the corpus from `figures.lock`
+  ([HOSTING.md](HOSTING.md) §"Figure and media stores" for a shared primary).
 - **Graph figures render the hosted plugin, not the checkout.** They load
   `jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/`, and `pnpm
   check-live-configs` refuses any other URL; a release reaches `latest/` only
@@ -254,11 +252,11 @@ bugs already fixed in source.
 no content-stable gate, so it is all that keeps a regen from re-encoding every
 other figure. **Bundled data first, network last**: opening a genome after an
 hg19 session was torn down hangs the import form with the assembly stuck
-`initialized: false` and no error. The same report came from the run's first
-volvox open in 3 of 5 runs under load ~24 (2026-11-03), with MST dead-node
-warnings at `/assemblyManager/assemblies/0` and a failure screenshot showing
-volvox loaded, so the harness was reading a replaced root; 7 runs passed once
-the load fell. `openVolvoxGenome` logs whether `window.JBrowseRootModel` and
+`initialized: false` and no error. Under heavy load the same report can come
+from the first volvox open, with MST dead-node warnings at
+`/assemblyManager/assemblies/0` and a failure screenshot showing volvox loaded:
+the harness read a replaced root, and a quieter box passes.
+`openVolvoxGenome` logs whether `window.JBrowseRootModel` and
 `window.JBrowseSession` are alive and agree when it fails.
 
 - **`desktop-cli-config.png`** runs the real `@jbrowse/cli` (build it first) and
@@ -276,19 +274,15 @@ the load fell. `openVolvoxGenome` logs whether `window.JBrowseRootModel` and
 - **The implicit wait dominates a run.** `setTimeouts({ implicit: 30000 })` makes
   every `findElements` that returns nothing cost 30 seconds. Existence checks go
   through `countElements`; keep new waits off `findElements`.
-- **Never send a plain `.fa` without a `.fai`.** It becomes `FastaAdapter`, which
+- **Send a plain `.fa` only with its `.fai`.** Alone it becomes `FastaAdapter`, which
   indexes through the `indexFasta` IPC handler, and that step hangs silently. The
   figures send `volvox.2bit`, which needs no index; `openVolvoxGenome` gates on the
   assembly manager.
 - **`sendKeys` appends to what the app already put in a field.** `UrlChooser`
-  is uncontrolled, so once add-track filled a sibling index itself the typed
-  URL concatenated onto it and the track 404'd every run. `clearInput` first,
-  or stop typing what the app now fills. An input the app swaps as soon as the
-  text classifies can unmount mid-word (`AddGenomePane` once cut `.fa.gz` to
-  `.fa`).
-- **In puppeteer, a triple-click does not replace a controlled MUI
-  `TextField`'s value**: the re-render drops the selection and the next key
-  inserts mid-string. Click, press End, then Backspace per character.
+  is uncontrolled, so a URL typed into a field add-track already filled
+  concatenates onto it and 404s. `clearInput` first, or stop typing what the
+  app now fills. An input the app swaps as soon as the text classifies can
+  unmount mid-word (`AddGenomePane` cutting `.fa.gz` to `.fa`).
 - A track that cannot load says so in the view and nowhere else;
   `assertNoErrorBanners` (`test/harness.ts`) is the backstop, and a doubled URL
   in a 404 is the tell.

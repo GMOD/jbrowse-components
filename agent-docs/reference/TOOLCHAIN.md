@@ -1,6 +1,6 @@
 ---
 name: toolchain
-description: How do the TypeScript 6/7 split, the oxlint/eslint split, incremental builds, the pre-push fixers, pnpm autogen, worktree installs and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a lint rule, or a docstring autogen reads.
+description: How do the TypeScript 6/7 split, the oxlint/eslint split, incremental builds, the pre-push fixers, pnpm autogen and dependency pruning work, and what breaks silently? Read before changing a TypeScript version, a lint rule, or a docstring autogen reads.
 audience: internal
 kind: operations
 ---
@@ -49,11 +49,10 @@ or `package.json`, and an error it replays names the stale type, not the cache.
   "tsconfig.build.esm.tsbuildinfo" -delete`), and confirm the dependency did
   the work by hiding its `node_modules` symlink and watching the error return.
 - **A typecheck that overlapped an edit** can keep printing the old type on
-  reruns, so launch `pnpm typecheck` after the edits it reads; when it
-  contradicts the file on disk, `rm tsconfig.tsbuildinfo`.
-- **A signature change can pass `pnpm verify` stale**: a newly required
-  parameter once left 25 callers to be found later. After changing an exported
-  signature, `rm tsconfig.tsbuildinfo` and run `pnpm typecheck` before landing.
+  reruns, and a changed exported signature can pass `pnpm verify` with its
+  callers unchecked. Launch `pnpm typecheck` after the edits it reads; when it
+  contradicts the file on disk, or after changing an exported signature, `rm
+  tsconfig.tsbuildinfo` and rerun it before landing.
 
 ## What `pnpm typecheck` does not check
 
@@ -141,13 +140,12 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 ## The pre-push hook's fixes are checked by `build:esm` only
 
 `.githooks/pre-push` commits what its linters, formatter and `autogen
---fix-stale` rewrote, and only `build:esm` runs after them. A fix that breaks
-website types or a jsdom test lands unread: `.dataset` on a `querySelector`
-`Element` failed CI's website build, and `CSS.escape` is a ReferenceError in
-jsdom. After a push whose hook reported fixes, re-run the touched suites and
-`pnpm --filter @jbrowse/website-astro typecheck`, then repair so the rule has
-nothing left to fix (`querySelector<HTMLElement>`), since a revert is re-fixed
-on the next push.
+--fix-stale` rewrote, and only `build:esm` runs after them, so a fix that
+breaks website types (`.dataset` on a `querySelector` `Element`) or a jsdom
+test (`CSS.escape`) lands unread. After a push whose hook reported fixes,
+re-run the touched suites and `pnpm --filter @jbrowse/website-astro
+typecheck`, then repair so the rule has nothing left to fix
+(`querySelector<HTMLElement>`), since a revert is re-fixed on the next push.
 
 **It commits by pathspec, so it cannot add a new generated file.** A schema
 change that creates a `website/docs/config` page blocks the push with
@@ -157,25 +155,10 @@ then `scripts/check-docs.ts`, each under `node --experimental-strip-types`) and
 commit `website/docs/config`, `website/docs/models`, `typeDocs.generated.json`
 and `coverage-gaps.txt` before pushing.
 
-## Worktrees
+## Formatting
 
-- **Check what the worktree branched from before trusting a gate.** `setup-worktree.sh`
-  branches from local `main` on purpose, since `origin/main` lags it by dozens of
-  commits. A worktree made another way can still predate a fix, so a gate
-  fails on it. `git merge-base --is-ancestor main HEAD` tells
-  you; `git rebase main` fixes it. A `git diff main` naming files you never opened is
-  the tell.
-- **A hand-made worktree is not an installed one.** `git worktree add` installs
-  nothing, and typecheck dies without the gitignored `buildInfo.ts`. Don't symlink
-  `node_modules` from the primary checkout: the per-package `@jbrowse/*` links are
-  relative and resolve back to its sources.
-- **`TS2307` on a `@jbrowse/*` subpath is a missing link, never a missing build.** A
-  rebase that picks up a new workspace package leaves the install behind. `pnpm
-  install` fixes it in seconds. A plain dependency bump does the same without
-  `TS2307`: the rebased worktree typechecks against the old package and reports errors
-  the bump fixed. Run `pnpm install --frozen-lockfile`. It cannot be a stale `esm/`:
-  workspace exports point at `src`. The exception is jbrowse-img's CLI from source,
-  which needs `pnpm build` (`products/jbrowse-img/src/resolve.ts`).
+A worktree's install, its base and `TS2307`: [WORKTREES.md](WORKTREES.md) §"A
+fresh worktree".
 
 `pnpm format` is safe bare. But `agent-docs` is on `.prettierignore` and **naming it
 explicitly overrides that**, rewrapping thousands of lines of prose.
@@ -190,9 +173,9 @@ format`, not before.
 **It needs a clean tree.** `pnpm gendocs` resolves sources through the
 `@jbrowse/*` workspace links, so a dirty shared tree leaks into the output and then
 fails the CI check. A temp worktree with symlinked `node_modules` does not escape it.
-Run it clean and commit the output by itself. Don't stage while it runs: the
-standalone generators write as they go. During a rebase, `git add` every
-resolution first.
+Run it clean and commit the output by itself. Stage after it finishes, since
+the standalone generators write as they go; during a rebase, `git add` every
+resolution before starting it.
 
 **What stales it**, which typecheck, jest, lint and `build:esm` all pass over:
 
@@ -212,9 +195,8 @@ resolution first.
 
 - An untagged MST member still gets a row with an empty description.
 - A `/** … */` block between a `#stateModel` docstring and its factory is
-  absorbed into the page, and the generator stops following the mixin (one
-  above `TrackHeightMixin()` dropped its members from 22 display pages). Use
-  `//` there.
+  absorbed into the page, and the generator stops following the mixin, so the
+  mixin's members drop off every page composing it. Use `//` there.
 - A shared slot builder spread into an inline sub-schema drops its slots from
   the parent page, since only slots with a `#slot` tag at the call site are
   inlined. It is free inside a schema with its own `#config` page; elsewhere

@@ -30,8 +30,8 @@ see.
 
 - **The last repaints of a clip do not reach the file**, and a
   `recorder.stop() -> TIMEOUT` in the log loses whatever had not flushed. Make
-  anything the last frame needs true well before it; never reopen a menu after
-  the result.
+  anything the last frame needs true well before it, and keep menus closed
+  after the result.
 - A screencast off a backgrounded tab is one frozen frame at the right duration;
   `probe-clip-motion.ts <clip.mp4>` counts distinct frames.
 - End on the result, not by scrolling to text: the fence beside the clip carries
@@ -76,7 +76,7 @@ see.
   swiftshader. `--headed` uses the real GPU.
 - A `type` into an Autocomplete or a `hover: { text }` on a canvas can report
   success and act on nothing: [FIGURE_CAPTURE.md](FIGURE_CAPTURE.md)
-  §"Reading a reshoot".
+  §"Steps that report success and act on nothing".
 - **A route that leaves JBrowse gets a harness step, not a UX change**: the
   JBrowseMSA Gene Explorer's new tab is filmed with an `opensTab` step. A tour
   is evidence about the product, so changing the product to suit it removes

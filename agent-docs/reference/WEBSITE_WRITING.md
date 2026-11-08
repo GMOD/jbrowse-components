@@ -137,8 +137,8 @@ no em-dashes.
   copy.
 - A menu path in prose spells the app's label, with the ellipsis the app shows
   on a row that opens a dialog: `**Color by → Tag...**`. Write the path bare in
-  a caption. `Add track` (FAB menu) and `Add track...` (track hamburger) are
-  both real labels.
+  a caption. `Add track` (FAB menu) and `Add track...` (the track selector's
+  menu) are both real labels.
 
 ### Commands
 

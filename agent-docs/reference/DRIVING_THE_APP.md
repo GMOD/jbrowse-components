@@ -26,17 +26,17 @@ A full session spec hides which half is broken. The ladder, blankest first:
 - **A full `session=spec-{…}`**: what every figure spec does.
 
 Load a misbehaving config, demo or capture at the second rung and add back one
-track at a time. The OrthoFinder demos named `.tbi` files that no longer
-existed and the stacked synteny figure still drew, because the ribbons come off
-the `.blocks` adapter; one gene track on a blank session put the error first on
-screen. The same rung makes the better live link for a tour.
+track at a time: a figure can still draw while a track it does not need is
+broken, and one track on a blank session puts that error first on screen. The
+same rung makes the better live link for a tour.
 
 ## The dev server serves current source
 
 `products/jbrowse-web/scripts/start.ts`, run with `NODE_ENV=development node`
 from that package (with `PORT=<n> BROWSER=none`, and
-`--experimental-strip-types` from a worktree), serves the app from source, `test_data` included, and rebuilds on edit, so a
-puppeteer check of a source change skips the build. `openJBrowse` from
+`--experimental-strip-types` from a worktree), serves the app from source,
+`test_data` included, and rebuilds on edit, so a puppeteer check of a source
+change skips the build. `openJBrowse` from
 `products/jbrowse-capture/src/index.ts` takes it as `instance`
 (`instance: 'http://localhost:3000/'`,
 `config: 'http://localhost:3000/test_data/volvox/config.json'`).
@@ -66,20 +66,11 @@ mode first. If none does, write a ~40-line `browser-tests/tmp-<name>.ts` with
 - **Read the model's derivation back beside the screenshot** (for lanes,
   `display.lanes.map(l => ({ key, label, maxY, regions: l.laidOutPileupMap.size }))`),
   then look at a crop (`convert … -crop 500x120+300+330 -resize 200%`): read
-  direction per lane is invisible at full-page scale. A lane refactor once
-  passed 2000 jest tests and every golden while wrong in the one mode no test
-  entered.
-- **A hosted config naming an `esmUrl` plugin stalls on the trust dialog**,
-  which renders outside `#root`, so the probe reports `#root stayed empty` with
-  no console error. Seed `localStorage['jbrowse-trusted-plugins']` with the
-  plugin URL in `evaluateOnNewDocument`, as `trustCapturePlugins`
-  (`website/scripts/screenshot-page.ts`) does. That list names the repo copy's
-  URL, so diff a hosted config against `demos/<name>` before blaming the build.
+  direction per lane is invisible at full-page scale, and a mode no test enters
+  can be wrong under a green suite and every golden.
 - **Drive the real component, not a page shaped like it.** A standalone repro
-  reproduces your model of the code and can answer backwards: one said the
-  `WorkspaceLayout` splitter selects the text it crosses, and the real
-  `Splitter` did not. A probe reporting an absence needs a control producing
-  the presence on the same page.
+  reproduces your model of the code and can answer backwards. A probe reporting
+  an absence needs a control producing the presence on the same page.
 - **A loading state over local `test_data` finishes before any screenshot**,
   and what you catch is the click's MUI transition (two radios checked at once).
   Hold it open with CDP `Network.emulateNetworkConditions` (latency 1500,
@@ -87,8 +78,8 @@ mode first. If none does, write a ~40-line `browser-tests/tmp-<name>.ts` with
   restore with latency 0 and throughput -1.
 - **A worker that never boots**: launch puppeteer Firefox with
   `extraPrefsFirefox: { 'dom.workers.maxPerDomain': 4 }` and it queues every
-  worker past the cap without an event; that reproduced the GFF3 tabix
-  "Downloading features 0%" hang in one try. Puppeteer Chrome's `workercreated`
+  worker past the cap without an event, which reproduces a display stuck at
+  "Downloading features 0%". Puppeteer Chrome's `workercreated`
   reports nested blob workers. Judge a display done by
   `displayPhase === 'ready'`, not `isLoading`, which is false between an
   aborted fetch and its replacement.
@@ -106,13 +97,21 @@ mode first. If none does, write a ~40-line `browser-tests/tmp-<name>.ts` with
 
 ## Hosted configs and unreleased plugins
 
+- **A config naming an `esmUrl` plugin stalls on the trust dialog**, which
+  renders outside `#root`, so a probe reports `#root stayed empty` and a
+  capture "found no census", with no console error. Seed
+  `localStorage['jbrowse-trusted-plugins']` with the plugin URL in
+  `evaluateOnNewDocument`, as `trustCapturePlugins`
+  (`website/scripts/screenshot-page.ts`) does; that list names the repo copy's
+  URL, so diff a hosted config against `demos/<name>` before blaming the build.
+  A config on the app's own origin skips the prompt, and under the dev server
+  so does any loopback config (`configNeedsNoPrompt` in
+  `products/jbrowse-web/src/trustedPlugins.ts`).
 - **The https app blocks a config served from localhost** (mixed content,
-  refused before the request leaves). Use the http dev server as `--instance`.
-  A config on another origin that names plugins stops at the trust dialog and
-  the capture times out with "found no census": put it in
-  `test_data/<scratch>/` on the dev server's own origin (the plugin's `esmUrl`
-  may stay cross-origin), rewrite its relative `uri`s as absolute, and delete it
-  before committing.
+  refused before the request leaves). Use the http dev server as `--instance`,
+  and put a config from another origin in `test_data/<scratch>/` on the dev
+  server's own origin (the plugin's `esmUrl` may stay cross-origin), rewrite
+  its relative `uri`s as absolute, and delete it before committing.
 - **A hosted multi-way star** captures without a build:
   `node --experimental-strip-types products/jbrowse-capture/src/bin.ts --instance https://jbrowse.org/code/jb2/main --config https://jbrowse.org/ucsc/mm39/config-staging.json --spec spec.json -o out.png --timeout 300000`,
   with the session the genomes portal's gene page writes for its star link (a
@@ -120,15 +119,13 @@ mode first. If none does, write a ~40-line `browser-tests/tmp-<name>.ts` with
   34 px per lane plus one).
 - **An unreleased plugin in a real figure session**: copy the hosted
   `ucsc/hg38/config.json` and rewrite every relative path against its URL, not
-  only `uri` keys (a relative `chromSizes` broke the assembly, and every
-  coordinate mapping in the plugins computed nothing without an error). Point the
+  only `uri` keys (a relative `chromSizes` breaks the assembly, and every
+  coordinate mapping in the plugins then computes nothing, silently). Point the
   plugin entries at `esmUrl: http://localhost:<port>/<dir>/<name>.esm.js` with
-  each plugin's whole `dist/` copied there, and serve with `npx serve --cors`;
-  a loopback app reading a loopback config skips the trust prompt
-  (`configNeedsNoPrompt`). Decode the figure's session from
-  `liveLinks.generated.ts`, edit it, and load `?config=…&session=encoded-…`.
-  Pass `--concurrency 1` (NCBI's ortholog API answers 429 to two captures) and
-  `--localport`.
+  each plugin's whole `dist/` copied there, and serve with `npx serve --cors`.
+  Decode the figure's session from `liveLinks.generated.ts`, edit it, and load
+  `?config=…&session=encoded-…` on the dev server. Pass `--concurrency 1`
+  (NCBI's ortholog API answers 429 to two captures) and `--localport`.
 
 ## Desktop
 
@@ -145,6 +142,9 @@ electron binary with `['.', '--no-sandbox', '--ozone-platform=x11', ...args]`,
 - Pass data files as absolute paths; a data-folder `cwd` fails as "bridge
   socket never came up".
 - One app holds the per-user bridge socket: `killGroup(app)` between launches.
+- A view can stay `initializing` under xvfb
+  (`ideas/waiting-on-a-number/a-desktop-view-under-xvfb-never-measures.md`);
+  use a visible window when one does.
 - A fresh worktree's first `require('electron')` downloads the binary and that
   launch fails; rerun. If the download fails, point
   `ELECTRON_OVERRIDE_DIST_PATH` at the primary's

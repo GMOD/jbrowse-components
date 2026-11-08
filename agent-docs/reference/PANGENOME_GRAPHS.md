@@ -83,11 +83,8 @@ the rule.
   refuses anything past `maxGraphNodes`, and a file graph has no region to zoom
   into (a five-strain E. coli pangenome is 30x over; whole chrM draws as a
   rope). The file is read whole on the main thread, so one past V8's ~512 MB
-  string limit cannot load. The proposed direction, not yet agreed: an
-  in-memory GFA adapter that parses once in the worker, anchors on a reference
-  path or the rGFA tags and answers `getSubgraph(region)`, so a plain GFA
-  becomes a track with the indexed route's locus cut. Check the plugin repo for
-  anything landed before proposing it.
+  string limit cannot load. A worker adapter that cuts by region is parked as
+  `waiting-on-a-call/a-file-loaded-gfa-becomes-a-worker-track.md`.
 
 ### A whole-cohort cut, and what decides whether walk rows can draw it
 

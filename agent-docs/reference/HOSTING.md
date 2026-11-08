@@ -21,8 +21,6 @@ Origin `s3://jbrowse.org`, fronted by CloudFront `E13LGELJOT4GQO`.
 - **Run CloudFront commands as `uvx --from awscli aws cloudfront …`**: an old
   aws CLI lacks `create-cache-policy`, and its `get-distribution-config` can
   drop newer fields.
-- genomes.jbrowse.org (`E12EBG02P68TDO`, nginx on EC2, TTLs 0) serves only the
-  catalog site and keeps the legacy settings.
 - **An rclone upload of a key the bucket has never held** needs `rclone copyto
   --s3-no-check-bucket`.
 - **CloudFront allows 15 wildcard invalidations in progress**, so a bulk upload
@@ -35,19 +33,41 @@ band). `scripts/deploy-demo.sh <local-file> <demos-relative-path>` copies,
 invalidates and sets the JSON content-type. Wait for the plain URL to reflect the
 change before regenerating anything that reads it.
 
-- **genomes.jbrowse.org and staging share one origin, a t2.nano EC2 nginx box
-  behind CloudFront.** Home page answering while `/ucsc/<db>/`, `/accession/…`
-  and `/robots.txt` 504 after 30 s means the origin hung; jb2hubs'
-  `DEVELOPERS.md` "Origin server" has how to reach, diagnose and reboot it
-  (check `/proc/cmdline` still carries `kho=off` first).
+## genomes.jbrowse.org
+
+- **It serves only the catalog site**, through its own distribution
+  (`E12EBG02P68TDO`, TTLs 0, the legacy settings), and shares one origin with
+  staging: a t2.nano EC2 nginx box. Home page answering while `/ucsc/<db>/`,
+  `/accession/…` and `/robots.txt` 504 after 30 s means the origin hung;
+  jb2hubs' `DEVELOPERS.md` "Origin server" has how to reach, diagnose and
+  reboot it (check `/proc/cmdline` still carries `kho=off` first).
+- **Its pages launch main.** `/ucsc/<db>/` and `/accession/<GCF>/` link
+  `https://jbrowse.org/code/jb2/main/?config=<hub config>`, which push.yml's
+  "Build and deploy jbrowse-web to S3" job rewrites ~20 min after each push to
+  main (a newer push cancels a pending run, so watch the newest main run). A
+  rendering fix reaches the portal on push; capture the hub with
+  `products/jbrowse-capture/esm/bin.js --instance
+  https://jbrowse.org/code/jb2/main/ --hub <db|accession>`, once before the
+  deploy for a free "before". A hub's GFF3 track is position-sorted and
+  tabix-windowed (the GenArk SARS-CoV-2 GFF is in
+  `plugins/gff3/src/test_data/`).
 
 ## Figure and media stores
 
 `website/static/img/` and `products/jbrowse-img`'s `img/` are gitignored. Bytes
 live at `s3://jbrowse.org/jb2-figures/<name>.<sha256[0:12]>.<ext>`; git tracks
 `figures.lock`. CLI: `website/scripts/figures.ts` (`pnpm figures`, `:pull`,
-`:push`). **Never delete from the store, including orphans**: URLs get pasted into
-issues and papers. There is deliberately no `gc`.
+`:push`). **Keep every object in the store, orphans included**: URLs get pasted
+into issues and papers. There is deliberately no `gc`.
+
+- **A plain `pull` installs missing figures and replaces one whose bytes on
+  disk are themselves in the store (left by another commit); it keeps bytes the
+  store lacks. `pull --force` discards those too**, which in a shared primary
+  are other sessions' unpublished figures. Use a plain `pull` there, including
+  to refresh the primary after a worktree publish (pre-push's "figures on disk
+  differ from figures.lock").
+- **Fetch an older figure by its `figures.lock` hash** from the URL above;
+  `git show <ref>:figures.lock` reaches past the current lock.
 
 ## Hosted genomes and the launch surface
 
@@ -71,20 +91,9 @@ issues and papers. There is deliberately no `gc`.
   `silencer`, …) and a `match` (`Target=NG_…`) padded 100 bp each side. None
   has a Parent, so all three draw as plain boxes. Grouping them is a jb2hubs
   data-shape question (`hubtools/src/ncbiGff.ts`), not a gene-glyph one.
-
-- **genomes.jbrowse.org runs main.** Portal pages `/ucsc/<db>/` and
-  `/accession/<GCF>/` link `https://jbrowse.org/code/jb2/main/?config=<hub
-  config>`, which push.yml's "Build and deploy jbrowse-web to S3" job rewrites
-  ~20 min after each push to main (a pending run is cancelled by a newer push,
-  so watch the newest main run). A rendering fix reaches the portal on push;
-  capture the hub with `products/jbrowse-capture/esm/bin.js --instance
-  https://jbrowse.org/code/jb2/main/ --hub <db|accession>`, once before the
-  deploy for a free "before". A hub's GFF3 track is position-sorted and
-  tabix-windowed (the GenArk SARS-CoV-2 GFF is in
-  `plugins/gff3/src/test_data/`).
-- **Two of the three ways to point at a JBrowse are the release.** `jbrowse
-  create <dir>` installs the newest release of the CLI's major, and
-  `https://jbrowse.org/code/jb2/latest/` is also the release (`release.yml`);
+- **`latest` and a bare `jbrowse create` are the release; `main` is main.**
+  `jbrowse create <dir>` installs the newest release of the CLI's major and
+  `https://jbrowse.org/code/jb2/latest/` is the release (`release.yml`);
   `https://jbrowse.org/code/jb2/main/` is main (`push.yml`, as
   `code/jb2/<ref>`), and `jbrowse create --branch <name>` (`--nightly` is main)
   fetches `code/jb2/<name>/jbrowse-web-<name>.zip`. A portal or capture showing
@@ -139,7 +148,7 @@ the key existed repointed a working track at an empty object. Require a nonzero
 `<Size>`; `aws s3 ls --no-sign-request --recursive` gives both in one pass.
 
 - **UCSC GenArk renames hub files in place under the same accession** (the NHGRI
-  apes' `*-v2.0_pri.*` became `*-v2.1_pri.*` by 2026-09-27), so a config that
+  apes' `*-v2.0_pri.*` became `*-v2.1_pri.*`), so a config that
   copied hub URIs 404s silently; in MultiWaySyntenyDisplay a lane whose gene
   track 404s draws tan boxes and reads as a rendering change. `curl -I` the URIs
   and list the hub directory for a renamed sibling.

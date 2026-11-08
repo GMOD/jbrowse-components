@@ -34,19 +34,18 @@ in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md); plugin-facing names are in
 ## Does a green suite cover it
 
 - **The only end-to-end jsdom layer is `products/jbrowse-web/src/tests`**, and
-  `pnpm test` leaves it to CI. Unit suites mock the seam under test: a sabotage
-  of `CoreGetRefNames` sequence priming stayed green across 6,607 core and
-  plugin tests and reddened `SaveTrackData.test.tsx`. Before calling a mechanism
-  uncovered, grep jbrowse-web tests and `browser-tests/` for the call
-  (`await executeX(`), not the import, and run that suite with the sabotage.
+  `pnpm test` leaves it to CI. Unit suites mock the seam under test, so a
+  sabotage can stay green across every core and plugin suite and redden one
+  jbrowse-web file. Before calling a mechanism uncovered, grep jbrowse-web tests
+  and `browser-tests/` for the call (`await executeX(`), not the import, and run
+  that suite with the sabotage.
 - **A jbrowse-web red on a security tightening means a case was removed.**
   `Authentication.test.tsx` pins an explicit `internetAccountId` on a relative
   uri, the shape a config with relative data paths needs.
-- **A package guard test is no file's "changed suite".**
-  `packages/display-ui/src/muiFree.test.ts` and
-  `packages/core/src/util/tss-react/muiFree.test.ts` refuse a `@jbrowse/core/ui`
-  barrel import in a new module. After adding a module, run its package's whole
-  `src` with jest.
+- **A suite that judges a change against files it did not touch** (a package
+  guard, a `publicApi` snapshot, `moduleClosure`) is never selected; the list is
+  [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md) §"Which suites a change
+  runs".
 - **`session.getTrackById` resolves from several stores**: the track list,
   `sessionTracks`, each assembly's and temporary assembly's `sequence`, a
   connection's `tracks` and persisted connection-track configs, plus inline
@@ -98,10 +97,11 @@ Typecheck, `test-related` and `verify` see none of these homes.
 - **A screenshot spec reaching a config through a shared const**
   (`GRASSES_RICE_LANES` in `specs/synteny.ts`): import `specs` from
   `screenshot-specs.ts` and match `decodeURIComponent(JSON.stringify(s))`.
-- **A menu label with two real spellings.** `HamburgerMenu.tsx` renders
-  `Add track...` and `HierarchicalFab.tsx` a bare `Add track`.
-  `check-menu-labels.ts` judges only `**A → B**` paths, so grep the bare form
-  across `plugins/ packages/ products/` before "fixing" a lone bold label.
+- **A menu label with two real spellings.** The track selector's
+  `HamburgerMenu.tsx` renders `Add track...` and `HierarchicalFab.tsx` a bare
+  `Add track`. `check-menu-labels.ts` judges only `**A → B**` paths, so grep
+  the bare form across `plugins/ packages/ products/` before "fixing" a lone
+  bold label.
 - **Emitted `.d.ts` for barrel exports.** A type nobody imports can be what tsc
   serializes into another package's declarations, and
   `scripts/check-declaration-leaks.ts` fails when it goes. After `build:esm`,
