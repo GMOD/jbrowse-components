@@ -23,11 +23,8 @@ interface Recorded {
 const SECTION: SectionRender = {
   pileupTopOffset: 100,
   coverageTopOffset: 0,
-  covClipTop: 0,
-  covClipHeight: 60,
   pileupClipTop: 100,
   pileupClipHeight: 200,
-  connectorClipTop: 100,
   connectorClipHeight: 220,
   arcBand: { top: 60, height: 40, down: true },
   sashimiBand: { top: 300, height: 40 },

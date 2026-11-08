@@ -76,6 +76,7 @@ export const laneLayerConfigSchema = ConfigurationSchema(
     height: {
       type: 'number',
       defaultValue: 24,
+      exclusiveMinimum: 0,
       description: 'px of band the layer takes in each lane',
     },
     /**

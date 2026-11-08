@@ -140,10 +140,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // The model's own scroll projection inputs, not a second hand-assembled
     // copy of them — the overlays all read `scrollModel`, and a hit test that
     // re-spelled the same fields is exactly how the two tiers drift apart.
-    return findSectionAtY(model.renderSections, canvasY, {
-      ...model.scrollModel,
-      contentHeight: model.sections.contentHeight,
-    })
+    return findSectionAtY(model.renderSections, canvasY, model.scrollModel)
   }
 
   // Split out because the arc band needs the region itself — its

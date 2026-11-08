@@ -368,11 +368,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           pileupTopOffset: covH,
           coverageTopOffset: 0,
-          covClipTop: 0,
-          covClipHeight: 200,
           pileupClipTop: covH,
           pileupClipHeight: 100,
-          connectorClipTop: 0,
           connectorClipHeight: 0,
         },
       ],
@@ -626,11 +623,8 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     const sec: SectionRender = {
       pileupTopOffset: 0,
       coverageTopOffset: 0,
-      covClipTop: 0,
-      covClipHeight: 0,
       pileupClipTop: 0,
       pileupClipHeight: 0,
-      connectorClipTop: 0,
       connectorClipHeight: 0,
       ...section,
     }
@@ -713,7 +707,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     {
       name: 'a coverage-only section with an empty pileup band',
       sync: true,
-      section: { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
+      section: { pileupClipTop: 100, pileupClipHeight: 0 },
       extra: { coverage: { ...TEST_COVERAGE, height: 100 } },
       expected: true,
     },
@@ -721,9 +715,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       name: 'an arcs-only section (read-cloud): empty pileup, no coverage',
       sync: true,
       section: {
-        covClipHeight: 0,
         pileupClipHeight: 0,
-        connectorClipTop: 0,
         connectorClipHeight: 0,
         arcBand: { top: 0, height: 100, down: false },
       },
@@ -735,20 +727,20 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       // nothing should be — the display is done, not loading.
       name: 'a section that fetched nothing, with every band empty',
       sync: 'empty',
-      section: { covClipHeight: 0, pileupClipHeight: 0 },
+      section: { pileupClipHeight: 0 },
       expected: true,
     },
     {
       // The same for a band the user collapsed over data that is there.
       name: 'a synced section whose bands are all collapsed',
       sync: true,
-      section: { covClipHeight: 0, pileupClipHeight: 0 },
+      section: { pileupClipHeight: 0 },
       expected: true,
     },
     {
       name: 'a block with no synced region',
       sync: false,
-      section: { covClipHeight: 100, pileupClipHeight: 100 },
+      section: { pileupClipHeight: 100 },
       extra: { coverage: { ...TEST_COVERAGE, height: 100 } },
       expected: false,
     },

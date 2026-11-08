@@ -234,8 +234,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
   const section = {
     pileupTopOffset: COV_H,
     coverageTopOffset: 0,
-    covClipTop: 0,
-    covClipHeight: COV_H,
     pileupClipTop: COV_H,
     pileupClipHeight: 200,
   }

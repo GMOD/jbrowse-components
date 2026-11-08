@@ -64,11 +64,8 @@ function scene(
       {
         pileupTopOffset: 140,
         coverageTopOffset: 0,
-        covClipTop: 0,
-        covClipHeight: 100,
         pileupClipTop: 140,
         pileupClipHeight: 160,
-        connectorClipTop: 0,
         connectorClipHeight: 0,
         sashimiBand: { top: 100, height: 40 },
       },

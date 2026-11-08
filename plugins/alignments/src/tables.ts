@@ -1163,7 +1163,11 @@ function readConnectionTables(
     },
     arcLegendTitle: arcLegendTitle(mode),
     arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
-    arcScale: arcScaleOf(host, result?.maxFlatArcSpanBp ?? 0),
+    arcScale: arcScaleOf(
+      host,
+      result?.maxFlatArcSpanBp ?? 0,
+      (result?.inkGroupKeys.size ?? 0) > 0,
+    ),
   }
 }
 
@@ -1174,7 +1178,11 @@ function readConnectionTables(
  * the coverage band's height, above the depth axis' baseline, the
  * connections draw in. Null while the band is off.
  */
-function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
+function arcScaleOf(
+  host: AlignmentsTablesHostModel,
+  maxFlatArcSpanBp: number,
+  hasArcs: boolean,
+) {
   const mode = host.drawnReadConnections
   const stated = {
     showCoverage: host.showCoverage,
@@ -1184,7 +1192,7 @@ function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
     readConnectionsHeight: host.readConnectionsHeight,
     showSashimi: false,
     sashimiHeight: 0,
-    hasArcs: true,
+    hasArcs,
     hasSashimiDownArcs: false,
   }
   const bound = {

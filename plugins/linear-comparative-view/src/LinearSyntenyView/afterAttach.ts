@@ -4,6 +4,7 @@ import {
   getSession,
   resolveNamedRegions,
 } from '@jbrowse/core/util'
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { whenViewsSettled } from '@jbrowse/core/util/whenViewSettled'
@@ -257,16 +258,17 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   })
 }
 
-// `levelHeights` lands after the auto-scale pass it is allowed to override.
+// `levelHeights` lands after the auto-scale pass it is allowed to override,
+// bound as every stated band height is.
 function applyLevelHeights(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
   const { levelHeights } = init
   if (typeof levelHeights === 'number') {
     for (const level of self.levels) {
-      level.setHeight(levelHeights)
+      level.setHeight(boundBandHeight(levelHeights))
     }
   } else {
     for (const [i, h] of (levelHeights ?? []).entries()) {
-      self.levels[i]?.setHeight(h)
+      self.levels[i]?.setHeight(boundBandHeight(h))
     }
   }
 }

@@ -69,11 +69,8 @@ function section(top: number) {
   return {
     pileupTopOffset: top + 50,
     coverageTopOffset: top,
-    covClipTop: top,
-    covClipHeight: 50,
     pileupClipTop: top + 50,
     pileupClipHeight: 50,
-    connectorClipTop: 0,
     connectorClipHeight: 0,
   }
 }

@@ -91,7 +91,7 @@ export function connectorHighlight(
         d: recorder.d,
         clip: {
           x: 0,
-          y: sec.connectorClipTop,
+          y: sec.pileupClipTop,
           width: state.canvasWidth,
           height: sec.connectorClipHeight,
         },
@@ -114,8 +114,8 @@ export function resolveConnectorHover(
 ): Omit<ConnectorMarkHit, 'type'> | undefined {
   if (
     feeds.size === 0 ||
-    yPx < sec.connectorClipTop ||
-    yPx > sec.connectorClipTop + sec.connectorClipHeight
+    yPx < sec.pileupClipTop ||
+    yPx > sec.pileupClipTop + sec.connectorClipHeight
   ) {
     return undefined
   }

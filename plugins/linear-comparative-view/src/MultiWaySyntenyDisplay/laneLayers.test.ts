@@ -691,3 +691,14 @@ describe('a template layer', () => {
     expect(title!.style.color).toBe(bandInk().text)
   })
 })
+
+// a layer's height is a band the lane gives up, so a write at or under 0 px,
+// which would overlap the next layer's top, is refused
+test('a lane layer height must be positive', () => {
+  const display = createDisplay()
+  expect(() => {
+    setConf(display, 'laneLayers', [{ height: 0 }])
+  }).toThrow(/height/)
+  setConf(display, 'laneLayers', [{ height: 12 }])
+  expect(display.laneLayerHeights).toEqual([12])
+})

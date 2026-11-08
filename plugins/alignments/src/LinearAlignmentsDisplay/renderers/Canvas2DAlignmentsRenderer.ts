@@ -197,9 +197,9 @@ export function drawAlignmentBlocks(
           withClip(
             ctx,
             scissorX,
-            sec.covClipTop,
+            sec.coverageTopOffset,
             scissorW,
-            sec.covClipHeight,
+            state.coverage.height,
             () => {
               for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
                 mark.paintBlock(ctx, region.coverage, block, sectionState)

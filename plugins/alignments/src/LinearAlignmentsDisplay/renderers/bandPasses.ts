@@ -47,7 +47,7 @@ export function forEachBandPass(
     if (feeds && feeds.size > 0 && sec.connectorClipHeight > 0) {
       visitor.visit({
         section,
-        top: sec.connectorClipTop,
+        top: sec.pileupClipTop,
         height: sec.connectorClipHeight,
         state: connectorBandState(state, sec),
         feeds,

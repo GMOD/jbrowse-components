@@ -1,5 +1,5 @@
 import { createTablesEngine } from './index.ts'
-import { PAIRED_INVERSION } from './volvox.fixture.ts'
+import { METHYLATED, PAIRED_INVERSION } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -69,4 +69,14 @@ test('the read cloud plots on a log axis inset from the band, floored at 1000 bp
 
 test('no band, no scale', async () => {
   expect((await engine.alignments(PAIRED_INVERSION)).arcScale).toBeNull()
+})
+
+// the display reserves no strip for reads with nothing to connect, so the
+// table states no scale for one
+test('reads with no arc to draw, no scale', async () => {
+  const t = await engine.alignments({
+    ...METHYLATED,
+    display: { readConnections: { show: true } },
+  })
+  expect(t.arcScale).toBeNull()
 })

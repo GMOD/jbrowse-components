@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
   createTestSession,
   createTestSessionAsync,
@@ -170,6 +171,23 @@ test('a single levelHeights number sets every level', async () => {
   })
   await when(() => view.levels.every(l => l.height === 77), { timeout: 5000 })
   expect(view.levels.map(l => l.height)).toEqual([77, 77])
+})
+
+// a stated height takes the band floor, so a 0 or negative one leaves the
+// ribbons a band to draw in and its handle a bar to grab
+test('a levelHeights under the band floor is bound up to it', async () => {
+  const { view } = await openIn({
+    views: threeRows,
+    tracks: ['vol_all'],
+    levelHeights: [0, -50],
+  })
+  await when(() => view.levels.every(l => l.height === MIN_BAND_HEIGHT), {
+    timeout: 5000,
+  })
+  expect(view.levels.map(l => l.height)).toEqual([
+    MIN_BAND_HEIGHT,
+    MIN_BAND_HEIGHT,
+  ])
 })
 
 test('an unknown trackId is reported, and the view still settles', async () => {

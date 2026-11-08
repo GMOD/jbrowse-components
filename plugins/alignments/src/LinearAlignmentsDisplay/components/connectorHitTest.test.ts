@@ -72,11 +72,8 @@ const feeds = buildConnectorFeeds({
 const sec: SectionRender = {
   pileupTopOffset: 0,
   coverageTopOffset: 0,
-  covClipTop: 0,
-  covClipHeight: 0,
   pileupClipTop: 0,
   pileupClipHeight: 100,
-  connectorClipTop: 0,
   connectorClipHeight: 150,
 }
 

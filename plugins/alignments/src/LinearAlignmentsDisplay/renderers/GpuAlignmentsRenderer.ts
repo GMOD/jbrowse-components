@@ -383,7 +383,12 @@ export class GpuAlignmentsRenderer
     // it reads that slot, which is exactly the handoff the arc band below
     // relies on as well — and, within the band, what lets its five marks share
     // one write per section (`StagedUniforms`).
-    const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
+    const cov = devicePxBand(
+      sec.coverageTopOffset,
+      sectionState.coverage.height,
+      scaleY,
+      bufH,
+    )
     if (sectionState.coverage.height > 0 && cov.height > 0) {
       this.hal.setScissor(clip.pxX, cov.top, clip.pxW, cov.height)
       drawMarks(

@@ -77,21 +77,21 @@ export interface RenderState extends DisplayRenderState {
   coverageTopOffset: number
 }
 
-// One stacked section's resolved screen-space draw geometry. All values are
-// screen px (scrollTop already applied for grouped sections). Ungrouped is a
-// single section whose values reproduce the pre-grouping layout exactly.
+// One stacked section's resolved draw geometry. Screen px (scrollTop already
+// applied for grouped sections) except `pileupTopOffset`, the content-space
+// row base the painters subtract scrollTop from. Ungrouped is a single
+// section whose values reproduce the pre-grouping layout exactly. The
+// coverage band clips to `coverageTopOffset` and the render state's
+// `coverage.height`, which every section shares.
 export interface SectionRender {
   pileupTopOffset: number
   coverageTopOffset: number
-  // Clip band for the coverage passes.
-  covClipTop: number
-  covClipHeight: number
   // Clip band for the pileup passes.
   pileupClipTop: number
   pileupClipHeight: number
-  // Clip band for the connectors: the pileup's, run on through the room the
-  // section reserves under its last row for a dipping one.
-  connectorClipTop: number
+  // How far the connectors' clip runs from `pileupClipTop`: the pileup's
+  // band, on through the room the section reserves under its last row for a
+  // dipping one.
   connectorClipHeight: number
   // Screen-space paired-end arc band for this section, or undefined when arcs
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);

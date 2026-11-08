@@ -1,13 +1,13 @@
 import { findSectionAtY } from './findSectionAtY.ts'
 
-// Three stacked groups, each a 50px coverage band over its pileup, content tops
-// at 0 / 100 / 200 and total content height 300.
+// Three stacked groups, each owning a 100px strip, content tops at 0 / 100 /
+// 200 and total content height 300.
 const sections = [
-  { groupKey: 'a', coverageTop: 0 },
-  { groupKey: 'b', coverageTop: 100 },
-  { groupKey: 'c', coverageTop: 200 },
+  { groupKey: 'a', coverageTop: 0, height: 100 },
+  { groupKey: 'b', coverageTop: 100, height: 100 },
+  { groupKey: 'c', coverageTop: 200, height: 100 },
 ]
-const grouped = { isGrouped: true, scrollTop: 0, contentHeight: 300 }
+const grouped = { isGrouped: true, scrollTop: 0 }
 
 describe('findSectionAtY', () => {
   it('returns undefined when there are no sections', () => {
@@ -15,7 +15,7 @@ describe('findSectionAtY', () => {
   })
 
   it('ungrouped returns the only section at offset 0 for any Y', () => {
-    const opts = { isGrouped: false, scrollTop: 0, contentHeight: 300 }
+    const opts = { isGrouped: false, scrollTop: 0 }
     expect(findSectionAtY(sections, 250, opts)).toEqual({
       section: sections[0],
       index: 0,
@@ -42,7 +42,7 @@ describe('findSectionAtY', () => {
   })
 
   it('grouped subtracts scrollTop from the resolved band top', () => {
-    const opts = { isGrouped: true, scrollTop: 80, contentHeight: 300 }
+    const opts = { isGrouped: true, scrollTop: 80 }
     // Second band now spans screen-Y 20..120; a Y of 30 lands in it.
     expect(findSectionAtY(sections, 30, opts)).toEqual({
       section: sections[1],

@@ -55,11 +55,8 @@ function bandState(overrides: TestRenderStateOverrides = {}) {
       {
         pileupTopOffset: 60,
         coverageTopOffset: 0,
-        covClipTop: 0,
-        covClipHeight: 60,
         pileupClipTop: 60,
         pileupClipHeight: 40,
-        connectorClipTop: 0,
         connectorClipHeight: 0,
       },
     ],
@@ -214,11 +211,8 @@ describe('the coverage band UBO', () => {
           {
             pileupTopOffset: 200,
             coverageTopOffset: 140,
-            covClipTop: 140,
-            covClipHeight: 60,
             pileupClipTop: 200,
             pileupClipHeight: 40,
-            connectorClipTop: 0,
             connectorClipHeight: 0,
           },
         ],

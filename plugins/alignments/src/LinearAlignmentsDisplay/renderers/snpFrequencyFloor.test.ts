@@ -137,11 +137,8 @@ test('the GPU carries the floor as its own uniform', () => {
         {
           pileupTopOffset: 50,
           coverageTopOffset: 0,
-          covClipTop: 0,
-          covClipHeight: 50,
           pileupClipTop: 50,
           pileupClipHeight: 50,
-          connectorClipTop: 0,
           connectorClipHeight: 0,
         },
       ],

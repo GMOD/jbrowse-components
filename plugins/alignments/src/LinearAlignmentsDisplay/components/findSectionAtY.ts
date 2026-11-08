@@ -5,11 +5,14 @@
 // to the pre-grouping single-offset path.
 //
 // Generic over the section shape so callers keep their full section type (the
-// loop only needs `coverageTop`); pure so it can be unit-tested without a model.
-export function findSectionAtY<T extends { coverageTop: number }>(
+// loop only needs each section's top and the strip it owns); pure so it can be
+// unit-tested without a model.
+export function findSectionAtY<
+  T extends { coverageTop: number; height: number },
+>(
   sections: T[],
   canvasY: number,
-  opts: { isGrouped: boolean; scrollTop: number; contentHeight: number },
+  opts: { isGrouped: boolean; scrollTop: number },
 ): { section: T; index: number; coverageTopOffset: number } | undefined {
   const first = sections[0]
   if (!first) {
@@ -18,13 +21,11 @@ export function findSectionAtY<T extends { coverageTop: number }>(
   if (!opts.isGrouped) {
     return { section: first, index: 0, coverageTopOffset: 0 }
   }
-  const { scrollTop, contentHeight } = opts
-  for (let i = 0; i < sections.length; i++) {
-    const top = sections[i]!.coverageTop - scrollTop
-    const next = sections[i + 1]
-    const bottom = (next ? next.coverageTop : contentHeight) - scrollTop
-    if (canvasY >= top && canvasY < bottom) {
-      return { section: sections[i]!, index: i, coverageTopOffset: top }
+  const { scrollTop } = opts
+  for (const [index, section] of sections.entries()) {
+    const top = section.coverageTop - scrollTop
+    if (canvasY >= top && canvasY < top + section.height) {
+      return { section, index, coverageTopOffset: top }
     }
   }
   return undefined

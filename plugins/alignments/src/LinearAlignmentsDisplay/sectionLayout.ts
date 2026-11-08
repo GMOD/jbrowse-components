@@ -348,11 +348,8 @@ export function buildSectionRenders(
     return {
       pileupTopOffset: sec.pileupTop,
       coverageTopOffset: coverageTop,
-      covClipTop: coverageTop,
-      covClipHeight: sec.coverageHeight,
       pileupClipTop,
       pileupClipHeight: clipHeightTo(pileupBottom),
-      connectorClipTop: pileupClipTop,
       connectorClipHeight: clipHeightTo(pileupBottom + sec.dipReserve),
       arcBand:
         sec.arcBandHeight > 0

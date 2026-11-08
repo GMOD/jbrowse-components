@@ -71,8 +71,8 @@ export function sashimiBandsOf(
         ? {
             top: sec.coverageTopOffset + YSCALEBAR_LABEL_OFFSET,
             height: upHeight,
-            clipTop: sec.covClipTop,
-            clipHeight: sec.covClipHeight,
+            clipTop: sec.coverageTopOffset,
+            clipHeight: state.coverage.height,
           }
         : undefined,
     down:

@@ -592,16 +592,9 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and clips the pileup 
     {
       pileupTopOffset: 45,
       coverageTopOffset: 0,
-      covClipTop: 0,
-      // The BAND, not the canvas. An indicator's bar length is not clamped —
-      // it scales the fetched block's peak event count against the visible
-      // domain — so against `canvasHeight` a breakpoint over a bounded domain
-      // painted down through the pileup, where the hit test does not answer.
-      covClipHeight: 45,
       pileupClipTop: 45,
       // 4 rows of 10 scrolled up by 37: the band ends 3 px below the ceiling
       pileupClipHeight: 3,
-      connectorClipTop: 45,
       connectorClipHeight: 3,
       arcBand: undefined,
       sashimiBand: undefined,
@@ -635,11 +628,8 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
     {
       pileupTopOffset: 20,
       coverageTopOffset: -10,
-      covClipTop: -10,
-      covClipHeight: 20,
       pileupClipTop: 10,
       pileupClipHeight: 30,
-      connectorClipTop: 10,
       connectorClipHeight: 30,
       arcBand: undefined,
       sashimiBand: undefined,
@@ -647,11 +637,8 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
     {
       pileupTopOffset: 70,
       coverageTopOffset: 40,
-      covClipTop: 40,
-      covClipHeight: 20,
       pileupClipTop: 60,
       pileupClipHeight: 50,
-      connectorClipTop: 60,
       connectorClipHeight: 50,
       arcBand: undefined,
       sashimiBand: undefined,

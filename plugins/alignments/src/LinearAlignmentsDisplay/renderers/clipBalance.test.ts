@@ -185,8 +185,6 @@ function state(): RenderState {
       {
         pileupTopOffset: 50,
         coverageTopOffset: 0,
-        covClipTop: 0,
-        covClipHeight: 50,
         pileupClipTop: 50,
         pileupClipHeight: 150,
         arcBand: { top: 0, height: 50, down: false },

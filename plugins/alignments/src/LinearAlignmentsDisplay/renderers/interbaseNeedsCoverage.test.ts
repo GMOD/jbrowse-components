@@ -150,11 +150,8 @@ function state(overrides: TestRenderStateOverrides): RenderState {
       {
         pileupTopOffset: 50,
         coverageTopOffset: 0,
-        covClipTop: 0,
-        covClipHeight: 50,
         pileupClipTop: 50,
         pileupClipHeight: 150,
-        connectorClipTop: 0,
         connectorClipHeight: 0,
       },
     ],
