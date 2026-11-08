@@ -131,3 +131,21 @@ test('a plot-only export leaves the band over rows to the overlays', async () =>
   )
   expect(container.textContent).not.toContain(KIT[0]![0])
 })
+
+test('in columns the export leaves out the focus chip line under the connectors', async () => {
+  const { display } = createMatrixTestEnvironment().createDisplay()
+  display.setSources([{ name: 'a' }, { name: 'b' }])
+  display.setRowFocus(['a'])
+  const { connectors } = display.topBands.reserved
+  const line = display.rowFocusLineHeight
+  expect(connectors).toBeGreaterThan(0)
+  expect(line).toBeGreaterThan(0)
+  expect(display.rowsTopOffset).toBe(connectors + line)
+  const { container } = render(<svg>{await renderSvg(display, {})}</svg>)
+  const rowShifts = [...container.querySelectorAll('g[transform]')].map(g =>
+    g.getAttribute('transform'),
+  )
+  expect(rowShifts).toContain(`translate(0 ${connectors})`)
+  expect(rowShifts).not.toContain(`translate(0 ${display.rowsTopOffset})`)
+  expect(exportedHeight(display)).toBe(display.height - line)
+})
