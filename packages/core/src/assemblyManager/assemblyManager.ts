@@ -289,12 +289,17 @@ function assemblyManagerFactory(
        * `statusProgress` its spinner should show. Returns the assembly itself
        * (a stable reference, so a consuming getter doesn't invalidate on every
        * read) or undefined once they are all loaded.
+       *
+       * Reads the name map rather than calling `get`: a view's loading getter
+       * runs during render, and `get` reports an unknown name to
+       * `Core-handleUnrecognizedAssembly`, whose handler may add a connection
+       * to the session mid-render.
        */
       loadingAssembly(asmNames: string[]) {
         // an unknown name is skipped: find() would hand back its undefined,
         // which reads as "all loaded" ahead of one still loading
         return asmNames
-          .map(name => this.get(name))
+          .map(name => self.assemblyNameMap[name])
           .find(asm => asm !== undefined && !asm.initialized)
       },
 
