@@ -36,68 +36,28 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // because that is the moment the prose needs rewriting too.
 const MUI_BUDGET = { 'multiple-tracks': 3 }
 
-// Record every MUI-classed element that is ever inserted, from before the
-// page's own scripts run. `recordFromLoad` in the shared harness.
+// Installed before the page's own scripts (`recordFromLoad` in the shared
+// harness). `window.__muiCensus` names the outermost MUI-classed elements on
+// screen — an icon button and the svg inside it are one control — by label,
+// since the label is the only thing that says which control appeared. The
+// interval keeps the busiest single sample in `window.__muiPeak`: two controls
+// sharing a label count twice, while a control React remounts, or whose label
+// changes as it loads, counts once.
 //
-// **This is the half the census was missing, and the reason it was missing is
-// the sampling instant rather than any assertion.** Everything below runs once
-// the page is quiet, and quiet means nothing is loading any more — so a
-// component that exists only while something is fetching is gone before
-// anything looks. The budget read zero on `synteny` for as long as that page
-// existed while it drew a `MuiLinearProgress` on every visit, and no amount of
-// care in the at-rest count could have caught it: `ComparativeFetchStatus`
-// reaches `@jbrowse/core/ui` directly, so `DisplayUIProvider` never redirected
-// it, and the bar was gone by the time the census ran. Same shape as the
-// `FloatingLegend` hole below, one step further out — that one needs a click,
-// this one needs you not to have waited.
+// **The peak is what catches a loading state.** The at-rest count runs once the
+// page is quiet, so a component that exists only while something is fetching is
+// gone before it looks: `synteny` drew a `MuiLinearProgress` on every visit
+// (`ComparativeFetchStatus` reaches `@jbrowse/core/ui` directly, so
+// `DisplayUIProvider` never redirected it) while the at-rest count read zero.
 //
-// **An interval, and a MutationObserver was tried first and killed the page.**
-// Observing `document` with `subtree` + `attributes` looks like the better
-// instrument — event-driven, no sampling gap — and on a React page repainting a
-// pileup it fires on every frame's class churn, with a `querySelectorAll` walk
-// per added subtree. Under swiftshader that wedged the renderer: two runs in
-// three died on `multiple-tracks` with a detached frame, and the same runs
-// passed with this recorder switched off. One `[class*="Mui"]` query every
-// 100ms is a single tree walk against a DOM that is mostly canvas, and three
-// full sweeps of the site never cost a page.
-//
-// The sampling gap that buys is theoretical here: what this is looking for is a
-// fetch indicator, which lives for about a second. Something that mounts and
-// unmounts inside 100ms is not a thing a reader could see either.
-//
-// Outermost-ness is decided at sample time, while the element still has a
-// parent chain to ask — the same filter the at-rest count applies. What is
-// kept is the busiest single sample: two controls sharing a label count twice,
-// while a control React remounts, or whose label changes as it loads, counts
-// once.
+// **An interval, because a MutationObserver killed the page.** Observing
+// `document` with `subtree` + `attributes` fires on every frame's class churn
+// while a pileup repaints, and under swiftshader that wedged the renderer — two
+// runs in three died on `multiple-tracks` with a detached frame. One
+// `[class*="Mui"]` query every 100ms never cost a page, and a fetch indicator
+// lives for about a second.
 function recordMuiFromLoad() {
-  window.__muiPeak = []
-  setInterval(() => {
-    const now = [...document.querySelectorAll('[class*="Mui"]')]
-      .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
-      .map(
-        el =>
-          el.getAttribute('aria-label') ||
-          el.textContent?.trim().slice(0, 40) ||
-          `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
-      )
-    if (now.length > window.__muiPeak.length) {
-      window.__muiPeak = now
-    }
-  }, 100)
-}
-
-// Count the outermost MUI-classed elements (an icon button and the svg inside it
-// are one control, not two) and report what they were, since the label is the
-// only thing that says which control appeared.
-//
-// Both instants are held to the same budget. A page's Material is either
-// permanent chrome or it is a loading state, and the second one is the one
-// nobody notices — so "ever" having a bigger number than "at rest" is not a
-// looser bar to record, it is the finding.
-async function muiBudget(page, slug) {
-  const expected = MUI_BUDGET[slug] ?? 0
-  const found = await page.evaluate(() =>
+  window.__muiCensus = () =>
     [...document.querySelectorAll('[class*="Mui"]')]
       .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
       .map(
@@ -105,8 +65,23 @@ async function muiBudget(page, slug) {
           el.getAttribute('aria-label') ||
           el.textContent.trim().slice(0, 40) ||
           `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
-      ),
-  )
+      )
+  window.__muiPeak = []
+  setInterval(() => {
+    const now = window.__muiCensus()
+    if (now.length > window.__muiPeak.length) {
+      window.__muiPeak = now
+    }
+  }, 100)
+}
+
+// Both instants are held to the same budget. A page's Material is either
+// permanent chrome or it is a loading state, and the second one is the one
+// nobody notices — so "ever" having a bigger number than "at rest" is not a
+// looser bar to record, it is the finding.
+async function muiBudget(page, slug) {
+  const expected = MUI_BUDGET[slug] ?? 0
+  const found = await page.evaluate(() => window.__muiCensus())
   const ever = await page.evaluate(() => {
     window.__muiPeakBeforeHover = window.__muiPeak
     return window.__muiPeak
@@ -130,28 +105,20 @@ async function muiBudget(page, slug) {
   return out
 }
 
-// The second half of the census, and the one that catches what counting `Mui*`
-// classnames cannot.
-//
+// The census that catches what counting `Mui*` classnames cannot.
 // `makeStyles` (`@jbrowse/core/util/tss-react`) emits an emotion class —
-// `css-5970li`, no `Mui` anywhere in it — while reading the Material UI
-// *theme*. So a component can be fully MUI-styled and score zero above. That
-// was not hypothetical: `BaseTooltip` rendered a grey Material chip in Roboto
-// on every one of these pages, and the count said zero, which is the worst
-// failure shape there is — silent, and endorsed by a green check.
+// `css-5970li`, no `Mui` in it — while reading the Material UI *theme*, so a
+// component can be fully MUI-styled and score zero above. `BaseTooltip` did
+// exactly that on every page here.
 //
 // The fingerprint is the font. A host that mounts no `ThemeProvider` (every
-// page here) gets MUI's *default* theme, whose typography is
-// `Roboto, Helvetica, Arial, sans-serif`; this site's own stack starts with
-// `-apple-system`, so an element computing Roboto first did not inherit it from
-// the page — something stated it, and the only thing on these pages that can is
-// the MUI theme.
+// page here) gets MUI's *default* theme, whose typography starts with Roboto;
+// this site's own stack starts with `-apple-system`, so an element computing
+// Roboto first was styled by the MUI theme.
 //
-// Elements inside a `Mui*`-classed subtree are excluded: those are counted
-// above, by name, and double-reporting them would make `multiple-tracks`
-// (which shows stock chrome on purpose) fail twice for one control. **Zero is
-// the bar on every page**, that one included — its three Material widgets are
-// unstyled by typography, and a tooltip is not one of them.
+// Elements inside a `Mui*`-classed subtree are counted above, by name, and
+// excluded here so `multiple-tracks` doesn't fail twice for one control.
+// **Zero is the bar on every page**, that one included.
 async function muiThemedStyling(page, when) {
   const found = await page.evaluate(() => {
     const themed = [...document.querySelectorAll('body *')].filter(el =>
@@ -175,29 +142,21 @@ async function muiThemedStyling(page, when) {
 }
 
 // Move the pointer across each track, so the census above sees the hover states
-// too — a tooltip only exists while something is under the cursor, and it is
-// drawn by the display itself rather than by either bring-your-own provider, so
-// it is the state most likely to smuggle a themed component onto the screen.
+// too: a tooltip is drawn by the display itself rather than by either
+// bring-your-own provider, so it is the state most likely to smuggle a themed
+// component onto the screen. Opportunistic — a hover that finds no feature
+// censuses an unchanged page; `BaseTooltip.test.tsx` in `@jbrowse/core` is the
+// deterministic half.
 //
-// Deliberately opportunistic: whether a given pixel in a headless swiftshader
-// render has a feature under it is not something to build a hard assertion on,
-// and a hover that finds nothing simply censuses an unchanged page.
-// `BaseTooltip.test.tsx` in `@jbrowse/core` is the deterministic half of this.
-//
-// The sweep stays out of the bottom-right quadrant on purpose: the corner
-// controls live there, and hovering one on `multiple-tracks` would mount a
-// Material popover that the at-rest count above has no entry for.
-// The census runs per track rather than once at the end, because a tooltip is
-// only up while the pointer is on the thing that raised it: sweeping every
-// track and then looking would only ever see the last position's.
+// The sweep stays out of the bottom-right quadrant: hovering a corner control
+// on `multiple-tracks` would mount a Material popover the at-rest count has no
+// entry for. The census runs per track, because a tooltip is only up while the
+// pointer is on the thing that raised it.
 async function censusWhileHovering(page) {
   const found = new Set()
   for (const canvas of await page.$$('canvas')) {
-    // `behavior: 'instant'` is not a default worth relying on: a stylesheet
-    // that sets `scroll-behavior: smooth` leaves the scroll still animating
-    // when `boundingBox()` is read below, and the coordinates are stale by the
-    // time the pointer reaches them — see `clicksReachTheTrack`, where the same
-    // thing fails loudly.
+    // `behavior: 'instant'` pinned: under `scroll-behavior: smooth` the scroll
+    // is still animating when `boundingBox()` is read
     await canvas.evaluate(el => {
       el.scrollIntoView({ block: 'center', behavior: 'instant' })
     })
@@ -222,28 +181,20 @@ async function censusWhileHovering(page) {
 // Every page here drives the view with a pan handler of its own, and a pan
 // handler that captures the pointer on pointerdown quietly eats every click
 // inside it: pointer capture retargets the click at the capturing element, so
-// the display underneath — its canvas, the buttons it draws in its corner —
-// never sees one. Everything still renders, which is why loading the page can't
-// catch it. Click for real and check where the click actually landed.
+// the display underneath never sees one. Everything still renders, which is why
+// loading the page can't catch it. Click for real and check where it landed.
 //
-// Deliberately asserted on the canvas rather than on a button: JBrowse's own
-// chrome claims its press (`data-gesture-owner`), so a button would keep
-// working even if the pan handler here regressed. The canvas has no such
-// protection, and it is what a reader pasting this handler into their own app
-// would lose first.
+// Asserted on the canvas rather than on a button: JBrowse's own chrome claims
+// its press (`data-gesture-owner`), so a button would keep working even if the
+// pan handler regressed.
 async function clicksReachTheTrack(page) {
   const canvas = await page.$('canvas')
   if (!canvas) {
     return ['no track canvas on the page']
   }
-  // `behavior: 'instant'`, pinned rather than left to the page: under a
-  // stylesheet that sets `scroll-behavior: smooth` this scroll is still
-  // animating when `boundingBox()` is read, and on a page tall enough to have
-  // somewhere to scroll — which, since demos started sharing pages, is most of
-  // them — the click lands wherever the page has slid to by then. It reports as
-  // "landed on <html>", which reads like a pan handler eating the click and is
-  // not. The shell no longer sets smooth scrolling, and this still does not
-  // depend on that.
+  // `behavior: 'instant'` pinned: a click after a still-animating smooth scroll
+  // lands wherever the page has slid to, and reports as "landed on <html>",
+  // which reads like a pan handler eating the click
   await canvas.evaluate(el => {
     el.scrollIntoView({ block: 'center', behavior: 'instant' })
   })
@@ -273,25 +224,12 @@ async function clicksReachTheTrack(page) {
     : [`a click inside the track landed on <${target}>, not the track canvas`]
 }
 
-// The hover sweep's own Material coverage, which it did not have.
-//
-// `muiThemedStyling` is the only census the sweep runs, and it drops anything
-// carrying a `Mui*` class — on the stated grounds that the count above has
-// those by name. The count above is `muiBudget`, which runs first and reads
-// `window.__muiPeak` at that instant, before a pointer has been anywhere. So a
-// Material element that exists only while something is under the cursor fell
-// between the two: named-but-not-yet, and themed-but-excluded.
-//
-// The recorder is a `setInterval` nobody clears, so the fix is to read it again
-// once the sweep is done. Only a peak the sweep itself set counts: a load
-// already over budget is `muiBudget`'s failure, not this one's.
-//
-// **A tooltip is the shape this is looking for**, because it is the one piece
-// of display chrome behind neither bring-your-own provider — a display renders
-// it directly, so an embedder installing both plain sets cannot redirect it.
-// `BaseTooltip.test.tsx` in `@jbrowse/core` pins today's implementation
-// deterministically, which is the right instrument for *that* component; this
-// is the one that notices any other Material widget a pointer can raise.
+// `muiThemedStyling` drops anything carrying a `Mui*` class, and `muiBudget`
+// read the peak before the pointer had been anywhere, so a Material element
+// that exists only while something is under the cursor fell between the two.
+// The recorder's interval is never cleared, so its peak is read again after the
+// sweep; only a peak the sweep itself set counts, since a load already over
+// budget is `muiBudget`'s failure.
 async function muiRaisedByHover(page, slug) {
   const expected = MUI_BUDGET[slug] ?? 0
   const raised = await page.evaluate(() =>
@@ -306,26 +244,16 @@ async function muiRaisedByHover(page, slug) {
       ]
 }
 
-// Drag-to-zoom on the scalebar, which is the one thing on this site that is
-// only a gesture. Every other check censuses a page or clicks one control, and
-// a rubberband that stopped working would leave a page that loads, paints and
-// reads exactly right — the failure is that nothing happens, which is what a
-// census of a page at rest reports on a healthy page too.
-//
-// The gesture is core's `usePointerDrag` since 2026-08, so this is also the
-// only place in the repo that drives that hook through a real browser: its unit
-// test covers the handler contract, and this covers the half a stubbed pointer
-// cannot — that a press, a stream of moves and a release across a real element
-// reach the model and reframe the view.
+// Drag-to-zoom on the scalebar, the one thing on this site that is only a
+// gesture: a rubberband that stopped working leaves a page that loads, paints
+// and reads exactly right. It is also the only place in the repo that drives
+// core's `usePointerDrag` through a real browser — its unit test covers the
+// handler contract, this covers a real press, moves and release reaching the
+// model.
 //
 // `page.mouse` is viewport coordinates, so the row is scrolled into view and
-// re-measured first, `behavior: 'instant'` pinned rather than left to the page
-// (see `clicksReachTheTrack` for what a smooth scroll does to a coordinate).
+// re-measured first (see `clicksReachTheTrack` on `behavior: 'instant'`).
 async function dragToZoomFramesTheSpan(page) {
-  // The row names itself. It used to be picked out of the page's
-  // `data-gesture-owner` elements by matching a pixel height restated from the
-  // example — which every display's overlay slot is now also a candidate for,
-  // and which reports a changed row height as "no scalebar".
   const el = await page.$('[data-testid="scalebar"]')
   if (!el) {
     return ['no scalebar row on the page']
@@ -383,17 +311,6 @@ async function dragToZoomFramesTheSpan(page) {
   return out
 }
 
-// The floating color legend, which is the one piece of display chrome behind
-// NEITHER bring-your-own seam: a display renders `FloatingLegend` directly, so
-// no provider redirects it and this site's whole claim rests on what that file
-// happens to import. It was two Material `IconButton`s and a `Link` until
-// 2026-08, and the census scored every page zero throughout — because a legend
-// only exists once something picks a coloring that has a key, and until this
-// page nothing here ever did.
-//
-// So the census is re-run with one on screen. Three assertions, and the middle
-// one is the one that stops this becoming another unearned zero: the scheme is
-// picked, the legend is confirmed *present*, and only then is the count taken.
 // A key the page places is derived from what the display painted, so a row
 // naming the data is the proof that the display drew and the page read it.
 async function placedKeyNamesItsRows(page, row) {
@@ -452,6 +369,11 @@ async function aTableRowMovesTheView(page) {
   }
 }
 
+// The floating color legend is the one piece of display chrome behind NEITHER
+// bring-your-own seam: a display renders `FloatingLegend` directly, so no
+// provider redirects it. It only exists once something picks a coloring that
+// has a key, so the census is re-run with one on screen — and the legend is
+// confirmed *present* before the count is taken, so a zero means something.
 async function legendIsPlainAndAboveTheSeams(page) {
   const picked = await page.evaluate(() => {
     const el = document.querySelector('select')
@@ -533,17 +455,11 @@ async function legendIsPlainAndAboveTheSeams(page) {
   }
 
   // The other half, and the reason this page draws seams at all: the legend has
-  // to paint ABOVE them. Not `elementFromPoint`, which would pass whatever the
-  // z-order is — the seams are `pointer-events: none`, so hit testing skips
-  // them and the check would be about nothing. The mechanism is asked instead:
-  // did the legend land in the slot's overlay node, and does that node outrank
-  // the seam layer?
-  //
-  // Both ends are named by a marker rather than found by shape.
-  // `data-track-overlay-node` is the node itself and `data-region-seams` is
-  // what the example draws over the stack — the walk up the tree sniffing for
-  // `contain: strict` and the `.demo div[aria-hidden]` that stood in for the
-  // seams were each one refactor away from silently matching nothing.
+  // to paint ABOVE them. Not `elementFromPoint`: the seams are
+  // `pointer-events: none`, so hit testing skips them whatever the z-order. The
+  // mechanism is asked instead — did the legend land in the slot's overlay
+  // node, and does that node outrank the seam layer? Both ends are named by a
+  // marker rather than found by shape.
   const order = await page.evaluate(() => {
     const z = el => Number.parseInt(getComputedStyle(el).zIndex, 10)
     const node = document
@@ -582,19 +498,14 @@ async function legendIsPlainAndAboveTheSeams(page) {
 // rendering **in place**, back inside the sandbox, where anything the page
 // paints over the track stack buries it and no z-index inside the box can win.
 //
-// Fourteen of this site's fifteen demos did exactly that, and every check here
-// stayed green, because nothing about a page at rest looks wrong: the corner
-// control is in a corner, the seams are two pixels wide, and the state that
+// Nothing about a page at rest looks wrong when that happens: the state that
 // would show it — a fetch in flight over a two-region view, a legend on,
-// whole-genome zoom where most spans elide — is not a state a census reaches.
+// whole-genome zoom where most spans elide — is not one a census reaches.
 //
-// **Two markers, one selector, no list of chrome.** `data-display-id` is on the
-// display root and `data-track-overlay-slot` on the slot, so the whole contract
-// is "every display is inside a slot" — which is also the floor, since a demo
-// page that mounted no display at all fails on the count rather than passing by
-// having nothing to look at. Enumerating the chrome instead (`track-control-*`,
-// `floating-legend`, …) would need editing every time a display grows a piece,
-// and a stale list reads as a clean run.
+// **Two markers, no list of chrome**: the contract is "every display is inside
+// a slot", and a page that mounted no display fails on the count rather than
+// passing with nothing to look at. A list of chrome pieces would go stale and
+// read as a clean run.
 async function everyDisplayIsInAnOverlaySlot(page) {
   const found = await page.evaluate(() => {
     const displays = [...document.querySelectorAll('[data-display-id]')]
@@ -711,34 +622,27 @@ async function localFileOpensAsATrack(page) {
 
 // The one page whose subject is a state you cannot see by loading it.
 //
-// `view-loading-and-errors` argues that a host gating on `view.ready` alone ships an
-// empty box: false for a failed load, and true for a view nothing has navigated
-// yet. Neither shows up on an idle page, and neither does the snackbar channel
-// that carries the failures the view has no state for. Every other check in
-// this file censuses a page at rest, where this page looks exactly like its
-// neighbours — so its claim was verified once, by hand, and nothing stopped the
-// next change from making it blank again. All three are driven here.
+// `view-loading-and-errors` argues that a host gating on `view.ready` alone
+// ships an empty box: false for a failed load, and true for a view nothing has
+// navigated yet. Neither shows up on an idle page, and neither does the
+// snackbar channel that carries the failures the view has no state for, so all
+// of them are driven here.
 //
-// `el.click()` rather than `page.mouse.click`, deliberately, and it is the
-// opposite call from the one `clicksReachTheTrack` makes: that check is *about*
-// whether a click reaches its target through the page's own pan handler, so it
-// has to go through the pointer. This one only needs to drive the UI, and a
-// synthetic click on a control by name can't fail for a coordinate reason and
-// report it as a rendering one.
+// `el.click()` rather than `page.mouse.click`: this only drives the UI (unlike
+// `clicksReachTheTrack`), and a synthetic click by name can't fail for a
+// coordinate reason and report it as a rendering one.
 //
 // Runs last. Picking the broken scenario replaces the engine with one that has
 // no canvas, so anything after it would be censusing a different page.
 async function viewStatusStatesAreDrawn(page) {
-  const clickByText = async text => {
-    const clicked = await page.evaluate(t => {
+  const clickByText = text =>
+    page.evaluate(t => {
       const el = [...document.querySelectorAll('button, label')].find(e =>
         e.innerText.includes(t),
       )
       el?.click()
       return !!el
     }, text)
-    return clicked
-  }
   const demoText = () =>
     page.evaluate(() => document.querySelector('.demo')?.innerText ?? '')
 
@@ -765,29 +669,18 @@ async function viewStatusStatesAreDrawn(page) {
     )
   }
 
-  // …and now that it is on screen, is it readable? This is the one place the
-  // repo's actual dark-theme bug can be caught, rather than a sibling of it: the
-  // snackbar exists only after the click above, so the at-rest contrast pass in
-  // the check list never sees it, and for as long as `color-scheme` went
-  // undeclared this notification — the single thing this page exists to prove a
-  // host must render — sat at 1.0:1 in dark mode with every check green.
-  // Drawing it and reading it are two different claims and both are this
-  // function's.
+  // …and now that it is on screen, is it readable? The snackbar exists only
+  // after the click above, so the at-rest contrast pass never sees it, and it
+  // once sat at 1.0:1 in dark mode while `color-scheme` went undeclared.
   out.push(...(await checkTextContrast(page)))
 
   // half two: view.status noRegions, the state `view.ready` answers "ready" to.
   // The radio builds an engine with no `view`, so nothing has told the view
   // where to look, and the panel's button hands it one through `setLaunch`.
   //
-  // **Both ends are asserted, and the second is the one that keeps the page
-  // honest.** Every other radio here is a state to be drawn; this one is a
-  // state to be *left*, and a host that draws it over a view it never lets the
-  // reader navigate has shipped the same empty box under a nicer caption.
-  //
-  // This scenario is also the only input on the site that reaches the branch at
-  // all. Every `ViewStatus` here renders a `noRegions` arm and every
-  // `createViewState` call used to pass one, so the state the page argues
-  // `view.ready` gets wrong was drawn by nothing, anywhere.
+  // **Both ends are asserted.** This state is one to be *left*, and a host that
+  // draws it over a view the reader can never navigate has shipped the same
+  // empty box under a nicer caption.
   if (!(await clickByText('no location yet'))) {
     return [...out, 'no unnavigated scenario radio on the page']
   }
@@ -1062,7 +955,6 @@ if (orphanChecks.length) {
 
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
-  // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs,
   // The one page that passes `makeWorkerInstance`. Every other demo here runs
@@ -1070,8 +962,6 @@ const failures = await smokeExamplesSite({
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
   // page's own claim is that a worker spawns, which loading it cannot show.
   workerSlug: 'web-worker',
-  // installed before each page's own scripts, so `muiBudget` can hold the
-  // census to what ever rendered rather than to what survived the load
   recordFromLoad: recordMuiFromLoad,
   // The console errors on this site that are a page working rather than
   // failing: `view-loading-and-errors` points one radio at an assembly whose
@@ -1090,7 +980,6 @@ const failures = await smokeExamplesSite({
     slug === 'track-loading-and-errors' &&
     text ===
       'display(s) showing an error: wiggle-display (hg38_broken-LinearWiggleDisplay) is error',
-  //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,
   // either side of a hover, because the states a display draws while the
