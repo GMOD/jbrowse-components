@@ -10,7 +10,6 @@ export default function SvInspector() {
   return (
     <JBrowse
       assemblies={assemblies}
-      tracks={[]}
       views={[
         {
           type: 'SvInspectorView',

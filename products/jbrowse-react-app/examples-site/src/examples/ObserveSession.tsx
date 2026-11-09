@@ -12,7 +12,6 @@ const config = {
   tracks: [
     {
       trackId: 'volvox_cram',
-      name: 'volvox-sorted.cram',
       uri: `${base}/volvox-sorted.cram`,
     },
   ],

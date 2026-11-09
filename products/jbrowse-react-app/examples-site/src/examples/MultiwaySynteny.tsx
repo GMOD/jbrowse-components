@@ -24,7 +24,7 @@ const tracks = [
     category: ['Synteny'],
     adapter: {
       type: 'MultiGenomePAFAdapter',
-      pafLocation: { uri: `${base}/all_vs_all.paf.gz` },
+      uri: `${base}/all_vs_all.paf.gz`,
       assemblyNames: strains.map(s => s.name),
     },
   },

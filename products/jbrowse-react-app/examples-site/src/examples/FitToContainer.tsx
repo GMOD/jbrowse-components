@@ -7,7 +7,6 @@ const assemblies = [
 const tracks = [
   {
     trackId: 'volvox_cram',
-    name: 'volvox-sorted.cram',
     uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.cram',
     category: ['Alignments'],
   },
