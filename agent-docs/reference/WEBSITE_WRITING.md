@@ -26,7 +26,10 @@ path spelling and caption length; this doc is the rest.
   deleting sentences, not compressing them. Keep specific values out of captions
   and callouts.
 - **A callout says what the picture cannot.** Delete one that names the largest
-  thing in the frame. Shading where something starts and stops is fine.
+  thing in the frame. Shading where something starts and stops is fine. A short
+  callout restating a small chip, track name or legend row in plain words stays
+  ("Reads without SA tag" beside the "Not split" chip): app text reaches the
+  reader at about 7 px in the docs column.
 - **Put something negative in the frame**: a reader cannot see "dense" without
   sparse beside it. Narrowing or widening the window usually supplies one.
 - **Say the thing**, not what it isn't ("X rather than Y"), and never argue with

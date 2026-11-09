@@ -808,9 +808,9 @@ export const svSpecs: ScreenshotSpec[] = [
                 { field: 'connection.offscreen', equal: false },
               ],
               coverage: { height: 70 },
-              // The "Not split" section runs out of rows before a taller box
-              // does.
-              height: 620,
+              // Tall enough for the "Not split" section's reads, not just its
+              // coverage lane.
+              height: 800,
               encoding: { color: 'insertSizeAndOrientation' },
               legend: { show: true },
               // `facet: 'split'` works in chain mode because split defines a
@@ -826,9 +826,8 @@ export const svSpecs: ScreenshotSpec[] = [
     // One frame: the session already sets `facet: split`, so a menu frame
     // would show the same picture.
     viewportWidth: 1400,
-    // Holds the whole grouped track, including the second section's coverage
-    // lane.
-    viewportHeight: 966,
+    // Holds the whole grouped track, the "Not split" reads included.
+    viewportHeight: 1146,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
     // The section pills anchor on the divider labels with `alignX: 'right'`;
