@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`rows.annotations` on every row display is a list of `RowColor` channels, each drawn as a fixed 4 px categorical color column beside the row labels with a key and a palette of its own, and two or more color columns take a stair-step label each above the rows; `TreeSidebarMixin.rowSidebarProps` states the sidebar once for the screen, the axis and the export. Amends ADR-207's one key"
+summary: "`rows.annotations` on every row display is a list of `RowColor` channels, each a fixed 4 px categorical color column beside the row labels with its own key and palette; two or more take stair-step labels above the rows. Amends ADR-207's one key"
 ---
 
 # ADR-260: Row annotations are color columns beside the row labels
