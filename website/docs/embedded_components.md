@@ -272,6 +272,12 @@ const makeWorkerInstance = () => new RpcWorker()
 import makeWorkerInstance from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'
 ```
 
+Vite 7 needs two settings Vite 8 does not. `worker: { format: 'es' }`, since its
+default `'iife'` cannot hold the worker's chunks and the production build fails;
+and, for the dev server, whose pre-bundling separates the package from its
+worker, `optimizeDeps: { exclude: ['@jbrowse/react-linear-genome-view2'] }` or a
+`?worker` factory as above.
+
 To run on the main thread on purpose, and silence that warning, set
 `configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } }`.
 
