@@ -11,6 +11,7 @@ test('the live row labels sit on the wash over the plot', () => {
           effectiveRowHeight: 40,
           drawsRowLabels: true,
           rowAnnotationColors: [],
+          rowColumnLabels: [],
         }}
         labelOffset={0}
       />

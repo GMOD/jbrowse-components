@@ -61,6 +61,32 @@ function rowColorsWidth(
 }
 
 /**
+ * The x of each color column's center, from the labels' left: the row
+ * color's where a row has one, then each annotation's.
+ */
+export function rowColorColumnCenters(
+  sources: readonly RowLabelSource[],
+  rowHeight: number,
+  annotations: readonly RowAnnotationColumn[] = [],
+) {
+  const rowColor = rowColorWidth(sources, rowHeight)
+  return [
+    ...(rowColor > 0 ? [rowColor / 2] : []),
+    ...annotations.map(
+      (_, column) => rowColor + (column + 0.5) * ROW_COLOR_BAR_WIDTH,
+    ),
+  ]
+}
+
+/** The line one color column's label takes above the first row. */
+export const ROW_COLUMN_LABEL_LINE_HEIGHT = SCREEN_LABEL_FONT_SIZE
+
+/** Px the color columns' labels take above the first row, a line each. */
+export function rowColumnLabelsHeight(labels: readonly string[] = []) {
+  return labels.length * ROW_COLUMN_LABEL_LINE_HEIGHT
+}
+
+/**
  * Where a label's text starts: past the row color bar and the annotation
  * columns, so every name in the column starts at the same x.
  */

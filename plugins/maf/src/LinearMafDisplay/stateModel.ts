@@ -753,11 +753,12 @@ export default function stateModelFactory(
         /**
          * #getter
          * The plot the bands share with the rows: the track height less the
-         * focus chip's line, keeping the rows a floor while they show.
+         * sidebar's lines above the rows, keeping the rows a floor while
+         * they show.
          */
         get bandPlot() {
           return {
-            height: self.allottedHeight - self.rowFocusLineHeight,
+            height: self.allottedHeight - self.rowsLeadHeight,
             floor: self.showAlignments ? MIN_BAND_HEIGHT : 0,
           }
         },

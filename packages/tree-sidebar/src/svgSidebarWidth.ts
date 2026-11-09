@@ -21,6 +21,8 @@ export interface SvgSidebarProps {
   bands?: readonly RowBand[]
   /** The `rows.annotations` columns, the mixin's `rowAnnotationColors`. */
   annotations?: readonly RowAnnotationColumn[]
+  /** The label over each color column, the mixin's `rowColumnLabels`. */
+  columnLabels?: readonly string[]
   /** Px of the export's left margin the display's own axes hold beside the plot. */
   leftInset?: number
 }

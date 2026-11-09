@@ -1,5 +1,8 @@
 import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
-import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import {
+  annotationPaletteColorAt,
+  rowPaletteColorAt,
+} from '@jbrowse/core/ui/colors'
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -7,6 +10,8 @@ import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { dealValueColors } from './rowColorScale.ts'
+import { ROW_COLUMN_LABEL_LINE_HEIGHT } from './rowLabelsBoxWidth.ts'
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 const configSchema = ConfigurationSchema('RowColorKeyDisplay', {
   rows: rowsConfigSchema,
@@ -29,6 +34,7 @@ const GROUPED: TestRow[] = [
 ]
 
 const p = rowPaletteColorAt
+const a = annotationPaletteColorAt
 
 function makeDisplay(
   configuration: Record<string, unknown> = {},
@@ -292,8 +298,8 @@ describe('rows.annotations', () => {
         title: 'Group',
         focusesRows: undefined,
         entries: [
-          ['x', p(0)],
-          ['y', p(1)],
+          ['x', a(0, 0)],
+          ['y', a(0, 1)],
         ],
       },
       {
@@ -302,7 +308,7 @@ describe('rows.annotations', () => {
         focusesRows: undefined,
         entries: [
           ['m', '#00f'],
-          ['f', p(0)],
+          ['f', a(1, 0)],
         ],
       },
     ])
@@ -324,10 +330,93 @@ describe('rows.annotations', () => {
     )
     expect(display.rowAnnotationColors.map(c => Object.fromEntries(c))).toEqual(
       [
-        { a: p(0), b: p(1), c: p(0) },
-        { a: p(0), b: '#00f', c: p(0) },
+        { a: a(0, 0), b: a(0, 1), c: a(0, 0) },
+        { a: a(1, 0), b: '#00f', c: a(1, 0) },
       ],
     )
+  })
+
+  it("deals each annotation from a palette of its own, none the row color's", () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['group', 'group'] } },
+      { rows: SEXED },
+    )
+    const [first, second] = display.rowAnnotationColors
+    const rowColor = display.resolvedRowColors
+    for (const name of ['a', 'b']) {
+      expect(
+        new Set([rowColor.get(name), first!.get(name), second!.get(name)]).size,
+      ).toBe(3)
+    }
+    expect(rowColor.get('a')).toBe(p(0))
+  })
+
+  it('wraps past the last palette', () => {
+    const palettes = 5
+    expect(a(palettes, 0)).toBe(a(0, 0))
+    expect(a(palettes - 1, 0)).not.toBe(a(0, 0))
+  })
+
+  it("keeps a column's colors when an earlier annotation draws nothing", () => {
+    const both = makeDisplay(
+      { rows: { annotations: ['group', 'sex'] } },
+      { rows: SEXED },
+    )
+    const lone = makeDisplay(
+      { rows: { annotations: ['population', 'sex'] } },
+      { rows: SEXED },
+    )
+    const named = makeDisplay(
+      { rows: { annotations: ['name', 'sex'] } },
+      { rows: SEXED },
+    )
+    expect(lone.rowAnnotationColors).toHaveLength(1)
+    expect(named.rowAnnotationColors).toHaveLength(1)
+    const sexOf = (display: ReturnType<typeof makeDisplay>) =>
+      Object.fromEntries(display.rowAnnotationColors.at(-1)!)
+    expect(sexOf(lone)).toEqual(sexOf(both))
+    expect(sexOf(named)).toEqual(sexOf(both))
+    expect(sexOf(both).a).toBe(a(1, 0))
+  })
+
+  it('deals the scale.range before its palette', () => {
+    const display = makeDisplay(
+      {
+        rows: {
+          annotations: [
+            {
+              field: 'sex',
+              scale: { domain: ['m'], range: ['#00f', '#0f0'] },
+            },
+          ],
+        },
+      },
+      {
+        rows: [...SEXED, { name: 'e', sex: 'x' }],
+      },
+    )
+    expect(Object.fromEntries(display.rowAnnotationDeals[0]!.dealt)).toEqual({
+      m: '#00f',
+      f: '#0f0',
+      x: a(0, 0),
+    })
+  })
+
+  it('deals no annotation color without contrast on white', () => {
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5]
+        .map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+    }
+    const contrasts = Array.from({ length: 5 }, (_, column) =>
+      Array.from(
+        { length: 30 },
+        (_, position) => 1.05 / (luminance(a(column, position)) + 0.05),
+      ),
+    ).flat()
+    expect(Math.min(...contrasts)).toBeGreaterThan(1.3)
+    expect(1.05 / (luminance(p(23)) + 0.05)).toBeLessThan(1.01)
   })
 
   it('draws no column and no key for a field no row carries', () => {
@@ -471,4 +560,97 @@ test("dealValueColors reads no row by name under unknown: ''", () => {
   )
   expect(Object.fromEntries(dealt)).toEqual({ a: '#f00' })
   expect(rowsOf).not.toHaveBeenCalled()
+})
+
+// A label over each color column, once there are two: the row color's first,
+// then each annotation's, worded as their keys are titled.
+describe('rowColumnLabels', () => {
+  const SEXED: TestRow[] = [
+    { name: 'a', group: 'x', sex: 'f' },
+    { name: 'b', group: 'y', sex: 'm' },
+  ]
+  const titlesOf = (display: ReturnType<typeof makeDisplay>) =>
+    display.rowColorScales.map(scale => scale.title)
+
+  it('labels nothing with no column, a lone row color or a lone annotation', () => {
+    expect(makeDisplay({}, { rows: SEXED }).rowColumnLabels).toEqual([])
+    expect(
+      makeDisplay({ rows: { color: 'group' } }, { rows: SEXED })
+        .rowColumnLabels,
+    ).toEqual([])
+    const lone = makeDisplay(
+      { rows: { annotations: ['sex'] } },
+      { rows: SEXED },
+    )
+    expect(lone.rowColumnLabels).toEqual([])
+    expect(lone.rowsTopOffset).toBe(0)
+  })
+
+  it('labels the row color and an annotation as their keys are titled', () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['sex'] } },
+      { rows: SEXED },
+    )
+    expect(display.rowColumnLabels).toEqual(['Group', 'Sex'])
+    expect(display.rowColumnLabels).toEqual(titlesOf(display))
+  })
+
+  it('labels two annotations with no row color', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['group', 'sex'] } },
+      { rows: SEXED },
+    )
+    expect(display.rowColumnLabels).toEqual(['Group', 'Sex'])
+    expect(display.rowColumnLabels).toEqual(titlesOf(display))
+  })
+
+  it('labels only the columns drawn', () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['population', 'sex'] } },
+      { rows: SEXED },
+    )
+    expect(display.rowColumnLabels).toEqual(['Group', 'Sex'])
+    expect(
+      makeDisplay(
+        { rows: { annotations: ['population', 'sex'] } },
+        { rows: SEXED },
+      ).rowColumnLabels,
+    ).toEqual([])
+  })
+
+  it('labels nothing while the row labels are hidden', () => {
+    const display = makeDisplay(
+      {
+        rows: {
+          color: 'group',
+          annotations: ['sex'],
+          axis: { labels: false },
+        },
+      },
+      { rows: SEXED },
+    )
+    expect(display.rowColumnLabels).toEqual([])
+  })
+
+  it('starts the rows a line lower per label, under the focus chip, and exports the lines', () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['group', 'sex'] } },
+      { rows: SEXED },
+    )
+    const lines = 3 * ROW_COLUMN_LABEL_LINE_HEIGHT
+    expect(display.rowsLeadHeight).toBe(lines)
+    expect(display.rowsTopOffset).toBe(lines)
+    expect(display.svgControlsStrip).toEqual({ top: 0, height: 0 })
+    expect(display.rowSidebarProps.columnLabels).toEqual([
+      'Group',
+      'Group',
+      'Sex',
+    ])
+    display.setRowFocus(['a'])
+    expect(display.rowsTopOffset).toBe(SIDEBAR_HINT_LINE_PX + lines)
+    expect(display.svgControlsStrip).toEqual({
+      top: 0,
+      height: SIDEBAR_HINT_LINE_PX,
+    })
+  })
 })

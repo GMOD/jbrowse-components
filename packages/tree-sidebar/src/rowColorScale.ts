@@ -90,13 +90,15 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * a row with its own color takes no turn. None for a field no row
  * carries. Reads no row where only the pairs paint, so a reorder deals nothing
  * again. `declared` lists values of a field the config states, which
- * take their turns first, loaded or not.
+ * take their turns first, loaded or not. `deck` deals in the row palette's
+ * place.
  */
 export function dealValueColors(
   setting: RowColorSetting,
   rowsOf: () => readonly RowSource[],
   namesDeal: boolean,
   declared: readonly string[] = [],
+  deck?: (position: number) => string,
 ): ReadonlyMap<string, string> {
   const { field, scale } = setting
   const { unknown } = scale
@@ -108,6 +110,7 @@ export function dealValueColors(
             .map(row => row.name)
         : [],
       scale,
+      deck,
     )
   }
   const rows = rowsOf()
@@ -117,6 +120,7 @@ export function dealValueColors(
           value => value !== '',
         ),
         scale,
+        deck,
       )
     : NONE
 }
@@ -306,12 +310,29 @@ export function rowColorKeyEntries(
 }
 
 /**
+ * One `rows.annotations` entry as read: its channel, and its place in the
+ * list, which picks the palette it deals from whatever the entries before it
+ * draw.
+ */
+export interface RowAnnotationSetting extends RowColorSetting {
+  position: number
+}
+
+/**
  * One `rows.annotations` entry dealt: its setting, and the color each value
  * of its field takes.
  */
 export interface RowAnnotationDeal {
-  setting: RowColorSetting
+  setting: RowAnnotationSetting
   dealt: ReadonlyMap<string, string>
+}
+
+/**
+ * What names an annotation: the title of its key and the label over its
+ * column.
+ */
+export function rowAnnotationTitle(setting: RowColorSetting) {
+  return capitalizeFirst(setting.field)
 }
 
 /**
@@ -362,7 +383,7 @@ export function rowAnnotationScales(
     const scale: CategoricalScale = {
       kind: 'categorical',
       id: rowAnnotationScaleId(index),
-      title: capitalizeFirst(setting.field),
+      title: rowAnnotationTitle(setting),
       entries,
     }
     return entries.length > 0 ? [scale] : []

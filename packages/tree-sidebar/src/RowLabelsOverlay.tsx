@@ -2,7 +2,9 @@ import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
+import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
+import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 
 import type { RowBand } from './arrangeRows.ts'
 import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
@@ -56,6 +58,10 @@ import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
  * unlike `canvasDrawn`, which flips on an empty first paint). Guarding the
  * element itself instead would make turning labels off also turn off the gate,
  * and the figure would capture blank.
+ *
+ * The color columns' labels (`columnLabels`) are a second `<svg>` over the
+ * lines the mixin reserves above the rows, so they stay put while the rows
+ * scroll and no scrolled row draws into them.
  */
 export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   sources,
@@ -69,6 +75,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   showLabels = true,
   bands = [],
   annotations,
+  columnLabels = [],
 }: {
   // Resolved, never absent: every display's `sources` getter answers `[]`
   // before a fetch has landed, and "no rows yet" is its loading state to
@@ -94,9 +101,37 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   bands?: readonly RowBand[]
   // The `rows.annotations` columns, the mixin's `rowAnnotationColors`.
   annotations?: readonly RowAnnotationColumn[]
+  // The label over each color column, the mixin's `rowColumnLabels`.
+  columnLabels?: readonly string[]
 }) {
+  const rowLabelOffset = labelOffset + (bands.length ? bandLabelWidth() : 0)
+  const columnLabelsHeight = rowColumnLabelsHeight(columnLabels)
   return sources.length ? (
     <TrackOverlayPortal>
+      {showLabels && columnLabelsHeight > 0 ? (
+        <svg
+          data-testid="row-column-labels"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: top - columnLabelsHeight,
+            width,
+            height: columnLabelsHeight,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        >
+          <g transform={`translate(0 ${columnLabelsHeight})`}>
+            <SvgRowColumnLabels
+              labels={columnLabels}
+              sources={sources}
+              rowHeight={rowHeight}
+              labelOffset={rowLabelOffset}
+              annotations={annotations}
+            />
+          </g>
+        </svg>
+      ) : null}
       <svg
         data-testid={testId}
         style={{
@@ -120,7 +155,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
           <SvgRowLabels
             sources={sources}
             rowHeight={rowHeight}
-            labelOffset={labelOffset + (bands.length ? bandLabelWidth() : 0)}
+            labelOffset={rowLabelOffset}
             scrollTop={scrollTop}
             availableHeight={height}
             backdrop={labelOffset > 0 ? 'paper' : 'wash'}

@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 
+import { exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
@@ -270,6 +271,31 @@ test.each([
         ),
       ).size,
     ).toBe(annotations.length)
+    const columnLabels = [
+      ...document.querySelectorAll('[data-testid="row-column-label"]'),
+    ].map(label => label.textContent)
+    expect(columnLabels).toEqual(display.rowColumnLabels)
+    expect(columnLabels).toEqual(
+      annotations.length > 1
+        ? display.rowColorScales.map(scale => scale.title)
+        : [],
+    )
+    const lines = columnLabels.length * 12
+    const top = display.rowsTopOffset
+    expect(top).toBe(plain.rowsTopOffset + lines)
+    expect(labels.style.top).toBe(`${top}px`)
+    expect(screen.queryByTestId('row-column-labels')?.style.top).toBe(
+      lines > 0 ? `${top - lines}px` : undefined,
+    )
+    expect(display.plotBox).toEqual({
+      yTop: top,
+      plotHeight: plain.plotBox.plotHeight - lines,
+    })
+    expect(display.valueScales[0]!.bandTops![0]).toBe(top)
+    expect(rowAt(display, top + 10)?.name).toBe('a')
+    expect(rowAt(display, top + 50)?.name).toBe('b')
+    expect(exportedY(display, top)).toBe(top)
+    expect(display.svgSidebar!.columnLabels).toEqual(columnLabels)
   },
 )
 

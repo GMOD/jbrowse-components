@@ -611,14 +611,21 @@ const PALETTE_LAP_TONES = [
   { lightnessShift: 0.18, chromaScale: 0.8 },
 ]
 
-// The color at `position` in `hexes`, each lap past the end re-lit.
-function lapColorAt(hexes: readonly string[], position: number) {
+// The color at `position` in `hexes`, each lap past the end re-lit, the pale
+// lap no lighter than `maxLightness`.
+function lapColorAt(
+  hexes: readonly string[],
+  position: number,
+  maxLightness?: number,
+) {
   const hex = hexes[position % hexes.length]!
   const lap =
     PALETTE_LAP_TONES[
       Math.floor(position / hexes.length) % PALETTE_LAP_TONES.length
     ]
-  return lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex
+  return lap
+    ? relight(hex, lap.lightnessShift, lap.chromaScale, maxLightness)
+    : hex
 }
 
 /** The palette color for a chromosome at `position` in its assembly. */
@@ -711,6 +718,30 @@ const tableau20 = [
   '#9d7660',
   '#d7b5a6',
 ]
+
+// A column of color beside the row labels sits on the paper background, where
+// the row palette's pale lap of a light hue is white: its yellow re-lit is
+// `#fffffe`. An annotation's pale lap stops at this OKLCH lightness.
+const ANNOTATION_MAX_LIGHTNESS = 0.85
+
+// None is tableau10, which the row color deals from, so a column beside the
+// row color shares no color with it.
+const annotationPalettes = [tolMuted, set2, okabeIto, set1, tolBright].map(
+  hexes => hexes.filter(hex => !NEUTRALS.has(hex) && !NEAR_WHITES.has(hex)),
+)
+
+/**
+ * The color the `rows.annotations` entry at `column` deals its value at
+ * `position`: a palette of its own by its place in the list, wrapping past
+ * the last palette, then re-lit laps of it as the row palette's are.
+ */
+export function annotationPaletteColorAt(column: number, position: number) {
+  return lapColorAt(
+    annotationPalettes[column % annotationPalettes.length]!,
+    position,
+    ANNOTATION_MAX_LIGHTNESS,
+  )
+}
 
 /** The palettes a capture run can deal the rows from by name (`paletteFromSpec`). */
 const namedPalettes: Readonly<Record<string, () => readonly string[]>> = {

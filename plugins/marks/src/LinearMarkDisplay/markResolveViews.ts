@@ -465,7 +465,7 @@ export type MarkDrawnHost = MarkRowTableHost &
   ReturnType<typeof markDrawnKeyViews> & {
     height: number
     rowsTopOffset: number
-    rowFocusLineHeight: number
+    rowsLeadHeight: number
   }
 
 /**
@@ -560,15 +560,15 @@ export function markStatsViews(self: MarkDrawnHost) {
     },
     /**
      * #getter
-     * The plot canvas's box: the axis inset, less the focus chip's line
-     * at its top, so the canvas starts where the rows do.
+     * The plot canvas's box: the axis inset, less the sidebar's lines
+     * above the rows at its top, so the canvas starts where the rows do.
      */
     get plotBox(): { yTop: number; plotHeight: number } {
       return {
         yTop: self.rowsTopOffset,
         plotHeight: Math.max(
           0,
-          axisPlotBox(self.height).plotHeight - self.rowFocusLineHeight,
+          axisPlotBox(self.height).plotHeight - self.rowsLeadHeight,
         ),
       }
     },
@@ -836,11 +836,11 @@ export function markScaleViews(self: MarkSidebarHost) {
                 (_, row) => rowsTop + row * rowHeight,
               ),
             }
-          : self.rowFocusLineHeight
+          : self.rowsLeadHeight
             ? {
-                height: height - self.rowFocusLineHeight,
+                height: height - self.rowsLeadHeight,
                 offset: YSCALEBAR_LABEL_OFFSET + pointInset,
-                bandTops: [self.rowFocusLineHeight],
+                bandTops: [self.rowsLeadHeight],
               }
             : {
                 height,

@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { annotationPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -22,11 +23,13 @@ import {
   dealValueColors,
   resolveRowColors,
   rowAnnotationScales,
+  rowAnnotationTitle,
   rowColorKeyEntries,
   rowFieldValue,
   withPinnedColors,
   withRowColors,
 } from './rowColorScale.ts'
+import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type {
@@ -42,6 +45,7 @@ import type { RowNarrowing } from './narrowRows.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
 import type {
   RowAnnotationDeal,
+  RowAnnotationSetting,
   RowColorKeyInputs,
   RowColorSetting,
 } from './rowColorScale.ts'
@@ -157,12 +161,15 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
      * The `rows.annotations` channels drawn, in the order listed, each read
      * as `rowColorChannel` reads `rows.color`: none while the row labels
      * they draw beside are hidden, and never one on `name`, which the
-     * labels already show.
+     * labels already show. Each keeps its `position` in the list.
      */
-    get rowAnnotationChannels(): RowColorSetting[] {
+    get rowAnnotationChannels(): RowAnnotationSetting[] {
       return getConf(self, ['rows', 'axis', 'labels'])
         ? self.configuration.rows.annotations
-            .map(annotation => rowColorSettingOf(annotation))
+            .map((annotation, position) => ({
+              ...rowColorSettingOf(annotation),
+              position,
+            }))
             .filter(setting => setting.field !== 'name')
         : []
     },
@@ -446,6 +453,15 @@ export function rowAliasViews<S extends RowSource>(self: ExpandedRowsHost<S>) {
       const { field } = self.rowColorSetting
       return field === 'name' ? '' : field
     },
+    /**
+     * #getter
+     * What names the row color: the title of its key and the label over
+     * its column, the `rows.color` field or `rowNoun` under `name`.
+     */
+    get rowColorTitle(): string {
+      const field = this.rowColorField
+      return field ? capitalizeFirst(field) : self.rowNoun
+    },
   }
 }
 
@@ -549,16 +565,24 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
     /**
      * #getter
      * Each `rows.annotations` entry with the color each value of its field
-     * takes, dealt as `dealtValueColors` is: the same palette over the rows
-     * in source order, the empty value taking none. None in a shared
-     * panel, which stacks no rows to draw a column beside.
+     * takes, dealt as `dealtValueColors` is over the rows in source order,
+     * the empty value taking none, from the palette its place in
+     * `rows.annotations` picks (`annotationPaletteColorAt`), so no two
+     * columns and no column and the row color start on one color. None in
+     * a shared panel, which stacks no rows to draw a column beside.
      */
     get rowAnnotationDeals(): RowAnnotationDeal[] {
       return self.sharesPanel
         ? []
         : self.rowAnnotationChannels.map(setting => ({
             setting,
-            dealt: self.dealtValueColorsFor(setting),
+            dealt: dealValueColors(
+              setting,
+              () => self.rowColorDealRows,
+              self.rowPaletteDeals,
+              self.rowColorDeclaredValues(setting.field),
+              position => annotationPaletteColorAt(setting.position, position),
+            ),
           }))
     },
   }
@@ -587,14 +611,28 @@ export function resolvedRowColorViews<S extends RowSource>(
     },
     /**
      * #getter
+     * The `rows.annotations` entries that color a row, each with the title
+     * that names it and its column. An entry whose field no row carries
+     * draws no column.
+     */
+    get rowAnnotationColumns(): {
+      title: string
+      colors: RowAnnotationColumn
+    }[] {
+      return self.rowAnnotationDeals
+        .map(deal => ({
+          title: rowAnnotationTitle(deal.setting),
+          colors: annotationColumn(self.expandedRows, deal),
+        }))
+        .filter(column => column.colors.size > 0)
+    },
+    /**
+     * #getter
      * The color columns the sidebar draws beside the row labels, one per
-     * `rows.annotations` entry that colors a row, each a row's color by
-     * name. An entry whose field no row carries draws no column.
+     * `rowAnnotationColumns` entry, each a row's color by name.
      */
     get rowAnnotationColors(): RowAnnotationColumn[] {
-      return self.rowAnnotationDeals
-        .map(deal => annotationColumn(self.expandedRows, deal))
-        .filter(column => column.size > 0)
+      return this.rowAnnotationColumns.map(column => column.colors)
     },
   }
 }
@@ -689,7 +727,7 @@ export function clusterableRowViews<S extends RowSource>(
       const rowKey: CategoricalScale = {
         kind: 'categorical',
         id: ROW_COLOR_SCALE_ID,
-        title: field ? capitalizeFirst(field) : self.rowNoun,
+        title: self.rowColorTitle,
         focusesRows: true,
         entries,
       }
@@ -793,31 +831,71 @@ export function rowFocusLineViews(self: { rowNarrowingShows: boolean }) {
   }
 }
 
+/** The labels over the color columns beside the row labels. */
+export function rowColumnLabelViews(self: {
+  sources: readonly RowLabelSource[]
+  rowColorTitle: string
+  rowAnnotationColumns: readonly { title: string }[]
+}) {
+  return {
+    /**
+     * #getter
+     * The label over each color column beside the row labels, the row
+     * color's first where a row has one and then each annotation's, each
+     * the title of its key. None under two columns, where the one key's
+     * title names the one column.
+     */
+    get rowColumnLabels(): string[] {
+      const titles = [
+        ...(self.sources.some(source => source.rowColor)
+          ? [self.rowColorTitle]
+          : []),
+        ...self.rowAnnotationColumns.map(column => column.title),
+      ]
+      return titles.length > 1 ? titles : []
+    },
+  }
+}
+
 /** Where the rows start in the display's box. */
 export function rowsTopOffsetViews(self: {
   rowsHeaderHeight: number
   rowsHeaderControlsHeight: number
   rowFocusLineHeight: number
+  rowColumnLabels: readonly string[]
 }) {
   return {
     /**
      * #getter
-     * Where the rows start in the display's box: under the display's own
-     * `rowsHeaderHeight` and the focus chip's line. Every row painter, hit
-     * test, label, tree and export places the rows from here.
+     * The lines the sidebar stacks directly above the first row: the focus
+     * chip's line, then a line per `rowColumnLabels` entry.
      */
-    get rowsTopOffset(): number {
-      return self.rowsHeaderHeight + self.rowFocusLineHeight
+    get rowsLeadHeight(): number {
+      return (
+        self.rowFocusLineHeight + rowColumnLabelsHeight(self.rowColumnLabels)
+      )
     },
     /**
      * #getter
-     * The lines directly above the rows that hold only controls, which the
-     * SVG export leaves out: `rowsHeaderControlsHeight` and the focus
-     * chip's line.
+     * Where the rows start in the display's box: under the display's own
+     * `rowsHeaderHeight` and `rowsLeadHeight`. Every row painter, hit
+     * test, label, tree and export places the rows from here.
+     */
+    get rowsTopOffset(): number {
+      return self.rowsHeaderHeight + this.rowsLeadHeight
+    },
+    /**
+     * #getter
+     * The lines above the rows that hold only controls, which the SVG
+     * export leaves out: `rowsHeaderControlsHeight` and the focus chip's
+     * line, directly above the column labels' lines, which it keeps.
      */
     get svgControlsStrip(): SvgControlsStrip {
       const height = self.rowsHeaderControlsHeight + self.rowFocusLineHeight
-      return { top: this.rowsTopOffset - height, height }
+      return {
+        top: self.rowsHeaderHeight - self.rowsHeaderControlsHeight,
+        height,
+      }
     },
   }
 }
@@ -990,6 +1068,7 @@ export interface RowSidebarHost {
   showRowLabels: boolean
   rowBands: readonly RowBand[]
   rowAnnotationColors: readonly RowAnnotationColumn[]
+  rowColumnLabels: readonly string[]
 }
 
 /** The sidebar drawn beside the rows. */
@@ -998,8 +1077,8 @@ export function rowSidebarViews(self: RowSidebarHost) {
     /**
      * #getter
      * What the sidebar draws left of the rows, from the settings and the
-     * rows drawn: the dendrogram, the band strip, the row labels and the
-     * `rows.annotations` columns. A display's `svgSidebar` is this, or a
+     * rows drawn: the dendrogram, the band strip, the row labels, the
+     * `rows.annotations` columns and the columns' labels. A display's `svgSidebar` is this, or a
      * spread of it with what that display changes, so the screen, the axis
      * past the panel and the export size and draw one sidebar.
      */
@@ -1013,6 +1092,7 @@ export function rowSidebarViews(self: RowSidebarHost) {
         showLabels: self.showRowLabels,
         bands: self.rowBands,
         annotations: self.rowAnnotationColors,
+        columnLabels: self.rowColumnLabels,
       }
     },
   }
@@ -1069,6 +1149,7 @@ export function treeSidebarRowStages<S extends RowSource>() {
       .views(self => sourceViews<S>(self))
       .views(self => rowNarrowingShowsViews<S>(self))
       .views(self => rowFocusLineViews(self))
+      .views(self => rowColumnLabelViews(self))
       .views(self => rowsTopOffsetViews(self))
       .views(self => rowTreeRootViews<S>(self))
       .views(self => treeSidebarTreeHookDefaults(self))

@@ -53,6 +53,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   showRowLabels: boolean
   drawsRowLabels: boolean
   rowAnnotationColors: readonly RowAnnotationColumn[]
+  rowColumnLabels: readonly string[]
   rowFocus?: readonly string[]
   rowNarrowingHint?: { text: string; title: string }
   rowNarrowingClears: boolean

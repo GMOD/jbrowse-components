@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { parseSamplesTsv } from '@jbrowse/core/util/samplesTsv'
-import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
-import { render } from '@testing-library/react'
+import { SvgLegend, exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
+import { render, within } from '@testing-library/react'
 
 import { createTestEnvironment } from '../testEnv.ts'
 import SvgVariantOverlay from './SvgVariantOverlay.tsx'
@@ -113,8 +113,11 @@ test('rows.annotations exports a color column per attribute, each with a key', (
     'volvox.sv.samples.tsv',
     'the VCF',
   )
-  const plain = createDisplay(sources)
-  const model = createDisplay(sources, { annotations: ['population', 'sex'] })
+  const plain = createDisplay(sources, { step: 20 })
+  const model = createDisplay(sources, {
+    step: 20,
+    annotations: ['population', 'sex'],
+  })
   expect(model.svgSidebarWidth()).toBeCloseTo(plain.svgSidebarWidth() + 8)
   expect(
     renderOverlay(plain).container.querySelectorAll(
@@ -141,9 +144,51 @@ test('rows.annotations exports a color column per attribute, each with a key', (
   )
   expect(fillsAt('4').size).toBe(new Set(sources.map(row => row.sex)).size)
 
-  const { getByText } = renderKey(model)
+  const { getByText } = within(renderKey(model).container)
   getByText('Population')
   getByText('Sex')
   getByText('PopA')
   getByText('female')
+})
+
+// Two columns take a label each, worded as their keys are titled, on lines
+// the rows start under: on screen (`rowsTopOffset`, the height left for the
+// rows) and in the export, which draws the labels just above its rows.
+test('rows.annotations labels its columns above rows that start lower, on screen and in the export', () => {
+  const sources = [
+    { name: 'HG001', population: 'EUR', sex: 'female' },
+    { name: 'HG002', population: 'AFR', sex: 'male' },
+  ]
+  const plain = createDisplay(sources)
+  const lone = createDisplay(sources, { annotations: ['sex'] })
+  const model = createDisplay(sources, { annotations: ['population', 'sex'] })
+  const colored = createDisplay(sources, {
+    color: 'population',
+    annotations: ['sex'],
+  })
+  const labelsOf = (display: ReturnType<typeof createDisplay>) =>
+    [
+      ...renderOverlay(display).container.querySelectorAll(
+        '[data-testid="row-column-label"]',
+      ),
+    ].map(label => label.textContent)
+  expect(labelsOf(plain)).toEqual([])
+  expect(labelsOf(lone)).toEqual([])
+  expect(lone.rowsTopOffset).toBe(plain.rowsTopOffset)
+  for (const display of [model, colored]) {
+    expect(labelsOf(display)).toEqual(['Population', 'Sex'])
+    expect(display.rowColorScales.map(scale => scale.title)).toEqual(
+      expect.arrayContaining(['Population', 'Sex']),
+    )
+    expect(display.rowsTopOffset).toBe(plain.rowsTopOffset + 24)
+    expect(display.availableHeight).toBe(plain.availableHeight - 24)
+    expect(display.svgControlsStrip).toEqual(plain.svgControlsStrip)
+    const { container } = renderOverlay(display)
+    const rows = container.querySelector(
+      'g:has(> g > [data-testid="row-column-label"])',
+    )!.parentElement!
+    expect(rows.getAttribute('transform')).toBe(
+      `translate(0 ${exportedY(plain, plain.rowsTopOffset) + 24})`,
+    )
+  }
 })

@@ -74,6 +74,9 @@ export interface TreeSidebarModel extends IStateTreeNode {
   sources: TreeSource[]
   rowBands?: readonly RowBand[]
   rowAnnotationColors?: readonly RowAnnotationColumn[]
+  // The label over each color column, whose lines sit between the focus
+  // chip's line and the rows.
+  rowColumnLabels?: readonly string[]
   treelessBandCount?: number
   // Whether the tree's leaves are rows a finer field draws, and what the hint
   // says then.

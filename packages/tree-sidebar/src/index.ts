@@ -12,6 +12,7 @@ export {
   treeSidebarRightEdge,
 } from './treeSidebarGeometry.ts'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
+export { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
 export { rowLabelsCarryText } from './rowLabelsBoxWidth.ts'
 export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 export { RowsPanel } from './RowsPanel.tsx'

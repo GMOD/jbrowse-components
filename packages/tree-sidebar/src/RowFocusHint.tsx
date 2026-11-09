@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { SidebarHintChip } from './SidebarHintChip.tsx'
+import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 
@@ -14,8 +15,8 @@ import type { TreeSidebarModel } from './types.ts'
  * filter, is a plain statement with no ✕: dismissed, it would leave its line
  * empty and hide a later clade pick's "Show all".
  *
- * It sits in the line `rowFocusLineHeight` reserves directly above the first
- * row, so it covers no row's label.
+ * It sits in the line `rowFocusLineHeight` reserves above the first row and
+ * the color columns' labels, so it covers no label.
  */
 export const RowFocusHint = observer(function RowFocusHint({
   model,
@@ -26,7 +27,11 @@ export const RowFocusHint = observer(function RowFocusHint({
 }) {
   return (
     <SidebarHintChip
-      top={rowsTop - model.rowFocusLineHeight}
+      top={
+        rowsTop -
+        rowColumnLabelsHeight(model.rowColumnLabels) -
+        model.rowFocusLineHeight
+      }
       testId="row_focus_hint"
       hint={model.rowNarrowingHint}
       onClick={

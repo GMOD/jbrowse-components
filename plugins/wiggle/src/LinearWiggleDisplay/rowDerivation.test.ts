@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SIDEBAR_HINT_LINE_PX, sidebarPanelWidth } from '@jbrowse/tree-sidebar'
 import { render, waitFor } from '@testing-library/react'
 
@@ -195,6 +196,25 @@ test.each([[['group']], [['group', 'tissue']]])(
         ].map(bar => bar.getAttribute('x')),
       ).size,
     ).toBe(annotations.length)
+    const labels = [
+      ...container.querySelectorAll('[data-testid="row-column-label"]'),
+    ].map(label => label.textContent)
+    expect(labels).toEqual(display.rowColumnLabels)
+    expect(labels).toEqual(
+      annotations.length > 1
+        ? display.rowColorScales.map(scale => scale.title)
+        : [],
+    )
+    const lines = labels.length * 12
+    expect(display.rowsTopOffset).toBe(plain.rowsTopOffset + lines)
+    expect(display.rowsHeight).toBe(plain.rowsHeight - lines)
+    expect(display.plotGeometry.yTop).toBe(display.rowsTopOffset)
+    expect(display.valueScales[0]!.bandTops![0]).toBe(display.rowsTopOffset)
+    expect(display.effectiveRowHeight * 3).toBeCloseTo(display.rowsHeight)
+    expect(exportedY(display, display.rowsTopOffset)).toBe(
+      display.rowsTopOffset,
+    )
+    expect(display.svgSidebar.columnLabels).toEqual(labels)
   },
 )
 

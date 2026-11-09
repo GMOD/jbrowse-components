@@ -1,4 +1,4 @@
-import { SvgRowLabels } from '@jbrowse/tree-sidebar'
+import { SvgRowColumnLabels, SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import type { RowAnnotationColumn } from '@jbrowse/tree-sidebar'
@@ -12,6 +12,7 @@ interface LabelModel {
   effectiveRowHeight: number
   drawsRowLabels: boolean
   rowAnnotationColors: readonly RowAnnotationColumn[]
+  rowColumnLabels: readonly string[]
 }
 
 // Row labels (non-overlay mode) for the live WiggleComponent, starting past the
@@ -26,12 +27,21 @@ export default observer(function WiggleRowLabels({
   const { sources, effectiveRowHeight, drawsRowLabels, rowAnnotationColors } =
     model
   return drawsRowLabels ? (
-    <SvgRowLabels
-      sources={sources}
-      rowHeight={effectiveRowHeight}
-      labelOffset={labelOffset}
-      backdrop="wash"
-      annotations={rowAnnotationColors}
-    />
+    <>
+      <SvgRowLabels
+        sources={sources}
+        rowHeight={effectiveRowHeight}
+        labelOffset={labelOffset}
+        backdrop="wash"
+        annotations={rowAnnotationColors}
+      />
+      <SvgRowColumnLabels
+        labels={model.rowColumnLabels}
+        sources={sources}
+        rowHeight={effectiveRowHeight}
+        labelOffset={labelOffset}
+        annotations={rowAnnotationColors}
+      />
+    </>
   ) : null
 })

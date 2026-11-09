@@ -1,6 +1,7 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 
 import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
+import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
@@ -17,7 +18,8 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 // (`availableHeight`), it clips to it as the screen does, so a row scrolled
 // above the first one draws nothing over the bands above the rows; `clipId`
 // names that clip, the display's `svgNodeId`, so two exports of one display
-// match byte for byte.
+// match byte for byte. The color columns' labels draw above the rows, outside
+// that clip.
 export function SvgTreeSidebar({
   sidebar,
   text,
@@ -41,12 +43,14 @@ export function SvgTreeSidebar({
     showLabels = true,
     bands = [],
     annotations,
+    columnLabels = [],
   } = sidebar
   const drawnTree = treeIsShowing({ showTree, hierarchy })
     ? hierarchy
     : undefined
   const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
   const width = svgSidebarWidth(sidebar, text)
+  const rowLabelOffset = labelOffset + (bands.length ? bandLabelWidth(text) : 0)
   const content = (
     <>
       <SvgBandLabels
@@ -61,7 +65,7 @@ export function SvgTreeSidebar({
         <SvgRowLabels
           sources={sources}
           rowHeight={rowHeight}
-          labelOffset={labelOffset + (bands.length ? bandLabelWidth(text) : 0)}
+          labelOffset={rowLabelOffset}
           scrollTop={scrollTop}
           availableHeight={availableHeight}
           text={text}
@@ -75,6 +79,16 @@ export function SvgTreeSidebar({
   )
   return (
     <g transform={`translate(${-width} 0)`}>
+      {showLabels && sources.length ? (
+        <SvgRowColumnLabels
+          labels={columnLabels}
+          sources={sources}
+          rowHeight={rowHeight}
+          labelOffset={rowLabelOffset}
+          annotations={annotations}
+          text={text}
+        />
+      ) : null}
       {availableHeight === undefined ? (
         content
       ) : (

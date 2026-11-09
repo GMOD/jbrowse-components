@@ -457,7 +457,8 @@ function deckColorAt(position: number) {
  * every other value, first seen first, takes the next entry of one cursor over
  * the `range` entries past the domain and then `rowPaletteColorAt`. A set
  * `unknown` takes the cursor's place: every other value takes it, or none
- * where it is `''`.
+ * where it is `''`. `deck` deals in the row palette's place, as an
+ * annotation's own palette does.
  */
 export function dealRowColors(
   order: Iterable<string>,
@@ -466,6 +467,7 @@ export function dealRowColors(
     range: readonly string[]
     unknown?: string
   },
+  deck = deckColorAt,
 ): ReadonlyMap<string, string> {
   const colors = new Map(pairedColorsOf(entries))
   const { unknown } = entries
@@ -485,7 +487,7 @@ export function dealRowColors(
     if (!colors.has(value)) {
       colors.set(
         value,
-        next < spare.length ? spare[next]! : deckColorAt(next - spare.length),
+        next < spare.length ? spare[next]! : deck(next - spare.length),
       )
       next++
     }
