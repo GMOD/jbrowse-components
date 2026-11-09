@@ -10,7 +10,7 @@ export default function DarkTheme() {
       tracks={[
         {
           trackId: 'volvox_sv',
-          name: 'Volvox duplications',
+          name: 'Volvox breakends',
           uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
         },
       ]}

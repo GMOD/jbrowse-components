@@ -13,15 +13,15 @@ export default function TrackShorthand() {
         { trackId: 'genes', uri: `${base}/volvox.sort.gff3.gz` },
         { trackId: 'microarray', uri: `${base}/volvox_microarray.bw` },
         {
-          trackId: 'duplications',
+          trackId: 'breakends',
           uri: `${base}/volvox.dup.vcf.gz`,
-          name: 'Duplications',
+          name: 'Breakends',
           displayDefaults: { encoding: { color: { value: 'purple' } } },
         },
       ]}
       view={{
         loc: 'ctgA:1..50,000',
-        tracks: ['genes', 'microarray', 'duplications'],
+        tracks: ['genes', 'microarray', 'breakends'],
       }}
     />
   )
