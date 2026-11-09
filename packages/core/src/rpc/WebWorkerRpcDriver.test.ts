@@ -381,13 +381,17 @@ class FakeWorkerInstance extends EventTarget {
   }
 }
 
-function makeDriver(pluginManager = fakePluginManager) {
+function makeDriver(
+  pluginManager = fakePluginManager,
+  makeWorkerInstance?: () => Promise<Worker>,
+) {
   const worker = new FakeWorkerInstance()
   const driver = new WebWorkerRpcDriver(
     pluginManager,
     rpcConfigSchema.create({}),
     {
-      makeWorkerInstance: () => worker as unknown as Worker,
+      makeWorkerInstance:
+        makeWorkerInstance ?? (() => worker as unknown as Worker),
       plugins: [],
       windowHref: 'http://localhost/',
       numberGrouping: true,
@@ -400,6 +404,7 @@ describe('WebWorkerRpcDriver boot handshake', () => {
   test('sends the config at once, again on readyForConfig, and resolves on ready', async () => {
     const { worker, driver } = makeDriver()
     const handleP = driver.makeWorker()
+    await Promise.resolve()
     const config = {
       message: 'config',
       config: {
@@ -427,6 +432,7 @@ describe('WebWorkerRpcDriver boot handshake', () => {
     // WebWorkerHandle logs worker errors; keep the expected one out of the output
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const handleP = driver.makeWorker()
+    await Promise.resolve()
 
     worker.dispatchEvent(
       new ErrorEvent('error', { message: 'script load failed' }),
@@ -440,6 +446,7 @@ describe('WebWorkerRpcDriver boot handshake', () => {
   test('an error message during boot rejects and is terminated', async () => {
     const { worker, driver } = makeDriver()
     const handleP = driver.makeWorker()
+    await Promise.resolve()
 
     worker.send('error', {
       error: { name: 'Error', message: 'plugin blew up' },
@@ -447,6 +454,29 @@ describe('WebWorkerRpcDriver boot handshake', () => {
 
     await expect(handleP).rejects.toThrow('plugin blew up')
     expect(worker.terminated).toBe(true)
+  })
+
+  test('a worker that arrives after the driver was destroyed is terminated unbooted', async () => {
+    const late = new FakeWorkerInstance()
+    let arrive = () => {}
+    const { driver } = makeDriver(
+      fakePluginManager,
+      () =>
+        new Promise<Worker>(resolve => {
+          arrive = () => {
+            resolve(late as unknown as Worker)
+          }
+        }),
+    )
+    driver.warmUp()
+    driver.destroy()
+    arrive()
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+
+    expect(late.terminated).toBe(true)
+    expect(late.posted).toEqual([])
   })
 })
 
@@ -458,6 +488,7 @@ describe('WebWorkerRpcDriver status channel', () => {
   async function callWith(statusCallback?: (s: unknown) => void) {
     const { worker, driver } = makeDriver()
     const handleP = driver.makeWorker()
+    await Promise.resolve()
     worker.send('readyForConfig')
     worker.send('ready')
     const handle = await handleP

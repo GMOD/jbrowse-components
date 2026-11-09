@@ -390,11 +390,14 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   ): Promise<WorkerHandle> {
     let instance: Worker
     try {
-      const made = this.options.makeWorkerInstance()
-      instance = made instanceof Promise ? await made : made
+      instance = await this.options.makeWorkerInstance()
     } catch (e) {
       this.bootFailure ??= e
       throw e
+    }
+    if (this.destroyed) {
+      instance.terminate()
+      throw new Error(`${this.name} was destroyed`)
     }
     // one RpcClient per worker so we can do our own state-group-aware load
     // balancing across the pool
