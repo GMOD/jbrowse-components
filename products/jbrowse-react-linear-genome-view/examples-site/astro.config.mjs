@@ -8,6 +8,10 @@ export default defineConfig({
   base: '/storybook/lgv',
   trailingSlash: 'always',
   integrations: [react()],
+  redirects: {
+    '/error-handler': '/storybook/lgv/session-persistence/',
+    '/outside-styling': '/storybook/lgv/custom-theme/',
+  },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.
   //

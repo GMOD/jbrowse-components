@@ -165,12 +165,6 @@ export const pages: ExamplePage[] = [
     group: 'Theming',
   },
   {
-    slug: 'outside-styling',
-    title: 'Styling from outside the component',
-    description: 'The view inherits CSS from its host by default.',
-    group: 'Theming',
-  },
-  {
     slug: 'shadow-dom',
     title: 'Package as a custom element',
     description: 'A <jbrowse-linear-view> tag, shadow-isolated.',
@@ -216,13 +210,6 @@ export const pages: ExamplePage[] = [
     slug: 'export-svg',
     title: 'Export the view (SVG/PNG)',
     description: 'The exportSvg action, through a ref.',
-    group: 'Integration',
-    skipSmoke: true,
-  },
-  {
-    slug: 'error-handler',
-    title: 'Custom error handling',
-    description: 'createViewState throws on a config it cannot build.',
     group: 'Integration',
     skipSmoke: true,
   },
