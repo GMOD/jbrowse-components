@@ -26,23 +26,22 @@ Gabon, we:
   [Desktop](/docs/quickstart_desktop))
 - [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`)
 - htslib (`bgzip`, `tabix`)
-- `samtools`
 - `curl`
 - `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,plink2 -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools tabix nodejs
+sudo apt install tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools htslib nodejs plink2
+conda install -c bioconda -c conda-forge htslib nodejs plink2
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,plink2 -->
 
 ## The data
 
@@ -58,7 +57,6 @@ slice.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | The phased haplotypes and their sample list for chromosome arm 2L, which the commands subset to one population at a time                                                                               | [shapeit/](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/)                    |
 | The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                                             | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
-| The AgamP4 reference and its gene models, which the build script's own JBrowse loads                                                                                                                   | [genome/](https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/)                                          |
 | The 2La tag SNPs, the ~200 positions whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
 
 ## Loading the anoGam3 assembly and genes

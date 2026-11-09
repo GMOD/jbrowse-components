@@ -1925,7 +1925,7 @@ export const figureFrames: Record<
   },
   "ld/anopheles_2la": {
     "width": 1500,
-    "height": 1395,
+    "height": 1445,
     "timeout": 180000
   },
   "ld/lct_haploblock": {

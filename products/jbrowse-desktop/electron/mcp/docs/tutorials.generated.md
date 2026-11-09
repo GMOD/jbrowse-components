@@ -409,12 +409,15 @@ Read precomputed PLINK LD over a 22 Mb inversion, and load the same inversion ge
 
 Page: https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/
 
-- https://jbrowse.org/demos/ag1000g/AgamP4.sorted.gff3.gz
+- https://hgdownload.soe.ucsc.edu/goldenPath/anoGam3/bigZips/anoGam3.2bit
 - https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
 - https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 - https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz
 - https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv
+- https://jbrowse.org/ucsc/anoGam3/anoGam3.chrom.sizes
 - https://jbrowse.org/ucsc/anoGam3/config.json
+- https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz
+- https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz.csi
 
 ## Local ancestry (Dog10K)
 

@@ -1,6 +1,6 @@
 ---
 name: tutorials-genomes-portal-crosslinks
-description: "Tutorials and genomes.jbrowse.org pages link each other wherever they share a genome or dataset. Waiting: the Ag1000G build script moving onto the anoGam3 hub, odp's renamed Dryad copies, a syri link, and a per-assembly tutorial list on the portal."
+description: "Tutorials and genomes.jbrowse.org pages link each other wherever they share a genome or dataset. Waiting: odp's renamed Dryad copies, a syri link, and a per-assembly tutorial list on the portal."
 ---
 
 # Tutorials and genomes portal cross-links
@@ -27,9 +27,6 @@ page, and update it as links land.
 - **`odp_linkage_groups_synteny.md`**: EMU and BFL match portal assemblies, but
   the Dryad copies rename every sequence, so hub tracks would not line up; RES
   and BIN are different assemblies.
-- **`scripts/build_ag1000g_ld.sh`** still builds its own JBrowse on AgamP4
-  from FASTA with the AgamP4.12 genes, while `ld_mosquitoes.md` now loads the
-  anoGam3 hub, so its "Reproduce it" output differs from the page.
 - **A `/ucsc/[id]` page listing its tutorials**: derive the list from the
   `jbrowse.org/ucsc/<id>` config URLs the tutorials carry, published as an index
   jb2hubs fetches, not a hand-kept list.

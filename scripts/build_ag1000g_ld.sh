@@ -47,19 +47,26 @@
 #    https://www.malariagen.net/data/our-approach-sharing-data/ag1000g-terms-of-use/
 #
 # Requires: plink2 (2.0 is labelled alpha, and has been for years while being
-#           the version in general use), htslib (bgzip, tabix), samtools, curl,
+#           the version in general use), htslib (bgzip, tabix), curl,
 #           awk, python3. gzip rather than zcat throughout: macOS zcat looks
 #           only for a .Z and fails on every .gz here.
 #           PLINK 1.9 also works, with LD_FLAGS=(--r2 dprime ...) instead.
 # Usage:    bash scripts/build_ag1000g_ld.sh [outdir]
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+HELPERS=(hosted_assembly.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
+done
+
 OUTDIR="${1:-ag1000g_ld_build}"
 # The derived inputs, and the switch that rebuilds them from the release.
 DERIVED=https://jbrowse.org/demos/ag1000g
 FROM_RELEASE="${FROM_RELEASE:-}"
 AR1=https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1
-GENOME=https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome
 CHROM=2L
 
 # Candidate span to test, from the literature, used ONLY as the probe window.
@@ -91,7 +98,7 @@ elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }
 fi
-for tool in "$PLINK" bgzip tabix samtools curl python3; do
+for tool in "$PLINK" bgzip tabix curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done
 if ! "$PLINK" --version 2>&1 | grep -q "PLINK v2"; then
@@ -103,9 +110,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 # ── Inputs ──────────────────────────────────────────────────────────────────
-# The haplotypes are SHAPEIT .haps/.sample, already phased by the project. The
-# reference and gene set sit on the same server, so the assembly needs no
-# outside source.
+# The haplotypes are SHAPEIT .haps/.sample, already phased by the project.
 fetch() { [ -f "$2" ] || curl -fsSL --retry 3 -o "$2" "$1"; }
 
 
@@ -430,34 +435,11 @@ echo "building per-mosquito karyotype tracks..."
 for pop in $PANEL_POPS; do emit_karyotype_track "$pop"; done
 
 # ── Assembly and JBrowse ────────────────────────────────────────────────────
-# VectorBase publishes the reference as a plain .fa.gz and the genes unsorted,
-# so both need converting before JBrowse can index them: bgzip plus faidx for
-# the one, sort plus tabix for the other. The converted files are a few tens of
-# megabytes and never change, so they are rehosted too and fetched ready to use.
-if [ -n "$FROM_RELEASE" ]; then
-  fetch "$GENOME/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa.gz" AgamP4.fa.gz
-  fetch "$GENOME/Anopheles-gambiae-PEST_BASEFEATURES_AgamP4.12.gff3.gz" AgamP4.gff3.gz
-  gzip -dc AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
-  samtools faidx AgamP4.fa.bgz
-  gzip -dc AgamP4.gff3.gz > AgamP4.gff3
-  jb sort-gff AgamP4.gff3 | bgzip > AgamP4.sorted.gff3.gz
-  tabix -f -C -p gff AgamP4.sorted.gff3.gz
-else
-  for f in AgamP4.fa.bgz AgamP4.fa.bgz.fai AgamP4.fa.bgz.gzi \
-           AgamP4.sorted.gff3.gz AgamP4.sorted.gff3.gz.csi; do
-    fetch "$DERIVED/$f" "$f"
-  done
-fi
-
+# The calls are on AgamP4, whose arms 2L, 2R, 3L, 3R and X have the same
+# sequence as UCSC's anoGam3 (AgamP3), so the tracks go on the anoGam3 hub's
+# assembly and Ensembl genes. Its alias table maps the files' 2L to chr2L.
 [ -f jbrowse2/index.html ] || jb create jbrowse2 --branch main
-
-# --type is required: the CLI infers the sequence type from the extension, and
-# does not recognize .bgz (it wants .fa.gz), so it cannot guess this one
-jb add-assembly AgamP4.fa.bgz --type bgzipFasta --name AgamP4 \
-  --load copy --force --out jbrowse2
-jb add-track AgamP4.sorted.gff3.gz --indexFile AgamP4.sorted.gff3.gz.csi \
-  --name "AgamP4.12 genes" --trackId agamp4_genes \
-  --load copy --force --out jbrowse2
+python3 "$SCRIPT_DIR/hosted_assembly.py" jbrowse2/config.json anoGam3 anoGam3-ensGene
 cp ld_cmgam.vcor.gz ld_cmgam.vcor.gz.csi ld_gagam.vcor.gz ld_gagam.vcor.gz.csi jbrowse2/
 for pop in $PANEL_POPS; do
   cp "ag1000g_2La_$pop.vcf.gz" "ag1000g_2La_$pop.vcf.gz.csi" \
@@ -492,7 +474,7 @@ for trackId, name in names.items():
         'type': 'LDTrack',
         'trackId': trackId,
         'name': name,
-        'assemblyNames': ['AgamP4'],
+        'assemblyNames': ['anoGam3'],
         'adapter': {
             'type': 'PlinkLDTabixAdapter',
             'uri': f'{trackId}.vcor.gz',
@@ -520,7 +502,7 @@ for pop, (trackId, name) in karyo.items():
         'type': 'VariantTrack',
         'trackId': trackId,
         'name': name,
-        'assemblyNames': ['AgamP4'],
+        'assemblyNames': ['anoGam3'],
         'adapter': {
             'type': 'VcfTabixAdapter',
             'uri': f'{trackId}.vcf.gz',
@@ -554,18 +536,16 @@ cfg['defaultSession'] = {
     'views': [{
         'id': 'ld_lgv',
         'type': 'LinearGenomeView',
-        'init': {
-            'assembly': 'AgamP4',
-            'loc': '2L:18,000,000-45,000,000',
-            'tracks': [t for t, _ in karyo.values()] + ['ld_cmgam', 'ld_gagam'],
-        },
+        'assembly': 'anoGam3',
+        'loc': 'chr2L:18,000,000-45,000,000',
+        'tracks': [t for t, _ in karyo.values()] + ['ld_cmgam', 'ld_gagam'],
     }],
 }
 json.dump(cfg, open(path, 'w'), indent=2)
 PY
 
 echo
-echo "Built $(pwd)/jbrowse2/config.json, opening on 2L:18,000,000-45,000,000."
+echo "Built $(pwd)/jbrowse2/config.json, opening on chr2L:18,000,000-45,000,000."
 echo "The top track is the arrangement itself, one row per mosquito, grouped by"
 echo "population and karyotype. Below it the Cameroon LD panel is one block from"
 echo "~20.5 to ~42.2 Mb and white outside it, and the Gabon panel is blank there,"
