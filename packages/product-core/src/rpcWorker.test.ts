@@ -45,7 +45,9 @@ test('a plugin hint starts the downloads before the configuration arrives', asyn
   const scope = globalThis as unknown as Record<string, unknown>
   const original = globalThis.postMessage
   globalThis.postMessage = (() => {}) as typeof globalThis.postMessage
+  // a classic worker, whose importScripts reads the prefetched copy
   scope.WorkerGlobalScope = class {}
+  scope.importScripts = () => {}
   const fetched: string[] = []
   const fetchSpy = jest
     .spyOn(globalThis, 'fetch')
@@ -77,6 +79,7 @@ test('a plugin hint starts the downloads before the configuration arrives', asyn
     globalThis.postMessage = original
     fetchSpy.mockRestore()
     delete scope.WorkerGlobalScope
+    delete scope.importScripts
   }
 })
 
