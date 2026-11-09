@@ -203,6 +203,8 @@ test('a module worker, which cannot importScripts, runs each UMD bundle from its
       '"use strict";var JBrowsePluginStrict={default:class Strict{}}',
     'https://example.com/umd.js':
       '!function(t){t.JBrowsePluginUmd={default:class Umd{}}}(this)\n//# sourceMappingURL=umd.js.map',
+    'https://example.com/dashed.js':
+      '!function(t){t["JBrowsePluginMy-Dashed"]={default:class Dashed{}}}(this)',
   }
   const fetchSpy = jest
     .spyOn(globalThis, 'fetch')
@@ -215,8 +217,9 @@ test('a module worker, which cannot importScripts, runs each UMD bundle from its
     const records = await new Loader([
       { name: 'Strict', url: 'https://example.com/strict.js' },
       { name: 'Umd', url: 'https://example.com/umd.js' },
+      { name: 'My-Dashed', url: 'https://example.com/dashed.js' },
     ]).load()
-    expect(records.map(r => r.plugin.name)).toEqual(['Strict', 'Umd'])
+    expect(records.map(r => r.plugin.name)).toEqual(['Strict', 'Umd', 'Dashed'])
   } finally {
     fetchSpy.mockRestore()
     for (const key of [
@@ -224,6 +227,7 @@ test('a module worker, which cannot importScripts, runs each UMD bundle from its
       'importScripts',
       'JBrowsePluginStrict',
       'JBrowsePluginUmd',
+      'JBrowsePluginMy-Dashed',
     ]) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete scope[key]

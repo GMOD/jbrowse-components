@@ -139,9 +139,12 @@ async function evalInGlobalScope(
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`)
   }
+  const readGlobal = /^[A-Za-z_$][\w$]*$/.test(globalName)
+    ? `typeof ${globalName} === 'undefined' ? undefined : ${globalName}`
+    : 'undefined'
   // eslint-disable-next-line no-eval
   const value: unknown = (0, eval)(
-    `${await response.text()}\n;typeof ${globalName} === 'undefined' ? undefined : ${globalName}\n//# sourceURL=${scriptUrl}`,
+    `${await response.text()}\n;${readGlobal}\n//# sourceURL=${scriptUrl}`,
   )
   if (value !== undefined) {
     Reflect.set(globalThis, globalName, value)
