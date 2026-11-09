@@ -108,12 +108,11 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     this.seqIdDecodedAgainst[seqId] = refName
     // @gmod/cram is 0-based half-open since v10, which is what getSequence
     // already takes, so the coordinates pass straight through
-    const seq = await sequenceAdapter.getSequence({
+    return sequenceAdapter.getSequence({
       refName,
       start,
       end,
     })
-    return seq ?? ''
   }
 
   private configure() {
