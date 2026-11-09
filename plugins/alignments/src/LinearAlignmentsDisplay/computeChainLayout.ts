@@ -43,7 +43,9 @@ interface ReadSpan extends Span {
 
 const byStart = (a: Span, b: Span) => a.start - b.start
 
-// Total order over chains: packing distance first, then span, then chain name.
+// Total order over chains: one in several displayed regions first, since a row
+// cap drops from the end and those chains are what joins the regions; then
+// packing distance, then span, then chain name.
 // The tiebreaks matter for the same reason `compareReadsCanonically`
 // (sortLayout.ts) needs them — first-fit-lowest-row placement is arrival-order
 // sensitive and JS sort is stable, so a distance-only comparator hands ties to
@@ -51,11 +53,17 @@ const byStart = (a: Span, b: Span) => a.start - b.start
 // is `maxEnd - minStart` (or |TLEN|), so every singleton chain of a fixed-length
 // read set shares one value. Across regions `mergeChains` orders by which region
 // first showed a chain, so a pan that re-split the regions reshuffled the rows.
-function compareChainsCanonically(
-  a: { name: string; minStart: number; maxEnd: number; distance: number },
-  b: { name: string; minStart: number; maxEnd: number; distance: number },
-) {
+interface PackedChain {
+  name: string
+  minStart: number
+  maxEnd: number
+  distance: number
+  crossesRegions: boolean
+}
+
+function compareChainsCanonically(a: PackedChain, b: PackedChain) {
   return (
+    Number(b.crossesRegions) - Number(a.crossesRegions) ||
     a.distance - b.distance ||
     a.minStart - b.minStart ||
     a.maxEnd - b.maxEnd ||
@@ -64,12 +72,7 @@ function compareChainsCanonically(
 }
 
 function buildChainRowMap(
-  chains: {
-    name: string
-    minStart: number
-    maxEnd: number
-    distance: number
-  }[],
+  chains: PackedChain[],
   maxRows = Number.POSITIVE_INFINITY,
 ) {
   chains.sort(compareChainsCanonically)
@@ -92,6 +95,7 @@ interface MergedChain {
   minStart: number
   maxEnd: number
   distance: number
+  crossesRegions: boolean
   reach: number
   refSeen: string | undefined
   refMin: number
@@ -173,6 +177,7 @@ function mergeChains(
             minStart: lo + offset,
             maxEnd: hi + offset,
             distance,
+            crossesRegions: false,
             reach: 0,
             refSeen: refName,
             refMin: lo,
@@ -182,6 +187,7 @@ function mergeChains(
         }
         const minStart = lo + offset
         const maxEnd = hi + offset
+        existing.crossesRegions = true
         if (minStart < existing.minStart) {
           existing.minStart = minStart
         }
@@ -237,6 +243,7 @@ function mergeChains(
     minStart: b.minStart,
     maxEnd: b.maxEnd,
     distance: Math.max(b.distance, b.reach, b.refMax - b.refMin),
+    crossesRegions: b.crossesRegions,
   }))
 }
 
