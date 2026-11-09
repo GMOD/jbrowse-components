@@ -102,54 +102,31 @@ try {
         near-white too. That is a 1.0 contrast ratio, and it shipped: the
         notification on BYO's Loading and error states page -- the one thing that
         page exists to prove a host must draw -- was unreadable in dark mode.
-        Declared in all three states for the same reason the palette is.
+        The palette is written with `light-dark()`, so `color-scheme` is also
+        what picks it.
       */
       :root {
-        color-scheme: light;
-        --accent: #135ba8;
-        --accent-fg: #ffffff;
-        --bg: #ffffff;
-        --fg: #1a1a1a;
-        --fg-soft: #333333;
-        --muted: #5a5a5a;
-        --border: #e2e2e2;
-        --rule: #eeeeee;
-        --hover: #f1f5fa;
-        --card-hover: #f5f9fd;
-        --code-inline-bg: #f4f4f4;
+        color-scheme: light dark;
+        --accent: light-dark(#135ba8, #6db3f2);
+        --accent-fg: light-dark(#ffffff, #10151b);
+        --bg: light-dark(#ffffff, #16191d);
+        --fg: light-dark(#1a1a1a, #e4e6e8);
+        --fg-soft: light-dark(#333333, #c6c9cd);
+        --muted: light-dark(#5a5a5a, #9aa0a6);
+        --border: light-dark(#e2e2e2, #2c3138);
+        --rule: light-dark(#eeeeee, #262b31);
+        --hover: light-dark(#f1f5fa, #1e242b);
+        --card-hover: light-dark(#f5f9fd, #1e242b);
+        --code-inline-bg: light-dark(#f4f4f4, #23282f);
         --sidebar-width: 260px;
         --topbar-h: 53px;
       }
-      /* dark palette: explicit toggle wins; otherwise follow the OS setting */
+      /* the OS setting, unless the toggle has written `data-theme` */
+      :root[data-theme='light'] {
+        color-scheme: light;
+      }
       :root[data-theme='dark'] {
         color-scheme: dark;
-        --accent: #6db3f2;
-        --accent-fg: #10151b;
-        --bg: #16191d;
-        --fg: #e4e6e8;
-        --fg-soft: #c6c9cd;
-        --muted: #9aa0a6;
-        --border: #2c3138;
-        --rule: #262b31;
-        --hover: #1e242b;
-        --card-hover: #1e242b;
-        --code-inline-bg: #23282f;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme='light']) {
-          color-scheme: dark;
-          --accent: #6db3f2;
-          --accent-fg: #10151b;
-          --bg: #16191d;
-          --fg: #e4e6e8;
-          --fg-soft: #c6c9cd;
-          --muted: #9aa0a6;
-          --border: #2c3138;
-          --rule: #262b31;
-          --hover: #1e242b;
-          --card-hover: #1e242b;
-          --code-inline-bg: #23282f;
-        }
       }
       * {
         box-sizing: border-box;
