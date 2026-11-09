@@ -41,5 +41,6 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
     viewportHeight: 540,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
+    hideSelectors: ['[data-testid="lgv-mini-controls"]'],
   },
 ]

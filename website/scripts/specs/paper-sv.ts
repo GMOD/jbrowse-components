@@ -44,13 +44,12 @@ export const paperSvSpecs: ScreenshotSpec[] = [
     ...PAPER,
     level: 60,
     reads: 250,
-    assemblyReads: 90,
     readRowHeight: 3,
     readArcs: 60,
     coverage: 20,
     trim: 90,
     annotations: [
-      rowLabel('hap1, same reads', 1, FONT),
+      rowLabel('hap1', 1, FONT),
       // facing each other over the chromosome boundary, above the read curves
       callout(
         'chr13 breakend',

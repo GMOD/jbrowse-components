@@ -131,7 +131,11 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     // the paper prints it at its full text width
     viewportWidth: 930,
     viewportHeight: 1000,
-    hideSelectors: ['header.MuiAppBar-root'],
+    hideSelectors: [
+      'header.MuiAppBar-root',
+      // the HGSVC blurb sits where this chip draws
+      '[data-testid="show_genotypes_chip"]',
+    ],
     tooltip: 'hide',
     diffThreshold: 0.02,
     annotations: [
