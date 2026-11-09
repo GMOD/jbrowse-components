@@ -82,7 +82,7 @@ export interface CreateViewStateBaseOptions {
    *
    * Read once, at construction, like every other option here. A host whose
    * files arrive later remounts on a React `key`; the imperative
-   * `createCircularGenomeView` has `addLocalFiles` for that instead.
+   * `createCircularGenomeView` takes them in `update({ localFiles })` instead.
    */
   localFiles?: LocalFileInput
   /**

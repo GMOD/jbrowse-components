@@ -112,7 +112,7 @@ export interface CreateViewStateBaseOptions {
    *
    * Read once, at construction, like every other option here. A host whose
    * files arrive later remounts on a React `key`; the imperative
-   * `createLinearGenomeView` has `addLocalFiles` for that instead.
+   * `createLinearGenomeView` takes them in `update({ localFiles })` instead.
    */
   localFiles?: LocalFileInput
   /**
