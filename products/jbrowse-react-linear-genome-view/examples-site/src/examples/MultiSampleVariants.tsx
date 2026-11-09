@@ -15,18 +15,12 @@ export default function MultiSampleVariants() {
           assemblyNames: ['volvox'],
           adapter: {
             type: 'VcfTabixAdapter',
-            uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz',
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sv.vcf.gz',
             samplesTsvLocation: {
-              uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.samples.tsv',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sv.samples.tsv',
             },
           },
-          displays: [
-            {
-              type: 'LinearVariantDisplay',
-              displayId: 'volvox_multisample_sv-LinearVariantDisplay',
-              rows: { color: 'population' },
-            },
-          ],
+          displayDefaults: { rows: { color: 'population' } },
         },
       ]}
       view={{

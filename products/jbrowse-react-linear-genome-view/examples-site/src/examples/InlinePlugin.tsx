@@ -1,36 +1,32 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-class HighlightRegionPlugin extends Plugin {
-  name = 'HighlightRegionPlugin'
+class SelectionLengthPlugin extends Plugin {
+  name = 'SelectionLengthPlugin'
 
   install(pluginManager: PluginManager) {
     extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
       stateModel.extend(self => {
-        const superRubberBandMenuItems = self.rubberBandMenuItems
+        const superLaunchMenuItems = self.rubberBandLaunchMenuItems
         return {
           views: {
-            rubberBandMenuItems() {
+            rubberBandLaunchMenuItems() {
               return [
-                ...superRubberBandMenuItems(),
+                ...superLaunchMenuItems(),
                 {
-                  label: 'Highlight selected region',
+                  label: 'Selection length',
                   onClick: () => {
-                    const { leftOffset, rightOffset } = self
-                    const session = getSession(self)
-                    for (const region of self.getSelectedRegions(
-                      leftOffset,
-                      rightOffset,
-                    )) {
-                      session.addHighlight(region)
-                    }
+                    const bp = self
+                      .getSelectedRegions(self.leftOffset, self.rightOffset)
+                      .reduce((sum, r) => sum + r.end - r.start, 0)
+                    getSession(self).notify(
+                      `${bp.toLocaleString()} bp selected`,
+                      'info',
+                    )
                   },
                 },
               ]
@@ -40,25 +36,24 @@ class HighlightRegionPlugin extends Plugin {
       }),
     )
   }
-
-  configure() {}
 }
 
 export default function InlinePlugin() {
-  const state = useCreateViewState({
-    assembly: {
-      name: 'volvox',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-    plugins: [HighlightRegionPlugin],
-    tracks: [
-      {
-        trackId: 'volvox_gff3',
-        name: 'Volvox genes',
-        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-      },
-    ],
-    location: 'ctgA:1105..1221',
-  })
-  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
+  return (
+    <LinearGenomeView
+      assembly={{
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      }}
+      plugins={[SelectionLengthPlugin]}
+      tracks={[
+        {
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      ]}
+      view={{ loc: 'ctgA:1105..1221' }}
+    />
+  )
 }

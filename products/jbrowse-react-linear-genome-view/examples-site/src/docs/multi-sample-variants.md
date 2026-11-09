@@ -1,2 +1,3 @@
-`rows.color` is a config setting, read once when sources load, so it goes on the
-`LinearVariantDisplay` config rather than a `displaySnapshot`.
+`rows.color` is a config setting, read once when sources load, so it goes in
+`displayDefaults`, which lands on the display's config, rather than in a
+`displaySnapshot`.
