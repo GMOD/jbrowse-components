@@ -1,5 +1,5 @@
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
-import { toPluginLoadRecord } from '@jbrowse/product-core'
+import { embeddedRpcOptions, toPluginLoadRecord } from '@jbrowse/product-core'
 
 import corePlugins from './corePlugins.ts'
 import createRootModel from './rootModel/rootModel.ts'
@@ -27,7 +27,11 @@ export default function createModel({
     model: createRootModel({
       pluginManager,
       sessionModelFactory,
-      makeWorkerInstance,
+      rpcManagerOptions: embeddedRpcOptions({
+        plugins: runtimePlugins,
+        makeWorkerInstance,
+        loadWorkerModule: () => import('./makeWorkerInstance.ts'),
+      }),
     }),
     pluginManager,
   }

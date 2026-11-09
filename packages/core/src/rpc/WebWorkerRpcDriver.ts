@@ -47,7 +47,9 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export interface WebWorkerRpcDriverOptions {
-  makeWorkerInstance: () => Worker
+  // a promise when the worker's module is itself loaded on demand, as an
+  // embedded product's default is, to keep it out of the host's eager bundle
+  makeWorkerInstance: () => Worker | Promise<Worker>
   plugins: PluginDefinition[]
   windowHref: string
   numberGrouping: boolean
@@ -169,21 +171,26 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      let early: WorkerHandle | undefined
+      let dispatchEarly = (_handle: WorkerHandle) => {}
+      const early = new Promise<WorkerHandle>(resolve => {
+        dispatchEarly = resolve
+      })
       const booted = this.driver.makeWorker(handle => {
-        early = handle
+        if (!this.driver.extendsWorkers()) {
+          dispatchEarly(handle)
+        }
       })
       this.bootP = booted
       // A booting worker holds the calls it is sent, so with nothing to extend
-      // them a call goes out now rather than when the page gets round to the
-      // worker's 'ready'. A boot that fails rejects those calls with the
-      // handle. An extended worker is extended once booted, as promised.
-      this.workerP =
-        early && !this.driver.extendsWorkers()
-          ? Promise.resolve(early)
-          : // once per booted worker by construction, rather than per dispatch
-            // behind a memo
-            booted.then(worker => this.driver.extendWorker(worker))
+      // them a call goes out once the worker exists rather than when the page
+      // gets round to the worker's 'ready'. A boot that fails rejects those
+      // calls with the handle. An extended worker is extended once booted, as
+      // promised: once per booted worker by construction, rather than per
+      // dispatch behind a memo.
+      this.workerP = Promise.race([
+        early,
+        booted.then(worker => this.driver.extendWorker(worker)),
+      ])
       // drop this slot so the next getWorker re-boots, whether the boot failed
       // or the booted worker later died (a dead worker never replies)
       const invalidate = () => {
@@ -255,6 +262,13 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   // `destroy` is terminal: `getWorkerPool` refuses rather than letting its `??=`
   // build a second pool for a driver whose teardown already ran. ADR-086.
   private destroyed = false
+
+  /**
+   * Why a worker of this pool failed to boot, if one has: what `RpcManager`
+   * reads to fall back to the main thread. Recorded before the boot's calls
+   * are rejected, so a call's own failure handler always finds it set.
+   */
+  bootFailure: unknown
 
   constructor(
     pluginManager: PluginManager,
@@ -374,9 +388,16 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   async makeWorker(
     onHandle?: (handle: WorkerHandle) => void,
   ): Promise<WorkerHandle> {
+    let instance: Worker
+    try {
+      const made = this.options.makeWorkerInstance()
+      instance = made instanceof Promise ? await made : made
+    } catch (e) {
+      this.bootFailure ??= e
+      throw e
+    }
     // one RpcClient per worker so we can do our own state-group-aware load
     // balancing across the pool
-    const instance = this.options.makeWorkerInstance()
     const handle = new WebWorkerHandle(instance)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
@@ -397,6 +418,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       // the pool discards this slot and re-boots on the next call, so terminate
       // the half-booted worker rather than orphaning its thread
       const fail = (error: Error) => {
+        this.bootFailure ??= error
         cleanup()
         handle.destroy()
         reject(error)

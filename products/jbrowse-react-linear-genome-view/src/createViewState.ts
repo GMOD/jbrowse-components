@@ -83,6 +83,13 @@ export interface CreateViewStateBaseOptions {
    * component is `height` tall with the bar inside it.
    */
   menuBar?: boolean
+  /**
+   * Builds the RPC web worker that fetches and parses data. Optional: left
+   * out, the package loads its own worker on demand, unless `plugins` holds a
+   * bare class, which keeps RPC on the main thread. Pass one when your bundler
+   * does not build the package's worker; a console warning says when that
+   * happened and the view fell back to the main thread.
+   */
   makeWorkerInstance?: () => Worker
   /**
    * Any CSS height (`'400px'`, `'80vh'`), applied to the component's own root.

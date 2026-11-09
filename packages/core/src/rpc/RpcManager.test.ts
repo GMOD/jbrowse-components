@@ -1,4 +1,6 @@
+import Plugin from '../Plugin.ts'
 import PluginManager from '../PluginManager.ts'
+import RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import { AuthNeededError } from '../util/types/index.ts'
 import RpcManager from './RpcManager.ts'
 
@@ -272,7 +274,7 @@ describe('RpcManager.destroy is terminal', () => {
 // disagreed — WebWorkerRpcDriver spread options over its own arguments and
 // honored a statusCallback there, MainThreadRpcDriver ignored `opts` entirely —
 // so the same call had a working progress bar under a worker and a silent one
-// under the driver every embedded component defaults to.
+// on the main thread.
 describe('RpcManager: the handles are args, and every method takes them', () => {
   test('forwards both handles to the driver, for a method whose registry entry declares neither', async () => {
     const { manager, callLog } = makeManager()
@@ -290,5 +292,168 @@ describe('RpcManager: the handles are args, and every method takes them', () => 
     expect(entry?.args.statusCallback).toBe(statusCallback)
     expect(entry?.args.signal).toBe(signal)
     expect(entry?.args.sessionId).toBe('s')
+  })
+})
+
+class Echo extends RpcMethodType {
+  name = 'Echo'
+
+  async execute(args: { value?: unknown }) {
+    return args.value
+  }
+}
+
+class EchoPlugin extends Plugin {
+  name = 'EchoPlugin'
+
+  install(pluginManager: PluginManager) {
+    pluginManager.addRpcMethod(pm => new Echo(pm))
+  }
+}
+
+// a stand-in for the `Worker` the real boot handshake drives
+class FakeWorker extends EventTarget {
+  terminated = false
+
+  postMessage() {}
+
+  terminate() {
+    this.terminated = true
+  }
+}
+
+const echo: string = 'Echo'
+
+function makeWorkerManager(
+  makeWorkerInstance: () => Worker | Promise<Worker>,
+  rpc: Record<string, unknown> = {},
+) {
+  const pluginManager = new PluginManager([
+    new EchoPlugin(),
+  ]).createPluggableElements()
+  return new RpcManager(pluginManager, RpcManager.configSchema.create(rpc), {
+    makeWorkerInstance,
+    defaultDriverName: 'WebWorkerRpcDriver',
+  })
+}
+
+const tick = () =>
+  new Promise(resolve => {
+    setTimeout(resolve, 0)
+  })
+
+describe('RpcManager falls back to the main thread when its worker cannot boot', () => {
+  let warn: jest.SpyInstance
+  let error: jest.SpyInstance
+  beforeEach(() => {
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    // WebWorkerHandle logs the worker's own error event
+    error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+  afterEach(() => {
+    warn.mockRestore()
+    error.mockRestore()
+  })
+
+  test('a call in flight when the worker posts a boot error succeeds on the main thread', async () => {
+    const worker = new FakeWorker()
+    const manager = makeWorkerManager(() => worker as unknown as Worker)
+    const call = manager.call('s', echo, { value: 'first' })
+    await tick()
+    worker.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          message: 'error',
+          error: { name: 'Error', message: 'plugin blew up' },
+        },
+      }),
+    )
+
+    await expect(call).resolves.toBe('first')
+    expect(worker.terminated).toBe(true)
+    expect(manager.driverName).toBe('MainThreadRpcDriver')
+    expect(manager.getDriver().name).toBe('MainThreadRpcDriver')
+    await expect(manager.call('s', echo, { value: 'second' })).resolves.toBe(
+      'second',
+    )
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]![0]).toMatch(/worker failed to start/)
+  })
+
+  test('so does one when the worker script fails to load', async () => {
+    const worker = new FakeWorker()
+    const manager = makeWorkerManager(() => worker as unknown as Worker)
+    const call = manager.call('s', echo, { value: 'v' })
+    await tick()
+    worker.dispatchEvent(new ErrorEvent('error', { message: 'not found' }))
+
+    await expect(call).resolves.toBe('v')
+    expect(warn).toHaveBeenCalledTimes(1)
+  })
+
+  test('and one whose worker module failed to import', async () => {
+    const manager = makeWorkerManager(() =>
+      Promise.reject(new Error('chunk failed')),
+    )
+
+    await expect(manager.call('s', echo, { value: 'v' })).resolves.toBe('v')
+    expect(manager.driverName).toBe('MainThreadRpcDriver')
+    expect(warn).toHaveBeenCalledTimes(1)
+  })
+
+  test('a warm-up that failed sends the first call straight to the main thread', async () => {
+    let made = 0
+    const manager = makeWorkerManager(() => {
+      made++
+      throw new Error('blocked')
+    })
+    manager.warmUp()
+    await tick()
+
+    await expect(manager.call('s', echo, { value: 'v' })).resolves.toBe('v')
+    expect(made).toBe(1)
+    expect(warn).toHaveBeenCalledTimes(1)
+  })
+
+  test('a call that fails on a worker that booted is not retried', async () => {
+    const worker = new FakeWorker()
+    const manager = makeWorkerManager(() => worker as unknown as Worker)
+    const call = manager.call('s', echo, { value: 'v' })
+    await tick()
+    worker.dispatchEvent(
+      new MessageEvent('message', { data: { message: 'ready' } }),
+    )
+    await tick()
+    manager.getDriver().destroy()
+
+    await expect(call).rejects.toThrow(/terminated/)
+    expect(manager.driverName).toBe('WebWorkerRpcDriver')
+    expect(warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('RpcManager says why it runs on the main thread', () => {
+  function makeReasonManager(rpc: Record<string, unknown> = {}) {
+    const pluginManager = new PluginManager([]).createPluggableElements()
+    return new RpcManager(pluginManager, RpcManager.configSchema.create(rpc), {
+      mainThreadReason: 'a plugin cannot follow it.',
+    })
+  }
+
+  test('once, when it builds the driver', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const manager = makeReasonManager()
+    manager.getDriver()
+    manager.getDriver()
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]![0]).toMatch(/a plugin cannot follow it/)
+    warn.mockRestore()
+  })
+
+  test('not at all when the config chose the main thread', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    makeReasonManager({ defaultDriver: 'MainThreadRpcDriver' }).getDriver()
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 })

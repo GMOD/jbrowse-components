@@ -12,12 +12,18 @@ import type { RpcConfigModel } from './configSchema.ts'
 
 export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
-  makeWorkerInstance?: () => Worker
-  // host-application default driver, used when the config names none. web and
-  // desktop pass 'WebWorkerRpcDriver'; embedded/headless leave it as the main
-  // thread.
+  makeWorkerInstance?: () => Worker | Promise<Worker>
+  // host-application default driver, used when the config names none. web,
+  // desktop and an embedded product that found a worker pass
+  // 'WebWorkerRpcDriver'; headless leaves it as the main thread.
   defaultDriverName?: string
+  // why the host default is the main thread, when that is a fallback rather
+  // than a choice; warned once, and only if the config names no driver
+  mainThreadReason?: string
 }
+
+const SETTING_MAIN_THREAD =
+  "Set configuration.rpc.defaultDriver to 'MainThreadRpcDriver' to choose the main thread and silence this."
 
 export default class RpcManager {
   static configSchema = rpcConfigSchema
@@ -25,9 +31,11 @@ export default class RpcManager {
   private pluginManager: PluginManager
   private mainConfiguration: RpcConfigModel
   private hostDriverName: string
-  private makeWorkerInstance?: () => Worker
+  private makeWorkerInstance?: () => Worker | Promise<Worker>
+  private mainThreadReason?: string
   private driver?: BaseRpcDriver
   private destroyed = false
+  private workerFailed = false
 
   constructor(
     pluginManager: PluginManager,
@@ -35,12 +43,14 @@ export default class RpcManager {
     {
       makeWorkerInstance,
       defaultDriverName = 'MainThreadRpcDriver',
+      mainThreadReason,
     }: RpcManagerOptions = {},
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.hostDriverName = defaultDriverName
     this.makeWorkerInstance = makeWorkerInstance
+    this.mainThreadReason = mainThreadReason
   }
 
   /**
@@ -54,10 +64,13 @@ export default class RpcManager {
    * times and one copy carried a cast.
    */
   get driverName(): string {
-    return (
-      readConfObject(this.mainConfiguration, 'defaultDriver') ||
-      this.hostDriverName
-    )
+    return this.workerFailed
+      ? 'MainThreadRpcDriver'
+      : this.configDriverName || this.hostDriverName
+  }
+
+  private get configDriverName(): string {
+    return readConfObject(this.mainConfiguration, 'defaultDriver')
   }
 
   /**
@@ -81,11 +94,40 @@ export default class RpcManager {
     if (this.destroyed) {
       throw new Error('RpcManager was destroyed')
     }
+    if (
+      this.driver instanceof WebWorkerRpcDriver &&
+      this.driver.bootFailure !== undefined
+    ) {
+      this.fallBackToMainThread(this.driver)
+    }
     return (this.driver ??= this.makeDriver(this.driverName))
+  }
+
+  /**
+   * A worker that cannot boot — a bundler that did not build it, a page that
+   * may not load it, a runtime plugin that fails in it — would otherwise leave
+   * every call failing and the view never loading. The main thread runs the
+   * same methods, slower, so the session moves there, once, and says so: a
+   * pool that quietly stops being a pool is the trap BGZF_WORKER_POOL.md
+   * records one layer down.
+   */
+  private fallBackToMainThread(driver: WebWorkerRpcDriver) {
+    console.warn(
+      `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. If the page's bundler does not build the worker, pass makeWorkerInstance a factory that does. ${SETTING_MAIN_THREAD}`,
+      driver.bootFailure,
+    )
+    this.workerFailed = true
+    driver.destroy()
+    this.driver = undefined
   }
 
   private makeDriver(backendName: string): BaseRpcDriver {
     if (backendName === 'MainThreadRpcDriver') {
+      if (this.mainThreadReason && !this.configDriverName) {
+        console.warn(
+          `JBrowse: RPC runs on the main thread, which is slower: ${this.mainThreadReason} ${SETTING_MAIN_THREAD}`,
+        )
+      }
       return new MainThreadRpcDriver(this.pluginManager, this.mainConfiguration)
     } else if (backendName === 'WebWorkerRpcDriver') {
       const { makeWorkerInstance } = this
@@ -124,8 +166,8 @@ export default class RpcManager {
    * accepted in an `opts` parameter as well, and the two disagreed:
    * `WebWorkerRpcDriver` honored a `statusCallback` there and
    * `MainThreadRpcDriver` ignored `opts` entirely, so the same call had a
-   * working progress bar under a worker and a silent one under the driver every
-   * embedded component defaults to. One position.
+   * working progress bar under a worker and a silent one on the main thread.
+   * One position.
    *
    * The cast on the way out is at the driver boundary, where the method is an
    * unparameterized {@link RpcMethodType} and `deserializeReturn` is therefore
@@ -141,9 +183,8 @@ export default class RpcManager {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    const driverForCall = this.getDriver()
-    const pending = this.withAuthRetry(() =>
-      driverForCall.call(sessionId, functionName, { ...args, sessionId }),
+    const pending = this.runOnDriver(driver =>
+      driver.call(sessionId, functionName, { ...args, sessionId }),
     )
     const calls =
       this.callsInFlight.get(sessionId) ?? new Set<Promise<unknown>>()
@@ -192,19 +233,29 @@ export default class RpcManager {
   }
 
   /**
-   * Run an RPC thunk, and if it fails because a location needs auth, set up
-   * credentials for the origin and run it exactly once more. The single retry
-   * is structural — there is no loop — so a persistent auth failure surfaces
-   * the error instead of spinning. The retry re-runs serializeArguments, which
-   * now finds the new account and injects pre-authorization (prompting the
-   * user). If auth can't be set up, the original error is rethrown unchanged.
+   * Run an RPC thunk on the driver, and run it exactly once more if it fails
+   * because a location needs auth: credentials for the origin are set up first.
+   * The single retry is structural — there is no loop — so a persistent auth
+   * failure surfaces the error instead of spinning. The retry re-runs
+   * serializeArguments, which now finds the new account and injects
+   * pre-authorization (prompting the user). If auth can't be set up, the
+   * original error is rethrown unchanged.
+   *
+   * A call that failed on a driver the session has since left — its worker
+   * failed to boot, taking the call with it — runs again on the one that
+   * replaced it.
    */
-  private async withAuthRetry<T>(run: () => Promise<T>): Promise<T> {
+  private async runOnDriver<T>(
+    run: (driver: BaseRpcDriver) => Promise<T>,
+  ): Promise<T> {
+    const driver = this.getDriver()
     try {
-      return await run()
+      return await run(driver)
     } catch (error) {
       if (isAuthNeededException(error) && this.ensureAuthForOrigin(error.url)) {
-        return run()
+        return run(driver)
+      } else if (!this.destroyed && this.getDriver() !== driver) {
+        return this.runOnDriver(run)
       } else {
         throw error
       }

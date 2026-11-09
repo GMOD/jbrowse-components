@@ -14,9 +14,11 @@ const rpcConfigSchema = ConfigurationSchema(
     /**
      * #slot
      * The RPC backend. Empty means "use the host application's
-     * default" (web/desktop default to the web worker driver, embedded/headless
-     * to the main thread). Every call in the session runs on the driver this
-     * names; there is no per-track or per-call override.
+     * default": the web worker driver in web, desktop and the embedded
+     * components (which fall back to the main thread, with a console warning,
+     * when a worker cannot run), and the main thread headless. Every call in
+     * the session runs on the driver this names; there is no per-track or
+     * per-call override.
      */
     defaultDriver: {
       type: 'string',

@@ -28,6 +28,7 @@ import type productSessionModelFactory from '../sessionModel/index.ts'
 import type { AbstractWebRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
 
@@ -54,11 +55,11 @@ export interface PluginsUpdate {
 export default function RootModel({
   pluginManager,
   sessionModelFactory,
-  makeWorkerInstance,
+  rpcManagerOptions,
 }: {
   pluginManager: PluginManager
   sessionModelFactory: typeof productSessionModelFactory
-  makeWorkerInstance?: () => Worker
+  rpcManagerOptions?: RpcManagerOptions
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
@@ -74,14 +75,7 @@ export default function RootModel({
           assemblyConfigSchema,
         }),
         assemblyConfigSchema,
-        rpcManagerOptions: {
-          makeWorkerInstance,
-          // when a worker factory is supplied, run RPC off the main thread by
-          // default; config `defaultDriver` still overrides this
-          defaultDriverName: makeWorkerInstance
-            ? 'WebWorkerRpcDriver'
-            : 'MainThreadRpcDriver',
-        },
+        rpcManagerOptions,
       }),
       InternetAccountsRootModelMixin(pluginManager),
       RootAppMenuMixin(),

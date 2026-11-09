@@ -2,6 +2,7 @@ import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   createEmbeddedRootModel,
+  embeddedRpcOptions,
   openConnectionMenuItem,
   openTrackMenuItem,
   toPluginLoadRecord,
@@ -36,7 +37,11 @@ export default function createModel(
     version,
     pluginManager,
     sessionModelType: createSessionModel(pluginManager),
-    makeWorkerInstance,
+    rpcManagerOptions: embeddedRpcOptions({
+      plugins: runtimePlugins,
+      makeWorkerInstance,
+      loadWorkerModule: () => import('../makeWorkerInstance.ts'),
+    }),
   })
     .props({
       /**

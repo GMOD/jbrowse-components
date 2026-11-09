@@ -19,6 +19,7 @@ import type { RootSession } from '../RootModel/index.ts'
 import type { SessionSnapshot } from '../sessionUrl.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
+import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
 import type { JBrowseConfigModel } from '@jbrowse/core/util'
 import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -58,13 +59,13 @@ export function createEmbeddedRootModel<
   version,
   pluginManager,
   sessionModelType,
-  makeWorkerInstance,
+  rpcManagerOptions,
 }: {
   name: string
   version: string
   pluginManager: PluginManager
   sessionModelType: SESSION
-  makeWorkerInstance?: () => Worker
+  rpcManagerOptions: RpcManagerOptions
 }) {
   // as BaseRootModelFactory does: a refused config value names its slot path
   setTypeChecking(true)
@@ -105,14 +106,7 @@ export function createEmbeddedRootModel<
           rpcManager: new RpcManager(
             pluginManager,
             self.config.configuration.rpc,
-            {
-              makeWorkerInstance,
-              // when a worker factory is supplied, run RPC off the main thread by
-              // default; config `defaultDriver` still overrides this
-              defaultDriverName: makeWorkerInstance
-                ? 'WebWorkerRpcDriver'
-                : 'MainThreadRpcDriver',
-            },
+            rpcManagerOptions,
           ),
           /**
            * #volatile
