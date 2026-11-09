@@ -198,6 +198,10 @@ mRNA.RE14076  Em0019g57a  .    #000000  524.9999053847149
 
 ## Loading the jellyfish and sponge assemblies
 
+<!-- No genomes.jbrowse.org hubs: EMU and BFL match portal assemblies, but the
+Dryad copies rename every sequence, so hub tracks would not line up, and RES
+and BIN are different assemblies from the portal's. -->
+
 We'll load the two genomes of the dotplot. The genome FASTA needs a `.fai`
 beside it (`samtools faidx`), and its sequence names must match the table's
 scaffold columns. The stack adds four more assemblies the same way, one block

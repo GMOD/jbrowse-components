@@ -135,6 +135,10 @@ wrapper body.
 
 ## Load the genomes
 
+<!-- No genomes.jbrowse.org link: the portal hosts only three of the five
+strains (GCF_000005845.2, GCF_000007445.1, GCF_000008865.2; checked
+2026-11-08), and each FASTA here is renamed to `chr` for the graph's paths. -->
+
 Every projection is a track on a strain's assembly, and each strain's FASTA
 holds one sequence named `chr`, the refName the graph's paths are renamed to
 below. We'll add K12, the reference the projections target, from a

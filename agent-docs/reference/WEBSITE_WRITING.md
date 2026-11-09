@@ -192,7 +192,17 @@ no em-dashes.
   `Synteny (MCScan anchors)`.
 - **A See also entry is a bare link** with no qualifier.
 - Describe setup by its steps, and cut a convenience pitch such as "nothing to
-  install". A genomes.jbrowse.org link is welcome where the story uses it.
+  install".
+- **Link a genomes.jbrowse.org page where the page loads data from it**, saying
+  what it loads. A page building its assembly from FASTA links none until it
+  loads the hub; a staging.genomes.jbrowse.org link stands until v5 ships, and
+  the page says so.
+  - Take the assembly and gene track verbatim from the hub:
+    `scripts/hosted_assembly.py` for a build script, its absolutized output
+    for a page's fence (`ld_mosquitoes.md`).
+  - A GenArk hub's `refNameColumnHeaderName: "ucsc"` makes UCSC names
+    canonical, so a spec's `displayedRegionNames` says `chr12`, not the NCBI
+    name.
 
 ### Before adding a locus
 
