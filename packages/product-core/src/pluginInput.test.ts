@@ -93,6 +93,28 @@ describe('with a Worker to build', () => {
     expect(opts.fallBackToMainThread).toBe(true)
     expect(driverOf(opts)).toBe('WebWorkerRpcDriver')
   })
+
+  test('a <script>-tag bundle has no default worker, but takes a factory', async () => {
+    await jest.isolateModulesAsync(async () => {
+      const umd = await import('./pluginInput.ts')
+      umd.disableDefaultWorker()
+      const loadWorkerModule = async () => ({
+        default: () => builtWorker as unknown as Worker,
+      })
+      const makeWorkerInstance = () => builtWorker as unknown as Worker
+
+      expect(umd.embeddedRpcOptions({ plugins: [], loadWorkerModule })).toEqual(
+        {},
+      )
+      expect(
+        umd.embeddedRpcOptions({
+          plugins: [],
+          makeWorkerInstance,
+          loadWorkerModule,
+        }).makeWorkerInstance,
+      ).toBe(makeWorkerInstance)
+    })
+  })
 })
 
 test('with no Worker at all, the main thread, and no warning', () => {

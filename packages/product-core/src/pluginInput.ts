@@ -33,6 +33,16 @@ export function toPluginLoadRecord(p: PluginInput) {
     : { plugin: new p.plugin(), definition: p.definition }
 }
 
+let defaultWorker = true
+
+/**
+ * Called by a product's `<script>`-tag bundle, whose worker would be served
+ * from the bundle's CDN origin, where `new Worker` refuses it.
+ */
+export function disableDefaultWorker() {
+  defaultWorker = false
+}
+
 /**
  * Where an embedded product's engine runs RPC, when its caller did not say: in
  * a worker, unless a bare plugin class could not follow it there. The worker
@@ -49,7 +59,8 @@ export function embeddedRpcOptions({
 }): RpcManagerOptions {
   const factory =
     makeWorkerInstance ??
-    (typeof Worker !== 'undefined' &&
+    (defaultWorker &&
+    typeof Worker !== 'undefined' &&
     !plugins.some(p => typeof p === 'function')
       ? async () => (await loadWorkerModule()).default()
       : undefined)

@@ -244,7 +244,7 @@ Each component fetches and parses data in a pool of web workers, as JBrowse Web
 does, with nothing to pass. The package loads its worker on demand, so the
 worker stays out of your page's first bundle.
 
-Two cases run that work on the main thread instead:
+Three cases run that work on the main thread instead:
 
 - **A `plugins` entry is a plugin class.** The worker loads a plugin from its
   URL, and a class has none, so the component stays on the main thread. Pass the
@@ -254,6 +254,8 @@ Two cases run that work on the main thread instead:
 - **The worker failed to start**, as it does when a bundler did not build the
   package's worker, and a console warning says why. Pass `makeWorkerInstance` a
   factory your bundler builds.
+- **The `<script>`-tag bundle** has no worker of its own: served from a CDN, it
+  would be on another origin, where a page cannot start one.
 
 A module worker, which Vite builds, runs a UMD plugin from `loadPlugins` with
 `eval`, so the plugin's host must send CORS headers and a
