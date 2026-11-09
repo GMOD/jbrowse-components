@@ -27,10 +27,6 @@
     "chunks": 280,
     "gzipKb": 487
   },
-  "highlight-a-region": {
-    "chunks": 279,
-    "gzipKb": 486
-  },
   "inline-plugin": {
     "chunks": 285,
     "gzipKb": 492

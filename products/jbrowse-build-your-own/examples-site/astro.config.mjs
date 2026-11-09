@@ -9,6 +9,11 @@ export default defineConfig({
   site: 'https://jbrowse.org',
   base: '/storybook/byo',
   trailingSlash: 'always',
+  // a key is relative to `base`, a destination is not: one naming a page's
+  // route would redirect to that route without the base
+  redirects: {
+    '/highlight-a-region': '/storybook/byo/table-of-calls/',
+  },
   integrations: [react()],
   // See the sibling lgv examples-site config for why these two are set: ES
   // worker output because the RPC worker code-splits, and HMR off in dev to

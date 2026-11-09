@@ -3,6 +3,7 @@ import {
   Highlights,
   NavButton,
   Scalebar,
+  Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
@@ -140,10 +141,23 @@ const TableOfCalls = observer(function TableOfCalls() {
   if (!state) {
     return null
   }
-  const { view } = state.session
+  const { session } = state
+  const { view } = session
   return (
-    <EmbedProvider session={state.session}>
+    <EmbedProvider session={session}>
       <Calls view={view} />
+      <Toolbar>
+        <label>
+          <input
+            type="checkbox"
+            checked={session.highlightsVisible}
+            onChange={event => {
+              session.setHighlightsVisible(event.target.checked)
+            }}
+          />
+          Show highlights
+        </label>
+      </Toolbar>
       <TrackStack view={view}>
         <Scalebar view={view} />
         <Highlights view={view} />

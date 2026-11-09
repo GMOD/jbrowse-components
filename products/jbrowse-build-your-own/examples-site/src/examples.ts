@@ -46,10 +46,9 @@ export const pages: ExamplePage[] = [
     group: 'Navigation',
   },
   {
-    slug: 'highlight-a-region',
-    title: 'Highlighting a region',
-    description:
-      'Mark the region a link points at, and keep it marked while panning.',
+    slug: 'table-of-calls',
+    title: 'Navigating from a table of calls',
+    description: 'Click a structural variant call to open and mark it.',
     group: 'Navigation',
   },
   {
@@ -116,12 +115,6 @@ export const pages: ExamplePage[] = [
     title: 'Your own data source',
     description:
       'A plugin in the page adds an adapter that reads genes from a JSON file.',
-    group: 'Data sources',
-  },
-  {
-    slug: 'table-of-calls',
-    title: 'Navigating from a table of calls',
-    description: 'Click a structural variant call to open and mark it.',
     group: 'Data sources',
   },
   {

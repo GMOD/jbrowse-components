@@ -305,52 +305,6 @@ async function muiRaisedByHover(page, slug) {
       ]
 }
 
-// `getHighlightCoords` earns its place by what it does to awkward input, and
-// none of that is visible on a page at rest. The floor is the case worth
-// driving: a one-base highlight at 40kb of zoom is a hundredth of a pixel, so
-// the method clamps the band to 3px, and losing that clamp reads as "the
-// highlight didn't work" rather than as a rendering bug.
-async function highlightSurvivesAOneBaseRegion(page) {
-  const clicked = await page.evaluate(() => {
-    const el = [...document.querySelectorAll('button')].find(e =>
-      e.innerText.includes('A single base'),
-    )
-    el?.click()
-    return !!el
-  })
-  if (!clicked) {
-    return ['no "A single base" button on the page']
-  }
-  try {
-    await page.waitForFunction(
-      () => {
-        const bands = [
-          ...document.querySelectorAll('[data-testid="highlight-band"]'),
-        ]
-        return (
-          bands.length === 1 &&
-          bands[0].innerText.includes('one base') &&
-          bands[0].getBoundingClientRect().width >= 3
-        )
-      },
-      { timeout: 15000 },
-    )
-    return []
-  } catch {
-    const bands = await page.evaluate(() =>
-      [...document.querySelectorAll('[data-testid="highlight-band"]')].map(
-        el => ({ text: el.innerText, width: el.getBoundingClientRect().width }),
-      ),
-    )
-    return [
-      'the one-base highlight did not become the only band, 3px or wider — ' +
-        'the click no longer replaces the highlights, getHighlightCoords lost ' +
-        `its minimum width, or the band is not drawn. Bands found: ` +
-        JSON.stringify(bands),
-    ]
-  }
-}
-
 // Drag-to-zoom on the scalebar, which is the one thing on this site that is
 // only a gesture. Every other check censuses a page or clicks one control, and
 // a rubberband that stopped working would leave a page that loads, paints and
@@ -457,6 +411,10 @@ async function placedKeyNamesItsRows(page, row) {
   }
 }
 
+// SV_20 is a one-base junction, which at the row's 10kb of zoom is a tenth of
+// a pixel, so `getHighlightCoords` clamps its band to 3px. Losing that clamp
+// reads as "the highlight didn't work" rather than as a rendering bug, and none
+// of it is visible on the page at rest.
 async function aTableRowMovesTheView(page) {
   const clicked = await page.evaluate(() => {
     const button = document
@@ -476,6 +434,9 @@ async function aTableRowMovesTheView(page) {
           ?.innerText.includes('SV_20') &&
         document.querySelector('[data-testid="highlight-band"]')?.innerText ===
           'SV_20' &&
+        document
+          .querySelector('[data-testid="highlight-band"]')
+          .getBoundingClientRect().width >= 3 &&
         [...document.querySelectorAll('[data-gesture-owner]')].some(el =>
           el.innerText.includes('139,97'),
         ),
@@ -484,7 +445,8 @@ async function aTableRowMovesTheView(page) {
     return []
   } catch {
     return [
-      'clicking the SV_20 button did not select it, mark it and move the view to chr3:139.97 Mb',
+      'clicking the SV_20 button did not select it, mark it with a band 3px or ' +
+        'wider and move the view to chr3:139.97 Mb',
     ]
   }
 }
@@ -1058,7 +1020,6 @@ async function searchByNameResolvesNames(page) {
 }
 
 const PAGE_CHECKS = {
-  'highlight-a-region': highlightSurvivesAOneBaseRegion,
   'scalebar-and-gridlines': dragToZoomFramesTheSpan,
   'search-results': searchResultsListsHits,
   'search-by-name': searchByNameResolvesNames,
