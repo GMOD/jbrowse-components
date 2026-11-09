@@ -253,6 +253,9 @@ warning:
   pass `makeWorkerInstance` to keep the worker.
 - **The worker failed to start**, as it does when a bundler did not build the
   package's worker. Pass `makeWorkerInstance` a factory your bundler builds.
+  Under Vite the package's worker is a module worker, which cannot load a UMD
+  plugin from `loadPlugins`; that page needs a factory building a classic
+  worker, or stays on the main thread.
 
 A factory is the package's own worker, spelled for your bundler:
 

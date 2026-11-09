@@ -113,7 +113,7 @@ export default class RpcManager {
    */
   private fallBackToMainThread(driver: WebWorkerRpcDriver) {
     console.warn(
-      `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. If the page's bundler does not build the worker, pass makeWorkerInstance a factory that does. ${SETTING_MAIN_THREAD}`,
+      `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. The error below says why; https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker has the fixes. ${SETTING_MAIN_THREAD}`,
       driver.bootFailure,
     )
     this.workerFailed = true
