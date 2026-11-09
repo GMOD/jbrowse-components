@@ -208,6 +208,7 @@ export const junctionScaffold = (
           {
             loc: `${SCAFFOLD}:106,646,329-106,656,329`,
             assembly: HG008T,
+            trackLabels: 'hidden',
             tracks: [
               {
                 trackId: ASSEMBLY_READS,
@@ -237,7 +238,26 @@ export const junctionScaffold = (
       140,
       70,
     ),
-    junction(1),
+    // in the notch between the two ribbons, clear of the hap1 reads
+    callout(
+      'junction',
+      { selector: BAND, view: [0, 1], alignY: 'top' },
+      0,
+      -100,
+    ),
+    {
+      type: 'text',
+      text: 'the same reads on hap1',
+      fontSize: FONT,
+      anchor: {
+        selector: '[data-testid="refLabel-prefix"]',
+        view: [0, 1],
+        alignX: 'left',
+        alignY: 'bottom',
+        dx: 4,
+        dy: 2 * FONT + 30,
+      },
+    },
     bandLabel('SV calls', 'draft benchmark somatic SVs', 22),
     bandLabel('aggregate read links', READS, 92),
     bandLabel('split reads', READS, 250),
