@@ -1,64 +1,14 @@
 import {
   EmbedProvider,
-  SearchPicker,
+  LocationBox,
+  NavButton,
+  Toolbar,
   TrackStack,
-  useLocationBox,
 } from '@jbrowse/display-ui/embed'
-import { SearchResultsNotFoundError } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
-
-const queries = ['chr13', 'gene15876', 'TP53', 'BRC', 'zzzznotagene']
-
-const SearchBox = observer(function SearchBox({
-  view,
-}: {
-  view: LinearGenomeViewModel
-}) {
-  const box = useLocationBox(view)
-  return (
-    <div style={{ display: 'grid', gap: 6, paddingBottom: 8 }}>
-      <form
-        onSubmit={event => {
-          event.preventDefault()
-          box.go()
-        }}
-      >
-        <input
-          aria-label="Search by name or location"
-          value={box.value}
-          size={28}
-          onChange={event => {
-            box.edit(event.target.value)
-          }}
-        />
-        <button type="submit">{box.pending ? 'Searching…' : 'Go'}</button>
-      </form>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {queries.map(query => (
-          <button
-            key={query}
-            type="button"
-            onClick={() => {
-              box.go(query)
-            }}
-          >
-            {query}
-          </button>
-        ))}
-      </div>
-      {box.error instanceof SearchResultsNotFoundError ? (
-        <span role="status">{box.error.message}</span>
-      ) : box.error ? (
-        <span role="alert">
-          {box.error instanceof Error ? box.error.message : String(box.error)}
-        </span>
-      ) : null}
-    </div>
-  )
-})
+const queries = ['chr13', 'gene15876', 'TP53', 'BRC']
 
 const SearchByName = observer(function SearchByName() {
   const state = useCreateViewState({
@@ -88,11 +38,16 @@ const SearchByName = observer(function SearchByName() {
   if (!state) {
     return null
   }
+  const { view } = state.session
   return (
     <EmbedProvider session={state.session}>
-      <SearchBox view={state.session.view} />
-      <SearchPicker view={state.session.view} />
-      <TrackStack view={state.session.view} />
+      <Toolbar>
+        <LocationBox view={view} />
+        {queries.map(query => (
+          <NavButton key={query} view={view} loc={query} />
+        ))}
+      </Toolbar>
+      <TrackStack view={view} />
     </EmbedProvider>
   )
 })

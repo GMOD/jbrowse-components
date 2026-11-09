@@ -968,7 +968,7 @@ async function searchByNameResolvesNames(page) {
         () =>
           /^(chr)?17:7,\d{3},/.test(
             document.querySelector(
-              '#search-by-name input[aria-label="Search by name or location"]',
+              '#search-by-name input[aria-label="Location"]',
             )?.value,
           ) || !!document.querySelector('[data-testid="search-picker"]'),
         { timeout: 30000 },
@@ -976,9 +976,8 @@ async function searchByNameResolvesNames(page) {
     } catch {
       const value = await page.evaluate(
         () =>
-          document.querySelector(
-            '#search-by-name input[aria-label="Search by name or location"]',
-          )?.value,
+          document.querySelector('#search-by-name input[aria-label="Location"]')
+            ?.value,
       )
       out.push(
         `searching TP53 neither navigated to chr17:7 Mb nor asked; the box reads "${value}"`,
@@ -995,9 +994,15 @@ async function searchByNameResolvesNames(page) {
     out.push('no exact "TP53" button')
   }
 
-  // And the other absence: a plain word with no hits is a typed throw the page
-  // renders as prose, not an error.
-  if (await clickButton('zzzznotagene')) {
+  // And the other absence: a plain word with no hits is a typed throw the
+  // location box renders as its message.
+  const box = await page.$('#search-by-name input[aria-label="Location"]')
+  if (box) {
+    await box.evaluate(el => {
+      el.select()
+    })
+    await box.type('zzzznotagene')
+    await box.press('Enter')
     try {
       await page.waitForFunction(
         () =>
@@ -1013,7 +1018,7 @@ async function searchByNameResolvesNames(page) {
       )
     }
   } else {
-    out.push('no exact "zzzznotagene" button')
+    out.push('no location box on the page')
   }
 
   return out
