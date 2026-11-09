@@ -2332,6 +2332,7 @@
         "SESSION_PARAM_KINDS",
         "SHARE_PREFIX",
         "SPEC_PREFIX",
+        "SearchResultsNotFoundError",
         "SimpleFeature",
         "UNKNOWN",
         "UNSUPPORTED",
@@ -3536,6 +3537,22 @@
         "localStorageSetNumber",
         "notifyLocalStorageKey",
         "subscribeToLocalStorageKey"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/locString": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SearchResultsNotFoundError",
+        "UnknownRefNameError",
+        "assembleLocString",
+        "assembleLocStringRaw",
+        "assembleLocStrings",
+        "compareLocStrings",
+        "compareLocs",
+        "parseLocString",
+        "parseLocStringOneBased",
+        "stringify"
       ],
       "worker": "real"
     },

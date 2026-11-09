@@ -348,6 +348,7 @@ export default [
   '@jbrowse/core/util/legendCandidates',
   '@jbrowse/core/util/librpc',
   '@jbrowse/core/util/localStorage',
+  '@jbrowse/core/util/locString',
   '@jbrowse/core/util/makeAssembly',
   '@jbrowse/core/util/markEncoding',
   '@jbrowse/core/util/measureText',
