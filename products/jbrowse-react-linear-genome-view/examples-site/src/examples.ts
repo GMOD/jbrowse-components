@@ -33,8 +33,8 @@ export const pages: ExamplePage[] = [
     group: 'Layout and chrome',
   },
   {
-    slug: 'external-navigate',
-    title: 'External navigation',
+    slug: 'view-controls',
+    title: 'Navigate from your own buttons',
     description:
       'navToLocString for a locstring, navToLocations for coordinates.',
     group: 'Navigation and search',
@@ -65,8 +65,8 @@ export const pages: ExamplePage[] = [
     group: 'Navigation and search',
   },
   {
-    slug: 'text-search',
-    title: 'Text searching',
+    slug: 'search-by-name',
+    title: 'Searching by name',
     description: 'A trix index finds a gene by name.',
     group: 'Navigation and search',
   },

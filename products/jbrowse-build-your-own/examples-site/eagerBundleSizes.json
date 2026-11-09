@@ -7,6 +7,10 @@
     "chunks": 281,
     "gzipKb": 487
   },
+  "custom-adapter": {
+    "chunks": 285,
+    "gzipKb": 492
+  },
   "dark-theme": {
     "chunks": 279,
     "gzipKb": 486
@@ -14,6 +18,10 @@
   "every-chromosome": {
     "chunks": 278,
     "gzipKb": 485
+  },
+  "export-svg": {
+    "chunks": 294,
+    "gzipKb": 499
   },
   "feature-details": {
     "chunks": 278,
@@ -26,10 +34,6 @@
   "genome-by-name": {
     "chunks": 280,
     "gzipKb": 487
-  },
-  "inline-plugin": {
-    "chunks": 285,
-    "gzipKb": 492
   },
   "local-files": {
     "chunks": 278,
@@ -62,10 +66,6 @@
   "static-first-paint": {
     "chunks": 10,
     "gzipKb": 92
-  },
-  "svg-figures": {
-    "chunks": 294,
-    "gzipKb": 499
   },
   "synteny": {
     "chunks": 396,

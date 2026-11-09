@@ -21,7 +21,7 @@ const hits = [
   { label: 'gene3', refName: 'ctgB', start: 100, end: 1500 },
 ]
 
-export default function ExternalNavigate() {
+export default function ViewControls() {
   const ref = useRef<ViewModel>(null)
   return (
     <div>

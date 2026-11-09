@@ -36,7 +36,7 @@ const Figure = observer(function Figure({
   )
 })
 
-const SvgFigures = observer(function SvgFigures() {
+const ExportSvg = observer(function ExportSvg() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -90,4 +90,4 @@ const SvgFigures = observer(function SvgFigures() {
   )
 })
 
-export default SvgFigures
+export default ExportSvg

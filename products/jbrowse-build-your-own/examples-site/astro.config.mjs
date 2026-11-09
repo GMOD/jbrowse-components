@@ -9,6 +9,8 @@ export default defineConfig(
     base: '/storybook/byo',
     integrations: [react()],
     redirects: {
+      'inline-plugin': 'custom-adapter',
+      'svg-figures': 'export-svg',
       'highlight-a-region': 'table-of-calls',
       'web-worker': 'ultraminimal',
     },

@@ -106,7 +106,7 @@ class GeneListPlugin extends Plugin {
   }
 }
 
-const InlinePlugin = observer(function InlinePlugin() {
+const CustomAdapter = observer(function CustomAdapter() {
   const state = useCreateViewState({
     plugins: [GeneListPlugin],
     assembly: {
@@ -157,4 +157,4 @@ const InlinePlugin = observer(function InlinePlugin() {
   )
 })
 
-export default InlinePlugin
+export default CustomAdapter

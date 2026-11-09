@@ -9,4 +9,4 @@ chrome falls back to the theme's next font, Helvetica or Arial.
 
 `view` is read once, at creation: a new `loc` on re-render does not move it. To
 drive the view, take a `ref` and call its
-[navigation actions](../external-navigate/).
+[navigation actions](../view-controls/).

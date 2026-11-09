@@ -1,6 +1,6 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-export default function TextSearch() {
+export default function SearchByName() {
   return (
     <LinearGenomeView
       assembly={{

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # The gene list the build-your-own "Your own data source" example
-# (products/jbrowse-build-your-own/examples-site/src/examples/InlinePlugin.tsx)
+# (products/jbrowse-build-your-own/examples-site/src/examples/CustomAdapter.tsx)
 # reads from https://jbrowse.org/demos/inline_plugin/genes.json.
 #
 # Source: GENCODE v47's gene rows on chr17, read by tabix from jbrowse.org's

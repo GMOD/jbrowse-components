@@ -107,7 +107,7 @@ export const pages: ExamplePage[] = [
     group: 'Data sources',
   },
   {
-    slug: 'inline-plugin',
+    slug: 'custom-adapter',
     title: 'Your own data source',
     description:
       'A plugin in the page adds an adapter that reads genes from a JSON file.',
@@ -159,7 +159,7 @@ export const pages: ExamplePage[] = [
     group: 'Workers, links and export',
   },
   {
-    slug: 'svg-figures',
+    slug: 'export-svg',
     title: 'SVG figures',
     description:
       'The page redraws an SVG figure of the view after each navigation.',
