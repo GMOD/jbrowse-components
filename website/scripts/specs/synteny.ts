@@ -2877,7 +2877,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  junctionScaffold('sv_cgiab/junction_synteny'),
+  junctionScaffold('sv_cgiab/junction_synteny', { assemblyReads: 170 }),
   scaffoldOverview('sv_cgiab/synteny_view'),
 
   {

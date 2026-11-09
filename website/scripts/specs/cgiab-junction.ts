@@ -29,6 +29,11 @@ interface Chrome {
   annotations?: Annotation[]
 }
 
+// assemblyReads is the height of a row of the tumor reads realigned to hap1
+interface JunctionOptions extends Chrome {
+  assemblyReads?: number
+}
+
 const chrome = (height: number, { hideAppBar, width = WIDTH }: Chrome) => ({
   viewportWidth: width,
   viewportHeight: hideAppBar ? height : height + APP_BAR_HEIGHT,
@@ -168,9 +173,23 @@ export const junctionReads = (
   ...chrome(790, opts),
 })
 
+const hap1Label = (text: string, dy: number): Annotation => ({
+  type: 'text',
+  text,
+  fontSize: FONT,
+  anchor: {
+    selector: '[data-testid="refLabel-prefix"]',
+    view: [0, 1],
+    alignX: 'left',
+    alignY: 'bottom',
+    dx: 4,
+    dy,
+  },
+})
+
 export const junctionScaffold = (
   name: string,
-  opts: Chrome = {},
+  { assemblyReads, ...opts }: JunctionOptions = {},
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
@@ -208,15 +227,19 @@ export const junctionScaffold = (
           {
             loc: `${SCAFFOLD}:106,646,329-106,656,329`,
             assembly: HG008T,
-            trackLabels: 'hidden',
-            tracks: [
-              {
-                trackId: ASSEMBLY_READS,
-                pileup: { mark: { height: 2 } },
-                height: 170,
-                forceLoad: true,
-              },
-            ],
+            ...(assemblyReads
+              ? {
+                  trackLabels: 'hidden',
+                  tracks: [
+                    {
+                      trackId: ASSEMBLY_READS,
+                      pileup: { mark: { height: 2 } },
+                      height: assemblyReads,
+                      forceLoad: true,
+                    },
+                  ],
+                }
+              : { hideNoTracksActive: true }),
             highlight: [band(HG008T, SCAFFOLD, 106651319, 106651339)],
           },
         ],
@@ -238,26 +261,18 @@ export const junctionScaffold = (
       140,
       70,
     ),
-    // in the notch between the two ribbons, clear of the hap1 reads
-    callout(
-      'junction',
-      { selector: BAND, view: [0, 1], alignY: 'top' },
-      0,
-      -100,
-    ),
-    {
-      type: 'text',
-      text: 'the same reads on hap1',
-      fontSize: FONT,
-      anchor: {
-        selector: '[data-testid="refLabel-prefix"]',
-        view: [0, 1],
-        alignX: 'left',
-        alignY: 'bottom',
-        dx: 4,
-        dy: 2 * FONT + 30,
-      },
-    },
+    ...(assemblyReads
+      ? [
+          // in the notch between the two ribbons, clear of the hap1 reads
+          callout(
+            'junction',
+            { selector: BAND, view: [0, 1], alignY: 'top' },
+            0,
+            -100,
+          ),
+          hap1Label('the same reads on hap1', 2 * FONT + 30),
+        ]
+      : [junction(1)]),
     bandLabel('SV calls', 'draft benchmark somatic SVs', 22),
     bandLabel('aggregate read links', READS, 92),
     bandLabel('split reads', READS, 250),
@@ -265,7 +280,7 @@ export const junctionScaffold = (
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
-  ...chrome(1342, opts),
+  ...chrome(1172 + (assemblyReads ? assemblyReads - 32 : 0), opts),
 })
 
 export const OVERVIEW_LEVEL_HEIGHT = 200

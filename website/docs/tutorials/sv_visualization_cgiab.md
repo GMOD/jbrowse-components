@@ -424,7 +424,13 @@ Drag over a region and take **Launch → Linear synteny view**, keeping
 **HG008T_v3.2 vs GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the
 synteny track, then enter `chr13 chr3` in the GRCh38 search box.
 
-<Figure caption="The breakpoint split view's two reference windows with tumor reads grouped by split read, above the fused scaffold. A curve joins the two halves of each split read." src="/img/sv_cgiab/junction_synteny.png" />
+<Figure caption="The breakpoint split view's two reference windows with tumor reads grouped by split read, above the fused scaffold. A curve joins the two halves of each split read, and the same reads realigned to the tumor assembly cross the junction in one piece." src="/img/sv_cgiab/junction_synteny.png" />
+
+The hosted config's **HG008-T PacBio HiFi reads on the HG008T v3.2 assembly**
+track holds the reads from these two windows realigned to the tumor assembly
+with minimap2 (`scripts/build_cgiab_reads_on_assembly.sh`). Open it from the
+track selector of the hap1 row: a read that splits at the translocation on
+GRCh38 aligns across the junction on `chr3_chr13_hap1` without a break.
 
 **Add row** in the import form gives each haplotype a separate row: hap2,
 GRCh38, hap1, with ribbons between each adjacent pair.
