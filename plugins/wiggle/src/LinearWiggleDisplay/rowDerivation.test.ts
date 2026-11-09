@@ -155,7 +155,7 @@ test('rows: the scale sits past the row labels, and at the edge without them', a
   expect(left()).toBe(0)
 })
 
-const TISSUES: SourceInfo[] = [
+const TISSUES: (SourceInfo & { tissue: string })[] = [
   { name: 'Grain1', group: 'Islet', tissue: 'pancreas' },
   { name: 'Grain2', group: 'Islet', tissue: 'pancreas' },
   { name: 'Grain3', group: 'Liver', tissue: 'liver' },
