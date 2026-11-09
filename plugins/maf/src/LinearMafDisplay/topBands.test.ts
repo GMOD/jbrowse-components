@@ -104,6 +104,48 @@ describe('a kept subset puts the focus chip in a line above the rows', () => {
   })
 })
 
+// Two color columns beside the row labels take a label line each above the
+// rows (`rowColumnLabels`), inside the track's height as the chip's line is.
+describe('two color columns put their labels in lines above the rows', () => {
+  const labelled = () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rows: { annotations: ['clade', 'sex'] } },
+    }).createDisplay()
+    const samples = [
+      { name: 'a', label: 'a', clade: 'x', sex: 'f' },
+      { name: 'b', label: 'b', clade: 'y', sex: 'm' },
+    ]
+    const before = {
+      bands: display.topBands.bottom,
+      height: display.height,
+      rowsHeight: display.rowsHeight,
+    }
+    display.setSamples({
+      samples,
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    return { display, before }
+  }
+
+  it('starts the rows two lines under the bands within the same track height', () => {
+    const { display, before } = labelled()
+    expect(display.rowColumnLabels).toEqual(['Clade', 'Sex'])
+    expect(display.renderState.rowsTop).toBe(before.bands + 24)
+    expect(display.rowsTopOffset).toBe(before.bands + 24)
+    expect(display.rowsHeight).toBe(before.rowsHeight - 24)
+    expect(display.height).toBe(before.height)
+    expect(display.svgSidebar.columnLabels).toEqual(['Clade', 'Sex'])
+  })
+
+  it('keeps the rows their floor under a band at its ceiling', () => {
+    const { display, before } = labelled()
+    display.setCoverageHeight(5000)
+    expect(display.rowsHeight).toBe(20)
+    expect(display.rowsTopOffset + display.rowsHeight).toBe(before.height)
+  })
+})
+
 // The bands share the track with the rows, so each band's ceiling counts the
 // band stacked with it: each bound on its own, two bands at their ceilings
 // took the rows to 0 px and started them past the track's bottom edge.
