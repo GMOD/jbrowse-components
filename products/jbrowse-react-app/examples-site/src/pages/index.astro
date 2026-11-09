@@ -1,25 +1,20 @@
 ---
-import { pages } from '../examples.ts'
 import Example from '../examples/HumanDemo.tsx'
+import Demo from '../layouts/Demo.astro'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
+import { landingDemo } from '../siteMeta.ts'
 ---
 
-<Shell
-  title="Getting started"
-  componentLabel={componentLabel}
-  examples={pages}
-  mainMaxWidth={mainMaxWidth}
->
+<Shell title="Getting started">
   <h1>JBrowse React App</h1>
   <p class="lead">
     The whole JBrowse 2 app, every view type, as a React component.
   </p>
 
-  <div class:list={['demo', { fill: demoFillHeight }]}>
+  <Demo slug={landingDemo}>
     <Example client:only="react" />
-  </div>
+  </Demo>
 
-  <Gallery examples={pages} />
+  <Gallery />
 </Shell>

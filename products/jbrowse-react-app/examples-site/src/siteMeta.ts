@@ -8,5 +8,7 @@ export const componentLabel = 'React App'
 export const mainMaxWidth = 'none'
 // the full app demo needs a fixed-height, clipped viewport
 export const demoFillHeight = true
+// the page the landing page runs, by its slug
+export const landingDemo = 'human-demo'
 // `demoFillHeight` already gives every demo box its height, so none is reserved
 export const demoHeights: Record<string, number> = {}

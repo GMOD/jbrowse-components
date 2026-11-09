@@ -1,0 +1,20 @@
+---
+// The box a demo mounts in, on an example page and on the landing page alike.
+// Symlinked into every product's src/layouts/, so — like Shell — a site module
+// is imported as `~site/...`, never by a relative path.
+import { demoFillHeight, demoHeights } from '~site/siteMeta.ts'
+
+interface Props {
+  slug: string
+}
+
+// held before the island mounts, so what follows the demo does not slide down
+const reserved = demoHeights[Astro.props.slug]
+---
+
+<div
+  class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
+  style={reserved ? `min-height:${reserved}px` : undefined}
+>
+  <slot />
+</div>

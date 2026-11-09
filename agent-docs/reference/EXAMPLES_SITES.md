@@ -45,7 +45,7 @@ example file no page mounts. The same demo takes the same slug on every site
 
 ## Shared layouts reach their site through `~site`
 
-The layouts (`Shell.astro`, `ExamplePage.astro`, `Gallery.astro`) and
+The layouts (`Shell.astro`, `ExamplePage.astro`, `Gallery.astro`, `Demo.astro`) and
 `exampleModel.ts` live in `examples-site-shared/` and are symlinked into each
 site. A shared file imports its site's own modules as `~site/...`
 (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative path: `astro

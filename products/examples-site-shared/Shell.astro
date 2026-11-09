@@ -4,16 +4,14 @@
 // `~site/...`: `astro check` resolves a relative import from the symlink's own
 // directory, not this file's real path. A sibling layout in src/layouts/ is
 // the one relative import that resolves the same both ways.
-import type { ExamplePage } from '~site/exampleModel.ts'
+import { pages } from '~site/examples.ts'
+import { componentLabel, mainMaxWidth } from '~site/siteMeta.ts'
 
 interface Props {
   title: string
-  componentLabel: string
-  examples: ExamplePage[]
-  mainMaxWidth?: string
 }
 
-const { title, componentLabel, examples, mainMaxWidth = '920px' } = Astro.props
+const { title } = Astro.props
 const base = import.meta.env.BASE_URL
 const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 
@@ -44,7 +42,7 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
 
 // sidebar is grouped by each page's `group`, in first-appearance order (the
 // pages list is already group-contiguous), mirroring the index Gallery
-const groups = [...new Set(examples.map(e => e.group))]
+const groups = [...new Set(pages.map(e => e.group))]
 
 // Which commit produced the page you are looking at. These sites deploy to a
 // fixed, unversioned S3 prefix (/storybook/<site>/) behind CloudFront, so there
@@ -609,7 +607,7 @@ try {
             <div class="nav-group">
               <div class="nav-group-title">{group}</div>
               <ul>
-                {examples
+                {pages
                   .filter(e => e.group === group)
                   .map(e => (
                     <li>

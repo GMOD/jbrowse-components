@@ -1,8 +1,4 @@
-import { findPage } from './exampleModel.ts'
-
 import type { ExamplePage } from './exampleModel.ts'
-
-export type { ExamplePage } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   {
@@ -129,7 +125,3 @@ export const pages: ExamplePage[] = [
     group: 'Real-world demos',
   },
 ]
-
-export function getPage(slug: string) {
-  return findPage(pages, slug)
-}

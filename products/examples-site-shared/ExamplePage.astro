@@ -1,14 +1,10 @@
 ---
 import { Code } from 'astro:components'
 
+import Demo from './Demo.astro'
 import Shell from './Shell.astro'
-import { getPage, pages } from '~site/examples.ts'
-import {
-  componentLabel,
-  demoFillHeight,
-  demoHeights,
-  mainMaxWidth,
-} from '~site/siteMeta.ts'
+import { findPage } from '~site/exampleModel.ts'
+import { pages } from '~site/examples.ts'
 
 import type { MarkdownInstance } from 'astro'
 
@@ -17,7 +13,7 @@ import type { MarkdownInstance } from 'astro'
 // comes first because it is the argument and the prose annotates it. The slug
 // is the page's own URL segment, so a page file cannot name another page.
 const slug = Astro.url.pathname.split('/').findLast(Boolean) ?? ''
-const page = getPage(slug)
+const page = findPage(pages, slug)
 const exampleFile = `${slug.replaceAll(/(?:^|-)(\w)/g, (_, c: string) => c.toUpperCase())}.tsx`
 
 const sources = import.meta.glob<string>('~site/examples/*.tsx', {
@@ -33,9 +29,6 @@ if (!loadSource) {
 const code = await loadSource()
 const sourceLines = code.trimEnd().split('\n').length
 
-// held before the island mounts, so the prose below does not slide down
-const reserved = demoHeights[slug]
-
 const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
   '~site/docs/*.md',
 )
@@ -46,21 +39,13 @@ const doc = loader ? await loader() : undefined
 const Doc = doc?.Content
 ---
 
-<Shell
-  title={page.title}
-  componentLabel={componentLabel}
-  examples={pages}
-  mainMaxWidth={mainMaxWidth}
->
+<Shell title={page.title}>
   <h1>{page.title}</h1>
   <p class="lead">{page.description}</p>
   <section id={slug} class="example-section">
-    <div
-      class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
-      style={reserved ? `min-height:${reserved}px` : undefined}
-    >
+    <Demo slug={slug}>
       <slot />
-    </div>
+    </Demo>
     {Doc && (
       <div class="doc">
         <Doc />

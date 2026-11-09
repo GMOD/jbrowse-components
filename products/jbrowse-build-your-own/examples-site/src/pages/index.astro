@@ -1,22 +1,12 @@
 ---
 import ScalebarAndGridlines from '../examples/ScalebarAndGridlines.tsx'
-import { pages } from '../examples.ts'
+import Demo from '../layouts/Demo.astro'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import {
-  componentLabel,
-  demoHeights,
-  landingDemo,
-  mainMaxWidth,
-} from '../siteMeta.ts'
+import { landingDemo } from '../siteMeta.ts'
 ---
 
-<Shell
-  title="Build your own"
-  componentLabel={componentLabel}
-  examples={pages}
-  mainMaxWidth={mainMaxWidth}
->
+<Shell title="Build your own">
   <h1>Build your own genome browser</h1>
   <p class="lead">
     Each example mounts JBrowse tracks in a React component and builds the
@@ -27,9 +17,9 @@ import {
     .
   </p>
 
-  <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
+  <Demo slug={landingDemo}>
     <ScalebarAndGridlines client:only="react" />
-  </div>
+  </Demo>
 
-  <Gallery examples={pages} />
+  <Gallery />
 </Shell>

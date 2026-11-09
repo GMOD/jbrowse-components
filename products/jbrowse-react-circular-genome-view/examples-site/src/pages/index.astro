@@ -1,33 +1,18 @@
 ---
 import Example from '../examples/Human.tsx'
-import { pages } from '../examples.ts'
+import Demo from '../layouts/Demo.astro'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import {
-  componentLabel,
-  demoHeights,
-  landingDemo,
-  mainMaxWidth,
-} from '../siteMeta.ts'
-
-const reserved = demoHeights[landingDemo]
+import { landingDemo } from '../siteMeta.ts'
 ---
 
-<Shell
-  title="Examples"
-  componentLabel={componentLabel}
-  examples={pages}
-  mainMaxWidth={mainMaxWidth}
->
+<Shell title="Examples">
   <h1>JBrowse Circular Genome View</h1>
   <p class="lead">A whole-genome circular view as a React component.</p>
 
-  <div
-    class:list={['demo', { reserved: !!reserved }]}
-    style={reserved ? `min-height:${reserved}px` : undefined}
-  >
+  <Demo slug={landingDemo}>
     <Example client:only="react" />
-  </div>
+  </Demo>
 
-  <Gallery examples={pages} />
+  <Gallery />
 </Shell>

@@ -1,36 +1,21 @@
 ---
 import Example from '../examples/OneLinearGenomeView.tsx'
-import { pages } from '../examples.ts'
+import Demo from '../layouts/Demo.astro'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import {
-  componentLabel,
-  demoHeights,
-  landingDemo,
-  mainMaxWidth,
-} from '../siteMeta.ts'
-
-const reserved = demoHeights[landingDemo]
+import { landingDemo } from '../siteMeta.ts'
 ---
 
-<Shell
-  title="Getting started"
-  componentLabel={componentLabel}
-  examples={pages}
-  mainMaxWidth={mainMaxWidth}
->
+<Shell title="Getting started">
   <h1>JBrowse Linear Genome View</h1>
   <p class="lead">
     A genome browser as a React component. For your own UI around the same
     engine, see <a href="https://jbrowse.org/storybook/byo/">Build your own</a>.
   </p>
 
-  <div
-    class:list={['demo', { reserved: !!reserved }]}
-    style={reserved ? `min-height:${reserved}px` : undefined}
-  >
+  <Demo slug={landingDemo}>
     <Example client:only="react" />
-  </div>
+  </Demo>
 
-  <Gallery examples={pages} />
+  <Gallery />
 </Shell>
