@@ -12,6 +12,7 @@ export default function TrackShorthand() {
           trackId: 'volvox_sv',
           uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
           name: 'Volvox duplications',
+          displayDefaults: { encoding: { color: { value: 'purple' } } },
         },
       ]}
       view={{ tracks: ['volvox_sv'] }}

@@ -29,8 +29,6 @@ class HalfTurnPlugin extends Plugin {
       }),
     )
   }
-
-  configure() {}
 }
 
 export default function InlinePlugin() {
