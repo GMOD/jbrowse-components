@@ -220,12 +220,35 @@ export function showRefNameLabels<T>(
  */
 interface RefNameRun {
   key: string
+  assemblyName: string
   refName: string
   reversed: boolean
   offsetPx: number
   endPx: number
   firstRegionIndex: number
   lastRegionIndex: number
+}
+
+/**
+ * Whether two adjacent regions, or content blocks, fall under one scalebar
+ * refName label. The single definition the labels, the space the coordinate
+ * numbers leave for them and the label menu share.
+ *
+ * Orientation is part of a run's identity, not just its refName: one label
+ * carries one direction (a `[rev]` marker under mixed orientation has to mean
+ * the whole of what it sits on), and two regions of one chromosome laid out in
+ * opposite directions are two things to name anyway. So is the assembly: two
+ * assemblies' chr1 side by side are two chromosomes.
+ */
+function sameRefNameRun(
+  a: { assemblyName: string; refName: string; reversed?: boolean },
+  b: { assemblyName: string; refName: string; reversed?: boolean },
+) {
+  return (
+    a.refName === b.refName &&
+    a.assemblyName === b.assemblyName &&
+    !!a.reversed === !!b.reversed
+  )
 }
 
 function refNameRuns(blocks: BaseBlock[]) {
@@ -237,20 +260,13 @@ function refNameRuns(blocks: BaseBlock[]) {
       block.displayedRegionIndex === undefined
     ) {
       current = undefined
-    } else if (
-      // orientation is part of a run's identity, not just its refName: one
-      // label carries one direction (a `[rev]` marker under mixed orientation
-      // has to mean the whole of what it sits on), and two regions of one
-      // chromosome laid out in opposite directions are two things to name
-      // anyway, however they are marked
-      current?.refName === block.refName &&
-      current.reversed === !!block.reversed
-    ) {
+    } else if (current !== undefined && sameRefNameRun(current, block)) {
       current.endPx = block.offsetPx + block.widthPx
       current.lastRegionIndex = block.displayedRegionIndex
     } else {
       current = {
         key: block.key,
+        assemblyName: block.assemblyName,
         refName: block.refName,
         reversed: !!block.reversed,
         offsetPx: block.offsetPx,
@@ -554,11 +570,7 @@ export function regionRunBounds(
 ) {
   const anchor = regions[firstIndex]
   const inRun = (r: Region | undefined) =>
-    r !== undefined &&
-    anchor !== undefined &&
-    r.refName === anchor.refName &&
-    r.assemblyName === anchor.assemblyName &&
-    !!r.reversed === !!anchor.reversed
+    r !== undefined && anchor !== undefined && sameRefNameRun(r, anchor)
   let first = firstIndex
   let last = lastIndex
   while (inRun(regions[first - 1])) {
@@ -697,6 +709,7 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
   const runs: BlockRun[] = []
   let current: BlockRun | undefined
   let currentRegionIndex: number | undefined
+  let prevBlock: ContentBlock | undefined
   for (const block of blocks) {
     if (block.type === 'ContentBlock') {
       if (
@@ -716,15 +729,16 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
           reversed,
           refName: block.refName,
           isLeftEndOfDisplayedRegion: !!block.isLeftEndOfDisplayedRegion,
-          labeled:
-            current?.refName !== block.refName || current.reversed !== reversed,
+          labeled: prevBlock === undefined || !sameRefNameRun(prevBlock, block),
         }
         currentRegionIndex = block.displayedRegionIndex
         runs.push(current)
       }
+      prevBlock = block
     } else {
       current = undefined
       currentRegionIndex = undefined
+      prevBlock = undefined
     }
   }
   return runs

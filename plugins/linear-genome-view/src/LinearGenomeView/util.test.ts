@@ -693,6 +693,42 @@ describe('getScalebarRefNameLabels', () => {
     expect(labels.map(l => l.key)).toEqual(['a'])
   })
 
+  // two assemblies' chr1 side by side are two chromosomes, and the coordinate
+  // numbers clear the second name just as the labels draw it
+  test('the same refName from another assembly gets its own label', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      {
+        ...refBlock({
+          key: 'b',
+          refName: 'chr1',
+          displayedRegionIndex: 1,
+          offsetPx: 800,
+          widthPx: 800,
+          isLeftEndOfDisplayedRegion: true,
+        }),
+        assemblyName: 'hg19',
+      },
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      prefix: '',
+    })
+    expect(labels.map(l => l.key)).toEqual(['a', 'b'])
+    expect(groupContiguousBlocks(blocks).map(r => r.labeled)).toEqual([
+      true,
+      true,
+    ])
+  })
+
   test('scrolled past a region: only the sticky label, no offscreen-left twin', () => {
     const blocks = [
       refBlock({
