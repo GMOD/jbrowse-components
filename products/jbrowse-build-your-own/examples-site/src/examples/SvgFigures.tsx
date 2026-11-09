@@ -68,7 +68,6 @@ const SvgFigures = observer(function SvgFigures() {
       tracks: ['hg38_phylop', 'hg38_genes'],
       highlight: [
         {
-          assemblyName: 'hg38',
           refName: 'chr17',
           start: 43044295,
           end: 43125364,

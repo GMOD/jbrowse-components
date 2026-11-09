@@ -93,7 +93,6 @@ const TrackLabels = observer(function TrackLabels() {
         <Labels view={state.session.view} />
         <TrackStack
           view={state.session.view}
-          trackIds={ids}
           style={{ flex: 1, minWidth: 0 }}
           renderTrack={id => (
             <>
