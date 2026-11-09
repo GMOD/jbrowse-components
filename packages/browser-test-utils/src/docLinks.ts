@@ -502,11 +502,8 @@ export function suggestDocLinks({
 }
 
 // The whole `pnpm check-links` run for one examples-site: every check above,
-// printed and reduced to an exit code. Each site's scripts/check-doc-links.mjs
-// was a byte-identical 122-line copy of this — the file already carried a
-// comment saying the shared impl belongs here, and this is the rest of it
-// arriving. The two things that genuinely differ per site, its own `pages` list
-// and where it sits on disk, are the arguments.
+// printed and reduced to an exit code. The two things that differ per site, its
+// own `pages` list and where it sits on disk, are the arguments.
 //
 // Returns the failure count; the caller exits on it, so this stays testable.
 export function runExamplesSiteChecks({

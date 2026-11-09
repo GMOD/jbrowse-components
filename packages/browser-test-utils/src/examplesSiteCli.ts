@@ -1,31 +1,21 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 
 import { listFilesRecursive, runExamplesSiteChecks } from './docLinks.ts'
 import { measureDemoHeights } from './examplesDemoHeights.ts'
 import { captureExamplePoster } from './examplesPoster.ts'
 
-// The whole of three examples-site maintenance scripts. Each site's
-// scripts/<name>.mjs is now a one-line call passing its own `import.meta.url`,
-// and that argument is the one part that cannot move here: node resolves a
-// module's relative paths from its real location, so a script shared by symlink
-// would look for `src/examples.ts` beside this file. Passing the anchor keeps
-// the sites' copies down to the line that names which site is calling.
-//
-// Everything downstream of the anchor is identical across all four sites by
+// The whole of three examples-site maintenance commands, run by
+// bin/examples-site.mjs in the site directory pnpm runs a package script from.
+// Everything downstream of that directory is identical across all four sites by
 // construction — where examples.ts lives, where dist/ lives, where the heights
-// file is written — which is why the copies were byte-identical with nothing
-// holding them that way.
+// file is written.
 
 interface ExamplesModule {
   pages: (Parameters<typeof runExamplesSiteChecks>[0]['pages'][number] & {
     skipSmoke?: boolean
   })[]
-}
-
-function siteRoot(scriptUrl: string) {
-  return path.join(path.dirname(fileURLToPath(scriptUrl)), '..')
 }
 
 // the specifier is only known at runtime, so `import()` is typed `any` here;
@@ -50,10 +40,9 @@ async function loadAstroConfig(site: string): Promise<{ base: string }> {
  * Advisory output: reference links still worth adding, and prose getting long.
  */
 export async function checkExamplesSiteDocLinks(
-  scriptUrl: string,
+  root: string,
   log: (message: string) => void = console.log,
 ) {
-  const root = siteRoot(scriptUrl)
   const repo = path.join(root, '..', '..', '..')
   const { pages } = await loadExamples(root)
   const { base } = await loadAstroConfig(root)
@@ -105,10 +94,9 @@ export async function checkExamplesSiteDocLinks(
  * leaves space inside the demo's own border.
  */
 export async function writeExamplesSiteDemoHeights(
-  scriptUrl: string,
+  site: string,
   log: (message: string) => void = console.log,
 ) {
-  const site = siteRoot(scriptUrl)
   const { pages } = await loadExamples(site)
   const config = await loadAstroConfig(site)
   const outFile = path.join(site, 'demoHeights.json')
@@ -130,6 +118,7 @@ export async function writeExamplesSiteDemoHeights(
       .map(([slug, h]) => `  ${slug.padEnd(30)} ${String(h).padStart(4)}px`)
       .join('\n')}\nwrote ${path.relative(site, outFile)}`,
   )
+  return 0
 }
 
 /**
@@ -143,11 +132,10 @@ export async function writeExamplesSiteDemoHeights(
  * shot at.
  */
 export async function writeExamplesSitePoster(
-  scriptUrl: string,
+  site: string,
   slug: string,
   log: (message: string) => void = console.log,
 ) {
-  const site = siteRoot(scriptUrl)
   const { base } = await loadAstroConfig(site)
   const out = `${path.join(site, 'public', slug)}.png` as const
   const { width, height } = await captureExamplePoster({

@@ -9,10 +9,10 @@
     "preview": "astro preview",
     "typecheck": "astro check",
     "measure-eager-bundle": "node scripts/measureEagerBundle.mjs",
-    "measure-demo-heights": "node scripts/measureDemoHeights.mjs",
-    "capture-poster": "node scripts/capturePoster.mjs",
+    "measure-demo-heights": "node node_modules/@jbrowse/browser-test-utils/bin/examples-site.mjs measure-demo-heights",
+    "capture-poster": "node node_modules/@jbrowse/browser-test-utils/bin/examples-site.mjs capture-poster static-first-paint",
     "smoke": "node scripts/measureEagerBundle.mjs --check; budget=$?; node scripts/smoke.mjs && exit $budget",
-    "check-links": "node scripts/check-doc-links.mjs && node scripts/check-duplication.mjs",
+    "check-links": "node node_modules/@jbrowse/browser-test-utils/bin/examples-site.mjs check-links && node scripts/check-duplication.mjs",
     "probe-eager-graph": "node scripts/eagerGraph.mjs"
   },
   "dependencies": {
