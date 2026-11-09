@@ -226,7 +226,7 @@ export default function InlinePlugin() {
     <JBrowse
       assemblies={assemblies}
       tracks={tracks}
-      plugins={[HighlightRegionPlugin]}
+      plugins={[CopyAsBedPlugin]}
       views={[
         {
           type: 'LinearGenomeView',
