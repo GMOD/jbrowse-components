@@ -53,12 +53,15 @@ from the GPU, so it is not pursued.
   `connectorPairSections` places and classifies each with the overlay's own
   `connectorShape` (straight, dip, maps-back loop, dashed hidden-segment
   junction), so a pan or zoom rebuilds nothing; a height drag rebuilds it, as
-  it moved the dips before.
+  it moved the dips before, and as it moves the floor they end by.
 - **One mark per section, after the blocks.** Both renderers draw
   `CONNECTOR_MARK` over the whole canvas from every region's feed, scissored
-  to the section's connector band (`SectionRender.connectorClipTop` /
-  `connectorClipHeight`: the pileup band and the room it reserves under its
-  last row for a dip). The SVG export paints it with the rest of the canvas.
+  from the section's pileup top to the bottom of the canvas
+  (`SectionRender.pileupClipTop` / `connectorClipHeight`). A section keeps no
+  room under its last row: a dip below it draws over the next section, and
+  the hover asks every section's mark, the last drawn first. The feed lets
+  a dip take half the room between its row and the bottom of the display
+  (`dipFloorPx`), so the last section's lowest rows flatten. The SVG export paints it with the rest of the canvas.
 - **The straight-line pass stays** where it is. On the GPU it costs about
   nothing, and it paints under the reads, where a view-spanning mark drawn
   after the blocks would stripe a deep pileup.

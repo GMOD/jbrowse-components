@@ -204,15 +204,15 @@ now exports no axis, as the display draws none.
 The layout runs there too: `pileupLayoutViews.ts` holds `facetLayoutViews`
 (the facet and the collapse in effect), `groupLayoutViews` (the sections and
 their `groupLayoutContext`), `pileupLayoutViews` (`layoutGroupsToViewport`,
-then `applyChainStrandFrames`) and `connectorViews` (`connectorsByGroup` and
-each section's `connectorDipReserve`), which the model installs around its fit
+then `applyChainStrandFrames`) and `connectorViews` (`connectorsByGroup`),
+which the model installs around its fit
 policy and the tables' host installs with no row cap, no coverage-only lane
 and no sized lane: a cap is a viewport policy, so the tables lay every row
 out. Running them closed a drift: the tables laid a faceted
 `pileup.collapsed` out as stacks.
 `packages/tables/src/parity/alignmentsGeometry.parity.test.ts` compares each
-read's row and section, the connectors, the dip reserve, the junctions, the
-arcs and the mismatch colors.
+read's row and section, the connectors, the junctions, the arcs and the
+mismatch colors.
 
 ## Built: features on a static MST host
 

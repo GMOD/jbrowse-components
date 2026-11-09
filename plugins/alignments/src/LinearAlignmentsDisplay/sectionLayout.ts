@@ -41,14 +41,9 @@ export interface Section {
   // The laid-out rows alone, the band the dip law sizes a discordant dip to
   // (`discordantDipPx`), so a drag padding the band deepens no curve.
   rowsHeight: number
-  // Room under the pileup band for the deepest connector that dips below its
-  // row, so the last rows' curves finish above the next section. Not part of
-  // `pileupHeight`: no read draws or hit-tests there, and the dip law takes the
-  // band without it.
-  dipReserve: number
   // The whole strip this section owns, down to the next section's coverage
-  // top: carried because the dip reserve and the label-chip pad belong to it,
-  // and re-deriving it from the next section put a group's name over the next.
+  // top: carried because the label-chip pad belongs to it, and re-deriving it
+  // from the next section put a group's name over the next.
   height: number
 }
 
@@ -260,18 +255,12 @@ export function laneBandOverheads(
   )
 }
 
-export interface SectionStackOpts<L> {
+export interface SectionStackOpts {
   rowHeight: number
   // Floor on the distance to the next section's top, so a section shorter than
   // its own label chip still leaves room for it. Only the stacking advance is
   // padded; `pileupHeight` stays the drawn row extent.
   minSectionHeight: number
-  // How far below a lane's pileup band its deepest dipping connector reaches,
-  // given that band's height (`connectorDipReservePx`). Pads only the advance,
-  // and never a lane sized by a drag: that lane is the height dragged to, so
-  // its seam follows the pointer, and it keeps only the rows whose dip room
-  // fits inside it (`sizedLaneDipCaps`).
-  dipReservePx: (lane: L, pileupHeight: number) => number
 }
 
 // Stack sections top-to-bottom, each reserving its own band stack and then its
@@ -280,7 +269,7 @@ export interface SectionStackOpts<L> {
 export function computeStackedSections<L extends SectionLaneInput>(
   lanes: readonly L[],
   settings: BelowCoverageBandsSettings,
-  opts: SectionStackOpts<L>,
+  opts: SectionStackOpts,
 ): SectionsLayout<L> {
   let top = 0
   const sections = lanes.map(lane => {
@@ -292,12 +281,8 @@ export function computeStackedSections<L extends SectionLaneInput>(
       lane.heightOverridePx !== undefined && rowsHeight > 0
         ? Math.max(rowsHeight, lane.heightOverridePx)
         : rowsHeight
-    const dipReserve =
-      pileupHeight > 0 && lane.heightOverridePx === undefined
-        ? opts.dipReservePx(lane, pileupHeight)
-        : 0
     top = Math.max(
-      pileupTop + pileupHeight + dipReserve,
+      pileupTop + pileupHeight,
       coverageTop + opts.minSectionHeight,
     )
     return {
@@ -308,7 +293,6 @@ export function computeStackedSections<L extends SectionLaneInput>(
       pileupTop,
       pileupHeight,
       rowsHeight,
-      dipReserve,
       height: top - coverageTop,
     }
   })
@@ -339,7 +323,7 @@ export function buildSectionRenders(
       coverageTopOffset: coverageTop,
       pileupClipTop,
       pileupClipHeight: clipHeightTo(pileupBottom),
-      connectorClipHeight: clipHeightTo(pileupBottom + sec.dipReserve),
+      connectorClipHeight: Math.max(0, scroll.canvasHeight - pileupClipTop),
       arcBand:
         sec.arcBand && sec.arcBand.height > 0
           ? { ...sec.arcBand, top: bandScreenTop(sec.arcBand.top, scroll) }

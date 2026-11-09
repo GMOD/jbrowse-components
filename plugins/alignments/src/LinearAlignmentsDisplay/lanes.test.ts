@@ -113,7 +113,7 @@ test('a section is emitted per lane, carrying that lane', () => {
       showSashimi: false,
       sashimiHeight: 0,
     },
-    { rowHeight: 10, minSectionHeight: 0, dipReservePx: () => 0 },
+    { rowHeight: 10, minSectionHeight: 0 },
   )
   expect(sections.map(s => s.groupKey)).toEqual(['a', 'b'])
   // Each entry carries its lane's own collections alongside its own geometry,

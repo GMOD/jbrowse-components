@@ -35,7 +35,6 @@ const GEOMETRY_DECISIONS = [
   'sections',
   'rows',
   'connectors',
-  'dipReserve',
   'junctions',
   'arcs',
   'mismatchColors',
@@ -115,9 +114,8 @@ function readRows(
 /**
  * What the alignments display draws of its pileup's geometry in `window`,
  * read off the model as its renderers read it: each drawn read's section and
- * row, every connector the line pass and the connector mark draw, each
- * section's dip reserve, the junctions the sashimi band draws and their
- * color, the arcs the read-connection band draws (those joining two regions
+ * row, every connector the line pass and the connector mark draw, the
+ * junctions the sashimi band draws and their color, the arcs the read-connection band draws (those joining two regions
  * by its overlay), and the color each mismatched base paints. The display
  * lays out the view's margin around a one-locus window too, which the window
  * does not show.
@@ -207,7 +205,6 @@ function modelGeometry(
     sections: sections.map(s => s.label),
     rows: m.showPileup ? readRows(sections, shown) : {},
     connectors: sorted([...straightLines, ...marked]),
-    dipReserve: Object.fromEntries(sections.map(s => [s.label, s.dipReserve])),
     junctions: Object.fromEntries(
       m.sashimiJunctionSections.flatMap(sec =>
         sec.junctions.map(j => [
@@ -276,9 +273,6 @@ function exportGeometry(t: AlignmentTables) {
           ? `${c.section[i]} ${c.start[i]}-${c.end[i]} ${c.row[i]}/${c.endRow[i]} straight`
           : `${c.section[i]} ${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.row[i]}/${c.endRow[i]} ${kind} ${c.dip[i]}`,
       ),
-    ),
-    dipReserve: Object.fromEntries(
-      t.sections.label.map((label, i) => [label, t.sections.dipReserve[i]]),
     ),
     junctions: Object.fromEntries(
       j.start.flatMap((start, i) =>
@@ -507,7 +501,7 @@ describe('simulated pairs over loci on two contigs, end to end', () => {
   )
 })
 
-test('the cases decide over loops, curves, straight lines, junctions, arcs within and across regions, and a dip reserve', async () => {
+test('the cases decide over loops, curves, straight lines, junctions, and arcs within and across regions', async () => {
   const [loops, pairs, spliced, arcs, acrossLoci] = await Promise.all([
     engine.alignments({ ...TANDEM_DUPLICATION, display: { unit: 'chain' } }),
     engine.alignments({
@@ -527,7 +521,6 @@ test('the cases decide over loops, curves, straight lines, junctions, arcs withi
   expect(loops.connectors.kind).toContain('loop')
   expect(pairs.connectors.kind).toContain('curve')
   expect(pairs.connectors.kind).toContain('straight')
-  expect(Math.max(...pairs.sections.dipReserve)).toBeGreaterThan(0)
   expect(spliced.junctions.shown).toContain(true)
   expect(arcs.arcs.start.length).toBeGreaterThan(0)
   expect(

@@ -160,10 +160,10 @@ a quiet region.
   the mark's own placement (render-core's `connectorPlacement`), returning
   each cubic's two control points in bp and rows and the arrowhead's arms, so
   a dip flattens as the figure zooms out, as the display's does.
-- `sections` has `dipReserve`, the px the display keeps under a section's
-  last row for its deepest dipping connector (the display's
-  `connectorDipReserve`), 0 where nothing dips past the rows and under
-  `heightMode: 'fit'`; a host adds it to the pileup's height.
+- A curve's `dip` can reach below its section's last row. The display keeps
+  no room for it and draws the curve over what is under the section, a dip
+  near the bottom of the track drawn shallower; a host with no
+  track height gets every `dip` as asked for and leaves that room itself.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where
@@ -176,7 +176,7 @@ a quiet region.
 - The tables run the display's own layout views (`pileupLayoutViews.ts`:
   `facetLayoutViews`, `groupLayoutViews`, `pileupLayoutViews`,
   `connectorViews`) on their static host, so a read's row and section, the
-  connectors and the dip reserve are the display's. What a viewport adds
+  connectors are the display's. What a viewport adds
   stays the view's: the row caps that split a track's height between
   sections, a lane's coverage-only chevron and a dragged lane size. The tables
   lay every row out.
@@ -255,8 +255,8 @@ what touches the window:
 - `alignments`: the reads touching it and the reads a listed connector joins
   to them, which the display draws partly off screen, with their marks, so
   every `key`, `mateKey` and `read` names a listed read; the connectors,
-  overlaps, arcs and ticks reaching into it. Connectors, arcs and the dip
-  reserve are placed in the contig, the arcs over the reads fetched.
+  overlaps, arcs and ticks reaching into it. Connectors and arcs are placed
+  in the contig, the arcs over the reads fetched.
 - A refusal names the regions asked for: `byteLimit` counts the bytes fetched,
   the margin's included, and `spanLimit` the span asked for.
 

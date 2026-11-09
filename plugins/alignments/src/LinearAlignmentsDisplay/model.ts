@@ -1264,8 +1264,6 @@ export default function stateModelFactory(
             {
               rowHeight: self.rowHeight,
               minSectionHeight: this.minSectionHeight,
-              dipReservePx: (lane, pileupHeight) =>
-                self.connectorDipReserve(lane.groupKey, pileupHeight),
             },
           )
         },
@@ -1282,9 +1280,12 @@ export default function stateModelFactory(
         /**
          * #getter
          * The pairs the connector mark draws, placed on each drawn section's
-         * pileup band, their dips sized to its rows (`rowsHeight`).
+         * pileup band, their dips sized to its rows (`rowsHeight`) and ending
+         * by `dipFloor`, the bottom of the display measured from that band's
+         * top with the display scrolled to its end.
          */
         get connectorPairSections() {
+          const bottom = Math.max(this.sections.contentHeight, self.height)
           return this.renderSections.flatMap(sec => {
             const pairs = self.connectorsByGroup.get(sec.groupKey)?.overlayPairs
             return pairs?.length
@@ -1293,7 +1294,7 @@ export default function stateModelFactory(
                     groupKey: sec.groupKey,
                     pileupTop: sec.pileupTop,
                     pileupHeight: sec.rowsHeight,
-                    dipReserve: sec.dipReserve,
+                    dipFloor: bottom - sec.pileupTop,
                     pairs,
                   },
                 ]
@@ -1750,6 +1751,7 @@ export default function stateModelFactory(
                   featureHeight: self.featureHeight,
                   featureSpacing: self.featureSpacing,
                   pileupHeight: sec.pileupHeight,
+                  dipFloorPx: sec.dipFloor,
                   colors: colors.get(),
                   labels: self.declaredReadLabels.categories,
                 }),

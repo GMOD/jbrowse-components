@@ -89,9 +89,9 @@ export interface SectionRender {
   // Clip band for the pileup passes.
   pileupClipTop: number
   pileupClipHeight: number
-  // How far the connectors' clip runs from `pileupClipTop`: the pileup's
-  // band, on through the room the section reserves under its last row for a
-  // dipping one.
+  // How far the connectors' clip runs from `pileupClipTop`: to the bottom of
+  // the canvas, so a dip below the section's last row draws over what is
+  // under it.
   connectorClipHeight: number
   // Screen-space paired-end arc band for this section, or undefined when arcs
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);

@@ -273,7 +273,6 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "strand": "array",
     },
     "sections": {
-      "dipReserve": "array",
       "key": "array",
       "label": "array",
     },
@@ -550,7 +549,6 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "strand": "array",
     },
     "sections": {
-      "dipReserve": "array",
       "key": "array",
       "label": "array",
     },

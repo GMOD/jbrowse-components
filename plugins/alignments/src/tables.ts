@@ -219,7 +219,6 @@ import { getOrCreate } from './shared/util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
-import type { GroupSize } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -525,7 +524,6 @@ interface AlignmentsTablesInputs {
 
 const NO_KEYS: ReadonlySet<string> = new Set()
 const NO_ROW_CAPS: ReadonlyMap<string, RowCap> = new Map()
-const NO_GROUP_SIZES: ReadonlyMap<string, GroupSize> = new Map()
 
 /**
  * The alignments display reduced to what its tables decide from: its config,
@@ -596,9 +594,6 @@ const AlignmentsTablesHost = types
     },
     get groupRowCaps() {
       return NO_ROW_CAPS
-    },
-    get groupSizesInEffect() {
-      return NO_GROUP_SIZES
     },
     get fitDefaultCap() {
       return UNCAPPED
@@ -1829,12 +1824,6 @@ function laidOutTables(
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
-      dipReserve: order.map(({ key }) =>
-        host.connectorDipReserve(
-          key,
-          groupMaxY(laidByGroup.get(key)!) * readPitch,
-        ),
-      ),
     },
     // apart where the display's one legend box merges them: a host drawing
     // reads and arcs as separate layers keys each, so merging here was reverted

@@ -244,9 +244,9 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         // from the height the lane was given, which can sit between two row
         // boundaries or past its rows, rather than the row-snapped band it
         // shows, so a drag inside one row does not snap back to it. An unsized
-        // lane starts from the seam's own height, dip room and label floor
-        // included: a sized lane is the height it was given, so starting from
-        // the band alone dropped those on the first frame.
+        // lane starts from the seam's own height, label floor included: a
+        // sized lane is the height it was given, so starting from the band
+        // alone dropped that on the first frame.
         const given = model.groupSizes.get(section.groupKey)
         return (
           <PileupResizeHandle

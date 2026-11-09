@@ -1,12 +1,8 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
-import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import {
-  connectorDipReservePx,
   connectorFilterOf,
-  enumerateConnectorPairs,
-  pairLowerRow,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { facetForUnit, sectionOrder } from '../shared/groupFeatures.ts'
@@ -16,8 +12,6 @@ import {
   applyChainStrandFrames,
   laneLayoutOf,
   layoutGroupsToViewport,
-  relayGroups,
-  sizedLaneDipCaps,
 } from './groupLayout.ts'
 import { buildRawDataByGroup, orderedGroups } from './groupedDataMaps.ts'
 
@@ -28,7 +22,6 @@ import type {
   RowCap,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
-import type { LinkedPair } from '../features/linkedReads/compute.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type {
   ColorFieldKind,
@@ -39,12 +32,7 @@ import type {
 } from '../shared/types.ts'
 import type { ConfigSlotSelf } from './configSlotViews.ts'
 import type { AlignmentsUnit } from './constants.ts'
-import type {
-  GroupLayoutContext,
-  GroupSize,
-  LaidOutByGroup,
-} from './groupLayout.ts'
-import type { IComputedValue } from 'mobx'
+import type { GroupLayoutContext, LaidOutByGroup } from './groupLayout.ts'
 
 /** What {@link facetLayoutViews} reads: the facet and unit settings. */
 export interface FacetLayoutHost extends ConfigSlotSelf {
@@ -214,9 +202,8 @@ export function groupLayoutViews(self: GroupLayoutHost) {
 }
 
 /**
- * What {@link pileupLayoutViews} reads: the layout context, the row caps a
- * viewport and the lane sizes set, which a static export answers with none,
- * and what a sized lane's connectors need.
+ * What {@link pileupLayoutViews} reads: the layout context and the row caps a
+ * viewport and the lane sizes set, which a static export answers with none.
  */
 export interface PileupLayoutHost {
   groupLayoutContext: GroupLayoutContext
@@ -224,19 +211,8 @@ export interface PileupLayoutHost {
   fitCeilingRows: number
   fitDefaultCap: RowCap
   groupRowCaps: ReadonlyMap<string, RowCap>
-  groupSizesInEffect: ReadonlyMap<string, GroupSize>
   bodyColorKind: ColorFieldKind
   unit: AlignmentsUnit
-  drawsConnectors: boolean
-  canonicalRefName: CanonicalRefName | undefined
-  loadedRegions: ReadonlyMap<number, RegionBounds>
-  connectionFilter: ConnectionFilter
-  arcCollection: { belowFloor: ReadonlySet<string> }
-  featureHeight: number
-  featureSpacing: number
-  host: {
-    displayedRegions: readonly { refName: string; reversed?: boolean }[]
-  }
 }
 
 /**
@@ -244,30 +220,16 @@ export interface PileupLayoutHost {
  * settled: the one layout the display draws and a static export reports.
  */
 export function pileupLayoutViews(self: PileupLayoutHost) {
-  let dipCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
   return {
-    /**
-     * #getter
-     * Which pairs the connectors draw under `connectionFilter`. The
-     * inter-chromosomal floor comes from the arc band's collection
-     * stage, which runs only once a connector crosses chromosomes.
-     */
-    get connectorFilter() {
-      return connectorFilterOf(
-        self.connectionFilter,
-        i => self.loadedRegions.get(i)?.refName,
-        () => self.arcCollection.belowFloor,
-      )
-    },
-
     /**
      * #getter
      * Per-group laid-out data, each lane under the cap the viewport or its
      * size sets: group key → (region index → laid-out data). Each group
      * lays out independently under a per-group cap, so a dense group
-     * cannot starve the rest.
+     * cannot starve the rest. Rows only; the per-read color arrays bake
+     * one computed later, in `laidOutByGroup`.
      */
-    get laidOutByRowCaps() {
+    get laidOutByGroupUncolored() {
       return layoutGroupsToViewport(self.groupLayoutContext, {
         collapsedKeys: self.collapsedGroups,
         // Reads only the resolved caps, not the track height, row pitch
@@ -276,77 +238,6 @@ export function pileupLayoutViews(self: PileupLayoutHost) {
         defaultCap: self.fitDefaultCap,
         overrideCaps: self.groupRowCaps,
       })
-    },
-
-    /**
-     * #getter
-     * The pairs the connector mark draws in each lane a drag sized, as
-     * `laidOutByRowCaps` lays it out.
-     */
-    get sizedLaneConnectorPairs() {
-      const pairs = new Map<string, LinkedPair[]>()
-      if (self.drawsConnectors) {
-        for (const [key, cap] of self.groupRowCaps) {
-          const map = this.laidOutByRowCaps.get(key)
-          if (cap.source === 'override' && map) {
-            pairs.set(
-              key,
-              enumerateConnectorPairs(
-                map,
-                self.canonicalRefName,
-                i => self.loadedRegions.get(i)?.refName,
-              ).filter(this.connectorFilter),
-            )
-          }
-        }
-      }
-      return pairs
-    },
-
-    /**
-     * #getter
-     * The fewer rows a sized lane keeps so the room its connectors dip
-     * below them fits its size (`sizedLaneDipCaps`). Keeps its identity
-     * while the caps compare equal, so a drag frame that moves no cap
-     * relays no read.
-     */
-    get sizedLaneDipCaps(): ReadonlyMap<string, RowCap> {
-      dipCaps ??= stableIdentityComputed(() => {
-        const rowHeight = self.featureHeight + self.featureSpacing
-        return sizedLaneDipCaps({
-          laidOut: this.laidOutByRowCaps,
-          sizes: self.groupSizesInEffect,
-          rowHeight,
-          reserveUnder: (key, rows) => {
-            const pairs = this.sizedLaneConnectorPairs.get(key)
-            return pairs?.length
-              ? connectorDipReservePx({
-                  pairs: pairs.filter(pair => pairLowerRow(pair) < rows),
-                  displayedRegions: self.host.displayedRegions,
-                  featureHeight: self.featureHeight,
-                  featureSpacing: self.featureSpacing,
-                  pileupHeight: rows * rowHeight,
-                })
-              : 0
-          },
-        })
-      })
-      return dipCaps.get()
-    },
-
-    /**
-     * #getter
-     * The layout the display draws: `laidOutByRowCaps`, with each sized
-     * lane whose connectors would dip past its size laid out again under
-     * its `sizedLaneDipCaps` cap. Rows only; the per-read color arrays
-     * bake one computed later, in `laidOutByGroup`.
-     */
-    get laidOutByGroupUncolored() {
-      return relayGroups(
-        self.groupLayoutContext,
-        this.laidOutByRowCaps,
-        this.sizedLaneDipCaps,
-      )
     },
 
     /**
@@ -408,21 +299,27 @@ export interface ConnectorHost {
   drawsConnectors: boolean
   canonicalRefName: CanonicalRefName | undefined
   loadedRegions: ReadonlyMap<number, RegionBounds>
-  connectorFilter: (pair: LinkedPair) => boolean
-  fitHeightToDisplay: boolean
-  featureHeight: number
-  featureSpacing: number
-  host: {
-    displayedRegions: readonly { refName: string; reversed?: boolean }[]
-  }
+  connectionFilter: ConnectionFilter
+  arcCollection: { belowFloor: ReadonlySet<string> }
 }
 
-/**
- * The pileup's connectors over the laid-out sections, and the room each
- * section keeps below its rows for the deepest of them.
- */
+/** The pileup's connectors over the laid-out sections. */
 export function connectorViews(self: ConnectorHost) {
   return {
+    /**
+     * #getter
+     * Which pairs the connectors draw under `connectionFilter`. The
+     * inter-chromosomal floor comes from the arc band's collection
+     * stage, which runs only once a connector crosses chromosomes.
+     */
+    get connectorFilter() {
+      return connectorFilterOf(
+        self.connectionFilter,
+        i => self.loadedRegions.get(i)?.refName,
+        () => self.arcCollection.belowFloor,
+      )
+    },
+
     /**
      * #getter
      * Every read connector per group, from one walk of its reads: the
@@ -437,7 +334,7 @@ export function connectorViews(self: ConnectorHost) {
           draws: self.drawsConnectors,
           canonicalRefName: self.canonicalRefName,
           refNameAt: i => self.loadedRegions.get(i)?.refName,
-          admits: self.connectorFilter,
+          admits: this.connectorFilter,
         },
         key =>
           laneLayoutOf(
@@ -447,29 +344,6 @@ export function connectorViews(self: ConnectorHost) {
             self.collapsedGroups,
           ) === 'stacked',
       )
-    },
-
-    /**
-     * #method
-     * The px a section keeps under its last row for its deepest dipping
-     * connector, given its pileup band's height
-     * (`connectorDipReservePx`); none under fit, whose pitch fills the
-     * track, or for a section drawing no rows.
-     */
-    connectorDipReserve(groupKey: string, pileupHeight: number) {
-      const pairs =
-        self.fitHeightToDisplay || pileupHeight === 0
-          ? undefined
-          : this.connectorsByGroup.get(groupKey)?.overlayPairs
-      return pairs?.length
-        ? connectorDipReservePx({
-            pairs,
-            displayedRegions: self.host.displayedRegions,
-            featureHeight: self.featureHeight,
-            featureSpacing: self.featureSpacing,
-            pileupHeight,
-          })
-        : 0
     },
   }
 }

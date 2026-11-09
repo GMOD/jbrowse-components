@@ -13,30 +13,30 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // Zoomed out, the connector mark caps the dip at a quarter of the ends' screen
 // separation (`connectorLiftPx`), so a narrow pair flattens toward a line.
 //
-// Scaling by the BAND is what keeps the ink: each pileup section clips at its
-// band bottom and the split view bleeds past its panel, so a fixed 110 px dip
-// under a six-read pileup fell off the bottom and read as a breakend tick. The
+// Scaling by the BAND is what keeps the ink: a fixed 110 px dip under a
+// six-read pileup fell off the bottom and read as a breakend tick. The
 // band a caller passes has to be a layout quantity — a pileup section's
 // `pileupHeight`, a split-view panel's height — and not a scroll-dependent one,
 // or the depth moves as the reader scrolls.
 //
 // The dip starts at the read's row while the band is measured from the band's
 // top, so any read below that top passes the band bottom by its own offset — a
-// 900 kb event in a 60 px band asks for 56 px from every row. The pileup
-// reserves that overshoot under the section's last row (`connectorDipReservePx`
-// in plugins/alignments) and still passes the band WITHOUT the reserve here, so
-// the room changes no depth. A lane sized by a drag passes its rows, not the
-// size, and keeps only as many rows as leave that room inside the size
-// (`sizedLaneDipCaps`). In fit-to-height mode it reserves nothing and the clip
-// cuts the lowest rows' curves, as the split view's panel edge does.
+// 900 kb event in a 60 px band asks for 56 px from every row. The pileup keeps
+// no room for that overshoot: the curve draws over whatever is under its
+// section, the next section's reads included, and clips at the bottom of the
+// display. A lane sized by a drag passes its rows, not the size. The connector
+// feed lets a dip take half the room between its row and the bottom of the
+// display with it scrolled to its end (`dipFloorPx` in plugins/alignments), so
+// the lowest rows of the last section flatten toward a line. The split view
+// clips at its panel edge.
 //
-// Capping the dip at the room left below the lower read was tried and measured
-// worse. It makes the ink fit, but on cancer_sv/derivative_inserts — 28
-// molecules of one junction in one band, the figure a reviewer asked to be
-// legible — every row that had to give room up flattens onto the band floor and
-// the curves pile there as a solid stripe. Clipped, the same curves simply leave
-// the band and the ones that remain stay readable. Shoot that figure before
-// trying it again.
+// Capping the dip at ALL the room left below the lower read was tried twice
+// and measured worse. It makes the ink fit, but on cancer_sv/derivative_inserts
+// — 28 molecules of one junction in one band, the figure a reviewer asked to be
+// legible — every row that had to give room up flattens onto the floor and the
+// curves pile there as a solid stripe. At half the room each row's apex sits
+// half a row above the next one's and the curves stay apart. Shoot that figure
+// before changing the share.
 const MIN_DIP_FRAC = 0.3
 const MAX_DIP_FRAC = 0.95
 const DIP_REF_MIN_BP = 1_000

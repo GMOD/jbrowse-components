@@ -556,7 +556,7 @@ export function layoutGroupsToViewport(
  * `pass` with each lane `caps` names laid out again under its new cap, and
  * every other lane's layout reused.
  */
-export function relayGroups(
+function relayGroups(
   ctx: GroupLayoutContext,
   pass: LaidOutByGroup,
   caps: ReadonlyMap<string, RowCap>,
@@ -566,76 +566,6 @@ export function relayGroups(
     result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
   }
   return result
-}
-
-/**
- * The most of a sized lane's `rows` that fit its size with the room their
- * connectors dip below them (`reserveUnder`), so the lane stays the height
- * dragged to and every curve finishes inside it. A smaller cap keeps the first
- * rows of a larger one's layout, which is what lets the one layout at the
- * size's own cap answer for every cap under it. At least one row.
- */
-export function rowsWithinSize({
-  rows,
-  sizePx,
-  rowHeight,
-  reserveUnder,
-}: {
-  rows: number
-  sizePx: number
-  rowHeight: number
-  reserveUnder: (rows: number) => number
-}) {
-  let lo = 1
-  let hi = rows
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2)
-    if (mid * rowHeight + reserveUnder(mid) <= sizePx) {
-      lo = mid
-    } else {
-      hi = mid - 1
-    }
-  }
-  return lo
-}
-
-/**
- * The cap each lane sized to a px height takes so its rows and their dip room
- * fit the size (`rowsWithinSize`), for the lanes whose laid-out rows do not.
- *
- * The room is read off the connectors of the uncut layout. In pileup mode a
- * cut can re-chain them: cutting the middle segment of an A→B→C split read
- * draws an A–C connector, and a mate whose primary is cut links from its
- * supplementary, so such a curve can still clip by up to the deepest dip.
- */
-export function sizedLaneDipCaps({
-  laidOut,
-  sizes,
-  rowHeight,
-  reserveUnder,
-}: {
-  laidOut: LaidOutByGroup
-  sizes: ReadonlyMap<string, GroupSize>
-  rowHeight: number
-  reserveUnder: (key: string, rows: number) => number
-}) {
-  const caps = new Map<string, RowCap>()
-  for (const [key, size] of sizes) {
-    const map = laidOut.get(key)
-    if (typeof size === 'number' && map) {
-      const rows = groupMaxY(map)
-      const kept = rowsWithinSize({
-        rows,
-        sizePx: size,
-        rowHeight,
-        reserveUnder: n => reserveUnder(key, n),
-      })
-      if (kept < rows) {
-        caps.set(key, overrideCap(kept))
-      }
-    }
-  }
-  return caps
 }
 
 // A sized lane's outcome under the shared cap, counted rather than laid out: one

@@ -34,7 +34,7 @@ function lane(o: Partial<TestLane> & { key: string; maxY: number }): TestLane {
 }
 
 type StackOpts = Partial<BelowCoverageBandsSettings> &
-  Partial<SectionStackOpts<TestLane>> & {
+  Partial<SectionStackOpts> & {
     coverageHeight: number
     rowHeight: number
   }
@@ -56,7 +56,6 @@ function stack(lanes: TestLane[], o: StackOpts) {
     {
       rowHeight: o.rowHeight,
       minSectionHeight: o.minSectionHeight ?? 0,
-      dipReservePx: o.dipReservePx ?? (() => 0),
     },
   )
 }
@@ -598,7 +597,7 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and clips the pileup 
       pileupClipTop: 45,
       // 4 rows of 10 scrolled up by 37: the band ends 3 px below the ceiling
       pileupClipHeight: 3,
-      connectorClipHeight: 3,
+      connectorClipHeight: 555,
       arcBand: undefined,
       sashimiBand: undefined,
     },
@@ -633,7 +632,7 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       coverageTopOffset: -10,
       pileupClipTop: 10,
       pileupClipHeight: 30,
-      connectorClipHeight: 30,
+      connectorClipHeight: 590,
       arcBand: undefined,
       sashimiBand: undefined,
     },
@@ -642,32 +641,23 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       coverageTopOffset: 40,
       pileupClipTop: 60,
       pileupClipHeight: 50,
-      connectorClipHeight: 50,
+      connectorClipHeight: 540,
       arcBand: undefined,
       sashimiBand: undefined,
     },
   ])
 })
 
-// The room a section reserves under its last row is the connectors' alone:
-// a dipping one finishes there, and the reads a row cap parked do not paint.
-test('buildSectionRenders: the connector band runs past the pileup by the dip reserve', () => {
-  const dipped = stack([lane({ key: '', maxY: 4 })], {
-    coverageHeight: 45,
-    rowHeight: 10,
-    dipReservePx: () => 12,
-  })
-  const [ungroupedRender] = renders(dipped, {
-    scrollTop: 0,
-    canvasHeight: 600,
-  })
-  expect(ungroupedRender?.pileupClipHeight).toBe(40)
-  expect(ungroupedRender?.connectorClipHeight).toBe(52)
-  const [clamped] = renders(dipped, {
+// A connector dipping below its section's last row draws over the next
+// section, where the reads a row cap parked do not paint.
+test('buildSectionRenders: the connector band runs to the bottom of the canvas', () => {
+  const [first, second] = renders(grouped, {
     scrollTop: 0,
     canvasHeight: 90,
   })
-  expect(clamped?.connectorClipHeight).toBe(45)
+  expect(first?.pileupClipHeight).toBe(30)
+  expect(first?.connectorClipHeight).toBe(70)
+  expect(second?.connectorClipHeight).toBe(20)
 })
 
 test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via shader)', () => {
@@ -750,70 +740,23 @@ test('minSectionHeight floors the advance to the next section, not the pileup', 
   expect(contentHeight).toBe(48)
 })
 
-// A discordant connector dips below its row, so the last rows' curves need
-// room under the band or the section's clip cuts them where the next section
-// begins.
-test('a dip reserve pushes the next section down and leaves the pileup band alone', () => {
-  const seen: [string, number][] = []
+// A connector dipping below its section's last row draws over the next
+// section, so the stacking keeps no room for it.
+test('a section advances by its rows alone', () => {
   const { sections, contentHeight } = stack(
     [
       lane({ key: 'split', maxY: 4 }),
       lane({ key: 'notSplit', maxY: 4 }),
       lane({ key: 'collapsed', maxY: 0 }),
     ],
-    {
-      coverageHeight: 0,
-      showCoverage: false,
-      rowHeight: 8,
-      dipReservePx: ({ key }, pileupHeight) => {
-        seen.push([key, pileupHeight])
-        return key === 'notSplit' ? 0 : 20
-      },
-    },
+    { coverageHeight: 0, showCoverage: false, rowHeight: 8 },
   )
-  expect(
-    sections.map(s => [s.pileupTop, s.pileupHeight, s.dipReserve, s.height]),
-  ).toEqual([
-    [0, 32, 20, 52],
-    [52, 32, 0, 32],
-    [84, 0, 0, 0],
+  expect(sections.map(s => [s.pileupTop, s.pileupHeight, s.height])).toEqual([
+    [0, 32, 32],
+    [32, 32, 32],
+    [64, 0, 0],
   ])
-  expect(contentHeight).toBe(84)
-  // asked with the band the dip law sees, and never for a band with no rows
-  expect(seen).toEqual([
-    ['split', 32],
-    ['notSplit', 32],
-  ])
-})
-
-// The drag handle sits at the section's bottom and sets the size, so a reserve
-// past the size kept the seam at the deepest dip until the drag passed it.
-test('a sized lane reserves no dip room past its size', () => {
-  const { sections } = stack(
-    [
-      lane({ key: 'sized', maxY: 4, heightOverridePx: 40 }),
-      lane({ key: 'unsized', maxY: 4 }),
-    ],
-    {
-      coverageHeight: 0,
-      showCoverage: false,
-      rowHeight: 8,
-      dipReservePx: () => 20,
-    },
-  )
-  expect(sections.map(s => [s.pileupHeight, s.dipReserve, s.height])).toEqual([
-    [40, 0, 40],
-    [32, 20, 52],
-  ])
-})
-
-test('no dip reserve callback reserves nothing', () => {
-  const { sections, contentHeight } = stack([lane({ key: '', maxY: 4 })], {
-    coverageHeight: 45,
-    rowHeight: 10,
-  })
-  expect(sections[0]!.dipReserve).toBe(0)
-  expect(contentHeight).toBe(85)
+  expect(contentHeight).toBe(64)
 })
 
 test('minSectionHeight is inert once a section is taller than it', () => {

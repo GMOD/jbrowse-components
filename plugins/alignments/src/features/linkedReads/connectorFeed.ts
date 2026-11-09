@@ -210,6 +210,21 @@ export function linePassInstance(
     : placed
 }
 
+// Clearance under the deepest apex for the stroke, which a hover thickens.
+const DIP_FLOOR_PAD_PX = 2
+// The share of the room under its row a dip may take. Short of all of it, so
+// the rows the floor flattens keep their apexes apart, in row order, where
+// taking it all piled every one of them on the floor as a stripe.
+const DIP_ROOM_SHARE = 0.5
+
+/** The deepest a dip starting at `rowCenterPx` reaches above `dipFloorPx`. */
+function dipRoomPx(rowCenterPx: number, dipFloorPx: number) {
+  return Math.max(
+    0,
+    (dipFloorPx - DIP_FLOOR_PAD_PX - rowCenterPx) * DIP_ROOM_SHARE,
+  )
+}
+
 export interface ConnectorFeedInput {
   pairs: readonly LinkedPair[]
   displayedRegions: readonly DisplayedRegion[]
@@ -217,6 +232,11 @@ export interface ConnectorFeedInput {
   featureSpacing: number
   /** The section's laid-out pileup band, which a discordant dip is sized to. */
   pileupHeight: number
+  /**
+   * How far below the band's top the bottom of the display sits. A dip or
+   * loop takes at most half the room between its row and there.
+   */
+  dipFloorPx: number
   colors: ColorPalette
   labels?: Partial<Record<SwatchCategory, string>>
 }
@@ -229,7 +249,8 @@ export interface ConnectorFeedInput {
  *
  * A normal connection is a straight segment, a maps-back loop dips a set depth
  * under its row and ends in an arrowhead, a hidden-segment junction is dashed,
- * and everything else dips by `discordantDipPx` (`connectorShape`).
+ * and everything else dips by `discordantDipPx` (`connectorShape`), or by
+ * half the room left above `dipFloorPx` where that is less.
  */
 export function buildConnectorFeeds({
   pairs,
@@ -237,6 +258,7 @@ export function buildConnectorFeeds({
   featureHeight,
   featureSpacing,
   pileupHeight,
+  dipFloorPx,
   colors,
   labels,
 }: ConnectorFeedInput): Map<number, ConnectorFeed> {
@@ -264,7 +286,18 @@ export function buildConnectorFeeds({
       lanes.x2Region.push(placed.x2Region)
       lanes.row.push(placed.row)
       lanes.row2.push(placed.row2)
-      lanes.bend.push(placed.bend)
+      lanes.bend.push(
+        placed.bend === CONNECTOR_BOW
+          ? placed.bend
+          : Math.min(
+              placed.bend,
+              dipRoomPx(
+                Math.max(placed.row, placed.row2) * rowPitch +
+                  featureHeight / 2,
+                dipFloorPx,
+              ),
+            ),
+      )
       lanes.width.push(placed.width)
       lanes.color.push(
         placed.alpha === 1

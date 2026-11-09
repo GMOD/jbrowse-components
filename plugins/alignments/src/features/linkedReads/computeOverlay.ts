@@ -1,5 +1,4 @@
 import { readNameAt, spanOf } from '@jbrowse/alignments-core'
-import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 import { discordantDipPx } from '@jbrowse/sv-core'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
@@ -229,9 +228,8 @@ function crossesOwnAlignment(
 }
 
 // How one pair is drawn, from the layout alone: nothing here reads a screen
-// position, so the section layout can ask it before any curve is projected
-// (`connectorDipReservePx`) and get the deepest the overlay draws; the mark
-// draws a dip shallower where its ends sit closer on screen than its depth.
+// position; the mark draws a dip shallower where its ends sit closer on screen
+// than its depth.
 //
 // A normal connection is a plain line and everything else dips below the
 // reads. A same-strand split junction is normal on any pair of chromosomes,
@@ -293,70 +291,4 @@ export const LOOP_MAX_ARROW_PX = 8
 /** How deep a maps-back loop dips under its row at a row pitch of `rowPitch`. */
 export function loopDipPx(rowPitch: number) {
   return Math.min(LOOP_MAX_DIP_PX, Math.max(LOOP_MIN_DIP_PX, 4 * rowPitch))
-}
-
-/** The lower of the two rows a pair joins, which its dip starts from. */
-export function pairLowerRow({ e1, e2 }: LinkedPair) {
-  return Math.max(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
-}
-
-// Clearance under the deepest apex for the stroke, which a hover thickens.
-const DIP_RESERVE_PAD_PX = 2
-
-// How far below a section's pileup band its deepest dipping connector or
-// maps-back loop reaches, which the section reserves under its last row so
-// that curve can finish (`computeStackedSections`). Zero when nothing dips, or
-// when every dip ends inside the band.
-//
-// `pileupHeight` is the band WITHOUT this reserve, the same number the overlay
-// hands the dip law, so reserving room changes no curve's depth. A cubic's
-// extreme is at most its apex depth below the lower endpoint, and exactly that
-// when the two ends share a row.
-//
-// Each dip counts at the depth its bps ask for, not the shallower one the mark
-// draws where its ends sit close on screen (`connectorLiftPx`), so a section
-// holds its height while the reader zooms; zoomed out, the room can stand
-// blank under curves drawn flat.
-export function connectorDipReservePx({
-  pairs,
-  displayedRegions,
-  featureHeight,
-  featureSpacing,
-  pileupHeight,
-}: Pick<
-  Opts,
-  | 'pairs'
-  | 'displayedRegions'
-  | 'featureHeight'
-  | 'featureSpacing'
-  | 'pileupHeight'
->) {
-  const rowH = featureHeight + featureSpacing
-  let deepest = 0
-  for (const pair of pairs) {
-    const { e1, e2 } = pair
-    const r1 = displayedRegions[e1.displayedRegionIndex]
-    const r2 = displayedRegions[e2.displayedRegionIndex]
-    if (r1 && r2) {
-      const { dipPx, loop } = connectorShape(
-        pair,
-        r1,
-        r2,
-        displayedRegions,
-        pileupHeight,
-      )
-      const depth = loop ? loopDipPx(rowH) : dipPx
-      if (depth !== undefined) {
-        deepest = Math.max(
-          deepest,
-          pairLowerRow(pair) * rowH +
-            featureHeight / 2 +
-            Math.min(depth, BEZIER_CONNECTOR_MAX_REACH_PX),
-        )
-      }
-    }
-  }
-  return deepest > 0
-    ? Math.max(0, Math.ceil(deepest + DIP_RESERVE_PAD_PX - pileupHeight))
-    : 0
 }

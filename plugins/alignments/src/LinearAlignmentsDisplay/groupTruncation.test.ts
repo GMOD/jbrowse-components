@@ -5,7 +5,6 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
 
-import { connectorDipReservePx } from '../features/linkedReads/computeOverlay.ts'
 import { laneExpandable } from './lanes.ts'
 import {
   bootAlignmentsDisplay,
@@ -497,10 +496,9 @@ test('a lane height floors at its label chip with coverage hidden', () => {
   expect(section.pileupHeight).toBe(section.height)
 })
 
-// A sized lane is the height dragged to, so its seam stays under the pointer;
-// the pair's dip from row 6 of the ten rows that size holds reached past that
-// seam, where the lane clips.
-test('a sized lane keeps the rows whose connectors finish inside it', () => {
+// A dip below a lane's last row draws over what is under it, so a sized lane
+// gives up no row to it, and the dip ends by the bottom of the display.
+test('a sized lane keeps every row its size holds under a dipping connector', () => {
   const display = seed([
     { key: '1', label: 'HP: 1', n: 0, data: readsWithPairOnRow(14, 6) },
   ])
@@ -509,19 +507,14 @@ test('a sized lane keeps the rows whose connectors finish inside it', () => {
   display.setGroupHeight('1', size)
 
   const section = display.renderSections[0]!
-  expect(section.pileupHeight + section.dipReserve).toBe(size)
+  expect(section.height).toBe(section.pileupTop + size)
+  expect(rowsIn(display, 0)).toBe(10)
   const [drawn] = display.connectorPairSections
   expect(drawn!.pairs).toHaveLength(1)
-  const reserve = connectorDipReservePx({
-    pairs: drawn!.pairs,
-    displayedRegions: [{ refName: 'ctgA' }],
-    featureHeight: display.featureHeight,
-    featureSpacing: display.featureSpacing,
-    pileupHeight: drawn!.pileupHeight,
-  })
-  expect(drawn!.pileupHeight + reserve).toBeLessThanOrEqual(size)
-  expect(rowsIn(display, 0)).toBeLessThan(10)
-  expect(clippedBy(display, '1')).toBe('override')
+  expect(drawn!.dipFloor).toBe(
+    Math.max(display.sections.contentHeight, display.height) -
+      section.pileupTop,
+  )
 })
 
 // jbrowse-img's `sortAt` counts the reads it keys; a hidden lane's are not drawn

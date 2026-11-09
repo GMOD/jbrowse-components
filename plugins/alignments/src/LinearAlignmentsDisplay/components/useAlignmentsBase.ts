@@ -94,11 +94,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     //
     // A splice junction outranks both by the same argument: its mark paints
     // last. A connector paints over the reads it joins, so it outranks the
-    // pileup the same way.
+    // pileup the same way, and it is asked of every section: one dipping
+    // below its section's last row paints over whatever is under it.
     const { renderState } = model
     const sec = picked ? renderState.sections[picked.index] : undefined
     const arc =
-      picked && sec
+      (picked && sec
         ? (resolveSashimiHit(
             canvasX,
             canvasY,
@@ -106,15 +107,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             renderState,
             sec,
           ) ??
-          resolveArcHover(canvasX, canvasY, picked.section, renderState, sec) ??
-          resolveConnectorHit(
-            canvasX,
-            canvasY,
-            picked.section,
-            renderState,
-            sec,
-          ))
-        : undefined
+          resolveArcHover(canvasX, canvasY, picked.section, renderState, sec))
+        : undefined) ?? resolveConnectorHit(canvasX, canvasY, renderState)
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
     // read the section's real offsets rather than standing in for a missing one.
@@ -170,27 +164,34 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       : undefined
   }
 
-  // The connector under the cursor in the hovered section, asked of the
-  // connector mark.
+  // The connector under the cursor, asked of the connector mark section by
+  // section, the last drawn first.
   function resolveConnectorHit(
     canvasX: number,
     canvasY: number,
-    section: LinearAlignmentsDisplayModel['renderSections'][number],
     renderState: RenderStateOf,
-    sec: SectionRenderOf,
   ): ConnectorMarkHit | undefined {
-    const feeds = model.themed.connectorFeedsByGroup.get(section.groupKey)
-    if (!feeds || feeds.size === 0) {
-      return undefined
+    let found: ConnectorMarkHit | undefined
+    for (let i = renderState.sections.length - 1; i >= 0 && !found; i--) {
+      const sec = renderState.sections[i]
+      const groupKey = model.renderSections[i]?.groupKey
+      const feeds =
+        groupKey === undefined
+          ? undefined
+          : model.themed.connectorFeedsByGroup.get(groupKey)
+      const hover =
+        sec && feeds
+          ? resolveConnectorHover(
+              canvasX,
+              canvasY,
+              feeds,
+              sec,
+              connectorBandState(renderState, sec),
+            )
+          : undefined
+      found = hover ? { type: 'connector', ...hover } : undefined
     }
-    const hover = resolveConnectorHover(
-      canvasX,
-      canvasY,
-      feeds,
-      sec,
-      connectorBandState(renderState, sec),
-    )
-    return hover ? { type: 'connector', ...hover } : undefined
+    return found
   }
 
   // The splice junction under the cursor in the hovered section, asked of the

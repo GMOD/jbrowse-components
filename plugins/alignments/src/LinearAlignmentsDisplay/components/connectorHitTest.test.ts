@@ -66,6 +66,7 @@ const feeds = buildConnectorFeeds({
   featureHeight: 10,
   featureSpacing: 0,
   pileupHeight: 100,
+  dipFloorPx: Infinity,
   colors: makeTestPalette(),
 })
 

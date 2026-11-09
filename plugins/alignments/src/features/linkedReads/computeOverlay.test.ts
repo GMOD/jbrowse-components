@@ -45,7 +45,6 @@ import {
 } from '../arcs/arcColors.ts'
 import {
   connectorCategories,
-  connectorDipReservePx,
   connectorFilterOf,
   enumerateConnectorPairs,
   resolveConnectors,
@@ -75,6 +74,7 @@ function drawnConnectors(opts: {
   featureSpacing: number
   pileupTopOffset: number
   pileupHeight: number
+  dipFloorPx?: number
   scrollTop: number
   colors: ColorPalette
   labels?: Partial<Record<SwatchCategory, string>>
@@ -97,7 +97,10 @@ function drawnConnectors(opts: {
     arrowPx: 0,
   }
   const frame = { canvasWidth: 1e9, canvasHeight: 1e9 }
-  const feeds = buildConnectorFeeds(opts)
+  const feeds = buildConnectorFeeds({
+    ...opts,
+    dipFloorPx: opts.dipFloorPx ?? Infinity,
+  })
   return [...feeds].flatMap(([regionIdx, feed]) =>
     feed.hits.flatMap((hit, i) => {
       const block = canvasWideBlock(regionIdx, frame.canvasWidth)
@@ -569,9 +572,8 @@ describe('connectors — discordant curves dip', () => {
   })
 })
 
-describe('connectorDipReservePx', () => {
-  // Three rows of 12 px: the band ends at the last read, which is where the
-  // section's clip used to cut the bottom rows' curves.
+describe('dipFloorPx', () => {
+  // Three rows of 12 px, the last read's row centred at 29.
   const pileupHeight = 36
   const rrPair = (ys: [number, number]) =>
     makeData({
@@ -588,98 +590,52 @@ describe('connectorDipReservePx', () => {
       ],
       ys,
     })
-  const reserveFor = (data: PileupDataResult) =>
-    connectorDipReservePx({
-      ...baseOpts,
-      pileupHeight,
-      pairs: enumerateConnectorPairs(new Map([[0, data]])),
-    })
-
-  it('holds the apex of a curve on the last row', () => {
-    const data = rrPair([2, 2])
-    const reserve = reserveFor(data)
-    const arcs = drawnConnectors({
+  const mapsBack = makeData({
+    names: ['r', 'r'],
+    flags: [0, SAM_FLAG_SUPPLEMENTARY],
+    strands: [1, 1],
+    positions: [
+      [300, 600],
+      [200, 500],
+    ],
+    ys: [2, 2],
+  })
+  const apexFor = (data: PileupDataResult, dipFloorPx?: number) => {
+    const [arc] = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pileupHeight,
+      dipFloorPx,
       pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
-    const { sy1, cp1y } = controlPoints(arcs[0]!.d)
-    const apex = sy1 + (cp1y - sy1) * CUBIC_APEX_RATIO
-    expect(apex).toBeGreaterThan(pileupHeight)
-    expect(apex).toBeLessThan(pileupHeight + reserve)
-    // only what the curve takes, plus the stroke's clearance
-    expect(pileupHeight + reserve - apex).toBeLessThan(3)
+    const { sy1, sy2, cp1y } = controlPoints(arc!.d)
+    const lower = Math.max(sy1, sy2)
+    return lower + (cp1y - lower) * CUBIC_APEX_RATIO
+  }
+
+  it('lets a curve on the last row dip past its band', () => {
+    expect(apexFor(rrPair([2, 2]))).toBeGreaterThan(pileupHeight)
+    expect(apexFor(mapsBack)).toBeGreaterThan(pileupHeight)
   })
 
-  it('holds a maps-back loop on the last row', () => {
-    const data = makeData({
-      names: ['r', 'r'],
-      flags: [0, SAM_FLAG_SUPPLEMENTARY],
-      strands: [1, 1],
-      positions: [
-        [300, 600],
-        [200, 500],
-      ],
-      ys: [2, 2],
-    })
-    const reserve = reserveFor(data)
-    const [loop] = drawnConnectors({
-      colors: PALETTE,
-      ...baseOpts,
-      pileupHeight,
-      pairs: enumerateConnectorPairs(new Map([[0, data]])),
-    })
-    const { sy1, cp1y } = controlPoints(loop!.d)
-    const apex = sy1 + (cp1y - sy1) * CUBIC_APEX_RATIO
-    expect(apex).toBeGreaterThan(pileupHeight)
-    expect(apex).toBeLessThan(pileupHeight + reserve)
-    expect(pileupHeight + reserve - apex).toBeLessThan(3)
+  // Half the 9 px between the row's centre and the floor, less the stroke's 2.
+  it('flattens a curve to half the room above the floor', () => {
+    expect(apexFor(rrPair([2, 2]), 40)).toBeCloseTo(33.5)
+    expect(apexFor(mapsBack, 40)).toBeCloseTo(33.5)
   })
 
-  it('measures from the lower of two rows', () => {
-    expect(reserveFor(rrPair([0, 2]))).toBe(reserveFor(rrPair([2, 2])))
-    expect(reserveFor(rrPair([0, 0]))).toBeLessThan(reserveFor(rrPair([2, 2])))
+  it('keeps flattened rows apart, in row order', () => {
+    const upper = apexFor(rrPair([1, 1]), 40)
+    expect(upper).toBeCloseTo(27.5)
+    expect(upper).toBeLessThan(apexFor(rrPair([2, 2]), 40))
   })
 
-  it('reserves nothing when no connector dips', () => {
-    // An LR pair across two regions is a straight line.
-    const lr = (ys: number[]) =>
-      makeData({
-        names: ['p'],
-        flags: [SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR],
-        strands: [1],
-        orientations: [PAIR_DIRECTION_NUM.LR],
-        positions: [[1000, 1100]],
-        ys,
-      })
-    const pairs = enumerateConnectorPairs(
-      new Map([
-        [0, lr([2])],
-        [1, lr([2])],
-      ]),
-    )
-    expect(
-      connectorDipReservePx({
-        ...baseOpts,
-        displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
-        pileupHeight,
-        pairs,
-      }),
-    ).toBe(0)
-    expect(
-      connectorDipReservePx({ ...baseOpts, pileupHeight, pairs: [] }),
-    ).toBe(0)
+  it('draws a curve with no room left as flat as its row', () => {
+    expect(apexFor(rrPair([2, 2]), 20)).toBeCloseTo(29)
   })
 
-  it('reserves nothing when the dip ends inside a taller band', () => {
-    expect(
-      connectorDipReservePx({
-        ...baseOpts,
-        pileupHeight: 400,
-        pairs: enumerateConnectorPairs(new Map([[0, rrPair([2, 2])]])),
-      }),
-    ).toBe(0)
+  it('leaves a curve that ends above the floor alone', () => {
+    expect(apexFor(rrPair([0, 0]), 400)).toBe(apexFor(rrPair([0, 0])))
   })
 })
 
