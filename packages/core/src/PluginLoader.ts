@@ -106,13 +106,21 @@ function promisifiedLoadScript(src: string, integrity?: string) {
   })
 }
 
+function hasImportScripts(
+  scope: typeof globalThis,
+): scope is typeof globalThis & {
+  importScripts: (...urls: string[]) => void
+} {
+  return 'importScripts' in scope && typeof scope.importScripts === 'function'
+}
+
 // A module worker has importScripts but throws from it, and called with no
 // urls it throws nowhere else
 function canImportScripts(
   scope: typeof globalThis,
 ): scope is typeof globalThis & { importScripts: (url: string) => void } {
   try {
-    if ('importScripts' in scope && typeof scope.importScripts === 'function') {
+    if (hasImportScripts(scope)) {
       scope.importScripts()
       return true
     } else {
