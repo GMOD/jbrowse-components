@@ -6864,7 +6864,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
@@ -7741,7 +7742,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
@@ -8413,7 +8415,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
@@ -9632,7 +9635,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
@@ -10603,7 +10607,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
@@ -11581,7 +11586,8 @@ export const configManifest: ConfigManifest = {
               "schema": "RowColor",
               "shorthand": {
                 "string": "field"
-              }
+              },
+              "liftsString": true
             },
             {
               "name": "axis",
