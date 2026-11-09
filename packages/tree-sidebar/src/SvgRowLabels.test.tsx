@@ -266,13 +266,13 @@ describe('annotation columns', () => {
       annotations: [population],
     })
     expect(barsOf(c)).toEqual([
-      { fill: eur, x: 0, y: 0, width: 4, height: 40 },
-      { fill: eur, x: 0, y: 60, width: 4, height: 20 },
-      { fill: afr, x: 0, y: 80, width: 4, height: 20 },
+      { fill: eur, x: 0, y: 0, width: 8, height: 40 },
+      { fill: eur, x: 0, y: 60, width: 8, height: 20 },
+      { fill: afr, x: 0, y: 80, width: 8, height: 20 },
     ])
   })
 
-  it('starts the columns past the row color bar, and the text past the columns', () => {
+  it('starts the columns past the row color, as wide as they are, and the text past the columns', () => {
     const textX = (c: HTMLElement) =>
       [...c.querySelectorAll('text')].map(t => t.getAttribute('x'))
     const one = draw({
@@ -281,30 +281,37 @@ describe('annotation columns', () => {
       labelOffset: 0,
       annotations: [population],
     })
-    expect(new Set(textX(one))).toEqual(new Set(['8']))
+    expect(new Set(textX(one))).toEqual(new Set(['12']))
     const two = draw({
       sources: colored,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population, sex],
     })
-    expect(new Set(textX(two))).toEqual(new Set(['16']))
+    expect(new Set(textX(two))).toEqual(new Set(['28']))
+    expect(
+      new Set(
+        [...two.querySelectorAll('[data-testid="row-color-bar"]')].map(bar =>
+          bar.getAttribute('width'),
+        ),
+      ),
+    ).toEqual(new Set(['8']))
     expect(two.querySelectorAll('[data-testid="row-color-bar"]')).toHaveLength(
       5,
     )
     expect(barsOf(two).map(bar => [bar.fill, bar.x])).toEqual([
-      [eur, 4],
-      [eur, 4],
-      [afr, 4],
-      [female, 8],
+      [eur, 8],
+      [eur, 8],
+      [afr, 8],
+      [female, 16],
     ])
   })
 
-  it('widens the label box by 4px a column', () => {
+  it('widens the label box by 8px a column', () => {
     const bare = rowLabelsBoxWidth(plain, 20)
-    expect(rowLabelsBoxWidth(plain, 20, undefined, [population])).toBe(bare + 4)
+    expect(rowLabelsBoxWidth(plain, 20, undefined, [population])).toBe(bare + 8)
     expect(rowLabelsBoxWidth(plain, 20, undefined, [population, sex])).toBe(
-      bare + 8,
+      bare + 16,
     )
   })
 
@@ -319,7 +326,7 @@ describe('annotation columns', () => {
     expect(barsOf(c).map(bar => bar.y)).toEqual([0])
   })
 
-  it('keeps 4px columns after the 8px swatch below the text threshold', () => {
+  it('draws 8px columns after the 8px swatch below the text threshold', () => {
     const c = draw({
       sources: colored,
       rowHeight: 2,
@@ -335,12 +342,12 @@ describe('annotation columns', () => {
     }))
     expect(rects).toEqual([
       { fill: dog, x: 0, width: 8, height: 10 },
-      { fill: female, x: 12, width: 4, height: 6 },
-      { fill: eur, x: 8, width: 4, height: 4 },
-      { fill: eur, x: 8, width: 4, height: 2 },
-      { fill: afr, x: 8, width: 4, height: 2 },
+      { fill: female, x: 16, width: 8, height: 6 },
+      { fill: eur, x: 8, width: 8, height: 4 },
+      { fill: eur, x: 8, width: 8, height: 2 },
+      { fill: afr, x: 8, width: 8, height: 2 },
     ])
-    expect(rowLabelsBoxWidth(colored, 2, undefined, [population, sex])).toBe(16)
+    expect(rowLabelsBoxWidth(colored, 2, undefined, [population, sex])).toBe(24)
   })
 
   it('draws the columns alone below the text threshold where no row has a color', () => {
@@ -352,11 +359,11 @@ describe('annotation columns', () => {
     })
     const bars = barsOf(c)
     expect(bars).toHaveLength(c.querySelectorAll('rect').length)
-    expect(new Set(bars.map(bar => bar.x))).toEqual(new Set([0, 4, 8]))
+    expect(new Set(bars.map(bar => bar.x))).toEqual(new Set([0, 8, 16]))
     expect(Math.min(...bars.map(bar => bar.height))).toBe(1)
     expect(
       rowLabelsBoxWidth(plain, 0.32, undefined, [population, sex, population]),
-    ).toBe(12)
+    ).toBe(24)
     expect(rowLabelsBoxWidth(plain, 0.32, undefined, [population])).toBe(8)
   })
 
@@ -403,7 +410,7 @@ describe('annotation columns', () => {
     }
     expect(
       svgSidebarWidth({ ...sidebar, annotations: [population, sex] }),
-    ).toBe(svgSidebarWidth(sidebar) + 8)
+    ).toBe(svgSidebarWidth(sidebar) + 16)
   })
 })
 

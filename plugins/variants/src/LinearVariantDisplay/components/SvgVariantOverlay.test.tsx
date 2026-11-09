@@ -118,7 +118,7 @@ test('rows.annotations exports a color column per attribute, each with a key', (
     step: 20,
     annotations: ['population', 'sex'],
   })
-  expect(model.svgSidebarWidth()).toBeCloseTo(plain.svgSidebarWidth() + 8)
+  expect(model.svgSidebarWidth()).toBeCloseTo(plain.svgSidebarWidth() + 16)
   expect(
     renderOverlay(plain).container.querySelectorAll(
       '[data-testid="row-annotation-bar"]',
@@ -137,12 +137,12 @@ test('rows.annotations exports a color column per attribute, each with a key', (
         .map(bar => bar.getAttribute('fill')),
     )
   expect(new Set(bars.map(bar => bar.getAttribute('x')))).toEqual(
-    new Set(['0', '4']),
+    new Set(['0', '8']),
   )
   expect(fillsAt('0').size).toBe(
     new Set(sources.map(row => row.population)).size,
   )
-  expect(fillsAt('4').size).toBe(new Set(sources.map(row => row.sex)).size)
+  expect(fillsAt('8').size).toBe(new Set(sources.map(row => row.sex)).size)
 
   const { getByText } = within(renderKey(model).container)
   getByText('Population')

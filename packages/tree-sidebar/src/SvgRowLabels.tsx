@@ -3,7 +3,6 @@ import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 
 import {
-  ROW_COLOR_BAR_WIDTH,
   ROW_SWATCH_WIDTH,
   rowColorWidth,
   rowLabelFontSize,
@@ -19,7 +18,7 @@ import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 // Each annotation's consecutive rows sharing a color, as one
-// `ROW_COLOR_BAR_WIDTH` rect (`rowRuns` owns that rule and says why; a row
+// `ROW_SWATCH_WIDTH` rect (`rowRuns` owns that rule and says why; a row
 // with no color contributes nothing, so a column draws gaps rather than a run
 // bridging them), the columns side by side from `x` on.
 function annotationRuns(
@@ -30,8 +29,8 @@ function annotationRuns(
   return annotations.flatMap((colors, column) =>
     rowRuns(sources, source => colors.get(source.name)).map(run => ({
       ...run,
-      x: x + column * ROW_COLOR_BAR_WIDTH,
-      width: ROW_COLOR_BAR_WIDTH,
+      x: x + column * ROW_SWATCH_WIDTH,
+      width: ROW_SWATCH_WIDTH,
       testId: 'row-annotation-bar',
     })),
   )
@@ -88,7 +87,7 @@ export function SvgRowLabels({
   const columns = annotationRuns(
     sources,
     annotations,
-    rowColorWidth(sources, rowHeight),
+    rowColorWidth(sources, rowHeight, annotations),
   )
   // Without a color there is nothing left once the text is gone, so a track
   // whose rows carry no color draws nothing rather than a bare stripe of the
@@ -141,7 +140,7 @@ export function SvgRowLabels({
             data-testid="row-color-bar"
             x={0}
             y={y}
-            width={ROW_COLOR_BAR_WIDTH}
+            width={rowColorWidth(sources, rowHeight, annotations)}
             height={rowHeight}
             {...getFillProps(source.rowColor)}
           />

@@ -468,8 +468,9 @@ adds `grid`, the row separators, on every row display but MAF.
   **longest-first** so the rarest group isn't overdrawn. The stripe is a marker,
   not a proportional encoding.
 - **An annotation is a column of runs after the row color.** `SvgRowLabels`
-  draws each `rows.annotations` column `ROW_COLOR_BAR_WIDTH` wide at every row
-  height, in the order listed, and the names start past the last one. A row
+  draws each `rows.annotations` column `ROW_SWATCH_WIDTH` (8 px) wide at every
+  row height, in the order listed, the row color beside them as wide, and the
+  names start past the last one. A row
   with no value leaves a gap. The width is fixed because the labels cover the
   plot's first region. Below `MIN_TEXT_ROW_HEIGHT` the box is the columns'
   width or the swatch's, whichever is wider.

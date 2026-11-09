@@ -241,7 +241,7 @@ const GROUPS = [
 ]
 
 // The box the labels draw on screen, the x the y scale starts at and the
-// gutter the export parks the sidebar in are one width, 4 px wider per column.
+// gutter the export parks the sidebar in are one width, 8 px wider per column.
 test.each([
   [['group']],
   [['group', { field: 'group', scale: { range: ['#111111', '#222222'] } }]],
@@ -258,7 +258,7 @@ test.each([
     )!
     const left = display.valueScales[0]!.left!
     expect(left).toBeCloseTo(
-      plain.valueScales[0]!.left! + 4 * annotations.length,
+      plain.valueScales[0]!.left! + 8 * annotations.length,
     )
     expect(Number(box[1])).toBeCloseTo(left)
     expect(

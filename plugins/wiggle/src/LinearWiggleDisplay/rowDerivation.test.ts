@@ -163,7 +163,7 @@ const TISSUES: (SourceInfo & { tissue: string })[] = [
 ]
 
 // The box the labels draw on screen, the x the y scale starts at and the
-// gutter the export parks the sidebar in are one width, 4 px wider per column.
+// gutter the export parks the sidebar in are one width, 8 px wider per column.
 test.each([[['group']], [['group', 'tissue']]])(
   'rows: the labels on screen, the scale past them and the export gutter widen alike under rows.annotations %j',
   async annotations => {
@@ -183,7 +183,7 @@ test.each([[['group']], [['group', 'tissue']]])(
     )!
     const left = display.valueScales[0]!.left!
     expect(left).toBeCloseTo(
-      plain.valueScales[0]!.left! + 4 * annotations.length,
+      plain.valueScales[0]!.left! + 8 * annotations.length,
     )
     expect(Number(box[1])).toBeCloseTo(left)
     expect(

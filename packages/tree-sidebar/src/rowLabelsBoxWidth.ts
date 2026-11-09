@@ -32,14 +32,16 @@ const TEXT_INSET = 4
 
 /**
  * Px the row color takes at the labels' left, none where no row has one: its
- * bar where the names draw, its swatch where they do not.
+ * bar where the names draw and it stands alone, else a column as wide as the
+ * annotations beside it, which is its swatch where no name draws.
  */
 export function rowColorWidth(
   sources: readonly RowLabelSource[],
   rowHeight: number,
+  annotations: readonly RowAnnotationColumn[] = [],
 ) {
   return sources.some(s => s.rowColor)
-    ? rowLabelsCarryText(rowHeight)
+    ? rowLabelsCarryText(rowHeight) && annotations.length === 0
       ? ROW_COLOR_BAR_WIDTH
       : ROW_SWATCH_WIDTH
     : 0
@@ -47,7 +49,7 @@ export function rowColorWidth(
 
 /**
  * Px of color at the labels' left: the row color, then a
- * `ROW_COLOR_BAR_WIDTH` column per annotation at any row height. Fixed
+ * `ROW_SWATCH_WIDTH` column per annotation at any row height. Fixed
  * widths, since the labels cover the plot's first region.
  */
 function rowColorsWidth(
@@ -56,7 +58,8 @@ function rowColorsWidth(
   annotations: readonly RowAnnotationColumn[] = [],
 ) {
   return (
-    rowColorWidth(sources, rowHeight) + annotations.length * ROW_COLOR_BAR_WIDTH
+    rowColorWidth(sources, rowHeight, annotations) +
+    annotations.length * ROW_SWATCH_WIDTH
   )
 }
 
@@ -69,11 +72,11 @@ export function rowColorColumnCenters(
   rowHeight: number,
   annotations: readonly RowAnnotationColumn[] = [],
 ) {
-  const rowColor = rowColorWidth(sources, rowHeight)
+  const rowColor = rowColorWidth(sources, rowHeight, annotations)
   return [
     ...(rowColor > 0 ? [rowColor / 2] : []),
     ...annotations.map(
-      (_, column) => rowColor + (column + 0.5) * ROW_COLOR_BAR_WIDTH,
+      (_, column) => rowColor + (column + 0.5) * ROW_SWATCH_WIDTH,
     ),
   ]
 }

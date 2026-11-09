@@ -95,7 +95,7 @@ describe('SvgRowColumnLabels', () => {
         annotations: [population, sex],
       }),
     )
-    expect(leaders.map(leader => leader.x)).toEqual([2, 6, 10])
+    expect(leaders.map(leader => leader.x)).toEqual([4, 12, 20])
     expect(leaders.map(leader => leader.width)).toEqual([1, 1, 1])
     expect(leaders.map(leader => leader.y)).toEqual(labels.map(l => l.y))
     const textX = new Set(labels.map(label => label.x))
@@ -105,7 +105,7 @@ describe('SvgRowColumnLabels', () => {
     expect(Math.max(...leaders.map(leader => leader.tickEnd))).toBeLessThan(x!)
   })
 
-  it('centers the leaders on the 8px swatch and the 4px columns at a sub-pixel row', () => {
+  it('centers the leaders on the same 8px columns at a sub-pixel row', () => {
     const { leaders } = partsOf(
       draw({
         labels: ['Superpopulation', 'Population', 'Sex'],
@@ -115,7 +115,7 @@ describe('SvgRowColumnLabels', () => {
         annotations: [population, sex],
       }),
     )
-    expect(leaders.map(leader => leader.x)).toEqual([4, 10, 14])
+    expect(leaders.map(leader => leader.x)).toEqual([4, 12, 20])
   })
 
   it('starts at the first annotation where no row has a color', () => {
@@ -128,7 +128,7 @@ describe('SvgRowColumnLabels', () => {
         annotations: [population, sex],
       }),
     )
-    expect(leaders.map(leader => leader.x)).toEqual([2, 6])
+    expect(leaders.map(leader => leader.x)).toEqual([4, 12])
   })
 
   it("takes the export's text size up to its line, and swallows no pointer", () => {

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`rows.annotations` on every row display is a list of `RowColor` channels, each a fixed 4 px categorical color column beside the row labels with its own key and palette; two or more take stair-step labels above the rows. Amends ADR-207's one key"
+summary: "`rows.annotations` on every row display is a list of `RowColor` channels, each a fixed 8 px categorical color column beside the row labels with its own key and palette; two or more take stair-step labels above the rows. Amends ADR-207's one key"
 ---
 
 # ADR-260: Row annotations are color columns beside the row labels
@@ -59,10 +59,13 @@ it exported.
 - **An annotation's pale lap stops short of white.** Past a palette's end
   the hues re-light as the row palette's do, deep and then pale, and the pale
   lap is capped at an OKLCH lightness of 0.85. The row palette's pale lap of
-  its yellow is `#fffffe` and of its pink `#fff5f6`, which a 4 px column on
+  its yellow is `#fffffe` and of its pink `#fff5f6`, which a narrow column on
   the paper background cannot show. The row color's own deal is unchanged.
-- **A column is 4 px at every row height**, `ROW_COLOR_BAR_WIDTH`, in runs
-  (`rowRuns`). The labels cover the first region's data (the header comment
+- **A column is 8 px at every row height**, `ROW_SWATCH_WIDTH`, in runs
+  (`rowRuns`), and beside one the row color is a column as wide, where alone
+  beside the names it stays a 4 px bar. The first build drew 4 px columns,
+  which the 1000 Genomes capture showed too thin to read against a row of
+  text (Colin, 2026-11-09). The labels cover the first region's data (the header comment
   in `RowLabelsOverlay.tsx`), so every px of sidebar is a px of plot hidden,
   and a fixed width keeps the cost a reader can count.
 - **Two or more color columns take a label each**, the row color's bar or
@@ -133,9 +136,8 @@ it exported.
   blue.
 - **A `width` option.** A default nobody should have to tune, and a wide
   column hides more of the first region.
-- **A wider column at sub-pixel rows.** The 8 px swatch there stands in for a
-  label that cannot draw; several columns read as a heatmap at 4 px, and at 8
-  each would double the plot they hide.
+- **A 4 px column.** As thin as the row color's bar, and too thin to read
+  as its own column of values beside the names.
 - **A shared `legend.title` for the annotations.** Each column is a different
   attribute, and its field is its title.
 - **A sequential ramp.** A quantitative row attribute needs a scale type, a
