@@ -86,7 +86,6 @@ export default function StaticFirstPaint() {
             <CircularGenomeView
               assembly={{
                 name: 'hg19',
-                aliases: ['GRCh37'],
                 uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
                 refNameAliases: {
                   uri: 'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',

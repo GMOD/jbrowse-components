@@ -15,10 +15,9 @@ const assembly = {
 
 const tracks = [
   {
-    trackId: 'volvox_sv_test',
-    name: 'volvox structural variant test',
+    trackId: 'volvox_sv',
+    name: 'Volvox duplications',
     uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
-    category: ['VCF'],
   },
 ]
 

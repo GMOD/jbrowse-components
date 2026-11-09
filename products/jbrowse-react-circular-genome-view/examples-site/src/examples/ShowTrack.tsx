@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '@jbrowse/react-circular-genome-view2'
 
-const TRACK_ID = 'volvox_sv_test'
+const TRACK_ID = 'volvox_sv'
 
 const ToggleTrack = observer(function ToggleTrack({
   viewState,
@@ -39,7 +39,7 @@ export default function ShowTrack() {
     tracks: [
       {
         trackId: TRACK_ID,
-        name: 'volvox structural variant test',
+        name: 'Volvox duplications',
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
       },
     ],
