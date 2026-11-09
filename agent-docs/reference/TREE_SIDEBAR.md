@@ -116,8 +116,8 @@ displays; ADR-157) and derives the rows from it.
 
 **`rows` is one object on every display, and the mixin reads its
 arrangement.** display-kit's `RowArrangement` is the five arrangement members
-(`sort`, `labels`, `colors`, `tree`, `kept`) with `color` and `axis`, MAF's
-`rows` whole. `Rows` extends it with `field`, `filter` and the axis `grid`: a
+(`sort`, `labels`, `colors`, `tree`, `kept`) with `color`, `annotations` and
+`axis`, MAF's `rows` whole. `Rows` extends it with `field`, `filter` and the axis `grid`: a
 feature field where the rows are a field's values, `source` alone on the
 quantitative display (`QuantitativeRows`), and `sample` or `haplotype` on the
 variant display (`VariantRows`). The host is typed on `RowArrangement`, so the
@@ -243,11 +243,15 @@ another setting.
   row's label bar, and a display paints its marks in it only where
   `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
 
-**A row color has one key, `rowColorScales`**, which every display spreads last
-into its `colorScales`: one scale titled by the `rows.color` field, capitalised,
-or none where it would have no entries. It keys wherever the labels cannot name
-the colors: by a field on any display at any row height, and by `name` only in a
-shared panel (on stacked rows the labels are the key).
+**A row color has one key, the first of `rowColorScales`**, which every display
+spreads last into its `colorScales`: one scale titled by the `rows.color` field,
+capitalised, or none where it would have no entries. It keys wherever the labels
+cannot name the colors: by a field on any display at any row height, and by
+`name` only in a shared panel (on stacked rows the labels are the key). After it
+comes one key per `rows.annotations` entry that colors a row
+(`rowAnnotationScales`), titled by its field, with the id
+`rowAnnotationScaleId(index)`. So a reader of the row color's key finds it by
+`ROW_COLOR_SCALE_ID`, never at index 0, as variants' `tables.ts` does.
 
 - `rowColorKeyEntries` lists one entry per value some row carries with a color,
   in deal order (pairs first, then first seen over the rows in source order, so a
@@ -408,6 +412,12 @@ marks derives it (wiggle's `markSources`) rather than storing it on the row.
 `RowLabelSource` is satisfied structurally, so a row type carrying the color under
 any other name type-checks and paints nothing.
 
+**The annotation columns are not a third color on the row.**
+`rows.annotations` is a list of `RowColor` channels (ADR-260), and the mixin's
+`rowAnnotationColors` is one `RowAnnotationColumn` per entry that colors a row:
+a map from row name to color, held beside the rows and never stamped on them.
+`rowAnnotationDeals` deals each entry's values as `dealtValueColors` does.
+
 `rowAxisConfigSchema` (display-kit) is the matching `rows.axis` object (`tree` /
 `branchLength` / `labels` / `width`), one sub-schema every row display's `rows`
 declares, so a display cannot ship three of the four. `rowAxisWithGridConfigSchema`
@@ -457,6 +467,12 @@ adds `grid`, the row separators, on every row display but MAF.
   draws, `SvgRowLabels` fills the label run with `rowColor`, floored to a pixel,
   **longest-first** so the rarest group isn't overdrawn. The stripe is a marker,
   not a proportional encoding.
+- **An annotation is a column of runs after the row color.** `SvgRowLabels`
+  draws each `rows.annotations` column `ROW_COLOR_BAR_WIDTH` wide at every row
+  height, in the order listed, and the names start past the last one. A row
+  with no value leaves a gap. The width is fixed because the labels cover the
+  plot's first region. Below `MIN_TEXT_ROW_HEIGHT` the box is the columns'
+  width or the swatch's, whichever is wider.
 - **Anything marking rows draws runs, never a rect per row (`rowRuns`).**
   `effectiveRowHeight` is fractional and deliberately never floored, so a rect per
   row blends twice at every boundary under a translucent fill. A row whose key is
@@ -538,8 +554,24 @@ not positioned, and reserving off the newick string puts the labels right of an
 empty gutter. Three places decide it: `TreeSidebar`'s early return,
 `SvgTreeSidebar`, and `treeSidebarOffset`.
 
-**A display states its export sidebar once, in the mixin's `svgSidebar` getter.**
-`renderSvg` hands that getter to `SvgTreeSidebar`, and the mixin's
+**The mixin states the sidebar once, in `rowSidebarProps`**: the tree, the band
+strip, the labels and the `rows.annotations` columns, from the settings and the
+rows drawn. A display's `svgSidebar` hook is that getter or a spread of it with
+what the display changes, so a new sidebar field needs no display edit:
+
+- variants and MAF return it as is;
+- wiggle's `sidebarPanel` replaces `showLabels` with `drawsRowLabels`, since an
+  overlay names no row;
+- the mark display's `sidebarPanel` is it while `drawsRows`, else undefined;
+- wiggle and marks add the axis gutter as `leftInset` in `svgSidebar`, and
+  their y scale's `left` is `sidebarPanelWidth(sidebarPanel)`.
+
+The static hosts (`wiggleStaticHost`, `markStaticHost`) install
+`rowSidebarViews` after `hierarchyViews`, as the mixin does. On screen
+`RowsPanel` and wiggle's `WiggleRowLabels` pass `rowAnnotationColors` to the
+same drawer, so the labels, the axis and the export gutter are one width.
+
+`renderSvg` hands `svgSidebar` to `SvgTreeSidebar`, and the mixin's
 `svgSidebarWidth(text)` sizes the view's gutter from the same props, so the width
 reserved and the sidebar drawn cannot drift. Both measure in the export's
 `ExportTextStyle`: labels measured in one font and drawn in another run into the
