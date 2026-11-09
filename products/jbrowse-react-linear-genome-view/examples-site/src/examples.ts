@@ -21,57 +21,6 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'disable-add-track',
-    title: 'Disable the add-track UI',
-    description: 'Hide the "add track" UI for a locked-down embed.',
-    group: 'Layout and chrome',
-  },
-  {
-    slug: 'fixed-height',
-    title: 'A fixed height, with a side drawer',
-    description: 'The height prop bounds the view and the drawer beside it.',
-    group: 'Layout and chrome',
-  },
-  {
-    slug: 'view-controls',
-    title: 'Navigate from your own buttons',
-    description:
-      'navToLocString for a locstring, navToLocations for coordinates.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'disable-zoom-and-side-scroll',
-    title: 'Stub out zoom and scroll',
-    description:
-      'A plugin turns zoomTo and scrollTo into no-ops; the inert header is hidden.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'show-track',
-    title: 'Show a track programmatically',
-    description: 'Show and hide a track from your own button.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'highlight-regions',
-    title: 'Highlight regions',
-    description: 'view.highlight shades regions, with a color and label each.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'flipped-regions',
-    title: 'Flipped regions',
-    description:
-      'Several regions, some reversed, and a horizontallyFlip() button.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'search-by-name',
-    title: 'Searching by name',
-    description: 'A trix index finds a gene by name.',
-    group: 'Navigation and search',
-  },
-  {
     slug: 'jexl-colors-and-labels',
     title: 'Jexl feature colors and labels',
     description: 'Color and re-label each feature from its own attributes.',
@@ -120,22 +69,43 @@ export const pages: ExamplePage[] = [
     group: 'Tracks',
   },
   {
-    slug: 'custom-theme',
-    title: 'Custom theme',
-    description: 'Four named palette colors drive most of the chrome.',
-    group: 'Theming',
+    slug: 'view-controls',
+    title: 'Navigate from your own buttons',
+    description:
+      'navToLocString for a locstring, navToLocations for coordinates.',
+    group: 'Navigation and search',
   },
   {
-    slug: 'dark-theme',
-    title: 'Dark theme',
-    description: 'palette.mode: dark.',
-    group: 'Theming',
+    slug: 'disable-zoom-and-side-scroll',
+    title: 'Stub out zoom and scroll',
+    description:
+      'A plugin turns zoomTo and scrollTo into no-ops; the inert header is hidden.',
+    group: 'Navigation and search',
   },
   {
-    slug: 'shadow-dom',
-    title: 'Package as a custom element',
-    description: 'A <jbrowse-linear-view> tag, shadow-isolated.',
-    group: 'Theming',
+    slug: 'show-track',
+    title: 'Show a track programmatically',
+    description: 'Show and hide a track from your own button.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'highlight-regions',
+    title: 'Highlight regions',
+    description: 'view.highlight shades regions, with a color and label each.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'flipped-regions',
+    title: 'Flipped regions',
+    description:
+      'Several regions, some reversed, and a horizontallyFlip() button.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'search-by-name',
+    title: 'Searching by name',
+    description: 'A trix index finds a gene by name.',
+    group: 'Navigation and search',
   },
   {
     slug: 'default-session',
@@ -167,6 +137,36 @@ export const pages: ExamplePage[] = [
     title: 'Two linear genome views',
     description: 'Two independent views on one page.',
     group: 'Sessions',
+  },
+  {
+    slug: 'custom-theme',
+    title: 'Custom theme',
+    description: 'Four named palette colors drive most of the chrome.',
+    group: 'Theming',
+  },
+  {
+    slug: 'dark-theme',
+    title: 'Dark theme',
+    description: 'palette.mode: dark.',
+    group: 'Theming',
+  },
+  {
+    slug: 'disable-add-track',
+    title: 'Disable the add-track UI',
+    description: 'Hide the "add track" UI for a locked-down embed.',
+    group: 'Integration',
+  },
+  {
+    slug: 'fixed-height',
+    title: 'A fixed height, with a side drawer',
+    description: 'The height prop bounds the view and the drawer beside it.',
+    group: 'Integration',
+  },
+  {
+    slug: 'shadow-dom',
+    title: 'Package as a custom element',
+    description: 'A <jbrowse-linear-view> tag, shadow-isolated.',
+    group: 'Integration',
   },
   {
     slug: 'export-svg',

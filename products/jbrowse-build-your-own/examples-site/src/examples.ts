@@ -5,47 +5,14 @@ export const pages: ExamplePage[] = [
     slug: 'ultraminimal',
     title: 'Ultraminimal',
     description: 'TrackStack draws one track. Drag to pan, scroll to zoom.',
-    group: 'First view',
+    group: 'Getting started',
   },
   {
     slug: 'multiple-tracks',
     title: 'Multiple tracks',
     description:
       "A wiggle, genes and reads, in JBrowse's own Material UI chrome.",
-    group: 'First view',
-  },
-  {
-    slug: 'view-controls',
-    title: 'Location box, zoom and track toggles',
-    description:
-      'A location box, zoom buttons and track toggles call methods on the view.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'search-by-name',
-    title: 'Searching by name',
-    description:
-      'A location box looks up gene names in a text index and navigates to the match.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'search-results',
-    title: 'Search results as a list',
-    description:
-      'view.search returns the matches, and the page lists them as buttons.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'scalebar-and-gridlines',
-    title: 'Scalebar and gridlines',
-    description: 'Drag across the scalebar to zoom, hover to read the base.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'table-of-calls',
-    title: 'Navigating from a table of calls',
-    description: 'Click a structural variant call to open and mark it.',
-    group: 'Navigation',
+    group: 'Getting started',
   },
   {
     slug: 'track-labels',
@@ -78,20 +45,14 @@ export const pages: ExamplePage[] = [
     title: 'Track loading and error states',
     description:
       "EmbedProvider's overlays swap what a track draws while it loads or fails.",
-    group: 'Loading, errors and theme',
+    group: 'Loading and errors',
   },
   {
     slug: 'view-loading-and-errors',
     title: 'View loading and error states',
     description:
       'Every way a view can fail to show data, and what each one draws.',
-    group: 'Loading, errors and theme',
-  },
-  {
-    slug: 'dark-theme',
-    title: 'Dark theme',
-    description: "The mode option sets light or dark from your app's state.",
-    group: 'Loading, errors and theme',
+    group: 'Loading and errors',
   },
   {
     slug: 'genome-by-name',
@@ -127,6 +88,39 @@ export const pages: ExamplePage[] = [
     group: 'Custom plots',
   },
   {
+    slug: 'view-controls',
+    title: 'Location box, zoom and track toggles',
+    description:
+      'A location box, zoom buttons and track toggles call methods on the view.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'search-by-name',
+    title: 'Searching by name',
+    description:
+      'A location box looks up gene names in a text index and navigates to the match.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'search-results',
+    title: 'Search results as a list',
+    description:
+      'view.search returns the matches, and the page lists them as buttons.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'scalebar-and-gridlines',
+    title: 'Scalebar and gridlines',
+    description: 'Drag across the scalebar to zoom, hover to read the base.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'table-of-calls',
+    title: 'Navigating from a table of calls',
+    description: 'Click a structural variant call to open and mark it.',
+    group: 'Navigation and search',
+  },
+  {
     slug: 'every-chromosome',
     title: 'Every chromosome in one view',
     description: 'One view shows the 24 human chromosomes side by side.',
@@ -146,23 +140,29 @@ export const pages: ExamplePage[] = [
     group: 'Several regions and genomes',
   },
   {
+    slug: 'session-in-url',
+    title: 'Session in the URL',
+    description: 'Save the view to a link and restore it on load.',
+    group: 'Sessions',
+  },
+  {
+    slug: 'dark-theme',
+    title: 'Dark theme',
+    description: "The mode option sets light or dark from your app's state.",
+    group: 'Theming',
+  },
+  {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:
       'A screenshot paints with the page; the engine loads near the viewport.',
-    group: 'Workers, links and export',
-  },
-  {
-    slug: 'session-in-url',
-    title: 'Session in the URL',
-    description: 'Save the view to a link and restore it on load.',
-    group: 'Workers, links and export',
+    group: 'Integration',
   },
   {
     slug: 'export-svg',
     title: 'SVG figures',
     description:
       'The page redraws an SVG figure of the view after each navigation.',
-    group: 'Workers, links and export',
+    group: 'Integration',
   },
 ]

@@ -17,39 +17,39 @@ export const pages: ExamplePage[] = [
     slug: 'show-track',
     title: 'Show and hide a track',
     description: 'Toggle a track from your own button.',
-    group: 'Getting started',
+    group: 'Tracks',
   },
   {
     slug: 'session-in-url',
     title: 'Put the session in the URL',
     description: 'encodeSession and decodeSession, for a sharable link.',
-    group: 'Getting started',
+    group: 'Sessions',
   },
   {
     slug: 'dark-theme',
     title: 'Dark theme',
     description: 'A Material UI palette, through configuration.theme.',
-    group: 'Getting started',
+    group: 'Theming',
   },
   {
     slug: 'inline-plugin',
     title: 'Inline plugin',
     description: 'A Plugin subclass that adds a view menu item.',
-    group: 'Getting started',
+    group: 'Integration',
   },
   {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:
       'A screenshot paints with the page; the engine loads near the viewport.',
-    group: 'Getting started',
+    group: 'Integration',
   },
   {
     slug: 'without-react',
     title: 'Without React',
     description:
       'createCircularGenomeView mounts into an element and hands back a controller.',
-    group: 'Getting started',
+    group: 'Integration',
   },
   {
     slug: 'human',
