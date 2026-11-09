@@ -1,4 +1,5 @@
 import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   destroyViewState,
@@ -204,12 +205,14 @@ export default async function createViewState(
   // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
   // is a JSX tag to babel, which is what jest parses these with
   function local<T>(node: T) {
-    return blobs
-      ? resolveLocalFileUris(
-          normalizeAdapterSnapshots(node, pluginManager),
-          blobs,
-        )
-      : node
+    return withPageBaseUri(
+      blobs
+        ? resolveLocalFileUris(
+            normalizeAdapterSnapshots(node, pluginManager),
+            blobs,
+          )
+        : node,
+    )
   }
   const stateTree = model.create(
     {
@@ -231,9 +234,11 @@ export default async function createViewState(
           local(expandLooseTrackConfig(t, pluginManager, assemblyNames[0])),
         ),
         internetAccounts,
-        aggregateTextSearchAdapters,
+        aggregateTextSearchAdapters: withPageBaseUri(
+          aggregateTextSearchAdapters,
+        ),
       },
-      session: opts.defaultSession ?? {
+      session: withPageBaseUri(opts.defaultSession) ?? {
         name: 'New session',
         view: {
           id: 'circularView',
@@ -250,7 +255,7 @@ export default async function createViewState(
     // applied after create: a restored session's shape is only known at
     // runtime, and restoreSession validates it, throwing on a mismatch
     try {
-      stateTree.restoreSession(opts.session)
+      stateTree.restoreSession(withPageBaseUri(opts.session))
     } catch (e) {
       destroyViewState(stateTree)
       throw e
