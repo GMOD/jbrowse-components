@@ -1,17 +1,14 @@
 import { JBrowse } from '@jbrowse/react-app2'
 
-const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
-
 const assemblies = [
   { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
 ]
 
 const tracks = [
   {
-    trackId: 'volvox_sv_cram',
-    name: 'volvox-sv (cram)',
-    uri: `${base}/volvox-sv.cram`,
-    category: ['Alignments'],
+    trackId: 'volvox_translocation',
+    name: 'ctgA/ctgB translocation reads',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-translocation.bam',
   },
 ]
 
@@ -25,14 +22,14 @@ export default function BreakpointSplit() {
           type: 'BreakpointSplitView',
           views: [
             {
-              loc: 'ctgA:1-5000',
+              loc: 'ctgA:19,500..20,500',
               assembly: 'volvox',
-              tracks: ['volvox_sv_cram'],
+              tracks: ['volvox_translocation'],
             },
             {
-              loc: 'ctgB:1-5000',
+              loc: 'ctgB:2,500..3,500',
               assembly: 'volvox',
-              tracks: ['volvox_sv_cram'],
+              tracks: ['volvox_translocation'],
             },
           ],
         },
