@@ -2,7 +2,7 @@ import type { Page } from 'puppeteer'
 
 // Per-page assertions for examples-site smoke runs — the `check` hook of
 // smokeExamplesSite. These live here rather than in each site's smoke.mjs
-// because all three products ship the same demos of the same shared API, and a
+// because the four products ship the same demos of the same shared API, and a
 // check that drifts between them stops being a guard. (The
 // don't-factor-anything-out rule in reference/EXAMPLES_SITES.md is about the
 // *example files*, which a reader has to be able to paste; scripts are not

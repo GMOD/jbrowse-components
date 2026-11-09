@@ -83,10 +83,12 @@ try {
     <title>{title} — JBrowse {componentLabel}</title>
     {/* apply the saved theme before first paint to avoid a flash */}
     <script is:inline>
-      const saved = localStorage.getItem('jb-theme')
-      if (saved === 'dark' || saved === 'light') {
-        document.documentElement.dataset.theme = saved
-      }
+      try {
+        const saved = localStorage.getItem('jb-theme')
+        if (saved === 'dark' || saved === 'light') {
+          document.documentElement.dataset.theme = saved
+        }
+      } catch {}
     </script>
     <style is:global>
       /*
@@ -212,7 +214,7 @@ try {
       header.topbar nav a:hover {
         text-decoration: underline;
       }
-      /* segmented lgv / cgv / app switcher */
+      /* segmented switcher between the sibling sites */
       .siblings {
         display: inline-flex;
         border: 1px solid var(--border);
@@ -328,7 +330,7 @@ try {
       main [id] {
         scroll-margin-top: calc(var(--topbar-h) + 12px);
       }
-      /* example-page chrome (ExampleLayout) */
+      /* example-page chrome (ExamplePage) */
       .lead {
         font-size: 1.05em;
         color: var(--muted);
@@ -360,7 +362,8 @@ try {
         border-radius: 8px;
         padding: 14px 16px;
       }
-      /* copy-to-clipboard button injected into every shiki code block */
+      /* copy-to-clipboard button: injected into every shiki code block, and
+      written into the summary of a page's folded source */
       .copy-btn {
         position: absolute;
         top: 8px;
@@ -383,12 +386,33 @@ try {
       .copy-btn:hover {
         background: rgba(255, 255, 255, 0.16);
       }
+      details.source > summary .copy-btn {
+        position: static;
+        float: right;
+        padding: 1px 10px;
+        font-weight: 400;
+        color: var(--fg-soft);
+        background: transparent;
+        border-color: var(--border);
+        opacity: 1;
+      }
+      details.source > summary .copy-btn:hover {
+        background: var(--hover);
+      }
+      details.source:not([open]) .when-open,
+      details.source[open] .when-closed {
+        display: none;
+      }
       .demo {
         border: 1px solid var(--border);
         border-radius: 4px;
         margin-bottom: 16px;
       }
+      /* the app root is `var(--jbrowse-app-height, 100vh)`, which overflows
+      an 80vh box; 100% resolves against it through the island's
+      `display: contents` and JBrowseApp's height-100% wrappers */
       .demo.fill {
+        --jbrowse-app-height: 100%;
         height: 80vh;
         overflow: hidden;
       }
@@ -620,31 +644,46 @@ try {
         btn.addEventListener('click', () => {
           const next = current() === 'dark' ? 'light' : 'dark'
           root.dataset.theme = next
-          localStorage.setItem('jb-theme', next)
+          try {
+            localStorage.setItem('jb-theme', next)
+          } catch {}
           render()
         })
         prefersDark.addEventListener('change', render)
         render()
       })()
 
-      // add a copy button to every shiki code block
-      document.querySelectorAll('pre.astro-code').forEach(pre => {
-        const code = pre.querySelector('code')
-        if (!code) {
-          return
-        }
-        const btn = document.createElement('button')
-        btn.type = 'button'
-        btn.className = 'copy-btn'
-        btn.textContent = 'Copy'
-        btn.addEventListener('click', async () => {
-          await navigator.clipboard.writeText(code.innerText)
+      // Copy buttons. textContent, not innerText: the page's source sits in a
+      // closed <details>, and innerText of content that is not rendered is not
+      // the same text. The summary's button cancels its click so copying does
+      // not also unfold the source.
+      const copyOnClick = (btn, code) => {
+        btn.addEventListener('click', async event => {
+          event.preventDefault()
+          event.stopPropagation()
+          await navigator.clipboard.writeText(code.textContent)
           btn.textContent = 'Copied'
           setTimeout(() => {
             btn.textContent = 'Copy'
           }, 1500)
         })
-        pre.appendChild(btn)
+      }
+      document.querySelectorAll('pre.astro-code').forEach(pre => {
+        const code = pre.querySelector('code')
+        const source = pre.closest('details.source')
+        if (code && source) {
+          const btn = source.querySelector(':scope > summary .copy-btn')
+          if (btn) {
+            copyOnClick(btn, code)
+          }
+        } else if (code) {
+          const btn = document.createElement('button')
+          btn.type = 'button'
+          btn.className = 'copy-btn'
+          btn.textContent = 'Copy'
+          copyOnClick(btn, code)
+          pre.appendChild(btn)
+        }
       })
     </script>
   </body>

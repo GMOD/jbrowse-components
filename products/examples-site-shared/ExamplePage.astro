@@ -57,8 +57,15 @@ const Doc = doc?.Content
         <Doc />
       </div>
     )}
-    <details class="source" open>
-      <summary>View source — {sourceLines} lines</summary>
+    <details class="source">
+      <summary>
+        <span class="when-closed">Show</span>
+        <span class="when-open">Hide</span>
+        source · {sourceLines} lines
+        <button type="button" class="copy-btn">
+          Copy
+        </button>
+      </summary>
       <Code code={code} lang="tsx" />
     </details>
   </section>

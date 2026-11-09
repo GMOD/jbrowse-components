@@ -1,7 +1,6 @@
 // Build-output smoke test (run after `astro build`): node scripts/smoke.mjs
-// Shared implementation lives in @jbrowse/browser-test-utils so all the
-// per-product examples-site smoke scripts stay identical, including the
-// per-page `check` assertions.
+// The harness and every check more than one site runs live in
+// @jbrowse/browser-test-utils; this file adds what only this site needs.
 import path from 'path'
 import { fileURLToPath } from 'url'
 
