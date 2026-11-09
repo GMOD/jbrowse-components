@@ -17,8 +17,8 @@ share; each site's own `CLAUDE.md` holds only what is local to it.
 Each page shows its demo's own source via `?raw`, and a reader has to be able to
 paste that block into their app and run it. An example file imports only from
 published packages (the site's product, `@jbrowse/core/*`, `@jbrowse/plugin-*`,
-`@mui/material`, `react`, `mobx-react`), never a relative import into the site's
-own helpers:
+`@jbrowse/display-ui`, `@mui/material`, `react`, `mobx-react`), never a relative
+import into the site's own helpers:
 
 **Do not factor the shared parts out.** A `src/browser/`-style helper turns every
 page's source into paths the reader cannot resolve; `jbrowse-build-your-own` was
@@ -40,7 +40,14 @@ A page is one live demo at one URL, and its slug names everything: the
 slug>.tsx` and the optional `src/docs/<slug>.md`. Adding one is those files and
 nothing else; `pnpm check-links` reports a page whose pieces disagree and an
 example file no page mounts. The same demo takes the same slug on every site
-(`dark-theme`, `session-in-url`, `inline-plugin`, `without-react`), so a link ports by swapping the site prefix.
+(`dark-theme`, `session-in-url`, `inline-plugin`, `without-react`,
+`search-by-name`, `view-controls`, `export-svg`), so a link ports by swapping
+the site prefix.
+
+A page's `group` comes from one vocabulary, in this order where a site has it:
+Getting started, Tracks, Navigation and search, Sessions, Theming, Integration,
+Real-world demos. A site adds a group of its own only for pages none of these
+fit (the app's View types, BYO's Data sources).
 
 ## Shared layouts reach their site through `~site`
 
