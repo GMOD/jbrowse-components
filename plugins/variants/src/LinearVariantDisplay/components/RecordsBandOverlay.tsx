@@ -229,10 +229,10 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       <RecordsBandInteraction model={model} id={id} />
       <RecordsSectionChips model={model} />
       {/* with no rows the band is the display, scrolled and resized by the
-          track's own chrome */}
+          track's own chrome; with the rows hidden the track's edge resizes it */}
       {model.recordsOnly ? (
         <ScrollChrome model={model} controlsId={id} />
-      ) : (
+      ) : model.rowsHidden ? null : (
         <BandSeamHandle
           data-testid="records_band_resize_handle"
           seam={topBands.addedHeight}

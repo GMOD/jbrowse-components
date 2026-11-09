@@ -132,3 +132,13 @@ test('a band that is off has no handle', () => {
 
   expect(screen.queryByTestId('records_band_resize_handle')).toBeNull()
 })
+
+test('with the genotype rows hidden the track handle sizes the band alone', () => {
+  const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+    genotypes: { show: false },
+  })
+  render(<RecordsBandOverlay model={display} />)
+
+  expect(display.rowsHidden).toBe(true)
+  expect(screen.queryByTestId('records_band_resize_handle')).toBeNull()
+})
