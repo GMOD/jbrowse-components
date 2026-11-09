@@ -40,7 +40,7 @@ A page is one live demo at one URL, and its slug names everything: the
 slug>.tsx` and the optional `src/docs/<slug>.md`. Adding one is those files and
 nothing else; `pnpm check-links` reports a page whose pieces disagree and an
 example file no page mounts. The same demo takes the same slug on every site
-(`dark-theme`, `session-in-url`, `inline-plugin`, `without-react`,
+(`dark-theme`, `web-worker`, `session-in-url`, `inline-plugin`, `without-react`,
 `search-by-name`, `view-controls`, `export-svg`), so a link ports by swapping
 the site prefix.
 

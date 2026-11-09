@@ -200,6 +200,13 @@ export const pages: ExamplePage[] = [
     group: 'Integration',
   },
   {
+    slug: 'web-worker',
+    title: 'Web worker',
+    description:
+      'Fetch and parse data off the main thread with makeWorkerInstance.',
+    group: 'Integration',
+  },
+  {
     slug: 'local-files',
     title: 'Files from your host process',
     description:

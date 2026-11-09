@@ -12,7 +12,6 @@ export default defineConfig(
       'inline-plugin': 'custom-adapter',
       'svg-figures': 'export-svg',
       'highlight-a-region': 'table-of-calls',
-      'web-worker': 'ultraminimal',
     },
     plugins: [eagerGraphDump()],
   }),

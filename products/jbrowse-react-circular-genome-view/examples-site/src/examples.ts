@@ -38,6 +38,13 @@ export const pages: ExamplePage[] = [
     group: 'Integration',
   },
   {
+    slug: 'web-worker',
+    title: 'Web worker',
+    description:
+      'Fetch and parse data off the main thread with makeWorkerInstance.',
+    group: 'Integration',
+  },
+  {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:

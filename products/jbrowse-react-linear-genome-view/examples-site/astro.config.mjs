@@ -21,7 +21,6 @@ export default defineConfig(
       'observe-visible': 'observe-session',
       'observe-selection': 'observe-session',
       'alignments-display': 'group-by-tag',
-      'web-worker': 'one-linear-genome-view',
     },
   }),
 )

@@ -30,7 +30,7 @@ const failures = await smokeExamplesSite({
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
-  workerSlug: 'volvox',
+  workerSlug: 'web-worker',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),

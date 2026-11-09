@@ -7,9 +7,6 @@ export default defineConfig(
   examplesSiteConfig(import.meta.url, {
     base: '/storybook/cgv',
     integrations: [react()],
-    redirects: {
-      'gene-density-marks': 'gene-density-ring',
-      'web-worker': 'volvox',
-    },
+    redirects: { 'gene-density-marks': 'gene-density-ring' },
   }),
 )

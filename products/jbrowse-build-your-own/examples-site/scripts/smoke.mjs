@@ -957,11 +957,11 @@ const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   base: config.base,
   slugs,
-  // Every demo runs its RPC in the worker by default, and the harness fails a
-  // page whose worker fell back; this one must also be seen to spawn it, the
-  // guard on the Rollup circular-dependency TDZ that webpack tolerates and Vite
-  // does not.
-  workerSlug: 'ultraminimal',
+  // The one page that passes `makeWorkerInstance`. Every other demo here runs
+  // main-thread RPC, so this slug is the site's only guard on the Rollup
+  // circular-dependency TDZ that webpack tolerates and Vite does not — and the
+  // page's own claim is that a worker spawns, which loading it cannot show.
+  workerSlug: 'web-worker',
   recordFromLoad: recordMuiFromLoad,
   // The console errors on this site that are a page working rather than
   // failing: `view-loading-and-errors` points one radio at an assembly whose
