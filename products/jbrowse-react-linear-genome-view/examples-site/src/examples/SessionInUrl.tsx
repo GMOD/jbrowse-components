@@ -21,15 +21,7 @@ const tracks = [
   },
 ]
 
-const freshSession = {
-  name: 'Session in URL',
-  view: {
-    type: 'LinearGenomeView',
-    assembly: 'volvox',
-    loc: 'ctgA:1..50000',
-    tracks: ['volvox_gff3'],
-  },
-}
+const view = { loc: 'ctgA:1..50000', tracks: ['volvox_gff3'] }
 
 function readSessionParam() {
   return (
@@ -57,11 +49,7 @@ async function build(report: (status: string) => void) {
       report(`could not restore the session in the URL: ${e}`)
     }
   }
-  return createViewStateAsync({
-    assembly,
-    tracks,
-    defaultSession: freshSession,
-  })
+  return createViewStateAsync({ assembly, tracks, view })
 }
 
 export default function SessionInUrl() {

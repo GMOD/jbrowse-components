@@ -209,15 +209,10 @@ const assembly = {
 function tracks(cells: Cells) {
   return [
     {
-      type: 'FeatureTrack',
       trackId: 'hg38_refseq_curated',
       name: 'NCBI RefSeq genes',
-      assemblyNames: ['hg38'],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
-        csi: true,
-      },
+      uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+      csi: true,
       displayDefaults: { height: 90 },
     },
     {
@@ -235,7 +230,7 @@ function tracks(cells: Cells) {
           uri: `${BASE}/${type.name.replaceAll(' ', '_')}.bw`,
         })),
       },
-      displayDefaults: { mark: 'bar', height: 330 },
+      displayDefaults: { height: 330 },
     },
     {
       type: 'MultiQuantitativeTrack',
@@ -261,14 +256,9 @@ function Demo() {
     assembly,
     plugins,
     tracks: tracks(cells),
-    defaultSession: {
-      name: 'scRNA pseudobulk',
-      view: {
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: 'chr11:60,453,846-60,472,752',
-        tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
-      },
+    view: {
+      loc: 'chr11:60,453,846-60,472,752',
+      tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
     },
   })
   return state ? (

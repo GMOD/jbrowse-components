@@ -23,10 +23,8 @@ export default function FeatureHighlights() {
         tracks: [
           {
             trackId: 'ncbi-refseq-genes',
-            displaySnapshot: {
-              height: 220,
-              featureHighlights: [{ refName: 'chr12', name: 'KRAS' }],
-            },
+            height: 220,
+            featureHighlights: [{ refName: 'chr12', name: 'KRAS' }],
           },
         ],
       }}

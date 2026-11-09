@@ -22,15 +22,7 @@ const tracks = [
   },
 ]
 
-const freshSession = {
-  name: 'Persisted session',
-  view: {
-    type: 'LinearGenomeView',
-    assembly: 'volvox',
-    loc: 'ctgA:1105..1221',
-    tracks: ['volvox_gff3'],
-  },
-}
+const view = { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }
 
 async function build() {
   const saved = localStorage.getItem(STORAGE_KEY)
@@ -40,15 +32,11 @@ async function build() {
       assembly,
       tracks,
       session: saved ? JSON.parse(saved) : undefined,
-      defaultSession: freshSession,
+      view,
     })
   } catch (e) {
     console.error(e)
-    return createViewStateAsync({
-      assembly,
-      tracks,
-      defaultSession: freshSession,
-    })
+    return createViewStateAsync({ assembly, tracks, view })
   }
 }
 

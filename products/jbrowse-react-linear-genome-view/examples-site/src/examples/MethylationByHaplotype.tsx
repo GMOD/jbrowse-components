@@ -14,7 +14,7 @@ const tracks = [
     trackId: 'hg38_genes',
     name: 'RefSeq curated genes',
     uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
-    index: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi',
+    csi: true,
     displayDefaults: { height: 90 },
   },
   {
@@ -35,16 +35,14 @@ export default function MethylationByHaplotype() {
           'hg38_genes',
           {
             trackId: 'hg002_snrpn',
-            displaySnapshot: {
-              type: 'LinearAlignmentsDisplay',
-              height: 360,
-              facet: 'tags.HP',
-              pileup: {
-                bases: {
-                  show: true,
-                  encoding: { color: 'modifications' },
-                  unmodified: { show: true },
-                },
+            type: 'LinearAlignmentsDisplay',
+            height: 360,
+            facet: 'tags.HP',
+            pileup: {
+              bases: {
+                show: true,
+                encoding: { color: 'modifications' },
+                unmodified: { show: true },
               },
             },
           },

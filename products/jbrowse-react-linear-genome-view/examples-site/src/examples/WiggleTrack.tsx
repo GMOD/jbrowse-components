@@ -13,7 +13,6 @@ export default function WiggleTrack() {
           name: 'Microarray (BigWig)',
           uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
           displayDefaults: {
-            mark: 'bar',
             height: 150,
             encoding: {
               y: { scale: { domainMin: 0, domainMax: 1000 } },

@@ -1,10 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -23,38 +20,32 @@ class MyPlugin extends Plugin {
     )
     // #endregion
   }
-  configure() {}
 }
 
 export default function DisableZoomAndSideScroll() {
-  const state = useCreateViewState({
-    assembly: {
-      name: 'volvox',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-    tracks: [
-      {
-        trackId: 'volvox_gff3',
-        name: 'Volvox genes',
-        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-      },
-    ],
-    plugins: [MyPlugin],
-    defaultSession: {
-      name: 'disable-zoom-and-side-scroll',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
+  return (
+    <LinearGenomeView
+      assembly={{
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      }}
+      tracks={[
+        {
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      ]}
+      plugins={[MyPlugin]}
+      view={{
         hideHeader: true,
         displayedRegions: [
           { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
         ],
         windowStartBp: 1000,
         windowWidthBp: 8000,
-        assembly: 'volvox',
         tracks: ['volvox_gff3'],
-      },
-    },
-  })
-  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
+      }}
+    />
+  )
 }

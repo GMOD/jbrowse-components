@@ -65,15 +65,10 @@ const assembly = {
 }
 
 const NCBI_REFSEQ_TRACK = {
-  type: 'FeatureTrack',
   trackId: 'ncbi_refseq_hg38',
   name: 'NCBI RefSeq genes',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
-    csi: true,
-  },
+  uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+  csi: true,
   displayDefaults: {
     height: 200,
     labels: {
@@ -109,14 +104,9 @@ function GenomeView({
   const state = useCreateViewState({
     assembly,
     tracks: [makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK],
-    defaultSession: {
-      name: 'Pan-UKB GWAS',
-      view: {
-        type: 'LinearGenomeView',
-        assembly: assembly.name,
-        loc: FEATURED[phenotype.id] ?? 'chr1',
-        tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
-      },
+    view: {
+      loc: FEATURED[phenotype.id] ?? 'chr1',
+      tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
     },
   })
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null

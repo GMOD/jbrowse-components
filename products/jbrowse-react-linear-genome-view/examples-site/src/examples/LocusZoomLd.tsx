@@ -102,7 +102,7 @@ const NCBI_REFSEQ_TRACK = {
   trackId: 'ncbi_refseq_hg19',
   name: 'NCBI RefSeq genes',
   uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz',
-  index: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz.csi',
+  csi: true,
   displayDefaults: {
     height: 150,
     labels: {

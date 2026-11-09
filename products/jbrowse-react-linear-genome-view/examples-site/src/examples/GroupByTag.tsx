@@ -19,12 +19,10 @@ export default function GroupByTag() {
         tracks: [
           {
             trackId: 'volvox_bam',
-            displaySnapshot: {
-              type: 'LinearAlignmentsDisplay',
-              height: 400,
-              encoding: { color: 'tags.HP' },
-              facet: 'tags.HP',
-            },
+            type: 'LinearAlignmentsDisplay',
+            height: 400,
+            encoding: { color: 'tags.HP' },
+            facet: 'tags.HP',
           },
         ],
       }}
