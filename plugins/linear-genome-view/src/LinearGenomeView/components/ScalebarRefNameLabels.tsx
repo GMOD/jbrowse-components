@@ -153,14 +153,10 @@ const RefNameMenu = observer(function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, displayedRegionIndex, lastDisplayedRegionIndex } =
-    menuState.label
-  // the label's own bracket comes off the static blocks, which stop near the
-  // viewport, so every item takes the whole run from the region list instead
+  const { refName, displayedRegionIndex } = menuState.label
   const { first: idx, last: lastIdx } = regionRunBounds(
     displayedRegions,
     displayedRegionIndex,
-    lastDisplayedRegionIndex,
   )
   const numRegions = displayedRegions.length
   const run = displayedRegions.slice(idx, lastIdx + 1)
@@ -195,7 +191,6 @@ const RefNameMenu = observer(function RefNameMenu({
           // moveTo by index, not navTo by refName: navTo resolves to the FIRST
           // region carrying the name, so on a duplicated refName (a chromosome
           // displayed twice) clicking the third chr1 label jumped to the first.
-          // Every other item in this menu is already idx-based.
           onClick: () => {
             const last = displayedRegions[lastIdx]!
             model.moveTo(

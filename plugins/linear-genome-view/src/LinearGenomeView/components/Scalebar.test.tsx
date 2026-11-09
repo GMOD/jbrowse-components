@@ -276,8 +276,7 @@ describe('Scalebar genome view component', () => {
   // The collapsed-introns shape: several windows cut out of one contig, drawn
   // under a single label. Rejoining them is the only way back to the gene's
   // whole span once the "Introns collapsed" snackbar is gone. Zoomed in on
-  // purpose: the label's own bracket comes off the static blocks, which stop at
-  // the viewport, so the span has to be taken from the region list instead.
+  // purpose, so the label's own bracket holds only the regions on screen.
   it('rejoins a run of regions into the span they were cut from', async () => {
     const model = collapsedIntronsView({ offsetPx: 0, bpPerPx: 10 })
     render(<Scalebar model={model} />)

@@ -2331,9 +2331,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *   the chromosome name off screen at exactly the zoom where nothing
          *   else names it.
          * - adjacent regions of the same refName (collapsed introns) get one
-         *   label between them, not one each. That label names the whole run and
-         *   is fitted to the whole run, and `displayedRegionIndex` /
-         *   `lastDisplayedRegionIndex` bracket what it stands for.
+         *   label between them, not one each. That label is fitted to the part
+         *   of the run in the static blocks, which `displayedRegionIndex` /
+         *   `lastDisplayedRegionIndex` bracket; `regionRunBounds` widens that to
+         *   the whole run, for anything acting on it.
          * - a name is drawn whole or not at all, measured against the space its
          *   run leaves. Clipped to that space, `chr16` reads as `chr1` —
          *   a different chromosome rather than a shortened name, which is why

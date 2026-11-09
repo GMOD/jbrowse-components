@@ -204,7 +204,7 @@ export function showRefNameLabels<T>(
 }
 
 /**
- * A maximal run of adjacent content blocks sharing one refName — the span a
+ * A maximal run of adjacent content blocks in one `sameRefNameRun` — the span a
  * single scalebar refName label names, and therefore the span it is fitted to.
  *
  * The unit is the run rather than the displayed region because collapsed
@@ -231,14 +231,8 @@ interface RefNameRun {
 
 /**
  * Whether two adjacent regions, or content blocks, fall under one scalebar
- * refName label. The single definition the labels, the space the coordinate
- * numbers leave for them and the label menu share.
- *
- * Orientation is part of a run's identity, not just its refName: one label
- * carries one direction (a `[rev]` marker under mixed orientation has to mean
- * the whole of what it sits on), and two regions of one chromosome laid out in
- * opposite directions are two things to name anyway. So is the assembly: two
- * assemblies' chr1 side by side are two chromosomes.
+ * refName label: same refName, assembly and orientation (one `[rev]` marker has
+ * to mean the whole of what it sits on).
  */
 function sameRefNameRun(
   a: { assemblyName: string; refName: string; reversed?: boolean },
@@ -557,27 +551,26 @@ export function setDisplayedRegionsKeepingCenter(
 }
 
 /**
- * The full run of same-orientation regions on one refName that a scalebar
- * label's `firstRegionIndex`..`lastRegionIndex` sits inside. Those come off the
- * static blocks, which are clipped to the viewport and broken by an elided
- * block, so a zoomed-in collapsed-introns view brackets only the exons on
- * screen — which is the wrong answer for anything acting on the whole run.
+ * The full `sameRefNameRun` of displayed regions around `index`. A scalebar
+ * label's own region bracket comes off the static blocks, which are clipped to
+ * the viewport and broken by an elided block, so a zoomed-in collapsed-introns
+ * view brackets only the exons on screen — the wrong answer for anything acting
+ * on the whole run.
  */
-export function regionRunBounds(
-  regions: Region[],
-  firstIndex: number,
-  lastIndex: number,
-) {
-  const anchor = regions[firstIndex]
-  const inRun = (r: Region | undefined) =>
-    r !== undefined && anchor !== undefined && sameRefNameRun(r, anchor)
-  let first = firstIndex
-  let last = lastIndex
-  while (inRun(regions[first - 1])) {
-    first--
-  }
-  while (inRun(regions[last + 1])) {
-    last++
+export function regionRunBounds(regions: Region[], index: number) {
+  let first = index
+  let last = index
+  const anchor = regions[index]
+  if (anchor !== undefined) {
+    while (first > 0 && sameRefNameRun(regions[first - 1]!, anchor)) {
+      first--
+    }
+    while (
+      last < regions.length - 1 &&
+      sameRefNameRun(regions[last + 1]!, anchor)
+    ) {
+      last++
+    }
   }
   return { first, last }
 }
@@ -701,7 +694,7 @@ export interface BlockRun {
   refName: string
   isLeftEndOfDisplayedRegion: boolean
   // whether this run starts one of getScalebarRefNameLabels' refName runs:
-  // after a nameless block, or where the name or orientation changes
+  // after a nameless block, or where `sameRefNameRun` breaks
   labeled: boolean
 }
 

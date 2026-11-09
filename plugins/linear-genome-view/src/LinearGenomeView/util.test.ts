@@ -1300,7 +1300,7 @@ describe('regionRunBounds', () => {
   // caller acting on the whole run has to widen it back out itself.
   test('widens a viewport-clipped bracket to the whole run', () => {
     const regions = [r(0, 100), r(200, 300), r(400, 500), r(600, 700)]
-    expect(regionRunBounds(regions, 1, 2)).toEqual({ first: 0, last: 3 })
+    expect(regionRunBounds(regions, 1)).toEqual({ first: 0, last: 3 })
   })
 
   test('stops at a different refName', () => {
@@ -1310,16 +1310,21 @@ describe('regionRunBounds', () => {
       r(400, 500),
       r(600, 700, { refName: 'ctgB' }),
     ]
-    expect(regionRunBounds(regions, 1, 1)).toEqual({ first: 1, last: 2 })
+    expect(regionRunBounds(regions, 1)).toEqual({ first: 1, last: 2 })
   })
 
   test('stops at a change of orientation', () => {
     const regions = [r(0, 100, { reversed: true }), r(200, 300), r(400, 500)]
-    expect(regionRunBounds(regions, 2, 2)).toEqual({ first: 1, last: 2 })
+    expect(regionRunBounds(regions, 2)).toEqual({ first: 1, last: 2 })
+  })
+
+  test('stops at another assembly', () => {
+    const regions = [r(0, 100), r(200, 300, { assemblyName: 'hg19' })]
+    expect(regionRunBounds(regions, 0)).toEqual({ first: 0, last: 0 })
   })
 
   test('a lone region is its own run', () => {
-    expect(regionRunBounds([r(0, 100)], 0, 0)).toEqual({ first: 0, last: 0 })
+    expect(regionRunBounds([r(0, 100)], 0)).toEqual({ first: 0, last: 0 })
   })
 })
 
