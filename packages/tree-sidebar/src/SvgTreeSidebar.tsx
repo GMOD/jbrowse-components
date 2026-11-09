@@ -40,6 +40,7 @@ export function SvgTreeSidebar({
     treeAreaWidth,
     showLabels = true,
     bands = [],
+    annotations,
   } = sidebar
   const drawnTree = treeIsShowing({ showTree, hierarchy })
     ? hierarchy
@@ -64,6 +65,7 @@ export function SvgTreeSidebar({
           scrollTop={scrollTop}
           availableHeight={availableHeight}
           text={text}
+          annotations={annotations}
         />
       ) : null}
       {drawnTree ? (

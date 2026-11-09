@@ -3,7 +3,11 @@ import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
 import type { RowBand } from './arrangeRows.ts'
-import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
+import type {
+  ClusterHierarchyNode,
+  RowAnnotationColumn,
+  RowLabelSource,
+} from './types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /** What a display's export sidebar draws, from its settings and loaded rows. */
@@ -15,6 +19,8 @@ export interface SvgSidebarProps {
   treeAreaWidth: number
   showLabels?: boolean
   bands?: readonly RowBand[]
+  /** The `rows.annotations` columns, the mixin's `rowAnnotationColors`. */
+  annotations?: readonly RowAnnotationColumn[]
   /** Px of the export's left margin the display's own axes hold beside the plot. */
   leftInset?: number
 }
@@ -32,12 +38,13 @@ export function sidebarPanelWidth(
     treeAreaWidth,
     showLabels = true,
     bands = [],
+    annotations,
   }: SvgSidebarProps,
   text?: ExportTextStyle,
 ) {
   const labels =
     showLabels && sources.length
-      ? rowLabelsBoxWidth(sources, rowHeight, text)
+      ? rowLabelsBoxWidth(sources, rowHeight, text, annotations)
       : 0
   return (
     treeSidebarOffset({ showTree, hierarchy, treeAreaWidth }) +

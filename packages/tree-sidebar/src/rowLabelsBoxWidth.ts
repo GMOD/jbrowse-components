@@ -2,7 +2,7 @@ import { max, measureText } from '@jbrowse/core/util'
 
 import { fittedLabel } from './fittedLabel.ts'
 
-import type { RowLabelSource } from './types.ts'
+import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
@@ -31,13 +31,44 @@ export const ROW_COLOR_BAR_WIDTH = 4
 const TEXT_INSET = 4
 
 /**
- * Where a label's text starts: past the color bars where any row has one, so
- * every name in the column starts at the same x.
+ * Px the row color takes at the labels' left, none where no row has one: its
+ * bar where the names draw, its swatch where they do not.
  */
-export function rowLabelTextX(sources: readonly RowLabelSource[]) {
+export function rowColorWidth(
+  sources: readonly RowLabelSource[],
+  rowHeight: number,
+) {
   return sources.some(s => s.rowColor)
-    ? ROW_COLOR_BAR_WIDTH + TEXT_INSET
-    : TEXT_INSET
+    ? rowLabelsCarryText(rowHeight)
+      ? ROW_COLOR_BAR_WIDTH
+      : ROW_SWATCH_WIDTH
+    : 0
+}
+
+/**
+ * Px of color at the labels' left: the row color, then a
+ * `ROW_COLOR_BAR_WIDTH` column per annotation at any row height. Fixed
+ * widths, since the labels cover the plot's first region.
+ */
+function rowColorsWidth(
+  sources: readonly RowLabelSource[],
+  rowHeight: number,
+  annotations: readonly RowAnnotationColumn[] = [],
+) {
+  return (
+    rowColorWidth(sources, rowHeight) + annotations.length * ROW_COLOR_BAR_WIDTH
+  )
+}
+
+/**
+ * Where a label's text starts: past the row color bar and the annotation
+ * columns, so every name in the column starts at the same x.
+ */
+export function rowLabelTextX(
+  sources: readonly RowLabelSource[],
+  annotations?: readonly RowAnnotationColumn[],
+) {
+  return rowColorsWidth(sources, MIN_TEXT_ROW_HEIGHT, annotations) + TEXT_INSET
 }
 
 /**
@@ -80,6 +111,7 @@ export function rowLabelsBoxWidth(
   sources: RowLabelSource[],
   rowHeight: number,
   text?: ExportTextStyle,
+  annotations?: readonly RowAnnotationColumn[],
 ) {
   const fontSize = rowLabelFontSize(rowHeight, text)
   return rowLabelsCarryText(rowHeight)
@@ -93,7 +125,10 @@ export function rowLabelsBoxWidth(
         0,
       ) +
         ROW_LABEL_PAD +
-        rowLabelTextX(sources) -
+        rowLabelTextX(sources, annotations) -
         TEXT_INSET
-    : ROW_SWATCH_WIDTH
+    : Math.max(
+        rowColorsWidth(sources, rowHeight, annotations),
+        ROW_SWATCH_WIDTH,
+      )
 }

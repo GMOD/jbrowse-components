@@ -4,6 +4,7 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 import { ROW_COLOR_BAR_WIDTH, rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
+import { svgSidebarWidth } from './svgSidebarWidth.ts'
 
 const ROW_LABEL_MAX_TEXT_WIDTH = 120
 
@@ -225,6 +226,184 @@ describe('SvgRowLabels', () => {
     expect(c.querySelector('path')?.getAttribute('d')).toContain(
       `h${ROW_LABEL_MAX_TEXT_WIDTH + 10}`,
     )
+  })
+})
+
+// `rows.annotations`: a column per annotation after the row color, each a
+// row's color by name, 4 px wide at any row height.
+describe('annotation columns', () => {
+  const eur = '#4e79a7'
+  const afr = '#f28e2c'
+  const female = '#d95f02'
+  const names = ['a', 'b', 'c', 'd', 'e']
+  const plain = names.map(name => ({ name }))
+  const colored = names.map(name => ({ name, rowColor: dog }))
+  const population = new Map([
+    ['a', eur],
+    ['b', eur],
+    ['d', eur],
+    ['e', afr],
+  ])
+  const sex = new Map([
+    ['a', female],
+    ['b', female],
+    ['c', female],
+  ])
+  const barsOf = (c: HTMLElement) =>
+    [...c.querySelectorAll('[data-testid="row-annotation-bar"]')].map(bar => ({
+      fill: bar.getAttribute('fill'),
+      x: Number(bar.getAttribute('x')),
+      y: Number(bar.getAttribute('y')),
+      width: Number(bar.getAttribute('width')),
+      height: Number(bar.getAttribute('height')),
+    }))
+
+  it('draws a column as one rect per run, a row with no value breaking the run', () => {
+    const c = draw({
+      sources: plain,
+      rowHeight: 20,
+      labelOffset: 0,
+      annotations: [population],
+    })
+    expect(barsOf(c)).toEqual([
+      { fill: eur, x: 0, y: 0, width: 4, height: 40 },
+      { fill: eur, x: 0, y: 60, width: 4, height: 20 },
+      { fill: afr, x: 0, y: 80, width: 4, height: 20 },
+    ])
+  })
+
+  it('starts the columns past the row color bar, and the text past the columns', () => {
+    const textX = (c: HTMLElement) =>
+      [...c.querySelectorAll('text')].map(t => t.getAttribute('x'))
+    const one = draw({
+      sources: plain,
+      rowHeight: 20,
+      labelOffset: 0,
+      annotations: [population],
+    })
+    expect(new Set(textX(one))).toEqual(new Set(['8']))
+    const two = draw({
+      sources: colored,
+      rowHeight: 20,
+      labelOffset: 0,
+      annotations: [population, sex],
+    })
+    expect(new Set(textX(two))).toEqual(new Set(['16']))
+    expect(two.querySelectorAll('[data-testid="row-color-bar"]')).toHaveLength(
+      5,
+    )
+    expect(barsOf(two).map(bar => [bar.fill, bar.x])).toEqual([
+      [eur, 4],
+      [eur, 4],
+      [afr, 4],
+      [female, 8],
+    ])
+  })
+
+  it('widens the label box by 4px a column', () => {
+    const bare = rowLabelsBoxWidth(plain, 20)
+    expect(rowLabelsBoxWidth(plain, 20, undefined, [population])).toBe(bare + 4)
+    expect(rowLabelsBoxWidth(plain, 20, undefined, [population, sex])).toBe(
+      bare + 8,
+    )
+  })
+
+  it('culls a run outside the available height', () => {
+    const c = draw({
+      sources: plain,
+      rowHeight: 20,
+      labelOffset: 0,
+      annotations: [population],
+      availableHeight: 50,
+    })
+    expect(barsOf(c).map(bar => bar.y)).toEqual([0])
+  })
+
+  it('keeps 4px columns after the 8px swatch below the text threshold', () => {
+    const c = draw({
+      sources: colored,
+      rowHeight: 2,
+      labelOffset: 0,
+      annotations: [population, sex],
+    })
+    expect(c.querySelectorAll('text')).toHaveLength(0)
+    const rects = [...c.querySelectorAll('rect')].map(rect => ({
+      fill: rect.getAttribute('fill'),
+      x: Number(rect.getAttribute('x')),
+      width: Number(rect.getAttribute('width')),
+      height: Number(rect.getAttribute('height')),
+    }))
+    expect(rects).toEqual([
+      { fill: dog, x: 0, width: 8, height: 10 },
+      { fill: female, x: 12, width: 4, height: 6 },
+      { fill: eur, x: 8, width: 4, height: 4 },
+      { fill: eur, x: 8, width: 4, height: 2 },
+      { fill: afr, x: 8, width: 4, height: 2 },
+    ])
+    expect(rowLabelsBoxWidth(colored, 2, undefined, [population, sex])).toBe(16)
+  })
+
+  it('draws the columns alone below the text threshold where no row has a color', () => {
+    const c = draw({
+      sources: plain,
+      rowHeight: 0.32,
+      labelOffset: 0,
+      annotations: [population, sex, population],
+    })
+    const bars = barsOf(c)
+    expect(bars).toHaveLength(c.querySelectorAll('rect').length)
+    expect(new Set(bars.map(bar => bar.x))).toEqual(new Set([0, 4, 8]))
+    expect(Math.min(...bars.map(bar => bar.height))).toBe(1)
+    expect(
+      rowLabelsBoxWidth(plain, 0.32, undefined, [population, sex, population]),
+    ).toBe(12)
+    expect(rowLabelsBoxWidth(plain, 0.32, undefined, [population])).toBe(8)
+  })
+
+  it.each([20, 2])(
+    'draws the same columns on screen and in the export at a %ipx row',
+    rowHeight => {
+      const screen = render(
+        <RowLabelsOverlay
+          sources={colored}
+          rowHeight={rowHeight}
+          labelOffset={0}
+          width={400}
+          height={200}
+          testId="labels"
+          annotations={[population, sex]}
+        />,
+      ).getByTestId('labels')
+      const exported = render(
+        <svg>
+          <SvgTreeSidebar
+            sidebar={{
+              showTree: false,
+              hierarchy: undefined,
+              sources: colored,
+              rowHeight,
+              treeAreaWidth: 0,
+              annotations: [population, sex],
+            }}
+          />
+        </svg>,
+      ).container
+      expect(barsOf(screen)).toHaveLength(4)
+      expect(barsOf(exported)).toEqual(barsOf(screen))
+    },
+  )
+
+  it('reserves the export gutter the columns take', () => {
+    const sidebar = {
+      showTree: false,
+      hierarchy: undefined,
+      sources: plain,
+      rowHeight: 20,
+      treeAreaWidth: 0,
+    }
+    expect(
+      svgSidebarWidth({ ...sidebar, annotations: [population, sex] }),
+    ).toBe(svgSidebarWidth(sidebar) + 8)
   })
 })
 

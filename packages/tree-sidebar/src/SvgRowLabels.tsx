@@ -4,6 +4,8 @@ import { getFillProps } from '@jbrowse/core/util'
 
 import {
   ROW_COLOR_BAR_WIDTH,
+  ROW_SWATCH_WIDTH,
+  rowColorWidth,
   rowLabelFontSize,
   rowLabelFullText,
   rowLabelText,
@@ -13,13 +15,30 @@ import {
 } from './rowLabelsBoxWidth.ts'
 import { rowRuns } from './rowRuns.ts'
 
-import type { RowLabelSource } from './types.ts'
+import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
-// Consecutive rows sharing a color paint as one rect (`rowRuns` owns that rule
-// and says why; rows with no color contribute nothing, so a partly-colored
-// track draws gaps rather than a run bridging them), then painted longest-run
-// first.
+// Each annotation's consecutive rows sharing a color, as one
+// `ROW_COLOR_BAR_WIDTH` rect (`rowRuns` owns that rule and says why; a row
+// with no color contributes nothing, so a column draws gaps rather than a run
+// bridging them), the columns side by side from `x` on.
+function annotationRuns(
+  sources: RowLabelSource[],
+  annotations: readonly RowAnnotationColumn[],
+  x: number,
+) {
+  return annotations.flatMap((colors, column) =>
+    rowRuns(sources, source => colors.get(source.name)).map(run => ({
+      ...run,
+      x: x + column * ROW_COLOR_BAR_WIDTH,
+      width: ROW_COLOR_BAR_WIDTH,
+      testId: 'row-annotation-bar',
+    })),
+  )
+}
+
+// The row color's runs as the swatch standing in for the label, then the
+// annotation columns, painted longest-run first.
 //
 // The sort is the part specific to this drawing: once a run is floored to a
 // pixel it is taller than the rows it covers, so a later rect overdraws its
@@ -28,10 +47,19 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 // exactly the group the stripe exists to find). Shortest last means the rarest
 // mark survives. Painting order is all this changes; every rect keeps its true
 // `y`.
-function colorRuns(sources: RowLabelSource[]) {
-  return rowRuns(sources, source => source.rowColor).sort(
-    (a, b) => b.end - b.start - (a.end - a.start),
-  )
+function swatchRuns(
+  sources: RowLabelSource[],
+  columns: ReturnType<typeof annotationRuns>,
+) {
+  return [
+    ...rowRuns(sources, source => source.rowColor).map(run => ({
+      ...run,
+      x: 0,
+      width: ROW_SWATCH_WIDTH,
+      testId: undefined,
+    })),
+    ...columns,
+  ].sort((a, b) => b.end - b.start - (a.end - a.start))
 }
 
 export function SvgRowLabels({
@@ -42,6 +70,7 @@ export function SvgRowLabels({
   availableHeight,
   backdrop,
   text,
+  annotations = [],
 }: {
   sources: RowLabelSource[]
   rowHeight: number
@@ -50,6 +79,7 @@ export function SvgRowLabels({
   availableHeight?: number
   backdrop?: 'paper' | 'wash'
   text?: ExportTextStyle
+  annotations?: readonly RowAnnotationColumn[]
 }) {
   const palette = usePalette()
   const fontSize = rowLabelFontSize(rowHeight, text)
@@ -58,7 +88,12 @@ export function SvgRowLabels({
   // Without a color there is nothing left once the text is gone, so a track
   // whose rows carry no color draws nothing rather than a bare stripe of the
   // default background.
-  const runs = textFits ? [] : colorRuns(sources)
+  const columns = annotationRuns(
+    sources,
+    annotations,
+    rowColorWidth(sources, rowHeight),
+  )
+  const runs = textFits ? [] : swatchRuns(sources, columns)
 
   function offscreen(y: number, height: number) {
     return (
@@ -66,8 +101,8 @@ export function SvgRowLabels({
     )
   }
 
-  const boxWidth = rowLabelsBoxWidth(sources, rowHeight, text)
-  const textX = rowLabelTextX(sources)
+  const boxWidth = rowLabelsBoxWidth(sources, rowHeight, text, annotations)
+  const textX = rowLabelTextX(sources, annotations)
   const rows = textFits
     ? sources
         .map((source, idx) => ({ source, idx, y: idx * rowHeight - scrollTop }))
@@ -112,6 +147,21 @@ export function SvgRowLabels({
           />
         ) : null,
       )}
+      {columns.map(run => {
+        const y = run.start * rowHeight - scrollTop
+        const height = (run.end - run.start) * rowHeight
+        return offscreen(y, height) ? null : (
+          <rect
+            key={`${run.x}:${sources[run.start]!.name}`}
+            data-testid={run.testId}
+            x={run.x}
+            y={y}
+            width={run.width}
+            height={height}
+            {...getFillProps(run.key)}
+          />
+        )
+      })}
       {separators ? <path d={separators} {...getFillProps(separator)} /> : null}
       {rows.map(({ source, y }) => {
         const full = rowLabelFullText(source)
@@ -146,10 +196,11 @@ export function SvgRowLabels({
           // the run's first row names it: stable across a re-sort, unlike the
           // array index the sorted list would otherwise supply
           <rect
-            key={sources[run.start]!.name}
-            x={0}
+            key={`${run.x}:${sources[run.start]!.name}`}
+            data-testid={run.testId}
+            x={run.x}
             y={y}
-            width={boxWidth}
+            width={run.width}
             height={height}
             {...getFillProps(run.key)}
           />

@@ -5,7 +5,7 @@ import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 
 import type { RowBand } from './arrangeRows.ts'
-import type { RowLabelSource } from './types.ts'
+import type { RowAnnotationColumn, RowLabelSource } from './types.ts'
 
 /**
  * The on-screen half of the sidebar's row labels: `SvgRowLabels` in the overlay
@@ -68,6 +68,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   testId,
   showLabels = true,
   bands = [],
+  annotations,
 }: {
   // Resolved, never absent: every display's `sources` getter answers `[]`
   // before a fetch has landed, and "no rows yet" is its loading state to
@@ -91,6 +92,8 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   // The bands' strip, drawn whatever `showLabels` says, the row labels beside
   // it.
   bands?: readonly RowBand[]
+  // The `rows.annotations` columns, the mixin's `rowAnnotationColors`.
+  annotations?: readonly RowAnnotationColumn[]
 }) {
   return sources.length ? (
     <TrackOverlayPortal>
@@ -121,6 +124,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
             scrollTop={scrollTop}
             availableHeight={height}
             backdrop={labelOffset > 0 ? 'paper' : 'wash'}
+            annotations={annotations}
           />
         ) : null}
       </svg>
