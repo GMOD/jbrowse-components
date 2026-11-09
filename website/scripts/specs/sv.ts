@@ -792,7 +792,11 @@ export const svSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: '1:197,785,500-197,791,000',
           tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              // Mid-HGSV_10047, so the inversion's carriers sort together.
+              sortRowsBy: { refName: '1', pos: 197_788_259 },
+            },
             {
               trackId: 'HG00151_ONT_1000g',
               unit: 'chain',
