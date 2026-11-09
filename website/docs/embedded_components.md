@@ -263,14 +263,12 @@ Content-Security-Policy must allow `'unsafe-eval'`.
 
 A factory is the package's own worker, spelled for your bundler:
 
-```js
-// Vite
-import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
-const makeWorkerInstance = () => new RpcWorker()
-
-// webpack (set output.publicPath: 'auto' so the worker finds its URL)
-import makeWorkerInstance from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'
-```
+- **Vite**: import `RpcWorker` from
+  `@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker` and pass
+  `makeWorkerInstance: () => new RpcWorker()`.
+- **webpack**: pass the default export of
+  `@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance`, and set
+  `output.publicPath: 'auto'` so the worker finds its URL.
 
 Vite 7 needs two settings Vite 8 does not. `worker: { format: 'es' }`, since its
 default `'iife'` cannot hold the worker's chunks and the production build fails;
