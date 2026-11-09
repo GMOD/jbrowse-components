@@ -150,9 +150,10 @@ interesting alleles are non-reference and an expansion is hard to read in a
 linear view. Revisit only with a rendering answer first (a graph projection or
 a per-allele length encoding).
 
-**Three bring-your-own examples nobody has written** (`064dd09cca`): session
-save/restore, linked views and base-level sequence. None of the pages under
-`products/jbrowse-build-your-own/examples-site/src/examples/` covers them, and
-that site's arc is one page adds one thing — see
+**Two bring-your-own examples nobody has written** (`064dd09cca`): linked
+views and base-level sequence. None of the pages under
+`products/jbrowse-build-your-own/examples-site/src/examples/` covers them
+(session save/restore is `session-in-url`), and that site's arc is one page
+adds one thing — see
 [lightweight-toolkit](../waiting-on-a-call/lightweight-toolkit.md) for what the
-ceremony on each page costs before adding three more.
+ceremony on each page costs before adding two more.
