@@ -141,6 +141,7 @@ export type {
   ClusterHierarchyNode,
   ClusterNodeData,
   HoveredTreeNode,
+  RowAnnotationColumn,
   RowLabelSource,
   RowSource,
   TreeDrawingModel,
