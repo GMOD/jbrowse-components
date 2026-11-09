@@ -34,6 +34,7 @@ export default function FixedHeight() {
           'volvox_microarray',
           'volvox-long-reads-sv-bam',
         ],
+        tracklist: true,
       }}
     />
   )

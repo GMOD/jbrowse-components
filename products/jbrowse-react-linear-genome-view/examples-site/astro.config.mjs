@@ -12,6 +12,9 @@ export default defineConfig({
     '/error-handler': '/storybook/lgv/session-persistence/',
     '/outside-styling': '/storybook/lgv/custom-theme/',
     '/view-prop': '/storybook/lgv/one-linear-genome-view/',
+    '/use-create-view-state': '/storybook/lgv/show-track/',
+    '/drawer-widget': '/storybook/lgv/fixed-height/',
+    '/view-spelled-out': '/storybook/lgv/highlight-regions/',
   },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.

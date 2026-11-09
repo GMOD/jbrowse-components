@@ -17,49 +17,49 @@ widgets.
 
 The most common use is a hierarchical track selector panel. Set
 `tracklist: true` in `view`, here on the managed `<LinearGenomeView>` component,
-whose `view` prop is its whole declarative input:
+whose `view` prop is its whole declarative input. `height` bounds the view and
+gives the drawer beside it a scroll region:
 
-<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/ViewSpelledOut.tsx -->
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/FixedHeight.tsx -->
 
 ```tsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-export default function ViewSpelledOut() {
+export default function FixedHeight() {
   return (
     <LinearGenomeView
+      height="400px"
       assembly={{
-        name: 'hg38',
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-        refNameAliases: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-        },
-        geneticCodes: { chrM: 2 },
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
       }}
       tracks={[
         {
-          trackId: 'ncbi-refseq-genes',
-          name: 'NCBI RefSeq Genes',
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+        {
+          trackId: 'volvox_microarray',
+          name: 'Microarray (BigWig)',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+          displayDefaults: { height: 150 },
+        },
+        {
+          trackId: 'volvox-long-reads-sv-bam',
+          name: 'volvox-long reads with SV',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-long-reads-sv.bam',
+          displayDefaults: { height: 200 },
         },
       ]}
-      height="400px"
       view={{
-        loc: 'chr1:11,106,077-11,261,675',
-        tracklist: true,
-        nav: true,
+        loc: 'ctgA:1..50,000',
         tracks: [
-          { trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } },
+          'volvox_gff3',
+          'volvox_microarray',
+          'volvox-long-reads-sv-bam',
         ],
-        highlight: [
-          'chr1:11,130,000-11,145,000',
-          {
-            refName: 'chr1',
-            start: 11_200_000,
-            end: 11_220_000,
-            color: 'rgba(0, 128, 255, 0.25)',
-            label: 'Region of interest',
-          },
-        ],
+        tracklist: true,
       }}
     />
   )
@@ -70,7 +70,7 @@ export default function ViewSpelledOut() {
 
 Code that opens a widget holds the engine, so it needs the `useCreateViewState`
 form — the same object either way, see
-[useCreateViewState](https://jbrowse.org/storybook/lgv/use-create-view-state/).
+[Show a track programmatically](https://jbrowse.org/storybook/lgv/show-track/).
 
 Every drawer action is on the session, so they read
 `state.session.setDrawerPosition('left')` and so on:
@@ -182,7 +182,7 @@ only fetched when it first opens.
 
 ## Storybook example
 
-See the `DrawerWidget` example: https://jbrowse.org/storybook/lgv/drawer-widget/
+See the `FixedHeight` example: https://jbrowse.org/storybook/lgv/fixed-height/
 
 ## See also
 

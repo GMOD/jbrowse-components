@@ -6,7 +6,6 @@
   "default-session": 523,
   "disable-add-track": 402,
   "disable-zoom-and-side-scroll": 166,
-  "drawer-widget": 902,
   "external-navigate": 260,
   "external-plugin": 234,
   "feature-highlights": 354,
@@ -37,8 +36,6 @@
   "track-shorthand": 569,
   "track-sizing": 715,
   "two-views": 288,
-  "use-create-view-state": 276,
-  "view-spelled-out": 402,
   "web-worker": 234,
   "wiggle-track": 284,
   "without-react": 271

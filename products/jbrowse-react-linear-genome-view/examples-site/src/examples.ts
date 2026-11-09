@@ -18,12 +18,6 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'use-create-view-state',
-    title: 'useCreateViewState',
-    description: 'Hold the view state yourself, stable across re-renders.',
-    group: 'Getting started',
-  },
-  {
     slug: 'genome-by-name',
     title: 'A hosted genome',
     description:
@@ -43,15 +37,9 @@ export const pages: ExamplePage[] = [
     group: 'Layout and chrome',
   },
   {
-    slug: 'drawer-widget',
-    title: 'Widgets in a side drawer',
-    description: 'Put the track selector and feature details in a drawer.',
-    group: 'Layout and chrome',
-  },
-  {
     slug: 'fixed-height',
-    title: 'Fitting the view in a fixed-height box',
-    description: 'The height prop, or a host box of your own.',
+    title: 'A fixed height, with a side drawer',
+    description: 'The height prop bounds the view and the drawer beside it.',
     group: 'Layout and chrome',
   },
   {
@@ -71,6 +59,12 @@ export const pages: ExamplePage[] = [
     slug: 'show-track',
     title: 'Show a track programmatically',
     description: 'Show and hide a track from your own button.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'highlight-regions',
+    title: 'Highlight regions',
+    description: 'view.highlight shades regions, with a color and label each.',
     group: 'Navigation and search',
   },
   {
@@ -163,12 +157,6 @@ export const pages: ExamplePage[] = [
     title: 'Package as a custom element',
     description: 'A <jbrowse-linear-view> tag, shadow-isolated.',
     group: 'Theming',
-  },
-  {
-    slug: 'view-spelled-out',
-    title: 'A view spelled out',
-    description: 'displaySnapshot, tracklist, nav, and labeled highlights.',
-    group: 'Sessions',
   },
   {
     slug: 'session-persistence',

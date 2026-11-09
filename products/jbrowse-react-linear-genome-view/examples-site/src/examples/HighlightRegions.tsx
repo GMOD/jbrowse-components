@@ -1,6 +1,6 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-export default function ViewSpelledOut() {
+export default function HighlightRegions() {
   return (
     <LinearGenomeView
       assembly={{
@@ -9,7 +9,6 @@ export default function ViewSpelledOut() {
         refNameAliases: {
           uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
-        geneticCodes: { chrM: 2 },
       }}
       tracks={[
         {
@@ -18,14 +17,9 @@ export default function ViewSpelledOut() {
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
         },
       ]}
-      height="400px"
       view={{
         loc: 'chr1:11,106,077-11,261,675',
-        tracklist: true,
-        nav: true,
-        tracks: [
-          { trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } },
-        ],
+        tracks: ['ncbi-refseq-genes'],
         highlight: [
           'chr1:11,130,000-11,145,000',
           {
