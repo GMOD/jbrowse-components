@@ -18,15 +18,9 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'import-config-json',
-    title: 'Import a config.json',
-    description: 'Bundled at build time.',
-    group: 'Getting started',
-  },
-  {
     slug: 'fetch-config-json',
-    title: 'Fetch a config.json',
-    description: 'Fetched at runtime.',
+    title: 'Load a config.json',
+    description: 'Fetched at runtime, or bundled at build time.',
     group: 'Getting started',
   },
   {
