@@ -1,7 +1,7 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { SearchResultsNotFoundError } from '@jbrowse/core/util'
 
 import {
-  SearchResultsNotFoundError,
   distinctDestinations,
   fetchResults,
   hitTrackToShow,

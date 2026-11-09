@@ -511,6 +511,7 @@ export { locStringsToRegions } from './locStringsToRegions.ts'
 export type { RefNameSource } from './locStringsToRegions.ts'
 export {
   type ParsedLocString,
+  SearchResultsNotFoundError,
   UnknownRefNameError,
   assembleLocString,
   assembleLocStringRaw,

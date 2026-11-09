@@ -1,3 +1,4 @@
+import { SearchResultsNotFoundError } from '@jbrowse/core/util/locString'
 import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
@@ -17,6 +18,11 @@ const FakeView = types
       if (input === 'nowhere') {
         return Promise.reject(new Error('Unknown feature or sequence'))
       }
+      if (input === 'zzzznotagene') {
+        return Promise.reject(
+          new SearchResultsNotFoundError(`No results found for "${input}"`),
+        )
+      }
       self.visited = [...self.visited, input]
       return Promise.resolve()
     },
@@ -28,8 +34,14 @@ const FakeSession = types
     rpcManager: {},
     configuration: {},
     errors: [] as string[],
+    warnings: [] as string[],
   }))
   .actions(self => ({
+    notify(message: string, level?: string) {
+      if (level === 'warning') {
+        self.warnings = [...self.warnings, message]
+      }
+    },
     notifyError(message: string) {
       self.errors = [...self.errors, message]
     },
@@ -65,6 +77,16 @@ test('a location the view cannot resolve reaches the session as an error', async
     fireEvent.click(screen.getByRole('button', { name: 'nowhere' }))
   })
   expect(session.errors).toEqual(['Error: Unknown feature or sequence'])
+})
+
+test('a name that matches nothing is a warning naming it, not an error', async () => {
+  const session = fakeSession()
+  render(<NavButton view={session.views[0]!} loc="zzzznotagene" />)
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'zzzznotagene' }))
+  })
+  expect(session.warnings).toEqual(['No results found for "zzzznotagene"'])
+  expect(session.errors).toEqual([])
 })
 
 test('a nav button with a highlight marks the place and moves there', async () => {

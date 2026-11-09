@@ -130,7 +130,8 @@ export {
   multiLevelRowMenuItems,
   rowLabels,
 } from './MultiLevelRubberband/index.ts'
-export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
+export { fetchResults } from './searchUtils.ts'
+export { SearchResultsNotFoundError } from '@jbrowse/core/util'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,

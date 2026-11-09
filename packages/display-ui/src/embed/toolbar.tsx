@@ -1,3 +1,4 @@
+import { SearchResultsNotFoundError } from '@jbrowse/core/util/locString'
 import { getSession } from '@jbrowse/core/util/mstUtils'
 import { observer } from 'mobx-react'
 
@@ -40,7 +41,9 @@ export interface HighlightingNavView extends NavView {
 /**
  * Moves the view to `loc`. Given `highlight`, it also replaces the view's
  * highlights, each written as the launch spec's `highlight` writes one, so a
- * link can mark the place it points at.
+ * link can mark the place it points at. A name search that matches nothing
+ * reaches the session as a warning naming the term; any other failure is an
+ * error.
  */
 export const NavButton = observer(function NavButton(
   props: (
@@ -64,7 +67,12 @@ export const NavButton = observer(function NavButton(
       onClick={() => {
         onClick?.()
         const report = (e: unknown) => {
-          getSession(view).notifyError(`${e}`, e)
+          const session = getSession(view)
+          if (e instanceof SearchResultsNotFoundError) {
+            session.notify(e.message, 'warning')
+          } else {
+            session.notifyError(`${e}`, e)
+          }
         }
         try {
           if (props.highlight) {

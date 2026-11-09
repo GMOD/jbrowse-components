@@ -18,6 +18,14 @@ export class UnknownRefNameError extends Error {
   name = 'UnknownRefNameError'
 }
 
+// Thrown when a name search yields no hits and the input isn't coordinate-shaped.
+// Typed so callers can render it as a soft "not found" warning instead of an
+// error. Here rather than in the LGV plugin so the embed's NavButton, which
+// cannot depend on that plugin, can tell a miss from a failure.
+export class SearchResultsNotFoundError extends Error {
+  name = 'SearchResultsNotFoundError'
+}
+
 // matches coordinate strings: "100", "100-200", "100..200", "100.." (open-ended).
 // Each coordinate may carry a metric unit suffix, so "34M-35M" and "1.5kb..2kb"
 // parse too; the numbers are converted eagerly here and nothing downstream ever

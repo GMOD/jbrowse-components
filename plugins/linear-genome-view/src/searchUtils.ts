@@ -8,6 +8,7 @@ import {
   matchRefNames,
   MAX_GLOB_REGIONS,
   rankRefNames,
+  SearchResultsNotFoundError,
   UnknownRefNameError,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -259,13 +260,6 @@ export async function navToOption({
       { session, result: option, model, assemblyName },
     )
   }
-}
-
-// Thrown when a name search yields no hits and the input isn't coordinate-shaped.
-// Typed (rather than a bare Error) so callers can render it as a soft "not found"
-// warning instead of an error — string-matching the message would be brittle.
-export class SearchResultsNotFoundError extends Error {
-  name = 'SearchResultsNotFoundError'
 }
 
 // How every search surface reports a failed navigation. A miss is the ordinary

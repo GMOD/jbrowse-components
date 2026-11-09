@@ -3,6 +3,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   resolveNamedRegions,
+  SearchResultsNotFoundError,
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
@@ -14,8 +15,6 @@ import { installCoarseBlocks } from '@jbrowse/display-kit/coarseBlocks'
 import { requestedDisplayType } from '@jbrowse/launch-args/displayAlias'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
-
-import { SearchResultsNotFoundError } from '../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
