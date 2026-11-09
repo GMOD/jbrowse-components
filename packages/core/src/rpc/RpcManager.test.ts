@@ -431,29 +431,3 @@ describe('RpcManager falls back to the main thread when its worker cannot boot',
     expect(warn).not.toHaveBeenCalled()
   })
 })
-
-describe('RpcManager says why it runs on the main thread', () => {
-  function makeReasonManager(rpc: Record<string, unknown> = {}) {
-    const pluginManager = new PluginManager([]).createPluggableElements()
-    return new RpcManager(pluginManager, RpcManager.configSchema.create(rpc), {
-      mainThreadReason: 'a plugin cannot follow it.',
-    })
-  }
-
-  test('once, when it builds the driver', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const manager = makeReasonManager()
-    manager.getDriver()
-    manager.getDriver()
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]![0]).toMatch(/a plugin cannot follow it/)
-    warn.mockRestore()
-  })
-
-  test('not at all when the config chose the main thread', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    makeReasonManager({ defaultDriver: 'MainThreadRpcDriver' }).getDriver()
-    expect(warn).not.toHaveBeenCalled()
-    warn.mockRestore()
-  })
-})

@@ -64,8 +64,8 @@ The main thread holds the result, uploads it, and draws it.
 an embedded component, which loads its own worker on demand. It runs every step
 in the box on the UI thread instead, where a deep BAM stalls whatever else the
 page is drawing, in two cases: a `plugins` entry is a bare class the worker
-cannot load, or the worker failed to start. Both print a console warning naming
-the fix; [](/docs/embedded_components#the-rpc-worker) has them.
+cannot load, or the worker failed to start, which prints a console warning;
+[](/docs/embedded_components#the-rpc-worker) has the fixes.
 
 ## Where wasm sits
 

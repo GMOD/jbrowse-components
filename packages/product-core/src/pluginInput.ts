@@ -34,16 +34,9 @@ export function toPluginLoadRecord(p: PluginInput) {
 }
 
 /**
- * Where an embedded product's engine runs RPC, when its caller did not say.
- *
- * In a worker, unless a plugin can't follow it there: a bare class has no
- * `definition`, so the worker would boot without it and whatever it registers
- * for the worker — an adapter, most often — would fail on a track that loads
- * fine on the main thread. That case stays on the main thread and says why.
- *
- * The product's worker module arrives by dynamic import, so the worker chunk
- * and the plugin graph behind it stay out of the host's eager bundle. With no
- * `Worker` at all — jest, a server render — there is nothing to choose.
+ * Where an embedded product's engine runs RPC, when its caller did not say: in
+ * a worker, unless a bare plugin class could not follow it there. The worker
+ * module arrives by dynamic import, to stay out of the host's eager bundle.
  */
 export function embeddedRpcOptions({
   plugins,
@@ -54,20 +47,13 @@ export function embeddedRpcOptions({
   makeWorkerInstance?: () => Worker
   loadWorkerModule: () => Promise<{ default: () => Worker }>
 }): RpcManagerOptions {
-  const canBuild = typeof Worker !== 'undefined'
-  const bareClass = canBuild
-    ? plugins.find(p => typeof p === 'function')
-    : undefined
   const factory =
     makeWorkerInstance ??
-    (canBuild && !bareClass
+    (typeof Worker !== 'undefined' &&
+    !plugins.some(p => typeof p === 'function')
       ? async () => (await loadWorkerModule()).default()
       : undefined)
   return factory
     ? { makeWorkerInstance: factory, defaultDriverName: 'WebWorkerRpcDriver' }
-    : {
-        mainThreadReason: bareClass
-          ? `plugins includes the class ${bareClass.name}, which the RPC worker cannot load. Pass the records loadPlugins returns instead; or, if it adds nothing that runs in the worker (an adapter, an RPC method), pass makeWorkerInstance to use the worker anyway.`
-          : undefined,
-      }
+    : {}
 }

@@ -244,18 +244,18 @@ Each component fetches and parses data in a pool of web workers, as JBrowse Web
 does, with nothing to pass. The package loads its worker on demand, so the
 worker stays out of your page's first bundle.
 
-Two cases run that work on the main thread instead, each with one console
-warning:
+Two cases run that work on the main thread instead:
 
 - **A `plugins` entry is a plugin class.** The worker loads a plugin from its
-  URL, and a class has none. Pass the records `loadPlugins` returns instead. A
-  class that adds nothing the worker runs (an adapter, an RPC method) can stay;
-  pass `makeWorkerInstance` to keep the worker.
+  URL, and a class has none, so the component stays on the main thread. Pass the
+  records `loadPlugins` returns instead; or, when the class adds nothing the
+  worker runs (an adapter, an RPC method), pass `makeWorkerInstance` to keep the
+  worker.
 - **The worker failed to start**, as it does when a bundler did not build the
-  package's worker. Pass `makeWorkerInstance` a factory your bundler builds.
-  Under Vite the package's worker is a module worker, which cannot load a UMD
-  plugin from `loadPlugins`; that page needs a factory building a classic
-  worker, or stays on the main thread.
+  package's worker, and a console warning says why. Pass `makeWorkerInstance` a
+  factory your bundler builds. Under Vite the package's worker is a module
+  worker, which cannot load a UMD plugin from `loadPlugins`; that page needs a
+  factory building a classic worker, or stays on the main thread.
 
 A factory is the package's own worker, spelled for your bundler:
 
@@ -268,7 +268,7 @@ const makeWorkerInstance = () => new RpcWorker()
 import makeWorkerInstance from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'
 ```
 
-To run on the main thread on purpose, and silence both warnings, set
+To run on the main thread on purpose, and silence that warning, set
 `configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } }`.
 
 ## Bundler examples

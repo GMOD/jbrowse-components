@@ -17,13 +17,7 @@ export interface RpcManagerOptions {
   // desktop and an embedded product that found a worker pass
   // 'WebWorkerRpcDriver'; headless leaves it as the main thread.
   defaultDriverName?: string
-  // why the host default is the main thread, when that is a fallback rather
-  // than a choice; warned once, and only if the config names no driver
-  mainThreadReason?: string
 }
-
-const SETTING_MAIN_THREAD =
-  "Set configuration.rpc.defaultDriver to 'MainThreadRpcDriver' to choose the main thread and silence this."
 
 export default class RpcManager {
   static configSchema = rpcConfigSchema
@@ -32,7 +26,6 @@ export default class RpcManager {
   private mainConfiguration: RpcConfigModel
   private hostDriverName: string
   private makeWorkerInstance?: () => Worker | Promise<Worker>
-  private mainThreadReason?: string
   private driver?: BaseRpcDriver
   private destroyed = false
   private workerFailed = false
@@ -43,14 +36,12 @@ export default class RpcManager {
     {
       makeWorkerInstance,
       defaultDriverName = 'MainThreadRpcDriver',
-      mainThreadReason,
     }: RpcManagerOptions = {},
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.hostDriverName = defaultDriverName
     this.makeWorkerInstance = makeWorkerInstance
-    this.mainThreadReason = mainThreadReason
   }
 
   /**
@@ -66,11 +57,8 @@ export default class RpcManager {
   get driverName(): string {
     return this.workerFailed
       ? 'MainThreadRpcDriver'
-      : this.configDriverName || this.hostDriverName
-  }
-
-  private get configDriverName(): string {
-    return readConfObject(this.mainConfiguration, 'defaultDriver')
+      : readConfObject(this.mainConfiguration, 'defaultDriver') ||
+          this.hostDriverName
   }
 
   /**
@@ -113,7 +101,7 @@ export default class RpcManager {
    */
   private fallBackToMainThread(driver: WebWorkerRpcDriver) {
     console.warn(
-      `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. The error below says why; https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker has the fixes. ${SETTING_MAIN_THREAD}`,
+      `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. The error below says why; https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker has the fixes. Set configuration.rpc.defaultDriver to 'MainThreadRpcDriver' to choose the main thread and silence this.`,
       driver.bootFailure,
     )
     this.workerFailed = true
@@ -123,11 +111,6 @@ export default class RpcManager {
 
   private makeDriver(backendName: string): BaseRpcDriver {
     if (backendName === 'MainThreadRpcDriver') {
-      if (this.mainThreadReason && !this.configDriverName) {
-        console.warn(
-          `JBrowse: RPC runs on the main thread, which is slower: ${this.mainThreadReason} ${SETTING_MAIN_THREAD}`,
-        )
-      }
       return new MainThreadRpcDriver(this.pluginManager, this.mainConfiguration)
     } else if (backendName === 'WebWorkerRpcDriver') {
       const { makeWorkerInstance } = this

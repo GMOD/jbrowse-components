@@ -67,7 +67,7 @@ describe('with a Worker to build', () => {
     expect(options([record]).defaultDriverName).toBe('WebWorkerRpcDriver')
   })
 
-  test('a bare plugin class keeps it on the main thread, and says so once', () => {
+  test('a bare plugin class keeps it on the main thread, silently', () => {
     const opts = options([record, BundledPlugin])
     expect(opts.makeWorkerInstance).toBeUndefined()
     const pluginManager = new PluginManager([]).createPluggableElements()
@@ -77,10 +77,8 @@ describe('with a Worker to build', () => {
       opts,
     )
     manager.getDriver()
-    manager.getDriver()
     expect(manager.driverName).toBe('MainThreadRpcDriver')
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]![0]).toMatch(/BundledPlugin.*loadPlugins/)
+    expect(warn).not.toHaveBeenCalled()
   })
 
   test("the caller's own factory wins, bare class or not", () => {
