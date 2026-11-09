@@ -40,8 +40,7 @@ needed so far); `panX`/`panY` are not persisted; callouts leave nested
 subfeatures (SARS mature peptides) unnamed, their leaders cross gene rows, and a
 long name can clip in a square export; the view's px layout words
 (`spacingPx`, `paddingPx`, `minimumRadiusPx`, `minVisibleWidth`) wait on the
-app-wide layout respelling; the React CGV examples site still reads the blocks
-PIF.
+app-wide layout respelling.
 
 **Parked:** the route clip, the polyploid circle, the track-management mixin, a
 worker-side length filter, and lifting `shapeFor`/`shapePathFor` into
