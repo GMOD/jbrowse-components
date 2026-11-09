@@ -18,13 +18,54 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // "Reset row order" and the keyed write rule walk the list, so a slot naming
 // rows that is missing from it survives a reset and a field change.
-test('the arrangement members are every RowArrangement slot but the axis and the color channel', () => {
+test('the arrangement members are every RowArrangement slot but the axis, the color channel and the annotations', () => {
   const slots = Object.keys(
     getConfigurationSchemaMetadata(rowArrangementConfigSchema)!.definition,
   )
-  expect([...ROW_ARRANGEMENT_MEMBERS, 'axis', 'color'].sort()).toEqual(
-    slots.sort(),
-  )
+  expect(
+    [...ROW_ARRANGEMENT_MEMBERS, 'axis', 'color', 'annotations'].sort(),
+  ).toEqual(slots.sort())
+})
+
+function annotationsOf(conf: Instance<typeof Display>) {
+  return conf.rows.annotations.map(annotation => ({
+    field: readConfObject(annotation, 'field'),
+    domain: readConfObject(annotation, ['scale', 'domain']),
+    range: readConfObject(annotation, ['scale', 'range']),
+  }))
+}
+
+const SEX = {
+  field: 'sex',
+  scale: { domain: ['female', 'male'], range: ['#d95f02', '#1b9e77'] },
+}
+
+test('rows.annotations is empty by default', () => {
+  expect(annotationsOf(Display.create({ displayId: 'd' }))).toEqual([])
+})
+
+test('rows.annotations lists RowColor channels, a string being the field', () => {
+  const conf = Display.create({
+    displayId: 'a',
+    rows: { annotations: ['superpopulation', SEX] },
+  })
+  expect(annotationsOf(conf)).toEqual([
+    { field: 'superpopulation', domain: [], range: [] },
+    { field: 'sex', domain: SEX.scale.domain, range: SEX.scale.range },
+  ])
+})
+
+test('a settings write sets rows.annotations, and a field change keeps it', () => {
+  const conf = Display.create({ displayId: 'w', rows: { field: 'source' } })
+  applyConfSettings(conf, { rows: { annotations: ['superpopulation', SEX] } })
+  applyConfSettings(conf, { rows: 'tissue' })
+  expect(annotationsOf(conf).map(a => a.field)).toEqual([
+    'superpopulation',
+    'sex',
+  ])
+  expect(plotOf(conf).rows).toMatchObject({
+    annotations: ['superpopulation', SEX],
+  })
 })
 
 const Display = ConfigurationSchema(
