@@ -12353,6 +12353,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowColor"
               }
             },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
+              }
+            },
             "axis": {
               "if": {
                 "type": "null"
@@ -13957,6 +13968,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowColor"
               }
             },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
+              }
+            },
             "axis": {
               "if": {
                 "type": "null"
@@ -15059,6 +15081,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
+        "annotations": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowColor"
+            }
+          }
+        },
         "axis": {
           "if": {
             "type": "null"
@@ -16093,6 +16126,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/RowColor"
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
               }
             },
             "axis": {

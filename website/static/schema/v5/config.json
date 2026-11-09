@@ -11977,6 +11977,17 @@
                 "$ref": "#/$defs/RowColor"
               }
             },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
+              }
+            },
             "axis": {
               "if": {
                 "type": "null"
@@ -13512,6 +13523,17 @@
                 "$ref": "#/$defs/RowColor"
               }
             },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
+              }
+            },
             "axis": {
               "if": {
                 "type": "null"
@@ -14578,6 +14600,17 @@
             "$ref": "#/$defs/RowColor"
           }
         },
+        "annotations": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowColor"
+            }
+          }
+        },
         "axis": {
           "if": {
             "type": "null"
@@ -15580,6 +15613,17 @@
               },
               "else": {
                 "$ref": "#/$defs/RowColor"
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowColor"
+                }
               }
             },
             "axis": {

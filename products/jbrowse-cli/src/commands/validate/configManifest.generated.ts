@@ -6832,6 +6832,41 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -7674,6 +7709,41 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -8306,6 +8376,41 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowColor",
               "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
               "shorthand": {
                 "string": "field"
               }
@@ -9495,6 +9600,41 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -10426,6 +10566,41 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowColor",
               "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
               "shorthand": {
                 "string": "field"
               }
@@ -11369,6 +11544,41 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowColor",
               "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "annotations",
+              "type": "RowColorConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
               "shorthand": {
                 "string": "field"
               }
