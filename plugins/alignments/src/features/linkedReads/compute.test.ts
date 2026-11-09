@@ -636,8 +636,8 @@ describe('readGroupConnections', () => {
 
 describe('reads past the row cap', () => {
   // A capped layout parks every read it could not fit on the overflow row,
-  // `maxY`, which nothing draws; a connector there hangs off no visible read.
-  it('connect nothing, curved or straight', () => {
+  // `maxY`, the section's bottom edge.
+  it('connect nothing between two of them, curved or straight', () => {
     const pair = (name: string) => [name, name]
     const data = makeData({
       names: [...pair('shown'), ...pair('capped'), ...pair('normal')],
@@ -674,7 +674,7 @@ describe('reads past the row cap', () => {
     expect(lines.size).toBe(0)
   })
 
-  it('join the drawn split segments either side of a parked one', () => {
+  it('keep the junctions that reach a drawn segment', () => {
     const data = makeData({
       names: ['r', 'r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY, SAM_FLAG_SUPPLEMENTARY],
@@ -690,8 +690,36 @@ describe('reads past the row cap', () => {
     })
     const pairs = [...iterLinkedPairs(new Map([[0, { ...data, maxY: 1 }]]))]
     expect(pairs.map(({ e1, e2 }) => [e1.readIdx, e2.readIdx])).toEqual([
-      [0, 2],
+      [0, 1],
+      [1, 2],
     ])
+  })
+
+  it('draw a curve from a drawn read to its mate on the overflow row', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [-1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
+      ys: [0, 1],
+    })
+    const { overlayPairs } = resolveConnectors(
+      new Map([[0, { ...data, maxY: 1 }]]),
+      { lines: true },
+    )
+    expect(
+      overlayPairs.map(({ e1, e2 }) => [
+        e1.data.readYs[e1.readIdx],
+        e2.data.readYs[e2.readIdx],
+      ]),
+    ).toEqual([[0, 1]])
   })
 })
 

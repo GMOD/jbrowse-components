@@ -41,9 +41,6 @@ export interface ReadEntry {
 // bucket held every block in view and `splitJunctions` chained them into a run
 // of fabricated junctions between features that share nothing. `chainGroupingKey`
 // gives the layout the same answer from the other side.
-//
-// A read parked past its section's row cap, on the overflow row `maxY`, is out
-// of view, and skipping it here joins the drawn segments on either side of it.
 export function groupReadsByName(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
 ): Map<string, ReadEntry[]> {
@@ -52,7 +49,7 @@ export function groupReadsByName(
     const { readKeys } = data
     for (let i = 0; i < readKeys.length; i++) {
       const name = readNameAt(data, i)
-      if (name && data.readYs[i]! < data.maxY) {
+      if (name) {
         getOrCreate(readsByName, name, () => []).push({
           displayedRegionIndex: idx,
           readIdx: i,
@@ -197,6 +194,14 @@ export interface LinkedPair {
 // (`hiddenSegmentsBetween`) in the view's own refName spelling. Both emitters
 // pass one: the overlay dashes such a junction, and the straight-line pass
 // leaves it to the overlay.
+//
+// A read past its section's row cap sits on the overflow row `maxY`, at the
+// section's bottom edge. A connection to one still draws, ending on that edge,
+// while one between two such reads joins nothing in view.
+function onDrawnRow({ data, readIdx }: ReadEntry) {
+  return data.readYs[readIdx]! < data.maxY
+}
+
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   canonicalRefName?: CanonicalRefName,
@@ -217,17 +222,19 @@ export function* iterLinkedPairs(
         isSplit,
         hiddenSegmentsBetween,
       } of readGroupConnections(entries, canonicalRefName)) {
-        yield {
-          e1,
-          e2,
-          c: classifyPair(
+        if (onDrawnRow(e1) || onDrawnRow(e2)) {
+          yield {
             e1,
             e2,
-            isSplit,
-            !!refNameAt && crossesChromosomes(e1, e2, refNameAt),
-          ),
-          hiddenSegmentsBetween,
-          segments: entries,
+            c: classifyPair(
+              e1,
+              e2,
+              isSplit,
+              !!refNameAt && crossesChromosomes(e1, e2, refNameAt),
+            ),
+            hiddenSegmentsBetween,
+            segments: entries,
+          }
         }
       }
     }
