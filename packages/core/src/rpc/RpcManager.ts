@@ -14,11 +14,11 @@ export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
   makeWorkerInstance?: () => Worker | Promise<Worker>
   // host-application default driver, used when the config names none. web,
-  // desktop and an embedded product that found a worker pass
+  // desktop and an embedded product whose host passed makeWorkerInstance pass
   // 'WebWorkerRpcDriver'; headless leaves it as the main thread.
   defaultDriverName?: string
   // move to the main thread when the worker fails to boot; an embedded
-  // product's host may not have built the worker it defaults to
+  // product's host may have passed a factory its bundler did not build
   fallBackToMainThread?: boolean
 }
 

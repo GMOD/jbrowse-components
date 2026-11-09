@@ -24,9 +24,6 @@ export default function umdConfig({ filename, library, cssUse }) {
     plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
-      // the embeds' default RPC worker, which src/webpack.ts turns off: one
-      // chunk cannot hold a worker, and a CDN would serve it cross-origin
-      alias: { [path.resolve('src/makeWorkerInstance.ts')]: false },
     },
     module: {
       rules: [

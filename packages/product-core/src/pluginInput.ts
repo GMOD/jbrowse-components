@@ -37,45 +37,21 @@ export function toPluginLoadRecord(p: PluginInput) {
       : { plugin: new p.plugin() }
 }
 
-function isMainThreadOnly(p: PluginInput) {
-  return typeof p === 'function' || !p.definition
-}
-
-let defaultWorker = true
-
 /**
- * Called by a product's `<script>`-tag bundle, whose worker would be served
- * from the bundle's CDN origin, where `new Worker` refuses it.
+ * Where an embedded product's engine runs RPC: in a worker when the host passed
+ * a factory, falling back to the main thread if that worker fails to boot, and
+ * on the main thread otherwise.
+ *
+ * A worker by default was tried and reverted: the code-split worker in the
+ * host's module graph made Vite 6 and 7 hosts set `worker.format: 'es'`, and
+ * an embed asks no bundler config of its host.
  */
-export function disableDefaultWorker() {
-  defaultWorker = false
-}
-
-/**
- * Where an embedded product's engine runs RPC, when its caller did not say: in
- * a worker, unless a plugin with no `definition` could not follow it there. The
- * worker module arrives by dynamic import, to stay out of the host's eager
- * bundle.
- */
-export function embeddedRpcOptions({
-  plugins,
-  makeWorkerInstance,
-  loadWorkerModule,
-}: {
-  plugins: PluginInput[]
-  makeWorkerInstance?: () => Worker
-  loadWorkerModule: () => Promise<{ default: () => Worker }>
-}): RpcManagerOptions {
-  const factory =
-    makeWorkerInstance ??
-    (defaultWorker &&
-    typeof Worker !== 'undefined' &&
-    !plugins.some(isMainThreadOnly)
-      ? async () => (await loadWorkerModule()).default()
-      : undefined)
-  return factory
+export function embeddedRpcOptions(
+  makeWorkerInstance?: () => Worker,
+): RpcManagerOptions {
+  return makeWorkerInstance
     ? {
-        makeWorkerInstance: factory,
+        makeWorkerInstance,
         defaultDriverName: 'WebWorkerRpcDriver',
         fallBackToMainThread: true,
       }

@@ -10,12 +10,8 @@
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
-import { disableDefaultWorker } from '@jbrowse/product-core'
-
 export * from './index.ts'
 
 export * from 'react-dom/client'
 
 export { React }
-
-disableDefaultWorker()

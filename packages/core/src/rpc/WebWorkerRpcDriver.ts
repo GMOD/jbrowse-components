@@ -47,8 +47,8 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export interface WebWorkerRpcDriverOptions {
-  // a promise when the worker's module is itself loaded on demand, as an
-  // embedded product's default is, to keep it out of the host's eager bundle
+  // a promise when the host loads the worker's module on demand, to keep it
+  // out of its eager bundle
   makeWorkerInstance: () => Worker | Promise<Worker>
   plugins: PluginDefinition[]
   windowHref: string

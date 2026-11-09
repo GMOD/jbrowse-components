@@ -37,11 +37,7 @@ export default function createModel(
     version,
     pluginManager,
     sessionModelType: createSessionModel(pluginManager),
-    rpcManagerOptions: embeddedRpcOptions({
-      plugins: runtimePlugins,
-      makeWorkerInstance,
-      loadWorkerModule: () => import('../makeWorkerInstance.ts'),
-    }),
+    rpcManagerOptions: embeddedRpcOptions(makeWorkerInstance),
   })
     .props({
       /**

@@ -83,7 +83,7 @@ export interface CreateViewStateBaseOptions {
    * component is `height` tall with the bar inside it.
    */
   menuBar?: boolean
-  /** Builds the RPC worker, when your bundler cannot build the package's own: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
+  /** Builds the RPC worker; without it, data loads on the main thread: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
   makeWorkerInstance?: () => Worker
   /**
    * Any CSS height (`'400px'`, `'80vh'`), applied to the component's own root.

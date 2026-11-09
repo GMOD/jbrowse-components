@@ -71,7 +71,7 @@ export interface CreateViewStateBaseOptions {
    * the RPC worker load the same plugin on its side.
    */
   plugins?: PluginInput[]
-  /** Builds the RPC worker, when your bundler cannot build the package's own: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
+  /** Builds the RPC worker; without it, data loads on the main thread: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
   makeWorkerInstance?: () => Worker
   /**
    * In-memory files, `name -> bytes`, that `tracks` may then refer to by that

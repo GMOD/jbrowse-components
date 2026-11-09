@@ -46,7 +46,7 @@ export interface JBrowseProps {
    * file stays indexed: only the bytes the current view needs are touched.
    */
   localFiles?: LocalFileInput
-  /** Builds the RPC worker, when your bundler cannot build the package's own: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
+  /** Builds the RPC worker; without it, data loads on the main thread: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
   makeWorkerInstance?: () => Worker
   // called when the plugin set changes (the plugin store, addSessionPlugin).
   // Hands back the plugins to load and the session to restore, so the host can

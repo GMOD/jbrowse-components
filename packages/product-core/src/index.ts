@@ -92,11 +92,7 @@ export type {
 } from './ui/index.ts'
 
 export { initializeWorker } from './rpcWorker.ts'
-export {
-  disableDefaultWorker,
-  embeddedRpcOptions,
-  toPluginLoadRecord,
-} from './pluginInput.ts'
+export { embeddedRpcOptions, toPluginLoadRecord } from './pluginInput.ts'
 export type { PluginInput } from './pluginInput.ts'
 export { loadRuntimePlugins, notifyPluginLoadFailures } from './loadPlugins.ts'
 export type { LoadPluginsArgs } from './loadPlugins.ts'

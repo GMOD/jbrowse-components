@@ -44,7 +44,7 @@ export interface CreateViewStateOptions {
    * file stays indexed: only the bytes the current view needs are touched.
    */
   localFiles?: LocalFileInput
-  /** Builds the RPC worker, when your bundler cannot build the package's own: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
+  /** Builds the RPC worker; without it, data loads on the main thread: https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker */
   makeWorkerInstance?: () => Worker
   /**
    * Called when something changes the plugin set — the plugin store widget,
