@@ -8,6 +8,12 @@ export interface Poster {
   src: string
   width: number
   height: number
+  /**
+   * The part of the screenshot kept on a box narrower than it: `left` for a
+   * linear view, whose tracks start at the left edge, `center` for a circular
+   * one, centred in its box
+   */
+  crop?: 'left' | 'center'
 }
 
 function isReady(el: HTMLElement) {
@@ -27,8 +33,8 @@ function isReady(el: HTMLElement) {
  * The loading view sits under the poster, `inert` and at `opacity: 0`: the
  * product components reset inherited styles on their root, so
  * `visibility: hidden` on a wrapper would not hide them. On a box narrower
- * than the screenshot the poster crops its right side rather than shrinking,
- * since the view keeps its height at any width.
+ * than the screenshot the poster crops rather than shrinks, keeping the part
+ * `poster.crop` names.
  */
 export const PosterFirst = observer(function PosterFirst({
   poster,
@@ -104,14 +110,16 @@ export const PosterFirst = observer(function PosterFirst({
       ) : null}
       {ready ? null : (
         <img
-          {...poster}
+          src={poster.src}
+          width={poster.width}
+          height={poster.height}
           alt={alt}
           style={{
             gridArea: '1 / 1',
             position: 'relative',
             width: '100%',
             objectFit: 'cover',
-            objectPosition: 'left top',
+            objectPosition: `${poster.crop ?? 'left'} top`,
           }}
         />
       )}

@@ -71,3 +71,23 @@ test('the view mounts only once its box nears the viewport', () => {
   expect(container.querySelector('[data-app-phase]')).toBeNull()
   expect(screen.getByAltText('genes')).toBeTruthy()
 })
+
+test('a narrow box keeps the part of the poster its crop names', () => {
+  render(
+    <PosterFirst poster={{ ...poster, crop: 'center' }} alt="circle">
+      <span />
+    </PosterFirst>,
+  )
+  render(
+    <PosterFirst poster={poster} alt="tracks">
+      <span />
+    </PosterFirst>,
+  )
+  expect(
+    screen.getByAltText<HTMLImageElement>('circle').style.objectPosition,
+  ).toBe('center top')
+  expect(
+    screen.getByAltText<HTMLImageElement>('tracks').style.objectPosition,
+  ).toBe('left top')
+  expect(screen.getByAltText('circle').hasAttribute('crop')).toBe(false)
+})

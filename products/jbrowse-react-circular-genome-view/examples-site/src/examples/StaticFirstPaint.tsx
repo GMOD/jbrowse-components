@@ -14,6 +14,7 @@ export default function StaticFirstPaint() {
         src: '/storybook/cgv/static-first-paint.png',
         width: 800,
         height: 406,
+        crop: 'center',
       }}
       alt="HG002 PacBio structural variants as chords around hg19"
     >
