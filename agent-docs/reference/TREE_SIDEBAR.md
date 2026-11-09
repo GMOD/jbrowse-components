@@ -475,6 +475,29 @@ adds `grid`, the row separators, on every row display but MAF.
   width or the swatch's, whichever is wider.
   With the row labels hidden or in a shared panel `rowAnnotationChannels` and
   `rowAnnotationDeals` are empty, so the columns and their keys go together.
+- **An annotation deals from its own palette.** `rowAnnotationDeals` hands
+  `dealValueColors` the deck `annotationPaletteColorAt(position, …)`, where
+  `position` is the entry's place in `rows.annotations` as
+  `rowAnnotationChannels` read it, before any entry is dropped for drawing
+  nothing. None of the palettes is the row color's, and the pale lap is
+  capped short of white, since a column sits on the paper background. The
+  entry's `scale.range` deals first, as the row color's does.
+- **Two or more color columns take a label each above the rows.**
+  `rowColumnLabels` lists them, the row color's `rowColorTitle` first where a
+  row has a color and then each drawn annotation's `rowAnnotationTitle`, the
+  same getters the keys are titled from, and is empty under two columns.
+  `SvgRowColumnLabels` draws them stair-step at negative y, a line each
+  (`ROW_COLUMN_LABEL_LINE_HEIGHT`), with a 1 px leader to each column's
+  center from `rowColorColumnCenters`, at every row height. The text size is
+  `rowLabelFontSize` of that line, so the export's font applies up to the
+  line the model reserved.
+- **The label lines are part of `rowsTopOffset`.** `rowsLeadHeight` is the
+  focus chip's line plus a line per label, and `rowsTopOffset` is the
+  display's `rowsHeaderHeight` plus that. A display that sizes its plot from
+  what the mixin stacks above the rows reads `rowsLeadHeight` (MAF's
+  `bandPlot`, the mark display's `plotBox`), never `rowFocusLineHeight`,
+  which is the chip's line alone. `svgControlsStrip` ends above the label
+  lines, so the export drops the chip's line and keeps the labels.
 - **Anything marking rows draws runs, never a rect per row (`rowRuns`).**
   `effectiveRowHeight` is fractional and deliberately never floored, so a rect per
   row blends twice at every boundary under a translucent fill. A row whose key is
@@ -501,6 +524,11 @@ The portal lands on the **display's own box**; a display drawing its sidebar
 elsewhere passes that down as `top`. Inside `RowsPanel` that `top` is
 `rowsTopOffset`, and the inline half takes none, since the panel already sits
 there.
+
+`RowLabelsOverlay` draws the column labels in a second `<svg>`
+(`row-column-labels`) over the lines above `top`, so they stay while the rows
+scroll and a row scrolled past the top draws nothing into them. Wiggle draws
+`SvgRowColumnLabels` beside `SvgRowLabels` in its own overlay.
 
 ## Install the autoruns statically; don't `import()` this barrel
 
@@ -557,8 +585,8 @@ empty gutter. Three places decide it: `TreeSidebar`'s early return,
 `SvgTreeSidebar`, and `treeSidebarOffset`.
 
 **The mixin states the sidebar once, in `rowSidebarProps`**: the tree, the band
-strip, the labels and the `rows.annotations` columns, from the settings and the
-rows drawn. A display's `svgSidebar` hook is that getter or a spread of it with
+strip, the labels, the `rows.annotations` columns and the columns' labels, from
+the settings and the rows drawn. A display's `svgSidebar` hook is that getter or a spread of it with
 what the display changes, so a new sidebar field needs no display edit:
 
 - variants and MAF return it as is;
@@ -579,4 +607,5 @@ reserved and the sidebar drawn cannot drift. Both measure in the export's
 `ExportTextStyle`: labels measured in one font and drawn in another run into the
 plot. Handed the rows' viewport (`availableHeight`), `SvgTreeSidebar` clips to
 it as the screen's rows box does: unclipped, a scrolled export drew the row
-just above the viewport over the bands above the rows.
+just above the viewport over the bands above the rows. The column labels draw
+outside that clip, in the lines `rowsTopOffset` leaves above the rows.
