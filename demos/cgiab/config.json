@@ -238,12 +238,8 @@
           "indexType": "CSI"
         }
       },
-      "category": [
-        "Reads"
-      ],
-      "assemblyNames": [
-        "HG008T_v3.2"
-      ],
+      "category": ["Reads"],
+      "assemblyNames": ["HG008T_v3.2"],
       "description": "The tumor HiFi reads that overlap GRCh38 chr3:139,930,000-140,010,000 or chr13:114,310,000-114,365,000 (the SV_20 translocation), realigned to the HG008T v3.2 tumor assembly with minimap2 map-hifi. Reads that split at the translocation on GRCh38 span the junction on chr3_chr13_hap1. Elsewhere the track is empty. Built by scripts/build_cgiab_reads_on_assembly.sh"
     },
     {

@@ -12,6 +12,13 @@
 # Deploy:   upload the BAM and its .csi beside demos/cgiab/config.json
 set -euo pipefail
 
+for tool in samtools minimap2 curl awk sort; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 OUTDIR="${1:-cgiab_reads_on_assembly}"
 THREADS="${THREADS:-8}"
 DEMO=https://jbrowse.org/demos/cgiab
@@ -24,7 +31,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 for f in "$SLICE" "$SLICE.bai" "$ASM"; do
-  [ -f "$f" ] || curl -fL -o "$f" "$DEMO/$f"
+  [ -f "$f" ] || { curl -fL -o "$f.part" "$DEMO/$f" && mv "$f.part" "$f"; }
 done
 
 # Primary records only: they carry the whole read, soft-clipped
