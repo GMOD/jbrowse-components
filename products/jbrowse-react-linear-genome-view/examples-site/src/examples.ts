@@ -211,7 +211,6 @@ export const pages: ExamplePage[] = [
     title: 'Export the view (SVG/PNG)',
     description: 'The exportSvg action, through a ref.',
     group: 'Integration',
-    skipSmoke: true,
   },
   {
     slug: 'static-first-paint',
