@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -90,4 +90,21 @@ test("a row recolored under name resets to the base's pairs", () => {
 
   expect(colorsOf(display)).toEqual({ a: '#f00' })
   expect(display.rowArrangementIsCustom).toBe(false)
+})
+
+// `rows.annotations` names no row, so no reset returns it and it never makes
+// the arrangement custom, as `rows.color`'s choice and `rows.axis` do not.
+test('a reset keeps rows.annotations, which is no part of the arrangement', () => {
+  const display = makeDisplay({ rows: { sort: ['a', 'b', 'c'] } })
+  setConf(display, ['rows', 'annotations'], ['group'])
+  expect(display.rowArrangementIsCustom).toBe(false)
+  display.setRowOrder(['c', 'b', 'a'].map(name => ({ name })))
+  expect(display.rowArrangementIsCustom).toBe(true)
+
+  display.resetRowArrangement()
+
+  expect(display.rowSort).toEqual(['a', 'b', 'c'])
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(display.rowAnnotationChannels.map(a => a.field)).toEqual(['group'])
+  expect(display.rowAnnotationColors).toHaveLength(1)
 })

@@ -18,8 +18,10 @@ import {
 } from './rowColorChoice.ts'
 import {
   ROW_COLOR_SCALE_ID,
+  annotationColumn,
   dealValueColors,
   resolveRowColors,
+  rowAnnotationScales,
   rowColorKeyEntries,
   rowFieldValue,
   withPinnedColors,
@@ -38,10 +40,15 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode } from './hierarchy.ts'
 import type { RowNarrowing } from './narrowRows.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
-import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
+import type {
+  RowAnnotationDeal,
+  RowColorKeyInputs,
+  RowColorSetting,
+} from './rowColorScale.ts'
 import type {
   ClusterHierarchyNode,
   ClusterNodeData,
+  RowAnnotationColumn,
   RowSource,
 } from './types.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
@@ -142,6 +149,16 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
      */
     get rowColorPins(): ReadonlyMap<string, string> {
       return pinnedColorsOf(getConf(self, ['rows', 'colors']))
+    },
+    /**
+     * #getter
+     * The `rows.annotations` channels in the order listed, each read as
+     * `rowColorChannel` reads `rows.color`.
+     */
+    get rowAnnotationChannels(): RowColorSetting[] {
+      return self.configuration.rows.annotations.map(annotation =>
+        rowColorSettingOf(annotation),
+      )
     },
   }
 }
@@ -523,6 +540,18 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
     get dealtValueColors(): ReadonlyMap<string, string> {
       return self.dealtValueColorsFor(self.rowColorSetting)
     },
+    /**
+     * #getter
+     * Each `rows.annotations` entry with the color each value of its field
+     * takes, dealt as `dealtValueColors` is: the same palette over the rows
+     * in source order, the empty value taking none.
+     */
+    get rowAnnotationDeals(): RowAnnotationDeal[] {
+      return self.rowAnnotationChannels.map(setting => ({
+        setting,
+        dealt: self.dealtValueColorsFor(setting),
+      }))
+    },
   }
 }
 
@@ -546,6 +575,17 @@ export function resolvedRowColorViews<S extends RowSource>(
         self.rowColorPins,
         self.rowAlias,
       )
+    },
+    /**
+     * #getter
+     * The color columns the sidebar draws beside the row labels, one per
+     * `rows.annotations` entry that colors a row, each a row's color by
+     * name. An entry whose field no row carries draws no column.
+     */
+    get rowAnnotationColors(): RowAnnotationColumn[] {
+      return self.rowAnnotationDeals
+        .map(deal => annotationColumn(self.expandedRows, deal))
+        .filter(column => column.size > 0)
     },
   }
 }
@@ -605,37 +645,42 @@ export function clusterableRowViews<S extends RowSource>(
     },
     /**
      * #getter
-     * The row color key, which every display spreads into its
+     * The row color keys, which every display spreads into its
      * `colorScales`: one scale titled by the `rows.color` field, or none
      * where it has no entries. Its entries (`rowColorKeyEntries`) show
      * where the labels cannot name the colors: by a field, where a row
      * `rows.colors` pins takes an entry by its label, or by name in a
-     * shared panel. By name on stacked rows the labels are the key.
+     * shared panel. By name on stacked rows the labels are the key. After
+     * it, one key per `rows.annotations` entry that colors a row, titled by
+     * its field, whose entries focus nothing.
      */
     get rowColorScales(): CategoricalScale[] {
       const field = self.rowColorField
-      if (!field && !self.sharesPanel) {
-        return []
-      }
+      const rows = self.rowColorDealRows
+      const keyed = !!field || self.sharesPanel
       const labels = new Map(
-        self.editableSources.map(row => [row.name, row.label ?? row.name]),
+        keyed
+          ? self.editableSources.map(row => [row.name, row.label ?? row.name])
+          : [],
       )
-      const entries = rowColorKeyEntries(
-        self.rowColorDealRows,
-        self.rowColorKeyInputs,
-        name => labels.get(name) ?? name,
-      )
-      return entries.length > 0
-        ? [
-            {
-              kind: 'categorical',
-              id: ROW_COLOR_SCALE_ID,
-              title: field ? capitalizeFirst(field) : self.rowNoun,
-              focusesRows: true,
-              entries,
-            },
-          ]
+      const entries = keyed
+        ? rowColorKeyEntries(
+            rows,
+            self.rowColorKeyInputs,
+            name => labels.get(name) ?? name,
+          )
         : []
+      const rowKey: CategoricalScale = {
+        kind: 'categorical',
+        id: ROW_COLOR_SCALE_ID,
+        title: field ? capitalizeFirst(field) : self.rowNoun,
+        focusesRows: true,
+        entries,
+      }
+      return [
+        ...(entries.length > 0 ? [rowKey] : []),
+        ...rowAnnotationScales(rows, self.rowAnnotationDeals),
+      ]
     },
   }
 }

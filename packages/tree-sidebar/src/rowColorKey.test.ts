@@ -1,8 +1,9 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { dealValueColors } from './rowColorScale.ts'
@@ -15,6 +16,7 @@ interface TestRow {
   name: string
   label?: string
   group?: string
+  sex?: string
   color?: string
 }
 
@@ -246,6 +248,121 @@ describe('a row rows.colors pins under an attribute', () => {
       label: 'b',
       color: '#123456',
     })
+  })
+})
+
+// `rows.annotations` colors no row and reorders none: each entry is a column
+// beside the labels with a key of its own after the row color's.
+describe('rows.annotations', () => {
+  const SEXED: TestRow[] = [
+    { name: 'a', group: 'x', sex: 'f' },
+    { name: 'b', group: 'y', sex: 'm' },
+    { name: 'c', group: 'x', sex: 'f' },
+    { name: 'd', group: '' },
+  ]
+  const SEX = {
+    field: 'sex',
+    scale: { domain: ['m'], range: ['#00f'] },
+  }
+  const keysOf = (display: ReturnType<typeof makeDisplay>) =>
+    display.rowColorScales.map(({ id, title, focusesRows, entries }) => ({
+      id,
+      title,
+      focusesRows,
+      entries: entries.map(({ value, color }) => [value, color]),
+    }))
+
+  it('adds one key per annotation, after the row color key', () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['group', SEX] } },
+      { rows: SEXED },
+    )
+    expect(keysOf(display)).toEqual([
+      {
+        id: 'rows.color',
+        title: 'Group',
+        focusesRows: true,
+        entries: [
+          ['x', p(0)],
+          ['y', p(1)],
+        ],
+      },
+      {
+        id: 'rows.annotations.0',
+        title: 'Group',
+        focusesRows: undefined,
+        entries: [
+          ['x', p(0)],
+          ['y', p(1)],
+        ],
+      },
+      {
+        id: 'rows.annotations.1',
+        title: 'Sex',
+        focusesRows: undefined,
+        entries: [
+          ['m', '#00f'],
+          ['f', p(0)],
+        ],
+      },
+    ])
+  })
+
+  it('keys an annotation where rows.color has no key', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex'] } },
+      { rows: SEXED },
+    )
+    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.0'])
+    expect(Object.fromEntries(display.resolvedRowColors)).toEqual({})
+  })
+
+  it('gives each row its column color by name, a row with no value none', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['group', SEX] } },
+      { rows: SEXED },
+    )
+    expect(display.rowAnnotationColors.map(c => Object.fromEntries(c))).toEqual(
+      [
+        { a: p(0), b: p(1), c: p(0) },
+        { a: p(0), b: '#00f', c: p(0) },
+      ],
+    )
+  })
+
+  it('draws no column and no key for a field no row carries', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['population', 'sex'] } },
+      { rows: SEXED },
+    )
+    expect(display.rowAnnotationColors).toHaveLength(1)
+    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.1'])
+  })
+
+  it('deals once per change to the deal, whatever arranges the rows', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex'] } },
+      { rows: SEXED },
+    )
+    const deals: unknown[] = []
+    const dispose = autorun(() => {
+      deals.push(display.rowAnnotationDeals)
+    })
+    display.setRowFocus(['b'])
+    display.setRowOrder(['c', 'b', 'a', 'd'].map(name => ({ name })))
+    expect(deals).toHaveLength(1)
+    setConf(display, ['rows', 'annotations'], ['group'])
+    expect(deals).toHaveLength(2)
+    dispose()
+  })
+
+  it('leaves a click on an annotation entry inert', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex'] } },
+      { rows: SEXED },
+    )
+    display.focusLegendEntry('rows.annotations.0', 'f')
+    expect(display.rowFocus).toBeUndefined()
   })
 })
 

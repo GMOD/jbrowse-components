@@ -45,6 +45,12 @@ export type TreeSource = Pick<RowSource, 'name'>
  */
 export type RowLabelSource = Pick<RowSource, 'name' | 'label' | 'rowColor'>
 
+/**
+ * One `rows.annotations` column as the label half draws it: a row's color by
+ * its name, a row with none leaving a gap.
+ */
+export type RowAnnotationColumn = ReadonlyMap<string, string>
+
 export interface TreeSidebarModel extends IStateTreeNode {
   hierarchy?: ClusterHierarchyNode
   // The parsed (and subtree-filtered) tree, from TreeSidebarMixin. `hierarchy`

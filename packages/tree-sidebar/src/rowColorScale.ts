@@ -1,11 +1,18 @@
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
-import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  dealRowColors,
+  pairedColorsOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import { otherName } from './arrangeRows.ts'
 
 import type { RowAlias } from './arrangeRows.ts'
-import type { RowSource } from './types.ts'
-import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
+import type { RowAnnotationColumn, RowSource } from './types.ts'
+import type {
+  CategoricalEntry,
+  CategoricalScale,
+} from '@jbrowse/core/ui/colorScale'
 
 /** The `rows.color.scale` as read: the values paired with a color, and what an unpaired value takes. */
 export interface RowColorScaleSetting {
@@ -296,4 +303,67 @@ export function rowColorKeyEntries(
       ? [{ value: OTHER_VALUE, label: 'Other', color: unknown }]
       : []),
   ]
+}
+
+/**
+ * One `rows.annotations` entry dealt: its setting, and the color each value
+ * of its field takes.
+ */
+export interface RowAnnotationDeal {
+  setting: RowColorSetting
+  dealt: ReadonlyMap<string, string>
+}
+
+/**
+ * The column one annotation draws: each row's color by name, the color its
+ * value of the annotation's field was dealt. A row whose value took none has
+ * no entry.
+ */
+export function annotationColumn(
+  rows: readonly RowSource[],
+  { setting, dealt }: RowAnnotationDeal,
+): RowAnnotationColumn {
+  return new Map(
+    rows.flatMap(row => {
+      const color = dealt.get(rowFieldValue(row, setting.field))
+      return color === undefined ? [] : [[row.name, color] as const]
+    }),
+  )
+}
+
+/** The id of the key of the `rows.annotations` entry at `index`. */
+export function rowAnnotationScaleId(index: number) {
+  return `rows.annotations.${index}`
+}
+
+/**
+ * One key per annotation with an entry, titled by its field: the values some
+ * row of `rows` carries with a color, listed as the row color key lists an
+ * attribute's.
+ */
+export function rowAnnotationScales(
+  rows: readonly RowSource[],
+  deals: readonly RowAnnotationDeal[],
+): CategoricalScale[] {
+  return deals.flatMap(({ setting, dealt }, index) => {
+    const entries = rowColorKeyEntries(
+      rows,
+      {
+        setting,
+        pairs: pairedColorsOf(setting.scale),
+        dealt,
+        resolved: NONE,
+        pinned: NONE,
+        alias: undefined,
+      },
+      name => name,
+    )
+    const scale: CategoricalScale = {
+      kind: 'categorical',
+      id: rowAnnotationScaleId(index),
+      title: capitalizeFirst(setting.field),
+      entries,
+    }
+    return entries.length > 0 ? [scale] : []
+  })
 }
