@@ -41,8 +41,9 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'disable-zoom-and-side-scroll',
-    title: 'Disable zoom and side scroll',
-    description: 'Lock the view so users cannot zoom or pan.',
+    title: 'Stub out zoom and scroll',
+    description:
+      'A plugin turns zoomTo and scrollTo into no-ops; the inert header is hidden.',
     group: 'Navigation and search',
   },
   {
