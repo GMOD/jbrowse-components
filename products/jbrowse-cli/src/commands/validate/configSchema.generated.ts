@@ -7676,7 +7676,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
           "deprecated": true,

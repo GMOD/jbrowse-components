@@ -599,6 +599,12 @@ function droppedKeysOf(configSchema) {
   return Object.keys(retired).filter(key => dropsRetiredKey(retired[key]))
 }
 
+function liftedKeysOf(configSchema) {
+  const retired =
+    getConfigurationSchemaMetadata(configSchema)?.options.retired ?? {}
+  return Object.keys(retired).filter(key => !dropsRetiredKey(retired[key]))
+}
+
 // A probe hands a schema keys it does not declare, each of which a closed one
 // names on the console.
 function unwarned(probe) {
@@ -923,10 +929,13 @@ function collect(group, getType) {
         ...retiredKeys.legacy,
       ]),
     ]
+    // a retired type dropping a key its successor lifts (LinearSNPCoverageDisplay's
+    // bin-hover mouseover) leaves the successor's own spelling working
+    const lifted = new Set(liftedKeysOf(entry.configSchema))
     const droppedKeys = [
       ...new Set([
         ...droppedKeysOf(entry.configSchema),
-        ...retiredKeys.dropped,
+        ...retiredKeys.dropped.filter(key => !lifted.has(key)),
       ]),
     ]
     const probed = unwarned(() => legacyValuesOf(entry.configSchema, slots))

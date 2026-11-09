@@ -606,6 +606,30 @@ describe('validateConfig', () => {
     ])
   })
 
+  // GMOD/jbrowse-components#5641: the retired LinearSNPCoverageDisplay drops
+  // its bin-hover mouseover, which LinearAlignmentsDisplay itself lifts
+  it('reads a key the display lifts as rewritten though a retired type drops it', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      // @ts-expect-error v4's mouseover
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          displayId: 'd',
+          mouseover: "jexl:get(feature,'mate').name",
+        },
+      ],
+    }
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)).toEqual([
+      expect.objectContaining({
+        where: 'tracks[0].displays[0].mouseover',
+        message: expect.stringContaining('a migration rewrites'),
+      }),
+    ])
+  })
+
   it('distinguishes a migrated legacy key from a dropped one', () => {
     const withBasic = baseConfig()
     withBasic.tracks[0] = {

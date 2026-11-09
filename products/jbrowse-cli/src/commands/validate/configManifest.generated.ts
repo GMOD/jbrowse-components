@@ -4531,8 +4531,7 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth",
-        "mouseover"
+        "minSubfeatureWidth"
       ],
       "aliases": [
         "LinearPileupDisplay",
