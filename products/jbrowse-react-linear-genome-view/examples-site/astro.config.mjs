@@ -10,7 +10,7 @@ export default defineConfig(
     redirects: {
       'external-navigate': 'view-controls',
       'text-search': 'search-by-name',
-      'error-handler': 'session-persistence',
+      'error-handler': 'one-linear-genome-view',
       'outside-styling': 'custom-theme',
       'view-prop': 'one-linear-genome-view',
       'use-create-view-state': 'show-track',
