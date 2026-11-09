@@ -154,13 +154,17 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
     },
     /**
      * #getter
-     * The `rows.annotations` channels in the order listed, each read as
-     * `rowColorChannel` reads `rows.color`.
+     * The `rows.annotations` channels drawn, in the order listed, each read
+     * as `rowColorChannel` reads `rows.color`: none while the row labels
+     * they draw beside are hidden, and never one on `name`, which the
+     * labels already show.
      */
     get rowAnnotationChannels(): RowColorSetting[] {
-      return self.configuration.rows.annotations.map(annotation =>
-        rowColorSettingOf(annotation),
-      )
+      return getConf(self, ['rows', 'axis', 'labels'])
+        ? self.configuration.rows.annotations
+            .map(annotation => rowColorSettingOf(annotation))
+            .filter(setting => setting.field !== 'name')
+        : []
     },
   }
 }
@@ -546,13 +550,16 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
      * #getter
      * Each `rows.annotations` entry with the color each value of its field
      * takes, dealt as `dealtValueColors` is: the same palette over the rows
-     * in source order, the empty value taking none.
+     * in source order, the empty value taking none. None in a shared
+     * panel, which stacks no rows to draw a column beside.
      */
     get rowAnnotationDeals(): RowAnnotationDeal[] {
-      return self.rowAnnotationChannels.map(setting => ({
-        setting,
-        dealt: self.dealtValueColorsFor(setting),
-      }))
+      return self.sharesPanel
+        ? []
+        : self.rowAnnotationChannels.map(setting => ({
+            setting,
+            dealt: self.dealtValueColorsFor(setting),
+          }))
     },
   }
 }
@@ -627,6 +634,17 @@ export function editableRowViews<S extends RowSource>(self: RowColorsHost<S>) {
         alias: self.rowAlias,
       }
     },
+    /**
+     * #getter
+     * One key per `rows.annotations` entry that colors a row, titled by its
+     * field, whose entries focus nothing.
+     */
+    get rowAnnotationScales(): CategoricalScale[] {
+      const deals = self.rowAnnotationDeals
+      return deals.length > 0
+        ? rowAnnotationScales(self.rowColorDealRows, deals)
+        : []
+    },
   }
 }
 
@@ -653,25 +671,21 @@ export function clusterableRowViews<S extends RowSource>(
      * where the labels cannot name the colors: by a field, where a row
      * `rows.colors` pins takes an entry by its label, or by name in a
      * shared panel. By name on stacked rows the labels are the key. After
-     * it, one key per `rows.annotations` entry that colors a row, titled by
-     * its field, whose entries focus nothing.
+     * it, `rowAnnotationScales`.
      */
     get rowColorScales(): CategoricalScale[] {
       const field = self.rowColorField
-      const rows = self.rowColorDealRows
-      const keyed = !!field || self.sharesPanel
-      const labels = new Map(
-        keyed
-          ? self.editableSources.map(row => [row.name, row.label ?? row.name])
-          : [],
-      )
-      const entries = keyed
-        ? rowColorKeyEntries(
-            rows,
-            self.rowColorKeyInputs,
-            name => labels.get(name) ?? name,
-          )
-        : []
+      const keyedLabels = () => {
+        const labels = new Map(
+          self.editableSources.map(row => [row.name, row.label ?? row.name]),
+        )
+        return rowColorKeyEntries(
+          self.rowColorDealRows,
+          self.rowColorKeyInputs,
+          name => labels.get(name) ?? name,
+        )
+      }
+      const entries = field || self.sharesPanel ? keyedLabels() : []
       const rowKey: CategoricalScale = {
         kind: 'categorical',
         id: ROW_COLOR_SCALE_ID,
@@ -681,7 +695,7 @@ export function clusterableRowViews<S extends RowSource>(
       }
       return [
         ...(entries.length > 0 ? [rowKey] : []),
-        ...rowAnnotationScales(rows, self.rowAnnotationDeals),
+        ...self.rowAnnotationScales,
       ]
     },
   }

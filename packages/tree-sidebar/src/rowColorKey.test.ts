@@ -339,6 +339,53 @@ describe('rows.annotations', () => {
     expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.1'])
   })
 
+  it('draws no column and no key while the row labels are hidden', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex'], axis: { labels: false } } },
+      { rows: SEXED },
+    )
+    expect(display.rowAnnotationColors).toEqual([])
+    expect(keysOf(display)).toEqual([])
+  })
+
+  it('draws no column and no key in a shared panel', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex'] } },
+      { rows: SEXED, shared: true },
+    )
+    expect(display.rowAnnotationColors).toEqual([])
+    expect(keysOf(display).map(key => key.id)).toEqual(['rows.color'])
+  })
+
+  it('draws nothing for an annotation on name, whatever its scale', () => {
+    const display = makeDisplay(
+      {
+        rows: { annotations: [{ field: 'name', scale: { unknown: '#ccc' } }] },
+      },
+      { rows: SEXED },
+    )
+    expect(display.rowAnnotationColors).toEqual([])
+    expect(keysOf(display)).toEqual([])
+  })
+
+  it('keys the empty value where the scale colors it', () => {
+    const display = makeDisplay(
+      {
+        rows: {
+          annotations: [
+            { field: 'sex', scale: { domain: [''], range: ['#ccc'] } },
+          ],
+        },
+      },
+      { rows: SEXED },
+    )
+    expect(display.rowAnnotationColors[0]?.get('d')).toBe('#ccc')
+    expect(keysOf(display)[0]?.entries).toContainEqual([
+      expect.any(String),
+      '#ccc',
+    ])
+  })
+
   it('deals once per change to the deal, whatever arranges the rows', () => {
     const display = makeDisplay(
       { rows: { annotations: ['sex'] } },

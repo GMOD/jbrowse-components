@@ -271,3 +271,17 @@ test('an empty sort is none, and a value no list reads is refused', () => {
     }),
   ])
 })
+
+test('a lone field or channel writes rows.annotations as a list of one, beside the other members', () => {
+  const conf = Display.create({ displayId: 'd' })
+  expect(
+    applyConfSettings(conf, { rows: { annotations: 'sex', color: 'group' } })
+      .failed,
+  ).toEqual([])
+  expect(annotationsOf(conf).map(a => a.field)).toEqual(['sex'])
+  expect(conf.rows.color.field).toBe('group')
+  applyConfSettings(conf, { rows: { annotations: SEX } })
+  expect(annotationsOf(conf).map(a => a.field)).toEqual(['sex'])
+  applyConfSettings(conf, { rows: { annotations: '' } })
+  expect(annotationsOf(conf)).toEqual([])
+})

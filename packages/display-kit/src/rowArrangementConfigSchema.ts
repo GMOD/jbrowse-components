@@ -42,6 +42,18 @@ export function stringList(
 }
 
 /**
+ * `snap.annotations` as the list of channels it fills, a lone field or
+ * channel object read as a list of one, as a launch arg
+ * `rows.annotations=sex` writes it, and `''` as none.
+ */
+function annotationList(snap: Record<string, unknown>) {
+  const { annotations } = snap
+  return annotations === undefined || Array.isArray(annotations)
+    ? {}
+    : { annotations: annotations === '' ? [] : [annotations] }
+}
+
+/**
  * #config RowArrangement
  * #category display
  * The `rows` setting of a display whose rows are not the values of a field:
@@ -168,6 +180,7 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
       ...snap,
       ...stringList(snap, 'sort', 'rows'),
       ...stringList(snap, 'kept', 'rows'),
+      ...annotationList(snap),
     }),
   },
 )

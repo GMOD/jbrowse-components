@@ -345,14 +345,15 @@ export function rowAnnotationScales(
   rows: readonly RowSource[],
   deals: readonly RowAnnotationDeal[],
 ): CategoricalScale[] {
-  return deals.flatMap(({ setting, dealt }, index) => {
+  return deals.flatMap((deal, index) => {
+    const { setting, dealt } = deal
     const entries = rowColorKeyEntries(
       rows,
       {
         setting,
         pairs: pairedColorsOf(setting.scale),
         dealt,
-        resolved: NONE,
+        resolved: annotationColumn(rows, deal),
         pinned: NONE,
         alias: undefined,
       },

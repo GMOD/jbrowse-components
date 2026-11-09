@@ -24,7 +24,7 @@ phenotype beside one dendrogram, as ComplexHeatmap's row annotation and
 ggtree's `gheatmap` draw them. Switching `rows.color` between attributes
 shows each in turn and never two against the same clusters.
 
-Each display also built its own sidebar props object for the export, five
+Each display also built its own sidebar props object for the export, in
 near-identical copies, so a field added to the sidebar meant an edit in every
 display and a display that missed it drew a different sidebar on screen than
 it exported.
@@ -54,8 +54,13 @@ it exported.
 - **Each annotation has a key**, appended to `rowColorScales` after the row
   color's, titled by its field. Its entries name colors and focus no rows.
   The row color's key is found by `ROW_COLOR_SCALE_ID`, never by position.
-- **No UI yet.** A config, a session spec and launch args set it. The
-  arrangement dialog shows `rows.color` alone.
+- **No UI yet.** A config, a session spec and launch args set it; a lone
+  field or channel, as `rows.annotations=sex` writes it, is a list of one.
+  The arrangement dialog shows `rows.color` alone.
+- **A column and its key show together or not at all.** The columns draw
+  beside the row labels, so with the labels hidden (`rows.axis.labels`) or in
+  a shared panel, which stacks no rows, the mixin reads no annotation: no
+  column, no deal and no key.
 - **The mixin states the sidebar once.** `rowSidebarProps` is the tree, the
   band strip, the labels and the annotation columns from the settings and the
   rows drawn. A display's `svgSidebar` is that getter or a spread of it with
@@ -70,8 +75,8 @@ it exported.
 - A track with several annotations shows several keys in its legend.
 - Below the text threshold a track with annotations and no row color draws its
   columns from the left edge, inside the 8 px the swatch would take.
-- An annotation on the default field, `name`, draws nothing and is not
-  refused.
+- An annotation on `name`, the default field, draws nothing whatever its
+  scale, since the labels already show the name; it is not refused.
 - The variants tables export still carries the row color and its key alone.
 - The static hosts install `rowSidebarProps`, so an export with no session
   draws the columns too.

@@ -473,6 +473,8 @@ adds `grid`, the row separators, on every row display but MAF.
   with no value leaves a gap. The width is fixed because the labels cover the
   plot's first region. Below `MIN_TEXT_ROW_HEIGHT` the box is the columns'
   width or the swatch's, whichever is wider.
+  With the row labels hidden or in a shared panel `rowAnnotationChannels` and
+  `rowAnnotationDeals` are empty, so the columns and their keys go together.
 - **Anything marking rows draws runs, never a rect per row (`rowRuns`).**
   `effectiveRowHeight` is fractional and deliberately never floored, so a rect per
   row blends twice at every boundary under a translucent fill. A row whose key is
