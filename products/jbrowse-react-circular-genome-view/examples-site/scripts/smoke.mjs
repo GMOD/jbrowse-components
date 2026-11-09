@@ -22,7 +22,6 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
   'gene-density-ring': checkRingsPainted,
-  'gene-density-marks': checkRingsPainted,
   'session-in-url': checkSessionUrlRoundTrip,
   'show-track': checkTrackToggles,
 }

@@ -1,7 +1,4 @@
-import {
-  JBrowseCircularGenomeView,
-  useCreateViewState,
-} from '@jbrowse/react-circular-genome-view2'
+import { CircularGenomeView } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = [
   { name: 'hg38', displayName: 'Human (hg38)' },
@@ -11,9 +8,8 @@ const assembly = [
   displayName,
   sequence: {
     adapter: {
-      type: 'TwoBitAdapter',
-      uri: `https://hgdownload.soe.ucsc.edu/goldenPath/${name}/bigZips/${name}.2bit`,
-      chromSizes: `https://jbrowse.org/ucsc/${name}/${name}.chrom.sizes`,
+      type: 'ChromSizesAdapter',
+      uri: `https://jbrowse.org/ucsc/${name}/${name}.chrom.sizes`,
     },
   },
   refNameAliases: {
@@ -21,11 +17,14 @@ const assembly = [
   },
 }))
 
+const density =
+  'https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw'
+
 const tracks = [
   {
     trackId: 'hg38ToMm39_gene_density',
-    name: 'Genes per 100 kb',
-    uri: 'https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw',
+    name: 'Genes per 100 kb, shaded',
+    uri: density,
     type: 'QuantitativeTrack',
     assemblyNames: ['hg38', 'mm39'],
     displays: [
@@ -34,6 +33,32 @@ const tracks = [
         displayId: 'hg38ToMm39_gene_density-LinearWiggleDisplay',
         mark: 'rect',
         height: 40,
+      },
+    ],
+  },
+  {
+    trackId: 'hg38ToMm39_gene_density_marks',
+    name: 'Genes per 100 kb, bars',
+    uri: density,
+    type: 'QuantitativeTrack',
+    assemblyNames: ['hg38', 'mm39'],
+    displays: [
+      {
+        type: 'LinearMarkDisplay',
+        displayId: 'hg38ToMm39_gene_density_marks-LinearMarkDisplay',
+        height: 60,
+        marks: [
+          {
+            mark: 'bar',
+            encoding: {
+              y: 'score',
+              color: {
+                field: 'score',
+                scale: { type: 'linear', scheme: 'viridis' },
+              },
+            },
+          },
+        ],
       },
     ],
   },
@@ -53,16 +78,20 @@ const tracks = [
 ]
 
 export default function GeneDensityRing() {
-  const state = useCreateViewState({
-    assembly,
-    tracks,
-    view: {
-      height: 700,
-      displayedRegionNames: ['chr1', 'chr2', 'chrX'],
-      filter: [{ field: 'length', gte: 100_000 }],
-      tracks: ['hg38ToMm39_gene_density', 'hg38ToMm39_liftover'],
-    },
-  })
-
-  return state ? <JBrowseCircularGenomeView viewState={state} /> : null
+  return (
+    <CircularGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      view={{
+        height: 700,
+        displayedRegionNames: ['chr1', 'chr2', 'chrX'],
+        filter: [{ field: 'length', gte: 100_000 }],
+        tracks: [
+          'hg38ToMm39_gene_density',
+          'hg38ToMm39_gene_density_marks',
+          'hg38ToMm39_liftover',
+        ],
+      }}
+    />
+  )
 }

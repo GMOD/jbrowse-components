@@ -81,14 +81,8 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'gene-density-ring',
-    title: 'Gene density as a ring',
-    description: 'A bigWig of gene density drawn as a ring.',
-    group: 'Real-world demos',
-  },
-  {
-    slug: 'gene-density-marks',
-    title: 'Gene density, declared as marks',
-    description: 'A LinearMarkDisplay bar mark, its colour a viridis ramp.',
+    title: 'Gene density as rings',
+    description: 'One bigWig as a shaded strip and as viridis bars.',
     group: 'Real-world demos',
   },
 ]

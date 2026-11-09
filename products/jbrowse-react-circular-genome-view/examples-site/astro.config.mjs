@@ -8,6 +8,10 @@ export default defineConfig({
   base: '/storybook/cgv',
   trailingSlash: 'always',
   integrations: [react()],
+  // a key is matched under `base`, but a destination is written out as given
+  redirects: {
+    '/gene-density-marks': '/storybook/cgv/gene-density-ring/',
+  },
   // ES output because the RPC worker code-splits; no HMR in dev because React
   // Fast Refresh breaks the worker. The linear site's config has the details.
   vite: {
