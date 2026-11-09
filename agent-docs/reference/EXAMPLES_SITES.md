@@ -47,7 +47,9 @@ the site prefix.
 A page's `group` comes from one vocabulary, in this order where a site has it:
 Getting started, Tracks, Navigation and search, Sessions, Theming, Integration,
 Real-world demos. A site adds a group of its own only for pages none of these
-fit (the app's View types, BYO's Data sources).
+fit (the app's View types, BYO's Data sources). BYO keeps its tutorial order
+instead, since each page builds on the one before it: navigation comes before
+tracks there.
 
 ## Shared layouts reach their site through `~site`
 

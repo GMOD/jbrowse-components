@@ -15,6 +15,39 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
+    slug: 'view-controls',
+    title: 'Location box, zoom and track toggles',
+    description:
+      'A location box, zoom buttons and track toggles call methods on the view.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'search-by-name',
+    title: 'Searching by name',
+    description:
+      'A location box looks up gene names in a text index and navigates to the match.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'search-results',
+    title: 'Search results as a list',
+    description:
+      'view.search returns the matches, and the page lists them as buttons.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'scalebar-and-gridlines',
+    title: 'Scalebar and gridlines',
+    description: 'Drag across the scalebar to zoom, hover to read the base.',
+    group: 'Navigation and search',
+  },
+  {
+    slug: 'table-of-calls',
+    title: 'Navigating from a table of calls',
+    description: 'Click a structural variant call to open and mark it.',
+    group: 'Navigation and search',
+  },
+  {
     slug: 'track-labels',
     title: 'Track labels and resize bars',
     description: 'Labels beside the tracks, and a bar to resize each.',
@@ -55,6 +88,12 @@ export const pages: ExamplePage[] = [
     group: 'Loading and errors',
   },
   {
+    slug: 'dark-theme',
+    title: 'Dark theme',
+    description: "The mode option sets light or dark from your app's state.",
+    group: 'Theming',
+  },
+  {
     slug: 'genome-by-name',
     title: 'A hosted genome',
     description:
@@ -88,39 +127,6 @@ export const pages: ExamplePage[] = [
     group: 'Custom plots',
   },
   {
-    slug: 'view-controls',
-    title: 'Location box, zoom and track toggles',
-    description:
-      'A location box, zoom buttons and track toggles call methods on the view.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'search-by-name',
-    title: 'Searching by name',
-    description:
-      'A location box looks up gene names in a text index and navigates to the match.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'search-results',
-    title: 'Search results as a list',
-    description:
-      'view.search returns the matches, and the page lists them as buttons.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'scalebar-and-gridlines',
-    title: 'Scalebar and gridlines',
-    description: 'Drag across the scalebar to zoom, hover to read the base.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'table-of-calls',
-    title: 'Navigating from a table of calls',
-    description: 'Click a structural variant call to open and mark it.',
-    group: 'Navigation and search',
-  },
-  {
     slug: 'every-chromosome',
     title: 'Every chromosome in one view',
     description: 'One view shows the 24 human chromosomes side by side.',
@@ -144,12 +150,6 @@ export const pages: ExamplePage[] = [
     title: 'Session in the URL',
     description: 'Save the view to a link and restore it on load.',
     group: 'Sessions',
-  },
-  {
-    slug: 'dark-theme',
-    title: 'Dark theme',
-    description: "The mode option sets light or dark from your app's state.",
-    group: 'Theming',
   },
   {
     slug: 'static-first-paint',
