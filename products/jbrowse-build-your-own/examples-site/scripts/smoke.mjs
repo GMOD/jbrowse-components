@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import {
   checkDemoAboveFold,
   checkDemoHeights,
+  checkSessionUrlRoundTrip,
   checkTextContrast,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
@@ -1036,6 +1037,7 @@ const PAGE_CHECKS = {
   'track-settings': legendIsPlainAndAboveTheSeams,
   'local-files': localFileOpensAsATrack,
   'view-loading-and-errors': viewStatusStatesAreDrawn,
+  'session-in-url': checkSessionUrlRoundTrip,
 }
 
 // '' first: the landing page runs a live demo, so it gets the same census as
