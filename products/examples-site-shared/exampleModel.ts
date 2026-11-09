@@ -13,11 +13,3 @@ export interface ExamplePage {
   // and works in a real browser, but crashes CI's software WebGL
   skipSmoke?: boolean
 }
-
-export function findPage(pages: ExamplePage[], slug: string): ExamplePage {
-  const found = pages.find(p => p.slug === slug)
-  if (!found) {
-    throw new Error(`no page "${slug}"`)
-  }
-  return found
-}

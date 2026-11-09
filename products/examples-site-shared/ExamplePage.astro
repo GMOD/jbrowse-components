@@ -3,7 +3,6 @@ import { Code } from 'astro:components'
 
 import Demo from './Demo.astro'
 import Shell from './Shell.astro'
-import { findPage } from '~site/exampleModel.ts'
 import { pages } from '~site/examples.ts'
 
 import type { MarkdownInstance } from 'astro'
@@ -13,7 +12,10 @@ import type { MarkdownInstance } from 'astro'
 // comes first because it is the argument and the prose annotates it. The slug
 // is the page's own URL segment, so a page file cannot name another page.
 const slug = Astro.url.pathname.split('/').findLast(Boolean) ?? ''
-const page = findPage(pages, slug)
+const page = pages.find(p => p.slug === slug)
+if (!page) {
+  throw new Error(`no page "${slug}" in src/examples.ts`)
+}
 const exampleFile = `${slug.replaceAll(/(?:^|-)(\w)/g, (_, c: string) => c.toUpperCase())}.tsx`
 
 const sources = import.meta.glob<string>('~site/examples/*.tsx', {
@@ -51,16 +53,14 @@ const Doc = doc?.Content
         <Doc />
       </div>
     )}
-    <details class="source">
-      <summary>
-        <span class="when-closed">Show</span>
-        <span class="when-open">Hide</span>
-        source · {sourceLines} lines
-        <button type="button" class="copy-btn">
-          Copy
-        </button>
-      </summary>
-      <Code code={code} lang="tsx" />
-    </details>
+    <div class="source">
+      <details>
+        <summary>
+          <span class="when-closed">Show source · {sourceLines} lines</span>
+          <span class="when-open">Hide source · {sourceLines} lines</span>
+        </summary>
+        <Code code={code} lang="tsx" />
+      </details>
+    </div>
   </section>
 </Shell>

@@ -6,7 +6,7 @@ import '@jbrowse/react-app2/styles.css'
 // needs the whole content width, so this site doesn't cap main.
 export const componentLabel = 'React App'
 export const mainMaxWidth = 'none'
-// the full app demo needs a fixed-height, clipped viewport
+// the full app demo needs a fixed-height viewport
 export const demoFillHeight = true
 // the page the landing page runs, by its slug
 export const landingDemo = 'human-demo'

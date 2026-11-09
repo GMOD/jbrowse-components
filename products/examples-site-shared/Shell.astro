@@ -89,22 +89,8 @@ try {
       } catch {}
     </script>
     <style is:global>
-      /*
-        `color-scheme` tracks the palette below, and it is load-bearing rather
-        than a nicety. The demos are copy-pasteable files, so they cannot reach
-        for the custom properties on this page -- they style themselves with CSS
-        *system* colors (`Canvas`, `CanvasText`, `color-mix` of the two), on the
-        stated grounds that those read correctly on whatever host they are pasted
-        into. Without this declaration they don't: `color-scheme` defaults to
-        `normal`, system colors stay on the light palette whatever `data-theme`
-        says, and `color-mix(in srgb, CanvasText 8%, Canvas)` paints a near-white
-        box on a dark page while the text inside it inherits `--fg` and stays
-        near-white too. That is a 1.0 contrast ratio, and it shipped: the
-        notification on BYO's Loading and error states page -- the one thing that
-        page exists to prove a host must draw -- was unreadable in dark mode.
-        The palette is written with `light-dark()`, so `color-scheme` is also
-        what picks it.
-      */
+      /* `color-scheme` picks the `light-dark()` palette and the system colors
+      (`Canvas`, `CanvasText`) the copy-pasteable demos style themselves with */
       :root {
         color-scheme: light dark;
         --accent: light-dark(#135ba8, #6db3f2);
@@ -143,15 +129,7 @@ try {
       a {
         color: var(--accent);
       }
-      /*
-        …but not inside a demo. What renders in there is the embedded product,
-        which brings its own Material theme and its own surfaces, and those two
-        theme systems do not move together: a link in JBrowse's content — a
-        track name carrying markup, a formatted feature detail — sat on the
-        app's white paper wearing this page's *dark* accent, which measured
-        2.24:1. `revert` hands the color back to the embedded app, falling
-        through to the UA default when it styles none.
-      */
+      /* a demo's links sit on the embedded product's own theme, not this page's */
       .demo a {
         color: revert;
       }
@@ -337,8 +315,9 @@ try {
         border-radius: 8px;
         padding: 14px 16px;
       }
-      /* copy-to-clipboard button: injected into every shiki code block, and
-      written into the summary of a page's folded source */
+      /* copy-to-clipboard button, injected into every shiki code block; a
+      page's folded source carries it beside its summary, not inside it, so it
+      neither toggles the panel nor joins the summary's name */
       .copy-btn {
         position: absolute;
         top: 8px;
@@ -361,9 +340,12 @@ try {
       .copy-btn:hover {
         background: rgba(255, 255, 255, 0.16);
       }
-      details.source > summary .copy-btn {
-        position: static;
-        float: right;
+      .source {
+        position: relative;
+      }
+      .source > .copy-btn {
+        top: 9px;
+        right: 12px;
         padding: 1px 10px;
         font-weight: 400;
         color: var(--fg-soft);
@@ -371,11 +353,11 @@ try {
         border-color: var(--border);
         opacity: 1;
       }
-      details.source > summary .copy-btn:hover {
+      .source > .copy-btn:hover {
         background: var(--hover);
       }
-      details.source:not([open]) .when-open,
-      details.source[open] .when-closed {
+      .source > details:not([open]) .when-open,
+      .source > details[open] .when-closed {
         display: none;
       }
       .demo {
@@ -383,24 +365,16 @@ try {
         border-radius: 4px;
         margin-bottom: 16px;
       }
-      /* the app root is `var(--jbrowse-app-height, 100vh)`, which overflows
-      an 80vh box; 100% resolves against it through the island's
-      `display: contents` and JBrowseApp's height-100% wrappers */
+      /* the app root is `var(--jbrowse-app-height, 100vh)`; 100% resolves
+      against this box through the island's `display: contents`, and a demo
+      whose app sits in a plain wrapper scrolls once its views outgrow it */
       .demo.fill {
         --jbrowse-app-height: 100%;
         height: 80vh;
-        overflow: hidden;
+        overflow: auto;
       }
-      /* A `client:only` island is an empty element until React hydrates it, and
-      Astro gives it `display: contents`, so it draws nothing of its own: a demo
-      box sits blank while several hundred KB of engine arrives. Styling the
-      island's *empty* state puts a skeleton in that box which removes itself the
-      instant React appends a child — no JS, no timer, and nothing left behind to
-      shift the page.
-
-      Only on a box that reserves its height (`.reserved`, from the site's
-      demoHeights): in a box that doesn't, this line would itself be the layout
-      shift it is here to avoid. */
+      /* a skeleton in the empty island until React appends a child, only on a
+      box that already owns its height, so it shifts nothing */
       .demo.reserved > astro-island:empty,
       .demo.fill > astro-island:empty {
         display: flex;
@@ -413,12 +387,8 @@ try {
       .demo.fill > astro-island:empty::after {
         content: 'loading…';
       }
-      /* The two ways a box can already own its space need different sizing, and
-      neither may add any of its own. `.fill` has a definite height, so `100%`
-      resolves against it. `.reserved` has only a min-height, against which
-      `100%` would resolve to auto — and an in-flow child given that same
-      min-height overflows the content box by the border, because these boxes are
-      `border-box`, which is 2px of shift straight back. So: out of flow. */
+      /* `.reserved` has only a min-height, so its skeleton goes out of flow
+      rather than overflow the border-box by its border */
       .demo.reserved {
         position: relative;
       }
@@ -429,21 +399,21 @@ try {
       .demo.fill > astro-island:empty {
         height: 100%;
       }
-      details.source {
+      .source > details {
         border: 1px solid var(--border);
         border-radius: 4px;
         margin-bottom: 24px;
       }
-      details.source > summary {
+      .source > details > summary {
         cursor: pointer;
-        padding: 8px 12px;
+        padding: 8px 88px 8px 12px;
         font-weight: 600;
         user-select: none;
       }
-      details.source[open] > summary {
+      .source > details[open] > summary {
         border-bottom: 1px solid var(--border);
       }
-      details.source pre {
+      .source pre {
         padding: 16px;
         border-radius: 0 0 4px 4px;
         overflow: auto;
@@ -628,36 +598,22 @@ try {
         render()
       })()
 
-      // Copy buttons. textContent, not innerText: the page's source sits in a
-      // closed <details>, and innerText of content that is not rendered is not
-      // the same text. The summary's button cancels its click so copying does
-      // not also unfold the source.
-      const copyOnClick = (btn, code) => {
-        btn.addEventListener('click', async event => {
-          event.preventDefault()
-          event.stopPropagation()
-          await navigator.clipboard.writeText(code.textContent)
-          btn.textContent = 'Copied'
-          setTimeout(() => {
-            btn.textContent = 'Copy'
-          }, 1500)
-        })
-      }
+      // textContent, not innerText: a closed <details> renders none of its code
       document.querySelectorAll('pre.astro-code').forEach(pre => {
         const code = pre.querySelector('code')
-        const source = pre.closest('details.source')
-        if (code && source) {
-          const btn = source.querySelector(':scope > summary .copy-btn')
-          if (btn) {
-            copyOnClick(btn, code)
-          }
-        } else if (code) {
+        if (code) {
           const btn = document.createElement('button')
           btn.type = 'button'
           btn.className = 'copy-btn'
           btn.textContent = 'Copy'
-          copyOnClick(btn, code)
-          pre.appendChild(btn)
+          btn.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(code.textContent)
+            btn.textContent = 'Copied'
+            setTimeout(() => {
+              btn.textContent = 'Copy'
+            }, 1500)
+          })
+          ;(pre.closest('.source') ?? pre).appendChild(btn)
         }
       })
     </script>
