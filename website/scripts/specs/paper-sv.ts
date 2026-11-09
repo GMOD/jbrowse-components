@@ -69,7 +69,6 @@ export const paperSvSpecs: ScreenshotSpec[] = [
       bandLabel('SV calls', 'draft benchmark somatic SVs', 30, FONT),
       bandLabel('aggregate\nread links', READS, 56, FONT),
       bandLabel('split reads', READS, 143, FONT),
-      bandLabel('unsplit reads', READS, 238, FONT),
     ],
   }),
   scaffoldOverview('paper/sv_scaffold_overview', {
