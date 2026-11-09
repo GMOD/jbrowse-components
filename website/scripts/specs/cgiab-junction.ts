@@ -9,6 +9,7 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const PIF = 'HG008T_v3.2_pif'
 export const READS = 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'
+const ASSEMBLY_READS = 'HG008-T_PacBio-HiFi-Revio_20240125_116x_HG008T_v3.2'
 const CALLS = 'hg008t_benchmark_sv'
 const GRCH38 = 'GRCh38_GIABv3'
 const HG008T = 'HG008T_v3.2'
@@ -207,7 +208,14 @@ export const junctionScaffold = (
           {
             loc: `${SCAFFOLD}:106,646,329-106,656,329`,
             assembly: HG008T,
-            hideNoTracksActive: true,
+            tracks: [
+              {
+                trackId: ASSEMBLY_READS,
+                pileup: { mark: { height: 2 } },
+                height: 170,
+                forceLoad: true,
+              },
+            ],
             highlight: [band(HG008T, SCAFFOLD, 106651319, 106651339)],
           },
         ],
@@ -237,7 +245,7 @@ export const junctionScaffold = (
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
-  ...chrome(1172, opts),
+  ...chrome(1342, opts),
 })
 
 export const OVERVIEW_LEVEL_HEIGHT = 200
