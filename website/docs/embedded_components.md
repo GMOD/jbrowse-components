@@ -23,7 +23,8 @@ app, a `<script>` bundle includes its own React; see
 | Make your own custom UI around the engine         | `createViewState` + [`@jbrowse/display-ui`](https://www.npmjs.com/package/@jbrowse/display-ui), [examples](https://jbrowse.org/storybook/byo/)               | —                      |
 
 Each package's storybook is the reference: copy-pasteable React code, one page
-per task (setting up the view, navigating from your own code, theming, plugins).
+per task (setting up the view, navigating from your own code, running a worker,
+theming, plugins).
 
 A `tracks` entry is a track config, and the shortest one is `{ trackId, uri }`.
 The type and adapter come from the file's extension, and `assemblyNames` from
@@ -240,45 +241,29 @@ try {
 
 ## The RPC worker {#the-rpc-worker}
 
-Each component fetches and parses data in a pool of web workers, as JBrowse Web
-does, with nothing to pass. The package loads its worker on demand, so the
-worker stays out of your page's first bundle.
-
-Three cases run that work on the main thread instead:
-
-- **A `plugins` entry is a plugin class.** The worker loads a plugin from its
-  URL, and a class has none, so the component stays on the main thread. Pass the
-  records `loadPlugins` returns instead; or, when the class adds nothing the
-  worker runs (an adapter, an RPC method), pass `makeWorkerInstance` to keep the
-  worker.
-- **The worker failed to start**, as it does when a bundler did not build the
-  package's worker, and a console warning says why. Pass `makeWorkerInstance` a
-  factory your bundler builds.
-- **The `<script>`-tag bundle** has no worker of its own: served from a CDN, it
-  would be on another origin, where a page cannot start one.
-
-A module worker, which Vite builds, runs a UMD plugin from `loadPlugins` with
-`eval`, so the plugin's host must send CORS headers and a
-Content-Security-Policy must allow `'unsafe-eval'`.
-
-A factory is the package's own worker, spelled for your bundler:
+A component fetches and parses data on the main thread unless you pass
+`makeWorkerInstance`, a factory for the package's own worker. With one, that
+work runs in a pool of web workers, as in JBrowse Web, so a deep BAM no longer
+stalls the rest of the page. The
+[web worker example](https://jbrowse.org/storybook/lgv/web-worker/) runs one.
+The factory, spelled for your bundler:
 
 - **Vite**: import `RpcWorker` from
   `@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker` and pass
-  `makeWorkerInstance: () => new RpcWorker()`.
+  `makeWorkerInstance: () => new RpcWorker()`. Vite 6 and 7 also need
+  `worker: { format: 'es' }`, since their default `'iife'` cannot hold the
+  worker's chunks and the production build fails.
 - **webpack**: pass the default export of
   `@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance`, and set
   `output.publicPath: 'auto'` so the worker finds its URL.
 
-Vite 6 and 7 need two settings Vite 8 does not. `worker: { format: 'es' }`,
-since its default `'iife'` cannot hold the worker's chunks and the production
-build fails; and, for the dev server, whose pre-bundling separates the package
-from its worker,
-`optimizeDeps: { exclude: ['@jbrowse/react-linear-genome-view2'] }` or a
-`?worker` factory as above.
+The worker loads each plugin from its `definition`, so pass the records
+`loadPlugins` returns, not bare classes. A Vite worker is a module worker, which
+runs a UMD plugin with `eval`: the plugin's host must send CORS headers, and a
+Content-Security-Policy must allow `'unsafe-eval'`.
 
-To run on the main thread on purpose, and silence that warning, set
-`configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } }`.
+A worker that fails to start moves the component to the main thread, with a
+console warning saying why.
 
 ## Bundler examples
 

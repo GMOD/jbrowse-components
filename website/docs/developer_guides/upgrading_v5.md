@@ -17,11 +17,7 @@ before your users do.
 - **Desktop**: updates itself.
 - **Embedded**: bump `@jbrowse/react-linear-genome-view2`,
   `@jbrowse/react-circular-genome-view2` and `@jbrowse/react-app2` to their v5
-  line. The packages without the `2` are deprecated. The v5 packages run data
-  fetching in a web worker with no `makeWorkerInstance`; on Vite 6 or 7, set
-  `worker: { format: 'es' }` or the production build fails.
-  [The RPC worker](/docs/embedded_components#the-rpc-worker) lists what stays on
-  the main thread and what a UMD plugin needs.
+  line. The packages without the `2` are deprecated.
 
 ## Migrations that happen automatically
 
