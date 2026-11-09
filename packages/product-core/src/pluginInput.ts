@@ -44,7 +44,10 @@ export function toPluginLoadRecord(p: PluginInput) {
  *
  * A worker by default was tried and reverted: the code-split worker in the
  * host's module graph made Vite 6 and 7 hosts set `worker.format: 'es'`, and
- * an embed asks no bundler config of its host.
+ * an embed asks no bundler config of its host. A prebuilt single-file worker
+ * loaded as an asset fails the same rule: Next.js recompiles it into a file
+ * that cannot boot, and Vite 6 and 7 dev servers 404 it from pre-bundled
+ * dependencies.
  */
 export function embeddedRpcOptions(
   makeWorkerInstance?: () => Worker,

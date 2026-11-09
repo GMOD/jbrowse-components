@@ -255,7 +255,9 @@ while IFS= read -r f; do
   fi
 done <"$tmp/scope" >"$scope_existing"
 mv "$scope_existing" "$tmp/scope"
-grep -E '\.(js|cjs|mjs|jsx|ts|cts|mts|tsx)$' "$tmp/scope" >"$tmp/scope-lint" || : >"$tmp/scope-lint"
+# component_tests/* carry their own eslint configs, whose plugins the workspace
+# does not install
+grep -E '\.(js|cjs|mjs|jsx|ts|cts|mts|tsx)$' "$tmp/scope" | grep -v '^component_tests/' >"$tmp/scope-lint" || : >"$tmp/scope-lint"
 grep -E '\.astro$' "$tmp/scope" >"$tmp/scope-astro" || : >"$tmp/scope-astro"
 tr '\n' '\0' <"$tmp/scope" >"$tmp/scope.0"
 tr '\n' '\0' <"$tmp/scope-lint" >"$tmp/scope-lint.0"
