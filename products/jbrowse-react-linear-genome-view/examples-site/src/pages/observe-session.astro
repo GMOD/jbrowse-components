@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ObserveSession.tsx'
+import code from '../examples/ObserveSession.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="observe-session" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

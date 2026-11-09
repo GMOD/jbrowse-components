@@ -25,12 +25,6 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'default-session',
-    title: 'Open on a default session',
-    description: 'A session carries what view cannot: a track of its own.',
-    group: 'Layout and chrome',
-  },
-  {
     slug: 'disable-add-track',
     title: 'Disable the add-track UI',
     description: 'Hide the "add track" UI for a locked-down embed.',
@@ -75,15 +69,9 @@ export const pages: ExamplePage[] = [
     group: 'Navigation and search',
   },
   {
-    slug: 'aggregate-text-search',
-    title: 'Aggregate text searching',
-    description: 'One trix index spanning every track.',
-    group: 'Navigation and search',
-  },
-  {
-    slug: 'per-track-text-search',
-    title: 'Per-track text searching',
-    description: 'An index attached to one track config.',
+    slug: 'text-search',
+    title: 'Text searching',
+    description: 'A trix index finds a gene by name.',
     group: 'Navigation and search',
   },
   {
@@ -102,12 +90,6 @@ export const pages: ExamplePage[] = [
     slug: 'feature-highlights',
     title: 'Highlight a feature, and sort it to the top',
     description: 'featureHighlights boxes one feature and pins its row.',
-    group: 'Tracks',
-  },
-  {
-    slug: 'alignments-display',
-    title: 'Initialize an alignments display',
-    description: 'A displaySnapshot on a view.tracks entry.',
     group: 'Tracks',
   },
   {
@@ -159,6 +141,12 @@ export const pages: ExamplePage[] = [
     group: 'Theming',
   },
   {
+    slug: 'default-session',
+    title: 'Open on a default session',
+    description: 'A session carries what view cannot: a track of its own.',
+    group: 'Sessions',
+  },
+  {
     slug: 'session-persistence',
     title: 'Persist & restore the session',
     description: 'onSnapshot out, session back in.',
@@ -171,15 +159,10 @@ export const pages: ExamplePage[] = [
     group: 'Sessions',
   },
   {
-    slug: 'observe-visible',
-    title: 'Observe the visible view',
-    description: 'An observer reading the regions currently on screen.',
-    group: 'Sessions',
-  },
-  {
-    slug: 'observe-selection',
-    title: 'Observe the selected feature',
-    description: 'Mirror session.selection into your own panel.',
+    slug: 'observe-session',
+    title: 'Observe the session',
+    description:
+      'Mirror the visible region and the selection into your own UI.',
     group: 'Sessions',
   },
   {

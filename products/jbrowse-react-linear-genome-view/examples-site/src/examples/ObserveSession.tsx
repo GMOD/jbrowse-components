@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, isFeature } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   JBrowseLinearGenomeView,
@@ -13,15 +13,28 @@ import { observer } from 'mobx-react'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-const VisibleRegions = observer(function VisibleRegions({
+function locOf(f: Feature) {
+  return assembleLocString({
+    refName: f.get('refName'),
+    start: f.get('start'),
+    end: f.get('end'),
+  })
+}
+
+const SelectedFeature = observer(function SelectedFeature({
   viewState,
 }: {
   viewState: ViewModel
 }) {
-  const view = viewState.session.view
-  return view.initialized ? (
-    <p>Visible region {view.coarseVisibleLocStrings}</p>
-  ) : null
+  const { selection } = viewState.session
+  return isFeature(selection) ? (
+    <p>
+      Selected <b>{selection.get('name') || selection.id()}</b> at{' '}
+      {locOf(selection)}
+    </p>
+  ) : (
+    <p>Click a feature to select it.</p>
+  )
 })
 
 const VisibleFeatures = observer(function VisibleFeatures({
@@ -29,8 +42,9 @@ const VisibleFeatures = observer(function VisibleFeatures({
 }: {
   viewState: ViewModel
 }) {
-  const [features, setFeatures] = useState<Feature[]>()
-  const [error, setError] = useState<unknown>()
+  const [result, setResult] = useState<
+    { features: Feature[] } | { error: unknown }
+  >()
   const { rpcManager, view } = viewState.session
 
   useEffect(() => {
@@ -48,14 +62,14 @@ const VisibleFeatures = observer(function VisibleFeatures({
               adapterConfig,
               regions: view.coarseDynamicBlocks,
             })
-            .then(feats => {
+            .then(features => {
               if (generation === latest) {
-                setFeatures(feats)
+                setResult({ features })
               }
             })
-            .catch((e: unknown) => {
+            .catch((error: unknown) => {
               if (generation === latest) {
-                setError(e)
+                setResult({ error })
               }
             })
         }
@@ -63,37 +77,36 @@ const VisibleFeatures = observer(function VisibleFeatures({
     })
   }, [rpcManager, view])
 
-  return error ? (
-    <div>Error: {String(error)}</div>
-  ) : !features ? (
-    <div>Loading...</div>
-  ) : (
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Location</th>
-        </tr>
-      </thead>
-      <tbody>
-        {features.map(f => (
-          <tr key={f.id()}>
-            <td>{f.get('name')}</td>
-            <td>
-              {assembleLocString({
-                refName: f.get('refName'),
-                start: f.get('start'),
-                end: f.get('end'),
-              })}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
+  return view.initialized ? (
+    <div>
+      <p>Visible region {view.coarseVisibleLocStrings}</p>
+      {!result ? (
+        <div>Loading...</div>
+      ) : 'error' in result ? (
+        <div>Error: {String(result.error)}</div>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            {result.features.map(f => (
+              <tr key={f.id()}>
+                <td>{f.get('name')}</td>
+                <td>{locOf(f)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  ) : null
 })
 
-export default function ObserveVisible() {
+export default function ObserveSession() {
   const state = useCreateViewState({
     assembly: {
       name: 'volvox',
@@ -106,20 +119,12 @@ export default function ObserveVisible() {
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
     ],
-    defaultSession: {
-      name: 'Observe visible',
-      view: {
-        type: 'LinearGenomeView',
-        assembly: 'volvox',
-        loc: 'ctgA:1105..1221',
-        tracks: ['volvox_gff3'],
-      },
-    },
+    view: { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] },
   })
   return state ? (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <VisibleRegions viewState={state} />
+      <SelectedFeature viewState={state} />
       <VisibleFeatures viewState={state} />
     </div>
   ) : null

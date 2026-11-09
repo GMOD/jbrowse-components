@@ -15,6 +15,11 @@ export default defineConfig({
     '/use-create-view-state': '/storybook/lgv/show-track/',
     '/drawer-widget': '/storybook/lgv/fixed-height/',
     '/view-spelled-out': '/storybook/lgv/highlight-regions/',
+    '/aggregate-text-search': '/storybook/lgv/text-search/',
+    '/per-track-text-search': '/storybook/lgv/text-search/',
+    '/observe-visible': '/storybook/lgv/observe-session/',
+    '/observe-selection': '/storybook/lgv/observe-session/',
+    '/alignments-display': '/storybook/lgv/group-by-tag/',
   },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.

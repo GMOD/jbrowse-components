@@ -1,6 +1,4 @@
 {
-  "aggregate-text-search": 145,
-  "alignments-display": 384,
   "custom-theme": 393,
   "dark-theme": 393,
   "default-session": 523,
@@ -21,11 +19,8 @@
   "locus-zoom-ld": 912,
   "methylation-by-haplotype": 623,
   "multi-sample-variants": 441,
-  "observe-selection": 291,
-  "observe-visible": 581,
   "one-linear-genome-view": 234,
   "pan-ukb-gwas": 785,
-  "per-track-text-search": 145,
   "reads-as-marks": 534,
   "session-in-url": 271,
   "session-persistence": 316,
