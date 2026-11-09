@@ -151,7 +151,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | --- | --- |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
-| `mouseover` | ignored |
+| `mouseover` | moved into a current slot |
 | `jexlFilters` | ignored |
 | `colorBy` | moved into a current slot |
 | `pileupDisplay` | moved into a current slot |
