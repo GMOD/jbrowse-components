@@ -118,18 +118,20 @@ const gates = {
   tooltip: 'hide',
 } as const
 
+const CALLOUT_FONT = 18
+
 const callouts: Annotation[] = [
   {
     type: 'text',
     text: '84.7 kb deletion',
-    fontSize: 26,
+    fontSize: CALLOUT_FONT,
     anchor: { trackId: LANES_TRACK, loc: DELETION_LOCUS, fracY: 0.75 },
   },
   {
     type: 'text',
     text: '84.7 kb deletion',
     leader: true,
-    fontSize: 26,
+    fontSize: CALLOUT_FONT,
     anchor: { graphNode: DELETION_NODE },
     // under the backbone, between the gene chips and the detour past the node
     dx: -30,
@@ -157,10 +159,10 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/hprc_lanes_graph_stacked_force',
-    url: session('force', 280, 50, 380, 'overlay'),
+    url: session('force', 280, 50, 416, 'overlay'),
     // the paper prints it at its full text width
-    viewportWidth: 1200,
-    viewportHeight: 962,
+    viewportWidth: 930,
+    viewportHeight: 998,
     hideSelectors: ['header.MuiAppBar-root'],
     ...gates,
     annotations: callouts,

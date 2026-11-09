@@ -87,11 +87,11 @@ export function drosophilaBlocksUrl(levelHeight: number) {
 export const drosophilaBlocksSpec: SessionUrlSpec = {
   mode: 'url',
   name: 'paper/drosophila_blocks',
-  url: drosophilaBlocksUrl(100),
+  url: drosophilaBlocksUrl(52),
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 240000,
-  viewportWidth: 1900,
-  viewportHeight: 680,
+  viewportWidth: 930,
+  viewportHeight: 460,
   // No session setting closes the legend or a row's zoom controls. Hidden
   // rather than clicked closed, since a click focuses the view and restyles
   // its header.

@@ -691,7 +691,10 @@ function peachGrapeChr1({
   )
 }
 
-export function ecoliOneVsAllUrl(levelHeight: number) {
+export function ecoliOneVsAllUrl(
+  levelHeight: number,
+  { firstLevelHeight = levelHeight, rowsTrackHeight = 100 } = {},
+) {
   return sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
     views: [
       {
@@ -711,7 +714,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
                   // the gaps are the information; a 7px bar hides them
                   mark: { height: 20 },
                 },
-                height: 100,
+                height: rowsTrackHeight,
               },
             ],
           },
@@ -727,7 +730,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
         encoding: { color: 'strand' },
         filter: [{ field: 'length', gte: 10000 }],
         collapseEmptyRows: true,
-        levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
+        levelHeights: [firstLevelHeight, levelHeight, levelHeight, levelHeight],
       },
     ],
   })

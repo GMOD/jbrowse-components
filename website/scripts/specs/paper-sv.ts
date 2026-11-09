@@ -15,56 +15,67 @@ import {
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const FONT = 28
+const FONT = 18
 // two lines for "chr13 breakend", so it stays clear of the row labels
-const STYLE = { fontSize: FONT, maxWidth: FONT * 5 }
+const ONE_LINE = { fontSize: FONT, strokeWidth: 3 }
+const STYLE = { ...ONE_LINE, maxWidth: FONT * 5 }
+// from a breakend band's top down to its record in the SV calls track
+const TO_CALL = 40
 const CHR13 = BAND
 const CHR3 = `${BAND} ~ ${BAND}`
 
 const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
-  fontSize: 88,
+  fontSize: 48,
   anchor: {
     selector: `[data-part="${part}"]`,
     alignX: 'left',
     alignY: 'top',
-    dx: -100,
-    dy: 112,
+    dx: -48,
+    dy: 60,
   },
 })
 
-const PAPER = { hideAppBar: true, width: 1300 }
+const PAPER = { hideAppBar: true, hideViewHeader: true, width: 820 }
 
 export const paperSvSpecs: ScreenshotSpec[] = [
   junctionScaffold('paper/sv_junction_scaffold', {
     ...PAPER,
+    level: 60,
+    reads: 270,
+    readRowHeight: 3,
+    readArcs: 60,
+    coverage: 20,
+    trim: 90,
     annotations: [
       rowLabel('hap1', 1, FONT),
       // facing each other over the chromosome boundary, above the read curves
       callout(
         'chr13 breakend',
-        { selector: CHR13, view: [0, 0], alignY: 'top' },
-        120,
-        70,
+        { selector: CHR13, view: [0, 0], alignY: 'top', dy: TO_CALL },
+        130,
+        -2,
         STYLE,
       ),
       callout(
         'chr3 breakend',
-        { selector: CHR3, view: [0, 0], alignY: 'top' },
-        -120,
-        70,
+        { selector: CHR3, view: [0, 0], alignY: 'top', dy: TO_CALL },
+        -50,
+        -2,
         STYLE,
       ),
       junction(1, STYLE),
-      bandLabel('SV calls', 'draft benchmark somatic SVs', 37, FONT),
-      bandLabel('aggregate\nread links', READS, 93, FONT),
-      bandLabel('split reads', READS, 259, FONT),
-      bandLabel('unsplit reads', READS, 619, FONT),
+      bandLabel('SV calls', 'draft benchmark somatic SVs', 30, FONT),
+      bandLabel('aggregate\nread links', READS, 56, FONT),
+      bandLabel('split reads', READS, 143, FONT),
+      bandLabel('unsplit reads', READS, 238, FONT),
     ],
   }),
   scaffoldOverview('paper/sv_scaffold_overview', {
     ...PAPER,
+    level: 60,
+    trim: 100,
     annotations: [
       rowLabel('hap2', 0, FONT),
       rowLabel('GRCh38', 1, FONT),
@@ -72,16 +83,16 @@ export const paperSvSpecs: ScreenshotSpec[] = [
       callout(
         'chr13 breakend',
         { selector: CHR13, view: [0, 1], alignY: 'top' },
-        -150,
-        40,
-        STYLE,
+        -40,
+        30,
+        ONE_LINE,
       ),
       callout(
         'chr3 breakend',
         { selector: CHR3, view: [0, 1], alignY: 'top' },
-        -150,
-        40,
-        STYLE,
+        -50,
+        30,
+        ONE_LINE,
       ),
       junction(2, STYLE),
     ],
@@ -90,9 +101,9 @@ export const paperSvSpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'paper/sv_translocation',
     parts: ['paper/sv_junction_scaffold', 'paper/sv_scaffold_overview'],
-    gutter: 40,
+    gutter: 16,
     // room for the part labels, which would cover each view's menu
-    sideMargin: 112,
+    sideMargin: 60,
     annotations: [partLabel(0, 'a'), partLabel(1, 'b')],
   },
 ]

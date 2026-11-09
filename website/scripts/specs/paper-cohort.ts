@@ -40,8 +40,8 @@ const HGSVC3_SV_TRACK = {
 // one nested in it, which the callset does not record and the heatmap shows
 const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 
-const BLURB_FONT = 24
-const LETTER_FONT = 36
+const BLURB_FONT = 18
+const LETTER_FONT = 26
 
 // Left of the first deletion call, where every track is clear of calls, the
 // blurb indented past its panel's letter
@@ -61,7 +61,7 @@ const trackBlurb = (
   text,
   textAlign: 'start',
   fontSize: BLURB_FONT,
-  anchor: { ...blurbAnchor(trackId, fracY), dx: 52 },
+  anchor: { ...blurbAnchor(trackId, fracY), dx: 40 },
 })
 
 const panelLabel = (
@@ -101,7 +101,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               // The key would cover the lane's label at the window's right
               // edge; the paper's caption gives it instead
               legend: { show: false },
-              height: 300,
+              height: 160,
             },
             {
               trackId: HGSVC3_SV_TRACK.trackId,
@@ -113,13 +113,13 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               ...CN_HEATMAP_SETTINGS,
               trackId: 'cnv_1000g_zarr',
               type: 'LinearWiggleDisplay',
-              height: 220,
+              height: 160,
               runClustering: true,
               rows: { axis: { tree: false, labels: false } },
             },
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
-              paneHeight: 300,
+              paneHeight: 270,
               color: { field: 'position' },
             }),
           ],
@@ -129,8 +129,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readySelector: `body:has(${displaySettled('variant-display')}):has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
     // the paper prints it at its full text width
-    viewportWidth: 1200,
-    viewportHeight: 1232,
+    viewportWidth: 930,
+    viewportHeight: 1000,
     hideSelectors: ['header.MuiAppBar-root'],
     tooltip: 'hide',
     diffThreshold: 0.02,

@@ -18,6 +18,11 @@ const WIDTH = 1800
 const FONT = 19
 const APP_BAR = 'header.MuiAppBar-root'
 const APP_BAR_HEIGHT = 48
+// the view's title bar and the synteny view's toolbar
+const VIEW_HEADER = [
+  '[data-testid^="view-container-"] > :first-child',
+  'div:has(> span > [data-testid="follow-synteny-toggle"])',
+]
 const BLUE = 'rgba(31,119,180,0.45)'
 export const BAND = '[data-testid="highlight-band"]'
 
@@ -25,19 +30,44 @@ export const BAND = '[data-testid="highlight-band"]'
 // callouts
 interface Chrome {
   hideAppBar?: boolean
+  // the title bar and toolbar repeat the assemblies and regions the rows name
+  hideViewHeader?: boolean
+  // what the viewport loses to hidden chrome and to blank rows under the last
+  // view
+  trim?: number
   width?: number
   annotations?: Annotation[]
 }
 
 // assemblyReads is the height of a row of the tumor reads realigned to hap1
-interface JunctionOptions extends Chrome {
+interface JunctionOptions extends Chrome, ScaffoldLayout {
   assemblyReads?: number
 }
 
-const chrome = (height: number, { hideAppBar, width = WIDTH }: Chrome) => ({
+// Heights a figure printed under a page-height cap shortens
+interface ScaffoldLayout {
+  level?: number
+  reads?: number
+  readArcs?: number
+  coverage?: number
+  readRowHeight?: number
+}
+
+interface OverviewLayout {
+  level?: number
+}
+
+const chrome = (
+  height: number,
+  { hideAppBar, hideViewHeader, trim = 0, width = WIDTH }: Chrome,
+  hidden = [
+    ...(hideAppBar ? [APP_BAR] : []),
+    ...(hideViewHeader ? VIEW_HEADER : []),
+  ],
+) => ({
   viewportWidth: width,
-  viewportHeight: hideAppBar ? height : height + APP_BAR_HEIGHT,
-  ...(hideAppBar ? { hideSelectors: [APP_BAR] } : {}),
+  viewportHeight: height + (hideAppBar ? 0 : APP_BAR_HEIGHT) - trim,
+  ...(hidden.length ? { hideSelectors: hidden } : {}),
 })
 
 const reads = {
@@ -47,6 +77,8 @@ const reads = {
   height: 200,
   forceLoad: true,
 }
+const SCAFFOLD_LEVEL = 150
+const SCAFFOLD_READS = 690
 
 // Each band spans more than the breakpoint, which is sub-pixel at every scale
 const band = (
@@ -56,14 +88,14 @@ const band = (
   end: number,
 ) => ({ assemblyName, refName, start, end, color: BLUE })
 
-type CalloutStyle = Pick<Annotation, 'fontSize' | 'maxWidth'>
+type CalloutStyle = Pick<Annotation, 'fontSize' | 'maxWidth' | 'strokeWidth'>
 
 export const callout = (
   text: string,
   anchor: Annotation['anchor'],
   dx: number,
   dy: number,
-  { fontSize = FONT, maxWidth }: CalloutStyle = {},
+  { fontSize = FONT, maxWidth, strokeWidth }: CalloutStyle = {},
 ): Annotation => ({
   type: 'text',
   text,
@@ -75,6 +107,7 @@ export const callout = (
   dx,
   dy,
   maxWidth,
+  ...(strokeWidth ? { strokeWidth } : {}),
 })
 
 // Anchored on the track label, the one element a band shares a row with. Its
@@ -190,6 +223,8 @@ const hap1Label = (text: string, dy: number): Annotation => ({
 export const junctionScaffold = (
   name: string,
   { assemblyReads, ...opts }: JunctionOptions = {},
+  level = opts.level ?? SCAFFOLD_LEVEL,
+  readsHeight = opts.reads ?? SCAFFOLD_READS,
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
@@ -198,7 +233,7 @@ export const junctionScaffold = (
       {
         type: 'LinearSyntenyView',
         mark: { interpolate: 'bump' },
-        levelHeights: [150],
+        levelHeights: [level],
         encoding: { opacity: 0.35 },
         offscreen: { show: false },
         tracks: [[PIF]],
@@ -214,9 +249,12 @@ export const junctionScaffold = (
                 facet: 'split',
                 encoding: { color: 'insertSizeAndOrientation' },
                 legend: { show: true },
-                pileup: { mark: { height: 2 } },
-                readConnections: { show: true, height: 70 },
-                height: 690,
+                pileup: { mark: { height: opts.readRowHeight ?? 2 } },
+                readConnections: { show: true, height: opts.readArcs ?? 70 },
+                ...(opts.coverage
+                  ? { coverage: { height: opts.coverage } }
+                  : {}),
+                height: readsHeight,
               },
             ],
             highlight: [
@@ -280,7 +318,13 @@ export const junctionScaffold = (
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
-  ...chrome(1172 + (assemblyReads ? assemblyReads - 32 : 0), opts),
+  ...chrome(
+    1172 -
+      (SCAFFOLD_LEVEL - level) -
+      (SCAFFOLD_READS - readsHeight) +
+      (assemblyReads ? assemblyReads - 32 : 0),
+    opts,
+  ),
 })
 
 export const OVERVIEW_LEVEL_HEIGHT = 200
@@ -289,7 +333,8 @@ export const OVERVIEW_LEVEL_HEIGHT = 200
 // line sits between two ribbons; the junction marker says which one it is.
 export const scaffoldOverview = (
   name: string,
-  opts: Chrome = {},
+  opts: Chrome & OverviewLayout = {},
+  level = opts.level ?? OVERVIEW_LEVEL_HEIGHT,
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
@@ -298,7 +343,7 @@ export const scaffoldOverview = (
       {
         type: 'LinearSyntenyView',
         mark: { interpolate: 'bump' },
-        levelHeights: [OVERVIEW_LEVEL_HEIGHT, OVERVIEW_LEVEL_HEIGHT],
+        levelHeights: [level, level],
         // a cutoff above 155 kb drops the last chr13 block before the junction
         filter: [{ field: 'length', gte: 100000 }],
         encoding: { opacity: 0.35 },
@@ -349,5 +394,5 @@ export const scaffoldOverview = (
   ],
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 180000,
-  ...chrome(758, opts),
+  ...chrome(758 - 2 * (OVERVIEW_LEVEL_HEIGHT - level), opts),
 })
