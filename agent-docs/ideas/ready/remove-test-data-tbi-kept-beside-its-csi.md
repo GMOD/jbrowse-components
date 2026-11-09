@@ -1,5 +1,5 @@
 ---
-name: remove-test-datas-kept-tbi-beside-their-csi
+name: remove-test-data-tbi-kept-beside-its-csi
 description: Commit 0dff85a30d kept test_data's old `.tbi` beside each new `.csi` so the deployed docs could still read them; once the docs site serves the CSI fences, `git rm` those `.tbi`.
 ---
 
