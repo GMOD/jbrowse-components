@@ -8,6 +8,10 @@ export default defineConfig({
   base: '/storybook/app',
   trailingSlash: 'always',
   integrations: [react()],
+  // a key is matched under `base`, but a destination is written out as given
+  redirects: {
+    '/add-tracks-programmatically': '/storybook/app/launch-view/',
+  },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.
   //

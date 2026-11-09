@@ -1,50 +1,74 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
+import { isTrackContainer } from '@jbrowse/core/util/types'
 import { JBrowse } from '@jbrowse/react-app2'
 
 import type { ViewModel } from '@jbrowse/react-app2'
 
 const assemblies = [
-  {
-    name: 'hg38',
-    uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-    refNameAliases: {
-      uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-    },
-    geneticCodes: { chrM: 2 },
-  },
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
 ]
 
-const tracks = [
-  {
-    trackId: 'hg38.100way.phyloP100way',
-    name: 'hg38.100way.phyloP100way',
-    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-    category: ['Conservation'],
-    assemblyNames: ['hg38'],
-  },
-]
+const genesTrack = {
+  trackId: 'volvox_genes',
+  name: 'Volvox genes',
+  uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+  assemblyNames: ['volvox'],
+}
 
 export default function LaunchView() {
   const ref = useRef<ViewModel>(null)
+  const [genesAdded, setGenesAdded] = useState(false)
 
-  function openView() {
-    const session = ref.current?.session
-    session
-      ?.launchView('LinearGenomeView', {
-        assembly: 'hg38',
-        loc: 'chr10:1-100000',
-        tracks: ['hg38.100way.phyloP100way'],
+  function run(action: (state: ViewModel) => Promise<unknown>) {
+    const state = ref.current
+    if (state) {
+      action(state).catch((e: unknown) => {
+        state.session.notifyError(`${e}`, e)
       })
-      .catch((e: unknown) => {
-        session.notifyError(`${e}`, e)
-      })
+    }
   }
 
   return (
-    <div>
-      <button onClick={openView}>Open a linear genome view</button>
-      <JBrowse ref={ref} assemblies={assemblies} tracks={tracks} />
-    </div>
+    <JBrowse
+      ref={ref}
+      assemblies={assemblies}
+      views={[
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1..50000' },
+      ]}
+      headerButtons={
+        <>
+          <button
+            type="button"
+            disabled={genesAdded}
+            onClick={() => {
+              run(async ({ jbrowse, session }) => {
+                jbrowse.addTrackConf(genesTrack)
+                setGenesAdded(true)
+                const view = session.views[0]
+                if (isTrackContainer(view)) {
+                  await view.launchTrack(genesTrack.trackId)
+                }
+              })
+            }}
+          >
+            Add genes track
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              run(({ session }) =>
+                session.launchView('LinearGenomeView', {
+                  assembly: 'volvox',
+                  loc: 'ctgB:1..6000',
+                }),
+              )
+            }}
+          >
+            Open another view
+          </button>
+        </>
+      }
+    />
   )
 }

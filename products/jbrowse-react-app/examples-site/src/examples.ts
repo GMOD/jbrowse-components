@@ -91,15 +91,9 @@ export const pages: ExamplePage[] = [
     group: 'Sessions and control',
   },
   {
-    slug: 'add-tracks-programmatically',
-    title: 'Add tracks programmatically',
-    description: 'addTrackConf, then launchTrack.',
-    group: 'Sessions and control',
-  },
-  {
     slug: 'launch-view',
-    title: 'Launch a view imperatively',
-    description: 'session.launchView, from your own button.',
+    title: 'Drive the app from your own buttons',
+    description: 'A ref to the engine: add a track, open a view.',
     group: 'Sessions and control',
   },
   {

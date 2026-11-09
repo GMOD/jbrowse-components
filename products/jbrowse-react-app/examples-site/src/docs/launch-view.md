@@ -1,4 +1,3 @@
-`session.launchView` takes any view type and the same settings a `views` entry
-does, and resolves to the new view. Each click opens another view below the
-last. [Automating JBrowse](https://jbrowse.org/jb2/docs/automating/) describes
-the view fields.
+`addTrackConf` adds a track to the config and the view's `launchTrack` opens it.
+`session.launchView` takes any view type and the settings a `views` entry does;
+[Automating JBrowse](https://jbrowse.org/jb2/docs/automating/) describes them.
