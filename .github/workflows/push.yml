@@ -638,7 +638,14 @@ jobs:
       # _astro/ is content-hashed, so its sync skips any key already there at
       # the same size. The rest is a `cp`, not a `sync`: it is a few dozen small
       # pages, and a sync of the prefix lists every one of those subdirs first,
-      # which took ~4 minutes to upload 51 files. Prerelease tags
+      # which took ~4 minutes to upload 51 files. For the same reason a
+      # `sync --delete` cannot retire a removed page: those subdirs have
+      # arbitrary branch names, so no exclude list keeps them. Instead each
+      # deploy records the page keys it shipped in .deployed-pages.txt, and the
+      # next one deletes a recorded key its own build no longer ships — so only
+      # a key this step once uploaded can ever be deleted, and a missing or
+      # unreadable record deletes nothing. Without it a removed page kept
+      # serving HTML whose chunks the prune below had deleted. Prerelease tags
       # (carrying a '-') are excluded, since a beta would replace the live demos
       # the embedded-component docs link to; release.yml's code/jb2/latest
       # deploy has the same guard.
@@ -662,6 +669,23 @@ jobs:
             --cache-control "public, max-age=31536000, immutable" \
             "$DIST/_astro" "$DEST/_astro"
           aws s3 cp --recursive --exclude="_astro/*" "$DIST" "$DEST"
+          export LC_ALL=C
+          work=$(mktemp -d)
+          (cd "$DIST" && find . -type f ! -path './_astro/*' | sed 's|^\./||' |
+            sort) > "$work/shipped.txt"
+          if [ ! -s "$work/shipped.txt" ]; then
+            echo "::error::No pages under $DIST; refusing to retire pages against an empty build."
+            exit 1
+          fi
+          if aws s3 cp --quiet "$DEST/.deployed-pages.txt" "$work/recorded.txt"; then
+            sort -u -o "$work/recorded.txt" "$work/recorded.txt"
+            comm -23 "$work/recorded.txt" "$work/shipped.txt" |
+              grep -v -e '^$' -e '^_astro/' -e '\.\.' |
+              while read -r key; do
+                aws s3 rm "$DEST/$key"
+              done
+          fi
+          aws s3 cp --quiet "$work/shipped.txt" "$DEST/.deployed-pages.txt"
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/storybook/${{ matrix.prefix }}/*"
