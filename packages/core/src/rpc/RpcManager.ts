@@ -17,6 +17,9 @@ export interface RpcManagerOptions {
   // desktop and an embedded product that found a worker pass
   // 'WebWorkerRpcDriver'; headless leaves it as the main thread.
   defaultDriverName?: string
+  // move to the main thread when the worker fails to boot; an embedded
+  // product's host may not have built the worker it defaults to
+  fallBackToMainThread?: boolean
 }
 
 export default class RpcManager {
@@ -26,6 +29,7 @@ export default class RpcManager {
   private mainConfiguration: RpcConfigModel
   private hostDriverName: string
   private makeWorkerInstance?: () => Worker | Promise<Worker>
+  private fallBackToMainThread: boolean
   private driver?: BaseRpcDriver
   private destroyed = false
   private workerFailed = false
@@ -36,12 +40,14 @@ export default class RpcManager {
     {
       makeWorkerInstance,
       defaultDriverName = 'MainThreadRpcDriver',
+      fallBackToMainThread = false,
     }: RpcManagerOptions = {},
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.hostDriverName = defaultDriverName
     this.makeWorkerInstance = makeWorkerInstance
+    this.fallBackToMainThread = fallBackToMainThread
   }
 
   /**
@@ -83,23 +89,17 @@ export default class RpcManager {
       throw new Error('RpcManager was destroyed')
     }
     if (
+      this.fallBackToMainThread &&
       this.driver instanceof WebWorkerRpcDriver &&
       this.driver.bootFailure !== undefined
     ) {
-      this.fallBackToMainThread(this.driver)
+      this.leaveFailedWorker(this.driver)
     }
     return (this.driver ??= this.makeDriver(this.driverName))
   }
 
-  /**
-   * A worker that cannot boot — a bundler that did not build it, a page that
-   * may not load it, a runtime plugin that fails in it — would otherwise leave
-   * every call failing and the view never loading. The main thread runs the
-   * same methods, slower, so the session moves there, once, and says so: a
-   * pool that quietly stops being a pool is the trap BGZF_WORKER_POOL.md
-   * records one layer down.
-   */
-  private fallBackToMainThread(driver: WebWorkerRpcDriver) {
+  // warned, because a pool that quietly stops being a pool goes unnoticed
+  private leaveFailedWorker(driver: WebWorkerRpcDriver) {
     console.warn(
       `JBrowse: the RPC web worker failed to start, so data now loads on the main thread, which is slower. The error below says why; https://jbrowse.org/jb2/docs/embedded_components/#the-rpc-worker has the fixes. Set configuration.rpc.defaultDriver to 'MainThreadRpcDriver' to choose the main thread and silence this.`,
       driver.bootFailure,
@@ -222,11 +222,8 @@ export default class RpcManager {
    * failure surfaces the error instead of spinning. The retry re-runs
    * serializeArguments, which now finds the new account and injects
    * pre-authorization (prompting the user). If auth can't be set up, the
-   * original error is rethrown unchanged.
-   *
-   * A call that failed on a driver the session has since left — its worker
-   * failed to boot, taking the call with it — runs again on the one that
-   * replaced it.
+   * original error is rethrown unchanged. A call that failed on a driver the
+   * session has since left runs again on its replacement.
    */
   private async runOnDriver<T>(
     run: (driver: BaseRpcDriver) => Promise<T>,

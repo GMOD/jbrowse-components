@@ -326,14 +326,15 @@ const echo: string = 'Echo'
 
 function makeWorkerManager(
   makeWorkerInstance: () => Worker | Promise<Worker>,
-  rpc: Record<string, unknown> = {},
+  fallBackToMainThread = true,
 ) {
   const pluginManager = new PluginManager([
     new EchoPlugin(),
   ]).createPluggableElements()
-  return new RpcManager(pluginManager, RpcManager.configSchema.create(rpc), {
+  return new RpcManager(pluginManager, RpcManager.configSchema.create({}), {
     makeWorkerInstance,
     defaultDriverName: 'WebWorkerRpcDriver',
+    fallBackToMainThread,
   })
 }
 
@@ -428,6 +429,19 @@ describe('RpcManager falls back to the main thread when its worker cannot boot',
 
     await expect(call).rejects.toThrow(/terminated/)
     expect(manager.driverName).toBe('WebWorkerRpcDriver')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  test('only when asked: web and desktop keep the pool, and the call fails', async () => {
+    const worker = new FakeWorker()
+    const manager = makeWorkerManager(() => worker as unknown as Worker, false)
+    const call = manager.call('s', echo, { value: 'v' })
+    await tick()
+    worker.dispatchEvent(new ErrorEvent('error', { message: 'not found' }))
+
+    await expect(call).rejects.toThrow()
+    expect(manager.driverName).toBe('WebWorkerRpcDriver')
+    expect(manager.getDriver().name).toBe('WebWorkerRpcDriver')
     expect(warn).not.toHaveBeenCalled()
   })
 })

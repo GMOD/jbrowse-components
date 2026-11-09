@@ -54,6 +54,10 @@ export function embeddedRpcOptions({
       ? async () => (await loadWorkerModule()).default()
       : undefined)
   return factory
-    ? { makeWorkerInstance: factory, defaultDriverName: 'WebWorkerRpcDriver' }
+    ? {
+        makeWorkerInstance: factory,
+        defaultDriverName: 'WebWorkerRpcDriver',
+        fallBackToMainThread: true,
+      }
     : {}
 }

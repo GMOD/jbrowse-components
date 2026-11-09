@@ -60,6 +60,7 @@ describe('with a Worker to build', () => {
   test('no plugins run RPC in the product worker', async () => {
     const opts = options([])
     expect(opts.defaultDriverName).toBe('WebWorkerRpcDriver')
+    expect(opts.fallBackToMainThread).toBe(true)
     expect(await opts.makeWorkerInstance?.()).toBe(builtWorker)
   })
 
@@ -89,6 +90,7 @@ describe('with a Worker to build', () => {
       loadWorkerModule: async () => ({ default: makeWorkerInstance }),
     })
     expect(opts.makeWorkerInstance).toBe(makeWorkerInstance)
+    expect(opts.fallBackToMainThread).toBe(true)
     expect(driverOf(opts)).toBe('WebWorkerRpcDriver')
   })
 })
