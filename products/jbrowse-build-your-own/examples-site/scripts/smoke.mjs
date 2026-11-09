@@ -995,31 +995,36 @@ async function searchByNameResolvesNames(page) {
     out.push('no exact "TP53" button')
   }
 
-  // And the other absence: a plain word with no hits is a typed throw the
-  // location box renders as its message.
-  const box = await page.$('#search-by-name input[aria-label="Location"]')
-  if (box) {
-    await box.evaluate(el => {
-      el.select()
-    })
-    await box.type('zzzznotagene')
-    await box.press('Enter')
+  // And the other absence: a plain word with no hits is an ordinary miss,
+  // which NavButton reports as a warning naming the term, not an error.
+  if (await clickButton('zzzznotagene')) {
     try {
       await page.waitForFunction(
         () =>
           document
-            .querySelector('#search-by-name')
-            ?.innerText.includes('No results found'),
+            .querySelector('#search-by-name [data-testid="embed-notification"]')
+            ?.innerText.includes('No results found for "zzzznotagene"'),
         { timeout: 30000 },
       )
+      const role = await page.evaluate(() =>
+        document
+          .querySelector('#search-by-name [data-testid="embed-notification"]')
+          ?.getAttribute('role'),
+      )
+      if (role !== 'status') {
+        out.push(
+          `the zzzznotagene miss drew as role="${role}" — NavButton is ` +
+            'reporting an ordinary miss as an error again',
+        )
+      }
     } catch {
       out.push(
-        'a search for zzzznotagene drew no "no results" line — ' +
+        'a search for zzzznotagene drew no "No results found" notification — ' +
           'SearchResultsNotFoundError is no longer reaching the page',
       )
     }
   } else {
-    out.push('no location box on the page')
+    out.push('no exact "zzzznotagene" button')
   }
 
   return out

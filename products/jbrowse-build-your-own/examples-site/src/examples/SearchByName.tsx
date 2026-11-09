@@ -8,7 +8,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-const queries = ['chr13', 'gene15876', 'TP53', 'BRC']
+const queries = ['chr13', 'gene15876', 'TP53', 'BRC', 'zzzznotagene']
 
 const SearchByName = observer(function SearchByName() {
   const state = useCreateViewState({
