@@ -43,13 +43,14 @@ export const paperSvSpecs: ScreenshotSpec[] = [
   junctionScaffold('paper/sv_junction_scaffold', {
     ...PAPER,
     level: 60,
-    reads: 270,
+    reads: 250,
+    assemblyReads: 90,
     readRowHeight: 3,
     readArcs: 60,
     coverage: 20,
     trim: 90,
     annotations: [
-      rowLabel('hap1', 1, FONT),
+      rowLabel('hap1, same reads', 1, FONT),
       // facing each other over the chromosome boundary, above the read curves
       callout(
         'chr13 breakend',
@@ -69,6 +70,7 @@ export const paperSvSpecs: ScreenshotSpec[] = [
       bandLabel('SV calls', 'draft benchmark somatic SVs', 30, FONT),
       bandLabel('aggregate\nread links', READS, 56, FONT),
       bandLabel('split reads', READS, 143, FONT),
+      bandLabel('unsplit reads', READS, 212, FONT),
     ],
   }),
   scaffoldOverview('paper/sv_scaffold_overview', {
