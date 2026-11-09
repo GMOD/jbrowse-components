@@ -91,30 +91,24 @@ between displays.
    betas included (Colin, 2026-10-27). Left: baseline
    `reExports.generated.json` and the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`).
-3. **Plugin displays are checked only with a plugin manifest.**
+3. **Plugin types are checked only with a plugin manifest.**
    `scripts/generateConfigManifest.ts --plugin <esm bundle> --out <file>`
-   (`--umd-plugin` for a UMD bundle) loads a plugin's built bundle beside
-   core, as the browser does, and
-   writes the types it adds with their slots and schema definitions;
-   `jbrowse validate --plugin-manifest <file>` then checks them as it checks
-   core's. On the graph plugin (2026-10-30) it found two things core's
-   warnings hid: `LinearGraphDisplay.facet` is `frozen`, so the old
-   `facet.domain` respelling passes unread, and `RgfaTabixAdapter`'s
-   `coarse.uri` and `coarse.format` are shorthand its normalizer applies to
-   the nested object, which no probe sees, so they report as unknown slots.
-   On 2026-11-06 it ran on the graph plugin 8.8.0, the ARG plugin and
-   Apollo3's `v2` branch (UMD; its `.esm.js` imports bare `@jbrowse/*`, the
-   npm form). The graph plugin (8.9.0, now 9.0.0) and the ARG plugin
-   (`94085aa`) then moved their floor and pins to beta.20 and write main's spellings, clean
-   under main's validator with their manifests (Colin, 2026-11-06: plugins
-   target the latest beta). Apollo's `jbrowse_config.json` carries `google`
-   and `microsoft` blocks its internet account never declares; it is a
-   coworker's repo, so that waits on him. A manifest generated on main does
-   not load in beta.20's CLI (`can't resolve reference
-   #/$defs/LGVSyntenyDisplaySlots/properties/tooltip`): generate with the
-   tree whose validator reads it. Left: plugin urls (local files only), a way
-   for a plugin's own CI to run the generator without a jbrowse-components
-   checkout, and where each plugin keeps its manifest.
+   (`--umd-plugin` for UMD), given a path or the url a config's `plugins`
+   entry names, writes the types the plugin adds and the top-level keys its
+   `rootConfigurationSchema` declares (MsaView's `msa`);
+   `jbrowse validate --plugin-manifest <file>` checks them as core's.
+   - Keep no manifest anywhere: generate it from the bundle url with the tree
+     whose validator reads it, since a main manifest does not load in
+     beta.20's CLI.
+   - On 2026-11-08 every `demos/` config declaring a plugin (graph, MsaView,
+     ARG, AlphaGenome, Protein3d, Apollo) validated clean against manifests
+     generated from its declared urls; Apollo's session names a track the
+     plugin creates at runtime.
+   - Apollo's own `jbrowse_config.json` carries `google` and `microsoft`
+     blocks its internet account never declares; a coworker's repo, so that
+     waits on him.
+   - A plugin's own CI running the generator without a jbrowse-components
+     checkout waits on a plugin asking for it; none runs it today.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
@@ -134,8 +128,9 @@ between displays.
   with ggjbrowse v0.10.0. v1.3.1–v1.3.5 declared
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
   `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
-- `jbrowse validate` reports no warning outside plugin-registered types on
-  hosted configs, `demos/` and the tutorials (step 3). On an adapter that
+- `jbrowse validate` reports no warning on hosted configs, `demos/` and the
+  tutorials, plugin types checked against manifests from step 3, but for a
+  track a plugin creates at runtime. On an adapter that
   derives no `svType`, validate reads `svtype` as the file's own column, so
   the gnomAD-SV bigBeds no longer warn. `demos/` held on 2026-11-08
   (`scripts/validate-built-config.ts --schema-only`).

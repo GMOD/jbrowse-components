@@ -3,10 +3,11 @@ import type { ConfigManifest } from './types.ts'
 type Schema = Record<string, unknown>
 
 /**
- * The types a plugin registers beside core's, in the manifest's own groups:
- * what `scripts/generateConfigManifest.ts --plugin <bundle> --out <file>`
- * writes from the plugin's built ESM bundle, or `--umd-plugin` from its UMD
- * bundle.
+ * The types a plugin registers beside core's, in the manifest's own groups,
+ * and the top-level keys its `rootConfigurationSchema` adds: what
+ * `scripts/generateConfigManifest.ts --plugin <bundle> --out <file>` writes
+ * from the plugin's built ESM bundle, or `--umd-plugin` from its UMD bundle,
+ * each a path or a url.
  */
 export interface PluginManifest extends Partial<
   Pick<
@@ -25,11 +26,15 @@ export interface PluginManifest extends Partial<
   /** The JBrowse version whose core it was read beside. */
   jbrowse?: string
   /**
-   * The config JSON Schema's definitions the plugin adds or changes: its own
-   * types, and core's unions (`Track`, `Display`, `RootConfiguration`, ...)
-   * with its types among their branches and properties.
+   * The config JSON Schema's parts the plugin adds or changes: the top-level
+   * keys its `rootConfigurationSchema` declares, its own type definitions, and
+   * core's unions (`Track`, `Display`, `RootConfiguration`, ...) with its types
+   * among their branches and properties.
    */
-  schema?: { $defs: Record<string, Schema> }
+  schema?: {
+    properties?: Record<string, Schema>
+    $defs: Record<string, Schema>
+  }
 }
 
 function merged<T extends object>(core: T, extra: readonly (T | undefined)[]) {
@@ -107,13 +112,17 @@ export function withPluginSchemas(
   core: Schema,
   plugins: readonly PluginManifest[],
 ): Schema {
+  const properties: Schema = {
+    ...(isRecord(core.properties) ? core.properties : {}),
+  }
   const defs: Schema = { ...(isRecord(core.$defs) ? core.$defs : {}) }
   for (const plugin of plugins) {
+    Object.assign(properties, plugin.schema?.properties)
     for (const [name, definition] of Object.entries(
       plugin.schema?.$defs ?? {},
     )) {
       defs[name] = mergedDefinition(defs[name], definition)
     }
   }
-  return { ...core, $defs: defs }
+  return { ...core, properties, $defs: defs }
 }

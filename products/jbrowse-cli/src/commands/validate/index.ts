@@ -42,9 +42,11 @@ the author may not have meant. With --json each finding has the stable
 
 Types registered by plugins are not known to this command, so they come through
 as warnings rather than errors. A plugin manifest (--plugin-manifest) lists the
-types one plugin registers and their slots, and a config's use of those is then
-checked as core's is. jbrowse-components' scripts/generateConfigManifest.ts
-writes one from the plugin's built ESM bundle:
+types one plugin registers and their slots, and the top-level keys its
+rootConfigurationSchema adds, and a config's use of those is then checked as
+core's is. jbrowse-components' scripts/generateConfigManifest.ts writes one
+from the plugin's built ESM bundle (--umd-plugin for a UMD one), a path or the
+url a config's plugins entry names:
 
   node --experimental-strip-types scripts/generateConfigManifest.ts \\
     --plugin dist/my-plugin.esm.js --out my-plugin.manifest.json

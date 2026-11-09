@@ -157,3 +157,28 @@ test("a track's displayDefaults reach the plugin display the manifest lists for 
   }
   expect(validateWith(config, [plugin]).problems).toEqual([])
 })
+
+test('a plugin manifest declares the top-level key its rootConfigurationSchema adds, and checks inside it', () => {
+  const plugin: PluginManifest = {
+    schema: {
+      properties: { msa: { $ref: '#/$defs/MSA' } },
+      $defs: {
+        MSA: {
+          type: 'object',
+          properties: { datasets: { type: 'array' } },
+          additionalProperties: false,
+        },
+      },
+    },
+  }
+  const config = { ...configWith({ type: 'LinearBasicDisplay' }) }
+  expect(where(validateConfig({ ...config, msa: { datasets: [] } }))).toEqual([
+    'warning msa',
+  ])
+  expect(
+    validateWith({ ...config, msa: { datasets: [] } }, [plugin]).problems,
+  ).toEqual([])
+  expect(
+    where(validateWith({ ...config, msa: { dataset: [] } }, [plugin])),
+  ).toEqual(['error msa.dataset'])
+})

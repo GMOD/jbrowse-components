@@ -20,6 +20,7 @@
 // scratch entry file into someone else's package (this is a shared worktree).
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -49,8 +50,9 @@ const REPO_ROOT = path.resolve(import.meta.dirname, '..')
 
 // `--plugin <bundle> --out <file>` writes a plugin's manifest instead: the
 // types its built ESM bundle (or `--umd-plugin`, its UMD bundle) registers
-// beside core's, which `jbrowse validate --plugin-manifest` checks a config's
-// slots against.
+// beside core's, and the top-level keys its rootConfigurationSchema adds, which
+// `jbrowse validate --plugin-manifest` checks a config against. A bundle is a
+// path or the https url a config's `plugins` entry names.
 const { values: args } = parseArgs({
   options: {
     plugin: { type: 'string', multiple: true, default: [] },
@@ -60,12 +62,61 @@ const { values: args } = parseArgs({
   },
 })
 const pluginSpecs = [...args.plugin, ...args['umd-plugin']]
-const toUrl = (spec: string) =>
-  spec.startsWith('file:') ? spec : pathToFileURL(path.resolve(spec)).href
-const pluginBundles = [
-  ...args.plugin.map(spec => ({ url: toUrl(spec), umd: false })),
-  ...args['umd-plugin'].map(spec => ({ url: toUrl(spec), umd: true })),
-]
+const downloads: string[] = []
+process.on('exit', () => {
+  for (const dir of downloads) {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+const RELATIVE_IMPORT = /(?:from|import)\s*\(?\s*["'](\.{1,2}\/[^"']+\.js)["']/g
+
+// A hosted ESM build is split into chunks it imports by relative path, so each
+// is fetched to the same place beside it.
+async function download(url: string) {
+  const dir = mkdtempSync(path.join(tmpdir(), 'plugin-bundle-'))
+  downloads.push(dir)
+  const entry = new URL(url)
+  const fetched = new Set<string>()
+  async function fetchWithImports(href: string): Promise<void> {
+    if (!fetched.has(href)) {
+      fetched.add(href)
+      const response = await fetch(href)
+      if (!response.ok) {
+        throw new Error(`${href}: HTTP ${response.status}`)
+      }
+      const text = await response.text()
+      const file = path.join(
+        dir,
+        path.relative(path.dirname(entry.pathname), new URL(href).pathname),
+      )
+      mkdirSync(path.dirname(file), { recursive: true })
+      writeFileSync(file, text)
+      await Promise.all(
+        [...text.matchAll(RELATIVE_IMPORT)].flatMap(([, relative]) =>
+          relative === undefined
+            ? []
+            : [fetchWithImports(new URL(relative, href).href)],
+        ),
+      )
+    }
+  }
+  await fetchWithImports(entry.href)
+  return pathToFileURL(path.join(dir, path.basename(entry.pathname))).href
+}
+
+const toUrl = async (spec: string) =>
+  /^https?:/.test(spec)
+    ? download(spec)
+    : spec.startsWith('file:')
+      ? spec
+      : pathToFileURL(path.resolve(spec)).href
+const pluginBundles = await Promise.all([
+  ...args.plugin.map(async spec => ({ url: await toUrl(spec), umd: false })),
+  ...args['umd-plugin'].map(async spec => ({
+    url: await toUrl(spec),
+    umd: true,
+  })),
+])
 if (pluginBundles.length > 0 && args.out === undefined) {
   throw new Error('--plugin needs --out, the plugin manifest to write')
 }
@@ -1483,6 +1534,12 @@ const PLUGIN_MANIFEST_GROUPS = {
   views: 'view',
 } as const
 
+function entriesOf(value: unknown) {
+  return typeof value === 'object' && value !== null
+    ? Object.entries(value)
+    : []
+}
+
 function writePluginManifest(out: string) {
   const groups = Object.entries(PLUGIN_MANIFEST_GROUPS).map(
     ([group, elementGroup]) => {
@@ -1506,6 +1563,12 @@ function writePluginManifest(out: string) {
         JSON.stringify(definition) !== JSON.stringify(coreDefs[name]),
     ),
   )
+  const coreRootKeys = new Set(
+    entriesOf(configJsonSchema.properties).map(([key]) => key),
+  )
+  const pluginProperties = Object.fromEntries(
+    entriesOf(jsonSchema.properties).filter(([key]) => !coreRootKeys.has(key)),
+  )
   writeFileSync(
     out,
     `${JSON.stringify(
@@ -1513,7 +1576,7 @@ function writePluginManifest(out: string) {
         plugins: pluginSpecs,
         jbrowse: VERSION,
         ...Object.fromEntries(groups),
-        schema: { $defs: pluginDefs },
+        schema: { properties: pluginProperties, $defs: pluginDefs },
       },
       null,
       2,
