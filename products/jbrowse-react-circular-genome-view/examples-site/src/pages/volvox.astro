@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/Volvox.tsx'
-import code from '../examples/Volvox.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="volvox" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/ExternalPlugin.tsx'
-import code from '../examples/ExternalPlugin.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="external-plugin" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

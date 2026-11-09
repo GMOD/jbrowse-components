@@ -200,7 +200,8 @@ export function pascalCase(slug: string) {
 }
 
 // A page is three hand-written things that have to agree: its examples.ts
-// entry, src/pages/<slug>.astro, and src/examples/<PascalCase slug>.tsx
+// entry, src/pages/<slug>.astro, and src/examples/<PascalCase slug>.tsx.
+// ExamplePage reads the slug from the page's URL, so the file name is the slug
 export function findPageDrift({
   pagesDir,
   examplesDir,
@@ -219,12 +220,6 @@ export function findPageDrift({
       continue
     }
     const source = fs.readFileSync(file, 'utf8')
-    if (!source.includes(`slug="${p.slug}"`)) {
-      drift.push({
-        what: p.slug,
-        reason: `the page file does not say slug="${p.slug}"`,
-      })
-    }
     if (!source.includes(`'../examples/${example}'`)) {
       drift.push({
         what: p.slug,

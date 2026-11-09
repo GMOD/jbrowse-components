@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/ShowTrack.tsx'
-import code from '../examples/ShowTrack.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="show-track" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

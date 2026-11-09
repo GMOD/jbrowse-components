@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/CustomTheme.tsx'
-import code from '../examples/CustomTheme.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="custom-theme" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

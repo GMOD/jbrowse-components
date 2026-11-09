@@ -12,15 +12,15 @@ function tmpDir(files: Record<string, string>) {
   return dir
 }
 
-const page = (slug: string, example: string) =>
-  `import Demo from '../examples/${example}.tsx'\n<ExamplePage slug="${slug}" />`
+const page = (example: string) =>
+  `import Demo from '../examples/${example}.tsx'\n<ExamplePage />`
 
 test('a page, its file and its example that disagree are reported', () => {
   const pagesDir = tmpDir({
     'index.astro': '',
-    'dark-theme.astro': page('dark-theme', 'DarkTheme'),
-    'web-worker.astro': page('web-worker', 'WithWebWorker'),
-    'stray.astro': page('stray', 'Stray'),
+    'dark-theme.astro': page('DarkTheme'),
+    'web-worker.astro': page('WithWebWorker'),
+    'stray.astro': page('Stray'),
   })
   const examplesDir = tmpDir({
     'DarkTheme.tsx': '',

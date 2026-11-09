@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/LocalFiles.tsx'
-import code from '../examples/LocalFiles.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="local-files" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

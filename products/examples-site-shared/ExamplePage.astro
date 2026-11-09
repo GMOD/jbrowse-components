@@ -14,14 +14,23 @@ import type { MarkdownInstance } from 'astro'
 
 // One example page: the live demo (slotted in, so its React island hydrates in
 // the page file), then src/docs/<slug>.md, then the demo's own source. The demo
-// comes first because it is the argument and the prose annotates it.
-interface Props {
-  slug: string
-  code: string
-}
-
-const { slug, code } = Astro.props
+// comes first because it is the argument and the prose annotates it. The slug
+// is the page's own URL segment, so a page file cannot name another page.
+const slug = Astro.url.pathname.split('/').findLast(Boolean) ?? ''
 const page = getPage(slug)
+const exampleFile = `${slug.replaceAll(/(?:^|-)(\w)/g, (_, c: string) => c.toUpperCase())}.tsx`
+
+const sources = import.meta.glob<string>('~site/examples/*.tsx', {
+  query: '?raw',
+  import: 'default',
+})
+const loadSource = Object.entries(sources).find(([path]) =>
+  path.endsWith(`/examples/${exampleFile}`),
+)?.[1]
+if (!loadSource) {
+  throw new Error(`no src/examples/${exampleFile} for page "${slug}"`)
+}
+const code = await loadSource()
 const sourceLines = code.trimEnd().split('\n').length
 
 // held before the island mounts, so the prose below does not slide down

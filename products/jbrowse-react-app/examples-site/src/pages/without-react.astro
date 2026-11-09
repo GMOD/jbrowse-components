@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/WithoutReact.tsx'
-import code from '../examples/WithoutReact.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="without-react" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>

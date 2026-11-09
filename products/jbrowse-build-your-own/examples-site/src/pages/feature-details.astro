@@ -1,9 +1,8 @@
 ---
 import Demo from '../examples/FeatureDetails.tsx'
-import code from '../examples/FeatureDetails.tsx?raw'
 import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<ExamplePage slug="feature-details" code={code}>
+<ExamplePage>
   <Demo client:only="react" />
 </ExamplePage>
