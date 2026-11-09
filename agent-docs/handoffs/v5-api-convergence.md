@@ -44,14 +44,11 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each shared path whose members differ
 between displays.
 
-- 2026-10-15 to 10-26 net: +1754 / −979 shared, +168 / −79 mark display.
-  10-22 alone moved about 3000 paths each way in one sub-schema move.
-- 2026-10-30 to 11-05 net: +279 / −319 shared, +30 / −17 mark display, 11-02
-  most of it; 11-03 and 11-04 +31 / −4 shared, 11-05 none.
-- 2026-11-06 to 11-08: one respell, `encoding.y.scale.group` to `share`
-  (3cc17821fb, 11-07, +6 / −6 shared, +1 / −1 mark display). The key was
-  beta-only, no writer outside the tree spelled it, and ggjbrowse's engine pin
-  includes it.
+- The last respell is `encoding.y.scale.group` to `share` (3cc17821fb,
+  2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
+  no writer outside the tree spelled it, and ggjbrowse's engine pin includes
+  it. No shared path changed from 11-08 through 11-09, v5.0.0-beta.21
+  included.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
