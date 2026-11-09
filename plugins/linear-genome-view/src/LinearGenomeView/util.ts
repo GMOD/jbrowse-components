@@ -226,7 +226,6 @@ interface RefNameRun {
   endPx: number
   firstRegionIndex: number
   lastRegionIndex: number
-  isLeftEndOfDisplayedRegion: boolean
 }
 
 function refNameRuns(blocks: BaseBlock[]) {
@@ -258,7 +257,6 @@ function refNameRuns(blocks: BaseBlock[]) {
         endPx: block.offsetPx + block.widthPx,
         firstRegionIndex: block.displayedRegionIndex,
         lastRegionIndex: block.displayedRegionIndex,
-        isLeftEndOfDisplayedRegion: !!block.isLeftEndOfDisplayedRegion,
       }
       runs.push(current)
     }
@@ -380,12 +378,9 @@ export function getScalebarRefNameLabels({
   const stickyIdx = stickyRunIndex(runs, offsetPx + captionSpanPx)
   const labels: ScalebarRefNameLabel[] = []
 
-  for (const [i, run] of runs.entries()) {
-    const sticky = i === stickyIdx
-    // runs left of the sticky one end under the caption or off screen
-    if (i < stickyIdx || !(sticky || run.isLeftEndOfDisplayedRegion)) {
-      continue
-    }
+  // runs left of the sticky one end under the caption or off screen
+  for (const [i, run] of runs.slice(stickyIdx).entries()) {
+    const sticky = i === 0
     const runStartPx = run.offsetPx - offsetPx
     const transform = sticky
       ? Math.max(captionSpanPx, runStartPx)

@@ -153,34 +153,27 @@ const RefNameMenu = observer(function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const {
-    refName,
-    displayedRegionIndex: idx,
-    lastDisplayedRegionIndex: lastIdx,
-  } = menuState.label
+  const { refName, displayedRegionIndex, lastDisplayedRegionIndex } =
+    menuState.label
+  // the label's own bracket comes off the static blocks, which stop near the
+  // viewport, so every item takes the whole run from the region list instead
+  const { first: idx, last: lastIdx } = regionRunBounds(
+    displayedRegions,
+    displayedRegionIndex,
+    lastDisplayedRegionIndex,
+  )
   const numRegions = displayedRegions.length
-  const labeled = displayedRegions.slice(idx, lastIdx + 1)
+  const run = displayedRegions.slice(idx, lastIdx + 1)
   // A label naming several regions is the collapsed-intron case: adjacent
   // regions sharing a refName get one label between them. Reverse/move/remove
-  // are per-region and this label names no particular one — it used to act on
-  // whichever region the label happened to ride, which for the pinned label
-  // changed as you scrolled — so a run offers only the two items that mean the
-  // whole run.
+  // are per-region and this label names no particular one, so a run offers only
+  // the items that mean the whole run.
   const oneRegion = idx === lastIdx
   // one region keeps its `{assembly}` qualifier; a run drops the qualifier the
   // regions all share, as the view header does for the same list
   const locString = oneRegion
-    ? assembleLocString(displayedRegions[idx]!)
-    : assembleLocStrings(labeled)
-  // The region this label's blocks were cut out of. Taken over the WHOLE run
-  // rather than `labeled`, which the viewport clips: a collapsed-introns view
-  // zoomed into two exons would otherwise offer a span that is not the gene's.
-  const { first: runFirst, last: runLast } = regionRunBounds(
-    displayedRegions,
-    idx,
-    lastIdx,
-  )
-  const run = displayedRegions.slice(runFirst, runLast + 1)
+    ? assembleLocString(run[0]!)
+    : assembleLocStrings(run)
   const wholeSpan = {
     ...run[0]!,
     start: Math.min(...run.map(r => r.start)),
@@ -211,7 +204,7 @@ const RefNameMenu = observer(function RefNameMenu({
             )
           },
         },
-        ...(labeled.length < numRegions
+        ...(run.length < numRegions
           ? [
               {
                 label: oneRegion
@@ -225,7 +218,7 @@ const RefNameMenu = observer(function RefNameMenu({
               },
             ]
           : []),
-        ...(runLast > runFirst
+        ...(!oneRegion
           ? [
               {
                 // Names its subject the way the two rows above it do; the span
@@ -237,14 +230,14 @@ const RefNameMenu = observer(function RefNameMenu({
                 // and showing the span is the whole point of the row.
                 onClick: () => {
                   model.setDisplayedRegions([
-                    ...displayedRegions.slice(0, runFirst),
+                    ...displayedRegions.slice(0, idx),
                     wholeSpan,
-                    ...displayedRegions.slice(runLast + 1),
+                    ...displayedRegions.slice(lastIdx + 1),
                   ])
                   model.moveTo(
-                    { index: runFirst, offset: 0 },
+                    { index: idx, offset: 0 },
                     {
-                      index: runFirst,
+                      index: idx,
                       offset: wholeSpan.end - wholeSpan.start,
                     },
                   )

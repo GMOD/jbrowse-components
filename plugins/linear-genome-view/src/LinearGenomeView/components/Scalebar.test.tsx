@@ -279,41 +279,7 @@ describe('Scalebar genome view component', () => {
   // purpose: the label's own bracket comes off the static blocks, which stop at
   // the viewport, so the span has to be taken from the region list instead.
   it('rejoins a run of regions into the span they were cut from', async () => {
-    const session = createTestSession({
-      sessionSnapshot: {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            offsetPx: 0,
-            bpPerPx: 10,
-            displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 5000 },
-              {
-                assemblyName: 'volvox',
-                refName: 'ctgA',
-                start: 10000,
-                end: 15000,
-              },
-              {
-                assemblyName: 'volvox',
-                refName: 'ctgA',
-                start: 20000,
-                end: 25000,
-              },
-              {
-                assemblyName: 'volvox',
-                refName: 'ctgA',
-                start: 30000,
-                end: 35000,
-              },
-            ],
-            tracks: [],
-          },
-        ],
-      },
-    }) as any
-    const model = session.views[0]
-    model.setWidth(800)
+    const model = collapsedIntronsView({ offsetPx: 0, bpPerPx: 10 })
     render(<Scalebar model={model} />)
 
     fireEvent.click(await screen.findByTestId('refLabel-ctgA'))
@@ -329,4 +295,63 @@ describe('Scalebar genome view component', () => {
     // coordinate space the rejoin just redefined
     expect(model.offsetPx).toBe(0)
   })
+
+  // bpPerPx 1 puts only the second region in the static blocks, so the pinned
+  // label's own bracket is that one region
+  it('a pinned label over one region of a run offers only run-wide items', async () => {
+    const model = collapsedIntronsView({ offsetPx: 6000, bpPerPx: 1 })
+    render(<Scalebar model={model} />)
+
+    fireEvent.click(await screen.findByTestId('refLabel-ctgA'))
+
+    expect(await screen.findByText('Show the whole span of ctgA')).toBeTruthy()
+    expect(screen.queryByText('Show only this region')).toBeNull()
+    expect(screen.queryByText('Actions')).toBeNull()
+  })
+
+  // the label's bracket holds the two regions on screen; ctgA is all four
+  it('a label over part of a one-contig run acts on all of it', async () => {
+    const model = collapsedIntronsView({ offsetPx: 0, bpPerPx: 10 })
+    render(<Scalebar model={model} />)
+
+    fireEvent.click(await screen.findByTestId('refLabel-ctgA'))
+    expect(await screen.findByText('Focus on ctgA')).toBeTruthy()
+    expect(screen.queryByText('Show only ctgA')).toBeNull()
+
+    fireEvent.click(screen.getByText('Focus on ctgA'))
+    // 20kb across 800px, not the 10kb on screen
+    await waitFor(() => {
+      expect(model.bpPerPx).toBeGreaterThan(20)
+    })
+  })
 })
+
+function collapsedIntronsView({
+  offsetPx,
+  bpPerPx,
+}: {
+  offsetPx: number
+  bpPerPx: number
+}) {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          offsetPx,
+          bpPerPx,
+          displayedRegions: [0, 10000, 20000, 30000].map(start => ({
+            assemblyName: 'volvox',
+            refName: 'ctgA',
+            start,
+            end: start + 5000,
+          })),
+          tracks: [],
+        },
+      ],
+    },
+  }) as any
+  const model = session.views[0]
+  model.setWidth(800)
+  return model
+}
