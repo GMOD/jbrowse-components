@@ -1687,6 +1687,7 @@
       "package": "@jbrowse/core",
       "names": [
         "DEAL_COLOR_DIFFERENCE",
+        "annotationPaletteColorAt",
         "categoricalColor",
         "categoricalColorScale",
         "categoricalPalette",

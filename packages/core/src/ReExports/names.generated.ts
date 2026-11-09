@@ -207,7 +207,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/ui/CascadingMenuButton': ['default'],
   '@jbrowse/core/ui/ClearableSearchField': ['default'],
   '@jbrowse/core/ui/ColorPicker': ['ColorPopover', 'default'],
-  '@jbrowse/core/ui/colors': ['DEAL_COLOR_DIFFERENCE', 'categoricalColor', 'categoricalColorScale', 'categoricalPalette', 'categoricalScale', 'categoricalValueColor', 'category10', 'ciede2000', 'colorDifference', 'getQueryColor', 'hashString', 'paletteColors', 'paletteFromSpec', 'refNameColor', 'refNamePaletteColorAt', 'rowPaletteColorAt', 'set1', 'similarColors'],
+  '@jbrowse/core/ui/colors': ['DEAL_COLOR_DIFFERENCE', 'annotationPaletteColorAt', 'categoricalColor', 'categoricalColorScale', 'categoricalPalette', 'categoricalScale', 'categoricalValueColor', 'category10', 'ciede2000', 'colorDifference', 'getQueryColor', 'hashString', 'paletteColors', 'paletteFromSpec', 'refNameColor', 'refNamePaletteColorAt', 'rowPaletteColorAt', 'set1', 'similarColors'],
   '@jbrowse/core/ui/colorScale': ['colorScaleIsEmpty', 'legendSpecOf', 'missingRowLast', 'rampLabels', 'summarizePast'],
   '@jbrowse/core/ui/ConfirmDialog': ['default'],
   '@jbrowse/core/ui/ContextMenu': ['default'],

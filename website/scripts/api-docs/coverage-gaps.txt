@@ -1306,7 +1306,7 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (86)
+# member tags in a file that documents no #stateModel (93)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedRows
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedSources
@@ -1327,6 +1327,10 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts parsedTree
 packages/tree-sidebar/src/treeSidebarRowViews.ts resolvedRowColors
 packages/tree-sidebar/src/treeSidebarRowViews.ts root
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowAlias
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationColors
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationColumns
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationDeals
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationScales
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBand
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBanding
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBands
@@ -1337,6 +1341,8 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorKeyInputs
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorPaintsMarks
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorScales
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorSetting
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorTitle
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColumnLabels
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowFocusLineHeight
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowForks
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowNarrowing
@@ -1348,6 +1354,7 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts rowParent
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowTree
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowsHeaderControlsHeight
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowsHeaderHeight
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowsLeadHeight
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowsTopOffset
 packages/tree-sidebar/src/treeSidebarRowViews.ts sharesPanel
 packages/tree-sidebar/src/treeSidebarRowViews.ts sources
