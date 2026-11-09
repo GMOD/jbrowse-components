@@ -45,7 +45,10 @@ const RATIO_SCALE = {
  * two tracks, and two conditions, read one color for one ratio; enrichment
  * paints red. No setting makes a ratio's domain follow the loaded values, as
  * a per-track quantile recentres on each track's noise (declined 2026-10-30);
- * a written `domainMin` or `domainMax` widens it.
+ * a written `domainMin` or `domainMax` widens it. A bin the file lists no
+ * contacts for draws as the page, white on a ratio as it is in Juicebox; a
+ * no-value grey under the triangle was captured on chr8 and declined
+ * (2026-11-09) as reading odder than the white.
  */
 export const HIC_FIELD_PRESETS = {
   observed: {
