@@ -1,40 +1,29 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
+import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-class SelectionLengthPlugin extends Plugin {
-  name = 'SelectionLengthPlugin'
+class CopyAsBedPlugin extends Plugin {
+  name = 'CopyAsBedPlugin'
 
   install(pluginManager: PluginManager) {
-    extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
-      stateModel.extend(self => {
-        const superLaunchMenuItems = self.rubberBandLaunchMenuItems
+    addViewMenuItems(pluginManager, 'LinearGenomeView', {
+      menu: 'rubberBandMenuItems',
+      items: self => {
+        const bed = self
+          .getSelectedRegions(self.leftOffset, self.rightOffset)
+          .map(r => `${r.refName}\t${r.start}\t${r.end}`)
+          .join('\n')
         return {
-          views: {
-            rubberBandLaunchMenuItems() {
-              return [
-                ...superLaunchMenuItems(),
-                {
-                  label: 'Selection length',
-                  onClick: () => {
-                    const bp = self
-                      .getSelectedRegions(self.leftOffset, self.rightOffset)
-                      .reduce((sum, r) => sum + r.end - r.start, 0)
-                    getSession(self).notify(
-                      `${bp.toLocaleString()} bp selected`,
-                      'info',
-                    )
-                  },
-                },
-              ]
-            },
+          label: 'Copy as BED',
+          onClick: () => {
+            void copyText(self, bed, 'BED')
           },
         }
-      }),
-    )
+      },
+    })
   }
 }
 
@@ -45,7 +34,7 @@ export default function InlinePlugin() {
         name: 'volvox',
         uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
       }}
-      plugins={[SelectionLengthPlugin]}
+      plugins={[CopyAsBedPlugin]}
       tracks={[
         {
           trackId: 'volvox_gff3',
