@@ -32,7 +32,7 @@ const scenarios = {
   'a sequence file behind a 404': {
     assembly: {
       name: 'hg38',
-      uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/does-not-exist.2bit',
+      uri: 'https://jbrowse.org/genomes/GRCh38/does-not-exist.2bit',
     },
     loc: brca1,
   },

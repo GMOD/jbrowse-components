@@ -129,7 +129,7 @@ const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
       {
         trackId: 'hg38_broken',
         name: 'A track that fails to load',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/does-not-exist.bw',
+        uri: 'https://jbrowse.org/demos/phylop/does-not-exist.bw',
         displayDefaults: { height: 80 },
       },
     ],
