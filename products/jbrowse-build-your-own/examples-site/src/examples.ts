@@ -146,12 +146,6 @@ export const pages: ExamplePage[] = [
     group: 'Several regions and genomes',
   },
   {
-    slug: 'web-worker',
-    title: 'Web worker',
-    description: 'Fetch and parse off the main thread with one option.',
-    group: 'Workers, links and export',
-  },
-  {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:

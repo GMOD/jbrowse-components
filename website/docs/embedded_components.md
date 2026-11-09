@@ -23,8 +23,7 @@ app, a `<script>` bundle includes its own React; see
 | Make your own custom UI around the engine         | `createViewState` + [`@jbrowse/display-ui`](https://www.npmjs.com/package/@jbrowse/display-ui), [examples](https://jbrowse.org/storybook/byo/)               | —                      |
 
 Each package's storybook is the reference: copy-pasteable React code, one page
-per task (setting up the view, navigating from your own code, running a worker,
-theming, plugins).
+per task (setting up the view, navigating from your own code, theming, plugins).
 
 A `tracks` entry is a track config, and the shortest one is `{ trackId, uri }`.
 The type and adapter come from the file's extension, and `assemblyNames` from
@@ -238,6 +237,36 @@ try {
   await browser.close()
 }
 ```
+
+## The RPC worker {#the-rpc-worker}
+
+Each component fetches and parses data in a pool of web workers, as JBrowse Web
+does, with nothing to pass. The package loads its worker on demand, so the
+worker stays out of your page's first bundle.
+
+Two cases run that work on the main thread instead, each with one console
+warning:
+
+- **A `plugins` entry is a plugin class.** The worker loads a plugin from its
+  URL, and a class has none. Pass the records `loadPlugins` returns instead. A
+  class that adds nothing the worker runs (an adapter, an RPC method) can stay;
+  pass `makeWorkerInstance` to keep the worker.
+- **The worker failed to start**, as it does when a bundler did not build the
+  package's worker. Pass `makeWorkerInstance` a factory your bundler builds.
+
+A factory is the package's own worker, spelled for your bundler:
+
+```js
+// Vite
+import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
+const makeWorkerInstance = () => new RpcWorker()
+
+// webpack (set output.publicPath: 'auto' so the worker finds its URL)
+import makeWorkerInstance from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'
+```
+
+To run on the main thread on purpose, and silence both warnings, set
+`configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } }`.
 
 ## Bundler examples
 

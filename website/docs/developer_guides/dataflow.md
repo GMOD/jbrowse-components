@@ -60,14 +60,12 @@ single-threaded however many cores the machine has.
 
 The main thread holds the result, uploads it, and draws it.
 
-**Spawning that pool is the host's decision.** jbrowse-web and desktop always
-do. An embedded component runs the same pool once the page hands it a
-`makeWorkerInstance` factory; without one it runs every step in the box on the
-UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
-a worker is bundler-specific, so the host writes the factory — the
-[web worker example](https://jbrowse.org/storybook/lgv/web-worker/) has the Vite
-and the webpack spelling, and passing one is the whole switch, with no config
-slot to set.
+**Every host spawns that pool.** jbrowse-web and desktop always do, and so does
+an embedded component, which loads its own worker on demand. It runs every step
+in the box on the UI thread instead, where a deep BAM stalls whatever else the
+page is drawing, in two cases: a `plugins` entry is a bare class the worker
+cannot load, or the worker failed to start. Both print a console warning naming
+the fix; [](/docs/embedded_components#the-rpc-worker) has them.
 
 ## Where wasm sits
 

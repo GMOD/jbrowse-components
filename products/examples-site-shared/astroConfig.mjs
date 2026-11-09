@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url'
 // Astro matches a redirect's key under `base` but writes its destination out
 // as given, so the destination gets the base here.
 //
-// The RPC worker (imported via Vite's `?worker`) needs ES output because it
-// code-splits. HMR is off in dev only to turn off React Fast Refresh, working
+// The RPC worker (each package's own, which every embed loads by default) needs
+// ES output because it code-splits. HMR is off in dev only to turn off React Fast Refresh, working
 // around an upstream @vitejs/plugin-react bug: the worker shares the dev module
 // graph with the main thread and imports Fast-Refresh-instrumented modules,
 // which pull in `/@react-refresh` (it touches `window` at eval time) and

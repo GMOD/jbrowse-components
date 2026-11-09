@@ -67,7 +67,7 @@ export function embeddedRpcOptions({
     ? { makeWorkerInstance: factory, defaultDriverName: 'WebWorkerRpcDriver' }
     : {
         mainThreadReason: bareClass
-          ? `plugins includes the class ${bareClass.name}, which the RPC worker cannot load. Pass the records loadPlugins returns instead, or pass makeWorkerInstance a worker that registers it.`
+          ? `plugins includes the class ${bareClass.name}, which the RPC worker cannot load. Pass the records loadPlugins returns instead; or, if it adds nothing that runs in the worker (an adapter, an RPC method), pass makeWorkerInstance to use the worker anyway.`
           : undefined,
       }
 }

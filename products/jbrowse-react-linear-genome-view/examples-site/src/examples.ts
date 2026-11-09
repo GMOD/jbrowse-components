@@ -199,12 +199,6 @@ export const pages: ExamplePage[] = [
     group: 'Integration',
   },
   {
-    slug: 'web-worker',
-    title: 'Web worker',
-    description: 'Move parsing and rendering off the main thread.',
-    group: 'Integration',
-  },
-  {
     slug: 'local-files',
     title: 'Files from your host process',
     description:

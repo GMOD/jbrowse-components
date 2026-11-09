@@ -102,9 +102,5 @@
   "view-loading-and-errors": {
     "chunks": 279,
     "gzipKb": 487
-  },
-  "web-worker": {
-    "chunks": 278,
-    "gzipKb": 485
   }
 }

@@ -11,6 +11,7 @@ export default defineConfig(
       'add-tracks-programmatically': 'launch-view',
       'import-config-json': 'fetch-config-json',
       dotplot: 'linear-synteny',
+      'web-worker': 'basic-example',
     },
   }),
 )

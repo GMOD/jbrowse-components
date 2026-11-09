@@ -28,9 +28,9 @@ const failures = await smokeExamplesSite({
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
-  // the web-worker example must actually spawn an RPC worker — guards the
-  // Rollup circular-dependency TDZ that webpack tolerates.
-  workerSlug: 'web-worker',
+  // the simplest demo must spawn an RPC worker, which every embed does by
+  // default — guards the Rollup circular-dependency TDZ that webpack tolerates
+  workerSlug: 'basic-example',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),

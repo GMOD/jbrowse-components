@@ -44,6 +44,11 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const MOUNT_TIMEOUT_MS = 15000
 const FRAME_TIMEOUT_MS = 60000
 
+// RpcManager's warning when an embed's worker failed to boot and its RPC moved
+// to the main thread: the page still works, so only this catches a site build
+// that stopped producing a worker every page uses by default
+const WORKER_FELL_BACK = 'the RPC web worker failed to start'
+
 // the readiness failure @jbrowse/capture's ready.ts reports for displays in
 // error
 const DISPLAY_ERROR = 'not ready for capture: display(s) showing an error:'
@@ -219,7 +224,9 @@ export async function smokeExamplesSite({
     })
     page.on('console', m => {
       const text = m.text()
-      if (m.type() === 'error' && isNetworkNoise(text)) {
+      if (m.type() === 'warn' && text.includes(WORKER_FELL_BACK)) {
+        errors.push(`console: ${text}`)
+      } else if (m.type() === 'error' && isNetworkNoise(text)) {
         stalls.push(text)
       } else if (
         m.type() === 'error' &&

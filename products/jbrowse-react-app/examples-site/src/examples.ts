@@ -32,12 +32,6 @@ export const pages: ExamplePage[] = [
     group: 'Customizing',
   },
   {
-    slug: 'web-worker',
-    title: 'Web worker',
-    description: 'Move parsing and rendering off the main thread.',
-    group: 'Customizing',
-  },
-  {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:

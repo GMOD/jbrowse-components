@@ -38,12 +38,6 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'web-worker',
-    title: 'Web worker',
-    description: 'Move data parsing off the main thread.',
-    group: 'Getting started',
-  },
-  {
     slug: 'static-first-paint',
     title: 'A picture first, then the view',
     description:

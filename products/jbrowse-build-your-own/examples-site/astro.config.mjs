@@ -8,7 +8,10 @@ export default defineConfig(
   examplesSiteConfig(import.meta.url, {
     base: '/storybook/byo',
     integrations: [react()],
-    redirects: { 'highlight-a-region': 'table-of-calls' },
+    redirects: {
+      'highlight-a-region': 'table-of-calls',
+      'web-worker': 'ultraminimal',
+    },
     plugins: [eagerGraphDump()],
   }),
 )
