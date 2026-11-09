@@ -15,6 +15,7 @@ geneGlyphMode
 geneTrackId
 genotypes.show
 height
+hideHeader
 labels
 layers
 loadedRegion

@@ -52,7 +52,7 @@ const MINIMAP2_TRACK = pifTrack(
 )
 
 const CFHR_WINDOW = 'chr1:196,640,000-196,900,000'
-const DELETION_LOCUS = 'chr1:196,810,000'
+const DELETION_LOCUS = 'chr1:196,778,000'
 
 const ROW_ORDER = [
   'HG00097.1',
@@ -68,8 +68,9 @@ const ROW_ORDER = [
 const lanes = (trackId: string) => ({
   trackId,
   rows: { sort: ROW_ORDER },
-  height: 300,
-  labels: { lanes: { placement: 'overlay' } },
+  height: 230,
+  labels: { name: { show: false }, lanes: { placement: 'overlay' } },
+  legend: { show: false },
 })
 
 const session = sessionSpec(CONFIG, {
@@ -79,6 +80,7 @@ const session = sessionSpec(CONFIG, {
       type: 'LinearGenomeView',
       assembly: 'hg38',
       loc: CFHR_WINDOW,
+      hideHeader: true,
       tracks: [
         {
           trackId: 'hg38_ncbiRefSeq_ucsc',
@@ -102,13 +104,13 @@ const callouts: Annotation[] = [
     type: 'text',
     text: '84.7 kb deletion',
     fontSize: 20,
-    anchor: { trackId: GRAPH_ROWS, loc: DELETION_LOCUS, fracY: 0.56 },
+    anchor: { trackId: GRAPH_ROWS, loc: DELETION_LOCUS, fracY: 0.78 },
   },
   {
     type: 'text',
     text: '84.7 kb deletion',
     fontSize: 20,
-    anchor: { trackId: MINIMAP2_ROWS, loc: DELETION_LOCUS, fracY: 0.56 },
+    anchor: { trackId: MINIMAP2_ROWS, loc: DELETION_LOCUS, fracY: 0.78 },
   },
 ]
 
@@ -117,8 +119,9 @@ export const paperHprcMinimap2Specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'paper/hprc_rows_graph_vs_minimap2',
     url: session,
-    viewportWidth: 1500,
-    viewportHeight: 950,
+    viewportWidth: 900,
+    viewportHeight: 700,
+    hideSelectors: ['header.MuiAppBar-root'],
     readySelector: BOTH_SETTLED,
     readyTimeout: 240000,
     tooltip: 'hide',
