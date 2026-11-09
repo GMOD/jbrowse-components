@@ -106,24 +106,46 @@ function promisifiedLoadScript(src: string, integrity?: string) {
   })
 }
 
-function hasImportScripts(
+// A module worker has importScripts but throws from it, and called with no
+// urls it throws nowhere else
+function canImportScripts(
   scope: typeof globalThis,
 ): scope is typeof globalThis & { importScripts: (url: string) => void } {
-  return 'importScripts' in scope
+  try {
+    if ('importScripts' in scope && typeof scope.importScripts === 'function') {
+      scope.importScripts()
+      return true
+    } else {
+      return false
+    }
+  } catch {
+    return false
+  }
 }
 
-// A *module* worker has importScripts on its global but throws from it — the
-// spec forbids it there, and the browser says so ("Module scripts don't support
-// importScripts"). That is the whole failure for a UMD plugin in a bundler
-// configured for module workers (Vite's `worker.format: 'es'`), and it reads as
-// a broken plugin unless named. Every other throw is the script's own — a 404,
-// or a bundle that dereferences `window` in a realm that has none — and the
-// script's words are the diagnosis, so they are kept rather than replaced.
 export function workerScriptLoadMessage(scriptUrl: string, error: unknown) {
-  const detail = error instanceof Error ? error.message : String(error)
-  return /module script/i.test(detail)
-    ? `Failed to load ${scriptUrl} in the worker. A UMD plugin is loaded there via importScripts, which module workers do not support — either build the worker as a classic worker, or use a plugin published as ESM.`
-    : `Failed to load ${scriptUrl} in the worker: ${detail}`
+  return `Failed to load ${scriptUrl} in the worker: ${error instanceof Error ? error.message : String(error)}`
+}
+
+// What importScripts does, for a module worker: run the bundle in the global
+// scope. A strict bundle's top-level `var` stays inside the eval, so the eval's
+// completion value hands the global back.
+async function evalInGlobalScope(
+  scriptUrl: string,
+  globalName: string,
+  integrity?: string,
+) {
+  const response = await fetch(scriptUrl, { integrity })
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
+  // eslint-disable-next-line no-eval
+  const value: unknown = (0, eval)(
+    `${await response.text()}\n;typeof ${globalName} === 'undefined' ? undefined : ${globalName}\n//# sourceURL=${scriptUrl}`,
+  )
+  if (value !== undefined) {
+    Reflect.set(globalThis, globalName, value)
+  }
 }
 
 const workerPrefetches = new Map<string, Promise<void>>()
@@ -149,24 +171,27 @@ function prefetchWorkerScript(url: string) {
   }
 }
 
-async function loadScript(scriptUrl: string, integrity?: string) {
+async function loadScript(
+  scriptUrl: string,
+  globalName: string,
+  integrity?: string,
+) {
   const scope = globalThis
   if (!isWebWorker()) {
-    return promisifiedLoadScript(scriptUrl, integrity)
-  } else if (hasImportScripts(scope)) {
-    await workerPrefetches.get(scriptUrl)
+    await promisifiedLoadScript(scriptUrl, integrity)
+  } else {
     try {
-      scope.importScripts(scriptUrl)
+      if (canImportScripts(scope)) {
+        await workerPrefetches.get(scriptUrl)
+        scope.importScripts(scriptUrl)
+      } else {
+        await evalInGlobalScope(scriptUrl, globalName, integrity)
+      }
     } catch (error) {
       throw new Error(workerScriptLoadMessage(scriptUrl, error), {
         cause: error,
       })
     }
-    return
-  } else {
-    throw new Error(
-      'cannot figure out how to load external JS scripts in this environment',
-    )
   }
 }
 
@@ -293,7 +318,7 @@ export function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
     return
   }
   if (isWebWorker()) {
-    for (const def of defs) {
+    for (const def of canImportScripts(globalThis) ? defs : []) {
       if (isUMDPluginDefinition(def)) {
         try {
           prefetchWorkerScript(pluginLoadUrl(def, baseUri).href)
@@ -367,6 +392,7 @@ export default class PluginLoader {
     // version-pinned and immutable, so cache-busting is unnecessary anyway)
     await loadScript(
       def.integrity ? parsedUrl.href : addCacheBuster(parsedUrl.href),
+      umdName,
       def.integrity,
     )
 

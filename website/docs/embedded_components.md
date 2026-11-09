@@ -253,9 +253,11 @@ Two cases run that work on the main thread instead:
   worker.
 - **The worker failed to start**, as it does when a bundler did not build the
   package's worker, and a console warning says why. Pass `makeWorkerInstance` a
-  factory your bundler builds. Under Vite the package's worker is a module
-  worker, which cannot load a UMD plugin from `loadPlugins`; that page needs a
-  factory building a classic worker, or stays on the main thread.
+  factory your bundler builds.
+
+A module worker, which Vite builds, runs a UMD plugin from `loadPlugins` with
+`eval`, so the plugin's host must send CORS headers and a
+Content-Security-Policy must allow `'unsafe-eval'`.
 
 A factory is the package's own worker, spelled for your bundler:
 

@@ -147,10 +147,12 @@ test('a worker fetches every UMD bundle before it runs the first', async () => {
   const scope = globalThis as unknown as Record<string, unknown>
   const events: string[] = []
   scope.WorkerGlobalScope = class {}
-  scope.importScripts = (url: string) => {
-    events.push(`run ${url}`)
-    scope[url.includes('one') ? 'JBrowsePluginOne' : 'JBrowsePluginTwo'] = {
-      default: class {},
+  scope.importScripts = (...urls: string[]) => {
+    for (const url of urls) {
+      events.push(`run ${url}`)
+      scope[url.includes('one') ? 'JBrowsePluginOne' : 'JBrowsePluginTwo'] = {
+        default: class {},
+      }
     }
   }
   const fetchSpy = jest
@@ -185,6 +187,48 @@ test('a worker fetches every UMD bundle before it runs the first', async () => {
     'run https://example.com/one.js',
     'run https://example.com/two.js',
   ])
+})
+
+test('a module worker, which cannot importScripts, runs each UMD bundle from its text', async () => {
+  jest.resetModules()
+  const scope = globalThis as unknown as Record<string, unknown>
+  scope.WorkerGlobalScope = class {}
+  scope.importScripts = () => {
+    throw new TypeError("Module scripts don't support importScripts().")
+  }
+  // an esbuild iife declares its global with a strict `var`; a rollup UMD
+  // assigns it onto the global `this`
+  const bundles: Record<string, string> = {
+    'https://example.com/strict.js':
+      '"use strict";var JBrowsePluginStrict={default:class Strict{}}',
+    'https://example.com/umd.js':
+      '!function(t){t.JBrowsePluginUmd={default:class Umd{}}}(this)\n//# sourceMappingURL=umd.js.map',
+  }
+  const fetchSpy = jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(
+      async url =>
+        ({ ok: true, text: async () => bundles[String(url)] }) as Response,
+    )
+  try {
+    const { default: Loader } = await import('./PluginLoader.ts')
+    const records = await new Loader([
+      { name: 'Strict', url: 'https://example.com/strict.js' },
+      { name: 'Umd', url: 'https://example.com/umd.js' },
+    ]).load()
+    expect(records.map(r => r.plugin.name)).toEqual(['Strict', 'Umd'])
+  } finally {
+    fetchSpy.mockRestore()
+    for (const key of [
+      'WorkerGlobalScope',
+      'importScripts',
+      'JBrowsePluginStrict',
+      'JBrowsePluginUmd',
+    ]) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete scope[key]
+    }
+  }
 })
 
 // load() stays all-or-nothing for callers that cannot degrade (the RPC worker),
@@ -736,18 +780,8 @@ test('a host that merely contains localhost is not this machine', async () => {
   ).resolves.toBe(false)
 })
 
-test('names the module-worker case only when the browser does', () => {
+test("a worker load failure keeps the script's own words", () => {
   const url = 'https://example.com/plugin.umd.js'
-  expect(
-    workerScriptLoadMessage(
-      url,
-      new TypeError(
-        "Failed to execute 'importScripts' on 'WorkerGlobalScope': Module scripts don't support importScripts().",
-      ),
-    ),
-  ).toMatch(/module workers do not support/)
-  // a bundle that dereferences `window` in the worker is the script's own
-  // fault, and its words are the diagnosis
   expect(
     workerScriptLoadMessage(url, new ReferenceError('window is not defined')),
   ).toBe(`Failed to load ${url} in the worker: window is not defined`)
