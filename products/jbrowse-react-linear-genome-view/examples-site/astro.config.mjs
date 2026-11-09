@@ -1,45 +1,24 @@
-import { fileURLToPath } from 'node:url'
-
 import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 
-export default defineConfig({
-  site: 'https://jbrowse.org',
-  base: '/storybook/lgv',
-  trailingSlash: 'always',
-  integrations: [react()],
-  redirects: {
-    '/error-handler': '/storybook/lgv/session-persistence/',
-    '/outside-styling': '/storybook/lgv/custom-theme/',
-    '/view-prop': '/storybook/lgv/one-linear-genome-view/',
-    '/use-create-view-state': '/storybook/lgv/show-track/',
-    '/drawer-widget': '/storybook/lgv/fixed-height/',
-    '/view-spelled-out': '/storybook/lgv/highlight-regions/',
-    '/aggregate-text-search': '/storybook/lgv/text-search/',
-    '/per-track-text-search': '/storybook/lgv/text-search/',
-    '/observe-visible': '/storybook/lgv/observe-session/',
-    '/observe-selection': '/storybook/lgv/observe-session/',
-    '/alignments-display': '/storybook/lgv/group-by-tag/',
-  },
-  // The RPC worker (imported via Vite's `?worker`) needs ES output because it
-  // code-splits.
-  //
-  // We disable HMR in dev ONLY to turn off React Fast Refresh, working around
-  // an upstream @vitejs/plugin-react bug: our RPC worker (imported via
-  // `?worker`) shares the dev module graph with the main thread and imports
-  // Fast-Refresh-instrumented modules. Those modules pull in `/@react-refresh`,
-  // whose runtime touches `window` at eval time, and reference the page
-  // preamble's `window.$RefreshSig$` — neither exists in a worker, so it throws
-  // (`ReferenceError: window is not defined` / `$RefreshSig$ is not defined`).
-  // `server.hmr:false` is plugin-react's only dev lever for skipping Fast
-  // Refresh. Production builds already strip it, so this affects dev only.
-  // Remove once plugin-react makes its refresh runtime worker-safe
-  // (window -> globalThis).
-  vite: {
-    resolve: {
-      alias: { '~site': fileURLToPath(new URL('./src', import.meta.url)) },
+import { examplesSiteConfig } from '../../examples-site-shared/astroConfig.mjs'
+
+export default defineConfig(
+  examplesSiteConfig(import.meta.url, {
+    base: '/storybook/lgv',
+    integrations: [react()],
+    redirects: {
+      'error-handler': 'session-persistence',
+      'outside-styling': 'custom-theme',
+      'view-prop': 'one-linear-genome-view',
+      'use-create-view-state': 'show-track',
+      'drawer-widget': 'fixed-height',
+      'view-spelled-out': 'highlight-regions',
+      'aggregate-text-search': 'text-search',
+      'per-track-text-search': 'text-search',
+      'observe-visible': 'observe-session',
+      'observe-selection': 'observe-session',
+      'alignments-display': 'group-by-tag',
     },
-    worker: { format: 'es' },
-    server: { hmr: false },
-  },
-})
+  }),
+)

@@ -47,11 +47,17 @@ example file no page mounts. The same demo takes the same slug on every site
 
 The layouts (`Shell.astro`, `ExamplePage.astro`, `Gallery.astro`) and
 `exampleModel.ts` live in `examples-site-shared/` and are symlinked into each
-site. A shared file imports its site's own modules as `~site/...` (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative
-path: `astro check` resolves a relative import from the symlink's directory and
-vite from the file's real path, so only an alias, declared in both
-`astro.config.mjs` and `tsconfig.json`, means the same file to both. Every site's
-`siteMeta.ts` exports the same names, including `demoHeights`.
+site. A shared file imports its site's own modules as `~site/...`
+(`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative path: `astro
+check` resolves a relative import from the symlink's directory and vite from the
+file's real path, so only an alias, declared in both
+`examples-site-shared/astroConfig.mjs` and `tsconfig.json`, means the same file
+to both. Every site's `siteMeta.ts` exports the same names, including
+`demoHeights`.
+
+Each site's `astro.config.mjs` is one call to that shared `examplesSiteConfig`,
+naming its `base` and its `redirects`. Removing or merging a page adds its old
+slug to `redirects`, mapped to the slug of the page that now covers it.
 
 ## Generated artifacts and CI
 
