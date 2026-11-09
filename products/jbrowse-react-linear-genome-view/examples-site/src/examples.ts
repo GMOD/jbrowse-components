@@ -18,12 +18,6 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
-    slug: 'view-prop',
-    title: 'The view to open',
-    description: 'The view prop against a real assembly (hg38).',
-    group: 'Getting started',
-  },
-  {
     slug: 'use-create-view-state',
     title: 'useCreateViewState',
     description: 'Hold the view state yourself, stable across re-renders.',

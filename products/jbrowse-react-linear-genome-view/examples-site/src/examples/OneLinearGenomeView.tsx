@@ -4,17 +4,27 @@ export default function OneLinearGenomeView() {
   return (
     <LinearGenomeView
       assembly={{
-        name: 'volvox',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+        name: 'hg38',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+        refNameAliases: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        },
+        cytobands: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+        },
       }}
       tracks={[
         {
-          trackId: 'volvox_gff3',
-          name: 'Volvox genes',
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+          trackId: 'hg38-ncbi-refseq-curated',
+          name: 'NCBI RefSeq Curated',
+          uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+          csi: true,
         },
       ]}
-      view={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
+      view={{
+        loc: 'chr7:155,799,529..155,812,871',
+        tracks: ['hg38-ncbi-refseq-curated'],
+      }}
     />
   )
 }

@@ -11,6 +11,7 @@ export default defineConfig({
   redirects: {
     '/error-handler': '/storybook/lgv/session-persistence/',
     '/outside-styling': '/storybook/lgv/custom-theme/',
+    '/view-prop': '/storybook/lgv/one-linear-genome-view/',
   },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.
