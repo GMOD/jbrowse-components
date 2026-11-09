@@ -334,6 +334,13 @@ eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
 docs_pid=$!
 eval "$cmd_diagrams_check" >"$tmp/diagrams.log" 2>&1 &
 diagrams_pid=$!
+typos_pid=
+if command -v typos >/dev/null; then
+  typos >"$tmp/typos.log" 2>&1 &
+  typos_pid=$!
+else
+  echo "pre-push: no typos on PATH, so CI's Spell check job is the first to read spelling (cargo install typos-cli)" >&2
+fi
 
 # Report-only, never `-u`: a slot default that moved is a line someone reads
 # before it lands, which an autofix would skip.
@@ -656,6 +663,18 @@ if [ "$gstatus" != 0 ]; then
   echo "pre-push: pnpm diagrams:check failed" >&2
   cat "$tmp/diagrams.log" >&2
   status=$gstatus
+fi
+
+if [ -n "$typos_pid" ]; then
+  tstatus=0
+  wait "$typos_pid" || tstatus=$?
+  if [ "$tstatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: typos found a misspelling, which fails CI's Spell check job" >&2
+    cat "$tmp/typos.log" >&2
+    echo "Fix the word, or add a deliberate spelling to _typos.toml." >&2
+    status=$tstatus
+  fi
 fi
 
 sstatus=0
