@@ -2,7 +2,11 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { listFilesRecursive, runExamplesSiteChecks } from './docLinks.ts'
+import {
+  listFilesRecursive,
+  pascalCase,
+  runExamplesSiteChecks,
+} from './docLinks.ts'
 import { measureDemoHeights } from './examplesDemoHeights.ts'
 import { captureExamplePoster } from './examplesPoster.ts'
 
@@ -145,10 +149,7 @@ export async function writeExamplesSitePoster(
     out,
   })
   log(`wrote ${path.relative(site, out)}, ${width}x${height} CSS px`)
-  const pascal = slug.replaceAll(/(?:^|-)(\w)/g, (_, c: string) =>
-    c.toUpperCase(),
-  )
-  const example = path.join(site, 'src', 'examples', `${pascal}.tsx`)
+  const example = path.join(site, 'src', 'examples', `${pascalCase(slug)}.tsx`)
   const source = readFileSync(example, 'utf8')
   if (
     !source.includes(`width: ${width},`) ||

@@ -82,6 +82,12 @@ describe('with a Worker to build', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
+  test('a plain-JS record without a definition keeps it on the main thread', () => {
+    const opts = options([record, { plugin: BundledPlugin }])
+    expect(opts.makeWorkerInstance).toBeUndefined()
+    expect(driverOf(opts)).toBe('MainThreadRpcDriver')
+  })
+
   test("the caller's own factory wins, bare class or not", () => {
     const makeWorkerInstance = () => builtWorker as unknown as Worker
     const opts = embeddedRpcOptions({

@@ -1,5 +1,5 @@
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { PluginRecord } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
 
 /**
@@ -7,11 +7,14 @@ import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
  * or the `{ plugin, definition }` record `loadPlugins` returns.
  *
  * Prefer passing the record straight through. The `definition` is what lets the
- * RPC worker load the same plugin on its side — hand it only the class and the
- * plugin exists on the main thread but not in the worker, so anything it
- * contributes that runs there (an adapter, most commonly) fails to resolve.
+ * RPC worker load the same plugin on its side — hand it only the class, or a
+ * record without one, and the plugin exists on the main thread but not in the
+ * worker, so anything it contributes that runs there (an adapter, most
+ * commonly) fails to resolve.
  */
-export type PluginInput = PluginConstructor | PluginRecord
+export type PluginInput =
+  | PluginConstructor
+  | { plugin: PluginConstructor; definition?: PluginDefinition }
 
 /**
  * Turn caller-supplied plugins into `PluginManager` load records, keeping each
@@ -27,10 +30,15 @@ export type PluginInput = PluginConstructor | PluginRecord
  * wrong is invisible until someone combines a runtime plugin with a worker.
  */
 export function toPluginLoadRecord(p: PluginInput) {
-  // a plugin class is a function; a loadPlugins record is a plain object
   return typeof p === 'function'
     ? { plugin: new p() }
-    : { plugin: new p.plugin(), definition: p.definition }
+    : p.definition
+      ? { plugin: new p.plugin(), definition: p.definition }
+      : { plugin: new p.plugin() }
+}
+
+function isMainThreadOnly(p: PluginInput) {
+  return typeof p === 'function' || !p.definition
 }
 
 let defaultWorker = true
@@ -45,8 +53,9 @@ export function disableDefaultWorker() {
 
 /**
  * Where an embedded product's engine runs RPC, when its caller did not say: in
- * a worker, unless a bare plugin class could not follow it there. The worker
- * module arrives by dynamic import, to stay out of the host's eager bundle.
+ * a worker, unless a plugin with no `definition` could not follow it there. The
+ * worker module arrives by dynamic import, to stay out of the host's eager
+ * bundle.
  */
 export function embeddedRpcOptions({
   plugins,
@@ -61,7 +70,7 @@ export function embeddedRpcOptions({
     makeWorkerInstance ??
     (defaultWorker &&
     typeof Worker !== 'undefined' &&
-    !plugins.some(p => typeof p === 'function')
+    !plugins.some(isMainThreadOnly)
       ? async () => (await loadWorkerModule()).default()
       : undefined)
   return factory

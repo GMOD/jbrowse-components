@@ -343,6 +343,9 @@ const tick = () =>
     setTimeout(resolve, 0)
   })
 
+const browserTestUtilsExamplesSmokeMatches =
+  'the RPC web worker failed to start'
+
 describe('RpcManager falls back to the main thread when its worker cannot boot', () => {
   let warn: jest.SpyInstance
   let error: jest.SpyInstance
@@ -378,7 +381,9 @@ describe('RpcManager falls back to the main thread when its worker cannot boot',
       'second',
     )
     expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]![0]).toMatch(/worker failed to start/)
+    expect(warn.mock.calls[0]![0]).toContain(
+      browserTestUtilsExamplesSmokeMatches,
+    )
   })
 
   test('so does one when the worker script fails to load', async () => {

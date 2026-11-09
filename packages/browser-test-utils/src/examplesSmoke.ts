@@ -44,8 +44,9 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const MOUNT_TIMEOUT_MS = 15000
 const FRAME_TIMEOUT_MS = 60000
 
-// RpcManager's warning when an embed's worker failed to boot: the page still
-// works on the main thread, so only this catches a build without a worker
+// RpcManager's warning when an embed's worker failed to boot, pinned by
+// RpcManager.test.ts: the page still works on the main thread, so only this
+// catches a build without a worker
 const WORKER_FELL_BACK = 'the RPC web worker failed to start'
 
 // the readiness failure @jbrowse/capture's ready.ts reports for displays in

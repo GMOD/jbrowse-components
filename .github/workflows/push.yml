@@ -629,26 +629,12 @@ jobs:
           args: link-check/ --check-anchors
       - name: Smoke-test examples-site
         run: pnpm --filter ${{ matrix.site }} smoke
-      # Each site deploys from its own leg, after its smoke test, so a red site
-      # never ships and a green one does not wait on the other three. The
-      # prefix is fixed and unversioned, so a site deploys to its root,
-      # overlaying it without touching the hundreds of historical per-ref
-      # Storybook subdirs beside it (e.g. /storybook/lgv/v3.0.0/).
-      #
-      # _astro/ is content-hashed, so its sync skips any key already there at
-      # the same size. The rest is a `cp`, not a `sync`: it is a few dozen small
-      # pages, and a sync of the prefix lists every one of those subdirs first,
-      # which took ~4 minutes to upload 51 files. For the same reason a
-      # `sync --delete` cannot retire a removed page: those subdirs have
-      # arbitrary branch names, so no exclude list keeps them. Instead each
-      # deploy records the page keys it shipped in .deployed-pages.txt, and the
-      # next one deletes a recorded key its own build no longer ships — so only
-      # a key this step once uploaded can ever be deleted, and a missing or
-      # unreadable record deletes nothing. Without it a removed page kept
-      # serving HTML whose chunks the prune below had deleted. Prerelease tags
-      # (carrying a '-') are excluded, since a beta would replace the live demos
-      # the embedded-component docs link to; release.yml's code/jb2/latest
-      # deploy has the same guard.
+      # A `sync --delete` cannot retire a removed page: the prefix also holds
+      # historical per-ref Storybook subdirs with arbitrary branch names, so
+      # each deploy records the page keys it shipped in .deployed-pages.txt and
+      # the next deletes only a recorded key its build no longer ships.
+      # Prerelease tags (carrying a '-') do not deploy, since a beta would
+      # replace the live demos the embedded-component docs link to.
       - name: Configure AWS credentials
         if:
           github.ref == 'refs/heads/main' || (startsWith(github.ref,
@@ -680,9 +666,11 @@ jobs:
           if aws s3 cp --quiet "$DEST/.deployed-pages.txt" "$work/recorded.txt"; then
             sort -u -o "$work/recorded.txt" "$work/recorded.txt"
             comm -23 "$work/recorded.txt" "$work/shipped.txt" |
-              grep -v -e '^$' -e '^_astro/' -e '\.\.' |
               while read -r key; do
-                aws s3 rm "$DEST/$key"
+                case "$key" in
+                  '' | _astro/* | *..*) ;;
+                  *) aws s3 rm "$DEST/$key" ;;
+                esac
               done
           fi
           aws s3 cp --quiet "$work/shipped.txt" "$DEST/.deployed-pages.txt"
