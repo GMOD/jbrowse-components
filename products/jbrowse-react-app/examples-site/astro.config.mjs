@@ -12,6 +12,7 @@ export default defineConfig({
   redirects: {
     '/add-tracks-programmatically': '/storybook/app/launch-view/',
     '/import-config-json': '/storybook/app/fetch-config-json/',
+    '/dotplot': '/storybook/app/linear-synteny/',
   },
   // The RPC worker (imported via Vite's `?worker`) needs ES output because it
   // code-splits.

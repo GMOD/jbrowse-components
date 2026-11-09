@@ -99,14 +99,8 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'linear-synteny',
-    title: 'Linear synteny view',
-    description: 'Two assemblies and a PAF.',
-    group: 'View types',
-  },
-  {
-    slug: 'dotplot',
-    title: 'Dotplot view',
-    description: 'A self-vs-self volvox dotplot.',
+    title: 'One PAF, two views',
+    description: 'A deletion as a linear synteny view and as a dotplot.',
     group: 'View types',
   },
   {

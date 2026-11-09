@@ -11,9 +11,7 @@ const tracks = [
   {
     type: 'SyntenyTrack',
     trackId: 'volvox_del.paf',
-    name: 'volvox_del.paf',
     assemblyNames: ['volvox', 'volvox_del'],
-    category: ['Synteny'],
     adapter: {
       type: 'PAFAdapter',
       uri: `${base}/volvox_del.paf`,
@@ -31,6 +29,11 @@ export default function LinearSynteny() {
       views={[
         {
           type: 'LinearSyntenyView',
+          views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+          tracks: ['volvox_del.paf'],
+        },
+        {
+          type: 'DotplotView',
           views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
           tracks: ['volvox_del.paf'],
         },
