@@ -1,9 +1,12 @@
+import { createElement } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { SIDEBAR_HINT_LINE_PX, sidebarPanelWidth } from '@jbrowse/tree-sidebar'
-import { waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
+import WiggleRowLabels from './WiggleRowLabels.tsx'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
@@ -151,6 +154,49 @@ test('rows: the scale sits past the row labels, and at the edge without them', a
   display.setShowRowLabels(false)
   expect(left()).toBe(0)
 })
+
+const TISSUES: SourceInfo[] = [
+  { name: 'Grain1', group: 'Islet', tissue: 'pancreas' },
+  { name: 'Grain2', group: 'Islet', tissue: 'pancreas' },
+  { name: 'Grain3', group: 'Liver', tissue: 'liver' },
+]
+
+// The box the labels draw on screen, the x the y scale starts at and the
+// gutter the export parks the sidebar in are one width, 4 px wider per column.
+test.each([[['group']], [['group', 'tissue']]])(
+  'rows: the labels on screen, the scale past them and the export gutter widen alike under rows.annotations %j',
+  async annotations => {
+    const plain = await loaded(TISSUES, rowsPerSource())
+    const display = await loaded(TISSUES, {
+      rows: { field: 'source', annotations },
+    })
+    const { container } = render(
+      createElement(
+        'svg',
+        null,
+        createElement(WiggleRowLabels, { model: display, labelOffset: 0 }),
+      ),
+    )
+    const box = /^M0 0h([\d.]+)v/.exec(
+      container.querySelector('path')!.getAttribute('d')!,
+    )!
+    const left = display.valueScales[0]!.left!
+    expect(left).toBeCloseTo(
+      plain.valueScales[0]!.left! + 4 * annotations.length,
+    )
+    expect(Number(box[1])).toBeCloseTo(left)
+    expect(
+      display.svgSidebarWidth() - display.svgSidebar.leftInset!,
+    ).toBeCloseTo(left)
+    expect(
+      new Set(
+        [
+          ...container.querySelectorAll('[data-testid="row-annotation-bar"]'),
+        ].map(bar => bar.getAttribute('x')),
+      ).size,
+    ).toBe(annotations.length)
+  },
+)
 
 test('rows: the declared order leads and the rest keep adapter order', async () => {
   const display = await loaded(GROUPED, rowsPerSource(['Grain3']))

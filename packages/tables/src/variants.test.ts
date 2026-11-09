@@ -188,6 +188,29 @@ test('each row takes the display’s rows.color from the samples file, under the
   expect(plain.rowLegend.label).toEqual([])
 })
 
+test('a rows.annotations key is never the row key: with no rows.color the rows have none', async () => {
+  const annotated = await engine.variants({
+    ...DOG_SV,
+    display: { rows: { annotations: ['group'] } },
+  })
+  expect(annotated.rowLegendTitle).toBe('')
+  expect(annotated.rowLegend.label).toEqual([])
+  expect(new Set(annotated.rows.color)).toEqual(new Set(['']))
+  const pinned = annotated.rows.name[0]!
+  const both = await engine.variants({
+    ...DOG_SV,
+    display: {
+      rows: {
+        annotations: ['group'],
+        color: { field: 'group' },
+        colors: { [pinned]: '#123456' },
+      },
+    },
+  })
+  expect(both.rowLegendTitle).toBe('Group')
+  expect(both.rowLegend.color).toContain('#123456')
+})
+
 test('a row rows.colors pins takes its key entry by its rows.labels label, as the display keys it', async () => {
   const plain = await engine.variants(DOG_SV)
   const pinned = plain.rows.name[0]!

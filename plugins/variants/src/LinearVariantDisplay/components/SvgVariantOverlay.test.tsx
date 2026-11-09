@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
+import { parseSamplesTsv } from '@jbrowse/core/util/samplesTsv'
 import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { render } from '@testing-library/react'
 
@@ -14,9 +18,9 @@ import type { Source } from '../../shared/types.ts'
 // key derives from `colorScales`, and the insertion entry asks the painter's
 // own question about the visible blocks, so the model needs the view its
 // components always have in the app.
-function createDisplay(sources: Source[]) {
+function createDisplay(sources: Source[], rows?: Record<string, unknown>) {
   const { display } = createTestEnvironment({
-    displayConfig: { genotypes: { show: true } },
+    displayConfig: { genotypes: { show: true }, ...(rows ? { rows } : {}) },
   }).createDisplay()
   display.setSources(sources)
   return display
@@ -94,4 +98,52 @@ test('a hidden legend exports nothing', () => {
   model.setShowLegend(false)
   const { queryByText } = renderKey(model)
   expect(queryByText('Homozygous reference')).toBeNull()
+})
+
+// volvox.sv.samples.tsv gives each sample a population and a sex, so the two
+// columns stand side by side past no row color, and the gutter the export
+// reserves widens by both.
+test('rows.annotations exports a color column per attribute, each with a key', () => {
+  const { sources } = parseSamplesTsv(
+    readFileSync(
+      path.resolve('test_data/volvox/volvox.sv.samples.tsv'),
+      'utf8',
+    ),
+    undefined,
+    'volvox.sv.samples.tsv',
+    'the VCF',
+  )
+  const plain = createDisplay(sources)
+  const model = createDisplay(sources, { annotations: ['population', 'sex'] })
+  expect(model.svgSidebarWidth()).toBeCloseTo(plain.svgSidebarWidth() + 8)
+  expect(
+    renderOverlay(plain).container.querySelectorAll(
+      '[data-testid="row-annotation-bar"]',
+    ),
+  ).toHaveLength(0)
+
+  const bars = [
+    ...renderOverlay(model).container.querySelectorAll(
+      '[data-testid="row-annotation-bar"]',
+    ),
+  ]
+  const fillsAt = (x: string) =>
+    new Set(
+      bars
+        .filter(bar => bar.getAttribute('x') === x)
+        .map(bar => bar.getAttribute('fill')),
+    )
+  expect(new Set(bars.map(bar => bar.getAttribute('x')))).toEqual(
+    new Set(['0', '4']),
+  )
+  expect(fillsAt('0').size).toBe(
+    new Set(sources.map(row => row.population)).size,
+  )
+  expect(fillsAt('4').size).toBe(new Set(sources.map(row => row.sex)).size)
+
+  const { getByText } = renderKey(model)
+  getByText('Population')
+  getByText('Sex')
+  getByText('PopA')
+  getByText('female')
 })
