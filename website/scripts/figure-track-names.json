@@ -27,6 +27,7 @@
   "https://jbrowse.org/demos/cgiab/config.json": {
     "grch38_cytobands": "Cytobands (UCSC hg38)",
     "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3": "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3",
+    "HG008-T_PacBio-HiFi-Revio_20240125_116x_HG008T_v3.2": "HG008-T PacBio HiFi reads on the HG008T v3.2 assembly",
     "hg008t_benchmark_sv": "HG008-T V0.5 draft benchmark somatic SVs",
     "hg008t_somatic_cnv": "HG008-T somatic CNV",
     "HG008T_v3.2_pif": "HG008T v3.2",
@@ -167,6 +168,7 @@
     "hprc_v2_1_walk_lanes": "HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk files"
   },
   "https://jbrowse.org/ucsc/anoGam3/config.json": {},
+  "https://jbrowse.org/ucsc/canFam4/config.json": {},
   "https://jbrowse.org/ucsc/dm6/config.json": {
     "dm6-ncbiRefSeqCurated": "NCBI RefSeq - RefSeq Curated"
   },
