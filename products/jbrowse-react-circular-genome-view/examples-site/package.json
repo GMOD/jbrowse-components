@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/react": "^7.1.4",
     "@jbrowse/core": "workspace:*",
+    "@jbrowse/display-ui": "workspace:*",
     "@jbrowse/react-circular-genome-view2": "workspace:*",
     "astro": "^7.4.7",
     "mobx": "^7.1.5",
