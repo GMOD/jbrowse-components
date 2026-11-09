@@ -329,6 +329,6 @@ could be considered just another 'band'."
 | Alternative | Why not |
 | --- | --- |
 | Keep the flat `lineZoneHeight` | The one flat height left among the bands, turned off by a special 0 |
-| `links` | Named for the variant display's planned SV links band (`todo/variant-display-links-band.md`) |
+| `links` | Named for the variant display's planned SV links band (`waiting-on-a-call/variant-display-links-band.md`) |
 | `guides` | LD's hover guides already take it |
 | `leaders` | Exact (cartography's leader lines) but unfamiliar to a genomics reader |
