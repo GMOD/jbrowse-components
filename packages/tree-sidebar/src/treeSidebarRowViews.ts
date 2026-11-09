@@ -45,10 +45,12 @@ import type {
   RowColorKeyInputs,
   RowColorSetting,
 } from './rowColorScale.ts'
+import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type {
   ClusterHierarchyNode,
   ClusterNodeData,
   RowAnnotationColumn,
+  RowLabelSource,
   RowSource,
 } from './types.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
@@ -960,6 +962,44 @@ export function hierarchyViews(self: HierarchyHost) {
             self.rowBands,
           )
         : undefined
+    },
+  }
+}
+
+/** What {@link rowSidebarViews} reads: the rows, their tree and their colors. */
+export interface RowSidebarHost {
+  showTree: boolean
+  hierarchy: ClusterHierarchyNode | undefined
+  sources: RowLabelSource[]
+  effectiveRowHeight: number
+  treeAreaWidth: number
+  showRowLabels: boolean
+  rowBands: readonly RowBand[]
+  rowAnnotationColors: readonly RowAnnotationColumn[]
+}
+
+/** The sidebar drawn beside the rows. */
+export function rowSidebarViews(self: RowSidebarHost) {
+  return {
+    /**
+     * #getter
+     * What the sidebar draws left of the rows, from the settings and the
+     * rows drawn: the dendrogram, the band strip, the row labels and the
+     * `rows.annotations` columns. A display's `svgSidebar` is this, or a
+     * spread of it with what that display changes, so the screen, the axis
+     * past the panel and the export size and draw one sidebar.
+     */
+    get rowSidebarProps(): SvgSidebarProps {
+      return {
+        showTree: self.showTree,
+        hierarchy: self.hierarchy,
+        sources: self.sources,
+        rowHeight: self.effectiveRowHeight,
+        treeAreaWidth: self.treeAreaWidth,
+        showLabels: self.showRowLabels,
+        bands: self.rowBands,
+        annotations: self.rowAnnotationColors,
+      }
     },
   }
 }

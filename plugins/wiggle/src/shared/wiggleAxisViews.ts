@@ -4,11 +4,7 @@ import { sidebarPanelWidth } from '@jbrowse/tree-sidebar'
 import { getRowTop } from './wiggleComponentUtils.ts'
 
 import type { WigglePlotGeometry } from './wiggleDisplayViews.ts'
-import type {
-  ClusterHierarchyNode,
-  RowLabelSource,
-  SvgSidebarProps,
-} from '@jbrowse/tree-sidebar'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ScaleType, ValueScale, YAxis } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleRowLabelViews} reads: the rows and the sidebar toggle. */
@@ -31,13 +27,9 @@ export function wiggleRowLabelViews(self: WiggleRowLabelHost) {
   }
 }
 
-/** What {@link wiggleSidebarViews} reads: the rows and the tree beside them. */
+/** What {@link wiggleSidebarViews} reads: the mixin's sidebar and whether the rows are named. */
 export interface WiggleSidebarHost {
-  showTree: boolean
-  hierarchy: ClusterHierarchyNode | undefined
-  treeAreaWidth: number
-  sources: RowLabelSource[]
-  effectiveRowHeight: number
+  rowSidebarProps: SvgSidebarProps
   drawsRowLabels: boolean
 }
 
@@ -50,14 +42,7 @@ export function wiggleSidebarViews(self: WiggleSidebarHost) {
      * sits past on screen and the export parks left of the figure.
      */
     get sidebarPanel(): SvgSidebarProps {
-      return {
-        showTree: self.showTree,
-        hierarchy: self.hierarchy,
-        sources: self.sources,
-        rowHeight: self.effectiveRowHeight,
-        treeAreaWidth: self.treeAreaWidth,
-        showLabels: self.drawsRowLabels,
-      }
+      return { ...self.rowSidebarProps, showLabels: self.drawsRowLabels }
     },
   }
 }

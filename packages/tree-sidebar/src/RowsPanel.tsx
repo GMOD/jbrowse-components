@@ -78,6 +78,7 @@ export const RowsPanel = observer(function RowsPanel({
         scrollTop={model.scrollTop}
         showLabels={model.showRowLabels}
         bands={model.rowBands}
+        annotations={model.rowAnnotationColors}
       />
       <ScrollChrome model={model} controlsId={id} top={top} />
     </>

@@ -918,14 +918,7 @@ export default function stateModelFactory(
          * #getter
          */
         get svgSidebar(): SvgSidebarProps {
-          return {
-            showTree: self.showTree,
-            hierarchy: self.hierarchy,
-            sources: self.sources,
-            rowHeight: self.effectiveRowHeight,
-            treeAreaWidth: self.treeAreaWidth,
-            showLabels: self.showRowLabels,
-          }
+          return self.rowSidebarProps
         },
       }))
       .actions(self => ({

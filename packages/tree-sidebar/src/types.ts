@@ -73,6 +73,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   showTree: boolean
   sources: TreeSource[]
   rowBands?: readonly RowBand[]
+  rowAnnotationColors?: readonly RowAnnotationColumn[]
   treelessBandCount?: number
   // Whether the tree's leaves are rows a finer field draws, and what the hint
   // says then.

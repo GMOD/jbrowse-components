@@ -10,6 +10,7 @@ test('the live row labels sit on the wash over the plot', () => {
           sources: [{ name: 'a' }, { name: 'b' }],
           effectiveRowHeight: 40,
           drawsRowLabels: true,
+          rowAnnotationColors: [],
         }}
         labelOffset={0}
       />

@@ -6,6 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar'
 import {
   hierarchyViews,
+  rowSidebarViews,
   rowsContentHeightViews,
   treeSidebarAxisConfigViews,
   treeSidebarRowsConfigViews,
@@ -120,6 +121,7 @@ const base = types
 const MarkStaticHostModel = treeSidebarRowStages<RowSource>()(base)
   .views(self => rowsContentHeightViews(self))
   .views(self => hierarchyViews(self))
+  .views(self => rowSidebarViews(self))
   .views(self => markConfigViews(self))
   .views(self => markChannelViews(self))
   .views(self => markFacetViews(self))

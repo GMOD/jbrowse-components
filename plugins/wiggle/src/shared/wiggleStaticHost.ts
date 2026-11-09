@@ -4,6 +4,7 @@ import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   hierarchyViews,
+  rowSidebarViews,
   rowsContentHeightViews,
   treeSidebarAxisConfigViews,
   treeSidebarRowsConfigViews,
@@ -91,6 +92,7 @@ function wiggleStaticHost(
   const scored = wiggleScoreStages(treeSidebarRowStages<Source>()(base))
     .views(self => rowsContentHeightViews(self))
     .views(self => hierarchyViews(self))
+    .views(self => rowSidebarViews(self))
   return wiggleSidebarStages(scored)
 }
 

@@ -78,12 +78,7 @@ import type {
   MarkColorScale,
   RowTable,
 } from '@jbrowse/render-core/marks'
-import type {
-  ClusterHierarchyNode,
-  RowBand,
-  RowSource,
-  SvgSidebarProps,
-} from '@jbrowse/tree-sidebar'
+import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type {
   ScaleType,
   ValueScale,
@@ -787,11 +782,7 @@ export function markDomainViews(self: MarkAutoscaleHost) {
 /** What {@link markSidebarViews} reads beside the domain. */
 export type MarkDomainHost = MarkAutoscaleHost &
   ReturnType<typeof markDomainViews> & {
-    showTree: boolean
-    hierarchy: ClusterHierarchyNode | undefined
-    treeAreaWidth: number
-    showRowLabels: boolean
-    rowBands: readonly RowBand[]
+    rowSidebarProps: SvgSidebarProps
   }
 
 /** The rows' sidebar. */
@@ -804,17 +795,7 @@ export function markSidebarViews(self: MarkDomainHost) {
      * figure; none while the rows are not drawn.
      */
     get sidebarPanel(): SvgSidebarProps | undefined {
-      return self.drawsRows
-        ? {
-            showTree: self.showTree,
-            hierarchy: self.hierarchy,
-            sources: self.sources,
-            rowHeight: self.effectiveRowHeight,
-            treeAreaWidth: self.treeAreaWidth,
-            showLabels: self.showRowLabels,
-            bands: self.rowBands,
-          }
-        : undefined
+      return self.drawsRows ? self.rowSidebarProps : undefined
     },
   }
 }

@@ -52,6 +52,7 @@ import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 import {
   hierarchyViews,
+  rowSidebarViews,
   listsInOrder,
   rowsContentHeightViews,
   treeSidebarAxisConfigViews,
@@ -543,6 +544,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     }))
     .views(self => rowsContentHeightViews(withRowHeight(self)))
     .views(self => hierarchyViews(self))
+    .views(self => rowSidebarViews(withRowHeight(self)))
     .views(self => ({
       /**
        * #getter

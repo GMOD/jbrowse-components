@@ -7,6 +7,7 @@ import type { SidebarBounds } from '@jbrowse/display-ui'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
+  RowAnnotationColumn,
 } from '@jbrowse/tree-sidebar'
 import type {
   ScaleType,
@@ -51,6 +52,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   showRowSeparators: boolean
   showRowLabels: boolean
   drawsRowLabels: boolean
+  rowAnnotationColors: readonly RowAnnotationColumn[]
   rowFocus?: readonly string[]
   rowNarrowingHint?: { text: string; title: string }
   rowNarrowingClears: boolean

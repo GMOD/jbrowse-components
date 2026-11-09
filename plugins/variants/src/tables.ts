@@ -13,6 +13,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
+import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
   treeSidebarRowsConfigViews,
   treeSidebarRowStages,
@@ -359,7 +360,9 @@ export async function variantTables(
     return {
       band: drawn.map(row => host.rowBand(row)),
       color: drawn.map(row => rowColors.get(row.name) ?? ''),
-      rowKey: host.rowColorScales[0],
+      rowKey: host.rowColorScales.find(
+        scale => scale.id === ROW_COLOR_SCALE_ID,
+      ),
       rowBands: host.rowBands,
       recordColors: host.regionRecordColors,
       cellColors: host.regionCellColors,
