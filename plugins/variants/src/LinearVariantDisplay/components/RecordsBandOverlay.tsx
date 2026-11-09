@@ -235,7 +235,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       ) : (
         <BandSeamHandle
           data-testid="records_band_resize_handle"
-          seam={recordsHeight}
+          seam={topBands.addedHeight}
           title="Drag to resize the records band"
           value={recordsHeight}
           onChange={height => {

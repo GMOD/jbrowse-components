@@ -13,6 +13,17 @@ function drag(handle: HTMLElement, dy: number) {
   fireEvent.pointerUp(handle, { clientY: dy, pointerId: 1 })
 }
 
+test('the seam sits under the chips, where the genotype rows begin', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  const { reserved } = display.topBands
+  render(<RecordsBandOverlay model={display} />)
+
+  const handle = screen.getByTestId('records_band_resize_handle')
+
+  expect(reserved.chips).toBeGreaterThan(0)
+  expect(Number.parseFloat(handle.style.top)).toBeGreaterThan(reserved.records)
+})
+
 test('a drag up on the seam sets the band below its stack', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   const natural = display.topBands.reserved.records
