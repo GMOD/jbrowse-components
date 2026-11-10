@@ -4,8 +4,9 @@
 import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/configSchema.generated.ts'
 
 // ADR-238: a part turns off through its `show` member and a threshold is a
-// filter predicate, so a show*, hide*, min* or max* config slot is a second
-// spelling of words the vocabulary already has. Each live one is listed here
+// filter predicate, so a show*, hide*, min* or max* config slot, or one with
+// Min or Max inside its name, is a second spelling of words the vocabulary
+// already has. Each live one is listed here
 // with why it stays, and an entry that stops matching fails, so the list only
 // shrinks. View launch keys and app-written state are out of scope.
 const ZOOM_INTERVAL =
@@ -21,6 +22,12 @@ const ALLOWED: Record<string, string> = {
     "v4.3.0's too-many-features gate, which skips the fetch rather than a part",
   minBpPerPx: ZOOM_INTERVAL,
   maxBpPerPx: ZOOM_INTERVAL,
+  domainMin: "Vega-Lite's scale ends (ADR-238)",
+  domainMax: "Vega-Lite's scale ends (ADR-238)",
+  growMaxHeight:
+    'the grow ceiling on every feature and alignments display (ADR-254)',
+  min: "the ends of alignments' normalInsertSize band (ADR-240)",
+  max: "the ends of alignments' normalInsertSize band (ADR-240)",
 }
 
 type Schema = Record<string, unknown>
@@ -57,7 +64,9 @@ function slotNames(schema: Schema) {
       walk(def)
     }
   }
-  return [...names].filter(name => /^(show|hide|min|max)[A-Z]/.test(name))
+  return [...names].filter(name =>
+    /^(show|hide)[A-Z]|^(min|max)([A-Z]|$)|[a-z](Min|Max)([A-Z]|$)/.test(name),
+  )
 }
 
 test('no config slot spells a toggle or threshold outside the vocabulary', () => {
