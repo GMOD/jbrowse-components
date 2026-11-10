@@ -74,11 +74,10 @@ ribbon settings:
 ## The TNNT3 rearrangement by strand
 
 _TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
-region reads as an inversion plus a deletion, and the inverted segment carries
-the long noncoding RNA _LINC01150_ from one side of _TNNT3_ to the other. The
-palette button in the view header sets the view's `encoding.color`, a color
-scale that maps a field to colors. Pick **Strand** there, and the segment that
-moved is the one ribbon in the second color.
+region reads as an inversion plus a deletion. The palette button in the view
+header sets the view's `encoding.color`, a color scale that maps a field to
+colors. Pick **Strand** there, and the segment that moved is the one ribbon in
+the second color.
 
 <Figure caption="hg38 (top) against hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
