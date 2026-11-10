@@ -139,6 +139,7 @@ import {
   buildSashimiDownKeys,
   eachGroup,
   hasNamedGroups,
+  orderedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -963,16 +964,16 @@ export default function stateModelFactory(
            */
           get liveNotices(): string[] {
             const facet = self.effectiveFacet
+            const compare = sectionOrder(facet?.field ?? '', facet?.sort)
             return [
               ...facetValueNotices(
                 facet,
-                self.groupOrder.map(g => g.key),
+                orderedGroups(self.rpcDataMap, undefined, compare).map(
+                  g => g.key,
+                ),
               ),
               ...overflowSplitNotices(
-                splitOverflowKeys(
-                  self.rpcDataMap,
-                  sectionOrder(facet?.field ?? '', facet?.sort),
-                ),
+                splitOverflowKeys(self.rpcDataMap, compare),
               ),
             ]
           },
