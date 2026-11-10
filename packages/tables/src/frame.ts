@@ -1,7 +1,6 @@
-import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
 
+import { sequenceRegions } from './assembly.ts'
 import { fileContigsOf } from './fileRegions.ts'
 
 import type { ResolvedAssembly } from './assembly.ts'
@@ -23,13 +22,8 @@ export async function referenceContig(
   sequenceAdapter: Record<string, unknown> | undefined,
   assembly: ResolvedAssembly | undefined,
 ): Promise<Span | undefined> {
-  const contigs = assembly
-    ? assembly.regions
-    : sequenceAdapter
-      ? await tablesAdapter(pluginManager, sequenceAdapter, undefined).then(a =>
-          isRegionsAdapter(a) ? a.getRegions({}) : [],
-        )
-      : []
+  const contigs =
+    assembly?.regions ?? (await sequenceRegions(pluginManager, sequenceAdapter))
   const canonical = assembly?.canonical ?? ((name: string) => name)
   const name = canonical(locus.originalRefName ?? locus.refName)
   return contigs.find(c => canonical(c.refName) === name)

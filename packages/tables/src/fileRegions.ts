@@ -1,8 +1,7 @@
-import {
-  isContigSource,
-  isRegionsAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { isContigSource } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+
+import { sequenceRegions } from './assembly.ts'
 
 import type { ResolvedAssembly } from './assembly.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -83,14 +82,7 @@ export async function contigNamesOf(
   if (!sequenceAdapter || !NAMES_FROM_RECORDS.has(String(adapterConfig.type))) {
     return names
   }
-  const sequence = await tablesAdapter(
-    pluginManager,
-    sequenceAdapter,
-    undefined,
-  )
-  const regions = isRegionsAdapter(sequence)
-    ? await sequence.getRegions({})
-    : []
+  const regions = await sequenceRegions(pluginManager, sequenceAdapter)
   return [...new Set([...names, ...regions.map(r => r.refName)])]
 }
 

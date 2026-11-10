@@ -33,6 +33,16 @@ export interface ResolvedAssembly {
   refNamePosition: (name: string) => number | undefined
 }
 
+export async function sequenceRegions(
+  pluginManager: PluginManager,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  const adapter = sequenceAdapter
+    ? await tablesAdapter(pluginManager, sequenceAdapter, undefined)
+    : undefined
+  return adapter && isRegionsAdapter(adapter) ? adapter.getRegions({}) : []
+}
+
 function aliasAdapterOf(sidecar: unknown) {
   if (sidecar === undefined || sidecar === null) {
     return undefined
@@ -57,11 +67,7 @@ async function resolveAssembly(
   const sequenceAdapter = expanded.sequence?.adapter
   const aliasAdapter = aliasAdapterOf(expanded.refNameAliases)
   const [regions, aliases] = await Promise.all([
-    sequenceAdapter
-      ? tablesAdapter(pluginManager, sequenceAdapter, undefined).then(a =>
-          isRegionsAdapter(a) ? a.getRegions({}) : [],
-        )
-      : [],
+    sequenceRegions(pluginManager, sequenceAdapter),
     aliasAdapter
       ? tablesAdapter(pluginManager, aliasAdapter, undefined).then(a =>
           isRefNameAliasAdapter(a) ? a.getRefNameAliases({}) : [],

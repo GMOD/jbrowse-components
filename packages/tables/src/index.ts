@@ -1,7 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   alignmentConnectorCurves,
   alignmentMarkAlpha,
@@ -40,7 +38,7 @@ import {
 } from '@jbrowse/plugin-wiggle/tables'
 import { adapterAssemblyNames } from '@jbrowse/synteny-core'
 
-import { assemblyResolver, renameRegions } from './assembly.ts'
+import { assemblyResolver, renameRegions, sequenceRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
 import {
@@ -368,14 +366,14 @@ async function undecodableContigs(
   pluginManager: PluginManager,
   { adapterConfig, sequenceAdapter, regions }: RegionArgs,
 ) {
-  const sequence =
-    sequenceAdapter && DECODES_AGAINST_REFERENCE.has(String(adapterConfig.type))
-      ? await tablesAdapter(pluginManager, sequenceAdapter, undefined)
-      : undefined
-  const names =
-    sequence && isRegionsAdapter(sequence)
-      ? (await sequence.getRegions({})).map(r => r.refName)
-      : []
+  const names = (
+    await sequenceRegions(
+      pluginManager,
+      DECODES_AGAINST_REFERENCE.has(String(adapterConfig.type))
+        ? sequenceAdapter
+        : undefined,
+    )
+  ).map(r => r.refName)
   const missing = lacks(names)
   const contigs = new Set(regions.filter(missing).map(r => r.refName))
   return [...contigs].map(
