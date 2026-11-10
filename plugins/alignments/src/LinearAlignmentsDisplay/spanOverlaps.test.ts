@@ -1,14 +1,26 @@
 import {
   mergeSortedSpans,
-  overlapIntervals,
   packedOverlapIntervals,
   subtractSortedSpans,
 } from './spanOverlaps.ts'
 
-describe('overlapIntervals', () => {
+import type { Span } from './spanOverlaps.ts'
+
+function overlapSpans(spans: Span[]) {
+  const packed = packedOverlapIntervals(
+    Uint32Array.from(spans.flatMap(s => [s.start, s.end])),
+    spans.length,
+  )
+  return Array.from({ length: packed.length / 2 }, (_, i) => ({
+    start: packed[i * 2],
+    end: packed[i * 2 + 1],
+  }))
+}
+
+describe('packedOverlapIntervals', () => {
   test('disjoint spans produce no overlaps', () => {
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 0, end: 100 },
         { start: 100, end: 200 },
       ]),
@@ -17,7 +29,7 @@ describe('overlapIntervals', () => {
 
   test('two overlapping spans yield their intersection', () => {
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 0, end: 150 },
         { start: 100, end: 250 },
       ]),
@@ -26,7 +38,7 @@ describe('overlapIntervals', () => {
 
   test('a fully contained span yields its own extent', () => {
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 0, end: 300 },
         { start: 100, end: 200 },
       ]),
@@ -35,7 +47,7 @@ describe('overlapIntervals', () => {
 
   test('input order does not matter', () => {
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 100, end: 250 },
         { start: 0, end: 150 },
       ]),
@@ -44,7 +56,7 @@ describe('overlapIntervals', () => {
 
   test('three mutually overlapping spans emit one interval per later span', () => {
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 0, end: 200 },
         { start: 100, end: 300 },
         { start: 150, end: 400 },
@@ -58,7 +70,7 @@ describe('overlapIntervals', () => {
   test('a span overlapping only an earlier longer span clamps to its end', () => {
     // second span sets runningMaxEnd=500; third starts inside it but ends short
     expect(
-      overlapIntervals([
+      overlapSpans([
         { start: 0, end: 50 },
         { start: 100, end: 500 },
         { start: 200, end: 300 },
@@ -67,8 +79,30 @@ describe('overlapIntervals', () => {
   })
 
   test('empty and single-span inputs produce no overlaps', () => {
-    expect(overlapIntervals([])).toEqual([])
-    expect(overlapIntervals([{ start: 0, end: 100 }])).toEqual([])
+    expect(overlapSpans([])).toEqual([])
+    expect(overlapSpans([{ start: 0, end: 100 }])).toEqual([])
+  })
+
+  test('ties on start keep input order', () => {
+    expect(
+      overlapSpans([
+        { start: 0, end: 30 },
+        { start: 0, end: 10 },
+        { start: 0, end: 20 },
+      ]),
+    ).toEqual([
+      { start: 0, end: 10 },
+      { start: 0, end: 20 },
+    ])
+  })
+
+  test('the returned array is exactly the intervals found', () => {
+    expect(
+      packedOverlapIntervals(Uint32Array.from([0, 200, 100, 300]), 2).length,
+    ).toBe(2)
+    expect(
+      packedOverlapIntervals(Uint32Array.from([0, 100, 100, 200]), 2).length,
+    ).toBe(0)
   })
 })
 
@@ -102,17 +136,6 @@ describe('mergeSortedSpans', () => {
       { start: 300, end: 400 },
     ])
   })
-
-  test('merging the stacked output of overlapIntervals yields one span (no double-blend)', () => {
-    const spans = [
-      { start: 0, end: 200 },
-      { start: 100, end: 300 },
-      { start: 150, end: 400 },
-    ]
-    expect(mergeSortedSpans(overlapIntervals(spans))).toEqual([
-      { start: 100, end: 300 },
-    ])
-  })
 })
 
 // Span sets with every overlap shape the tint has to survive.
@@ -143,12 +166,11 @@ const cases = [
 // The property the collapsed-group tint depends on: alpha-blending the raw
 // (unmerged) output darkens each position exactly in proportion to how many
 // spans cover it.
-describe('overlapIntervals depth property', () => {
-  function tintCountAt(spans: { start: number; end: number }[], pos: number) {
-    return overlapIntervals(spans).filter(s => pos >= s.start && pos < s.end)
-      .length
+describe('packedOverlapIntervals depth property', () => {
+  function tintCountAt(spans: Span[], pos: number) {
+    return overlapSpans(spans).filter(s => pos >= s.start && pos < s.end).length
   }
-  function depthAt(spans: { start: number; end: number }[], pos: number) {
+  function depthAt(spans: Span[], pos: number) {
     return spans.filter(s => pos >= s.start && pos < s.end).length
   }
 
@@ -162,64 +184,6 @@ describe('overlapIntervals depth property', () => {
       }
     },
   )
-})
-
-// The collapsed relayout takes the packed entry point and chain mode the object
-// one, so the two have to be the same sweep rather than a similar one.
-describe('packedOverlapIntervals', () => {
-  function packed(spans: { start: number; end: number }[]) {
-    const positions = Uint32Array.from(spans.flatMap(s => [s.start, s.end]))
-    return [...packedOverlapIntervals(positions, spans.length)]
-  }
-  function flattened(spans: { start: number; end: number }[]) {
-    return overlapIntervals(spans).flatMap(s => [s.start, s.end])
-  }
-
-  const fixtures = [
-    [],
-    [{ start: 0, end: 100 }],
-    [
-      { start: 0, end: 100 },
-      { start: 100, end: 200 },
-    ],
-    [
-      { start: 100, end: 250 },
-      { start: 0, end: 150 },
-    ],
-    [
-      { start: 0, end: 200 },
-      { start: 100, end: 300 },
-      { start: 150, end: 400 },
-    ],
-    [
-      { start: 0, end: 50 },
-      { start: 100, end: 500 },
-      { start: 200, end: 300 },
-    ],
-    // ties on start, where the object path relied on its sort being stable
-    [
-      { start: 0, end: 30 },
-      { start: 0, end: 10 },
-      { start: 0, end: 20 },
-    ],
-    ...cases,
-  ]
-
-  test.each(fixtures.map((spans, i) => [i, spans] as const))(
-    'fixture %i matches the object path exactly',
-    (_i, spans) => {
-      expect(packed(spans)).toEqual(flattened(spans))
-    },
-  )
-
-  test('the returned array is exactly the intervals found', () => {
-    expect(
-      packedOverlapIntervals(Uint32Array.from([0, 200, 100, 300]), 2).length,
-    ).toBe(2)
-    expect(
-      packedOverlapIntervals(Uint32Array.from([0, 100, 100, 200]), 2).length,
-    ).toBe(0)
-  })
 })
 
 describe('subtractSortedSpans', () => {

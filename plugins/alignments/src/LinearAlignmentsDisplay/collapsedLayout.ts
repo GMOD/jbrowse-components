@@ -15,7 +15,7 @@ import type {
 // per group, so an all-vs-all synteny track shows one thin band per mate genome
 // instead of one stack per mate genome.
 //
-// Depth is drawn, not stacked. `overlapIntervals` emits a position covered by
+// Depth is drawn, not stacked. `packedOverlapIntervals` emits a position covered by
 // `d` features exactly `d - 1` times (see spanOverlaps.ts), and the tint blends
 // alpha, so a segment darkens monotonically with how many alignments cover it —
 // a repeat family that hits 22 mate loci reads as one dark tick rather than 22
