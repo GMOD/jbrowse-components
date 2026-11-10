@@ -21,6 +21,10 @@ destination, which is now `scales.y` rather than the owning mark's declaration.
 ADR-113's other half — a quantitative color ramp resolving on the main thread
 against a domain unioned over the loaded regions — is untouched, as is
 ADR-115's `pileup` step and its three track types.
+Amended 2026-11-09: two right-side axes ruling the same rows now stand side
+by side (`rightAxisStackInsets`), where `axisGutterLeft` alone overprinted
+them, for the alignments coverage band under its up-mode read cloud. The
+mark display still declares one scale, for the reading below.
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) and
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) are the
 operational docs.

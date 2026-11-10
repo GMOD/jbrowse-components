@@ -8,6 +8,7 @@ import {
   ScoreRules,
   YScaleBarOverlay,
   axisDrawn,
+  rightAxisStackInsets,
 } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
@@ -36,6 +37,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
     return null
   }
   const captioned = captionedAxes(model)
+  const stackInsets = rightAxisStackInsets(axes)
   return (
     <>
       {axes.map((axis, i) => {
@@ -68,6 +70,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
                     axis={axis}
                     top={top}
                     width={width}
+                    stackInset={stackInsets[i]}
                   />
                 ))
               : null}
@@ -77,6 +80,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
                 bandTops={bandTops}
                 width={width}
                 height={height}
+                stackInset={stackInsets[i]}
               />
             ) : null}
           </Fragment>

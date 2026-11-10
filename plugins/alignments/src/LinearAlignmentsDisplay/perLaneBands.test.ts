@@ -1,5 +1,10 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
+import {
+  axisGutterLeft,
+  axisGutterWidth,
+  rightAxisStackInsets,
+} from '@jbrowse/display-ui'
 
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import { ARC_BAND_INSET_PX } from './renderers/arcMarks.ts'
@@ -421,4 +426,48 @@ describe('the sticky band and the fit budget follow the lanes', () => {
       6,
     )
   })
+})
+
+function withCoverage(data: WorkerPileupData): WorkerPileupData {
+  return {
+    ...data,
+    coverageDepths: new Float32Array(10_000).fill(20),
+    coverageMaxDepth: 20,
+    coverageStartPos: 0,
+  }
+}
+
+// Up mode draws the read cloud over the coverage histogram, so its TLEN axis
+// rules the coverage axis's rows, and the lane chips put both on the right.
+test('up-mode read cloud beside the lane chips draws its axis beside the coverage axis', () => {
+  const { display } = createEnv()
+  display.setDrawnReadConnections('rule')
+  display.setReadConnectionsPlacement('up')
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: 'a', label: 'Lane A', data: withCoverage(oneRead(2000)) },
+        {
+          key: 'b',
+          label: 'Lane B',
+          data: withCoverage(oneRead(3000, LANE_B)),
+        },
+      ],
+    },
+    { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+  )
+  const axes = display.axes
+  expect(axes.map(a => [a.caption === 'TLEN', a.side])).toEqual([
+    [false, 'right'],
+    [true, 'right'],
+  ])
+  expect(axes[0]!.bandTops).toEqual(axes[1]!.bandTops)
+  const insets = rightAxisStackInsets(axes)
+  const [coverageLeft, tlenLeft] = axes.map((a, i) =>
+    axisGutterLeft(a, 800, insets[i]!),
+  )
+  expect(tlenLeft! + axisGutterWidth(axes[1]!)).toBeLessThanOrEqual(
+    coverageLeft!,
+  )
 })

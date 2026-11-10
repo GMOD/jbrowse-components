@@ -933,6 +933,21 @@ describe('the y axis', () => {
     expect(Number.parseFloat(axis!.left)).toBeGreaterThan(300)
   })
 
+  // The read cloud over a grouped coverage band: two right-side scales on
+  // the same rows.
+  test('two right-side scales on the same rows stand side by side', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [scale({ side: 'right' }), scale({ side: 'right' })],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    const [first, second] = overlays(container).map(s =>
+      Number.parseFloat(s.left),
+    )
+    expect(first! - second!).toBe(50)
+  })
+
   // A dendrogram panel takes the left edge; the gutter starts past it.
   test('a scale with a panel at the left starts its gutter past it', async () => {
     const { container, findByTestId } = renderChrome(

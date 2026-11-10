@@ -22,6 +22,7 @@ import {
   ScoreRuleLines,
   axisDrawn,
   axisGutterLeft,
+  rightAxisStackInsets,
 } from '@jbrowse/display-ui'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
@@ -253,6 +254,7 @@ export function SvgYAxis({
   const { axes } = model
   const height = exportedHeight(model)
   const contentLeft = Math.max(-view.offsetPx, 0)
+  const stackInsets = rightAxisStackInsets(axes)
   return (
     <>
       {axes.map((axis, i) => {
@@ -264,7 +266,7 @@ export function SvgYAxis({
         const gutterLeft = axisGutterLeft(
           axis,
           width,
-          AXIS_RIGHT_INSET_PX,
+          AXIS_RIGHT_INSET_PX + stackInsets[i]!,
           contentLeft,
         )
         return (

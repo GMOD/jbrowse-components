@@ -232,6 +232,19 @@ describe('the y axis', () => {
     }
   })
 
+  test('two right-side scales on the same rows stand side by side', async () => {
+    const xs = labelXs(
+      (
+        await renderShell(
+          axisHost([scale({ side: 'right' }), scale({ side: 'right' })]),
+          [],
+        )
+      ).container,
+    )
+    expect(xs).toHaveLength(4)
+    expect(xs[0]! - xs[2]!).toBe(50)
+  })
+
   // The export parks the dendrogram and labels in the margin past the axis
   // strip, so a scale's on-screen `left` does not move its gutter off the
   // plot; the spine stays against the panel and the numbers grow right of it.

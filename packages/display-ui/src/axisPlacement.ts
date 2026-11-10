@@ -97,6 +97,51 @@ export function numbersGrowRight(axis: Pick<YAxis, 'side' | 'left'>) {
   return axis.side === 'right' || (axis.left ?? 0) > 0
 }
 
+function bandsOverlap(
+  a: Pick<YAxis, 'height' | 'bandTops'>,
+  b: Pick<YAxis, 'height' | 'bandTops'>,
+) {
+  return (a.bandTops ?? [0]).some(aTop =>
+    (b.bandTops ?? [0]).some(
+      bTop => aTop < bTop + b.height && bTop < aTop + a.height,
+    ),
+  )
+}
+
+/**
+ * Px each axis's gutter moves in from the right edge past the right-side
+ * axes declared before it whose bands overlap its own, so two right-side
+ * axes ruling the same rows stand side by side rather than on top of each
+ * other. 0 for a left-side axis, an axis not drawn, and the first right-side
+ * axis on its rows. The on-screen chrome and the export both add it to their
+ * right inset.
+ */
+export function rightAxisStackInsets(
+  axes: readonly Pick<
+    YAxis,
+    'side' | 'height' | 'bandTops' | 'showAxis' | 'ticks' | 'caption'
+  >[],
+) {
+  const insets: number[] = []
+  axes.forEach((axis, i) => {
+    let inset = 0
+    if (axis.side === 'right' && axisDrawn(axis)) {
+      for (let j = 0; j < i; j++) {
+        const earlier = axes[j]!
+        if (
+          earlier.side === 'right' &&
+          axisDrawn(earlier) &&
+          bandsOverlap(earlier, axis)
+        ) {
+          inset = Math.max(inset, insets[j]! + axisGutterWidth(earlier))
+        }
+      }
+    }
+    insets.push(inset)
+  })
+  return insets
+}
+
 /** How far in from the plot's right edge a right-side gutter ends in an export. */
 export const AXIS_RIGHT_INSET_PX = 4
 

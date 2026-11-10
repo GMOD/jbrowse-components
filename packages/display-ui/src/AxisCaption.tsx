@@ -88,18 +88,24 @@ export const AxisCaptionOverlay = observer(function AxisCaptionOverlay({
   bandTops,
   width,
   height,
+  stackInset = 0,
 }: {
   axis: YAxis
   bandTops: number[]
   width: number
   height: number
+  stackInset?: number
 }) {
   return (
     <svg
       style={{
         position: 'absolute',
         top: 0,
-        left: axisGutterLeft(axis, width, VERTICAL_SCROLLBAR_CLEARANCE),
+        left: axisGutterLeft(
+          axis,
+          width,
+          VERTICAL_SCROLLBAR_CLEARANCE + stackInset,
+        ),
         pointerEvents: 'none',
         height,
         width: axisGutterWidth(axis),

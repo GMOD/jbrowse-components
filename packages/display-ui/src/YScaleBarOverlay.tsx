@@ -9,23 +9,31 @@ import type { YAxis } from './valueScale.ts'
 /**
  * The on-screen axis of one band: an `<svg>` the width of the gutter,
  * positioned absolutely over the band at `top`, with `AxisGutter` inside. A
- * right-side gutter clears the vertical scrollbar a display may mount.
+ * right-side gutter clears the vertical scrollbar a display may mount, and
+ * `stackInset` more past the right-side axes beside it
+ * (`rightAxisStackInsets`).
  */
 const YScaleBarOverlay = observer(function YScaleBarOverlay({
   axis,
   top,
   width,
+  stackInset = 0,
 }: {
   axis: YAxis
   top: number
   width: number
+  stackInset?: number
 }) {
   return (
     <svg
       style={{
         position: 'absolute',
         top,
-        left: axisGutterLeft(axis, width, VERTICAL_SCROLLBAR_CLEARANCE),
+        left: axisGutterLeft(
+          axis,
+          width,
+          VERTICAL_SCROLLBAR_CLEARANCE + stackInset,
+        ),
         pointerEvents: 'none',
         height: axis.height,
         width: axisGutterWidth(axis),
