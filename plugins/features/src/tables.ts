@@ -1,5 +1,5 @@
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
+import { DEFAULT_BYTE_LIMIT, lociOf } from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
@@ -353,8 +353,8 @@ export async function featureTables(
     displayedRegions,
     display = {},
     bpPerPx,
-    colorByFrame = false,
-    aminoAcids = true,
+    colorByFrame,
+    aminoAcids,
     geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: FeatureTablesArgs,
@@ -443,7 +443,7 @@ export async function featureTables(
     : [{ key: '', label: '', top: 0, height: joined.height }]
   if (items.length > 0 && items.every(isHidden)) {
     throw new Error(
-      `every section at ${regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')} is hidden; facet.hidden lists them all`,
+      `every section at ${lociOf(regions)} is hidden; facet.hidden lists them all`,
     )
   }
   return {

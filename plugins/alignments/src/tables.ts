@@ -1074,6 +1074,7 @@ function readConnectionTables(
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
   regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
+  slotColor: string[],
   connectorSlots: ReadonlySet<number>,
 ) {
   const mode = host.drawnReadConnections
@@ -1083,12 +1084,7 @@ function readConnectionTables(
       : computeArcsByGroup(
           new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
           {
-            loaded: host.fetchedRegions.map((r, i) => ({
-              refName: r.refName,
-              start: r.start,
-              end: r.end,
-              displayedRegionIndex: i,
-            })),
+            loaded: regionBlocks(host.fetchedRegions),
             displayed: host.frames,
           },
           {
@@ -1097,7 +1093,6 @@ function readConnectionTables(
             showOrdinaryPairs: host.showOrdinaryPairs,
           },
         )
-  const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
   const stroke = host.readConnectionsStrokeScale
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
@@ -1709,11 +1704,13 @@ function laidOutTables(
   }
   const readPitch = featureHeight + host.featureSpacing
   const connectorsBySection = sectionConnectors(host, readPitch)
+  const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
   const connections = readConnectionTables(
     host,
     sectionData,
     regionInfos,
     colors,
+    slotColor,
     new Set(
       [...connectorsBySection.values()].flatMap(byRegion =>
         [...byRegion.values()].flatMap(list =>
@@ -1721,9 +1718,6 @@ function laidOutTables(
         ),
       ),
     ),
-  )
-  const connectorSlotColor = buildArcColorPalette(colors.palette).map(
-    normalizedRgbToHex,
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
   const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)
@@ -1735,7 +1729,7 @@ function laidOutTables(
             windowedPart({ section: label, region: i }, dataFor(key, i), r, {
               ...connectorColumns(
                 connectorsBySection.get(key)?.get(i) ?? [],
-                connectorSlotColor,
+                slotColor,
                 keyOf,
               ),
               ...overlapsInWindow(
