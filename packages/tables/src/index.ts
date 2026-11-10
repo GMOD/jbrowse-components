@@ -275,17 +275,43 @@ const MULTIWAY_ARGS = {
   assemblies: true,
 } satisfies ArgKeys<MultiWayTablesArgs>
 
-const FILE_REGIONS_ARGS = { adapterConfig: true, assembly: true } as const
+interface FileRegionsArgs {
+  adapterConfig: Record<string, unknown>
+  assembly?: AssemblyConfig
+}
+
+const FILE_REGIONS_ARGS = {
+  adapterConfig: true,
+  assembly: true,
+} satisfies ArgKeys<FileRegionsArgs>
+
+interface SequenceArgs {
+  sequenceAdapter?: Record<string, unknown>
+  region: TablesRegion
+  assembly?: AssemblyConfig
+}
 
 const SEQUENCE_ARGS = {
   sequenceAdapter: true,
   region: true,
   assembly: true,
-} as const
+} satisfies ArgKeys<SequenceArgs>
 
-const REGIONS_ARGS = { assembly: true } as const
+interface RegionsArgs {
+  assembly: AssemblyConfig
+}
 
-const CANONICAL_NAMES_ARGS = { assembly: true, refNames: true } as const
+const REGIONS_ARGS = { assembly: true } satisfies ArgKeys<RegionsArgs>
+
+interface CanonicalNamesArgs {
+  assembly?: AssemblyConfig
+  refNames: string | string[]
+}
+
+const CANONICAL_NAMES_ARGS = {
+  assembly: true,
+  refNames: true,
+} satisfies ArgKeys<CanonicalNamesArgs>
 
 /**
  * The longest column of each table in `result`, a table being an object of
@@ -683,13 +709,7 @@ export function createTablesEngine() {
     fileRegions: call(
       'fileRegions',
       FILE_REGIONS_ARGS,
-      async ({
-        adapterConfig,
-        assembly,
-      }: {
-        adapterConfig: Record<string, unknown>
-        assembly?: AssemblyConfig
-      }) =>
+      async ({ adapterConfig, assembly }: FileRegionsArgs) =>
         fileRegions(
           pluginManager,
           adapterConfig,
@@ -768,15 +788,7 @@ export function createTablesEngine() {
     sequence: call(
       'sequence',
       SEQUENCE_ARGS,
-      async ({
-        assembly,
-        region,
-        ...given
-      }: {
-        sequenceAdapter?: Record<string, unknown>
-        region: TablesRegion
-        assembly?: AssemblyConfig
-      }) => {
+      async ({ assembly, region, ...given }: SequenceArgs) => {
         const args = { ...given, regions: [region] }
         const { sequenceAdapter, regions } = assembly
           ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
@@ -803,7 +815,7 @@ export function createTablesEngine() {
     regions: call(
       'regions',
       REGIONS_ARGS,
-      async ({ assembly }: { assembly: AssemblyConfig }) => {
+      async ({ assembly }: RegionsArgs) => {
         const { regions, canonical } = await assemblyOf(assembly)
         return {
           refName: regions.map(r => r.refName),
@@ -822,13 +834,7 @@ export function createTablesEngine() {
     canonicalNames: call(
       'canonicalNames',
       CANONICAL_NAMES_ARGS,
-      async ({
-        assembly,
-        refNames,
-      }: {
-        assembly?: AssemblyConfig
-        refNames: string | string[]
-      }) => {
+      async ({ assembly, refNames }: CanonicalNamesArgs) => {
         if (!assembly) {
           throw new Error(
             'canonicalNames resolves names through an assembly; pass one',
