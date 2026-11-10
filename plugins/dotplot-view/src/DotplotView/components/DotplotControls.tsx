@@ -115,7 +115,7 @@ const DotplotControls = observer(function DotplotControls({
                 : 'Zooms both axes to show the same total bp, whatever their widths.',
           },
           {
-            label: 'Show all regions',
+            label: 'Zoom out fully',
             onClick: () => {
               model.showAllRegions()
             },
