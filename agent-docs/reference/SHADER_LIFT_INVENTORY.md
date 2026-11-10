@@ -125,7 +125,7 @@ is no longer shared with anything.
 | `armLocalPx` | tests only — `chevronStroke.test.ts` |
 | `arrowCoverage` | tests only — `arrowCoverage.test.ts` |
 | `arrowReachPx` | tests only — `arrowCoverage.test.ts` |
-| `bitField` | nothing |
+| `bitField` | tests only — `mapqRampParity.test.ts`, `packReadSegments.test.ts` |
 | `chevronCornerPx` | tests only — `chevronStroke.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
