@@ -62,7 +62,7 @@ test('the variant track menu names its controls generically', async () => {
 
   const labels = labelsIn(display.trackMenuItems())
   expect(labels).toEqual(
-    expect.arrayContaining(['Show', 'Records', 'Color by']),
+    expect.arrayContaining(['Show', 'Show records', 'Color by']),
   )
 
   // ...and no control row is renamed by the noun
