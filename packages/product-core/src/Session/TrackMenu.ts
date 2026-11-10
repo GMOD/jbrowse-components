@@ -148,6 +148,11 @@ export function trackActionItems<C extends { trackId: string }>({
             label: 'Delete track',
             icon: DeleteIcon,
             disabled: !canEdit || isRefSeq,
+            disabledHelpText: isRefSeq
+              ? 'A reference sequence track cannot be deleted.'
+              : canEdit
+                ? undefined
+                : 'This track is part of the config, which only an admin can edit. A copy of it can be deleted.',
             onClick: () => {
               session.deleteTrackConf(config)
             },

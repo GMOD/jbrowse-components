@@ -48,6 +48,10 @@ export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
             all: 'All junctions',
             only: 'Only non-canonical junctions',
             exclude: 'Hide non-canonical junctions',
+            helpText:
+              'Junctions whose splice-site dinucleotides, read off the ' +
+              'reference, are none of GT-AG, GC-AG or AT-AC. A junction whose ' +
+              'ends were not read counts as canonical.',
           },
           model.junctionFilter.nonCanonical,
           nonCanonical => {

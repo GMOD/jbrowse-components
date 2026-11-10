@@ -1,6 +1,7 @@
 import { trackActionItems } from './TrackMenu.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 // The predicate this check asks is `@jbrowse/core/util`'s, and its own cases are
@@ -100,5 +101,41 @@ describe('the copy actions on a temporary-assembly track', () => {
   test('leave Settings and Delete alone', () => {
     expect(labelled(SEGMENTS, 'Settings')).toBeTruthy()
     expect(labelled(SEGMENTS, 'Delete track')).toHaveProperty('disabled', false)
+  })
+})
+
+describe('Delete track', () => {
+  function deleteRow(config: TrackConfigEntry, canEdit: boolean) {
+    return trackActionItems({
+      session: {
+        ...SESSION,
+        editConfiguration: () => {},
+        publishTrackConf: () => undefined,
+        deleteTrackConf: () => {},
+      },
+      config,
+      canEdit,
+      makeCopy: () => ({ trackId: 'copy' }),
+    }).find(i => 'label' in i && i.label === 'Delete track')
+  }
+
+  test('says why it is refused on a reference sequence track', () => {
+    expect(
+      deleteRow({ ...HG38, type: 'ReferenceSequenceTrack' }, true),
+    ).toMatchObject({
+      disabled: true,
+      disabledHelpText: expect.stringContaining('reference sequence'),
+    })
+  })
+
+  test('says why it is refused without edit rights', () => {
+    expect(deleteRow(HG38, false)).toMatchObject({
+      disabled: true,
+      disabledHelpText: expect.stringContaining('admin'),
+    })
+  })
+
+  test('carries no tooltip when it is offered', () => {
+    expect(deleteRow(HG38, true)).toHaveProperty('disabledHelpText', undefined)
   })
 })

@@ -28,4 +28,15 @@ describe('undoMenuItem / redoMenuItem', () => {
     clickOf(redoMenuItem(history))()
     expect(redo).toHaveBeenCalledTimes(1)
   })
+
+  it('disables each row while its history is empty', () => {
+    const history = {
+      canUndo: false,
+      canRedo: true,
+      undo: jest.fn(),
+      redo: jest.fn(),
+    }
+    expect(undoMenuItem(history)).toMatchObject({ disabled: true })
+    expect(redoMenuItem(history)).toMatchObject({ disabled: false })
+  })
 })

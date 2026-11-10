@@ -3,7 +3,6 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { toLocale } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
@@ -20,7 +19,12 @@ import {
   withLd,
   withoutLd,
 } from './ldPlot.ts'
-import { parseChrBp, placeIndexSnp } from './parseChrBp.ts'
+import {
+  chrBpLabel,
+  indexSnpLabel,
+  parseChrBp,
+  placeIndexSnp,
+} from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -327,7 +331,7 @@ export function stateModelFactory(
                       },
                       {
                         label: self.settledTopSnp
-                          ? `Set index SNP to top hit (${self.settledTopSnp})`
+                          ? `Set index SNP to top hit (${indexSnpLabel(self.settledTopSnp)})`
                           : 'Set index SNP to top hit',
                         disabled:
                           !self.joinsLd ||
@@ -358,7 +362,7 @@ export function stateModelFactory(
             placesEachSnp(mark, self.sharedSteps)
               ? [
                   {
-                    label: `Color by LD to ${hit.refName}:${toLocale(hit.start + 1)}`,
+                    label: `Color by LD to ${chrBpLabel({ refName: hit.refName, bp: hit.start + 1 })}`,
                     onClick: () => {
                       self.colorByLdToHit(hit)
                     },

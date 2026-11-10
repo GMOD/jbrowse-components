@@ -75,8 +75,8 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
 
 // One checkbox per row of each categorical or identity color key, which
 // hides the row's categories from the plot and the hover. A key too long to
-// list offers none, and the submenu stays while anything is hidden, so a
-// hide always has its way back.
+// list offers no submenu; "Show all categories" under Filter by undoes its
+// hides.
 function categoriesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   const rows = self.legendSections.flatMap(section => {
     const { scale } = section
@@ -94,20 +94,16 @@ function categoriesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     )
   })
   const hidden = self.activeHiddenCategories.length
-  const toggles =
-    rows.length > MAX_LEGEND_ENTRIES
-      ? []
-      : rows.map(({ field, entry }) =>
-          checkboxItem(entry.label, !entry.hidden, () => {
-            self.toggleCategory(field, entry.values ?? [entry.value])
-          }),
-        )
-  return toggles.length > 0 || hidden > 0
+  return rows.length > 0 && rows.length <= MAX_LEGEND_ENTRIES
     ? [
         {
           label: hidden > 0 ? `Categories (${hidden} hidden)` : 'Categories',
           icon: LegendToggleIcon,
-          subMenu: toggles,
+          subMenu: rows.map(({ field, entry }) =>
+            checkboxItem(entry.label, !entry.hidden, () => {
+              self.toggleCategory(field, entry.values ?? [entry.value])
+            }),
+          ),
         },
       ]
     : []

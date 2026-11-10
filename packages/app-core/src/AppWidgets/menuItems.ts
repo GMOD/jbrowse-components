@@ -129,6 +129,7 @@ export function undoMenuItem(history: HistoryManager): MenuItem {
   return {
     label: 'Undo',
     icon: UndoIcon,
+    disabled: !history.canUndo,
     onClick: () => {
       if (history.canUndo) {
         history.undo()
@@ -141,6 +142,7 @@ export function redoMenuItem(history: HistoryManager): MenuItem {
   return {
     label: 'Redo',
     icon: RedoIcon,
+    disabled: !history.canRedo,
     onClick: () => {
       if (history.canRedo) {
         history.redo()

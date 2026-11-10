@@ -5,7 +5,11 @@ import {
   junctionFilterOf,
   withFields,
 } from '../../shared/alignmentsFilter.ts'
-import { getSashimiPlacementItems, sashimiShowItems } from './sashimi.ts'
+import {
+  getJunctionFilterItems,
+  getSashimiPlacementItems,
+  sashimiShowItems,
+} from './sashimi.ts'
 
 import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
@@ -91,5 +95,13 @@ describe('sashimi placement row', () => {
       'Below coverage',
     )
     expect(model.sashimiPlacement).toBe('down')
+  })
+})
+
+describe('junction filter row', () => {
+  test('carries its help text on the category row', () => {
+    const model = { ...makeModel(), showSashimi: true, setFilterFields() {} }
+    const [row] = getJunctionFilterItems(model)
+    expect(row && 'helpText' in row ? row.helpText : undefined).toMatch(/GT-AG/)
   })
 })

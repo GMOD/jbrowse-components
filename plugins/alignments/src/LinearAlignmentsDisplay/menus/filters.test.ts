@@ -1,4 +1,7 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { mergeFilter } from '../../shared/alignmentsFilter.ts'
+import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 import { declaredFiltersOf } from '../dialogs/layerFilters.ts'
 import { getFiltersMenuItems } from './filters.ts'
 
@@ -75,4 +78,23 @@ test('a floor change keeps the ceiling written on the same field', () => {
       { field: 'mapq', lte: 50 },
     ],
   })
+})
+
+test('each read-category row carries its help text', () => {
+  const model = {
+    featureNoun: 'read',
+    filterPredicates: mergeFilter([]),
+    declaredFilters: declaredFiltersOf([], []),
+    setFilterFields: jest.fn(),
+    filterNarrowing: () => ({ count: 0, clear: () => {} }),
+  }
+  const group = getFiltersMenuItems(model, { readCategories: true }).find(
+    i => 'subMenu' in i,
+  )
+  const rows = group && 'subMenu' in group ? resolveSubMenu(group) : []
+  const categories = READ_CATEGORIES.filter(c => c.key !== 'alone')
+  for (const { noun, helpText } of categories) {
+    const row = rows.find(i => 'label' in i && i.label === noun)
+    expect(row && 'helpText' in row ? row.helpText : undefined).toBe(helpText)
+  }
 })

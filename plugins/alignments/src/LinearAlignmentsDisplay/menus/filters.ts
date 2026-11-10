@@ -68,6 +68,7 @@ function readCategoryItem(
       only: spec.only,
       exclude: spec.exclude,
       all: 'All reads',
+      helpText: spec.helpText,
     },
     categoryOf(model.filterPredicates, spec.key),
     value => {

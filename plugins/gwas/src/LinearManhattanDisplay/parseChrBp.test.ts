@@ -1,4 +1,4 @@
-import { parseChrBp } from './parseChrBp.ts'
+import { chrBpLabel, indexSnpLabel, parseChrBp } from './parseChrBp.ts'
 
 test('parses a plain chr:bp locus', () => {
   expect(parseChrBp('chr2:100')).toEqual({ refName: 'chr2', bp: 100 })
@@ -28,4 +28,12 @@ test('a non-integer position is rejected', () => {
 
 test('an empty refName (leading colon) is rejected', () => {
   expect(parseChrBp(':100')).toBeUndefined()
+})
+
+test('a locus label carries thousands commas, as the right-click row shows', () => {
+  expect(chrBpLabel({ refName: 'chr2', bp: 191_958_656 })).toBe(
+    'chr2:191,958,656',
+  )
+  expect(indexSnpLabel('chr2:191958656')).toBe('chr2:191,958,656')
+  expect(indexSnpLabel('rs12345')).toBe('rs12345')
 })

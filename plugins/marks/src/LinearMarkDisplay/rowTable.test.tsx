@@ -533,6 +533,24 @@ test('hiding a key category drops its spans from the plot and the hover, and fet
   expect(display.hiddenCategories).toBeUndefined()
 })
 
+test('a key too long to list offers no Categories submenu, even with a hide', () => {
+  const many = features(
+    Array.from({ length: 40 }, (_, i) => ({
+      source: 'mom',
+      tissue: `t${i}`,
+      start: i * 10,
+      end: i * 10 + 5,
+    })),
+  )
+  const display = loaded({ rows: 'source' }, TISSUE_RECTS, many)
+  display.toggleCategory('tissue', ['t0'])
+  expect(display.activeHiddenCategories).toHaveLength(1)
+  expect(menuLabels(display)).toContain('  Show all categories')
+  expect(
+    menuLabels(display).filter(label => label.startsWith('Categories')),
+  ).toEqual([])
+})
+
 test('under a row focus a hidden category keeps its key row, its way back', () => {
   const display = loaded({ rows: 'source' }, TISSUE_RECTS)
   display.setRowFocus(['mom', 'dad', 's2'])

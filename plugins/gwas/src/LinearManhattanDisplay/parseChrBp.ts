@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, toLocale } from '@jbrowse/core/util'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -17,6 +17,17 @@ export function parseChrBp(
   return /^\d+$/.test(posStr) && bp >= 1
     ? { refName: indexSnp.slice(0, colon), bp }
     : undefined
+}
+
+/** A `chr:bp` locus as a menu row prints it, its position with thousands commas. */
+export function chrBpLabel({ refName, bp }: { refName: string; bp: number }) {
+  return `${refName}:${toLocale(bp)}`
+}
+
+/** A `chr:bp` index SNP as a menu row prints it, or as given where it names no locus. */
+export function indexSnpLabel(indexSnp: string) {
+  const locus = parseChrBp(indexSnp)
+  return locus ? chrBpLabel(locus) : indexSnp
 }
 
 /**
