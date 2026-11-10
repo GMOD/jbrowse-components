@@ -521,12 +521,18 @@ samtools index ecoli_e146_ont.bam
   "trackId": "ecoli_e146_ont",
   "name": "E146 nanopore reads (vs K12)",
   "uri": "ecoli_e146_ont.bam",
-  "assemblyNames": ["K12"]
+  "assemblyNames": ["K12"],
+  "displayDefaults": {
+    "unit": "chain",
+    "facet": "split",
+    "encoding": { "color": "insertSizeAndOrientation" }
+  }
 }
 ```
 
-Type `chr:2,554,000-2,570,000`. Reads long enough to cross the trough show it as
-a single labelled deletion.
+Type `chr:2,554,000-2,570,000`. `facet: "split"` puts the reads with a
+supplementary alignment in their own section, linked across the trough. The
+other reads show it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from another isolate over one K12 depth trough, with the graph's depth curve and MAF below." src="/img/pangenome/long_reads.png" />
 

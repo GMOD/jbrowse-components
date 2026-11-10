@@ -752,7 +752,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text' as const,
-        text: 'GFA SM:Z: tag, per segment',
+        text: 'GFA SB:H: bitmask, per segment',
         fontSize: 15,
         anchor: {
           trackId: PGGB_CARRIAGE_TRACK,

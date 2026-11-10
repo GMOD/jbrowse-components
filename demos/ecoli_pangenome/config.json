@@ -596,7 +596,7 @@
           }
         }
       ],
-      "description": "The same segments as the track above, colored by how many haplotypes walk each one. gfa-to-tabix records the carriers as an SM:Z: tag while it walks the graph's paths, so membership travels with the index. The depth track answers the same question as a smoothed count over windows; this answers it per segment, and clicking one lists the strains by name."
+      "description": "The same segments as the track above, colored by how many haplotypes walk each one. gfa-to-tabix records the carriers as an SB:H: bitmask while it walks the graph's paths, so membership travels with the index. The depth track answers the same question as a smoothed count over windows; this answers it per segment, and clicking one lists the strains by name."
     },
     {
       "type": "SyntenyTrack",
