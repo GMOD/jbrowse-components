@@ -55,7 +55,8 @@ The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies plus T2T builds of C57BL/6J and CAST/EiJ, as UCSC GenArk rehosts
 them.
 
-Nothing to download: the track configs below read the index files by URL.
+Nothing to download: the track configs below read the index files by URL, and
+the ranking step streams the bubbles file.
 [Building a minigraph graph](#building-a-minigraph-graph-from-the-strain-assemblies)
 builds the files for strains of your own.
 
@@ -116,11 +117,13 @@ Ranked by that count, the bubbles that overlap a gene include the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
 wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
 intron at `chr11:34,516,045-34,560,497`. Rank the bubbles that fit in a 100 kb
-window:
+window, streaming the hosted file, or swap in the `.bubbles.bed.gz` your own
+build wrote:
 
 ```bash
 # column 4: the bubble's segment count; the densest come first
-gzip -dc graph.bubbles.bed.gz \
+curl -s https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz \
+  | gzip -dc \
   | awk -v OFS='\t' '$3 - $2 < 100000 { print $1, $2, $3, $4 }' \
   | sort -t "$(printf '\t')" -k4,4nr | head -20
 ```

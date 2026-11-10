@@ -334,7 +334,7 @@ equivalent:
 
   minigraph-cactus, a rebuild. Writes per-haplotype W lines, so carriage, a
   base-level graph, a VCF and a GBZ all follow from one pass, and
-  gfa-to-tabix emits the five files above with SM:Z: on them. Multi-day
+  gfa-to-tabix emits the five files above with SB:H: on them. Multi-day
   on one box. This is what makes mouse a peer of demos/hprc rather than a
   structural-resolution sibling.
 NOTES

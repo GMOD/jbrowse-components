@@ -273,7 +273,7 @@ Published variants the callset reproduces, carriers read off its GT columns:
 
 GOING BASE-LEVEL. The tarball's `pggb` and `cactus` sets state per-assembly
 walks, so gfa-to-tabix over one of them emits the same five files WITH the
-SM:Z: carriage tag that rGFA cannot express, and `vg deconstruct` a base-level
+SB:H: carriage bits that rGFA cannot express, and `vg deconstruct` a base-level
 VCF where this one stops at structure. That would make the bovine set a peer of
 demos/hprc rather than a structural-resolution sibling, and it needs no new
 download:
