@@ -5,6 +5,9 @@ import path from 'node:path'
 import { unified } from '@astrojs/markdown-remark'
 import icon from 'astro-icon'
 import { defineConfig, fontProviders } from 'astro/config'
+import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import { unified as remarkProcessor } from 'unified'
 
 import { emitRawMarkdown, rawDocPages } from './src/lib/emit-raw-markdown.ts'
 import rehypeBaseUrls from './src/lib/rehype-base-urls.ts'
@@ -56,10 +59,14 @@ function markdownWorkerPath() {
 }
 
 // Raw `/docs/<slug>.md` files for LLM/agent consumption and the copy button
-// (see src/lib/emit-raw-markdown.ts and the /llms.txt index).
+// (see src/lib/emit-raw-markdown.ts and the /llms.txt index). The parser is
+// built here from static imports: this config runs in Vite's module runner,
+// which is closed by `astro:build:done`, so an `import()` from the hook fails.
 function emitRawMarkdownIntegration() {
   const docsDir = new URL('./docs', import.meta.url).pathname
   const origin = `${SITE}${BASE}`
+  const processor = remarkProcessor().use(remarkParse).use(remarkGfm)
+  const parse = markdown => processor.parse(markdown)
   const route = new RegExp(`^${BASE}/docs/(.+)\\.md$`)
   return {
     name: 'emit-raw-markdown',
@@ -68,7 +75,7 @@ function emitRawMarkdownIntegration() {
         server.middlewares.use(async (req, res, next) => {
           const slug = route.exec(req.url?.split('?')[0] ?? '')?.[1]
           const md = slug
-            ? (await rawDocPages({ docsDir, origin })).get(slug)
+            ? (await rawDocPages({ docsDir, origin, parse })).get(slug)
             : undefined
           if (md === undefined) {
             next()
@@ -83,6 +90,7 @@ function emitRawMarkdownIntegration() {
           docsDir,
           distDir: dir instanceof URL ? dir.pathname : dir,
           origin,
+          parse,
         })
       },
     },

@@ -36,12 +36,16 @@ function parseFrontmatter(raw: string) {
   return { data, body: match ? match[2]! : raw }
 }
 
+type ParseMarkdown = (markdown: string) => Root
+
 export async function rawDocPages({
   docsDir,
   origin,
+  parse,
 }: {
   docsDir: string
   origin: string
+  parse: ParseMarkdown
 }) {
   const pages = []
   const titles = new Map<string, string>()
@@ -56,7 +60,6 @@ export async function rawDocPages({
       pages.push({ rel, body, slug, title })
     }
   }
-  const parse = await markdownParser()
   return new Map(
     pages.map(page => [
       page.slug,
@@ -69,19 +72,6 @@ export async function rawDocPages({
   )
 }
 
-// Loaded on first use because remark is ESM-only, which jest cannot require,
-// and the page function below is what the tests exercise.
-async function markdownParser() {
-  const [{ unified }, { default: remarkParse }, { default: remarkGfm }] =
-    await Promise.all([
-      import('unified'),
-      import('remark-parse'),
-      import('remark-gfm'),
-    ])
-  const processor = unified().use(remarkParse).use(remarkGfm)
-  return (markdown: string) => processor.parse(markdown)
-}
-
 export function rawPageMarkdown(
   { rel, body, slug, title }: { rel: string; body: string; slug: string; title: string },
   {
@@ -90,7 +80,7 @@ export function rawPageMarkdown(
     titleOf,
   }: {
     origin: string
-    parse: (markdown: string) => Root
+    parse: ParseMarkdown
     titleOf: (url: string) => string | undefined
   },
 ) {
@@ -109,12 +99,14 @@ export async function emitRawMarkdown({
   docsDir,
   distDir,
   origin,
+  parse,
 }: {
   docsDir: string
   distDir: string
   origin: string
+  parse: ParseMarkdown
 }) {
-  for (const [slug, md] of await rawDocPages({ docsDir, origin })) {
+  for (const [slug, md] of await rawDocPages({ docsDir, origin, parse })) {
     const out = path.join(distDir, 'docs', `${slug}.md`)
     await fs.mkdir(path.dirname(out), { recursive: true })
     await fs.writeFile(out, md)
