@@ -14,7 +14,7 @@ import {
   connectorStrokePx,
   connectorTangent,
 } from '../shaders/connectorMark.js.generated.ts'
-import { regionPx } from './linkRegion.ts'
+import { linkedRegion, regionPx } from './linkRegion.ts'
 
 import type { ConnectorChannels, ConnectorParams } from './connectorMark.ts'
 
@@ -65,7 +65,7 @@ export function placeConnector(
   const { regions } = params
   const far = c.x2Region[i]!
   const ownRegion = regions[own]
-  const farRegion = regions[far]
+  const farRegion = linkedRegion(regions, far)
   if (!ownRegion || !farRegion) {
     return false
   }

@@ -146,6 +146,22 @@ test('a far end on no region the table holds draws and answers nothing', () => {
   void ctx
 })
 
+test('a far end past the shader region table places nowhere, as the shader does', () => {
+  const many = {
+    ...params,
+    regions: Array.from({ length: 257 }, (_, i) => ({
+      anchorPx: i * 1000,
+      anchorBp: 0,
+      signedPxPerBp: 1,
+    })),
+  }
+  const c = channels([
+    { x: 100, x2: 0, region: 256, row: 10, row2: 10, bits: CONNECTOR_STRAIGHT },
+  ])
+  expect(connectorEnds(c, block, many, 0)).toBeUndefined()
+  expect(hit(c, block, frame, many, 100, 105, [0], 25)).toBeUndefined()
+})
+
 function paint(c: ConnectorChannels) {
   const { ctx } = recordingContext()
   const dashes: number[][] = []

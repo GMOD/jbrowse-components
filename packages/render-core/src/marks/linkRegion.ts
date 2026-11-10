@@ -1,3 +1,5 @@
+import { LINK_MAX_REGIONS } from '../shaders/linkMark.consts.generated.ts'
+
 /**
  * One displayed region as a foot places through it: the canvas px of an
  * anchor bp chosen near the view, so a foot's offset from it stays inside
@@ -21,4 +23,9 @@ export function regionPx(
 ) {
   const r = regions[index]!
   return r.anchorPx + (bp - r.anchorBp) * r.signedPxPerBp
+}
+
+/** Displayed region `index` as a far end finds it: none past the shader's table. */
+export function linkedRegion(regions: readonly LinkRegion[], index: number) {
+  return index < LINK_MAX_REGIONS ? regions[index] : undefined
 }

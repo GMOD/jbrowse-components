@@ -35,7 +35,7 @@ import {
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
-import { regionPx } from './linkRegion.ts'
+import { linkedRegion, regionPx } from './linkRegion.ts'
 import { nearestInk } from './markHit.ts'
 import {
   colorBits,
@@ -285,10 +285,9 @@ function reachesX(
     return false
   }
   const x = regionPx(g.regions, g.own, c.x[i]!)
-  const x2 =
-    region < g.regions.length && region < LINK_MAX_REGIONS
-      ? regionPx(g.regions, region, c.x2[i]!)
-      : x
+  const x2 = linkedRegion(g.regions, region)
+    ? regionPx(g.regions, region, c.x2[i]!)
+    : x
   const pad = g.xPadPx + (c.feet?.[i] ? g.footPx : 0)
   return x2 > x
     ? x2 + pad >= lo && x - pad <= hi
@@ -371,7 +370,7 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
     g.kind = KIND_NONE
     return
   }
-  if (region >= regions.length || region >= LINK_MAX_REGIONS) {
+  if (!linkedRegion(regions, region)) {
     g.kind = KIND_STEM
     g.x2Px = g.xPx
     g.rx = 0
