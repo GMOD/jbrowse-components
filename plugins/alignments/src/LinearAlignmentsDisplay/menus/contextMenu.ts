@@ -30,7 +30,11 @@ import {
   splitAlignmentSegments,
   splitReadLaunch,
 } from '../../shared/splitAlignment.ts'
-import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
+import {
+  getCigarTypeLabel,
+  getCigarTypeNoun,
+  isInterbaseType,
+} from '../../shared/types.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
@@ -296,7 +300,7 @@ export function getHitMenuItems(
           block,
           label: typeLabel,
           sortLabel: isInterbase
-            ? `Sort by ${typeLabel.toLowerCase()} at position`
+            ? `Sort by ${getCigarTypeNoun(cigarHit.type)} at position`
             : 'Sort by base at position',
           sortField: isInterbaseType(cigarHit.type) ? cigarHit.type : 'base',
           // An interbase mark IS its position, so the sort anchors on the mark.
@@ -311,7 +315,7 @@ export function getHitMenuItems(
           // feature-level "Open feature details" reads as the CIGAR op the
           // cursor is on rather than as an unexplained second kind of detail. A
           // mismatch is 1bp by construction and says nothing.
-          detailsLabel: `Open ${typeLabel.toLowerCase()} details${
+          detailsLabel: `Open ${getCigarTypeNoun(cigarHit.type)} details${
             cigarHit.length > 1
               ? ` (${cigarHit.length.toLocaleString()} bp)`
               : ''
@@ -346,10 +350,10 @@ export function getHitMenuItems(
           self,
           block,
           label: `Coverage ${typeLabel}`,
-          sortLabel: `Sort by ${typeLabel.toLowerCase()} at position`,
+          sortLabel: `Sort by ${getCigarTypeNoun(indicatorHit.indicatorType)} at position`,
           sortField: indicatorHit.indicatorType,
           position: indicatorHit.position,
-          detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
+          detailsLabel: `Open ${getCigarTypeNoun(indicatorHit.indicatorType)} details`,
           openDetails: () => {
             openIndicatorWidget(
               self,

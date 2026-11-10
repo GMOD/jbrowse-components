@@ -60,7 +60,7 @@ export function showRowLabelsMenuItem(self: RowLabelsMenuModel): MenuItem {
     self.setShowRowLabels,
     {
       helpText:
-        'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
+        'Below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
     },
   )
 }

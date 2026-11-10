@@ -75,7 +75,7 @@ export const configVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'About track', hidden: true },
       { type: 'click', selector: '[aria-label="JBrowse"]' },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'waitForText', text: 'Track menu', hidden: true },
       // The page's figure is a still of this frame, so the hold stays short.
       { type: 'delay', ms: 1200 },
       {

@@ -33,6 +33,25 @@ export type ColorSchemeName = (typeof COLOR_SCHEMES)[number]
 
 /**
  * #api
+ * The name a menu row shows for each scheme.
+ */
+export const COLOR_SCHEME_LABELS: Record<ColorSchemeName, string> = {
+  viridis: 'Viridis',
+  magma: 'Magma',
+  inferno: 'Inferno',
+  cividis: 'Cividis',
+  juicebox: 'Juicebox',
+  fall: 'Fall',
+  reds: 'Reds',
+  blues: 'Blues',
+  redblue: 'Red-blue',
+  purpleorange: 'Purple-orange',
+  redgreyblue: 'Red-grey-blue',
+  redyellowblue: 'Red-yellow-blue',
+}
+
+/**
+ * #api
  * The ramp a continuous scale samples while it names no `range` and no
  * `scheme`, so a declaration spelling it out and one leaving it unset resolve
  * alike.

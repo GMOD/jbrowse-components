@@ -184,9 +184,9 @@ export const epigenomicsVideos: VideoSpec[] = [
       },
       // The pointer is where the dialog's button was, over the painting, which
       // draws a crosshair and a feature tooltip under it; the click also blurs
-      // the menu icon, whose "Track settings" tooltip would outlive its menu.
+      // the menu icon, whose "Track menu" tooltip would outlive its menu.
       { type: 'click', selector: WORDMARK },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'waitForText', text: 'Track menu', hidden: true },
       {
         type: 'delay',
         ms: 4000,

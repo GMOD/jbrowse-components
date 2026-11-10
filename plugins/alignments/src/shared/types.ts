@@ -378,3 +378,10 @@ const CIGAR_TYPE_LABELS: Record<string, string> = {
 export function getCigarTypeLabel(type: string) {
   return CIGAR_TYPE_LABELS[type] ?? type
 }
+
+/** The label mid-sentence: words lowercased, acronyms such as SNP kept. */
+export function getCigarTypeNoun(type: string) {
+  return getCigarTypeLabel(type).replaceAll(/\b[A-Z][a-z]+/g, word =>
+    word.toLowerCase(),
+  )
+}

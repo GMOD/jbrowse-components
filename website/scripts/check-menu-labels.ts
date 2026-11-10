@@ -121,8 +121,8 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
-// write "**Track menu → Filter by**" to say *where* to click, and no string
-// in the source says "Track menu". Only ever the first segment. Listed instead
+// write "**Track menu → Filter by**" to say *where* to click, and no menu
+// row is named "Track menu". Only ever the first segment. Listed instead
 // of left to chance — most of them (`Add`, `File`, `Tools`) do match some
 // unrelated literal somewhere and were passing by accident, which is not the
 // same as being checked.

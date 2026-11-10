@@ -56,7 +56,7 @@ export const repeatVideos: VideoSpec[] = [
       // settings" tooltip stays up over the first lane; a click on the logo
       // blurs it.
       { type: 'click', selector: '[aria-label="JBrowse"]' },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'waitForText', text: 'Track menu', hidden: true },
       {
         type: 'delay',
         ms: 4000,

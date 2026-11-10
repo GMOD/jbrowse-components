@@ -34,7 +34,7 @@ export const TrackLabelCloseButton = observer(function TrackLabelCloseButton({
     <IconButton
       onClick={() => view.hideTrack(track.trackId)}
       className={classes.iconButton}
-      title="close this track"
+      title="Close track"
       data-testid={`track-close-${track.trackId}`}
     >
       <CloseIcon fontSize="small" />
@@ -52,7 +52,7 @@ export const TrackLabelMinimizeButton = observer(
           track.setMinimized(!minimized)
         }}
         className={classes.iconButton}
-        title={minimized ? 'restore track' : 'minimize track'}
+        title={minimized ? 'Restore track' : 'Minimize track'}
         // one testid whichever way it is pointing, so a test that minimizes and
         // restores does not have to know which state it is in to find it
         data-testid={`track-minimize-${track.trackId}`}

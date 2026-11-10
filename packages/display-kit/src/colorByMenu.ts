@@ -1,13 +1,16 @@
 import { makeRadioSubMenu, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst } from '@jbrowse/core/util'
-import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import {
+  COLOR_SCHEMES,
+  COLOR_SCHEME_LABELS,
+} from '@jbrowse/core/util/colorSchemes'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import type { MenuItem, SubMenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
-  scheme => [scheme, capitalizeFirst(scheme)] as const,
+  scheme => [scheme, COLOR_SCHEME_LABELS[scheme]] as const,
 )
 
 /**

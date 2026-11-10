@@ -60,7 +60,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       className={classes.menuButton}
       data-testid="track_menu_icon"
       data-trackid={track.trackId}
-      tooltip="Track settings"
+      tooltip="Track menu"
     >
       <MoreVertIcon fontSize="small" />
     </CascadingMenuButton>

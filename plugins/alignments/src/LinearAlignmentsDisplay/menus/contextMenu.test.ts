@@ -703,7 +703,7 @@ describe('getHitMenuItems with sort: false', () => {
       { sort: false },
     )
     expect(items.map(i => (i as { label?: string }).label)).toEqual([
-      'Open snp/mismatch details',
+      'Open SNP/mismatch details',
     ])
     expect(items.every(i => !('subMenu' in i))).toBe(true)
   })
