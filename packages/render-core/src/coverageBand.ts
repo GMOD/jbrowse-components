@@ -10,9 +10,6 @@ import type { InstancePass } from './instancePass.ts'
 
 export type { CoverageBandBuffers } from './coverageBandBuffers.ts'
 
-export const COVERAGE_BAND_UNIFORMS_SIZE_BYTES =
-  coverageBarShader.UNIFORMS_SIZE_BYTES
-
 /**
  * The fifth buffer, base modifications stacked in the same bars. Separate
  * because only one producer emits it — a MAF alignment carries no modification
