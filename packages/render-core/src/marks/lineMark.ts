@@ -580,8 +580,7 @@ export function traceCenter(
       const bandTop = bandTopPx(g, slot)
       const colorY = colorYInBand(g, bandTop, y[i]!)
       const cy = clampToBand(g, bandTop, colorY)
-      const linked =
-        linksBefore(s, i) && rowSlot(row, i - 1, table) !== undefined
+      const linked = linksBefore(s, i)
       if (!linked) {
         pen.moveTo(cx, cy, colorY)
       }
@@ -796,8 +795,7 @@ function centerInk(
   const s = spansOf(c)
   const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
   const cy = valueYPx(g, y[i]!, slot)
-  const linked =
-    linksBefore(s, i) && rowSlot(row, i - 1, params.rowTable) !== undefined
+  const linked = linksBefore(s, i)
   const px = linked ? (g.bpToPx(x[i - 1]!) + g.bpToPx(x2[i - 1]!)) / 2 : cx
   const py = linked ? valueYPx(g, y[i - 1]!, slot) : cy
   return box(px, cx, py, cy, params.lineWidth / 2)
