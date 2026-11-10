@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Reproducibly build the four-strain E. coli all-vs-all synteny view shown in
+# Reproducibly build the five-strain E. coli all-vs-all synteny view shown in
 # website/docs/tutorials/allvsall_synteny.md, then wire up a runnable JBrowse.
 #
 # It downloads five complete NCBI RefSeq E. coli assemblies (genome + GFF3),
@@ -87,7 +87,7 @@ STRAINS
 # adapter wants -- every cross-strain pair once, plus each strain's own
 # paralogy, which is what the K12-vs-K12 lane in the one-vs-all figures draws.
 for strain in $STRAINS; do
-  awk -v s="$strain" '/^>/{print ">" s "#1#chr"; next} {print}' "$strain.fa"
+  awk -v s="$strain" '/^>/{print ">" s "#1#" substr($1, 2); next} {print}' "$strain.fa"
 done > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 

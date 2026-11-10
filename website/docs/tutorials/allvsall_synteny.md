@@ -86,14 +86,15 @@ names every sequence `sample#haplotype#contig`, e.g. `K12#1#chr`.
 The [script](#reproduce-it-end-to-end) reduces each assembly to one `chr`
 record. The JBrowse assemblies use the strain FASTAs as they are; only the
 concatenated copy minimap2 aligns has PanSN names, with haplotype `1`
-throughout:
+throughout. The loop keeps each record's name as the contig, so a strain FASTA
+with several contigs works the same way, and its assembly keeps those names:
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
-  # '>chr' -> '>K12#1#chr'
-  awk -v s="$strain" '/^>/{print ">" s "#1#chr"; next} {print}' "$strain.fa"
+  # '>chr' -> '>K12#1#chr', keeping each contig's own name
+  awk -v s="$strain" '/^>/{print ">" s "#1#" substr($1, 2); next} {print}' "$strain.fa"
 done > all.fa
 
 # -c: emit the base-level CIGAR the linear synteny view needs
