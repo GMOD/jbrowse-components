@@ -9,6 +9,7 @@ import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
+  groupByRowAttributeMenuItems,
   hiddenGroupsItems,
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
@@ -70,6 +71,7 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         rowCount: self.clusterableSources.length,
       },
     }),
+    ...groupByRowAttributeMenuItems(self, self.rowAttributeFields),
   ]
 }
 

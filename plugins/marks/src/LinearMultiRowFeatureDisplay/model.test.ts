@@ -8,6 +8,7 @@ import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
 import { keySettingOf } from '../LinearMarkDisplay/legend.ts'
 import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
 import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
+import { scanPlotFields } from '../LinearMarkDisplay/scanPlotFields.ts'
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
 import {
@@ -45,50 +46,94 @@ function labels(items: MenuItem[]) {
   return items.flatMap(i => ('label' in i ? [i.label] : []))
 }
 
-test('a painting rows on repClass, else an attribute few values apart before name, unless the adapter lists sources', () => {
-  expect(
-    multiRowPlot({
-      numeric: [],
-      categorical: [],
-      attributes: ['name', 'repClass'],
-    }),
-  ).toEqual({ marks: RECT_MARKS, rows: 'repClass' })
-  expect(
-    multiRowPlot({
-      numeric: [],
-      categorical: ['sample'],
-      attributes: ['name', 'sample'],
-    }).rows,
-  ).toBe('sample')
-  expect(
-    multiRowPlot({
-      numeric: [],
-      categorical: ['strand'],
-      attributes: ['name', 'strand'],
-    }).rows,
-  ).toBe('name')
-  expect(
-    multiRowPlot({ numeric: [], categorical: [], rows: 'source' }).rows,
-  ).toBe('source')
+function scan(records: Parameters<typeof features>[0]) {
+  return scanPlotFields(features(records), { listedSources: 0 })
+}
+
+// A painting as one scan window meets it: every sample's segment covers the
+// window, so `sample` takes a value per feature while the genotype each
+// segment is painted by takes two, shared across samples.
+const PAINTING_WINDOW = Array.from({ length: 30 }, (_, i) => ({
+  start: 0,
+  end: 5000 + i,
+  name: i % 2 ? 'B' : 'D',
+  genotype: i % 2 ? 'B' : 'D',
+  sample: `BXD${i}`,
+}))
+
+test('a painting rows on the field whose values each hold features that never overlap', () => {
+  const fields = scan(PAINTING_WINDOW)
+  expect(fields.categorical).toContain('genotype')
+  expect(fields.lane).toBe('sample')
+  expect(multiRowPlot(fields)).toEqual({ marks: RECT_MARKS, rows: 'sample' })
 })
 
-test('nameless features row on the first attribute few values apart, else draw one lane', () => {
-  expect(
-    multiRowPlot({
-      numeric: [],
-      categorical: ['sample', 'strand'],
-      attributes: ['sample', 'score', 'strand'],
-    }).rows,
-  ).toBe('sample')
-  const bed3 = multiRowPlot({
-    numeric: ['score'],
-    categorical: ['strand'],
-    attributes: ['score', 'strand'],
-  })
+test("a painting whose segments are each named rows on its samples, not the segments' names", () => {
+  const fields = scan([
+    { start: 0, end: 900, name: 'seg1', sample: 'mom' },
+    { start: 0, end: 700, name: 'seg2', sample: 'dad' },
+    { start: 0, end: 800, name: 'seg3', sample: 'kid' },
+  ])
+  expect(multiRowPlot(fields).rows).toBe('sample')
+})
+
+test('of two lane fields the one of fewer values gives the rows', () => {
+  const fields = scan([
+    { start: 0, end: 100, cellType: 'K562', segment: 'a' },
+    { start: 100, end: 200, cellType: 'K562', segment: 'b' },
+    { start: 0, end: 100, cellType: 'HepG2', segment: 'c' },
+    { start: 100, end: 200, cellType: 'HepG2', segment: 'd' },
+  ])
+  expect(multiRowPlot(fields).rows).toBe('cellType')
+})
+
+test('features that overlap within every field, or share one value, draw one lane', () => {
+  const overlapping = scan([
+    { start: 0, end: 500, name: 'peak', kind: 'a', strand: 1 },
+    { start: 100, end: 600, name: 'peak', kind: 'a', strand: -1 },
+    { start: 200, end: 700, name: 'peak', kind: 'b', strand: 1 },
+    { start: 300, end: 800, name: 'peak', kind: 'b', strand: -1 },
+  ])
+  expect(overlapping.lane).toBeUndefined()
+  const constant = scan([
+    { start: 0, end: 100, kind: 'peak', score: 3 },
+    { start: 200, end: 300, kind: 'peak', score: 9 },
+  ])
+  expect(constant.lane).toBeUndefined()
+  const bed3 = multiRowPlot(constant)
   expect(bed3.rows).toBeUndefined()
   const model = display({})
   model.applyDefaultPlot(bed3)
   expect(model.drawsRows).toBe(false)
+})
+
+test('a field some features lack, a number and a color column give no rows', () => {
+  const fields = scan([
+    { start: 0, end: 100, depth: 3, itemRgb: '255,0,0', note: 'x' },
+    { start: 0, end: 100, depth: 9, itemRgb: '0,0,255', note: 'y' },
+    { start: 0, end: 100, depth: 4, itemRgb: '0,255,0' },
+  ])
+  expect(fields.lane).toBeUndefined()
+})
+
+test('a feature two scan windows both answer does not overlap itself', () => {
+  const [mom, dad] = features([
+    { start: 0, end: 900, sample: 'mom' },
+    { start: 0, end: 900, sample: 'dad' },
+  ])
+  expect(
+    scanPlotFields([mom!, dad!, mom!, dad!], { listedSources: 0 }).lane,
+  ).toBe('sample')
+})
+
+test('RepeatMasker rows take a row per repClass though a class overlaps itself, and an adapter listing sources rows on them first', () => {
+  const fields = scan([
+    { start: 0, end: 300, name: 'AluY', repClass: 'SINE' },
+    { start: 200, end: 500, name: 'AluSx', repClass: 'SINE' },
+    { start: 400, end: 900, name: 'L1PA2', repClass: 'LINE' },
+  ])
+  expect(multiRowPlot(fields).rows).toBe('repClass')
+  expect(multiRowPlot({ ...fields, rows: 'source' }).rows).toBe('source')
 })
 
 test('spliced features draw their blocks joined by a line, and a file stating colors paints them', () => {
@@ -97,6 +142,7 @@ test('spliced features draw their blocks joined by a line, and a file stating co
       numeric: [],
       categorical: [],
       attributes: ['name', 'transcript'],
+      lane: 'name',
       spliced: true,
       bedColored: true,
     }),
@@ -122,7 +168,42 @@ test('protein features alone take a row per transcript they sit on, colored by f
   })
 })
 
+// Isoforms as domains2genome --gff3 writes them: overlapping transcripts, two
+// sharing a product, so `product` is few-valued and holds no lanes.
+function transcript(name: string, product: string, start: number) {
+  return {
+    start,
+    end: start + 900,
+    type: 'mRNA',
+    name,
+    product,
+    protein_id: `${name}.p`,
+    subfeatures: [
+      { uniqueId: `${name}-exon`, start, end: start + 900, type: 'exon' },
+      { uniqueId: `${name}-cds`, start, end: start + 600, type: 'CDS' },
+      {
+        uniqueId: `${name}-pfam`,
+        start,
+        end: start + 300,
+        type: 'protein_match',
+        name: 'SET',
+      },
+    ],
+  }
+}
+
 test('a transcript carrying protein matches draws as the transcript with its matches over it, a row each', () => {
+  const fields = scan([
+    transcript('XM_1', 'TBC1 domain family member 10A', 0),
+    transcript('XM_2', 'TBC1 domain family member 10A', 100),
+    transcript('XM_3', 'GATA zinc finger protein 8', 200),
+  ])
+  expect(fields.categorical).toContain('product')
+  expect(multiRowPlot(fields)).toEqual({
+    marks: TRANSCRIPT_PROTEIN_MARKS,
+    rows: 'name',
+    color: { field: 'name' },
+  })
   expect(
     multiRowPlot({
       numeric: [],
@@ -136,6 +217,17 @@ test('a transcript carrying protein matches draws as the transcript with its mat
     rows: 'name',
     color: { field: 'name' },
   })
+  // nameless transcripts row on what the scan found
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      attributes: ['protein_id', 'type'],
+      lane: 'protein_id',
+      spliced: true,
+      childTypes: ['CDS', 'exon', 'protein_match'],
+    }).rows,
+  ).toBe('protein_id')
   expect(
     multiRowPlot({
       numeric: [],
@@ -198,11 +290,12 @@ test('the default plot writes its rows and color, and leaves a declared color al
 
 test('One row per and Color by offer the scanned attributes and write the display', () => {
   const model = display({ rows: 'sample', marks: RECT_MARKS })
-  model.setPlotFields({
+  const scanned = {
     numeric: ['score'],
     categorical: [],
     attributes: ['itemRgb', 'name', 'sample', 'score', 'strand'],
-  })
+  }
+  model.setPlotFields({ ...scanned, bedColored: true })
   const items = multiRowMenuItems(model)
   expect(labels(subMenu(items, 'One row per'))).toEqual(['name', 'sample'])
   const colorBy = labels(subMenu(items, 'Color by'))
@@ -210,6 +303,11 @@ test('One row per and Color by offer the scanned attributes and write the displa
     expect.arrayContaining(['Strand', 'itemRgb', 'name', 'sample', 'score']),
   )
   expect(colorBy).not.toContain('strand')
+  // a color column no feature states a color in offers no itemRgb row
+  model.setPlotFields(scanned)
+  expect(labels(subMenu(multiRowMenuItems(model), 'Color by'))).not.toContain(
+    'itemRgb',
+  )
 
   model.setRowsField('name')
   expect(model.rowsField).toBe('name')
@@ -217,6 +315,51 @@ test('One row per and Color by offer the scanned attributes and write the displa
   expect(model.colorByMode).toBe('itemRgb')
   model.colorByField('strand')
   expect(model.colorByMode).toBe('strand')
+})
+
+function ticked(items: MenuItem[]) {
+  return labels(items.filter(i => 'checked' in i && i.checked))
+}
+
+test('Group by ticks the row attribute banding the rows, and None once it is cleared', () => {
+  const model = loaded(
+    display({
+      rows: {
+        field: 'sample',
+        groups: [
+          { match: '^(mom|dad)$', group: 'parents' },
+          { match: 'kid', group: 'children' },
+        ],
+      },
+      marks: RECT_MARKS,
+    }),
+  )
+  const groupBy = () => subMenu(model.trackMenuItems(), 'Group by')
+  expect(labels(groupBy())).toEqual(['None', 'Group'])
+  expect(ticked(groupBy())).toEqual(['None'])
+  model.facetByField('group')
+  expect(model.bandsRows).toBe(true)
+  expect(ticked(groupBy())).toEqual(['Group'])
+  model.facetByField('')
+  expect(ticked(groupBy())).toEqual(['None'])
+})
+
+test('rows with no attributes offer no Group by', () => {
+  const model = loaded(display({ rows: 'sample', marks: RECT_MARKS }))
+  expect(labels(model.trackMenuItems())).not.toContain('Group by')
+})
+
+test("One row per goes while a facet's sections draw in the rows' place", () => {
+  const model = display({ rows: 'sample', marks: RECT_MARKS })
+  model.setPlotFields({
+    numeric: [],
+    categorical: [],
+    attributes: ['name', 'sample'],
+  })
+  expect(labels(multiRowMenuItems(model))).toContain('One row per')
+  model.facetByField('name')
+  expect(model.drawsRows).toBe(false)
+  expect(labels(multiRowMenuItems(model))).not.toContain('One row per')
 })
 
 test('Color by a `jexl:` field ticks nothing and names it a custom expression', () => {
@@ -300,8 +443,9 @@ test('Reset row order returns a config arrangement stating no field on any field
   const model = display({ rows })
   const fields = {
     numeric: [],
-    categorical: ['sample'],
+    categorical: [],
     attributes: ['name', 'sample'],
+    lane: 'sample',
   }
   model.setPlotFields(fields)
   model.applyDefaultPlot(model.defaultPlotOf(fields)!)
@@ -503,10 +647,10 @@ test("a declared plot whose first window holds no features offers the next windo
     expect(asked).toHaveLength(1)
   })
   await new Promise(resolve => setTimeout(resolve, 0))
-  expect(display.attributes).toEqual([])
+  expect(display.plotFields?.attributes).toBeUndefined()
   view.setNewView(1, 1_000_000)
   await waitFor(() => {
-    expect(display.attributes).toEqual(['name', 'repClass'])
+    expect(display.plotFields?.attributes).toEqual(['name', 'repClass'])
   })
   expect(labels(subMenu(display.trackMenuItems(), 'One row per'))).toContain(
     'repClass',
@@ -526,6 +670,6 @@ test('a declared plot draws on through a failed scan, and the next window scans 
   expect(display.error).toBeUndefined()
   view.setNewView(1, 1_000_000)
   await waitFor(() => {
-    expect(display.attributes).toEqual(['name', 'repClass'])
+    expect(display.plotFields?.attributes).toEqual(['name', 'repClass'])
   })
 })

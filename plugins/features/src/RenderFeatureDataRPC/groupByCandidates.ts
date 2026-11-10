@@ -1,8 +1,5 @@
-import {
-  MAX_GROUPS,
-  compareGroupKeys,
-  valueText,
-} from '@jbrowse/core/util/groupKeys'
+import { censusFields } from '@jbrowse/core/util/fieldCensus'
+import { MAX_GROUPS, compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -16,70 +13,33 @@ export interface GroupByCandidate {
   overflow: boolean
 }
 
-// Structural fields, and strand, which the dialog offers as its own choice.
-const NOT_A_GROUPING = new Set([
-  'start',
-  'end',
-  'refName',
-  'uniqueId',
-  'subfeatures',
-  'parentId',
-  'strand',
-])
-
 /**
- * The attribute names the features carry, each with the distinct values a
- * facet on it would section by. Counting a field stops once it passes the
- * cap, so a near-unique field (name, ID) costs one set per feature only until
- * it overflows.
- *
- * The names come from `feature.toJSON()`, the only field list `Feature`
- * offers, and on a gene that serializes the transcript tree as well — nine
- * tenths of the ~16µs an NCBI-shaped gene costs here. The dialog scans once
- * per open, so a thousand genes is ~20ms; anything reading this per fetch
- * needs a cheaper enumeration than the interface has today.
- *
- * Multi-row's per-fetch rows-field count (`packMultiRowFeatures.ts`) is a
- * different scan: it samples its field list, caps at 200 rather than
- * `MAX_GROUPS`, and ships each region's value sets for the main thread to
- * union, which a count cannot do.
+ * The attributes the features carry, each with the distinct values a facet on
+ * it would section by, read off the field census (`censusFields`), whose count
+ * of a field stops once it passes the cap. The dialog scans once per open, so
+ * a thousand genes is ~20ms.
  */
 export function summarizeGroupByCandidates(
   features: Iterable<Feature>,
 ): GroupByCandidate[] {
-  const valuesOf = new Map<string, Set<string>>()
-  const carrying = new Map<string, number>()
-  const overflowed = new Set<string>()
-  let n = 0
-  for (const feature of features) {
-    n++
-    for (const field of Object.keys(feature.toJSON())) {
-      if (NOT_A_GROUPING.has(field) || overflowed.has(field)) {
-        continue
-      }
-      const value = valueText(feature.get(field))
-      if (value === '') {
-        continue
-      }
-      carrying.set(field, (carrying.get(field) ?? 0) + 1)
-      let values = valuesOf.get(field)
-      if (!values) {
-        values = new Set()
-        valuesOf.set(field, values)
-      }
-      values.add(value)
-      if (values.size > MAX_GROUPS) {
-        overflowed.add(field)
-        valuesOf.delete(field)
-      }
-    }
-  }
-  const fields = [...new Set([...valuesOf.keys(), ...overflowed])].sort()
-  return fields.map(field => {
-    const values = [...(valuesOf.get(field) ?? [])].sort(compareGroupKeys)
-    const missing = (carrying.get(field) ?? 0) < n
-    const overflow =
-      overflowed.has(field) || values.length + (missing ? 1 : 0) > MAX_GROUPS
-    return { field, values: overflow ? [] : values, missing, overflow }
-  })
+  const { n, fields } = censusFields(features, MAX_GROUPS)
+  return (
+    fields
+      // the dialog offers strand as its own choice
+      .filter(({ field }) => field !== 'strand')
+      .sort((a, b) => compareGroupKeys(a.field, b.field))
+      .map(({ field, carried, values }) => {
+        const missing = carried < n
+        const listed =
+          values && values.length + (missing ? 1 : 0) <= MAX_GROUPS
+            ? values
+            : undefined
+        return {
+          field,
+          values: listed ? [...listed].sort(compareGroupKeys) : [],
+          missing,
+          overflow: listed === undefined,
+        }
+      })
+  )
 }

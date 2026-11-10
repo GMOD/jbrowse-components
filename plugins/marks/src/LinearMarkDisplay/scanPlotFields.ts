@@ -5,8 +5,14 @@ import {
   featureItemRgb,
 } from '@jbrowse/core/util/colorBits'
 import { matedBy } from '@jbrowse/core/util/featureTransforms'
+import { censusFields, isRecord } from '@jbrowse/core/util/fieldCensus'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
+
+import { isRowField } from './rowFields.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldCensus, FieldSummary } from '@jbrowse/core/util/fieldCensus'
 
 export const PLOT_FIELD_SAMPLE = 200
 
@@ -22,31 +28,15 @@ function statesBedColor(feature: Feature) {
   )
 }
 
-// Structure rather than data: a plot of `start` or of `uniqueId` says nothing,
-// and `subfeatures` is a tree.
-const NON_PLOT_FIELDS = new Set([
-  'uniqueId',
-  'refName',
-  'start',
-  'end',
-  'subfeatures',
-  'parentId',
+// What a feature is called rather than a value it carries: a plot of `name`
+// says nothing, and `CHROM` and `POS` are a VCF record's position again.
+const NOT_PLOTTED = new Set([
   'type',
   'name',
   'id',
   'description',
   'CHROM',
   'POS',
-])
-
-// Where a feature sits and what it is made of, never a value it carries.
-const STRUCTURE_FIELDS = new Set([
-  'uniqueId',
-  'refName',
-  'start',
-  'end',
-  'subfeatures',
-  'parentId',
 ])
 
 // A code, not a quantity: +1 and -1 want a palette and never a ramp.
@@ -83,6 +73,11 @@ export interface PlotFields {
    * than one other genome.
    */
   rows?: string
+  /**
+   * The field whose values each hold features that never overlap, so each is
+   * a lane: a painting's `sample`, a transcript's `name`.
+   */
+  lane?: string
   /** The genomes the features align to, where they are genome alignments. */
   genomes?: string[]
   /**
@@ -93,9 +88,9 @@ export interface PlotFields {
   /** Every scanned feature carries SAM `flags`: they are aligned reads. */
   reads?: true
   /**
-   * Every field a scanned feature carries besides its position and its
-   * children, `name` and `type` included: what a row or a color may be
-   * read from.
+   * Every field a scanned feature carries a value in besides its position
+   * and its children, `name` and `type` included, by the path a channel reads
+   * it: what a row or a color may be read from.
    */
   attributes?: string[]
   /**
@@ -125,74 +120,87 @@ function splicedChildren(feature: Feature): Feature[] {
     : []
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+function namesOf(fields: readonly FieldSummary[]) {
+  return fields.map(f => f.field).sort()
 }
 
-// What a channel reads as one datum: a one-element list is its element, as a
-// VCF INFO value is, and a longer list or a record is no datum at all.
-function datumOf(value: unknown) {
-  const v: unknown =
-    Array.isArray(value) && value.length === 1 ? value[0] : value
-  return v === undefined || v === null || v === '' || typeof v === 'object'
-    ? undefined
-    : v
+// What a feature is called, which gives a row each only where nothing else does.
+const NAME_FIELDS = new Set(['name', 'id'])
+
+// The first `PLOT_FIELD_SAMPLE` features, each once: the scan's windows
+// answer a feature spanning two of them twice.
+function sampleOf(features: readonly Feature[]) {
+  const byId = new Map<string, Feature>()
+  for (const feature of features) {
+    if (byId.size < PLOT_FIELD_SAMPLE) {
+      byId.set(feature.id(), feature)
+    }
+  }
+  return [...byId.values()]
 }
 
-// A record's own fields, and one level into a structured one under the dotted
-// path a channel reads it by: `INFO.DP` on a VCF record, `tags.NM` on a read.
-function fieldEntries(record: Record<string, unknown>): [string, unknown][] {
-  return Object.entries(record).flatMap(([field, value]) =>
-    NON_PLOT_FIELDS.has(field)
-      ? []
-      : isRecord(value)
-        ? Object.entries(value).map(([key, member]): [string, unknown] => [
-            `${field}.${key}`,
-            member,
-          ])
-        : [[field, value]],
+// Whether the features sharing a value of `field` never overlap, read as the
+// rows read it.
+function holdsLanes(byStart: readonly Feature[], field: string) {
+  const read = fieldReader(field, undefined)
+  const ends = new Map<string, number>()
+  return byStart.every(feature => {
+    const lane = `${feature.get('refName')}\n${valueText(read(feature))}`
+    const free = feature.get('start') >= (ends.get(lane) ?? -Infinity)
+    ends.set(lane, feature.get('end'))
+    return free
+  })
+}
+
+// A row is a lane, so the row field is the one every feature carries, as text
+// of more than one value, whose features never overlap within a value: a
+// painting's `sample`, where its segment `name`s overlap across samples. Of
+// several, the one of fewest values, a name only where nothing else is one,
+// then the file's own column order.
+function laneFieldOf(sample: readonly Feature[], { n, fields }: FieldCensus) {
+  const byStart = [...sample].sort(
+    (a, b) => a.get('start') - b.get('start') || a.get('end') - b.get('end'),
   )
-}
-
-function isNumericDatum(v: unknown) {
-  return typeof v === 'number'
-    ? Number.isFinite(v)
-    : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))
+  return fields
+    .flatMap(({ field, carried, numeric, values }) =>
+      numeric === false && carried === n && values && values.length > 1
+        ? [{ field, count: values.length }]
+        : [],
+    )
+    .filter(({ field }) => isRowField(field) && holdsLanes(byStart, field))
+    .sort(
+      (a, b) =>
+        a.count - b.count ||
+        Number(NAME_FIELDS.has(a.field)) - Number(NAME_FIELDS.has(b.field)),
+    )[0]?.field
 }
 
 /**
- * The fields a sample of features carry, each numeric only where every value
- * seen for it read as a finite number and sparse where most features lack it, and a text field only where a color
- * key could name its values. `source` is a facet only where the adapter lists
- * more than one source, since a GFF3 record's `source` column is not a file,
- * and a multi-BigWig answers each file's features in one run, so a sample
- * would see the first file alone.
- * Enumerated through `toJSON`, not `tags()`: `tags` is `SimpleFeature`'s, and
- * the `Feature` interface an adapter may implement carries only the
- * serializer.
+ * What a sample of features says a plot of them can read: the census of their
+ * fields (`censusFields`) split by what each holds, a text field a color
+ * choice only where a key could name its values and a numeric one sparse where
+ * most features lack it, then what the features are, read off the features
+ * themselves. `source` is a facet only where the adapter lists more than one
+ * source, since a GFF3 record's `source` column is not a file, and a
+ * multi-BigWig answers each file's features in one run, so a sample would see
+ * the first file alone.
  */
 export function scanPlotFields(
   features: readonly Feature[],
   { listedSources }: { listedSources: number },
 ): PlotFields {
-  const numeric = new Map<string, boolean>()
-  const carried = new Map<string, number>()
-  const values = new Map<string, Set<unknown>>()
+  const sample = sampleOf(features)
   let mated: PlotFields['mated']
-  let reads = features.length > 0
+  let reads = sample.length > 0
   let spliced = false
   const childTypes = new Set<string>()
   let bedColored = false
-  const attributes = new Set<string>()
   const genomes = new Set<string>()
-  const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
-  for (let i = 0; i < n; i++) {
-    const feature = features[i]!
+  for (const feature of sample) {
     if (mated !== 'mate') {
       mated = matedBy(feature) ?? mated
     }
-    const record = feature.toJSON()
-    reads &&= typeof record.flags === 'number'
+    reads &&= typeof feature.get('flags') === 'number'
     const children = splicedChildren(feature)
     spliced ||= children.length > 0
     for (const child of children) {
@@ -202,48 +210,40 @@ export function scanPlotFields(
       }
     }
     bedColored ||= statesBedColor(feature)
-    for (const field of Object.keys(record)) {
-      if (!STRUCTURE_FIELDS.has(field)) {
-        attributes.add(field)
-      }
-    }
-    const mate = record.mate
+    const mate: unknown = feature.get('mate')
     if (isRecord(mate) && typeof mate.assemblyName === 'string') {
       genomes.add(mate.assemblyName)
     }
-    for (const [field, value] of fieldEntries(record)) {
-      const v = datumOf(value)
-      if (v === undefined) {
-        continue
-      }
-      const num = !ALWAYS_CATEGORICAL.has(field) && isNumericDatum(v)
-      numeric.set(field, (numeric.get(field) ?? true) && num)
-      carried.set(field, (carried.get(field) ?? 0) + 1)
-      const seen = values.get(field) ?? new Set()
-      if (seen.size <= MAX_LEGEND_ITEMS) {
-        seen.add(v)
-      }
-      values.set(field, seen)
-    }
   }
-  const fields = [...numeric.keys()].sort()
-  const numericFields = fields.filter(f => numeric.get(f)!)
-  const sparse = numericFields.filter(f => carried.get(f)! * 2 < n)
+  const census = censusFields(sample, PLOT_FIELD_SAMPLE)
+  const plotted = census.fields.filter(f => !NOT_PLOTTED.has(f.field))
+  const isNumeric = (f: FieldSummary) =>
+    f.numeric === true && !ALWAYS_CATEGORICAL.has(f.field)
+  const numeric = plotted.filter(isNumeric)
+  const sparse = numeric.filter(f => f.carried * 2 < census.n)
+  const lane = laneFieldOf(sample, census)
   return {
-    numeric: numericFields,
-    ...(sparse.length > 0 ? { sparse } : {}),
-    categorical: fields.filter(
-      f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
+    numeric: namesOf(numeric),
+    ...(sparse.length > 0 ? { sparse: namesOf(sparse) } : {}),
+    categorical: namesOf(
+      plotted.filter(
+        f =>
+          f.numeric !== undefined &&
+          !isNumeric(f) &&
+          f.values !== undefined &&
+          f.values.length <= MAX_LEGEND_ITEMS,
+      ),
     ),
     ...(listedSources > 1
       ? { rows: ROWS_FIELD }
       : genomes.size > 1
         ? { rows: GENOME_FIELD }
         : {}),
+    ...(lane === undefined ? {} : { lane }),
     ...(genomes.size > 0 ? { genomes: [...genomes].sort() } : {}),
     ...(mated === undefined ? {} : { mated }),
     ...(reads ? { reads: true as const } : {}),
-    ...(attributes.size > 0 ? { attributes: [...attributes].sort() } : {}),
+    ...(census.fields.length > 0 ? { attributes: namesOf(census.fields) } : {}),
     ...(spliced ? { spliced: true as const } : {}),
     ...(childTypes.size > 0 ? { childTypes: [...childTypes].sort() } : {}),
     ...(bedColored ? { bedColored: true as const } : {}),

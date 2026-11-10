@@ -10,7 +10,10 @@ summary: "`LinearMultiRowFeatureDisplay` keeps its name but becomes a mark displ
 Accepted (2026-10-25), Colin's "go for it" on
 `ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`, which this
 retires. Amends ADR-165 and ADR-169: the mark display now drives the row table
-and the bands on the painting's behalf.
+and the bands on the painting's behalf. Amended by
+[ADR-263](adr-263-a-row-field-is-a-lane-field-and-the-field-scans-share-one-census.md):
+the default rows field is the scan's lane field, and Group by is the mark
+display's.
 
 ## Context
 

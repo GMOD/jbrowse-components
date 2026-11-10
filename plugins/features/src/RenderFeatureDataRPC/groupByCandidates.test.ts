@@ -74,3 +74,19 @@ test('exactly MAX_GROUPS values plus a missing section is over the cap too', () 
   expect(name!.overflow).toBe(true)
   expect(name!.missing).toBe(true)
 })
+
+test("a structured field offers its members by the path the facet reads, never the record's own text", () => {
+  expect(
+    summarizeGroupByCandidates([
+      feat({ INFO: { SVTYPE: ['DEL'] } }),
+      feat({ INFO: { SVTYPE: ['INS'] } }),
+    ]),
+  ).toEqual([
+    {
+      field: 'INFO.SVTYPE',
+      values: ['DEL', 'INS'],
+      missing: false,
+      overflow: false,
+    },
+  ])
+})

@@ -1,5 +1,3 @@
-import { BED_COLOR_FIELDS } from '@jbrowse/core/util/colorBits'
-
 import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
 import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
 
@@ -60,20 +58,7 @@ export const TRANSCRIPT_PROTEIN_MARKS: MarkSnapshot[] = [
   },
 ]
 
-// Values a block paints by, never names a row stands for.
-const NON_ROW_FIELDS = new Set<string>([
-  'strand',
-  'score',
-  'phase',
-  ...BED_COLOR_FIELDS,
-])
-
-/** The attributes "One row per" offers. */
-export function rowsFieldChoices(attributes: readonly string[]) {
-  return attributes.filter(name => !NON_ROW_FIELDS.has(name))
-}
-
-const PREFERRED_ROWS_FIELD = 'repClass'
+const REPEAT_CLASS_FIELD = 'repClass'
 const NAME_FIELD = 'name'
 const TRANSCRIPT_FIELD = 'transcript'
 const FAMILY_FIELD = 'name'
@@ -82,16 +67,17 @@ const FAMILY_FIELD = 'name'
 const PROTEIN_FEATURE_FIELDS = ['proteinStart', TRANSCRIPT_FIELD]
 
 /**
- * A painting off the scanned fields. Transcripts carrying protein matches
- * (domains2genome --gff3) draw as transcripts with the matches over them,
- * a row each, colored by family; protein features alone (domains2genome's
- * BED) take a row per transcript they sit on, colored by family. Otherwise
- * a row per adapter source where it lists several, else per `repClass`
- * where the features carry one, else per the first attribute few values
- * apart, else per `name`, which a painting's BED gives its color's label or
- * an id, else one lane; a feature's blocks joined
- * by a line where the features are spliced; and each feature its own BED
- * color where the file states any.
+ * A painting off the scanned fields: the formats it knows, then what the scan
+ * found. Transcripts carrying protein matches (domains2genome --gff3) draw as
+ * transcripts with the matches over them, a row per transcript `name`,
+ * colored by family; protein features alone (domains2genome's BED) take a row
+ * per `transcript` they sit on, colored by family; RepeatMasker rows take a
+ * row per `repClass`. Any other file rows on the scan's `lane` field, the one
+ * whose values each hold features that never overlap, and draws one lane
+ * where the scan found none. An adapter listing several sources rows on them
+ * before any of these. A feature's blocks are joined by a line where the
+ * features are spliced, and each feature paints its own BED color where the
+ * file states any.
  */
 export function multiRowPlot(fields: PlotFields): DefaultPlot {
   const attributes = fields.attributes ?? []
@@ -107,12 +93,13 @@ export function multiRowPlot(fields: PlotFields): DefaultPlot {
         : RECT_MARKS,
     rows:
       fields.rows ??
-      (placesProteins
-        ? TRANSCRIPT_FIELD
-        : attributes.includes(PREFERRED_ROWS_FIELD)
-          ? PREFERRED_ROWS_FIELD
-          : (rowsFieldChoices(fields.categorical)[0] ??
-            (attributes.includes(NAME_FIELD) ? NAME_FIELD : undefined))),
+      (carriesMatches && attributes.includes(NAME_FIELD)
+        ? NAME_FIELD
+        : placesProteins
+          ? TRANSCRIPT_FIELD
+          : attributes.includes(REPEAT_CLASS_FIELD)
+            ? REPEAT_CLASS_FIELD
+            : fields.lane),
     ...(fields.bedColored
       ? { color: { scale: { type: 'identity' } } }
       : carriesMatches || placesProteins

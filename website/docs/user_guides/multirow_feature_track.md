@@ -24,13 +24,15 @@ reach every mark, scale, filter and facet setting.
 
 When you pick it from **Display types**, JBrowse reads a sample of the features
 once and splits them on a column the file has: a RepeatMasker table opens as ~20
-rows of `repClass`, and anything else falls back to the `name` column. Which
-column assigns a feature to a row is then **One row per** in the same track
-menu, which lists the attributes the sampled features have, so RepeatMasker also
-offers `repFamily` and `name` beside the class it started on. A saved row order,
-its labels and colors, and a clustering run are kept across a repartition. They
-refer to rows by value, so they apply to no row under the new partition and
-apply again when the field comes back.
+rows of `repClass`, and any other file takes the column whose features never
+overlap within one value, as the segments of one `sample` do in a painting, or a
+single row where no column is like that. Which column assigns a feature to a row
+is then **One row per** in the same track menu, which lists the attributes the
+sampled features have, so RepeatMasker also offers `repFamily` and `name` beside
+the class it started on. A saved row order, its labels and colors, and a
+clustering run are kept across a repartition. They refer to rows by value, so
+they apply to no row under the new partition and apply again when the field
+comes back.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 

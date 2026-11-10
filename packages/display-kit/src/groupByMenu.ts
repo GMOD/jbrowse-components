@@ -1,3 +1,4 @@
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
@@ -125,6 +126,43 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
       ...extras.map(extraRadio),
     ] satisfies MenuItem[],
   }
+}
+
+/**
+ * The Group by submenu of a display whose rows band by one of their own
+ * attributes: None and a radio per attribute, ticked by the facet as written.
+ * A facet on a field no row carries yet keeps its radio, so a config's choice
+ * reads as chosen before the rows load. None while there is nothing to pick.
+ */
+export function groupByRowAttributeMenuItems(
+  self: {
+    writtenFacet: WrittenFacet
+    facetByField: (field: string) => void
+  },
+  attributes: readonly string[],
+): MenuItem[] {
+  const current = self.writtenFacet.field || undefined
+  const fields =
+    current === undefined || attributes.includes(current)
+      ? attributes
+      : [...attributes, current]
+  return fields.length > 0
+    ? [
+        groupByRadioMenuItem({
+          current,
+          options: fields.map(field => ({
+            type: field,
+            label: capitalizeFirst(field),
+          })),
+          onSelect: field => {
+            self.facetByField(field)
+          },
+          onNone: () => {
+            self.facetByField('')
+          },
+        }),
+      ]
+    : []
 }
 
 /**

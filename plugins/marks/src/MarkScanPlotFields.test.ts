@@ -37,6 +37,7 @@ test("a GFF3 track's source column takes no rows", async () => {
     numeric: ['score'],
     categorical: ['source'],
     attributes: ['score', 'source'],
+    lane: 'source',
   })
 })
 
@@ -73,6 +74,7 @@ test('a multi-BigWig of one file takes no rows', async () => {
     numeric: ['score'],
     categorical: ['source'],
     attributes: ['score', 'source'],
+    lane: 'source',
   })
 })
 
@@ -89,5 +91,6 @@ test("a MAF's listed species take no rows on source", async () => {
     numeric: ['score'],
     categorical: ['source'],
     attributes: ['score', 'source'],
+    lane: 'source',
   })
 })

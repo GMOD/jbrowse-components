@@ -17,6 +17,7 @@ import {
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   groupByRadioMenuItem,
+  groupByRowAttributeMenuItems,
   hiddenGroupsItems,
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
@@ -44,7 +45,6 @@ import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import { breakendSplitViewMenuItem } from '../shared/breakendSplitViewMenuItem.ts'
 import { recordHueField } from '../shared/cellHue.ts'
-import { capitalizeFirst } from '../shared/constants.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 // lazy: this file is reached from a state model, so a dialog named here is in
 // every host's first paint — see ./lazyDialogs.ts
@@ -195,13 +195,6 @@ const RECORD_FIELD = 'field' as const
 // feature track; over rows the sample attributes band the rows.
 function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
   const recordsField = self.recordsFacet?.field
-  // the configured field stays listed where no sample carries it, so it
-  // shows as chosen and None can clear it, as Color by keeps its own
-  const facetField = self.facet?.field
-  const rowFields =
-    facetField && !self.rowColorFields.includes(facetField)
-      ? [...self.rowColorFields, facetField]
-      : self.rowColorFields
   return !self.drawsGenotypeRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
@@ -225,23 +218,7 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
           ],
         }),
       ]
-    : rowFields.length
-      ? [
-          groupByRadioMenuItem({
-            current: facetField,
-            options: rowFields.map(attr => ({
-              type: attr,
-              label: capitalizeFirst(attr),
-            })),
-            onSelect: attr => {
-              self.facetByField(attr)
-            },
-            onNone: () => {
-              self.facetByField('')
-            },
-          }),
-        ]
-      : []
+    : groupByRowAttributeMenuItems(self, self.rowColorFields)
 }
 
 // Items for the "Show" submenu; the subtree filter has its own entry via

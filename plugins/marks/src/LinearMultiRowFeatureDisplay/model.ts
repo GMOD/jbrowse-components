@@ -2,6 +2,7 @@ import { ConfigurationReference, setConf } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import ColorWritesMixin, {
   solidColorOf,
 } from '@jbrowse/display-kit/ColorWritesMixin'
@@ -23,7 +24,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel LinearMultiRowFeatureDisplay
  * #category display
  * The mark display drawing a row per value of a feature attribute, with the
- * menus a painting is read through: One row per, Group by and Color by.
+ * menus that pick a painting's fields off the scan: One row per and Color by.
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -48,18 +49,12 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * A rect per feature in a row per value of an attribute, as
-       * `multiRowPlot` reads the scanned fields.
+       * A rect per feature in a row per value of an attribute:
+       * `multiRowPlot`'s recipes for the formats it knows, else the scan's
+       * lane field.
        */
       defaultPlotOf(fields: PlotFields): DefaultPlot {
         return multiRowPlot(fields)
-      },
-      /**
-       * #getter
-       * The attributes of the scanned features, which the menus offer.
-       */
-      get attributes(): readonly string[] {
-        return self.plotFields?.attributes ?? []
       },
       /**
        * #getter
@@ -72,8 +67,7 @@ export function stateModelFactory(
        * The field the display's color paints by, or undefined for none.
        */
       get colorField(): string | undefined {
-        const { field } = self.writtenColor
-        return typeof field === 'string' && field !== '' ? field : undefined
+        return self.writtenColor.field || undefined
       },
       /**
        * #getter
@@ -98,7 +92,7 @@ export function stateModelFactory(
         const { scale, value } = self.writtenColor
         const field = this.colorField
         return field === undefined
-          ? scale?.type === 'identity' && value === undefined
+          ? scale?.type === IDENTITY_SCALE && value === undefined
             ? 'itemRgb'
             : this.solidColor === undefined
               ? 'default'
