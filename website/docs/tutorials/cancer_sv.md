@@ -330,8 +330,8 @@ On the hg38 row, the figures draw UCSC's RefSeq genes:
 }
 ```
 
-The demo config has no gene track on the derivative. The figures below draw the
-RefSeq annotation projected onto it, which is not part of the files above.
+The figures below also draw RefSeq genes projected onto the derivative, a track
+the demo config does not carry.
 
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny
