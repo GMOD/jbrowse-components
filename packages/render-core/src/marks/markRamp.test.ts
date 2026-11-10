@@ -20,7 +20,6 @@ import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import {
   colorBits,
   isThreshold,
-  keepRampValues,
   paintColors,
   rampUniforms,
   rampValueBits,
@@ -163,14 +162,6 @@ test('the bake paints no value, text and infinities as the shader does', () => {
     grey(255),
     grey(0),
   ])
-})
-
-test('keeping part of a lane keeps the value-less payload bit for bit', () => {
-  const values = new Float32Array([1, 0, 3])
-  rampValueBits(values)[1] = RAMP_NO_VALUE_BITS
-  const kept = keepRampValues(values, (_, i) => i > 0)
-  expect(rampValueBits(kept)[0]).toBe(RAMP_NO_VALUE_BITS)
-  expect(kept[1]).toBe(3)
 })
 
 test('a domain with no range steps: the ceiling above its min, the floor at or below', () => {

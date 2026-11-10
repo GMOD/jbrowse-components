@@ -59,41 +59,6 @@ function nearestCos(qx: number, qy: number, ax: number, ay: number) {
   return clamp1(co)
 }
 
-export function ellipseDistance(
-  px: number,
-  py: number,
-  rx: number,
-  ry: number,
-) {
-  let qx = Math.abs(px)
-  let qy = Math.abs(py)
-  let ax = rx
-  let ay = ry
-  // Solve in the half where q.x <= q.y, mirroring point and radii together.
-  if (qx > qy) {
-    ;[qx, qy] = [qy, qx]
-    ;[ax, ay] = [ay, ax]
-  }
-  // Degenerate to the point at the origin, which the circle test below cannot
-  // catch: its threshold is `ay * ay`, so it reads `abs(l) < 0` and lets a zero
-  // divisor through. Same guard as curveDistance.slang's.
-  // Degenerate to the point at the origin, which the circle test below cannot
-  // catch: its threshold is `ay * ay`, so it reads `abs(l) < 0` and lets a zero
-  // divisor through. Same guard as curveDistance.slang's.
-  if (ax * ax + ay * ay <= 0) {
-    return Math.hypot(qx, qy)
-  }
-  const l = ay * ay - ax * ax
-  // Circle: `l` is the solver's divisor, so hand those back the exact answer
-  // rather than a division by ~0. Reachable — a clamped dome's ry is pinned to
-  // the band while rx tracks the pair's width, so they cross.
-  if (Math.abs(l) < 1e-6 * ay * ay) {
-    return Math.abs(Math.hypot(qx, qy) - ax)
-  }
-  const co = nearestCos(qx, qy, ax, ay)
-  return Math.hypot(ax * co - qx, ay * Math.sqrt(Math.max(1 - co * co, 0)) - qy)
-}
-
 /**
  * The point of the ellipse nearest (px, py), in the ellipse's own frame, and
  * how far it is: what a hit test hands back as the ink it found.

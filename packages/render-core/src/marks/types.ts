@@ -302,11 +302,6 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   readonly spansView?: boolean
   /** The pass whose uploaded instance buffer this mark draws from. */
   readonly bufferOf?: string
-  /** What the pass's samplers read this frame; undefined binds an inert table. */
-  readonly textures?: (
-    state: TState,
-    region: TRegion,
-  ) => MarkTextures | undefined
   /**
    * Whether the mark draws at all under `state`. `planMarks` asks once per
    * frame and every other consumer per block, before any lens.
@@ -457,7 +452,6 @@ export function defineMark<
     },
     bufferOf,
     spansView: shape.spansView,
-    textures: ownTextures,
     enabled,
     planned,
     // `resolve`'s gates inline: its picks leaving as a record or through

@@ -159,19 +159,6 @@ export function rampValueBits(values: Float32Array) {
 }
 
 /**
- * A value lane's values kept where `keep` says, copied as bits: a JS number
- * read out of the lane may lose the payload `RAMP_NO_VALUE_BITS` marks a
- * feature with no value by.
- */
-export function keepRampValues(
-  values: Float32Array,
-  keep: (value: number, index: number) => boolean,
-) {
-  const kept = rampValueBits(values).filter((_, i) => keep(values[i]!, i))
-  return new Float32Array(kept.buffer, kept.byteOffset, kept.length)
-}
-
-/**
  * The interval a lane value is in on a threshold: how many of the ascending
  * cuts it is at or past, `thresholdIndex`'s rule and the shader's
  * `thresholdBand`. The value is a float32 and so is each cut in the shader's

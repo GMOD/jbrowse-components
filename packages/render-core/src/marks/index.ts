@@ -38,7 +38,7 @@ export {
   CONNECTOR_MINUS_2,
   CONNECTOR_STRAIGHT,
 } from '../shaders/connectorMark.consts.generated.ts'
-export { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
+export { ellipseNearest } from './ellipseDistance.ts'
 export { appendGlyph, pointInsetPx } from './glyphPaint.ts'
 export { recordPath } from './pathRecorder.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
@@ -51,7 +51,6 @@ export {
   RAMP_LINE_BANDS,
   instanceColor,
   isThreshold,
-  keepRampValues,
   paintColors,
   rampAsThreshold,
   rampUniforms,

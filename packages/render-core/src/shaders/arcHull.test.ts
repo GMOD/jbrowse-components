@@ -5,7 +5,7 @@
 // sample is tested against the strip's triangles as `linkMark.slang` emits
 // them. The vertices come from `curveDistance.slang`'s
 // own emitted twins.
-import { ellipseDistance } from '../marks/ellipseDistance.ts'
+import { ellipseNearest } from '../marks/ellipseDistance.ts'
 import { aaHalfPx, edgeCoverage } from './antialias.js.generated.ts'
 import {
   distToWideCirclePx,
@@ -149,7 +149,7 @@ function worstOnDome(
     p => p[1] > EXACT,
   )
   return worstUncovered(coverIndex(stripTriangles(pairs)), samples, p =>
-    edgeCoverage(half - ellipseDistance(p[0], p[1], rx, ry), dpr),
+    edgeCoverage(half - ellipseNearest(p[0], p[1], rx, ry).dist, dpr),
   )
 }
 

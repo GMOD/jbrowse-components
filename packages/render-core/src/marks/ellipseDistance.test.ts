@@ -1,4 +1,4 @@
-import { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
+import { ellipseNearest } from './ellipseDistance.ts'
 
 // The reference is a brute-force minimum over the parametric angle: coarse scan,
 // then ternary refinement. Slow and obviously correct, which is the point — the
@@ -61,7 +61,7 @@ test('agrees with a brute-force minimum across the arc band’s aspect range', (
           worst = Math.max(
             worst,
             Math.abs(
-              ellipseDistance(px, py, rx, ry) - bruteForce(px, py, rx, ry),
+              ellipseNearest(px, py, rx, ry).dist - bruteForce(px, py, rx, ry),
             ),
           )
         }
@@ -77,18 +77,17 @@ test('agrees with a brute-force minimum across the arc band’s aspect range', (
 test('a circle is the degenerate case the branch exists for', () => {
   // rx == ry makes `l` the solver's divisor zero; the short-circuit answers
   // |distance to centre - r| exactly.
-  expect(ellipseDistance(3, 4, 1, 1)).toBeCloseTo(4, 12)
-  expect(ellipseDistance(0.5, 0, 1, 1)).toBeCloseTo(0.5, 12)
+  expect(ellipseNearest(3, 4, 1, 1).dist).toBeCloseTo(4, 12)
+  expect(ellipseNearest(0.5, 0, 1, 1).dist).toBeCloseTo(0.5, 12)
   // Inside and outside are both unsigned — the hit test only ever asks how far.
-  expect(ellipseDistance(0, 0, 2, 2)).toBeCloseTo(2, 12)
+  expect(ellipseNearest(0, 0, 2, 2).dist).toBeCloseTo(2, 12)
 })
 
 test('both radii zero is the point at the origin', () => {
   // The circle branch above cannot take this one: its threshold is `ay * ay`,
   // so at zero radii it reads `abs(l) < 0` and the solve divides by `l == 0`.
   // `linkRadiiPx` hands it out for a pair whose two ends share a pixel.
-  expect(ellipseDistance(3, 4, 0, 0)).toBeCloseTo(5, 12)
-  expect(ellipseDistance(0, 0, 0, 0)).toBe(0)
+  expect(ellipseNearest(0, 0, 0, 0).dist).toBe(0)
   expect(ellipseNearest(3, 4, 0, 0)).toEqual({ x: 0, y: 0, dist: 5 })
   expect(ellipseNearest(-2, 0, 0, 0)).toEqual({ x: -0, y: 0, dist: 2 })
 })
@@ -100,7 +99,12 @@ test('a point on the curve is at distance zero', () => {
     [3, 200],
   ]) {
     for (const t of [0, 0.3, 1, Math.PI / 2 - 0.01, Math.PI / 2]) {
-      const d = ellipseDistance(rx! * Math.cos(t), ry! * Math.sin(t), rx!, ry!)
+      const d = ellipseNearest(
+        rx! * Math.cos(t),
+        ry! * Math.sin(t),
+        rx!,
+        ry!,
+      ).dist
       expect(d).toBeLessThan(1e-6)
     }
   }
@@ -114,10 +118,10 @@ test('the answer is symmetric in both axes, as the arc band relies on', () => {
     [0.25, 60],
     [900, 1],
   ]) {
-    const base = ellipseDistance(px!, py!, 400, 20)
-    expect(ellipseDistance(-px!, py!, 400, 20)).toBeCloseTo(base, 12)
-    expect(ellipseDistance(px!, -py!, 400, 20)).toBeCloseTo(base, 12)
-    expect(ellipseDistance(-px!, -py!, 400, 20)).toBeCloseTo(base, 12)
+    const base = ellipseNearest(px!, py!, 400, 20).dist
+    expect(ellipseNearest(-px!, py!, 400, 20).dist).toBeCloseTo(base, 12)
+    expect(ellipseNearest(px!, -py!, 400, 20).dist).toBeCloseTo(base, 12)
+    expect(ellipseNearest(-px!, -py!, 400, 20).dist).toBeCloseTo(base, 12)
   }
 })
 
@@ -132,7 +136,6 @@ test('the nearest point lies on the ellipse, in the cursor’s quadrant, at the 
   ]
   for (const [px, py, rx, ry] of cases) {
     const near = ellipseNearest(px, py, rx, ry)
-    expect(near.dist).toBeCloseTo(ellipseDistance(px, py, rx, ry), 9)
     expect(Math.hypot(near.x - px, near.y - py)).toBeCloseTo(near.dist, 9)
     expect((near.x / rx) ** 2 + (near.y / ry) ** 2).toBeCloseTo(1, 6)
     expect(Math.sign(near.x) * Math.sign(px)).toBeGreaterThanOrEqual(0)
