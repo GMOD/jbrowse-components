@@ -2765,8 +2765,8 @@ export const figureFrames: Record<
     "timeout": 300000
   },
   "paper/drosophila_blocks": {
-    "width": 930,
-    "height": 460,
+    "width": 870,
+    "height": 412,
     "timeout": 240000
   },
   "grant/drosophila_blocks": {
@@ -2823,8 +2823,8 @@ export const figureFrames: Record<
     "timeout": 240000
   },
   "paper/ecoli_synteny": {
-    "width": 930,
-    "height": 540,
+    "width": 870,
+    "height": 492,
     "timeout": 120000
   },
   "paper/sv_junction_scaffold": {
@@ -3375,6 +3375,7 @@ export const figureComposites: Record<
   "grant/protein_row": {"parts":["grant/hbb_e6v_pocket","grant/tp53_y220c"],"horizontal":true,"gutter":60,"callouts":true},
   "grant/sv_row_translocation": {"parts":["grant/sv_row_junction","grant/sv_row_overview"],"horizontal":false,"gutter":40,"callouts":false},
   "grant/sv_row": {"parts":["grant/sv_row_translocation","grant/sv_row_inversion"],"horizontal":true,"gutter":60,"callouts":true},
+  "paper/synteny_views": {"parts":["paper/drosophila_blocks","paper/ecoli_synteny"],"horizontal":false,"gutter":16,"sideMargin":60,"callouts":true},
   "paper/sv_translocation": {"parts":["paper/sv_junction_scaffold","paper/sv_scaffold_overview"],"horizontal":false,"gutter":16,"sideMargin":60,"callouts":true},
   "pangenome/rgfa_launch_roundtrip": {"parts":["pangenome/rgfa_strain_launch","pangenome/rgfa_segment_neighbourhood"],"horizontal":true,"callouts":false},
   "pangenome/graph_context": {"parts":["pangenome/graph_context_none","pangenome/graph_context_hop1"],"horizontal":true,"callouts":false},
