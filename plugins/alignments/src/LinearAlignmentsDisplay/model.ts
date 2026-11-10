@@ -224,7 +224,6 @@ import type {
   SectionSource,
 } from './renderers/rendererTypes.ts'
 import type { SashimiLabel } from './renderers/sashimiMarks.ts'
-import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -801,21 +800,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The settings half of the below-coverage band geometry: whether each
-           * strip MAY be reserved and how tall, with neither data half
-           * answered.
-           */
-          get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
-            const { hasArcs, hasSashimiDownArcs, ...settings } =
-              this.statedBelowCoverageBands
-            return { ...settings, ...this.bandHeights }
-          },
-
-          /**
-           * #getter
-           * The pooled stack the drag bounds read: the bound heights, the
-           * settings, and whether any lane has arcs or a sashimi junction
-           * bound for its strip. Every lane's handle for a band resizes it.
+           * The pooled band stack: the bound heights, the settings, and
+           * whether any lane has arcs or a sashimi junction bound for its
+           * strip. Each lane's stack reads the settings and answers the data
+           * half itself; the drag bounds read the pooled answer, so every
+           * lane's handle for a band resizes it.
            */
           get belowCoverageBandsInput() {
             return { ...this.statedBelowCoverageBands, ...this.bandHeights }
@@ -829,7 +818,7 @@ export default function stateModelFactory(
            */
           get laneBandOverheads(): number[] {
             return laneBandOverheads(
-              this.belowCoverageBandsSettings,
+              this.belowCoverageBandsInput,
               self.groupOrder.map(g => g.key),
               this.arcsResult.inkGroupKeys,
               this.sashimiDownArcLanes,
@@ -1281,7 +1270,7 @@ export default function stateModelFactory(
         get sections() {
           return computeStackedSections(
             this.drawnLanes,
-            self.belowCoverageBandsSettings,
+            self.belowCoverageBandsInput,
             {
               rowHeight: self.rowHeight,
               minSectionHeight: this.minSectionHeight,
