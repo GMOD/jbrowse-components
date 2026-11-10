@@ -93,6 +93,7 @@ fusion table and a bedGraph from the copy-number segments. K562 is model
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
 ```bash
+curl -O https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 python3 depmap_to_jbrowse.py fusions OmicsFusionFiltered.csv ACH-000551 K562.star-fusion.tsv
 python3 depmap_to_jbrowse.py segments OmicsCNSegmentsProfile.csv PR-aheaZL K562_cn.bedGraph
 sort -k1,1 -k2,2n K562_cn.bedGraph |
@@ -110,7 +111,7 @@ moves both:
 
 ```bash
 python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \
-  ./liftOver calls.hg38.vcf liftwork
+  liftOver calls.hg38.vcf liftwork
 bgzip calls.hg38.vcf && tabix -f -C -p vcf calls.hg38.vcf.gz
 ```
 
