@@ -657,7 +657,7 @@ exists" is a claim to re-check, not a category to file things in.
   overlay painters, labels, SVG-export-only highlight boxes), and most of the
   rest is loop scaffolding and style caching rather than shader-mirrored math.
   Reducing canvas LOC generally is a *different* job: keep promoting recurring
-  loop pieces into `canvas2dUtils.ts`, as `forEachClippedBlock` / `fillBpSpan` /
+  loop pieces into `canvas2dUtils.ts`, as `forEachClippedBlock` and
   `makeCellLeftMapper` already were.
 - One consumer changed behavior rather than just its source: synteny's
   `resolveInstanceFill` now rounds to 8 bits instead of truncating with `| 0`.

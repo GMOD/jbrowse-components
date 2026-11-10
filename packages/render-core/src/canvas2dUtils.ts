@@ -439,7 +439,6 @@ export function spanLeft(x1: number, x2: number, width: number) {
  * fill — a hover box, an SVG rect, a cull test, an overlay div — which is where
  * the pivot and the floor were being restated separately. The multi-row painter
  * and the hover box it has to line up with each spelled out both.
- * `fillBpSpan` is the same span when a `fillRect` is the only consumer.
  *
  * Not for a per-instance paint loop: this allocates a result per call, so the
  * span mark's painter and wiggle's two bar loops take `spanLeft` and the two
@@ -561,38 +560,6 @@ export function makeCellLeftMapper(bounds: BpRegionBounds) {
   // these run per base per row, so a second mapper call per cell would show.
   const shift = bounds.reversed ? -pxPerBp : 0
   return (bp: number) => toX(bp) + shift
-}
-
-/**
- * Fill the rect covering genomic `[startBp, endBp)`, given a bare
- * `makeBpMapper`. Maps **both** edges and takes the leftmost, which is
- * orientation-safe by construction: on a reversed block bp runs leftward, so
- * the span's left edge is its *end*, and there is no pivot to get backwards.
- *
- * Prefer this to `makeCellLeftMapper` + a caller-computed width for anything
- * wider than one base. The pivot in `makeCellLeftMapper` is exactly one base,
- * which is right for a 1bp cell and wrong for an N-bp span — it
- * anchors the rect one base from the correct edge and then grows it the wrong
- * way. `fillBpSpan(bp, bp + 1)` is *identical* to the cell-mapper spelling, so
- * a per-base painter can use this too and never think about orientation again.
- *
- * `seam` is the caller's sub-pixel overlap (MAF's `GAP_STROKE_OFFSET`), added
- * to the width so adjacent cells don't show hairlines at ~1px/bp. Widening a
- * sub-pixel *feature* to a visible floor is a different job — that's
- * `spanLeft`, which must anchor the feature's start edge.
- */
-export function fillBpSpan(
-  ctx: { fillRect: (x: number, y: number, w: number, h: number) => void },
-  toX: (bp: number) => number,
-  startBp: number,
-  endBp: number,
-  top: number,
-  height: number,
-  seam = 0,
-) {
-  const x1 = toX(startBp)
-  const x2 = toX(endBp)
-  ctx.fillRect(Math.min(x1, x2), top, Math.abs(x2 - x1) + seam, height)
 }
 
 /**
