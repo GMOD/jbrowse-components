@@ -5,7 +5,11 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
+import {
+  regionBlocks,
+  regionsWidthPx,
+  windowFetchRegions,
+} from '@jbrowse/display-kit/regionHost'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -117,23 +121,13 @@ async function fetchedWiggleHost(
     ...fetchInputs,
     statusCallback: () => {},
   }
-  if (args.regions.length === 0) {
-    throw new Error('wiggleTables needs a region or regions')
-  }
   const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
     .value
   model.setFetched(
     {
       initialized: true,
-      settledDynamicBlocks: regions.map((r, i) => ({
-        start: r.start,
-        end: r.end,
-        displayedRegionIndex: i,
-      })),
-      trackWidthPx: regions.reduce(
-        (sum, r) => sum + (r.end - r.start) / bpPerPx,
-        0,
-      ),
+      settledDynamicBlocks: regionBlocks(regions),
+      trackWidthPx: regionsWidthPx(regions, bpPerPx),
     },
     new Map(results.entries()),
   )

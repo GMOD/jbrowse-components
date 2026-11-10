@@ -138,6 +138,29 @@ export function windowFetchRegions<
 }
 
 /**
+ * `regions` as a view's blocks laid end to end, each naming its displayed
+ * region by its index.
+ */
+export function regionBlocks(
+  regions: readonly { refName: string; start: number; end: number }[],
+) {
+  return regions.map(({ refName, start, end }, displayedRegionIndex) => ({
+    refName,
+    start,
+    end,
+    displayedRegionIndex,
+  }))
+}
+
+/** The px `regions` laid end to end take at `bpPerPx`. */
+export function regionsWidthPx(
+  regions: readonly { start: number; end: number }[],
+  bpPerPx: number,
+) {
+  return regions.reduce((sum, r) => sum + (r.end - r.start) / bpPerPx, 0)
+}
+
+/**
  * What a tables read fetches for `regions` (`windowFetchRegions`), each with
  * an empty `assemblyName`, refused when their index-only bytes summed are over
  * `byteLimit`. `tooLarge` is the refusal naming every region asked for, for a

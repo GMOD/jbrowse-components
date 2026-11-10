@@ -49,6 +49,7 @@ import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   byteGatedFetchRegions,
+  regionBlocks,
   windowFrames,
 } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -1561,9 +1562,6 @@ export async function alignmentTables(
     spanLimit = DEFAULT_SPAN_LIMIT,
   }: AlignmentTablesArgs,
 ) {
-  if (regions.length === 0) {
-    throw new Error('alignmentTables reads a region, or regions')
-  }
   const several = regions.length > 1
   const span = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   if (span > spanLimit) {
@@ -1686,18 +1684,8 @@ function laidOutTables(
   host.setInputs({
     rpcDataMap: fetched,
     fetchedRegions,
-    regionInfos: regions.map((r, i) => ({
-      refName: r.refName,
-      start: r.start,
-      end: r.end,
-      displayedRegionIndex: i,
-    })),
-    frames: frames.map((r, i) => ({
-      refName: r.refName,
-      start: r.start,
-      end: r.end,
-      displayedRegionIndex: i,
-    })),
+    regionInfos: regionBlocks(regions),
+    frames: regionBlocks(frames),
     sortColumn,
     paintedRefNamePosition,
   })

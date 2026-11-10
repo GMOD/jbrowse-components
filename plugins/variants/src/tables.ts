@@ -199,9 +199,6 @@ async function fetchedVariantHost(
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: VariantTablesArgs,
 ) {
-  if (regions.length === 0) {
-    throw new Error('variantTables reads a region, or regions')
-  }
   const host = VariantTablesHost.create(
     {
       configuration: {

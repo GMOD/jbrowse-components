@@ -4,7 +4,10 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
-import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
+import {
+  byteGatedFetchRegions,
+  regionBlocks,
+} from '@jbrowse/display-kit/regionHost'
 import { runInAction } from 'mobx'
 
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
@@ -356,10 +359,10 @@ export async function featureTables(
   }: FeatureTablesArgs,
 ) {
   const host = createFeatureStaticHost({ id: 'tables', display, pluginManager })
-  const blocks = regions.map(r => ({
+  const blocks = regionBlocks(regions).map(b => ({
+    ...b,
     assemblyName: TABLES_ASSEMBLY,
-    ...r,
-    widthPx: (r.end - r.start) / bpPerPx,
+    widthPx: (b.end - b.start) / bpPerPx,
   }))
   host.setFrame({
     bpPerPx,
