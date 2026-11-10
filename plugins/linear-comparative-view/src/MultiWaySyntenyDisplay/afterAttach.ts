@@ -448,9 +448,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       }
     },
     empty: spec => ({ key: spec.key, genes: [] }),
-    commit: (genes, specs, anchor) => {
-      self.setLaneGenes(genes, specs, anchor)
-    },
+    commit: self.setLaneGenes,
   })
 
   installLaneFetch(self, {
@@ -483,9 +481,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         ? fetchLanePairBatch(self, [first, ...rest], ctx)
         : undefined,
     empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
-    commit: (links, specs, anchor) => {
-      self.setLaneLinks(links, specs, anchor)
-    },
+    commit: self.setLaneLinks,
   })
 
   installLaneFetch(self, {
@@ -501,9 +497,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       return { key: spec.key, features }
     },
     empty: spec => ({ key: spec.key, features: [] }),
-    commit: (groups, specs, anchor) => {
-      self.setLaneGroups(groups, specs, anchor)
-    },
+    commit: self.setLaneGroups,
   })
 
   installLaneFetch(self, {
@@ -535,8 +529,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       region: spec.region,
       channels: [],
     }),
-    commit: (layers, specs, anchor) => {
-      self.setLaneLayerData(layers, specs, anchor)
-    },
+    commit: self.setLaneLayerData,
   })
 }

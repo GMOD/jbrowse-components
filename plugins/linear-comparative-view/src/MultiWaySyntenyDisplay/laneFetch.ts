@@ -192,7 +192,7 @@ export function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
 }
 
-export interface LaneGenesSpecInputs {
+interface LaneGenesSpecInputs {
   windows: ReadonlyMap<string, LaneWindow>
   adapters: ReadonlyMap<string, Record<string, unknown>>
   tracks: ReadonlyMap<string, TrackConfigEntry>
@@ -248,7 +248,7 @@ export function laneGroupsFetchSpecsOf(
   })
 }
 
-export interface LaneLinksSpecInputs {
+interface LaneLinksSpecInputs {
   pairs: readonly LanePair[]
   windows: ReadonlyMap<string, Pick<LaneWindow, 'regions'>>
   rowFrames: ReadonlyMap<string, unknown>
