@@ -10,7 +10,7 @@ export interface Item {
   // a sub-schema slot's schema: the declIds its value expression names, and the
   // `#config` page the nearest of them resolves to once every config is read
   schemaDeclIds?: string[]
-  schemaPage?: { name: string; id: string }
+  schemaPage?: { name: string; id: string; list: boolean }
   schemas?: ReachedSchema[]
   returnedCode?: string
   // a sub-schema slot whose own slots are rows of this page, or of `page`: the

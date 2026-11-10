@@ -890,7 +890,8 @@ function slotKind(item: Item, code: string | undefined) {
   const pluggable =
     pluggableSlotType(code) ?? pluggableSlotType(item.returnedCode)
   if (item.schemaPage) {
-    return { name: item.schemaPage.name, href: `../${item.schemaPage.id}` }
+    const { name, id, list } = item.schemaPage
+    return { name: list ? `list of ${name} entries` : name, href: `../${id}` }
   } else if (pluggable) {
     return {
       name: pluggable.name,
@@ -911,7 +912,11 @@ function slotKind(item: Item, code: string | undefined) {
 // What a slot holds: its declared type, with a stringEnum's choices, else what
 // `slotKind` names, else a sub-schema named by its own name, else the source.
 type SlotType =
-  | { declared: string; enumValues?: readonly string[] }
+  | {
+      declared: string
+      enumValues?: readonly string[]
+      literalValues?: readonly string[]
+    }
   | { kind: string; href?: string }
   | { code: string | undefined }
 
@@ -938,7 +943,11 @@ function slotTypeOf(item: Item, meta: SlotMeta): SlotType {
   const schemaName =
     code && /^ConfigurationSchema\(\s*'([^']+)'/.exec(code)?.[1]
   return meta.type
-    ? { declared: meta.type, enumValues: meta.enumValues }
+    ? {
+        declared: meta.type,
+        enumValues: meta.enumValues,
+        literalValues: meta.literalValues,
+      }
     : kind
       ? { kind: kind.name, href: kind.href }
       : schemaName
@@ -980,7 +989,7 @@ export function slotTypeText(
   const { type } = record
   const text =
     'declared' in type
-      ? `${spell.declared(type.declared)}${type.enumValues ? ` (${enumList(type.enumValues)})` : ''}`
+      ? `${spell.declared(type.declared)}${type.literalValues ? ` or ${type.literalValues.map(v => spell.code(v)).join(' or ')}` : ''}${type.enumValues ? ` (${enumList(type.enumValues)})` : ''}`
       : 'kind' in type
         ? spell.kind(type.kind, type.href)
         : spell.code(type.code)
@@ -1082,7 +1091,11 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
         slot.schemaDeclIds?.map(id => index.byDeclId.get(id)).find(Boolean) ??
         (elementName ? index.byName.get(elementName) : undefined)
       if (schema) {
-        slot.schemaPage = { name: schema.header.name, id: schema.header.id }
+        slot.schemaPage = {
+          name: schema.header.name,
+          id: schema.header.id,
+          list: !!manifestSlot(header.name, slot.name)?.type.endsWith('[]'),
+        }
       }
       const first = pageSlots.find(
         s =>

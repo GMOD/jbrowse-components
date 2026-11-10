@@ -16,6 +16,9 @@ export interface SlotMeta {
   description?: string
   defaultValue?: string
   enumValues?: string[]
+  // the literals a `types.union(types.number, types.literal('fit'))` model
+  // takes beside its declared type
+  literalValues?: string[]
   advanced?: boolean
   // `contextVariable`: the names a jexl callback on this slot receives
   contextVariable?: string[]
@@ -90,8 +93,11 @@ function applySlotProperty(
     }
   } else if (key === 'model') {
     const values = enumerationValues(node)
+    const literals = unionLiterals(node)
     if (values) {
       meta.enumValues = values
+    } else if (literals) {
+      meta.literalValues = literals
     } else {
       meta.typeCode = node.getText()
     }
@@ -142,6 +148,33 @@ function enumerationValues(node: ts.Expression): string[] | undefined {
         : [],
   )
   return values?.length ? values : undefined
+}
+
+// The `types.literal(...)` members of a `types.union(...)` model, each as its
+// value, when every other member is a primitive type the slot's declared type
+// already names.
+function unionLiterals(node: ts.Expression): string[] | undefined {
+  const members =
+    ts.isCallExpression(node) && node.expression.getText() === 'types.union'
+      ? node.arguments
+      : undefined
+  const literals = members?.flatMap(member => {
+    const arg =
+      ts.isCallExpression(member) &&
+      member.expression.getText() === 'types.literal'
+        ? member.arguments[0]
+        : undefined
+    return arg
+      ? [
+          ts.isStringLiteralLike(arg)
+            ? `'${arg.text}'`
+            : ts.isIdentifier(arg)
+              ? `'${scalarConstantValue(arg.text) ?? arg.text}'`
+              : arg.getText(),
+        ]
+      : []
+  })
+  return literals?.length ? literals : undefined
 }
 
 // A default rendered compactly enough to sit on the label line: scalars,
