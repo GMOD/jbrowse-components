@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.6",
-    "astro": "^7.4.7",
+    "astro": "^7.4.8",
     "astro-icon": "^1.2.0",
     "github-slugger": "2.0.0",
     "rehype-raw": "^7.0.0",

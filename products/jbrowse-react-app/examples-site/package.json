@@ -13,12 +13,12 @@
     "check-links": "node node_modules/@jbrowse/browser-test-utils/bin/examples-site.mjs check-links"
   },
   "dependencies": {
-    "@astrojs/react": "^7.1.4",
+    "@astrojs/react": "^7.1.5",
     "@jbrowse/core": "workspace:*",
     "@jbrowse/display-ui": "workspace:*",
     "@jbrowse/mobx-state-tree": "^6.10.0",
     "@jbrowse/react-app2": "workspace:*",
-    "astro": "^7.4.7",
+    "astro": "^7.4.8",
     "mobx": "^7.1.5",
     "mobx-react": "^10.0.3",
     "react": "^19.3.1",
