@@ -68,11 +68,13 @@ path spelling and caption length; this doc is the rest.
   is, never "add this to `tracks`" or "run the CLI command below". An assembly
   the add-genome form has no input for (`aliases`, `geneticCodes`) gets no app
   tab, and the page gives that reader a sentence in its place.
-- `config=` on a session fence adds a live link: prefer
-  `config=test_data/<name>/config.json`, relative so `JBROWSE_CODE_BASE`
-  retargets it. An addtrack fence takes `loc=` (no spaces) from a locus the page
-  already states. **Judge what the session shows**; `check-session-urls` passing
-  says only that it opens.
+- `config=` on a session fence, and a `json live` fence (a session spec), add
+  an "Open in JBrowse" tab: prefer `config=test_data/<name>/config.json`,
+  relative so `JBROWSE_CODE_BASE` retargets it. An addtrack fence takes `loc=`
+  (no spaces) from a locus the page already states. A link that opens a session
+  spec also brings the figure recipe's tabs the fence lacks (Notebook, Image).
+  **Judge what the session shows**; `check-session-urls` passing says only that
+  it opens.
 - **Show what a command prints in a `text output` fence directly under it**,
   pasted from a real run; the site renders it in the command's box. Put a file
   the command writes in a plain `text` fence.

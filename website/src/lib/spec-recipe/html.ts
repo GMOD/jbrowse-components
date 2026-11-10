@@ -102,7 +102,7 @@ function assembliesNote(assemblies: string[]): string {
 // doesn't apply (a notebook snippet for a synteny view) simply isn't in it —
 // tab and panel positions stay in step with each other automatically, which
 // index-per-panel markup could not guarantee.
-function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
+export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
   return [
     {
       ...APP_TAB,

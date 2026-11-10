@@ -1,4 +1,4 @@
-import { CODE_BASE } from './code-base.ts'
+import { CODE_BASE, RELEASED_CODE_BASE } from './code-base.ts'
 import { defaultConfigs } from './default-configs.ts'
 import { configCliTabs } from './remark-config-cli-tabs.ts'
 
@@ -109,7 +109,7 @@ test('config= on an addtrack fence opens the track as a session track', () => {
     'addtrack config=test_data/volvox/config.json loc=chr1:1-100',
   )
   expect(messages).toEqual([])
-  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live'])
+  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live', 'notebook', 'img'])
   const web = hrefs.find(h => h.startsWith(CODE_BASE))!
   const params = new URL(web).searchParams
   expect(params.get('config')).toBe('test_data/volvox/config.json')
@@ -139,7 +139,7 @@ function configParam(html: string) {
 test('loc= alone opens the default config of the first assembly', () => {
   const { kinds, html, messages } = render('addtrack loc=chr1:1-100')
   expect(messages).toEqual([])
-  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live'])
+  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live', 'notebook', 'img'])
   expect(configParam(html)).toBe(defaultConfigs.hg38)
   expect(
     configParam(
@@ -278,4 +278,77 @@ test('a track a session on the page opens keeps its pasted config in the app tab
   )
   expect(chained).not.toContain('Main file')
   expect(chained).toContain('Add track from pasted JSON')
+})
+
+const SPEC = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-100',
+      tracks: ['volvox_sv'],
+    },
+  ],
+}
+
+test('a live fence renders the spec as a tab beside its web and Desktop links', () => {
+  const { kinds, hrefs, html } = render(
+    'live config=test_data/volvox/config.json',
+    SPEC,
+  )
+  expect(kinds.slice(0, 2)).toEqual(['config', 'live'])
+  expect(html).toContain('>Session spec</label>')
+  const web = hrefs.find(h => h.startsWith(CODE_BASE))!
+  const params = new URL(web).searchParams
+  expect(params.get('config')).toBe('test_data/volvox/config.json')
+  expect(JSON.parse(params.get('session')!.slice('spec-'.length))).toEqual(SPEC)
+  const desktop = hrefs.find(h => h.startsWith('jbrowse://'))!
+  expect(new URL(desktop).searchParams.get('url')).toBe(web)
+})
+
+test('a live fence on the released build is retargeted at CODE_BASE', () => {
+  const web = (meta: string) =>
+    render(meta, SPEC).hrefs.find(h => h.includes('session=spec-'))!
+  expect(web(`live base=${RELEASED_CODE_BASE}`).startsWith(CODE_BASE)).toBe(
+    true,
+  )
+  expect(web('live').startsWith(CODE_BASE)).toBe(true)
+  expect(
+    web('live base=https://example.com/jb2/').startsWith(
+      'https://example.com/jb2/?',
+    ),
+  ).toBe(true)
+})
+
+test('a fence opening a spec session gains the recipe tabs it lacks, and no Agent tab', () => {
+  const { kinds, html } = render(
+    'live config=test_data/volvox/config.json',
+    SPEC,
+  )
+  expect(kinds).toEqual(['config', 'live', 'desktop', 'notebook', 'img'])
+  expect(html).toContain('from jbrowse_anywidget import')
+})
+
+test('an addtrack fence gains no notebook tab when its track needs a plugin', () => {
+  const { kinds } = render('addtrack loc=chr1:1-100', {
+    ...TRACK,
+    type: 'SomePluginTrack',
+  })
+  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live'])
+})
+
+test('an addtrack fence with no live link gains no recipe tabs', () => {
+  expect(render('addtrack').kinds).not.toContain('notebook')
+})
+
+test("a session fence's live tab carries a Desktop link for its json- session", () => {
+  const { hrefs } = render('session config=test_data/volvox/config.json', {
+    defaultSession: {
+      views: [{ type: 'LinearGenomeView', assembly: 'volvox', tracks: ['a'] }],
+    },
+  })
+  const web = hrefs.find(h => h.startsWith(CODE_BASE))!
+  expect(new URL(web).searchParams.get('session')).toMatch(/^json-/)
+  const desktop = hrefs.find(h => h.startsWith('jbrowse://'))!
+  expect(new URL(desktop).searchParams.get('url')).toBe(web)
 })

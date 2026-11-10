@@ -19,10 +19,22 @@ import { CODE_BASE } from './code-base.ts'
 import { asRecord } from './derive-cli-command.ts'
 import { defaultSessionObject } from './derive-set-default-session.ts'
 
+// A fence's meta string as key/value pairs, the one parser every tagged fence
+// reads. A bare word (`addtrack`, `live`) maps to '', so test it with `in`.
+export function fenceMeta(meta: string | null | undefined) {
+  const out: Record<string, string> = {}
+  for (const m of (meta ?? '').matchAll(
+    /(\w+)(?:=(?:"([^"]*)"|'([^']*)'|(\S+)))?/g,
+  )) {
+    out[m[1]!] = m[2] ?? m[3] ?? m[4] ?? ''
+  }
+  return out
+}
+
 // `config=<url>` out of a fence's meta string, e.g.
 // ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 export function sessionConfigUrl(meta: string | null | undefined) {
-  return /(^|\s)config=(\S+)/.exec(meta ?? '')?.[2]
+  return fenceMeta(meta).config || undefined
 }
 
 /**

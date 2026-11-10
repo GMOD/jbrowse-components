@@ -24,7 +24,6 @@ import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
 import remarkSeeAlso from './remark-see-also.ts'
-import remarkSpecExample from './remark-spec-example.ts'
 import remarkVideo, { type VideoRef } from './remark-video.ts'
 import remarkWikiTitle from './remark-wiki-title.ts'
 
@@ -60,7 +59,6 @@ export function createRenderMarkdown({
     .use(remarkVideo)
     .use(remarkDocList)
     .use(remarkDocCards)
-    .use(remarkSpecExample)
     .use(remarkCodeBase)
     .use(remarkCodeOutput)
     .use(remarkAutolinkTypes)

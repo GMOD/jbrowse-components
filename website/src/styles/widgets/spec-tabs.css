@@ -1,7 +1,6 @@
 /* Radio-driven tabs: no JS, the checked input selects its panel.
    Markup: src/lib/spec-recipe/html.ts (the figure recipe dialog) and
-   src/lib/remark-config-cli-tabs.ts (the Config/CLI tabs on a track-config
-   fence). Two callers in unrelated contexts, so every rule here keys off
+   src/lib/remark-config-cli-tabs.ts (the tabs on a tagged JSON fence). Two callers in unrelated contexts, so every rule here keys off
    `.spec-tabs` and nothing above it. */
 @layer widget {
   .spec-tabs > .spec-tab-input {

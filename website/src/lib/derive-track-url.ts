@@ -9,11 +9,11 @@ import { toProtocolUrl } from '../../../products/jbrowse-desktop/electron/launch
 import { CODE_BASE } from './code-base.ts'
 import { defaultConfigUrl } from './default-configs.ts'
 import { configFileUris } from './derive-desktop-steps.ts'
-import { sessionConfigUrl } from './derive-session-url.ts'
+import { fenceMeta, sessionConfigUrl } from './derive-session-url.ts'
 import { withSessionName } from './spec-recipe/recipe.ts'
 
 export function trackLocation(meta: string | null | undefined) {
-  return /(^|\s)loc=(\S+)/.exec(meta ?? '')?.[2]
+  return fenceMeta(meta).loc || undefined
 }
 
 export function trackConfigUrl(
@@ -26,14 +26,25 @@ export function trackConfigUrl(
   )
 }
 
-export type TrackLinks =
-  | { webUrl: string; desktopUrl: string }
-  | { refusal: string }
+export function specUrl(base: string, configUrl: string, spec: unknown) {
+  return `${base}?${[
+    ...(configUrl ? [`config=${encodeURIComponent(configUrl)}`] : []),
+    `session=spec-${encodeURIComponent(JSON.stringify(spec))}`,
+  ].join('&')}`
+}
+
+// Every fence's web and Desktop links, named for the session Desktop writes
+export function liveLinks(url: string, name?: string) {
+  const webUrl = withSessionName(url, name)
+  return { webUrl, desktopUrl: toProtocolUrl(webUrl) }
+}
+
+export type LiveLinks = ReturnType<typeof liveLinks>
 
 export function deriveTrackLinks(
   config: Record<string, unknown>,
   meta: string | null | undefined,
-): TrackLinks | undefined {
+) {
   const loc = trackLocation(meta)
   if (sessionConfigUrl(meta) === undefined && loc === undefined) {
     return undefined
@@ -68,9 +79,8 @@ export function deriveTrackLinks(
       },
     ],
   }
-  const webUrl = withSessionName(
-    `${CODE_BASE}?config=${encodeURIComponent(configUrl)}&session=spec-${encodeURIComponent(JSON.stringify(spec))}`,
+  return liveLinks(
+    specUrl(CODE_BASE, configUrl, spec),
     typeof name === 'string' ? name : trackId,
   )
-  return { webUrl, desktopUrl: toProtocolUrl(webUrl) }
 }
