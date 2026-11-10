@@ -177,9 +177,9 @@ describe('a split arc names the sashimi junction its reads make', () => {
     expect(lit[0]?.reads).toEqual([0, 1])
   })
 
-  test('two feet on one base take a split color but name no junction', () => {
+  test('two feet on one base paint an insertion and name no sashimi junction', () => {
     const [arc] = litBy(splitRead([100, 200, 1], [200, 300, 1]), ONE_REGION)
-    expect(arc?.category).toBe('splitForward')
+    expect(arc?.category).toBe('splitInsertion')
     expect(arc?.junction).toBeUndefined()
   })
 })

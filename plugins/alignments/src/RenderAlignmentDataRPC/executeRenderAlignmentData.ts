@@ -278,6 +278,7 @@ async function buildGroupResult(
           features,
           suppAlignments,
           clipAtStart,
+          alignedBases,
           readNames,
           fetched: fetchedSegments,
         })

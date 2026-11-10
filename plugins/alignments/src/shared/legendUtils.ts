@@ -65,6 +65,7 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
+import type { SashimiSplitClass } from '../features/sashimi/junctionClass.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
@@ -332,7 +333,7 @@ export const SASHIMI_LEGEND_TITLE = 'Sashimi arcs'
  */
 export interface SashimiLegend {
   strands: LegendItem[]
-  splits: { split: ArcSplitCategory; color: string }[]
+  splits: { split: SashimiSplitClass; color: string }[]
 }
 
 export function sashimiLegend(

@@ -227,6 +227,7 @@ import type {
   RowCap,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+import type { ArcSplitCategory } from './features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
 import type { LinkedPair } from './features/linkedReads/compute.ts'
@@ -946,9 +947,19 @@ function arcLevelOf(category: ArcCategory) {
   )
 }
 
-/** A split read's arc's `junction.class`, '' for a pair's. */
+// A split read's arc's class: a sashimi junction's `junction.class`, and an
+// insertion, which draws no sashimi junction.
+const ARC_SPLIT_CLASS: Record<ArcSplitCategory, string> = {
+  splitForward: junctionClass('splitForward'),
+  splitBack: junctionClass('splitBack'),
+  splitInvLL: junctionClass('splitInvLL'),
+  splitInvRR: junctionClass('splitInvRR'),
+  splitInsertion: 'insertion',
+}
+
+/** A split read's arc's class, '' for a pair's. */
 function arcClassOf(category: ArcCategory) {
-  return isArcSplitCategory(category) ? junctionClass(category) : ''
+  return isArcSplitCategory(category) ? ARC_SPLIT_CLASS[category] : ''
 }
 const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
 

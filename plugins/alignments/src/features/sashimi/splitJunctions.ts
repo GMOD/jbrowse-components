@@ -3,24 +3,20 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
-  readLeadingBodyDir,
   readLeadingBp,
-  readTrailingBodyDir,
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
 import { adapterRefName } from '@jbrowse/core/util'
 
-import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { splitJunctionSlot } from '../arcs/arcColors.ts'
-import { SPLIT_JUNCTION_CLASSES, splitClassCode } from './junctionClass.ts'
+import { isArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import { splitClassCode } from './junctionClass.ts'
 
 import type { FeatureData } from '../../shared/webglRpcTypes.ts'
+import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { ReadNames } from '@jbrowse/alignments-core'
 import type { AdapterRefName } from '@jbrowse/core/util'
-
-const CATEGORY_OF_SLOT = new Map(
-  SPLIT_JUNCTION_CLASSES.map(c => [ARC_SLOT_CATEGORY.indexOf(c), c]),
-)
 
 const MINUS = 45
 const ZERO = 48
@@ -53,60 +49,55 @@ function digitsAt(s: string, from: number, to: number) {
 type Visit = (
   start: number,
   end: number,
-  splitClass: number,
+  split: ArcSplitCategory,
   predecessorClip: number,
 ) => void
 
+/** One piece of a split read: its span, strand and place along the read. */
+export interface SplitPiece {
+  start: number
+  end: number
+  strand: number
+  clip: number
+  alignedBases: number
+}
+
 /**
- * The junction a read makes leaving segment 1 by its read-trailing edge and
- * entering segment 2 by its read-leading edge, classed as the read arcs class
- * it (`splitJunctionColor`): undefined when a strand is unknown, `category`
- * undefined when the two feet share a base and the junction spans nothing.
+ * The junction a read makes leaving piece `a` by its read-trailing edge and
+ * entering the next piece in read order, `b`, by its read-leading edge,
+ * classed as the read arcs class it (`splitJunctionSlot`): undefined when a
+ * strand is unknown.
  */
-export function splitJoin(
-  s1: number,
-  start1: number,
-  end1: number,
-  s2: number,
-  start2: number,
-  end2: number,
-) {
-  const kind = splitJunctionKind(s1, s2)
-  const bp1 = readTrailingBp(s1, start1, end1)
-  const bp2 = readLeadingBp(s2, start2, end2)
-  return kind === undefined
+export function splitJoin(a: SplitPiece, b: SplitPiece) {
+  const bp1 = readTrailingBp(a.strand, a.start, a.end)
+  const bp2 = readLeadingBp(b.strand, b.start, b.end)
+  const category = arcSlotCategory(
+    splitJunctionSlot(
+      a.strand,
+      bp1,
+      b.strand,
+      bp2,
+      b.clip - (a.clip + a.alignedBases),
+    ),
+  )
+  return splitJunctionKind(a.strand, b.strand) === undefined ||
+    !isArcSplitCategory(category)
     ? undefined
-    : {
-        bp1,
-        bp2,
-        category:
-          bp1 === bp2
-            ? undefined
-            : CATEGORY_OF_SLOT.get(
-                splitJunctionSlot(
-                  kind === 'inversion',
-                  bp1 < bp2 ? readTrailingBodyDir(s1) : readLeadingBodyDir(s2),
-                ),
-              ),
-      }
+    : { bp1, bp2, category }
 }
 
 function visitJoin(
-  s1: number,
-  start1: number,
-  end1: number,
-  s2: number,
-  start2: number,
-  end2: number,
+  a: SplitPiece,
+  b: SplitPiece,
   predecessorClip: number,
   visit: Visit,
 ) {
-  const join = splitJoin(s1, start1, end1, s2, start2, end2)
-  if (join?.category !== undefined) {
+  const join = splitJoin(a, b)
+  if (join) {
     visit(
       Math.min(join.bp1, join.bp2),
       Math.max(join.bp1, join.bp2),
-      splitClassCode(join.category),
+      join.category,
       predecessorClip,
     )
   }
@@ -197,65 +188,48 @@ export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
  * and joins nothing here. An SA entry the read arcs drop joins nothing either.
  */
 export function forEachSplitJunction(
-  segment: { start: number; end: number; strand: number; clipAtStart: number },
+  segment: SplitPiece,
   sa: string,
   isHere: (refName: AdapterRefName) => boolean,
   visit: Visit,
 ) {
-  const { clipAtStart } = segment
+  const { clip: clipAtStart } = segment
   const near: { before?: Neighbour; after?: Neighbour } = {}
-  forEachSAEntry(sa, (nameStart, nameEnd, start, end, strand, clip) => {
-    if (clip < clipAtStart && clip > (near.before?.clip ?? -1)) {
-      near.before = {
-        here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
-        strand,
-        start,
-        end,
-        clip,
+  forEachSAEntry(
+    sa,
+    (nameStart, nameEnd, start, end, strand, clip, _mapq, alignedBases) => {
+      if (clip < clipAtStart && clip > (near.before?.clip ?? -1)) {
+        near.before = {
+          here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
+          strand,
+          start,
+          end,
+          clip,
+          alignedBases,
+        }
+      } else if (clip > clipAtStart && clip < (near.after?.clip ?? Infinity)) {
+        near.after = {
+          here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
+          strand,
+          start,
+          end,
+          clip,
+          alignedBases,
+        }
       }
-    } else if (clip > clipAtStart && clip < (near.after?.clip ?? Infinity)) {
-      near.after = {
-        here: isHere(adapterRefName(sa.slice(nameStart, nameEnd))),
-        strand,
-        start,
-        end,
-        clip,
-      }
-    }
-  })
+    },
+  )
   const { before, after } = near
   if (before?.here) {
-    visitJoin(
-      before.strand,
-      before.start,
-      before.end,
-      segment.strand,
-      segment.start,
-      segment.end,
-      before.clip,
-      visit,
-    )
+    visitJoin(before, segment, before.clip, visit)
   }
   if (after?.here) {
-    visitJoin(
-      segment.strand,
-      segment.start,
-      segment.end,
-      after.strand,
-      after.start,
-      after.end,
-      -1,
-      visit,
-    )
+    visitJoin(segment, after, -1, visit)
   }
 }
 
-interface Neighbour {
+interface Neighbour extends SplitPiece {
   here: boolean
-  strand: number
-  start: number
-  end: number
-  clip: number
 }
 
 export interface SplitJunction {
@@ -269,6 +243,7 @@ interface SplitRecords {
   features: readonly FeatureData[]
   suppAlignments: readonly string[] | undefined
   clipAtStart: readonly number[]
+  alignedBases: readonly number[]
   readNames: ReadNames
 }
 
@@ -320,13 +295,15 @@ export function fetchedSplitSegments(groups: Iterable<SplitRecords>) {
  * and the later one stands in. A primary and its supplementary never count
  * twice, a junction lands in the group holding its earlier segment, and every
  * region holding a junction foot sees its full count. Secondary alignments are
- * another mapping of the same bases and join nothing.
+ * another mapping of the same bases and join nothing, and an insertion
+ * junction spans no reference to draw an arc over.
  */
 export function computeSplitJunctions({
   refName,
   features,
   suppAlignments,
   clipAtStart,
+  alignedBases,
   readNames,
   fetched,
 }: SplitRecords & { refName: string; fetched: FetchedSegments }) {
@@ -339,13 +316,15 @@ export function computeSplitJunctions({
   let mate = 0
   const here = adapterRefName(refName)
   const isHere = (name: AdapterRefName) => name === here
-  const visit: Visit = (start, end, splitClass, predecessorClip) => {
+  const visit: Visit = (start, end, split, predecessorClip) => {
     if (
-      predecessorClip === -1 ||
-      !fetched
-        .get(readNameAt(readNames, record))
-        ?.includes(predecessorClip * 4 + mate)
+      split !== 'splitInsertion' &&
+      (predecessorClip === -1 ||
+        !fetched
+          .get(readNameAt(readNames, record))
+          ?.includes(predecessorClip * 4 + mate))
     ) {
+      const splitClass = splitClassCode(split)
       let list = byStart.get(start)
       if (!list) {
         list = []
@@ -372,7 +351,8 @@ export function computeSplitJunctions({
           start: f.start,
           end: f.end,
           strand: f.strand,
-          clipAtStart: clipAtStart[i]!,
+          clip: clipAtStart[i]!,
+          alignedBases: alignedBases[i]!,
         },
         sa,
         isHere,

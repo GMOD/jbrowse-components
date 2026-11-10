@@ -32,6 +32,7 @@ export const ARC_SLOT_CATEGORY = [
   'splitBack',
   'splitInvLL',
   'splitInvRR',
+  'splitInsertion',
 ] as const satisfies readonly (SwatchCategory | ArcSplitCategory)[]
 
 /**

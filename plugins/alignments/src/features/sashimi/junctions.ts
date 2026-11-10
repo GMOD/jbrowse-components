@@ -32,7 +32,7 @@ import {
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { JunctionFilter } from '../../shared/types.ts'
-import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { SashimiSplitClass } from './junctionClass.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'up' draws every arc over the
@@ -53,7 +53,7 @@ export function junctionKey(
   refName: string,
   start: number,
   end: number,
-  split?: ArcSplitCategory,
+  split?: SashimiSplitClass,
 ) {
   return split
     ? `${refName}:${start}:${end}:${split}`
@@ -70,7 +70,7 @@ export interface MergedJunction {
   strand: number
   motif: number
   /** The split class of a junction counted from split reads, undefined for an N gap. */
-  split: ArcSplitCategory | undefined
+  split: SashimiSplitClass | undefined
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
@@ -86,7 +86,7 @@ interface JunctionAccumulator {
   rev: number
   donor: number
   acceptor: number
-  split: ArcSplitCategory | undefined
+  split: SashimiSplitClass | undefined
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:

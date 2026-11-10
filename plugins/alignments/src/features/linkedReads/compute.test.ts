@@ -363,7 +363,7 @@ describe('classifyPair — split long reads', () => {
     expect(c.isNormal).toBe(false)
   })
 
-  it('two segments meeting on one base skip nothing and map back over nothing', () => {
+  it('two segments meeting on one base map back over nothing and paint an insertion', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -377,7 +377,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.mapsBack).toBe(false)
-    expect(paints(c.colorType)).toBe('splitForward')
+    expect(paints(c.colorType)).toBe('splitInsertion')
   })
 
   it('both rev, e1 left of e2 in read order → maps back, strand-flipped edges', () => {

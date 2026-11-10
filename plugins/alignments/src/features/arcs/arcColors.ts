@@ -1,10 +1,11 @@
 import { PAIR_DIRECTION_NUM, splitJunctionKind } from '@jbrowse/alignments-core'
+import { SV_INDEL_MIN_BP } from '@jbrowse/cigar-utils'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { pairCategory } from '../../shared/pairCategory.ts'
 
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ComputedArc, PendingArc } from './arcTypes.ts'
+import type { ComputedArc, PendingArc, SplitPendingArc } from './arcTypes.ts'
 
 // Which color slot an arc paints in, and the paint order that follows from it.
 // Split from `compute.ts`: classification is a pure function of a connection's
@@ -53,6 +54,8 @@ export const ARC_COLOR_SPLIT_FORWARD = ARC_SLOT_CATEGORY.indexOf('splitForward')
 export const ARC_COLOR_SPLIT_BACK = ARC_SLOT_CATEGORY.indexOf('splitBack')
 export const ARC_COLOR_SPLIT_INV_LL = ARC_SLOT_CATEGORY.indexOf('splitInvLL')
 export const ARC_COLOR_SPLIT_INV_RR = ARC_SLOT_CATEGORY.indexOf('splitInvRR')
+export const ARC_COLOR_SPLIT_INSERTION =
+  ARC_SLOT_CATEGORY.indexOf('splitInsertion')
 
 // Paint rank of an arc color slot: 0 for the baseline "nothing to see here"
 // slot, 1 for every slot that says something. Array order is paint order and
@@ -111,37 +114,64 @@ export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
   )
 }
 
-// A junction's class from the direction the read extends at its lower and its
-// higher foot. Same-strand segments always extend opposite ways and
-// opposite-strand segments the same way, so every junction with both strands
-// known lands in one of the four; an unknown strand keeps the default slot.
-//
-// Two feet on one base (a split insertion) have no lower foot, and ordering
-// them by arrival made a forward read "forward" and a reverse read over the
-// same junction "back" — two arcs, each with half the support. The left-
-// extending foot is the lower one there.
-function splitJunctionColor(arc: PendingArc) {
-  const kind = splitJunctionKind(arc.p1Strand, arc.p2Strand)
-  if (kind === undefined) {
-    return ARC_COLOR_DEFAULT
-  }
-  const p1IsLower =
-    arc.p1Bp === arc.p2Bp ? arc.p1Dir === -1 : arc.p1Bp < arc.p2Bp
-  return splitJunctionSlot(
-    kind === 'inversion',
-    p1IsLower ? arc.p1Dir : arc.p2Dir,
+// A split junction's slot. Its two feet are the earlier piece's read-trailing
+// edge (`bp1`) and the later piece's read-leading edge (`bp2`); an unknown
+// strand keeps the default slot.
+function splitJunctionColor(arc: SplitPendingArc) {
+  return splitJunctionKind(arc.p1Strand, arc.p2Strand) === undefined
+    ? ARC_COLOR_DEFAULT
+    : splitJunctionSlot(
+        arc.p1Strand,
+        arc.p1Bp,
+        arc.p2Strand,
+        arc.p2Bp,
+        arc.readGap,
+      )
+}
+
+/**
+ * Whether a same-strand junction is an insertion: the read comes back where
+ * it left (`refGap`, the reference it skips in its own direction, 0), or reads
+ * an SV-size stretch (`readGap`) between pieces that overlap or miss by at
+ * most half of it, as a target-site duplication or flank homology leaves them,
+ * and skip under an SV's worth of reference, which a deletion would.
+ */
+export function isSplitInsertion(refGap: number, readGap: number) {
+  return (
+    refGap === 0 ||
+    (readGap >= SV_INDEL_MIN_BP &&
+      2 * Math.abs(refGap) <= readGap &&
+      refGap < SV_INDEL_MIN_BP)
   )
 }
 
-/** A split junction's slot, by whether it inverts and which way the read extends from its lower foot. */
-export function splitJunctionSlot(inversion: boolean, lowerDir: number) {
-  return inversion
+/**
+ * A split junction's slot, from its feet in read order (`s1`/`bp1` the
+ * earlier piece's strand and read-trailing edge, `s2`/`bp2` the later's and
+ * read-leading edge) and the read bases between the two pieces. An inversion
+ * is classed by which way the read extends from its lower foot, the left-
+ * extending foot the lower one where both share a base; a same-strand
+ * junction by `isSplitInsertion`, then by whether the read skips reference
+ * (deletion-type) or steps back (duplication-type).
+ */
+export function splitJunctionSlot(
+  s1: number,
+  bp1: number,
+  s2: number,
+  bp2: number,
+  readGap: number,
+) {
+  const lowerDir = bp1 < bp2 || (bp1 === bp2 && s1 === 1) ? -s1 : s2
+  const refGap = (bp2 - bp1) * s1
+  return s1 !== s2
     ? lowerDir === -1
       ? ARC_COLOR_SPLIT_INV_LL
       : ARC_COLOR_SPLIT_INV_RR
-    : lowerDir === -1
-      ? ARC_COLOR_SPLIT_FORWARD
-      : ARC_COLOR_SPLIT_BACK
+    : isSplitInsertion(refGap, readGap)
+      ? ARC_COLOR_SPLIT_INSERTION
+      : refGap > 0
+        ? ARC_COLOR_SPLIT_FORWARD
+        : ARC_COLOR_SPLIT_BACK
 }
 
 /** The slot a mate link paints. */

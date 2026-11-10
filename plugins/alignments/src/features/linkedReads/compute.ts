@@ -2,6 +2,7 @@ import {
   classifyConnection,
   isAbnormalConnection,
   pairFieldEntry,
+  readGapBetween,
   readGroupConnections,
   readNameAt,
 } from '@jbrowse/alignments-core'
@@ -17,7 +18,10 @@ import {
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
-import type { ConnectionKind } from '@jbrowse/alignments-core'
+import type {
+  ConnectionEndpoints,
+  ConnectionKind,
+} from '@jbrowse/alignments-core'
 
 // No refName, unlike the arc path's entry: every comparison this path makes is
 // between two on-screen entries, and the overlay resolves each end's refName
@@ -116,18 +120,11 @@ export function classifyPair(
       e2,
       interchrom ? 'interchrom' : kind,
       isSplit,
-      lowerFootDir(bp1, s1, bp2, s2),
+      { s1, bp1, s2, bp2 },
     ),
     interchrom,
     isSplit,
   }
-}
-
-// Which way a split read extends from its lower foot: against s1 from the
-// first, along s2 from the second, the first foot lower on one base when it
-// extends left.
-function lowerFootDir(bp1: number, s1: number, bp2: number, s2: number) {
-  return bp1 < bp2 || (bp1 === bp2 && s1 === 1) ? -s1 : s2
 }
 
 // The slots the arc band paints the same connection in (`getArcColorType`),
@@ -138,14 +135,14 @@ function connectionColorType(
   e2: ReadEntry,
   kind: ConnectionKind,
   isSplit: boolean,
-  lowerDir: number,
+  { s1, bp1, s2, bp2 }: ConnectionEndpoints,
 ) {
   if (kind === 'interchrom') {
     return ARC_COLOR_INTERCHROM
   }
   if (isSplit) {
     return kind === 'splitSameStrand' || kind === 'splitInverted'
-      ? splitJunctionSlot(kind === 'splitInverted', lowerDir)
+      ? splitJunctionSlot(s1, bp1, s2, bp2, readGapBetween(e1, e2))
       : ARC_COLOR_DEFAULT
   }
   const { data, readIdx } = pairFieldEntry(e1, e2)

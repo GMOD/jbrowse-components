@@ -986,6 +986,20 @@ describe('getAlignmentsColorScales', () => {
     expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
   })
 
+  test('an insertion split row joins the short insert row', () => {
+    const split = { color: 'teal', label: 'Split read (insertion)' }
+    expect(
+      shown(
+        getAlignmentsColorScales(
+          model([{ color: 'teal', label: 'Short insert' }], [split]),
+        ),
+      ),
+    ).toEqual([['Read and arc colors', ['Short insert or insertion split']]])
+    expect(arcColorCategoryLabel('splitInsertion')).toBe(
+      'Split read (insertion)',
+    )
+  })
+
   test('a split arc row joins the pair row it shares a color with', () => {
     const split = { color: 'red', label: 'Split read (duplication-type)' }
     expect(

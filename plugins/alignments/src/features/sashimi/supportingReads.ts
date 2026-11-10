@@ -4,14 +4,13 @@ import { adapterRefNameText } from '@jbrowse/core/util'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { GAP_SKIP } from '../../shaders/slang/gap.consts.generated.ts'
 import { isArcSplitCategory } from '../arcs/arcSplitCategory.ts'
-import { splitClassCode } from './junctionClass.ts'
 import { forEachSplitJunction } from './splitJunctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
-import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { ArcBandHit } from '../arcs/bandFeed.ts'
+import type { SashimiSplitClass } from './junctionClass.ts'
 import type { AdapterRefName } from '@jbrowse/core/util'
 
 /** A junction as one lane draws it: what a hovered sashimi arc names. */
@@ -21,7 +20,7 @@ export interface LaneJunction {
   start: number
   end: number
   // the split class of a split junction, unset for an N gap
-  split?: ArcSplitCategory
+  split?: SashimiSplitClass
 }
 
 /**
@@ -47,7 +46,7 @@ export function arcSplitJunction(hit: ArcBandHit, refName: string | undefined) {
     refName !== undefined
   ) {
     const split = arcSlotCategory(hit.colorType)
-    if (isArcSplitCategory(split)) {
+    if (isArcSplitCategory(split) && split !== 'splitInsertion') {
       junction = {
         refName,
         start: Math.min(hit.x1, hit.x2),
@@ -83,6 +82,7 @@ type ReadFields = Pick<
   | 'readFlags'
   | 'readSuppAlignments'
   | 'readClipAtStart'
+  | 'readAlignedBases'
 >
 
 function skipGapReads(data: ReadFields, start: number, end: number) {
@@ -105,24 +105,28 @@ function skipGapReads(data: ReadFields, start: number, end: number) {
 function splitReads(
   data: ReadFields,
   junction: LaneJunction,
-  split: ArcSplitCategory,
+  split: SashimiSplitClass,
   canonicalRefName: CanonicalRefName,
 ) {
-  const { readSuppAlignments, readClipAtStart, readPositions, readStrands } =
-    data
+  const {
+    readSuppAlignments,
+    readClipAtStart,
+    readAlignedBases,
+    readPositions,
+    readStrands,
+  } = data
   const reads: number[] = []
   if (!readSuppAlignments || !readClipAtStart) {
     return reads
   }
-  const code = splitClassCode(split)
   const isHere = (refName: AdapterRefName) =>
     canonicalRefName(refName) === junction.refName
   let read = -1
-  const visit = (start: number, end: number, splitClass: number) => {
+  const visit = (start: number, end: number, joinSplit: string) => {
     if (
       start === junction.start &&
       end === junction.end &&
-      splitClass === code &&
+      joinSplit === split &&
       reads.at(-1) !== read
     ) {
       reads.push(read)
@@ -137,7 +141,8 @@ function splitReads(
           start: readPositions[i * 2]!,
           end: readPositions[i * 2 + 1]!,
           strand: readStrands[i]!,
-          clipAtStart: readClipAtStart[i]!,
+          clip: readClipAtStart[i]!,
+          alignedBases: readAlignedBases?.[i] ?? 0,
         },
         sa,
         isHere,

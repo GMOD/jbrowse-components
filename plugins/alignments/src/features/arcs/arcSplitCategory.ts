@@ -13,6 +13,7 @@ export const ARC_SPLIT_SWATCH = {
   splitBack: 'pairRL',
   splitInvLL: 'pairLL',
   splitInvRR: 'pairRR',
+  splitInsertion: 'shortInsert',
 } as const satisfies Record<string, SwatchCategory>
 
 export type ArcSplitCategory = keyof typeof ARC_SPLIT_SWATCH
@@ -26,6 +27,7 @@ export const ARC_SPLIT_LABELS: Record<ArcSplitCategory, string> = {
   splitBack: 'Split read (duplication-type)',
   splitInvLL: 'Split read (inversion, LL-type)',
   splitInvRR: 'Split read (inversion, RR-type)',
+  splitInsertion: 'Split read (insertion)',
 }
 
 // The one row a split class and its pair twin share when a key holds both: they
@@ -35,6 +37,7 @@ export const ARC_SPLIT_MERGED_LABELS: Record<ArcSplitCategory, string> = {
   splitBack: 'RL pair or duplication-type split',
   splitInvLL: 'LL pair or inversion split',
   splitInvRR: 'RR pair or inversion split',
+  splitInsertion: 'Short insert or insertion split',
 }
 
 export function isArcSplitCategory(

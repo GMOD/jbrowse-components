@@ -7,6 +7,7 @@ import {
   ARC_COLOR_DEFAULT,
   ARC_COLOR_SPLIT_BACK,
   ARC_COLOR_SPLIT_FORWARD,
+  ARC_COLOR_SPLIT_INSERTION,
   ARC_COLOR_SPLIT_INV_LL,
   ARC_COLOR_SPLIT_INV_RR,
   getArcColorType,
@@ -38,6 +39,7 @@ function junction([start1, end1, s1]: Segment, [start2, end2, s2]: Segment) {
     p2Strand: s2,
     p2Dir: dir2,
     isSplit: true,
+    readGap: 0,
   } satisfies PendingArc
 }
 
@@ -84,12 +86,12 @@ describe('split junction class', () => {
     expect(colorType(fromOtherEnd(a, b))).toBe(expected)
   })
 
-  test('two feet on one base class the same from either end', () => {
+  test('two feet on one base are an insertion from either end', () => {
     const a: Segment = [100, 200, 1]
     const b: Segment = [200, 300, 1]
     expect(junction(a, b).p1Bp).toBe(junction(a, b).p2Bp)
-    expect(colorType(junction(a, b))).toBe(ARC_COLOR_SPLIT_FORWARD)
-    expect(colorType(fromOtherEnd(a, b))).toBe(ARC_COLOR_SPLIT_FORWARD)
+    expect(colorType(junction(a, b))).toBe(ARC_COLOR_SPLIT_INSERTION)
+    expect(colorType(fromOtherEnd(a, b))).toBe(ARC_COLOR_SPLIT_INSERTION)
   })
 
   test('an unknown strand keeps the default slot', () => {

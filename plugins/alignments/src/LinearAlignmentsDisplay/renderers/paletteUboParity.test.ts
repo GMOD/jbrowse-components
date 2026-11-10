@@ -2,7 +2,11 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { buildArcColorPalette } from '../../shaders/palettes.ts'
+import {
+  ARC_SLOT_CATEGORY,
+  buildArcColorPalette,
+} from '../../shaders/palettes.ts'
+import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   UNIFORM_OFFSET_U32,
   UNIFORM_SLOT_ARRAYS,
@@ -157,6 +161,17 @@ describe('the indexed palette uniforms', () => {
       ])
     },
   )
+
+  // The loop above walks the shader's own slot count, so a slot the arcs add
+  // and the shader lacks would pass it while `linkedReadColorSlot` clamps
+  // that slot onto the one before.
+  test('linkedReadColor holds a slot per arc color, and clamps none of them', () => {
+    const last = ARC_SLOT_CATEGORY.length - 1
+    expect(UNIFORM_SLOT_ARRAYS.linkedReadColor).toHaveLength(
+      ARC_SLOT_CATEGORY.length,
+    )
+    expect(linkedReadColorSlot(last)).toBe(last)
+  })
 
   // Driven off `readCategoryPaletteKeys` rather than off the slot array, since
   // the categories index the array by name through READ_COLOR_CATEGORY — the

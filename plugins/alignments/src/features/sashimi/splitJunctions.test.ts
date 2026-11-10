@@ -16,7 +16,7 @@ import {
 } from './splitJunctions.ts'
 
 import type { FeatureData } from '../../shared/webglRpcTypes.ts'
-import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { SashimiSplitClass } from './junctionClass.ts'
 
 interface Rec {
   name: string
@@ -26,6 +26,8 @@ interface Rec {
   clip: number
   sa: string
   flags?: number
+  // the read bases the record aligns, its span unless given
+  alignedBases?: number
 }
 
 function records(recs: Rec[]) {
@@ -45,6 +47,7 @@ function records(recs: Rec[]) {
     ),
     suppAlignments: recs.map(r => r.sa),
     clipAtStart: recs.map(r => r.clip),
+    alignedBases: recs.map(r => r.alignedBases ?? r.end - r.start),
     readNames: namesToBlock(recs.map(r => r.name)),
   }
 }
@@ -61,7 +64,7 @@ function count(refName: string, recs: Rec[], fetch = recs) {
 const junction = (
   start: number,
   end: number,
-  split: ArcSplitCategory,
+  split: SashimiSplitClass,
   n = 1,
 ) => ({ start, end, splitClass: splitClassCode(split), n })
 

@@ -57,6 +57,8 @@ export interface SegAln {
   strand: number
   // soft/hard-clip at the 5' start of the read — read-order sort key
   clipAtStart: number
+  // the read bases it aligns, which with `clipAtStart` place its 3' end
+  alignedBases: number
   // a fetched pileup entry, as opposed to one known only from a sibling's SA tag
   onScreen: boolean
   // above MAPQ 0, as ADR-229 counts a piece placed
@@ -177,6 +179,9 @@ export interface PendingArcEndpoints {
 // arm prove `pairOrientationNum`/`tlen` are present.
 export interface SplitPendingArc extends PendingArcEndpoints {
   isSplit: true
+  // The read bases between the two pieces, which with the feet class it
+  // (`splitJunctionSlot`).
+  readGap: number
 }
 
 // A mate link between the two reads of a pair, with the primary's orientation

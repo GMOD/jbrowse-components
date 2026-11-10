@@ -1,4 +1,4 @@
-import { getClip } from '@jbrowse/cigar-utils'
+import { getClip, getLengthSansClipping } from '@jbrowse/cigar-utils'
 
 import {
   forEachSAEntry,
@@ -8,18 +8,20 @@ import { isMismatchFeature } from './extractCigarFeatures.ts'
 import { getMappingQuality, getStrand } from './util.ts'
 
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
+import type { SplitPiece } from '../features/sashimi/splitJunctions.ts'
 import type { SvKind } from './readFieldLevels.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // A split class files with the pairs across the same junction, as
 // `ARC_SPLIT_SWATCH` pairs them: duplication-type with RL, either inversion
-// type with LL and RR pairs, and deletion-type with the LR pairs the aligner
-// did not pair.
+// type with LL and RR pairs, deletion-type with the LR pairs the aligner did
+// not pair, and an insertion with the pairs too close.
 const KIND_OF_SPLIT: Record<ArcSplitCategory, SvKind> = {
   splitForward: 'deletionType',
   splitBack: 'duplicationType',
   splitInvLL: 'inversion',
   splitInvRR: 'inversion',
+  splitInsertion: 'insertion',
 }
 
 /**
@@ -37,24 +39,14 @@ export const SV_KIND_PRECEDENCE: readonly SvKind[] = [
   'none',
 ]
 
-export interface ReadPiece {
+export interface ReadPiece extends SplitPiece {
   refName: string
-  start: number
-  end: number
-  strand: number
-  clip: number
   placed: boolean
 }
 
-// Feet on one base: the read leaves the reference and comes back where it
-// left, the bases between them inserted.
 function sameReferenceKind(a: ReadPiece, b: ReadPiece) {
-  const join = splitJoin(a.strand, a.start, a.end, b.strand, b.start, b.end)
-  return join === undefined
-    ? undefined
-    : join.category === undefined
-      ? 'insertion'
-      : KIND_OF_SPLIT[join.category]
+  const join = splitJoin(a, b)
+  return join === undefined ? undefined : KIND_OF_SPLIT[join.category]
 }
 
 function junctionKind(a: ReadPiece, b: ReadPiece) {
@@ -85,6 +77,9 @@ export function splitReadKind(pieces: ReadPiece[]) {
 
 function ownPiece(feature: Feature): ReadPiece {
   const strand = getStrand(feature)
+  const cigar = isMismatchFeature(feature)
+    ? ''
+    : ((feature.get('CIGAR') as string | undefined) ?? '')
   return {
     refName: feature.get('refName'),
     start: feature.get('start'),
@@ -92,23 +87,30 @@ function ownPiece(feature: Feature): ReadPiece {
     strand,
     clip: isMismatchFeature(feature)
       ? feature.clipLengthAtStartOfRead
-      : getClip((feature.get('CIGAR') as string | undefined) ?? '', strand),
+      : getClip(cigar, strand),
+    alignedBases: isMismatchFeature(feature)
+      ? feature.alignedReadBases
+      : getLengthSansClipping(cigar),
     placed: getMappingQuality(feature) !== 0,
   }
 }
 
 export function piecesOf(feature: Feature, sa: string) {
   const pieces = [ownPiece(feature)]
-  forEachSAEntry(sa, (nameStart, nameEnd, start, end, strand, clip, mapq) => {
-    pieces.push({
-      refName: sa.slice(nameStart, nameEnd),
-      start,
-      end,
-      strand,
-      clip,
-      placed: mapq !== 0,
-    })
-  })
+  forEachSAEntry(
+    sa,
+    (nameStart, nameEnd, start, end, strand, clip, mapq, alignedBases) => {
+      pieces.push({
+        refName: sa.slice(nameStart, nameEnd),
+        start,
+        end,
+        strand,
+        clip,
+        alignedBases,
+        placed: mapq !== 0,
+      })
+    },
+  )
   return pieces
 }
 

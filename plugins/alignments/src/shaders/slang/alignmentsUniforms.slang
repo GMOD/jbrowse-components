@@ -22,7 +22,7 @@ import hpmath;
 // build a palette of exactly this length — the generated `UNIFORM_SLOT_ARRAYS`
 // entry has one word offset per slot, so a palette of the wrong size is caught
 // there rather than by writing off the end.
-public static const uint LINKED_READ_COLOR_SLOTS = 11u;
+public static const uint LINKED_READ_COLOR_SLOTS = 12u;
 // One slot per read color category (read.slang's RC_*, which are dense from 0).
 // It lives here rather than with the RC_* block because the uniform declaring it
 // does, and imports only resolve one way. read.slang re-exports it so

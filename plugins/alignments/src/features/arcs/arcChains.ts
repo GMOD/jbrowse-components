@@ -1,4 +1,5 @@
 import {
+  alignedBasesAt,
   clipAt,
   flagsOf,
   interchromOf,
@@ -35,6 +36,7 @@ import type {
   ReadEntry,
   RegionInfo,
   SegAln,
+  SplitPendingArc,
 } from './arcTypes.ts'
 
 // Reads in, pending arcs out: grouping by QNAME, walking a read's SA segments
@@ -112,6 +114,7 @@ function entrySeg(entry: ReadEntry): SegAln {
     ...spanOf(entry),
     strand: strandOf(entry),
     clipAtStart: clipAt(entry),
+    alignedBases: alignedBasesAt(entry),
     onScreen: true,
     placed: isPlacedRead(entry),
   }
@@ -151,6 +154,7 @@ function saSegments(
       end: sa.end,
       strand: sa.strand,
       clipAtStart: sa.clipLengthAtStartOfRead,
+      alignedBases: sa.mate.end - sa.mate.start,
       onScreen: false,
       placed: sa.mapq !== 0,
     }))
@@ -188,7 +192,7 @@ function splitJunctionArc(
   a1: SegAln,
   a2: SegAln,
   offScreen: boolean,
-): PendingArc {
+): SplitPendingArc {
   const { bp1, bp2, dir1, dir2 } = connectionEndpointBps({
     s1: a1.strand,
     start1: a1.start,
@@ -208,6 +212,7 @@ function splitJunctionArc(
     p2Strand: a2.strand,
     p2Dir: dir2,
     isSplit: true,
+    readGap: a2.clipAtStart - (a1.clipAtStart + a1.alignedBases),
     offScreen,
   }
 }
