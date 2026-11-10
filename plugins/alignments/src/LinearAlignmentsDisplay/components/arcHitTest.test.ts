@@ -143,10 +143,13 @@ describe('a band of ticks and no arcs', () => {
     })
   })
 
-  test('the highlight traces the full-band vertical the tick draws, and its foot', () => {
-    expect(hover(300, 120, { lines })!.highlight.d).toBe(
-      `M300 160L300 100M300 159.0641353123017L${300 + ARC_TICK_FOOT_PX} 159.0641353123017`,
-    )
+  test('the highlight traces the full-band vertical the tick draws, its round tip as its own subpath, and its foot', () => {
+    expect(hover(300, 120, { lines })!.highlight.d.split('M')).toEqual([
+      '',
+      '300 160L300 100',
+      expect.stringMatching(/^299\.06\S* 100(L\S+ \S+)+L300\.93\S* 100$/),
+      `300 159.0641353123017L${300 + ARC_TICK_FOOT_PX} 159.0641353123017`,
+    ])
   })
 })
 

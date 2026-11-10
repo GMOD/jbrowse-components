@@ -13,6 +13,7 @@ export function recordPath() {
   let dash: number[] = []
   let strokedDash: number[] = []
   let strokedWidth = 0
+  let inSubpath = false
   const ctx: MarkContext2D = {
     fillStyle: '',
     strokeStyle: '',
@@ -22,12 +23,15 @@ export function recordPath() {
     save() {},
     restore() {},
     clip() {},
-    beginPath() {},
+    beginPath() {
+      inSubpath = false
+    },
     translate() {},
     scale() {},
     rotate() {},
     rect(x, y, w, h) {
       parts.push(`M${x} ${y}h${w}v${h}h${-w}Z`)
+      inSubpath = true
     },
     fillRect(x, y, w, h) {
       this.rect(x, y, w, h)
@@ -37,6 +41,7 @@ export function recordPath() {
     },
     moveTo(x, y) {
       parts.push(`M${x} ${y}`)
+      inSubpath = true
     },
     lineTo(x, y) {
       parts.push(`L${x} ${y}`)
@@ -50,8 +55,10 @@ export function recordPath() {
     ellipse(x, y, rx, ry, _rotation, start, end) {
       for (let k = 0; k <= ELLIPSE_SEGMENTS; k++) {
         const a = start + ((end - start) * k) / ELLIPSE_SEGMENTS
-        parts.push(`L${x + rx * Math.cos(a)} ${y + ry * Math.sin(a)}`)
+        const command = k === 0 && !inSubpath ? 'M' : 'L'
+        parts.push(`${command}${x + rx * Math.cos(a)} ${y + ry * Math.sin(a)}`)
       }
+      inSubpath = true
     },
     setLineDash(segments) {
       dash = segments
