@@ -434,7 +434,7 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
       }
-      if (anchorGap >= SPLIT_AT_GAP_BP) {
+      if (anchorGap >= SPLIT_AT_GAP_BP && right.lane.end > left.lane.end) {
         changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion', anchor })
       }
       if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {

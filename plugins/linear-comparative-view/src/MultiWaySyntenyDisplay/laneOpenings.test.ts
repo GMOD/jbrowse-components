@@ -598,6 +598,23 @@ describe('what a lane states across a gap against the anchor', () => {
     })
   })
 
+  test('a piece nested inside another record states no deletion between their anchor stretches', () => {
+    const groups = groupFeatures([
+      piece('outer', 1_000_000, 1_100_000, [
+        { assemblyName: 'HG01123.1', refName: ref, start: 0 },
+      ]),
+      piece(
+        'nested',
+        2_000_000,
+        2_000_500,
+        [{ assemblyName: 'HG01123.1', refName: ref, start: 20_000 }],
+        1,
+        'other',
+      ),
+    ])
+    expect(read(groups)).toEqual({ openings: [], changes: [] })
+  })
+
   test('one record cut in two fetch windows states nothing about the anchor between them', () => {
     const inWindow = (window: string) => (f: SimpleFeature) =>
       new SimpleFeature({ ...f.toJSON(), clipWindow: window })
