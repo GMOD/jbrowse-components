@@ -866,6 +866,30 @@ describe('validateConfig', () => {
       ])
     })
 
+    it('flags a domain on a color that names no field', () => {
+      const types = ['SYN', 'INV', 'TRANS']
+      const bed = (type: string, color: Record<string, unknown>) =>
+        found({
+          type: 'FeatureTrack',
+          adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+          ...display(type, color),
+        })
+      for (const type of [
+        'LinearMultiRowFeatureDisplay',
+        'LinearBasicDisplay',
+      ]) {
+        expect(bed(type, { scale: { domain: types } })).toEqual([
+          `domain-no-field ${where}.scale.domain`,
+        ])
+        expect(bed(type, { field: 'name', scale: { domain: types } })).toEqual(
+          [],
+        )
+        expect(
+          bed(type, { scale: { type: 'identity', domain: ['#cccccc'] } }),
+        ).toEqual([])
+      }
+    })
+
     it('names the preset field a mistyped field is one edit from', () => {
       expect(
         found(display('LinearAlignmentsDisplay', { field: 'strnd' })),

@@ -1006,18 +1006,29 @@ function checkChannels(
   adapterType?: string,
 ) {
   if (slot.fieldPresets) {
-    for (const problem of colorProblems(
-      withImpliedField(
-        colorSlotsOf(path =>
-          path.length === 1 && path[0] === 'field'
-            ? (channelMember(written, slot, path) ?? slot.fieldDefault)
-            : channelMember(written, slot, path),
-        ),
-        slot.impliedField,
+    const color = withImpliedField(
+      colorSlotsOf(path =>
+        path.length === 1 && path[0] === 'field'
+          ? (channelMember(written, slot, path) ?? slot.fieldDefault)
+          : channelMember(written, slot, path),
       ),
-      slot.fieldPresets,
-    )) {
+      slot.impliedField,
+    )
+    for (const problem of colorProblems(color, slot.fieldPresets)) {
       warn(where, problem)
+    }
+    if (
+      !color.field &&
+      color.value === undefined &&
+      color.scale?.type !== 'identity' &&
+      (color.scale?.domain?.length ?? 0) > 0
+    ) {
+      warn(where, {
+        rule: 'domain-no-field',
+        slot: 'scale.domain',
+        message:
+          'domain orders the values of the field a color maps, and this color names no field, so nothing reads it; name the field its values come from, or for colors written in the file, set type to identity and list those colors',
+      })
     }
     const field = channelMember(written, slot, ['field'])
     const presets = [
