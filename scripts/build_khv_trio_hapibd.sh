@@ -110,10 +110,8 @@ track = {
     "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": True,
-        "columnNames": ["chrom", "chromStart", "chromEnd", "name", "score",
-                        "strand", "thickStart", "thickEnd", "itemRgb", "parenthap"],
-        "bedGzLocation": {"uri": "trio.hapibd.bed.gz"},
-        "index": {"location": {"uri": "trio.hapibd.bed.gz.csi"}, "indexType": "CSI"},
+        "uri": "trio.hapibd.bed.gz",
+        "csi": True,
     },
     "displays": [{
         "type": "LinearMultiRowFeatureDisplay",
@@ -122,6 +120,7 @@ track = {
             "field": "parenthap",
             "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"],
         },
+        "legend": {"show": False},
     }],
 }
 cfg["tracks"] = [t for t in cfg["tracks"] if t.get("trackId") != track["trackId"]]
