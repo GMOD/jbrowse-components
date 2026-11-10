@@ -981,14 +981,20 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       if (g.kind === KIND_NONE) {
         continue
       }
+      const css = abgrToCssRgba(rowColor(color[i]!, channels.row, i, g.table))
       ctx.lineWidth = g.strokePx
-      ctx.strokeStyle = abgrToCssRgba(
-        rowColor(color[i]!, channels.row, i, g.table),
-      )
+      ctx.strokeStyle = css
       ctx.setLineDash(dashes(g) ? dash : [])
       ctx.beginPath()
       tracePath(ctx, g)
       ctx.stroke()
+      if (g.kind === KIND_STEM) {
+        const start = g.reverse ? 0 : Math.PI
+        ctx.fillStyle = css
+        ctx.beginPath()
+        ctx.arc(g.xPx, yAt(g, g.stemPx), g.strokePx / 2, start, start + Math.PI)
+        ctx.fill()
+      }
       const feet = footSegments(g)
       if (feet.length > 0) {
         ctx.setLineDash([])

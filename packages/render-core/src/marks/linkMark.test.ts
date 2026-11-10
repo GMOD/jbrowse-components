@@ -521,6 +521,31 @@ test('a stem rises as far as the mark says, and a dash strokes only straight ink
   expect(dashes).toEqual([[3, 3], [], []])
 })
 
+test.each([
+  [false, 100 - LINK_STEM_PX, Math.PI],
+  [true, LINK_STEM_PX, 0],
+])(
+  'a stem ends in a round tip filled on its far side, reverse %s',
+  (reverse, tipY, start) => {
+    const c = channels([{ x: 500, x2: 42, region: LINK_NO_REGION }])
+    const calls: unknown[][] = []
+    const { ctx } = mockCtx()
+    const spy = Object.assign(ctx, {
+      arc(...args: number[]) {
+        calls.push(['arc', ...args])
+      },
+      fill() {
+        calls.push(['fill', spy.fillStyle])
+      },
+    })
+    linkMark.paintBlock(spy, c, block, frame, { ...params, reverse })
+    expect(calls).toEqual([
+      ['arc', 500, tipY, 1, start, start + Math.PI],
+      ['fill', abgrToCssRgba(RED)],
+    ])
+  },
+)
+
 test('a foot ticks along its arm, mirrored on a reversed region and stopped at the region edge', () => {
   const bounded: LinkRegion[] = [
     { anchorPx: 0, anchorBp: 0, signedPxPerBp: 1, leftPx: 0, rightPx: 1000 },
