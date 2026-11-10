@@ -30,6 +30,7 @@ cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
   (with cutadapt)
 - [bwameth](https://github.com/brentp/bwa-meth)
 - [samtools](http://www.htslib.org/)
+- `curl`, `unzip` and `python3`, which the build script uses
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
   [conversion-rate check](#checking-the-bisulfite-conversion-rate) and the
@@ -380,7 +381,7 @@ bash build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrows
 npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 ```
 
-On Debian/Ubuntu, `apt install wget curl samtools` covers several
+On Debian/Ubuntu, `apt install wget curl unzip python3 samtools` covers several
 [prerequisites](#prerequisites); the rest install from the pages linked there.
 The alignment step downloads a full WGBS run, so allow time and disk.
 
