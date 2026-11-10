@@ -5098,7 +5098,6 @@
     "@jbrowse/display-kit/rowColorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "RANGE",
         "rowColorConfigSchema",
         "rowColorScaleConfigSchema"
       ],

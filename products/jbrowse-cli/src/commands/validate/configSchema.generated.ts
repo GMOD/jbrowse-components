@@ -12300,7 +12300,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from.",
+          "description": "the CSS color each value in domain takes, in the same order; past them, the column's palette.",
           "if": {
             "type": "null"
           },
