@@ -647,7 +647,7 @@ export default function stateModelFactory(
             return self.unit === 'chain'
               ? 'Chain rows are ordered by chain — turn off "View as pairs/link supplementary alignments" to sort reads'
               : !self.showPileup
-                ? 'Turn on Show → Show pileup to sort reads'
+                ? 'Turn on "Show pileup" to sort reads'
                 : this.collapseSortBlockedReason
           },
 
@@ -665,7 +665,7 @@ export default function stateModelFactory(
                   this.groupRowCaps.has(g.key) &&
                   !self.collapsedGroups.has(g.key),
               )
-              ? `Every group is drawn on one row — turn off Show → "Collapse groups to one row"${self.fitHeightToDisplay ? '' : ', or expand a group from its label,'} to sort`
+              ? `Every group is drawn on one row — turn off "Collapse groups to one row"${self.fitHeightToDisplay ? '' : ', or expand a group from its label,'} to sort`
               : undefined
           },
 
@@ -3011,8 +3011,7 @@ export default function stateModelFactory(
         trackMenuItems() {
           const pileupGate = {
             disabled: !self.showPileup,
-            disabledHelpText:
-              'Turn on Show → Show pileup to change read height',
+            disabledHelpText: 'Turn on "Show pileup" to change read height',
           }
           // Where the band switches live is settled (Coverage, Pileup and
           // Sashimi arcs in "Show...", the pair band in "Read connections"),

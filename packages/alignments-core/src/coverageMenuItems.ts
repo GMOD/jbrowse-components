@@ -54,7 +54,7 @@ const OFF = 'off'
 // on, so each names that switch instead. At depth 500 every sequencing error
 // paints a sliver, so without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
-  'These settings scale the coverage band — turn on "Show → Show coverage" first'
+  'These settings scale the coverage band — turn on "Show coverage" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -105,7 +105,7 @@ export function interbaseIndicatorsMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Interbase marks are drawn in the coverage band — turn on "Show → Show coverage" first',
+        'Interbase marks are drawn in the coverage band — turn on "Show coverage" first',
     },
   )
 }

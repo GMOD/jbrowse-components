@@ -279,6 +279,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-menu-labels.ts'),
   },
   {
+    name: 'no submenu row ends in an ellipsis',
+    argv: web('check-menu-ellipsis.ts'),
+  },
+  {
     name: 'Python and R blocks name what jbrowse-anywidget and JBrowseR provide',
     argv: web('check-embedding-docs.ts'),
   },

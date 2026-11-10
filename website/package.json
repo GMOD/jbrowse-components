@@ -29,6 +29,7 @@
     "check-external-links": "node scripts/check-external-links.ts",
     "check-menu-paths": "node scripts/check-menu-paths.ts",
     "check-menu-labels": "node scripts/check-menu-labels.ts",
+    "check-menu-ellipsis": "node scripts/check-menu-ellipsis.ts",
     "check-embedding-docs": "node scripts/check-embedding-docs.ts",
     "check-llms": "node scripts/check-llms.ts",
     "check-fence-langs": "node scripts/check-fence-langs.ts",

@@ -267,7 +267,7 @@ The view's hamburger menu keeps seven rows however many genomes are stacked. The
 three that zoom every row at once are at the top; what varies with the stack is
 inside **Rows**:
 
-- **Square view - average bp per pixel** puts every row on the average of the
+- **Square view - same bp per pixel** puts every row on the average of the
   rows' current scales, keeping each row's center
 - **Show whole genome - each row fit to width** zooms every row out to its whole
   genome (its chromosomes, where the assembly's sequence report names them),

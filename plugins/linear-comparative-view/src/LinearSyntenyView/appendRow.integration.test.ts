@@ -288,7 +288,7 @@ test('the header menu opens the same six rows at any row count', async () => {
       .headerMenuItems()
       .map(item => ('label' in item ? item.label : item.type)),
   ).toEqual([
-    'Square view - average bp per pixel',
+    'Square view - same bp per pixel',
     'Show whole genome - each row fit to width',
     'Show whole genome - same bp per pixel',
     'Follow',

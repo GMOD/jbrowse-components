@@ -77,11 +77,11 @@ describe('navigationMenuItems', () => {
   test('the three zoom commands lead the menu, unheaded', () => {
     const { items, calls } = build()
     expect(items.slice(0, 3).map(i => ('label' in i ? i.label : ''))).toEqual([
-      'Square view - average bp per pixel',
+      'Square view - same bp per pixel',
       'Show whole genome - each row fit to width',
       'Show whole genome - same bp per pixel',
     ])
-    labelled(items, 'Square view - average bp per pixel')?.onClick?.()
+    labelled(items, 'Square view - same bp per pixel')?.onClick?.()
     labelled(items, 'Show whole genome - each row fit to width')?.onClick?.()
     labelled(items, 'Show whole genome - same bp per pixel')?.onClick?.()
     expect(calls).toEqual(['square', 'fit', 'sameScale'])
@@ -105,7 +105,7 @@ describe('navigationMenuItems', () => {
     // the rows are under, which outlives the click and so carries a mark.
     const { items } = build()
     expect(
-      labelled(items, 'Square view - average bp per pixel'),
+      labelled(items, 'Square view - same bp per pixel'),
     ).not.toHaveProperty('type')
     for (const label of SHOW_ALL_REGIONS_LABELS) {
       expect(labelled(items, label)?.type).toBe('radio')

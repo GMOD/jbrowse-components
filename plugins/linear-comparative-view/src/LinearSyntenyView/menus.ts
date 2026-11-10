@@ -77,7 +77,7 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
   const { ratio, followSynteny, followAnchorIndex } = model
   return [
     {
-      label: 'Square view - average bp per pixel',
+      label: 'Square view - same bp per pixel',
       icon: CropFreeIcon,
       onClick: () => {
         model.squareView()

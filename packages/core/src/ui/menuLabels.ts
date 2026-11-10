@@ -33,7 +33,7 @@
  * parenthetical of their own ("Conservation (% identity)", "Codon changes
  * (amino acids)"), and a second pair straight after the first reads as a typo.
  * It also keeps the aside distinct from the ` - ` that names a permanent half of
- * a label ("Square view - average bp per pixel").
+ * a label ("Square view - same bp per pixel").
  *
  * KEEP THE HINT SHORT -- a few words, not a sentence. A menu sizes to its widest
  * row, so a long one widens every row for as long as it fires, which is the same

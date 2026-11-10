@@ -62,10 +62,7 @@ function disabledUnless(enabled: boolean, disabledHelpText: string) {
 
 // A pileup-only layer greys out with the pileup hidden, as Read height does.
 function pileupLayerGate(model: ReadsModel, what: string) {
-  return disabledUnless(
-    model.showPileup,
-    `Turn on Show → Show pileup to ${what}`,
-  )
+  return disabledUnless(model.showPileup, `Turn on "Show pileup" to ${what}`)
 }
 
 function softClippingItem(model: ReadsModel) {
@@ -98,7 +95,7 @@ function fadeMismatchesItem(model: ReadsModel) {
     pileupLayerGate(model, 'fade mismatches') ??
       disabledUnless(
         model.showMismatches,
-        'Turn on Show → Show mismatches to fade them',
+        'Turn on "Show mismatches" to fade them',
       ),
   )
 }
