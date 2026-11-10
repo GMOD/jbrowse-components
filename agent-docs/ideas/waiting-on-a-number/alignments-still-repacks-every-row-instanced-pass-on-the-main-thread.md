@@ -50,6 +50,19 @@ pileup with per-base quality on, which is where the per-base passes (one instanc
 per base per read) dominate — at gene-scale defaults the read pass alone may not
 justify any of this.
 
+The read pass's half of that number exists.
+`plugins/alignments/benches/instancePackDescriptor.bench.ts` records
+`packReadSegments` at 0.63 ms for 60k segments, a typical pileup, on the
+40-byte instance `read.slang` had then, twice what it packs now. So the read
+pass does not justify any of
+the three designs, and what is still unmeasured is the per-base passes and the
+upload. The option the third design lacked is in the tree now:
+`rowTable.slang` is the region-independent row indirection
+([ADR-165](../../architecture-decision-records/adr-165-the-row-axis-rides-a-table-the-vertex-stage-samples.md)),
+and
+[ADR-211](../../architecture-decision-records/adr-211-variant-cells-keep-their-screen-row-per-instance.md)
+declined it for variant cells at 25-115 ms a gesture.
+
 Related and independent: both HALs `deleteBuffer` + recreate on every
 `uploadBuffer` (`webgpuHal.ts` `createVertexBuffer`, `webgl2Hal.ts`
 `bufferData`). Reusing the allocation when capacity allows would drop the churn
