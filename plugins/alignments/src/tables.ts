@@ -592,6 +592,9 @@ const AlignmentsTablesHost = types
     get collapsedGroups() {
       return NO_KEYS
     },
+    get rowlessLaneKeys() {
+      return NO_KEYS
+    },
     get groupRowCaps() {
       return NO_ROW_CAPS
     },

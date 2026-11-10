@@ -69,6 +69,7 @@ export interface AlignmentsColorHost {
   showLegend: boolean
   framesChainStrand: boolean
   laidOutByGroupFramed: LaidOutByGroup
+  rowlessLaneKeys: ReadonlySet<string>
   keyWindows: readonly KeyWindow[]
   paintedRefNamePosition: RefNamePosition | undefined
   detectedModifications: ReadonlyMap<string, string>
@@ -78,6 +79,15 @@ export interface AlignmentsColorHost {
 export interface ReadPaletteHost {
   colorSetting: AlignmentsColorSetting
   colorEncoding: AlignmentsColorEncoding
+}
+
+function withoutLanes<T>(
+  byGroup: ReadonlyMap<string, T>,
+  keys: ReadonlySet<string>,
+) {
+  return keys.size > 0
+    ? new Map([...byGroup].filter(([key]) => !keys.has(key)))
+    : byGroup
 }
 
 /** The read palette in a theme, under the colors `encoding.color` writes. */
@@ -235,7 +245,8 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
     /**
      * #getter
      * Read-color buckets present across the rendered reads, so the legend
-     * lists only relevant swatches. Empty while the legend is hidden,
+     * lists only relevant swatches; a lane laying out no rows
+     * (`rowlessLaneKeys`) renders none. Empty while the legend is hidden,
      * skipping the O(reads) scan.
      */
     get colorLegendCategories(): Set<ReadColorCategory> {
@@ -243,7 +254,10 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
       // classification of `rpcDataMap`: `readFillColors` is empty until
       // the main thread bakes it.
       return self.showLegend
-        ? readCategoriesInWindows(this.laidOutByGroupColored, self.keyWindows)
+        ? readCategoriesInWindows(
+            withoutLanes(this.laidOutByGroupColored, self.rowlessLaneKeys),
+            self.keyWindows,
+          )
         : new Set()
     },
 
@@ -256,11 +270,15 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
      * O(reads).
      */
     get presentTagValues(): ReadonlySet<string> | undefined {
+      const drawn = withoutLanes(
+        self.laidOutByGroupFramed,
+        self.rowlessLaneKeys,
+      )
       return !self.showLegend || !isBakedField(self.colorField)
         ? undefined
         : self.colorField === 'mapq'
-          ? readMapqsInWindows(self.laidOutByGroupFramed, self.keyWindows)
-          : readTagValuesInWindows(self.laidOutByGroupFramed, self.keyWindows)
+          ? readMapqsInWindows(drawn, self.keyWindows)
+          : readTagValuesInWindows(drawn, self.keyWindows)
     },
 
     /**

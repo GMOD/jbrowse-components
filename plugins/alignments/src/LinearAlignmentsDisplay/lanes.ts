@@ -48,6 +48,12 @@ export interface AlignmentLane {
   ceilingClipped: boolean
 }
 
+// Whether a lane lays out read rows: the pileup is shown and the lane is not
+// collapsed to its coverage.
+export function drawsPileupRows(showPileup: boolean, collapsed: boolean) {
+  return showPileup && !collapsed
+}
+
 // Whether a region of the lane has a read to draw. A section the filter left
 // with its coverage alone has none, so its chip has no pileup to collapse.
 export function laneDrawsReads(lane: AlignmentLane) {
@@ -144,7 +150,9 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       hasSashimiDownArcs: sashimiDownKeys.size > 0,
       // showPileup off collapses every pileup band to zero height (coverage +
       // arcs only), the same height-0 path a collapsed lane takes.
-      maxY: !showPileup || collapsed ? 0 : groupMaxY(laidOutPileupMap),
+      maxY: drawsPileupRows(showPileup, collapsed)
+        ? groupMaxY(laidOutPileupMap)
+        : 0,
       collapsed,
       heightOverridePx: typeof size === 'number' ? size : undefined,
       expanded: size === 'all',
