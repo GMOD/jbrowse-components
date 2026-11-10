@@ -525,7 +525,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             hg38GeneLane(70),
             {
               trackId: HG38_UNIPROT_DOMAINS_TRACK.trackId,
-              type: 'LinearBasicDisplay',
               height: 75,
             },
             {
