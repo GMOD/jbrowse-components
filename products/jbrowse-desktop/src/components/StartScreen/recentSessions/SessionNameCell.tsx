@@ -86,7 +86,6 @@ ${summary}`
           menuItems={sessionMenuItems({
             session: row,
             isFavorite,
-            launch,
             onRename: setSessionToRename,
             onDelete: session => {
               setSessionsToDelete([session])
@@ -95,7 +94,6 @@ ${summary}`
               toggleFavorite(row.path)
             },
             onAddToQuickstartList: addToQuickstartList,
-            includeLaunch: true,
           })}
         >
           <MoreHoriz />

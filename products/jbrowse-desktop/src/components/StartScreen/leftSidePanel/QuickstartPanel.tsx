@@ -29,7 +29,7 @@ const QuickstartPanel = observer(function QuickstartPanel({
     mutate: refetchQuickstarts,
   } = useFetch('listQuickstarts', () => invokeIpc('listQuickstarts'))
 
-  return (
+  return quickstarts?.length === 0 ? null : (
     <CollapsibleSection
       storageKey="startScreen-quickstartMinimized"
       title="Quickstart list"
@@ -40,8 +40,6 @@ const QuickstartPanel = observer(function QuickstartPanel({
         ) : (
           <LoadingEllipses />
         )
-      ) : quickstarts.length === 0 ? (
-        <div>No quickstarts available</div>
       ) : (
         <div style={{ maxHeight: innerHeight / 4, overflow: 'auto' }}>
           <table>
@@ -54,12 +52,6 @@ const QuickstartPanel = observer(function QuickstartPanel({
                     launch([name])
                   }}
                   menuItems={[
-                    {
-                      label: 'Launch',
-                      onClick: () => {
-                        launch([name])
-                      },
-                    },
                     {
                       label: 'Delete',
                       onClick: () => {

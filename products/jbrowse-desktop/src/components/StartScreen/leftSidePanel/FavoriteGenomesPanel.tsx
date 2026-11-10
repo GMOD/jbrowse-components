@@ -51,12 +51,6 @@ const FavoriteGenomesPanel = observer(function FavoriteGenomesPanel({
                   launch([jbrowseConfig])
                 }}
                 menuItems={[
-                  {
-                    label: 'Launch',
-                    onClick: () => {
-                      launch([jbrowseConfig])
-                    },
-                  },
                   ...(jbrowseMinimalConfig
                     ? [
                         {

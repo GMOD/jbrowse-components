@@ -116,7 +116,6 @@ const RecentSessionCard = observer(function RecentSessionCard({
           menuItems={sessionMenuItems({
             session: sessionData,
             isFavorite,
-            launch,
             onRename,
             onDelete,
             onToggleFavorite,

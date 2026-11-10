@@ -73,6 +73,12 @@ const useStyles = makeStyles()({
     marginBottom: 30,
     display: 'flex',
     gap: 10,
+    '& a': {
+      textDecoration: 'none',
+      '&:hover': {
+        textDecoration: 'underline',
+      },
+    },
     // a window too narrow for both used to hold the launch panel at its minimum
     // and crush the recent-sessions panel, which has the wider content of the
     // two; stack them instead
@@ -87,13 +93,13 @@ const useStyles = makeStyles()({
   panel: {
     flex: 1,
     padding: 16,
-    minWidth: 450,
-    maxWidth: 600,
+    minWidth: 360,
+    maxWidth: 450,
     ...narrowPanel,
   },
 
   recentPanel: {
-    flex: 2,
+    flex: 3,
     padding: 16,
     minWidth: 450,
     overflow: 'auto',
