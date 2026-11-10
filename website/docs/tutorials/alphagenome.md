@@ -216,8 +216,9 @@ megabase:
 
 In T-cell acute lymphoblastic leukemia (T-ALL), _TAL1_ is switched on in a
 lineage where it should be silent. One route is a small insertion upstream of
-the gene that creates a binding site. The variant track holds the insertions
-reported in T-ALL patients and cell lines, all at one site.
+the gene that creates a binding site. The variant track holds the variants
+reported in T-ALL patients and cell lines, most of them insertions at one site
+upstream of the gene.
 
 Right-click any variant and choose **Predict variant effect with AlphaGenome**.
 The query panel opens with the variant loaded, and running it predicts the
