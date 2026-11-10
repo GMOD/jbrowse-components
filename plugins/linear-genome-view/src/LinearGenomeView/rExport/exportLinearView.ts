@@ -110,19 +110,21 @@ export function exportLinearViewToR(view: LinearGenomeViewModel, out?: string) {
 }
 
 /**
- * Saves the view's R script, telling the user what it leaves out. Throws when
+ * Saves the view's R script, telling the user how to run it and what it leaves
+ * out. Throws when
  * no open track has an R export, so the export dialog shows why.
  */
 export function saveRScript(view: LinearGenomeViewModel, filename: string) {
   const { script, notes } = exportLinearViewToR(view)
   if (script) {
     saveAs(new Blob([script], { type: 'text/plain;charset=utf-8' }), filename)
-    if (notes.length) {
-      getSession(view).notify(
-        `Exported with ${notes.length} note${notes.length === 1 ? '' : 's'} in the script header`,
-        'info',
-      )
-    }
+    const noteCount = notes.length
+      ? ` It carries ${notes.length} note${notes.length === 1 ? '' : 's'} in its header.`
+      : ''
+    getSession(view).notify(
+      `Saved ${filename}. Open it in RStudio and click Source, or run it with Rscript in a terminal.${noteCount}`,
+      'info',
+    )
   } else {
     throw new Error(`No open track has an R export. ${notes.join('; ')}`)
   }

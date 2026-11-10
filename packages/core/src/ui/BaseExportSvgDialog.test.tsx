@@ -62,7 +62,7 @@ test('a stored theme that no longer exists falls back to the session theme', asy
 test('the R format hands the filename to exportR and hides the image options', async () => {
   const exportSvg = jest.fn().mockResolvedValue(undefined)
   const exportR = jest.fn().mockResolvedValue(undefined)
-  const { getByRole, queryByLabelText } = render(
+  const { getByRole, getByText, getByLabelText, queryByLabelText } = render(
     <BaseExportSvgDialog
       model={stubModel('default')}
       handleClose={() => {}}
@@ -73,6 +73,14 @@ test('the R format hands the filename to exportR and hides the image options', a
   fireEvent.click(getByRole('button', { name: 'R' }))
 
   expect(queryByLabelText('Font')).toBeNull()
+  expect(getByText('Rscript jbrowse.R')).toBeInTheDocument()
+  fireEvent.change(getByLabelText('Filename'), {
+    target: { value: 'my locus.R' },
+  })
+  expect(getByText('Rscript "my locus.R"')).toBeInTheDocument()
+  fireEvent.change(getByLabelText('Filename'), {
+    target: { value: 'jbrowse.R' },
+  })
   fireEvent.click(getByRole('button', { name: 'Submit' }))
   await waitFor(() => {
     expect(exportR).toHaveBeenCalledWith('jbrowse.R')

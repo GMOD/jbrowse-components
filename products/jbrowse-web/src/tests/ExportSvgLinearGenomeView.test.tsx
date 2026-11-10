@@ -100,4 +100,7 @@ test('the export dialog saves an R script of the view', async () => {
   const [blob, filename] = saveAs.mock.calls[0]
   expect(filename).toBe('jbrowse.R')
   expect(blob.content[0]).toContain('jbrowse_alignments(')
+  expect(
+    await findByText(/Saved jbrowse\.R\. Open it in RStudio/, ...opts),
+  ).toBeTruthy()
 }, 45000)

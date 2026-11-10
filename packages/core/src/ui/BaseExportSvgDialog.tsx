@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 
 import { getSession } from '../util/index.ts'
 import ErrorBanner from './ErrorBanner.tsx'
+import ExternalLink from './ExternalLink.tsx'
 import LabeledCheckbox from './LabeledCheckbox.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 import { useExportSvgPreference } from './useExportSvgPreference.ts'
@@ -32,6 +33,10 @@ const EXTENSIONS = { svg: '.svg', png: '.png', r: '.R' } as const
 
 function withExtension(filename: string, format: ExportFormat) {
   return filename.replace(/\.(svg|png|r)$/i, EXTENSIONS[format])
+}
+
+function shellQuote(filename: string) {
+  return /\s/.test(filename) ? `"${filename}"` : filename
 }
 
 // Generic CSS families only, so exported text resolves in any SVG renderer
@@ -173,10 +178,29 @@ export default observer(function BaseExportSvgDialog({
           </ToggleButtonGroup>
         </div>
         {format === 'r' ? (
-          <Typography variant="body2">
-            A script that redraws the open tracks over the regions on screen in
-            R, with ggjbrowse reading the same data files
-          </Typography>
+          <div>
+            <Typography variant="body2">
+              Saves an R script that redraws the open tracks with ggjbrowse,
+              reading the same data files. To draw the figure:
+            </Typography>
+            <Typography variant="body2" component="ul" sx={{ my: 1 }}>
+              <li>
+                open <code>{filename}</code> in RStudio and click <b>Source</b>,
+                or
+              </li>
+              <li>
+                run <code>Rscript {shellQuote(filename)}</code> in a terminal
+              </li>
+            </Typography>
+            <Typography variant="body2">
+              Either way it also saves <code>figure.png</code> in the working
+              directory. Without ggjbrowse installed, the script stops and
+              prints the line that installs it.{' '}
+              <ExternalLink href="https://jbrowse.org/jb2/docs/user_guides/r_export/">
+                More on the R export
+              </ExternalLink>
+            </Typography>
+          </div>
         ) : (
           <>
             {children}
