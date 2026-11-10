@@ -15,8 +15,6 @@ import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
 import type {
   LgvSvgBodyProps,
   LgvSvgExportable,
-  SvgDisplayBox,
-  SvgViewFrame,
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
@@ -28,14 +26,13 @@ import type {
 import type React from 'react'
 
 /**
- * What the export's body reads off the display — spelled out rather than
- * taking the concrete model, which is the convention `renderDisplaySvg`
- * documents and what keeps this path testable without standing up MST and a
- * fetch lifecycle. It is deliberately not the component contract
- * (`WiggleDisplayModel`): that one also carries the canvas refs and hover
- * setters an export has no use for. A static export builds it as a plain host.
+ * What the export reads off the display — spelled out rather than taking the
+ * concrete model, which is the convention `renderDisplaySvg` documents and what
+ * keeps this path testable without standing up MST and a fetch lifecycle. It is
+ * deliberately not the component contract (`WiggleDisplayModel`): that one
+ * also carries the canvas refs and hover setters an export has no use for.
  */
-export interface WiggleSvgBodyModel extends SvgDisplayBox {
+export interface RenderSvgModel extends LgvSvgExportable {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   renderState: WiggleGPURenderState
   gpuProps: () => WiggleGpuProps
@@ -56,9 +53,6 @@ export interface WiggleSvgBodyModel extends SvgDisplayBox {
   rowsTopOffset: number
 }
 
-/** {@link WiggleSvgBodyModel} on a display that waits for its own data. */
-export interface RenderSvgModel extends WiggleSvgBodyModel, LgvSvgExportable {}
-
 export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
@@ -66,13 +60,7 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, WiggleSvgBody)
 }
 
-/**
- * The exported plot, mounted by the display shell over the containing view or
- * over a static frame.
- */
-export function WiggleSvgBody(
-  props: LgvSvgBodyProps<WiggleSvgBodyModel, SvgViewFrame>,
-) {
+function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   const { model, canvasWidth, overlays, opts } = props
   const { plotGeometry } = model
   // No data-size gate: renderState is always defined (a [0,1] stub until

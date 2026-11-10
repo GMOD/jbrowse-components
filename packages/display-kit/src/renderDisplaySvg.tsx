@@ -33,7 +33,7 @@ import { isLegendHost } from './legendHost.ts'
 
 import type { AxisHost } from './axisHost.ts'
 import type { HighlightRect } from './highlightHost.ts'
-import type { RegionHost, VisibleRegion } from './regionHost.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions, ExportTextStyle } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -43,10 +43,10 @@ import type { ThemeOptions } from '@mui/material'
 import type React from 'react'
 
 /**
- * What {@link renderDisplaySvgInFrame} reads off a display whose data is in
- * hand: the box it occupies and whether it drew the too-large note.
+ * What the shell reads off a display: the box it occupies and whether it drew
+ * the too-large note.
  */
-export interface SvgDisplayBox {
+interface SvgDisplayBox {
   id: string
   height: number
   regionTooLarge: boolean
@@ -97,25 +97,12 @@ export interface LgvSvgExportable
   extends SvgExportable, IStateTreeNode, SvgDisplayBox {}
 
 /**
- * What the shell reads off the view a display is drawn in: its width, its
- * scroll and the regions on screen. A `RegionHost` is one; so is a static
- * frame built from a region list and a width, with no view at all.
- */
-export interface SvgViewFrame {
-  width: number
-  offsetPx: number
-  visibleRegions: VisibleRegion[]
-}
-
-/**
  * What the shell resolves for the body. `canvasWidth` is the load-bearing one:
- * see {@link renderDisplaySvg}. `V` is the view the body reads, the containing
- * `RegionHost` under {@link renderDisplaySvg}; a body that reads no more than
- * {@link SvgViewFrame} also renders from a static frame.
+ * see {@link renderDisplaySvg}.
  */
-export interface LgvSvgBodyProps<M, V extends SvgViewFrame = RegionHost> {
+export interface LgvSvgBodyProps<M> {
   model: M
-  view: V
+  view: RegionHost
   height: number
   /**
    * The width the export paints at — `view.width`, deliberately NOT the
@@ -356,24 +343,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   Body: React.ComponentType<LgvSvgBodyProps<M>>,
 ): Promise<React.ReactNode> {
   await awaitSvgReady(model)
-  return renderDisplaySvgInFrame(model, containingHost(model), opts, Body)
-}
-
-/**
- * {@link renderDisplaySvg} past its readiness wait, with the view handed in
- * rather than found up the state tree: the shell for a display whose data is
- * already in hand, an MST display once `awaitSvgReady` resolves or a plain
- * host a static export built from fetched results and a static frame.
- */
-export function renderDisplaySvgInFrame<
-  M extends SvgDisplayBox,
-  V extends SvgViewFrame,
->(
-  model: M,
-  view: V,
-  opts: ExportSvgDisplayOptions | undefined,
-  Body: React.ComponentType<LgvSvgBodyProps<M, V>>,
-) {
+  const view = containingHost(model)
   const height = exportedHeight(model)
   const overlays = !opts?.plotOnly
   const sidebarWidth = overlays ? (model.svgSidebarWidth?.(opts) ?? 0) : 0

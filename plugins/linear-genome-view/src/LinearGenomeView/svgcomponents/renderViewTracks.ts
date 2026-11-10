@@ -135,11 +135,10 @@ export async function renderViewTracks<T extends SvgExportTrack>({
 
 /**
  * The geometry of a stack of rendered tracks, which {@link renderViewTracks}
- * measures once the renders resolve and a static export measures over the
- * display boxes it resolved: the stack's height, each track's room in the
- * legend gutter (absent for a track with no key), and the gutter's width.
+ * measures once the renders resolve: the stack's height, each track's room in
+ * the legend gutter (absent for a track with no key), and the gutter's width.
  */
-export function layoutSvgTracks({
+function layoutSvgTracks({
   tracks,
   theme,
   textHeight,

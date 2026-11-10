@@ -89,11 +89,8 @@ import type {
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 
-/**
- * What a mark host reads off the view it is drawn in: a linear genome view,
- * or a static frame built from a region list and a width.
- */
-export type MarkViewFrame = Pick<
+/** What a mark display reads off the linear genome view it is drawn in. */
+type MarkViewFrame = Pick<
   RegionHost,
   | 'initialized'
   | 'bpPerPx'

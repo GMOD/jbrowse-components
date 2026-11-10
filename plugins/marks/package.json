@@ -19,8 +19,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./LinearMarkDisplay/stateModel": "./src/LinearMarkDisplay/model.ts",
-    "./staticSvg": "./src/staticSvg.tsx"
+    "./LinearMarkDisplay/stateModel": "./src/LinearMarkDisplay/model.ts"
   },
   "files": [
     "esm"
@@ -57,8 +56,7 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./LinearMarkDisplay/stateModel": "./esm/LinearMarkDisplay/model.js",
-      "./staticSvg": "./esm/staticSvg.js"
+      "./LinearMarkDisplay/stateModel": "./esm/LinearMarkDisplay/model.js"
     }
   },
   "sideEffects": false,

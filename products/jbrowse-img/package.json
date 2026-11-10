@@ -59,11 +59,8 @@
   "devDependencies": {
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-features": "workspace:^",
-    "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
-    "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
-    "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@types/jsdom": "^30.0.0"
   },

@@ -26,33 +26,19 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type {
   LgvSvgBodyProps,
   LgvSvgExportable,
-  SvgDisplayBox,
-  SvgViewFrame,
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
-/**
- * What the export's body reads off the display, which a static export builds
- * as a plain object off its static host.
- */
-export interface FeaturesSvgBodyModel extends SvgDisplayBox {
+export interface RenderSvgModel extends LgvSvgExportable {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   fieldPalette: FieldPalette | undefined
   renderState: RenderState
-  renderedLabels: LabelPlacementContext
-  showsGroupLabels: boolean
-  groupSections: FeatureGroupSection[]
-}
-
-/** The view frame the body reads: the shell's, and the zoom. */
-export interface FeaturesSvgFrame extends SvgViewFrame {
-  bpPerPx: number
-}
-
-export interface RenderSvgModel extends FeaturesSvgBodyModel, LgvSvgExportable {
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
   pinnedInk: HighlightRect[]
+  renderedLabels: LabelPlacementContext
+  showsGroupLabels: boolean
+  groupSections: FeatureGroupSection[]
 }
 
 export async function renderSvg(
@@ -62,11 +48,7 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, FeaturesSvgBody)
 }
 
-/**
- * The exported features, labels, residues and section chips, mounted by the
- * display shell over the containing view or over a static frame.
- */
-export function FeaturesSvgBody({
+function FeaturesSvgBody({
   model,
   view,
   height,
@@ -74,7 +56,7 @@ export function FeaturesSvgBody({
   renderBlocks,
   overlays,
   opts,
-}: LgvSvgBodyProps<FeaturesSvgBodyModel, FeaturesSvgFrame>) {
+}: LgvSvgBodyProps<RenderSvgModel>) {
   const palette = usePalette()
   const visibleRegions = view.visibleRegions
   // Anchors the chips to the content edge; non-zero only when scrolled

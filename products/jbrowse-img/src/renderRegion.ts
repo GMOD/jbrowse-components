@@ -71,6 +71,8 @@ import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// Drawing with no session was built and removed: the session costs 10–14 ms
+// of a 55–640 ms render (ADR-262).
 async function createModel(data: Config) {
   const model = await createViewStateAsync({
     config: {

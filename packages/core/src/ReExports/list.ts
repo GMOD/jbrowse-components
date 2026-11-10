@@ -180,7 +180,6 @@ export default [
   '@jbrowse/core/PluginLoader',
   '@jbrowse/core/PluginManager',
   '@jbrowse/core/rpc/byteBudget',
-  '@jbrowse/core/rpc/methods/executeEncodedLayers',
   '@jbrowse/core/rpc/RpcManager',
   '@jbrowse/core/rpc/RpcRegistry',
   '@jbrowse/core/rpc/WebWorkerRpcDriver',

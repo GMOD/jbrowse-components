@@ -4,7 +4,7 @@ import type { FeatureGroupSection } from './facet.ts'
 /**
  * What the feature passes and the SVG export paint under: the scroll, the
  * canvas box and whether intron lines carry chevrons. The base model installs
- * it as a `.views()` layer; the static export's host installs the same.
+ * it as a `.views()` layer.
  */
 export function featureRenderStateViews(self: {
   scrollTop: number
@@ -28,10 +28,7 @@ export function featureRenderStateViews(self: {
   }
 }
 
-/**
- * Whether the section chips draw, which the base model and the static
- * export's host both install over the band's `groupSections`.
- */
+/** Whether the section chips draw, over the band's `groupSections`. */
 export function groupLabelViews(self: {
   groupSections: FeatureGroupSection[]
 }) {

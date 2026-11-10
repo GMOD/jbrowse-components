@@ -206,7 +206,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/RegionTooLargeMixin': m71.default,
   '@jbrowse/display-kit/regionTooLargeUtils': m72,
   '@jbrowse/display-kit/regionTooLargeViews': m73,
-  '@jbrowse/display-kit/renderDisplaySvg': uiNamespace(['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'exportedHeight', 'exportedY', 'renderDisplaySvg', 'renderDisplaySvgInFrame', 'svgLegendGutterWidth']),
+  '@jbrowse/display-kit/renderDisplaySvg': uiNamespace(['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'exportedHeight', 'exportedY', 'renderDisplaySvg', 'svgLegendGutterWidth']),
   '@jbrowse/display-kit/retiredSettings': m75,
   '@jbrowse/display-kit/rowArrangementConfigSchema': m76,
   '@jbrowse/display-kit/rowAxisConfigSchema': m77,

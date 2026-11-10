@@ -22,7 +22,6 @@
     "./LinearBasicDisplay/stateModel": "./src/LinearBasicDisplay/model.ts",
     "./LinearBasicDisplay/baseStateModel": "./src/LinearBasicDisplay/baseModel.ts",
     "./tables": "./src/tables.ts",
-    "./staticSvg": "./src/staticSvg.tsx",
     "./band": "./src/band.ts",
     "./densityGate": "./src/RenderFeatureDataRPC/densityGate.ts"
   },
@@ -64,7 +63,6 @@
       "./LinearBasicDisplay/stateModel": "./esm/LinearBasicDisplay/model.js",
       "./LinearBasicDisplay/baseStateModel": "./esm/LinearBasicDisplay/baseModel.js",
       "./tables": "./esm/tables.js",
-      "./staticSvg": "./esm/staticSvg.js",
       "./band": "./esm/band.js",
       "./densityGate": "./esm/RenderFeatureDataRPC/densityGate.js"
     }

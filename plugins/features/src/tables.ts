@@ -364,7 +364,6 @@ export async function featureTables(
   host.setFrame({
     bpPerPx,
     coarseBpPerPx: bpPerPx,
-    trackWidthPx: blocks.reduce((sum, b) => sum + b.widthPx, 0),
     settledDynamicBlocks: blocks,
   })
   const fetchRegions = windowFetchRegions(regions, displayedRegions)

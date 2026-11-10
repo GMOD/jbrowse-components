@@ -2450,21 +2450,12 @@ importers:
       '@jbrowse/plugin-features':
         specifier: workspace:^
         version: link:../../plugins/features
-      '@jbrowse/plugin-gff3':
-        specifier: workspace:^
-        version: link:../../plugins/gff3
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
-      '@jbrowse/plugin-marks':
-        specifier: workspace:^
-        version: link:../../plugins/marks
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../../plugins/wiggle
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core

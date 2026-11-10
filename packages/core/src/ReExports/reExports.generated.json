@@ -1317,14 +1317,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/rpc/methods/executeEncodedLayers": {
-      "package": "@jbrowse/core",
-      "names": [
-        "executeGetEncodedFeature",
-        "executeGetEncodedLayers"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/rpc/RpcManager": {
       "package": "@jbrowse/core",
       "names": [
@@ -5039,7 +5031,6 @@
         "exportedHeight",
         "exportedY",
         "renderDisplaySvg",
-        "renderDisplaySvgInFrame",
         "svgLegendGutterWidth"
       ],
       "worker": "stub",

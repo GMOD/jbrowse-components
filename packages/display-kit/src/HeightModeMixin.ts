@@ -85,8 +85,7 @@ export function fitTargetHeightViews(self: { allottedHeight: number }) {
 
 /**
  * The track height under the `heightMode` strategy, past the display's
- * `growTargetHeight` hook: `HeightModeMixin` installs it, and a static host,
- * whose frame is always measured, installs the same.
+ * `growTargetHeight` hook, which `HeightModeMixin` installs.
  */
 export function grownHeightViews(self: {
   autoHeight: boolean

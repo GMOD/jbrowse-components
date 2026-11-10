@@ -20,9 +20,7 @@ import type { ReactNode } from 'react'
 
 /**
  * What the LGV export's chrome (header, ruler, gridlines, region separators,
- * track boxes and labels) reads off the view it frames. The view is one; so is
- * a `staticLgvFrame`, which computes each member from a region list and a
- * width with the functions the view's getters call.
+ * track boxes and labels) reads off the view it frames.
  */
 export interface LgvSvgChromeView {
   id: string
@@ -54,7 +52,7 @@ interface TrackHeights {
  * its height, its terminal state, the sidebar it reserves, and (for
  * `SvgLegend`) whatever legend members it carries.
  */
-export type SvgRowDisplay = {
+type SvgRowDisplay = {
   height: number
   regionTooLarge?: boolean
   drawsGenomicCoordinates?: boolean

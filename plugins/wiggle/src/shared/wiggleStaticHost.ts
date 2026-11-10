@@ -48,7 +48,7 @@ const NO_FRAME: WiggleStaticFrame = {
  * they were fetched over, under the views the display installs, in the
  * display's order, its row views, row hooks and key among them. No session, no
  * view, no autoruns, and so no autoscale group: the axis autoscales over
- * this track alone. The tables and the static SVG export both run it.
+ * this track alone. The tables run it.
  */
 function wiggleStaticHost(
   configuration:

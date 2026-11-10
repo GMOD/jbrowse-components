@@ -182,14 +182,6 @@ export { containingLgv } from './LinearGenomeView/containingLgv.ts'
 export { showRegionsWithUndo } from './LinearGenomeView/showRegionsWithUndo.ts'
 export type { SharedFit } from './LinearGenomeView/sharedScaleContainer.ts'
 export { fitAllRegionsWindow } from './LinearGenomeView/util.ts'
-export { staticLgvFrame } from './LinearGenomeView/staticFrame.ts'
-export type { StaticLgvFrame } from './LinearGenomeView/staticFrame.ts'
-export {
-  lgvSvgLayoutOptions,
-  staticLgvSvg,
-} from './LinearGenomeView/svgcomponents/lgvSvgDocument.tsx'
-export type { StaticLgvTrack } from './LinearGenomeView/svgcomponents/lgvSvgDocument.tsx'
-export type { LgvSvgChromeView } from './LinearGenomeView/svgcomponents/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 // The third form of the same export: not a file, not a markup string, but the
 // components mounted in a host's own page. See the file for the three pieces

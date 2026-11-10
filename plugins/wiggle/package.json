@@ -20,7 +20,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./LinearWiggleDisplay/stateModel": "./src/LinearWiggleDisplay/model.ts",
-    "./staticSvg": "./src/staticSvg.tsx",
     "./tables": "./src/tables.ts"
   },
   "files": [
@@ -64,7 +63,6 @@
     "exports": {
       ".": "./esm/index.js",
       "./LinearWiggleDisplay/stateModel": "./esm/LinearWiggleDisplay/model.js",
-      "./staticSvg": "./esm/staticSvg.js",
       "./tables": "./esm/tables.js"
     }
   },

@@ -3,12 +3,10 @@ import { overByteLimitError } from '@jbrowse/core/data_adapters/tables'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   fitTargetHeightViews,
-  grownHeightViews,
   heightModeViews,
 } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
 import { runInAction } from 'mobx'
 
@@ -21,13 +19,8 @@ import {
 import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import { featureColorScaleViews } from '../LinearBasicDisplay/derivedColorKey.ts'
 import { featureBandViews } from '../LinearBasicDisplay/featureBandViews.ts'
-import { heightViews } from '../LinearBasicDisplay/heightViews.ts'
 import { layoutRegionKey } from '../LinearBasicDisplay/layoutInputs.ts'
 import { featureIdsTouchingBlocks } from '../LinearBasicDisplay/layoutQueries.ts'
-import {
-  featureRenderStateViews,
-  groupLabelViews,
-} from '../LinearBasicDisplay/renderStateViews.ts'
 import { executeRenderFeatureData } from '../RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { createPeptideCache } from '../RenderFeatureDataRPC/peptides/peptideCache.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -42,12 +35,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * What a static feature host reads off the view it stands in for: the zoom
- * it lays out at, the blocks on screen and the width its canvas spans.
+ * it lays out at and the blocks on screen.
  */
-export interface FeatureStaticFrame {
+interface FeatureStaticFrame {
   bpPerPx: number
   coarseBpPerPx: number
-  trackWidthPx: number
   settledDynamicBlocks: readonly {
     assemblyName: string
     refName: string
@@ -60,7 +52,6 @@ export interface FeatureStaticFrame {
 const NO_FRAME: FeatureStaticFrame = {
   bpPerPx: 1,
   coarseBpPerPx: 1,
-  trackWidthPx: 0,
   settledDynamicBlocks: [],
 }
 
@@ -71,7 +62,7 @@ const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
  * frame it lays out in and what was fetched over it, under the views layers
  * the display installs, in the display's order. No session, no view, no
  * autoruns: nothing is pinned or expanded, no density gate measured, and the
- * track is unscrolled. The tables and the static SVG export both run it.
+ * track is unscrolled. The tables run it.
  */
 const FeatureStaticHostModel = types
   .compose(
@@ -85,8 +76,6 @@ const FeatureStaticHostModel = types
     layoutPinnedFeatureIdSet: NO_FEATURE_IDS,
     expandedGeneIdSet: NO_FEATURE_IDS,
     visibleFeatureDensityPerPx: 0,
-    morphFromTops: undefined,
-    morphFromMaxY: 0,
   }))
   .actions(self => ({
     setFrame(host: FeatureStaticFrame) {
@@ -100,9 +89,6 @@ const FeatureStaticHostModel = types
     get conf() {
       return self.configuration
     },
-    get canvasWidthPx() {
-      return trackCanvasWidthPx(self.host)
-    },
     get layoutReady() {
       return self.rpcDataMap.size > 0
     },
@@ -114,9 +100,6 @@ const FeatureStaticHostModel = types
     },
     get hidesOverflow() {
       return false
-    },
-    get hostInitialized() {
-      return true
     },
   }))
   .views(self => heightModeViews(self))
@@ -137,10 +120,6 @@ const FeatureStaticHostModel = types
   .views(self => basicDisplayGlyphViews(self))
   .views(self => basicDisplayLayoutViews(self))
   .views(featureBandViews)
-  .views(self => groupLabelViews(self))
-  .views(self => heightViews(self))
-  .views(self => grownHeightViews(self))
-  .views(self => featureRenderStateViews(self))
   .views(self => featureColorScaleViews(self))
 
 export interface FeatureStaticHost extends Instance<
