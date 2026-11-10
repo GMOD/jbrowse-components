@@ -197,7 +197,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                   ? 'Read connection, partner off screen'
                   : endRefName === undefined
                     ? 'Read connection'
-                    : 'Translocation connection'}
+                    : 'Inter-chromosomal connection'}
               </strong>
             </div>
             {/* Two POSITIONS across chromosomes, one RANGE within one. A range
@@ -255,12 +255,12 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
             <div>
-              <strong>Translocation breakpoint</strong>
+              <strong>Inter-chromosomal breakpoint</strong>
             </div>
             <div>Location: {formatBandLocation(refName, position)}</div>
             {/* The one thing the mark itself cannot show. A tick is a bare
                 vertical at a locus: without this the reader can see THAT the
-                reads here have mates elsewhere and not where elsewhere is.
+                reads here have partners elsewhere and not where elsewhere is.
                 Dropped entirely when the list is empty rather than printing a
                 label with nothing after it — `resolveArcs` always fills it, but
                 the hit test defaults it, so the empty case is reachable by a
@@ -268,12 +268,12 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             {partnerRefNames.length === 0 ? null : (
               <div>
                 {partnerRefNames.length === 1
-                  ? 'Mate chromosome: '
-                  : 'Mate chromosomes: '}
+                  ? 'Partner chromosome: '
+                  : 'Partner chromosomes: '}
                 {partnerRefNames.join(', ')}
               </div>
             )}
-            {/* Why this is a tick and not an arc. Naming the mate chromosome
+            {/* Why this is a tick and not an arc. Naming the partner chromosome
                 is the whole content of the mark, and it is actively misleading
                 when that chromosome is on screen: the reader looks across,
                 sees arcs landing in the partner window, and cannot tell that

@@ -43,3 +43,35 @@ test.each<[string, TooltipPayload]>([
   const { getByTestId } = renderTip(tip)
   expect(getByTestId('pileup-tooltip').textContent).toContain('read<abc>&b')
 })
+
+test('an arc between chromosomes is an inter-chromosomal connection', () => {
+  const { getByRole } = renderTip({
+    type: 'arc',
+    refName: 'chr1',
+    endRefName: 'chr7',
+    start: 1000,
+    end: 5000,
+    support: 3,
+    category: undefined,
+  })
+  const text = getByRole('tooltip', { hidden: true }).textContent
+  expect(text).toContain('Inter-chromosomal connection')
+  expect(text).not.toContain('Translocation')
+})
+
+test('a tick names its partner chromosomes, not mates', () => {
+  const { getByRole } = renderTip({
+    type: 'arcLine',
+    refName: 'chr1',
+    position: 1000,
+    partnerRefNames: ['chr7', 'chr9'],
+    partnerLoci: [],
+    support: 2,
+    partnerOffView: true,
+  })
+  const text = getByRole('tooltip', { hidden: true }).textContent
+  expect(text).toContain('Inter-chromosomal breakpoint')
+  expect(text).toContain('Partner chromosomes: chr7, chr9')
+  expect(text).not.toContain('Mate')
+  expect(text).not.toContain('Translocation')
+})

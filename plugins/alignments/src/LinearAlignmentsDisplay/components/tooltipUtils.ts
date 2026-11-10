@@ -89,7 +89,7 @@ export interface ArcTooltipPayload {
   // interchromosomal arc is the one mark whose two feet are not on one number
   // line, so it is rendered as two positions rather than as a range with a
   // distance: `chr22:23,290,313-130,853,964` names one chromosome and a
-  // coordinate from another, and a bp distance across a translocation is not a
+  // coordinate from another, and a bp distance between chromosomes is not a
   // quantity. As a tick this fact was readable from the mark itself; as an arc
   // the color is the only channel carrying it, so the hover has to say it.
   endRefName?: string
@@ -121,7 +121,7 @@ export interface ArcLineTooltipPayload {
   refName: string
   // The breakpoint itself, in absolute genomic bp.
   position: number
-  // The chromosome(s) the reads through this breakpoint have their mates on,
+  // The chromosome(s) the reads through this breakpoint have their partners on,
   // sorted. Never empty. More than one is a genuinely complex rearrangement
   // rather than a formatting edge case, so the tooltip lists them all.
   partnerRefNames: string[]
@@ -136,9 +136,9 @@ export interface ArcLineTooltipPayload {
   // `lineTouchesRegion` can only have been pushed for a partner that resolved
   // to no region. Read cloud is the exception — it ticks every
   // interchromosomal connection, displayed partner or not, because the cloud's
-  // Y axis is insert size and a translocation has none.
+  // Y axis is insert size and a connection between chromosomes has none.
   //
-  // The hover needs it because naming the mate chromosome is not enough when
+  // The hover needs it because naming the partner chromosome is not enough when
   // that chromosome is ON SCREEN with arcs into it: the reader looks across,
   // finds the partner window, and has no way to learn that these particular
   // reads land outside it.
