@@ -1,4 +1,3 @@
-import { capitalizeFirst } from '@jbrowse/core/util'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import {
   dealRowColors,
@@ -310,11 +309,13 @@ export function rowColorKeyEntries(
 }
 
 /**
- * One `rows.annotations` entry as read: its channel, and its place in the
- * list, which picks the palette it deals from whatever the entries before it
- * draw.
+ * One `rows.annotations` entry as read: its channel; its title, which names
+ * its key and the label over its column, `legend.title` else the field
+ * capitalised; and its place in the list, which picks the palette it deals
+ * from whatever the entries before it draw.
  */
 export interface RowAnnotationSetting extends RowColorSetting {
+  title: string
   position: number
 }
 
@@ -325,14 +326,6 @@ export interface RowAnnotationSetting extends RowColorSetting {
 export interface RowAnnotationDeal {
   setting: RowAnnotationSetting
   dealt: ReadonlyMap<string, string>
-}
-
-/**
- * What names an annotation: the title of its key and the label over its
- * column.
- */
-export function rowAnnotationTitle(setting: RowColorSetting) {
-  return capitalizeFirst(setting.field)
 }
 
 /**
@@ -383,7 +376,7 @@ export function rowAnnotationScales(
     const scale: CategoricalScale = {
       kind: 'categorical',
       id: rowAnnotationScaleId(index),
-      title: rowAnnotationTitle(setting),
+      title: setting.title,
       entries,
     }
     return entries.length > 0 ? [scale] : []

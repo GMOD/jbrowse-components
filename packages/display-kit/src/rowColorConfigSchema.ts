@@ -7,6 +7,44 @@ import {
 } from './colorConfigSchema.ts'
 
 /**
+ * A row color channel's `scale`, named `name` and `path` in what it refuses:
+ * which color each value of the field takes, `domain` paired with `range`,
+ * and `unknown` for the values it leaves out. `rows.color` and each
+ * `rows.annotations` entry declare one.
+ */
+export function rowColorScaleConfigSchema({
+  name,
+  path,
+  domain,
+  unknown,
+}: {
+  name: string
+  path: string
+  domain: string
+  unknown: string
+}) {
+  return ConfigurationSchema(
+    name,
+    {
+      ...colorDomainSlot({ domain }),
+      ...colorRangeSlot({
+        range:
+          'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from',
+      }),
+      /**
+       * #slot unknown
+       * The color every row the scale leaves out takes; `''` for none.
+       */
+      unknown: {
+        type: 'maybeColor',
+        description: unknown,
+      },
+    },
+    colorScaleOptions(path),
+  )
+}
+
+/**
  * #config RowColor
  * #category display
  * `scale.unknown: ''` colors no row but those `rows.colors` pins: the "None"
@@ -75,30 +113,14 @@ export const rowColorConfigSchema = ConfigurationSchema(
      * Which color each value of the field takes. Under `name` it takes no
      * `domain`: a row's own color is `rows.colors`.
      */
-    scale: ConfigurationSchema(
-      'RowColorScale',
-      {
-        ...colorDomainSlot({
-          domain:
-            "the field's values that get a color, in order; none under name, where a row's own color is rows.colors",
-        }),
-        ...colorRangeSlot({
-          range:
-            'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from',
-        }),
-        /**
-         * #slot unknown
-         * `''` colors no row but those `rows.colors` pins: the menu's None.
-         * A color is the one every row the scale leaves out takes.
-         */
-        unknown: {
-          type: 'maybeColor',
-          description:
-            '"" colors no row but those rows.colors pins: the menu\'s None. A color: every row the scale leaves out takes it. Unset: under name the palette deals a color per row where the rows share one panel, and under an attribute each value deals the next palette color; a row left without one keeps the color its file gives it',
-        },
-      },
-      colorScaleOptions('rows.color.scale'),
-    ),
+    scale: rowColorScaleConfigSchema({
+      name: 'RowColorScale',
+      path: 'rows.color.scale',
+      domain:
+        "the field's values that get a color, in order; none under name, where a row's own color is rows.colors",
+      unknown:
+        '"" colors no row but those rows.colors pins: the menu\'s None. A color: every row the scale leaves out takes it. Unset: under name the palette deals a color per row where the rows share one panel, and under an attribute each value deals the next palette color; a row left without one keeps the color its file gives it',
+    }),
   },
   {
     shorthand: 'field',

@@ -1,12 +1,11 @@
 import { ConfigurationSchema, keyedBase } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
+import { rowAnnotationList } from './rowAnnotationConfigSchema.ts'
 import {
   ROW_ARRANGEMENT_MEMBERS,
   rowArrangementConfigSchema,
 } from './rowArrangementConfigSchema.ts'
 import { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
-import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
 import { rowFilterList } from './rowPredicateConfigSchema.ts'
 
 /**
@@ -85,16 +84,18 @@ export const rowsConfigSchema = ConfigurationSchema(
      * #slot annotations
      * Extra color columns beside the row labels, one per row attribute, as
      * ggtree's `gheatmap` and ComplexHeatmap's row annotation draw them: a
-     * list of [RowColor](../rowcolor) channels, each a field or
-     * `{ field, scale: { domain, range, unknown } }`, drawn in the order
-     * listed after the row's own color. Categorical only: each value of the
-     * field takes a color the way `rows.color` deals one, a row with no
-     * value leaves a gap, a field no row carries draws nothing, and each
-     * column gets a key. It reorders no row, so under one tree several
-     * attributes read against the same clusters. Like `filter` it names no
-     * row: "Reset row order" and a write changing `field` keep it.
+     * list of [RowAnnotation](../rowannotation) entries, each a field or
+     * `{ field, scale: { domain, range, unknown }, legend: { title } }`,
+     * drawn in the order listed after the row's own color. Categorical
+     * only: each value of the field takes a color the way `rows.color`
+     * deals one, a row with no value leaves a gap, a field no row carries
+     * draws nothing, and each column gets a key titled `legend.title`, else
+     * the field. An entry with no field, or on `name`, is refused. It
+     * reorders no row, so under one tree several attributes read against
+     * the same clusters. Like `filter` it names no row: "Reset row order"
+     * and a write changing `field` keep it.
      */
-    annotations: types.array(rowColorConfigSchema),
+    annotations: rowAnnotationList(),
     /**
      * #slot axis
      * The guide down the left of the rows, a

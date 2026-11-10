@@ -3,7 +3,11 @@ import { capitalizeFirst } from '@jbrowse/core/util'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
-import type { RowColorScaleSetting, RowColorSetting } from './rowColorScale.ts'
+import type {
+  RowAnnotationSetting,
+  RowColorScaleSetting,
+  RowColorSetting,
+} from './rowColorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** The `rows.color` object as a config or the dialog writes it. */
@@ -54,6 +58,26 @@ export function rowColorSettingOf(
       unknown: readConfObject(color, ['scale', 'unknown']),
     },
   })
+}
+
+/**
+ * One `rows.annotations` entry's config node, at `position` in the list, read
+ * as a `RowAnnotationSetting`.
+ */
+export function rowAnnotationSettingOf(
+  annotation: AnyConfigurationModel,
+  position: number,
+): RowAnnotationSetting {
+  const setting = rowColorSettingOf(annotation)
+  const title: string | undefined = readConfObject(annotation, [
+    'legend',
+    'title',
+  ])
+  return {
+    ...setting,
+    title: title || capitalizeFirst(setting.field),
+    position,
+  }
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>

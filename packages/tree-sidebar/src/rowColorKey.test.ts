@@ -382,16 +382,10 @@ describe('rows.annotations', () => {
       { rows: { annotations: ['population', 'sex'] } },
       { rows: SEXED },
     )
-    const named = makeDisplay(
-      { rows: { annotations: ['name', 'sex'] } },
-      { rows: SEXED },
-    )
     expect(lone.rowAnnotationColors).toHaveLength(1)
-    expect(named.rowAnnotationColors).toHaveLength(1)
     const sexOf = (display: ReturnType<typeof makeDisplay>) =>
       Object.fromEntries(display.rowAnnotationColors.at(-1)!)
     expect(sexOf(lone)).toEqual(sexOf(both))
-    expect(sexOf(named)).toEqual(sexOf(both))
     expect(sexOf(both).a).toBe(a(1, 0))
   })
 
@@ -463,15 +457,23 @@ describe('rows.annotations', () => {
     expect(keysOf(display).map(key => key.id)).toEqual(['rows.color'])
   })
 
-  it('draws nothing for an annotation on name, whatever its scale', () => {
+  it('titles the key and the column label by legend.title, else the field', () => {
     const display = makeDisplay(
       {
-        rows: { annotations: [{ field: 'name', scale: { unknown: '#ccc' } }] },
+        rows: {
+          annotations: [
+            'group',
+            { field: 'sex', legend: { title: 'Sex (reported)' } },
+          ],
+        },
       },
       { rows: SEXED },
     )
-    expect(display.rowAnnotationColors).toEqual([])
-    expect(keysOf(display)).toEqual([])
+    expect(keysOf(display).map(key => key.title)).toEqual([
+      'Group',
+      'Sex (reported)',
+    ])
+    expect(display.rowColumnLabels).toEqual(['Group', 'Sex (reported)'])
   })
 
   it('keys the empty value where the scale colors it', () => {

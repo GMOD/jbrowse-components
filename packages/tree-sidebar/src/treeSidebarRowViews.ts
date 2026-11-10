@@ -15,6 +15,7 @@ import { narrowRows, narrows } from './narrowRows.ts'
 import {
   liftRowColor,
   pinnedColorsOf,
+  rowAnnotationSettingOf,
   rowColorSettingOf,
 } from './rowColorChoice.ts'
 import {
@@ -23,7 +24,6 @@ import {
   dealValueColors,
   resolveRowColors,
   rowAnnotationScales,
-  rowAnnotationTitle,
   rowColorKeyEntries,
   rowFieldValue,
   withPinnedColors,
@@ -174,7 +174,7 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
         ? annotations
             .flatMap((annotation: unknown, position) =>
               isConfigurationModel(annotation)
-                ? [{ ...rowColorSettingOf(annotation), position }]
+                ? [rowAnnotationSettingOf(annotation, position)]
                 : [],
             )
             .filter(setting => setting.field !== 'name')
@@ -628,7 +628,7 @@ export function resolvedRowColorViews<S extends RowSource>(
     }[] {
       return self.rowAnnotationDeals
         .map(deal => ({
-          title: rowAnnotationTitle(deal.setting),
+          title: deal.setting.title,
           colors: annotationColumn(self.expandedRows, deal),
         }))
         .filter(column => column.colors.size > 0)

@@ -885,6 +885,46 @@ function checkRowFilters(
   }
 }
 
+// What `RowAnnotation` refuses of an entry written as a bare string, which the
+// schema reads as a plain string: none and `name`. An object entry's are the
+// schema's own `requires` and `refuses`. Copied from `ROW_ANNOTATION_NO_FIELD`
+// and `ROW_ANNOTATION_ON_NAME`.
+const ROW_ANNOTATION_REFUSALS: Record<string, string> = {
+  '': "a rows.annotations entry needs a field, the row attribute its column colors by, as annotations: ['sex']",
+  name: "field 'name' is the row itself, which its label already shows: a rows.annotations entry colors by an attribute of the row, such as sex",
+}
+
+function checkRowAnnotations(
+  display: Record<string, unknown>,
+  type: string,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const { rows } = display
+  const annotations =
+    declaresSlot(manifest.displays[type]?.slots ?? [], [
+      'rows',
+      'annotations',
+    ]) && isRecord(rows)
+      ? rows.annotations
+      : undefined
+  if (Array.isArray(annotations)) {
+    annotations.forEach((entry: unknown, i) => {
+      const message =
+        typeof entry === 'string' ? ROW_ANNOTATION_REFUSALS[entry] : undefined
+      if (message) {
+        pushOnce(report, {
+          level: 'error',
+          where: `${where}.rows.annotations[${i}]`,
+          message,
+          rule: 'row-annotation',
+        })
+      }
+    })
+  }
+}
+
 // A problem the color and scale rules and the mark rule list both reach, such
 // as the y axis's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
@@ -1149,6 +1189,7 @@ function checkMarkDisplays(
     if (typeof node.type === 'string') {
       checkAlignmentsFilters(node, node.type, manifest, where, report)
       checkRowFilters(node, node.type, manifest, where, report)
+      checkRowAnnotations(node, node.type, manifest, where, report)
     }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
@@ -1177,6 +1218,13 @@ function checkMarkDisplays(
           report,
         )
         checkRowFilters(
+          defaults,
+          display,
+          manifest,
+          `${where}.displayDefaults`,
+          report,
+        )
+        checkRowAnnotations(
           defaults,
           display,
           manifest,

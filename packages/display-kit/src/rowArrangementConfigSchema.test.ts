@@ -41,47 +41,6 @@ test('rows.annotations sits on Rows beside filter, and RowArrangement has none',
   ).not.toContain('annotations')
 })
 
-function annotationsOf(conf: Instance<typeof Display>) {
-  return conf.rows.annotations.map(annotation => ({
-    field: readConfObject(annotation, 'field'),
-    domain: readConfObject(annotation, ['scale', 'domain']),
-    range: readConfObject(annotation, ['scale', 'range']),
-  }))
-}
-
-const SEX = {
-  field: 'sex',
-  scale: { domain: ['female', 'male'], range: ['#d95f02', '#1b9e77'] },
-}
-
-test('rows.annotations is empty by default', () => {
-  expect(annotationsOf(Display.create({ displayId: 'd' }))).toEqual([])
-})
-
-test('rows.annotations lists RowColor channels, a string being the field', () => {
-  const conf = Display.create({
-    displayId: 'a',
-    rows: { annotations: ['superpopulation', SEX] },
-  })
-  expect(annotationsOf(conf)).toEqual([
-    { field: 'superpopulation', domain: [], range: [] },
-    { field: 'sex', domain: SEX.scale.domain, range: SEX.scale.range },
-  ])
-})
-
-test('a settings write sets rows.annotations, and a field change keeps it', () => {
-  const conf = Display.create({ displayId: 'w', rows: { field: 'source' } })
-  applyConfSettings(conf, { rows: { annotations: ['superpopulation', SEX] } })
-  applyConfSettings(conf, { rows: 'tissue' })
-  expect(annotationsOf(conf).map(a => a.field)).toEqual([
-    'superpopulation',
-    'sex',
-  ])
-  expect(plotOf(conf).rows).toMatchObject({
-    annotations: ['superpopulation', SEX],
-  })
-})
-
 const Display = ConfigurationSchema(
   'TreeHost',
   { rows: rowsConfigSchema },
@@ -284,18 +243,4 @@ test('an empty sort is none, and a value no list reads is refused', () => {
       error: expect.stringMatching(/rows\.sort is a list/),
     }),
   ])
-})
-
-test('a lone field or channel writes rows.annotations as a list of one, beside the other members', () => {
-  const conf = Display.create({ displayId: 'd' })
-  expect(
-    applyConfSettings(conf, { rows: { annotations: 'sex', color: 'group' } })
-      .failed,
-  ).toEqual([])
-  expect(annotationsOf(conf).map(a => a.field)).toEqual(['sex'])
-  expect(conf.rows.color.field).toBe('group')
-  applyConfSettings(conf, { rows: { annotations: SEX } })
-  expect(annotationsOf(conf).map(a => a.field)).toEqual(['sex'])
-  applyConfSettings(conf, { rows: { annotations: '' } })
-  expect(annotationsOf(conf)).toEqual([])
 })
