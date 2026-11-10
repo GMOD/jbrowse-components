@@ -50,9 +50,10 @@ export const SPLICED_LEVELS = ['spliced', 'unspliced'] as const
 /**
  * Where a read stands in its pair. `concordant` is the aligner's verdict
  * (`isConcordantPairRead`), so a file whose aligner never sets the proper-pair
- * flag files every pair `discordant`. `nonPrimary` is a secondary or
- * supplementary record, whose own flags and orientation do not describe its
- * pair.
+ * flag files every pair `discordant`, and a read whose mate is unmapped is
+ * `discordant` too. `unpaired` is a single-end record or one that is itself
+ * unmapped. `nonPrimary` is a secondary or supplementary record, whose own
+ * flags and orientation do not describe its pair.
  */
 export const PAIRING_LEVELS = [
   'concordant',

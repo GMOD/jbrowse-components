@@ -491,6 +491,19 @@ Codes into a list of labels, one per row.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
+### COLOR_SCHEME_LABELS
+
+The name a menu row shows for each scheme.
+
+```js
+import { COLOR_SCHEME_LABELS } from '@jbrowse/core/util/colorSchemes'
+
+// type signature
+Record<"blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis", string>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
 ### COLOR_SCHEMES
 
 The named ramps a continuous color scale's `scheme` takes, each one a stop table

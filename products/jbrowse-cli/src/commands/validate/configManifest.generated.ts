@@ -4243,7 +4243,7 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "show",
-                  "type": "boolean"
+                  "type": "(boolean | undefined)"
                 },
                 {
                   "name": "encoding",
@@ -5984,6 +5984,28 @@ export const configManifest: ConfigManifest = {
                       "legend": {
                         "title": "Syntenic depth"
                       }
+                    },
+                    "strand": {
+                      "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                          "1",
+                          "-1",
+                          "0"
+                        ],
+                        "range": [
+                          "tomato",
+                          "cornflowerblue",
+                          "goldenrod"
+                        ],
+                        "names": [
+                          "Forward strand",
+                          "Reverse strand",
+                          "No strand"
+                        ]
+                      },
+                      "missing": "0",
+                      "closed": true
                     }
                   },
                   "impliedField": "strand"
@@ -12677,6 +12699,30 @@ export const configManifest: ConfigManifest = {
       "snpCovHeight",
       "sortedBy",
       "trackMaxHeight"
+    ],
+    "LGVSyntenyDisplay": [
+      "PileupDisplay",
+      "SNPCoverageDisplay",
+      "autoscale",
+      "colorBy",
+      "colorBySetting",
+      "constraints",
+      "displayCrossHatches",
+      "drawProperPairs",
+      "drawSingletons",
+      "filterBy",
+      "filterBySetting",
+      "hideMismatchesSetting",
+      "scale",
+      "showLegend",
+      "snpCovHeight",
+      "sortedBy",
+      "trackMaxHeight"
+    ],
+    "LinearReferenceSequenceDisplay": [
+      "showForward",
+      "showReverse",
+      "showTranslation"
     ],
     "LinearVariantDisplay": [
       "clusterTree",

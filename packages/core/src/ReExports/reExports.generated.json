@@ -2996,6 +2996,7 @@
       "package": "@jbrowse/core",
       "names": [
         "COLOR_SCHEMES",
+        "COLOR_SCHEME_LABELS",
         "DEFAULT_COLOR_SCHEME"
       ],
       "worker": "real"
@@ -5293,6 +5294,7 @@
         "AxisCaptionOverlay",
         "AxisGutter",
         "BOTTOM_RIGHT_CONTROLS_ORDER",
+        "BOTTOM_RIGHT_NOTICES_ORDER",
         "BottomRightCornerContext",
         "COMPACT_AXIS_HEIGHT",
         "CrossHatchLines",
@@ -5332,6 +5334,7 @@
         "plainChromeOverlays",
         "plainTrackControl",
         "resolveOverlays",
+        "rightAxisStackInsets",
         "scoreToAxisY",
         "sidebarCovers",
         "textHalo",
@@ -5358,6 +5361,7 @@
         "axisShown",
         "leftAxisGutterWidth",
         "numbersGrowRight",
+        "rightAxisStackInsets",
         "rulesABand"
       ],
       "worker": "real"
@@ -5441,7 +5445,6 @@
         "clipBlockForCanvas",
         "devicePxBand",
         "devicePxSpan",
-        "fillBpSpan",
         "forEachClippedBlock",
         "getDpr",
         "getPreparedCanvas2D",
@@ -5502,7 +5505,6 @@
       "package": "@jbrowse/render-core",
       "names": [
         "COVERAGE_BAND_LAYER_ORDER",
-        "COVERAGE_BAND_UNIFORMS_SIZE_BYTES",
         "COVERAGE_BAR_PASS",
         "COVERAGE_CLIP_PASS",
         "COVERAGE_INTERBASE_PASS",
@@ -5642,13 +5644,11 @@
         "connectorMark",
         "connectorPlacement",
         "defineMark",
-        "ellipseDistance",
         "ellipseNearest",
         "inkOfInstances",
         "instanceColor",
         "interleavedSpans",
         "isThreshold",
-        "keepRampValues",
         "keySlot",
         "lineCenterMark",
         "lineMarkOf",
@@ -5730,7 +5730,6 @@
     "@jbrowse/render-core/marks/ellipseDistance": {
       "package": "@jbrowse/render-core",
       "names": [
-        "ellipseDistance",
         "ellipseNearest"
       ],
       "worker": "real"

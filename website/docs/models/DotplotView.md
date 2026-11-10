@@ -74,7 +74,7 @@ From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displa
 | <span id="volatile-cursormode">**cursorMode**</span><br><code>string</code> | these are 'personal preferences', stored in volatile and loaded/written to localStorage |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>18 inherited volatiles from 6 models</summary>
+<summary>17 inherited volatiles from 6 models</summary>
 
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="volatile-colorlegenddismissedfor">[`colorLegendDismissedFor`](../syntenyviewmixin#volatile-colorlegenddismissedfor)</span>
 
@@ -84,7 +84,7 @@ From [ImportFormSyntenyMixin](../importformsyntenymixin): <span id="volatile-imp
 
 From [DiagonalizeProgressMixin](../diagonalizeprogressmixin): <span id="volatile-awaitingautodiagonalize">[`awaitingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-awaitingautodiagonalize)</span>, <span id="volatile-pendingautodiagonalize">[`pendingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-pendingautodiagonalize)</span>, <span id="volatile-diagonalizestatus">[`diagonalizeStatus`](../diagonalizeprogressmixin#volatile-diagonalizestatus)</span>, <span id="volatile-diagonalizecancel">[`diagonalizeCancel`](../diagonalizeprogressmixin#volatile-diagonalizecancel)</span>, <span id="volatile-diagonalizeerror">[`diagonalizeError`](../diagonalizeprogressmixin#volatile-diagonalizeerror)</span>
 
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
 
 From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-problems">[`problems`](../baseviewmodel#volatile-problems)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
 

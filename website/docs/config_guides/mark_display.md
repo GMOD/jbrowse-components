@@ -977,6 +977,7 @@ each reported under its id:
 | `names-domain` | warning | A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. |
 | `unknown-domain` | warning | An ordinal color's `scale.unknown` with no `scale.domain`, so it paints every value. |
 | `scheme-domain` | warning | An ordinal color's `scale.scheme` with no `scale.domain` or `scale.range`, so the default palette paints. |
+| `domain-levels` | warning | An ordinal color's `scale.domain` naming a value outside a closed field's levels, such as `+` on `strand`, whose levels are `1`, `-1` and `0`. |
 | `unknown-scale` | warning | A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. |
 | `invalid-scale` | warning | A `scale.invalid` on a color painting through no ordinal scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |

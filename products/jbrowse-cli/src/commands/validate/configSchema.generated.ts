@@ -5032,7 +5032,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead.",
           "default": 1,
           "if": {
             "type": "null"
@@ -6156,7 +6156,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead.",
           "default": 1,
           "if": {
             "type": "null"
@@ -6379,7 +6379,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fenceQuantile": {
-          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there, where a color ramp's domainQuantile clips at the quantile itself.",
           "default": 1,
           "if": {
             "type": "null"
@@ -6995,8 +6995,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the per-base layer over the reads, and its modification bars in the coverage band.",
-          "default": false,
+          "description": "draw the per-base layer over the reads, and its modification bars in the coverage band; unset draws it while a field is named, false hides it and keeps the field.",
           "if": {
             "type": "null"
           },
@@ -7563,7 +7562,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs/link supplementary alignments\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain, which is a read, its mate and its split segments rather than a UCSC chain file's alignment (the \\"View as pairs/link supplementary alignments\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -8728,7 +8727,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs/link supplementary alignments\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain, which is a read, its mate and its split segments rather than a UCSC chain file's alignment (the \\"View as pairs/link supplementary alignments\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -9108,7 +9107,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead.",
           "default": 1,
           "if": {
             "type": "null"
@@ -9526,7 +9525,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mapq",
             "identity",
             "dnds",
-            "syntenicDepth"
+            "syntenicDepth",
+            "strand"
           ],
           "allOf": [
             {
@@ -9578,7 +9578,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "mapq",
                 "identity",
                 "dnds",
-                "syntenicDepth"
+                "syntenicDepth",
+                "strand"
               ]
             },
             "scale": {
@@ -9837,7 +9838,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw each lane's coordinate ticks; with this off, the header's span and multiple are the only scale shown.",
+          "description": "draw each lane's coordinate ticks; with this off, the span and multiple a zoomed-out lane's header prints are the only scale shown.",
           "default": true,
           "if": {
             "type": "null"
@@ -10108,7 +10109,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead.",
           "default": 1,
           "if": {
             "type": "null"
@@ -10783,7 +10784,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "const": "filter"
         },
         "expr": {
-          "description": "jexl callback over feature.",
+          "description": "jexl callback over feature, with its jexl: prefix.",
           "default": "",
           "if": {
             "type": "null"
@@ -10807,7 +10808,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "const": "formula"
         },
         "expr": {
-          "description": "jexl callback over feature.",
+          "description": "jexl callback over feature, with its jexl: prefix.",
           "default": "",
           "if": {
             "type": "null"
@@ -12624,7 +12625,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead.",
           "default": 1,
           "if": {
             "type": "null"
@@ -12705,7 +12706,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
+              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
               "default": "",
               "if": {
                 "type": "null"
@@ -14325,7 +14326,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fenceQuantile": {
-          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there, where a color ramp's domainQuantile clips at the quantile itself.",
           "default": 0.99,
           "if": {
             "type": "null"
@@ -16279,7 +16280,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fenceQuantile": {
-          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there, where a color ramp's domainQuantile clips at the quantile itself.",
           "default": 1,
           "if": {
             "type": "null"
@@ -24783,6 +24784,74 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "PileupDisplay": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "SNPCoverageDisplay": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "colorBySetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "constraints": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "drawProperPairs": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "drawSingletons": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "filterBy": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "filterBySetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "hideMismatchesSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "scale": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "snpCovHeight": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "sortedBy": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "trackMaxHeight": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -24873,6 +24942,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "heightPreConfig": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showForward": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showReverse": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showTranslation": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }

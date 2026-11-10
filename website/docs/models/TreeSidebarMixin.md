@@ -98,7 +98,7 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-rownarrowingnotices">**rowNarrowingNotices**</span><br><code>string[]</code> | The corner notice's lines on the narrowing, once the rows are known: a `rows.filter` field no row carries, what left no row where none shows, and where the track lists its rows up front (`rowsListedUpFront`), the `rows.kept` names no row has. Each display spreads it into its `notices`. |
 | <span id="getter-rownarrowinghint">**rowNarrowingHint**</span><br><code>{ text: string; title: string; } &#124; undefined</code> | The chip above the rows while `rowNarrowingShows`: "Showing N of M rows", with "Show all" where `rowNarrowingClears`, and the config's own `rows.filter`, which "Show all" keeps, stated in its tooltip. |
 | <span id="getter-treeonfinerrows">**treeOnFinerRows**</span><br><code>boolean</code> | Whether the tree's leaves include rows a finer field draws (`finerRows`), each standing in for a drawn row, as a tree clustered per haplotype is in sample mode: it describes no drawn rows, and the hint says why (`finerTreeHint`). |
-| <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> | Whether the tree has merge heights, so a dendrogram layout differs from the cladogram; gates the "Tree branch lengths" toggle. |
+| <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> | Whether the tree has merge heights, so a dendrogram layout differs from the cladogram; gates the "Show tree branch lengths" toggle. |
 
 ## Methods
 

@@ -69,6 +69,7 @@ a file, and fails on a key it does not know.
 | `LDTrackDisplay`, `LinearBasicDisplay`, `LinearVariantDisplay` | `maxHeight` | dropped |
 | `LDTrackDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `mouseover` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
+|  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
 |  | `featureHeight` | `pileup.mark.height` |
 |  | `hideMismatches` | `pileup.mismatches.show` |
@@ -82,15 +83,7 @@ a file, and fails on a key it does not know.
 |  | `scaleType` | `coverage.encoding.y.scale.type` |
 |  | `snpCoverageDisplay` | `coverage.encoding.y.scale.domainMin`, `coverage.height` |
 |  | `defaultRendering`, `hideLargeIndels`, `hideSmallIndels`, `jitter`, `minSubfeatureWidth`, `multiTicks` | dropped |
-| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearBasicDisplay` | `mouseover` | `tooltip.field` |
-| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
-| `LinearAlignmentsDisplay` | `colorBy` | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
-|  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `sashimi.show: false` |
-|  | type `LinearReadArcsDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true` |
-|  | type `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true`, `readConnections.mark: "rule"` |
-|  | type `LinearSNPCoverageDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.height: 100`, `height: 100` |
 |  | `autoscale` (session) | `coverage.encoding.y.scale.fenceQuantile` |
-|  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
 |  | `constraints` (session) | `coverage.encoding.y.scale.domainMax`, `coverage.encoding.y.scale.domainMin` |
 |  | `displayCrossHatches` (session) | `coverage.encoding.y.axis.grid` |
 |  | `drawProperPairs` (session) | `readConnections.ordinaryPairs.show` |
@@ -102,7 +95,15 @@ a file, and fails on a key it does not know.
 |  | `snpCovHeight` (session) | `coverage.height` |
 |  | `sortedBy` (session) | `sort.field`, `sort.pos`, `sort.refName` |
 |  | `trackMaxHeight` (session) | `pileup.maxLayoutHeight` |
-| `LinearAlignmentsDisplay`, `LinearHicDisplay` | `showLegend` (session) | `legend.show` |
+| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearBasicDisplay` | `mouseover` | `tooltip.field` |
+| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearHicDisplay` | `showLegend` (session) | `legend.show` |
+| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
+| `LinearAlignmentsDisplay` | `colorBy` | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
+|  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `sashimi.show: false` |
+|  | type `LinearReadArcsDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true` |
+|  | type `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true`, `readConnections.mark: "rule"` |
+|  | type `LinearSNPCoverageDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.height: 100`, `height: 100` |
+|  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
 | `LinearArcDisplay` | `color`, `renderer` | dropped |
 | `LinearBasicDisplay` | `color3` | `utrs.encoding.color.value` |
 |  | `containerTypes` | `containers.types` |
@@ -131,6 +132,9 @@ a file, and fails on a key it does not know.
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
 |  | type `LinearPairedArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link","transform":[{"type":"mate"}],"encoding":{"x2":{"refName":"mate.refName","pos":"mate.start"}}}]` |
 | `LinearPairedArcDisplay` | `color`, `renderer` | dropped |
+| `LinearReferenceSequenceDisplay` | `showForward` (session) | `forward.show` |
+|  | `showReverse` (session) | `reverse.show` |
+|  | `showTranslation` (session) | `translation.show` |
 | `LinearSNPCoverageDisplay` | `mouseover` | dropped |
 | `LinearSyntenyDisplay` | `middle` | dropped |
 |  | `alpha` (session) | `encoding.opacity` on `LinearSyntenyView` |

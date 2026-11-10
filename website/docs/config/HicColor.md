@@ -27,7 +27,9 @@ its `observed/expected` or `observed/control` ratio, through a `linear`,
   observed/expected.
 
 The slots are the shared color channel's, so `jbrowse validate` and "Edit
-plot..." judge them as they judge any other display's.
+plot..." judge them as they judge any other display's. There is no `value`:
+every bin paints its field through `MatrixRampMixin`'s ramp, which has no
+constant color.
 
 ## Example usage
 
@@ -59,11 +61,11 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (observed, observed/expected, observed/control) = <code>'observed'</code> | observed, each bin's contact count; observed/expected, that count over the file's expected count at its distance; or observed/control, that count over the control file's, both scaled to one library depth |
-| <span id="slot-scale">**scale**</span><br>[HicColorScale sub-schema](#slot-scaletype) | How a bin's value maps to a color, Vega-Lite's scale object. |
+| <span id="slot-scale">**scale**</span><br>[HicColorScale sub-schema](#slot-scaletype) | How a bin's value maps to a color, Vega-Lite's scale object. No `range`: `MatrixRampMixin` builds the ramp from `scheme` and `reverse` alone (Colin, 2026-10-30). |
 | <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear, symlog, log) | linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor, so only 0 paints as the domain's bottom does; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which paints as the domain's bottom does. Juicebox paints that bottom transparent. Unset is the field's own, linear for observed |
 | <span id="slot-scalescheme">**scale.scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red |
 | <span id="slot-scalereverse">**scale.reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round viridis, magma, inferno and cividis, which run dark at their low end, since an unpainted bin is the page behind the matrix; the field's own scheme keeps the field's direction. |
-| <span id="slot-scaledomainmid">**scale.domainMid**</span><br><code>colorRampSlots.domainMid</code> | The value the ramp's middle stop sits at, so a diverging scheme centres on it and equal distances from it take equal colors; unset, the stops spread evenly across the domain. |
+| <span id="slot-scaledomainmid">**scale.domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the ramp's middle stop sits at, so a diverging scheme centres on it and equal distances from it take equal colors; unset, the stops spread evenly across the domain. |
 | <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset follows the loaded values, whose extent starts at 0 since no value is below it |
 | <span id="slot-scaledomainmax">**scale.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of the scale's domain; unset follows the loaded counts |
 | <span id="slot-scaledomainquantile">**scale.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | The value an unset `domainMax` follows: the loaded values' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. Only the top clips, since the values' extent starts at 0, the way an axis that starts at 0 adds 0 to the shared quantile extent. |

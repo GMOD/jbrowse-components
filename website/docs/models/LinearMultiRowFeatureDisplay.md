@@ -1,14 +1,14 @@
 ---
 id: linearmultirowfeaturedisplay
 title: LinearMultiRowFeatureDisplay
-description: "The mark display drawing a row per value of a feature attribute, with the menus a painting is read through: One row per..., Group by and Color by."
+description: "The mark display drawing a row per value of a feature attribute, with the menus a painting is read through: One row per, Group by and Color by."
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/model.ts).
 
 The mark display drawing a row per value of a feature attribute, with the
-menus a painting is read through: One row per..., Group by and Color by.
+menus a painting is read through: One row per, Group by and Color by.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmultirowfeaturedisplay).
 
@@ -38,7 +38,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 ## Volatiles
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>37 inherited volatiles from 11 models</summary>
+<summary>36 inherited volatiles from 11 models</summary>
 
 From [LinearMarkDisplay](../linearmarkdisplay): <span id="volatile-sourcelisting">[`sourceListing`](../linearmarkdisplay#volatile-sourcelisting)</span>, <span id="volatile-plotfields">[`plotFields`](../linearmarkdisplay#volatile-plotfields)</span>, <span id="volatile-plotfieldserror">[`plotFieldsError`](../linearmarkdisplay#volatile-plotfieldserror)</span>, <span id="volatile-plotdefaultchecked">[`plotDefaultChecked`](../linearmarkdisplay#volatile-plotdefaultchecked)</span>, <span id="volatile-plotfieldspromise">[`plotFieldsPromise`](../linearmarkdisplay#volatile-plotfieldspromise)</span>, <span id="volatile-plotscanned">[`plotScanned`](../linearmarkdisplay#volatile-plotscanned)</span>, <span id="volatile-detailsrotation">[`detailsRotation`](../linearmarkdisplay#volatile-detailsrotation)</span>, <span id="volatile-plotscanrotation">[`plotScanRotation`](../linearmarkdisplay#volatile-plotscanrotation)</span>
 
@@ -56,7 +56,7 @@ From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="volatile-l
 
 From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSignal`](../fetchmixin#volatile-activesignal)</span>, <span id="volatile-fetchgeneration">[`fetchGeneration`](../fetchmixin#volatile-fetchgeneration)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../fetchmixin#volatile-reloadcounter)</span>, <span id="volatile-statuswindow">[`statusWindow`](../fetchmixin#volatile-statuswindow)</span>, <span id="volatile-error">[`error`](../fetchmixin#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../fetchmixin#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../fetchmixin#volatile-statusprogress)</span>, <span id="volatile-fetchcanceled">[`fetchCanceled`](../fetchmixin#volatile-fetchcanceled)</span>, <span id="volatile-fetchrotation">[`fetchRotation`](../fetchmixin#volatile-fetchrotation)</span>
 
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="volatile-forceloadtrack">[`forceLoadTrack`](../regiontoolargemixin#volatile-forceloadtrack)</span>, <span id="volatile-byteestimate">[`byteEstimate`](../regiontoolargemixin#volatile-byteestimate)</span>, <span id="volatile-gatemeasuredviewportkey">[`gateMeasuredViewportKey`](../regiontoolargemixin#volatile-gatemeasuredviewportkey)</span>
 

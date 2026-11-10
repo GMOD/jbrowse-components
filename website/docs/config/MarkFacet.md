@@ -20,7 +20,7 @@ is.
 ```js
 {
   type: 'LinearMarkDisplay',
-  facet: { field: 'HP', transform: [{ type: 'pileup' }] },
+  facet: { field: 'tags.HP',transform: [{ type: 'pileup' }] },
   marks: [{ mark: 'rect' }],
 }
 ```
@@ -36,7 +36,7 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-transform">**transform**</span><br>[MarkTransform](../marktransform) | Steps that run separately over each section's features, after the display's `transform` and before any mark's `transform`: a `pileup` here packs each section into separate rows, and every mark draws in them. |
+| <span id="slot-transform">**transform**</span><br>[list of MarkTransform entries](../marktransform) | Steps that run separately over each section's features, after the display's `transform` and before any mark's `transform`: a `pileup` here packs each section into separate rows, and every mark draws in them. |
 | <span class="slot-group">Inherited from [SectionFacet](../sectionfacet)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-hidden">**hidden**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The keys of the sections hidden from the stack, as a section chip's Hide writes them; "Show all" clears it. |
 | <span class="slot-group">Inherited from [Facet](../facet)</span> | <span class="slot-group-count">2 slots</span> |

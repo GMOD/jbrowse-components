@@ -8,9 +8,10 @@ sidebar_label: Display setting -> MarkTransform
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
 
 One step of a `transform` list, which runs over the region's features in
-order, each step reading what the one before it produced. A step names its
-`type` and takes that step's settings; a key belonging to another step
-is refused at load.
+order, each step reading what the one before it produced. The list follows
+Vega's typed transform steps: a step names its `type`, which picks the
+schema it takes (ADR-150), and a key belonging to another step is refused
+at load.
 
 `filter` keeps the features an expression admits; `formula` writes an
 expression's value into a field; `bin` snaps each feature to a
@@ -84,10 +85,10 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-filterexpr">**filter.expr**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A jexl callback over `feature`. The features it admits are kept and the rest dropped before the steps behind it run.<br>_callback args:_ `feature` |
-| <span id="slot-formulaexpr">**formula.expr**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A jexl callback over `feature` whose value is written into `as`.<br>_callback args:_ `feature` |
+| <span id="slot-filterexpr">**filter.expr**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A jexl callback over `feature`, written with its `jexl:` prefix. The features it admits are kept and the rest dropped before the steps behind it run.<br>_callback args:_ `feature` |
+| <span id="slot-formulaexpr">**formula.expr**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A jexl callback over `feature`, written with its `jexl:` prefix, whose value is written into `as`.<br>_callback args:_ `feature` |
 | <span id="slot-formulaas">**formula.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'value'</code> | The field the value is written to. |
-| <span id="slot-binstep">**bin.step**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | The bin width in bp, aligned to the genome, or `"auto"` for a width that follows the view's zoom — the target of four pixels per bin, snapped up to the next 1/2/5 rung, resolved before the fetch and keyed into it. |
+| <span id="slot-binstep">**bin.step**</span><br>[`number`](/docs/config_guides/slot_types#number) or <code>'auto'</code> = <code>10000</code> | The bin width in bp, aligned to the genome, or `"auto"` for a width that follows the view's zoom — the target of four pixels per bin, snapped up to the next 1/2/5 rung, resolved before the fetch and keyed into it. |
 | <span id="slot-binfield">**bin.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'start'</code> | The field placing a feature in a bin: a name, or a dotted path into a structured field (`INFO.END`). A `formula` step in front computes one. |
 | <span id="slot-binfields">**bin.fields**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | An interval's start and end fields, in place of `field`: each feature is cut at the bin edges into one piece per bin it overlaps, and each piece writes `overlap`, the bases of the interval inside its bin, which an `aggregate` op's `weight` reads for a mean per base. Empty bins by `field`. |
 | <span id="slot-binas">**bin.as**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['start', 'end']</code> | The two fields the bin's edges are written to. An `aggregate` behind the bin that names no `groupby` groups by these. |
@@ -98,7 +99,7 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 | <span id="slot-aggregategroupby">**aggregate.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups. Empty takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's, so binning and counting needs no restatement; with none there it folds the whole region into one feature. |
 | <span id="slot-aggregateops">**aggregate.ops**</span><br>[list of MarkAggregateOp entries](#slot-aggregateopsop) | The summaries computed for each group. |
 | <span id="slot-windowgroupby">**window.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups a frame stays inside, within a facet's section. When empty, each section is one group. |
-| <span id="slot-windowframe">**window.frame**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[...DEFAULT_WINDOW_FRAME]</code> | The rows before and after each row that its summaries read, in its group's start order: `[-10, 10]` reads 21 rows, whatever bases they span, and `null` runs to the group's end, so `[null, 0]` is a running total. |
+| <span id="slot-windowframe">**window.frame**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[-10, 10]</code> | The rows before and after each row that its summaries read, in its group's start order: `[-10, 10]` reads 21 rows, whatever bases they span, and `null` runs to the group's end, so `[null, 0]` is a running total. |
 | <span id="slot-windowops">**window.ops**</span><br>[list of MarkAggregateOp entries](#slot-aggregateopsop) | The summaries each row is written with, named as an `aggregate`'s are. |
 | <span id="slot-coverageas">**coverage.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'coverage'</code> | The field each run's depth is written to. |
 | <span id="slot-flattenfield">**flatten.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'subfeatures'</code> | The field fanned out, one feature per element of an array or per entry of a record keyed by name: a name or a dotted path. An element that is a feature, such as a BED12 block or a transcript's exon, hovers and opens as the feature it came from, in every mark; a record or a plain value is a row of its own. |

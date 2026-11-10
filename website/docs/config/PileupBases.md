@@ -1,15 +1,15 @@
 ---
 id: pileupbases
 title: PileupBases
-description: "The pileup's bases layer, a cell per base over the reads: show turns it on and encoding.color names what it paints. It draws while show is on and a field is named."
+description: "The pileup's bases layer, a cell per base over the reads: encoding.color names what it paints, and naming a field turns it on. show: false hides it and keeps the field for the way back."
 sidebar_label: Display setting -> PileupBases
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupBasesConfigSchema.ts).
 
-The pileup's `bases` layer, a cell per base over the reads: `show` turns it
-on and `encoding.color` names what it paints. It draws while `show` is on
-and a field is named. Its `filter` picks the modification calls the
+The pileup's `bases` layer, a cell per base over the reads:
+`encoding.color` names what it paints, and naming a field turns it on.
+`show: false` hides it and keeps the field for the way back. Its `filter` picks the modification calls the
 `modifications` and `bisulfite` fields paint, and `unmodified` adds the
 unmodified side in blue.
 
@@ -23,7 +23,7 @@ as the last example does.
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  pileup: { bases: { show: true, encoding: { color: 'baseQuality' } } },
+  pileup: { bases: { encoding: { color: 'baseQuality' } } },
   encoding: { color: 'tags.HP' },
 }
 ```
@@ -33,7 +33,6 @@ as the last example does.
   type: 'LinearAlignmentsDisplay',
   pileup: {
     bases: {
-      show: true,
       encoding: { color: 'modifications' },
       filter: [
         { field: 'probability', gte: 0.5 },
@@ -49,7 +48,6 @@ as the last example does.
   type: 'LinearAlignmentsDisplay',
   pileup: {
     bases: {
-      show: true,
       encoding: { color: 'modifications' },
       filter: [{ field: 'context', oneOf: ['CHG'] }],
       unmodified: { show: true },
@@ -63,7 +61,7 @@ as the last example does.
   type: 'LinearAlignmentsDisplay',
   pileup: {
     show: false,
-    bases: { show: true, encoding: { color: 'modifications' } },
+    bases: { encoding: { color: 'modifications' } },
   },
 }
 ```
@@ -75,8 +73,8 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw the per-base layer over the reads, and its modification bars in the coverage band |
+| <span id="slot-show">**show**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset, the layer draws whenever `encoding.color` names a field. |
 | <span id="slot-encoding">**encoding**</span><br>[PileupBasesEncoding sub-schema](#slot-encodingcolor) | The layer's channels: `encoding.color`, the per-base variable. |
 | <span id="slot-encodingcolor">**encoding.color**</span><br>[AlignmentsBaseColor](../alignmentsbasecolor) | The per-base variable the layer paints. |
-| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The modification calls drawn, by `probability` (0 to 1), `context` (`CG`, `CHG` or `CHH`) and `code` (`m`, `h`, `a`, ...). Unwritten, a field keeps its default: `probability` at least 0.1, which only the by-type view applies, `context` CG, which the methylation fill and bisulfite read, and every code. An entry naming a field with no test, `{ field: 'context' }`, drops that field's default. |
+| <span id="slot-filter">**filter**</span><br>[list of FieldPredicate entries](../fieldpredicate) | The modification calls drawn, by `probability` (0 to 1), `context` (`CG`, `CHG` or `CHH`) and `code` (`m`, `h`, `a`, ...). Unwritten, a field keeps its default: `probability` at least 0.1, which only the by-type view applies, `context` CG, which the methylation fill and bisulfite read, and every code. An entry naming a field with no test, `{ field: 'context' }`, drops that field's default. |
 | <span id="slot-unmodified">**unmodified**</span><br>[PileupBasesUnmodified](../pileupbasesunmodified) | The unmodified side, in blue, under the `modifications` and `bisulfite` fields: the methylation view. |

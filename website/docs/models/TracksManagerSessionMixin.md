@@ -56,7 +56,9 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 | Member | Description |
 | --- | --- |
 | <span id="method-withtrackedits">**withTrackEdits**</span><br><code>(base: TrackConfigEntry) =&gt; TrackConfigEntry</code> | A track's base as the session resolves it, its edits applied. Here the base itself. |
+| <span id="method-withsequenceedits">**withSequenceEdits**</span><br><code>(sequence: AnyTrackConfig) =&gt; AnyTrackConfig</code> | An assembly's sequence track as the session resolves it, its edits applied. Here the assembly's live node, which an edit writes directly. |
 | <span id="method-gettrackbyid">**getTrackById**</span><br><code>(id: string) =&gt; AnyTrackConfig &#124; undefined</code> | Config for one trackId — a track, assembly sequence, or connection track — or undefined. Per-id reactive: every display resolves its config through this (via TrackConfigurationReference) and subscribes only to that track's id, so one track's settings edit doesn't re-render the others. |
+| <span id="method-assemblysequencebyid">**assemblySequenceById**</span><br><code>(id: string) =&gt; AnyTrackConfig &#124; undefined</code> | The assembly's own sequence track config under `id`, before any edit, or undefined. |
 | <span id="method-gettracksbyid">**getTracksById**</span><br><code>() =&gt; Record&lt;string, AnyTrackConfig&gt;</code> | Every track config the session can resolve, keyed by trackId. Prefer the per-id reactive `getTrackById(id)`: this map is rebuilt over every track on the first read after any edit, and reading it subscribes the caller to all of them. Kept for plugins that look up ids in a non-reactive context. |
 
 <details class="inherited-members" data-pagefind-ignore>

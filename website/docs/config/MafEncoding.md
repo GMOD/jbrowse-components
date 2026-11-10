@@ -23,5 +23,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[MafColor](../mafcolor) | What each aligned cell paints: `mismatch`, `base`, `identity`, `chromosome` or `codon`, and the scale its values map through. |
+| <span id="slot-color">**color**</span><br>[MafColor](../mafcolor) | What fills each aligned cell: the field `identity` or `refNameRank`, or a constant `value`, and the scale the field's values map through. Base and codon colors belong to the per-base layer, `alignments.bases.encoding.color`. |
 | <span id="slot-y">**y**</span><br>[MafY](../mafy) | The value a row's bar height shows: `identity`, or unset for none. |

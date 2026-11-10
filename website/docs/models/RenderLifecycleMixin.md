@@ -28,9 +28,6 @@ and discarded. The mixin owns:
    `renderNow()` after every upload that reached the backend, on
    tab-visibility restore, and when a circular ring backend starts. These
    are not a pan or zoom, so off screen a moved tick means new data.
- - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
-   pair is spawned once per model instance, not once per backend
-   assignment.
 
 The `upload` callback runs in one autorun, `render` in another. Inside
 each, every observable read is auto-tracked by MobX — no getter-layer
@@ -47,7 +44,6 @@ this tick (e.g. `renderState` not yet computed or no regions loaded).
 | <span id="volatile-paintcount">**paintCount**</span><br><code>number</code> | bumped after every frame the backend painted, so a consumer that reads this display's canvas — the circular view's ring, which copies the strip into a texture — knows when the pixels moved |
 | <span id="volatile-currentrenderingbackend">**currentRenderingBackend**</span><br><code>unknown</code> | current backend reference, updated on context-loss recovery. Typed `unknown` rather than generic `B`: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast. |
 | <span id="volatile-rendertick">**renderTick**</span><br><code>number</code> | counter the render autorun observes; bumped to force a re-render |
-| <span id="volatile-autorunsinstalled">**autorunsInstalled**</span><br><code>boolean</code> | guards attachRenderingBackend so the autorun pair spawns once per instance |
 | <span id="volatile-rendererror">**renderError**</span><br><code>unknown</code> | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay). |
 | <span id="volatile-offscreen">**offScreen**</span><br><code>boolean</code> | the display's canvas has scrolled out of the page, so the render autorun skips pan and zoom redraws, still draws new data, and hands its GPU targets back after every tick. Written by `useRenderingBackend`, which watches the canvas element itself — false everywhere `IntersectionObserver` is absent, which is every unit test and every non-browser host.<br><br>A whole view that scrolls away is already unmounted (`useViewVisibility`) and a minimized track never mounts, so what this covers is the track below the fold of a view that is mounted: the display list is not windowed, and each of those tracks holds a full-height multisampled target. |
 

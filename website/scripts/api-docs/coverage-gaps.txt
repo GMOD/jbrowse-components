@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1252)
+# model members with no description (1253)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1008,6 +1008,7 @@ MultiWaySyntenyDisplay.colorScales
 MultiWaySyntenyDisplay.contextMenuItems
 MultiWaySyntenyDisplay.dataSuperseded
 MultiWaySyntenyDisplay.declaredLanes
+MultiWaySyntenyDisplay.defaultOpacity
 MultiWaySyntenyDisplay.describedLanes
 MultiWaySyntenyDisplay.endAnimation
 MultiWaySyntenyDisplay.endDescribingLanes
@@ -1306,7 +1307,7 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (92)
+# member tags in a file that documents no #stateModel (93)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedRows
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedSources
@@ -1393,6 +1394,7 @@ plugins/wiggle/src/shared/wiggleResolveViews.ts gpuProps
 plugins/wiggle/src/shared/wiggleResolveViews.ts markColoring
 plugins/wiggle/src/shared/wiggleResolveViews.ts markSources
 plugins/wiggle/src/shared/wiggleResolveViews.ts rowColorPaintsMarks
+plugins/wiggle/src/shared/wiggleResolveViews.ts rpcProps
 plugins/wiggle/src/shared/wiggleResolveViews.ts scoreGradientPaints
 plugins/wiggle/src/shared/wiggleResolveViews.ts scoreRuleValues
 plugins/wiggle/src/shared/wiggleResolveViews.ts wiggleColor

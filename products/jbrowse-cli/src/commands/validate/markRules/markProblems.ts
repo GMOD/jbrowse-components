@@ -88,6 +88,8 @@ export const MARK_RULES = {
   'unknown-domain': 'warning',
   /** An ordinal color's `scale.scheme` with no `scale.domain` or `scale.range`, so the default palette paints. */
   'scheme-domain': 'warning',
+  /** An ordinal color's `scale.domain` naming a value outside a closed field's levels, such as `+` on `strand`, whose levels are `1`, `-1` and `0`. */
+  'domain-levels': 'warning',
   /** A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. */
   'unknown-scale': 'warning',
   /** A `scale.invalid` on a color painting through no ordinal scale, so nothing reads it. */

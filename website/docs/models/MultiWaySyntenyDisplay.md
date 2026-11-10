@@ -61,7 +61,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-lanedragpx">**laneDragPx**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>25 inherited volatiles from 8 models</summary>
+<summary>24 inherited volatiles from 8 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
 
@@ -73,7 +73,7 @@ From [KeyedFetchMixin](../keyedfetchmixin): <span id="volatile-loadedfetchkey">[
 
 From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSignal`](../fetchmixin#volatile-activesignal)</span>, <span id="volatile-fetchgeneration">[`fetchGeneration`](../fetchmixin#volatile-fetchgeneration)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../fetchmixin#volatile-reloadcounter)</span>, <span id="volatile-statuswindow">[`statusWindow`](../fetchmixin#volatile-statuswindow)</span>, <span id="volatile-error">[`error`](../fetchmixin#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../fetchmixin#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../fetchmixin#volatile-statusprogress)</span>, <span id="volatile-fetchcanceled">[`fetchCanceled`](../fetchmixin#volatile-fetchcanceled)</span>, <span id="volatile-fetchrotation">[`fetchRotation`](../fetchmixin#volatile-fetchrotation)</span>
 
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="volatile-forceloadtrack">[`forceLoadTrack`](../regiontoolargemixin#volatile-forceloadtrack)</span>, <span id="volatile-byteestimate">[`byteEstimate`](../regiontoolargemixin#volatile-byteestimate)</span>, <span id="volatile-gatemeasuredviewportkey">[`gateMeasuredViewportKey`](../regiontoolargemixin#volatile-gatemeasuredviewportkey)</span>
 
@@ -125,6 +125,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-lanechanges">**laneChanges**</span><br><code>(assemblyName: string, refName: string) =&gt; readonly LaneChange[]</code> | each lane's deletions, insertions and inversions as its records state them, for the header |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
 | <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> |  |
+| <span id="getter-defaultopacity">**defaultOpacity**</span><br><code>number</code> |  |
+| <span id="getter-opacitylevel">**opacityLevel**</span><br><code>number</code> | the opacity every ribbon draws at before a field's fade |
 | <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots an ordinal gene color deals its values into. |
 | <span id="getter-genecolorfeatures">**geneColorFeatures**</span><br><code>Feature[]</code> | The boxes' features and every lane gene's, which a gene color field reads together |
 | <span id="getter-dealtgenecolorslots">**dealtGeneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | `geneColorSlots` once every value the boxes and lane genes show is dealt as one batch, so the two take colors apart whichever lands first |
@@ -334,6 +336,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |
 | <span id="action-setresolution">**setResolution**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
+| <span id="action-setopacity">**setOpacity**</span><br><code>(value: number) =&gt; void</code> | the Opacity slider: the constant, or under a field its range scaled so its most opaque end equals `value` |
 | <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch for `regions` completes. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
 | <span id="action-chooselanes">**chooseLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |

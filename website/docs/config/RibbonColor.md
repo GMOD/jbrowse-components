@@ -36,6 +36,7 @@ through the same slots as the synteny view's
       color: {
         field: 'strand',
         scale: {
+          domain: ['1', '-1'],
           range: ['#1b9e77', '#d95f02'],
           names: ['Kept', 'Inverted'],
         },
@@ -70,6 +71,7 @@ A `field` named here paints through its own scale while `scale.type` is unset, a
 | `identity` | linear |  |  | `domainMin: 0`; `domainMax: 1`; `scheme: redgreyblue`; key "Identity" |
 | `dnds` | linear |  |  | `domainMin: 0`; `domainMax: 2`; `domainMid: 1`; `scheme: redyellowblue`; `reverse: true`; key "dN/dS" |
 | `syntenicDepth` | threshold | `2`, `3` | One-to-one, Shared by 2 genes, Shared by 3 or more | `range`: `#bdbdbd`, `#fdae6b`, `#e6550d`; key "Syntenic depth" |
+| `strand` | ordinal | `1`, `-1`, `0` | Forward strand, Reverse strand, No strand | `range`: `tomato`, `cornflowerblue`, `goldenrod` |
 
 ## Config slots
 
