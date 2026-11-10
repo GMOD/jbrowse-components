@@ -1,4 +1,4 @@
-import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import {
   identityFadeMenuItem,
   lodMenuItems,
@@ -59,8 +59,8 @@ export function syntenySettingsMenuItems(
     ),
     ...(model.hasLegendKey
       ? [
-          toggleItem('Show legend', model.showLegend, v => {
-            model.setLegendShow(v)
+          showLegendCheckboxItem(model.showLegend, () => {
+            model.setLegendShow(!model.showLegend)
           }),
         ]
       : []),

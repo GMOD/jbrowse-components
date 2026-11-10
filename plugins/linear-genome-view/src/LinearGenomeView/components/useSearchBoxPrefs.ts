@@ -34,21 +34,16 @@ export type SearchBoxPrefs = ReturnType<typeof useSearchBoxPrefs>
 /**
  * The menu rows that drive those prefs. "Stacked" rather than "Vertical": the
  * two headers name the same state and had drifted apart on it once already.
- * A caller spreading the rows into a "Show" submenu passes `'Search boxes'`
- * as the toggle's label.
  */
-export function searchBoxMenuItems(
-  {
-    showSearchBoxes,
-    setShowSearchBoxes,
-    sideBySide,
-    setSideBySide,
-  }: SearchBoxPrefs,
-  toggleLabel = 'Show search boxes',
-): MenuItem[] {
+export function searchBoxMenuItems({
+  showSearchBoxes,
+  setShowSearchBoxes,
+  sideBySide,
+  setSideBySide,
+}: SearchBoxPrefs): MenuItem[] {
   return [
     {
-      label: toggleLabel,
+      label: 'Show search boxes',
       type: 'checkbox',
       checked: showSearchBoxes,
       onClick: () => {

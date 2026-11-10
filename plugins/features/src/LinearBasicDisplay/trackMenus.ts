@@ -167,7 +167,7 @@ export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
   return [
     toggleItem(
       withHint(
-        'Names',
+        'Show names',
         hint(self.showNames, self.showLabels, self.labelFitHints.names),
       ),
       self.showNames,
@@ -177,7 +177,7 @@ export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
     ),
     toggleItem(
       withHint(
-        'Descriptions',
+        'Show descriptions',
         hint(
           self.showDescriptions,
           self.effectiveShowDescriptions,

@@ -1,6 +1,10 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
+import {
+  showLegendCheckboxItem,
+  toggleItem,
+  withHint,
+} from '@jbrowse/core/ui/menuItems'
 import {
   SETTINGS_SURFACE_LABELS,
   identityFadeMenuItem,
@@ -73,8 +77,8 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
           ),
           ...(model.hasLegendKey
             ? [
-                toggleItem('Show legend', model.showLegend, flag => {
-                  model.setLegendShow(flag)
+                showLegendCheckboxItem(model.showLegend, () => {
+                  model.setLegendShow(!model.showLegend)
                 }),
               ]
             : []),

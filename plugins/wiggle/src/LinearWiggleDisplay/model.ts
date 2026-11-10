@@ -540,7 +540,7 @@ export default function stateModelFactory(
     .views(self => ({
       trackMenuItems() {
         const showItems: MenuItem[] = [
-          // the tree, row separators and row labels only render in multi-row
+          // the tree, row labels and row separators only render in multi-row
           // modes, not overlays — an overlay is one row and names itself by
           // the track name, and draws no dendrogram (see `hierarchy`). A
           // persisted `showTree` is left untouched, so it comes back on
@@ -549,8 +549,8 @@ export default function stateModelFactory(
             ? []
             : [
                 ...treeSidebarShowMenuItems(self),
-                showRowSeparatorsMenuItem(self),
                 showRowLabelsMenuItem(self),
+                showRowSeparatorsMenuItem(self),
               ]),
           ...(self.hasLegendKey ? legendMenuItems(self) : []),
         ]

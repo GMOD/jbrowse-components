@@ -269,7 +269,7 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            toggleItem('Chevrons', self.showChevrons, show => {
+            toggleItem('Show chevrons', self.showChevrons, show => {
               self.setShowChevrons(show)
             }),
           ]

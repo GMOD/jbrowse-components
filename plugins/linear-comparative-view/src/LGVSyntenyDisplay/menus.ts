@@ -105,14 +105,18 @@ interface ShowModel
 // menu, which this display also builds.
 export function getSyntenyShowMenuItems(model: ShowModel) {
   return makeShowSubMenu([
-    toggleItem('Coverage', model.showCoverage, model.setShowCoverage),
-    toggleItem('Alignments', model.showPileup, model.setShowPileup),
+    toggleItem('Show coverage', model.showCoverage, model.setShowCoverage),
+    toggleItem('Show alignments', model.showPileup, model.setShowPileup),
     // Only while grouping is in effect — for an all-vs-all track grouped by
     // mate assembly this is the default, one band per mate genome.
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     ...sectionOrderResetItems(model),
-    toggleItem('Mismatches', model.showMismatches, model.setShowMismatches),
+    toggleItem(
+      'Show mismatches',
+      model.showMismatches,
+      model.setShowMismatches,
+    ),
     // Only while the coverage band is drawn. Every interbase mark lives in
     // that band — the coverage marks draw under `showCoverage`, and the
     // hit test gates on `showCoverage && showInterbase` — and this
@@ -124,7 +128,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     ...(model.showCoverage
       ? [
           toggleItem(
-            'Coverage alleles',
+            'Show coverage alleles',
             model.showCoverageAlleles,
             model.setShowCoverageAlleles,
             {
@@ -134,7 +138,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
             },
           ),
           toggleItem(
-            'Interbase indicators',
+            'Show interbase indicators',
             model.showInterbase,
             model.setShowInterbase,
             {

@@ -131,7 +131,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
     ? [
         toggleItem(
           withHint(
-            'CDS frames',
+            'Show CDS frames',
             self.framesGateBlocked
               ? 'too much frame data here, zoom in'
               : undefined,
@@ -281,7 +281,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     showRowLabelsMenuItem(self),
     toggleItem(
       withHint(
-        'Coverage',
+        'Show coverage',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showCoverage,
@@ -290,22 +290,22 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       },
     ),
     interbaseIndicatorsMenuItem(self),
-    toggleItem('Alignments', self.showAlignments, f => {
+    toggleItem('Show alignments', self.showAlignments, f => {
       self.setShowAlignments(f)
     }),
     toggleItem(
-      withHint('Mismatches', mismatchesHint(self)),
+      withHint('Show mismatches', mismatchesHint(self)),
       self.showMismatches,
       f => {
         self.setShowMismatches(f)
       },
     ),
-    toggleItem('Reference row', self.showReferenceRow, f => {
+    toggleItem('Show reference row', self.showReferenceRow, f => {
       self.setShowReferenceRow(f)
     }),
     toggleItem(
       withHint(
-        'Conservation',
+        'Show conservation',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showConservation,
@@ -315,7 +315,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     ),
     toggleItem(
       withHint(
-        'Inversions (strand flips)',
+        'Show inversions (strand flips)',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showInversions,

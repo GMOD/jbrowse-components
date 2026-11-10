@@ -966,7 +966,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             : []),
           ...makeShowSubMenu([
             {
-              label: 'Header',
+              label: 'Show header',
               type: 'checkbox',
               checked: self.showHeader,
               // opts out of the checkbox "stay open" default: this menu is

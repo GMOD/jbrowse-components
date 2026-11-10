@@ -63,7 +63,7 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    toggleItem('Variant labels', self.showNames, self.setShowNames),
+    toggleItem('Show variant labels', self.showNames, self.setShowNames),
     ...legendMenuItems(self),
   ]
 }

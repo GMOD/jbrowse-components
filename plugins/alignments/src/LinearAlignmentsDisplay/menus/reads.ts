@@ -62,12 +62,15 @@ function disabledUnless(enabled: boolean, disabledHelpText: string) {
 
 // A pileup-only layer greys out with the pileup hidden, as Read height does.
 function pileupLayerGate(model: ReadsModel, what: string) {
-  return disabledUnless(model.showPileup, `Turn on Show → Pileup to ${what}`)
+  return disabledUnless(
+    model.showPileup,
+    `Turn on Show → Show pileup to ${what}`,
+  )
 }
 
 function softClippingItem(model: ReadsModel) {
   return toggleItem(
-    'Soft clipping',
+    'Show soft clipping',
     model.showSoftClips,
     value => {
       model.setShowSoftClips(value)
@@ -95,17 +98,17 @@ function fadeMismatchesItem(model: ReadsModel) {
     pileupLayerGate(model, 'fade mismatches') ??
       disabledUnless(
         model.showMismatches,
-        'Turn on Show → Mismatches to fade them',
+        'Turn on Show → Show mismatches to fade them',
       ),
   )
 }
 
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
-    toggleItem('Coverage', model.showCoverage, show => {
+    toggleItem('Show coverage', model.showCoverage, show => {
       model.setShowCoverage(show)
     }),
-    toggleItem('Pileup', model.showPileup, show => {
+    toggleItem('Show pileup', model.showPileup, show => {
       model.setShowPileup(show)
     }),
     // Only while grouping is in effect, so it sits next to the pileup toggle
@@ -114,7 +117,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     ...hiddenGroupsItems(model),
     ...sectionOrderResetItems(model),
     toggleItem(
-      'Mismatches',
+      'Show mismatches',
       model.showMismatches,
       show => {
         model.setShowMismatches(show)

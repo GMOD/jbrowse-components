@@ -322,10 +322,14 @@ function laneFlipMenuItems(
 
 export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
-    toggleItem('Lane ticks', model.showLaneTicks, model.setShowLaneTicks),
-    toggleItem('Gene labels', model.showGeneLabels, model.setShowGeneLabels),
+    toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks),
     toggleItem(
-      'Lane names on the gene row',
+      'Show gene labels',
+      model.showGeneLabels,
+      model.setShowGeneLabels,
+    ),
+    toggleItem(
+      'Show lane names on the gene row',
       model.inlineLaneNames,
       model.setInlineLaneNames,
       {
@@ -333,7 +337,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
           "Print each genome's name over the left end of its genes instead of on a line above them, so more lanes fit.",
       },
     ),
-    toggleItem('Curved lines', model.interpolate === 'bump', v => {
+    toggleItem('Show curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
     }),
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {

@@ -273,7 +273,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       trackMenuItems() {
         const pileupGate = {
           disabled: !self.showPileup,
-          disabledHelpText: `Turn on "Show → Alignments" to change ${self.featureNoun} height`,
+          disabledHelpText: `Turn on "Show → Show alignments" to change ${self.featureNoun} height`,
         }
         return [
           // Paired-end and modification/bisulfite coloring are deliberately

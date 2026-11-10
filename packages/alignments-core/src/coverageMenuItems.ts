@@ -54,7 +54,7 @@ const OFF = 'off'
 // on, so each names that switch instead. At depth 500 every sequencing error
 // paints a sliver, so without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
-  'These settings scale the coverage band — turn on "Show → Coverage" first'
+  'These settings scale the coverage band — turn on "Show → Show coverage" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -87,7 +87,7 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
 }
 
 /**
- * The coverage band's "Insertion and clip markers" row. Every interbase mark
+ * The coverage band's "Show insertion and clip markers" row. Every interbase mark
  * draws inside the band and its hit test reads the band's height, so with the
  * band hidden the row greys out and names that switch.
  */
@@ -97,7 +97,7 @@ export function interbaseIndicatorsMenuItem(model: {
   setShowInterbase: (show: boolean) => void
 }): MenuItem {
   return toggleItem(
-    'Insertion and clip markers',
+    'Show insertion and clip markers',
     model.showInterbase,
     show => {
       model.setShowInterbase(show)
@@ -105,7 +105,7 @@ export function interbaseIndicatorsMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Interbase marks are drawn in the coverage band — turn on "Show → Coverage" first',
+        'Interbase marks are drawn in the coverage band — turn on "Show → Show coverage" first',
     },
   )
 }
@@ -132,7 +132,7 @@ export function coverageAllelesMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Alleles are colored in the coverage band — turn on "Show → Coverage" first',
+        'Alleles are colored in the coverage band — turn on "Show → Show coverage" first',
     },
   )
 }

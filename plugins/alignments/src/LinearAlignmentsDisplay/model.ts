@@ -647,7 +647,7 @@ export default function stateModelFactory(
             return self.unit === 'chain'
               ? 'Chain rows are ordered by chain — turn off "View as pairs/link supplementary alignments" to sort reads'
               : !self.showPileup
-                ? 'Turn on Show → Pileup to sort reads'
+                ? 'Turn on Show → Show pileup to sort reads'
                 : this.collapseSortBlockedReason
           },
 
@@ -1577,7 +1577,7 @@ export default function stateModelFactory(
          * Layout rect of one read of `readArraysByGroup`, Y in content space:
          * subtract `scrollTop` for the screen. A read past the row cap sits on
          * the cap's overflow row. None while its lane draws no rows (Show →
-         * Pileup off, or a collapsed lane).
+         * Show pileup off, or a collapsed lane).
          */
         readLayoutRecord(
           groupKey: string,
@@ -2989,7 +2989,8 @@ export default function stateModelFactory(
         trackMenuItems() {
           const pileupGate = {
             disabled: !self.showPileup,
-            disabledHelpText: 'Turn on Show → Pileup to change read height',
+            disabledHelpText:
+              'Turn on Show → Show pileup to change read height',
           }
           // Where the band switches live is settled (Coverage, Pileup and
           // Sashimi arcs in "Show...", the pair band in "Read connections"),
