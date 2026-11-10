@@ -59,8 +59,8 @@ category touches 25–30 files before tests and generated docs:
 - `isConcordantFRPair`, `pairCategory`, and `isConcordantPairRead` with its
   callers (`readCategoryBits`, `pairing`, arcs `compute`, the breakpoint split
   view's `readChains`), plus the Feature-only helpers (`readCategoryBitsOf`,
-  `pairingKey`, `selectChains`) that would need the expected direction before
-  chain selection.
+  `pairingKey`, `filterChainFeatures`) that would need the expected direction
+  before chain selection.
 
 The shader part is the cheap part: one `RC_PAIR_LR` constant and a
 `READ_CATEGORY_SLOTS` bump in `read.slang`. A `pairLR` connection kind already
