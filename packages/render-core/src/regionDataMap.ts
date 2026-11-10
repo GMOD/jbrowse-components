@@ -10,10 +10,10 @@ import type { ObservableMap } from 'mobx'
 // Module state, and duplication-safe in the only way that matters here: two
 // live copies of this package would each hold their own set, so a map built by
 // one and installed through the other is checked twice rather than missed.
-const checkedAtTheStore = new WeakSet<ReadonlyMap<number, unknown>>()
+const checkedAtTheStore = new WeakSet<object>()
 
 export function isCheckedAtTheStore(map: ReadonlyMap<unknown, unknown>) {
-  return checkedAtTheStore.has(map as ReadonlyMap<number, unknown>)
+  return checkedAtTheStore.has(map)
 }
 
 /**
