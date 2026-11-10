@@ -2168,7 +2168,7 @@ describe('rows the layer menus hand to other menus', () => {
     const display = createDisplay()
     display.setShowSashimi(false)
     expect(labelsUnder(display, 'Filter by')).not.toContain(
-      'Inter-chromosomal pairs',
+      'Inter-chromosomal connections',
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',

@@ -1268,17 +1268,17 @@ function filterFieldStep(
   }
   if (field === 'connection.offscreen' && alignments) {
     return categoryStep(
-      `${MORE_FILTERS} → Read connections → Off-screen mate connections`,
+      `${MORE_FILTERS} → Read connections → Off-screen partner connections`,
       categoryOf(equal),
-      'off-screen mate connections',
+      'off-screen partner connections',
       'The section appears once read arcs, the read cloud or pileup connectors draw.',
     )
   }
   if (field === 'connection.interchrom' && alignments) {
     return categoryStep(
-      `${MORE_FILTERS} → Read connections → Inter-chromosomal pairs`,
+      `${MORE_FILTERS} → Read connections → Inter-chromosomal connections`,
       categoryOf(equal),
-      'inter-chromosomal pairs',
+      'inter-chromosomal connections',
     )
   }
   return undefined

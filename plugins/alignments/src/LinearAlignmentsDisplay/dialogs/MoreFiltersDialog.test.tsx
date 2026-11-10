@@ -290,3 +290,32 @@ test('the Sashimi arcs section shows while the arcs draw, and writes its floor',
     { field: 'junction.reads', gte: 5 },
   ])
 })
+
+// Both categories gate a split junction too, and the floor gates mate links
+// only (split junctions are exempt), so none of the rows may say "pairs" or
+// "mate" for all of them.
+test('the Read connections rows name what they gate', () => {
+  const setFilterFields = jest.fn()
+  const model = {
+    filterPredicates: mergeFilter([]),
+    declaredFilters: declaredFiltersOf([], []),
+    setFilterFields,
+    drawsConnectors: true,
+    connectionFilter: { minInterchromReads: 2 },
+  }
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <MoreFiltersDialog model={model} handleClose={() => {}} />
+    </ThemeProvider>,
+  )
+  expect(screen.getByText('Inter-chromosomal connections')).toBeTruthy()
+  expect(screen.getByText('Off-screen partner connections')).toBeTruthy()
+  fireEvent.change(
+    screen.getByLabelText('Min read pairs at an inter-chromosomal breakpoint'),
+    { target: { value: '5' } },
+  )
+  submit()
+  expect(setFilterFields.mock.lastCall![0]['breakpoint.reads']).toEqual([
+    { field: 'breakpoint.reads', gte: 5 },
+  ])
+})

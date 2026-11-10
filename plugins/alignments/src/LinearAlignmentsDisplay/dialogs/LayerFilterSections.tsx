@@ -48,10 +48,10 @@ const LayerFilterSections = observer(function LayerFilterSections({
         <>
           <FormHeading>Read connections</FormHeading>
           <CategoryRow
-            label="Off-screen mate connections"
+            label="Off-screen partner connections"
             all="All connections"
-            only="Only off-screen mate connections"
-            exclude="Hide off-screen mate connections"
+            only="Only off-screen partner connections"
+            exclude="Hide off-screen partner connections"
             value={connections.offscreenMates}
             onChange={offscreenMates => {
               setState({
@@ -61,10 +61,10 @@ const LayerFilterSections = observer(function LayerFilterSections({
             }}
           />
           <CategoryRow
-            label="Inter-chromosomal pairs"
+            label="Inter-chromosomal connections"
             all="All connections"
-            only="Only inter-chromosomal pairs"
-            exclude="Hide inter-chromosomal pairs"
+            only="Only inter-chromosomal connections"
+            exclude="Hide inter-chromosomal connections"
             value={connections.interchrom}
             onChange={interchrom => {
               setState({
@@ -74,7 +74,7 @@ const LayerFilterSections = observer(function LayerFilterSections({
             }}
           />
           <NumberRow
-            label="Min reads at a breakpoint"
+            label="Min read pairs at an inter-chromosomal breakpoint"
             value={connections.minInterchromReads}
             min={1}
             onChange={minInterchromReads => {
