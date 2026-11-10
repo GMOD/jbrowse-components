@@ -90,9 +90,13 @@ const ImportFormModes = observer(function ImportFormModes({
           onChange={newTrackId => {
             quick.setTrackId(newTrackId)
           }}
-          onSwap={() => {
-            quick.swap()
-          }}
+          onSwap={
+            new Set(quick.trackRows).size > 1
+              ? () => {
+                  quick.swap()
+                }
+              : undefined
+          }
           onSwitchToManual={() => {
             quick.setMode('manual')
           }}

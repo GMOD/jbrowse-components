@@ -50,7 +50,8 @@ const QuickStartPanel = observer(function QuickStartPanel({
   trackId: string
   onChange: (trackId: string) => void
   onLaunch: () => void
-  onSwap: () => void
+  /** absent when the track aligns one assembly to itself */
+  onSwap?: () => void
   onSwitchToManual: () => void
   swapTitle: string
   swapLabel: string
@@ -76,17 +77,19 @@ const QuickStartPanel = observer(function QuickStartPanel({
         >
           Launch
         </Button>
-        <Tooltip title={swapTitle}>
-          <Button
-            variant="outlined"
-            startIcon={<SwapVertIcon />}
-            onClick={() => {
-              onSwap()
-            }}
-          >
-            {swapLabel}
-          </Button>
-        </Tooltip>
+        {onSwap ? (
+          <Tooltip title={swapTitle}>
+            <Button
+              variant="outlined"
+              startIcon={<SwapVertIcon />}
+              onClick={() => {
+                onSwap()
+              }}
+            >
+              {swapLabel}
+            </Button>
+          </Tooltip>
+        ) : null}
       </div>
     </div>
   ) : (

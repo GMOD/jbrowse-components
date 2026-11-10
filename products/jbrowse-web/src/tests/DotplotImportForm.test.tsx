@@ -72,7 +72,7 @@ test('open local paf', async () => {
     },
   })
 
-  fireEvent.click(await findByText('Swap?'))
+  fireEvent.click(await findByText('Swap'))
   fireEvent.click(await findByText('Launch'))
   expectCanvasMatch(await findDisplayPainted('dotplot_webgl_canvas', delay))
 }, 50000)
@@ -109,7 +109,7 @@ test('open local pif', async () => {
     },
   })
 
-  fireEvent.click(await findByText('Swap?'))
+  fireEvent.click(await findByText('Swap'))
   fireEvent.click(await findByText('Launch'))
   expectCanvasMatch(await findDisplayPainted('dotplot_webgl_canvas', delay))
 }, 50000)

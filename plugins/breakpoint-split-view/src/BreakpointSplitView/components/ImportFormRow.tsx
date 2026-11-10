@@ -44,8 +44,8 @@ const ImportFormRow = observer(function ImportFormRow({
   const { classes } = useStyles()
   return (
     <div className={classes.row}>
-      <span>Row {idx + 1}:</span>
       <AssemblySelector
+        label={`Row ${idx + 1} assembly`}
         helperText=""
         selected={assembly}
         onChange={val => {
@@ -55,13 +55,16 @@ const ImportFormRow = observer(function ImportFormRow({
       />
       <TextField
         className={classes.loc}
+        variant="outlined"
+        label="Location (optional)"
         value={loc}
-        placeholder="e.g. chr1:1,000-2,000 (optional, blank = whole assembly)"
+        placeholder="chr1:1,000-2,000"
         onChange={event => {
           onLocChange(event.target.value)
         }}
       />
       <IconButton
+        aria-label="Move row up"
         disabled={idx === 0}
         onClick={() => {
           onMove(-1)
@@ -70,6 +73,7 @@ const ImportFormRow = observer(function ImportFormRow({
         <KeyboardArrowUpIcon />
       </IconButton>
       <IconButton
+        aria-label="Move row down"
         disabled={idx === count - 1}
         onClick={() => {
           onMove(1)
@@ -86,6 +90,7 @@ const ImportFormRow = observer(function ImportFormRow({
       >
         <span>
           <IconButton
+            aria-label="Remove row"
             disabled={count <= 2}
             onClick={() => {
               onRemove()

@@ -21,6 +21,7 @@ export interface SwapAssembliesProps {
 const useStyles = makeStyles()({
   row: {
     display: 'flex',
+    alignItems: 'center',
     gap: 20,
   },
   swap: {
@@ -42,14 +43,8 @@ const SwapAssemblies = observer(function SwapAssemblies({
   text2,
 }: SwapAssembliesProps) {
   const { classes } = useStyles()
-  return (
+  return assembly1 === assembly2 ? null : (
     <div>
-      <div>
-        Verify or click swap
-        <Tooltip title={helpContent || <code>{helpStrings[radioOption]}</code>}>
-          <HelpIcon />
-        </Tooltip>
-      </div>
       <div className={classes.row}>
         <div className={classes.swap}>
           <div>
@@ -62,13 +57,17 @@ const SwapAssemblies = observer(function SwapAssemblies({
           <div>{text2}</div>
         </div>
         <Button
-          variant="contained"
+          variant="outlined"
+          size="small"
           onClick={() => {
             setSwap(!swap)
           }}
         >
-          Swap?
+          Swap
         </Button>
+        <Tooltip title={helpContent || <code>{helpStrings[radioOption]}</code>}>
+          <HelpIcon />
+        </Tooltip>
       </div>
     </div>
   )

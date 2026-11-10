@@ -22,9 +22,6 @@ const useStyles = makeStyles()(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-  button: {
-    margin: theme.spacing(1),
-  },
 }))
 
 const BreakpointSplitViewImportForm = observer(
@@ -90,6 +87,15 @@ const BreakpointSplitViewImportForm = observer(
               }}
             />
           ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              addRow()
+            }}
+          >
+            Add row
+          </Button>
         </div>
 
         <div className={classes.section}>
@@ -105,16 +111,6 @@ const BreakpointSplitViewImportForm = observer(
 
         <div>
           <Button
-            className={classes.button}
-            variant="outlined"
-            onClick={() => {
-              addRow()
-            }}
-          >
-            Add row
-          </Button>
-          <Button
-            className={classes.button}
             variant="contained"
             color="primary"
             disabled={!canLaunch}
