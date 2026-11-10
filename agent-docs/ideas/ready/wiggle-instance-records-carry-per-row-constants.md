@@ -172,13 +172,13 @@ cost then moves to hidden sources staying in the buffer.
 
 **What the HAL supports today:**
 
-- A pass gets one texture. `pnpm gen:shaders` refuses a second sampler. Fill,
-  line and band bind none, so they are free.
-- **Density is not free.** Its ramp LUT holds the slot, and it draws off the
-  fill pass's buffer (`bufferOf: fill`), so removing `color` from the fill
-  record removes it from density too. Density then needs the ramp and the row
-  table in one texture (row 0 the ramp, row 1 the colors), or multi-texture
-  support in both HALs.
+- A render pass binds two combined samplers, at 2/3 and 4/5 (`55fff2c934`);
+  point, bar and link already sample `colorRamp` at unit 0 and `rowTable` at
+  unit 1. Fill, line and band bind none, so they take the table at the first.
+- **Density takes the second.** Its ramp LUT holds the first, and it draws off
+  the fill pass's buffer (`bufferOf: fill`), so removing `color` from the fill
+  record removes it from density too; density binds the row table beside its
+  ramp, as point, bar and link do.
 - The WebGPU bind group layout shows each binding to the stages the shader's
   reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
   so a vertex-stage lookup needs nothing of the HAL: `barMark` samples its
@@ -193,10 +193,8 @@ cost then moves to hidden sources staying in the buffer.
 - **The table exists.** `packages/render-core/src/marks/rowTable.ts` and
   `shaders/rowTable.slang` are the two-plane key → slot, hidden, color
   texture the span pass reads and the multi-row feature display drives
-  (ADR-165). Wiggle's fill and density passes take it once a second
-  texture binding lands in both HALs, or the ramp and the table share one
-  texture; the line and band passes bind nothing today and can take it as
-  span did.
+  (ADR-165). Wiggle's fill, line and band passes take it as span did, and
+  density beside its ramp.
 
 **What kills the uniform-array version:** WebGL2 guarantees a
 `MAX_UNIFORM_BLOCK_SIZE` of only 16,384 bytes, and std140 pads each array

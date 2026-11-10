@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-packing-moves-to-the-worker
-description: "`wiggleInstanceBuffer.pack` runs synchronously mid-frame on the main thread; moving it to the worker saves a frame but duplicates the encoder and keeps a large packed buffer resident."
+description: "Wiggle's instance packers (`packFillInstances` and its siblings) run on the main thread as each region arrives; moving them to the worker saves a frame but duplicates the encoder and keeps a large packed buffer resident."
 ---
 
 # Wiggle instance packing could move to the worker
@@ -13,27 +13,32 @@ renders in jsdom before you profile a build".
 shrinks the same buffer.
 
 
-`wiggleInstanceBuffer.pack` is **measured ~98ms**, run synchronously inside the
-RPC message handler so it lands mid-frame. A zoom across a BigWig tier
+Wiggle packs one instance record per rendering (`packFillInstances`,
+`packLineInstances`, `packLineCenterInstances`, `packBandInstances` in
+`wiggleInstanceBuffer.ts`, wired through `wiggleMarks.ts`) on the main thread
+as each region arrives. The single `pack` they replaced **measured ~98ms**,
+landing mid-frame; re-measure the split packers before quoting it. A zoom
+across a BigWig tier
 already refetches (ADR-125), so a worker-side pack rides along free there;
 `MafUploadPayload` is the payload shape to copy.
 
-**"Move `pack`" understates the move, and `origin` is how you see it.**
-`pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
+**"Move the packers" understates the move, and `origin` is how you see it.**
+Each packer takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
 — so the worker would have to run that too, or receive the expanded form over
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
 the pivot lives: `makeSummaryLayers` colors every band around it, which is why
 the resolved color and its `origin` sit in **`gpuProps`** and, since the
 worker-side split was deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
-value — the SVG export calls `buildSourceRenderData(data, gpuProps)` directly
-(`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise color its bands
+value — the SVG export encodes through `encodeWiggleRegions`
+(`LinearWiggleDisplay/renderSvg.tsx`) and would otherwise color its bands
 around nothing. A worker-side pack would have to be handed the pivot as a pack
 argument rather than reading it off the fetch. Availability is not the
 obstacle.
 
 **The obstacle is that the encoder cannot leave, only be duplicated.**
 `installUpload` re-encodes **every cached region** whenever `gpuProps` identity
-moves (`installUpload.ts:195-198`: `p !== lastProps` clears `encodedFrom`), and
+moves (`createEncodeMemo` in `packages/render-core/src/encodeMemo.ts`:
+`p !== lastProps` clears `encodedFrom`), and
 most of what moves it — color, plot type, summary score mode, re-sort — does
 **not** refetch. Those have to be served main-thread. So a worker-side pack adds
 a second encoder rather than relocating the first, and the two must agree
@@ -51,9 +56,9 @@ or expressible as a uniform") is what a reader should apply here.
 **The blocker nobody listed is retention.** Today the packed buffer is
 transient — pack, upload, garbage. In the upload payload it is resident for the
 life of the region, twice over (`mapUploadSync` also holds it, and payloads are
-documented immutable so it cannot be nulled after upload). Wiggle's own comment
-puts that at **82MB for a 1000-source multiwiggle at a 1Mb view**
-(`wiggleInstanceBuffer.ts:33`). That is the decision, not a detail.
+documented immutable so it cannot be nulled after upload). Every record byte is
+multiplied by features x sources, which `wiggleInstanceBuffer.ts` already holds
+against a 256MB `maxBufferSize` floor. That is the decision, not a detail.
 
 **Of the old obstacle list, two counts were wrong and one is thinner than it
 reads.** Color strings parse fine in a worker (`colorBits.ts` is a pure parser,
@@ -70,6 +75,6 @@ Its ~98ms is **~8ms per fetch round over ~11-12 rounds** — pacing, not
 throughput. Anyone selling it as "5.68s -> 5.58s" is quoting noise; it is
 verifiable only as a frame leaving the top-self list.
 
-Order if taken: measure `pack` in isolation first (a whole-gesture A/B cannot
+Order if taken: measure the packers in isolation first (a whole-gesture A/B cannot
 resolve it), settle retention, decide whether two encoders that must agree is a
 price worth paying, and only then write the plumbing.

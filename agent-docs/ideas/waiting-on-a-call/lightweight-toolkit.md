@@ -158,14 +158,18 @@ Two edges outside the split were in the way and are gone: `RpcRegistry.ts` took
 was 368 of its 368 type files, and `regionTooLargeUtils.ts` reached one byte
 formatter through `@jbrowse/core/util`.
 
-**Plugin files naming `AbstractSessionModel`: 53 → 7.** One is a comment. The
-six real ones are the administration UI — the assembly manager
-(`AssemblyAddForm`, `AssemblyManager`, `AssemblyTable`), the connection manager
-(`ManageConnectionsDialog`), the plugin store (`PluginStoreWidget/util`) and the
-session manager (`SessionManager/util`) — and each wants `adminMode`,
-`addAssembly`/`removeAssembly`, `sessionConnections` or `sessionPlugins`. Those
-are the application, and asking for it there is correct. **No display, no
-launcher and no menu names it any more.**
+**The split held for a while and has since leaked back.** After it, the plugin
+files naming `AbstractSessionModel` were the administration UI, which wants
+`adminMode`, `addAssembly`/`removeAssembly`, `sessionConnections` or
+`sessionPlugins` and is correctly the application. Today
+`ManageConnectionsDialog` is the one admin site left, and displays and menus
+name it again: the Hi-C comparison menu (`compareTrackMenuItems.ts`) and the
+multi-way display's `afterAttach.ts` and `laneHolders.ts` take a whole
+`AbstractSessionModel`, and the LGV's `afterAttach.ts` and `searchUtils.ts`
+`Pick` from it. Each wants a member or two a slice already names, or one no
+slice has yet (`addHighlight`, `textSearchManager`), so the fix is the same
+retype, and a lint rule refusing the name outside an allow-list is what keeps
+it from leaking again.
 
 Where a plugin needed several services, the intersection is named once rather
 than repeated: `UcscHost` (BLAT), `BreakpointSplitViewHost` (sv-core),
@@ -179,13 +183,13 @@ better without weighing less. Cutting that base was tried: 44 errors, all in
 `packages/app-core`, because the app shell uses `SessionWithDrawerWidgets` as
 its name for the whole session. The fix belongs there, not in plugins.
 
-### 3. `queueDialog`, at 49 sites, is the application leaking downward
+### 3. `queueDialog` is the application leaking downward
 
 A dialog is the most app-shaped concept there is: it assumes a modal layer, a
 component type, and a React tree the host owns. It is also the single
 most-called session member from plugin code.
 
-Nearly all 49 are a display saying *the user wants to configure something* —
+Nearly all are a display saying *the user wants to configure something* —
 which is a request, not a modal. As written, a host drawing its own UI either
 gets JBrowse's Material dialogs or gets nothing, with no error either way. That
 is the same hole the Loading-and-error-states page exists to document for
@@ -194,8 +198,8 @@ currently stops being true.
 
 **Partly addressed, 2026-08-23**: `queueDialog` now has a slice of its own, so a
 host that draws its own UI has exactly one named member — `DialogHost` — to
-implement rather than an 81-member session, and every one of the 50 call sites
-asks for it by name through `getDialogHost(self)`.
+implement rather than an 81-member session, and every call site asks for it by
+name through `getDialogHost(self)`.
 
 **First site turned to data, 2026-10-09**: the ambiguous-name search picker is
 `view.searchPicker` (query, assembly, one row per place, and a `pick`), no longer
@@ -205,14 +209,14 @@ so the one dialog a bring-your-own page could reach now draws. A picker cannot
 outlive its view the way a queued dialog could (the dead-view crash
 `DialogQueue`'s error boundary guards), since the volatile dies with the view.
 The picker draws only while its view's body is mounted, so one raised on a
-minimized or background view waits there. The other 49 sites remain.
+minimized or background view waits there. The other sites remain.
 
 That is the seam, not the redesign. A dialog is still a component the display
 hands over, so the host that implements `DialogHost` still has to mount JBrowse's
 React tree. Making it a *request* instead — the display names the settings it
 wants edited and the host renders them however it likes — is a real design and is
 not started. The shape to look at first, noted here rather than built: nearly all
-50 callbacks return `[SomeDialog, { model: self, handleClose }]`, i.e. the
+the callbacks return `[SomeDialog, { model: self, handleClose }]`, i.e. the
 payload is already just "this model, edited". A `requestSettings(self, schema)`
 whose default implementation is today's `queueDialog` would cover the majority
 without touching the minority that pass real arguments.
