@@ -162,29 +162,28 @@ wide block, and rows start in the callset's order:
 
 - Click the deletion to open the feature details panel, whose **SAMPLES**
   section lists every sample's genotype, read depth and other fields.
-- Right-click the deletion and pick **Sort by genotype** to order rows by
-  genotype at that call, then by how far each keeps matching its neighbours.
+- Right-click the deletion and pick **Sort rows by genotype here** to order rows
+  by genotype at that call, then by how far each keeps matching its neighbours.
 - **Clustering → Cluster rows by genotype...** in the track menu clusters rows
   by genotypes across the whole window instead, with a dendrogram.
 
-In the matrix, dark blue is no copy of _RHD_, light blue one and grey two. The
-olive stripe is `HGSV_1823`, a small copy-number record nested inside the
-deletion. The callset gives most of the cohort a no-call there (no genotype
+In the genotype rows, dark blue is no copy of _RHD_, light blue one and grey
+two. The olive stripe is `HGSV_1823`, a small copy-number record nested inside
+the deletion. The callset gives most of the cohort a no-call there (no genotype
 reported), while QuicK-mer2 measures copy number per bin from the reads, so the
 olive column is a red gain in the copy-number track.
 
-A matrix cell marks some call at that column. To see which call, load the same
-VCF again in the ordinary variant display, which draws each record on a separate
-row with its id, class and size, or color cells by **SV type**, as the
+A genotype cell marks some call at that position. The records band above the
+rows draws each call with its id, class and size, and **Color by → SV type**
+names the class in the cells too, as the
 [multi-variant track guide](/docs/user_guides/multivariant_track) shows. The
-figure has three tracks over NCBI RefSeq genes:
+figure has two tracks over NCBI RefSeq genes:
 
-- the callset as a genotype matrix, one row per sample, sorted by genotype at
-  the _RHD_ deletion
+- the callset, one row per sample sorted by genotype at the _RHD_ deletion,
+  under its records band with each call labelled by its id
 - QuicK-mer2 copy number for every individual, one row each and clustered on
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
-- the same records in the ordinary variant display, each labelled with its id
 
 <Figure caption="The 1KGP SV callset over RHD with the panel's copy-number calls under it." src="/img/multisv_rhd.png" />
 
