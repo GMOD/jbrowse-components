@@ -112,6 +112,95 @@ export const hostedConfigs: Record<string, HostedConfig> = {
     ],
     "absent": []
   },
+  "https://jbrowse.org/demos/jb2v5_paper/ecoli_orthologs/config.json": {
+    "assemblies": [
+      {
+        "name": "MG1655",
+        "sequence": {
+          "trackId": "MG1655-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "trackId": "ecoli_orthologs",
+        "name": "E. coli orthologs by gene symbol (44 genomes, RefSeq)",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "MCScanBlocksAdapter"
+        },
+        "displays": [
+          {
+            "type": "MultiWaySyntenyDisplay"
+          }
+        ]
+      }
+    ],
+    "absent": []
+  },
+  "https://jbrowse.org/demos/jb2v5_paper/ecoli_pangenome/config.json": {
+    "assemblies": [
+      {
+        "name": "K12",
+        "sequence": {
+          "trackId": "K12-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter"
+          }
+        }
+      },
+      {
+        "name": "Sakai",
+        "sequence": {
+          "trackId": "Sakai-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter"
+          }
+        }
+      },
+      {
+        "name": "CFT073",
+        "sequence": {
+          "trackId": "CFT073-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter"
+          }
+        }
+      },
+      {
+        "name": "NCTC86",
+        "sequence": {
+          "trackId": "NCTC86-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter"
+          }
+        }
+      },
+      {
+        "name": "IAI39",
+        "sequence": {
+          "trackId": "IAI39-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "trackId": "ecoli_ava",
+        "name": "E. coli pangenome (all-vs-all PAF)",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "MultiGenomePAFAdapter"
+        }
+      }
+    ],
+    "absent": []
+  },
   "https://jbrowse.org/demos/orthofinder_drosophila_blocks/config.json": {
     "assemblies": [
       {
@@ -199,21 +288,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       }
     ],
-    "tracks": [
-      {
-        "trackId": "GCF_003254395.2-ncbiGff",
-        "name": "NCBI RefSeq - RefSeq All (GFF)",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "Gff3TabixAdapter"
-        },
-        "displays": [
-          {
-            "type": "LinearBasicDisplay"
-          }
-        ]
-      }
-    ],
+    "tracks": [],
     "absent": []
   },
   "https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json": {
@@ -279,14 +354,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         "type": "QuantitativeTrack",
         "adapter": {
           "type": "MinigraphBubbleAdapter"
-        }
-      },
-      {
-        "trackId": "hprc_minigraph_alleles",
-        "name": "HPRC release 2 graph: allele inventory",
-        "type": "AlignmentsTrack",
-        "adapter": {
-          "type": "BedTabixAdapter"
         }
       },
       {
@@ -381,6 +448,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "bosTau9-unipMut",
       "bosTau9-unipOther",
       "bosTau9-unipRepeat",
+      "bosTau9-unipSplice",
       "bosTau9-unipStruct",
       "bosTau9-windowmaskerSdust",
       "bosTau9-xenoRefGene",
@@ -404,6 +472,11 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "bosTau9_to_rheMac10_liftOver",
       "bosTau9_to_susScr11_liftOver"
     ]
+  },
+  "https://jbrowse.org/ucsc/canFam4/config.json": {
+    "assemblies": [],
+    "tracks": [],
+    "absent": []
   },
   "https://jbrowse.org/ucsc/ce11/config.json": {
     "assemblies": [
@@ -629,9 +702,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
     "allTrackIds": [
       "hg19-100way_phastCons",
       "hg19-100way_phyloP100way",
-      "hg19-MaxAFmutC",
-      "hg19-MaxAFmutG",
-      "hg19-MaxAFmutT",
       "hg19-Max_counts_multiwig",
       "hg19-ReMapDensity",
       "hg19-ReMapTFs",
@@ -648,18 +718,10 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-bamSLVi33dot16",
       "hg19-bamSLVi33dot25",
       "hg19-bamSLVi33dot26",
-      "hg19-cadd1_7_A",
-      "hg19-cadd1_7_C",
+      "hg19-bayesDel",
+      "hg19-cadd1_7",
       "hg19-cadd1_7_Del",
-      "hg19-cadd1_7_G",
       "hg19-cadd1_7_Ins",
-      "hg19-cadd1_7_T",
-      "hg19-caddA",
-      "hg19-caddC",
-      "hg19-caddDel",
-      "hg19-caddG",
-      "hg19-caddIns",
-      "hg19-caddT",
       "hg19-ccdsGene",
       "hg19-cgapSage",
       "hg19-civic",
@@ -667,10 +729,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-clinGenGeneDisease",
       "hg19-clinGenHaplo",
       "hg19-clinGenTriplo",
-      "hg19-clinPredA",
-      "hg19-clinPredC",
-      "hg19-clinPredG",
-      "hg19-clinPredT",
+      "hg19-clinPred",
       "hg19-clinvarCnv",
       "hg19-clinvarMain",
       "hg19-clinvarSubLolly",
@@ -689,11 +748,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-cytoBand",
       "hg19-cytoBandIdeo",
       "hg19-darned",
-      "hg19-dbSnp153",
-      "hg19-dbSnp153BadCoords",
-      "hg19-dbSnp153ClinVar",
-      "hg19-dbSnp153Common",
-      "hg19-dbSnp153Mult",
       "hg19-dbSnp155",
       "hg19-dbSnp155BadCoords",
       "hg19-dbSnp155ClinVar",
@@ -818,29 +872,13 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-getRmSangerDeadZone",
       "hg19-giabSv",
       "hg19-gnomadExomes",
-      "hg19-gnomadExomes100XPercentage",
-      "hg19-gnomadExomes10XPercentage",
-      "hg19-gnomadExomes15XPercentage",
-      "hg19-gnomadExomes1XPercentage",
-      "hg19-gnomadExomes20XPercentage",
-      "hg19-gnomadExomes25XPercentage",
-      "hg19-gnomadExomes30XPercentage",
-      "hg19-gnomadExomes50XPercentage",
-      "hg19-gnomadExomes5XPercentage",
       "hg19-gnomadExomesMeanCoverage",
       "hg19-gnomadExomesMedianCoverage",
+      "hg19-gnomadExomesReadDepthPct",
       "hg19-gnomadGenomes",
-      "hg19-gnomadGenomes100XPercentage",
-      "hg19-gnomadGenomes10XPercentage",
-      "hg19-gnomadGenomes15XPercentage",
-      "hg19-gnomadGenomes1XPercentage",
-      "hg19-gnomadGenomes20XPercentage",
-      "hg19-gnomadGenomes25XPercentage",
-      "hg19-gnomadGenomes30XPercentage",
-      "hg19-gnomadGenomes50XPercentage",
-      "hg19-gnomadGenomes5XPercentage",
       "hg19-gnomadGenomesMeanCoverage",
       "hg19-gnomadGenomesMedianCoverage",
+      "hg19-gnomadGenomesReadDepthPct",
       "hg19-gnomadMissense",
       "hg19-gnomadMpc",
       "hg19-gnomadSvControls",
@@ -887,9 +925,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-iscaPathGainCum",
       "hg19-iscaPathLossCum",
       "hg19-jarvis",
-      "hg19-jaspar2018",
-      "hg19-jaspar2020",
-      "hg19-jaspar2022",
       "hg19-jaspar2024",
       "hg19-jaxQtlAsIs",
       "hg19-jaxQtlPadded",
@@ -898,7 +933,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-laminB1Lads",
       "hg19-linsight",
       "hg19-lrg",
-      "hg19-maxAFmutA",
       "hg19-mcapA",
       "hg19-mcapC",
       "hg19-mcapG",
@@ -912,15 +946,9 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-missenseByTranscript",
       "hg19-mitoMapDiseaseMuts",
       "hg19-mitoMapVars",
-      "hg19-mtrA",
       "hg19-mtrBed",
-      "hg19-mtrC",
-      "hg19-mtrG",
-      "hg19-mtrT",
-      "hg19-mutScoreA",
-      "hg19-mutScoreC",
-      "hg19-mutScoreG",
-      "hg19-mutScoreT",
+      "hg19-mtrScores",
+      "hg19-mutScore",
       "hg19-ncbiRefSeq",
       "hg19-ncbiRefSeqCurated",
       "hg19-ncbiRefSeqGenomicDiff",
@@ -930,10 +958,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-ncbiRefSeqSelect",
       "hg19-neandertalMethylation",
       "hg19-nestedRepeats",
-      "hg19-noAFmutA",
-      "hg19-noAFmutC",
-      "hg19-noAFmutG",
-      "hg19-noAFmutT",
       "hg19-ntHumChimpCodingDiff",
       "hg19-ntOoaHaplo",
       "hg19-ntSssSnps",
@@ -1006,11 +1030,8 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg19-qPcrPrimers",
       "hg19-recombRate",
       "hg19-refGene",
-      "hg19-revelA",
-      "hg19-revelC",
-      "hg19-revelG",
+      "hg19-revel",
       "hg19-revelOverlaps",
-      "hg19-revelT",
       "hg19-rgdQtl",
       "hg19-rgdRatQtl",
       "hg19-rmsk",
@@ -1281,7 +1302,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         },
         "displays": [
           {
-            "type": "MultiLinearWiggleDisplay"
+            "type": "LinearWiggleDisplay"
           }
         ]
       },
@@ -1294,7 +1315,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         },
         "displays": [
           {
-            "type": "MultiLinearWiggleDisplay"
+            "type": "LinearWiggleDisplay"
           }
         ]
       },
@@ -1362,19 +1383,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       },
       {
-        "trackId": "hg38-lrSv1kgOnt",
-        "name": "Long-read SVs - 1KG Vienna ONT SVs",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        },
-        "displays": [
-          {
-            "type": "LinearBasicDisplay"
-          }
-        ]
-      },
-      {
         "trackId": "hg38-phyloP470wayBW",
         "name": "Basewise Conservation (phyloP) - 470 phyloP",
         "type": "QuantitativeTrack",
@@ -1409,14 +1417,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         ]
       },
       {
-        "trackId": "hg38-umap100Quantitative",
-        "name": "Multi-read mappability - Umap M100",
-        "type": "QuantitativeTrack",
-        "adapter": {
-          "type": "BigWigAdapter"
-        }
-      },
-      {
         "trackId": "hg38-cpgIslandExt",
         "name": "CpG Islands",
         "type": "FeatureTrack",
@@ -1430,7 +1430,12 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         "type": "FeatureTrack",
         "adapter": {
           "type": "BedTabixAdapter"
-        }
+        },
+        "displays": [
+          {
+            "type": "LinearBasicDisplay"
+          }
+        ]
       },
       {
         "trackId": "hg38-ncbiRefSeq",
@@ -1465,7 +1470,10 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       }
     ],
-    "absent": [],
+    "absent": [
+      "hg38-lrSv1kgOnt",
+      "hg38-umap100Quantitative"
+    ],
     "allTrackIds": [
       "hg38-1KGP_3202.Illumina_ensemble_callset.freeze_V1",
       "hg38-1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF",
@@ -1479,48 +1487,33 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-alldifficultregions",
       "hg38-alllowmapandsegdupregions",
       "hg38-alphaMissense",
-      "hg38-aou1kSv",
-      "hg38-aprSv",
       "hg38-avada",
       "hg38-bismap",
       "hg38-bismap100Neg",
       "hg38-bismap100Pos",
-      "hg38-bismap100Quantitative",
       "hg38-bismap24Neg",
       "hg38-bismap24Pos",
-      "hg38-bismap24Quantitative",
       "hg38-bismap36Neg",
       "hg38-bismap36Pos",
-      "hg38-bismap36Quantitative",
       "hg38-bismap50Neg",
       "hg38-bismap50Pos",
-      "hg38-bismap50Quantitative",
       "hg38-cCREregistry",
       "hg38-cactus447way",
-      "hg38-cadd",
       "hg38-cadd1_7",
       "hg38-cadd1_7_Del",
       "hg38-cadd1_7_Ins",
-      "hg38-caddDel",
-      "hg38-caddIns",
-      "hg38-cardSv",
       "hg38-ccdsGene",
       "hg38-centromeres",
-      "hg38-chirmade101Sv",
       "hg38-civic",
       "hg38-clinGenCspec",
       "hg38-clinGenGeneDisease",
       "hg38-clinGenHaplo",
       "hg38-clinGenTriplo",
-      "hg38-clinPredA",
-      "hg38-clinPredC",
-      "hg38-clinPredG",
-      "hg38-clinPredT",
+      "hg38-clinPred",
       "hg38-clinvarCnv",
       "hg38-clinvarMain",
       "hg38-clinvarSubLolly",
       "hg38-cls_gene_models",
-      "hg38-colorsDbSv",
       "hg38-comments",
       "hg38-coriellDelDup",
       "hg38-covidHgiGwasB2",
@@ -1530,47 +1523,35 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-covidHgiGwasR4PvalC1",
       "hg38-covidHgiGwasR4PvalC2",
       "hg38-covidMuts",
-      "hg38-cpc1Sv",
       "hg38-cpgIslandExt",
       "hg38-cpgIslandExtUnmasked",
       "hg38-cytoBand",
       "hg38-cytoBandIdeo",
-      "hg38-dbSnp153",
-      "hg38-dbSnp153BadCoords",
-      "hg38-dbSnp153ClinVar",
-      "hg38-dbSnp153Common",
-      "hg38-dbSnp153Mult",
       "hg38-dbSnp155",
       "hg38-dbSnp155BadCoords",
       "hg38-dbSnp155ClinVar",
       "hg38-dbSnp155Common",
       "hg38-dbSnp155Mult",
-      "hg38-dbVar_common_1000g",
-      "hg38-dbVar_common_abel",
-      "hg38-dbVar_common_african",
-      "hg38-dbVar_common_american",
-      "hg38-dbVar_common_byrska_bishop",
-      "hg38-dbVar_common_decipher",
-      "hg38-dbVar_common_east_asian",
-      "hg38-dbVar_common_european",
-      "hg38-dbVar_common_global",
-      "hg38-dbVar_common_gnomad",
-      "hg38-dbVar_common_lee",
-      "hg38-dbVar_common_other",
-      "hg38-dbVar_common_south_asian",
+      "hg38-dbVar_common",
       "hg38-dbVar_conflict_pathogenic",
       "hg38-dbVar_other_healthy",
       "hg38-dbVar_other_phenotype",
       "hg38-dbVar_somatic_sv",
-      "hg38-decodeSv",
       "hg38-dgvGold",
       "hg38-dgvMerged",
       "hg38-dgvSupporting",
       "hg38-encBlacklist",
+      "hg38-encode4ProCap_A673_procap",
+      "hg38-encode4ProCap_Caco-2_procap",
+      "hg38-encode4ProCap_Calu3_procap",
+      "hg38-encode4ProCap_HUVEC_procap",
+      "hg38-encode4ProCap_K562_procap",
+      "hg38-encode4ProCap_MCF10A_procap",
       "hg38-epdNewPromoter",
       "hg38-epdNewPromoterNonCoding",
       "hg38-eve",
       "hg38-fiberSeqAcc",
+      "hg38-fiberSeqCompendium-bigNarrowPeak",
       "hg38-fiberSeqCompendium_PM00001_acc",
       "hg38-fiberSeqCompendium_PM00001_cpg",
       "hg38-fiberSeqCompendium_PM00001_cpgDiff",
@@ -1818,11 +1799,12 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-fiberSeqCompendium_PS01524_hap",
       "hg38-fiberSeqCompendium_PS01524_peaks",
       "hg38-fishClones",
+      "hg38-fiveUltraUorfs",
       "hg38-g2p",
-      "hg38-ga4kSv",
       "hg38-gap",
       "hg38-gc5BaseBw",
       "hg38-genCC",
+      "hg38-gencNcOrfs",
       "hg38-gencNcOrfsComprehensive",
       "hg38-gencNcOrfsPrimary",
       "hg38-gencodeBasic",
@@ -1835,39 +1817,19 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-geneReviews",
       "hg38-genomicSuperDups",
       "hg38-giabSv",
-      "hg38-gnomad3100XPercentage",
-      "hg38-gnomad310XPercentage",
-      "hg38-gnomad315XPercentage",
-      "hg38-gnomad31XPercentage",
-      "hg38-gnomad320XPercentage",
-      "hg38-gnomad325XPercentage",
-      "hg38-gnomad330XPercentage",
-      "hg38-gnomad350XPercentage",
-      "hg38-gnomad35XPercentage",
+      "hg38-gnomad3Coverage",
       "hg38-gnomad3MeanCoverage",
       "hg38-gnomad3MedianCoverage",
-      "hg38-gnomad4Exome100XPercentage",
-      "hg38-gnomad4Exome10XPercentage",
-      "hg38-gnomad4Exome15XPercentage",
-      "hg38-gnomad4Exome1XPercentage",
-      "hg38-gnomad4Exome20XPercentage",
-      "hg38-gnomad4Exome25XPercentage",
-      "hg38-gnomad4Exome30XPercentage",
-      "hg38-gnomad4Exome50XPercentage",
-      "hg38-gnomad4Exome5XPercentage",
+      "hg38-gnomad4ExomeCoverage",
       "hg38-gnomad4ExomeMeanCoverage",
       "hg38-gnomad4ExomeMedianCoverage",
       "hg38-gnomadConstraint",
       "hg38-gnomadCopyNumberVariants",
       "hg38-gnomadExomesVariantsV4_1",
-      "hg38-gnomadGenomesVariantsV3_1",
       "hg38-gnomadGenomesVariantsV3_1_1",
       "hg38-gnomadGenomesVariantsV4_1",
-      "hg38-gnomadMpcA",
-      "hg38-gnomadMpcC",
-      "hg38-gnomadMpcG",
+      "hg38-gnomadMpc",
       "hg38-gnomadMpcOverlaps",
-      "hg38-gnomadMpcT",
       "hg38-gnomadStr",
       "hg38-gnomadStructuralVariants",
       "hg38-gold",
@@ -1875,23 +1837,17 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-grcIncidentDb",
       "hg38-gtexEqtlCaviar",
       "hg38-gtexEqtlDapg",
-      "hg38-gustafsonSv",
       "hg38-gwasCatalog",
       "hg38-gwipsvizRiboseq",
-      "hg38-han945Sv",
       "hg38-haqers",
       "hg38-har2649",
       "hg38-hars312",
       "hg38-hcondels",
       "hg38-hg38ContigDiff",
       "hg38-hgnc",
-      "hg38-hgsvc2Sv",
-      "hg38-hgsvc3Sv",
       "hg38-highReproRegions",
       "hg38-hmc",
-      "hg38-hprc-v2.0-allele-inventory",
       "hg38-hprc-v2.0-pangenome-vcf",
-      "hg38-hprc2v21Sv",
       "hg38-hprcArrDupBedV1",
       "hg38-hprcArrInvBedV1",
       "hg38-hprcDeletionsV1",
@@ -1902,29 +1858,21 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-iscaBenignLossCum",
       "hg38-iscaPathGainCum",
       "hg38-iscaPathLossCum",
+      "hg38-iscaViewTotal",
       "hg38-jarvis",
-      "hg38-jaspar2018",
-      "hg38-jaspar2020",
-      "hg38-jaspar2022",
-      "hg38-jaspar2024",
       "hg38-jaspar2026",
       "hg38-knownAlt",
       "hg38-knownGene",
-      "hg38-lrSv1kLin",
-      "hg38-lrSv1kgOnt",
+      "hg38-longReadVariants",
       "hg38-lrSvAll",
       "hg38-lrg",
       "hg38-mane",
-      "hg38-meiEul1db",
-      "hg38-meiEul1dbRef",
-      "hg38-meiHgsvc3",
-      "hg38-meiHmeid",
+      "hg38-mappability-bigBed",
+      "hg38-mei",
       "hg38-metamorf",
+      "hg38-methaDory",
       "hg38-microsat",
       "hg38-missenseByGene",
-      "hg38-missenseByTranscript",
-      "hg38-missenseByTranscriptV4",
-      "hg38-missenseByTranscriptV4_1",
       "hg38-missenseByTranscriptV4_1_1",
       "hg38-mitoMapDiseaseMuts",
       "hg38-mitoMapVars",
@@ -1954,7 +1902,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-nmdEscNcbiRefSeq",
       "hg38-notinalldifficultregions",
       "hg38-notinalllowmapandsegdupregions",
-      "hg38-noyvertSv",
       "hg38-nuMtSeq",
       "hg38-nuorfdb",
       "hg38-openprot",
@@ -1983,11 +1930,21 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-phyloP447wayLRT",
       "hg38-phyloP470wayBW",
       "hg38-pliByGene",
-      "hg38-pliByTranscript",
-      "hg38-pliByTranscriptV4",
-      "hg38-pliByTranscriptV4_1",
       "hg38-pliByTranscriptV4_1_1",
       "hg38-popEve",
+      "hg38-proCapNet_A673_contrib",
+      "hg38-proCapNet_A673_pred",
+      "hg38-proCapNet_Caco-2_contrib",
+      "hg38-proCapNet_Caco-2_pred",
+      "hg38-proCapNet_Calu3_contrib",
+      "hg38-proCapNet_Calu3_pred",
+      "hg38-proCapNet_HUVEC_contrib",
+      "hg38-proCapNet_HUVEC_pred",
+      "hg38-proCapNet_K562_contrib",
+      "hg38-proCapNet_K562_pred",
+      "hg38-proCapNet_MCF10A_contrib",
+      "hg38-proCapNet_MCF10A_pred",
+      "hg38-problematicSuper-bigBed",
       "hg38-pubtator",
       "hg38-recomb1000GAvg",
       "hg38-recombAvg",
@@ -2011,16 +1968,12 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-simpleRepeat",
       "hg38-snpediaAll",
       "hg38-spMut",
-      "hg38-spliceAiAccMinus",
-      "hg38-spliceAiAccPlus",
-      "hg38-spliceAiDonorMinus",
-      "hg38-spliceAiDonorPlus",
+      "hg38-spliceAIWt",
       "hg38-spliceVarDb",
       "hg38-strchive",
       "hg38-stsMap",
       "hg38-tRNAs",
       "hg38-target_regions",
-      "hg38-tommoJpSv",
       "hg38-tommoStr",
       "hg38-trexplorer",
       "hg38-ucneChicken",
@@ -2034,13 +1987,9 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-ultras",
       "hg38-umap",
       "hg38-umap100",
-      "hg38-umap100Quantitative",
       "hg38-umap24",
-      "hg38-umap24Quantitative",
       "hg38-umap36",
-      "hg38-umap36Quantitative",
       "hg38-umap50",
-      "hg38-umap50Quantitative",
       "hg38-unipChain",
       "hg38-unipConflict",
       "hg38-unipDisulfBond",
@@ -2056,6 +2005,8 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-unipRepeat",
       "hg38-unipSplice",
       "hg38-unipStruct",
+      "hg38-uniprot-bigBed",
+      "hg38-unusualcons-bigBed",
       "hg38-utrAnnotUorfs",
       "hg38-varChat",
       "hg38-varaico",
