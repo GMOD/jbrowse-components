@@ -41,4 +41,4 @@ samtools view -u -F 0x900 "$SLICE" "${REGIONS[@]}" |
   samtools sort -@ 4 -o "$OUT" -
 samtools index -c "$OUT"
 
-samtools idxstats "$OUT" | awk '$3>0 {print $1, $3}' | sort -k2,2nr | head
+samtools idxstats "$OUT" | awk '$3>0 {print $1, $3}' | sort -k2,2nr | awk 'NR<=10'
