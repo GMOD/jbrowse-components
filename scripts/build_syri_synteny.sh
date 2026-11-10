@@ -129,9 +129,11 @@ for p in "${PAIRS[@]}"; do cat "${p/ /_}.paf"; done >syri_pangenome.paf
 tabix -f -C -p bed syri_regions.bed.gz
 
 echo "== config.json"
-NAMES="${NAMES[*]}" python3 - <<'PY'
+NAMES="${NAMES[*]}" PYTHONPATH="$SCRIPT_DIR" python3 - <<'PY'
 import json
 import os
+
+from syri_to_paf import COLORS
 
 names = os.environ['NAMES'].split()
 reference = names[0]
@@ -171,7 +173,12 @@ config = {
                     'type': 'MultiWaySyntenyDisplay',
                     'displayId': 'syri_pangenome-MultiWaySyntenyDisplay',
                     'rows': {'sort': names[1:]},
-                    'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': syri_types}}}},
+                    'ribbons': {
+                        'encoding': {
+                            'color': {'field': 'syri', 'scale': {'domain': syri_types}},
+                            'opacity': 0.7,
+                        }
+                    },
                 }
             ],
         },
@@ -191,8 +198,13 @@ config = {
                     'type': 'LinearMultiRowFeatureDisplay',
                     'displayId': f'syri_regions_on_{reference}-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'query', 'sort': names[1:]},
-                    # the key in plotsr's order; the blocks keep their itemRgb
-                    'encoding': {'color': {'scale': {'domain': syri_types}}},
+                    'encoding': {
+                        'color': {
+                            'field': 'name',
+                            'scale': {'domain': syri_types, 'range': [COLORS[t] for t in syri_types]},
+                            'legend': {'title': 'syri'},
+                        }
+                    },
                 }
             ],
         },

@@ -1496,6 +1496,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             color: { field: 'syri', scale: { domain: SYRI_TYPES } },
             opacity: 0.9,
           },
+          filter: [{ field: 'length', gte: 10_000 }],
           mark: { interpolate: 'bump' },
           render: { antialias: false },
           collapseEmptyRows: true,

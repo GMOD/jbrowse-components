@@ -533,9 +533,19 @@
           },
           "encoding": {
             "color": {
+              "field": "name",
               "scale": {
-                "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
-              }
+                "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"],
+                "range": [
+                  "#c8c8c8",
+                  "#ffa500",
+                  "#9acd32",
+                  "#9acd32",
+                  "#00bbff",
+                  "#00bbff"
+                ]
+              },
+              "legend": { "title": "syri" }
             }
           }
         }

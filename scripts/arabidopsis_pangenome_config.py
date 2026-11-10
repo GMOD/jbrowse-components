@@ -17,6 +17,8 @@ import os
 import sys
 import urllib.request
 
+from syri_to_paf import COLORS
+
 BASE = sys.argv[sys.argv.index('--base-url') + 1].rstrip('/') + '/' if '--base-url' in sys.argv else ''
 
 PORTAL = 'https://1001genomes.org/data/1001Gp/27genomes/releases/current'
@@ -309,7 +311,13 @@ def main():
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay',
                         'rows': {'field': 'query', 'sort': names},
-                        'encoding': {'color': {'scale': {'domain': SYRI_TYPES}}},
+                        'encoding': {
+                            'color': {
+                                'field': 'name',
+                                'scale': {'domain': SYRI_TYPES, 'range': [COLORS[t] for t in SYRI_TYPES]},
+                                'legend': {'title': 'syri'},
+                            }
+                        },
                     }
                 ],
             },
@@ -323,7 +331,7 @@ def main():
                     {
                         'type': 'MultiWaySyntenyDisplay',
                         'displayId': 'syri_1001g-MultiWaySyntenyDisplay',
-                        'domain': names,
+                        'rows': {'sort': names},
                         'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': SYRI_TYPES}}}},
                     }
                 ],

@@ -22,8 +22,8 @@ inversion again with it, then compare four more accessions. We:
   PAF
 - load the PAF as a synteny track and color its ribbons by SyRI type in a linear
   synteny view of two accessions
-- stack all six accessions in one linear synteny view, the way
-  [plotsr](https://github.com/schneebergerlab/plotsr) draws them
+- stack all six accessions in one linear synteny view, as
+  [plotsr](https://github.com/schneebergerlab/plotsr) does
 - draw the accessions as lanes of a multi-way synteny display under Columbia,
   beside a feature track with a row of SyRI regions per accession
 
@@ -146,8 +146,9 @@ Two entries in the track config matter here:
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
   [lanes view](#every-accession-in-columbia-coordinates): `rows.sort` orders the
-  lanes, and `ribbons.encoding.color` is a color scale on the bands, mapping the
-  `syri` field through a `scale.domain` of the six types
+  lanes, `ribbons.encoding.color` is a color scale on the bands, mapping the
+  `syri` field through a `scale.domain` of the six types, and
+  `ribbons.encoding.opacity` draws the bands darker than the default 0.3
 
 ```json addtrack
 {
@@ -171,7 +172,8 @@ Two entries in the track config matter here:
             "scale": {
               "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
             }
-          }
+          },
+          "opacity": 0.7
         }
       }
     }
@@ -217,15 +219,18 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
 
 The thin ribbons leaving the frame are duplications and translocations whose
 other end sits on another chromosome, which the label at the edge of the frame
-names. The key has one row per color, so `INVTR` shares a row with `TRANS` and
-`INVDP` with `DUP`.
+names. A key row names every type on screen drawn in its color, since plotsr
+paints `INVTR` as `TRANS` and `INVDP` as `DUP`.
 
 <Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion." src="/img/syri/col_ler_chr4.png" />
 
 ## Stacking the accessions, one SyRI run per band
 
 The `syri_pangenome` track stacks all of them, each band drawing the SyRI run
-between the two genomes it joins:
+between the two genomes it joins. plotsr leaves out structural regions shorter
+than 10 kb, and `filter` drops them here too. plotsr also leaves out the regions
+joining two chromosomes unless given `--itx`; those stay as the long ribbons
+crossing a band:
 
 ```json session config=test_data/syri/config.json
 {
@@ -252,6 +257,7 @@ between the two genomes it joins:
           },
           "opacity": 0.9
         },
+        "filter": [{ "field": "length", "gte": 10000 }],
         "mark": { "interpolate": "bump" },
         "render": { "antialias": false },
         "collapseEmptyRows": true,
@@ -262,15 +268,15 @@ between the two genomes it joins:
 }
 ```
 
-<Figure caption="Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins." src="/img/syri/six_accessions.png" />
+<Figure caption="Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins. The crossed ribbon on Chr3 between Kyo and Sha is an inversion." src="/img/syri/six_accessions.png" />
 
 ## Every accession in Columbia coordinates
 
 The stack compares each accession with the one above it. To read every accession
 against Col-0, in Col-0 coordinates, `syri_to_paf.py` also writes each pair's
 regions in reference coordinates, one BED row per region. Each row's name is its
-type, its color comes from `itemRgb`, and a `query` column holds the accession
-name. The rows against Col-0 concatenate into one track:
+type, `itemRgb` holds its color, and a `query` column holds the accession name.
+The rows against Col-0 concatenate into one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -286,7 +292,9 @@ tabix -C -p bed syri_regions.bed.gz
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
 one row per value of a field, here `query`, the accession, and `rows.sort`
-orders them:
+orders them. `encoding.color` maps the `name` field, the type, through the six
+types in plotsr's order to the colors `syri_to_paf.py` writes, so the key lists
+them in that order:
 
 ```json addtrack
 {
@@ -309,9 +317,19 @@ orders them:
       },
       "encoding": {
         "color": {
+          "field": "name",
           "scale": {
-            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
-          }
+            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"],
+            "range": [
+              "#c8c8c8",
+              "#ffa500",
+              "#9acd32",
+              "#9acd32",
+              "#00bbff",
+              "#00bbff"
+            ]
+          },
+          "legend": { "title": "syri" }
         }
       }
     }
@@ -374,6 +392,8 @@ Two links on the page open the SyRI rows in JBrowse:
   sets up
 - **Every accession as SyRI lanes**, under the page title, opens the same rows
   over the chromosome 4 inversion
+
+<Figure caption="TAIR10 chromosome 4 with a row of SyRI regions per 1001 Genomes Plus accession." src="/img/syri/tair10_1001g.png" />
 
 ## Reproduce it end to end
 
