@@ -48,7 +48,7 @@ cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 <!-- END GENERATED GRAPH_PLUGIN_CONFIG -->
 
 `RgfaTabixAdapter` and `MinigraphBubbleAdapter` ship in the same plugin. The
-plugin needs a JBrowse 5 build (v5.0.0-beta.9 or later). A JBrowse 4 host does
+plugin needs a JBrowse 5 build (v5.0.0-beta.20 or later). A JBrowse 4 host does
 not load it, and a config naming it opens with no graph track and neither
 adapter.
 

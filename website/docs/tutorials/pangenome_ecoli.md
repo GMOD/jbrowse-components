@@ -39,7 +39,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.4.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 4.0.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)

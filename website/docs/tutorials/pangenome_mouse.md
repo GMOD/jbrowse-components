@@ -15,14 +15,14 @@ deletion, appears as an insertion. No locus list has been published for these
 strains, so we rank the graph's bubbles, the regions where the strains' paths
 split and rejoin, by how many segments each holds, and open the densest. We:
 
-- load the graph and its bubbles as tracks on mm39
 - at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
   name the strains
 - rank the bubbles file by segment count and open the densest that fits a
   window, at _Dock2_
+- load the graph and its bubbles as tracks on mm39 in your own JBrowse
 - build a minigraph graph from strain assemblies of your own
 
-Every step starts from the mouse graph page on
+The first two start from the mouse graph page on
 [genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/mouse), which
 launches the JBrowse 5 development build until JBrowse 5 ships.
 
@@ -37,20 +37,17 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store); the
   [portal page](https://genomes.jbrowse.org/pangenomes/mouse) already loads it
-- htslib (`tabix`), to query the hosted index
 - [`minigraph`](https://github.com/lh3/minigraph), to build a graph like this
   one
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,minigraph -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL minigraph -->
 
 ```bash
-# Debian/Ubuntu
-sudo apt install tabix
-# or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib minigraph
+# conda
+conda install -c bioconda -c conda-forge minigraph
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,minigraph -->
+<!-- END GENERATED TUTORIAL_INSTALL minigraph -->
 
 ## The data
 
@@ -74,62 +71,6 @@ builds the files for strains of your own.
 | The whole-chromosome overview, with variants under 10 kb folded into the reference | [mouse-mm39-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz) |
 
 </details>
-
-## Load the graph
-
-We'll load the reference, then the graph and its bubbles. The graph track names
-the file prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted
-copy, so swap the prefix for your own build.
-
-```json addassembly
-{
-  "name": "mm39",
-  "aliases": ["GRCm39"],
-  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
-  "refNameAliases": {
-    "uri": "https://jbrowse.org/ucsc/mm39/mm39.chromAlias.txt"
-  }
-}
-```
-
-```json addtrack
-{
-  "type": "GraphTrack",
-  "trackId": "mouse_minigraph_segments",
-  "name": "Mouse strain pangenome (rGFA segments)",
-  "assemblyNames": ["mm39"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
-    "format": 2,
-    "coarse": {
-      "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
-      "format": 2,
-      "aboveBpPerPx": 1000
-    }
-  },
-  "displays": [
-    { "type": "LinearGraphDisplay" },
-    { "type": "LinearBasicDisplay" }
-  ]
-}
-```
-
-The bubbles track reads the same build's bubble index:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "mouse_minigraph_bubbles",
-  "name": "Mouse strain pangenome bubbles",
-  "assemblyNames": ["mm39"],
-  "adapter": {
-    "type": "MinigraphBubbleAdapter",
-    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
-    "csi": true
-  }
-}
-```
 
 ## Nnt: a C57BL/6J deletion that appears as an insertion
 
@@ -192,6 +133,63 @@ To open the _Dock2_ bubble:
 
 <Figure caption="The Dock2 intron bubble in the bubbles track and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
+## Loading the graph in your own JBrowse {#load-the-graph}
+
+The portal's launches load these tracks for you. In your own JBrowse, we'll load
+the reference, then the graph and its bubbles. The graph track names the file
+prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted copy, so
+swap the prefix for your own build.
+
+```json addassembly
+{
+  "name": "mm39",
+  "aliases": ["GRCm39"],
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
+  "refNameAliases": {
+    "uri": "https://jbrowse.org/ucsc/mm39/mm39.chromAlias.txt"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "mouse_minigraph_segments",
+  "name": "Mouse strain pangenome (rGFA segments)",
+  "assemblyNames": ["mm39"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
+    "format": 2,
+    "coarse": {
+      "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+      "format": 2,
+      "aboveBpPerPx": 1000
+    }
+  },
+  "displays": [
+    { "type": "LinearGraphDisplay" },
+    { "type": "LinearBasicDisplay" }
+  ]
+}
+```
+
+The bubbles track reads the same build's bubble index:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "mouse_minigraph_bubbles",
+  "name": "Mouse strain pangenome bubbles",
+  "assemblyNames": ["mm39"],
+  "adapter": {
+    "type": "MinigraphBubbleAdapter",
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+    "csi": true
+  }
+}
+```
+
 ## Building a minigraph graph from the strain assemblies
 
 To build a graph like this one, run `minigraph` once per chromosome over the
@@ -237,5 +235,3 @@ build.
 
 - Li et al. (2020).
   [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
-- Wick et al. (2015).
-  [Bandage: interactive visualization of de novo genome assemblies](https://doi.org/10.1093/bioinformatics/btv383)

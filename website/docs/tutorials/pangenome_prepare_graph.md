@@ -117,6 +117,19 @@ The `gfa-to-tabix build` command writes every file below. Without a Rust
 toolchain, take a Linux or macOS binary from its
 [releases](https://github.com/GMOD/gfa-to-tabix/releases).
 
+The sections that apply depend on the file you have:
+
+- **An rGFA** gives the graph track, the bubbles and the coarse tier here, and
+  with the assemblies,
+  [each haplotype's allele at every bubble](#which-haplotypes-walk-each-segment).
+- **A plain GFA** gives the same tracks from a snarl VCF, and
+  [the haplotypes on each segment](#which-haplotypes-walk-each-segment) from its
+  paths.
+- **A base-level GFA with W lines** also gives
+  [haplotype lanes](#haplotype-walks-tabix) and
+  [whole-genome synteny](#walks-as-paf).
+- **A GBZ** converts to that GFA with `vg convert -f`.
+
 An **rGFA**, from minigraph or the minigraph stage of Minigraph-Cactus, needs an
 output prefix and the assembly name your config uses. Its bubbles come from
 `gfatools bubble`, so put `gfatools` on PATH:

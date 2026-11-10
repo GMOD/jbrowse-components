@@ -19,12 +19,13 @@ haplotypes differ, the graph forms a bubble, and each route through a bubble is
 an allele. HPRC writes each haplotype's route through every bubble as a phased
 VCF, so a record lists which haplotypes have which allele. We open the graph and
 the VCF from the HPRC page on genomes.jbrowse.org as tracks of a linear view of
-GRCh38, at the complement genes C4 and beside _HLA-DRB5_ in MHC class II. We:
+GRCh38, at the CFH gene cluster, the complement genes C4 and beside _HLA-DRB5_
+in MHC class II. We:
 
-- launch tracks from the HPRC page, and open a whole chromosome as a graph track
-  with one node per bubble
-- open C4 as a force-directed graph track and name its backbone, bubbles and
-  alleles
+- launch tracks from the HPRC page, and at CFH find a published deletion in the
+  launch's tracks
+- open a whole chromosome as a graph track with one node per bubble, and C4 as a
+  force-directed graph track
 - open the assembly an allele beside _HLA-DRB5_ came from with **Open in**
 - load the phased VCF as a variant track with one row per haplotype, and cluster
   the rows
