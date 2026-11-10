@@ -28,7 +28,7 @@ import {
   reloadWithGlobalPlugins,
 } from './globalPlugins.ts'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
-import { narrowMedia } from './narrow.ts'
+import { compactMedia, narrowMedia } from './narrow.ts'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 import { createStartScreenPluginManager, loadPluginManager } from './util.tsx'
 
@@ -56,6 +56,10 @@ const useStyles = makeStyles()({
     alignItems: 'flex-start',
     gap: 8,
     padding: 16,
+    [compactMedia]: {
+      alignItems: 'center',
+      padding: '8px 30px',
+    },
   },
 
   headerLogo: {

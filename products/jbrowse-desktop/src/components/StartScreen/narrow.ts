@@ -9,3 +9,7 @@
 export const NARROW_QUERY = '(max-width: 600px)'
 
 export const narrowMedia = `@media ${NARROW_QUERY}`
+
+export const COMPACT_QUERY = '(max-height: 760px), (max-width: 1100px)'
+
+export const compactMedia = `@media ${COMPACT_QUERY}`
