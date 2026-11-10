@@ -90,12 +90,14 @@ export const drosophilaBlocksSpec: SessionUrlSpec = {
   url: drosophilaBlocksUrl(52),
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 240000,
-  viewportWidth: 930,
-  viewportHeight: 460,
+  // with the composed figure's margin for its part letters, the paper's 930
+  viewportWidth: 870,
+  viewportHeight: 412,
   // No session setting closes the legend or a row's zoom controls. Hidden
   // rather than clicked closed, since a click focuses the view and restyles
   // its header.
   hideSelectors: [
+    'header.MuiAppBar-root',
     '[data-testid="floating-legend"]',
     '[data-testid="lgv-mini-controls"]',
   ],

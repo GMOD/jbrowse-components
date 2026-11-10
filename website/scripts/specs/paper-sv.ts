@@ -24,7 +24,7 @@ const TO_CALL = 40
 const CHR13 = BAND
 const CHR3 = `${BAND} ~ ${BAND}`
 
-const partLabel = (part: number, text: string): Annotation => ({
+export const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
   fontSize: 48,

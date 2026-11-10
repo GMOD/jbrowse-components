@@ -1,8 +1,10 @@
-// The JBrowse 2 v5 paper's two E. coli figures, which the paper repo syncs from
-// figures.lock: tutorial figures set shorter for the page.
+// The JBrowse 2 v5 paper's two E. coli figures and its composed synteny figure,
+// which the paper repo syncs from figures.lock: tutorial figures set shorter
+// for the page.
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { partLabel } from './paper-sv.ts'
 import { ecoliOneVsAllUrl } from './synteny.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -37,10 +39,22 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'paper/ecoli_synteny',
     url: ecoliOneVsAllUrl(36, { firstLevelHeight: 60, rowsTrackHeight: 86 }),
-    viewportWidth: 930,
-    viewportHeight: 540,
+    viewportWidth: 870,
+    viewportHeight: 492,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    hideSelectors: ['[data-testid="lgv-mini-controls"]'],
+    hideSelectors: [
+      'header.MuiAppBar-root',
+      '[data-testid="lgv-mini-controls"]',
+    ],
+  },
+  {
+    mode: 'compose',
+    name: 'paper/synteny_views',
+    parts: ['paper/drosophila_blocks', 'paper/ecoli_synteny'],
+    gutter: 16,
+    // room for the part letters
+    sideMargin: 60,
+    annotations: [partLabel(0, 'a'), partLabel(1, 'b')],
   },
 ]
