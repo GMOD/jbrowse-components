@@ -7,7 +7,7 @@ import { toArray } from 'rxjs/operators'
 
 import GWASAdapter from './GWASAdapter.ts'
 import GWASAdapterConfigSchema from './configSchema.ts'
-import { INDEX_SNP_MISSING } from './ldJoin.ts'
+import { INDEX_SNP_MISSING, sparseIndexNotice } from './ldJoin.ts'
 import {
   SLE_ADAPTER,
   SLE_INDEX_START,
@@ -148,6 +148,19 @@ describe('an LD join asked for through the fetch options', () => {
       await noticesOf({ start: SLE_INDEX_START + 1, refName: '2' }),
     ).toEqual([])
     warn.mockRestore()
+  })
+
+  // SLE.ld holds r² to three index SNPs, as LocusZoom's tables do
+  it('names the SNP the LD file lists an index it was not written for under', async () => {
+    const notices: string[] = []
+    const features = await sle({
+      ld: { start: 191_964_632, refName: '2' },
+      notices,
+    })
+    expect(notices).toEqual([sparseIndexNotice(['rs4274624 at 2:191,958,656'])])
+    expect(features.filter(f => f.get('ld_role') === 'partner')).toEqual([
+      named(features, 'rs4274624'),
+    ])
   })
 
   it('notes nothing for a region too narrow to hold a partner', async () => {

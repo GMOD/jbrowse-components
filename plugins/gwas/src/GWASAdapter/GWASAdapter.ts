@@ -6,7 +6,7 @@ import { BedTabixAdapter } from '@jbrowse/plugin-bed'
 import { defer, firstValueFrom, forkJoin, mergeMap, of, toArray } from 'rxjs'
 
 import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
-import { INDEX_SNP_MISSING, joinLd, ldOfIndex, ldToIndex } from './ldJoin.ts'
+import { joinLd, ldOfIndex, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
 import { TOP_HIT_FACT, topHitsOf } from './topHit.ts'
 
@@ -117,12 +117,12 @@ export default class GWASAdapter extends BedTabixAdapter {
       super.getFeatures(region, opts).pipe(toArray()),
     ]).pipe(
       mergeMap(([lookup, loaded]) => {
-        const { joined, unjoined } =
+        const { joined, notice } =
           ld && lookup
             ? joinLd(loaded, lookup, ld)
-            : { joined: [], unjoined: false }
-        if (unjoined) {
-          opts.notices?.push(INDEX_SNP_MISSING)
+            : { joined: [], notice: undefined }
+        if (notice) {
+          opts.notices?.push(notice)
         }
         const features = loaded.map((f, i) => this.joined(f, joined[i]))
         if (facts) {

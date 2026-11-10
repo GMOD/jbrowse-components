@@ -72,7 +72,7 @@ bgzipped or not. Generate it from:
   or 1.9's `plink --r2 --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0`
   (1.9 otherwise pairs each variant with only its next 9). A table written with
   `--ld-snp` holds r² to the SNPs it lists and no others, so only those can be
-  the index
+  the index, and the track names them when another SNP is picked
 - Reference panel - 1000 Genomes phase 3 at
   `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
   AMR, or SAS by population). Point `bcftools` at the `.bcf` files under

@@ -1,6 +1,14 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { LD_WINDOW_BP, joinLd, ldOfIndex, ldToIndex } from './ldJoin.ts'
+import {
+  INDEX_SNP_MISSING,
+  LD_FILE_HAS_NO_R2,
+  LD_WINDOW_BP,
+  joinLd,
+  ldOfIndex,
+  ldToIndex,
+  sparseIndexNotice,
+} from './ldJoin.ts'
 
 import type { LdJoin } from './ldJoin.ts'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -279,18 +287,59 @@ describe('the missing-index notice', () => {
 
   it('is raised where the LD file names no partner of a shown index', () => {
     const empty = { byName: new Map(), byStart: new Map() }
-    expect(joinLd([index, unlisted], empty, join).unjoined).toBe(true)
+    expect(joinLd([index, unlisted], empty, join).notice).toBe(
+      INDEX_SNP_MISSING,
+    )
   })
 
   it('is not raised for a partner the GWAS file lacks', () => {
     const ld = { byName: new Map(), byStart: new Map([[1199, 0.5]]) }
-    expect(joinLd([index, unlisted], ld, join).unjoined).toBe(false)
+    expect(joinLd([index, unlisted], ld, join).notice).toBeUndefined()
   })
 
   it('is not raised where the index is off the region', () => {
     const empty = { byName: new Map(), byStart: new Map() }
-    expect(joinLd([unlisted], empty, join).unjoined).toBe(false)
+    expect(joinLd([unlisted], empty, join).notice).toBeUndefined()
   })
+})
+
+// LocusZoom's tables and `--ld-snp` hold r² to the SNPs they were written for
+describe('an index the LD file was not written for', () => {
+  const join = { start: 499, refName: 'chr1' }
+  const perIndex = [
+    rec({ snpA: 'rsLead', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 }),
+    rec({ snpA: 'rsLead', bpA: 100, snpB: 'rsClicked', bpB: 500, r2: 0.4 }),
+    rec({ snpA: 'rsLead', bpA: 100, snpB: 'rsD', bpB: 900, r2: 0.2 }),
+  ]
+  const shown = [feat({ name: 'rsClicked', start: 499 })]
+  const noticeOf = async (records: PlinkLDRecord[]) =>
+    joinLd(shown, await ldToIndex(source('chr1', records), join), join).notice
+
+  it('is told which variants the file does hold r² to it from', async () => {
+    expect(await noticeOf(perIndex)).toBe(
+      sparseIndexNotice(['rsLead at chr1:100']),
+    )
+  })
+
+  it('is not remarked on where a row has the index on its A side', async () => {
+    expect(
+      await noticeOf([
+        ...perIndex,
+        rec({ snpA: 'rsClicked', bpA: 500, snpB: 'rsD', bpB: 900, r2: 0.6 }),
+      ]),
+    ).toBeUndefined()
+  })
+})
+
+test('a D′-only LD file says it has no r²', async () => {
+  const join = { start: 99, refName: 'chr1' }
+  const ld = await ldToIndex(
+    source('chr1', [
+      rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: undefined }),
+    ]),
+    join,
+  )
+  expect(joinLd([feat({ start: 99 })], ld, join).notice).toBe(LD_FILE_HAS_NO_R2)
 })
 
 test('the LD read carries the fetch options, so an abort reaches it', async () => {

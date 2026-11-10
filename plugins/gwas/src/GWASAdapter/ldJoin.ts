@@ -29,6 +29,29 @@ export const LD_WINDOW_BP = 1_000_000
 export const INDEX_SNP_MISSING =
   'No point has LD data to the index SNP, so every other point is grey: check that the LD file covers the index SNP and that the assembly’s aliases cover its reference names (e.g. “chr2” vs “2”)'
 
+/** The notice where the LD file's rows around the index carry no r² at all. */
+export const LD_FILE_HAS_NO_R2 =
+  'The LD file has no r² column, so no point is colored by LD: write it with r², as PLINK’s --r2 does, since D′ alone colors nothing here'
+
+/**
+ * How few variants may name the index, each from its A side, for the notice
+ * that the file was written for other index SNPs. An all-pairs table names a
+ * SNP from that many only at the edge of its LD block, where the notice still
+ * reads true.
+ */
+export const SPARSE_INDEX_PARTNERS = 10
+
+/**
+ * The notice where the LD file names the index only as a partner of a few
+ * other variants. LocusZoom's tables and PLINK's `--ld-snp` hold r² to the
+ * SNPs they were written for, and all pairs of a GWAS peak would run to
+ * millions of rows, so an index off that list is the common case.
+ */
+export function sparseIndexNotice(listedBy: string[]) {
+  const n = listedBy.length
+  return `The LD file holds r² between the index SNP and only ${n} other ${n === 1 ? 'variant' : 'variants'} (${listedBy.slice(0, 3).join(', ')}${n > 3 ? ', …' : ''}), so every other point is grey: a table written per index SNP colors a region only from the SNPs it was written for, so right-click one of them to color by LD to it`
+}
+
 /** PLINK writes `.` for a variant with no id, which names nothing. */
 function isNamedSnp(name: unknown): name is string {
   return typeof name === 'string' && name !== '' && name !== '.'
@@ -38,6 +61,8 @@ function isNamedSnp(name: unknown): name is string {
 export interface LdToIndex {
   byName: Map<string, number>
   byStart: Map<number, number>
+  /** What a region showing the index says of a join that colors little. */
+  notice?: string
 }
 
 /**
@@ -83,6 +108,8 @@ export async function ldToIndex(
   const records = await source.getLDRecords(query, opts)
   const { byName, byStart } = emptyLd()
   const variants = new Map<string, LdToIndex>()
+  const listedBy: string[] = []
+  let indexOnASide = false
   for (const { r2, snpA, chrA, bpA, snpB, chrB, bpB } of records) {
     if (r2 === undefined) {
       continue
@@ -90,6 +117,11 @@ export async function ldToIndex(
     const aIsIndex = isIndex(chrA, bpA)
     if (aIsIndex !== isIndex(chrB, bpB)) {
       const indexSnp = aIsIndex ? snpA : snpB
+      if (aIsIndex) {
+        indexOnASide = true
+      } else {
+        listedBy.push(`${snpA} at ${chrA}:${bpA.toLocaleString('en-US')}`)
+      }
       const variant = variants.get(indexSnp) ?? emptyLd()
       variants.set(indexSnp, variant)
       const snp = aIsIndex ? snpB : snpA
@@ -104,13 +136,21 @@ export async function ldToIndex(
       }
     }
   }
-  if (variants.size === 0 && records.length > 0) {
+  const noR2 = records.length > 0 && records.every(r => r.r2 === undefined)
+  if (variants.size === 0 && records.length > 0 && !noR2) {
     const r = records[0]!
     console.warn(
       `LD coloring: the index SNP matched none of ${records.length} LD records in ${query.refName}:${query.start}-${query.end} (e.g. SNP_A "${r.snpA}" at ${r.chrA}:${r.bpA}), so no point has an r² to it. The index is probably absent from the LD file, or named differently there than in the GWAS file.`,
     )
   }
-  return { byName, byStart, variants }
+  const notice = noR2
+    ? LD_FILE_HAS_NO_R2
+    : !indexOnASide &&
+        listedBy.length > 0 &&
+        listedBy.length <= SPARSE_INDEX_PARTNERS
+      ? sparseIndexNotice(listedBy)
+      : undefined
+  return { byName, byStart, variants, notice }
 }
 
 /**
@@ -124,7 +164,8 @@ export function ldOfIndex(
   join: LdJoin,
 ): LdToIndex {
   const name: unknown = rowsAtIndex[indexRowOf(rowsAtIndex, join)]?.get('name')
-  return (typeof name === 'string' ? at.variants.get(name) : undefined) ?? at
+  const own = typeof name === 'string' ? at.variants.get(name) : undefined
+  return own ? { ...own, notice: at.notice } : at
 }
 
 /** A feature's r² to the index and its part in the join. */
@@ -175,8 +216,8 @@ function partnerOf(
 }
 
 /**
- * Each feature's part in the join, and whether the region shows the index
- * while the LD file names no partner of it at all. The index joins whether or
+ * Each feature's part in the join, and the notice of a region that shows the
+ * index while the LD file names no partner of it, or too few to color by. The index joins whether or
  * not the LD file names it. A partner the GWAS file lacks, or one outside a
  * narrow region, is ordinary and goes unremarked.
  */
@@ -186,6 +227,12 @@ export function joinLd(features: Feature[], ld: LdToIndex, join: LdJoin) {
     joined: features.map((f, i) =>
       i === index ? INDEX : partnerOf(f, ld, join),
     ),
-    unjoined: ld.byName.size === 0 && ld.byStart.size === 0 && index !== -1,
+    notice:
+      index === -1
+        ? undefined
+        : (ld.notice ??
+          (ld.byName.size === 0 && ld.byStart.size === 0
+            ? INDEX_SNP_MISSING
+            : undefined)),
   }
 }

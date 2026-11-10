@@ -122,6 +122,16 @@ transforms or Edit plot.
   files share no id it joins every variant's, as before. `indexSnp` stays a
   `chr:bp`. Reading the id off the fetched region was not an option: one
   region holds the index row, and the others would have joined differently.
+- **A join that colors little says why** (amended 2026-11-09). The adapter's
+  notice covered only a join with no partner at all. The two shipped LD
+  tables, `SLE.ld` and LocusZoom's `plink.ld.tab.gz`, each hold r² to three
+  index SNPs and no others, since all pairs of a GWAS peak run to millions of
+  rows, so a right-click on any other SNP joined the three and drew the rest
+  grey with no message. A region showing an index that the file names from
+  the A side of no row, and from at most `SPARSE_INDEX_PARTNERS` variants,
+  lists those variants (`sparseIndexNotice`), and a file whose rows carry no
+  r² says so (`LD_FILE_HAS_NO_R2`) in place of the coverage-and-aliases
+  notice.
 - **No field preset for `r2`.** The previous color object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.
@@ -187,6 +197,11 @@ transforms or Edit plot.
   beside the r² scale gives. A `colorByLd` flag deriving the drawn plot fails
   too: Edit plot would show a plot other than the one drawn, and 22 readers of
   `conf.marks` need live config nodes.
+- **Detecting a per-index LD table by its shape**, to snap the index to a
+  SNP it lists: any count of A-side variants is a guess, and the snap moves
+  an index the user picked. The notice states only what the rows say.
+- **All-pairs demo LD tables**: 16,000 variants at FTO is on the order of a
+  hundred million pairs.
 - **Coloring a bar-only plot by LD**: no shipped config has one, and the item
   greys out with a pointer to Edit plot instead.
 - **A notice for an LD plot whose marks all fail `placesEachSnp`**: only an
