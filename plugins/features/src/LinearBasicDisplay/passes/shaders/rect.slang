@@ -2,8 +2,8 @@
 // instancing (ADR-005).
 //! targets: wgsl, glsl
 //! coverage: analytic
-//! export-consts: MIN_RECT_WIDTH_PX, SPARSE_EXON_MIN_WIDTH_PX, MIN_DENSITY_ALPHA, RECT_FLAG_DENSITY_FADE, RECT_FLAG_SPARSE_EXONS
-//! js-export: rectSpanPx, rectDrawsOutline
+//! export-consts: MIN_RECT_WIDTH_PX, SPARSE_EXON_MIN_WIDTH_PX, MIN_DENSITY_ALPHA, RECT_FLAG_DENSITY_FADE, RECT_FLAG_SPARSE_EXONS, RECT_FLAG_UTR, UTR_HEIGHT_FRACTION
+//! js-export: rectSpanPx, rectDrawsOutline, rectBoxYPx
 
 import antialias;
 import hpmath;
@@ -18,9 +18,13 @@ static const float MIN_RECT_WIDTH_PX = 2.0;
 // pixel (sparseExons.ts); dense transcripts keep MIN_RECT_WIDTH_PX so
 // their 1px intron gaps stay open.
 static const float SPARSE_EXON_MIN_WIDTH_PX = 3.0;
-// Bits of the per-rect `densityFade` lane, both set by the main-thread layout.
+// Bits of the per-rect `densityFade` lane. The main-thread layout sets the
+// first two; the worker sets UTR on a UTR box, which it emits at its row's full
+// height for the pass to thin in pixels.
 static const uint RECT_FLAG_DENSITY_FADE = 1u;
 static const uint RECT_FLAG_SPARSE_EXONS = 2u;
+static const uint RECT_FLAG_UTR = 4u;
+static const float UTR_HEIGHT_FRACTION = 0.65;
 // Alpha for a mark the layout flagged `densityFade` (see PILEUP_FADE_DEPTH), so
 // a pile of collapsed marks reads as density rather than a flat fill. The blend
 // accumulates 1-(1-a)^n, and a low `a` keeps that tracking pile depth (0.3: 1
@@ -69,6 +73,20 @@ public bool rectDrawsOutline(float widthPx, float heightPx) {
   return widthPx > 2.0 && heightPx > 2.0;
 }
 
+// The pixel row a box's top lands on and its pixel height. A UTR is thinned
+// from its row's SNAPPED height rather than snapped from a fractional one, so it
+// keeps at least a pixel of its row clear above and below wherever the row is 3
+// pixels or more: rounding a 0.65-scale box on its own drew it as tall as the CDS
+// beside it at superCompact's 3px row.
+public float2 rectBoxYPx(float y, float height, bool utr, float scrollY) {
+  float top = snapBoxTopPx(y, height, scrollY);
+  float h = snapBoxHeightPx(height);
+  float inset = utr && h >= 3.0
+    ? max(1.0, floor(h * (1.0 - UTR_HEIGHT_FRACTION) * 0.5 + 0.5))
+    : 0.0;
+  return float2(top + inset, h - 2.0 * inset);
+}
+
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float cw = u.canvasWidth;
@@ -82,11 +100,10 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   );
   float left = min(span.x, span.y);
   float right = max(span.x, span.y);
-  // Not a bare round of each edge: snapBoxHeightPx gives a thin box an odd
-  // height, so the 1px glyphs riding on it have a center row, and snapBoxTopPx
-  // snaps about the center so a center-shrunk UTR stays on its row.
-  float top = snapBoxTopPx(inst.y, inst.height, u.scrollY);
-  float bottom = top + snapBoxHeightPx(inst.height);
+  float2 boxY = rectBoxYPx(
+    inst.y, inst.height, (inst.densityFade & RECT_FLAG_UTR) != 0u, u.scrollY);
+  float top = boxY.x;
+  float bottom = top + boxY.y;
   float pad = snappedEdgePadPx(u);
 
   float2 q = quadLocal(vid);

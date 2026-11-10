@@ -14,6 +14,7 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import { RECT_FLAG_UTR } from '@jbrowse/plugin-features'
 import {
   attributeTooltipLines,
   comparativeFilter,
@@ -1352,8 +1353,9 @@ describe('a lane cell', () => {
       PX_ORIGIN + 96,
       PX_ORIGIN + 112,
     ])
-    expect(cell.rectHeights[0]).toBeLessThan(cell.rectHeights[2]!)
-    expect(cell.rectHeights[2]).toBe(s.glyphHeight)
+    // the UTRs keep the row's height and the rect pass thins them in pixels
+    expect([...cell.rectHeights]).toEqual(new Array(3).fill(s.glyphHeight))
+    expect([...cell.rectDensityFade]).toEqual([RECT_FLAG_UTR, RECT_FLAG_UTR, 0])
     expect([...cell.arrowDirections]).toEqual([-1])
     // at the gene's end; the pass draws it inward from there
     expect(cell.arrowXs[0]).toBe(PX_ORIGIN + 80)

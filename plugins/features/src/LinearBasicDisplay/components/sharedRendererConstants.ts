@@ -44,6 +44,7 @@ export {
   MIN_RECT_WIDTH_PX,
   RECT_FLAG_DENSITY_FADE,
   RECT_FLAG_SPARSE_EXONS,
+  RECT_FLAG_UTR,
   SPARSE_EXON_MIN_WIDTH_PX,
 } from '../passes/shaders/rect.consts.generated.ts'
 export {

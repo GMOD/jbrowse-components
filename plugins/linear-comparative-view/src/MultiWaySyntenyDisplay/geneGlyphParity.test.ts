@@ -162,16 +162,18 @@ function boxes(
   positions: ArrayLike<number>,
   ys: Float32Array,
   heights: Float32Array,
+  flags: Uint32Array,
   origin: number,
   top: number,
 ) {
-  const out: [number, number, number, number][] = []
+  const out: [number, number, number, number, number][] = []
   for (let i = 0; i < ys.length; i++) {
     out.push([
       positions[i * 2]! - origin,
       positions[i * 2 + 1]! - origin,
       round(ys[i]! - top),
       round(heights[i]!),
+      flags[i]!,
     ])
   }
   return out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
@@ -202,9 +204,23 @@ describe.each([
 
   test('a lane emits the boxes the feature track emits, at its UTR height and centring', () => {
     expect(
-      boxes(lane.rectPositions, lane.rectYs, lane.rectHeights, PX_ORIGIN, 0),
+      boxes(
+        lane.rectPositions,
+        lane.rectYs,
+        lane.rectHeights,
+        lane.rectDensityFade,
+        PX_ORIGIN,
+        0,
+      ),
     ).toEqual(
-      boxes(track.rectPositions, track.rectYs, track.rectHeights, 0, trackTop),
+      boxes(
+        track.rectPositions,
+        track.rectYs,
+        track.rectHeights,
+        track.rectDensityFade,
+        0,
+        trackTop,
+      ),
     )
   })
 

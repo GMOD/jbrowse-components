@@ -10,11 +10,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
-import {
-  UTR_HEIGHT_FRACTION,
-  centerShrink,
-  getFeatureName,
-} from '@jbrowse/plugin-features'
+import { RECT_FLAG_UTR, getFeatureName } from '@jbrowse/plugin-features'
 import {
   attributeTooltipLines,
   colorSchemes,
@@ -739,6 +735,7 @@ class GlyphBuilder {
   rectHeights: number[] = []
   rectColors: number[] = []
   rectStrands: number[] = []
+  rectFlags: number[] = []
   linePositions: number[] = []
   lineYs: number[] = []
   lineColors: number[] = []
@@ -752,12 +749,20 @@ class GlyphBuilder {
   hits: GlyphHit[] = []
   outlineColor = 0
 
-  rect(x1: number, x2: number, y: number, height: number, color: number) {
+  rect(
+    x1: number,
+    x2: number,
+    y: number,
+    height: number,
+    color: number,
+    flags = 0,
+  ) {
     this.rectPositions.push(toU32(Math.min(x1, x2)), toU32(Math.max(x1, x2)))
     this.rectYs.push(y)
     this.rectHeights.push(height)
     this.rectColors.push(color)
     this.rectStrands.push(0)
+    this.rectFlags.push(flags)
   }
 
   line(x1: number, x2: number, y: number, direction: number, color: number) {
@@ -790,7 +795,7 @@ class GlyphBuilder {
       rectHeights: Float32Array.from(this.rectHeights),
       rectColors: Uint32Array.from(this.rectColors),
       rectStrands: Float32Array.from(this.rectStrands),
-      rectDensityFade: new Uint32Array(this.rectYs.length),
+      rectDensityFade: Uint32Array.from(this.rectFlags),
       linePositions: Uint32Array.from(this.linePositions),
       lineYs: Float32Array.from(this.lineYs),
       lineColors: Uint32Array.from(this.lineColors),
@@ -1031,13 +1036,8 @@ export function buildLaneCells({
     for (const [x1, x2] of introns) {
       glyphs.line(x1, x2, rowCenter, pxDir, stroke)
     }
-    const [utrY, utrHeight] = centerShrink(
-      row.top,
-      row.height,
-      UTR_HEIGHT_FRACTION,
-    )
     for (const [x1, x2] of thin) {
-      glyphs.rect(x1, x2, utrY, utrHeight, utrColor)
+      glyphs.rect(x1, x2, row.top, row.height, utrColor, RECT_FLAG_UTR)
     }
     for (const [x1, x2] of full) {
       glyphs.rect(x1, x2, row.top, row.height, fill.packed)

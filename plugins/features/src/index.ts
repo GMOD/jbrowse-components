@@ -117,10 +117,7 @@ export { getFeatureName } from './RenderFeatureDataRPC/labelUtils.ts'
 export { FEATURE_NAME_FIELD } from './RenderFeatureDataRPC/featureNameField.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
 // glyphs through the passes above.
-export {
-  UTR_HEIGHT_FRACTION,
-  centerShrink,
-} from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
+export { RECT_FLAG_UTR } from './LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
 export {
   featureType,
   getSubfeatures,

@@ -25,24 +25,12 @@ import type {
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export const UTR_HEIGHT_FRACTION = 0.65
-
 export function centerShrink(
   topPx: number,
   height: number,
   fraction: number,
 ): [topPx: number, height: number] {
   return [topPx + ((1 - fraction) / 2) * height, height * fraction]
-}
-
-function applyUTRSizing(
-  topPx: number,
-  height: number,
-  utr: boolean,
-): [topPx: number, height: number] {
-  return utr
-    ? centerShrink(topPx, height, UTR_HEIGHT_FRACTION)
-    : [topPx, height]
 }
 
 export function emitIntronLines(
@@ -174,23 +162,23 @@ export function pushBoxRect(
 ) {
   const {
     feature,
-    topPx: baseTopPx,
-    height: baseHeight,
+    topPx,
+    height,
     flatbushIdx,
     labelRowsAbove,
     glyphDefault,
     level,
   } = args
   const { rects } = collector
-  const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   const fill = packColor(
     boxColor(feature, ctx, collector.colorKey, level, glyphDefault),
   )
   rects.push({
     start: feature.get('start'),
     end: feature.get('end'),
-    y,
+    y: topPx,
     height,
+    utr: isUTR(feature),
     ...fill,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,

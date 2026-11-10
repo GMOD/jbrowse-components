@@ -3,12 +3,9 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 // What a compacted transcript row has to keep true: everything drawn on the body
 // stays on the body. At superCompact's 3px body one pixel is a third of the
 // glyph, which is where both halves of it come apart.
-import {
-  UTR_HEIGHT_FRACTION,
-  centerShrink,
-} from '../../RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { HEIGHT_MULTIPLIERS } from '../../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
+import { RECT_FLAG_UTR } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -86,19 +83,14 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     screenEndPx: 800,
     reversed: false,
   }
-  const [utrTop, utrHeight] = centerShrink(
-    rowTop,
-    bodyHeight,
-    UTR_HEIGHT_FRACTION,
-  )
   const region: RegionRenderData = {
     ...EMPTY,
     rectPositions: new Uint32Array([100, 300, 300, 500]),
-    rectYs: new Float32Array([rowTop, utrTop]),
-    rectHeights: new Float32Array([bodyHeight, utrHeight]),
+    rectYs: new Float32Array([rowTop, rowTop]),
+    rectHeights: new Float32Array([bodyHeight, bodyHeight]),
     rectColors: new Uint32Array([0xff_00_00_00, 0xff_00_00_00]),
     rectStrands: new Float32Array([1, 1]),
-    rectDensityFade: new Uint32Array([0, 0]),
+    rectDensityFade: new Uint32Array([0, RECT_FLAG_UTR]),
     arrowXs: new Uint32Array([500]),
     arrowYs: new Float32Array([rowTop + bodyHeight / 2]),
     arrowHeights: new Float32Array([bodyHeight]),
@@ -136,6 +128,16 @@ test.each(BODY_HEIGHTS)(
       // An odd box inside an even row, or the reverse, has to spend its last
       // pixel on one side.
       expect(Math.abs(above - below)).toBeLessThanOrEqual(1)
+    }
+  },
+)
+
+test.each(BODY_HEIGHTS)(
+  'a %s UTR draws thinner than its CDS',
+  (_mode, bodyHeight) => {
+    for (const rowTop of [0, 12, 20.4]) {
+      const { cds, utr } = drawTranscriptRow(rowTop, bodyHeight)
+      expect(utr.h).toBeLessThanOrEqual(cds.h - 2)
     }
   },
 )

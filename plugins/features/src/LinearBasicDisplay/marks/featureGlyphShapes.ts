@@ -18,11 +18,7 @@ import {
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
-import {
-  snapBoxCenterYPx,
-  snapBoxHeightPx,
-  snapBoxTopPx,
-} from '@jbrowse/render-core/shaders/hpmath'
+import { snapBoxCenterYPx } from '@jbrowse/render-core/shaders/hpmath'
 
 import {
   ARROW_LENGTH_PX,
@@ -38,6 +34,7 @@ import {
   MIN_RECT_WIDTH_PX,
   RECT_FLAG_DENSITY_FADE,
   RECT_FLAG_SPARSE_EXONS,
+  RECT_FLAG_UTR,
   SPARSE_EXON_MIN_WIDTH_PX,
   STEM_HALF_H_PX,
   canvasEdgeFlags,
@@ -72,6 +69,7 @@ import {
   runsOffEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
 import {
+  rectBoxYPx,
   rectDrawsOutline,
   rectSpanPx,
 } from '../passes/shaders/rect.js.generated.ts'
@@ -266,8 +264,14 @@ function placeRectY(c: RectChannels, g: RectFrame, i: number) {
   if (!rowVisible(g.scrollY, g.canvasHeight, boxTop, boxHeight)) {
     return false
   }
-  g.top = snapBoxTopPx(boxTop, boxHeight, g.scrollY)
-  g.height = snapBoxHeightPx(boxHeight)
+  const [top, height] = rectBoxYPx(
+    boxTop,
+    boxHeight,
+    (c.densityFade[i]! & RECT_FLAG_UTR) !== 0,
+    g.scrollY,
+  )
+  g.top = top
+  g.height = height
   return true
 }
 

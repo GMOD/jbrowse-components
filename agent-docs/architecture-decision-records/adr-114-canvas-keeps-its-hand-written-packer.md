@@ -33,7 +33,7 @@ decides the question:
 | Family | Lane | Kind |
 | --- | --- | --- |
 | rect | `rectPositions` | a feature field for a box, derived geometry for a codon stripe (the amino acid's span) |
-| rect | `rectYs`, `rectHeights` | layout result — `FeatureLayout.y`/`.height`, UTR-shrunk by `UTR_HEIGHT_FRACTION`, rescaled and row-offset again on the main thread |
+| rect | `rectYs`, `rectHeights` | layout result — `FeatureLayout.y`/`.height` (a UTR keeps its row's and carries `RECT_FLAG_UTR`, thinned in pixels by `rectBoxYPx`), rescaled and row-offset again on the main thread |
 | rect | `rectColors` | an encoding of a feature field, resolved by `boxColor` |
 | rect | `rectColorClasses` | a **deferred** encoding: the theme class the main thread resolves, length zero when every color was literal |
 | rect | `rectColorValues` | a **deferred** encoding: each box's one-based index into the region's distinct values of the color field, which the main thread paints through the color object |

@@ -41,7 +41,12 @@ import {
   chevronOffset,
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
+import {
+  RECT_FLAG_UTR,
+  UTR_HEIGHT_FRACTION,
+} from './LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
+import { centerShrink } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
 import { shouldRenderPeptideText } from './RenderFeatureDataRPC/zoomThresholds.ts'
 import {
@@ -598,6 +603,11 @@ export function laidOutTables(
   }
 
   const rects = rows.keep(d.rectFeatureIndices)
+  const rectYs = rects.map(i =>
+    d.rectDensityFade[i]! & RECT_FLAG_UTR
+      ? centerShrink(d.rectYs[i]!, d.rectHeights[i]!, UTR_HEIGHT_FRACTION)
+      : [d.rectYs[i]!, d.rectHeights[i]!],
+  )
   const lines = rows.keep(d.lineFeatureIndices)
   return {
     features: {
@@ -625,8 +635,8 @@ export function laidOutTables(
     rects: {
       start: rects.map(i => d.rectPositions[i * 2]!),
       end: rects.map(i => d.rectPositions[i * 2 + 1]!),
-      top: take(d.rectYs, rects),
-      height: take(d.rectHeights, rects),
+      top: rectYs.map(([top]) => top),
+      height: rectYs.map(([, height]) => height),
       color: take(d.rectColors, rects).map(abgrToHex),
       feature: take(d.rectFeatureIndices, rects).map(rows.feature),
       subfeature: rects.map(i =>
