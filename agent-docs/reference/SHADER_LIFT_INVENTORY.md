@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 47 shaders with entry points. 168 functions
-are inside the emitter's subset, of which **136 are exported**.
+Scanned 47 shaders with entry points. 169 functions
+are inside the emitter's subset, of which **137 are exported**.
 
 ## Candidates
 
@@ -86,12 +86,12 @@ noticing in a diff.
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
+| type 'vec3' is outside the supported scalar subset | 7 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `getReadColor`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
-| type 'vec3' is outside the supported scalar subset | 6 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `linkedReadColorByIndex` |
-| type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |
+| type 'Instance' is outside the supported scalar subset | 3 | `computeCorners`, `fillVsBegin`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
@@ -125,6 +125,7 @@ is no longer shared with anything.
 | `armLocalPx` | tests only — `chevronStroke.test.ts` |
 | `arrowCoverage` | tests only — `arrowCoverage.test.ts` |
 | `arrowReachPx` | tests only — `arrowCoverage.test.ts` |
+| `bitField` | nothing |
 | `chevronCornerPx` | tests only — `chevronStroke.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |

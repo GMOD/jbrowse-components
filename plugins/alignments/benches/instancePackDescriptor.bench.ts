@@ -110,14 +110,71 @@
 // its source forward with repeats. A fixture with a shuffled index would price a
 // cache-miss pattern this call site does not have.
 
-import {
-  INSTANCE_OFFSET_F32 as F_F32,
-  INSTANCE_OFFSET_I32 as F_I32,
-  INSTANCE_OFFSET_U32 as F_U32,
-  INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS,
-  packInstances,
-} from '../src/shaders/slang/read.iface.generated.ts'
+// The 40-byte, ten-attribute read instance these numbers were taken on, frozen
+// here: read.slang has since packed six of its fields into one word.
+const INSTANCE_STRIDE_WORDS = 10
+const INSTANCE_STRIDE_BYTES = INSTANCE_STRIDE_WORDS * 4
+const F_F32 = { insertSize: 4 }
+const F_I32 = { strand: 5 }
+const F_U32 = {
+  startOff: 0,
+  endOff: 1,
+  y: 2,
+  flags: 3,
+  fillColor: 6,
+  edgeFlags: 7,
+  interchrom: 8,
+  colorCategory: 9,
+}
+
+interface InstanceArrays {
+  startOff: ArrayLike<number>
+  endOff: ArrayLike<number>
+  y: ArrayLike<number>
+  flags: ArrayLike<number>
+  insertSize: ArrayLike<number>
+  strand: ArrayLike<number>
+  fillColor: ArrayLike<number>
+  edgeFlags: ArrayLike<number>
+  interchrom: ArrayLike<number>
+  colorCategory: ArrayLike<number>
+}
+
+function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const i32 = new Int32Array(buf)
+  const {
+    startOff,
+    endOff,
+    y,
+    flags,
+    insertSize,
+    strand,
+    fillColor,
+    edgeFlags,
+    interchrom,
+    colorCategory,
+  } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_WORDS
+    u32[o + 0] = startOff[i]!
+    u32[o + 1] = endOff[i]!
+    u32[o + 2] = y[i]!
+    u32[o + 3] = flags[i]!
+    f32[o + 4] = insertSize[i]!
+    i32[o + 5] = strand[i]!
+    u32[o + 6] = fillColor[i]!
+    u32[o + 7] = edgeFlags[i]!
+    u32[o + 8] = interchrom[i]!
+    u32[o + 9] = colorCategory[i]!
+  }
+  return buf
+}
 
 const arg = (name: string, dflt: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt

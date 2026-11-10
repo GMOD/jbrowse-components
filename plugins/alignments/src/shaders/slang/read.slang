@@ -2,8 +2,8 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
-//! js-export: showChevron
-//! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERTED, RC_SPLIT_SAME_STRAND, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! js-export: showChevron, bitField
+//! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERTED, RC_SPLIT_SAME_STRAND, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX, READ_PACK_ROW_SHIFT, READ_PACK_ROW_BITS, READ_PACK_CATEGORY_SHIFT, READ_PACK_CATEGORY_BITS, READ_PACK_STRAND_SHIFT, READ_PACK_STRAND_BITS, READ_PACK_EDGE_SHIFT, READ_PACK_EDGE_BITS, READ_PACK_INTERCHROM_SHIFT, READ_PACK_FLAGS_SHIFT, READ_PACK_FLAGS_MASK
 
 import alignmentsUniforms;
 import colorPack;
@@ -22,7 +22,7 @@ public static const uint VERTS_PER_INSTANCE = 9u;
 //
 // Which category a read falls into is decided ONCE, on the CPU, by
 // `readColorCategory` (colorUtils.ts) — baked per read into
-// `readColorCategories` and uploaded as `inst.colorCategory`. This shader only
+// `readColorCategories` and uploaded in `inst.packedFields`. This shader only
 // PAINTS a category; it does not classify. That is why there is no precedence
 // chain here anymore: the ordered rules (long-read chain strand framing, split
 // inversion/deletion, unmapped mate, inter-chromosomal, per-field) used to be
@@ -124,20 +124,34 @@ static const float READ_OUTLINE_MIN_WIDTH_PX = 2.0;
 // test. One asker, and the varying it needed is a scalar again.
 static const float READ_OUTLINE_MIN_HEIGHT_PX = 4.0;
 
+static const uint SAM_FLAG_PAIRED = 1u;
+static const uint SAM_FLAG_MATE_UNMAPPED = 8u;
+
+static const uint READ_PACK_ROW_SHIFT = 0u;
+static const uint READ_PACK_ROW_BITS = 16u;
+static const uint READ_PACK_CATEGORY_SHIFT = READ_PACK_ROW_SHIFT + READ_PACK_ROW_BITS;
+static const uint READ_PACK_CATEGORY_BITS = 5u;
+static const uint READ_PACK_STRAND_SHIFT = READ_PACK_CATEGORY_SHIFT + READ_PACK_CATEGORY_BITS;
+static const uint READ_PACK_STRAND_BITS = 2u;
+static const uint READ_PACK_EDGE_SHIFT = READ_PACK_STRAND_SHIFT + READ_PACK_STRAND_BITS;
+static const uint READ_PACK_EDGE_BITS = 2u;
+static const uint READ_PACK_INTERCHROM_SHIFT = READ_PACK_EDGE_SHIFT + READ_PACK_EDGE_BITS;
+static const uint READ_PACK_FLAGS_SHIFT = READ_PACK_INTERCHROM_SHIFT + 1u;
+static const uint READ_PACK_FLAGS_MASK = SAM_FLAG_PAIRED | SAM_FLAG_MATE_UNMAPPED;
+
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  uint  startOff       : ATTR0;   // absolute genomic bp
-  uint  endOff         : ATTR1;   // absolute genomic bp
-  uint  y              : ATTR2;
-  uint  flags          : ATTR3;
-  float insertSize     : ATTR4;
-  int   strand         : ATTR5;
-  uint  fillColor      : ATTR6;   // ABGR u32 under RC_MAPQ and RC_TAG; 0 = not set
-  uint  edgeFlags      : ATTR7;   // bit 0 = is_first, bit 1 = is_last
-  uint  interchrom     : ATTR8;   // 1 = mate on a different chromosome
-  uint  colorCategory  : ATTR9;   // RC_* — CPU-classified, see above
+  uint  startOff     : ATTR0;   // absolute genomic bp
+  uint  endOff       : ATTR1;   // absolute genomic bp
+  float insertSize   : ATTR2;
+  uint  fillColor    : ATTR3;   // ABGR u32 under RC_MAPQ and RC_TAG; 0 = not set
+  uint  packedFields : ATTR4;
 };
+
+uint bitField(uint word, uint shift, uint bits) {
+  return (word >> shift) & ((1u << bits) - 1u);
+}
 
 struct VsOut {
   float4 position : SV_Position;
@@ -187,9 +201,9 @@ bool showChevron(bool chainMode, float pxPerBp, float featHeight,
                  float insertSize, float featWPx) {
   bool baseShow = (chainMode || pxPerBp > 0.1) && featHeight >= 3.0;
   bool dirMoot = colorCategory == RC_PLAIN
-      || (flags & 8u) != 0u
+      || (flags & SAM_FLAG_MATE_UNMAPPED) != 0u
       || interchrom != 0u;
-  bool isPaired = (flags & 1u) != 0u;
+  bool isPaired = (flags & SAM_FLAG_PAIRED) != 0u;
   bool pairTooTight = isPaired && abs(insertSize) * pxPerBp < PAIR_MIN_SPAN_PX;
   return baseShow && !pairTooTight
       && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
@@ -197,10 +211,9 @@ bool showChevron(bool chainMode, float pxPerBp, float featHeight,
 
 // RC_MAPQ and RC_TAG resolve per read, so `packReadSegments` packs their color
 // into `fillColor`; an unset tag color falls back to RC_TAG's own palette slot.
-float3 getReadColor(Instance inst, Uniforms u) {
-  uint cat = inst.colorCategory;
-  if ((cat == RC_MAPQ || cat == RC_TAG) && inst.fillColor != 0u) {
-    return unpackRGBA(inst.fillColor).xyz;
+float3 getReadColor(uint cat, uint fillColor, Uniforms u) {
+  if ((cat == RC_MAPQ || cat == RC_TAG) && fillColor != 0u) {
+    return unpackRGBA(fillColor).xyz;
   }
   return categoryPaletteColor(cat, u);
 }
@@ -208,6 +221,16 @@ float3 getReadColor(Instance inst, Uniforms u) {
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
+
+  uint row = bitField(inst.packedFields, READ_PACK_ROW_SHIFT, READ_PACK_ROW_BITS);
+  uint category = bitField(
+      inst.packedFields, READ_PACK_CATEGORY_SHIFT, READ_PACK_CATEGORY_BITS);
+  int strand = int(bitField(
+      inst.packedFields, READ_PACK_STRAND_SHIFT, READ_PACK_STRAND_BITS)) - 1;
+  uint edgeFlags = bitField(
+      inst.packedFields, READ_PACK_EDGE_SHIFT, READ_PACK_EDGE_BITS);
+  uint interchrom = bitField(inst.packedFields, READ_PACK_INTERCHROM_SHIFT, 1u);
+  uint flags = (inst.packedFields >> READ_PACK_FLAGS_SHIFT) & READ_PACK_FLAGS_MASK;
 
   uint v = vid % 9u;
   float sx1 = bpToClipX(inst.startOff, u);
@@ -218,7 +241,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx2 = extendToMinWidthX(
       sx1, bpToClipX(inst.endOff, u), 1.0, u.canvasW);
 
-  float2 yy = pileupY(float(inst.y), u);
+  float2 yy = pileupY(float(row), u);
   float syTop = yy.x;
   float syBot = yy.y;
   float syMid = (syTop + syBot) * 0.5;
@@ -229,14 +252,14 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.featWPx = featWPx;
 
   bool showChev = showChevron(
-    u.chainMode == 1, u.pxPerBp, u.featHeight, inst.colorCategory,
-    inst.flags, inst.interchrom, inst.insertSize, featWPx);
+    u.chainMode == 1, u.pxPerBp, u.featHeight, category,
+    flags, interchrom, inst.insertSize, featWPx);
 
   // Which edge the arrowhead caps, asked ONCE: the body quad spends the answer
   // as `ef` (which side skips its outline) and the cap verts as their geometry,
   // and a read whose chevron is suppressed must get the same answer from both or
   // the body hides an outline edge no cap covers.
-  int capsEdge = showChev ? chevronCapsEdge(inst.strand, inst.edgeFlags) : 0;
+  int capsEdge = showChev ? chevronCapsEdge(strand, edgeFlags) : 0;
   bool drawFwd = capsEdge > 0;
   bool drawRev = capsEdge < 0;
 
@@ -275,7 +298,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.localPos = float2(lx, ly);
   o.edgeFlag = ef;
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
-  o.color = float4(getReadColor(inst, u), 1.0);
+  o.color = float4(getReadColor(category, inst.fillColor, u), 1.0);
   return o;
 }
 

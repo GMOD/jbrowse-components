@@ -12,11 +12,17 @@ import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.t
 import { packReadSegments } from '../features/read/mark.ts'
 import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import { colorSettingOf } from '../shared/colorSettingFixture.ts'
-import { RC_MAPQ, RC_MAPQ_UNAVAILABLE } from './slang/read.consts.generated.ts'
+import {
+  RC_MAPQ,
+  RC_MAPQ_UNAVAILABLE,
+  READ_PACK_CATEGORY_BITS,
+  READ_PACK_CATEGORY_SHIFT,
+} from './slang/read.consts.generated.ts'
 import {
   INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_WORDS,
 } from './slang/read.iface.generated.ts'
+import { bitField } from './slang/read.js.generated.ts'
 
 const palette = makeTestPalette({ colorPairLR: [0.5, 0.5, 0.5] })
 
@@ -61,7 +67,11 @@ const packed = new Uint32Array(packReadSegments(region))
 function gpuFill(mapq: number) {
   const o = mapq * INSTANCE_STRIDE_WORDS
   return {
-    category: packed[o + INSTANCE_OFFSET_U32.colorCategory]!,
+    category: bitField(
+      packed[o + INSTANCE_OFFSET_U32.packedFields]!,
+      READ_PACK_CATEGORY_SHIFT,
+      READ_PACK_CATEGORY_BITS,
+    ),
     fillColor: packed[o + INSTANCE_OFFSET_U32.fillColor]!,
   }
 }

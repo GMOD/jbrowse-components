@@ -22,6 +22,13 @@ import {
   READ_OUTLINE_MIN_WIDTH_PX,
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
+  READ_PACK_CATEGORY_SHIFT,
+  READ_PACK_EDGE_SHIFT,
+  READ_PACK_FLAGS_MASK,
+  READ_PACK_FLAGS_SHIFT,
+  READ_PACK_INTERCHROM_SHIFT,
+  READ_PACK_ROW_SHIFT,
+  READ_PACK_STRAND_SHIFT,
 } from '../../shaders/slang/read.consts.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
@@ -64,12 +71,10 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
   const n = data.segmentReadIndices.length
   const stride32 = readShader.INSTANCE_STRIDE_WORDS
   const F_F32 = readShader.INSTANCE_OFFSET_F32
-  const F_I32 = readShader.INSTANCE_OFFSET_I32
   const F_U32 = readShader.INSTANCE_OFFSET_U32
   const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const i32 = new Int32Array(buf)
   const fillColors = data.readFillColors
   const hasFillColors = fillColors.length > 0
   const colorCategories = data.readColorCategories
@@ -84,17 +89,17 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
   for (let j = 0; j < n; j++) {
     const ri = segmentReadIndices[j]!
     const o = j * stride32
-    const category = colorCategories[ri]!
     u32[o + F_U32.startOff] = segmentPositions[j * 2]!
     u32[o + F_U32.endOff] = segmentPositions[j * 2 + 1]!
-    u32[o + F_U32.y] = readYs[ri]!
-    u32[o + F_U32.flags] = readFlags[ri]!
     f32[o + F_F32.insertSize] = readInsertSizes[ri]!
-    i32[o + F_I32.strand] = readStrands[ri]!
     u32[o + F_U32.fillColor] = hasFillColors ? fillColors[ri]! : 0
-    u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
-    u32[o + F_U32.interchrom] = interchrom[ri]!
-    u32[o + F_U32.colorCategory] = category
+    u32[o + F_U32.packedFields] =
+      (readYs[ri]! << READ_PACK_ROW_SHIFT) |
+      (colorCategories[ri]! << READ_PACK_CATEGORY_SHIFT) |
+      ((readStrands[ri]! + 1) << READ_PACK_STRAND_SHIFT) |
+      (segmentEdgeFlags[j]! << READ_PACK_EDGE_SHIFT) |
+      (interchrom[ri]! << READ_PACK_INTERCHROM_SHIFT) |
+      ((readFlags[ri]! & READ_PACK_FLAGS_MASK) << READ_PACK_FLAGS_SHIFT)
   }
   return buf
 }
