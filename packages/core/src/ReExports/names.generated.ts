@@ -492,7 +492,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/rowArrangementConfigSchema': ['ROW_ARRANGEMENT_MEMBERS', 'rowArrangementConfigSchema', 'stringList'],
   '@jbrowse/display-kit/rowAxisConfigSchema': ['rowAxisConfigSchema'],
   '@jbrowse/display-kit/rowAxisWithGridConfigSchema': ['rowAxisWithGridConfigSchema'],
-  '@jbrowse/display-kit/rowColorConfigSchema': ['rowColorConfigSchema', 'rowColorScaleConfigSchema'],
+  '@jbrowse/display-kit/rowColorConfigSchema': ['RANGE', 'rowColorConfigSchema', 'rowColorScaleConfigSchema'],
   '@jbrowse/display-kit/rowPredicateConfigSchema': ['ROW_IDENTITY_FIELDS', 'rowExpressionPointer', 'rowFilterList', 'rowIdentityPointer', 'rowPredicateConfigSchema'],
   '@jbrowse/display-kit/rowsConfigSchema': ['ROWS_WRITES', 'rowsConfigSchema', 'rowsForField'],
   '@jbrowse/display-kit/rowsWithStepConfigSchema': ['rowsWithStepConfigSchema'],
