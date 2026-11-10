@@ -39,18 +39,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 local = quadLocal(vid);
 
   float pxPerBp = u.pxPerBp;
-  float cx = bpToClipX(inst.position, u);
-
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
-  float rectW = insertionBarWidthPx(inst.length, pxPerBp, u.featHeight);
-
-  float rectWClip = pxToClipLen(rectW, u.canvasW);
-  float serifHalfWClip = pxToClipLen(SERIF_HALF_W_PX, u.canvasW);
-  float serifHClip = pxToClipLen(SERIF_H_PX, u.canvasH);
-
-  float2 yy = pileupY(float(inst.y), u);
-  float syTop = yy.x;
-  float syBot = yy.y;
 
   // Long insertions draw as a fixed marker and never frequency-fade. They do
   // still fade by size — see insertionSizeAlpha, which is the gate that answers
@@ -62,12 +51,21 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   bool serifs = insertionSerifsDraw(inst.length, pxPerBp);
   if (rectIdx != 0u && !serifs) { return discardVertex(); }
 
+  float cx = bpToClipX(inst.position, u);
+  float2 yy = pileupY(float(inst.y), u);
+  float syTop = yy.x;
+  float syBot = yy.y;
+
   if (rectIdx == 0u) {
+    float rectWClip = pxToClipLen(
+      insertionBarWidthPx(inst.length, pxPerBp, u.featHeight), u.canvasW);
     o.position = flippedQuadPos(cx - rectWClip * 0.5, cx + rectWClip * 0.5,
                                 syBot, syTop, local, u);
   } else {
     // Each cap stands on its row edge and points into the row; clip y runs up,
     // so the top cap's depth is negative.
+    float serifHalfWClip = pxToClipLen(SERIF_HALF_W_PX, u.canvasW);
+    float serifHClip = pxToClipLen(SERIF_H_PX, u.canvasH);
     bool topCap = rectIdx == 1u;
     float2 p = insertionSerifCorner(local.x, local.y, cx, topCap ? syTop : syBot,
                                     serifHalfWClip, topCap ? -serifHClip : serifHClip);

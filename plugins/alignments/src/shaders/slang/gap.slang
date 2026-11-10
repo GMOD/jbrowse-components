@@ -53,27 +53,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 local = quadLocal(vid);
   float row = float(inst.rowAndType & GAP_ROW_MASK);
   uint gapType = inst.rowAndType >> GAP_ROW_BITS;
-
-  // Widen to a minimum of 1 CSS px, as drawGaps' `Math.max(1, widthPx)` does:
-  // a few-bp deletion is sub-pixel at ordinary zoom, and without this it
-  // rasterized to partial coverage (or nothing) on the GPU while Canvas2D and
-  // SVG export drew a full 1px mark. The alpha fade below is what's meant to
-  // thin these out, not the geometry.
-  float2 xx = expandMinWidthX(
-    bpToClipX(inst.startOff, u), bpToClipX(inst.endOff, u), u.canvasW);
-  float sx1 = xx.x;
-  float sx2 = xx.y;
-
-  float2 yy = pileupY(row, u);
-  float yTop = yy.x;
-  float yBot = yy.y;
+  bool skip = gapType == GAP_SKIP;
 
   float alpha = 1.0;
 
-  if (gapType == GAP_SKIP) {
-    float2 line = pileupCenterlineY(row, u);
-    yTop = line.x;
-    yBot = line.y;
+  if (skip) {
     alpha = intronAlpha(u.featHeight);
   }
   if (gapType == GAP_DELETION) {
@@ -90,7 +74,16 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
   if (alpha <= 0.0) { return discardVertex(); }
 
-  o.position = flippedQuadPos(sx1, sx2, yBot, yTop, local, u);
+  // Widen to a minimum of 1 CSS px, as drawGaps' `Math.max(1, widthPx)` does:
+  // a few-bp deletion is sub-pixel at ordinary zoom, and without this it
+  // rasterized to partial coverage (or nothing) on the GPU while Canvas2D and
+  // SVG export drew a full 1px mark. The alpha fade above is what's meant to
+  // thin these out, not the geometry.
+  float2 xx = expandMinWidthX(
+    bpToClipX(inst.startOff, u), bpToClipX(inst.endOff, u), u.canvasW);
+  float2 yy = skip ? pileupCenterlineY(row, u) : pileupY(row, u);
+
+  o.position = flippedQuadPos(xx.x, xx.y, yy.y, yy.x, local, u);
   float3 c = (gapType == GAP_DELETION) ? unpackRGBA(u.colorDeletion).xyz : unpackRGBA(u.colorSkip).xyz;
   o.color = float4(c, alpha);
   return o;
