@@ -6,6 +6,9 @@ import {
   colorScaleOptions,
 } from './colorConfigSchema.ts'
 
+export const RANGE =
+  'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from'
+
 /**
  * A row color channel's `scale`, named `name` and `path` in what it refuses:
  * which color each value of the field takes, `domain` paired with `range`,
@@ -16,25 +19,20 @@ export function rowColorScaleConfigSchema({
   name,
   path,
   domain,
+  range,
   unknown,
 }: {
   name: string
   path: string
   domain: string
+  range: string
   unknown: string
 }) {
   return ConfigurationSchema(
     name,
     {
       ...colorDomainSlot({ domain }),
-      ...colorRangeSlot({
-        range:
-          'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from',
-      }),
-      /**
-       * #slot unknown
-       * The color every row the scale leaves out takes; `''` for none.
-       */
+      ...colorRangeSlot({ range }),
       unknown: {
         type: 'maybeColor',
         description: unknown,
@@ -116,8 +114,22 @@ export const rowColorConfigSchema = ConfigurationSchema(
     scale: rowColorScaleConfigSchema({
       name: 'RowColorScale',
       path: 'rows.color.scale',
+      /**
+       * #slot scale.domain
+       * The field's values that get a color, in order; none under `name`.
+       */
       domain:
         "the field's values that get a color, in order; none under name, where a row's own color is rows.colors",
+      /**
+       * #slot scale.range
+       * The CSS color each value in `domain` takes, in the same order; past
+       * them, the palette the other values deal from.
+       */
+      range: RANGE,
+      /**
+       * #slot scale.unknown
+       * The color every row the scale leaves out takes; `''` for none.
+       */
       unknown:
         '"" colors no row but those rows.colors pins: the menu\'s None. A color: every row the scale leaves out takes it. Unset: under name the palette deals a color per row where the rows share one panel, and under an attribute each value deals the next palette color; a row left without one keeps the color its file gives it',
     }),

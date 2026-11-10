@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-row display's default rows field is the scan's `lane` field, the one whose values each hold features that never overlap, after its format recipes; the mark and feature displays' field scans read one `censusFields` walk; rows banded by a row attribute have one Group by builder. Amends ADR-249"
+summary: "The multi-row display's default rows field is the scan's `lane` field, whose values each hold features that never overlap; the field scans share one `censusFields` walk; rows banded by a row attribute have one Group by builder. Amends ADR-249"
 ---
 
 # ADR-263: A row field is a lane field, and the field scans share one census

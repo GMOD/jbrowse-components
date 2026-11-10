@@ -2,7 +2,7 @@ import { ConfigurationSchema, refuseOnWrite } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorLegendOptions } from './colorConfigSchema.ts'
-import { rowColorScaleConfigSchema } from './rowColorConfigSchema.ts'
+import { RANGE, rowColorScaleConfigSchema } from './rowColorConfigSchema.ts'
 
 /** What a `rows.annotations` entry naming no field is refused with. */
 export const ROW_ANNOTATION_NO_FIELD =
@@ -63,7 +63,21 @@ export const rowAnnotationConfigSchema = ConfigurationSchema(
     scale: rowColorScaleConfigSchema({
       name: 'RowAnnotationScale',
       path: 'rows.annotations.scale',
+      /**
+       * #slot scale.domain
+       * The field's values that get a color, in order.
+       */
       domain: "the field's values that get a color, in order",
+      /**
+       * #slot scale.range
+       * The CSS color each value in `domain` takes, in the same order; past
+       * them, the column's palette.
+       */
+      range: RANGE,
+      /**
+       * #slot scale.unknown
+       * The color every row the scale leaves out takes; `''` for none.
+       */
       unknown:
         'a color: every row the scale leaves out takes it. Unset: each value deals the next color of the column\'s palette; "" leaves the rows domain does not list without a color',
     }),

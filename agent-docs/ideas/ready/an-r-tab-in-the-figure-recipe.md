@@ -1,6 +1,6 @@
 ---
 name: an-r-tab-in-the-figure-recipe
-description: A figure's recipe and a spec-opening fence derive Notebook (Python) and Embed (React) tabs from the session spec, and nothing derives R. `JBrowseRApp()` takes `createApp`'s options verbatim, so the snippet is the notebook one in R, once an R reader has a way to fetch a hosted config with its relative URIs stamped.
+description: A recipe derives Notebook (Python) and Embed (React) tabs from the session spec, and nothing derives R. `JBrowseRApp()` takes `createApp`'s options verbatim, so the snippet is the notebook one in R once an R reader can fetch a hosted config with its relative URIs stamped.
 ---
 
 # An R tab in the figure recipe
