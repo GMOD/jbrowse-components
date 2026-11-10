@@ -359,8 +359,8 @@ test('pairing files each record by where it stands in its pair', () => {
     Object.fromEntries(groups.map(g => [g.key, g.features.map(f => f.id())])),
   ).toEqual({
     concordant: ['proper'],
-    discordant: ['inverted', 'unflagged'],
-    unpaired: ['mateless', 'unmapped', 'single'],
+    discordant: ['inverted', 'unflagged', 'mateless'],
+    unpaired: ['unmapped', 'single'],
     nonPrimary: ['secondary', 'supp'],
   })
   expect(keys(groups)).toEqual([
