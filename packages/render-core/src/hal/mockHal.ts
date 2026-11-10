@@ -381,10 +381,6 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     return this.uniformWrites.map(u => new Float32Array(u))
   }
 
-  getUniformWritesU32() {
-    return this.uniformWrites.map(u => new Uint32Array(u))
-  }
-
   getBuffer(regionKey: number, passId: string) {
     return this.regions.get(regionKey, passId)
   }
@@ -404,21 +400,13 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
    * answer to "which columns did this pass paint into" and "which uniforms did
    * it read", neither of which `callsOf('drawPass')` can give, because clip and
    * uniforms are state rather than arguments. `scissor: null` is unclipped;
-   * `uniformWrite` indexes `getUniformWrites*`. See {@link MockDraw} for what
-   * each is guarding.
+   * `uniformWrite` indexes `getUniformWritesF32()`. See {@link MockDraw} for
+   * what each is guarding.
    */
   draws() {
     return this.drawLog
   }
 
-  /**
-   * The uniform bytes a recorded draw reads, as f32 — `draws()` joined to
-   * `getUniformWritesF32()` for you, since doing it by hand at every call site
-   * is how the index and the list drift apart. `null` when the draw preceded
-   * any write, which is the case no renderer should rely on: WebGPU clamps it
-   * to ring slot 0 and WebGL2 leaves the previous frame's UBO bound, so the two
-   * backends disagree about what it even means.
-   */
   /**
    * `${regionKey}:${passId}` for each buffer this run replaced or deleted while
    * the open frame had already drawn from it, in order — empty when a renderer
@@ -429,21 +417,16 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     return [...this.replacedWhileDrawnLog]
   }
 
+  /**
+   * The uniform bytes a recorded draw reads, as f32 — `draws()` joined to
+   * `getUniformWritesF32()` for you, since doing it by hand at every call site
+   * is how the index and the list drift apart. `null` when the draw preceded
+   * any write, which is the case no renderer should rely on: WebGPU clamps it
+   * to ring slot 0 and WebGL2 leaves the previous frame's UBO bound, so the two
+   * backends disagree about what it even means.
+   */
   uniformsOf(draw: MockDraw) {
     const buf = this.uniformWrites[draw.uniformWrite]
     return buf ? new Float32Array(buf) : null
-  }
-
-  reset() {
-    this.disposed = false
-    this.calls = []
-    this.regions.deleteAll()
-    this.uniformWrites = []
-    this.drawLog = []
-    this.scissor = null
-    this.viewport = null
-    this.frameOpen = false
-    this.drawnThisFrame.clear()
-    this.replacedWhileDrawnLog = []
   }
 }
