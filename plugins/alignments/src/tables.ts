@@ -958,7 +958,7 @@ const ARC_SPLIT_CLASS: Record<ArcSplitCategory, string> = {
 }
 
 /** A split read's arc's class, '' for a pair's. */
-function arcClassOf(category: ArcCategory) {
+export function arcClassOf(category: ArcCategory) {
   return isArcSplitCategory(category) ? ARC_SPLIT_CLASS[category] : ''
 }
 const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
