@@ -71,10 +71,6 @@ export function isRetrotransposonBody(type: string) {
   return type.toLowerCase().endsWith('_retrotransposon')
 }
 
-// The internal body draws short so the full-height LTRs/TSDs painted over it
-// still read as flanking caps.
-export const REPEAT_BODY_HEIGHT_FRACTION = 0.65
-
 // A per-feature color expression that throws or answers nothing paints its
 // box the misconfiguration grey, as the mark encoder paints one, rather than
 // failing the whole track render.

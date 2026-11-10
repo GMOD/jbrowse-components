@@ -1,6 +1,6 @@
 import {
   RECT_FLAG_DENSITY_FADE,
-  RECT_FLAG_UTR,
+  RECT_FLAG_INSET,
 } from './components/sharedRendererConstants.ts'
 import { featureGroupSections, sectionIdsOf } from './facet.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
@@ -210,7 +210,7 @@ export function applyLayoutToRegion(
   for (let i = 0; i < data.rectDensityFade.length; i++) {
     const featureId = data.flatbushItems[data.rectFeatureIndices[i]!]!.featureId
     data.rectDensityFade[i] =
-      (data.rectDensityFade[i]! & RECT_FLAG_UTR) |
+      (data.rectDensityFade[i]! & RECT_FLAG_INSET) |
       (densityFadeIds.has(featureId) ? RECT_FLAG_DENSITY_FADE : 0)
   }
 

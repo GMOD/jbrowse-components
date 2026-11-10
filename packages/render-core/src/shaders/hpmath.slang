@@ -117,13 +117,10 @@ static const float SNAP_TIE_BIAS_PX = 1.0 / 64.0;
 
 // The pixel row a box's top edge lands on. Snapped about the box's CENTER, not
 // its top: `snapBoxHeightPx` rounds the height and sometimes nudges it a whole
-// pixel, and anchoring the top spends all of that off the BOTTOM edge. A box the
-// layout deliberately centered inside its row then isn't — a UTR is
-// center-shrunk to 0.65 of the transcript body, so at superCompact's 3px row its
-// 1.95px box rounded up to 3px and drew a full pixel below the CDS beside it,
-// while the intron line and strand arrow (which snap to the row's center row)
-// sat on its top edge. Top-anchored and center-anchored agree wherever the
-// height survives the snap unchanged, which is every full-height feature box.
+// pixel, and anchoring the top spends all of that off the BOTTOM edge, moving
+// the box off the center row the intron line and strand arrow snap to.
+// Top-anchored and center-anchored agree wherever the height survives the snap
+// unchanged.
 public float snapBoxTopPx(float topY, float heightPx, float scrollY) {
   float centerY = topY + heightPx * 0.5;
   return floor(
@@ -133,7 +130,7 @@ public float snapBoxTopPx(float topY, float heightPx, float scrollY) {
 
 // The pixel row holding the box's center, which a thin glyph (intron line,
 // chevron, strand arrow) draws on. It is the middle row of every odd-height box
-// with that center, so a center-shrunk UTR and its transcript's arrow agree
+// with that center, so boxes of different heights sharing a center agree on it
 // whatever their parities; an even-height box's center row is whichever of its
 // two middle rows the center falls in. Taking the lower middle row of an even
 // box instead put the arrow a pixel under the UTR on an isoform stack, whose

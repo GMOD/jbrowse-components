@@ -138,7 +138,9 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
     markerApexInsetPx(pairIndex, screenStrand, edgeSide), u);
   float dir = markerDirection(screenStrand, edgeSide);
   ChevronCorner c = chevronCorner(
-    vid % 3u, CONT_TRI_W_PX, markerHalfHeight(inst.height),
+    vid % 3u, CONT_TRI_W_PX,
+    markerHalfHeight(rectBoxYPx(
+      inst.y, inst.height, (inst.densityFade & RECT_FLAG_INSET) != 0u, u.scrollY).y),
     CONT_STROKE_PX * 0.5, u.devicePixelRatio);
 
   o.position = float4(

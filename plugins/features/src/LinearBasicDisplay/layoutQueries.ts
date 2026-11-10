@@ -1,3 +1,7 @@
+import {
+  INSET_HEIGHT_FRACTION,
+  RECT_FLAG_INSET,
+} from './components/sharedRendererConstants.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -37,9 +41,13 @@ function drawnBoxHeightRange(
   let min = Number.POSITIVE_INFINITY
   let max = 0
   for (const data of map.values()) {
-    const { rectHeights, rectFeatureIndices, flatbushItems } = data
+    const { rectHeights, rectDensityFade, rectFeatureIndices, flatbushItems } =
+      data
     for (let i = 0; i < rectHeights.length; i++) {
-      const height = rectHeights[i]!
+      const height =
+        rectDensityFade[i]! & RECT_FLAG_INSET
+          ? rectHeights[i]! * INSET_HEIGHT_FRACTION
+          : rectHeights[i]!
       if (height <= 0 || (height >= min && height <= max)) {
         continue
       }

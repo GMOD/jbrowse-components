@@ -5,7 +5,7 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 // glyph, which is where both halves of it come apart.
 import { HEIGHT_MULTIPLIERS } from '../../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
-import { RECT_FLAG_UTR } from './sharedRendererConstants.ts'
+import { RECT_FLAG_INSET } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -90,7 +90,7 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     rectHeights: new Float32Array([bodyHeight, bodyHeight]),
     rectColors: new Uint32Array([0xff_00_00_00, 0xff_00_00_00]),
     rectStrands: new Float32Array([1, 1]),
-    rectDensityFade: new Uint32Array([0, RECT_FLAG_UTR]),
+    rectDensityFade: new Uint32Array([0, RECT_FLAG_INSET]),
     arrowXs: new Uint32Array([500]),
     arrowYs: new Float32Array([rowTop + bodyHeight / 2]),
     arrowHeights: new Float32Array([bodyHeight]),
@@ -162,6 +162,80 @@ test.each(BODY_HEIGHTS)(
       const { cds, head } = drawTranscriptRow(rowTop, bodyHeight)
       expect(head.top).toBeGreaterThanOrEqual(cds.y)
       expect(head.bottom).toBeLessThanOrEqual(cds.y + cds.h)
+    }
+  },
+)
+
+function edgeMarkerRows(rowTop: number, bodyHeight: number) {
+  const fills: { y: number; h: number }[] = []
+  const strokedYs: number[] = []
+  let pathYs: number[] = []
+  const ctx = {
+    save() {},
+    restore() {},
+    clip() {},
+    rect() {},
+    beginPath() {
+      pathYs = []
+    },
+    moveTo(_x: number, y: number) {
+      pathYs.push(y)
+    },
+    lineTo(_x: number, y: number) {
+      pathYs.push(y)
+    },
+    closePath() {},
+    stroke() {
+      strokedYs.push(...pathYs)
+    },
+    fill() {},
+    fillRect(_x: number, y: number, _w: number, h: number) {
+      fills.push({ y, h })
+    },
+    strokeRect() {},
+    strokeStyle: '',
+    fillStyle: '',
+    lineWidth: 1,
+  } as unknown as Ctx2D
+
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 800,
+    screenStartPx: 0,
+    screenEndPx: 800,
+    reversed: false,
+  }
+  const region: RegionRenderData = {
+    ...EMPTY,
+    rectPositions: new Uint32Array([600, 1000]),
+    rectYs: new Float32Array([rowTop]),
+    rectHeights: new Float32Array([bodyHeight]),
+    rectColors: new Uint32Array([0xff_00_00_00]),
+    rectStrands: new Float32Array([1]),
+    rectDensityFade: new Uint32Array([RECT_FLAG_INSET]),
+  }
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
+    scrollY: 0,
+    canvasWidth: 800,
+    canvasHeight: 60,
+    outlineColor: 0,
+  })
+  const [box] = fills
+  if (!box || strokedYs.length === 0) {
+    throw new Error('expected a box and its edge marker')
+  }
+  return { box, top: Math.min(...strokedYs), bottom: Math.max(...strokedYs) }
+}
+
+test.each(BODY_HEIGHTS)(
+  'a %s UTR running off the canvas keeps its edge marker inside it',
+  (_mode, bodyHeight) => {
+    for (const rowTop of [0, 12, 20.4]) {
+      const { box, top, bottom } = edgeMarkerRows(rowTop, bodyHeight)
+      // An even box's centre row sits half a pixel off its middle.
+      expect(top).toBeGreaterThanOrEqual(box.y - 0.5)
+      expect(bottom).toBeLessThanOrEqual(box.y + box.h + 0.5)
     }
   },
 )

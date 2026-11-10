@@ -5,6 +5,7 @@ import {
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import { RECT_FLAG_INSET } from '../LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
 import { collectRenderData } from './collectRenderData.ts'
 import { FEATURE_NAME_FIELD } from './featureNameField.ts'
 import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
@@ -1134,6 +1135,12 @@ describe("a glyph's own palette is the default the track's color beats", () => {
     expect([...collectRepeat({}).rectColors]).toEqual(
       ['#118119', '#000075', '#fb0'].map(c => cssColorToABGR(c)),
     )
+  })
+
+  it('draws the body inset within the row its LTR and TSD fill', () => {
+    const { rectHeights, rectDensityFade } = collectRepeat({})
+    expect(new Set(rectHeights).size).toBe(1)
+    expect([...rectDensityFade]).toEqual([RECT_FLAG_INSET, 0, 0])
   })
 
   it('paints every part the color the track sets', () => {

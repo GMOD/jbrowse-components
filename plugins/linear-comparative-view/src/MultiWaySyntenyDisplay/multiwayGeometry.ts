@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
-import { RECT_FLAG_UTR, getFeatureName } from '@jbrowse/plugin-features'
+import { RECT_FLAG_INSET, getFeatureName } from '@jbrowse/plugin-features'
 import {
   attributeTooltipLines,
   colorSchemes,
@@ -1037,7 +1037,7 @@ export function buildLaneCells({
       glyphs.line(x1, x2, rowCenter, pxDir, stroke)
     }
     for (const [x1, x2] of thin) {
-      glyphs.rect(x1, x2, row.top, row.height, utrColor, RECT_FLAG_UTR)
+      glyphs.rect(x1, x2, row.top, row.height, utrColor, RECT_FLAG_INSET)
     }
     for (const [x1, x2] of full) {
       glyphs.rect(x1, x2, row.top, row.height, fill.packed)

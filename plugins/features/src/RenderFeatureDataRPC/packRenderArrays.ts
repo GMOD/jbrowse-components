@@ -1,4 +1,4 @@
-import { RECT_FLAG_UTR } from '../LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
+import { RECT_FLAG_INSET } from '../LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
 import { LITERAL } from './colorClasses.ts'
 import { ROOT_CHILD_ORDINAL } from './rpcTypes.ts'
 
@@ -22,8 +22,8 @@ export interface RectData extends PrimitiveBase {
   height: number
   strand: number
   colorValue?: number
-  // Drawn thinner than `height`, its row's, by the rect pass (`rectBoxYPx`).
-  utr?: boolean
+  // Drawn thinner than `height`, its row's, by the passes (`rectBoxYPx`).
+  inset?: boolean
 }
 
 export interface LineData extends PrimitiveBase {
@@ -136,7 +136,7 @@ export function packRenderArrays(
   const rectHeights = new Float32Array(visibleRects.length)
   const rectColors = new Uint32Array(visibleRects.length)
   const rectStrands = new Float32Array(visibleRects.length)
-  // Carries the UTR bit from here; the main-thread layout adds the rest, as it
+  // Carries the INSET bit from here; the main-thread layout adds the rest, as it
   // decides the dense-pileup regime per FEATURE.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectColorClasses = colorClassArray(visibleRects)
@@ -157,7 +157,7 @@ export function packRenderArrays(
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
-    rectDensityFade[i] = rect.utr ? RECT_FLAG_UTR : 0
+    rectDensityFade[i] = rect.inset ? RECT_FLAG_INSET : 0
     rectFeatureIndices[i] = rect.flatbushIdx
   }
 

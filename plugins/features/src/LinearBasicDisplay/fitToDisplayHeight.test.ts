@@ -8,6 +8,10 @@ import {
   makeFlatbushItem,
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  INSET_HEIGHT_FRACTION,
+  RECT_FLAG_INSET,
+} from './components/sharedRendererConstants.ts'
 import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
 import { packedContentHeight } from './layoutTestUtils.ts'
@@ -922,6 +926,16 @@ describe('feature display fit escalation ladder', () => {
     tall.setHeightMode('fit')
     expect(tall.fitSmallestBoxPx).toBe(20)
     expect(tall.fitMinScale).toBeCloseTo(0.1)
+  })
+
+  it('floors on an inset box at the height it draws, not its row', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const data = mixedHeightRegionData([20, 20, 20])
+    data.rectDensityFade[1] = RECT_FLAG_INSET
+    display.setRpcData(0, data, ctgA)
+    display.setHeightMode('fit')
+    expect(display.fitSmallestBoxPx).toBeCloseTo(20 * INSET_HEIGHT_FRACTION)
   })
 
   it('floors on the transcript rect a gene draws, not the gene it stacks them in', () => {

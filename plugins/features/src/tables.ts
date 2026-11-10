@@ -42,9 +42,9 @@ import {
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import {
-  RECT_FLAG_UTR,
-  UTR_HEIGHT_FRACTION,
-} from './LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
+  INSET_HEIGHT_FRACTION,
+  RECT_FLAG_INSET,
+} from './LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { centerShrink } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
@@ -604,8 +604,8 @@ export function laidOutTables(
 
   const rects = rows.keep(d.rectFeatureIndices)
   const rectYs = rects.map(i =>
-    d.rectDensityFade[i]! & RECT_FLAG_UTR
-      ? centerShrink(d.rectYs[i]!, d.rectHeights[i]!, UTR_HEIGHT_FRACTION)
+    d.rectDensityFade[i]! & RECT_FLAG_INSET
+      ? centerShrink(d.rectYs[i]!, d.rectHeights[i]!, INSET_HEIGHT_FRACTION)
       : [d.rectYs[i]!, d.rectHeights[i]!],
   )
   const lines = rows.keep(d.lineFeatureIndices)

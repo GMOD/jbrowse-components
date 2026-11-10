@@ -34,7 +34,7 @@ import {
   MIN_RECT_WIDTH_PX,
   RECT_FLAG_DENSITY_FADE,
   RECT_FLAG_SPARSE_EXONS,
-  RECT_FLAG_UTR,
+  RECT_FLAG_INSET,
   SPARSE_EXON_MIN_WIDTH_PX,
   STEM_HALF_H_PX,
   canvasEdgeFlags,
@@ -69,10 +69,10 @@ import {
   runsOffEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
 import {
-  rectBoxYPx,
   rectDrawsOutline,
   rectSpanPx,
 } from '../passes/shaders/rect.js.generated.ts'
+import { rectBoxYPx } from '../passes/shaders/rectInstance.js.generated.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { BpProjection } from '@jbrowse/render-core/canvas2dUtils'
@@ -267,7 +267,7 @@ function placeRectY(c: RectChannels, g: RectFrame, i: number) {
   const [top, height] = rectBoxYPx(
     boxTop,
     boxHeight,
-    (c.densityFade[i]! & RECT_FLAG_UTR) !== 0,
+    (c.densityFade[i]! & RECT_FLAG_INSET) !== 0,
     g.scrollY,
   )
   g.top = top
@@ -594,7 +594,15 @@ export const continuationShape: MarkShape<RectChannels, FeatureGlyphParams> = {
     if (!edges) {
       return
     }
-    const { startEnd, y: ys, height, color, strand: strands, count } = channels
+    const {
+      startEnd,
+      y: ys,
+      height,
+      color,
+      densityFade,
+      strand: strands,
+      count,
+    } = channels
     const { scrollY } = params
     const { canvasHeight } = frame
     const { leftIsCanvasEdge, rightIsCanvasEdge, scissorLeft, scissorRight } =
@@ -627,7 +635,13 @@ export const continuationShape: MarkShape<RectChannels, FeatureGlyphParams> = {
           : `rgba(255,255,255,${CONT_MARK_ALPHA})`
         ctx.lineWidth = CONT_STROKE_PX
         const cy = snapBoxCenterYPx(ys[i]! + height[i]! * 0.5, scrollY)
-        const halfH = markerHalfHeight(height[i]!)
+        const [, boxHeight] = rectBoxYPx(
+          ys[i]!,
+          height[i]!,
+          (densityFade[i]! & RECT_FLAG_INSET) !== 0,
+          scrollY,
+        )
+        const halfH = markerHalfHeight(boxHeight)
         const rawStrand = strands[i]!
         const strand = block.reversed ? -rawStrand : rawStrand
         if (offRight) {

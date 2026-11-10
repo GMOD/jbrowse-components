@@ -1,5 +1,6 @@
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
+import { INSET_HEIGHT_FRACTION } from '../../LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
 import { LITERAL } from '../colorClasses.ts'
 import { DEFAULT_TOOLTIP } from '../featureTooltip.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
@@ -26,7 +27,6 @@ import {
 import {
   CRISPR_PAM_COLOR,
   CUT_SITE_COLOR,
-  REPEAT_BODY_HEIGHT_FRACTION,
   boxColor,
   featureTooltip,
   isRetrotransposonBody,
@@ -379,19 +379,20 @@ function processRepeatRegionLayout(
   for (const childLayout of sortedChildren) {
     const childFeature = childLayout.feature
     const childType = featureType(childFeature)
-    const [topPx, heightPx] = isRetrotransposonBody(childType)
-      ? centerShrink(
-          baseTopPx + childLayout.y,
-          childLayout.height,
-          REPEAT_BODY_HEIGHT_FRACTION,
-        )
-      : [baseTopPx + childLayout.y, childLayout.height]
+    // The internal body draws short so the full-height LTRs/TSDs painted over
+    // it still read as flanking caps.
+    const body = isRetrotransposonBody(childType)
+    const rowTopPx = baseTopPx + childLayout.y
+    const [topPx, heightPx] = body
+      ? centerShrink(rowTopPx, childLayout.height, INSET_HEIGHT_FRACTION)
+      : [rowTopPx, childLayout.height]
 
     pushBoxRect(
       {
         feature: childFeature,
-        topPx,
-        height: heightPx,
+        topPx: rowTopPx,
+        height: childLayout.height,
+        inset: body,
         flatbushIdx,
         labelRowsAbove,
         glyphDefault: repeatSubpartColor(childType),

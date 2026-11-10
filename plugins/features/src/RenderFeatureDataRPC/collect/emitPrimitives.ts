@@ -153,6 +153,8 @@ export interface BoxRectArgs {
   // The feature a color scale reads, where it is not the box: a part's
   // transcript.
   level?: Feature
+  // Thinned within `height` by the passes; a UTR is unless this says otherwise.
+  inset?: boolean
 }
 
 export function pushBoxRect(
@@ -168,6 +170,7 @@ export function pushBoxRect(
     labelRowsAbove,
     glyphDefault,
     level,
+    inset,
   } = args
   const { rects } = collector
   const fill = packColor(
@@ -178,7 +181,7 @@ export function pushBoxRect(
     end: feature.get('end'),
     y: topPx,
     height,
-    utr: isUTR(feature),
+    inset: inset ?? isUTR(feature),
     ...fill,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,
