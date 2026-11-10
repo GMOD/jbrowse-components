@@ -43,13 +43,14 @@ const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
     { value: 'down', label: 'Below coverage' },
   ]
 
-const PAIR_BAND_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
-  { value: 'off', label: 'None' },
-  { value: 'link', label: 'Read arcs' },
-  { value: 'rule', label: 'Read cloud' },
-]
+const CONNECTION_BAND_OPTIONS: { value: ReadConnectionsMode; label: string }[] =
+  [
+    { value: 'off', label: 'None' },
+    { value: 'link', label: 'Read arcs' },
+    { value: 'rule', label: 'Read cloud' },
+  ]
 
-export const PAIR_BAND_LABEL = 'Pair band'
+export const CONNECTION_BAND_LABEL = 'Connection band'
 
 // Read arcs and the read cloud share one band, so they are radios under their
 // own sub-header. The connection filters live in the "More filters..." dialog
@@ -75,8 +76,8 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           }),
         ]),
     ...withSubHeader(
-      PAIR_BAND_LABEL,
-      radioItems(PAIR_BAND_OPTIONS, model.drawnReadConnections, mode => {
+      CONNECTION_BAND_LABEL,
+      radioItems(CONNECTION_BAND_OPTIONS, model.drawnReadConnections, mode => {
         model.setDrawnReadConnections(mode)
       }),
     ),

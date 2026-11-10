@@ -989,7 +989,7 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// the Pair band radios in getReadConnectionsMenuItem
+// the Connection band radios in getReadConnectionsMenuItem
 // (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
   off: 'None',

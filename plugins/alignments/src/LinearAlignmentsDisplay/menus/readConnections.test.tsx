@@ -98,7 +98,7 @@ describe('read connections menu', () => {
     expect(labelsOf(rows(model))).not.toContain('Pileup connectors')
   })
 
-  test('is checkboxes, then the Pair band radios, with no "?"', () => {
+  test('is checkboxes, then the Connection band radios, with no "?"', () => {
     const model = makeModel()
     model.drawnReadConnections = 'link'
     const items = rows(model)
@@ -106,7 +106,7 @@ describe('read connections menu', () => {
       'View as pairs/link supplementary alignments',
       'Pileup connectors',
       'Ordinary pairs',
-      'Pair band',
+      'Connection band',
       'None',
       'Read arcs',
       'Read cloud',
@@ -141,7 +141,7 @@ describe('read connections menu', () => {
     expect(model.unit).toBe('read')
   })
 
-  test('the Pair band radios pick one of none, arcs and the cloud', () => {
+  test('the Connection band radios pick one of none, arcs and the cloud', () => {
     const model = makeModel()
     expect(checked(model)).toEqual(['None'])
     click(rows(model), 'Read arcs')

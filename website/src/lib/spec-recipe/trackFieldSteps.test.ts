@@ -256,7 +256,7 @@ test('a size preset needs no display type, since only the canvas base declares i
   ).toEqual([])
 })
 
-test('read connections are the Pair band radios', () => {
+test('read connections are the Connection band radios', () => {
   expect(
     stepPaths('readConnections', 'cloud', 'LinearAlignmentsDisplay'),
   ).toEqual(['Track menu → Read connections → Read cloud'])
