@@ -118,7 +118,8 @@
           "thickEnd",
           "itemRgb",
           "query"
-        ]
+        ],
+        "disableGeneHeuristic": true
       },
       "displays": [
         {

@@ -166,8 +166,9 @@ on the palette button, and the `MultiWaySyntenyDisplay` entry sets up the
 
 The second places each accession's regions on Col-0, a BED row per region whose
 `name` is its type and whose `query` column names the accession. `rows` gives
-each accession a row, and `encoding.color` maps the type to plotsr's colors in
-plotsr's order:
+each accession a row, `encoding.color` maps the type to plotsr's colors in
+plotsr's order, and `disableGeneHeuristic` keeps the lanes from drawing it as
+Col-0's genes:
 
 ```json addtrack
 {
@@ -189,7 +190,8 @@ plotsr's order:
       "thickEnd",
       "itemRgb",
       "query"
-    ]
+    ],
+    "disableGeneHeuristic": true
   },
   "displays": [
     {
