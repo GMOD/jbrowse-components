@@ -65,9 +65,6 @@ export interface RenderingBackendCallbacks<B> {
  *    `renderNow()` after every upload that reached the backend, on
  *    tab-visibility restore, and when a circular ring backend starts. These
  *    are not a pan or zoom, so off screen a moved tick means new data.
- *  - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
- *    pair is spawned once per model instance, not once per backend
- *    assignment.
  *
  * The `upload` callback runs in one autorun, `render` in another. Inside
  * each, every observable read is auto-tracked by MobX — no getter-layer
@@ -87,7 +84,6 @@ export function RenderLifecycleMixin() {
       paintCount: number
       currentRenderingBackend: unknown
       renderTick: number
-      autorunsInstalled: boolean
       renderError: unknown
       offScreen: boolean
     }>(() => ({
@@ -117,11 +113,6 @@ export function RenderLifecycleMixin() {
        * counter the render autorun observes; bumped to force a re-render
        */
       renderTick: 0,
-      /**
-       * #volatile
-       * guards attachRenderingBackend so the autorun pair spawns once per instance
-       */
-      autorunsInstalled: false,
       /**
        * #volatile
        * the render-backend (GPU/Canvas2D init or context-loss) error, or
@@ -316,93 +307,96 @@ export function RenderLifecycleMixin() {
         }
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * attach a GPU/Canvas2D backend and install the upload + render autorun
-       * pair. Idempotent: re-calling swaps the backend and does not run `setup`
-       * again, so the callbacks and everything they close over are the first
-       * call's.
-       */
-      attachRenderingBackend<B>(
-        backend: B,
-        setup: () => RenderingBackendCallbacks<B>,
-      ) {
-        self.currentRenderingBackend = backend
-        if (self.autorunsInstalled) {
-          return
-        }
-        // Before the flag, so a throw in `setup` leaves the display
-        // un-installed and the next backend can try again.
-        const cbs = setup()
-        self.autorunsInstalled = true
-        let drawnTick = -1
-        namedAutorun(
-          self,
-          () => {
-            const b = self.currentRenderingBackend as B | undefined
-            if (b === undefined || !self.canRender) {
-              return
-            }
-            // A throw in the upload callback (malformed worker data, a bad
-            // buffer-packing edge case) is routed to `renderError` for the
-            // same reason as the render autorun below: an uncaught reaction
-            // error would skip `renderNow()`, never flip `canvasDrawn`, and
-            // strand the display on 'loading' forever with no retry. For
-            // DisplayChrome consumers setting `renderError` unmounts the
-            // canvas and disposes the backend, so this can't re-fire into a
-            // loop; a shared-canvas consumer (dotplot, synteny) keeps the
-            // canvas mounted through an error (ADR-025), so there the only
-            // pacing is that autoruns re-fire on dep changes — a
-            // deterministically-throwing callback re-throws once per change,
-            // each landing on `setRenderError`'s identity guard.
-            try {
-              if (cbs.upload(b)) {
-                self.renderNow()
+    .actions(self => {
+      let autorunsInstalled = false
+      return {
+        /**
+         * #action
+         * attach a GPU/Canvas2D backend and install the upload + render autorun
+         * pair. Idempotent: re-calling swaps the backend and does not run `setup`
+         * again, so the callbacks and everything they close over are the first
+         * call's.
+         */
+        attachRenderingBackend<B>(
+          backend: B,
+          setup: () => RenderingBackendCallbacks<B>,
+        ) {
+          self.currentRenderingBackend = backend
+          if (autorunsInstalled) {
+            return
+          }
+          // Before the flag, so a throw in `setup` leaves the display
+          // un-installed and the next backend can try again.
+          const cbs = setup()
+          autorunsInstalled = true
+          let drawnTick = -1
+          namedAutorun(
+            self,
+            () => {
+              const b = self.currentRenderingBackend as B | undefined
+              if (b === undefined || !self.canRender) {
+                return
               }
-            } catch (e) {
-              self.setRenderError(e)
-            }
-          },
-          { name: 'RenderLifecycle:upload' },
-        )
-        namedAutorun(
-          self,
-          () => {
-            const b = self.currentRenderingBackend as B | undefined
-            const tick = self.renderTick
-            if (b === undefined || !self.canRender) {
-              return
-            }
-            // A throw in the render callback (e.g. an invalid render-state
-            // input like an empty rendering type) would otherwise escape as
-            // an uncaught reaction error and leave the display stuck on
-            // "loading" forever. Route it to `renderError` so it surfaces as
-            // the render-error overlay (with the message + retry) instead.
-            // Same loop caveat as the upload autorun above: the
-            // unmount-and-dispose that prevents re-fire is DisplayChrome's,
-            // not a shared canvas's.
-            // Off screen, only a re-fire with no `renderNow()` behind it (a
-            // pan, a zoom) is skipped: new data draws wherever the canvas is,
-            // so `painted` never stands over a partial picture. The tick is
-            // recorded even when the render answers false, since Canvas2D
-            // resizes before answering.
-            try {
-              const skip =
-                self.offScreen && self.canvasDrawn && tick === drawnTick
-              drawnTick = tick
-              if (!skip && cbs.render(b)) {
-                self.markCanvasDrawn()
+              // A throw in the upload callback (malformed worker data, a bad
+              // buffer-packing edge case) is routed to `renderError` for the
+              // same reason as the render autorun below: an uncaught reaction
+              // error would skip `renderNow()`, never flip `canvasDrawn`, and
+              // strand the display on 'loading' forever with no retry. For
+              // DisplayChrome consumers setting `renderError` unmounts the
+              // canvas and disposes the backend, so this can't re-fire into a
+              // loop; a shared-canvas consumer (dotplot, synteny) keeps the
+              // canvas mounted through an error (ADR-025), so there the only
+              // pacing is that autoruns re-fire on dep changes — a
+              // deterministically-throwing callback re-throws once per change,
+              // each landing on `setRenderError`'s identity guard.
+              try {
+                if (cbs.upload(b)) {
+                  self.renderNow()
+                }
+              } catch (e) {
+                self.setRenderError(e)
               }
-              if (self.offScreen) {
-                cbs.releaseTargets(b)
+            },
+            { name: 'RenderLifecycle:upload' },
+          )
+          namedAutorun(
+            self,
+            () => {
+              const b = self.currentRenderingBackend as B | undefined
+              const tick = self.renderTick
+              if (b === undefined || !self.canRender) {
+                return
               }
-            } catch (e) {
-              self.setRenderError(e)
-            }
-          },
-          { name: 'RenderLifecycle:render' },
-        )
-      },
-    }))
+              // A throw in the render callback (e.g. an invalid render-state
+              // input like an empty rendering type) would otherwise escape as
+              // an uncaught reaction error and leave the display stuck on
+              // "loading" forever. Route it to `renderError` so it surfaces as
+              // the render-error overlay (with the message + retry) instead.
+              // Same loop caveat as the upload autorun above: the
+              // unmount-and-dispose that prevents re-fire is DisplayChrome's,
+              // not a shared canvas's.
+              // Off screen, only a re-fire with no `renderNow()` behind it (a
+              // pan, a zoom) is skipped: new data draws wherever the canvas is,
+              // so `painted` never stands over a partial picture. The tick is
+              // recorded even when the render answers false, since Canvas2D
+              // resizes before answering.
+              try {
+                const skip =
+                  self.offScreen && self.canvasDrawn && tick === drawnTick
+                drawnTick = tick
+                if (!skip && cbs.render(b)) {
+                  self.markCanvasDrawn()
+                }
+                if (self.offScreen) {
+                  cbs.releaseTargets(b)
+                }
+              } catch (e) {
+                self.setRenderError(e)
+              }
+            },
+            { name: 'RenderLifecycle:render' },
+          )
+        },
+      }
+    })
 }
