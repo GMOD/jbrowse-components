@@ -9,23 +9,7 @@ import { createMapUploadSync } from './mapUploadSync.ts'
 import { isCheckedAtTheStore } from './regionDataMap.ts'
 
 import type { LifecycleHost } from './RenderLifecycleMixin.ts'
-
-/**
- * What every backend that takes keyed uploads implements. One cell is one
- * immutable payload under one key, and the key is whatever the display's own
- * map is keyed by: a `displayedRegionIndex`, a sibling display's
- * `sharedBackendKey`, or a slot name on a display that holds one payload.
- *
- * `release` is per key, never an active-set prune. The diff below knows
- * exactly which keys departed, so a per-key release does the same job on a
- * display's own map and is the only correct shape on a canvas several displays
- * share, where a prune computed from one display's map would wipe its
- * siblings' buffers.
- */
-export interface CellTarget<K, Encoded> {
-  upload(key: K, data: Encoded): void
-  release(key: K): void
-}
+import type { CellTarget } from './mapUploadSync.ts'
 
 /**
  * The other half of what this installer needs off a backend, and the half every
@@ -184,14 +168,7 @@ export function installUpload<
   { cells, inputs, encode, render }: UploadSpec<K, Data, Props, Encoded, B>,
 ) {
   self.attachRenderingBackend<B>(backend, () => {
-    const sync = createMapUploadSync<K, Encoded, B>({
-      upload: (b, key, data) => {
-        b.upload(key, data)
-      },
-      remove: (b, key) => {
-        b.release(key)
-      },
-    })
+    const sync = createMapUploadSync<K, Encoded, B>()
     const own = encode
       ? createEncodeMemo(cells, inputs, encode)
       : (cells as unknown as () => ReadonlyMap<K, Encoded>)

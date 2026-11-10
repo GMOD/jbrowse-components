@@ -1,16 +1,20 @@
 import { createMapUploadSync } from './mapUploadSync.ts'
 
+function makeBackend(calls: string[]) {
+  return {
+    upload(key: number, data: string | undefined) {
+      calls.push(`up:${key}:${String(data)}`)
+    },
+    release(key: number) {
+      calls.push(`rm:${key}`)
+    },
+  }
+}
+
 function harness() {
   const calls: string[] = []
-  const backend = { calls }
-  const sync = createMapUploadSync<number, string | undefined, typeof backend>({
-    upload: (b, k, v) => {
-      b.calls.push(`up:${k}:${String(v)}`)
-    },
-    remove: (b, k) => {
-      b.calls.push(`rm:${k}`)
-    },
-  })
+  const backend = makeBackend(calls)
+  const sync = createMapUploadSync<number, string | undefined, typeof backend>()
   return { backend, calls, sync }
 }
 
@@ -36,6 +40,6 @@ test('a backend swap forgets the memo and re-uploads everything', () => {
   const { backend, calls, sync } = harness()
   const entries = new Map([[1, 'x']])
   sync(backend, entries)
-  expect(sync({ calls }, entries)).toBe(true)
+  expect(sync(makeBackend(calls), entries)).toBe(true)
   expect(calls.filter(c => c.startsWith('up:'))).toEqual(['up:1:x', 'up:1:x'])
 })

@@ -1,6 +1,18 @@
-export interface MapUploadTarget<K, T, B> {
-  upload: (backend: B, key: K, data: T) => void
-  remove?: (backend: B, key: K) => void
+/**
+ * What every backend that takes keyed uploads implements. One cell is one
+ * immutable payload under one key, and the key is whatever the display's own
+ * map is keyed by: a `displayedRegionIndex`, a sibling display's
+ * `sharedBackendKey`, or a slot name on a display that holds one payload.
+ *
+ * `release` is per key, never an active-set prune. The diff below knows
+ * exactly which keys departed, so a per-key release does the same job on a
+ * display's own map and is the only correct shape on a canvas several displays
+ * share, where a prune computed from one display's map would wipe its
+ * siblings' buffers.
+ */
+export interface CellTarget<K, Encoded> {
+  upload(key: K, data: Encoded): void
+  release(key: K): void
 }
 
 /**
@@ -17,13 +29,15 @@ export interface MapUploadTarget<K, T, B> {
  * entries across recomputes. With an always-fresh map every entry re-uploads,
  * which is correct but defeats the optimization.
  *
- * **A display does not hold one of these.** The lifecycle installers own it,
- * built inside the `attachRenderingBackend` setup thunk so the memo lives
+ * **A display does not hold one of these.** `installUpload` owns it, built
+ * inside the `attachRenderingBackend` setup thunk so the memo lives
  * exactly as long as the callbacks that read it.
  */
-export function createMapUploadSync<K, T, B extends object>(
-  target: MapUploadTarget<K, T, B>,
-) {
+export function createMapUploadSync<
+  K,
+  T,
+  B extends CellTarget<K, T> & object,
+>() {
   const uploaded = new Map<K, T>()
   // weak: this outlives an unmounted backend, whose canvas and GL context a
   // strong ref would pin until the display remounts
@@ -37,14 +51,14 @@ export function createMapUploadSync<K, T, B extends object>(
     let changed = false
     for (const [key, data] of entries) {
       if (!uploaded.has(key) || uploaded.get(key) !== data) {
-        target.upload(backend, key, data)
+        backend.upload(key, data)
         uploaded.set(key, data)
         changed = true
       }
     }
     for (const key of uploaded.keys()) {
       if (!entries.has(key)) {
-        target.remove?.(backend, key)
+        backend.release(key)
         uploaded.delete(key)
         changed = true
       }
