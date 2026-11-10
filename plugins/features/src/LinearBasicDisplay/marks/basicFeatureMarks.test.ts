@@ -66,6 +66,23 @@ function block(over: Partial<RenderBlock> = {}): RenderBlock {
   }
 }
 
+// Every glyph family populated, so no pass skips its draw for want of a buffer.
+function everyFamily() {
+  return regionData(2, {
+    linePositions: new Uint32Array([100, 200, 300, 400]),
+    lineYs: new Float32Array(2),
+    lineColors: new Uint32Array(2).fill(0xff00_00ff),
+    lineDirections: new Int8Array(2).fill(1),
+    arrowXs: new Uint32Array([150, 350]),
+    arrowYs: new Float32Array(2),
+    arrowHeights: new Float32Array(2).fill(10),
+    arrowWidthsBp: new Uint32Array(2).fill(50),
+    arrowGene: new Uint8Array(2),
+    arrowDirections: new Int8Array(2).fill(1),
+    arrowColors: new Uint32Array(2).fill(0xff00_00ff),
+  })
+}
+
 function setup() {
   const hal = new MockHal(BASIC_FEATURE_MARKS.map(m => m.pass))
   return {
@@ -112,8 +129,9 @@ describe('per-region uploads', () => {
 describe('draw passes', () => {
   it('draws the borrowing passes from the lender’s buffer', () => {
     const { hal, renderer } = setup()
-    renderer.upload(REGION, regionData(2))
-    renderer.renderBlocks([block()], new Map([[REGION, regionData(2)]]), STATE)
+    const data = everyFamily()
+    renderer.upload(REGION, data)
+    renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
     expect(
       callsTo(hal, 'drawPass').map(c => [c.args[0], c.args[2]]),
     ).toStrictEqual([
@@ -127,8 +145,9 @@ describe('draw passes', () => {
 
   it('stages one uniform write for the block, not one per pass', () => {
     const { hal, renderer } = setup()
-    renderer.upload(REGION, regionData(2))
-    renderer.renderBlocks([block()], new Map([[REGION, regionData(2)]]), STATE)
+    const data = everyFamily()
+    renderer.upload(REGION, data)
+    renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
     // All five marks read `writeFeatureGlyphUniforms` through one `params`
     // lens, so the four after the first draw off the slot the first staged.
     expect(callsTo(hal, 'writeUniforms')).toHaveLength(1)
@@ -139,19 +158,7 @@ describe('draw passes', () => {
     const { hal, renderer } = setup()
     // Every glyph family populated and a block on both canvas edges, so nothing
     // is absent for want of data.
-    const data = regionData(2, {
-      linePositions: new Uint32Array([100, 200, 300, 400]),
-      lineYs: new Float32Array(2),
-      lineColors: new Uint32Array(2).fill(0xff00_00ff),
-      lineDirections: new Int8Array(2).fill(1),
-      arrowXs: new Uint32Array([150, 350]),
-      arrowYs: new Float32Array(2),
-      arrowHeights: new Float32Array(2).fill(10),
-      arrowWidthsBp: new Uint32Array(2).fill(50),
-      arrowGene: new Uint8Array(2),
-      arrowDirections: new Int8Array(2).fill(1),
-      arrowColors: new Uint32Array(2).fill(0xff00_00ff),
-    })
+    const data = everyFamily()
     renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
 

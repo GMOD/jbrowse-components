@@ -61,7 +61,8 @@ const SECTION: SectionRender = {
   connectorClipHeight: 0,
 }
 
-// The uniforms one block of one empty region leaves behind. No per-base layer,
+// The uniforms the read pass draws one block of a one-read region under, a read
+// because the pass draws nothing over an empty buffer. No per-base layer,
 // so `effectiveBaseColors` passes the five base colors through unmuted.
 function frameUniforms() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
@@ -70,7 +71,9 @@ function frameUniforms() {
     sections: [
       {
         groupKey: '',
-        laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
+        laidOutPileupMap: new Map([
+          [0, makePileupDataResult({ readPositions: Uint32Array.of(10, 50) })],
+        ]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
         connectorFeeds: new Map(),

@@ -294,7 +294,7 @@ describe('the wiggle mark list', () => {
   })
 
   // Nothing to draw either way — an empty pack releases the pass's buffer — so
-  // this is only pinning that the missing-layer lookup doesn't throw.
+  // the fallback shows only in the uniforms the block writes.
   it('falls back to the render state when a region has no layers', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
@@ -305,7 +305,10 @@ describe('the wiggle mark list', () => {
       renderingType: RENDERING_TYPE_LINE,
     })
 
-    expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('line')
+    expect(hal.callsOf('drawPass')).toEqual([])
+    expect(hal.getLastUniformsI32()![UI.renderingType]).toBe(
+      RENDERING_TYPE_LINE,
+    )
   })
 
   // Density is the composed rowRect × scoreScale shape (wiggleDensity.slang):

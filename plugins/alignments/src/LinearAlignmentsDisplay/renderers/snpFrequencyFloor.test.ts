@@ -108,7 +108,9 @@ test('the GPU carries the floor as its own uniform', () => {
     sections: [
       {
         groupKey: '',
-        laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
+        laidOutPileupMap: new Map([
+          [0, makePileupDataResult({ snpPackedBuffer: stacked() })],
+        ]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
         connectorFeeds: new Map(),

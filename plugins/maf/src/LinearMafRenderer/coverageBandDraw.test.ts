@@ -83,7 +83,8 @@ function state(coverage: CoverageBandState): MafGPURenderState {
   }
 }
 
-// One region with a real depth peak, distinct from the display's domain max.
+// One region with a real depth peak, distinct from the display's domain max,
+// and one instance for each band pass, which draws nothing over an empty buffer.
 function payload(): MafUploadPayload {
   return {
     cells: {
@@ -97,6 +98,11 @@ function payload(): MafUploadPayload {
       ...emptyMafCoverage(),
       coverageMaxDepth: 5,
       coveragePackedBuffer: new ArrayBuffer(8),
+      snpPackedBuffer: new ArrayBuffer(20),
+      interbasePackedBuffer: new ArrayBuffer(16),
+      interbaseMaxCount: 1,
+      indicatorPositions: Uint32Array.of(5),
+      indicatorTypes: Float32Array.of(0),
     },
   }
 }

@@ -265,6 +265,8 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
 describe('GpuPerRegionRenderingBackend.renderBlocks block clipping', () => {
   function drawingBackend() {
     const hal = new MockHal([{ id: 'rect' } as unknown as PipelineDescriptor])
+    hal.uploadBuffer(0, 'rect', new Float32Array([1]), 1)
+    hal.uploadBuffer(1, 'rect', new Float32Array([1]), 1)
     return { hal, b: new DrawingGpuBackend(hal) }
   }
 

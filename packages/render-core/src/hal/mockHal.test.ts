@@ -6,9 +6,19 @@ function pass(id: string) {
   return { id } as PipelineDescriptor
 }
 
+function uploaded(passIds: string[], regionKeys = [0]) {
+  const hal = new MockHal(passIds.map(pass))
+  for (const regionKey of regionKeys) {
+    for (const passId of passIds) {
+      hal.uploadBuffer(regionKey, passId, new Float32Array([1]), 1)
+    }
+  }
+  return hal
+}
+
 describe('MockHal effective clip per draw', () => {
   it('carries the scissor in force at each draw', () => {
-    const hal = new MockHal([pass('a'), pass('b')])
+    const hal = uploaded(['a', 'b'], [0, 1])
     hal.beginFrame(0, 0, 0, 0)
     hal.setScissor(0, 0, 400, 100)
     hal.drawPass('a', 0)
@@ -30,7 +40,7 @@ describe('MockHal effective clip per draw', () => {
     // The WebGPU bug this exists for: `clearScissor` dropped the stored rect
     // without re-issuing a full-canvas one, so a draw after it stayed clipped to
     // the previous block. `null` here is the contract — the full canvas.
-    const hal = new MockHal([pass('a'), pass('overlay')])
+    const hal = uploaded(['a', 'overlay'])
     hal.beginFrame(0, 0, 0, 0)
     hal.setScissor(400, 0, 400, 100)
     hal.drawPass('a', 0)
@@ -45,7 +55,7 @@ describe('MockHal effective clip per draw', () => {
   })
 
   it('a new frame starts unclipped', () => {
-    const hal = new MockHal([pass('a')])
+    const hal = uploaded(['a'])
     hal.beginFrame(0, 0, 0, 0)
     hal.setScissor(400, 0, 400, 100)
     hal.drawPass('a', 0)
@@ -62,7 +72,7 @@ describe('MockHal effective clip per draw', () => {
   })
 
   it('tracks the viewport on the same terms', () => {
-    const hal = new MockHal([pass('a')])
+    const hal = uploaded(['a'])
     hal.beginFrame(0, 0, 0, 0)
     hal.setViewport(10, 0, 200, 50)
     hal.drawPass('a', 0)
@@ -79,10 +89,22 @@ describe('MockHal effective clip per draw', () => {
 
 describe('MockHal draw validation', () => {
   it('records a draw against a registered pass', () => {
-    const hal = new MockHal([pass('rect'), pass('line')])
+    const hal = uploaded(['rect', 'line'])
     hal.drawPass('rect', 0)
 
     expect(hal.callsOf('drawPass')[0]!.args).toEqual(['rect', 0, undefined])
+  })
+
+  it('records no draw over a buffer that was never uploaded, as both HALs skip it', () => {
+    const hal = uploaded(['rect', 'line'])
+    hal.drawPass('rect', 1)
+    hal.drawPass('rect', 0, 'line')
+    hal.uploadBuffer(0, 'line', new Float32Array(0), 0)
+    hal.drawPass('rect', 0, 'line')
+
+    expect(
+      hal.draws().map(d => [d.passId, d.regionKey, d.bufferPassId]),
+    ).toEqual([['rect', 0, 'line']])
   })
 
   it('throws on a pass the display never registered', () => {
@@ -132,7 +154,7 @@ describe('MockHal uniforms per draw', () => {
   const u = (v: number) => Float32Array.from([v]).buffer
 
   it('pairs each draw with the write in force when it was issued', () => {
-    const hal = new MockHal([pass('a'), pass('b')])
+    const hal = uploaded(['a', 'b'])
     hal.beginFrame(0, 0, 0, 0)
     hal.writeUniforms(u(10))
     hal.drawPass('a', 0)
@@ -146,7 +168,7 @@ describe('MockHal uniforms per draw', () => {
   it('two draws after one write share it, which is the legal batching', () => {
     // A renderer writing once per block and drawing several passes into it is
     // the common shape, and it is fine on both HALs.
-    const hal = new MockHal([pass('a'), pass('b')])
+    const hal = uploaded(['a', 'b'])
     hal.beginFrame(0, 0, 0, 0)
     hal.writeUniforms(u(7))
     hal.drawPass('a', 0)
@@ -162,7 +184,7 @@ describe('MockHal uniforms per draw', () => {
     // WebGPU it is wrong *silently and differently*: every draw binds the last
     // slot, so the pass that meant to read 10 reads 20. The log is what makes
     // the mispairing visible in a unit test.
-    const hal = new MockHal([pass('a'), pass('b')])
+    const hal = uploaded(['a', 'b'])
     hal.beginFrame(0, 0, 0, 0)
     hal.writeUniforms(u(10))
     hal.writeUniforms(u(20))
@@ -176,7 +198,7 @@ describe('MockHal uniforms per draw', () => {
   it('reports a draw that precedes every write rather than inventing one', () => {
     // WebGPU clamps this to ring slot 0 and WebGL2 leaves the last frame's UBO
     // bound, so there is no shared answer to report — null says so.
-    const hal = new MockHal([pass('a')])
+    const hal = uploaded(['a'])
     hal.beginFrame(0, 0, 0, 0)
     hal.drawPass('a', 0)
     hal.endFrame()
@@ -296,6 +318,8 @@ describe('MockHal texture uploads', () => {
 
   it('draws a pass only once every sampler has its texture, as both HALs do', () => {
     const hal = new MockHal([twoSamplers, pass('bare')])
+    hal.uploadBuffer(0, 'bare', new Float32Array([1]), 1)
+    hal.uploadBuffer(0, 'point', new Float32Array([1]), 1)
     hal.beginFrame(0, 0, 0, 0)
     hal.drawPass('bare', 0)
     hal.uploadTexture('point', texels, 1, 1, 'colorRamp')

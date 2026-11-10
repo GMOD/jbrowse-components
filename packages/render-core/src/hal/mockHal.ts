@@ -290,16 +290,18 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     if (bufferPassId !== undefined) {
       this.assertRegistered(bufferPassId, 'bufferPassId')
     }
-    const missing = (this.descriptors.get(passId)?.textures ?? []).some(
-      t => !this.textures.has(textureKey(passId, t.name)),
-    )
+    // The buffer the draw reads, which `bufferPassId` renames — that is the
+    // resource a later upload in this frame would be replacing under it.
+    const bufferKey = bufferPassId ?? passId
+    const missing =
+      this.regions.get(regionKey, bufferKey) === undefined ||
+      (this.descriptors.get(passId)?.textures ?? []).some(
+        t => !this.textures.has(textureKey(passId, t.name)),
+      )
     if (missing) {
       return
     }
     this.record('drawPass', passId, regionKey, bufferPassId)
-    // The buffer the draw reads, which `bufferPassId` renames — that is the
-    // resource a later upload in this frame would be replacing under it.
-    const bufferKey = bufferPassId ?? passId
     let drawn = this.drawnThisFrame.get(regionKey)
     if (!drawn) {
       drawn = new Set()

@@ -74,17 +74,13 @@ function bandState(overrides: TestRenderStateOverrides = {}) {
 function bandUniforms(state: RenderState, depth?: number) {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
-  // `regionMeta` reports a peak only for a region that packed coverage bins, so
-  // a test about the peak has to give it both.
-  const data = makePileupDataResult(
-    depth === undefined
-      ? {}
-      : {
-          coverageMaxDepth: depth,
-          coverageGpuBinCount: 1,
-          coveragePackedBuffer: new ArrayBuffer(16),
-        },
-  )
+  // The coverage pass draws only over packed bins, and `regionMeta` reports a
+  // peak only for a region that has them, so every region here packs one.
+  const data = makePileupDataResult({
+    coverageMaxDepth: depth ?? 0,
+    coverageGpuBinCount: 1,
+    coveragePackedBuffer: new ArrayBuffer(16),
+  })
   const sources: AlignmentsSources = {
     sections: [
       {

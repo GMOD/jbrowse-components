@@ -199,7 +199,13 @@ describe('color by source chromosome, as a span mark', () => {
     const hal = new MockHal(MAF_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, MAF_MARKS)
     const payload = {
-      cells: EMPTY_MAF_CELLS,
+      cells: {
+        x: Uint32Array.of(1100),
+        x2: Uint32Array.of(1110),
+        row: Uint32Array.of(0),
+        color: Uint32Array.of(0xff00_00ff),
+        count: 1,
+      },
       refNameRank: encodeRefNameRankSpans(
         [mafBlock(1100, 1150, [[0, 'chrI']])],
         RANKS,
