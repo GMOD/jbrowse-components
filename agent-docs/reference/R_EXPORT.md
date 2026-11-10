@@ -103,14 +103,17 @@ color) land in the script header.
   `ggsave()` takes `jbrowse_height(fig)`, which measures the stack's bands at
   the display's pixels, a compact pileup included, and its keys, rather than a
   height per track kind in the exporter. `jbrowse_width(fig)` gives the width
-  at the same 150 px an inch: a 2,500 px view saved 10 inches wide drew its
+  at the same 96 px an inch, the browser's own, so an 11 px label prints at
+  8 pt beside 9 pt titles: a 2,500 px view saved 10 inches wide drew its
   feature labels at 3 pt, since a label takes the panel's smaller scale.
+  RStudio's pane draws `print(fig)` at the pane's size, so a view wider than
+  the pane shows smaller labels there; the script's `width` comment says so.
 - **The script pins its ggjbrowse.** `GGJBROWSE_VERSION` is the release the
   script is tested against: an older install stops with an install line pinned
   to that tag rather than an "unused argument" error. It is a floor, not an
   exact match, since an exact one would stop every exported script the day
   ggjbrowse ships its next release. Bump it to a release whose engine fixes
-  reach a figure, even with no reader argument changed (0.11.0's CRAM fixes).
+  reach a figure, even with no reader argument changed (0.11.0's CRAM fixes, 0.12.0's seamless wiggle bars and 96 px inch).
 
 ## Verify a change
 

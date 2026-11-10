@@ -100,7 +100,7 @@ export const READERS: Record<
  * The ggjbrowse release the script is tested against: its floor, and the tag
  * its install line pins. The R export workflow installs this tag on a push.
  */
-export const GGJBROWSE_VERSION = '0.11.0'
+export const GGJBROWSE_VERSION = '0.12.0'
 
 const INSTALL = `remotes::install_github("GMOD/ggjbrowse@v${GGJBROWSE_VERSION}")`
 
@@ -656,9 +656,10 @@ export function exportTracksToR({
           `assembly <- ${assemblyValue}`,
         ]
       : []),
-    "# The view's pixels across its regions. A smaller number lays the tracks",
-    '# out as a narrower browser window would, for a narrower figure with',
-    "# fewer labels at the same size. RStudio's plot pane draws the figure",
+    "# The view's pixels across its regions, 96 to the inch of the saved",
+    '# figure. A smaller number lays the tracks out as a narrower browser',
+    '# window would, for a narrower figure with fewer labels at the same',
+    "# size: 672 for a 7 inch panel. RStudio's plot pane draws the figure",
     "# at the pane's size, so a view wider than the pane shows its labels",
     '# smaller there than in the saved figure.',
     `width <- ${viewPx}`,

@@ -53,9 +53,9 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   expect(script).toContain(
     'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.11.0"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.12.0"')
   expect(script).toContain(
-    'remotes::install_github(\\"GMOD/ggjbrowse@v0.11.0\\")',
+    'remotes::install_github(\\"GMOD/ggjbrowse@v0.12.0\\")',
   )
   const code = script
     .split('\n')
