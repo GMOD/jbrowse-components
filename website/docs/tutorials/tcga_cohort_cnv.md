@@ -46,7 +46,8 @@ needed.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. Use your own cohort covers your own calls.
+rebuild those results. [Use your own cohort](#use-your-own-cohort) covers your
+own calls.
 
 | What it is                                                                              | File                                      |
 | --------------------------------------------------------------------------------------- | ----------------------------------------- |
