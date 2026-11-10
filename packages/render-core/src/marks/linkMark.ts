@@ -167,7 +167,7 @@ interface LinkFrame {
   shape: number
   valued: number
   sizeMode: number
-  sizePx: number
+  sizeConstantPx: number
   sizeDomainMin: number
   sizeDomainMax: number
   sizeScaleType: number
@@ -195,6 +195,18 @@ interface LinkFrame {
   foot2Len: number
 }
 
+function linkSizeUniforms({ sizeScale, sizePx }: LinkParams) {
+  return {
+    sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
+    sizeConstantPx: sizePx,
+    sizeDomainMin: sizeScale?.domain[0] ?? 0,
+    sizeDomainMax: sizeScale?.domain[1] ?? 1,
+    sizeScaleType: sizeScale?.scale === 'log' ? SCALE_TYPE_LOG : 0,
+    sizeRangeMin: sizeScale?.range[0] ?? sizePx,
+    sizeRangeMax: sizeScale?.range[1] ?? sizePx,
+  }
+}
+
 function linkFrame(
   block: RenderBlock,
   frame: MarkFrame,
@@ -204,6 +216,7 @@ function linkFrame(
   const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(params)
   const { sizeScale } = params
   return {
+    ...linkSizeUniforms(params),
     band,
     rowOffsetPx: params.rowOffsetPx ?? 0,
     table: params.rowTable,
@@ -222,13 +235,6 @@ function linkFrame(
     insetPx: params.insetPx ?? 0,
     shape: linkShapeCode(params.linkShape),
     valued: params.valued ? 1 : 0,
-    sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
-    sizePx: params.sizePx,
-    sizeDomainMin: sizeScale?.domain[0] ?? 0,
-    sizeDomainMax: sizeScale?.domain[1] ?? 1,
-    sizeScaleType: sizeScale?.scale === 'log' ? SCALE_TYPE_LOG : 0,
-    sizeRangeMin: sizeScale?.range[0] ?? params.sizePx,
-    sizeRangeMax: sizeScale?.range[1] ?? params.sizePx,
     kind: KIND_STEM,
     xPx: 0,
     x2Px: 0,
@@ -357,7 +363,7 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
   g.strokePx = linkStrokeWidthPx(
     sizeOf(c, i),
     g.sizeMode,
-    g.sizePx,
+    g.sizeConstantPx,
     g.sizeDomainMin,
     g.sizeDomainMax,
     g.sizeScaleType,
@@ -915,7 +921,6 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
   },
 
   writeUniforms(scratch, _clip, block, frame, params) {
-    const { sizeScale } = params
     shader.writeUniforms(scratch, {
       canvasHeight: frame.canvasHeight,
       devicePixelRatio: getDpr(),
@@ -934,13 +939,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ...rampUniforms(params.colorScale),
       valued: params.valued ? 1 : 0,
       linkShape: linkShapeCode(params.linkShape),
-      sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
-      sizeConstantPx: params.sizePx,
-      sizeDomainMin: sizeScale?.domain[0] ?? 0,
-      sizeDomainMax: sizeScale?.domain[1] ?? 1,
-      sizeScaleType: sizeScale?.scale === 'log' ? SCALE_TYPE_LOG : 0,
-      sizeRangeMin: sizeScale?.range[0] ?? params.sizePx,
-      sizeRangeMax: sizeScale?.range[1] ?? params.sizePx,
+      ...linkSizeUniforms(params),
       canvasWidth: frame.canvasWidth,
       regionCount: fillTable(params.regions),
       zero: 0,
