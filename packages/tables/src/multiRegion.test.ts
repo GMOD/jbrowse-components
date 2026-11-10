@@ -328,8 +328,8 @@ test('byteLimit holds over the regions together, in every region table', async (
   ]
   for (const { what, regions, read } of reads) {
     const bytesOf = async (region: TablesRegion) => {
-      const error = await read([region], 1).catch((e: unknown) => String(e))
-      return Number(/needs (\d+) bytes/.exec(error)![1])
+      const error = await read([region], 1).catch(String)
+      return Number(/needs (\d+) bytes/.exec(String(error))![1])
     }
     const [a, b] = await Promise.all(regions.map(bytesOf))
     const byteLimit = Math.max(a!, b!)
