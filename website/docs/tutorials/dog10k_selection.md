@@ -214,8 +214,9 @@ bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
 tabix -C -p vcf dog10k_igf1.vcf.gz
 ```
 
-A site that is reference in every animal is drawn as an empty column, so the
-second `bcftools view` drops it.
+`igf1.samples` lists one sample name per line, the first column of the samples
+TSV below without its header. A site that is reference in every animal is drawn
+as an empty column, so the second `bcftools view` drops it.
 
 ## Loading the IGF1 slice with a sample-metadata TSV
 
@@ -331,7 +332,7 @@ Reading the matrix against the Fst track above it:
   equal width and the Fst track keeps genomic spacing, so sloped lines tie each
   column to its coordinate.
 - Some animals cluster with the other size class: single orange rows sit within
-  the giant cluster and single blue rows within the small one.
+  the toy and small cluster and single blue rows within the giant one.
 - The wolves form a contiguous band directly below the toy and small block, and
   have part of its haplotype.
 
