@@ -20,6 +20,7 @@ import {
   colorSchemes,
   isAttributeLabels,
   readChannelValue,
+  syntenyBlockLines,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -247,24 +248,40 @@ class RibbonBuilder {
 }
 
 /**
- * A hovered ribbon's tooltip: its locations, then the numeric channels its
- * record carries, in the lines the synteny views print them in
+ * A hovered ribbon's tooltip in the lines the synteny views print a block in:
+ * the two lanes it joins, `Inverted`, then the numeric channels its record
+ * carries. A ribbon whose lanes do not each name one placement keeps `label`.
  */
 export function ribbonTooltip(
   label: string,
+  sides: readonly RibbonSide[],
   record: Feature,
   attributeRanges: Record<string, AttributeRange>,
 ) {
-  const values: Record<string, number> = {}
+  const attributes: Record<string, number> = {}
   for (const [name, range] of Object.entries(attributeRanges)) {
     const value = isAttributeLabels(range)
       ? Number.NaN
       : readChannelValue(record, name)
     if (Number.isFinite(value)) {
-      values[name] = value
+      attributes[name] = value
     }
   }
-  return [label, ...attributeTooltipLines(values)].join('\n')
+  return (
+    sides.length === 2
+      ? syntenyBlockLines({
+          sides: sides.map(({ lane, placement }) => ({
+            assemblyName: lane.label,
+            name: placement.name,
+            refName: lane.canon(placement.refName),
+            start: Math.round(placement.start),
+            end: Math.round(placement.end),
+          })),
+          inverted: sides[0]!.orientation * sides[1]!.orientation < 0,
+          attributes,
+        })
+      : [label, ...attributeTooltipLines(attributes)]
+  ).join('\n')
 }
 
 export interface RibbonGeometry {
@@ -1138,28 +1155,43 @@ function laneEndOf(
   }
 }
 
+/** one lane a ribbon joins: where it sits there, and which way it runs */
+export interface RibbonSide {
+  lane: Lane
+  placement: MultiWayPlacement
+  orientation: number
+}
+
 /**
  * Where a ribbon between `upper` and `lower` sits on each lane's genome: a
  * lane-pair record and its mate, or the group's placement on each lane. A
  * lane placing the group more than once names the placement only where the
  * ribbon's own record picks it.
  */
-export function ribbonEnds(
+export function ribbonSides(
   upper: Lane,
   lower: Lane,
   target: RibbonRef,
   record: Feature,
-): LaneEnd[] {
+): RibbonSide[] {
   if (target.linkId !== undefined) {
     const mate = getMate(record)
     return mate
       ? [
-          laneEndOf(upper, {
-            refName: record.get('refName'),
-            start: record.get('start'),
-            end: record.get('end'),
-          }),
-          laneEndOf(lower, mate),
+          {
+            lane: upper,
+            placement: {
+              refName: record.get('refName'),
+              start: record.get('start'),
+              end: record.get('end'),
+            },
+            orientation: 1,
+          },
+          {
+            lane: lower,
+            placement: mate,
+            orientation: record.get('strand') === -1 ? -1 : 1,
+          },
         ]
       : []
   }
@@ -1168,8 +1200,15 @@ export function ribbonEnds(
     const placed = key === undefined ? undefined : lane.placements.get(key)
     const picked = placed?.features.indexOf(record) ?? -1
     const index = picked >= 0 ? picked : placed?.intervals.length === 1 ? 0 : -1
-    const interval = placed?.intervals[index]
-    return interval ? [laneEndOf(lane, interval)] : []
+    const placement = placed?.intervals[index]
+    const orientation = placed?.orientations[index]
+    return placement && orientation !== undefined
+      ? [{ lane, placement, orientation }]
+      : []
   }
   return [...placedOn(upper), ...placedOn(lower)]
+}
+
+export function ribbonEnds(sides: readonly RibbonSide[]): LaneEnd[] {
+  return sides.map(({ lane, placement }) => laneEndOf(lane, placement))
 }

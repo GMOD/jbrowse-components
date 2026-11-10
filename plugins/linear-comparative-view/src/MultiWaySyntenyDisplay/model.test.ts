@@ -21,6 +21,7 @@ import { autorun, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
+import { featureWidgetOf } from './featureWidget.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import {
@@ -491,6 +492,7 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
   const items = display.trackMenuItems()
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Color by',
+    'Opacity',
     'Show',
     'Lanes',
     'Advanced',
@@ -1169,9 +1171,11 @@ describe('the lane stack scrolls once lanes would crush', () => {
       display
         .contextMenuItems()
         .map(item => ('label' in item ? item.label : '')),
-    ).toEqual(
-      expect.arrayContaining([expect.stringMatching(/^Open .* at gene1$/)]),
-    )
+    ).toEqual([
+      'Open feature details',
+      expect.stringMatching(/^Open .* at gene1$/),
+      expect.stringMatching(/^Re-anchor on .* at gene1$/),
+    ])
 
     const [anchor] = lanes
     const [a1, a2] = anchor!.placements.get('gene1')!.spans[0]!
@@ -1182,6 +1186,10 @@ describe('the lane stack scrolls once lanes would crush', () => {
     expect(ribbon?.loci?.map(l => l.assemblyName)).toEqual([
       anchor!.assemblyName,
       'mate0',
+    ])
+    expect(ribbon?.label.split('\n').slice(0, 2)).toEqual([
+      expect.stringContaining(anchor!.label),
+      expect.stringContaining(lane.label),
     ])
   })
 })
@@ -1229,6 +1237,36 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
     )?.trackId,
   ).toBe(display.parentTrack.configuration.trackId)
   stop()
+})
+
+test('an anchor record with a mate opens the synteny feature panel, and a lane gene or lane-pair record the default one', () => {
+  const gene = { uniqueId: 'g', refName: 'ctgA', start: 100, end: 300 }
+  const mate = { assemblyName: 'volvox_random', ...gene, refName: 'ctgB' }
+  const isAnchor = (assemblyName: string) => assemblyName === 'volvox'
+  const widgetOf = (data: object) =>
+    featureWidgetOf(new SimpleFeature({ ...gene, ...data }), isAnchor)?.type
+  expect(widgetOf({ mate })).toBe('SyntenyFeatureWidget')
+  expect(widgetOf({ mate, assemblyName: 'volvox' })).toBe(
+    'SyntenyFeatureWidget',
+  )
+  expect(widgetOf({ mate, assemblyName: 'volvox_ins' })).toBeUndefined()
+  expect(widgetOf({})).toBeUndefined()
+})
+
+test('the Opacity slider writes the ribbons constant, and under a fade its most opaque end', () => {
+  const display = createDisplay()
+  expect(display.opacityLevel).toBe(display.defaultOpacity)
+  display.setOpacity(0.6)
+  expect(display.ribbonOpacity).toMatchObject({ value: 0.6 })
+  expect(display.opacityLevel).toBe(0.6)
+
+  setConf(display, ['ribbons', 'encoding', 'opacity'], {
+    field: 'identity',
+    scale: { range: ['0.2', '0.4'] },
+  })
+  display.setOpacity(0.8)
+  expect(display.opacityLevel).toBeCloseTo(0.8)
+  expect(display.ribbonOpacity).toMatchObject({ field: 'identity' })
 })
 
 test('two lanes whose gene tracks share an id select, ink and name their own gene', async () => {

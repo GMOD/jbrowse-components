@@ -37,8 +37,9 @@ Each lane has its own scale, printed in its header:
 
 - the left end shows where the lane starts, with `[rev]` where the lane runs
   against the anchor
-- the right end shows the span the lane draws, and that span as a multiple of
-  the anchor's window, rounded to one of a few fixed steps
+- the right end of a lane zoomed out past the anchor shows the span the lane
+  draws, and that span as a multiple of the anchor's window, rounded to one of a
+  few fixed steps; a lane at the anchor's scale prints no span
 - the ticks fall at one interval shared by every lane
 - `also at` names a second stretch the window aligns to, a window or more away
   from the one the lane draws
@@ -54,8 +55,14 @@ The view's gridlines stop at the anchor, the one lane they fit.
   reversed. A lane drawn reversed has its ribbons run straight on screen while
   the color still marks them as inverted.
 - Hover a ribbon to light the same alignment or ortholog group in every lane it
-  reaches.
+  reaches. The tooltip names the two lanes the ribbon joins, each with its
+  stretch and length.
 - Click a ribbon to open its details; click empty canvas to clear the outline.
+  The details of an alignment against the anchor end in a **Link to view** card,
+  which opens the other genome at the matching region or launches a synteny view
+  of the pair.
+- **Opacity** in the track menu sets how far overlapping ribbons show through
+  each other.
 - A ribbon joins a gene to the next lane that places it when the lane between
   places nothing, so a sparse lane mid-stack cuts no chain. A track whose
   ribbons all join the anchor draws each gutter against the anchor instead.

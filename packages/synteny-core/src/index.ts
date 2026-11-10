@@ -226,6 +226,7 @@ export {
   opacityFadeOf,
   opacityLevel,
   opacityMapsField,
+  opacityRangeAt,
 } from './opacityChannel.ts'
 export { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 // the palette button itself, not just the menu inside it — the two headers had a

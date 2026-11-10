@@ -79,10 +79,14 @@ import {
   lodMenuItems,
   lodTierAt,
   LodTierInfoMixin,
+  opacityLevel,
+  opacityMapsField,
+  opacityRangeAt,
   orderAttributeLabels,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
@@ -102,6 +106,7 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
+import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
@@ -202,6 +207,7 @@ import {
   glyphHitAt,
   glyphsKey,
   ribbonEnds,
+  ribbonSides,
   outlineKey,
   ribbonFeatureId,
   ribbonTooltip,
@@ -214,6 +220,7 @@ import {
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
 import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
+import { RIBBON_OPACITY } from './ribbonPaint.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -737,6 +744,50 @@ export function stateModelFactory(
           self.seenAttributeRanges,
           self.ribbonColorDomain,
           self.ribbonColorRange,
+        )
+      },
+    }))
+    .views(self => ({
+      /** #getter */
+      get defaultOpacity() {
+        return RIBBON_OPACITY
+      },
+      /**
+       * #getter
+       * the opacity every ribbon draws at before a field's fade
+       */
+      get opacityLevel() {
+        return opacityLevel(
+          self.ribbonOpacity,
+          RIBBON_OPACITY,
+          self.ribbonAttributeRanges,
+        )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * the Opacity slider: the constant, or under a field its range scaled so
+       * its most opaque end equals `value`
+       */
+      setOpacity(value: number) {
+        const setting = self.ribbonOpacity
+        setConf(
+          self,
+          ['ribbons', 'encoding', 'opacity'],
+          opacityMapsField(setting)
+            ? {
+                ...setting,
+                scale: {
+                  ...setting.scale,
+                  range: opacityRangeAt(
+                    setting,
+                    value,
+                    self.ribbonAttributeRanges,
+                  ),
+                },
+              }
+            : { ...setting, value },
         )
       },
     }))
@@ -3061,6 +3112,10 @@ export function stateModelFactory(
         const rows = hit && self.ribbonLayerRows.get(hit.key)
         const upper = rows && lanes[self.rowsVsAnchor ? 0 : rows[0]]
         const lower = rows && lanes[rows[1]]
+        const sides =
+          target && record && upper && lower
+            ? ribbonSides(upper, lower, target, record)
+            : []
         return target && record
           ? {
               ...target,
@@ -3068,11 +3123,11 @@ export function stateModelFactory(
               trackId: self.parentTrack.configuration.trackId,
               label: ribbonTooltip(
                 target.label,
+                sides,
                 record,
                 self.ribbonAttributeRanges,
               ),
-              loci:
-                upper && lower ? ribbonEnds(upper, lower, target, record) : [],
+              loci: ribbonEnds(sides),
             }
           : undefined
       },
@@ -3121,7 +3176,16 @@ export function stateModelFactory(
     .actions(self => ({
       /** #action */
       selectFeature(feature: Feature, sourceTrackId?: string) {
-        openFeatureWidget(self, feature.toJSON(), { feature, sourceTrackId })
+        openFeatureWidget(self, feature.toJSON(), {
+          feature,
+          sourceTrackId,
+          widget: featureWidgetOf(
+            feature,
+            assemblyName =>
+              self.laneKey(assemblyName) ===
+              self.laneKey(self.anchorAssemblyName),
+          ),
+        })
       },
       /** #action */
       openInNewView(assemblyName: string, loc: string) {
@@ -3199,10 +3263,24 @@ export function stateModelFactory(
         /** #method */
         contextMenuItems(): MenuItem[] {
           const { lanes } = self.laneStack
-          return (self.contextMenuInfo?.target.loci ?? []).flatMap(locus => {
-            const lane = lanes.find(l => l.assemblyName === locus.assemblyName)
-            return lane ? laneLocusMenuItems(self, lane, locus) : []
-          })
+          const target = self.contextMenuInfo?.target
+          return target
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeature(target.feature, target.trackId)
+                  },
+                },
+                ...(target.loci ?? []).flatMap(locus => {
+                  const lane = lanes.find(
+                    l => l.assemblyName === locus.assemblyName,
+                  )
+                  return lane ? laneLocusMenuItems(self, lane, locus) : []
+                }),
+              ]
+            : []
         },
         /** #method */
         trackMenuItems(): MenuItem[] {

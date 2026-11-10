@@ -175,6 +175,9 @@ function trackModel({
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},
     ribbonPaint: {},
+    opacityLevel: 0.3,
+    defaultOpacity: 0.3,
+    setOpacity: () => {},
     hideUnlabelled: false,
     setHideUnlabelled: () => {},
     showLaneTicks: true,
@@ -210,6 +213,7 @@ test('the track menu is Color by, Show and Lanes', () => {
   const { model } = trackModel()
   expect(labelsOf(multiWayTrackMenuItems(model))).toEqual([
     'Color by',
+    'Opacity',
     'Show',
     'Lanes',
   ])

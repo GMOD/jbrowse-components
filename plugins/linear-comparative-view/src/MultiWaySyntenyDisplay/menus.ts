@@ -18,7 +18,7 @@ import {
   showHiddenItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
-import { colorByMenuItems } from '@jbrowse/synteny-core'
+import { colorByMenuItems, opacityMenuItem } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
@@ -104,6 +104,9 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   pickDefaultColor: () => void
   pickSolidColor: () => void
   setLanesFrozen: (flag: boolean) => void
+  opacityLevel: number
+  defaultOpacity: number
+  setOpacity: (value: number) => void
 }
 
 export function laneHeaderMenuItems(
@@ -476,6 +479,12 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
         { header: 'Genes', rows: geneColorMenuItems(model) },
         { header: 'Ribbons', rows: ribbonColorMenuItems(model) },
       ],
+    }),
+    opacityMenuItem({
+      opacityLevel: model.opacityLevel,
+      defaultOpacity: model.defaultOpacity,
+      setOpacity: model.setOpacity,
+      colorSurface: () => 'ribbons',
     }),
     ...makeShowSubMenu(showSubMenuItems(model)),
     lanesMenuItem(model),

@@ -38,6 +38,8 @@ import {
   mismatchColor,
   buildTickGeometry,
   glyphHitAt,
+  ribbonEnds,
+  ribbonSides,
   ribbonTooltip,
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
@@ -796,24 +798,39 @@ describe('the ribbons', () => {
     ])
   })
 
-  test('a hovered ribbon lists its record’s numeric channels under its locations', () => {
+  test('a hovered ribbon names the two lanes it joins, then its record’s numeric channels', () => {
     const record = new SimpleFeature({
-      ...pairFeature('g1', 100, 200).toJSON(),
+      ...pairFeature('g1', 100, 200, { strand: -1 }).toJSON(),
       identity: 0.98712,
       mappingQual: 60,
       group: 'A1a',
     })
-    const lines = ribbonTooltip('g1\ngrape chr1:101..200', record, {
+    const [grape, peach] = stack({ features: [record] }).lanes
+    const [groupKey] = grape!.placements.keys()
+    const sides = ribbonSides(grape!, peach!, { groupKey }, record)
+    const ranges = {
       identity: { min: 0.9, max: 1 },
       mappingQual: { min: 0, max: 60 },
       ks: { min: 0, max: 1 },
       group: { labels: ['A1a'], colors: {} },
-    }).split('\n')
-    expect(lines.slice(0, 2)).toEqual(['g1', 'grape chr1:101..200'])
-    expect(lines.slice(2)).toEqual(
-      attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
-    )
-    expect(lines).toHaveLength(4)
+    }
+    expect(ribbonEnds(sides).map(end => end.assemblyName)).toEqual([
+      'grape',
+      'peach',
+    ])
+    expect(ribbonTooltip('unused', sides, record, ranges).split('\n')).toEqual([
+      'grape g1 chr1:101-200 (100 bp)',
+      'peach Pp1:1,101-1,200 (100 bp)',
+      'Inverted',
+      ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
+    ])
+    expect(
+      ribbonTooltip('g1\ngrape chr1:101..200', [], record, ranges).split('\n'),
+    ).toEqual([
+      'g1',
+      'grape chr1:101..200',
+      ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
+    ])
   })
 
   test('a filter draws only the ribbons that pass it, by length or strand', () => {
