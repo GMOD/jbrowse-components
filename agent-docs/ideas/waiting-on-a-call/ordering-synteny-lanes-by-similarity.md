@@ -128,8 +128,8 @@ same locus, so that scalar is degenerate across them. What a lane does still hav
 from star data is its PROFILE against the shared reference, which is what
 `buildIdentityMatrix` already builds and what PC1 of that profile set would order
 by — the local-PCA ordering
-[gpu-sample-distance-matrix](gpu-sample-distance-matrix.md) lists as falling out
-of the same pass. So on a star the honest ceiling is a profile ordering: cheaper
+[keep-the-sample-distance-matrix-resident](keep-the-sample-distance-matrix-resident.md)
+gets from the sample matrix. So on a star the honest ceiling is a profile ordering: cheaper
 than seriation, weaker than it, and not nothing.
 
 **Copy its shell.** `DiagonalizeDialog`, `DiagonalizeProgressMixin`,
@@ -154,7 +154,8 @@ matrix is shaped that way. The approximation is a real one: two haplotypes that
 diverge from the reference at the same bins score identically there whether or
 not they diverge the same WAY. Going pairwise on the MAF is the case that meets
 the compute-shader criterion in
-[gpu-sample-distance-matrix](gpu-sample-distance-matrix.md) — bases x bases,
+[CLUSTERING_WORKFLOW](../../reference/CLUSTERING_WORKFLOW.md) §"Which in-browser
+compute is worth doing" — bases x bases,
 viewport-defined — and it is the only place in this subject where a kernel is the
 lever rather than a cap.
 
