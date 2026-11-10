@@ -674,7 +674,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
-              title="Export SVG"
+              title="Export image"
               type="button"
             >
               <svg

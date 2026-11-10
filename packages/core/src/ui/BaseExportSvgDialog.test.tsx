@@ -58,3 +58,49 @@ test('a stored theme that no longer exists falls back to the session theme', asy
 
   expect(await exportedThemeName('lightStock')).toBe('lightStock')
 })
+
+test('the R format hands the filename to exportR and hides the image options', async () => {
+  const exportSvg = jest.fn().mockResolvedValue(undefined)
+  const exportR = jest.fn().mockResolvedValue(undefined)
+  const { getByRole, queryByLabelText } = render(
+    <BaseExportSvgDialog
+      model={stubModel('default')}
+      handleClose={() => {}}
+      exportSvg={exportSvg}
+      exportR={exportR}
+    />,
+  )
+  fireEvent.click(getByRole('button', { name: 'R' }))
+
+  expect(queryByLabelText('Font')).toBeNull()
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  await waitFor(() => {
+    expect(exportR).toHaveBeenCalledWith('jbrowse.R')
+  })
+  expect(exportSvg).not.toHaveBeenCalled()
+})
+
+// The format and filename are stored once for every view's dialog, and only
+// the linear genome view offers R.
+test('a stored R format exports an SVG from a dialog without exportR', async () => {
+  localStorage.setItem('svg-format', JSON.stringify('r'))
+  localStorage.setItem('svg-file', JSON.stringify('locus.R'))
+  const exportSvg = jest.fn().mockResolvedValue(undefined)
+  const { getByRole, queryByRole } = render(
+    <BaseExportSvgDialog
+      model={stubModel('default')}
+      handleClose={() => {}}
+      exportSvg={exportSvg}
+    />,
+  )
+
+  expect(queryByRole('button', { name: 'R' })).toBeNull()
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  await waitFor(() => {
+    expect(exportSvg).toHaveBeenCalled()
+  })
+  expect(exportSvg.mock.calls[0][0]).toMatchObject({
+    format: 'svg',
+    filename: 'locus.svg',
+  })
+})

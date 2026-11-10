@@ -1711,7 +1711,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             icon: CenterFocusStrongIcon,
           },
           {
-            label: 'Export SVG...',
+            label: 'Export image...',
             icon: PhotoCameraIcon,
             onClick: () => {
               self.openExportDialog()

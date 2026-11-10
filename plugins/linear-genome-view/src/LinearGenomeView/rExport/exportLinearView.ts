@@ -1,6 +1,7 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { getSession } from '@jbrowse/core/util'
+import { saveAs } from '@jbrowse/core/util/FileSaver'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { exportTracksToR } from './rScript.ts'
@@ -108,30 +109,21 @@ export function exportLinearViewToR(view: LinearGenomeViewModel, out?: string) {
   })
 }
 
-/** Downloads the view's R script, telling the user what it leaves out. */
-export async function downloadRScript(view: LinearGenomeViewModel) {
-  const session = getSession(view)
-  try {
-    const { saveAs } = await import('@jbrowse/core/util/FileSaver')
-    const { script, notes } = exportLinearViewToR(view)
-    if (!script) {
-      session.notify(
-        `No open track has an R export. ${notes.join('; ')}`,
-        'warning',
-      )
-      return
-    }
-    saveAs(
-      new Blob([script], { type: 'text/plain;charset=utf-8' }),
-      'jbrowse_view.R',
-    )
+/**
+ * Saves the view's R script, telling the user what it leaves out. Throws when
+ * no open track has an R export, so the export dialog shows why.
+ */
+export function saveRScript(view: LinearGenomeViewModel, filename: string) {
+  const { script, notes } = exportLinearViewToR(view)
+  if (script) {
+    saveAs(new Blob([script], { type: 'text/plain;charset=utf-8' }), filename)
     if (notes.length) {
-      session.notify(
+      getSession(view).notify(
         `Exported with ${notes.length} note${notes.length === 1 ? '' : 's'} in the script header`,
         'info',
       )
     }
-  } catch (e) {
-    session.notifyError(`${e}`, e)
+  } else {
+    throw new Error(`No open track has an R export. ${notes.join('; ')}`)
   }
 }

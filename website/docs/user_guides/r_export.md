@@ -1,14 +1,14 @@
 ---
 title: Export R script
 description:
-  The linear genome view's menu writes an R script that redraws the open tracks
-  as an editable ggplot2 figure, reading the same data files
+  The linear genome view's image export writes an R script that redraws the open
+  tracks as an editable ggplot2 figure, reading the same data files
 guide_category: General usage
 ---
 
-The linear genome view's menu has an **Export R script** item. It downloads
-`jbrowse_view.R`, a short script that redraws the tracks open in the view, over
-the regions on screen, in R:
+The linear genome view's **Export image...** dialog offers **R** beside SVG and
+PNG. It downloads `jbrowse.R`, a short script that redraws the tracks open in
+the view, over the regions on screen, in R:
 
 - **Each track is one call** to [ggjbrowse](https://github.com/GMOD/ggjbrowse),
   which runs JBrowse's own data engine inside R and reads the track with the

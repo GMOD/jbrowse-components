@@ -1267,7 +1267,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       const exportSvgMenuItem = {
-        label: 'Export SVG...',
+        label: 'Export image...',
         icon: PhotoCameraIcon,
         onClick: () => {
           getDialogHost(self).queueDialog(handleClose => [
@@ -1309,7 +1309,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #method
          * The header's view-options menu: the zoom actions, the row coupling,
          * what varies with the stack under "Rows", each synteny track's menu
-         * under "Tracks", then Export SVG. Every
+         * under "Tracks", then Export image. Every
          * render setting is in `SyntenySettingsMenu` instead.
          * `ViewOptionsMenuButton` passes the "Show" submenu as
          * `extraSubMenus`, since the search box prefs are React state.

@@ -7,9 +7,10 @@ kind: spec
 
 # R script export
 
-The linear genome view's menu item **Export R script** downloads a `.R` that
-redraws the view in R through [ggjbrowse](https://github.com/GMOD/ggjbrowse),
-JBrowse's own engine in R ([TABLES.md](TABLES.md)):
+The linear genome view's **Export image...** dialog, set to **R**, downloads a
+`.R` that redraws the view in R through
+[ggjbrowse](https://github.com/GMOD/ggjbrowse), JBrowse's own engine in R
+([TABLES.md](TABLES.md)):
 
 - **In:** the view's open tracks and the regions on screen.
 - **Out:** a short script: one ggjbrowse reader per track, `fig <-
@@ -20,7 +21,8 @@ JBrowse's own engine in R ([TABLES.md](TABLES.md)):
 ## Where the code is
 
 `plugins/linear-genome-view/src/LinearGenomeView/rExport/`, imported lazily
-from the view menu (`menuItems.ts`):
+by the `exportR` the view menu (`menuItems.ts`) hands the shared export dialog
+(`BaseExportSvgDialog`), which shows R as a format only when given one:
 
 - `rScript.ts`: the pure part. `exportTracksToR` maps each track to its
   reader (`READERS`), writes the file argument, the regions and the
@@ -51,7 +53,7 @@ color) land in the script header.
 ## Settled decisions
 
 - **ggjbrowse is the product; the export is a doorway to it.** R users start in
-  R, and the browser already gives an instant figure (Export SVG); what R adds
+  R, and the browser already gives an instant figure (Export image, as SVG or PNG); what R adds
   happens in the user's own session. No in-browser R (webR) unless ggjbrowse
   users ask for it. Decided with Colin, 2026-10-11.
 - **R is the point, not an implementation choice.** No Python or Vega-Lite

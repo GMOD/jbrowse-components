@@ -29,7 +29,7 @@ import { autorun, runInAction } from 'mobx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
-import { exportLinearViewToR } from './rExport/exportLinearView.ts'
+import { exportLinearViewToR, saveRScript } from './rExport/exportLinearView.ts'
 import {
   setDisplayedRegionsKeepingCenter,
   withRegionRemoved,
@@ -2430,6 +2430,10 @@ describe('TrackInit with display configuration', () => {
       'Third: LinearBareDisplay has no R reader in ggjbrowse yet',
       'track1: LinearBareDisplay has no R reader in ggjbrowse yet',
     ])
+    // the export dialog shows the reason in place of a download
+    expect(() => {
+      saveRScript(model, 'jbrowse.R')
+    }).toThrow('No open track has an R export')
   })
 
   test('init with string trackIds works (backwards compatibility)', async () => {

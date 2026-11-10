@@ -61,7 +61,7 @@ Desktop, in `@jbrowse/launch-args` (GMOD/jbrowse-components#4303).
   `--drawCurves`, `--minAlignmentLength`, `--colorBy`, `--opacity`,
   `--levelHeights`, `--cigarMode` and `--autoDiagonalize`.
 - `--showGridlines` and `--trackLabels` stay: they are the export's options, the
-  ones the app's Export SVG dialog has, not view settings.
+  ones the app's Export image dialog has, not view settings.
 - A track flag names a format family (`--gff` reads GFF3 and GTF, `--bed` BED,
   bedGraph and BEDPE), opens the member the name says, and throws on a name
   another flag reads; a `.gz` name or `index:` picks the tabix adapter.

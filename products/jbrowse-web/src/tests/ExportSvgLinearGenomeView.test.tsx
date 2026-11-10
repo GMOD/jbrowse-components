@@ -1,6 +1,6 @@
 import './svgExportMocks.ts'
 
-import { fireEvent } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
   createView,
@@ -19,8 +19,10 @@ setup()
 // selector row for the other ~120 - see volvoxConfigWithTracks
 const config = volvoxConfigWithTracks(['volvox_alignments_pileup_coverage'])
 
+// the dialog stores its format, so an R export would carry into the next test
 beforeEach(() => {
   jest.clearAllMocks()
+  localStorage.clear()
   doBeforeEach()
 })
 
@@ -74,4 +76,28 @@ test('export svg of lgv with gridlines', async () => {
       fireEvent.click(await findByText('Show gridlines', ...opts))
     },
   })
+}, 45000)
+
+test('the export dialog saves an R script of the view', async () => {
+  const { saveAs } = jest.requireMock<{ saveAs: jest.Mock }>(
+    '@jbrowse/core/util/FileSaver',
+  )
+  const { view, findByTestId, findByText, findByRole } =
+    await createView(config)
+
+  view.setNewView(0.1, 1)
+  fireEvent.click(
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
+  )
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+  fireEvent.click(await findByText('Export image...', ...opts))
+  fireEvent.click(await findByRole('button', { name: 'R' }, ...opts))
+  fireEvent.click(await findByText('Submit', ...opts))
+
+  await waitFor(() => {
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+  const [blob, filename] = saveAs.mock.calls[0]
+  expect(filename).toBe('jbrowse.R')
+  expect(blob.content[0]).toContain('jbrowse_alignments(')
 }, 45000)

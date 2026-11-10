@@ -293,7 +293,7 @@ test('the header menu opens the same six rows at any row count', async () => {
     'Show whole genome - same bp per pixel',
     'Follow',
     'Rows',
-    'Export SVG...',
+    'Export image...',
   ])
 })
 

@@ -451,7 +451,7 @@ return {
 ## A publication figure, at a path you choose
 
 A screenshot captures the window; `view.exportSvg` writes the figure as vector
-graphics with no browser chrome, the same output the Export SVG dialog writes.
+graphics with no browser chrome, the same output the Export image dialog writes.
 `save: false` returns the markup, and your own file tools write it where you
 want. Raise `maxBytes` on the call to get the whole document back:
 

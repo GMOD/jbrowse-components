@@ -92,7 +92,7 @@ const Controls = observer(function Controls({
         onClick={() => {
           model.openExportDialog()
         }}
-        title="Export SVG"
+        title="Export image"
       >
         <PhotoCamera />
       </IconButton>

@@ -26,6 +26,14 @@ export interface BaseExportSvgOptions {
   fontFamily: string
 }
 
+type ExportFormat = BaseExportSvgOptions['format'] | 'r'
+
+const EXTENSIONS = { svg: '.svg', png: '.png', r: '.R' } as const
+
+function withExtension(filename: string, format: ExportFormat) {
+  return filename.replace(/\.(svg|png|r)$/i, EXTENSIONS[format])
+}
+
 // Generic CSS families only, so exported text resolves in any SVG renderer
 // (browser, Inkscape, Illustrator) without embedding a named font like Roboto.
 // The 'default' sentinel is the selected default; it maps to no font-family so
@@ -43,12 +51,14 @@ export default observer(function BaseExportSvgDialog({
   model,
   handleClose,
   exportSvg,
+  exportR,
   children,
   checkboxes,
 }: {
   model: IAnyStateTreeNode
   handleClose: () => void
   exportSvg: (opts: BaseExportSvgOptions) => Promise<unknown>
+  exportR?: (filename: string) => Promise<unknown>
   children?: React.ReactNode
   checkboxes?: React.ReactNode
 }) {
@@ -64,11 +74,21 @@ export default observer(function BaseExportSvgDialog({
   const rasterizeLayers = offscreenCanvas && rasterizePreference
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
-  const [format, setFormat] = useExportSvgPreference<'svg' | 'png'>(
+  // The stored format is shared by every view's dialog, and only some views
+  // offer R, so a view without it reads a stored `r` as SVG.
+  const [formatPreference, setFormat] = useExportSvgPreference<ExportFormat>(
     'format',
     'svg',
   )
-  const [filename, setFilename] = useExportSvgPreference('file', 'jbrowse.svg')
+  const format = formatPreference === 'r' && !exportR ? 'svg' : formatPreference
+  const [filenamePreference, setFilename] = useExportSvgPreference(
+    'file',
+    'jbrowse.svg',
+  )
+  const filename =
+    format === formatPreference
+      ? filenamePreference
+      : withExtension(filenamePreference, format)
   const [themePreference, setThemeName] = useExportSvgPreference(
     'theme',
     session.themeName || 'default',
@@ -97,13 +117,17 @@ export default observer(function BaseExportSvgDialog({
         setLoading(true)
         setError(undefined)
         try {
-          await exportSvg({
-            rasterizeLayers,
-            format,
-            filename,
-            themeName,
-            fontFamily: fontFamily === DEFAULT_FONT ? '' : fontFamily,
-          })
+          if (format === 'r') {
+            await exportR?.(filename)
+          } else {
+            await exportSvg({
+              rasterizeLayers,
+              format,
+              filename,
+              themeName,
+              fontFamily: fontFamily === DEFAULT_FONT ? '' : fontFamily,
+            })
+          }
           handleClose()
         } catch (e) {
           console.error(e)
@@ -119,7 +143,7 @@ export default observer(function BaseExportSvgDialog({
         <div>
           <CircularProgress size={20} style={{ marginRight: 20 }} />
           <Typography sx={{ display: 'inline' }}>
-            Creating {format.toUpperCase()}
+            Creating {format === 'r' ? 'R script' : format.toUpperCase()}
           </Typography>
         </div>
       ) : null}
@@ -135,74 +159,80 @@ export default observer(function BaseExportSvgDialog({
           <ToggleButtonGroup
             value={format}
             exclusive
-            onChange={(_event, value: 'svg' | 'png' | null) => {
+            onChange={(_event, value: ExportFormat | null) => {
               if (value) {
                 setFormat(value)
-                if (filename.endsWith('.svg') && value === 'png') {
-                  setFilename(filename.replace(/\.svg$/, '.png'))
-                } else if (filename.endsWith('.png') && value === 'svg') {
-                  setFilename(filename.replace(/\.png$/, '.svg'))
-                }
+                setFilename(withExtension(filename, value))
               }
             }}
             size="small"
           >
             <ToggleButton value="svg">SVG</ToggleButton>
             <ToggleButton value="png">PNG</ToggleButton>
+            {exportR ? <ToggleButton value="r">R</ToggleButton> : null}
           </ToggleButtonGroup>
         </div>
-        {children}
-        {allThemes ? (
-          <TextField
-            select
-            label="Theme"
-            variant="outlined"
-            style={{ minWidth: 200 }}
-            value={themeName}
-            onChange={event => {
-              setThemeName(event.target.value)
-            }}
-          >
-            {Object.entries(allThemes).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {val.name || '(Unknown name)'}
-              </MenuItem>
-            ))}
-          </TextField>
-        ) : null}
-        <TextField
-          select
-          label="Font"
-          variant="outlined"
-          style={{ minWidth: 200 }}
-          value={fontFamily}
-          onChange={event => {
-            setFontFamily(event.target.value)
-          }}
-        >
-          {fontFamilyOptions.map(({ value, label }) => (
-            <MenuItem key={value} value={value}>
-              {label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {checkboxes}
-          {offscreenCanvas ? (
-            <LabeledCheckbox
-              checked={rasterizeLayers}
-              onChange={val => {
-                setRasterizePreference(val)
+        {format === 'r' ? (
+          <Typography variant="body2">
+            A script that redraws the open tracks over the regions on screen in
+            R, with ggjbrowse reading the same data files
+          </Typography>
+        ) : (
+          <>
+            {children}
+            {allThemes ? (
+              <TextField
+                select
+                label="Theme"
+                variant="outlined"
+                style={{ minWidth: 200 }}
+                value={themeName}
+                onChange={event => {
+                  setThemeName(event.target.value)
+                }}
+              >
+                {Object.entries(allThemes).map(([key, val]) => (
+                  <MenuItem key={key} value={key}>
+                    {val.name || '(Unknown name)'}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : null}
+            <TextField
+              select
+              label="Font"
+              variant="outlined"
+              style={{ minWidth: 200 }}
+              value={fontFamily}
+              onChange={event => {
+                setFontFamily(event.target.value)
               }}
-              label="Rasterize canvas based tracks? File may be much larger if this is turned off"
-            />
-          ) : (
-            <Typography>
-              Note: rasterizing layers not yet supported in this browser, so SVG
-              size may be large
-            </Typography>
-          )}
-        </div>
+            >
+              {fontFamilyOptions.map(({ value, label }) => (
+                <MenuItem key={value} value={value}>
+                  {label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {checkboxes}
+              {offscreenCanvas ? (
+                <LabeledCheckbox
+                  checked={rasterizeLayers}
+                  onChange={val => {
+                    setRasterizePreference(val)
+                  }}
+                  label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+                />
+              ) : (
+                <Typography>
+                  Note: rasterizing layers not yet supported in this browser, so
+                  SVG size may be large
+                </Typography>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </SubmitDialog>
   )

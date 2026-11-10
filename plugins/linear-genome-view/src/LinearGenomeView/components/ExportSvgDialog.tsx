@@ -29,6 +29,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
   chooseWidth,
+  exportR,
 }: {
   model: {
     width?: number
@@ -43,6 +44,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
   }
   handleClose: () => void
   chooseWidth?: boolean
+  exportR?: (filename: string) => Promise<unknown>
 }) {
   // The view's own setting is already an export mode, so a user who has not
   // picked one here gets the figure their screen shows. The key is `-mode`
@@ -77,6 +79,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
           viewWidth: chooseWidth && widthValid ? typedWidth : undefined,
         })
       }
+      exportR={exportR}
       checkboxes={
         <LabeledCheckbox
           checked={showGridlines}
