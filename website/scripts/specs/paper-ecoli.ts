@@ -9,11 +9,15 @@ import { ecoliOneVsAllUrl } from './synteny.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// Copies of the two E. coli demos as the paper's figures read them, so a
+// rebuilt demo cannot change a published figure
+const FROZEN = 'https://jbrowse.org/demos/jb2v5_paper'
+
 export const paperEcoliSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/ecoli_oantigen',
-    url: sessionSpec('https://jbrowse.org/demos/ecoli_orthologs/config.json', {
+    url: sessionSpec(`${FROZEN}/ecoli_orthologs/config.json`, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -38,7 +42,11 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/ecoli_synteny',
-    url: ecoliOneVsAllUrl(36, { firstLevelHeight: 60, rowsTrackHeight: 86 }),
+    url: ecoliOneVsAllUrl(36, {
+      firstLevelHeight: 60,
+      rowsTrackHeight: 86,
+      config: `${FROZEN}/ecoli_pangenome/config.json`,
+    }),
     viewportWidth: 870,
     viewportHeight: 492,
     readySelector: displayPainted('synteny_canvas'),

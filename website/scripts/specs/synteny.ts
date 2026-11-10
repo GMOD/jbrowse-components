@@ -693,9 +693,13 @@ function peachGrapeChr1({
 
 export function ecoliOneVsAllUrl(
   levelHeight: number,
-  { firstLevelHeight = levelHeight, rowsTrackHeight = 100 } = {},
+  {
+    firstLevelHeight = levelHeight,
+    rowsTrackHeight = 100,
+    config = 'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+  } = {},
 ) {
-  return sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+  return sessionSpec(config, {
     views: [
       {
         type: 'LinearSyntenyView',
