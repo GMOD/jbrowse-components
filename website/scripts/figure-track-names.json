@@ -10,6 +10,7 @@
   },
   "https://jbrowse.org/demos/arabidopsis_pangenome/config.json": {
     "arabidopsis_minigraph_paths": "1001G+ minigraph pangenome: each accession's allele at every bubble",
+    "syri_regions_on_TAIR10": "SyRI regions on TAIR10, one row per accession",
     "TAIR10_genes": "TAIR10 genes (NCBI RefSeq)"
   },
   "https://jbrowse.org/demos/cancer_sv/config.json": {
