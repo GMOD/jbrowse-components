@@ -2,6 +2,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { adapterSpelledFilter } from './adapterSpelledFilter.ts'
 
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
 import type { RenameRegionsArgs } from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -12,6 +13,7 @@ interface GetConsensusSequenceArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   filter?: FieldPredicate[]
+  pinnedInsertSizeBand?: InsertSizeBand
   minDepth?: number
   callFract?: number
   hetFract?: number

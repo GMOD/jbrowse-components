@@ -3,6 +3,9 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
+import { workerInsertSizeBand } from './groupFeatures.ts'
+
+import type { InsertSizeBand } from './insertSizeStats.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -25,6 +28,7 @@ export async function getUniqueTags({
   self: IStateTreeNode & {
     adapterConfig: Record<string, unknown>
     readPredicates: FieldPredicate[]
+    pinnedInsertSizeBand: InsertSizeBand | undefined
     resolvedByteLimit: () => number | undefined
   }
   tag: string
@@ -41,6 +45,11 @@ export async function getUniqueTags({
     adapterConfig,
     tag,
     filter,
+    pinnedInsertSizeBand: workerInsertSizeBand(
+      undefined,
+      filter,
+      self.pinnedInsertSizeBand,
+    ),
     byteLimit: self.resolvedByteLimit(),
     regions: containingLgv(self).staticBlocks.contentBlocks.filter(b =>
       onTrack(b.assemblyName),

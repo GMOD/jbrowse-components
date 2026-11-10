@@ -409,13 +409,18 @@ describe('filterChainFeatures read dimensions', () => {
     name: string,
     orientation: string,
     flags: number,
-    { strand = 1, mate = 'ctgA' }: { strand?: number; mate?: string } = {},
+    {
+      strand = 1,
+      mate = 'ctgA',
+      tlen = 400,
+    }: { strand?: number; mate?: string; tlen?: number } = {},
   ) {
     const common = {
       refName: 'ctgA',
       name,
       pair_orientation: orientation,
       next_ref: mate,
+      template_length: tlen,
       CIGAR: '100M',
     }
     return [
@@ -532,6 +537,23 @@ describe('filterChainFeatures read dimensions', () => {
         { field: 'svKind', equal: 'elsewhere' },
       ]).map(f => f.id()),
     ).toEqual(['elsewhere-1', 'elsewhere-2', 'splitMate-1', 'splitMate-2'])
+  })
+
+  test('svKind files a too-close LR pair by the pinned band over the sampled one', () => {
+    const library = [90, 95, 100, 105, 110, 98, 102].flatMap((tlen, i) =>
+      mates(`proper${i}`, 'F1R2', PROPER, { tlen }),
+    )
+    const features = [
+      ...library,
+      ...mates('tooClose', 'F1R2', PAIRED, { tlen: 100 }),
+    ]
+    const insertion = [{ field: 'svKind', equal: 'insertion' }]
+    expect(names(filterChainFeatures(features, insertion))).toEqual([])
+    expect(
+      names(
+        filterChainFeatures(features, insertion, { lower: 150, upper: 600 }),
+      ),
+    ).toEqual(['tooClose'])
   })
 
   test('the entries on one dimension read each record once', () => {

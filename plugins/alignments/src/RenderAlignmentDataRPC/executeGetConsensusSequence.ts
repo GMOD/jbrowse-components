@@ -27,6 +27,7 @@ export async function executeGetConsensusSequence({
     sequenceAdapter,
     regions,
     filter,
+    pinnedInsertSizeBand,
     minDepth,
     callFract,
     hetFract,
@@ -78,9 +79,11 @@ export async function executeGetConsensusSequence({
   // that could drift from it. `MismatchFeature` satisfies core's
   // `ConsensusFeature` structurally. The read-category filters go first, as
   // they do for the pileup, so the tally is over the reads on screen.
-  const features = filterChainFeatures(featuresArray, filter).filter(f =>
-    isMismatchFeature(f),
-  )
+  const features = filterChainFeatures(
+    featuresArray,
+    filter,
+    pinnedInsertSizeBand,
+  ).filter(f => isMismatchFeature(f))
 
   // Features are already flag-filtered at fetch time by `filter`; reuse its
   // excluded flags here so the tally can't re-drop reads the user chose to

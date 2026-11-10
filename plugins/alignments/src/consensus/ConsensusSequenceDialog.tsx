@@ -31,9 +31,11 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { workerInsertSizeBand } from '../shared/groupFeatures.ts'
 import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ConsensusVcfEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -55,6 +57,7 @@ function download(content: string, filename: string, type: string) {
 export interface ConsensusDisplay extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   readPredicates: FieldPredicate[]
+  pinnedInsertSizeBand: InsertSizeBand | undefined
 }
 
 interface ConsensusData {
@@ -143,6 +146,11 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             regions,
             adapterConfig: display.adapterConfig,
             filter,
+            pinnedInsertSizeBand: workerInsertSizeBand(
+              undefined,
+              filter,
+              display.pinnedInsertSizeBand,
+            ),
             minDepth,
             callFract,
             hetFract: effectiveHetFract,
@@ -164,6 +172,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               adapterConfig: params.adapterConfig,
               regions: [region],
               filter: params.filter,
+              pinnedInsertSizeBand: params.pinnedInsertSizeBand,
               minDepth: params.minDepth,
               callFract: params.callFract,
               hetFract: params.hetFract,

@@ -16,7 +16,15 @@ export async function executeGetGlobalValueForTag({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>
 }) {
-  const { regions, tag, filter, byteLimit, signal, statusCallback } = args
+  const {
+    regions,
+    tag,
+    filter,
+    pinnedInsertSizeBand,
+    byteLimit,
+    signal,
+    statusCallback,
+  } = args
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     ...args,
@@ -56,6 +64,7 @@ export async function executeGetGlobalValueForTag({
     const features = filterChainFeatures(
       await dataAdapter.getFeaturesArray(region, fetchOpts),
       filter,
+      pinnedInsertSizeBand,
     )
     for (const feature of features) {
       // The same extractor the render path keys on, so a field-backed tag (no

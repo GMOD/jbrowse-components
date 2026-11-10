@@ -100,8 +100,13 @@ function passingMapq(
 export function filterChainFeatures(
   features: Feature[],
   filter?: readonly FieldPredicate[],
+  pinnedInsertSizeBand?: InsertSizeBand,
 ) {
-  return selectChains(sampleFeatures(features, filter), filter)
+  return selectChains(
+    sampleFeatures(features, filter),
+    filter,
+    pinnedInsertSizeBand,
+  )
 }
 
 // The reads the sample filters keep: one per record, passing `mapq`.
@@ -307,7 +312,14 @@ export function drawnReadMask(
 export function selectChains(
   sample: Feature[],
   filter?: readonly FieldPredicate[],
+  pinnedInsertSizeBand?: InsertSizeBand,
 ) {
-  const drawn = drawnReadMask(featureSource(sample), filter)
+  const drawn = drawnReadMask(
+    featureSource(
+      sample,
+      pinnedInsertSizeBand ? () => pinnedInsertSizeBand : undefined,
+    ),
+    filter,
+  )
   return drawn ? sample.filter((_, i) => drawn[i] === 1) : sample
 }

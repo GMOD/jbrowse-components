@@ -14,6 +14,7 @@ import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { BaseLayer, Facet } from '../../shared/types.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -22,11 +23,12 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface GroupByDialogModel extends IStateTreeNode, GroupByPlotHost {
   id: string
-  // `getUniqueTags` reads these three: its scan is the render fetch's
+  // `getUniqueTags` reads these four: its scan is the render fetch's
   // download, over the same read set the worker partitions and under the same
   // byte budget.
   adapterConfig: Record<string, unknown>
   readPredicates: FieldPredicate[]
+  pinnedInsertSizeBand: InsertSizeBand | undefined
   resolvedByteLimit: () => number | undefined
   colorField: string | undefined
   writtenColor: ColorSlots

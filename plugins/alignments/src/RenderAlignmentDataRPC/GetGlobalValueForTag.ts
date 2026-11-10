@@ -2,6 +2,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { adapterSpelledFilter } from './adapterSpelledFilter.ts'
 
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { RenameRegionsArgs } from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
@@ -19,6 +20,7 @@ interface GetGlobalValueForTagArgs {
   // only by filtered-out reads both padded "Found values" and could block Submit
   // on a grouping that would in fact have produced a handful of sections.
   filter?: FieldPredicate[]
+  pinnedInsertSizeBand?: InsertSizeBand
   // The display's own gate budget (`resolvedByteLimit()`), so this scan is
   // refused wherever the render fetch would be. It downloads every read of every
   // visible block — the largest thing the group-by dialog does — so ungated it
