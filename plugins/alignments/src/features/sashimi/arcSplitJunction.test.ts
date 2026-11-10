@@ -30,18 +30,19 @@ function saEntry([start, end, strand]: Segment, clip: number, tail: number) {
   return `chr1,${start + 1},${strand === -1 ? '-' : '+'},${cigar},60,0;`
 }
 
-// One split read of two segments in read order, each fetched as a record
-// whose SA tag names the other, or only the first when `fetchSecond` is off.
-function splitRead(a: Segment, b: Segment, fetchSecond = true) {
+// One split read of two segments in read order, `inserted` read bases between
+// them, each fetched as a record whose SA tag names the other, or only the
+// first when `fetchSecond` is off.
+function splitRead(a: Segment, b: Segment, fetchSecond = true, inserted = 0) {
   const lenA = a[1] - a[0]
   const lenB = b[1] - b[0]
   const records = [
-    { seg: a, clip: 0, flags: 0, sa: saEntry(b, lenA, 0) },
+    { seg: a, clip: 0, flags: 0, sa: saEntry(b, lenA + inserted, 0) },
     {
       seg: b,
-      clip: lenA,
+      clip: lenA + inserted,
       flags: SAM_FLAG_SUPPLEMENTARY,
-      sa: saEntry(a, 0, lenB),
+      sa: saEntry(a, 0, inserted + lenB),
     },
   ].slice(0, fetchSecond ? 2 : 1)
   return makePileupDataResult({
@@ -49,6 +50,7 @@ function splitRead(a: Segment, b: Segment, fetchSecond = true) {
     readStrands: new Int8Array(records.map(r => r.seg[2])),
     readFlags: new Uint16Array(records.map(r => r.flags)),
     readClipAtStart: new Uint32Array(records.map(r => r.clip)),
+    readAlignedBases: new Uint32Array(records.map(r => r.seg[1] - r.seg[0])),
     readSuppAlignments: records.map(r => r.sa),
     ...namesToBlock(records.map(() => 'split')),
   })
@@ -177,11 +179,35 @@ describe('a split arc names the sashimi junction its reads make', () => {
     expect(lit[0]?.reads).toEqual([0, 1])
   })
 
-  test('two feet on one base paint an insertion and name no sashimi junction', () => {
+  test('two feet on one base paint an insertion and light its reads', () => {
     const [arc] = litBy(splitRead([100, 200, 1], [200, 300, 1]), ONE_REGION)
     expect(arc?.category).toBe('splitInsertion')
-    expect(arc?.junction).toBeUndefined()
+    expect(arc?.junction).toEqual({
+      refName: 'chr1',
+      start: 200,
+      end: 200,
+      split: 'splitInsertion',
+    })
+    expect(arc?.reads).toEqual([0, 1])
   })
+
+  test.each([
+    ['forward', [100, 200, 1], [185, 285, 1]],
+    ['from the other end', [185, 285, -1], [100, 200, -1]],
+  ] as [string, Segment, Segment][])(
+    'an insertion inside a target-site duplication lights its reads, read %s',
+    (_name, a, b) => {
+      const [arc] = litBy(splitRead(a, b, true, 500), ONE_REGION)
+      expect(arc?.category).toBe('splitInsertion')
+      expect(arc?.junction).toEqual({
+        refName: 'chr1',
+        start: 185,
+        end: 200,
+        split: 'splitInsertion',
+      })
+      expect(arc?.reads).toEqual([0, 1])
+    },
+  )
 })
 
 describe('arcSplitJunction', () => {

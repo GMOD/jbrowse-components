@@ -8,6 +8,7 @@ import { forEachSplitJunction } from './splitJunctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
+import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { ArcBandHit } from '../arcs/bandFeed.ts'
 import type { SashimiSplitClass } from './junctionClass.ts'
@@ -25,28 +26,31 @@ export interface LaneJunction {
 
 /**
  * A hovered junction: a sashimi junction names its lane, and a split arc,
- * whose support pools every lane, names none.
+ * whose support pools every lane, names none. A split arc names its arc
+ * class, an insertion included, which no sashimi arc draws.
  */
-export type HoveredJunction = Omit<LaneJunction, 'groupKey'> & {
+export interface HoveredJunction extends Omit<
+  LaneJunction,
+  'groupKey' | 'split'
+> {
   groupKey?: string
+  split?: ArcSplitCategory
 }
 
 /**
  * The split junction a hovered arc draws on `refName`, the canonical name of
- * the region it is filed under. None for a mate link, a tick, an arc reaching
- * another chromosome or one whose feet share a base, which no sashimi class
- * names.
+ * the region it is filed under. None for a mate link, a tick or an arc
+ * reaching another chromosome.
  */
 export function arcSplitJunction(hit: ArcBandHit, refName: string | undefined) {
   let junction: HoveredJunction | undefined
   if (
     hit.kind === 'arc' &&
     hit.endRefName === undefined &&
-    hit.x1 !== hit.x2 &&
     refName !== undefined
   ) {
     const split = arcSlotCategory(hit.colorType)
-    if (isArcSplitCategory(split) && split !== 'splitInsertion') {
+    if (isArcSplitCategory(split)) {
       junction = {
         refName,
         start: Math.min(hit.x1, hit.x2),
@@ -104,8 +108,8 @@ function skipGapReads(data: ReadFields, start: number, end: number) {
 // each read once.
 function splitReads(
   data: ReadFields,
-  junction: LaneJunction,
-  split: SashimiSplitClass,
+  junction: HoveredJunction,
+  split: ArcSplitCategory,
   canonicalRefName: CanonicalRefName,
 ) {
   const {
@@ -122,7 +126,7 @@ function splitReads(
   const isHere = (refName: AdapterRefName) =>
     canonicalRefName(refName) === junction.refName
   let read = -1
-  const visit = (start: number, end: number, joinSplit: string) => {
+  const visit = (start: number, end: number, joinSplit: ArcSplitCategory) => {
     if (
       start === junction.start &&
       end === junction.end &&
@@ -166,7 +170,7 @@ export function junctionSupportingReadSlots(
     refName: string | undefined
     data: ReadFields
   }>,
-  junction: LaneJunction,
+  junction: HoveredJunction & { groupKey: string },
   canonicalRefName: CanonicalRefName = adapterRefNameText,
 ) {
   const { groupKey, start, end, split } = junction
