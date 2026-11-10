@@ -9,6 +9,7 @@ import {
 import { takeArrangement } from './arrangements.ts'
 import { agentBrief, captureFrame } from './agent.ts'
 import { configTracks } from './configTracks.ts'
+import { embedSnippet } from './embed.ts'
 import { imgRecipe } from './img.ts'
 import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 
@@ -69,6 +70,8 @@ export interface Recipe {
   steps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
+  // the same view as a React component, absent where the notebook snippet is
+  embed?: string
   // a prompt handing a coding agent this view, and the `npx @jbrowse/capture`
   // invocation that rebuilds the figure
   agent: AgentRecipe
@@ -647,6 +650,7 @@ export function buildRecipe(
     specJson,
     steps,
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
+    embed: plugin ? undefined : embedSnippet(configUrl, spec),
     agent: {
       brief: agentBrief(decoded),
       frames: [captureFrame(decoded, figureName)],

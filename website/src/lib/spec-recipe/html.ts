@@ -3,6 +3,7 @@ import { escapeAttr } from '../inline-html.ts'
 import { APP_TAB, JSON_TAB_KIND } from '../tab-kinds.ts'
 
 import { OWN_FILE } from './configTracks.ts'
+import { EMBED_PACKAGE } from './embed.ts'
 
 import type { AgentRecipe } from './agent.ts'
 import type { Recipe, RecipeStep } from './recipe.ts'
@@ -144,6 +145,20 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
                 'This view in a notebook, with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>. Swap a track\'s <code>uri</code> for your file.',
               ),
               copyableBlock(recipe.python, 'spec-python'),
+            ].join(''),
+          },
+        ]
+      : []),
+    ...(recipe.embed
+      ? [
+          {
+            label: 'Embed',
+            kind: 'embed',
+            body: [
+              note(
+                `This view in your React app, with <a href="/docs/embedded_components/">${EMBED_PACKAGE}</a> and <code>@jbrowse/core</code>. Add your own files to <code>tracks</code>.`,
+              ),
+              copyableBlock(recipe.embed, 'spec-json'),
             ].join(''),
           },
         ]
