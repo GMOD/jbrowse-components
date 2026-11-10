@@ -47,6 +47,7 @@ import {
   framedIn,
   referenceContig,
 } from './frame.ts'
+import { isRow } from './wire.ts'
 
 import type { AssemblyConfig, ResolvedAssembly } from './assembly.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
@@ -289,19 +290,21 @@ const CANONICAL_NAMES_ARGS = { assembly: true, refNames: true } as const
  * arrays, or a typed array alone, as a matrix's values are.
  */
 function tableRows(result: object, path = ''): [string, number][] {
-  return Object.entries(result).flatMap(([name, value]) => {
-    if (value instanceof Float32Array) {
-      return [[`${path}${name}`, value.length]]
-    }
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return []
-    }
-    const columns = Object.values(value as object).filter(
-      c => Array.isArray(c) || ArrayBuffer.isView(c),
-    ) as ArrayLike<unknown>[]
-    return columns.length
-      ? [[`${path}${name}`, Math.max(...columns.map(c => c.length))]]
-      : tableRows(value as object, `${path}${name}.`)
+  return Object.entries(result).flatMap(([name, value]: [string, unknown]) => {
+    const at = `${path}${name}`
+    const columns =
+      typeof value === 'object' && value !== null
+        ? Object.values(value).filter(isRow)
+        : []
+    return isRow(value)
+      ? Array.isArray(value)
+        ? []
+        : [[at, value.length]]
+      : columns.length > 0
+        ? [[at, Math.max(...columns.map(c => c.length))]]
+        : typeof value === 'object' && value !== null
+          ? tableRows(value, `${at}.`)
+          : []
   })
 }
 

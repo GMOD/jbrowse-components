@@ -76,7 +76,7 @@ function encode(value: unknown, bytes: ByteSink): unknown {
 const isNull = (v: unknown): v is null | undefined =>
   v === null || v === undefined
 
-function isRow(v: unknown): v is ArrayLike<unknown> {
+export function isRow(v: unknown): v is ArrayLike<unknown> {
   return Array.isArray(v) || ArrayBuffer.isView(v)
 }
 

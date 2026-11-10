@@ -1,6 +1,6 @@
 import { createTablesEngine } from './index.ts'
 import { INV_INDELS, INV_INDELS_DOTPLOT, STAR } from './synteny.fixture.ts'
-import { BAM, GFF3 } from './volvox.fixture.ts'
+import { BAM, GFF3, MULTI_BIGWIG } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -71,4 +71,14 @@ test('region and regions read the same', async () => {
   const listed = await engine.alignments({ ...rest, regions: [region] })
   expect(listed.reads.id).toEqual(one.reads.id)
   expect(listed.readAs).toEqual(one.readAs)
+})
+
+test('a matrix past its row limit is refused for its values, a table alone', async () => {
+  const { values } = await engine.scoreMatrix(MULTI_BIGWIG)
+  await expect(
+    engine.scoreMatrix({ ...MULTI_BIGWIG, rowLimit: values.length - 1 }),
+  ).rejects.toThrow(`the file gives ${values.length} rows of values,`)
+  await expect(
+    engine.scoreMatrix({ ...MULTI_BIGWIG, rowLimit: values.length }),
+  ).resolves.toBeDefined()
 })
