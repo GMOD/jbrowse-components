@@ -23,9 +23,10 @@ color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
 (`readCategoryColorsOf`, built once per palette over `declaredReadCategoryColors`)
 → the color `encoding.color` declares for the category.
 
-A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
+A split-read arc's five slots (`features/arcs/arcSplitCategory.ts`) are not read
 categories. `ARC_SPLIT_SWATCH` names the read swatch each paints, so a color
-declared for `pairRL` also moves the duplication-type split arc, and the
+declared for `pairRL` also moves the duplication-type split arc, the
+insertion split paints `shortInsert` as a too-close pair does, and the
 deletion-type split takes the `splitSameStrand` gold of the read fills.
 A split takes its class under both color fields: neither has a value for a
 junction, and the baseline slot would key it as a normal pair.
@@ -35,7 +36,7 @@ together. **When adding a slot**, add it to the meaning table. Do not add a colo
 and do not add a `case` to a classifier that already has a table.
 
 Labels derive the same way: `arcColorCategoryLabel` reads wording through the
-read key, with `ARC_SPLIT_LABELS` naming the four junction rows. The band's
+read key, with `ARC_SPLIT_LABELS` naming the five junction rows. The band's
 colors and the pileup connectors' are one key list (the model's
 `connectionLegendItems`), since they paint one field through one palette, and
 the interchromosomal row reads "Inter-chromosomal" whether a split read or a

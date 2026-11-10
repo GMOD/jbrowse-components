@@ -68,6 +68,46 @@ did not pair it), `partnerElsewhere` to `elsewhere`, and `svInsertion` to
 `insertion`. Labels lead with the kind, and the deletion-type label names the
 CIGAR deletions it holds.
 
+Amended 2026-11-09: a long read split around an insertion it did not align
+files as an insertion. The two pieces of such a read almost never meet on one
+base: on HG002 (GRCh37; Sequel HiFi pbmm2 0.10, Revio HiFi pbmm2 1.10, ONT UL
+minimap2 2.17, against GIAB Tier1 SV v0.6) they overlap by a target-site
+duplication (-18 to -10 bp on HiFi) or a few hundred bases of flank homology,
+or miss by a few bases, so the reads filed duplication-type or deletion-type
+and the arc painted deletion-type gold. With `refGap` the reference the read
+skips between its pieces in its own direction and `readGap` the read bases
+between them (`clipAtStart(B) - (clipAtStart(A) + alignedBases(A))`), a
+same-strand junction is an insertion when `refGap` is 0, or when `readGap` is
+at least `SV_INDEL_MIN_BP`, `|refGap|` at most half of it, and `refGap` under
+`SV_INDEL_MIN_BP`: a junction skipping an SV-size stretch is a deletion first,
+as a CIGAR holding both files. `splitJunctionSlot` decides it for the band,
+the arc, the connector and the hover; the arc paints `splitInsertion`, the
+short-insert pink of the too-close pairs. An insertion junction draws no
+sashimi arc, since it spans no reference; the sashimi classes stay four. A
+junction is size-matched below when `readGap` or `readGap - refGap` is within
+20% of a Tier1 insertion within 1 kb:
+
+| | Sequel HiFi | Revio | ONT |
+| --- | --- | --- | --- |
+| junctions moved / size-matched | 575 / 489 | 54 / 37 | 616 / 282 |
+| moved off duplication-type / deletion-type | 553 / 22 | 50 / 4 | 527 / 89 |
+| Tier1 insertion loci with 2+ junction reads, all insertion | 90 of 115 | 10 of 20 | 19 of 104 |
+| chr20 stretch with no locus selection, moved / matched | 9 / 8 | 0 of 1 junction | 15 / 14 |
+| tandem duplications size-matched to a `REPTYPE=DUP` call, moved | 0 of 18 | 0 of 11 | 12 of 85 |
+
+The chr20 stretch is 10-30 Mb on Sequel and 10-15 Mb on Revio and ONT. In the
+-350 to -100 bp overlap group, SVLEN matches `readGap - refGap` better than
+`readGap` for 260 of 274 matched Sequel junctions, 8 of 8 Revio and 92 of 101
+ONT. The `refGap` clause takes 31, 15 and 316 junctions back out of the
+insertion class; on ONT it costs most of the all-insertion loci (64 of 104
+without it), whose reads skip 50 bp or more of reference beside the insertion.
+Out of scope: a read whose inserted sequence aligned elsewhere as a middle
+piece has no junction between its flanks, stays in "Partner on another
+chromosome or unmapped" when that piece is on another reference, and these
+reads outnumber the ones the rule moves: 824 against 559 reads holding an
+insertion junction on Sequel, 967 against 53 on Revio, 1,385 against 562 on
+ONT, 680, 850 and 1,094 of them in the partner band.
+
 ## Context
 
 - **SV channels was a short-read arrangement.** The preset faceted by
@@ -185,8 +225,10 @@ CIGAR deletions it holds.
   (ADR-229's amendment), and the band keys whole chains off the filter's
   verdict. Pinned on the four volvox SV fixtures (`svKind.test.ts`). A
   secondary keys a chain of its own and files by its own evidence.
-- `insertion` from a split needs the feet on one base exactly; a one- or
-  two-base overlap files as duplication-type.
+- `insertion` from a split reads the read gap between the pieces as well as
+  their feet (the 2026-11-09 amendment), so a target-site duplication or a
+  few bases' miss files as insertion; the read gap ships per record as
+  `readAlignedBases`, read off the stored read length less its soft clips.
 - The keyer runs only under `facet: svKind`. It reads the start clip off the
   record, since rebuilding the CIGAR string cost 15 to 25 times the rest of the
   classifier, and walks the SA tag in place. It costs what the `svSignal`

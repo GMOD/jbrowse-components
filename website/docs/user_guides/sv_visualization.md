@@ -183,16 +183,19 @@ duplication-type, inversion, a partner on another chromosome or unmapped, an
 SV-size insertion, and no SV evidence. The preset files a discordant pair by its
 orientation, an LR pair whose mates sit closer than the library's fragments as
 an insertion, and a split read by its junction, so short and long reads of one
-event fill the same band. Concordant pairs and every other read without SV
-evidence fill the last band, the depth the others are read against. The preset
-also sets **Filter by → SV evidence → Only SV evidence**, which hides rows and
-leaves every band's coverage counting all its reads, so the last band draws its
-coverage alone and the others draw only the reads with SV evidence. The band
-that fills identifies the rearrangement, and a band that stays empty under a
-call is a call with no read evidence behind it. A band appears only for a kind
-of evidence that some read in the window has. The partner band is never empty on
-short reads: at every locus some mates land on another chromosome, and an
-insertion longer than the fragment adds mates that do not map.
+event fill the same band. A long read split around an insertion files as an
+insertion when 50 or more read bases lie between its two pieces and the pieces
+overlap on the reference by at most half that many bases, or leave a gap under
+both 50 bases and half that many. Concordant pairs and every other read without
+SV evidence fill the last band, the depth the others are read against. The
+preset also sets **Filter by → SV evidence → Only SV evidence**, which hides
+rows and leaves every band's coverage counting all its reads, so the last band
+draws its coverage alone and the others draw only the reads with SV evidence.
+The band that fills identifies the rearrangement, and a band that stays empty
+under a call is a call with no read evidence behind it. A band appears only for
+a kind of evidence that some read in the window has. The partner band is never
+empty on short reads: at every locus some mates land on another chromosome, and
+an insertion longer than the fragment adds mates that do not map.
 
 A read counts as **SV evidence** when it is a split read whose placed pieces
 join, an insertion or deletion of 50 bp or more, or a discordant pair, with both
@@ -296,7 +299,9 @@ color between two forward-strand segments, and an arc joins each breakpoint
 pair: green at the junction LL pairs span, navy at the one RR pairs span. A
 split read across a deletion draws a gold arc. One across a tandem duplication
 draws a teal arc, the color of the pairs that span it, and a teal loop under its
-row where the read maps back over itself.
+row where the read maps back over itself. One split around an insertion the
+aligner left out of the CIGAR draws a pink arc, the color of the pairs too close
+across it, and no sashimi arc.
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the
