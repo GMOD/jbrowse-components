@@ -235,8 +235,8 @@ location box, then pick this path from the track menu:
 The color marks each read's strand. To compare the strands over a whole gene,
 **Group by → First-of-pair strand** applies a `facet`, one section per strand,
 each with a coverage histogram drawn from that section's reads, forward and
-reverse on one autoscaled axis. **Show → Pileup**, unticked, hides the reads and
-leaves the two histograms.
+reverse on one autoscaled axis. **Show → Show pileup**, unticked, hides the
+reads and leaves the two histograms.
 
 On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 `chr6:31,920,500-31,933,000` into the location box:

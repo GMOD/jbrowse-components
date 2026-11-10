@@ -671,7 +671,7 @@ function wiggleSizeStep(menu: string, plots: string): FieldRecipe {
 // One toggle, one place, on every display with a dendrogram sidebar
 // (tree-sidebar's `treeSidebarShowMenuItems`): it reveals the dendrogram alone
 // and the row labels have their own row beneath it.
-const TREE_SIDEBAR_TOGGLE = 'Tree'
+const TREE_SIDEBAR_TOGGLE = 'Show tree'
 const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMafDisplay',
   'LinearMultiRowFeatureDisplay',
@@ -1124,7 +1124,7 @@ const layerCheckbox = (label: string, note?: string): FieldRecipe => {
 // quality fade's checkbox writes `encoding.opacity.field` alone; a written
 // scale has no row.
 const mismatchesLayer = layerCheckbox(
-  'Show → Mismatches',
+  'Show → Show mismatches',
   'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
 )
 const mismatchesFade = checkbox('Show → Fade low-quality mismatches')
@@ -1566,7 +1566,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined,
   clusterRegion: value => (typeof value === 'string' ? [] : undefined),
   'rows.axis.grid': showToggle(
-    'Row separators',
+    'Show row separators',
     d => d === 'LinearMultiRowFeatureDisplay',
   ),
   // Which attribute becomes the rows. The submenu's options are discovered from
@@ -1652,7 +1652,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'rows.axis.labels': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Show → Row labels (${checked(value)})`,
+          path: `${TRACK_MENU} → Show → Show row labels (${checked(value)})`,
           note: value
             ? undefined
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
@@ -1663,7 +1663,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show → Tree branch lengths (${checked(value)})`,
+          path: `${TRACK_MENU} → Show → Show tree branch lengths (${checked(value)})`,
           note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item appears once the tree is showing and carries branch lengths.',
         }
       : undefined,
@@ -1719,9 +1719,9 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  'legend.show': showToggle('Legend', d => SHOW_LEGEND_DISPLAYS.has(d)),
+  'legend.show': showToggle('Show legend', d => SHOW_LEGEND_DISPLAYS.has(d)),
   'coverage.show': showToggle(
-    'Coverage',
+    'Show coverage',
     d => SHOW_SUBMENU_DISPLAYS.has(d) || d === 'LinearMafDisplay',
   ),
   'pileup.collapsed': showToggle(
@@ -1741,7 +1741,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'overlay' || value === 'above') &&
     displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show → Lane names on the gene row (${checked(value === 'overlay')})`,
+          path: `${TRACK_MENU} → Show → Show lane names on the gene row (${checked(value === 'overlay')})`,
         }
       : undefined,
   'coverage.encoding.y': yStep(channelYMembers),
@@ -1760,7 +1760,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     ].flatMap(step => (step === undefined ? [] : step))
     return steps.length ? steps : undefined
   },
-  'conservation.show': showToggle('Conservation', isMaf),
+  'conservation.show': showToggle('Show conservation', isMaf),
   'conservation.unit': (value, { displayType }) => {
     const label = CONSERVATION_UNIT_OPTIONS.find(([v]) => v === value)?.[1]
     return label && displayType === 'LinearMafDisplay'
@@ -1776,10 +1776,10 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: rowHeightPath(value, presets) }
       : undefined
   },
-  'alignments.reference': showToggle('Reference row', isMaf, {
+  'alignments.reference': showToggle('Show reference row', isMaf, {
     read: layerShow,
   }),
-  'alignments.mismatches': showToggle('Mismatches', isMaf, {
+  'alignments.mismatches': showToggle('Show mismatches', isMaf, {
     read: layerShow,
   }),
   'alignments.bases': (value, { displayType }) => {
@@ -1888,7 +1888,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         : undefined
     }
     if (displayType === 'MultiWaySyntenyDisplay') {
-      return checkbox('Gene labels', labels?.name)
+      return checkbox('Show gene labels', labels?.name)
     }
     if (!displayType || !CANVAS_DISPLAYS.has(displayType)) {
       return undefined
@@ -1898,8 +1898,8 @@ export const trackFields: Record<string, FieldRecipe> = {
       subfeatures?.show === false ? 'none' : asString(subfeatures?.placement)
     const radio = placement ? SUBFEATURE_LABELS[placement] : undefined
     const steps = [
-      checkbox('Names', labels?.name),
-      checkbox('Descriptions', labels?.description),
+      checkbox('Show names', labels?.name),
+      checkbox('Show descriptions', labels?.description),
       radio
         ? { path: `${TRACK_MENU} → Show → Subfeature labels → ${radio}` }
         : undefined,
@@ -1915,19 +1915,19 @@ export const trackFields: Record<string, FieldRecipe> = {
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
   'pileup.softClips': layerCheckbox(
-    'Show → Soft clipping',
+    'Show → Show soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   'pileup.connectors': layerCheckbox(
     'Read connections → Pileup connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
-  // Sits directly under "Coverage" in the alignments "Show" submenu
+  // Sits directly under "Show coverage" in the alignments "Show" submenu
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a
   // 30x pileup is a solid mass and only the curve carries the comparison.
   'pileup.show': checkbox(
-    'Show → Pileup',
+    'Show → Show pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
   // A radio list of five fractions rather than a number entry
@@ -1952,20 +1952,20 @@ export const trackFields: Record<string, FieldRecipe> = {
   // histogram wants: the arcs are strand-colored too, from the XS/TS tag, and
   // outdraw it.
   'sashimi.show': checkbox(
-    'Show → Sashimi arcs',
+    'Show → Show sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   'pileup.mismatches': mismatchesStep,
   'genotypes.reference': layerCheckbox(
-    'Show → Reference alleles',
+    'Show → Show reference alleles',
     'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
   ),
   // Three sibling checkboxes in the reference-sequence track's Show submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
-  forward: layerCheckbox('Show → Forward'),
-  reverse: layerCheckbox('Show → Reverse'),
-  translation: layerCheckbox('Show → Translation'),
-  'sashimi.labels': layerCheckbox('Show → Sashimi read counts'),
+  forward: layerCheckbox('Show → Show forward'),
+  reverse: layerCheckbox('Show → Show reverse'),
+  translation: layerCheckbox('Show → Show translation'),
+  'sashimi.labels': layerCheckbox('Show → Show sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,
@@ -2288,7 +2288,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     const { grid, labels } = asRecord(value) ?? {}
     const gridPath =
       viewType === 'LinearGenomeView'
-        ? 'View menu → Show → Guidelines'
+        ? 'View menu → Show → Show guidelines'
         : viewType === 'LinearSyntenyView'
           ? settingsPath(viewType, 'Location markers')
           : settingsPath(viewType, 'Gridlines')
@@ -2387,7 +2387,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → Center line (${checked(value)})`,
+          path: `View menu → Show → Show center line (${checked(value)})`,
         }
       : undefined,
   tracklist: value =>
@@ -2401,13 +2401,13 @@ export const viewFields: Record<string, FieldRecipe> = {
   colorByFrame: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → CDS reading frame colors (${checked(value)})`,
+          path: `View menu → Show → Show CDS reading frame colors (${checked(value)})`,
         }
       : undefined,
   showAminoAcids: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → Amino acids when zoomed in (${checked(value)})`,
+          path: `View menu → Show → Show amino acids when zoomed in (${checked(value)})`,
         }
       : undefined,
   // The checkbox carries the placeholder's visibility, so it reads the inverse
@@ -2416,7 +2416,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   hideNoTracksActive: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show → No tracks active button (${value ? 'unchecked' : 'checked'})`,
+          path: `View menu → Show → Show no tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
   // the linear synteny view's ribbon curve, the Curved lines checkbox

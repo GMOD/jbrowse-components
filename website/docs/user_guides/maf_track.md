@@ -54,10 +54,10 @@ them is refused.
 
 ## Conservation and per-row identity
 
-The **Show → Conservation** band plots, at each reference base, the fraction of
-aligned species whose base matches the reference, a quick read of which regions
-are conserved versus divergent. It is computed from the alignment itself, so no
-extra files are needed.
+The **Show → Show conservation** band plots, at each reference base, the
+fraction of aligned species whose base matches the reference, a quick read of
+which regions are conserved versus divergent. It is computed from the alignment
+itself, so no extra files are needed.
 
 Like the [alignments track](/docs/user_guides/alignments_track)'s reads, each
 row is a fill with the mismatches drawn over it. **Color by** breaks the same
@@ -76,8 +76,8 @@ Its **Per-base coloring** block draws over the fill. **Every base** colors
 matching bases by base too, so the whole alignment reads as sequence, and
 **Codon changes (amino acids)**, below, colors each codon. Zoomed in, a letter
 marks every cell its base colors, in the case the file gives it; UCSC alignments
-lowercase soft-masked repeats. **Show → Mismatches** takes the differing bases,
-insertion markers and deletion counts off, leaving the fill.
+lowercase soft-masked repeats. **Show → Show mismatches** takes the differing
+bases, insertion markers and deletion counts off, leaving the fill.
 
 **Plot type** › **Identity X-Y plot** draws identity as each row's bar height, a
 per-species wiggle. The bars are colored with the heatmap's ramp under
@@ -121,23 +121,23 @@ blocks from more than one source chromosome, which flags a translocation or
 rearrangement. The ranking is per row, and a compact legend in the top-right
 names the scheme (main / 2nd / 3rd source). Like conservation, it is derived
 from the alignment with no extra data to fetch. The figure turns off **Show →
-Mismatches**, which at this zoom would cover most of the fill.
+Show mismatches**, which at this zoom would cover most of the fill.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="The ce11 26-way colored by source chromosome, a row switching color where its blocks come from another chromosome."/>
 
 ## Inversions (strand flips)
 
-**Show → Inversions (strand flips)** overlays a diagonal hatch on any block that
-aligns inverted relative to the consensus orientation of its source chromosome.
-Each block is compared to its scaffold's consensus, so an arbitrarily-oriented
-scaffold reads as collinear and only a genuine intra-scaffold strand flip is
-marked. It is an overlay, so it composes on top of any fill and per-base
-coloring.
+**Show → Show inversions (strand flips)** overlays a diagonal hatch on any block
+that aligns inverted relative to the consensus orientation of its source
+chromosome. Each block is compared to its scaffold's consensus, so an
+arbitrarily-oriented scaffold reads as collinear and only a genuine
+intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
+any fill and per-base coloring.
 
 ## Codon (amino-acid) view
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
-on the display), two coding-aware options appear. **CDS frames** (off by
+on the display), two coding-aware options appear. **Show CDS frames** (off by
 default, under **Show**) draws a thin reading-frame-colored strip on each
 species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. The strip draws over
@@ -237,8 +237,8 @@ row has that species' gene track where the session has one.
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree.
 
-- **Show → Tree** toggles the dendrogram and **Row labels** the species names,
-  and **Tree branch lengths** draws the tree to scale.
+- **Show → Show tree** toggles the dendrogram and **Show row labels** the
+  species names, and **Show tree branch lengths** draws the tree to scale.
 - **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its

@@ -207,7 +207,7 @@ ortholog group, named by its gene symbol, to a color:
   breaks the column.
 - A gene in no group is grey.
 - A key naming the groups appears in the top right once the window holds few
-  enough to list. Untick **Show → Legend** in the track menu to hide it.
+  enough to list. Untick **Show → Show legend** in the track menu to hide it.
 
 ```json addtrack
 {

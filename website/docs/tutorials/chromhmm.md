@@ -216,7 +216,7 @@ file's colors and relabels them in the key.
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:
 
-- **Show → Legend** turns the key off.
+- **Show → Show legend** turns the key off.
 - The **Categories** submenu has a checkbox per legend entry. Uncheck the
   quiescent and repressed states to leave the promoters, enhancers and
   transcription.

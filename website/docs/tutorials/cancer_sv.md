@@ -157,7 +157,8 @@ Open the SV calls and the tumor and normal read tracks at
 on another chromosome, so its end here is soft clipping, a stretch the aligner
 left unaligned. In each read track's menu:
 
-- **Show → Soft clipping** draws the clipped ends, which are off by default.
+- **Show → Show soft clipping** draws the clipped ends, which are off by
+  default.
 - **Sort by → Split reads first** lifts the reads that continue on another
   chromosome to the top of the pileup.
 - **Force load** approves the download when the track asks first because the

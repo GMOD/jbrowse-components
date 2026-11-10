@@ -14,7 +14,7 @@ chooses how the variants run across it:
   a heatmap
 
 A VCF with one sample, such as a call set, opens as its records alone; **Show →
-Genotype rows** in the track menu draws its row.
+Show genotype rows** in the track menu draws its row.
 
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 

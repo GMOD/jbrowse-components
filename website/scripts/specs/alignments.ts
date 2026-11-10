@@ -277,21 +277,21 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Show', 'Soft clipping']),
+          ...menuCascade(['Show', 'Show soft clipping']),
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Show' } },
-          { type: 'box', anchor: { text: 'Soft clipping' } },
+          { type: 'box', anchor: { text: 'Show soft clipping' } },
         ],
       },
       {
         // A checkbox row keeps the menu open, so two Escapes close the submenu
         // and the track menu.
         actions: [
-          { type: 'click', text: 'Soft clipping' },
+          { type: 'click', text: 'Show soft clipping' },
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
-          { type: 'waitForText', text: 'Soft clipping', hidden: true },
+          { type: 'waitForText', text: 'Show soft clipping', hidden: true },
           { type: 'waitForText', text: 'Show', hidden: true },
           // the focused track menu icon keeps its tooltip up until a click
           // elsewhere blurs it

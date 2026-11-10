@@ -106,9 +106,9 @@ index is found beside it:
 
 - open `https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam`, then
   `NCI-H596_RNA.bam` and `EBC-1_RNA_5pct.bam` from the same folder
-- on each RNA-seq track, turn off **Show → Pileup** and turn on **Show → Sashimi
-  read counts** in the track menu, which leaves the coverage and an arc for each
-  junction, labelled with its number of reads
+- on each RNA-seq track, turn off **Show → Show pileup** and turn on **Show →
+  Show sashimi read counts** in the track menu, which leaves the coverage and an
+  arc for each junction, labelled with its number of reads
 
 ## Following exon 14 onto the structure
 

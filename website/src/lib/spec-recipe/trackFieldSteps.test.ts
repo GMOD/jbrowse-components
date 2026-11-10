@@ -145,7 +145,7 @@ test('a legend toggle is the same Show row on every display that has a legend', 
     'LinearMarkDisplay',
   ]) {
     expect(stepPaths('legend.show', false, displayType)).toEqual([
-      'Track menu → Show → Legend (unchecked)',
+      'Track menu → Show → Show legend (unchecked)',
     ])
   }
   expect(stepPaths('legend.show', true, undefined)).toEqual([])
@@ -164,18 +164,18 @@ test("the variant display's rows.field is the Rows radio, unit only the alignmen
 
 test('branch lengths are the toggle beside Tree', () => {
   expect(stepPaths('rows.axis.branchLength', false, 'LinearMafDisplay')).toEqual([
-    'Track menu → Show → Tree branch lengths (unchecked)',
+    'Track menu → Show → Show tree branch lengths (unchecked)',
   ])
   expect(stepPaths('rows.axis.branchLength', false, 'LinearBasicDisplay')).toEqual([])
 })
 
 test('the tree and row separator toggles are Show rows', () => {
   expect(stepPaths('rows.axis.tree', false, 'LinearMafDisplay')).toEqual([
-    'Track menu → Show → Tree (unchecked)',
+    'Track menu → Show → Show tree (unchecked)',
   ])
   expect(
     stepPaths('rows.axis.grid', true, 'LinearMultiRowFeatureDisplay'),
-  ).toEqual(['Track menu → Show → Row separators (checked)'])
+  ).toEqual(['Track menu → Show → Show row separators (checked)'])
 })
 
 test('rows.colors is the arrangement dialog, and a rows.color column stays a Samples row', () => {

@@ -177,7 +177,8 @@ inversion (Stefansson et al. 2005), and H9 has one of each. On hg38 at
 - pick **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002
   maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
 - drag the H9 hap2 lane's label to the top of the stack, beside hg38
-- turn off **Show → Gene labels**, since the RefSeq track above names the genes
+- turn off **Show → Show gene labels**, since the RefSeq track above names the
+  genes
 
 <Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue, and its header names the inversion." />
 

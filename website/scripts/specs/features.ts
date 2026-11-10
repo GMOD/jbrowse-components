@@ -173,20 +173,20 @@ export const featuresSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show', 'CDS reading frame colors']),
+          ...menuCascade(['Show', 'Show CDS reading frame colors']),
         ],
         annotations: [
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show', 'CDS reading frame colors']),
+          ...cascadeBoxes(['Show', 'Show CDS reading frame colors']),
         ],
       },
       {
         // the checkbox row keeps the menu open (staysOnClick)
         actions: [
-          { type: 'click', text: 'CDS reading frame colors' },
+          { type: 'click', text: 'Show CDS reading frame colors' },
           // Clicks the menu backdrop, since Escape leaves the hamburger's
           // tooltip in the frame. The point must stay inside the viewport, or
           // the menu stays up.

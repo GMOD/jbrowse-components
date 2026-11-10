@@ -275,8 +275,8 @@ reading strain by strain:
   from its label
 - tick **Group by → Hide self-alignment lane** to drop the section for the
   strain you're viewing, as in the figures below
-- tick **Show → Coverage** to add a histogram of how many other strains cover
-  each base
+- tick **Show → Show coverage** to add a histogram of how many other strains
+  cover each base
 
 The figure below shows K-12's phenylacetate (paa) operon, where some strains
 stop at the shaded edge and NCTC86 runs through, with a track of the segments of

@@ -73,9 +73,9 @@ display clusters on which bins each row covers at all.
 After a run, rows are reordered so similar rows sit together and a dendrogram is
 drawn in the sidebar.
 
-- **Show → Tree** toggles the dendrogram. It stays disabled until clustering has
-  been run; the row labels have a separate toggle beside it.
-- **Show → Tree branch lengths** draws the tree with branch lengths, so the
+- **Show → Show tree** toggles the dendrogram. It stays disabled until
+  clustering has been run; the row labels have a separate toggle beside it.
+- **Show → Show tree branch lengths** draws the tree with branch lengths, so the
   horizontal extent of each branch reflects distance.
 - Click any internal node to filter the track down to that subtree. Click it
   again to clear, or use **Show all rows**. A chip above the rows reads "Showing

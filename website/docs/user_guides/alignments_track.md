@@ -13,9 +13,10 @@ sized, or filtered.
 <Figure caption="An alignments track: coverage on top, pileup below. Mismatches show as colored ticks in the pileup and colored segments in the coverage bars." src="/img/volvox_alignments.png" />
 
 A coverage bar that is part red means that fraction of reads have a mismatch
-there. The track menu's **Show → Coverage** and **Show → Pileup** toggles turn
-either panel off independently: coverage-only is compact for surveying depth
-across many samples, and pileup-only gives the reads the vertical space.
+there. The track menu's **Show → Show coverage** and **Show → Show pileup**
+toggles turn either panel off independently: coverage-only is compact for
+surveying depth across many samples, and pileup-only gives the reads the
+vertical space.
 
 ## Sorting reads
 
@@ -214,12 +215,13 @@ reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
 Each section's coverage band is built from only the reads grouped into that
-section. Group by **Strand** and turn off **Show → Pileup** for a forward and a
-reverse histogram on a shared scale, each colored by the mismatches in that
-strand's reads. On a strand-specific paired-end library group by **First-of-pair
-strand** instead, since there the transcript strand is which mate the read is;
-the [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows
-that. Long-read cDNA is the clearest case, since the reads are oriented to the
+section. Group by **Strand** and turn off **Show → Show pileup** for a forward
+and a reverse histogram on a shared scale, each colored by the mismatches in
+that strand's reads. On a strand-specific paired-end library group by
+**First-of-pair strand** instead, since there the transcript strand is which
+mate the read is; the
+[RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that.
+Long-read cDNA is the clearest case, since the reads are oriented to the
 transcript.
 
 <Figure caption="HSV-1 cDNA reads over two neighbouring genes, grouped and colored by strand." src="/img/alignments/strand_split_depth.png" />
@@ -286,8 +288,8 @@ reads at that base.
 
 Insertions larger than 10bp also draw a purple rectangle in the pileup. A long
 read spanning the insertion shows the mark. A short read ends at the insertion's
-edge, and [**Show → Soft clipping**](#soft-clipping) draws its unaligned bases
-past that edge, as on the Illumina track below (GIAB HG002 reads at
+edge, and [**Show → Show soft clipping**](#soft-clipping) draws its unaligned
+bases past that edge, as on the Illumina track below (GIAB HG002 reads at
 `1:55,705,770-55,706,090` on hg19).
 
 <Figure caption="A large insertion across GIAB HG002 nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
@@ -342,9 +344,9 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-**Show → Sashimi arcs** turns them on and off, and **Show → Sashimi read
-counts** prints each junction's supporting-read count on its arc. While the arcs
-draw:
+**Show → Show sashimi arcs** turns them on and off, and **Show → Show sashimi
+read counts** prints each junction's supporting-read count on its arc. While the
+arcs draw:
 
 - **Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
   junctions whose motif is none of the three canonical pairs. On deep RNA-seq

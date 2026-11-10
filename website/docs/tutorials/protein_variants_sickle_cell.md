@@ -185,8 +185,8 @@ one color in every view:
 
 - in the alignment view's menu, click **Show domains on the genome**, which adds
   a domain track to the genome view
-- in the genome view's menu, untick **Show → CDS reading frame colors**, whose
-  frame colors would mix with the domain colors
+- in the genome view's menu, untick **Show → Show CDS reading frame colors**,
+  whose frame colors would mix with the domain colors
 - type `chr11:5226956-5227046[rev] chr11:5226750-5226799[rev]` into the location
   box, which adds the start of exon 2 beside codon 7
 - in the protein view's palette menu, pick **Domains from the alignment**

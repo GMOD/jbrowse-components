@@ -62,7 +62,7 @@ Track-menu toggles:
 
 - Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
 - Show subfeature labels - each transcript's name on its row
-- Show → Chevrons - strand chevrons along the intron lines (on by default)
+- Show → Show chevrons - strand chevrons along the intron lines (on by default)
 - Filter by → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
   genes
 - Group by - _Strand_ packs the forward-strand features into one labelled
@@ -173,11 +173,11 @@ this way.
 
 ## Color by CDS
 
-**Show → CDS reading frame colors**, in the linear genome view's hamburger menu,
-tints each CDS segment by the frame it is read in, so one color is one frame
-across the view. Frame is constant within a segment, so a color change across a
-junction is a frame shift. The setting applies to every gene track in the view,
-and JBrowse remembers it across sessions.
+**Show → Show CDS reading frame colors**, in the linear genome view's hamburger
+menu, tints each CDS segment by the frame it is read in, so one color is one
+frame across the view. Frame is constant within a segment, so a color change
+across a junction is a frame shift. The setting applies to every gene track in
+the view, and JBrowse remembers it across sessions.
 
 <Figure caption="Color by CDS on BRCA1. Top: the menu toggle. Bottom: each codon tinted by reading frame with its amino acid drawn over it." src="/img/gene_track_color_by_cds.png" />
 
@@ -210,8 +210,9 @@ configuration behind that figure and the pipeline that writes the attributes.
 The track draws the translated protein on coding features by default. Zooming
 in, the amino acids first appear as alternating per-codon shading, then at
 roughly base-pair resolution as single-letter code over each codon, in register
-with the reference sequence track. Turn off **Amino acids when zoomed in**, in
-the view menu's **Show** submenu, to keep the view from fetching the reference.
+with the reference sequence track. Turn off **Show amino acids when zoomed in**,
+in the view menu's **Show** submenu, to keep the view from fetching the
+reference.
 
 The translation follows the transcript's strand and CDS phase, splitting codons
 that straddle an exon boundary. A CDS with a `transl_table` attribute (NCBI

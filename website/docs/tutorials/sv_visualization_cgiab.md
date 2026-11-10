@@ -402,8 +402,8 @@ The filter keeps ClinVar CNVs under 50 kb.
 
 Open **NCBI RefSeq genes (hg38)** from the hosted config and the tumor PacBio
 HiFi reads, then set **Read height → Compact** and **Sort by → Base** in the
-reads' track menu and center the deletion. **Show → Center line** in the view
-menu helps line up the breakpoint.
+reads' track menu and center the deletion. **Show → Show center line** in the
+view menu helps line up the breakpoint.
 
 <Figure caption="Tumor HiFi reads at compact height, sorted by base pair at the deletion." src="/img/sv_cgiab/deletion_linear_view.png" />
 

@@ -178,7 +178,7 @@ mean copy number, with `scale.names` naming each interval in the key:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number, one row per tumor, colored by the interval its log2 ratio falls in." />
 
-**Show → Legend** keys the colors actually present, and the **Categories**
+**Show → Show legend** keys the colors actually present, and the **Categories**
 submenu beside it hides individual categories, so you can drop the states or
 classes you aren't reading and leave the rest painted. The submenu counts what
 is hidden and offers **Show all categories** to put them back.
@@ -195,8 +195,8 @@ at render time, with no refetch.
 The rows divide the track height between them, as a multi-row wiggle's do, so
 more samples shrink the rows and the track keeps its height. Drag the track
 taller to give a deep cohort more room per row, or pick **Row height** to give
-each row a fixed height and scroll the rest. **Show → Row separators** draws a
-line between rows once they are tall enough to hold one.
+each row a fixed height and scroll the rest. **Show → Show row separators**
+draws a line between rows once they are tall enough to hold one.
 
 ## Ordering and clustering rows
 
@@ -255,8 +255,9 @@ A band marks a group by position, which stays readable over many groups where
 colors alone are hard to tell apart, so facet a long list of groups and use the
 colors as a second cue.
 
-**Show → Tree** toggles the dendrogram once one has been computed, and **Show →
-Row labels** the labels beside it, which are useful with no clustering run.
+**Show → Show tree** toggles the dendrogram once one has been computed, and
+**Show → Show row labels** the labels beside it, which are useful with no
+clustering run.
 
 A row that [`rows.colors`](/docs/config/markrows/#slot-colors) pins, or that
 [`rows.color`](/docs/config/markrows/#slot-color) colors by an attribute such as

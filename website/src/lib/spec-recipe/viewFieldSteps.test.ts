@@ -83,7 +83,7 @@ test('the legend toggle of the circular view is in its view menu', () => {
 
 test('an axis grid names the menu each view keeps it in', () => {
   expect(stepPaths('axis', { grid: false }, 'LinearGenomeView')).toEqual([
-    'View menu → Show → Guidelines (unchecked)',
+    'View menu → Show → Show guidelines (unchecked)',
   ])
   expect(
     stepPaths('axis', { grid: false, labels: false }, 'DotplotView'),
