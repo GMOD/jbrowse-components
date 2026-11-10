@@ -2386,7 +2386,6 @@
         "createStatusChannel",
         "createStatusFanOut",
         "createStatusWindow",
-        "declaredSyntheticAssemblies",
         "dedupe",
         "defaultCodonTable",
         "defaultStarts",

@@ -12569,7 +12569,6 @@ export const configManifest: ConfigManifest = {
         "height",
         "trackSelectorType",
         "assemblyNames",
-        "syntheticAssemblies",
         "indels",
         "axis",
         "coord",
@@ -12615,7 +12614,6 @@ export const configManifest: ConfigManifest = {
         "coord",
         "diagonalizeAnchorRow",
         "levels",
-        "syntheticAssemblies",
         "views"
       ],
       "launchKeys": [

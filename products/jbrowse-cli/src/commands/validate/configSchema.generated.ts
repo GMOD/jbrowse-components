@@ -28934,7 +28934,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "syntheticAssemblies": {},
         "indels": {
           "$ref": "#/$defs/SyntenyIndels"
         },
@@ -29386,7 +29385,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "additionalProperties": false
           }
         },
-        "syntheticAssemblies": {},
         "views": {
           "type": "array",
           "description": "The rows this view composes, each a view of its own.",
