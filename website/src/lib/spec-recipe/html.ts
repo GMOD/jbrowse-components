@@ -1,5 +1,6 @@
 import { desktopLinkHtml } from '../desktop-link.ts'
 import { escapeAttr } from '../inline-html.ts'
+import { APP_TAB, JSON_TAB_KIND } from '../tab-kinds.ts'
 
 import { OWN_FILE } from './configTracks.ts'
 
@@ -104,8 +105,7 @@ function assembliesNote(assemblies: string[]): string {
 function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
   return [
     {
-      label: 'Steps',
-      kind: 'desktop',
+      ...APP_TAB,
       body: [
         inlineOpens
           ? `<div class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · ${desktopLink(recipe, id, 'Open this view in JBrowse Desktop ↗')}</div>`
@@ -167,7 +167,7 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
       : []),
     {
       label: 'Session',
-      kind: 'spec',
+      kind: JSON_TAB_KIND,
       body: [
         note(
           `The <a href="/docs/urlparams/#session-spec">session spec</a> behind the figure, over <a href="${escapeAttr(recipe.configUrl)}">this config</a>.`,

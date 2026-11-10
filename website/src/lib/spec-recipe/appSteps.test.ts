@@ -21,7 +21,15 @@ test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')
 })
 
-test('the dialog has one Steps tab, and the Desktop popover sits by the buttons', () => {
+test('the app and JSON tabs carry the kinds and label a fence widget gives them', () => {
+  const html = recipeDialogHtml(recipe, 'd')
+  expect(html).toContain('data-tab-kind="desktop"')
+  expect(html).toContain('>In the app</label>')
+  expect(html).toContain('data-tab-kind="config"')
+  expect(html).not.toContain('data-tab-kind="spec"')
+})
+
+test('the dialog has one app tab, and the Desktop popover sits by the buttons', () => {
   const html = recipeDialogHtml(recipe, 'd')
   expect(html.match(/<ol class="spec-steps">/g)).toHaveLength(1)
   expect(html).not.toContain('data-tab-kind="web"')

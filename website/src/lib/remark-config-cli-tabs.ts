@@ -9,6 +9,7 @@ import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 import { deriveTrackLinks } from './derive-track-url.ts'
 import { escapeAttr } from './inline-html.ts'
 import { desktopLinkHtml } from './desktop-link.ts'
+import { APP_TAB, JSON_TAB_KIND } from './tab-kinds.ts'
 
 import type {
   Code,
@@ -131,7 +132,7 @@ function bash(value: string) {
 }
 
 function desktopTab(nodes: RootContent[]): Tab {
-  return { kind: 'desktop', label: 'In the app', nodes }
+  return { ...APP_TAB, nodes }
 }
 
 // Links rather than the URL as text: once its JSON is percent-encoded the URL
@@ -373,7 +374,7 @@ export function configCliTabs(
     }
     return tabWidget(`cfgtab-${(widgets += 1)}`, [
       {
-        kind: 'config',
+        kind: JSON_TAB_KIND,
         label: 'Config file',
         nodes: [structuredClone(entry.placement), node],
       },
