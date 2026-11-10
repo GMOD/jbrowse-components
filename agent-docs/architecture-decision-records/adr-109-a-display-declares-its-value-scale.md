@@ -203,3 +203,12 @@ per section reserving an arc band, on the side each mode's axis had, captioned
   overlap — and the coverage band's default height is 45, so a shared 70
   would have captioned every default coverage band. The multi-wiggle's rows
   gain an axis in the window instead.
+- **Breaking the multi-wiggle's spines apart at each row boundary**
+  (2026-11-10), because the four per-row axes run together and a "0" and a
+  "300" stand at every boundary. The rows stack edge to edge for density, so
+  the upper row's domain-min and the lower row's domain-max sit on adjacent
+  pixels; a gap means a tick off its data or padded rows. Each label already
+  keeps inside its own row (`YScaleBar`'s `bandHeight`), and the fused double
+  tick is what marks the boundary on the axis. Labelling only the first row
+  was declined too: a cropped or scrolled row then has no numbers. At the 30
+  px floor the two boundary labels still clear each other.
