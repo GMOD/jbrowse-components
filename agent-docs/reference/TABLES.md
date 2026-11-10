@@ -288,7 +288,8 @@ shows several loci, so each fetches itself.
 - `variants` lists a record once per region it falls in, under one `key`, and
   `cells.variant` indexes the joined table. `rows` and `bands` are one set for
   every region.
-- `spanLimit` and `byteLimit` apply to the regions' sum.
+- `spanLimit` and `byteLimit` apply to the regions' sum, and `byteLimit` does in
+  the feature tables too (`byteGatedFetchRegions`).
 - `warnings` names each setting the layout drops without an error, such as a
   column sort with no `pos`, a sort across contigs or held by no region with reads,
   a sort or `pileup.softClips` under `unit: 'chain'`, and a sort of sections

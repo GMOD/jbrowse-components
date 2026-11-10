@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { lociOf } from '@jbrowse/core/data_adapters/tables'
 import { registerAlignmentsAdapters } from '@jbrowse/plugin-alignments/tables'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
 
@@ -8,11 +9,15 @@ import { buildLaidOutPileupMap } from '../../../plugins/alignments/src/RenderAli
 import { createTablesEngine } from './index.ts'
 import {
   BAM,
+  DOG_VCF,
+  GFF3,
   PAIRED_INVERSION,
   READ_GROUPS,
   SPLICED,
   WGSIM,
 } from './volvox.fixture.ts'
+
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 
 const engine = createTablesEngine()
 
@@ -289,18 +294,50 @@ test('the limits hold over the regions together', async () => {
   ).rejects.toThrow(
     'ctgA:1000-4000, ctgA:10000-13000 span 6000 bp of alignments in total, over the 5000-bp limit',
   )
+})
 
-  const bytesOf = async (region: (typeof regions)[number]) => {
-    const error = await engine
-      .alignments({ ...BAM, region, byteLimit: 1 })
-      .catch((e: unknown) => e as Error)
-    return Number(/needs (\d+) bytes/.exec(String(error))![1])
+test('byteLimit holds over the regions together, in every region table', async () => {
+  const reads = [
+    {
+      what: 'alignments',
+      regions: [
+        { refName: 'ctgA', start: 1000, end: 4000 },
+        { refName: 'ctgA', start: 10000, end: 13000 },
+      ],
+      read: (regions: TablesRegion[], byteLimit: number) =>
+        engine.alignments({ ...without(BAM), regions, byteLimit }),
+    },
+    {
+      what: 'features',
+      regions: [
+        { refName: 'ctgA', start: 1000, end: 4000 },
+        { refName: 'ctgA', start: 10000, end: 13000 },
+      ],
+      read: (regions: TablesRegion[], byteLimit: number) =>
+        engine.features({ ...without(GFF3), regions, byteLimit }),
+    },
+    {
+      what: 'variants',
+      regions: [
+        { refName: 'chr30', start: 38258000, end: 38260000 },
+        { refName: 'chr30', start: 38263000, end: 38265000 },
+      ],
+      read: (regions: TablesRegion[], byteLimit: number) =>
+        engine.variants({ ...without(DOG_VCF), regions, byteLimit }),
+    },
+  ]
+  for (const { what, regions, read } of reads) {
+    const bytesOf = async (region: TablesRegion) => {
+      const error = await read([region], 1).catch((e: unknown) => String(e))
+      return Number(/needs (\d+) bytes/.exec(error)![1])
+    }
+    const [a, b] = await Promise.all(regions.map(bytesOf))
+    const byteLimit = Math.max(a!, b!)
+    for (const region of regions) {
+      await expect(read([region], byteLimit)).resolves.toBeDefined()
+    }
+    await expect(read(regions, byteLimit)).rejects.toThrow(
+      `${lociOf(regions)} need ${a! + b!} bytes of ${what} in total, over the ${byteLimit}-byte limit`,
+    )
   }
-  const [a, b] = await Promise.all(regions.map(bytesOf))
-  const byteLimit = Math.max(a!, b!)
-  await expect(
-    engine.alignments({ ...without(BAM), regions, byteLimit }),
-  ).rejects.toThrow(
-    `need ${a! + b!} bytes of alignments in total, over the ${byteLimit}-byte limit`,
-  )
 })

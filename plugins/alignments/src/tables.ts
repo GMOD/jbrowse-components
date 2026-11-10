@@ -34,12 +34,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import {
-  DEFAULT_BYTE_LIMIT,
-  lociOf,
-  overByteLimitError,
-} from '@jbrowse/core/data_adapters/tables'
-import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+import { DEFAULT_BYTE_LIMIT, lociOf } from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { adapterRefNameText } from '@jbrowse/core/util'
@@ -53,7 +48,7 @@ import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
-  windowFetchRegions,
+  byteGatedFetchRegions,
   windowFrames,
 } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -1576,19 +1571,18 @@ export async function alignmentTables(
       `${lociOf(regions)} ${several ? 'span' : 'spans'} ${span} bp of alignments${several ? ' in total' : ''}, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
     )
   }
-  const fetchedRegions = windowFetchRegions(regions, displayedRegions)
-  const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(regions, bytes, byteLimit, 'alignments')
   const dataAdapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,
     sequenceAdapter,
   )
-  const fetchRegions = fetchedRegions.map(r => ({ assemblyName: '', ...r }))
-  const bytes = await totalRegionBytes(dataAdapter, fetchRegions)
-  if (overByteBudget(bytes, byteLimit)) {
-    throw tooLarge(bytes)
-  }
+  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+    adapter: dataAdapter,
+    regions,
+    displayedRegions,
+    byteLimit,
+    what: 'alignments',
+  })
   const host = AlignmentsTablesHost.create({
     type: 'LinearAlignmentsDisplay',
     configuration: {
@@ -1657,7 +1651,7 @@ export async function alignmentTables(
     laidOutTables(host, {
       regions,
       frames: windowFrames(regions, displayedRegions),
-      fetchedRegions,
+      fetchedRegions: fetchRegions,
       fetched,
       sortColumn,
       paintedRefNamePosition,

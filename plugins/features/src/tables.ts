@@ -4,7 +4,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
-import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
+import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { runInAction } from 'mobx'
 
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
@@ -95,8 +95,8 @@ export interface FeatureTablesArgs {
   /** The genetic code for a CDS whose feature names no `transl_table`. */
   geneticCodeId?: number
   /**
-   * The most compressed bytes the region may need, refused off the index
-   * before any feature is fetched. 200 MB by default.
+   * The most compressed bytes the regions may need together, refused off the
+   * index before any feature is fetched. 200 MB by default.
    */
   byteLimit?: number
 }
@@ -366,23 +366,23 @@ export async function featureTables(
     coarseBpPerPx: bpPerPx,
     settledDynamicBlocks: blocks,
   })
-  const fetchRegions = windowFetchRegions(regions, displayedRegions)
+  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+    adapter: await tablesFeatureAdapter(
+      pluginManager,
+      adapterConfig,
+      sequenceAdapter,
+    ),
+    regions,
+    displayedRegions,
+    byteLimit,
+    what: 'features',
+  })
   const config = await fetchFeatureRegions(
     pluginManager,
     host,
-    fetchRegions.map((region, index) => ({
-      region: { assemblyName: TABLES_ASSEMBLY, ...region },
-      index,
-      requested: { assemblyName: TABLES_ASSEMBLY, ...regions[index]! },
-    })),
-    {
-      adapterConfig,
-      sequenceAdapter,
-      colorByFrame,
-      aminoAcids,
-      geneticCodeId,
-      byteLimit,
-    },
+    fetchRegions.map((region, index) => ({ region, index })),
+    { adapterConfig, sequenceAdapter, colorByFrame, aminoAcids, geneticCodeId },
+    tooLarge,
   )
   // One batch, so every read shares one fit solve.
   const {

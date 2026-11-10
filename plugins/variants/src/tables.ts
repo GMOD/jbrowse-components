@@ -1,16 +1,12 @@
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import {
-  DEFAULT_BYTE_LIMIT,
-  overByteLimitError,
-} from '@jbrowse/core/data_adapters/tables'
-import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
+import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
 import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorScale'
@@ -222,14 +218,13 @@ async function fetchedVariantHost(
     adapterConfig,
     sequenceAdapter,
   )
-  const fetchedRegions = windowFetchRegions(regions, displayedRegions)
-  const fetchRegions = fetchedRegions.map(r => ({ assemblyName: '', ...r }))
-  const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(regions, bytes, byteLimit, 'variants')
-  const bytes = await totalRegionBytes(adapter, fetchRegions)
-  if (overByteBudget(bytes, byteLimit)) {
-    throw tooLarge(bytes)
-  }
+  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+    adapter,
+    regions,
+    displayedRegions,
+    byteLimit,
+    what: 'variants',
+  })
   const listing = await sourcesAndWarnings(adapter, fetchRegions, {})
   host.setAdapterSamples(listing.sources)
   host.setKeyWindows(

@@ -1,3 +1,8 @@
+import { overByteLimitError } from '@jbrowse/core/data_adapters/tables'
+import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
+import type { ByteMeasurableAdapter } from '@jbrowse/core/rpc/byteBudget'
 import type { AbstractViewModel, Region } from '@jbrowse/core/util'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -130,6 +135,38 @@ export function windowFetchRegions<
     start: region.start,
     end: region.end,
   }))
+}
+
+/**
+ * What a tables read fetches for `regions` (`windowFetchRegions`), each with
+ * an empty `assemblyName`, refused when their index-only bytes summed are over
+ * `byteLimit`. `tooLarge` is the refusal naming every region asked for, for a
+ * fetch that measures more than the index promised.
+ */
+export async function byteGatedFetchRegions({
+  adapter,
+  regions,
+  displayedRegions,
+  byteLimit,
+  what,
+}: {
+  adapter: ByteMeasurableAdapter
+  regions: readonly TablesRegion[]
+  displayedRegions?: readonly TablesRegion[]
+  byteLimit: number
+  what: string
+}) {
+  const fetchRegions = windowFetchRegions(regions, displayedRegions).map(r => ({
+    assemblyName: '',
+    ...r,
+  }))
+  const tooLarge = (bytes: number | undefined) =>
+    overByteLimitError(regions, bytes, byteLimit, what)
+  const bytes = await totalRegionBytes(adapter, fetchRegions)
+  if (overByteBudget(bytes, byteLimit)) {
+    throw tooLarge(bytes)
+  }
+  return { fetchRegions, tooLarge }
 }
 
 /**

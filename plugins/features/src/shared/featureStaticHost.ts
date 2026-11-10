@@ -1,5 +1,4 @@
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
-import { overByteLimitError } from '@jbrowse/core/data_adapters/tables'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   fitTargetHeightViews,
@@ -158,29 +157,27 @@ export interface FeatureFetchArgs {
   aminoAcids?: boolean
   /** The genetic code for a CDS whose feature names no `transl_table`. */
   geneticCodeId?: number
-  /** The most compressed bytes a region may need, refused off the index. */
-  byteLimit: number
 }
 
 /**
  * The display's fetch over `regions` at the frame's zoom, run in-process, its
  * results set on `host` keyed by each region's `index`: the inputs the worker
  * reads off the display in one batch, then one `RenderFeatureData` per
- * region. A region over `byteLimit` throws, naming its `requested` region
- * where the fetch widens one. Returns the config the fetch read.
+ * region, ungated: the caller measures the regions first, and a refusal
+ * throws `tooLarge`. Returns the config the fetch read.
  */
 export async function fetchFeatureRegions(
   pluginManager: PluginManager,
   host: FeatureStaticHost,
-  regions: readonly { region: Region; index: number; requested?: Region }[],
+  regions: readonly { region: Region; index: number }[],
   {
     adapterConfig,
     sequenceAdapter,
     colorByFrame = false,
     aminoAcids = true,
     geneticCodeId,
-    byteLimit,
   }: FeatureFetchArgs,
+  tooLarge: (bytes: number | undefined) => Error,
 ) {
   const { config, displayConfig, geneGlyphMode, bpPerPx } = runInAction(() => {
     const config = fullConfSnapshot(host.configuration)
@@ -201,11 +198,7 @@ export async function fetchFeatureRegions(
   const peptideCache = createPeptideCache()
   const fetched = await Promise.all(
     regions.map(
-      async ({
-        region,
-        index,
-        requested = region,
-      }): Promise<[number, LayoutRegionData]> => {
+      async ({ region, index }): Promise<[number, LayoutRegionData]> => {
         const result = await executeRenderFeatureData({
           pluginManager,
           peptideCache,
@@ -220,17 +213,11 @@ export async function fetchFeatureRegions(
             colorByFrame,
             peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
             geneticCodeId,
-            byteLimit,
             statusCallback: () => {},
           } satisfies RpcExecuteArgs<'RenderFeatureData'>,
         })
         if ('regionTooLarge' in result) {
-          throw overByteLimitError(
-            [requested],
-            result.bytes,
-            byteLimit,
-            'features',
-          )
+          throw tooLarge(result.bytes)
         }
         return [
           index,
