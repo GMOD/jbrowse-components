@@ -40,7 +40,7 @@ export function anchorPx(
   return bp === undefined ? undefined : layoutPx(view, bp)
 }
 
-export interface AxisPlacement {
+interface AxisPlacement {
   /**
    * view px of the clipped ends before the scroll offset, in the interval's
    * own order

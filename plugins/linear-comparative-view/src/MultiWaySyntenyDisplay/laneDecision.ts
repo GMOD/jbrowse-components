@@ -94,7 +94,7 @@ function pivotOf(d: LaneDecision) {
 }
 
 // multiples of the anchor's visible span; rung 1 never zooms in past the anchor
-export const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
+const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
 
 // the share of a lower rung a fit must leave unused before the lane drops to it
 const SHRINK_ROOM = 0.85
@@ -231,13 +231,12 @@ export function computeRowFrame(
   groups: MultiWayGroup[],
   assemblyName: string,
   unitBp = 0,
-  incumbent?: FitIncumbent,
 ): RowFrame | undefined {
   return fitLane(
     groups,
     assemblyName,
     unitBp,
-    unlessReleased(incumbent, undefined),
+    undefined,
     undefined,
     laneOpeningsOf(groups),
   )?.frame
@@ -318,7 +317,6 @@ function fitLane(
 
 interface LanePlacement {
   group: MultiWayGroup
-  key: string
   center: number
   bp: number
   // the run's say in where the lane sits: one per gene on a gene table, its bp
@@ -338,7 +336,6 @@ function lanePlacements(
       const bp = Math.max(run.max - run.min, 1)
       out.push({
         group,
-        key: group.key,
         center: (run.min + run.max) / 2,
         bp,
         weight: voteEvidence(isNamedRecord(group.feature), bp),
@@ -355,27 +352,30 @@ function lanePlacementXs(
 ) {
   const heaviest = new Map<string, LanePlacement>()
   for (const p of placements) {
-    const held = heaviest.get(p.key)
+    const held = heaviest.get(p.group.key)
     if (!held || p.bp > held.bp) {
-      heaviest.set(p.key, p)
+      heaviest.set(p.group.key, p)
     }
   }
   return new Map(
-    [...heaviest.values()].map(p => [p.key, rowFrameX(frame, p.center, width)]),
+    [...heaviest.values()].map(p => [
+      p.group.key,
+      rowFrameX(frame, p.center, width),
+    ]),
   )
 }
 
 function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
-    .filter(p => upperX.has(p.key))
-    .sort((a, b) => upperX.get(a.key)! - upperX.get(b.key)!)
+    .filter(p => upperX.has(p.group.key))
+    .sort((a, b) => upperX.get(a.group.key)! - upperX.get(b.group.key)!)
   const byKey = new Map<string, LanePlacement[]>()
   for (const p of shared) {
-    const runs = byKey.get(p.key)
+    const runs = byKey.get(p.group.key)
     if (runs) {
       runs.push(p)
     } else {
-      byKey.set(p.key, [p])
+      byKey.set(p.group.key, [p])
     }
   }
   if (byKey.size < MIN_SHARED_FOR_ORIENTATION) {
@@ -446,7 +446,7 @@ function decideOrientation(
  * The value at the halfway point of the summed weights: each sample counts its
  * weight, one per gene on a gene table and its bp on an alignment.
  */
-export function weightedMedian(samples: { value: number; weight: number }[]) {
+function weightedMedian(samples: { value: number; weight: number }[]) {
   const sorted = [...samples].sort((a, b) => a.value - b.value)
   const total = sorted.reduce((sum, s) => sum + s.weight, 0)
   let acc = 0
@@ -469,7 +469,7 @@ function alignFrameTo(
   width: number,
 ): RowFrame {
   const samples = lane.flatMap(p => {
-    const x = upperX.get(p.key)
+    const x = upperX.get(p.group.key)
     return x === undefined
       ? []
       : [{ value: x - rowFrameX(frame, p.center, width), weight: p.weight }]
@@ -696,7 +696,7 @@ export function decideLaneFrames({
     }
     if (!decision) {
       const pivot = placements
-        .map(p => ({ group: p.group, x: anchorX.get(p.key) }))
+        .map(p => ({ group: p.group, x: anchorX.get(p.group.key) }))
         .filter(
           (p): p is { group: MultiWayGroup; x: number } => p.x !== undefined,
         )

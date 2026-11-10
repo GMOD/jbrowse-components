@@ -9,7 +9,7 @@ export interface LanePiece {
  * direction; undefined where they turn or change anchor refName, so the
  * anchor says nothing about the lane between them.
  */
-export function anchorGapBetween(left: LanePiece, right: LanePiece) {
+function anchorGapBetween(left: LanePiece, right: LanePiece) {
   return left.lane.orientation !== right.lane.orientation ||
     left.anchor.refName !== right.anchor.refName
     ? undefined

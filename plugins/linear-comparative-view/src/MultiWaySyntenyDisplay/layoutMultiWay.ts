@@ -59,7 +59,7 @@ export interface MultiWayPlacement {
  * `orientation` is the pair's strand, never the mate object's own `strand`;
  * -1 twists the ribbon.
  */
-export interface MatePlacement extends MultiWayPlacement {
+interface MatePlacement extends MultiWayPlacement {
   orientation: number
   /** the pair's own row, which can differ from the group's `feature` */
   feature: Feature
@@ -111,7 +111,7 @@ export interface LaneChange {
   anchor: AnchorStretch
 }
 
-export interface AnchorStretch {
+interface AnchorStretch {
   refName: string
   start: number
   end: number
@@ -273,7 +273,7 @@ export function openedBp(
  * A lane point: a lane bp, and how far into the hole opening there it sits,
  * since a hole holds no lane bp of its own
  */
-export interface LanePoint {
+interface LanePoint {
   bp: number
   inHole: number
 }
@@ -668,7 +668,6 @@ export function groupSpansLanes(group: PlacedGroup) {
   return group.mates.size > 1 || isNamedRecord(group.feature)
 }
 
-// Densest lane first, after the lanes `preferred` names, in its order.
 /**
  * Lanes densest first, `preferred` ones leading in its order; `placeless`
  * lanes, which the window shows none of, sit at the foot whatever `preferred`
@@ -740,7 +739,7 @@ function framesOf(frame: RowFrame) {
 }
 
 /** bp, over the frame and every frame a transition moves it from */
-export function frameExtent(frame: RowFrame) {
+function frameExtent(frame: RowFrame) {
   let { min, max } = frame
   for (const from of frame.morphFrom ?? []) {
     min = Math.min(min, from.frame.min)

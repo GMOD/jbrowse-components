@@ -33,7 +33,7 @@ export function laneResetLabel(
 type KeyOf = (name: string) => string
 
 /** Whether a lane draws: chosen by the selection in force and not hidden. */
-export function drawnLaneTest(
+function drawnLaneTest(
   selection: readonly string[] | undefined,
   hidden: readonly string[],
   keyOf: KeyOf,

@@ -162,7 +162,7 @@ export interface Lane {
   strandRows?: 1 | -1
 }
 
-export interface LaneGroup {
+interface LaneGroup {
   group: PlacedGroup
   spans: Span[]
   /** per span, the run's strand against the anchor, which px order hides */

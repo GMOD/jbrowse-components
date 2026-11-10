@@ -11,7 +11,7 @@ export interface LanePlacePin {
  * against `anchor`'s order, as `LaneDecision.flipped` is; a pin naming no
  * anchor holds under any
  */
-export interface LaneFlipPin {
+interface LaneFlipPin {
   lane: string
   refName: string
   flipped: boolean
@@ -27,12 +27,7 @@ export function isFlipPin(pin: LanePin): pin is LaneFlipPin {
 }
 
 /** Whether `pin` is the one `lane` holds of its kind under `anchor`. */
-export function pinHolds(
-  pin: LanePin,
-  lane: string,
-  anchor: string,
-  keyOf: KeyOf,
-) {
+function pinHolds(pin: LanePin, lane: string, anchor: string, keyOf: KeyOf) {
   return (
     keyOf(pin.lane) === keyOf(lane) &&
     (!isFlipPin(pin) ||
