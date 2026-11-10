@@ -76,7 +76,6 @@ import {
   navigationMenuItems,
   removeRowMenuItems,
   rowMenuItems,
-  rowViewMenuItems,
   syntenyTracksMenuItems,
 } from './menus.ts'
 import { syntenyNavigationConfigSchema } from './navigationConfigSchema.ts'
@@ -1386,12 +1385,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #method
          */
         menuItems(): MenuItem[] {
-          return [
-            returnToImportFormMenuItem,
-            ...rowViewMenuItems(self),
-            ...circularMenuItems(),
-            exportSvgMenuItem,
-          ]
+          return [returnToImportFormMenuItem, exportSvgMenuItem]
         },
         /**
          * #method

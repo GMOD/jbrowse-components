@@ -234,16 +234,6 @@ export function syntenyTracksMenuItems(model: TracksMenuModel): MenuItem[] {
   return subMenu.length > 0 ? [{ label: 'Tracks', subMenu }] : []
 }
 
-// the same per-row menus for the app's view menu, which has no "Rows" group
-export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
-  return [
-    {
-      label: 'Row view menus',
-      subMenu: rowMenuItems(model),
-    },
-  ]
-}
-
 /**
  * Whether one synteny display could show CIGAR detail — the per-display half of
  * the view's `hasCigarData`. A coarse LOD tier can omit CIGARs the file has, so
