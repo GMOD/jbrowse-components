@@ -369,7 +369,8 @@ tabix -C -p vcf dog10k_fgf4_svs.vcf.gz
 `fgf4.samples` holds whole breeds: three breeds whose short legs are the trait
 Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds, and
 the Greek gray wolves. A samples TSV labels the rows, and `rows.color` paints
-its `group` column, a breed's body proportions.
+its `group` column, a breed's body proportions. `records.labels` hides the
+record's name and description, as in the synteny figure below.
 
 ```json addtrack
 {
@@ -387,6 +388,12 @@ its `group` column, a breed's body proportions.
     {
       "type": "LinearVariantDisplay",
       "rows": { "color": "group" },
+      "records": {
+        "labels": {
+          "name": { "show": false },
+          "description": { "show": false }
+        }
+      },
       "height": 690
     }
   ]
