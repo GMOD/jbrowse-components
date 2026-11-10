@@ -20,8 +20,10 @@ export const mafEncodingConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot color
-     * What each aligned cell paints: `mismatch`, `base`, `identity`,
-     * `chromosome` or `codon`, and the scale its values map through.
+     * What fills each aligned cell: the field `identity` or `refNameRank`, or
+     * a constant `value`, and the scale the field's values map through. Base
+     * and codon colors belong to the per-base layer,
+     * `alignments.bases.encoding.color`.
      */
     color: mafColorConfigSchema,
     /**
