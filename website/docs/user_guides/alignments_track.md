@@ -417,7 +417,8 @@ mapped:
   joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
-  which draws the connecting splines
+  which draws the connecting splines. It is offered for a pair the aligner did
+  not call concordant, or one whose mate is on another chromosome
 
 For a split read, the **View split alignments** submenu offers the same two:
 **Split current view to show split alignments** lays out one region per segment

@@ -1,4 +1,12 @@
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  isConcordantPairRead,
+  pairOrientationToNum,
+} from '@jbrowse/alignments-core'
+import {
+  adapterRefNameText,
+  assembleLocString,
+  getSession,
+} from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -35,6 +43,7 @@ import {
   getCigarTypeNoun,
   isInterbaseType,
 } from '../../shared/types.ts'
+import { getFlags } from '../../shared/util.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
@@ -50,6 +59,7 @@ import {
 import { COLUMN_SORTS, queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { MateFields } from '../../shared/mateFeature.ts'
 import type { ColumnSortField, SortColumn } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
@@ -436,6 +446,16 @@ function openSplitViewItems(
     : []
 }
 
+// A concordant pair's mate sits a fragment away, where a second panel would
+// show the same locus.
+function mateIsElsewhere(feat: Feature, mate: MateFields) {
+  const pairOrientation: string | undefined = feat.get('pair_orientation')
+  return (
+    adapterRefNameText(mate.nextRef) !== mate.refName ||
+    !isConcordantPairRead(getFlags(feat), pairOrientationToNum(pairOrientation))
+  )
+}
+
 // Right-click menu over the pileup: the hit items above, plus mate-view,
 // filter, copy and feature-detail actions for the read itself. Split out of the
 // model to mirror trackMenuItems (menus/index.ts).
@@ -530,9 +550,11 @@ export function getContextMenuItems(
               })
             },
           },
-          ...openSplitViewItems(self, () => ({
-            feature: buildPairedEndMateFeature(mateFields),
-          })),
+          ...(mateIsElsewhere(feat, mateFields)
+            ? openSplitViewItems(self, () => ({
+                feature: buildPairedEndMateFeature(mateFields),
+              }))
+            : []),
         ],
       })
     }

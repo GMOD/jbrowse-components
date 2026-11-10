@@ -673,6 +673,47 @@ test('a split read offers its segments along this view or a panel each', () => {
   ])
 })
 
+describe('View mate', () => {
+  function mateRows(fields: Record<string, unknown>) {
+    const model = makeModel({
+      contextMenuFeature: makeFeature({
+        name: 'readABC',
+        refName: 'chr22',
+        start: 10_000,
+        end: 10_150,
+        strand: 1,
+        CIGAR: '150M',
+        next_ref: 'chr22',
+        next_pos: 10_200,
+        ...fields,
+      }),
+    })
+    return labels(findSubMenu(run(model), 'View mate'))
+  }
+
+  test('a concordant pair is not offered a second panel on its own locus', () => {
+    expect(
+      mateRows({ flags: 0x1 | 0x2 | 0x20 | 0x40, pair_orientation: 'F1R2' }),
+    ).toEqual(['Split current view to show mate'])
+  })
+
+  test('a discordant pair is offered the breakpoint split view', () => {
+    expect(
+      mateRows({ flags: 0x1 | 0x20 | 0x40, pair_orientation: 'F1R2' }),
+    ).toEqual(['Split current view to show mate', 'Open breakpoint split view'])
+  })
+
+  test('a mate on another chromosome is offered the breakpoint split view', () => {
+    expect(
+      mateRows({
+        flags: 0x1 | 0x2 | 0x20 | 0x40,
+        pair_orientation: 'F1R2',
+        next_ref: 'chr9',
+      }),
+    ).toEqual(['Split current view to show mate', 'Open breakpoint split view'])
+  })
+})
+
 test('a read with no SA tag is not offered the split-alignment view', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({
