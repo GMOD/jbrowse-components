@@ -57,7 +57,7 @@ export function hasSessionExtension(filePath: string) {
 
 // A launch argument may be a saved session (.jbrowse) or a hand-written /
 // CLI-generated config (config.json); both are JSON snapshots loaded the same
-// way, and the start screen's "Open session file..." accepts the
+// way, and the start screen's "Open session (.jbrowse) file..." accepts the
 // same pair.
 //
 // Only the first is registered as a file association: `.json` is every

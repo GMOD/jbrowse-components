@@ -268,7 +268,7 @@ const StartScreen = observer(function StartScreen({
                 },
               },
               {
-                label: 'Open session file...',
+                label: 'Open session (.jbrowse) file...',
                 disabled: loading,
                 onClick: async () => {
                   try {

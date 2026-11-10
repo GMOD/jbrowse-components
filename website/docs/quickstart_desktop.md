@@ -123,7 +123,7 @@ opened sessions". The **File → Session** menu handles named sessions:
 
 - **Save session as...** writes a `.jbrowse` file you can reopen or share.
 - **Open config.json or .jbrowse file...** reopens one, as does the start
-  screen's **File → Open session file...**.
+  screen's **File → Open session (.jbrowse) file...**.
 - **Export session to web...** produces a shareable URL for someone running
   JBrowse Web.
 

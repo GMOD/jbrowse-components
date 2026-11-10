@@ -77,7 +77,7 @@ test('a launch from one panel leaves nothing in either panel to start a second',
   openFileMenu()
   expect(
     screen
-      .getByRole('menuitem', { name: 'Open session file...' })
+      .getByRole('menuitem', { name: 'Open session (.jbrowse) file...' })
       .getAttribute('aria-disabled'),
   ).toBe('true')
 
@@ -112,12 +112,12 @@ test.each([
   },
 )
 
-test('File > Open session file... loads the picked file', async () => {
+test('File > Open session (.jbrowse) file... loads the picked file', async () => {
   jest.mocked(loadPluginManager).mockResolvedValue({} as PluginManager)
   renderStartScreen()
   openFileMenu()
   fireEvent.click(
-    screen.getByRole('menuitem', { name: 'Open session file...' }),
+    screen.getByRole('menuitem', { name: 'Open session (.jbrowse) file...' }),
   )
   await waitFor(() => {
     expect(loadPluginManager).toHaveBeenCalledWith('/home/u/picked.jbrowse')
