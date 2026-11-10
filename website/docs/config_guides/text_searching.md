@@ -127,6 +127,12 @@ and an `.ixx` file recording the byte offset of each prefix (`signa000000435`).
 JBrowse extends the format: each `.ix` line also contains the feature's name and
 genomic location in an encoded form.
 
+A search matches a word from its first letter. So that `drb1` finds `HLA-DRB1`,
+a name with punctuation in it is also indexed by what follows each mark, where
+that is at least three characters and not a number, and where no more than 100
+features share it. `as1` ends thousands of antisense gene names, so it is not
+indexed as a word of its own, and `brca1-as1` is still found by typing `brca1`.
+
 ## See also
 
 - [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box)

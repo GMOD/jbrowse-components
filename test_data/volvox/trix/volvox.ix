@@ -37,6 +37,16 @@ ctga ["ctgA%3A1..50001"|"gff3tabix_genes"|"ctgA"],1
 ctgb ["ctgB%3A1..6079"|"gff3tabix_genes"|"ctgB"],1
 dead ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|"DEAD%20box"],1 ["ctgA%3A28342..28447"|"gff3tabix_genes"|"m10"|"DEAD%20box"],2
 del1 ["ctgA%3A2700..34200"|"volvox_del_sv"|"del1"],1
+del_001 ["ctgA%3A1500..2500"|"volvox%20multi-sample%20sv"|"sv_del_001"],1
+del_002 ["ctgA%3A7000..9500"|"volvox%20multi-sample%20sv"|"sv_del_002"],1
+del_003 ["ctgA%3A13000..13800"|"volvox%20multi-sample%20sv"|"sv_del_003"],1
+del_004 ["ctgA%3A17500..19000"|"volvox%20multi-sample%20sv"|"sv_del_004"],1
+del_005 ["ctgA%3A23500..24200"|"volvox%20multi-sample%20sv"|"sv_del_005"],1
+del_006 ["ctgA%3A27000..28500"|"volvox%20multi-sample%20sv"|"sv_del_006"],1
+del_007 ["ctgA%3A32000..34000"|"volvox%20multi-sample%20sv"|"sv_del_007"],1
+del_008 ["ctgA%3A36500..37800"|"volvox%20multi-sample%20sv"|"sv_del_008"],1
+del_009 ["ctgA%3A42500..43500"|"volvox%20multi-sample%20sv"|"sv_del_009"],1
+del_010 ["ctgA%3A46000..48000"|"volvox%20multi-sample%20sv"|"sv_del_010"],1
 eden ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],2 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],3 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],4
 eden.1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1
 eden.2 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],1
@@ -82,17 +92,30 @@ gene:hga ["ctgA%3A1100..2000"|"gff3tabix_genes"|"Gene%3Ahga"],1
 gene:hgb ["ctgA%3A1600..3000"|"gff3tabix_genes"|"Gene%3Ahgb"],1
 get ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 helix ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1
+hga ["ctgA%3A1000..2000"|"gff3tabix_genes"|"Remark%3Ahga"],1 ["ctgA%3A1100..2000"|"gff3tabix_genes"|"Gene%3Ahga"],2 ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"],3
+hgb ["ctgA%3A1600..3000"|"gff3tabix_genes"|"Gene%3Ahgb"],1 ["ctgA%3A1800..2900"|"gff3tabix_genes"|"Protein%3AHGB"],2
 hox ["ctgA%3A28332..30033"|"gff3tabix_genes"|"m02"|"HOX"],1
 i ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 ig-like ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|"Ig-like"],1
+ins_001 ["ctgA%3A5500..5500"|"volvox%20multi-sample%20sv"|"sv_ins_001"],1
+ins_002 ["ctgA%3A15200..15200"|"volvox%20multi-sample%20sv"|"sv_ins_002"],1
+ins_003 ["ctgA%3A25500..25500"|"volvox%20multi-sample%20sv"|"sv_ins_003"],1
+ins_004 ["ctgA%3A35000..35000"|"volvox%20multi-sample%20sv"|"sv_ins_004"],1
+ins_005 ["ctgA%3A44500..44500"|"volvox%20multi-sample%20sv"|"sv_ins_005"],1
 inv133 ["ctgA%3A1..1000"|"volvox.inv.vcf"|"inv133"],1
 inv134 ["ctgA%3A2700..10000"|"volvox.inv.vcf"|"inv134"],1
 inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],1
 inv136 ["ctgA%3A19848..30074"|"volvox.inv.vcf"|"inv136"],1
 inv9000 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv9000"],1
+inv_001 ["ctgA%3A3200..4800"|"volvox%20multi-sample%20sv"|"sv_inv_001"],1
+inv_002 ["ctgA%3A10500..12000"|"volvox%20multi-sample%20sv"|"sv_inv_002"],1
+inv_003 ["ctgA%3A20000..22500"|"volvox%20multi-sample%20sv"|"sv_inv_003"],1
+inv_004 ["ctgA%3A29500..31000"|"volvox%20multi-sample%20sv"|"sv_inv_004"],1
+inv_005 ["ctgA%3A39000..41500"|"volvox%20multi-sample%20sv"|"sv_inv_005"],1
 is ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
 kinase ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A11911..15561"|"gff3tabix_genes"|"m11"|"kinase"],2 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],3 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],4 ["ctgA%3A46012..48851"|"gff3tabix_genes"|"m09"|"kinase"],5
 length ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+like ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|"Ig-like"],1
 loop ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1
 m01 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|"WD40"],1
 m02 ["ctgA%3A28332..30033"|"gff3tabix_genes"|"m02"|"HOX"],1
@@ -239,8 +262,11 @@ sv_inv_005 ["ctgA%3A39000..41500"|"volvox%20multi-sample%20sv"|"sv_inv_005"],1
 that ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
 the ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 this ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
+transmembrane ["ctgA%3A17023..17675"|"gff3tabix_genes"|"m08"|"7-transmembrane"],1 ["ctgA%3A18048..18552"|"gff3tabix_genes"|"m07"|"7-transmembrane"],2 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],3
 utrs ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],2
 wd40 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|"WD40"],1
 with ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],3 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],4 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],5 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],6
 zinc ["ctgA%3A15396..16159"|"gff3tabix_genes"|"m03"|"zinc%20finger"],1
 ああ、この機能は、世界中を旅しています！ ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
+この機能は、世界中を旅しています！ ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
+世界中を旅しています！ ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1

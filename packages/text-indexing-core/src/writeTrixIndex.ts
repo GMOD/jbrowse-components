@@ -7,6 +7,7 @@ import { ixIxxStream } from 'ixixx'
 import { indexFiles } from './indexFiles.ts'
 import { TRIX_DIR, trixFilePaths } from './trixPaths.ts'
 import { trackIndexingPolicy } from './util.ts'
+import { withWordTails } from './wordTails.ts'
 
 import type { TrackIndexProgress } from './indexFiles.ts'
 import type { IndexingPolicy, Track } from './util.ts'
@@ -40,7 +41,9 @@ export async function writeTrixIndex({
 }) {
   fs.mkdirSync(path.join(outDir, TRIX_DIR), { recursive: true })
   const records = Readable.from(
-    indexFiles({ tracks, policy, outDir, makeProgress, checkAbort }),
+    withWordTails(
+      indexFiles({ tracks, policy, outDir, makeProgress, checkAbort }),
+    ),
   )
   if (onSort) {
     records.on('end', onSort)

@@ -37,6 +37,8 @@ form ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden
 gene:hga ["ctgA%3A11100..12000"|"volvox-rev-del-annotations"|"Gene%3Ahga"],1
 gene:hgb ["ctgA%3A11600..13000"|"volvox-rev-del-annotations"|"Gene%3Ahgb"],1
 get ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+hga ["ctgA%3A11000..12000"|"volvox-rev-del-annotations"|"Remark%3Ahga"],1 ["ctgA%3A11100..12000"|"volvox-rev-del-annotations"|"Gene%3Ahga"],2 ["ctgA%3A11200..11900"|"volvox-rev-del-annotations"|"Protein%3AHGA"],3
+hgb ["ctgA%3A11600..13000"|"volvox-rev-del-annotations"|"Gene%3Ahgb"],1 ["ctgA%3A11800..12900"|"volvox-rev-del-annotations"|"Protein%3AHGB"],2
 i ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 is ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],4 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],5
 kinase ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A6012..8851"|"volvox-rev-del-annotations"|"m09"|"kinase"],2
@@ -71,3 +73,5 @@ this ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"T
 wd40 ["ctgA%3A8253..8366"|"volvox-rev-del-annotations"|"m01"|"WD40"],1
 with ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
 ああ、この機能は、世界中を旅しています！ ["ctgB%3A-35285..-34032"|"volvox-rev-del-annotations"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
+この機能は、世界中を旅しています！ ["ctgB%3A-35285..-34032"|"volvox-rev-del-annotations"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
+世界中を旅しています！ ["ctgB%3A-35285..-34032"|"volvox-rev-del-annotations"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1

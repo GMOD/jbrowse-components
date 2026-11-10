@@ -28,7 +28,7 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a local gz gff3 file 3`] = `11671`;
+exports[`indexes a local gz gff3 file 3`] = `11962`;
 
 exports[`indexes a local gz gff3 file 4`] = `
 "agt220000000000
@@ -51,25 +51,28 @@ au9.g1005 ["Group1.36%3A195248..197254"|"au9"
 `;
 
 exports[`indexes a local non-gz gff3 file 2`] = `
-"9.g994 ["Group1.36%3A135249..142374"|"au9_scaffold"|"au9.g994"|"au9.g994"],1
-au9.g994.t1 ["Group1.36%3A135249..142374"|"au9_scaffold"|"au9.g994.t1"|"au9.g994.t1"],1
-au9.g995 ["Group1.36%3A147520..150414"|"au9_scaffold"|"au9.g995"|"au9.g995"],1
-au9.g995.t1 ["Group1.36%3A147520..150414"|"au9_scaffold"|"au9.g995.t1"|"au9.g995.t1"],1
-au9.g996 ["Group1.36%3A150539..152854"|"au9_scaffold"|"au9.g996"|"au9.g996"],1
-au9.g996.t1 ["Group1.36%3A150539..152854"|"au9_scaffold"|"au9.g996.t1"|"au9.g996.t1"],1
-au9.g997 ["Group1.36%3A154495..156294"|"au9_scaffold"|"au9.g997"|"au9.g997"],1
-au9.g997.t1 ["Group1.36%3A154495..156294"|"au9_scaffold"|"au9.g997.t1"|"au9.g997.t1"],1
-au9.g998 ["Group1.36%3A157495..164685"|"au9_scaffold"|"au9.g998"|"au9.g998"],1
-au9.g998.t1 ["Group1.36%3A157495..164685"|"au9_scaffold"|"au9.g998.t1"|"au9.g998.t1"],1
-au9.g999 ["Group1.36%3A165558..166984"|"au9_scaffold"|"au9.g999"|"au9.g999"],1
-au9.g999.t1 ["Group1.36%3A165558..166984"|"au9_scaffold"|"au9.g999.t1"|"au9.g999.t1"],1
+""au9_scaffold"|"au9.g993.t1"|"au9.g993.t1"],1
+g994 ["Group1.36%3A135249..142374"|"au9_scaffold"|"au9.g994"|"au9.g994"],1
+g994.t1 ["Group1.36%3A135249..142374"|"au9_scaffold"|"au9.g994.t1"|"au9.g994.t1"],1
+g995 ["Group1.36%3A147520..150414"|"au9_scaffold"|"au9.g995"|"au9.g995"],1
+g995.t1 ["Group1.36%3A147520..150414"|"au9_scaffold"|"au9.g995.t1"|"au9.g995.t1"],1
+g996 ["Group1.36%3A150539..152854"|"au9_scaffold"|"au9.g996"|"au9.g996"],1
+g996.t1 ["Group1.36%3A150539..152854"|"au9_scaffold"|"au9.g996.t1"|"au9.g996.t1"],1
+g997 ["Group1.36%3A154495..156294"|"au9_scaffold"|"au9.g997"|"au9.g997"],1
+g997.t1 ["Group1.36%3A154495..156294"|"au9_scaffold"|"au9.g997.t1"|"au9.g997.t1"],1
+g998 ["Group1.36%3A157495..164685"|"au9_scaffold"|"au9.g998"|"au9.g998"],1
+g998.t1 ["Group1.36%3A157495..164685"|"au9_scaffold"|"au9.g998.t1"|"au9.g998.t1"],1
+g999 ["Group1.36%3A165558..166984"|"au9_scaffold"|"au9.g999"|"au9.g999"],1
+g999.t1 ["Group1.36%3A165558..166984"|"au9_scaffold"|"au9.g999.t1"|"au9.g999.t1"],1
 "
 `;
 
-exports[`indexes a local non-gz gff3 file 3`] = `113448`;
+exports[`indexes a local non-gz gff3 file 3`] = `221712`;
 
 exports[`indexes a local non-gz gff3 file 4`] = `
 "au9.g0000000000
+g1000000001BB28
+g8866000002BB23
 "
 `;
 
@@ -95,12 +98,13 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a remote and a local file 3`] = `134191`;
+exports[`indexes a remote and a local file 3`] = `251818`;
 
 exports[`indexes a remote and a local file 4`] = `
 "agt220000000000
 au9.g000000023C
-seg11000002006A
+g29350000020086
+g8871000003004E
 "
 `;
 
@@ -126,7 +130,7 @@ exports[`indexes a remote gz gff3 file 2`] = `
 "
 `;
 
-exports[`indexes a remote gz gff3 file 3`] = `13155`;
+exports[`indexes a remote gz gff3 file 3`] = `13481`;
 
 exports[`indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -148,29 +152,34 @@ au9.g1004.t2 ["Group1.36%3A187115..195224"|"online_au9_scaffold"|"
 `;
 
 exports[`indexes a remote non-gz gff3 file 2`] = `
-"au9.g994.t1 ["Group1.36%3A135249..142374"|"online_au9_scaffold"|"au9.g994.t1"|"au9.g994.t1"],1
-au9.g995 ["Group1.36%3A147520..150414"|"online_au9_scaffold"|"au9.g995"|"au9.g995"],1
-au9.g995.t1 ["Group1.36%3A147520..150414"|"online_au9_scaffold"|"au9.g995.t1"|"au9.g995.t1"],1
-au9.g996 ["Group1.36%3A150539..152854"|"online_au9_scaffold"|"au9.g996"|"au9.g996"],1
-au9.g996.t1 ["Group1.36%3A150539..152854"|"online_au9_scaffold"|"au9.g996.t1"|"au9.g996.t1"],1
-au9.g997 ["Group1.36%3A154495..156294"|"online_au9_scaffold"|"au9.g997"|"au9.g997"],1
-au9.g997.t1 ["Group1.36%3A154495..156294"|"online_au9_scaffold"|"au9.g997.t1"|"au9.g997.t1"],1
-au9.g998 ["Group1.36%3A157495..164685"|"online_au9_scaffold"|"au9.g998"|"au9.g998"],1
-au9.g998.t1 ["Group1.36%3A157495..164685"|"online_au9_scaffold"|"au9.g998.t1"|"au9.g998.t1"],1
-au9.g999 ["Group1.36%3A165558..166984"|"online_au9_scaffold"|"au9.g999"|"au9.g999"],1
-au9.g999.t1 ["Group1.36%3A165558..166984"|"online_au9_scaffold"|"au9.g999.t1"|"au9.g999.t1"],1
+"line_au9_scaffold"|"au9.g994"|"au9.g994"],1
+g994.t1 ["Group1.36%3A135249..142374"|"online_au9_scaffold"|"au9.g994.t1"|"au9.g994.t1"],1
+g995 ["Group1.36%3A147520..150414"|"online_au9_scaffold"|"au9.g995"|"au9.g995"],1
+g995.t1 ["Group1.36%3A147520..150414"|"online_au9_scaffold"|"au9.g995.t1"|"au9.g995.t1"],1
+g996 ["Group1.36%3A150539..152854"|"online_au9_scaffold"|"au9.g996"|"au9.g996"],1
+g996.t1 ["Group1.36%3A150539..152854"|"online_au9_scaffold"|"au9.g996.t1"|"au9.g996.t1"],1
+g997 ["Group1.36%3A154495..156294"|"online_au9_scaffold"|"au9.g997"|"au9.g997"],1
+g997.t1 ["Group1.36%3A154495..156294"|"online_au9_scaffold"|"au9.g997.t1"|"au9.g997.t1"],1
+g998 ["Group1.36%3A157495..164685"|"online_au9_scaffold"|"au9.g998"|"au9.g998"],1
+g998.t1 ["Group1.36%3A157495..164685"|"online_au9_scaffold"|"au9.g998.t1"|"au9.g998.t1"],1
+g999 ["Group1.36%3A165558..166984"|"online_au9_scaffold"|"au9.g999"|"au9.g999"],1
+g999.t1 ["Group1.36%3A165558..166984"|"online_au9_scaffold"|"au9.g999.t1"|"au9.g999.t1"],1
 "
 `;
 
-exports[`indexes a remote non-gz gff3 file 3`] = `122520`;
+exports[`indexes a remote non-gz gff3 file 3`] = `239856`;
 
 exports[`indexes a remote non-gz gff3 file 4`] = `
 "au9.g0000000000
+g1000000001DE98
+g8839000002DE91
 "
 `;
 
 exports[`indexes a track using only the attributes tag 1`] = `
-"b101.2 ["ctgA%3A1000..20000"|"noAttributes"|"b101.2"],1
+"apple2 ["ctgA%3A13000..17200"|"noAttributes"|"cds-Apple2"],1
+apple3 ["ctgA%3A17400..23000"|"noAttributes"|"rna-Apple3"],1
+b101.2 ["ctgA%3A1000..20000"|"noAttributes"|"b101.2"],1
 cds-apple2 ["ctgA%3A13000..17200"|"noAttributes"|"cds-Apple2"],1
 eden ["ctgA%3A1050..9000"|"noAttributes"|"EDEN"],1
 eden.1 ["ctgA%3A1050..9000"|"noAttributes"|"EDEN.1"],1
@@ -188,7 +197,9 @@ rna-apple3 ["ctgA%3A17400..23000"|"noAttributes"|"rna-Apple3"],1
 `;
 
 exports[`indexes a track using only the attributes tag 2`] = `
-"b101.2 ["ctgA%3A1000..20000"|"noAttributes"|"b101.2"],1
+"apple2 ["ctgA%3A13000..17200"|"noAttributes"|"cds-Apple2"],1
+apple3 ["ctgA%3A17400..23000"|"noAttributes"|"rna-Apple3"],1
+b101.2 ["ctgA%3A1000..20000"|"noAttributes"|"b101.2"],1
 cds-apple2 ["ctgA%3A13000..17200"|"noAttributes"|"cds-Apple2"],1
 eden ["ctgA%3A1050..9000"|"noAttributes"|"EDEN"],1
 eden.1 ["ctgA%3A1050..9000"|"noAttributes"|"EDEN.1"],1
@@ -205,10 +216,10 @@ rna-apple3 ["ctgA%3A17400..23000"|"noAttributes"|"rna-Apple3"],1
 "
 `;
 
-exports[`indexes a track using only the attributes tag 3`] = `791`;
+exports[`indexes a track using only the attributes tag 3`] = `913`;
 
 exports[`indexes a track using only the attributes tag 4`] = `
-"b101.0000000000
+"apple0000000000
 "
 `;
 
@@ -237,7 +248,7 @@ seg15 ["ctgA%3A39265..39361"|"noAttributes"|"seg15"],1 ["ctgA%3A39753..40034"|"n
 "
 `;
 
-exports[`indexes a track with no attributes in the config 3`] = `11035`;
+exports[`indexes a track with no attributes in the config 3`] = `11311`;
 
 exports[`indexes a track with no attributes in the config 4`] = `
 "agt220000000000
@@ -267,11 +278,13 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes multiple local gff3 files 3`] = `125119`;
+exports[`indexes multiple local gff3 files 3`] = `233674`;
 
 exports[`indexes multiple local gff3 files 4`] = `
 "agt220000000000
 au9.g000000023C
+g3608000001FFF1
+g89460000030027
 "
 `;
 
@@ -295,12 +308,13 @@ exports[`indexes multiple remote gff3 file 2`] = `
 "
 `;
 
-exports[`indexes multiple remote gff3 file 3`] = `135675`;
+exports[`indexes multiple remote gff3 file 3`] = `253337`;
 
 exports[`indexes multiple remote gff3 file 4`] = `
 "agt220000000000
 au9.g0000000274
-seg0900000202FE
+g2933000002001C
+g88700000030091
 "
 `;
 
@@ -327,7 +341,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with  single per-file arg 3`] = `12647`;
+exports[`indexes with  single per-file arg 3`] = `12958`;
 
 exports[`indexes with  single per-file arg 4`] = `
 "agt220000000000
@@ -357,7 +371,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with multiple per-file args 3`] = `12647`;
+exports[`indexes with multiple per-file args 3`] = `12958`;
 
 exports[`indexes with multiple per-file args 4`] = `
 "agt220000000000
@@ -389,7 +403,7 @@ seg15 ["ctgA%3A39265..39361"|"remote_gff3_gz"|"seg15"],1 ["ctgA%3A39753..40034"|
 "
 `;
 
-exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `11459`;
+exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `11745`;
 
 exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 4`] = `
 "agt220000000000
