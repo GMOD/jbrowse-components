@@ -467,16 +467,18 @@ describe('alignments colorField', () => {
     expect(display.baseLayer?.field).toBe('modifications')
   })
 
-  it('a named field draws no layer while bases.show is off', () => {
+  it('a named field draws the layer unless bases.show is false', () => {
     const { display } = createDisplay({
       pileup: { bases: { encoding: { color: 'modifications' } } },
     })
+    expect(display.baseLayer?.field).toBe('modifications')
+    display.setBases({ show: false })
     expect(display.baseLayer).toBeUndefined()
     display.setBases({ show: true, field: 'base' })
     expect(display.baseLayer?.field).toBe('base')
     expect(
       readConfObject(requireReadsConf(display), ['pileup', 'bases', 'show']),
-    ).toBe(true)
+    ).toBeUndefined()
   })
 
   it('a ramp with its ends reversed is a notice', () => {

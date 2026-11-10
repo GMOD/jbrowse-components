@@ -9,9 +9,9 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
 /**
  * #config PileupBases
  * #category display
- * The pileup's `bases` layer, a cell per base over the reads: `show` turns it
- * on and `encoding.color` names what it paints. It draws while `show` is on
- * and a field is named. Its `filter` picks the modification calls the
+ * The pileup's `bases` layer, a cell per base over the reads:
+ * `encoding.color` names what it paints, and naming a field turns it on.
+ * `show: false` hides it and keeps the field for the way back. Its `filter` picks the modification calls the
  * `modifications` and `bisulfite` fields paint, and `unmodified` adds the
  * unmodified side in blue.
  *
@@ -24,7 +24,7 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { bases: { show: true, encoding: { color: 'baseQuality' } } },
+ *   pileup: { bases: { encoding: { color: 'baseQuality' } } },
  *   encoding: { color: 'tags.HP' },
  * }
  * ```
@@ -33,7 +33,6 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  *   type: 'LinearAlignmentsDisplay',
  *   pileup: {
  *     bases: {
- *       show: true,
  *       encoding: { color: 'modifications' },
  *       filter: [
  *         { field: 'probability', gte: 0.5 },
@@ -48,7 +47,6 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  *   type: 'LinearAlignmentsDisplay',
  *   pileup: {
  *     bases: {
- *       show: true,
  *       encoding: { color: 'modifications' },
  *       filter: [{ field: 'context', oneOf: ['CHG'] }],
  *       unmodified: { show: true },
@@ -61,7 +59,7 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  *   type: 'LinearAlignmentsDisplay',
  *   pileup: {
  *     show: false,
- *     bases: { show: true, encoding: { color: 'modifications' } },
+ *     bases: { encoding: { color: 'modifications' } },
  *   },
  * }
  * ```
@@ -71,12 +69,12 @@ export const pileupBasesConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * Unset, the layer draws whenever `encoding.color` names a field.
      */
     show: {
-      type: 'boolean',
-      defaultValue: false,
+      type: 'maybeBoolean',
       description:
-        'draw the per-base layer over the reads, and its modification bars in the coverage band',
+        'draw the per-base layer over the reads, and its modification bars in the coverage band; unset draws it while a field is named, false hides it and keeps the field',
     },
     /**
      * #slot encoding

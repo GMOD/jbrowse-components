@@ -641,7 +641,6 @@ describe('color routing', () => {
       encoding: { color: 'mapq' },
       pileup: {
         bases: {
-          show: true,
           encoding: { color: 'modifications' },
           unmodified: { show: true },
         },
@@ -655,7 +654,7 @@ describe('color routing', () => {
     ).toEqual({
       pileup: {
         mark: { height: 3 },
-        bases: { show: true, encoding: { color: 'baseQuality' } },
+        bases: { encoding: { color: 'baseQuality' } },
       },
     })
   })

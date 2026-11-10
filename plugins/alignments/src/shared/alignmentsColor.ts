@@ -155,17 +155,18 @@ export function readColorFieldOf(
 }
 
 /**
- * The per-base layer a `pileup.bases` config draws, undefined while it is
- * hidden or names no field. `filter` is `bases.filter` as `basesFilterOf`
+ * The per-base layer a `pileup.bases` config draws, undefined while it names
+ * no field or `show` is false. `filter` is `bases.filter` as `basesFilterOf`
  * reads it.
  */
 export function baseLayerOf(
   bases: Instance<typeof pileupBasesConfigSchema>,
   filter: BasesFilter,
 ): BaseLayer | undefined {
-  const field = readConfObject(bases, 'show')
-    ? baseLayerOfField(readConfObject(bases, ['encoding', 'color', 'field']))
-    : undefined
+  const field =
+    readConfObject(bases, 'show') !== false
+      ? baseLayerOfField(readConfObject(bases, ['encoding', 'color', 'field']))
+      : undefined
   return field === undefined
     ? undefined
     : isModificationLayerField(field)

@@ -710,7 +710,6 @@ const modifiers: Record<string, Modifier> = {
       mergeSettings(settingsOf(r), {
         pileup: {
           bases: {
-            show: true,
             encoding: {
               color: value === 'methylation' ? 'modifications' : value,
             },

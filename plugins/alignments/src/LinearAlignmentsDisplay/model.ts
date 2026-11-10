@@ -2543,7 +2543,8 @@ export default function stateModelFactory(
            * #action
            * Writes the `pileup.bases` members the patch names, as one
            * action so a layer and its filter refetch once. The read fill is
-           * `colorByField`'s and stays as it is.
+           * `colorByField`'s and stays as it is. Turning a hidden layer back
+           * on clears `show`, since a named field draws unless it is false.
            */
           setBases({ show, field, unmodified, filter }: BasesPatch) {
             const conf = requireReadsConf(self)
@@ -2559,8 +2560,15 @@ export default function stateModelFactory(
                 colorForField(writtenColorOf(color), field),
               )
             }
-            if (show !== undefined) {
-              setConf(conf, ['pileup', 'bases', 'show'], show)
+            if (
+              show !== undefined &&
+              show !== (readConfObject(bases, 'show') !== false)
+            ) {
+              setConf(
+                conf,
+                ['pileup', 'bases', 'show'],
+                show ? undefined : false,
+              )
             }
             if (unmodified !== undefined) {
               setConf(
