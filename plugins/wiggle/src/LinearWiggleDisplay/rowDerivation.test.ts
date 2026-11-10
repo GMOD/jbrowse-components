@@ -218,6 +218,22 @@ test.each([[['group']], [['group', 'tissue']]])(
   },
 )
 
+// One row names no row (`drawsRowLabels`), so it draws no column beside
+// the label it lacks, and neither reserves their labels' lines nor keys them.
+test('rows: a one-row track draws no annotation column, label line or key', async () => {
+  const one = TISSUES.slice(0, 1)
+  const plain = await loaded(one, rowsPerSource())
+  const display = await loaded(one, {
+    rows: { field: 'source', annotations: ['group', 'tissue'] },
+  })
+  expect(display.drawsRowLabels).toBe(false)
+  expect(display.rowAnnotationColors).toEqual([])
+  expect(display.rowColumnLabels).toEqual([])
+  expect(display.rowsTopOffset).toBe(plain.rowsTopOffset)
+  expect(display.rowColorScales).toEqual([])
+  expect(display.svgSidebar.annotations).toEqual([])
+})
+
 test('rows: the declared order leads and the rest keep adapter order', async () => {
   const display = await loaded(GROUPED, rowsPerSource(['Grain3']))
   expect(derived(display)).toMatchSnapshot()

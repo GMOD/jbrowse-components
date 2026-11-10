@@ -45,6 +45,7 @@ import type { RowNarrowing } from './narrowRows.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
 import type {
   RowAnnotationDeal,
+  RowAnnotationDrawn,
   RowAnnotationSetting,
   RowColorKeyInputs,
   RowColorSetting,
@@ -275,6 +276,17 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      * holds while nothing else colors them. True by default.
      */
     get rowColorPaintsMarks(): boolean {
+      return true
+    },
+    /**
+     * #getter
+     * Overridable hook: whether the display draws the `rows.annotations`
+     * columns beside its row labels at all, true by default; off where it
+     * names no row, as a one-row wiggle track does. The columns, their
+     * labels' lines and their keys all read it, through
+     * `rowAnnotationColumns`.
+     */
+    get drawsRowAnnotations(): boolean {
       return true
     },
     /**
@@ -621,31 +633,6 @@ export function resolvedRowColorViews<S extends RowSource>(
         self.rowAlias,
       )
     },
-    /**
-     * #getter
-     * The `rows.annotations` entries that color a row, each with the title
-     * that names it and its column. An entry whose field no row carries
-     * draws no column.
-     */
-    get rowAnnotationColumns(): {
-      title: string
-      colors: RowAnnotationColumn
-    }[] {
-      return self.rowAnnotationDeals
-        .map(deal => ({
-          title: deal.setting.title,
-          colors: annotationColumn(self.expandedRows, deal),
-        }))
-        .filter(column => column.colors.size > 0)
-    },
-    /**
-     * #getter
-     * The color columns the sidebar draws beside the row labels, one per
-     * `rowAnnotationColumns` entry, each a row's color by name.
-     */
-    get rowAnnotationColors(): RowAnnotationColumn[] {
-      return this.rowAnnotationColumns.map(column => column.colors)
-    },
   }
 }
 
@@ -704,17 +691,13 @@ export function clusterableRowViews<S extends RowSource>(
     },
     /**
      * #getter
-     * The row color keys, which every display spreads into its
-     * `colorScales`: one scale titled by the `rows.color` field, or none
-     * where it has no entries. Its entries (`rowColorKeyEntries`) show
+     * The row color's key: one scale titled by the `rows.color` field, or
+     * none where it has no entries. Its entries (`rowColorKeyEntries`) show
      * where the labels cannot name the colors: by a field, where a row
      * `rows.colors` pins takes an entry by its label, or by name in a
-     * shared panel. By name on stacked rows the labels are the key. After
-     * it, one key per `rows.annotations` entry that colors a row drawn,
-     * titled by its field, listing only the values the drawn rows carry,
-     * since its entries focus nothing.
+     * shared panel. By name on stacked rows the labels are the key.
      */
-    get rowColorScales(): CategoricalScale[] {
+    get rowColorKeyScales(): CategoricalScale[] {
       const field = self.rowColorField
       const keyedLabels = () => {
         const labels = new Map(
@@ -734,13 +717,7 @@ export function clusterableRowViews<S extends RowSource>(
         focusesRows: true,
         entries,
       }
-      return [
-        ...(entries.length > 0 ? [rowKey] : []),
-        ...rowAnnotationScales(
-          this.clusterableSources,
-          self.rowAnnotationDeals,
-        ),
-      ]
+      return entries.length > 0 ? [rowKey] : []
     },
   }
 }
@@ -803,8 +780,57 @@ export function sourceViews<S extends RowSource>(self: BandedSourcesHost<S>) {
   }
 }
 
-type SourcesHost<S extends RowSource> = BandedSourcesHost<S> &
+type DrawnRowsHost<S extends RowSource> = BandedSourcesHost<S> &
   ReturnType<typeof sourceViews<S>>
+
+/** The `rows.annotations` columns drawn beside the rows drawn, and the keys. */
+export function rowAnnotationViews<S extends RowSource>(
+  self: DrawnRowsHost<S>,
+) {
+  return {
+    /**
+     * #getter
+     * The one decision of which `rows.annotations` columns draw: each
+     * entry dealt that colors one of the rows drawn (`sources`, after
+     * `filter` and `kept`), while `drawsRowAnnotations`, with each drawn
+     * row's color by name. The columns, the labels' lines above them and
+     * the keys all read it, so none draws without the others.
+     */
+    get rowAnnotationColumns(): RowAnnotationDrawn[] {
+      return self.drawsRowAnnotations
+        ? self.rowAnnotationDeals.flatMap(deal => {
+            const colors = annotationColumn(self.sources, deal)
+            return colors.size > 0 ? [{ ...deal, colors }] : []
+          })
+        : []
+    },
+    /**
+     * #getter
+     * The color columns the sidebar draws beside the row labels, one per
+     * `rowAnnotationColumns` entry, each a row's color by name.
+     */
+    get rowAnnotationColors(): RowAnnotationColumn[] {
+      return this.rowAnnotationColumns.map(column => column.colors)
+    },
+    /**
+     * #getter
+     * The row color keys, which every display spreads into its
+     * `colorScales`: the row color's (`rowColorKeyScales`), then one per
+     * `rowAnnotationColumns` entry, titled as its column is labelled and
+     * listing only the values the rows drawn carry, since its entries
+     * focus nothing.
+     */
+    get rowColorScales(): CategoricalScale[] {
+      return [
+        ...self.rowColorKeyScales,
+        ...rowAnnotationScales(self.sources, this.rowAnnotationColumns),
+      ]
+    },
+  }
+}
+
+type SourcesHost<S extends RowSource> = DrawnRowsHost<S> &
+  ReturnType<typeof rowAnnotationViews<S>>
 
 /** Whether the rows drawn are narrowed, which a chip above them says. */
 export function rowNarrowingShowsViews<S extends RowSource>(
@@ -841,7 +867,7 @@ export function rowFocusLineViews(self: { rowNarrowingShows: boolean }) {
 export function rowColumnLabelViews(self: {
   sources: readonly RowLabelSource[]
   rowColorTitle: string
-  rowAnnotationColumns: readonly { title: string }[]
+  rowAnnotationColumns: readonly RowAnnotationDrawn[]
 }) {
   return {
     /**
@@ -856,7 +882,7 @@ export function rowColumnLabelViews(self: {
         ...(self.sources.some(source => source.rowColor)
           ? [self.rowColorTitle]
           : []),
-        ...self.rowAnnotationColumns.map(column => column.title),
+        ...self.rowAnnotationColumns.map(column => column.setting.title),
       ]
       return titles.length > 1 ? titles : []
     },
@@ -1153,6 +1179,7 @@ export function treeSidebarRowStages<S extends RowSource>() {
       .views(self => bandedRowViews<S>(self))
       .views(self => bandedSourceViews<S>(self))
       .views(self => sourceViews<S>(self))
+      .views(self => rowAnnotationViews<S>(self))
       .views(self => rowNarrowingShowsViews<S>(self))
       .views(self => rowFocusLineViews(self))
       .views(self => rowColumnLabelViews(self))

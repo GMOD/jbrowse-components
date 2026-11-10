@@ -24,6 +24,14 @@ export function wiggleRowLabelViews(self: WiggleRowLabelHost) {
     get drawsRowLabels() {
       return self.numSources > 1 && self.isRowLayout && self.showRowLabels
     },
+    /**
+     * #getter
+     * `TreeSidebarMixin`'s hook: the annotation columns draw beside the
+     * row labels, so only where `drawsRowLabels`.
+     */
+    get drawsRowAnnotations() {
+      return this.drawsRowLabels
+    },
   }
 }
 

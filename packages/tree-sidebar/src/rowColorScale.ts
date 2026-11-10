@@ -329,6 +329,14 @@ export interface RowAnnotationDeal {
 }
 
 /**
+ * One `rows.annotations` entry drawn: its deal, and its column, each drawn
+ * row's color by name.
+ */
+export interface RowAnnotationDrawn extends RowAnnotationDeal {
+  colors: RowAnnotationColumn
+}
+
+/**
  * The column one annotation draws: each row's color by name, the color its
  * value of the annotation's field was dealt. A row whose value took none has
  * no entry.
@@ -351,34 +359,29 @@ export function rowAnnotationScaleId(index: number) {
 }
 
 /**
- * One key per annotation with an entry, titled by its field: the values some
- * row of `rows` carries with a color, listed as the row color key lists an
- * attribute's.
+ * One key per annotation drawn, titled as its column is labelled: the values
+ * some row of `rows` carries with a color, listed as the row color key lists
+ * an attribute's.
  */
 export function rowAnnotationScales(
   rows: readonly RowSource[],
-  deals: readonly RowAnnotationDeal[],
+  drawn: readonly RowAnnotationDrawn[],
 ): CategoricalScale[] {
-  return deals.flatMap((deal, index) => {
-    const { setting, dealt } = deal
-    const entries = rowColorKeyEntries(
+  return drawn.map(({ setting, dealt, colors }, index) => ({
+    kind: 'categorical',
+    id: rowAnnotationScaleId(index),
+    title: setting.title,
+    entries: rowColorKeyEntries(
       rows,
       {
         setting,
         pairs: pairedColorsOf(setting.scale),
         dealt,
-        resolved: annotationColumn(rows, deal),
+        resolved: colors,
         pinned: NONE,
         alias: undefined,
       },
       name => name,
-    )
-    const scale: CategoricalScale = {
-      kind: 'categorical',
-      id: rowAnnotationScaleId(index),
-      title: setting.title,
-      entries,
-    }
-    return entries.length > 0 ? [scale] : []
-  })
+    ),
+  }))
 }

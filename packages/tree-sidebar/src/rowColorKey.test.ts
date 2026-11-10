@@ -439,8 +439,34 @@ describe('rows.annotations', () => {
       { rows: SEXED },
     )
     expect(display.rowAnnotationColors).toHaveLength(1)
-    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.1'])
+    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.0'])
   })
+
+  // The columns, their labels' lines and their keys read one decision over
+  // the rows drawn, so a narrowing leaving no row with a value drops all three.
+  it.each([
+    ['kept', { kept: ['b'] }],
+    ['filter', { filter: [{ field: 'group', oneOf: ['y'] }] }],
+  ])(
+    'draws no column, label line or key where %s leaves only rows lacking the value',
+    (_, narrowing) => {
+      const rows = [
+        { name: 'a', group: 'x', tissue: 'liver' },
+        { name: 'b', group: 'y' },
+      ]
+      const config = { color: 'group', annotations: ['tissue'] }
+      const whole = makeDisplay({ rows: config }, { rows })
+      expect(whole.rowColumnLabels).toEqual(['Group', 'Tissue'])
+      const display = makeDisplay(
+        { rows: { ...config, ...narrowing } },
+        { rows },
+      )
+      expect(display.rowAnnotationColors).toEqual([])
+      expect(display.rowColumnLabels).toEqual([])
+      expect(display.rowsLeadHeight).toBe(SIDEBAR_HINT_LINE_PX)
+      expect(keysOf(display).map(key => key.id)).toEqual(['rows.color'])
+    },
+  )
 
   it('draws no column and no key while the row labels are hidden', () => {
     const display = makeDisplay(
