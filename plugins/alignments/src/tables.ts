@@ -1967,7 +1967,7 @@ function markLegends(
   const keyedEvents = INTERBASE_TYPE_NAMES.filter(t => events.has(t))
   return {
     baseLegend: {
-      label: keyedBases.map(b => b as string),
+      label: keyedBases,
       color: keyedBases.map(b => paint.base[b]!),
     },
     baseLegendTitle: 'Base',
