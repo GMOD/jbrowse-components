@@ -17,14 +17,14 @@ jest.mock('@jbrowse/core/svg/svgReady', () => ({
 function recordsItem(items: MenuItem[]) {
   const show = items.find(i => 'label' in i && i.label === 'Show')
   const subMenu = show && 'subMenu' in show ? resolveSubMenu(show) : []
-  return subMenu.find(i => 'label' in i && i.label === 'Records')
+  return subMenu.find(i => 'label' in i && i.label === 'Show records')
 }
 
-test('Show → Records toggles the band', () => {
+test('Show → Show records toggles the band', () => {
   const { display } = recordsDisplayAt(KIT, 51, { show: false })
   const item = recordsItem(display.trackMenuItems())
   if (!item || !('type' in item) || item.type !== 'checkbox') {
-    throw new Error('no "Records" checkbox in "Show"')
+    throw new Error('no "Show records" checkbox in "Show"')
   }
   expect(item.checked).toBe(false)
 

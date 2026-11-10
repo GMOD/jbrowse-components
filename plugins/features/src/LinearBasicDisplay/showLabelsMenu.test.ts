@@ -35,12 +35,12 @@ describe('Show... label checkboxes', () => {
   it('checks each label the track shows', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(checkbox(display, 'Names').checked).toBe(true)
-    expect(checkbox(display, 'Descriptions').checked).toBe(true)
+    expect(checkbox(display, 'Show names').checked).toBe(true)
+    expect(checkbox(display, 'Show descriptions').checked).toBe(true)
 
     display.setShowDescriptions(false)
-    expect(checkbox(display, 'Names').checked).toBe(true)
-    expect(checkbox(display, 'Descriptions').checked).toBe(false)
+    expect(checkbox(display, 'Show names').checked).toBe(true)
+    expect(checkbox(display, 'Show descriptions').checked).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
@@ -50,7 +50,7 @@ describe('Show... label checkboxes', () => {
     display.setShowNames(false)
     expect(display.showLabels).toBe(false)
     expect(display.showDescriptions).toBe(true)
-    expect(checkbox(display, 'Names').checked).toBe(false)
-    expect(checkbox(display, 'Descriptions').checked).toBe(true)
+    expect(checkbox(display, 'Show names').checked).toBe(false)
+    expect(checkbox(display, 'Show descriptions').checked).toBe(true)
   })
 })

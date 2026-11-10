@@ -220,7 +220,7 @@ test('sort by longest features first from the Sort by submenu', async () => {
 // differences render, which is what makes this checkbox worth carrying on a
 // synteny track. Toggling it must actually repaint; a dead layer would leave
 // the canvas byte-identical.
-test('Show → Mismatches is a live layer on a synteny track', async () => {
+test('Show → Show mismatches is a live layer on a synteny track', async () => {
   await mockConsoleWarn(async () => {
     const { view } = await createView()
 
@@ -239,7 +239,7 @@ test('Show → Mismatches is a live layer on a synteny track', async () => {
 
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
     fireEvent.click(await screen.findByText('Show'))
-    fireEvent.click(await screen.findByText('Mismatches'))
+    fireEvent.click(await screen.findByText('Show mismatches'))
     await waitFor(() => {
       expect(display.showMismatches).toBe(false)
     }, delay)

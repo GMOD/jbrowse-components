@@ -79,8 +79,8 @@ describe('the wiggle display Clustering submenu', () => {
       'Cluster rows by score...',
     ])
     expect(labels(subMenuOf(items, 'Show'))).toEqual([
-      'Row separators',
-      'Row labels',
+      'Show row labels',
+      'Show row separators',
     ])
     expect(
       labels(
@@ -89,7 +89,12 @@ describe('the wiggle display Clustering submenu', () => {
           'Show',
         ),
       ),
-    ).toEqual(['Tree', 'Tree branch lengths', 'Row separators', 'Row labels'])
+    ).toEqual([
+      'Show tree',
+      'Show tree branch lengths',
+      'Show row labels',
+      'Show row separators',
+    ])
   })
 
   it('drops the tree controls where the sources share one plot', () => {
@@ -102,7 +107,7 @@ describe('the wiggle display Clustering submenu', () => {
     // gate, and these controls follow it
     expect(display.hierarchy).toBeUndefined()
     expect(labels(subMenuOf(display.trackMenuItems(), 'Show'))).not.toContain(
-      'Tree',
+      'Show tree',
     )
   })
 
@@ -115,7 +120,7 @@ describe('the wiggle display Clustering submenu', () => {
 
     expect(display.hierarchy).toBeDefined()
     expect(labels(subMenuOf(display.trackMenuItems(), 'Show'))).toContain(
-      'Tree',
+      'Show tree',
     )
   })
 
@@ -241,7 +246,7 @@ describe('the wiggle display track menu', () => {
       const items = display.trackMenuItems()
       return (
         labels(items).includes('Show') &&
-        labels(subMenuOf(items, 'Show')).includes('Legend')
+        labels(subMenuOf(items, 'Show')).includes('Show legend')
       )
     }
 

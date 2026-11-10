@@ -152,14 +152,18 @@ function showLabels(showCoverage: boolean) {
 }
 
 test('the interbase toggle is offered only while coverage is drawn', () => {
-  expect(showLabels(true)).toContain('Interbase indicators')
-  expect(showLabels(false)).not.toContain('Interbase indicators')
-  expect(showLabels(true)).toContain('Coverage alleles')
-  expect(showLabels(false)).not.toContain('Coverage alleles')
+  expect(showLabels(true)).toContain('Show interbase indicators')
+  expect(showLabels(false)).not.toContain('Show interbase indicators')
+  expect(showLabels(true)).toContain('Show coverage alleles')
+  expect(showLabels(false)).not.toContain('Show coverage alleles')
 })
 
 test('the rest of the Show menu does not depend on coverage', () => {
   expect(showLabels(false)).toEqual(
-    expect.arrayContaining(['Coverage', 'Alignments', 'Mismatches']),
+    expect.arrayContaining([
+      'Show coverage',
+      'Show alignments',
+      'Show mismatches',
+    ]),
   )
 })

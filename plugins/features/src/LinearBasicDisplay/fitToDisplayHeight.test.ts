@@ -554,7 +554,7 @@ describe('feature display fit escalation ladder', () => {
     display.setHeightMode('fit')
     expect(display.fitNote).toBeUndefined()
     expect(labelRows()).toEqual(
-      expect.arrayContaining(['Names', 'Descriptions']),
+      expect.arrayContaining(['Show names', 'Show descriptions']),
     )
 
     display.setHeight(Math.round((labelsH + fullH) / 2))
@@ -563,7 +563,10 @@ describe('feature display fit escalation ladder', () => {
       'descriptions hidden (taller track shows more)',
     )
     expect(labelRows()).toEqual(
-      expect.arrayContaining(['Names', 'Descriptions — hidden to fit']),
+      expect.arrayContaining([
+        'Show names',
+        'Show descriptions — hidden to fit',
+      ]),
     )
 
     display.setHeight(Math.round(bodiesH / 3))
@@ -573,15 +576,15 @@ describe('feature display fit escalation ladder', () => {
     )
     expect(labelRows()).toEqual(
       expect.arrayContaining([
-        'Names — hidden to fit',
-        'Descriptions — hidden to fit',
+        'Show names — hidden to fit',
+        'Show descriptions — hidden to fit',
       ]),
     )
 
     display.setHeightMode('fixed')
     expect(display.fitNote).toBeUndefined()
     expect(labelRows()).toEqual(
-      expect.arrayContaining(['Names', 'Descriptions']),
+      expect.arrayContaining(['Show names', 'Show descriptions']),
     )
   })
 

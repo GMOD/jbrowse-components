@@ -267,7 +267,7 @@ describe('the track menu', () => {
     const off = recordsDisplayAt(FEW, 10, {}, true, {
       genotypes: { show: false },
     }).display
-    expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
+    expect(subMenuLabels(menu(off), 'Show')).toContain('Show genotype rows')
     expect(labelsOf(menu(off))).not.toContain('Row height')
     // the band sizes a track whose rows are hidden, so no track sizing
     expect(subMenuLabels(menu(off), 'Feature height')).toEqual([
@@ -337,7 +337,7 @@ describe('the track menu', () => {
       expect(labelsOf(menu(display))).not.toContain('Layout')
       expect(labelsOf(menu(display))).not.toContain('Row height')
     }
-    expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
+    expect(subMenuLabels(menu(off), 'Show')).toContain('Show genotype rows')
     off.setShowGenotypes(true)
     expect(off.variantLayout).toBe('columns')
     expect(labelsOf(menu(off))).toContain('Layout')
@@ -347,7 +347,7 @@ describe('the track menu', () => {
     const { display } = recordsDisplayAt(FEW, 10, {}, true, {
       variantLayout: 'columns',
     })
-    expect(subMenuLabels(menu(display), 'Show')).toContain('Genotype rows')
+    expect(subMenuLabels(menu(display), 'Show')).toContain('Show genotype rows')
     display.setShowGenotypes(false)
     expect(display.atGenomicPositions).toBe(true)
     expect(display.showRecords).toBe(true)

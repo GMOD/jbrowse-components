@@ -177,7 +177,7 @@ describe('the record menus', () => {
     const { display } = recordsDisplayAt(KIT, 51, {}, false)
     const menu = display.trackMenuItems()
     expect(subMenuLabels(menu, 'Show')).toEqual(
-      expect.arrayContaining(['Names', 'Descriptions']),
+      expect.arrayContaining(['Show names', 'Show descriptions']),
     )
     expect(subMenuLabels(menu, 'Group by')).toEqual(['None', 'Field...'])
     display.setRecordsLabelShow('description', false)
@@ -191,7 +191,7 @@ describe('the record menus', () => {
       const menu = recordsDisplayAt(KIT, 51, records).display.trackMenuItems()
       expect(labelsOf(menu)).toContain('Row height')
       expect(labelsOf(menu)).not.toContain('Feature height')
-      expect(subMenuLabels(menu, 'Show')).not.toContain('Names')
+      expect(subMenuLabels(menu, 'Show')).not.toContain('Show names')
     }
   })
 

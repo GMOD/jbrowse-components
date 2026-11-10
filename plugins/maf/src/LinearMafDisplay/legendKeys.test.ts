@@ -133,7 +133,7 @@ describe('the color key is dismissible, like every other row display', () => {
 
   it('offers the shared row where a key exists', () => {
     const display = heatmapDisplay()
-    expect(rows(display.trackMenuItems())).toContain('Legend')
+    expect(rows(display.trackMenuItems())).toContain('Show legend')
     expect(display.showLegend).toBe(true)
     display.setShowLegend(false)
     expect(display.showLegend).toBe(false)
@@ -142,7 +142,7 @@ describe('the color key is dismissible, like every other row display', () => {
   it('offers nothing under the constant fill, which has no key to show', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(display.colorScales).toEqual([])
-    expect(rows(display.trackMenuItems())).not.toContain('Legend')
+    expect(rows(display.trackMenuItems())).not.toContain('Show legend')
   })
 
   it('keeps the row at base level, where identity yields to the bases', () => {
@@ -153,7 +153,7 @@ describe('the color key is dismissible, like every other row display', () => {
       display.view.bpPerPx,
     )
     expect(display.rowPlan.color).toBeUndefined()
-    expect(rows(display.trackMenuItems())).toContain('Legend')
+    expect(rows(display.trackMenuItems())).toContain('Show legend')
   })
 
   it('keeps the row for the frames key off any CDS', () => {
@@ -162,13 +162,13 @@ describe('the color key is dismissible, like every other row display', () => {
     }).createDisplay()
     display.setShowFrames(true)
     expect(display.visibleFrames).toEqual([])
-    expect(rows(display.trackMenuItems())).toContain('Legend')
+    expect(rows(display.trackMenuItems())).toContain('Show legend')
   })
 
   it('offers no frames key without a frames adapter', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setShowFrames(true)
-    expect(rows(display.trackMenuItems())).not.toContain('Legend')
+    expect(rows(display.trackMenuItems())).not.toContain('Show legend')
   })
 
   it('the heatmap key is one scale named for the rendering', () => {

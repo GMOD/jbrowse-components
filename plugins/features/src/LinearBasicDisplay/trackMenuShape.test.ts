@@ -204,9 +204,9 @@ describe('feature track menu shape', () => {
     const show = subMenuOf(display.trackMenuItems(), 'Show')
 
     expect(show.map(labelOf)).toEqual([
-      'Names',
-      'Descriptions',
-      'Chevrons',
+      'Show names',
+      'Show descriptions',
+      'Show chevrons',
       'Subfeature labels',
       'Auto',
       'Off',
@@ -218,17 +218,17 @@ describe('feature track menu shape', () => {
   it('says so when a ticked label is suppressed by collapsed mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Names')
+    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Show names')
 
     display.setDisplayMode('collapsed')
     const inert = find(
       subMenuOf(display.trackMenuItems(), 'Show'),
-      'Names — hidden while collapsed',
+      'Show names — hidden while collapsed',
     )
     expect(inert.type === 'checkbox' && inert.checked).toBe(true)
     find(
       subMenuOf(display.trackMenuItems(), 'Show'),
-      'Descriptions — hidden while collapsed',
+      'Show descriptions — hidden while collapsed',
     )
   })
 

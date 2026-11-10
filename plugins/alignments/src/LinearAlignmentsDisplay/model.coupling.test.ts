@@ -2203,7 +2203,7 @@ describe('rows the layer menus hand to other menus', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     expect(labelsUnder(display, 'Show')).toEqual(
-      expect.arrayContaining(['Sashimi arcs', 'Sashimi read counts']),
+      expect.arrayContaining(['Show sashimi arcs', 'Show sashimi read counts']),
     )
     expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
       true,

@@ -533,9 +533,9 @@ export function exportTracksToR({
   assembly?: Record<string, unknown>
   /** The view's zoom, which decides what a feature or quantitative display shows. */
   bpPerPx: number
-  /** The view's "CDS reading frame colors", which a feature track takes. */
+  /** The view's "Show CDS reading frame colors", which a feature track takes. */
   colorByFrame?: boolean
-  /** The view's "Amino acids when zoomed in", which a feature track takes. */
+  /** The view's "Show amino acids when zoomed in", which a feature track takes. */
   showAminoAcids?: boolean
   out?: string
   /** What the caller knows of the view that the figure does not show. */

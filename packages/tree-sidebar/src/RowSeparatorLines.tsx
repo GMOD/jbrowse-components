@@ -28,7 +28,7 @@ import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
  *
  * Not a per-caller argument because the threshold is the pixel rule this
  * component already owns. Exported so a menu row can say why the grid is absent
- * (see the "Row separators" toggle).
+ * (see the "Show row separators" toggle).
  */
 export const MIN_SEPARATOR_ROW_PX = 4
 

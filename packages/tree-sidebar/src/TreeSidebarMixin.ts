@@ -722,7 +722,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Whether the tree has merge heights, so a dendrogram layout differs
-       * from the cladogram; gates the "Tree branch lengths" toggle.
+       * from the cladogram; gates the "Show tree branch lengths" toggle.
        */
       get treeHasBranchLengths() {
         return !!self.root && maxNodeHeight(self.root) > 0

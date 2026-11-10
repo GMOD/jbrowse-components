@@ -214,10 +214,10 @@ test('the track menu is Color by, Show and Lanes', () => {
     'Lanes',
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
-    'Lane ticks',
-    'Gene labels',
-    'Lane names on the gene row',
-    'Curved lines',
+    'Show lane ticks',
+    'Show gene labels',
+    'Show lane names on the gene row',
+    'Show curved lines',
   ])
 })
 
@@ -316,7 +316,10 @@ test('Show offers the legend only when something is keyed, and the hidden lanes 
     hiddenLanes: ['peach', 'cacao'],
   })
   const show = showSubMenuItems(model)
-  expect(labelsOf(show).slice(4)).toEqual(['Show 2 hidden lanes', 'Legend'])
+  expect(labelsOf(show).slice(4)).toEqual([
+    'Show 2 hidden lanes',
+    'Show legend',
+  ])
   click(show[4])
   expect(calls).toEqual(['show hidden'])
 })

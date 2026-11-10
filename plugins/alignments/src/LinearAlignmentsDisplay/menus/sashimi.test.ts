@@ -61,11 +61,11 @@ function click(items: MenuItem[], label: string) {
 describe('sashimi rows in Show', () => {
   test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
-    expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
+    expect(labelsOf(sashimiShowItems(model))).toEqual(['Show sashimi arcs'])
     model.showSashimi = true
     expect(labelsOf(sashimiShowItems(model))).toEqual([
-      'Sashimi arcs',
-      'Sashimi read counts',
+      'Show sashimi arcs',
+      'Show sashimi read counts',
     ])
   })
 })

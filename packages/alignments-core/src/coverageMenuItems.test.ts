@@ -60,7 +60,7 @@ test('the coverage rows grey out with the band hidden', () => {
   for (const row of menu(false)) {
     expect(row).toMatchObject({
       disabled: true,
-      disabledHelpText: expect.stringContaining('Coverage'),
+      disabledHelpText: expect.stringContaining('Show coverage'),
     })
   }
 })

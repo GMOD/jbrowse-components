@@ -88,8 +88,8 @@ export interface FeatureTablesArgs {
   colorByFrame?: boolean
   /**
    * Translate each CDS over `sequenceAdapter` once the zoom reaches a base a
-   * px, as the view's "Amino acids when zoomed in" does: codon stripes in `rects`, and
-   * each residue in `aminoAcids`. On by default, as in the view.
+   * px, as the view's "Show amino acids when zoomed in" does: codon stripes in
+   * `rects`, and each residue in `aminoAcids`. On by default, as in the view.
    */
   aminoAcids?: boolean
   /** The genetic code for a CDS whose feature names no `transl_table`. */

@@ -123,8 +123,8 @@ test('the metric help says the values are read from the file', () => {
 test('Show carries the visibility toggles, legend last, and Layout the rest', () => {
   const items = buildLDTrackMenuItems(makeSelf())
   expect(labels(subMenuOf(items, 'Show')!)).toEqual([
-    'Variant labels',
-    'Legend',
+    'Show variant labels',
+    'Show legend',
   ])
   expect(labels(subMenuOf(items, 'Layout')!)).toEqual([
     'Fit to track height',

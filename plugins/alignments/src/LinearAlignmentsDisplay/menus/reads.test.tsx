@@ -110,9 +110,9 @@ test('renders as an unbroken list of menu rows', () => {
 test('the toggles fire against the model', () => {
   const model = makeModel()
   const { getByText } = renderRows(subMenuOf(model))
-  fireEvent.click(getByText('Legend'))
-  fireEvent.click(getByText('Mismatches'))
-  fireEvent.click(getByText('Coverage'))
+  fireEvent.click(getByText('Show legend'))
+  fireEvent.click(getByText('Show mismatches'))
+  fireEvent.click(getByText('Show coverage'))
   expect(model.setShowLegend).toHaveBeenCalledWith(true)
   expect(model.setShowMismatches).toHaveBeenCalledWith(false)
   expect(model.setShowCoverage).toHaveBeenCalledWith(false)
@@ -136,7 +136,7 @@ test('the row cap is not here', () => {
 
 function interbaseRow(showCoverage: boolean) {
   return subMenuOf(makeModel({ showCoverage })).find(
-    r => 'label' in r && r.label === 'Insertion and clip markers',
+    r => 'label' in r && r.label === 'Show insertion and clip markers',
   )
 }
 
@@ -147,7 +147,7 @@ function interbaseRow(showCoverage: boolean) {
 test('the interbase toggle follows the coverage band', () => {
   expect(interbaseRow(false)).toMatchObject({
     disabled: true,
-    disabledHelpText: expect.stringContaining('Coverage'),
+    disabledHelpText: expect.stringContaining('Show coverage'),
   })
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
 })
@@ -157,14 +157,14 @@ test('the interbase toggle follows the coverage band', () => {
 test('Show carries no coverage allele row', () => {
   expect(
     subMenuOf(makeModel()).some(
-      r => 'label' in r && r.label === 'Coverage alleles',
+      r => 'label' in r && r.label === 'Show coverage alleles',
     ),
   ).toBe(false)
 })
 
 function softClipRow(unit: AlignmentsUnit) {
   return subMenuOf(makeModel({ unit })).find(
-    r => 'label' in r && r.label === 'Soft clipping',
+    r => 'label' in r && r.label === 'Show soft clipping',
   )
 }
 
@@ -188,23 +188,23 @@ function rowOf(model: ReturnType<typeof makeModel>, label: string) {
 test('the pileup-only layers grey out with the pileup hidden', () => {
   const pileupOff = makeModel({ showPileup: false })
   for (const label of [
-    'Mismatches',
+    'Show mismatches',
     'Fade low-quality mismatches',
-    'Soft clipping',
+    'Show soft clipping',
   ]) {
     expect(rowOf(pileupOff, label)).toMatchObject({
       disabled: true,
-      disabledHelpText: expect.stringContaining('Pileup'),
+      disabledHelpText: expect.stringContaining('Show pileup'),
     })
   }
   expect(
     rowOf(makeModel({ showMismatches: false }), 'Fade low-quality mismatches'),
   ).toMatchObject({
     disabled: true,
-    disabledHelpText: expect.stringContaining('Mismatches'),
+    disabledHelpText: expect.stringContaining('Show mismatches'),
   })
   const on = makeModel()
-  expect(rowOf(on, 'Mismatches')).not.toHaveProperty('disabled')
+  expect(rowOf(on, 'Show mismatches')).not.toHaveProperty('disabled')
   expect(rowOf(on, 'Fade low-quality mismatches')).not.toHaveProperty(
     'disabled',
   )

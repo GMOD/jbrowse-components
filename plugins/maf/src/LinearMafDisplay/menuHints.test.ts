@@ -57,7 +57,7 @@ function disabledHintOn(items: MenuItem[], label: string) {
   return undefined
 }
 
-const BAND_ROWS = ['Coverage', 'Conservation']
+const BAND_ROWS = ['Show coverage', 'Show conservation']
 const HINT = 'zoom in past the summary tier'
 
 describe('the band toggles say when the summary tier has overridden them', () => {
@@ -196,7 +196,7 @@ describe('the per-base rows say when the X-Y plot draws bars', () => {
     display.setYField('identity')
     const items = display.trackMenuItems()
     expect(hintOn(items, 'Every base')).toBe(HINT)
-    expect(hintOn(items, 'Mismatches')).toBe(HINT)
+    expect(hintOn(items, 'Show mismatches')).toBe(HINT)
     expect(hintOn(items, 'Source sequence')).toBeUndefined()
     expect(hintOn(items, 'Identity to reference')).toBeUndefined()
   })
@@ -220,7 +220,7 @@ describe('the per-base rows say when the X-Y plot draws bars', () => {
 // deep alignment, and that failure is soft by design — nothing else on screen
 // changes. Silence there is indistinguishable from "this region has no CDS".
 describe('the CDS strip says when its read was declined as too large', () => {
-  const STRIP = 'CDS frames'
+  const STRIP = 'Show CDS frames'
 
   it('is quiet while the frames are being read', () => {
     const { display } = framesEnv().createDisplay()

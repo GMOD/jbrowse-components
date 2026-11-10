@@ -1659,7 +1659,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether this display has a color key, as opposed to whether one is
-         * drawn now: the question "Legend" is offered on. A constant fill
+         * drawn now: the question "Show legend" is offered on. A constant fill
          * and the bases key nothing; a field, the bars' height, the codon
          * layer and the frame strip key what they paint. Read off the
          * settings rather than `rowPlan` or the frames on screen, so the row
