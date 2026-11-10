@@ -26,6 +26,7 @@ interface RawAdapter {
 export interface RawTrack {
   trackId: string
   name?: string
+  uri?: string
   type?: string
   assemblyNames?: string[]
   adapter?: RawAdapter
