@@ -2062,9 +2062,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         text: '4AL/5AL',
         fontSize: 20,
-        anchor: { selector: '[data-testid="refLabel-6"]', alignX: 'left' },
-        dx: -240,
-        dy: 54,
+        anchor: { selector: '[data-testid="refLabel-6"]', alignX: 'right' },
+        dx: -80,
+        dy: 150,
       },
       {
         type: 'text',
