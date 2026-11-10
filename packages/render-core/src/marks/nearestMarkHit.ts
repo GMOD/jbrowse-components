@@ -187,9 +187,10 @@ export function valueWindow(
       insetPx?: number
       edgePx?: number
       origin?: number
+      reverse?: boolean
     },
 ): [number, number] {
-  const { domain, insetPx = 0, edgePx = 0, origin } = scale
+  const { domain, insetPx = 0, edgePx = 0, origin, reverse } = scale
   const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(scale)
   const height = scale.rowHeight ?? canvasHeight
   const offset = scale.rowOffsetPx ?? 0
@@ -204,22 +205,26 @@ export function valueWindow(
   let valueMax = -Infinity
   for (let b = bandAt(yPx - radiusPx); b <= lastBand; b++) {
     const top = offset + b * height
-    const valueAt = (y: number) =>
-      denormalizeScore(
-        1 - (y - top - inset) / (height - 2 * inset),
+    const valueAt = (y: number) => {
+      const f = (y - top - inset) / (height - 2 * inset)
+      return denormalizeScore(
+        reverse ? f : 1 - f,
         domain[0],
         domain[1],
         valueScaleType,
         valueSymlogConstant,
       )
-    const lo =
+    }
+    const atBottom =
       yPx + radiusPx >= top + height - inset - edgePx
-        ? -Infinity
+        ? undefined
         : valueAt(yPx + radiusPx)
-    const hi =
+    const atTop =
       yPx - radiusPx <= top + inset + edgePx
-        ? Infinity
+        ? undefined
         : valueAt(yPx - radiusPx)
+    const lo = (reverse ? atTop : atBottom) ?? -Infinity
+    const hi = (reverse ? atBottom : atTop) ?? Infinity
     const [bandMin, bandMax] =
       origin === undefined
         ? [lo, hi]

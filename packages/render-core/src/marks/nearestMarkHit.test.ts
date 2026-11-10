@@ -189,6 +189,18 @@ describe('valueWindow', () => {
     expect(valueWindow(97, 5, frame, { domain: [0, 10] })[0]).toBe(-Infinity)
   })
 
+  test('a reversed scale reads down from the top, and its edges open the other way', () => {
+    const reversed = {
+      domain: [0, 10] satisfies [number, number],
+      reverse: true,
+    }
+    const [lo, hi] = valueWindow(20, 5, frame, reversed)
+    expect(lo).toBeCloseTo(1.5, 9)
+    expect(hi).toBeCloseTo(2.5, 9)
+    expect(valueWindow(3, 5, frame, reversed)[0]).toBe(-Infinity)
+    expect(valueWindow(97, 5, frame, reversed)[1]).toBe(Infinity)
+  })
+
   test('a point inset from the edge is reachable from the full radius below it', () => {
     // the domain max draws at y=3.2, 6.8 px above a cursor at y=10
     const [, hi] = valueWindow(10, 8, frame, { domain: [0, 10], insetPx: 3.2 })

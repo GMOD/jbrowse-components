@@ -131,6 +131,8 @@ export interface LinkParams extends RowParams, MarkValueScale {
   sizeScale?: LinkSizeScale
   /** How far inside the band the value range ends, the axis's own. */
   insetPx?: number
+  /** Whether the domain's minimum sits at the band's top rather than its bottom. */
+  reverse?: boolean
 }
 
 const KIND_ELLIPSE = 0

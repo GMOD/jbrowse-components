@@ -70,6 +70,8 @@ export interface ValuedMarkParams extends RowParams, MarkValueScale {
    * the display's axis takes as its offset. Absent centres it on the edge.
    */
   insetPx?: number
+  /** Whether the domain's minimum sits at the band's top rather than its bottom. */
+  reverse?: boolean
 }
 
 export interface PointParams extends ValuedMarkParams {

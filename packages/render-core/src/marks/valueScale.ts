@@ -13,8 +13,6 @@ export interface MarkValueScale {
    * axis resolves it (`resolveSymlogConstant`); d3's 1 when absent.
    */
   symlogConstant?: number
-  /** Whether the domain's minimum sits at the band's top rather than its bottom. */
-  reverse?: boolean
 }
 
 /**
