@@ -93,6 +93,7 @@ Follow a three-chromosome rearrangement across a breakpoint split view, then ali
 
 Page: https://jbrowse.org/jb2/docs/tutorials/cancer_sv/
 
+- https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 - https://jbrowse.org/demos/cancer_sv/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
@@ -315,7 +316,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/genomes_synteny/
 
 ## Comparing one genome's two haplotypes (T2T-HG002)
 
-Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain, plot one haplotype against the other genome-wide, and look at the 8p23.1 inversion in a linear synteny view
+Load T2T-HG002 v1.2 and the Q100 project's own chain between the haplotypes, plot one haplotype against the other genome-wide, and look at the 8p23.1 inversion in a linear synteny view
 
 Page: https://jbrowse.org/jb2/docs/tutorials/hg002_haplotypes/
 
@@ -369,6 +370,7 @@ Triage a fusion caller's short-read calls against long RNA reads from the same c
 
 Page: https://jbrowse.org/jb2/docs/tutorials/k562_fusions/
 
+- https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 - https://jbrowse.org/demos/cancer_sv/K562.star-fusion.tsv
 - https://jbrowse.org/demos/cancer_sv/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
