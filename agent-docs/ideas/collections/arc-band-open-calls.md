@@ -1,6 +1,6 @@
 ---
 name: arc-band-open-calls
-description: Four parked visual calls on the read-connection band and the read cloud, three on marks and geometry and one on a menu, that the settled reference/ARC_BAND.md leaves open.
+description: Three parked visual calls on the read-connection band and the read cloud, two on marks and geometry and one on a menu, that the settled reference/ARC_BAND.md leaves open.
 ---
 
 # The arc band's open calls
@@ -89,40 +89,6 @@ dataset open rather than off the fixtures — `cancer_sv/k562_bcr_abl_split` and
 the HG002 300x window at 1:2,000,000 (`reference/DEEP_COVERAGE.md`), in that
 order. Every argument here is an argument about what a reader concludes, and
 the fixture tests cannot settle it.
-
-### Give the interchromosomal ticks breakend feet too
-
-Unfinished, not wrong: a tick that says nothing about direction is worse than
-one that does, and no worse than the last release's.
-
-An interchromosomal arc draws a foot at each end — a short horizontal tick lying
-over the sequence that end keeps, so outward reads as a deletion-type junction,
-inward as a duplication-type and parallel as an inversion (the link mark's
-`feet` lane, and [reference/ARC_BAND.md](../../reference/ARC_BAND.md) §"Breakend
-feet"). An interchromosomal connection whose partner is **off screen** draws as
-a TICK instead, and ticks carry no feet.
-
-That is unfinished, not declined. A tick means "the partner is somewhere you
-cannot see", and the direction at the near foot is exactly as informative there
-— arguably more, since there is no second endpoint to read the orientation off.
-
-The drawing half is now free: a tick is a link stem, and the link draws a foot
-at a stem's placed end from the same `feet` lane, in every backend, the export
-and the hit test. What is left is the direction, below, and setting the lane
-in `buildArcBandFeeds`. `LinearAlignmentsDisplay/components/arcBreakendFeet.test.ts`
-is where a tick-foot direction assertion lands.
-
-The direction itself is already computed and already correct for this case:
-`readTrailingBodyDir` is a property of the junction rather than of the read, so a
-tick coalescing several reads on one coordinate has one answer — but note that a
-`ComputedLine` deliberately carries none today, and two junctions sharing a
-breakpoint would otherwise take whichever read arrived first. Decide that before
-packing a direction into the tick buffer.
-
-Whichever direction a tick's foot ends up taking, it is the OFF-SCREEN-partner
-case, so `pairOuterDir`'s distinction applies to it too: the mate-link producers
-answer with the read's direction negated, because their endpoint is the
-fragment's outer edge rather than the junction.
 
 ### Read cloud ticks every interchromosomal connection as a full-band vertical
 
