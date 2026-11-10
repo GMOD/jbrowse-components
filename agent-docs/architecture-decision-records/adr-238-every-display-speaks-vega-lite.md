@@ -78,8 +78,8 @@ vocabulary.
 
 ```
 { type, filter, encoding, mark, facet, <named parts>,
-  height, autosize, maxHeight,
-  data: { resolution, normalization, limit }, render: { antialias },
+  height, heightMode, growMaxHeight,
+  data: { resolution, normalization }, render: { antialias },
   theme, navigation }
 ```
 
@@ -133,7 +133,7 @@ Amended 2026-10-24:
 ### Channel
 
 `{ value | datum | field, scale: { type, domain, range, scheme, reverse,
-zero, clamp, constant, unknown, name }, sort, legend | axis }` serves
+zero, clamp, constant, unknown, share }, sort, legend | axis }` serves
 `color`, `opacity`, `size`, `strokeWidth`, `shape` and the positional
 channels.
 
@@ -152,7 +152,7 @@ channels.
   no value. Unset, a feature with no value keeps the display's no-value color
   and its own key row; writing `invalid` as the `unknown` color files it under
   Other. Alignments had split the two first (ADR-240).
-- `scale.name` shares a domain across tracks as the union of member domains,
+- `scale.share` shares a domain across tracks as the union of member domains,
   as `autoscaleGroup` does.
 - A threshold takes at most eight cuts, which is the shader's cap.
 - `scale: 'none'` goes. A constant is `value`.
@@ -211,8 +211,8 @@ its only value scale is `coverage.encoding.y`.
   `band`-scale `y`. This replaces the Rows bullet below.
   - **Members** (`RowAxis`, from tree-sidebar): `tree`, `branchLength`,
     `labels` and `width`. Wiggle, the multi-sample variant and the multi-row
-    feature displays add `grid` (`RowAxisWithGrid`); MAF and the mark display
-    draw no row separators.
+    feature displays and the mark display add `grid` (`RowAxisWithGrid`);
+    MAF draws no row separators.
   - `tree`, `labels` and `grid` are Vega-Lite's axis booleans, each naming
     the part it draws. `rows` holds what the axis draws (`rows.tree` the
     newick, `rows.labels` the text) and `axis` whether it draws it.
@@ -248,7 +248,7 @@ against the code, checked the spelling twice.
   `subfeatures` holds `placement`: `auto` labels a polyprotein's cleavage
   products on their rows, `below` and `overlay` every part. `showLabels` and
   `subfeatureLabels` go.
-  - The variant band's `variants.labels`, LD's `labels.name`, and the
+  - The variant band's `records.labels`, LD's `labels.name`, and the
     multi-way display's `labels.name` (from `text` and `showGeneLabels`) take
     the same shape. The multi-way display's top-level `labels` holds its gene
     names and its lane names (`labels.lanes`), as its top-level `encoding`
@@ -317,10 +317,10 @@ against the code, checked the spelling twice.
     family `shape` (`line arc curve diagonal orthogonal`).
   - The chord displays' `mark.depth` replaces `bezierRadiusRatio`, flipped so
     a larger value curves more: 1 runs an antipodal chord through the center.
-- **Axis:** `axis: { grid, labels, title, tickCount, format, extent, tree }`.
+- **Axis:** `axis: { show, grid, labels, title, tree }`.
   It replaces the gridline, location-marker, tick-label and minimal-tick
   flags and the tree sidebar's toggles.
-- **Legend:** `legend: { show, title, format, values }` replaces
+- **Legend:** `legend: { show, title, descending }` replaces
   `showLegend`, `labels`, `title` and `breaks`.
 - **Coordinates:** `coord: 'cartesian' | 'parallel' | 'polar'` names the
   dotplot, the linear synteny view and the circle, and `ratio: 1` replaces
@@ -431,7 +431,7 @@ predicate in the layer's own `filter`:
 | `splitStrands` kept as a switch, or as a `yOffset` channel on reading direction | One layout reads better at every lane height it fits, and a short lane already falls back to one row |
 | The row sidebar's `axis` as Vega-Lite's `header`, since the multi-way lanes' `axis` is an x ruler (2026-11-01 cold read) | Both are guides on a positional channel, the band y's and the lanes' x; `header` labels facet panels, and these rows are positions on one scale |
 | `rows.labels` as a `scale.names` list | `names` runs parallel to a declared `domain`; rows have none, their order being `rows.sort` over whatever the source lists, so a label is keyed by row name |
-| `tooltip` as Vega-Lite's `encoding.tooltip` (2026-11-07) | The part carries `show`, and a channel cannot turn off, `null` resetting it; Vega-Lite itself spells hover twice, `mark.tooltip` on or off and `encoding.tooltip` its fields. The part's `field` names the hover's first line |
+| `tooltip` as Vega-Lite's `encoding.tooltip` (2026-11-07) | The feature displays' part carries `show`, and a channel cannot turn off, `null` resetting it; the alignments part is field-only (ADR-240) and keeps the one spelling. Vega-Lite itself spells hover twice, `mark.tooltip` on or off and `encoding.tooltip` its fields. The part's `field` names the hover's first line |
 
 ## Consequences
 

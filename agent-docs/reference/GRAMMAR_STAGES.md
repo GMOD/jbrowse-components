@@ -153,7 +153,8 @@ layer list under its frame (ADR [180](../architecture-decision-records/adr-180-a
 
 ## Facet
 
-`facet` is `{ field, sort, hidden }`, plus `transform` on the mark display;
+`facet` is `{ field, sort, hidden }`, plus `transform` on the mark display
+and without `hidden` on LinearVariantDisplay;
 the schema is `facetConfigSchema.ts` (display-kit) (ADRs [130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md), [131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md)). A `sort`
 orders sections and never decides which exist, so no worker request carries
 one, and `groupKeyComparator` (`packages/core/src/util/groupKeys.ts`) is that
@@ -166,9 +167,12 @@ are `groupByMenu.ts` (display-kit).
 
 ## Rows
 
-A row display's row axis is its `rows` object: the row `field`, `sort`,
-`labels`, cluster `tree`, `color` and pinned `colors`, `step` (row height, a
-pixel count or `"fit"`), `filter` and the sidebar `axis`
+A row display's row axis is its `rows` object: `sort`, `labels` and `kept`
+on every one; the row `field`, cluster `tree`, `color` and pinned `colors`,
+`annotations`, `filter`, `step` (row height, a pixel count or `"fit"`),
+`groups` and the sidebar `axis` where the display has them. MAF has no
+`field`, `filter` or `step`, since its rows carry no attributes; wiggle has no
+`step` or `groups`; the multi-way lanes take only `sort`, `labels` and `kept`
 (ADRs [157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md), [160](../architecture-decision-records/adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md), [257](../architecture-decision-records/adr-257-the-row-axis-owns-its-settings.md)). The schema is `rowsConfigSchema.ts` (display-kit).
 `TreeSidebarMixin` (`packages/tree-sidebar`) owns the arrangement: rows a
 source lists keep its order past the `sort` list (`orderRowsByDomain`), a

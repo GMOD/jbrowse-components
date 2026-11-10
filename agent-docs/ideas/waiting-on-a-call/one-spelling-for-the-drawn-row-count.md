@@ -25,6 +25,6 @@ used and reads as English; `nrow` matches R and ggplot's `facet_wrap(nrow =)`.
 In plugins/alignments, `rowHeight` is `featureHeight + featureSpacing`
 (`alignmentComponentUtils.ts`, `computeVisibleLabels.ts`, `groupLayout.ts`),
 the distance from one row's top to the next. Every other display's
-`rowHeight`, including the `rows.rowHeight` config slot, is a row's own
+`rowHeight`, and the `rows.step` config slot it reads, is a row's own
 height. Calling the alignments value `rowPitch` (about 15 files) keeps a
 reader from adding spacing to it twice.

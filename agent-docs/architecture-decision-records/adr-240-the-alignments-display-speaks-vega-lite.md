@@ -90,7 +90,6 @@ hand, and Colin's rulings on the calls they split.
   ],
 
   "facet": { "field": "tags.HP", "sort": ["2", "1"], "hidden": [] },
-  "collapseSections": false,
   "sort": "position",                   // or { field, pos, refName, within }
 
   "encoding": {
@@ -113,14 +112,15 @@ hand, and Colin's rulings on the calls they split.
     "show": true, "height": 45,
     "encoding": { "y": {
       "scale": { "type": "linear", "zero": true, "domainMin": null, "domainMax": null,
-                 "constant": 1, "group": "tumor-normal" },
-      "axis": { "grid": false, "title": "Depth", "tickCount": 4 } } },
+                 "constant": 1, "share": "tumor-normal" },
+      "axis": { "grid": false, "title": "Depth" } } },
     "interbase": { "show": true },
     "alleles": { "show": true, "filter": [{ "field": "fraction", "gte": 0.2 }] }
   },
 
   "pileup": {
     "show": true,
+    "collapsed": false,
     "mark": { "height": 7 },
     "maxLayoutHeight": 6000,
     "fadeLowFrequency": true,
@@ -201,7 +201,7 @@ them in its own stage:
    modifiers, which compose onto what the config says
    (`readFilterModifiers.test.ts`). The merge runs once at config resolve.
 2. **A link's width is `strokeWidth`**, as Vega-Lite spells a line's width;
-   `size` is a point's area.
+   `size` is a point's diameter in px, not Vega-Lite's area.
 3. **`autosize` is not borrowed.** Vega-Lite's `autosize` fits guides and
    padding inside a size; `pad` and `none` would claim the grow and fixed
    modes. `heightMode: fixed | grow | fit` stays, in every display's height

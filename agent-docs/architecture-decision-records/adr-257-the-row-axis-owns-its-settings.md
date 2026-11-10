@@ -57,8 +57,9 @@ no attributes. Neither MAF's `rows` nor the lanes' takes a `field`, which
 would be a one-value enum there (the lanes' `assembly` went 2026-11-04,
 read by nothing).
 
-One naming rule makes each member predictable: a plural member is a map keyed
-by row name (`labels`, `colors`), a singular member is a channel or setting
+One naming rule makes each member predictable: a plural map is keyed by row
+name (`labels`, `colors`), a plural list is ordered entries (`groups`,
+`annotations`, `kept`), a singular member is a channel or setting
 (`color`, `step`, `filter`, `tree`), and `axis.*` holds the drawing toggles
 (`axis.labels`, `axis.tree`). Each same-word pair names its sibling in its
 description, and a refused shape or key names that description at load, on a
