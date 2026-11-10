@@ -211,3 +211,28 @@ test('a program that fails to link is compiled once and reported for each pass',
   ])
   expect(reported.every(isGpuContextLostError)).toBe(true)
 })
+
+test('a HAL whose first pass cannot build constructs, and its draw reports a flagged error', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { canvas } = fakeContext()
+  const stages = await spanMark.pass.source.glsl()
+  const hal = await WebGL2Hal.create(canvas, [
+    pass('bad', {
+      source: {
+        ...spanMark.pass.source,
+        glsl: () =>
+          Promise.resolve({
+            ...stages,
+            GLSL_VERTEX: `${stages.GLSL_VERTEX}\n// broken`,
+          }),
+      },
+    }),
+  ])
+  const reported: Error[] = []
+  hal.setErrorHandler(e => {
+    reported.push(e)
+  })
+  drawEach(hal, ['bad'])
+  expect(reported).toHaveLength(1)
+  expect(reported.every(isGpuContextLostError)).toBe(true)
+})
