@@ -116,18 +116,18 @@ read the capture; the wedge sits at the deletion.
 
 ## Open calls
 
-1. **Does the site want this page?** The route is a genuine reader task, but the
+- **Does the site want this page?** The route is a genuine reader task, but the
    protein story already has three CCR5 figures in `genomes_proteins`.
-2. **The allele's gene model.** The hosted figures label "31 novel residues" and
+- **The allele's gene model.** The hosted figures label "31 novel residues" and
    "premature stop" from a hand-built GFF
-   (`~/src/protein-figure-builders/ccr5/frameshift.py`, `build_ccr5_delta32.py`). The reader's
+   (`~/src/protein-figure-builders/ccr5/frameshift.py`, `build_ccr5.py`). The reader's
    route has no equivalent, so the allele row shows sequence only. Options: drop
    the annotation and let the sequence track's translation carry the stop
    (unchecked at base level); give the reader a short script that re-derives the
    CDS on the allele, which is the step `a-variant-haplotype-is-a-lane` wants
    built into JBrowse; or point at the hosted GFF, which is the demo's allele.
-3. **Heterozygotes.** Showing both haplotypes of HG00101 needs two assemblies
+- **Heterozygotes.** Showing both haplotypes of HG00101 needs two assemblies
    and a phase check. Probably a second page.
-4. **Reads.** The reads track in the combo figure is the three 30x CRAMs over
+- **Reads.** The reads track in the combo figure is the three 30x CRAMs over
    S3 (`thousand-genomes-30x-crams-stream-from-s3`). A tutorial would open one
    and sort on the deletion before building the allele.

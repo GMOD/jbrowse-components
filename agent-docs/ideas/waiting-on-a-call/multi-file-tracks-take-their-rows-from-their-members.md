@@ -45,17 +45,17 @@ The routes that stack several files into one track still disagree:
 - **The add-track form and the track selector** check each member, but
   `mapWithConcurrency` rejects on the first failure, so one bad file blanks
   every row.
-- **`jb.addTrack([...])`** refuses anything but `.bw` (`jbApi.ts:1311`), so it
+- **`jb.addTrack([...])`** refuses anything but `.bw` (`jbApi.ts`), so it
   refuses the bedGraph and BED files the form accepts.
-- **`jbrowse add-track --multiwig`** (`jbrowse-cli/.../add-track-utils/multiwig.ts:41`)
-  and **`jbrowse-img --multiwig`** (`jbrowse-img/src/makeConfigs.ts:317`)
+- **`jbrowse add-track --multiwig`** (`jbrowse-cli/.../add-track-utils/multiwig.ts`)
+  and **`jbrowse-img --multiwig`** (`jbrowse-img/src/makeConfigs.ts`)
   hard-code `MultiWiggleAdapter` over `BigWigAdapter`.
 
 A feature stack's rows are a label stamped on each feature, not the members:
 `LinearMultiRowFeatureDisplay` partitions on the `source` value
 `MultiWiggleAdapter` writes on a copy of every feature.
 
-And every file in a stack must spell chromosomes alike. `loadRefNameMap.ts:86`
+And every file in a stack must spell chromosomes alike. `loadRefNameMap.ts`
 maps each canonical name to one spelling, the last one the union of the files'
 names offered, so a `chr1` file stacked with a `1` file draws nothing and
 `detectRefNameMismatch` stays silent because some name matched.
@@ -66,7 +66,7 @@ A multi-file track's rows are its **members**, not a label stamped on each
 feature. `MultiWiggleAdapter`'s fast path already works that way:
 `getMultiSourceFeatureArraysMulti` hands the executor `{ source, raws }` per
 file and labels no feature. Making it the contract for every format removes, on
-the drawing path, the per-feature copy (`MultiWiggleAdapter.ts:240`), id
+the drawing path, the per-feature copy (`MultiWiggleAdapter.ts`), id
 collisions between files, and the clash between the member label and a
 parser's own `source` field.
 
@@ -83,7 +83,7 @@ BigWig assumptions:
   with the class.
 - `getMembers(regions, opts)` → `{ name, adapter, regions }[]`: the members the
   samples table admits, narrowed by `opts.sources`, as `getFilteredAdapters`
-  does (`MultiWiggleAdapter.ts:193-200`), each with its regions spelled the way
+  does (`MultiWiggleAdapter.ts`), each with its regions spelled the way
   its own file spells them (see the aliases below). Executors call this; it is
   the whole contract, and it stays duck-typed the way `isMultiSource` is.
 - `getFeatures` stays, for every consumer that knows nothing of members:
@@ -91,22 +91,22 @@ BigWig assumptions:
   comes through a thin delegating `Feature` whose `get('source')` answers the
   member, whose `id()` is member-qualified and whose `toJSON()` carries both. A
   BigBed singleton's id is `bb-${blockOffset}-${recordStart}` with no adapter id
-  in it (`BigBedAdapter.ts:182`), so two BigBeds from one pipeline collide
+  in it (`BigBedAdapter.ts`), so two BigBeds from one pipeline collide
   without the qualifier.
 - `getRefNames` is the union, under the same concurrency cap as the fetches;
-  today's unbounded `Promise.all` (`MultiWiggleAdapter.ts:187`) downloads every
+  today's unbounded `Promise.all` (`MultiWiggleAdapter.ts`) downloads every
   index before the first paint.
 - `getRegionByteSize` sums the members that estimate, as
   `MultiWiggleAdapter`'s does; `getZoomRange` intersects.
 - `listRowSources` lists every member with its label, color and attributes,
   plus a `warnings` member, which `RowSourceListing` lacks
   (`rowSources.ts`). Today's listing strips everything but label and color
-  (`MultiWiggleAdapter.ts:369-375`), so a samples-TSV column never reaches
+  (`MultiWiggleAdapter.ts`), so a samples-TSV column never reaches
   `rows.color` or `facet`, and the table's warnings are dropped
-  (`:362-364`).
+  there too.
 - It declares `READS_REFERENCE`, so members get a reference:
   `getSubAdapter` hands each member its parent's `keyedSequence`
-  (`dataAdapterCache.ts:86-87`), which is undefined otherwise, and a GC-content
+  (`dataAdapterCache.ts`), which is undefined otherwise, and a GC-content
   or CRAM member would read none.
 
 `MultiWiggleAdapter` stays as a name for the same class, because hosted hub
@@ -118,7 +118,7 @@ the shared class. New configs write `MultiFileAdapter`.
 
 ### Each display's worker loops over the members
 
-- **Wiggle**: `fetchSourceRaws` (`fetchRegionRaws.ts:64-70`) and the render and
+- **Wiggle**: `fetchSourceRaws` (`fetchRegionRaws.ts`) and the render and
   cluster executors loop over `getMembers` where they branch on
   `isMultiSource`, calling `fetchRegionRaws` per member.
   `multiSourceAdapter.ts` goes.
@@ -132,7 +132,7 @@ the shared class. New configs write `MultiFileAdapter`.
 `MarkGetRowSources` moves into core as `CoreGetRowSources`, beside
 `CoreGetRefNames`. `TreeSidebarMixin` gains a `rowListing` hook and merges the
 listed rows ahead of the found rows, in listing order, which the mark display
-does by hand today (`plugins/marks/src/LinearMarkDisplay/model.ts:705` on).
+does by hand today (`plugins/marks/src/LinearMarkDisplay/model.ts` on).
 The mixin owns the rule: listed rows in listing order, then found rows
 sorted.
 
@@ -147,18 +147,18 @@ and MAF keeps its rows from a header fetch (`sourcesVolatile`).
 
 ### A region carries its chromosome aliases
 
-`renamed()` (`renameRegions.ts:139`) writes each region's canonical name and
+`renamed()` (`renameRegions.ts`) writes each region's canonical name and
 its alias set, `[canonical, ...assembly.getAliasesForRefName(canonical)]` —
-that method leaves out the name it is given (`assembly.ts:652`). The assembly is
+that method leaves out the name it is given (`assembly.ts`). The assembly is
 already loaded there, so the set is never empty, and the stamp goes on both
 branches, since `renameRegionIfNeeded` returns a region unchanged when the map
-has no entry (`:50-58`). `fetchInputs`, `zoomFetchArgs` and `loadedRegions`
+has no entry. `fetchInputs`, `zoomFetchArgs` and `loadedRegions`
 never see it, so no fetch key moves.
 
 The spelling an adapter reads is picked worker-side from its own memoized
 `getRefNames`, resolving aliases and casing together as `getCanonicalRefName`
 does. One helper serves two sites: the worker half of the rename base classes
-(`deserializeArguments`, `RpcMethodType.ts:358`, which every renamed RPC
+(`deserializeArguments`, `RpcMethodType.ts`, which every renamed RPC
 inherits and which must tolerate running twice) for the track's adapter, and
 `getMembers` for each member. `RpcMethodTypeWithRenameRegion` mirrors
 `regions[0]` into `region`, so the singular RPCs get it too.
@@ -172,7 +172,7 @@ Names changes with it. A member none of whose names the assembly knows gets a
 warning on the listing, shown on its row; `detectRefNameMismatch` cannot see
 it, because it fires only when no name at all matches.
 
-The header of `renameRegions.ts:20-42` says a second renamed name has "no
+The header of `renameRegions.ts` says a second renamed name has "no
 reason to expect a third". This reverses it, so step 4 lands with its own ADR.
 GWAS's LD join resolves a second file's spelling by hand before the RPC
 (`opts.ld.refName`) and is a candidate to move onto the stamp.
@@ -199,7 +199,7 @@ and every route calls it:
 - **"Add multi-row track"**, replacing "Add multi-wiggle track", built from the
   bulk workflow's `LocationInput`, `summarizeBulkInput` (detection and index
   pairing) and `TrackPreviewTable`, with rename in the table. It publishes, as
-  every add-track workflow does (`addTrackFromWidget.ts:137`).
+  every add-track workflow does (`addTrackFromWidget.ts`).
 - **"Create multi-row track..."** in the track selector, moved into
   data-management, which owns the selector. It passes the whole selection,
   names the misfits, and adds to the session.
@@ -209,7 +209,7 @@ and every route calls it:
 A misfit is a file nothing recognises, a mix of quantitative and feature files,
 or a track on another assembly; each route names it with its reason. bedGraph
 needs nothing, being `QuantitativeTrack` already
-(`trackTypes.generated.ts:12-13`). MACS2's `.narrowPeak`/`.broadPeak`, the
+(`trackTypes.generated.ts`). MACS2's `.narrowPeak`/`.broadPeak`, the
 likeliest per-sample peak files, match no regex in
 `add-track-core/src/formats.ts` and need one.
 
@@ -218,7 +218,7 @@ them the pasted-JSON subadapter form: rename is in the table, color is
 `rows.colors` (ADR-160, ADR-257), and a hand-written subadapter list is a config file.
 
 `jbrowse text-index` indexes by adapter type (`indexableAdapters`,
-`text-index/command.ts:109`) and skips a stack of BEDs without a word; it walks
+`text-index/command.ts`) and skips a stack of BEDs without a word; it walks
 `subadapters` and indexes each member under the stacked track.
 
 ### Which display
@@ -237,7 +237,7 @@ into one. The one-row model's two levels answer it: the member is the band and
 the inner value is the row. A row's `name` is the qualified `member/inner`, the
 qualification `disambiguateSources` already writes, its `label` is the inner
 value, and `facet: 'source'` bands by member. `bandRows` keys rows by name
-alone (`arrangeRows.ts:209-214`), so an unqualified `m` under two bedMethyls
+alone (`arrangeRows.ts`), so an unqualified `m` under two bedMethyls
 would collide; the qualified name fits ADR-160's `name` keyspace and ADR-189's
 listing. Wiggle's `checkRowsField`, which admits `source` alone, widens to the
 inner field. A single-row member keeps the member as its row and draws no band.
@@ -267,7 +267,7 @@ move only where a display's row source changes.
    or use it as their worked example move with it:
    `tutorials/scrna_pseudobulk.md` (§Building the track from a list of BigWigs),
    `developer_guides/creating_addtrack_workflow.md` and
-   `developer_guides/extension_points.md:1063`.
+   `developer_guides/extension_points.md`.
 6. **Members with rows of their own.** The qualified name, the member band and
    the widened `checkRowsField`, on both displays.
 

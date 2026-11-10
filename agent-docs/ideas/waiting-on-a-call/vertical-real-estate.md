@@ -32,9 +32,10 @@ where "use less" is strictly a win.
 
 Grounding check against the code corrected two tempting-but-wrong premises:
 
-- `useWheelScroll.ts` already separates axes: plain wheel `deltaX` -> horizontal
-  pan, `ctrl`/`meta` (or opt-in `scrollZoom`) -> zoom, `deltaY` -> the track's own
-  vertical scroll. `trackPointerPresence` drops accumulation when the cursor
+- The wheel already separates axes (`wheelZoom.ts`'s `wheelIsZoom` behind
+  `usePanZoom`, and `useVirtualScrollWheel.ts`): plain wheel `deltaX` ->
+  horizontal pan, `ctrl`/`meta` (or opt-in `scrollZoom`) -> zoom, `deltaY` ->
+  the track's own vertical scroll. `trackPointerPresence` drops accumulation when the cursor
   leaves so gestures chain to the page. `scrollLatch.ts` reproduces native
   scroll-chaining. So "gesture ambiguity" is largely already solved.
 - Per-track vertical scroll is **synthetic on purpose** (`TrackRenderingContainer`
@@ -168,7 +169,7 @@ question rather than a picture.
 - A 100-sample MAF or a very deep pileup cannot be fit without losing detail, so
   level 3 (scroll) never fully disappears - but even there the right response is
   summarize-to-fit (level 2), with scroll as the genuine last resort.
-- `useWheelScroll` is LGV-specific. Dotplot/synteny are genuinely 2D (vertical
+- The LGV's wheel handling is LGV-specific. Dotplot/synteny are genuinely 2D (vertical
   *is* a genome axis); none of the "vertical = document" logic applies there.
 - Any grow / allocator change is gated on deployment context (embedded vs full
   app), because `TrackRenderingContainer` is shared.

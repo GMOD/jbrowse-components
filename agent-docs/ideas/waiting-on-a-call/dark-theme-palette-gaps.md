@@ -17,8 +17,9 @@ Left open by the LinearAlignmentsDisplay review that landed on 2026-09-02
 (`8e44ed5a78`, `d68391829b`). The review closed every legend gap it found in
 the color modules; this one it kept separate as a palette call.
 
-The modification fills sit in the `modifications` block with no `dark`
-counterpart, and the categorical tag palette that `colorTagUtils.ts` hashes
+The methylation fills (`methylated5mC`, `unmethylated5mC` and `methylated5hmC`,
+the `theme-methylation` table) are plain constants with no `dark` counterpart,
+and the categorical tag palette that `colorTagUtils.ts` hashes
 values into is likewise a single lap set relit rather than a per-theme pair. So
 a modifications or tag color scheme paints light-theme color on a dark track.
 

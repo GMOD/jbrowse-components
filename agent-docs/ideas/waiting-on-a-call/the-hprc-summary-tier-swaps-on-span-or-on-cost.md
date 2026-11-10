@@ -15,8 +15,7 @@ rows, 464 haplotypes, all 195 contigs), rebuilt from the v2.1 MAF on 2026-09-16,
 wired by `test_data/hprc_maf_summary.json` and rebuilt by
 `scripts/build_hprc_maf_summary.sh`. Worth 3.19 GB refused against 150 kB drawn
 on whole chr6, and a whole-chromosome read costs 73 kB to 212 kB against a 5 MB
-budget ([reference/HPRC_RELEASE2.md](../../reference/HPRC_RELEASE2.md) §"What the
-zoom-out tier is worth"). What is left is one decision and one upstream report.
+budget. What is left is one decision and one upstream report.
 
 **Report the overlap collapse to `maf2bed`.** `--summary` emits a haplotype's
 overlapping runs separately, and `--merge-gap` structurally cannot reach them —
@@ -29,6 +28,8 @@ the tier being switched on for `hprc_maf.json` itself. It swaps at 20 kb, and th
 tutorial's own figure is drawn at 83 kb, so wiring the summary there silently
 replaces the per-haplotype base rows the figure exists to show — for a detail
 read of 3.50 MB against a 5 MB budget. The gap is the one
-[reference/MAF_LARGE_BLOCKS.md](../../reference/MAF_LARGE_BLOCKS.md) §"What the LOD
-lesson actually points at" predicted; HPRC_RELEASE2.md says why it is a design
-question rather than a one-liner.
+[reference/MAF_LARGE_BLOCKS.md](../../reference/MAF_LARGE_BLOCKS.md) §"Fetch
+dominates at 470-way" predicted;
+[reference/HPRC_RELEASE2.md](../../reference/HPRC_RELEASE2.md) §"Unpacking
+pairwise alignments from the graph" says why it is a design question rather than
+a one-liner.

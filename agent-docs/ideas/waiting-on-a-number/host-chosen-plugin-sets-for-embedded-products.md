@@ -13,24 +13,25 @@ the shape of *why* is the useful part, because the obvious version of the idea
 buys zero bytes.
 
 **What exists is additive only.** `createViewState`'s `plugins` option
-(`products/jbrowse-react-linear-genome-view/src/createViewState.ts:106`) reaches
+(`products/jbrowse-react-linear-genome-view/src/createViewState.ts`) reaches
 `createModel`, which concatenates the host's plugins onto a hardcoded array:
-`corePlugins.map(...)` then `runtimePlugins.map(...)`
-(`createModel/createModel.ts:27-30`). `corePlugins.ts` is 18 static imports for
-`@jbrowse/react-linear-genome-view2` and 29 for `@jbrowse/react-app2`. Nothing
+`corePluginRecords(corePlugins)` then `runtimePlugins.map(toPluginLoadRecord)`
+(`createModel/createModel.ts`). `corePlugins.ts` is a list of static imports
+for `@jbrowse/react-linear-genome-view2` and a longer one for
+`@jbrowse/react-app2`. Nothing
 in the published surface removes an entry, and no example on the BYO site passes
 `plugins` at all.
 
 **A runtime allowlist is not the feature.** Bundle size is the static module
 graph, not which registry entries a caller instantiates. `plugins: ['wiggle',
-'sequence']` filtered at `createViewState` time would still ship all 18 plugin
-graphs — no bundler can prove the rest unreachable through a static array. This
+'sequence']` filtered at `createViewState` time would still ship every plugin
+graph — no bundler can prove the rest unreachable through a static array. This
 has to be *build-time* selection, i.e. the host's own import list reaching the
 plugin manager, or it is a no-op with a config knob on top.
 
 **The worker half of that door is already open; the main-thread half is not.**
 `initializeWorker(corePlugins, opts)` takes the array as an argument and is
-publicly exported (`packages/product-core/src/index.ts:103`), so a host can
+publicly exported (`packages/product-core/src/index.ts`), so a host can
 write its own worker entry with a chosen set today — which is exactly what each
 product's `rpcWorker.ts` does, and why `makeWorkerInstance.ts` says the module is
 deliberately not shared. On the main thread, `createModel` is exported from the

@@ -1,6 +1,6 @@
 ---
 name: block-level-synteny-from-external-tools
-description: Whole-genome synteny overviews draw thousands of raw minimap2 ribbons as a hairball; chained block-level synteny as a zoom tier of the pif would declutter what the coarse tier's strip-and-split cannot.
+description: Whole-genome synteny overviews draw thousands of raw minimap2 ribbons as a hairball; chained block-level synteny as a zoom tier of the pif would declutter what the coarse tier's per-row CIGAR fold cannot.
 ---
 
 # Block-level synteny data from external tools
@@ -11,8 +11,9 @@ A coarse LOD *tier* (Route B's tiering architecture) ships —
 [SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md) — and true cross-row block
 **chaining** (Route B's algorithm) does not.
 
-**Important:** the coarse tier is a per-row *strip + split* pass, the opposite of the
-block *merge* below. It coarsens each alignment individually; it does **not**
+**Important:** the coarse tier is a per-row CIGAR fold (`coarsenCigar` in
+`make-pif`, written as the row's `cr:Z:` tag), the opposite of the block *merge*
+below. It coarsens each alignment individually; it does **not**
 collapse runs of separate collinear alignments into blocks. The hairball's
 structural cause (many separate small alignments) is untouched — only per-ribbon
 CIGAR detail is dropped at overview. Route B's chaining is still the open work.

@@ -24,8 +24,8 @@ dotplot right-click.
 lost `@mui/material` in `2377b8b9c9` and is pinned there three times —
 `muiFree.test.ts` in both `core` and `display-ui`, plus `BaseTooltip.test.tsx`.
 A third seam for it was considered and rejected on the record:
-[reference/DISPLAYCHROME.md](../../reference/DISPLAYCHROME.md):955-963, "reach for the
-palette before reaching for a fourth context".
+[reference/DISPLAYCHROME.md](../../reference/DISPLAYCHROME.md) §"The bring-your-own
+seams": "Reach for the palette before a fourth context".
 
 The fetch status now goes through the seam, and the design question this entry
 posed turned out not to be one. Its two states *are* `DisplayChromeOverlays`
@@ -55,8 +55,9 @@ page has 105 eager modules importing `@mui/material`, 42 of them first-party, an
 ships 691 KB gzip; `ComparativeFetchStatus` reaches them through the
 `@jbrowse/core/ui` barrel, which `menuItems.purity.test.ts` asserts reaches
 Material as its negative control. A rendered-element census cannot see any of it
-— see "0 Material elements and no Material UI are different claims" in
-EAGER_BUNDLE.md, whose holder table is the real scope. So this entry buys an
+— [EAGER_BUNDLE.md](../../reference/EAGER_BUNDLE.md) says why 0 Material
+elements and no Material UI are different claims, and its holders
+(`pnpm probe-eager-graph`) are the real scope. So this entry buys an
 embedder the look, not the bytes, and nothing here changes that on its own.
 
 **Whoever gives the comparative displays a cancel and a retry passes exactly

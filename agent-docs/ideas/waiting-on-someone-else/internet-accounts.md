@@ -58,7 +58,7 @@ model, no auth plugin in the worker at all.
 persisted — the envelope then carries id → headers and the location keeps only a
 name, which is what makes the slot removal a simplification rather than a
 relocation. And read what `blobMap` is before copying it: a module-level global
-the worker *replaces wholesale* per call (`util/tracks.ts:161-176`). That shape
+the worker *replaces wholesale* per call (`setBlobMap` in `util/tracks.ts`). That shape
 is right for blobs and wrong for credentials, which should not outlive the call
 that needed them.
 
@@ -102,7 +102,7 @@ retry.
 than they made it look:
 
 - It is not the only caller. `findAppropriateInternetAccount` calls it too
-  (`packages/product-core/src/RootModel/InternetAccounts.ts:187`) for a location
+  (`packages/product-core/src/RootModel/InternetAccounts.ts`) for a location
   naming an id whose leading segment is a registered type — the shared-session
   path, which is not the HTTP Basic 401 retry and which depends on the same
   `<TypeName>-<rest>` encoding.
@@ -220,7 +220,7 @@ long-lived, higher-privilege refresh token that can regenerate it gets
 
 "Nothing anywhere" would be too strong: Apollo3 has an "Apollo → Log out" menu
 item that opens a dialog and calls `removeToken()` on the account picked
-(`menus/topLevelMenu.ts:51`, `components/LogOut.tsx`). agent-docs/architecture-decision-records/ already
+(`menus/topLevelMenu.ts`, `components/LogOut.tsx`). agent-docs/architecture-decision-records/ already
 weighed that and ruled it evidence about Apollo rather than demand here, so this
 is not a reason to reopen the menu item. Two mechanics from it are still worth
 having in hand: their handler follows the call with `globalThis.location.reload()`,

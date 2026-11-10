@@ -90,7 +90,9 @@ page pins `currentVersion` 4.3.0 and the plugin store reads the committed
 
 **`archive-docs.yml`**, `workflow_dispatch` with `ref` and `prefix`: refuse a
 prefix the filter would not protect, install with the website filter, build,
-`rclone sync dist s3:jbrowse.org/jb2/versions/<prefix>`, invalidate
+`rclone --config rclone.conf sync disthash: s3:jbrowse.org/jb2/versions/<prefix>
+--checksum` as `deploy.sh` syncs (`disthash:` is `website/rclone.conf`'s
+md5-caching wrapper over `dist/`), invalidate
 `/jb2/versions/<prefix>/*` (CloudFront has already cached a 404 for the unused
 prefix), then curl the home, a docs page, search and `pagefind/pagefind.js` for
 200.

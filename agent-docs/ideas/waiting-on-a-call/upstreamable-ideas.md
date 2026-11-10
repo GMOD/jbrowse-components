@@ -16,16 +16,14 @@ right one.
 
 ## The failure case here is narrower than "dying with the code"
 
-The ideas are written down. `agent-docs/` is 203 files and 45,264 lines,
-including 73 ADRs, and the reasoning behind most non-obvious decisions in this
-repo is somewhere in it.
+The ideas are written down. `agent-docs/` and its ADRs hold the reasoning
+behind most non-obvious decisions in this repo.
 
 All of it is addressed to agents working in this repository, in this
 repository's dialect, in a directory `.prettierignore` skips and no build
 publishes. The only outward-facing narrative channel is `website/blog/`, and
-115 of its 122 entries are release announcements — the most recent of the other
-seven is a year-in-review from 2025-02-13. `planRegionFetch` appears zero times
-anywhere under `website/`.
+nearly all of its entries are release announcements. `planRegionFetch` appears
+nowhere under `website/`.
 
 So the ideas will not die with the code. They will die *in the repo*, which is
 a different problem and a much cheaper one to fix.

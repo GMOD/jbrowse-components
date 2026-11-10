@@ -7,7 +7,7 @@ description: A long read's category bits (ADR-226) read every CIGAR op, a second
 
 Moved from a handoff on 2026-10-11, the one item left of ADR-226.
 
-`numericCigarCategoryBits` (`plugins/alignments/src/shared/readCategoryBits.ts`)
+`numericCigarCategoryBits` (`packages/cigar-utils/src/cigarCategoryBits.ts`)
 reads every op of a read's CIGAR, while the windowed walk stops at the region.
 On `200x.longread.bam` (7,300 ops a read) the bits cost 0.37 of the walk, and a
 pass that only ORs each op's bit runs about as fast, so the pass itself is the

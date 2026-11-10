@@ -42,7 +42,7 @@ on its session path.
 Drawing it from `@jbrowse/tables` was considered and declined: tables stop at
 data plus the display's decisions, so jb2export would need a second drawer per
 display, and the tables already disagree with the view in places
-([a-tables-export-calls-the-models-decisions](a-tables-export-calls-the-models-decisions.md)).
+([a-tables-export-calls-the-models-decisions](../ready/a-tables-export-calls-the-models-decisions.md)).
 
 ## The shape
 

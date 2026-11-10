@@ -7,8 +7,9 @@ description: Making `displayMode: 'collapsed'` keep its feature names, which is 
 
 `collapsed` packs every feature onto one row, which is the largest vertical
 saving a linear feature display has, and it **hides every name** to do it —
-`showLabels` in `LinearBasicDisplay/baseModel.ts` returns false outright in that
-mode. So the saving is available to exactly the lanes whose content is their
+`labelVisibility` (`LinearBasicDisplay/showLabelsMode.ts`, behind the
+`showLabels` getter in `basicDisplayLayoutViews.ts`) returns no labels outright
+in that mode. So the saving is available to exactly the lanes whose content is their
 glyphs, and unavailable to the ones whose content is their labels.
 
 That is the trade a figure keeps running into. `cancer_sv/derivative_synteny`'s
@@ -43,7 +44,8 @@ its neighbours in genomic space, not of what happens to be on screen.
 testing, the DOM overlay and SVG export — so that reserved space, drawn text and
 click targets cannot disagree. A collapsed-with-labels mode has to give all four
 the same placement, which means the solver output is layout data, not a paint-time
-decision. The main thread's `packRef` (`LinearBasicDisplay/layout.ts`) is where it
+decision. The main thread's ref pack (`prepareRefPack` and `packPreparedRef` in
+`LinearBasicDisplay/packRef.ts`, called from `layout.ts`) is where it
 belongs for the same reason the compact subfeature-label reservation does — the
 mode and `labelFontPx` are known there and the worker is deliberately
 mode-agnostic. The height side of the same problem has since been settled:

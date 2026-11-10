@@ -8,12 +8,12 @@ description: The drawn-row count is spelled `nrow`, `numRows` and `rowCount` acr
 The number of rows a display draws has three names:
 
 - `rowCount`: the mark display's getter and its facet layout, synteny, MAF
-  and sequence (about 50 files).
+  and sequence, the most used.
 - `numRows`: wiggle's getter and the props its separators, hit test and SVG
-  export take (about 27 files, 18 in wiggle).
+  export take, mostly in wiggle.
 - `nrow`: what `applyRowResizeWheel` (packages/core) and
-  `useRowVirtualScroll` divide the plot by (about 17 files, a few of them R's
-  own `nrow()` in generated scripts). The mark display
+  `useRowVirtualScroll` divide the plot by, beside R's own `nrow()` in
+  generated scripts. The mark display
   keeps a second getter, `nrow`, that only returns `rowCount` under this name.
 
 One spelling removes the mark display's alias and lets a reader grep one word
@@ -26,5 +26,5 @@ In plugins/alignments, `rowHeight` is `featureHeight + featureSpacing`
 (`alignmentComponentUtils.ts`, `computeVisibleLabels.ts`, `groupLayout.ts`),
 the distance from one row's top to the next. Every other display's
 `rowHeight`, and the `rows.step` config slot it reads, is a row's own
-height. Calling the alignments value `rowPitch` (about 15 files) keeps a
+height. Calling the alignments value `rowPitch` keeps a
 reader from adding spacing to it twice.

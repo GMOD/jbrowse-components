@@ -15,7 +15,7 @@ both are public. Either is a tutorial on its own; neither is started.
 
 Grochowski et al. 2024, *Cell Genomics*. Targeted ONT at SRA PRJNA953021 (31
 runs; BAB14547 = SRR24098759, BAB14604 = SRR24098758) and Agilent arrays at GEO
-GSE250451, hg19. Local copies under `/home/cdiesh/sv_scratch/mecp2/`.
+GSE250451, hg19.
 
 The reads resolve the head-to-head junction joining the DUP start to the TRP
 start — BAB14604 at hg19 153,188,684 ↔ 153,499,733 on 11 reads, BAB14547 at

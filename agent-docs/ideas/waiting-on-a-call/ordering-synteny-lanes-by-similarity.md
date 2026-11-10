@@ -16,10 +16,10 @@ alignment. This file is the ORDER of whatever set that picks.
 
 ## The display side is done
 
-`rows.sort` is already a slot on `MultiWaySyntenyDisplay`'s model
-(`types.array(types.string)`): lanes it names pin to the top in its order, and
-lanes it does not follow densest-first. `layoutMultiWay`'s `preferred` argument
-reads it. So nothing needs building to CONSUME an order — the open question is
+`rows.sort` is already a config slot on `MultiWaySyntenyDisplay` (a list of
+assembly names): lanes it names pin to the top in its order, and lanes it does
+not follow densest-first. The lane selection's `preferred` argument
+(`laneSelection.ts`) reads it. So nothing needs building to CONSUME an order — the open question is
 only where one comes from, and a first cut can write `rows.sort` from a track
 menu item without touching the layout at all.
 

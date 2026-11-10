@@ -110,11 +110,6 @@ matters.
   warning in practice: quote the min of a quiet run, and gate the lift on `readSuppAlignments` being present anyway,
   since the worker ships it only when some read carries an SA tag and the
   deep short-read view then pays nothing.
-- **A mark on a chain's row has to clear its span.** `buildChainConnectingData`
-  draws ONE solid span per chain per region, min start to max end, so a dash
-  lying on the row vanishes into it. `connectorShape` bows a
-  hidden-segment line whose ends share a row for that reason, and a one-ended
-  hop's mark needs the same.
 - **Gate on the filters that exist**: the `connection.offscreen` and
   `connection.interchrom` fields, combined by `emitsOffScreenPartner` — which exists
   because layering them as an AND once made unticking off-screen mates silently

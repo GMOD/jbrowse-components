@@ -12,7 +12,8 @@ itself drawn and nothing on the console.
 
 The painter is not at fault. At 50 kb `buildAlignmentsRegionMap` holds the
 pileup, `drawAlignmentBlocks` runs once, and a `getImageData` inside it reads
-the coverage and pileup pixels back before and after the read-connections pass in `paintBands`. Taking
+the coverage and pileup pixels back before and after `paintBands` paints the
+read-connections band. Taking
 that readback also makes the final frame correct. The frame's 202,905 canvas
 calls, replayed into a bare `<canvas>` in Chrome 154.0.8037.97:
 
@@ -31,7 +32,8 @@ that pairs the Canvas2D pin with the SwiftShader flags over a dense arc band.
 ## What sets it off
 
 Each of these alone restores the replayed frame: dropping the arc band's clip
-(`withClip` in `paintBands`' read-connections pass, `Canvas2DAlignmentsRenderer.ts`), giving that
+(the `withClip` `paintBands` wraps each band pass in, from `forEachBandPass`,
+in `Canvas2DAlignmentsRenderer.ts`), giving that
 clip a fractional height, dropping the ellipses under 12 px wide, or dropping
 three quarters of the earlier `fillRect`s. In the app, capping the ellipse
 strokes at 5,000 draws the frame and 8,000 blanks it; the 30 kb view strokes

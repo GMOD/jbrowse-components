@@ -29,7 +29,8 @@ of chr1 is also 2.49M bins, 30 MB of typed arrays across the worker boundary.
 ## Options
 
 - **Gate it.** `GCContentAdapter.getRegionByteSize` answers the sequence
-  adapter's estimate, or one byte per base where it has none, and the wiggle
+  adapter's estimate, or one byte per base where it has none, as the sequence
+  plugin's scan adapters already do (`ReferenceScanAdapter`), and the wiggle
   display opts into the gate with a `fetchSizeLimit` row in
   `scripts/gatedAdapterBudgets.json`. The gate's banner and force-load button
   then work unchanged. The cost is the wiggle RPC learning
@@ -48,5 +49,5 @@ scattered 1 kb windows still inflate a thousand blocks, about a quarter of the
 whole read, and each pixel then shows the GC of 1 kb out of its 250 kb.
 
 The multi-way synteny view's lane layers already stop a computed adapter at
-`LANE_TEMPLATE_MAX_BP` (5 Mb) and say so in the band's title, so a span cap on
+`LANE_TEMPLATE_MAX_BP` and say so in the band's title, so a span cap on
 the wiggle display would match a rule the app already has.

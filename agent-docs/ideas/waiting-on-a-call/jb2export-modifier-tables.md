@@ -5,24 +5,25 @@ description: The jb2export track-modifier tables are the last big hand-maintaine
 
 # The jb2export modifier tables
 
-`products/jbrowse-img/README.md` documents 18 track modifiers across four
+`products/jbrowse-img/README.md` documents the track modifiers in per-track-type
 tables, and `website/scripts/generate-img-doc.ts` mirrors the whole README onto
 the site — so the tables are hand-written once and published twice.
 
-`modifiers` in `products/jbrowse-img/src/applyTrackOpts.ts` is already a
-registry: one entry per modifier, each carrying an `on: Category[]` list, and
-its own comment says the `on` lists "are the same grouping the README documents
-per track type". That is the coupling, written down and enforced by nothing.
+`modifiers` in `packages/launch-args/src/displaySettings.ts` is already a
+registry: one entry per modifier, each carrying an `on: Category[]` list, which
+is the same grouping the README's tables document per track type. That is the
+coupling, and nothing enforces it.
 
-**They are not drifted today.** Every registry key appears in a table, and each
-table's grouping matches its `on` list. So this is a gate to add before a gap
-opens, not a repair — which is why it is parked rather than in TODO.md.
+**They were not drifted when this was written.** Every registry key appeared in
+a table, and each table's grouping matched its `on` list. So this is a gate to
+add before a gap opens, not a repair — which is why it is parked rather than in
+TODO.md. Re-check before building it.
 
 ## What it would take
 
 The names and the track types are derivable; the **description and the example
 are not**, so a generator means a `#modifier <example> | <description>` tag on
-each of the 18 entries, in the manner of `#shaderExport` (whose generator throws
+each entry, in the manner of `#shaderExport` (whose generator throws
 on an untagged emit site, which is the property that makes the docs unable to
 fall behind). The registry is `const modifiers`, not exported, so a generator
 reads it syntactically or the module starts exporting it.

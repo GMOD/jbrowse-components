@@ -29,8 +29,8 @@ is 6.7s. Cold it is 12.6s. The calls themselves are not the cost —
 
 `test_util.ts` imports `../../corePlugins.ts`, so every suite that wants a session
 evaluates the whole web plugin set, and jest gives each suite a fresh module
-registry so none of it is shared. 65 suites import it
-(`grep -rl "@jbrowse/web/testUtils"`), which is where a meaningful slice of the
+registry so none of it is shared. Every suite that imports it
+(`grep -rl "@jbrowse/web/testUtils"`) pays it, which is where a meaningful slice of the
 wall clock goes.
 
 ## Why it is parked

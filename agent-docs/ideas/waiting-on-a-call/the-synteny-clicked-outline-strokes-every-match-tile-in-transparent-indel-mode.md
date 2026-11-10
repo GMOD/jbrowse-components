@@ -10,10 +10,11 @@ what v5.0.0 turns on. Accidental kind reuse rather than a chosen look, but it
 needs the silhouette-or-per-tile call and then an outline-only instance the
 fill passes discard and the pick engine skips.
 
-In transparent-indel mode (`drawCIGARMatchesOnly`), `cigarSegmentKind` tags each
+In transparent-indel mode (`cigarMode: 'matches'`), `cigarSegmentKind` tags each
 match segment `KIND_BASE_TILE`, and the outline gate is "not CIGAR, not marker"
-(`isClickedSilhouette` in `syntenyTypes.slang`, mirrored in
-`Canvas2DSyntenyRenderer`), which a tile passes. So a clicked feature gets the
+(`isClickedSilhouette` in `syntenyTypes.slang`, mirrored by
+`packClickedOutlineInstances` in `instanceInterleave.ts` and by the Canvas2D
+twin in `drawSyntenyTrack.ts`), which a tile passes. So a clicked feature gets the
 side edges of *every* match tile stroked instead of one silhouette — a ribbon
 with 300 visible indels draws ~600 black hairlines. The shader comments say the
 intent is the clicked feature's BASE silhouette, so this is accidental kind
@@ -33,7 +34,7 @@ the hull, or per-tile outlines.**
 
 The perf argument that used to ride along with this is gone — the edge pass no
 longer draws every instance. `packClickedOutlineInstances` builds a buffer of
-just the clicked feature's instances (`GpuSyntenyRenderer.ensureOutlineUploaded`),
-so don't reintroduce the HAL `firstInstance`/`instanceCount` range on `drawPass`
+just the clicked feature's instances (the edge shapes' `pack` in
+`syntenyRibbonMarks.ts`), so don't reintroduce the HAL `firstInstance`/`instanceCount` range on `drawPass`
 for this reason. The corner-order convention these passes read is spelled out at
 the top of `syntenyTypes.slang`.

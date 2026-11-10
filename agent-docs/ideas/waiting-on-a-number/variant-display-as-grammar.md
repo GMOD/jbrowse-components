@@ -1,13 +1,13 @@
 ---
 name: variant-display-as-grammar
-description: "The variant display is about 9,100 lines for what grammar draws as two marks over one tidy VCF table; it waits on a LinearMarkDisplay spec of the RHD SV picture matching its speed at 3,202 samples."
+description: "The variant display is thousands of lines for what grammar draws as two marks over one tidy VCF table; it waits on a LinearMarkDisplay spec of the RHD SV picture matching its speed at 3,202 samples."
 ---
 
 # The variant display as a grammar spec
 
-After the merge (ADR-254, ADR-255) the variant display
-is about 9,100 lines of source in `plugins/variants/src/LinearVariantDisplay/`,
-2,374 of them `model.ts`, plus the worker RPC and shaders. In ggplot2 the same
+After the merge (ADR-254, ADR-255) the variant display is
+`plugins/variants/src/LinearVariantDisplay/` (`wc -l` it; `model.ts` is the
+largest file), plus the worker RPC and shaders. In ggplot2 the same
 picture is two layers over one table with a shared x. Much of the code pays for
 what a static plot never needs (streaming per region and zoom, worker/main split,
 zoom-dependent label and pile rules, hit-testing, three renderers, persisted and
@@ -27,8 +27,8 @@ that kind of cost.
 ## What LinearMarkDisplay already has
 
 `plugins/marks/src/LinearMarkDisplay/`: `pileup` (packing), `flatten` (fans a
-VCF `samples` record out, its `key` the sample: markTransformConfigSchema.ts
-~245), `encoding.row`, `rows` with its `colors` and `color` (sample rows, display-kit),
+VCF `samples` record out, its `key` the sample: markTransformConfigSchema.ts),
+`encoding.row`, `rows` with its `colors` and `color` (sample rows, display-kit),
 `facet`, `aggregate`/`bin`, `mate` + `link` (arcs; waiting-on-a-call/variant-display-links-band.md),
 legends and scales per ADR-238. reference/MARK_ENCODING.md and
 reference/GRAMMAR_OF_GRAPHICS.md describe them.

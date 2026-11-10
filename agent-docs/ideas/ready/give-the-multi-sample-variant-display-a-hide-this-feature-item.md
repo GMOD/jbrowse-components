@@ -1,17 +1,17 @@
 ---
 name: give-the-multi-sample-variant-display-a-hide-this-feature-item
-description: `plugins/features` has `hideFeature` and the multi-sample variant displays do not, so a single dominating variant cannot be taken out of the picture — a copy of a mechanism that has since moved to `featureSetViews.ts` and `featureContextMenu.ts`
+description: `plugins/features` has `hideFeature` and `LinearVariantDisplay` does not, so a single dominating variant cannot be taken out of the picture; the copy is `featureSetViews.ts` and `featureContextMenu.ts` plus a worker-side id filter in the cell fetch.
 ---
 
-# Give the multi-sample variant display a "hide this feature" item
+# Give LinearVariantDisplay a "hide this feature" item
 
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. Parity with another display rather than a setting the
 rewrite dropped, which is what kept the tooltip toggle ahead of it on the
-release list — that one landed as the `showTooltips` config slot and its
+release list — that one landed as the `tooltip.show` config slot and its
 "Show..." checkbox, so this is the entry's remaining half.
 
-`plugins/features` has `hideFeature` and the multi-sample variant displays do not,
+`plugins/features` has `hideFeature` and `LinearVariantDisplay` does not,
 so a single dominating variant cannot be taken out of the picture the way a
 feature can on a basic display.
 
@@ -22,8 +22,9 @@ feature can on a basic display.
 Nothing under `plugins/variants` mentions it.
 
 The tooltip toggle it used to be taken with is done:
-`LinearVariantDisplay/configSchema.ts` declares the slot, the base model gates
-`hoveredTooltipSource` on it, and `variantShowSubmenuItems` carries the
+`LinearVariantDisplay/configSchema.ts` declares the slot, the model's
+`showTooltips` getter gates `hoveredTooltipSource` on it, and
+`variantShowSubmenuItems` (`variantDisplayMenuItems.ts`) carries the
 checkbox — the same three places a "hide this feature" item would land.
 
 **Since ADR-255 (one `LinearVariantDisplay`)** a right-clicked record on the

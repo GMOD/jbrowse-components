@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target, the largest per-display allocation, exists for read-connection arcs that no longer need it; the alignments coverage band, read arrow tips and Hi-C/LD diamonds still do, and the lever is a per-display sample count.
+description: The 4x MSAA target, the largest per-display allocation, was kept for read-connection arcs that no longer need it. The per-display sample count is built and synteny and dotplot run at 1; the coverage band, read arrow tips and Hi-C/LD diamonds still lean on it.
 ---
 
 # Antialiasing arcs without MSAA

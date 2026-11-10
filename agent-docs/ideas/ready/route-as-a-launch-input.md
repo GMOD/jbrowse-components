@@ -99,7 +99,8 @@ unread in the tree today.
   claim or both. That is the standard's own separation of
   copy-number evidence from breakpoint evidence, and the variant reader ignores
   it, so a depth-only deletion draws like a junction-backed one. `EVENTTYPE`
-  names an `EVENT`'s class and the breakend walk ignores it too.
+  names an `EVENT`'s class; core's `svClassOf` reads it to class a breakend,
+  and the breakend walk ignores it.
 - **A derived sequence has two standard spellings**: an explicit ALT string,
   or breakends whose mates point into a contig named by an `##assembly=`
   header (VCF §5.4.2, which `@gmod/vcf`'s `parseBreakend` already handles).
