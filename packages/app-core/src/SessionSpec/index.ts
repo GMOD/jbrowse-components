@@ -16,6 +16,7 @@ export {
   viewTypeProblem,
 } from './loadSessionSpec.ts'
 export {
+  parseConfigUrl,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
 } from './parseSessionSpecUrl.ts'

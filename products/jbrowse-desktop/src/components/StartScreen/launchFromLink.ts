@@ -1,5 +1,6 @@
 import {
   loadSessionSpec,
+  parseConfigUrl,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
   resolveShareUrl,
@@ -51,11 +52,11 @@ function nonEmptyList(value: unknown): unknown[] {
 // config's defaultSession, which is the session Desktop opens for any config,
 // so nothing here re-implements applying one.
 //
-// Two keys of a web session have no slot in Desktop's: `sessionPlugins`, which
-// join the config's plugins once trusted, and `sessionConnections`, which have
-// nowhere to go yet and so stop the launch. MST drops an undeclared snapshot key
-// in silence, so any other key Desktop's session did not take is reported on
-// the session that opened without it.
+// Two keys of a web session have no slot in Desktop's, and both join the
+// config, which on Desktop is the session's own file: `sessionPlugins` its
+// plugins, once trusted, and `sessionConnections` its connections. MST drops an
+// undeclared snapshot key in silence, so any other key Desktop's session did
+// not take is reported on the session that opened without it.
 async function launchSessionSnapshot(
   link: ParsedSessionSnapshotUrl,
   { fetchConfig, createPluginManager, trustPlugins }: LaunchFromLinkDeps,
@@ -68,12 +69,13 @@ async function launchSessionSnapshot(
       loadUrl: shareEndpoint(resolveShareUrl(config, link.pageUrl), 'load'),
       password: link.password,
     })
-  const connections = nonEmptyList(sessionConnections)
-  if (connections.length) {
-    throw new Error(
-      `That link's session has ${connections.length} connection(s) of its own, which JBrowse Desktop cannot open from a link yet. Remove them in JBrowse Web and share the session again.`,
-    )
-  }
+  const configConnections = config.connections ?? []
+  const configConnectionIds = new Set(
+    configConnections.map(c => c.connectionId),
+  )
+  const connections = (
+    nonEmptyList(sessionConnections) as { connectionId: string }[]
+  ).filter(c => !configConnectionIds.has(c.connectionId))
   const plugins = nonEmptyList(sessionPlugins) as PluginDefinition[]
   if (plugins.length) {
     await trustPlugins(plugins)
@@ -81,6 +83,7 @@ async function launchSessionSnapshot(
   const pluginManager = await createPluginManager({
     ...config,
     plugins: [...(config.plugins ?? []), ...plugins],
+    connections: [...configConnections, ...connections],
     defaultSession: session,
   })
   const opened = pluginManager.rootModel?.session
@@ -96,25 +99,6 @@ async function launchSessionSnapshot(
   return pluginManager
 }
 
-// The config a link opens when it carries no session: a url whose path ends in
-// .json is one itself (a hub's config.json, or a genomes.jbrowse.org
-// per-assembly file), and a JBrowse Web link naming only `?config=` opens that
-// config's defaultSession, as web does. Checked only after parseSessionSpecUrl
-// fails, so `config.json?session=spec-...` is still read as the spec link it is.
-function linkedConfig(link: string) {
-  try {
-    const url = new URL(link)
-    const config = url.searchParams.get('config')
-    return url.pathname.endsWith('.json')
-      ? link
-      : config && !url.searchParams.has('session')
-        ? new URL(config, url.href).href
-        : undefined
-  } catch {
-    return undefined
-  }
-}
-
 export async function launchFromLink(
   link: string,
   deps: LaunchFromLinkDeps,
@@ -128,7 +112,7 @@ export async function launchFromLink(
   try {
     parsed = parseSessionSpecUrl(link)
   } catch (e) {
-    const configUrl = linkedConfig(link)
+    const configUrl = parseConfigUrl(link)
     if (!configUrl) {
       throw e
     }

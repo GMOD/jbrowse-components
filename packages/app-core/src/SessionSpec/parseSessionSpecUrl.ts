@@ -28,9 +28,9 @@ import type { ViewSpec } from './types.ts'
 //   to be reported here as "that link has no session in it" — about a link that
 //   describes a perfectly openable view.
 //
-// A `share-`/`encoded-`/`local-` session is still not one of them: it needs
-// jbrowse-web's session store or its encryption key, neither of which exists
-// outside the browser that made it.
+// A `share-`/`encoded-`/`json-` link hands over a whole session rather than a
+// spec, and parseSessionSnapshotUrl reads those. A `local-` session exists only
+// in the browser that saved it.
 
 export interface ParsedSessionSpec {
   // the `config=` value: an absolute URL, or a path relative to the JBrowse Web
@@ -228,6 +228,30 @@ export function parseSessionSnapshotUrl(
         pageUrl: url.href,
       }
     : undefined
+}
+
+/**
+ * The config a link opens when it carries no session: a url whose path ends in
+ * .json is one itself (a hub's config.json, or a genomes.jbrowse.org
+ * per-assembly file), and a JBrowse Web link naming only `config=` opens that
+ * config's defaultSession, as web does. For a caller to try only after
+ * parseSessionSpecUrl fails, so `config.json?session=spec-...` is still read as
+ * the spec link it is.
+ */
+export function parseConfigUrl(input: string): string | undefined {
+  let url: URL
+  try {
+    url = unwrapProtocolUrl(new URL(input.trim()))
+  } catch {
+    return undefined
+  }
+  const params = readAllQueryParams(url)
+  const config = params.get('config')
+  return url.pathname.endsWith('.json')
+    ? url.href
+    : config && config !== 'none' && !params.has('session')
+      ? new URL(config, url.href).href
+      : undefined
 }
 
 export function parseSessionSpecUrl(input: string): ParsedSessionSpec {

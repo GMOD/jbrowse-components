@@ -39,6 +39,7 @@ export {
   buildLgvInit,
   hubConnectionSpec,
   loadSessionSpec,
+  parseConfigUrl,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
   readHubUrlParam,

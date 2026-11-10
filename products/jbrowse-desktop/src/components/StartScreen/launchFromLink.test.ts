@@ -146,6 +146,29 @@ test('a web link naming only a config opens its default session', async () => {
   expect(result).toBe(pluginManager)
 })
 
+test('a config-only link opens the same wrapped as jbrowse:// or with its params in the hash', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+  const hashLink =
+    'https://jbrowse.org/code/jb2/main/#config=test_data/volvox/config.json'
+
+  await launchFromLink(hashLink, {
+    fetchConfig,
+    createPluginManager,
+    trustPlugins,
+  })
+  await launchFromLink(`jbrowse://open?url=${encodeURIComponent(hashLink)}`, {
+    fetchConfig,
+    createPluginManager,
+    trustPlugins,
+  })
+
+  expect(fetchConfig.mock.calls).toEqual([
+    ['https://jbrowse.org/code/jb2/main/test_data/volvox/config.json'],
+    ['https://jbrowse.org/code/jb2/main/test_data/volvox/config.json'],
+  ])
+})
+
 test('a link whose session does not parse is not opened as its bare config', async () => {
   const fetchConfig = jest.fn().mockResolvedValue(config)
   await expect(
@@ -230,6 +253,7 @@ test("a link carrying its whole session opens it as the config's session", async
   expect(createPluginManager).toHaveBeenCalledWith({
     ...config,
     plugins: [],
+    connections: [],
     defaultSession: snapshot,
   })
   expect(trustPlugins).not.toHaveBeenCalled()
@@ -257,6 +281,7 @@ test("a session's own plugins are vetted, then loaded beside the config's", asyn
   expect(createPluginManager).toHaveBeenCalledWith({
     ...config,
     plugins: [...configPlugins, ...sessionPlugins],
+    connections: [],
     defaultSession: snapshot,
   })
 })
@@ -279,18 +304,27 @@ test('untrusted session plugins strand the link before anything is built', async
   expect(createPluginManager).not.toHaveBeenCalled()
 })
 
-test("a session's own connections stop the launch, since Desktop has no slot for them", async () => {
-  const fetchConfig = jest.fn().mockResolvedValue(config)
-  const createPluginManager = jest.fn()
+test("a session's own connections join the config's, one per connectionId", async () => {
+  const configConnections = [{ connectionId: 'a', name: 'from the config' }]
+  const fetchConfig = jest
+    .fn()
+    .mockResolvedValue({ ...config, connections: configConnections })
+  const createPluginManager = jest.fn().mockResolvedValue({})
 
-  await expect(
-    launchFromLink(
-      inlineLink({ ...snapshot, sessionConnections: [{ connectionId: 'a' }] }),
-      { fetchConfig, createPluginManager, trustPlugins },
-    ),
-  ).rejects.toThrow(/1 connection\(s\)/)
+  await launchFromLink(
+    inlineLink({
+      ...snapshot,
+      sessionConnections: [{ connectionId: 'a' }, { connectionId: 'b' }],
+    }),
+    { fetchConfig, createPluginManager, trustPlugins },
+  )
 
-  expect(createPluginManager).not.toHaveBeenCalled()
+  expect(createPluginManager).toHaveBeenCalledWith(
+    expect.objectContaining({
+      connections: [...configConnections, { connectionId: 'b' }],
+      defaultSession: snapshot,
+    }),
+  )
 })
 
 test("a setting Desktop's session did not take is reported on the session", async () => {
@@ -356,6 +390,7 @@ test('an encoded- session in a jbrowse:// link opens the same way', async () => 
   expect(createPluginManager).toHaveBeenCalledWith({
     ...config,
     plugins: [],
+    connections: [],
     defaultSession: snapshot,
   })
 })
@@ -402,6 +437,7 @@ describe('a share- link', () => {
     expect(createPluginManager).toHaveBeenCalledWith({
       ...config,
       plugins: [],
+      connections: [],
       defaultSession: snapshot,
     })
   })
@@ -456,6 +492,7 @@ describe('a share- link', () => {
     expect(createPluginManager).toHaveBeenCalledWith({
       ...config,
       plugins: [],
+      connections: [],
       defaultSession: snapshot,
     })
   })
