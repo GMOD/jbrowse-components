@@ -524,9 +524,9 @@ https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
 }
 ```
 
-At a T-cell marker the T-cell rows have signal and the B-cell rows stay flat,
-and at a B-cell marker the reverse. Paste a T-cell marker (_CD8A_) and a B-cell
-marker (_MS4A1_) into the location box to open them side by side:
+At _CD8A_ the CD8 T, MAIT and NK rows carry the peaks and the B rows stay near
+flat, and at _MS4A1_ the B rows carry them and the T rows stay near flat. Paste
+both into the location box to open them side by side:
 
 ```text
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
