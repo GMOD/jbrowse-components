@@ -74,11 +74,11 @@ ribbon settings:
 ## The TNNT3 rearrangement by strand
 
 _TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
-region reads as an inversion plus a deletion that removes the long noncoding RNA
-_LINC01150_ in every individual. The palette button in the view header sets the
-view's `encoding.color`, a color scale that maps a field to colors. Pick
-**Strand** there, and the segment that moved is the one ribbon in the second
-color.
+region reads as an inversion plus a deletion, and the inverted segment carries
+the long noncoding RNA _LINC01150_ from one side of _TNNT3_ to the other. The
+palette button in the view header sets the view's `encoding.color`, a color
+scale that maps a field to colors. Pick **Strand** there, and the segment that
+moved is the one ribbon in the second color.
 
 <Figure caption="hg38 (top) against hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
@@ -98,10 +98,9 @@ tracks to the chimp panel:
 <Figure caption="Launching from the hg38-to-panTro6 liftOver track: right-click a chain block, confirm the framing, launch, then add the chimp panel's tracks." src="/img/genomes_synteny/launch_sequence.png" />
 
 With transparent indels, the one gap in the ribbon is a hole that lines up with
-a RepeatMasker element on hg38. The chimp panel lacks that element and has every
-other repeat in the window. The rest of the panTro6 hub loads from **File → Open
-connection...** as a JBrowse 2 hub at
-`https://jbrowse.org/ucsc/panTro6/config.json`.
+the L1HS element in hg38's RepeatMasker track, and the chimp panel's has no
+L1HS. The rest of the panTro6 hub loads from **File → Open connection...** as a
+JBrowse 2 hub at `https://jbrowse.org/ucsc/panTro6/config.json`.
 
 A chain or PAF of your own launches the same way once it is added as a synteny
 track: [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
@@ -180,7 +179,7 @@ inversion (Stefansson et al. 2005), and H9 has one of each. On hg38 at
 - turn off **Show → Show gene labels**, since the RefSeq track above names the
   genes
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue, and its header names the inversion." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five human haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue, and its header names the inversion." />
 
 ## See also
 
