@@ -228,11 +228,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 5 models</summary>
+<summary>17 inherited methods from 5 models</summary>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
-From [TreeSidebarMixin](../treesidebarmixin): <span id="method-rowfoundatsomeloci">[`rowFoundAtSomeLoci`](../treesidebarmixin#method-rowfoundatsomeloci)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+From [TreeSidebarMixin](../treesidebarmixin): <span id="method-rowfoundatsomeloci">[`rowFoundAtSomeLoci`](../treesidebarmixin#method-rowfoundatsomeloci)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>, <span id="method-rowannotationnotices">[`rowAnnotationNotices`](../treesidebarmixin#method-rowannotationnotices)</span>
 
 From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-regionhasdata">[`regionHasData`](../multiregiondisplaymixin#method-regionhasdata)</span>, <span id="method-iscachevalid">[`isCacheValid`](../multiregiondisplaymixin#method-iscachevalid)</span>
 

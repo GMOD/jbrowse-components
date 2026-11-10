@@ -53,7 +53,7 @@ R through V8. The adapters must be registered on `pluginManager`
 
 ```js
 // type signature
-(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: {…}; ramps: {…}[]; legend: { label: string[]; color: string[]; section: string[]; }; legendTitle: string; scoreScale: { domain: [number, number]; type: "linear" | "log" | "symlog"; symlogConstant: number; }; clipStrip: { color: string; px: number; }; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; warnings: string[]; }>
+(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ scoreScale: {…}; clipStrip: {…}; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<…>; warnings: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; bins: {…}; marks: {…}; sources: { name: string[]; label: string[]; group: string[]; color: string[]; }; rules: { value: number[]; color: string[]; label: string[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

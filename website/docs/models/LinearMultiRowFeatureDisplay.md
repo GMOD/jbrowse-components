@@ -1,14 +1,14 @@
 ---
 id: linearmultirowfeaturedisplay
 title: LinearMultiRowFeatureDisplay
-description: "The mark display drawing a row per value of a feature attribute, with the menus a painting is read through: One row per, Group by and Color by."
+description: "The mark display drawing a row per value of a feature attribute, with the menus that pick a painting's fields off the scan: One row per and Color by."
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/model.ts).
 
 The mark display drawing a row per value of a feature attribute, with the
-menus a painting is read through: One row per, Group by and Color by.
+menus that pick a painting's fields off the scan: One row per and Color by.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmultirowfeaturedisplay).
 
@@ -69,7 +69,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-attributes">**attributes**</span><br><code>readonly string[]</code> | The attributes of the scanned features, which the menus offer. |
 | <span id="getter-menusofferplotfields">**menusOfferPlotFields**</span><br><code>boolean</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>string &#124; undefined</code> | The field the display's color paints by, or undefined for none. |
 | <span id="getter-solidcolor">**solidColor**</span><br><code>string &#124; undefined</code> | The constant every feature paints, undefined for none or a `jexl:` callback. |
@@ -119,11 +118,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-defaultplotof">**defaultPlotOf**</span><br><code>(fields: PlotFields) =&gt; DefaultPlot</code> | A rect per feature in a row per value of an attribute, as `multiRowPlot` reads the scanned fields. |
+| <span id="method-defaultplotof">**defaultPlotOf**</span><br><code>(fields: PlotFields) =&gt; DefaultPlot</code> | A rect per feature in a row per value of an attribute: `multiRowPlot`'s recipes for the formats it knows, else the scan's lane field. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>27 inherited methods from 7 models</summary>
+<summary>28 inherited methods from 7 models</summary>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
@@ -131,7 +130,7 @@ From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-resolveadaptero
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
-From [TreeSidebarMixin](../treesidebarmixin): <span id="method-rowfoundatsomeloci">[`rowFoundAtSomeLoci`](../treesidebarmixin#method-rowfoundatsomeloci)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+From [TreeSidebarMixin](../treesidebarmixin): <span id="method-rowfoundatsomeloci">[`rowFoundAtSomeLoci`](../treesidebarmixin#method-rowfoundatsomeloci)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>, <span id="method-rowannotationnotices">[`rowAnnotationNotices`](../treesidebarmixin#method-rowannotationnotices)</span>
 
 From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-regionhasdata">[`regionHasData`](../multiregiondisplaymixin#method-regionhasdata)</span>, <span id="method-iscachevalid">[`isCacheValid`](../multiregiondisplaymixin#method-iscachevalid)</span>
 

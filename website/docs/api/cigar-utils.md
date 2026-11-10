@@ -8,6 +8,19 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## alignedReadBasesNumeric
+
+The read bases a packed CIGAR aligns (M, I, =, X): the stored sequence's
+`seqLength` less its soft clips, or a walk of the CIGAR for a record that
+stores no sequence (`seqLength` 0).
+
+```js
+// type signature
+(cigar: ArrayLike<number>, seqLength: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
+
 ## buildReadVsRefFeatures
 
 Decompose one alignment record plus its SA tag into the segments of the split

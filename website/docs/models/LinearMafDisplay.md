@@ -267,9 +267,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-summaryhoverinfo">**summaryHoverInfo**</span><br><code>(rowIndex: number, x: number) =&gt; MafSummaryRecord &#124; undefined</code> | The summary record whose bar is drawn at canvas x `x` on display row `rowIndex`, or undefined: the hover on the summary tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 6 models</summary>
+<summary>17 inherited methods from 6 models</summary>
 
-From [TreeSidebarMixin](../treesidebarmixin): <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+From [TreeSidebarMixin](../treesidebarmixin): <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>, <span id="method-rowannotationnotices">[`rowAnnotationNotices`](../treesidebarmixin#method-rowannotationnotices)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 

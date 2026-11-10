@@ -1307,7 +1307,7 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (93)
+# member tags in a file that documents no #stateModel (96)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedRows
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedSources
@@ -1315,6 +1315,7 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts clusterableSources
 packages/tree-sidebar/src/treeSidebarRowViews.ts dealtValueColors
 packages/tree-sidebar/src/treeSidebarRowViews.ts dealtValueColorsFor
 packages/tree-sidebar/src/treeSidebarRowViews.ts discoveredRows
+packages/tree-sidebar/src/treeSidebarRowViews.ts drawsRowAnnotations
 packages/tree-sidebar/src/treeSidebarRowViews.ts drawsTree
 packages/tree-sidebar/src/treeSidebarRowViews.ts editableSources
 packages/tree-sidebar/src/treeSidebarRowViews.ts expandRows
@@ -1338,6 +1339,7 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorDealRows
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorDeclaredValues
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorField
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorKeyInputs
+packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorKeyScales
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorPaintsMarks
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorScales
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowColorSetting
@@ -1368,6 +1370,7 @@ plugins/gccontent/src/GCContentTrack/index.ts setStep
 plugins/gccontent/src/GCContentTrack/index.ts setWindow
 plugins/gccontent/src/GCContentTrack/index.ts step
 plugins/gccontent/src/GCContentTrack/index.ts window
+plugins/wiggle/src/shared/wiggleAxisViews.ts drawsRowAnnotations
 plugins/wiggle/src/shared/wiggleAxisViews.ts drawsRowLabels
 plugins/wiggle/src/shared/wiggleAxisViews.ts sidebarPanel
 plugins/wiggle/src/shared/wiggleAxisViews.ts svgSidebar

@@ -67,7 +67,7 @@ section's `label`. A section `facet.hidden` lists leaves every table.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; fetchRegions: (TablesRegion & {…})[]; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; lines: {…} & {…}; rects: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; fetchRegions: {…}[]; height: number; truncated: number; features: {…} & {…}; subfeatures: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; chevrons: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & {…}; labels: {…} & { region: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/tables.ts)

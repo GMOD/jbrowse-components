@@ -33,6 +33,10 @@ export function rowColorScaleConfigSchema({
     {
       ...colorDomainSlot({ domain }),
       ...colorRangeSlot({ range }),
+      /**
+       * #slot unknown
+       * The color every row the scale leaves out takes; `''` for none.
+       */
       unknown: {
         type: 'maybeColor',
         description: unknown,
