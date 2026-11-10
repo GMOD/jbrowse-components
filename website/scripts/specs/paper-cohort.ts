@@ -123,7 +123,6 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             {
               ...CN_HEATMAP_SETTINGS,
               trackId: CN_BEDGRAPH_TRACK.trackId,
-              type: 'LinearWiggleDisplay',
               height: 160,
               runClustering: true,
               rows: { axis: { tree: false, labels: false } },

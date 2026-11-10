@@ -276,7 +276,9 @@ test("records alone hand R the record settings as a feature track's", () => {
   expect(script).toContain(
     'tooltip = list(show = FALSE, field = "INFO.CLNSIG")',
   )
-  expect(script).not.toMatch(/records|population/)
+  // the display argument alone: the reader's path is the checkout's
+  const display = script.split('\n').find(line => line.includes('display ='))
+  expect(display).not.toMatch(/records|population/)
 })
 
 test('the header names what the figure leaves out, and an unreadable track does not stop it', () => {
