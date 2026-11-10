@@ -557,7 +557,7 @@ export const colorDomainQuantileSlot = {
     type: 'number',
     defaultValue: 1,
     description:
-      'the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own',
+      'the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own; a y scale fences at twice that span with fenceQuantile instead',
     advanced: true,
   },
 } as const

@@ -15,8 +15,8 @@ export type HeightMode = (typeof HEIGHT_MODE_VALUES)[number]
 // rather than a constant because 800px is a guess about screen real estate, not
 // a property of the data — at real Illumina depth a pileup passes it in the
 // first hundred rows, and from there "autogrow" is indistinguishable from a
-// fixed 800px track. Distinct from each display's own `maxHeight` slot, which
-// bounds how much content is laid out / clamped, not the grow ceiling.
+// fixed 800px track. Distinct from alignments' `pileup.maxLayoutHeight`, which
+// bounds how much content is laid out, not the grow ceiling.
 export const GROW_MAX_HEIGHT = 800
 
 export const GROW_THE_TRACK_LABEL = 'Grow the track'

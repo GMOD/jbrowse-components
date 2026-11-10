@@ -30,13 +30,14 @@ const filter = ConfigurationSchema(
   {
     /**
      * #slot filter.expr
-     * A jexl callback over `feature`. The features it admits are kept and the
-     * rest dropped before the steps behind it run.
+     * A jexl callback over `feature`, written with its `jexl:` prefix. The
+     * features it admits are kept and the rest dropped before the steps
+     * behind it run.
      */
     expr: {
       type: 'string',
       defaultValue: '',
-      description: 'jexl callback over feature',
+      description: 'jexl callback over feature, with its jexl: prefix',
       contextVariable: ['feature'],
     },
   },
@@ -48,12 +49,13 @@ const formula = ConfigurationSchema(
   {
     /**
      * #slot formula.expr
-     * A jexl callback over `feature` whose value is written into `as`.
+     * A jexl callback over `feature`, written with its `jexl:` prefix, whose
+     * value is written into `as`.
      */
     expr: {
       type: 'string',
       defaultValue: '',
-      description: 'jexl callback over feature',
+      description: 'jexl callback over feature, with its jexl: prefix',
       contextVariable: ['feature'],
     },
     /**
@@ -353,9 +355,10 @@ const pileup = ConfigurationSchema(
  * #config MarkTransform
  * #category display
  * One step of a `transform` list, which runs over the region's features in
- * order, each step reading what the one before it produced. A step names its
- * `type` and takes that step's settings; a key belonging to another step
- * is refused at load.
+ * order, each step reading what the one before it produced. The list follows
+ * Vega's typed transform steps: a step names its `type`, which picks the
+ * schema it takes (ADR-150), and a key belonging to another step is refused
+ * at load.
  *
  * `filter` keeps the features an expression admits; `formula` writes an
  * expression's value into a field; `bin` snaps each feature to a

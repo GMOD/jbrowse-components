@@ -90,7 +90,7 @@ export function yScaleSchema({
         type: 'number',
         defaultValue: fenceQuantile,
         description:
-          'fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there',
+          "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there, where a color ramp's domainQuantile clips at the quantile itself",
       },
       /**
        * #slot

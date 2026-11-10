@@ -21,9 +21,9 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  *
  * The **descriptions** are the parameters because they are the part that is
  * genuinely per display — canvas sizes a feature stack against `displayMode`,
- * alignments a grouped pileup against `featureHeight`, and each names its own
- * `maxHeight`, which is a different quantity in the two schemas and therefore
- * deliberately not here. The types, the enum and the grow ceiling are not per
+ * alignments a grouped pileup against `featureHeight`, which bounds its layout
+ * by its own `pileup.maxLayoutHeight`, a different quantity from the grow
+ * ceiling and therefore deliberately not here. The types, the enum and the grow ceiling are not per
  * display, and both copies had written them out.
  *
  * `growMaxHeight` takes `GROW_MAX_HEIGHT` rather than a literal `800`. Writing

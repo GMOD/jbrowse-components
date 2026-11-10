@@ -249,7 +249,7 @@ const markEncodingSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.size
      * A point's diameter in px. The track menu's Point size writes every
-     * point mark's number.
+     * point mark's number. It is a px diameter, not Vega-Lite's area.
      */
     size: markSizeSchema,
     /**

@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   MEASURE_FIELD_PRESETS,
+  UNIVERSAL_FIELD_PRESETS,
   withImpliedField,
 } from '@jbrowse/core/util/colorScale'
 import {
@@ -70,6 +71,7 @@ export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
  *       color: {
  *         field: 'strand',
  *         scale: {
+ *           domain: ['1', '-1'],
  *           range: ['#1b9e77', '#d95f02'],
  *           names: ['Kept', 'Inverted'],
  *         },
@@ -128,7 +130,9 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       colorLegendOptions,
     ),
   },
-  colorChannelOptions('ribbons.encoding.color', MEASURE_FIELD_PRESETS, {
-    impliedField: RIBBON_IMPLIED_FIELD,
-  }),
+  colorChannelOptions(
+    'ribbons.encoding.color',
+    { ...MEASURE_FIELD_PRESETS, strand: UNIVERSAL_FIELD_PRESETS.strand },
+    { impliedField: RIBBON_IMPLIED_FIELD },
+  ),
 )
