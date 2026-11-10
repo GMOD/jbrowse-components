@@ -39,8 +39,9 @@ in display-kit, `rowArrangementMenuItem.ts`, `scoreMenuItems.ts`), Edit plot
 (ADR-204), the validator, the legend, the axis, the agent API and SVG export
 each read the one object. A display becomes a mark-display subtype only when
 its whole picture is a plot, as Manhattan is (ADR-178); alignments, canvas,
-Hi-C, MAF (ADR-199) and the comparative displays hold fetch policy, layout
-memory and domain actions a plot does not. Their domain actions stay theirs.
+Hi-C, MAF (ADR-199), variants (ADR-261) and the comparative displays hold fetch
+policy, layout memory and domain actions a plot does not. Their domain actions
+stay theirs.
 
 **3. Generality resolves before the loop.** A shape composes its scale at
 `gen:shaders` (ADR-095), a field name becomes a direct read before the walk, a
