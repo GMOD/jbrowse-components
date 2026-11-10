@@ -404,8 +404,9 @@ config, so name your own `trackId` instead):
 <Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane with no ortholog in view." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 Each lane header gives the lane's range, with `[rev]` where its gene order runs
-against grape's, and its span as a multiple of the grape window. `rows.sort` in
-the session above sets the lane order, peach and cacao first. The
+against grape's, and, on a lane zoomed out past grape, its span as a multiple of
+the grape window. `rows.sort` in the session above sets the lane order, peach
+and cacao first. The
 [multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
 covers the headers, lane order and lane menus.
 
