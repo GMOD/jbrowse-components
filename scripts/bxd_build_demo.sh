@@ -172,7 +172,8 @@ cat > "$APP"/config.json <<'JSON'
                 "type": "identity",
                 "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
                 "names": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
-              }
+              },
+              "legend": { "title": "Genotype" }
             }
           }
         }
