@@ -298,8 +298,8 @@ bases past that edge, as on the Illumina track below (GIAB HG002 reads at
 
 Bases at a read's end that don't align are **soft-clipped** (kept in the read)
 or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
-→ Soft clipping** in the track menu reveals them. Clusters of them often mark a
-structural-variant breakpoint.
+→ Show soft clipping** in the track menu reveals them. Clusters of them often
+mark a structural-variant breakpoint.
 
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw, so its clip indicator appears black.
