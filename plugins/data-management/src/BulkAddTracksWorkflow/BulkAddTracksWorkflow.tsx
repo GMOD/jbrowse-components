@@ -70,7 +70,6 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
   return (
     <Paper className={classes.paper}>
-      <Typography variant="h6">Add multiple tracks</Typography>
       <Typography variant="body2" color="textSecondary">
         Paste a list of file URLs or drop a set of local files. Track types are
         auto-detected and index files (e.g. .bai, .tbi) are paired with their

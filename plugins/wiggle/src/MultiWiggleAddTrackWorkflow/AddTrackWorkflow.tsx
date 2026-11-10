@@ -45,13 +45,10 @@ const useStyles = makeStyles()(theme => ({
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
-  },
-  toggle: {
-    marginBottom: theme.spacing(),
-  },
-  submit: {
-    marginTop: 25,
-    display: 'block',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1.5),
   },
 }))
 
@@ -87,7 +84,7 @@ const KIND_LABEL: Record<StackKind, string> = {
 }
 
 const PASTE_HELP =
-  'One URL per line. BigWig and bedGraph files stack as quantitative rows, BED and BigBed files as feature rows. A JSON array of subadapter configs sets a row\'s color or name, e.g. [{"type":"BigWigAdapter","bigWigLocation":{"uri":"https://host/file.bw"},"color":"green","source":"sample 1"}]'
+  "One URL per line: BigWig or bedGraph for quantitative rows, BED or BigBed for feature rows. Or a JSON array of subadapter configs, to set each row's color and name."
 
 function doSubmit({
   trackName,
@@ -193,7 +190,6 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       }}
     >
       <ToggleButtonGroup
-        className={classes.toggle}
         color="primary"
         size="small"
         exclusive
@@ -230,14 +226,16 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
           </Button>
         </>
       ) : (
-        <FileDropZone
-          onDrop={accepted => {
-            addClassified(accepted.map(file => classifyFile(file, guessers)))
-          }}
-        />
+        <div style={{ width: '100%' }}>
+          <FileDropZone
+            onDrop={accepted => {
+              addClassified(accepted.map(file => classifyFile(file, guessers)))
+            }}
+          />
+        </div>
       )}
       {tracks.length > 0 ? (
-        <div style={{ marginTop: 8 }}>
+        <div style={{ width: '100%' }}>
           <Button
             variant="outlined"
             size="small"
@@ -293,7 +291,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         </div>
       ) : null}
       {refusalLines.length > 0 ? (
-        <Alert severity="warning" style={{ marginTop: 8 }}>
+        <Alert severity="warning">
           Left out:
           <ul style={{ margin: 0 }}>
             {refusalLines.map(line => (
@@ -303,20 +301,20 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         </Alert>
       ) : null}
       {kind === 'mixed' ? (
-        <Alert severity="error" style={{ marginTop: 8 }}>
-          {MIXED_MESSAGE}
-        </Alert>
+        <Alert severity="error">{MIXED_MESSAGE}</Alert>
       ) : null}
       <TextField
         value={trackName}
         label="Track name"
+        variant="outlined"
+        fullWidth
         onChange={event => {
           update({ trackName: event.target.value })
         }}
       />
       <AssemblySelector
         session={getSession(model)}
-        helperText="Select assembly to add track to"
+        helperText=""
         selected={model.assembly}
         onChange={arg => {
           model.setAssembly(arg)
@@ -325,7 +323,6 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       />
       <Button
         variant="contained"
-        className={classes.submit}
         disabled={!canSubmit({ kind, trackName, assembly: model.assembly })}
         onClick={() => {
           try {

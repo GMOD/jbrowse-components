@@ -45,19 +45,21 @@ const useStyles = makeStyles()(theme => ({
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1.5),
   },
-  submit: {
-    marginTop: 25,
-    marginBottom: 100,
-    display: 'block',
+  file: {
+    width: '100%',
   },
 }))
 
 const dataFileName: Record<AdapterTypeOptions, string> = {
-  BigMafAdapter: 'Path to bigMaf',
-  MafTabixAdapter: 'Path to MAF tabix',
-  BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
-  BgzipMafAdapter: 'Path to MAF.gz (bgzip-compressed MAF)',
+  BigMafAdapter: 'bigMaf file',
+  MafTabixAdapter: 'MAF tabix file',
+  BgzipTaffyAdapter: 'TAF.gz file',
+  BgzipMafAdapter: 'MAF.gz file',
 }
 
 // User-facing radio labels; the option values are the internal adapter type
@@ -72,8 +74,11 @@ const fileTypeLabel: Record<AdapterTypeOptions, string> = {
 // The `maf2bed --summary` BED, offered by every format whose own read is
 // unbounded by zoom. Same wording in all three places it appears, so the file
 // being asked for reads the same however the user got here.
-const SUMMARY_BED_LABEL =
-  'Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)'
+const SUMMARY_BED = {
+  name: 'Summary BED',
+  description:
+    'Optional. The .bed.gz from `maf2bed --summary`, which draws the zoomed-out view.',
+}
 
 const MultiMAFWidget = observer(function MultiMAFWidget({
   model,
@@ -129,7 +134,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
 
   return (
     <Paper className={classes.paper}>
-      <div>
+      <div className={classes.file}>
         {error ? <ErrorMessage error={error} /> : null}
         <RadioSelector
           label="File type"
@@ -160,7 +165,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
         {fileTypeChoice === 'BigMafAdapter' ? (
           <FileSelector
             location={summaryLoc}
-            name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
+            name="bigMafSummary (.bb)"
+            description="Optional. Draws the zoomed-out view."
             rootModel={rootModel}
             setLocation={arg => {
               update({ summaryLoc: arg })
@@ -178,7 +184,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
             />
             <FileSelector
               location={indexLoc}
-              name="Path to MAF tabix index (optional — the sibling index is assumed)"
+              name="Tabix index"
+              description="Optional. Left empty, the index next to the file is used."
               rootModel={rootModel}
               setLocation={arg => {
                 update({ indexLoc: arg })
@@ -190,7 +197,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
                 .tbi is assumed, as everywhere else in this adapter. */}
             <FileSelector
               location={summaryLoc}
-              name={SUMMARY_BED_LABEL}
+              {...SUMMARY_BED}
               rootModel={rootModel}
               setLocation={arg => {
                 update({ summaryLoc: arg })
@@ -205,7 +212,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
                 differ only in the file name the label quotes. */}
             <FileSelector
               location={indexLoc}
-              name={`Path to ${fileTypeChoice === 'BgzipTaffyAdapter' ? 'TAF' : 'MAF'}.gz.tai (taffy index, optional — the sibling .tai is assumed)`}
+              name="Taffy index (.tai)"
+              description="Optional. Left empty, the .tai next to the file is used."
               rootModel={rootModel}
               setLocation={arg => {
                 update({ indexLoc: arg })
@@ -217,7 +225,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
                 index does. Same sibling-.tbi assumption as the tabix branch. */}
             <FileSelector
               location={summaryLoc}
-              name={SUMMARY_BED_LABEL}
+              {...SUMMARY_BED}
               rootModel={rootModel}
               setLocation={arg => {
                 update({ summaryLoc: arg })
@@ -226,7 +234,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           </>
         )}
       </div>
-      <div>
+      <div className={classes.file}>
         {/* Format-independent — every MAF adapter takes the frames file as the
             same BigBed sub-adapter — so it sits outside the per-format branch
             above, next to the tree, which is the other file that describes the
@@ -235,7 +243,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
             are all unreachable, which is what a UI-added track used to be. */}
         <FileSelector
           location={framesLoc}
-          name="Path to CDS frames (UCSC multiz<N>wayFrames.bb, optional — enables the CDS overlay and codon view)"
+          name="CDS frames (.bb)"
+          description="Optional. A UCSC multiz<N>wayFrames.bb, for the CDS overlay and codon view."
           rootModel={rootModel}
           setLocation={arg => {
             update({ framesLoc: arg })
@@ -243,7 +252,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
         />
         <FileSelector
           location={nhLoc}
-          name="Path to newick tree (.nh)"
+          name="Newick tree (.nh)"
+          description="Optional."
           rootModel={rootModel}
           setLocation={arg => {
             update({ nhLoc: arg })
@@ -251,27 +261,30 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
         />
         <TextField
           multiline
-          rows={10}
+          minRows={2}
+          maxRows={10}
+          label="Sample names"
           value={samples}
           onChange={event => {
             update({ samples: event.target.value })
           }}
-          helperText="Sample names (optional — taken from the .nh tree, or auto-detected from the file, when left blank)"
-          placeholder="Enter sample names from the MAF file, one per line, or JSON formatted array of samples"
+          helperText="Optional. One per line, or a JSON array. Left empty, they come from the tree or the file."
           variant="outlined"
           fullWidth
         />
       </div>
       <TextField
         value={trackName}
-        helperText="Track name"
+        label="Track name"
+        variant="outlined"
+        fullWidth
         onChange={event => {
           update({ trackName: event.target.value })
         }}
       />
       <AssemblySelector
         session={session}
-        helperText="Select assembly to add track to"
+        helperText=""
         selected={model.assembly}
         onChange={arg => {
           model.setAssembly(arg)
@@ -280,7 +293,6 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
       />
       <Button
         variant="contained"
-        className={classes.submit}
         disabled={!loc || !trackName.trim() || !model.assembly}
         onClick={() => {
           handleSubmit()

@@ -32,10 +32,9 @@ function detectedTypeLabel(row: TrackConfRow) {
   if (row.status === 'unknown') {
     return 'Unrecognized file type'
   }
-  const type = `${row.trackType} (${row.adapterType})`
-  // the type is right; what is missing is the config only the single-track form
-  // collects, so say that rather than implying the format wasn't recognized
-  return row.status === 'needsSetup' ? `${type} — needs setup` : type
+  return row.status === 'needsSetup'
+    ? `${row.trackType} (needs setup)`
+    : row.trackType
 }
 
 // error for a row nothing could read, warning for one that was read fine but
@@ -62,7 +61,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     name,
     autoName,
     type: detectedTypeLabel(row),
-    index: row.indexName ?? 'auto',
+    index: row.indexName ?? '',
     status: row.status,
   }))
 
@@ -75,7 +74,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     },
     {
       field: 'type',
-      headerName: 'Detected type',
+      headerName: 'Type',
       flex: 1,
       renderCell: ({ row }) => (
         <Typography variant="body2" color={statusColor(row.status)}>
@@ -83,15 +82,13 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
         </Typography>
       ),
     },
-    {
-      field: 'index',
-      headerName: 'Index',
-      width: 120,
-    },
+    ...(gridRows.some(row => row.index)
+      ? [{ field: 'index', headerName: 'Index', flex: 1 }]
+      : []),
     {
       field: 'actions',
       headerName: '',
-      width: 50,
+      width: 40,
       sortable: false,
       renderCell: ({ row }) => (
         <IconButton
@@ -120,6 +117,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
         rowHeight={ROW_HEIGHT}
         columnHeaderHeight={HEADER_HEIGHT}
         hideFooter
+        disableColumnMenu
         disableRowSelectionOnClick
         processRowUpdate={newRow => {
           const { id, name, autoName } = newRow
