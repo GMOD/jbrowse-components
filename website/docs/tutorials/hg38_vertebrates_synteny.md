@@ -134,8 +134,8 @@ One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
   [Stacking many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
   turns on.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
-  the session supplies each lane's gene models, so this track is the only
-  addition to the hub entries.
+  each lane draws its genome's gene track, so this track is the only addition to
+  the hub entries.
 
 A genome of your own loads from its FASTA instead:
 
