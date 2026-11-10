@@ -15,7 +15,8 @@ import { YSCALEBAR_LABEL_OFFSET } from './yAxisConstants.ts'
 // producer and each one owns it. `computeInsertSizeTicks` derives its geometry
 // from the very functions the arcs are drawn with. Its down-anchored mode
 // returns the pair reversed, `yTop` at domain-min, so a consumer wanting a
-// span must take min and max.
+// span must take min and max, and it supplies `valueToY`, the y its marks
+// plot a value at, which a scale's rules are placed by in place of the box.
 //
 // The half-pixel a 1px stroke needs to land crisply is the *drawing's*
 // business, not this type's. Folding it into the values skews every tick to buy
@@ -27,6 +28,7 @@ export interface YScaleTicks {
   items: { value: number; y: number; label?: string }[]
   yTop: number
   yBottom: number
+  valueToY?: (value: number) => number
 }
 
 /**

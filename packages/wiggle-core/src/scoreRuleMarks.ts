@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/display-ui/yScaleTicks'
 
 import type { ScoreRuleMark, ValueScaleRule } from '@jbrowse/display-ui'
+import type { YScaleTicks } from '@jbrowse/display-ui/yScaleTicks'
 
 export type { ScoreRuleMark } from '@jbrowse/display-ui'
 
@@ -26,7 +27,9 @@ export type { ScoreRuleMark } from '@jbrowse/display-ui'
  * `box` is likewise the caller's own — hand it the same `{yTop, yBottom}` the
  * display's ticks were built with (a `YScaleTicks` satisfies it). A box
  * recomputed here would place rules off the ticks of any band that lays its
- * axis out differently, and the alignments coverage band does.
+ * axis out differently, and the alignments coverage band does. A box carrying
+ * its own `valueToY` places the rules by that instead of `normalize`: the read
+ * cloud's ladder, whose band flips when it hangs down.
  */
 export function scoreRuleMarks({
   rules,
@@ -36,7 +39,7 @@ export function scoreRuleMarks({
 }: {
   rules: readonly ValueScaleRule[]
   domain: [number, number] | undefined
-  box: { yTop: number; yBottom: number }
+  box: Pick<YScaleTicks, 'yTop' | 'yBottom' | 'valueToY'>
   normalize: (score: number) => number
 }): ScoreRuleMark[] {
   if (!domain) {
@@ -46,17 +49,18 @@ export function scoreRuleMarks({
   if (max === min) {
     return []
   }
+  const valueToY =
+    box.valueToY ??
+    ((value: number) =>
+      scoreToAxisY(normalize(value), {
+        ...box,
+        plotHeight: box.yBottom - box.yTop,
+      }))
   return rules
     .filter(r => Number.isFinite(r.value) && r.value >= min && r.value <= max)
     .map(r => ({
       ...r,
-      y: clampStrokeInsideAxis(
-        scoreToAxisY(normalize(r.value), {
-          ...box,
-          plotHeight: box.yBottom - box.yTop,
-        }),
-        box.yBottom,
-      ),
+      y: clampStrokeInsideAxis(valueToY(r.value), box.yBottom),
     }))
 }
 

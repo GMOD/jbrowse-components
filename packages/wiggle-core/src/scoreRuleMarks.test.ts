@@ -87,6 +87,20 @@ describe('scoreRuleMarks', () => {
     // symlog lifts a depth of 1 well up the plot; linear leaves it on the floor
     expect(mark!.y).toBeLessThan(linearY - 0.2 * (box.yBottom - box.yTop))
   })
+
+  // A ladder whose band hangs down puts domain-min at yTop, which the box
+  // alone would read upside down; its own `valueToY` places the rule instead.
+  test('a box with its own valueToY places the rule by it', () => {
+    const box = axisPlotBox(height)
+    const valueToY = (value: number) => box.yTop + (value / 60) * 10
+    const marks = scoreRuleMarks({
+      rules: [{ value: 30 }, { value: 90 }],
+      domain,
+      box: { ...box, valueToY },
+      normalize: linear(0, 60),
+    })
+    expect(marks.map(m => [m.value, m.y])).toEqual([[30, valueToY(30)]])
+  })
 })
 
 describe('widenRangeToRules', () => {

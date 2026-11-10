@@ -2136,7 +2136,9 @@ export default function stateModelFactory(
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
          * left edge. The read cloud's insert-size scale rules each section's arc band,
-         * captioned TLEN. Each band projects through its section's own scroll;
+         * captioned TLEN, with a line at each end of the insert-size band the
+         * pairs are classed by (pinned, else the one the arcs pool). Each band
+         * projects through its section's own scroll;
          * the chrome drops the off-screen ones.
          */
         get valueScales(): ValueScale[] {
@@ -2168,6 +2170,7 @@ export default function stateModelFactory(
               arcsYDomainBp,
             })
             if (ticks) {
+              const normalBand = self.arcCollection.scale.stats
               scales.push({
                 domain: [1, arcsYDomainBp],
                 scaleType: 'log',
@@ -2175,6 +2178,9 @@ export default function stateModelFactory(
                 ticks,
                 side: down ? 'left' : 'right',
                 caption: 'TLEN',
+                rules: normalBand
+                  ? [{ value: normalBand.lower }, { value: normalBand.upper }]
+                  : [],
                 bandTops: banded.map(arcBand =>
                   bandScreenTop(arcBand.top, scroll),
                 ),

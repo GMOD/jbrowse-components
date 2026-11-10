@@ -102,18 +102,20 @@ export function computeInsertSizeTicks({
     return undefined
   }
   const domainMax = Math.max(2, arcsYDomainBp)
+  const valueToY = (v: number) => bandY(band, domainMax, v)
   // ~30px of vertical room per tick keeps the 10px labels from colliding; a
   // short band thus shows just min + max
   const maxTicks = Math.max(2, Math.floor(plotH / 30))
   const items: YScaleTicks['items'] = logTickValues(
     arcsYDomainBp,
     maxTicks,
-  ).map(v => ({ value: v, y: bandY(band, domainMax, v), label: formatBp(v) }))
-  const yMin = bandY(band, domainMax, 1)
-  const yMax = bandY(band, domainMax, domainMax)
+  ).map(v => ({ value: v, y: valueToY(v), label: formatBp(v) }))
+  const yMin = valueToY(1)
+  const yMax = valueToY(domainMax)
   return {
     items,
     yTop: Math.min(yMin, yMax),
     yBottom: Math.max(yMin, yMax),
+    valueToY,
   }
 }

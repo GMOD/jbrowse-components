@@ -5,9 +5,11 @@ import {
   axisGutterWidth,
   rightAxisStackInsets,
 } from '@jbrowse/display-ui'
+import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
+import { pointRowYPx, pointYPx } from '@jbrowse/render-core/shaders/pointMark'
 
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
-import { ARC_BAND_INSET_PX } from './renderers/arcMarks.ts'
+import { ARC_BAND_INSET_PX, arcBandScale } from './renderers/arcMarks.ts'
 import {
   makeEmptyAlignmentsResult,
   makeEmptyPileupData,
@@ -59,15 +61,28 @@ function stackedLane(
   }
 }
 
+import type { YAxis } from '@jbrowse/display-ui'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 // Boots a real LinearAlignmentsDisplay in a measured view, so the per-lane band
 // decision is exercised through the actual `arcsByGroup` → `sections` chain
 // rather than by calling `computeStackedSections` directly (sectionLayout.test.ts
 // covers the pure function).
-function createEnv() {
+function createEnv(displayConfig?: Record<string, unknown>) {
   console.warn = jest.fn()
-  const { baseSession, mount } = bootAlignmentsDisplay()
+  const { baseSession, mount } = bootAlignmentsDisplay({
+    trackConfig: displayConfig
+      ? {
+          displays: [
+            {
+              type: 'LinearAlignmentsDisplay',
+              displayId: 'd1',
+              ...displayConfig,
+            },
+          ],
+        }
+      : {},
+  })
   // `arcsByGroup` normalizes SA/RNEXT refNames through the assembly, so the mock
   // has to answer `initialized` + `getCanonicalRefName2`.
   const asm = {
@@ -87,7 +102,10 @@ function createEnv() {
       isValidRefName: () => true,
     },
   }))
-  const { view, display } = mount(Session)
+  const { view, display } = mount(
+    Session,
+    displayConfig ? { configuration: 'd1' } : {},
+  )
   view.setWidth(800)
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
@@ -469,5 +487,92 @@ test('up-mode read cloud beside the lane chips draws its axis beside the coverag
   )
   expect(tlenLeft! + axisGutterWidth(axes[1]!)).toBeLessThanOrEqual(
     coverageLeft!,
+  )
+})
+
+// The read cloud's ruler marks the band that parts short, normal and long
+// pairs, so a bar's height says which side of it the pair is on.
+describe('the read cloud rules the normal insert range', () => {
+  // The one pair's |TLEN| is 500, so each band leaves it outside, where the
+  // cloud draws it rather than hiding it as an ordinary pair.
+  function cloud(
+    placement: 'up' | 'down',
+    band?: { lower: number; upper: number },
+    displayConfig?: Record<string, unknown>,
+  ) {
+    const { display } = createEnv(displayConfig)
+    display.setDrawnReadConnections('rule')
+    display.setReadConnectionsPlacement(placement)
+    const data = oneRead(2000)
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: 'a',
+            label: 'Lane A',
+            data: band ? { ...data, insertSizeStats: band } : data,
+          },
+        ],
+      },
+      { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+    )
+    return display
+  }
+  const tlenAxis = (display: { axes: YAxis[] }) =>
+    display.axes.find(a => a.caption === 'TLEN')
+
+  test('a line at each end of the sampled band', () => {
+    const display = cloud('down', { lower: 100, upper: 400 })
+    expect(tlenAxis(display)?.rules?.map(r => r.value)).toEqual([100, 400])
+  })
+
+  test('no band, no lines', () => {
+    expect(tlenAxis(cloud('down'))?.rules ?? []).toEqual([])
+  })
+
+  test('a pinned band wins over the sampled one', () => {
+    const display = cloud(
+      'down',
+      { lower: 100, upper: 400 },
+      { normalInsertSize: { min: 120, max: 450 } },
+    )
+    expect(tlenAxis(display)?.rules?.map(r => r.value)).toEqual([120, 450])
+  })
+
+  test('a band end past the tallest bar draws no line', () => {
+    const display = cloud('down', { lower: 600, upper: 5000 })
+    expect(tlenAxis(display)?.ruleMarks?.map(m => m.value)).toEqual([600])
+  })
+
+  // The chrome's line against the bar the point mark plots at the same
+  // |TLEN|, through the band scale the renderer reads.
+  test.each(['up', 'down'] as const)(
+    '%s: each line lies on the bars at its |TLEN|',
+    placement => {
+      const display = cloud(placement, { lower: 100, upper: 400 })
+      const axis = tlenAxis(display)!
+      const scale = arcBandScale(
+        { height: axis.height, down: placement === 'down' },
+        1,
+        display.arcsYDomainBp,
+      )
+      const barY = (tlen: number) =>
+        pointRowYPx(
+          0,
+          scale.reachPx,
+          scale.reverse ? 1 : 0,
+          pointYPx(
+            tlen,
+            scale.domain![0],
+            scale.domain![1],
+            scale.reachPx,
+            SCALE_TYPE_LOG,
+            scale.insetPx,
+            1,
+          ),
+        )
+      expect(axis.ruleMarks?.map(m => m.y)).toEqual([barY(100), barY(400)])
+    },
   )
 })
