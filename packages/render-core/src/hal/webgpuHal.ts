@@ -571,7 +571,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   writeUniforms(data: ArrayBuffer) {
     if (this.currentEncoder) {
-      // Inside a frame: stage data at the current slot for batched upload
       if (
         this.uniformSlot >= this.uniformSlots &&
         this.uniformSlots < MAX_UNIFORM_SLOTS
@@ -592,17 +591,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       const offset = this.uniformSlot * this.alignedUniformSize
       this.uniformStaging.set(new Uint8Array(data), offset)
       this.uniformSlot++
-    } else {
-      // No active frame (currentEncoder is null). Every renderer writes
-      // uniforms strictly between beginFrame and endFrame, so the only way to
-      // land here is when beginFrame early-returned on a zero-size canvas
-      // (it skips creating the encoder and resetting uniformSlot). The paired
-      // drawPass/endFrame also no-op on that path, so this write never reaches
-      // the screen — but writing to slot 0 and marking it used keeps the ring
-      // state coherent rather than appending to a stale uniformSlot. Defensive,
-      // not a real render path.
-      this.device.queue.writeBuffer(this.uniformRingBuffer, 0, data)
-      this.uniformSlot = 1
     }
   }
 

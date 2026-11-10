@@ -228,3 +228,14 @@ test('a frame past the ring doubles it, and every draw reads the slots it was wr
   hal.dispose()
   resetDeviceGpuCacheForTests(fake.device)
 })
+
+test('a write outside a frame reaches no buffer', async () => {
+  const fake = recordingDevice()
+  const hal = await makeHal(fake.device)
+  hal.writeUniforms(new ArrayBuffer(desc.uniformByteSize))
+  expect(fake.events).toEqual([])
+  frame(hal, 1)
+  expect(fake.events).toEqual([`write:0:${slot}`, 'submit'])
+  hal.dispose()
+  resetDeviceGpuCacheForTests(fake.device)
+})
