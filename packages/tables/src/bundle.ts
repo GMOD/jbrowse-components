@@ -24,7 +24,8 @@ Object.assign(globalThis, {
     ...Object.fromEntries(
       Object.entries(tables).map(([name, table]) => [
         name,
-        async (args: string) => send(await table(JSON.parse(args))),
+        async (args: string) =>
+          send(await (table as (args: unknown) => unknown)(JSON.parse(args))),
       ]),
     ),
     sequence: async (args: string) => sequence(JSON.parse(args)),
