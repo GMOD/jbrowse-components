@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, isConfigurationModel } from '@jbrowse/core/configuration'
 import { annotationPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
@@ -159,17 +159,24 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
     /**
      * #getter
      * The `rows.annotations` channels drawn, in the order listed, each read
-     * as `rowColorChannel` reads `rows.color`: none while the row labels
+     * as `rowColorChannel` reads `rows.color`: none where the display's
+     * `rows` declares no `annotations` (MAF's), none while the row labels
      * they draw beside are hidden, and never one on `name`, which the
      * labels already show. Each keeps its `position` in the list.
      */
     get rowAnnotationChannels(): RowAnnotationSetting[] {
-      return getConf(self, ['rows', 'axis', 'labels'])
-        ? self.configuration.rows.annotations
-            .map((annotation, position) => ({
-              ...rowColorSettingOf(annotation),
-              position,
-            }))
+      const annotations: unknown = Reflect.get(
+        self.configuration.rows,
+        'annotations',
+      )
+      return getConf(self, ['rows', 'axis', 'labels']) &&
+        Array.isArray(annotations)
+        ? annotations
+            .flatMap((annotation: unknown, position) =>
+              isConfigurationModel(annotation)
+                ? [{ ...rowColorSettingOf(annotation), position }]
+                : [],
+            )
             .filter(setting => setting.field !== 'name')
         : []
     },

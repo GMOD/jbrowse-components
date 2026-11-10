@@ -1,10 +1,12 @@
 import { ConfigurationSchema, keyedBase } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   ROW_ARRANGEMENT_MEMBERS,
   rowArrangementConfigSchema,
 } from './rowArrangementConfigSchema.ts'
 import { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
+import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
 import { rowFilterList } from './rowPredicateConfigSchema.ts'
 
 /**
@@ -17,12 +19,25 @@ export const ROWS_WRITES = {
 } as const
 
 /**
+ * `snap.annotations` as the list of channels it fills, a lone field or
+ * channel object read as a list of one, as a launch arg
+ * `rows.annotations=sex` writes it, and `''` as none.
+ */
+function annotationList(snap: Record<string, unknown>) {
+  const { annotations } = snap
+  return annotations === undefined || Array.isArray(annotations)
+    ? {}
+    : { annotations: annotations === '' ? [] : [annotations] }
+}
+
+/**
  * #config Rows
  * #category display
  * The `rows` setting of the displays that draw one row per value of a field,
  * with the dendrogram sidebar beside them: a [RowArrangement](../rowarrangement)
- * plus the `field`, `filter`, which narrows the rows by attribute, and an axis
- * with `grid`. A string is the field; the arrangement members name rows by
+ * plus the `field`, `filter`, which narrows the rows by attribute,
+ * `annotations`, the attributes drawn as color columns beside the labels, and
+ * an axis with `grid`. A string is the field; the arrangement members name rows by
  * value of the field, so a write changing it clears them.
  *
  * #example
@@ -67,6 +82,20 @@ export const rowsConfigSchema = ConfigurationSchema(
      */
     filter: rowFilterList(),
     /**
+     * #slot annotations
+     * Extra color columns beside the row labels, one per row attribute, as
+     * ggtree's `gheatmap` and ComplexHeatmap's row annotation draw them: a
+     * list of [RowColor](../rowcolor) channels, each a field or
+     * `{ field, scale: { domain, range, unknown } }`, drawn in the order
+     * listed after the row's own color. Categorical only: each value of the
+     * field takes a color the way `rows.color` deals one, a row with no
+     * value leaves a gap, a field no row carries draws nothing, and each
+     * column gets a key. It reorders no row, so under one tree several
+     * attributes read against the same clusters. Like `filter` it names no
+     * row: "Reset row order" and a write changing `field` keep it.
+     */
+    annotations: types.array(rowColorConfigSchema),
+    /**
      * #slot axis
      * The guide down the left of the rows, a
      * [RowAxisWithGrid](../rowaxiswithgrid): whether the tree and the row
@@ -82,6 +111,7 @@ export const rowsConfigSchema = ConfigurationSchema(
     baseConfiguration: rowArrangementConfigSchema,
     shorthand: 'field',
     writes: ROWS_WRITES,
+    preProcessSnapshot: snap => ({ ...snap, ...annotationList(snap) }),
   },
 )
 

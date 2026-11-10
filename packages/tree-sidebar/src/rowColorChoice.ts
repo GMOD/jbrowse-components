@@ -4,7 +4,7 @@ import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
 import type { RowColorScaleSetting, RowColorSetting } from './rowColorScale.ts'
-import type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** The `rows.color` object as a config or the dialog writes it. */
 export interface RowColorSnapshot {
@@ -44,7 +44,7 @@ export function liftRowColor(value: unknown): RowColorSetting {
 
 /** A `rows.color` config node read as a `RowColorSetting`. */
 export function rowColorSettingOf(
-  color: TreeSidebarConfigModel['rows']['color'],
+  color: AnyConfigurationModel,
 ): RowColorSetting {
   return liftRowColor({
     field: readConfObject(color, 'field'),

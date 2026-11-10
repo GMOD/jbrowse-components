@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
@@ -7,8 +6,8 @@ import { rowTreeConfigSchema } from './rowTreeConfigSchema.ts'
 
 /**
  * The members naming a row by its name, which a reader's arrangement writes
- * and "Reset row order" returns: every slot but the axis, the color channel
- * and the annotations, which name no row.
+ * and "Reset row order" returns: every slot but the axis and the color
+ * channel, which name no row.
  */
 export const ROW_ARRANGEMENT_MEMBERS = [
   'sort',
@@ -39,18 +38,6 @@ export function stringList(
     throw new Error(`${setting}.${key} is a list`)
   }
   return Array.isArray(list) ? { [key]: list.map(String) } : {}
-}
-
-/**
- * `snap.annotations` as the list of channels it fills, a lone field or
- * channel object read as a list of one, as a launch arg
- * `rows.annotations=sex` writes it, and `''` as none.
- */
-function annotationList(snap: Record<string, unknown>) {
-  const { annotations } = snap
-  return annotations === undefined || Array.isArray(annotations)
-    ? {}
-    : { annotations: annotations === '' ? [] : [annotations] }
 }
 
 /**
@@ -137,20 +124,6 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
      */
     color: rowColorConfigSchema,
     /**
-     * #slot annotations
-     * Extra color columns beside the row labels, one per row attribute, as
-     * ggtree's `gheatmap` and ComplexHeatmap's row annotation draw them: a
-     * list of [RowColor](../rowcolor) channels, each a field or
-     * `{ field, scale: { domain, range, unknown } }`, drawn in the order
-     * listed after the row's own color. Categorical only: each value of the
-     * field takes a color the way `rows.color` deals one, a row with no
-     * value leaves a gap, a field no row carries draws nothing, and each
-     * column gets a key. It reorders no row, so under one tree several
-     * attributes read against the same clusters. Like `color` it names no
-     * row: "Reset row order" and a write changing `field` keep it.
-     */
-    annotations: types.array(rowColorConfigSchema),
-    /**
      * #slot axis
      * The guide down the left of the rows, a [RowAxis](../rowaxis): whether
      * the tree and the row names draw, and the sidebar's width. What it draws
@@ -180,7 +153,6 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
       ...snap,
       ...stringList(snap, 'sort', 'rows'),
       ...stringList(snap, 'kept', 'rows'),
-      ...annotationList(snap),
     }),
   },
 )

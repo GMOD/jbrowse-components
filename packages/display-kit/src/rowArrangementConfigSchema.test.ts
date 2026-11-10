@@ -18,13 +18,27 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // "Reset row order" and the keyed write rule walk the list, so a slot naming
 // rows that is missing from it survives a reset and a field change.
-test('the arrangement members are every RowArrangement slot but the axis, the color channel and the annotations', () => {
+test('the arrangement members are every RowArrangement slot but the axis and the color channel', () => {
   const slots = Object.keys(
     getConfigurationSchemaMetadata(rowArrangementConfigSchema)!.definition,
   )
+  expect([...ROW_ARRANGEMENT_MEMBERS, 'axis', 'color'].sort()).toEqual(
+    slots.sort(),
+  )
+})
+
+// MAF's species rows carry no attributes, so its field-less rows draw none.
+test('rows.annotations sits on Rows beside filter, and RowArrangement has none', () => {
+  const declared = (schema: typeof rowsConfigSchema) =>
+    Object.keys(getConfigurationSchemaMetadata(schema)!.definition)
+  expect(declared(rowsConfigSchema)).toEqual(
+    expect.arrayContaining(['filter', 'annotations']),
+  )
   expect(
-    [...ROW_ARRANGEMENT_MEMBERS, 'axis', 'color', 'annotations'].sort(),
-  ).toEqual(slots.sort())
+    Object.keys(
+      getConfigurationSchemaMetadata(rowArrangementConfigSchema)!.definition,
+    ),
+  ).not.toContain('annotations')
 })
 
 function annotationsOf(conf: Instance<typeof Display>) {
