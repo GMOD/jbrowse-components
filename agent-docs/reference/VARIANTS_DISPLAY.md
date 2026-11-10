@@ -350,8 +350,9 @@ a `recordsOnly` choice in the model belongs there.
   `Show records` or `Show genotypes` for the one hidden, beside the
   hidden-records count. While both draw, `Records ×` and the count sit at the
   band's top instead, so each part reads as a subtrack under its own chip,
-  unless the band's top is taken by its section chips (`records.facet`) or the
-  band is shorter than a chip. The export leaves the strip out, since it holds
+  ahead of the topmost section chip when `records.facet` sections the band
+  (`GroupLabelChips`' `leading`), and in the strip while the band is shorter
+  than a chip. The export leaves the strip out, since it holds
   controls: the display's `rowsHeaderControlsHeight` hook names it, and
   tree-sidebar's `svgControlsStrip` joins it to the focus chip's line, which
   the export shell drops (`exportedHeight`, `exportedY`), so the rows sit

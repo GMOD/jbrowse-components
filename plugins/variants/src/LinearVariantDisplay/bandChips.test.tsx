@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
 import BandChips from './components/BandChips.tsx'
+import RecordsBandOverlay from './components/RecordsBandOverlay.tsx'
 import { recordsDisplayAt } from './recordsBand.fixture.ts'
 
 import type { BandRecord } from './recordsBand.fixture.ts'
@@ -67,5 +68,29 @@ test('with the rows hidden the records keep the strip, clear of the track label'
     within(screen.getByTestId('band_chips_strip')).getByTestId(
       'show_genotypes_chip',
     ),
+  ).toBeTruthy()
+})
+
+test('sectioned records carry their chip ahead of the topmost section chip', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['a', 1000, 5000, 'DEL', 'DEL', { groupKey: 'Benign' }],
+      ['b', 2000, 6000, 'DEL', 'DEL', { groupKey: 'Pathogenic' }],
+    ],
+    10,
+    { facet: 'INFO.CLNSIG' },
+  )
+  render(
+    <>
+      <RecordsBandOverlay model={display} />
+      <BandChips model={display} />
+    </>,
+  )
+  const [topmost] = screen.getAllByTestId('group-label-chip')
+  expect(within(topmost!).getByTitle('Hide records')).toBeTruthy()
+  expect(screen.getAllByTitle('Hide records')).toHaveLength(1)
+  expect(screen.queryByTestId('records_band_chips')).toBeNull()
+  expect(
+    within(screen.getByTestId('band_chips_strip')).getByTitle('Hide genotypes'),
   ).toBeTruthy()
 })

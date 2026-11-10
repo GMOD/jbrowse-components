@@ -70,3 +70,19 @@ test('a press that stays put still clicks the hide button, and a drag swallows i
   fireEvent.click(hide)
   expect(onHide).toHaveBeenCalledTimes(1)
 })
+
+test('the leading chips ride the topmost chip on screen, ahead of its pill', () => {
+  const view = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <GroupLabelChips
+        canvasHeight={300}
+        sections={SECTIONS.map(s => ({ ...s, top: s.top - 150 }))}
+        leading={<span data-testid="lead">Records</span>}
+      />
+    </ThemeProvider>,
+  )
+  const chips = view.getAllByTestId('group-label-chip')
+  expect(view.getAllByTestId('lead')).toHaveLength(1)
+  expect(chips[0]!.firstElementChild).toBe(view.getByTestId('lead'))
+  expect(chips[0]!.textContent).toContain('B')
+})

@@ -15,6 +15,11 @@ import {
   recordsBandPainter,
   recordsSectionsInBand,
 } from '../recordsBandPaint.ts'
+import {
+  RecordsChips,
+  recordsChipsHeadBand,
+  recordsSectionChipsDrawn,
+} from './BandChips.tsx'
 import { buildRecordHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
@@ -141,7 +146,8 @@ const RecordsBandInteraction = observer(function RecordsBandInteraction({
 /**
  * The record sections' chips (`records.facet`), as a feature track draws its
  * own: each pins to the band's top while its section scrolls past, and hides
- * its section or drags it onto another.
+ * its section or drags it onto another. The topmost carries the records' own
+ * chips while they head the band.
  */
 const RecordsSectionChips = observer(function RecordsSectionChips({
   model,
@@ -150,9 +156,14 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
 }) {
   const { recordsGroupSections, recordsFacet } = model
   const canHide = recordsGroupSections.length > 1
-  return recordsFacet && recordsGroupSections.length > 0 ? (
+  return recordsFacet && recordsSectionChipsDrawn(model) ? (
     <GroupLabelChips
       canvasHeight={model.topBands.reserved.records}
+      leading={
+        recordsChipsHeadBand(model) ? (
+          <RecordsChips model={model} hideable />
+        ) : null
+      }
       hiddenCount={model.recordsHiddenGroups.size}
       onShowHidden={() => {
         model.showAllRecordsGroups()

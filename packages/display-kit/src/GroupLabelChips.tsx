@@ -44,7 +44,8 @@ export interface GroupChipSection {
  * every display that stacks groups in one track. A chip pins to the canvas top
  * while its section scrolls past (`groupChipTop`, which the SVG twin shares),
  * and a divider marks each section's top edge after the first. The topmost
- * chip on screen carries the way back from any hidden sections.
+ * chip on screen carries the way back from any hidden sections, after the
+ * caller's `leading` chips: whatever heads the whole stack.
  */
 export const GroupLabelChips = observer(function GroupLabelChips({
   sections,
@@ -52,12 +53,14 @@ export const GroupLabelChips = observer(function GroupLabelChips({
   hiddenCount = 0,
   onShowHidden,
   onMove,
+  leading,
 }: {
   sections: readonly GroupChipSection[]
   canvasHeight: number
   hiddenCount?: number
   onShowHidden?: () => void
   onMove?: (key: string, ontoKey: string) => void
+  leading?: React.ReactNode
 }) {
   const { classes, cx } = useGroupLabelStyles()
   const drag = useSectionDrag(
@@ -99,6 +102,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
               style={{ top: chipTop + 1 }}
               data-testid="group-label-chip"
             >
+              {i === topmost ? leading : null}
               <div
                 className={cx(
                   classes.pill,
