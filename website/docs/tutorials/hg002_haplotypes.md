@@ -2,7 +2,7 @@
 title: Comparing one genome's two haplotypes (T2T-HG002)
 sidebar_label: Synteny (haplotypes, T2T-HG002)
 description:
-  Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain,
+  Load T2T-HG002 v1.2 and the Q100 project's own chain between the haplotypes,
   plot one haplotype against the other genome-wide, and look at the 8p23.1
   inversion in a linear synteny view
 guide_category: Tutorials
@@ -15,7 +15,7 @@ diploid assembly lets us lay them against each other. We use T2T-HG002 v1.2, the
 Q100 project's telomere-to-telomere assembly of the HG002 reference individual,
 and:
 
-- load the diploid assembly, and the maternal-to-paternal chain as a synteny
+- load the diploid assembly, and the chain between the haplotypes as a synteny
   track
 - open a dotplot of the mother's copy of every chromosome against the father's
 - open the 8p23.1 inversion in a linear synteny view, with the follow button
@@ -44,7 +44,8 @@ conda install -c bioconda -c conda-forge minimap2 htslib samtools
 ## The data
 
 T2T-HG002 v1.2, the [Q100 project](https://github.com/marbl/HG002)'s diploid
-assembly, and the maternal-to-paternal chain the project publishes
+assembly, and the chain between its haplotypes the project publishes, with one
+set of chains per direction
 ([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
@@ -58,7 +59,7 @@ alignment_ describes.
 | What it is                                                                                                       | File                                                                                                                                                                  |
 | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`, `chr1_PATERNAL`)                       | [hg002v1.2.fasta.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz)                                                    |
-| The Q100 project's maternal-to-paternal chain                                                                    | [hg002v1.2_to_other_haplotype.chain.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz)      |
+| The Q100 project's chain between the haplotypes                                                                  | [hg002v1.2_to_other_haplotype.chain.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz)      |
 | The JHU Liftoff v0.6 gene models, maternal haplotype (the paternal file sits beside it, `PAT` in place of `MAT`) | [hg002v1.1.MAT.loff.v0.6.gff.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz) |
 
 </details>
@@ -133,7 +134,7 @@ Genome-wide, an inversion of a few megabases is a pixel or two of the line, so
 open a second dotplot the same way with `chr8_MATERNAL` and `chr8_PATERNAL` in
 the boxes, colored by strand.
 
-<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand: the whole genome above, chr8 below." src="/img/hg002_haplotypes_wholegenome.png" />
+<Figure caption="The Q100 chain as dotplots colored by strand: the whole genome above, chr8 below." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## Opening the 8p23.1 inversion in a linear synteny view
 
