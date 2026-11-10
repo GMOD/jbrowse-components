@@ -1,14 +1,13 @@
 import { withWordTails, wordTails } from './wordTails.ts'
 
 async function collect(lines: string[]) {
-  const out = []
-  for await (const line of withWordTails(
-    (async function* () {
-      yield* lines
-    })(),
-  )) {
-    out.push(line)
-  }
+  const out = await Array.fromAsync(
+    withWordTails(
+      (async function* () {
+        yield* lines
+      })(),
+    ),
+  )
   return out
 }
 

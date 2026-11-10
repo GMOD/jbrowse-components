@@ -1077,7 +1077,9 @@
       "package": "@jbrowse/core",
       "names": [
         "DEFAULT_BYTE_LIMIT",
+        "joinTables",
         "lociOf",
+        "numberByFirstAppearance",
         "overByteLimitError"
       ],
       "worker": "real"
@@ -2384,6 +2386,7 @@
         "createStatusChannel",
         "createStatusFanOut",
         "createStatusWindow",
+        "declaredSyntheticAssemblies",
         "dedupe",
         "defaultCodonTable",
         "defaultStarts",
@@ -3144,6 +3147,14 @@
     "@jbrowse/core/util/fetchPhases": {
       "package": "@jbrowse/core",
       "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/fieldCensus": {
+      "package": "@jbrowse/core",
+      "names": [
+        "censusFields",
+        "isRecord"
+      ],
       "worker": "real"
     },
     "@jbrowse/core/util/fieldPredicate": {
@@ -4000,6 +4011,7 @@
         "getFileFromCache",
         "getFileName",
         "getRpcSessionId",
+        "getSequenceAssemblyConf",
         "getTrackAssemblyNames",
         "getTrackName",
         "guessAdapter",
@@ -4736,6 +4748,7 @@
         "colorsWithGrouping",
         "groupByPlotOf",
         "groupByRadioMenuItem",
+        "groupByRowAttributeMenuItems",
         "hiddenGroupsItems",
         "mergeDomain",
         "moveSectionOnto",
@@ -4974,7 +4987,10 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "bufferedVisibleRegionsOf",
+        "byteGatedFetchRegions",
         "contentRightEdgePx",
+        "regionBlocks",
+        "regionsWidthPx",
         "windowFetchRegions",
         "windowFrames"
       ],
@@ -5047,6 +5063,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowAnnotationConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "ROW_ANNOTATION_NO_FIELD",
+        "ROW_ANNOTATION_ON_NAME",
+        "rowAnnotationConfigSchema",
+        "rowAnnotationList"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rowArrangementConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -5073,7 +5099,8 @@
     "@jbrowse/display-kit/rowColorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "rowColorConfigSchema"
+        "rowColorConfigSchema",
+        "rowColorScaleConfigSchema"
       ],
       "worker": "real"
     },

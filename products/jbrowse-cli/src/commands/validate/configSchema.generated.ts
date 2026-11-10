@@ -12271,6 +12271,195 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "RowAnnotationScale": {
+      "title": "RowAnnotationScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the field's values that get a color, in order.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CssColorEntry"
+            }
+          }
+        },
+        "unknown": {
+          "description": "a color: every row the scale leaves out takes it. Unset: each value deals the next color of the column's palette; \\"\\" leaves the rows domain does not list without a color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "RowAnnotationLegend": {
+      "title": "RowAnnotationLegend",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "title": {
+          "description": "the title of the column's key and the label over its column; unset, the field capitalised.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "RowAnnotation": {
+      "title": "RowAnnotation",
+      "x-meaning": "a color column beside the row labels, 'sex' or { field, scale, legend: { title } }",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "RowAnnotation",
+          "type": "object",
+          "allOf": [
+            {
+              "x-requirement": {
+                "id": "row-annotation-field",
+                "slot": "field"
+              },
+              "if": {
+                "type": "object",
+                "properties": {}
+              },
+              "then": {
+                "type": "object",
+                "required": [
+                  "field"
+                ],
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "errorMessage": "a rows.annotations entry needs a field, the row attribute its column colors by, as annotations: ['sex']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-annotation-name",
+                "slot": "field"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "field"
+                  ],
+                  "properties": {
+                    "field": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' is the row itself, which its label already shows: a rows.annotations entry colors by an attribute of the row, such as sex"
+            }
+          ],
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the row attribute whose values take the column's colors, such as a column of a multi-sample adapter's samplesTsvLocation, e.g. population, or a subtrack's group; not name, which the row label shows.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAnnotationScale"
+              }
+            },
+            "legend": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAnnotationLegend"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "VariantRows": {
       "title": "VariantRows",
       "anyOf": [
@@ -12354,17 +12543,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowColor"
               }
             },
-            "annotations": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/RowColor"
-                }
-              }
-            },
             "axis": {
               "if": {
                 "type": "null"
@@ -12420,6 +12598,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "array",
                 "items": {
                   "$ref": "#/$defs/RowPredicate"
+                }
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowAnnotation"
                 }
               }
             },
@@ -13969,17 +14158,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowColor"
               }
             },
-            "annotations": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/RowColor"
-                }
-              }
-            },
             "axis": {
               "if": {
                 "type": "null"
@@ -14035,6 +14213,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "array",
                 "items": {
                   "$ref": "#/$defs/RowPredicate"
+                }
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowAnnotation"
                 }
               }
             }
@@ -15082,17 +15271,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
-        "annotations": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowColor"
-            }
-          }
-        },
         "axis": {
           "if": {
             "type": "null"
@@ -16129,17 +16307,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowColor"
               }
             },
-            "annotations": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/RowColor"
-                }
-              }
-            },
             "axis": {
               "if": {
                 "type": "null"
@@ -16192,6 +16359,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "array",
                 "items": {
                   "$ref": "#/$defs/RowPredicate"
+                }
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowAnnotation"
                 }
               }
             },
@@ -28756,6 +28934,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
+        "syntheticAssemblies": {},
         "indels": {
           "$ref": "#/$defs/SyntenyIndels"
         },
@@ -29207,6 +29386,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "additionalProperties": false
           }
         },
+        "syntheticAssemblies": {},
         "views": {
           "type": "array",
           "description": "The rows this view composes, each a view of its own.",

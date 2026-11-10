@@ -186,16 +186,16 @@ an insertion, and a split read by its junction, so short and long reads of one
 event fill the same band. A long read split around an insertion files as an
 insertion when 50 or more read bases lie between its two pieces and the pieces
 overlap on the reference, or leave a gap there, by at most half that many bases.
-Concordant pairs and every other read without
-SV evidence fill the last band, the depth the others are read against. The
-preset also sets **Filter by → SV evidence → Only SV evidence**, which hides
-rows and leaves every band's coverage counting all its reads, so the last band
-draws its coverage alone and the others draw only the reads with SV evidence.
-The band that fills identifies the rearrangement, and a band that stays empty
-under a call is a call with no read evidence behind it. A band appears only for
-a kind of evidence that some read in the window has. The partner band is never
-empty on short reads: at every locus some mates land on another chromosome, and
-an insertion longer than the fragment adds mates that do not map.
+Concordant pairs and every other read without SV evidence fill the last band,
+the depth the others are read against. The preset also sets **Filter by → SV
+evidence → Only SV evidence**, which hides rows and leaves every band's coverage
+counting all its reads, so the last band draws its coverage alone and the others
+draw only the reads with SV evidence. The band that fills identifies the
+rearrangement, and a band that stays empty under a call is a call with no read
+evidence behind it. A band appears only for a kind of evidence that some read in
+the window has. The partner band is never empty on short reads: at every locus
+some mates land on another chromosome, and an insertion longer than the fragment
+adds mates that do not map.
 
 A read counts as **SV evidence** when it is a split read whose placed pieces
 join, an insertion or deletion of 50 bp or more, or a discordant pair, with both

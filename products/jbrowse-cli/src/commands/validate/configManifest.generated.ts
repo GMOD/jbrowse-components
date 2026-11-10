@@ -6854,42 +6854,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
-            },
-            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -6972,6 +6936,54 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "annotations",
+              "type": "RowAnnotationConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowAnnotationScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "RowAnnotationLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowAnnotation",
+              "shorthand": {
+                "string": "field"
+              },
+              "liftsString": true
             },
             {
               "name": "step",
@@ -7732,42 +7744,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
-            },
-            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -7850,6 +7826,54 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "annotations",
+              "type": "RowAnnotationConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowAnnotationScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "RowAnnotationLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowAnnotation",
+              "shorthand": {
+                "string": "field"
+              },
+              "liftsString": true
             }
           ],
           "schema": "QuantitativeRows",
@@ -8403,42 +8427,6 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
-            },
-            {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
             },
             {
               "name": "axis",
@@ -9625,42 +9613,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
-            },
-            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -9743,6 +9695,54 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "annotations",
+              "type": "RowAnnotationConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowAnnotationScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "RowAnnotationLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowAnnotation",
+              "shorthand": {
+                "string": "field"
+              },
+              "liftsString": true
             },
             {
               "name": "step",
@@ -10597,42 +10597,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
-            },
-            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -10715,6 +10679,54 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "annotations",
+              "type": "RowAnnotationConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowAnnotationScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "RowAnnotationLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowAnnotation",
+              "shorthand": {
+                "string": "field"
+              },
+              "liftsString": true
             },
             {
               "name": "step",
@@ -11576,42 +11588,6 @@ export const configManifest: ConfigManifest = {
               }
             },
             {
-              "name": "annotations",
-              "type": "RowColorConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "RowColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    }
-                  ],
-                  "schema": "RowColorScale",
-                  "writes": "members"
-                }
-              ],
-              "schema": "RowColor",
-              "shorthand": {
-                "string": "field"
-              },
-              "liftsString": true
-            },
-            {
               "name": "axis",
               "type": "RowAxisWithGridConfigurationSchema",
               "subSlots": [
@@ -11694,6 +11670,54 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "annotations",
+              "type": "RowAnnotationConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowAnnotationScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "RowAnnotationLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "RowAnnotationLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowAnnotation",
+              "shorthand": {
+                "string": "field"
+              },
+              "liftsString": true
             },
             {
               "name": "step",
@@ -12545,6 +12569,7 @@ export const configManifest: ConfigManifest = {
         "height",
         "trackSelectorType",
         "assemblyNames",
+        "syntheticAssemblies",
         "indels",
         "axis",
         "coord",
@@ -12590,6 +12615,7 @@ export const configManifest: ConfigManifest = {
         "coord",
         "diagonalizeAnchorRow",
         "levels",
+        "syntheticAssemblies",
         "views"
       ],
       "launchKeys": [
