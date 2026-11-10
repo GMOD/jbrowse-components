@@ -33,5 +33,5 @@ kept in config with it; the hide is session state until then.
   haplotype rows still writes the sample order;
 - `refillArray` in `packages/core/src/configuration/configurationSchema.ts`
   works around the fork's quadratic array reconcile, which
-  `@jbrowse/mobx-state-tree` 6.6.1 made linear; measure a 5,000-name reorder
+  `@jbrowse/mobx-state-tree` made linear in 6.6.1 (the tree is on 6.10); measure a 5,000-name reorder
   through plain assignment and drop the refill if it holds.

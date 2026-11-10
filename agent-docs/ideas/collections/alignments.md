@@ -98,7 +98,8 @@ either way. And the byte gate would have to let that coverage-only fetch through
 since it refuses on the reads' bytes.
 
 **Lifting `MAX_GROUPS` needs the depth sweep binned, not merely coalesced.** The
-cap and everything hanging off it — `capGroups`, `OVERFLOW_GROUP_KEY`,
+cap and everything hanging off it — `capGroupKeys`, `OVERFLOW_GROUP_KEY`
+(`packages/core/src/util/groupKeys.ts`),
 `groupKeyRank`'s three-way rank, GroupByDialog's cardinality refusal, and the
 "keep every dimension a closed set" rule — exist for one stated reason: each group
 runs the whole worker spine, and its coverage pipeline allocates per-bp depth
@@ -121,8 +122,8 @@ So the real prerequisite for a higher cap is a per-lane depth representation tha
 is not region-width — the same downsampling the GPU buffer already uses, applied
 to the sweep the hit test and the stats read. Do that first and the cap becomes a
 policy number instead of a memory ceiling; coalesce the buffers after, if the
-allocation count still shows up. Roughly 150 lines of ceiling machinery come out
-only at the end of that, and `MAX_GROUPS = 40` is still worth keeping as a
+allocation count still shows up. The ceiling machinery comes out only at the end
+of that, and `MAX_GROUPS` is still worth keeping as a
 cardinality sanity check on `tag`, which is the one dimension the data decides.
 
 **A value can split between its own lane and the overflow lane.** The cap runs
@@ -133,7 +134,7 @@ part drawn, and Save track data exports that part. Reachable from the synteny
 display's "Mate assembly" radio over an all-vs-all track in a two-region view.
 The corner notice says so (`splitOverflowKeys`); the fix is not cheap. Folding
 the value into the overflow lane on the main thread means merging two
-`WorkerPileupData`s, about 94 fields with per-group depth arrays and no merge
+`WorkerPileupData`s, dozens of fields with per-group depth arrays and no merge
 function. Sending the worker the cross-region key set puts a fetch result in
 `rpcProps`, which loops. Capping over a key universe the config declares
 collapses a region holding only late-sorting keys into one overflow lane. A

@@ -177,7 +177,7 @@ one hard assumption; see `agent-docs/reference/BP_PRECISION.md` §"Genome-size l
 **`featureId` as Float32 → 16.7M-instance cap.** `instanceInterleave.ts` writes
 the per-instance `featureId` through the Float32 view, and the shader compares
 it to `float` `hoveredFeatureId`/`clickedFeatureId` uniforms
-(`GpuSyntenyRenderer.ts`). Past 2²⁴ features in one synteny RPC response,
+(`shaders/syntenyTypes.slang`). Past 2²⁴ features in one synteny RPC response,
 adjacent indices collide in Float32 and hover/click highlights the wrong
 feature (visual identity only — coords/colors stay correct; `color` already
 goes through the `u32` view). This one is **genome-size-independent** and the
@@ -191,8 +191,8 @@ all-vs-all file reaches the cap rather than speculatively.
 Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
 current stack. The overriding conclusion is that **the render/model/color surface is
 already comprehensive** — the `color` object (ADR-139) covers `default·strand·query·target·
-reference·identity·mappingQuality·dnds`, plus `opacityByIdentity`,
-`fadeThinAlignments`, N-way stacked views, `color: { field: 'reference' }` chromosome-painting,
+reference·identity·mappingQuality·dnds`, plus `encoding.opacity` (a constant or a
+field such as `identity`), `fadeThinAlignments`, N-way stacked views, `color: { field: 'reference' }` chromosome-painting,
 and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
 file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
 below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`
@@ -219,9 +219,9 @@ template: "one file backs N-1 pairwise tracks, no renderer change").
   uses **forward=blue / inversion=orange**; our `strand` scheme is pos=red/neg=blue
   (`colorUtils.ts`). Aligning the palette is a constants-only change but a *default* change —
   verify against existing screenshots before touching. Also: SVbyEye/SafFire discretize
-  identity into breaks (`c(90,95,99,99.5,…)`) where our `opacityByIdentity` is a continuous
-  fade — a discrete-bin mode is a possible legend-friendlier variant, but continuous is
-  arguably better and this would add a knob, so likely YAGNI.
+  identity into breaks (`c(90,95,99,99.5,…)`); `encoding.opacity` over `identity` fades
+  continuously by default, and a `threshold` scale on it
+  (`syntenyOpacityConfigSchema.ts`) already gives the discrete bins.
 
 ### Polyploidy-aware many-to-many synteny
 

@@ -19,7 +19,8 @@ changing each residue"):
   - a skip that removes a folded domain from the gene's own structure, which
     would read stronger than MET's 8-residue peptide on another protein. It
     wants Protein3d to "hide the highlighted residues", a structure filter
-    from the genome view's highlight; `residueFilter.ts` ANDs its predicates,
+    from the genome view's highlight; `residueFilter.ts` (in the protein3d
+    plugin repo, `src/ProteinView/`) ANDs its predicates,
     so a gap inside a chain needs an exclude predicate first.
 - **The painted fold as a supporting layer**: a variant pair whose wild type
   is painted by the scan says both what the residue does and that the whole

@@ -8,12 +8,12 @@ audience: internal
 
 **Colin's standing preference: film the TUTORIALS before the user guides.** The
 three tours filmed on 2026-08-21 were two user guides and a quickstart, which is
-the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
-holds the remaining user-guide proposals and the harness analysis; this file is
-the tutorial half and is the one to work from.
+the wrong end of the corpus to have started at. The tutorial candidates come
+first here; the user-guide proposals and the harness analysis are under §"Tours
+that start near scratch" below.
 
 Every candidate below came out of the ten-agent tutorial audit
-(`tutorial-corpus-audit.md` §5-6 is that audit's structural half). Each names the
+(`tutorial-corpus-audit.md` §5 is that audit's structural half). Each names the
 prose it makes unnecessary, which is what ranks it.
 
 **A tour does not retire a figure.** Two were retired on 2026-08-21 and put back
@@ -46,8 +46,8 @@ on a respine, 19 on the frame.
     page's one whole-genome stack, so it is the tour's target.
 
 19. **`local_ancestry/cluster_painting`** (`local_ancestry.md`) — `Clustering →
-    Cluster rows by similarity` on the ancestry painting. The prose at
-    `:304-306` is genuinely orphaned: `dog10k-wolfdog-ancestry-clustered` was
+    Cluster rows by similarity` on the ancestry painting. The prose that
+    described its clustered figure is genuinely orphaned: `dog10k-wolfdog-ancestry-clustered` was
     deleted, so what that figure knew is a paragraph with no picture. **It does
     not fit the frame.** The claim is about the 243-animal painting, whose 486
     rows were a 2,610px capture, against a 1920-wide encode ceiling and a 960
@@ -122,15 +122,15 @@ reorderable just films the confusion.
 - **`dog10k_svs.md`** — two single-step interactions on 618 lines, each already
   in a figure within fifty lines of it, and `tutorial-corpus-audit.md` §5
   names the page as the reorderable case in its own opening words.
-- **`mappability_qc.md`** — it HAS the shape: three numbered steps at `:168-179`
-  with no figure near them, and a `Resolution → Bin summary` flip whose losing
+- **`mappability_qc.md`** — it HAS the shape: three numbered steps with no
+  figure near them, and a `Resolution → Bin summary` flip whose losing
   half is in no picture. Both sit on a 30x remote CRAM that needs `forceLoad` to
   draw at all and whose still costs a 600s ready gate. Revisit with `--headed`
   if that pileup is ever cheap enough.
 
 ## What is still missing from the harness
 
-In `tutorial-tours-from-scratch.md`, which is where the numbered gaps live.
+Under §"Machinery gaps" below.
 
 ## Tours that start near scratch
 
@@ -149,14 +149,14 @@ In `tutorial-tours-from-scratch.md`, which is where the numbered gaps live.
 Rank 1 is one click away in the app and unreachable in the harness. The
 fresh-install banner's only affordance is
 `<a href="?config=test_data/volvox/config.json">`
-(`products/jbrowse-web/src/components/LoaderErrorBanner.tsx:25`), and that is a
+(`products/jbrowse-web/src/components/LoaderErrorBanner.tsx`), and that is a
 same-tab navigation, which gap 1 explains.
 
 **Desktop cannot be filmed with this harness**; an `x11grab` recorder over the
 Xvfb display the Selenium run already uses can, and
 [tutorial-corpus-audit](tutorial-corpus-audit.md) §2 has that route. Desktop figures come from a Selenium + Electron run over the
 packaged binary (`products/jbrowse-desktop/test/screenshots.ts`), whose only
-capture call is `driver.takeScreenshot()`; `scripts/generate-video.ts` drives a
+capture call is `driver.takeScreenshot()`; `website/scripts/generate-video.ts` drives a
 page in puppeteer Chrome and films with `page.screencast`. Electron's
 chromedriver does not expose the CDP-backed window commands.
 So `quickstart_desktop.md`, which carries
@@ -198,8 +198,8 @@ it would let its page delete, since a tour that only adds is the weaker kind.
 ### Machinery gaps
 
 1. **A same-tab navigation kills the overlay, silently.** `injectOverlay` runs
-   once before the first step (`generate-video.ts:353`); the re-inject exists
-   only on the `opensTab` branch (`:383-390`). Every overlay helper null-guards,
+   once before the first step (`generate-video.ts`); the re-inject exists
+   only on the `opensTab` branch. Every overlay helper null-guards,
    so after a navigation the clip keeps filming with no cursor and no captions
    while the `.vtt` still ships every line, and no line of `video-report.ts` sees
    it. **This is the whole distance between rank 2 and rank 1.** A
@@ -207,23 +207,23 @@ it would let its page delete, since a tour that only adds is the weaker kind.
 2. **`VideoSpec` has no `allowUnsettled` and no `expectedConsole`.**
    `ScreenshotSpec` has both, and a no-config tour needs both.
 3. **`scrollTo` cannot scroll a drawer or a dialog.** `scrollPage` walks up from
-   `[data-testid^="view-container-"]` (`video-overlay.ts:214-239`), so on a tour
+   `[data-testid^="view-container-"]` (`video-overlay.ts`), so on a tour
    whose subject IS the drawer it scrolls the views instead. Blocks proposal 9;
    today the only lever is a taller viewport.
-4. **`ResizeHandle` publishes no selector** (`packages/core/src/ui/ResizeHandle.tsx:69-87`)
+4. **`ResizeHandle` publishes no selector** (`packages/core/src/ui/ResizeHandle.tsx`)
    — a bare `<div>` with emotion classes. A track-height drag is therefore
    measured pixels, which is the one thing this corpus refuses, so
    `config/settings_to_json` drops its drag. Two-line fix on the component.
 
 7) **The LGV import form's Open button has no testid**
-   (`ImportForm.tsx:196-203`), and `Open` is a prefix of `Open from a URL`,
-   `Open track...` and `Open file from URL or local computer`. `videos/sv.ts:200-209`
+   (`ImportForm.tsx`), and `Open` is a prefix of `Open from a URL`,
+   `Open track...` and `Open file from URL or local computer`. `videos/sv.ts`
    records what that cost once already.
 8) **Nothing pairs a typed URL with the page that prints it.**
    `validateVideoSpecs` demands a `pastedTrackConfigs` entry only for a `type`
    step whose value starts with `{`, and `check-paste-configs` compares against
    `json*` fences only. The exposure is already live: `sv/inspector_route` types
-   a VCF URL against the one at `sv_inspector_view.md:44`, and a rehost moves one
+   a VCF URL against the one in `sv_inspector_view.md`, and a rehost moves one
    and not the other. Extending the pair
    to `{ video, doc, text }` needs no new mechanism.
 9) **There is no embedded mode for a tour.** `VideoSpec` carries a `url` and

@@ -21,11 +21,12 @@ the MAF display.
 1. **Identity sampling.** Sub-pixel sampling (`binBp`) and the cross-block
    flank (`rowFlank.ts`), which the MAF painters do and the steps do not;
    `bin: auto`'s 1-2-5 ladder differs from MAF's power-of-two `binBp`.
-2. **Per-mark `minWidthPx`/`seamPx`.** `markList.ts` hands every span the
+2. **Per-mark `minWidthPx`/`seamPx`.** `markList.ts` hands every `rect` the
    display's one `minWidthPx` and a seam of 0 (a bar takes
    `CANVAS_SEAM_PX`), so it cannot reproduce MAF
    cells (`minWidthPx: 0`, `seamPx: GAP_STROKE_OFFSET`). The row offset has two
-   spellings, `scrollTop` on span and `rowOffsetPx` on the rest.
+   spellings, `scrollTop` on render-core's `spanMark` and `rowOffsetPx` on the
+   rest.
 3. A band stack with its own axes above the rows, for coverage and
    conservation.
 4. A coarse tier serving per-row records from `summaryAdapter`, which
@@ -37,7 +38,7 @@ the MAF display.
    `length`, a color scale on the mark (it packs ABGR only), a hit rule for a
    zero-width interval, which `rows` never answers, and a call to
    `paintInsertionLabels` from the text layer. Today `cells` emits each
-   insertion as an interbase feature a span paints as a `minWidthPx` sliver.
+   insertion as an interbase feature a `rect` paints as a `minWidthPx` sliver.
    The inversion hatch and e-line double lines are the same kind of glyph.
 7. A second-adapter join for the frames (codon cells, letters, conservation,
    the CDS strip).
@@ -48,7 +49,7 @@ the MAF display.
 ## What ports today with no new mark
 
 - The summary presence bars as a FeatureTrack over the summary file:
-  `rows: "src"` and a `span` with a color scale over `score`, as a separate
+  `rows: "src"` and a `rect` with a color scale over `score`, as a separate
   track rather than the in-display zoom swap.
 - The CDS frame strip as a FeatureTrack over the `mafFrames` bigBed.
 - The identity-yields-at-base-level switch as a `minBpPerPx`/`maxBpPerPx`

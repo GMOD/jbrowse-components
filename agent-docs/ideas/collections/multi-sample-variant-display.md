@@ -14,7 +14,7 @@ invalidation tiers constrain all of these.
 GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
 surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
 escalation the PS-phasing coloring already takes
-(`makePhaseSetReader`). MVP: a `genotypeQualityThreshold` config
+(`makePhaseSetReader`, `shared/phaseSetReader.ts`). MVP: a `genotypeQualityThreshold` config
 slot (default `0` = off = today's path unchanged); when set, a genotype with
 `GQ < threshold` renders as no-call grey instead of its allele color — masking
 chosen over continuous dimming because it reuses the existing no-call rendering
@@ -23,16 +23,17 @@ thread ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-
 than as a color the repaint would overwrite. It's a
 **fetch input** (belongs in `rpcProps()`), threaded through
 `VariantRPC/executeVariantCellData.ts` into `computeVariantCells.ts`, with a
-menu entry (presets GQ ≥ 20/≥ 30 + custom dialog) cloned from
-`createMAFFilterMenuItem` under the "Filter by" submenu.
+slider beside the "Minor allele frequency" and "Missingness" ones that
+`filterMenuItems` carries in `variantDisplayMenuItems.ts` (presets GQ ≥ 20/≥ 30).
 Open question: whether masking should also feed the MAF filter (a masked het
 shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
 (color het cells by allelic fraction — a somatic/mosaic cohort view).
 
 **Pedigree / inheritance awareness (biggest biological ceiling).** There is no
-pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
-arbitrary `samplesTsv` columns (`LinearVariantDisplay/variantLegend.ts::getSampleGroupLegendItems`).
+pedigree, affected-status, or trio model today — "grouping" is a flat `rows.color`
+on arbitrary `samplesTsv` columns, keyed in the legend by the display's row
+color scale (`LinearVariantDisplay/variantLegend.ts`).
 If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
 (already fetched) are enough to compute and highlight **de novo mutations**, **compound
 hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
@@ -97,11 +98,9 @@ every line with `pointToSegmentDist` on each mousemove. Enrich the tooltip
 (position / ref / alt) and add click-through to feature detail.
 
 **jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
-matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR
-renders the genotype matrix empty for real data" blocker was **stale** (verified by
-rendering both `display:multivariant` and `display:multivariantmatrix` against
-`ALL.chr11.phase3…genotypes.vcf.gz` → full 2,504-sample matrix). The remaining gap for the
-flagship figure is `colorBy:'population'`: it needs the VCF adapter's `samplesTsv`
+matrix renders real 1000 Genomes data in jb2export (a full 2,504-sample matrix
+off `ALL.chr11.phase3…genotypes.vcf.gz`). The remaining gap for the
+flagship figure is `rows.color: 'population'`: it needs the VCF adapter's `samplesTsv`
 (sample→population map), which the CLI can't yet pass. Add a `samplesTsv:<uri>` track
 modifier → `samplesTsvLocation` on the adapter so a genome-wide callset can be colored by
 super-population instead of reading as reference-dominant grey.
