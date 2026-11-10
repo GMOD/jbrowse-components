@@ -57,6 +57,17 @@ export function decodeSpecUrl(url: string): DecodedSpec | undefined {
   }
 }
 
+// A live link's `config` resolved against the app it opens, which names the
+// hosted copy of a `test_data/` config the link carries relative
+export function specConfigUrl(link: string) {
+  try {
+    const config = new URL(link).searchParams.get('config')
+    return config ? new URL(config, link).href : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function specTrackId(entry: SpecTrackEntry): string {
   return typeof entry === 'string' ? entry : entry.trackId
 }

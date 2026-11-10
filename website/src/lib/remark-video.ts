@@ -1,6 +1,7 @@
 import { visit } from 'unist-util-visit'
 
 import { liveHref } from './code-base.ts'
+import { videoSpecName } from './figure-live-links.ts'
 import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
 import {
   videoCaptioned,
@@ -42,10 +43,6 @@ import type { Plugin } from 'unified'
 // picture rather than a black rectangle, and the track is what makes the step
 // labels readable to anything but an eye.
 const videoRe = /<Video\s+([\s\S]*?)\s*\/>/g
-
-// `/media/pangenome/x.mp4` -> the spec named `pangenome/x`.
-const specNameOf = (src: string) =>
-  /^\/media\/(.+)\.mp4$/.exec(src)?.[1] ?? undefined
 
 // Where each clip sits on the page, for the jump bar DocsLayout puts under the
 // h1. A reader who came for the walkthrough is otherwise scrolling a tutorial
@@ -115,7 +112,7 @@ const remarkVideo: Plugin<[], Root> = () => {
       // browser that plays anything, and the VP9 alternative measured larger for
       // this content rather than smaller.
       const sources = `<source src="${mp4}" type="video/mp4"/>`
-      const name = specNameOf(rawSrc) ?? ''
+      const name = videoSpecName(rawSrc) ?? ''
       // The step labels the tour draws into its own frames, as text. Burned-in
       // words are invisible to a screen reader and to search, so the same strings
       // ship again as a track — generate-video.ts writes the `.vtt` beside the

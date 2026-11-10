@@ -11,8 +11,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { MAIN_CODE_BASE } from '../src/lib/code-base.ts'
+import { figureLiveTargets } from '../src/lib/figure-live-links.ts'
 import { parseAttrs } from '../src/lib/inline-html.ts'
-import { figureLiveRefs } from '../src/lib/liveLinks.generated.ts'
+import { specConfigUrl } from '../src/lib/spec-recipe/decode.ts'
 import { checkOrWrite, parseFrontmatter } from './check-utils.ts'
 
 const TUTORIALS = 'website/docs/tutorials'
@@ -33,35 +34,13 @@ function decoded(text: string) {
   }
 }
 
-const specLink = (name: string | undefined) => {
-  const ref = name ? figureLiveRefs[name] : undefined
-  return ref === undefined ? undefined : new URL(ref, MAIN_CODE_BASE).href
-}
-
-// A live link's `config` resolved against the app it opens, which names the
-// hosted copy of a `test_data/` config the link carries relative
-function configUrl(link: string) {
-  try {
-    const config = new URL(link).searchParams.get('config')
-    return config ? new URL(config, link).href : undefined
-  } catch {
-    return undefined
-  }
-}
-
-// The live links remark-figure.ts gives a page's figures: `link=`, else the
-// spec named by `src`, plus every spec in `links=`.
 function figureLinks(text: string) {
-  return [...text.matchAll(/<Figure\s+([\s\S]*?)\s*\/>/g)].flatMap(match => {
-    const attrs = parseAttrs(match[1]!)
-    return [
-      attrs.link ??
-        specLink(attrs.src?.replace(/^\/img\//, '').replace(/\.png$/, '')),
-      ...(attrs.links ?? '')
-        .split(',')
-        .map(l => specLink(l.split('=')[1]?.trim())),
-    ].flatMap(link => (link ? [link, configUrl(link) ?? ''] : []))
-  })
+  return [...text.matchAll(/<Figure\s+([\s\S]*?)\s*\/>/g)].flatMap(match =>
+    figureLiveTargets(parseAttrs(match[1]!)).flatMap(({ ref }) => {
+      const link = new URL(ref, MAIN_CODE_BASE).href
+      return [link, specConfigUrl(link) ?? '']
+    }),
+  )
 }
 
 function dataUrls(text: string) {

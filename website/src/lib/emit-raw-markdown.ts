@@ -5,8 +5,11 @@ import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
 import { retargetCodeBaseInMarkdown } from './code-base.ts'
 import { docId, docUrl, normalizeDocUrl, slugFilename } from './doc-slug.ts'
 import { plainReferenceMarkdown } from './plain-reference-markdown.ts'
+import { withDerivedForms } from './raw-markdown-derived.ts'
 import { seeAlsoMarkdown } from './remark-see-also.ts'
 import { tutorialBetaNotice } from './tutorial-beta-notice.ts'
+
+import type { Root } from 'mdast'
 
 // Each doc's raw Markdown, served at `/docs/<slug>.md` (introduction ->
 // `index.md`): written into dist at build time and served by the dev server.
@@ -53,22 +56,53 @@ export async function rawDocPages({
       pages.push({ rel, body, slug, title })
     }
   }
-  const out = new Map<string, string>()
-  for (const { rel, body, slug, title } of pages) {
-    const notice =
-      tutorialBetaNotice && slug.startsWith('tutorials/')
-        ? `${tutorialBetaNotice}\n\n`
-        : ''
-    const text = /^(config|models)\//.test(rel)
-      ? plainReferenceMarkdown(body)
-      : body
-    const linked = seeAlsoMarkdown(text, url => titles.get(url))
-    out.set(
-      slug,
-      `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + linked.trimStart(), origin))}\n`,
-    )
-  }
-  return out
+  const parse = await markdownParser()
+  return new Map(
+    pages.map(page => [
+      page.slug,
+      rawPageMarkdown(page, {
+        origin,
+        parse,
+        titleOf: url => titles.get(url),
+      }),
+    ]),
+  )
+}
+
+// Loaded on first use because remark is ESM-only, which jest cannot require,
+// and the page function below is what the tests exercise.
+async function markdownParser() {
+  const [{ unified }, { default: remarkParse }, { default: remarkGfm }] =
+    await Promise.all([
+      import('unified'),
+      import('remark-parse'),
+      import('remark-gfm'),
+    ])
+  const processor = unified().use(remarkParse).use(remarkGfm)
+  return (markdown: string) => processor.parse(markdown)
+}
+
+export function rawPageMarkdown(
+  { rel, body, slug, title }: { rel: string; body: string; slug: string; title: string },
+  {
+    origin,
+    parse,
+    titleOf,
+  }: {
+    origin: string
+    parse: (markdown: string) => Root
+    titleOf: (url: string) => string | undefined
+  },
+) {
+  const notice =
+    tutorialBetaNotice && slug.startsWith('tutorials/')
+      ? `${tutorialBetaNotice}\n\n`
+      : ''
+  const text = /^(config|models)\//.test(rel)
+    ? plainReferenceMarkdown(body)
+    : withDerivedForms(body, parse(body))
+  const linked = seeAlsoMarkdown(text, titleOf)
+  return `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + linked.trimStart(), origin))}\n`
 }
 
 export async function emitRawMarkdown({
