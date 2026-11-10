@@ -1124,6 +1124,9 @@ function computePileupRowLayout(
   if (withReads.length === 0) {
     return { empties, laid: [], maxY: 0, clippedBy: undefined }
   }
+  // Not a call to `computeMultiRegionLayout` with one entry: that path has no
+  // heap packer and always sorts, measuring 4x to 22x slower from 20,000 reads
+  // up, and its soft-clip tiebreaks and sort gate give different rows.
   if (withReads.length === 1) {
     const [idx, data] = withReads[0]!
     const activeSort = sortForRegions(sortColumn, [idx], regions)
