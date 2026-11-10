@@ -238,3 +238,19 @@ test('a pair the control holds no matrix for comes back without a control', asyn
   expect(inter.control).toBeUndefined()
   expect(pairs.find(p => p.region2Idx === 0)!.control).toBeDefined()
 })
+
+test('a vector read that failed is read again by the next fetch', async () => {
+  const chromosomes = { '1': 100, '2': 100 }
+  const cells = { '1-1': [[1, 2, 6]] } as FakeFile['cells']
+  const kr = { '1': ALL_VALID, '2': ALL_VALID }
+  const adapter = compare(
+    { chromosomes, cells, kr },
+    { chromosomes, cells, kr },
+  )
+  const hic = (adapter as unknown as { hic: ReturnType<typeof fakeHic> }).hic
+  const { getNormalizationVector } = hic
+  hic.getNormalizationVector = () => Promise.reject(new Error('network'))
+  await expect(fetch(adapter)).rejects.toThrow('network')
+  hic.getNormalizationVector = getNormalizationVector
+  expect((await fetch(adapter)).pairs[0]!.control).toBeDefined()
+})

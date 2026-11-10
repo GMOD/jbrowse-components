@@ -80,10 +80,6 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
     : []
 }
 
-function showMenuItems(self: HicMenuSelf): MenuItem[] {
-  return legendMenuItems(self)
-}
-
 function layoutMenuItem(self: HicMenuSelf): MenuItem {
   return {
     label: 'Layout',
@@ -225,7 +221,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     ),
     ...normalizationMenuItems(self),
     ...resolutionMenuItems(self),
-    ...makeShowSubMenu(showMenuItems(self)),
+    ...makeShowSubMenu(legendMenuItems(self)),
     layoutMenuItem(self),
   ]
 }

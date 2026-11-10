@@ -201,3 +201,11 @@ test('an observed floor applies to plain counts too', async () => {
   })
   expect(values(data)).toEqual([9, 3])
 })
+
+test('a NaN control count, the file no-value marker, has no cell', async () => {
+  const contacts = controlledPairs()
+  contacts.pairs[0]!.control!.counts = Float32Array.of(4, Number.NaN)
+  const data = await render(contacts)
+  expect(values(data)).toEqual([2, 1])
+  expect(Array.from(data.operands!.control)).toEqual([4, 3])
+})

@@ -166,7 +166,11 @@ export async function executeRenderHicData({
             }
           } else if (ctrlCounts) {
             const ctrl = ctrlCounts[k]!
-            if (ctrl < ctrlMin || (ctrlStrict && ctrl === ctrlMin)) {
+            if (
+              Number.isNaN(ctrl) ||
+              ctrl < ctrlMin ||
+              (ctrlStrict && ctrl === ctrlMin)
+            ) {
               continue
             }
             value = (count * gain + 1) / (ctrl * controlGain + 1)
