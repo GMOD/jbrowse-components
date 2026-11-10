@@ -149,7 +149,7 @@ Read the bars this way:
 
 - **Length counts copies.** Each copy a haplotype adds lengthens its bar.
 - **Purple marks sequence off GRCh38's path.** The graph routes most copies
-  through nodes off GRCh38's path, so most bars are largely purple.
+  through nodes off GRCh38's path.
 - **Gold is steps the file did not load.** The walk file abridges the costliest
   walks through the array, and a bar marks its length ≈ where the walk runs on
   past the window. Right-click one and take the **Load the … abridged steps**
