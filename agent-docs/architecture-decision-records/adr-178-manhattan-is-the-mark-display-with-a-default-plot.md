@@ -113,6 +113,15 @@ transforms or Edit plot.
   imputation quality, and the join writes only the SNPs it matches, so every
   unmatched point was colored through the LD threshold by that column in place
   of the grey "No LD data".
+- **The index's variant is found by its id** (amended 2026-11-09). An LD
+  panel holds a SNP and an indel at one position routinely, and the join read
+  every row at the index position, so a partner took the r² of whichever
+  variant's row came last. `GWASAdapter` reads the GWAS file's own row at the
+  index once per index, and where the LD file names a variant there by that
+  row's id, joins that variant's partners alone (`ldOfIndex`); where the two
+  files share no id it joins every variant's, as before. `indexSnp` stays a
+  `chr:bp`. Reading the id off the fetched region was not an option: one
+  region holds the index row, and the others would have joined differently.
 - **No field preset for `r2`.** The previous color object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.

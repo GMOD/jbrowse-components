@@ -3,10 +3,10 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
-import { defer, forkJoin, mergeMap, of, toArray } from 'rxjs'
+import { defer, firstValueFrom, forkJoin, mergeMap, of, toArray } from 'rxjs'
 
 import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
-import { INDEX_SNP_MISSING, joinLd, ldToIndex } from './ldJoin.ts'
+import { INDEX_SNP_MISSING, joinLd, ldOfIndex, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
 import { TOP_HIT_FACT, topHitsOf } from './topHit.ts'
 
@@ -42,7 +42,7 @@ export default class GWASAdapter extends BedTabixAdapter {
       }
     | undefined
 
-  private ldToIndex(join: LdJoin, opts: GWASFetchOptions) {
+  private ldToIndex(join: LdJoin, region: Region, opts: GWASFetchOptions) {
     const key = `${join.refName}:${join.start}`
     if (this.ldLookup?.key !== key) {
       this.ldLookup = {
@@ -50,14 +50,14 @@ export default class GWASAdapter extends BedTabixAdapter {
         load: cachedSetup({
           label: 'Downloading LD data',
           setup: ({ signal, statusCallback }) =>
-            this.readLdToIndex(join, { signal, statusCallback }),
+            this.readLdToIndex(join, region, { signal, statusCallback }),
         }),
       }
     }
     return this.ldLookup.load(opts)
   }
 
-  private async readLdToIndex(join: LdJoin, opts: BaseOptions) {
+  private async readLdToIndex(join: LdJoin, region: Region, opts: BaseOptions) {
     const config: Record<string, unknown> | undefined = readConfObject(
       this.config,
       'ldAdapter',
@@ -71,7 +71,18 @@ export default class GWASAdapter extends BedTabixAdapter {
         `Adapter type "${config.type}" cannot supply LD records for coloring`,
       )
     }
-    return ldToIndex(dataAdapter, join, opts)
+    const [at, rowsAtIndex] = await Promise.all([
+      ldToIndex(dataAdapter, join, opts),
+      firstValueFrom(
+        super
+          .getFeatures(
+            { ...region, start: join.start, end: join.start + 1 },
+            opts,
+          )
+          .pipe(toArray()),
+      ),
+    ])
+    return ldOfIndex(at, rowsAtIndex, join)
   }
 
   protected override featureOf(data: BedFeatureData) {
@@ -102,7 +113,7 @@ export default class GWASAdapter extends BedTabixAdapter {
   getFeatures(region: Region, opts: GWASFetchOptions = {}) {
     const { ld, facts } = opts
     return forkJoin([
-      ld ? defer(() => this.ldToIndex(ld, opts)) : of(undefined),
+      ld ? defer(() => this.ldToIndex(ld, region, opts)) : of(undefined),
       super.getFeatures(region, opts).pipe(toArray()),
     ]).pipe(
       mergeMap(([lookup, loaded]) => {

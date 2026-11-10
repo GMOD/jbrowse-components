@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { LD_WINDOW_BP, joinLd, ldToIndex } from './ldJoin.ts'
+import { LD_WINDOW_BP, joinLd, ldOfIndex, ldToIndex } from './ldJoin.ts'
 
 import type { LdJoin } from './ldJoin.ts'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -103,6 +103,42 @@ test('of two alleles at the index position, only the stronger is the index', asy
     [undefined, undefined],
     [0.8, 'partner'],
   ])
+})
+
+// A panel places an indel at the base before it, the position of a SNP there
+describe('a SNP and an indel the LD file holds at the index position', () => {
+  const join = { start: 99, refName: 'chr1' }
+  const read = () =>
+    ldToIndex(
+      source('chr1', [
+        rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 }),
+        rec({ snpA: 'rsIndel', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.1 }),
+        rec({ snpA: 'rsIndel', bpA: 100, snpB: 'rsC', bpB: 300, r2: 0.3 }),
+      ]),
+      join,
+    )
+
+  it('joins only the partners of the variant the GWAS file names there', async () => {
+    const ld = ldOfIndex(
+      await read(),
+      [feat({ name: 'rsIndex', start: 99 })],
+      join,
+    )
+    expect([...ld.byName]).toEqual([['rsB', 0.8]])
+    expect([...ld.byStart]).toEqual([[199, 0.8]])
+  })
+
+  it('joins both where the two files share no id', async () => {
+    const ld = ldOfIndex(
+      await read(),
+      [feat({ name: '1:100:A:G', start: 99 })],
+      join,
+    )
+    expect([...ld.byName]).toEqual([
+      ['rsB', 0.1],
+      ['rsC', 0.3],
+    ])
+  })
 })
 
 // a p-value of NA parses to NaN, which draws no point to carry the diamond

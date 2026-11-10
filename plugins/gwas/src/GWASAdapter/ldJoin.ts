@@ -41,6 +41,18 @@ export interface LdToIndex {
 }
 
 /**
+ * Partner r² to whatever the LD file holds at the index position, and to each
+ * variant there by its id: a SNP and an indel routinely share a position.
+ */
+export interface LdAtIndex extends LdToIndex {
+  variants: Map<string, LdToIndex>
+}
+
+function emptyLd(): LdToIndex {
+  return { byName: new Map(), byStart: new Map() }
+}
+
+/**
  * Where to read the `.ld` file: around the index, not the fetched region,
  * because an index over the file finds a row by its A side, so a window
  * without the index returns no row naming it. On `test_data/gwas/SLE.ld` a
@@ -63,38 +75,56 @@ export async function ldToIndex(
   source: Pick<LDRecordSource, 'getLDRecords'>,
   join: LdJoin,
   opts?: BaseOptions,
-): Promise<LdToIndex> {
+): Promise<LdAtIndex> {
   const { start, refName } = join
   const isIndex = (chr: string, bp: number) =>
     chr === refName && bp - 1 === start
   const query = ldWindow(join)
   const records = await source.getLDRecords(query, opts)
-  const byName = new Map<string, number>()
-  const byStart = new Map<number, number>()
-  let found = false
+  const { byName, byStart } = emptyLd()
+  const variants = new Map<string, LdToIndex>()
   for (const { r2, snpA, chrA, bpA, snpB, chrB, bpB } of records) {
     if (r2 === undefined) {
       continue
     }
     const aIsIndex = isIndex(chrA, bpA)
     if (aIsIndex !== isIndex(chrB, bpB)) {
-      found = true
+      const indexSnp = aIsIndex ? snpA : snpB
+      const variant = variants.get(indexSnp) ?? emptyLd()
+      variants.set(indexSnp, variant)
       const snp = aIsIndex ? snpB : snpA
       if (isNamedSnp(snp)) {
         byName.set(snp, r2)
+        variant.byName.set(snp, r2)
       }
       if ((aIsIndex ? chrB : chrA) === refName) {
-        byStart.set((aIsIndex ? bpB : bpA) - 1, r2)
+        const partnerStart = (aIsIndex ? bpB : bpA) - 1
+        byStart.set(partnerStart, r2)
+        variant.byStart.set(partnerStart, r2)
       }
     }
   }
-  if (!found && records.length > 0) {
+  if (variants.size === 0 && records.length > 0) {
     const r = records[0]!
     console.warn(
       `LD coloring: the index SNP matched none of ${records.length} LD records in ${query.refName}:${query.start}-${query.end} (e.g. SNP_A "${r.snpA}" at ${r.chrA}:${r.bpA}), so no point has an r² to it. The index is probably absent from the LD file, or named differently there than in the GWAS file.`,
     )
   }
-  return { byName, byStart }
+  return { byName, byStart, variants }
+}
+
+/**
+ * The partners of the index's own variant, where the LD file names one at its
+ * position by the id the GWAS file gives its row there, or of every variant at
+ * the position where the two files share no id.
+ */
+export function ldOfIndex(
+  at: LdAtIndex,
+  rowsAtIndex: Feature[],
+  join: LdJoin,
+): LdToIndex {
+  const name: unknown = rowsAtIndex[indexRowOf(rowsAtIndex, join)]?.get('name')
+  return (typeof name === 'string' ? at.variants.get(name) : undefined) ?? at
 }
 
 /** A feature's r² to the index and its part in the join. */
