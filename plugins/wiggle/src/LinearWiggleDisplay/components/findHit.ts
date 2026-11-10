@@ -24,7 +24,12 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface VisibleSource {
   name: string
+  label?: string
   color?: string
+}
+
+function shownName({ name, label }: VisibleSource) {
+  return label ?? name
 }
 
 // Overlay mode: every visible source's score at the cursor bp, or at the
@@ -57,7 +62,7 @@ export function findOverlayHit(
         reachBp,
       )
       if (i !== -1) {
-        rows.push(makeTooltipRow(ds, i, showsMinMax, src.name, src.color))
+        rows.push(makeTooltipRow(ds, i, showsMinMax, shownName(src), src.color))
       }
     }
   }
@@ -123,7 +128,15 @@ function sourceHit(
 ) {
   const ds = data.sources.find(s => s.name === src.name)
   return ds
-    ? findSourceHit(ds, bp, reachBp, refName, showsMinMax, src.name, src.color)
+    ? findSourceHit(
+        ds,
+        bp,
+        reachBp,
+        refName,
+        showsMinMax,
+        shownName(src),
+        src.color,
+      )
     : undefined
 }
 
@@ -132,7 +145,8 @@ function sourceHit(
 export interface WiggleHitModel {
   effectiveRowHeight: number
   rowsTopOffset: number
-  // each visible source and the color its marks paint in
+  // each visible source, the label it is named by and the color its marks
+  // paint in
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean

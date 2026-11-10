@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import WiggleHint from './WiggleHint.tsx'
 
@@ -14,6 +14,7 @@ function makeModel(overrides: Partial<HintModel> = {}): HintModel {
     isDensityMode: false,
     effectiveRowHeight: 50,
     height: 100,
+    setPlot: () => {},
     ...overrides,
   }
 }
@@ -29,9 +30,25 @@ describe('rows packed below a pixel', () => {
         })}
       />,
     )
-    getByText(
-      /400 subtracks in 100px leaves rows below 1px\. Pick Plot type → Overlapping/,
+    getByText('400 subtracks in 100px leaves rows below 1px.')
+  })
+
+  it('offers the heatmap, the plot that reads at that height', () => {
+    const setPlot = jest.fn()
+    const { getByText } = render(
+      <WiggleHint
+        model={makeModel({
+          numSources: 400,
+          effectiveRowHeight: 0.25,
+          setPlot,
+        })}
+      />,
     )
+    fireEvent.click(getByText('Draw as heatmap'))
+    expect(setPlot).toHaveBeenCalledWith({
+      mark: { type: 'rect' },
+      rowLayout: true,
+    })
   })
 
   // In density the escape the message names IS the mode the user picked, and

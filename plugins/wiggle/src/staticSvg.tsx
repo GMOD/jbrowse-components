@@ -107,10 +107,7 @@ export async function staticWiggleDisplay(
   }: StaticWiggleSvgArgs,
 ): Promise<StaticWiggleDisplay> {
   const model = createWiggleStaticHost({ trackType, id, display })
-  const fetchInputs = runInAction(() => ({
-    resolution: model.resolution,
-    yField: model.yField,
-  }))
+  const fetchInputs = runInAction(() => model.rpcProps())
   const fetched = frame.bufferedVisibleRegions
   const results = (
     await executeRenderMultiWiggleData({

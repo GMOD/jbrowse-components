@@ -105,10 +105,7 @@ async function fetchedWiggleHost(
   }: WiggleTablesArgs,
 ) {
   const model = createWiggleStaticHost({ trackType, id: 'tables', display })
-  const fetchInputs = runInAction(() => ({
-    resolution: model.resolution,
-    yField: model.yField,
-  }))
+  const fetchInputs = runInAction(() => model.rpcProps())
   const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
     sessionId: 'tables',
     adapterConfig,

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AssemblySelector, SanitizedHTML } from '@jbrowse/core/ui'
+import { AssemblySelector, FileDropZone, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   addTrackFromWidget,
   getNotificationSink,
@@ -22,13 +22,13 @@ import {
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import DropZone from './DropZone.tsx'
 import {
   MIXED_MESSAGE,
   applyName,
   buildAdapterPayload,
   buildMultiRowTrackConf,
   canSubmit,
+  classifyFile,
   classifyItem,
   parseItems,
   partition,
@@ -128,8 +128,9 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
   const { classes } = useStyles()
   const { form, update } = workflowForm(model, MULTI_ROW_WORKFLOW, initialForm)
   const { inputMode, inputVal, tracks, refusals, trackName } = form
-  const currentTracks = () =>
-    workflowForm(model, MULTI_ROW_WORKFLOW, initialForm).form.tracks
+  const currentForm = () =>
+    workflowForm(model, MULTI_ROW_WORKFLOW, initialForm).form
+  const currentTracks = () => currentForm().tracks
   const guessers = sessionGuessers(model)
   const [selection, setSelection] = useState<GridRowSelectionModel>(() => ({
     type: 'include',
@@ -142,6 +143,25 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       tracks: [...currentTracks(), ...added.members.map(memberToRow)],
       refusals: added.refusals,
     })
+  }
+
+  function addPasted() {
+    const pasted = currentForm().inputVal
+    if (pasted.trim()) {
+      addClassified(
+        parseItems(pasted).map(item => classifyItem(item, guessers)),
+      )
+      update({ inputVal: '' })
+    }
+  }
+
+  // The paste box is hidden behind the drop zone, so what it holds joins the
+  // grid first: Submit stacks only rows the form shows.
+  function showInputMode(mode: MultiRowForm['inputMode']) {
+    if (mode === 'upload') {
+      addPasted()
+    }
+    update({ inputMode: mode })
   }
 
   // resolve here so the header "select all" (an exclude-type model) counts
@@ -168,7 +188,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       className={classes.paper}
       onDragEnter={event => {
         if (event.dataTransfer.types.includes('Files')) {
-          update({ inputMode: 'upload' })
+          showInputMode('upload')
         }
       }}
     >
@@ -180,7 +200,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         value={inputMode}
         onChange={(_event, val: unknown) => {
           if (val === 'paste' || val === 'upload') {
-            update({ inputMode: val })
+            showInputMode(val)
           }
         }}
       >
@@ -204,18 +224,17 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
           <Button
             variant="outlined"
             disabled={!inputVal.trim()}
-            onClick={() => {
-              addClassified(
-                parseItems(inputVal).map(item => classifyItem(item, guessers)),
-              )
-              update({ inputVal: '' })
-            }}
+            onClick={addPasted}
           >
             Add tracks
           </Button>
         </>
       ) : (
-        <DropZone guessers={guessers} addClassified={addClassified} />
+        <FileDropZone
+          onDrop={accepted => {
+            addClassified(accepted.map(file => classifyFile(file, guessers)))
+          }}
+        />
       )}
       {tracks.length > 0 ? (
         <div style={{ marginTop: 8 }}>

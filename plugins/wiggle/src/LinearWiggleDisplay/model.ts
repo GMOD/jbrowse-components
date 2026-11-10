@@ -82,7 +82,7 @@ import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -340,6 +340,24 @@ export default function stateModelFactory(
         return self.wiggleColor.posColor
       },
       /**
+       * #method
+       * The exported features this display draws: those of a subtrack no
+       * filter, focus or subtree hides. Asked of the rows hidden rather than
+       * the rows shown, so an export before the first fetch lists its
+       * subtracks keeps every feature.
+       */
+      exportedFeatures(features: Feature[]) {
+        const shown = new Set(self.sources.map(row => row.name))
+        const hidden = new Set(
+          self.discoveredRows
+            .map(row => row.name)
+            .filter(name => !shown.has(name)),
+        )
+        return hidden.size > 0
+          ? features.filter(f => !hidden.has(f.get('source') ?? ''))
+          : features
+      },
+      /**
        * #getter
        * Whether a summary bin's tooltip lists its min and max: where they are
        * drawn, or where the bar is one of them rather than the mean.
@@ -367,22 +385,6 @@ export default function stateModelFactory(
               d.sources.some(source => source.numFeatures > 0),
             ))
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * `y` is a fetch key as written, so picking another stored summary
-       * refetches arrays the worker already shipped; `extent` is not
-       * (WIGGLE_DISPLAY.md, "`y`, `mark.extent`"). The color settings are not
-       * among the keys: every mode partitions by sign on the main thread, so
-       * moving the pivot re-encodes and refetches nothing.
-       */
-      rpcProps() {
-        return {
-          resolution: self.resolution,
-          yField: self.yField,
-        }
       },
     }))
     .views(self => {

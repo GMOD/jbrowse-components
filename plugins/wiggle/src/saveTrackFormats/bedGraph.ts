@@ -1,10 +1,12 @@
+import { numericValue } from '@jbrowse/core/util/numericValue'
+
 import type { FileTypeExporter } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
  * The "Save track data" formats for a track that draws a wiggle. Shared rather
- * than repeated per track type so the columns, and the score-missing
- * fallback below, have one definition.
+ * than repeated per track type so the columns, and the rule below for a
+ * feature holding no score, have one definition.
  */
 export const bedGraphFormatOptions: Record<string, FileTypeExporter> = {
   bedGraph: {
@@ -40,14 +42,18 @@ function sourceOf(feature: Feature) {
 /**
  * One row per interval, and for a track of several subtracks a header and a
  * `source` column naming each row's, which BedGraphAdapter reads back as the
- * same subtracks. In the order given, which the export has sorted.
+ * same subtracks. In the order given, which the export has sorted. A feature
+ * holding no number for a score writes no row, as it draws no bar.
  */
 export function stringifyBedGraph({ features }: { features: Feature[] }) {
   const tidy = features.some(f => sourceOf(f))
-  const rows = features.map(f => {
-    const row = `${f.get('refName')}\t${f.get('start')}\t${f.get('end')}\t${scoreText(f.get('score') ?? 0)}`
-    return tidy ? `${row}\t${sourceOf(f)}` : row
-  })
+  const rows = features
+    .map(f => ({ f, score: numericValue(f.get('score')) }))
+    .filter(({ score }) => !Number.isNaN(score))
+    .map(({ f, score }) => {
+      const row = `${f.get('refName')}\t${f.get('start')}\t${f.get('end')}\t${scoreText(score)}`
+      return tidy ? `${row}\t${sourceOf(f)}` : row
+    })
   return (tidy ? ['#chrom\tstart\tend\tscore\tsource', ...rows] : rows).join(
     '\n',
   )

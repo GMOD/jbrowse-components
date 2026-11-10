@@ -42,6 +42,32 @@ function makeSource(
   return { name, ...featureArrays }
 }
 
+describe('a relabelled source', () => {
+  const data = {
+    sources: [
+      makeSource('s1', [{ start: 0, end: 100, score: 5 }]),
+      makeSource('s2', [{ start: 0, end: 100, score: 10 }]),
+    ],
+  }
+  const sources = [{ name: 's1', label: 'Tumor' }, { name: 's2' }]
+
+  test('names its tooltip row by the label in a shared plot', () => {
+    expect(
+      findOverlayHit(data, sources, 50, 0, 'chr1', false)?.rows.map(
+        r => r.source,
+      ),
+    ).toEqual(['Tumor', 's2'])
+  })
+
+  test('names its tooltip row by the label on its own row', () => {
+    expect(
+      findRowHit(data, sources, 50, 0, 5, 10, 'chr1', false)?.rows.map(
+        r => r.source,
+      ),
+    ).toEqual(['Tumor'])
+  })
+})
+
 describe('findOverlayHit', () => {
   test('collects every visible source with a feature at bp', () => {
     const data = {

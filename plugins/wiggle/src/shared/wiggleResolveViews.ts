@@ -35,7 +35,9 @@ export interface WiggleResolveHost {
   summaryField: SummaryField
   renderingType: WiggleRendering
   isRowLayout: boolean
-  sources: readonly { name: string; rowColor?: string }[]
+  sources: readonly { name: string; label?: string; rowColor?: string }[]
+  resolution: number
+  yField: string
   rowPaletteDeals: boolean
   resolvedRowColors: ReadonlyMap<string, string>
   scoreRules: readonly { value: number }[]
@@ -124,10 +126,10 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
 
     /**
      * #getter
-     * Each source and the color its marks paint in (`wiggleMarkSources`),
-     * which the encoder and the tooltip read.
+     * Each source as it is drawn, its label and the color its marks paint in
+     * (`wiggleMarkSources`), which the encoder and the tooltip read.
      */
-    get markSources(): { name: string; color?: string }[] {
+    get markSources(): { name: string; label?: string; color?: string }[] {
       return wiggleMarkSources(self.sources, {
         rowColorPaintsMarks: this.rowColorPaintsMarks,
         paletteDeals: self.rowPaletteDeals,
@@ -153,6 +155,22 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
      */
     get autoscaleSourceNames(): Set<string> {
       return new Set(self.sources.map(s => s.name))
+    },
+
+    /**
+     * #method
+     * What every fetch of this display's scores asks its adapter for, on
+     * screen and in a static export alike. `y` is a fetch key as written, so
+     * picking another stored summary refetches arrays the worker already
+     * shipped; `extent` is not (WIGGLE_DISPLAY.md, "`y`, `mark.extent`"). The
+     * color settings are not among the keys: every mode partitions by sign on
+     * the main thread, so moving the pivot re-encodes and refetches nothing.
+     */
+    rpcProps() {
+      return {
+        resolution: self.resolution,
+        yField: self.yField,
+      }
     },
 
     /**

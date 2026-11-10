@@ -1,4 +1,4 @@
-import type { WiggleRendering } from '../../renderingTypes.ts'
+import type { WiggleMarkObject, WiggleRendering } from '../../renderingTypes.ts'
 import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextInfo } from './findHit.ts'
@@ -24,7 +24,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
   sources: { name: string; color?: string; rowColor?: string }[]
-  markSources: { name: string; color?: string }[]
+  markSources: { name: string; label?: string; color?: string }[]
   discoveredRows: { name: string }[]
   domain: [number, number] | undefined
   scaleType: ScaleType
@@ -71,6 +71,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void
   selectFeature: (feat: WiggleHoveredFeature) => void
+  setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
   contextMenuInfo?: ContextMenuAnchor & { hit: WiggleContextInfo }
   openContextMenu: (
     info: ContextMenuAnchor & { hit: WiggleContextInfo },

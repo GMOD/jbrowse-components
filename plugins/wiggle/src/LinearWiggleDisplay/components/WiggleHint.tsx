@@ -1,6 +1,9 @@
 import BlockMsg from '@jbrowse/display-kit/BlockMsg'
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import type { WiggleMarkObject } from '../../renderingTypes.ts'
 
 // What the hint reads, spelled out like its sibling overlays (see
 // WiggleRowSeparators, WiggleRowLabels) rather than taking the whole display.
@@ -10,11 +13,12 @@ export interface HintModel {
   isDensityMode: boolean
   effectiveRowHeight: number
   height: number
+  setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
 }
 
 // Rows packed so tight they are sub-pixel draw as an unreadable smear rather
-// than a blank, so the escape is named inline. Not in density, where the
-// escape the message names IS the mode the user is in, and sub-pixel rows are
+// than a blank, so the escape is offered inline. Not in density, where the
+// escape the button offers IS the mode the user is in, and sub-pixel rows are
 // the intended cohort view: a thousand-sample heatmap is read as a stack.
 function hint({
   numSources,
@@ -27,7 +31,7 @@ function hint({
     !isDensityMode &&
     numSources > 0 &&
     effectiveRowHeight < 1
-    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px. Pick Plot type → Overlapping or Multi-row → Heatmap, or make the track taller.`
+    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px.`
     : undefined
 }
 
@@ -48,7 +52,20 @@ const WiggleHint = observer(function WiggleHint({
           pointerEvents: 'auto',
         }}
       >
-        <BlockMsg severity="warning" message={message} />
+        <BlockMsg
+          severity="warning"
+          message={message}
+          action={
+            <Button
+              size="small"
+              onClick={() => {
+                model.setPlot({ mark: { type: 'rect' }, rowLayout: true })
+              }}
+            >
+              Draw as heatmap
+            </Button>
+          }
+        />
       </div>
     </TrackOverlayPortal>
   ) : null

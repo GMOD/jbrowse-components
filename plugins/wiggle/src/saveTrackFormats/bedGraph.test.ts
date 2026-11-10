@@ -35,12 +35,15 @@ test('a float32 score writes as the decimal the file held', () => {
   expect(scoreText(Number.NaN)).toBe('NaN')
 })
 
-test('a missing score writes as zero rather than as undefined', () => {
+test('a feature holding no score writes no row, and a measured zero does', () => {
   expect(
     stringifyBedGraph({
-      features: [feat({ refName: 'ctgA', start: 0, end: 10 })],
+      features: [
+        feat({ refName: 'ctgA', start: 0, end: 10 }),
+        feat({ refName: 'ctgA', start: 10, end: 20, score: 0 }),
+      ],
     }),
-  ).toBe('ctgA\t0\t10\t0')
+  ).toBe('ctgA\t10\t20\t0')
 })
 
 // BigWigAdapter's `source` slot defaults to '', so a plain quantitative track

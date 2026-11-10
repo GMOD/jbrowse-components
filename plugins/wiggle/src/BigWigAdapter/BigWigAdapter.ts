@@ -146,11 +146,16 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return (bpPerPx / resolution) * this.resolutionMultiplier
   }
 
+  // The tier a fetch at this zoom reads, as the span range it serves: the one
+  // answer the declared zoom range and the fetch both take.
+  private async tierSpans(opts: WiggleOptions) {
+    return tierSpanRange(await this.tierLevels(opts), this.basesPerSpan(opts))
+  }
+
   public async getZoomRange(opts: WiggleOptions = {}): Promise<ZoomRange> {
-    const levels = await this.tierLevels(opts)
     const { resolution = 1 } = opts
     const bpPerPxPerSpan = resolution / this.resolutionMultiplier
-    const [lo, hi] = tierSpanRange(levels, this.basesPerSpan(opts))
+    const [lo, hi] = await this.tierSpans(opts)
     return {
       minBpPerPx: lo * bpPerPxPerSpan,
       maxBpPerPx: hi * bpPerPxPerSpan,
@@ -181,8 +186,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   public async getFeatureArrays(regions: Region[], opts: WiggleOptions = {}) {
     const { statusCallback } = opts
     const { bigwig, firstLevel } = await this.setup(opts)
-    const levels = await this.tierLevels(opts)
-    const [tierLo, tierHi] = tierSpanRange(levels, this.basesPerSpan(opts))
+    const [tierLo, tierHi] = await this.tierSpans(opts)
     const binBp = syntheticBinBp(tierLo, firstLevel)
     // bbi re-derives the tier through `1 / (1 / span)`, which can land one ulp
     // under a level's boundary and read the raw section at a summary zoom, so

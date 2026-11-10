@@ -1,4 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -79,4 +80,39 @@ test('rows.filter refuses a row name, pointing at rows.kept', async () => {
   expect(() => {
     setConf(display, ['rows', 'filter'], [{ field: 'name', equal: 'Grain1' }])
   }).toThrow(/a row's name goes in rows.kept/)
+})
+
+const exported = (source?: string) =>
+  new SimpleFeature({
+    uniqueId: `f-${source}`,
+    refName: 'ctgA',
+    start: 0,
+    end: 10,
+    score: 1,
+    source,
+  })
+
+test('Save track data holds the subtracks shown', async () => {
+  const display = await loaded({ kept: ['Grain1', 'Grain3'] })
+  const features = GROUPED.map(s => exported(s.name))
+  expect(display.exportedFeatures(features).map(f => f.get('source'))).toEqual([
+    'Grain1',
+    'Grain3',
+  ])
+})
+
+test('Save track data keeps every feature while no row is hidden', async () => {
+  const display = await loaded({})
+  const features = [exported('Grain1'), exported('Unlisted'), exported()]
+  expect(display.exportedFeatures(features)).toEqual(features)
+})
+
+test('a row is drawn under the label rows.labels gives it', async () => {
+  const display = await loaded({ labels: { Grain1: 'Liver A' } })
+  expect(display.markSources.map(s => s.label ?? s.name)).toEqual([
+    'Liver A',
+    'Grain2',
+    'Grain3',
+    'Grain4',
+  ])
 })

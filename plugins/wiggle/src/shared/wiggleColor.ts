@@ -126,13 +126,14 @@ export function wiggleSharesPanel(rowLayout: boolean, sourceCount: number) {
 export const UNCOLORED_ROW = '#999'
 
 /**
- * Each source and the color its marks paint in, for the model and
- * `wiggleTables` alike: its row color while row colors paint the marks, else
- * none, the plot's own. Where the palette deals a shared panel and some row
- * took a color, a row left without one paints `UNCOLORED_ROW`.
+ * Each source as it is drawn, for the model and `wiggleTables` alike: the
+ * label it is named by, and the color its marks paint in, its row color while
+ * row colors paint the marks, else none, the plot's own. Where the palette
+ * deals a shared panel and some row took a color, a row left without one
+ * paints `UNCOLORED_ROW`.
  */
 export function wiggleMarkSources(
-  sources: readonly { name: string; rowColor?: string }[],
+  sources: readonly { name: string; label?: string; rowColor?: string }[],
   {
     rowColorPaintsMarks,
     paletteDeals,
@@ -142,10 +143,11 @@ export function wiggleMarkSources(
     paletteDeals: boolean
     anyRowColored: boolean
   },
-): { name: string; color?: string }[] {
+): { name: string; label?: string; color?: string }[] {
   const uncolored = paletteDeals && anyRowColored ? UNCOLORED_ROW : undefined
   return sources.map(s => ({
     name: s.name,
+    label: s.label,
     color: (rowColorPaintsMarks ? s.rowColor : undefined) ?? uncolored,
   }))
 }
