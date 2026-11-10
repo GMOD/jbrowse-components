@@ -895,6 +895,7 @@ Load the SyRI classification of the differences between assembled genomes, so ea
 Page: https://jbrowse.org/jb2/docs/tutorials/syri_synteny/
 
 - https://jbrowse.org/code/jb2/main/test_data/syri/config.json
+- https://jbrowse.org/demos/arabidopsis_pangenome/config.json
 
 ## Synteny from a Cactus alignment (T2T apes)
 
