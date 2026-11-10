@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target, the largest per-display allocation, was kept for read-connection arcs that no longer need it. The per-display sample count is built and synteny and dotplot run at 1; the coverage band, read arrow tips and Hi-C/LD diamonds still lean on it.
+description: The 4x MSAA target, the largest per-display allocation, was kept for read-connection arcs that no longer need it. The per-display sample count is built and synteny, dotplot and alignments run at 1, read ends inking their own coverage; the coverage band and Hi-C/LD diamonds still lean on it.
 ---
 
 # Antialiasing arcs without MSAA
@@ -282,10 +282,10 @@ four.
 - `wiggle.slang` — the bar's vertical cuts, in the list above. Its
   small-point square inks its box by area since 2026-10-30, through the
   kernel `pointMark` uses.
-- `read.slang`, `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`,
-  `gap.slang`, `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang`
-  — flat fills with **no** pixel snap. Read ends are pointed, so those quads
-  have diagonal silhouettes.
+- `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`, `gap.slang`,
+  `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang` — flat
+  fills with **no** pixel snap. `read.slang` was one, and inks its own x
+  coverage since 2026-11-10 (§4, "Read ends").
 - `hic.slang`, `ldGenomic.slang`, `ldUniform.slang` — cells laid out on a
   45°-rotated grid (`diagonalGrid.slang`). **Every visible edge is a diagonal.**
 - The ones this list had never reached, all flat fills of an unpadded quad, all
@@ -703,10 +703,14 @@ tree:
     the only fix is the one-primitive-per-stack rewrite §5 describes.
     [reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"What the
     coverage band cannot antialias" carries the worked composites.
-- **Read ends.** `read.slang`'s pointed terminus is a triangle, and
-  plugin-features' `chevronStroke.slang` measures the same slanted edges in px
-  with the pad already on them. Requires a varying, since the slope is
-  per-instance.
+- **Read ends. Done 2026-11-10.** At one sample a read's fractional ends
+  drew whole or not at all, so a sub-pixel gap between two reads in a row was
+  a white column or nothing, where v4.3.0's `fillRect` gave a light tint.
+  `read.slang`'s body now pads each uncapped end one output pixel and inks
+  `edgeCoverage(start) - edgeCoverage(past end)` in CSS px; the chevron cap,
+  unpadded, ramps its slanted edges inside the ink, a half device px blunter
+  at the apex than a padded cap would be. Two reads abutting at a fractional
+  px now leave a faint seam, as `fillRect` did in v4.
 - **The strand arrowhead.** `arrow.slang`, same treatment, smallest of the three.
 
 Two constraints from this repo. The distance must be computed in **screen px
@@ -812,8 +816,7 @@ Concretely, in the order to take it:
 - **Wiggle stays at four, by choice.** Its bars' vertical cuts and density's
   edges go hard at one sample (`wiggle-xyplot-bars`, `wiggle-density`) for
   ~8 MiB a single-row track at dpr 2, which is not worth the edges.
-- Read arrow tips are a follow-up either way. They are silhouette-only, they
-  are small, and a look at the 10x pileup crop will say whether anyone minds.
+- Read ends and arrow tips ink their own coverage (§4, "Read ends").
 - **Option 2 is no longer a change at all** — it is the `sampleCount = 4`
   default in `createRenderingBackend`, and moving it inverts which displays have
   to opt in. Don't, until a Hi-C track has been looked at.

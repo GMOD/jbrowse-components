@@ -6,6 +6,7 @@
 //! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERTED, RC_SPLIT_SAME_STRAND, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX, READ_PACK_ROW_SHIFT, READ_PACK_ROW_BITS, READ_PACK_CATEGORY_SHIFT, READ_PACK_CATEGORY_BITS, READ_PACK_STRAND_SHIFT, READ_PACK_STRAND_BITS, READ_PACK_EDGE_SHIFT, READ_PACK_EDGE_BITS, READ_PACK_INTERCHROM_SHIFT, READ_PACK_FLAGS_SHIFT, READ_PACK_FLAGS_MASK
 
 import alignmentsUniforms;
+import antialias;
 import colorPack;
 import hpmath;
 import readChevron;
@@ -156,6 +157,8 @@ uint bitField(uint word, uint shift, uint bits) {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  // Body: x is CSS px from the read's start edge (negative in the pad), y the
+  // row-local 0..1. Cap: CSS px to each slanted edge.
   float2 localPos : COLOR1;
   // On-screen width of this read in CSS px, for the outline's inset and its
   // width gate. The height half of this used to ride along and was `u.featHeight`
@@ -267,13 +270,20 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float ef = 0.0;
 
   if (v < 6u) {
-    float2 q = quadLocal(v);
-    lx = q.x;
-    ly = q.y;
-    sx = lerp(sx1, sx2, lx);
-    sy = lerp(syBot, syTop, ly);
     if (drawFwd)      { ef = 1.0; }
     else if (drawRev) { ef = -1.0; }
+    // A read's ends sit at fractional px and the display draws at one sample,
+    // so the fragment inks its own x coverage. Each antialiased end grows a
+    // full output pixel, the ramp's last inked centre plus its half; the end a
+    // chevron caps stays hard, flush against the cap.
+    float padPx = aaPx(u.devicePixelRatio);
+    float padStart = drawRev ? 0.0 : padPx;
+    float padEnd = drawFwd ? 0.0 : padPx;
+    float2 q = quadLocal(v);
+    lx = lerp(-padStart, featWPx + padEnd, q.x);
+    ly = q.y;
+    sx = sx1 + pxToClipLen(lx, u.canvasW);
+    sy = lerp(syBot, syTop, ly);
   } else if (drawFwd || drawRev) {
     ef = 2.0;
     // `localPos` on a cap vertex is its distance to each slanted edge: a corner
@@ -304,25 +314,29 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  if (u.showStroke == 1) {
-    float edgeDist;
-    if (fragIn.edgeFlag > 1.5) {
-      // chevron tip — distance to the two diagonal edges
-      edgeDist = min(fragIn.localPos.x, fragIn.localPos.y);
-    } else {
-      // Whichever side the chevron joins on hands its outline to the cap.
-      float dxL = fragIn.localPos.x * fragIn.featWPx;
-      float dxR = (1.0 - fragIn.localPos.x) * fragIn.featWPx;
-      if (fragIn.edgeFlag > 0.5)  { dxR = 999.0; }
-      if (fragIn.edgeFlag < -0.5) { dxL = 999.0; }
-      float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * u.featHeight;
-      edgeDist = min(min(dxL, dxR), dy);
-    }
-    // No height gate: `u.showStroke` already carries it, frame-level.
-    if (edgeDist < READ_OUTLINE_PX
-        && fragIn.featWPx > READ_OUTLINE_MIN_WIDTH_PX) {
-      return float4(fragIn.color.rgb * READ_OUTLINE_SHADE, fragIn.color.a);
-    }
+  float dpr = u.devicePixelRatio;
+  float edgeDist;
+  float coverage;
+  if (fragIn.edgeFlag > 1.5) {
+    // The cap is not padded, so its slanted edges ramp inside the ink.
+    edgeDist = min(fragIn.localPos.x, fragIn.localPos.y);
+    coverage = edgeCoverage(edgeDist - aaHalfPx(dpr), dpr);
+  } else {
+    // Whichever side the chevron joins on hands its outline to the cap.
+    float dxL = fragIn.localPos.x;
+    float dxR = fragIn.featWPx - fragIn.localPos.x;
+    if (fragIn.edgeFlag > 0.5)  { dxR = 999.0; }
+    if (fragIn.edgeFlag < -0.5) { dxL = 999.0; }
+    float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * u.featHeight;
+    edgeDist = min(min(dxL, dxR), dy);
+    coverage = edgeCoverage(dxL, dpr) - edgeCoverage(-dxR, dpr);
   }
-  return fragIn.color;
+  // No height gate: `u.showStroke` already carries it, frame-level.
+  bool outlined = u.showStroke == 1
+      && edgeDist < READ_OUTLINE_PX
+      && fragIn.featWPx > READ_OUTLINE_MIN_WIDTH_PX;
+  float3 rgb = outlined
+      ? fragIn.color.rgb * READ_OUTLINE_SHADE
+      : fragIn.color.rgb;
+  return float4(rgb, fragIn.color.a * coverage);
 }
