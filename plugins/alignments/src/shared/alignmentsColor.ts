@@ -1,3 +1,4 @@
+import { PAIR_DIRECTION_NUM } from '@jbrowse/alignments-core'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
@@ -23,9 +24,11 @@ import {
   isModificationLayerField,
 } from './colorFieldDefs.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
+import { ABNORMAL_ORIENTATION, INSERT_CLASS } from './pairCategory.ts'
 import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
+  PAIR_ORIENTATION_LEVELS,
 } from './readFieldLevels.ts'
 import {
   BASE_COLOR_FIELDS,
@@ -200,27 +203,18 @@ export function isBakedField(colorField: string | undefined) {
 
 type ReadColorLevel = readonly [value: string, category: ReadColorCategory]
 
-const INSERT_SIZE_CATEGORY = {
-  short: 'shortInsert',
-  normal: 'normalInsert',
-  long: 'longInsert',
-} as const satisfies Record<
-  (typeof INSERT_SIZE_LEVELS)[number],
-  ReadColorCategory
->
-
 const INSERT_SIZE_COLOR_LEVELS: readonly ReadColorLevel[] =
-  INSERT_SIZE_LEVELS.map(value => [value, INSERT_SIZE_CATEGORY[value]])
+  INSERT_SIZE_LEVELS.map(value => [value, INSERT_CLASS[value]])
 
 // an LR pair takes its insert class, so only the abnormal orientations are
 // levels of their own
-const PAIR_COLOR_LEVELS: readonly ReadColorLevel[] = [
-  ['RL', 'pairRL'],
-  ['RR', 'pairRR'],
-  ['LL', 'pairLL'],
-]
+const PAIR_COLOR_LEVELS: readonly ReadColorLevel[] =
+  PAIR_ORIENTATION_LEVELS.flatMap(direction => {
+    const category = ABNORMAL_ORIENTATION[PAIR_DIRECTION_NUM[direction]]
+    return category ? [[direction, category]] : []
+  })
 
-const STRAND_LEVELS: readonly ReadColorLevel[] = [
+const STRAND_COLOR_LEVELS: readonly ReadColorLevel[] = [
   ['1', 'fwdStrand'],
   ['-1', 'revStrand'],
 ]
@@ -250,8 +244,8 @@ const CHAIN_LEVELS: readonly ReadColorLevel[] = [
 const READ_COLOR_LEVELS: Record<ReadColorFieldKind, readonly ReadColorLevel[]> =
   {
     normal: [],
-    strand: STRAND_LEVELS,
-    firstOfPairStrand: STRAND_LEVELS,
+    strand: STRAND_COLOR_LEVELS,
+    firstOfPairStrand: STRAND_COLOR_LEVELS,
     insertSizeAndOrientation: [
       ...INSERT_SIZE_COLOR_LEVELS,
       ...PAIR_COLOR_LEVELS,

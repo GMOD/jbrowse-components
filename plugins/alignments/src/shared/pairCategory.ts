@@ -31,13 +31,13 @@ export function pairCategory(
   )
 }
 
-const ABNORMAL_ORIENTATION: Record<number, ReadColorCategory> = {
+export const ABNORMAL_ORIENTATION: Record<number, ReadColorCategory> = {
   2: 'pairRL',
   3: 'pairRR',
   4: 'pairLL',
 }
 
-const INSERT_CLASS: Record<
+export const INSERT_CLASS: Record<
   ReturnType<typeof classifyInsertSize>,
   ReadColorCategory
 > = {
