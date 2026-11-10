@@ -858,6 +858,19 @@ test('a scheme on an ordinal color samples a listed domain, and warns with none'
   ])
 })
 
+test("a domain naming a value outside strand's levels warns", () => {
+  const colored = (domain: string[]) => [
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'strand', scale: { domain } } },
+    },
+  ]
+  expect(found(colored(['1', '-1']))).toEqual([])
+  expect(found(colored(['+', '-']))).toEqual([
+    'warning domain-levels mark 0 encoding.color.scale.domain',
+  ])
+})
+
 test('names name the domain values of a shape, and a constant shape names none', () => {
   const shaped = (shape: unknown) => [
     { mark: 'point', encoding: { y: 'score', shape } },
