@@ -12,6 +12,7 @@ import {
 } from './rowAnnotationConfigSchema.ts'
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const Display = ConfigurationSchema(
@@ -21,7 +22,8 @@ const Display = ConfigurationSchema(
 )
 
 function annotationsOf(conf: Instance<typeof Display>) {
-  return conf.rows.annotations.map(annotation => ({
+  const annotations: AnyConfigurationModel[] = conf.rows.annotations
+  return annotations.map(annotation => ({
     field: readConfObject(annotation, 'field'),
     domain: readConfObject(annotation, ['scale', 'domain']),
     range: readConfObject(annotation, ['scale', 'range']),
