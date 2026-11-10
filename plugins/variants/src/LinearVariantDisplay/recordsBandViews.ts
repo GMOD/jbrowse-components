@@ -38,7 +38,7 @@ import { resolveSampleName } from '../shared/getSources.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { paintFeatureColors } from './paintCells.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
-import { countRecordCarriers } from './recordCarriers.ts'
+import { recordCarrierCounter } from './recordCarriers.ts'
 import {
   RECORD_LABEL_LINE,
   labelsReadByWorker,
@@ -60,7 +60,7 @@ import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { ProcessedSource } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { KeyedVariants } from './keyedVariants.ts'
-import type { RecordCarriers } from './recordCarriers.ts'
+import type { RecordCarrierCounter } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Band } from '@jbrowse/core/util/bandLayout'
@@ -431,14 +431,15 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
-     * Each record's carriers among `recordCarrierSamples`, once per
-     * payload and row set; none with no rows to carry it.
+     * A record's carriers among `recordCarrierSamples`, counted when a
+     * drawn label or a hover first asks and held per payload and row set;
+     * undefined with no rows to carry it.
      */
-    get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
+    get recordCarriersOf(): RecordCarrierCounter | undefined {
       const { cellData } = self
       return cellData && self.showRecords && self.drawsGenotypeRows
-        ? countRecordCarriers(cellData, this.recordCarrierSamples)
-        : new Map<string, RecordCarriers>()
+        ? recordCarrierCounter(cellData, this.recordCarrierSamples)
+        : undefined
     },
     /**
      * #getter
@@ -595,7 +596,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
         const { jexl } = getEnv(self).pluginManager
         const { displayedRegions } = self.view
         const featureColors = self.regionRecordColors
-        const carriers = this.recordCarriers
+        const carriersOf = this.recordCarriersOf
         for (const k in cellData.perRegionCellData) {
           const displayedRegionIndex = Number(k)
           const data = cellData.perRegionCellData[k]!
@@ -610,7 +611,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
                 },
                 region,
                 labels: recordLabels,
-                carriers,
+                carriersOf,
                 config,
                 jexl,
               }),

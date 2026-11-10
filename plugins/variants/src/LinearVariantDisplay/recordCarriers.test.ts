@@ -1,3 +1,5 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import {
   cellDataOf,
   cellPayloadOf,
@@ -8,9 +10,16 @@ import { getTooltipRows } from './components/getTooltipRows.ts'
 import {
   carrierPercent,
   carrierSummary,
-  countRecordCarriers,
+  recordCarrierCounter,
 } from './recordCarriers.ts'
+import {
+  RECORD_LABEL_LINE,
+  buildRecordsRenderData,
+  recordsDisplayConfig,
+} from './recordsRenderData.ts'
 import { createTestEnvironment } from './testEnv.ts'
+
+import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 
 const SAMPLES = ['S0', 'S1', 'S2', 'S3']
 // S0 carries on both haplotypes, S1 on one, S2 is reference, S3 a no-call
@@ -51,27 +60,34 @@ function cellData(
   })
 }
 
+function countOf(data: CellDataResult) {
+  return recordCarrierCounter(
+    data,
+    SAMPLES,
+  )(data.perRegionCellData[0]!.featureInfo[0]!)
+}
+
 test('a sample counts once, whatever it carries, and a no-call still counts', () => {
-  expect(
-    countRecordCarriers(cellData([1, 2, 3, 4]), SAMPLES).get('sv1'),
-  ).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
+  expect(countOf(cellData([1, 2, 3, 4]))).toEqual({
+    carriers: 2,
+    nonCarriers: 1,
+    noCall: 1,
+  })
 })
 
 // An un-decomposed site: ALT1 a 2 bp change, ALT2 the deletion that makes
 // the record an SV. Calling ALT1 alone does not carry the deletion.
 test('only the structural alleles carry a multi-allelic SV record', () => {
-  const counted = countRecordCarriers(
+  const counted = countOf(
     cellData([2, 5, 3, 4], 'DEL', ['TT', '<DEL>'], [false, true]),
-    SAMPLES,
-  ).get('sv1')
+  )
   expect(counted).toEqual({ carriers: 1, nonCarriers: 2, noCall: 1 })
 })
 
 test('any called ALT carries a record with no SV class', () => {
-  const counted = countRecordCarriers(
+  const counted = countOf(
     cellData([2, 5, 3, 4], '', ['T', 'G'], [false, false]),
-    SAMPLES,
-  ).get('sv1')
+  )
   expect(counted).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
 })
 
@@ -86,6 +102,36 @@ test('the share is of every shown sample, no-calls included', () => {
   expect(carrierPercent({ carriers: 0, nonCarriers: 3202, noCall: 0 })).toBe(
     '0%',
   )
+  expect(carrierPercent({ carriers: 3201, nonCarriers: 1, noCall: 0 })).toBe(
+    '>99%',
+  )
+  expect(carrierPercent({ carriers: 3202, nonCarriers: 0, noCall: 0 })).toBe(
+    '100%',
+  )
+})
+
+// The count walks every sample, so a record whose label draws no text, past
+// the label density or with both kinds hidden, is never counted.
+test.each([
+  [{ name: 'name', description: '' }, 1],
+  [{ name: '', description: '' }, 0],
+])('a record is counted only for a label with text: %j', (labels, counts) => {
+  const data = cellData([1, 2, 3, 4]).perRegionCellData[0]!
+  const carriersOf = jest.fn(recordCarrierCounter(cellData([]), SAMPLES))
+  buildRecordsRenderData({
+    data: { ...data, featureColors: new Uint32Array(1) },
+    region: { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+    labels,
+    carriersOf,
+    config: recordsDisplayConfig({
+      featureHeight: 6,
+      labels: RECORD_LABEL_LINE,
+      tooltip: '',
+      faceted: false,
+    }),
+    jexl: createJexlInstance(),
+  })
+  expect(carriersOf).toHaveBeenCalledTimes(counts)
 })
 
 test('the tooltip breaks the samples down', () => {
@@ -139,7 +185,9 @@ test('haplotype rows count their sample once', () => {
   display.setCellData(cellData([1, 2, 3, 4]), [0])
   expect(display.sources.length).toBe(8)
   expect(display.recordCarrierSamples).toEqual(SAMPLES)
-  expect(display.recordCarriers.get('sv1')).toEqual({
+  expect(
+    display.recordCarriersOf?.(display.featureInfoById('sv1')!),
+  ).toEqual({
     carriers: 2,
     nonCarriers: 1,
     noCall: 1,
@@ -148,9 +196,9 @@ test('haplotype rows count their sample once', () => {
 
 test('a reorder recounts nothing', () => {
   const display = recordsDisplay()
-  const counted = display.recordCarriers
+  const counted = display.recordCarriersOf
   const samples = display.recordCarrierSamples
   display.setRowOrder([...SAMPLES].reverse().map(name => ({ name })))
   expect(display.recordCarrierSamples).toBe(samples)
-  expect(display.recordCarriers).toBe(counted)
+  expect(display.recordCarriersOf).toBe(counted)
 })

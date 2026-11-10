@@ -55,7 +55,7 @@ function getHoveredRecord(
           line: result.feature.tooltip,
           featureId: result.feature.featureId,
           displayedRegionIndex: result.displayedRegionIndex,
-          carriers: model.recordCarriers.get(result.feature.featureId),
+          carriers: model.recordCarriersOf?.(info),
           pileSize: result.feature.pileSize,
         }),
         hit: result,

@@ -13,7 +13,7 @@ import { carrierPercent } from './recordCarriers.ts'
 
 import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { VariantFeatureInfo } from '../shared/types.ts'
-import type { RecordCarriers } from './recordCarriers.ts'
+import type { RecordCarrierCounter } from './recordCarriers.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type {
@@ -168,14 +168,15 @@ export function buildRecordsRenderData({
   data,
   region,
   labels,
-  carriers,
+  carriersOf,
   config,
   jexl,
 }: {
   data: RecordsSourceData
   region: RecordsRegion
   labels: RecordsLabels
-  carriers: ReadonlyMap<string, RecordCarriers>
+  /** Asked only for a record whose label has text for the share to follow. */
+  carriersOf: RecordCarrierCounter | undefined
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
@@ -201,9 +202,8 @@ export function buildRecordsRenderData({
     // it and written back before anything else sees it
     const feature = new SimpleFeature(record)
     const text = label(feature)
-    const counted = carriers.get(info.featureId)
-    const percent = counted ? carrierPercent(counted) : ''
-    record.recordLabel = text && percent ? `${text} ${percent}` : text
+    const percent = text && carriersOf ? carrierPercent(carriersOf(info)) : ''
+    record.recordLabel = percent ? `${text} ${percent}` : text
     return feature
   }
   // the packer places by bp, so this orders only the paint and the pick: an
