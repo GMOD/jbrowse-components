@@ -1,6 +1,6 @@
 ---
 name: view-owned-synthetic-assemblies
-description: A comparative view's synthetic assembly (read-vs-ref, multi-way lanes) lives in `session.temporaryAssemblies`, a list that outlives its one owner. Three ways of moving it onto the owner were tried and each broke something; the call is whether to build the fourth, which keeps the list and derives only the removal.
+description: A comparative view's synthetic assembly lives in `session.temporaryAssemblies`, a list that outlives its owner. Three ways of moving it onto the owner each broke something. Parked 2026-11-09 with no open bug; the untried fourth keeps the list and derives only the removal.
 ---
 
 # View-owned synthetic assemblies
@@ -85,7 +85,10 @@ plugin's own `addTemporaryAssembly` entry is not in the set and is left alone.
 
 ## What still needs an answer
 
-- Whether that is worth building. It removes the release hooks, the lane
+- Colin parked this on 2026-11-09: it is a cleanup with no user-visible bug
+  behind it, and read-vs-ref stays. Pick it up when the lifetime code bites,
+  and put the design in front of an adversarial reviewer before writing it.
+- What it buys: it removes the release hooks, the lane
   refcount and the detach/destroy ordering trap, and adds one autorun and
   one persisted set. No user-visible bug is open against today's code.
 - The walk for declared names runs in a reaction, not in a lookup, so the
