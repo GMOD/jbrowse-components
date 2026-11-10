@@ -285,11 +285,11 @@ CN = 2 * depth over the element / depth over the sequence around it
 
 The flanking sequence should come back at two copies in every dog, which checks
 the ratio. For a locus of your own, this takes the two files above and the
-coordinates where the flanks end, and writes the BED the track below reads, one
-row per run of equal copy number per animal:
+coordinates where the flanks end (`38245000` and `38275000` here), and writes
+the BED the track below reads, one row per run of equal copy number per animal:
 
 ```python
-# python3 depth_to_cn.py chr30 FLANK_LEFT_END FLANK_RIGHT_START > cn.bed
+# python3 depth_to_cn.py chr30 FLANK_LEFT_END FLANK_RIGHT_START > cohort_cn.bed
 import statistics, sys
 
 chrom, left, right = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
@@ -329,6 +329,14 @@ for i, sample in enumerate(samples):
                 run = [start, start + STEP, cn]
     if run:
         emit(sample, *run)
+```
+
+The rows come out grouped by animal, so sort them by position before the `bgzip`
+and `tabix`:
+
+```bash
+sort -k1,1 -k2,2n cohort_cn.bed | bgzip > dog10k_cyp1a2_cohort_cn.bed.gz
+tabix -C -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 ```
 
 The callset records depth only where a variant was called, so the build script
