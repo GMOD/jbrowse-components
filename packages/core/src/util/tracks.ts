@@ -190,14 +190,8 @@ export function isSameAssemblyName(
  * A track built on `createBaseTrackConfig` carries `assemblyNames`.
  * `ReferenceSequenceTrack` does not — its schema omits the slot deliberately
  * (see `createReferenceSeqTrackConfig`), because the assembly config holding it
- * IS its assembly, so the name is read off the parent instead.
- *
- * That makes a sequence track's assembly **positional**, so a copy of one that
- * is not inside its assembly cannot answer at all — and a detached config is
- * what every hydration path produces (`hydrateTrackConfig`, and the working
- * copy a non-admin's edits would go to, ADR-032). `hasParent` is the guard:
- * without it the walk raises MST's "Failed to find the parent" from a helper
- * whose other two failure modes are a plain `undefined`.
+ * IS its assembly, so the name is read off that assembly instead
+ * ({@link getSequenceAssemblyConf}).
  *
  * A frozen {@link TrackConfigEntry} omits a slot at its default, so one
  * without `assemblyNames` names the slot's default, `[]`.
@@ -209,14 +203,39 @@ function confAssemblyNames(conf: AnyConfiguration) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]
     | undefined
-  if (trackAssemblyNames) {
-    return trackAssemblyNames
-  }
-  if (!hasParent(conf)) {
-    return undefined
-  }
-  const parent = getParent<BaseAssemblyConfigModel>(conf)
-  return 'sequence' in parent ? [readConfObject(parent, 'name')] : undefined
+  const assembly = trackAssemblyNames
+    ? undefined
+    : getSequenceAssemblyConf(conf)
+  return (
+    trackAssemblyNames ??
+    (assembly ? [readConfObject(assembly, 'name')] : undefined)
+  )
+}
+
+/**
+ * The assembly config whose `sequence` a `ReferenceSequenceTrack` config is,
+ * and undefined for every other track.
+ *
+ * The config is either the assembly's own child or, in a session that keeps
+ * track edits, a detached working copy of it (`withSequenceEdits`, ADR-032),
+ * which only its trackId ties back to the assembly.
+ */
+export function getSequenceAssemblyConf(conf: AnyConfigurationModel) {
+  const parent = hasParent(conf)
+    ? getParent<BaseAssemblyConfigModel>(conf)
+    : undefined
+  return parent?.sequence === conf
+    ? parent
+    : conf.type === 'ReferenceSequenceTrack'
+      ? assemblyBySequenceId(conf)
+      : undefined
+}
+
+function assemblyBySequenceId(conf: AnyConfigurationModel) {
+  const { rootModel } = getEnv(conf).pluginManager
+  return rootModel?.session?.assemblyManager.assemblyList.find(
+    a => a.sequence.trackId === conf.trackId,
+  )
 }
 
 export function getConfAssemblyNames(conf: AnyConfiguration) {
@@ -778,7 +797,9 @@ export function getTrackName(
     ? (readConfObject(conf, 'name') as string)
     : ((conf.name as string | undefined) ?? '')
   if (!trackName && conf.type === 'ReferenceSequenceTrack') {
-    const asm = session.assemblies.find(a => a.sequence === conf)
+    const asm = session.assemblies.find(
+      a => a.sequence.trackId === conf.trackId,
+    )
     return asm
       ? `Reference sequence (${
           readConfObject(asm, 'displayName') || readConfObject(asm, 'name')

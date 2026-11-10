@@ -5,8 +5,8 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { readConfObject } from '@jbrowse/core/configuration'
 import { CopyToClipboardButton } from '@jbrowse/core/ui'
 import { withAbsoluteLocations } from '@jbrowse/core/util/addRelativeUris'
+import { getSequenceAssemblyConf } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -14,7 +14,6 @@ import RefNameAliasesDialog from './RefNameAliasesDialog.tsx'
 
 import type { AboutPanelProps } from './util.ts'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // `Attributes` omits these at every depth, which is what reaches the two that
@@ -39,22 +38,6 @@ const useStyles = makeStyles()(theme => ({
     gap: theme.spacing(1),
   },
 }))
-
-/**
- * The assembly config a `ReferenceSequenceTrack` config hangs off, and
- * undefined for every other track.
- *
- * A reference sequence track declares no `assemblyNames` slot — the config node
- * holding it *is* its assembly, the same walk `getConfAssemblyNames` makes.
- * Compared by identity against that node's `sequence`, so the card is the
- * assembly of the track the dialog is already showing.
- */
-function getAssemblyConf(config: AnyConfigurationModel) {
-  const parent = hasParent(config)
-    ? getParent<BaseAssemblyConfigModel>(config)
-    : undefined
-  return parent?.sequence === config ? parent : undefined
-}
 
 const AssemblyCard = observer(function AssemblyCard({
   assemblyConf,
@@ -111,7 +94,7 @@ const AssemblyInfoPanel = observer(function AssemblyInfoPanel({
   session,
   hideUris,
 }: AboutPanelProps & { hideUris?: boolean }) {
-  const assemblyConf = getAssemblyConf(config)
+  const assemblyConf = getSequenceAssemblyConf(config)
 
   return assemblyConf ? (
     <AssemblyCard
