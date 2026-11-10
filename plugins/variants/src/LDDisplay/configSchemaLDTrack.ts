@@ -116,7 +116,9 @@ export default function ldTrackDisplayConfigSchema() {
         {
           /**
            * #slot labels.name
-           * Each variant's name, above its tick mark.
+           * Each variant's name, above its tick mark. No `field`: an LD SNP
+           * carries only the id its file names, its position and its MAF, so
+           * the id is the one text there is to draw.
            */
           name: ConfigurationSchema(
             'LDNameLabel',

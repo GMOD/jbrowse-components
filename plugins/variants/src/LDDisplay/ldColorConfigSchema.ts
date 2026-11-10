@@ -43,7 +43,9 @@ export const LD_COLOR_SCALES = ['linear', 'threshold'] as const
  * `range` color instead, so the triangle can take the bins a GWAS track's LD
  * coloring uses. The slots are the shared color channel's, so
  * `jbrowse validate` and "Edit plot..." judge them as they judge any other
- * display's. A string is the field.
+ * display's. A string is the field. There is no `value`: every cell paints
+ * its statistic through `MatrixRampMixin`'s ramp, which has no constant
+ * color.
  *
  * #example
  * ```js
@@ -65,7 +67,7 @@ export const LD_COLOR_SCALES = ['linear', 'threshold'] as const
  *       field: 'r2',
  *       scale: {
  *         type: 'threshold',
- *         domain: ['0.2', '0.4', '0.6', '0.8'],
+ *         domain: [0.2, 0.4, 0.6, 0.8],
  *         range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
  *       },
  *       legend: { descending: true },
@@ -93,7 +95,9 @@ export const ldColorConfigSchema = ConfigurationSchema(
     /**
      * #slot scale
      * The ramp the statistic runs along, or the intervals it is cut into,
-     * Vega-Lite's scale object.
+     * Vega-Lite's scale object. `range` colors a threshold's intervals only:
+     * `MatrixRampMixin` builds the ramp from `scheme` and `reverse` alone
+     * (Colin, 2026-10-30).
      */
     scale: ConfigurationSchema(
       'LDColorScale',

@@ -162,7 +162,8 @@ export const wiggleColorSchema = ConfigurationSchema(
     ),
     /**
      * #slot legend
-     * The key this channel draws.
+     * The key this channel draws. No `descending`: wiggle builds its own
+     * threshold key around its cuts (Colin, 2026-10-30).
      */
     legend: ConfigurationSchema(
       'WiggleColorLegend',

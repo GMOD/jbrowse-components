@@ -47,8 +47,11 @@ between displays.
 - The last respell is `encoding.y.scale.group` to `share` (3cc17821fb,
   2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
   no writer outside the tree spelled it, and ggjbrowse's engine pin includes
-  it. No shared path changed from 11-08 through 11-09, v5.0.0-beta.21
-  included.
+  it. No shared path was respelled from 11-08 through 11-09, v5.0.0-beta.21
+  included, but one was added: `rows.annotations` on the shared row
+  arrangement (946afc33db, regenerated into six displays' slots by
+  925e55d750). The first gate below needs a ruling on whether an addition
+  counts as a shared-path change.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
@@ -108,8 +111,8 @@ between displays.
      checkout waits on a plugin asking for it; none runs it today.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
-   or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
-   direction).
+   the 2026-10-30 taste calls among them (ChordColor's `scale`, HicColor's
+   and LDColor's `scale`, WiggleColor's `legend`).
 
 ## Release candidate gates
 

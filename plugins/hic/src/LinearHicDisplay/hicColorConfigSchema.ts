@@ -88,7 +88,9 @@ export const HIC_FIELD_PRESETS = {
  *   observed/expected.
  *
  * The slots are the shared color channel's, so `jbrowse validate` and "Edit
- * plot..." judge them as they judge any other display's.
+ * plot..." judge them as they judge any other display's. There is no `value`:
+ * every bin paints its field through `MatrixRampMixin`'s ramp, which has no
+ * constant color.
  *
  * #example
  * ```js
@@ -115,7 +117,9 @@ export const hicColorConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot scale
-     * How a bin's value maps to a color, Vega-Lite's scale object.
+     * How a bin's value maps to a color, Vega-Lite's scale object. No
+     * `range`: `MatrixRampMixin` builds the ramp from `scheme` and `reverse`
+     * alone (Colin, 2026-10-30).
      */
     scale: ConfigurationSchema(
       'HicColorScale',
