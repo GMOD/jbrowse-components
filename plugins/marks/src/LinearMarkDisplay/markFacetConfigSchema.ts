@@ -19,7 +19,7 @@ import { markTransformStep } from './markTransformConfigSchema.ts'
  * ```js
  * {
  *   type: 'LinearMarkDisplay',
- *   facet: { field: 'HP', transform: [{ type: 'pileup' }] },
+ *   facet: { field: 'tags.HP',transform: [{ type: 'pileup' }] },
  *   marks: [{ mark: 'rect' }],
  * }
  * ```
