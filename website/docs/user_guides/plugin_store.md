@@ -88,10 +88,10 @@ Desktop has two routes:
 - **Tools → Plugin store** inside a session works as in
   [JBrowse Web](#the-plugin-store). **How long it lasts:** as long as that
   session file; other sessions don't load it.
-- **Global plugins...**, in the start screen's menu, installs a plugin for every
-  session on this machine, from the next session you open.
+- **Global plugins...**, in the start screen's Tools menu, installs a plugin for
+  every session on this machine, from the next session you open.
 
-<Figure caption="Global plugins from the start screen menu (1) opens the dialog, whose Add custom plugin (2) takes a UMD build's name and URL (3) or, under Advanced options, an ESM build's URL (4)." src="/img/desktop-global-plugins-steps.png" />
+<Figure caption="Global plugins from the start screen's Tools menu (1) opens the dialog, whose Add custom plugin (2) takes a UMD build's name and URL (3) or, under Advanced options, an ESM build's URL (4)." src="/img/desktop-global-plugins-steps.png" />
 
 The dialog lists the store's plugins under **Available plugins**, each with an
 **Install** button. If a plugin crashes on load, switch it off there to keep it

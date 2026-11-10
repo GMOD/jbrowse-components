@@ -226,7 +226,7 @@ const GlobalPluginsDialog = observer(function GlobalPluginsDialog({
             on load can be switched off here — which keeps it installed, so it
             can be switched back on — or removed outright; and the whole list
             can be skipped for one launch with &quot;Reload without global
-            plugins&quot; in the start screen menu.
+            plugins&quot; in the start screen&apos;s Tools menu.
           </Typography>
           {loadError && !plugins ? <ErrorMessage error={loadError} /> : null}
           {saveError ? <ErrorMessage error={saveError} /> : null}

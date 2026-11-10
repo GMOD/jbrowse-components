@@ -505,7 +505,7 @@ plugin before you put there.
 | `Core-replaceAbout` | sync | ComponentSlot | Replace or wrap a track's About dialog body |
 | `Core-replaceWidget` | sync | ComponentSlot | Replace or wrap the component that renders a widget |
 | `Desktop-StartScreenLaunchPanel` | sync | ComponentSlot | Replace or wrap the "Launch new session" panel |
-| `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
+| `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen's Tools menu |
 | `Desktop-StartScreenRecentSessionsPanel` | sync | ComponentSlot | Replace or wrap the recent sessions panel |
 | `DotplotView-OverlayHTMLComponent` | sync | ElementList | Add an HTML overlay component to the dotplot view |
 | `DotplotView-OverlaySVGComponent` | sync | ElementList | Add an SVG overlay component to the dotplot view |
@@ -1459,7 +1459,7 @@ Register it with
 
 type: synchronous
 
-- `args` - `MenuItem[]` - the start screen menu's items
+- `args` - `MenuItem[]` - the items of the start screen's Tools menu
 - `props` - `{ pluginManager, setPluginManager, loadPluginManager }`
 
 Desktop only. The start screen runs before any session exists, so these points

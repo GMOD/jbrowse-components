@@ -9,17 +9,27 @@ import {
   pluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import MenuIcon from '@mui/icons-material/Menu'
-import { Alert, Button, Paper, Typography } from '@mui/material'
+import {
+  Alert,
+  AppBar,
+  Button,
+  Paper,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { invokeIpc } from '../../ipc.ts'
 import { useNotifyError } from '../NotifyContext.ts'
+import SessionLoadingScreen from '../SessionLoadingScreen.tsx'
+import { useUpdateStatus } from '../useUpdateStatus.ts'
 import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
+import StartScreenDialogs from './StartScreenDialogs.tsx'
 import {
   globalPluginReadErrorMessage,
   globalPluginSafeMode,
@@ -30,9 +40,11 @@ import {
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import { compactMedia, narrowMedia } from './narrow.ts'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
+import { StartScreenLaunchContext } from './startScreenLaunch.ts'
 import { createStartScreenPluginManager, loadPluginManager } from './util.tsx'
 
 import type { StartScreenPanelProps } from './startScreenExtensionPoints.ts'
+import type { StartScreenDialog } from './startScreenLaunch.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -49,8 +61,6 @@ const narrowPanel = {
 }
 
 const useStyles = makeStyles()({
-  // the menu button rides in the header row rather than floating over the page,
-  // so a logo scaled down to a narrow window never ends up underneath it
   header: {
     display: 'flex',
     alignItems: 'flex-start',
@@ -60,11 +70,6 @@ const useStyles = makeStyles()({
       alignItems: 'center',
       padding: '8px 30px',
     },
-  },
-
-  headerLogo: {
-    flex: 1,
-    minWidth: 0,
   },
 
   root: {
@@ -141,8 +146,8 @@ const StartScreenPanel = observer(function StartScreenPanel({
         <>
           <Alert severity="error">
             A global plugin failed while rendering this panel. Remove it from
-            the menu&apos;s &quot;Global plugins&quot; dialog, or reload without
-            global plugins.
+            the Tools menu&apos;s &quot;Global plugins&quot; dialog, or reload
+            without global plugins.
           </Alert>
           <Component {...props} />
         </>
@@ -190,6 +195,8 @@ const StartScreen = observer(function StartScreen({
 }) {
   const { classes } = useStyles()
   const [showGlobalPlugins, setShowGlobalPlugins] = useState(false)
+  const [dialog, setDialog] = useState<StartScreenDialog>()
+  const { status, updateStatus } = useUpdateStatus()
   const notifyError = useNotifyError()
   const safeMode = globalPluginSafeMode()
   const suspects = globalPluginSafeModeSuspects()
@@ -233,40 +240,86 @@ const StartScreen = observer(function StartScreen({
   )
   const startScreenPluginManager = data?.pluginManager
   const panelProps = { setPluginManager, loadPluginManager }
+  const launch = (load: () => Promise<PluginManager>) =>
+    updateStatus('Loading session', async () => {
+      setPluginManager(await load())
+    })
+  const loading = Boolean(status)
 
   return (
-    <div>
-      <div className={classes.header}>
-        <div className={classes.headerLogo}>
-          <Logo />
-        </div>
-        <CascadingMenuButton
-          data-testid="start-screen-menu"
-          menuItems={() => [
-            {
-              label: 'Global plugins...',
-              onClick: () => {
-                setShowGlobalPlugins(true)
-              },
-            },
-            safeMode
-              ? {
-                  label: 'Reload with global plugins',
-                  onClick: () => {
-                    reloadWithGlobalPlugins()
-                  },
-                }
-              : {
-                  label: 'Reload without global plugins',
-                  onClick: () => {
-                    reloadInSafeMode()
-                  },
+    <StartScreenLaunchContext value={{ launch, openDialog: setDialog }}>
+      <AppBar position="static" data-testid="start-screen-menu">
+        <Toolbar>
+          <DropDownMenu
+            menuTitle="File"
+            menuItems={[
+              {
+                label: 'Open your own genome...',
+                disabled: loading,
+                onClick: () => {
+                  setDialog('openGenome')
                 },
-            ...pluginMenuItems(startScreenPluginManager, panelProps),
-          ]}
-        >
-          <MenuIcon />
-        </CascadingMenuButton>
+              },
+              {
+                label: 'Browse hosted genomes...',
+                disabled: loading,
+                onClick: () => {
+                  setDialog('hostedGenomes')
+                },
+              },
+              {
+                label: 'Open session file...',
+                disabled: loading,
+                onClick: async () => {
+                  try {
+                    const path = await invokeIpc('promptOpenFile')
+                    if (path) {
+                      await launch(() => loadPluginManager(path))
+                    }
+                  } catch (e) {
+                    console.error(e)
+                    notifyError(e)
+                  }
+                },
+              },
+              {
+                label: 'Open JBrowse Web link...',
+                disabled: loading,
+                onClick: () => {
+                  setDialog('openLink')
+                },
+              },
+            ]}
+          />
+          <DropDownMenu
+            menuTitle="Tools"
+            menuItems={() => [
+              {
+                label: 'Global plugins...',
+                onClick: () => {
+                  setShowGlobalPlugins(true)
+                },
+              },
+              safeMode
+                ? {
+                    label: 'Reload with global plugins',
+                    onClick: () => {
+                      reloadWithGlobalPlugins()
+                    },
+                  }
+                : {
+                    label: 'Reload without global plugins',
+                    onClick: () => {
+                      reloadInSafeMode()
+                    },
+                  },
+              ...pluginMenuItems(startScreenPluginManager, panelProps),
+            ]}
+          />
+        </Toolbar>
+      </AppBar>
+      <div className={classes.header}>
+        <Logo />
       </div>
       {safeMode ? (
         <Alert
@@ -308,26 +361,36 @@ const StartScreen = observer(function StartScreen({
           ) : null}
         </Alert>
       ) : null}
-      <div className={classes.root}>
-        <Paper elevation={3} className={classes.panel}>
-          <Typography variant="h5">Launch new session</Typography>
-          <StartScreenPanel
-            pluginManager={startScreenPluginManager}
-            name="Desktop-StartScreenLaunchPanel"
-            component={LeftSidePanel}
-            props={panelProps}
-          />
-        </Paper>
-        <Paper elevation={3} className={classes.recentPanel}>
-          <Typography variant="h5">Recently opened sessions</Typography>
-          <StartScreenPanel
-            pluginManager={startScreenPluginManager}
-            name="Desktop-StartScreenRecentSessionsPanel"
-            component={RecentSessionPanel}
-            props={panelProps}
-          />
-        </Paper>
-      </div>
+      {status ? (
+        <SessionLoadingScreen message={status} />
+      ) : (
+        <div className={classes.root}>
+          <Paper elevation={3} className={classes.panel}>
+            <Typography variant="h5">Launch new session</Typography>
+            <StartScreenPanel
+              pluginManager={startScreenPluginManager}
+              name="Desktop-StartScreenLaunchPanel"
+              component={LeftSidePanel}
+              props={panelProps}
+            />
+          </Paper>
+          <Paper elevation={3} className={classes.recentPanel}>
+            <Typography variant="h5">Recently opened sessions</Typography>
+            <StartScreenPanel
+              pluginManager={startScreenPluginManager}
+              name="Desktop-StartScreenRecentSessionsPanel"
+              component={RecentSessionPanel}
+              props={panelProps}
+            />
+          </Paper>
+        </div>
+      )}
+      <StartScreenDialogs
+        dialog={dialog}
+        onClose={() => {
+          setDialog(undefined)
+        }}
+      />
       {showGlobalPlugins ? (
         <GlobalPluginsDialog
           onClose={() => {
@@ -338,7 +401,7 @@ const StartScreen = observer(function StartScreen({
           }}
         />
       ) : null}
-    </div>
+    </StartScreenLaunchContext>
   )
 })
 

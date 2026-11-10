@@ -63,9 +63,9 @@ function bullets(items: PhrasingContent[][]) {
 // this file to the same bar as doc prose: a renamed menu item has to fail a
 // build, not sit in a tab nobody re-reads.
 export const DESKTOP_UI_LABELS = {
-  openGenome: 'Open new genome',
+  openGenome: 'Open your own genome',
   openGenomeMenu: 'File → Open genome...',
-  allGenomes: 'Show all available genomes',
+  allGenomes: 'Browse hosted genomes',
   fromUrl: 'Open from a URL',
   openTrack: 'File → Open track...',
   pasteJson: 'Add track from pasted JSON',

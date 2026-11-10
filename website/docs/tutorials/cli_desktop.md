@@ -144,7 +144,7 @@ that JBrowse would otherwise ignore.
 ## Open the CLI-built folder in JBrowse Desktop
 
 Choose **File → Session → Open config.json or .jbrowse file...** in JBrowse
-Desktop (or use the **Open file or link** button on the start screen) and pick
+Desktop (or **File → Open session file...** on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's folder and loads the copied files from local disk, with no web server.
 

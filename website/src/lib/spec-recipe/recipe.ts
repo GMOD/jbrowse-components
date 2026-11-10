@@ -311,7 +311,7 @@ function importFormSteps(
   if (assemblies.length) {
     steps.push({
       title:
-        'Open your genomes: **Open new genome** in JBrowse Desktop, then **File → Open genome...** for each of the rest, or `jbrowse add-assembly` for each in JBrowse Web.',
+        'Open your genomes: **Open your own genome** in JBrowse Desktop, then **File → Open genome...** for each of the rest, or `jbrowse add-assembly` for each in JBrowse Web.',
       example: form.assemblies(assemblies),
     })
   }
@@ -442,7 +442,7 @@ function viewSteps(
     const kind = assembly ? fileKind(assembly.adapterType) : undefined
     steps.push({
       title:
-        'Open your genome: **Open new genome** in JBrowse Desktop, or `jbrowse add-assembly` for JBrowse Web.',
+        'Open your genome: **Open your own genome** in JBrowse Desktop, or `jbrowse add-assembly` for JBrowse Web.',
       example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
     })
   }

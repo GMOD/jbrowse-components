@@ -19,7 +19,7 @@ export interface StartScreenMenuItemsProps extends StartScreenPanelProps {
 // session's.
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    /** #extensionPoint Desktop-StartScreenMenuItems | sync | Add items to the start screen menu */
+    /** #extensionPoint Desktop-StartScreenMenuItems | sync | Add items to the start screen's Tools menu */
     'Desktop-StartScreenMenuItems': {
       args: MenuItem[]
       result: MenuItem[]

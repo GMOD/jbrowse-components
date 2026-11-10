@@ -28,10 +28,10 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 
 <Figure src="/img/desktop-landing.png" caption="The JBrowse Desktop start screen."/>
 
-- **Open new genome** loads a genome from local files or URLs
+- **Open your own genome** loads a genome from local files or URLs
   ([Opening a genome](#opening-a-genome)).
-- **Show all available genomes** launches from a searchable table of public
-  reference genomes.
+- **Browse hosted genomes** launches from a searchable table of public reference
+  genomes.
 - **Favorite genomes** and **Quickstart list** are one-click launchers for
   genomes you have starred or saved.
 - **Recently opened sessions**, on the right, holds saved sessions and
@@ -39,10 +39,10 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 
 ## Opening a genome
 
-**Open new genome** brings up the "Open genome(s)" dialog, and what you give it
-becomes a new session on that assembly.
+**Open your own genome** brings up the "Open genome(s)" dialog, and what you
+give it becomes a new session on that assembly.
 
-<Figure src="/img/desktop-open-genome-steps.png" caption="Open new genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
+<Figure src="/img/desktop-open-genome-steps.png" caption="Open your own genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 
 - Drop the sequence file (FASTA, bgzip-compressed FASTA or 2bit, with any `.fai`
   or `.gzi` beside it) onto the drop area, or click it to browse. **Open from a
@@ -65,12 +65,12 @@ becomes a new session on that assembly.
 
 ### Using a pre-loaded genome
 
-**Show all available genomes** needs no files. The table is searchable by name,
+**Browse hosted genomes** needs no files. The table is searchable by name,
 scientific name or accession, grouped by source (UCSC, GenArk and so on). Star a
 genome to add it to **Favorite genomes**, and check several and click **Go** to
 open them in one session for comparative work.
 
-<Figure src="/img/desktop-available-genomes-steps.png" caption="Show all available genomes (1) opens the table, and launch (2) opens a session on that genome."/>
+<Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and launch (2) opens a session on that genome."/>
 
 ## Adding tracks
 
@@ -123,14 +123,14 @@ opened sessions". The **File → Session** menu handles named sessions:
 
 - **Save session as...** writes a `.jbrowse` file you can reopen or share.
 - **Open config.json or .jbrowse file...** reopens one, as does the start
-  screen's **Open .jbrowse or config.json or link** menu.
+  screen's **File → Open session file...**.
 - **Export session to web...** produces a shareable URL for someone running
   JBrowse Web.
 
 ### Opening a JBrowse web link
 
-**Open JBrowse Web link...**, on the start screen's open menu or under **File →
-Session**, takes a JBrowse Web URL and rebuilds it as a new session:
+**Open JBrowse Web link...**, in the start screen's **File** menu or under
+**File → Session**, takes a JBrowse Web URL and rebuilds it as a new session:
 
 - a [session spec](/docs/urlparams/#session-spec) link (`&session=spec-...`),
   such as the "Open this view in JBrowse" link under any figure in these docs

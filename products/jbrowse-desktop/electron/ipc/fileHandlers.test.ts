@@ -54,7 +54,7 @@ afterEach(() => {
   fs.rmSync(dir, { recursive: true, force: true })
 })
 
-// The desktop-only path behind "Open new genome" when the user brings a bare
+// The desktop-only path behind "Open your own genome" when the user brings a bare
 // FASTA. It had no test at all, and it is where the E2E test used to go — badly
 // enough that the run failed about half the time (see the note on
 // openVolvoxGenome). Testing the handler directly is what lets that run take the

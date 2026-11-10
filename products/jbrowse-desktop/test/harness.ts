@@ -767,7 +767,7 @@ export async function startStaticServer(
   })
 }
 
-// Load the volvox assembly through the "Open new genome" dialog, then navigate
+// Load the volvox assembly through the "Open your own genome" dialog, then navigate
 // to a region so the view fully paints.
 //
 // What each caller passes, and why, is the caller's own note. What matters here
@@ -782,7 +782,7 @@ export async function openVolvoxGenome(
   sequenceUrls: string | string[],
 ): Promise<void> {
   await waitForStartScreen(driver)
-  await clickButton(driver, 'Open new genome')
+  await clickButton(driver, 'Open your own genome')
   await delay(1000)
 
   // The dialog opens on a drop zone. Switch to URL entry and paste the sequence

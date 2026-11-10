@@ -130,7 +130,7 @@ export const PROCEDURES: Record<string, Procedure> = {
         title: 'start screen',
         annotations: step({
           n: 1,
-          anchor: { text: 'Open new genome' },
+          anchor: { text: 'Open your own genome' },
           label: 'Start here for a genome of your own',
           box: false,
         }),
@@ -191,7 +191,7 @@ export const PROCEDURES: Record<string, Procedure> = {
         title: 'start screen',
         annotations: step({
           n: 1,
-          anchor: { text: 'Show all available genomes' },
+          anchor: { text: 'Browse hosted genomes' },
           label: 'No files needed for a common reference',
         }),
       },

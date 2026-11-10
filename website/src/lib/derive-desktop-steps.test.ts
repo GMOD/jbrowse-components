@@ -24,8 +24,8 @@ test('a bgzipped fasta names the two index files the form asks for', () => {
     ),
   ).toMatchInlineSnapshot(`
     "<div class="desktop-steps">
-    hg38 is one of the genomes JBrowse Desktop hosts, with gene tracks already set up: on the start screen click Show all available genomes and pick it. To load the files of this config instead:
-    In JBrowse Desktop, Open new genome on the start screen (or File → Open genome... in a session), then Open from a URL and paste, one per line:
+    hg38 is one of the genomes JBrowse Desktop hosts, with gene tracks already set up: on the start screen click Browse hosted genomes and pick it. To load the files of this config instead:
+    In JBrowse Desktop, Open your own genome on the start screen (or File → Open genome... in a session), then Open from a URL and paste, one per line:
     https://example.com/hg38.fa.gz
     https://example.com/hg38.fa.gz.fai
     https://example.com/hg38.fa.gz.gzi
@@ -74,11 +74,11 @@ test('a genome Desktop hosts is offered from its list first', () => {
       uri: 'https://example.com/hg38.2bit',
     }),
   )
-  expect(hosted).toContain('Show all available genomes and pick it')
-  expect(hosted).toContain('Open new genome')
+  expect(hosted).toContain('Browse hosted genomes and pick it')
+  expect(hosted).toContain('Open your own genome')
   expect(
     flatten(desktopAssemblyNodes({ name: 'volvox', uri: 'volvox.2bit' })),
-  ).not.toContain('Show all available genomes')
+  ).not.toContain('Browse hosted genomes')
 })
 
 // Refused rather than shown with the unexpressible slot dropped: a reader who

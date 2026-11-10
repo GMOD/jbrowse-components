@@ -449,7 +449,10 @@ async function launchHg19(driver: WebDriver): Promise<void> {
   // the app bar (where the blat plugin's Tools items live) appears once the
   // session opens; the hg19 config is fetched from jbrowse.org, and the RefSeq
   // lane behind the dialogs has to have painted before anything is captured
-  await findByText(driver, 'Tools')
+  await driver.wait(
+    until.elementLocated(By.css('[data-testid="app-bar"]')),
+    30000,
+  )
   await waitForAppReady(driver)
   await freezeAnimations(driver)
 }
@@ -459,10 +462,7 @@ async function launchHg19(driver: WebDriver): Promise<void> {
 async function captureGlobalPluginsSteps(driver: WebDriver): Promise<void> {
   const figure = 'desktop-global-plugins-steps.png'
   console.log('Capturing global plugins dialogs...')
-  const menuButton = await driver.findElement(
-    By.css('[data-testid="start-screen-menu"]'),
-  )
-  await driver.executeScript('arguments[0].click();', menuButton)
+  await openMenu(driver, 'Tools')
   await findByText(driver, 'Global plugins...')
   await delay(500)
   await procedureFrame(driver, figure, 0)
@@ -899,7 +899,7 @@ async function main(): Promise<void> {
 
   // "Open genome(s)" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')
-  await clickButton(driver, 'Open new genome')
+  await clickButton(driver, 'Open your own genome')
   await findByText(driver, 'Open genome(s)')
   await delay(1000)
   await blurActiveElement(driver)
@@ -970,7 +970,7 @@ async function main(): Promise<void> {
   // "Available genomes" dialog (searchable table of public assemblies, fetched
   // from jbrowse.org/hubs — wait for real rows, not the skeleton loader)
   console.log('Capturing available-genomes dialog...')
-  await clickButton(driver, 'Show all available genomes')
+  await clickButton(driver, 'Browse hosted genomes')
   await findByText(driver, 'Available genomes')
   await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
   await waitForAppReady(driver)

@@ -1,23 +1,15 @@
 import { useState } from 'react'
 
-import {
-  CascadingMenuButton,
-  ErrorMessage,
-  LabeledCheckbox,
-} from '@jbrowse/core/ui'
+import { ErrorMessage, LabeledCheckbox } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { mutate, useFetch } from '@jbrowse/core/util/useFetch'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import DeleteIcon from '@mui/icons-material/Delete'
-import OpenIcon from '@mui/icons-material/FolderOpen'
-import LinkIcon from '@mui/icons-material/Link'
 import ListIcon from '@mui/icons-material/List'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
-  Button,
   FormControl,
   IconButton,
   Menu,
@@ -32,24 +24,21 @@ import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
-import OpenLinkDialog from '../../OpenLinkDialog.tsx'
-import SessionLoadingScreen from '../../SessionLoadingScreen.tsx'
 import {
   LIST_SESSIONS_KEY,
   removeRecentAction,
 } from '../../removeRecentAction.ts'
-import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameDialog from '../dialogs/RenameDialog.tsx'
 import { NARROW_QUERY } from '../narrow.ts'
+import { useStartScreenLaunch } from '../startScreenLaunch.ts'
 import { useInnerDims } from '../useInnerDims.ts'
-import { loadPluginManager, openSpecLink } from '../util.tsx'
+import { loadPluginManager } from '../util.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import { useFavoriteSessions } from './useFavoriteSessions.ts'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
 
 const useStyles = makeStyles()({
@@ -57,13 +46,9 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    // a narrow panel used to crush the row's items below their content width,
-    // clipping the open button's label; let it spill onto a second line instead
+    // a narrow panel used to crush the row's items below their content width;
+    // let them spill onto a second line instead
     flexWrap: 'wrap',
-  },
-  openButton: {
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
   },
   label: {
     whiteSpace: 'nowrap',
@@ -111,12 +96,9 @@ const IconButtonWithTooltip = observer(function IconButtonWithTooltip({
   )
 })
 
-const RecentSessionPanel = observer(function RecentSessionPanel({
-  setPluginManager,
-}: {
-  setPluginManager: (pm: PluginManager) => void
-}) {
+const RecentSessionPanel = observer(function RecentSessionPanel() {
   const { classes } = useStyles()
+  const { launch: launchSession } = useStartScreenLaunch()
   const notifyError = useNotifyError()
   const { height: innerHeight } = useInnerDims()
   const narrow = useMediaQuery(NARROW_QUERY, { noSsr: true })
@@ -125,7 +107,6 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement>()
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
@@ -155,26 +136,12 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
     { onSuccess: pruneTo },
   )
 
-  // the panel gives way to a loading screen for the whole load, which is also
-  // what keeps a second click from starting a second one
-  const { status, updateStatus } = useUpdateStatus()
   const launch = async (path: string) => {
     try {
-      await updateStatus('Loading session', async () => {
-        setPluginManager(await loadPluginManager(path))
-      })
+      await launchSession(() => loadPluginManager(path))
     } catch (e) {
       console.error(e)
       notifyError(e, removeRecentAction(path))
-    }
-  }
-
-  // the native picker is the same one File -> Open uses, so the start screen and
-  // the in-session menu share its filters and default directory
-  const promptOpenFile = async () => {
-    const path = await invokeIpc('promptOpenFile')
-    if (path) {
-      await launch(path)
     }
   }
 
@@ -209,10 +176,6 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
     visiblePaths.has(s.path),
   )
 
-  if (status) {
-    return <SessionLoadingScreen message={status} />
-  }
-
   return (
     <div>
       {listSessionsError ? <ErrorMessage error={listSessionsError} /> : null}
@@ -235,16 +198,6 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
           onClose={() => {
             setSessionsToDelete(undefined)
             refreshSessions()
-          }}
-        />
-      ) : null}
-      {linkDialogOpen ? (
-        <OpenLinkDialog
-          onSubmit={async link => {
-            setPluginManager(await openSpecLink(link))
-          }}
-          onClose={() => {
-            setLinkDialogOpen(false)
           }}
         />
       ) : null}
@@ -335,35 +288,6 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
             setShowFavoritesOnly(val)
           }}
         />
-
-        <CascadingMenuButton
-          ButtonComponent={Button}
-          className={classes.openButton}
-          variant="contained"
-          endIcon={<ArrowDropDownIcon />}
-          tooltip="Open a .jbrowse or config.json file, or a JBrowse Web link"
-          menuItems={[
-            {
-              label: 'Open .jbrowse or config.json file...',
-              icon: OpenIcon,
-              onClick: () => {
-                promptOpenFile().catch((e: unknown) => {
-                  console.error(e)
-                  notifyError(e)
-                })
-              },
-            },
-            {
-              label: 'Open JBrowse Web link...',
-              icon: LinkIcon,
-              onClick: () => {
-                setLinkDialogOpen(true)
-              },
-            },
-          ]}
-        >
-          Open file or link
-        </CascadingMenuButton>
       </div>
 
       {!filteredSessions.length ? (
