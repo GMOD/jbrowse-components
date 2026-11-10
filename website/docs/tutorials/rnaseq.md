@@ -466,11 +466,17 @@ this library has:
 
 To load the other tables:
 
-- For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
-  color's `field` is `annotated`.
-- For the portcullis file, the color's `field` is `canonical_ss`, its
-  `scale.domain` `["C", "S", "N"]`, and its `scale.names` canonical,
-  semi-canonical and non-canonical, with a third color in `scale.range`.
+- For the STAR file, the `columnNames` end in `motif` and `annotated`, the
+  color's `field` is `annotated`, and the `filter`'s `expr` is
+  `jexl:feature.score >= 3 && feature.motif != '0'`.
+- For the portcullis file, the `columnNames` end in `strand` and `canonical_ss`,
+  the color's `field` is `canonical_ss`, its `scale.domain` `["C", "S", "N"]`,
+  and its `scale.names` canonical, semi-canonical and non-canonical, with a
+  third color in `scale.range`. The `filter`'s `expr` is
+  `jexl:feature.score >= 3 && feature.canonical_ss != 'N'`.
+
+The `filter` reads column names, and a name the file lacks reads as nothing, so
+the config's `splice_site` test would hide every junction in either file.
 
 ## See also
 
