@@ -273,10 +273,13 @@ paint did not move (1198 ms against 1196 ms with 1.8.0), and repeat visits got
   108 ms, against its comment's "nearly free"
 
 The first draw's main-thread task was 546 ms: shader compile, about 155 ms of
-`sortLayout`, then packing and `createBuffer`. Each worker line is a 3-7% cut;
-only splitting one region's parse across the RPC pool gives 2x or more
-([split-one-regions-parse-across-the-rpc-pool](../ideas/waiting-on-a-call/split-one-regions-parse-across-the-rpc-pool.md)).
-The other heavy cells, mount to drawn: 200x at 100 kb 1.1 s BAM / 1.0 s CRAM;
+`sortLayout`, then packing and `createBuffer`. Each worker line is a 3-7% cut.
+Declined: splitting one region's parse across the RPC pool. This window is about
+40 MB of BAM against the 5 MB byte gate, so a default config refuses it; a
+4-core pool of three workers bounds the draw near 2.2 s before any merge; a
+session is pinned to one worker (`WebWorkerRpcDriver.getWorker`), so each tile
+would boot its own adapter and inflate pool; and `WorkerPileupData` has no
+merge. The other heavy cells, mount to drawn: 200x at 100 kb 1.1 s BAM / 1.0 s CRAM;
 1000x at 19 kb 1.06 s / 0.93 s; 200x long reads at 19 kb 0.97 s / 0.70 s.
 
 ## Measured and declined
