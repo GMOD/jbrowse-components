@@ -28,8 +28,7 @@ const SYRI = {
   adapterConfig: {
     type: 'MultiGenomePAFAdapter',
     pafLocation: {
-      uri: pathToFileURL(path.resolve('test_data/syri/syri_pangenome.paf'))
-        .href,
+      uri: pathToFileURL(path.resolve('test_data/syri/syri.paf')).href,
       locationType: 'UriLocation',
     },
   },

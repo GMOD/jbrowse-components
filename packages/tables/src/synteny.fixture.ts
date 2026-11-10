@@ -67,7 +67,7 @@ export const ALL_VS_ALL: MultiWayTablesArgs = {
 export const SYRI: MultiWayTablesArgs = {
   adapterConfig: {
     type: 'MultiGenomePAFAdapter',
-    pafLocation: uri('syri_pangenome.paf', path.resolve('test_data/syri')),
+    pafLocation: uri('syri.paf', path.resolve('test_data/syri')),
     attributeColumns: ['syri', 'color'],
   },
   anchor: {

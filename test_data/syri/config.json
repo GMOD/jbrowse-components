@@ -71,19 +71,20 @@
   "tracks": [
     {
       "type": "SyntenyTrack",
-      "trackId": "syri_pangenome",
+      "trackId": "syri",
       "name": "SyRI regions",
       "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri", "Kyo", "Sha"],
       "adapter": {
         "type": "MultiGenomePAFAdapter",
-        "uri": "syri_pangenome.paf",
+        "uri": "syri.paf",
         "attributeColumns": ["syri", "color"]
       },
       "displays": [
         {
           "type": "MultiWaySyntenyDisplay",
-          "displayId": "syri_pangenome-MultiWaySyntenyDisplay",
-          "rows": { "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
+          "rows": {
+            "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
+          },
           "ribbons": {
             "encoding": {
               "color": {
@@ -101,18 +102,27 @@
     {
       "type": "FeatureTrack",
       "trackId": "syri_regions_on_Col-0",
-      "name": "SyRI regions on Col-0, by accession",
+      "name": "SyRI regions on Col-0, by genome",
       "assemblyNames": ["Col-0"],
       "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "syri_regions.bed.gz",
-        "csi": true,
-        "disableGeneHeuristic": true
+        "type": "BedAdapter",
+        "uri": "syri_regions.bed",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "query"
+        ]
       },
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "syri_regions_on_Col-0-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "query",
             "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
@@ -123,7 +133,7 @@
               "scale": {
                 "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"],
                 "range": [
-                  "#c8c8c8",
+                  "#cccccc",
                   "#ffa500",
                   "#9acd32",
                   "#9acd32",
@@ -131,11 +141,65 @@
                   "#00bbff"
                 ]
               },
-              "legend": { "title": "syri" }
+              "legend": {
+                "title": "syri"
+              }
             }
           }
         }
       ]
     }
-  ]
+  ],
+  "defaultSession": {
+    "name": "SyRI regions",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          {
+            "assembly": "Col-0"
+          },
+          {
+            "assembly": "Ler"
+          },
+          {
+            "assembly": "Cvi"
+          },
+          {
+            "assembly": "Eri"
+          },
+          {
+            "assembly": "Kyo"
+          },
+          {
+            "assembly": "Sha"
+          }
+        ],
+        "tracks": ["syri"],
+        "encoding": {
+          "color": {
+            "field": "syri",
+            "scale": {
+              "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+            }
+          },
+          "opacity": 0.9
+        },
+        "filter": [
+          {
+            "field": "length",
+            "gte": 10000
+          }
+        ],
+        "mark": {
+          "interpolate": "bump"
+        },
+        "render": {
+          "antialias": false
+        },
+        "collapseEmptyRows": true,
+        "levelHeights": [150, 150, 150, 150, 150]
+      }
+    ]
+  }
 }

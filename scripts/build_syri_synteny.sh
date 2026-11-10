@@ -2,12 +2,12 @@
 #
 # Six Arabidopsis thaliana accessions compared the two ways SyRI's users compare
 # them: each genome against the one above it, the stack plotsr draws, and each
-# against Col-0, the reference every other track is annotated on. SyRI's typed
-# regions (syntenic, inverted, translocated, duplicated) become one multi-genome
-# PAF, whose records carry their type and plotsr's color for it as tags, and a
-# BED of every accession's regions on Col-0.
+# against Col-0, the reference every other track is annotated on. syri2jbrowse
+# turns SyRI's typed regions (syntenic, inverted, translocated, duplicated) into
+# the JBrowse config.
 #
-# Requires: curl, awk, sort, python3, samtools, minimap2, bgzip and tabix,
+# Requires: awk, samtools, minimap2, syri2jbrowse
+#           (pip install git+https://github.com/cmdcolin/syri2jbrowse),
 #           the NCBI `datasets` CLI and unzip for a genome downloaded by
 #           accession, and SyRI (`syri` on the PATH, or Docker, which
 #           runs the biocontainers image)
@@ -20,18 +20,11 @@
 
 set -euo pipefail
 
-for tool in curl awk sort python3 samtools minimap2 bgzip tabix; do
+for tool in awk samtools minimap2 syri2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HELPERS=(syri_to_paf.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUT="${1:-syri_synteny}"
@@ -92,7 +85,6 @@ while read -r name accession; do
     rm -rf "$name.zip" "$name.ncbi"
   fi
   samtools faidx "$name.fa"
-  cut -f1,2 "$name.fa.fai" >"$name.chrom.sizes"
 done <<<"$ROWS"
 
 # each accession against the reference, then each against the one above it;
@@ -115,104 +107,20 @@ for p in "${PAIRS[@]}"; do
     # -F P says the alignment is PAF; --nc runs the chromosomes in parallel
     run_syri -c "$pair.aln.paf" -r "$ref.fa" -q "$qry.fa" -F P --prefix "$pair." --nc 5
   fi
-  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --reference "$ref" --query "$qry"
 done
 
-echo "== one PAF for every pair, one BED for every accession on the reference"
-for p in "${PAIRS[@]}"; do cat "${p/ /_}.paf"; done >syri_pangenome.paf
-{
-  head -n1 "${REFERENCE}_${NAMES[1]}.regions.bed"
-  for name in "${NAMES[@]:1}"; do
-    tail -n +2 "${REFERENCE}_$name.regions.bed"
-  done | sort -k1,1 -k2,2n
-} | bgzip >syri_regions.bed.gz
-tabix -f -C -p bed syri_regions.bed.gz
-
-echo "== config.json"
-NAMES="${NAMES[*]}" PYTHONPATH="$SCRIPT_DIR" python3 - <<'PY'
-import json
-import os
-
-from syri_to_paf import COLORS
-
-names = os.environ['NAMES'].split()
-reference = names[0]
-syri_types = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
-
-
-def assembly(name):
-    return {
-        'name': name,
-        'sequence': {
-            'type': 'ReferenceSequenceTrack',
-            'trackId': f'{name}-ReferenceSequenceTrack',
-            'adapter': {
-                'type': 'ChromSizesAdapter',
-                'uri': f'{name}.chrom.sizes',
-            },
-        },
-    }
-
-
-config = {
-    '$schema': 'https://jbrowse.org/jb2/schema/v5/config.json',
-    'assemblies': [assembly(name) for name in names],
-    'tracks': [
-        {
-            'type': 'SyntenyTrack',
-            'trackId': 'syri_pangenome',
-            'name': 'SyRI regions',
-            'assemblyNames': names,
-            'adapter': {
-                'type': 'MultiGenomePAFAdapter',
-                'uri': 'syri_pangenome.paf',
-                'attributeColumns': ['syri', 'color'],
-            },
-            'displays': [
-                {
-                    'type': 'MultiWaySyntenyDisplay',
-                    'displayId': 'syri_pangenome-MultiWaySyntenyDisplay',
-                    'rows': {'sort': names[1:]},
-                    'ribbons': {
-                        'encoding': {
-                            'color': {'field': 'syri', 'scale': {'domain': syri_types}},
-                            'opacity': 0.7,
-                        }
-                    },
-                }
-            ],
-        },
-        {
-            'type': 'FeatureTrack',
-            'trackId': f'syri_regions_on_{reference}',
-            'name': f'SyRI regions on {reference}, by accession',
-            'assemblyNames': [reference],
-            'adapter': {
-                'type': 'BedTabixAdapter',
-                'uri': 'syri_regions.bed.gz',
-                'csi': True,
-                'disableGeneHeuristic': True,
-            },
-            'displays': [
-                {
-                    'type': 'LinearMultiRowFeatureDisplay',
-                    'displayId': f'syri_regions_on_{reference}-LinearMultiRowFeatureDisplay',
-                    'rows': {'field': 'query', 'sort': names[1:]},
-                    'encoding': {
-                        'color': {
-                            'field': 'name',
-                            'scale': {'domain': syri_types, 'range': [COLORS[t] for t in syri_types]},
-                            'legend': {'title': 'syri'},
-                        }
-                    },
-                }
-            ],
-        },
-    ],
-}
-with open('config.json', 'w') as fh:
-    json.dump(config, fh, indent=2)
-    fh.write('\n')
-PY
-
-echo "Wrote $(pwd)/config.json, syri_pangenome.paf, syri_regions.bed.gz, *.chrom.sizes"
+echo "== the JBrowse config"
+# plotsr's genomes file: each genome's FASTA and name, in stack order
+for name in "${NAMES[@]}"; do
+  printf '%s.fa\t%s\n' "$name" "$name"
+done >genomes.txt
+# --sr is each neighbouring pair, as plotsr takes them; --pair is each accession
+# against the reference, which draws them as lanes in its coordinates
+ARGS=(--genomes genomes.txt -o .)
+for ((i = 1; i < ${#NAMES[@]}; i++)); do
+  ARGS+=(--sr "${NAMES[i - 1]}_${NAMES[i]}.syri.out")
+done
+for name in "${NAMES[@]:2}"; do
+  ARGS+=(--pair "$REFERENCE" "$name" "${REFERENCE}_$name.syri.out")
+done
+syri2jbrowse "${ARGS[@]}"

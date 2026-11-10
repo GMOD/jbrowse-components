@@ -133,6 +133,10 @@
     "bins": [],
     "modules": ["jcvi"]
   },
+  "syri2jbrowse": {
+    "pip": "git+https://github.com/cmdcolin/syri2jbrowse",
+    "bins": ["syri2jbrowse"]
+  },
   "whatshap": {
     "pip": "whatshap",
     "modules": ["whatshap"]
