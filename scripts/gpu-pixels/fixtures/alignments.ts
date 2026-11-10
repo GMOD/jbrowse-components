@@ -322,10 +322,13 @@ function mismatchFixture(name: string, bpPerPx: number, about: string) {
     count: cells.length,
     instances: {
       position: cells.map(c => c.position),
-      y: cells.map(c => c.row),
+      rowFrequencyQual: cells.map(
+        c =>
+          c.row |
+          (255 << mismatch.FREQUENCY_SHIFT) |
+          (mismatch.QUAL_UNAVAILABLE << mismatch.QUAL_SHIFT),
+      ),
       base: cells.map(c => c.letter.charCodeAt(0)),
-      frequency: cells.map(() => 1),
-      qual: cells.map(() => mismatch.QUAL_UNAVAILABLE),
     },
     uniforms: (dpr: number) =>
       pileupUniforms(MM_W, MM_H, bpPerPx, FEAT_H, FEAT_SPACING, dpr),

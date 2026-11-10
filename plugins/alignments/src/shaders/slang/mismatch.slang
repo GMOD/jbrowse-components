@@ -1,7 +1,7 @@
 // Mismatch pass: one colored 1bp rectangle per mismatch base. Also used for
 // the softclip-bases overlay (same geometry, same color lookup).
 //! targets: wgsl, glsl
-//! export-consts: QUAL_UNAVAILABLE
+//! export-consts: QUAL_UNAVAILABLE, FREQUENCY_SHIFT, QUAL_SHIFT
 //! js-export: qualityFade
 
 import alignmentsUniforms;
@@ -20,12 +20,14 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // at 50, so 255 was already indistinguishable from opaque; 0 was not.
 static const float QUAL_UNAVAILABLE = 255.0;
 
+static const uint ROW_MASK = 0xFFFFu;
+static const uint FREQUENCY_SHIFT = 16u;
+static const uint QUAL_SHIFT = 24u;
+
 struct Instance {
-  uint  position  : ATTR0;   // absolute genomic bp
-  uint  y         : ATTR1;   // pileup row
-  uint  base      : ATTR2;   // ASCII: A=65/97 C=67/99 G=71/103 T=84/116
-  float frequency : ATTR3;   // 0..1, fraction of reads with this base
-  float qual      : ATTR4;   // per-base Phred quality; QUAL_UNAVAILABLE = none
+  uint  position         : ATTR0;   // absolute genomic bp
+  uint  rowFrequencyQual : ATTR1;   // row | frequency byte (255 = every read) << FREQUENCY_SHIFT | Phred byte << QUAL_SHIFT
+  uint  base             : ATTR2;   // ASCII: A=65/97 C=67/99 G=71/103 T=84/116
 };
 
 float3 baseColor(uint b, Uniforms u) {
@@ -65,8 +67,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
   // per-site frequency so thinly-covered mismatches fade out. The softclip-base
   // pass shares this shader and packs full frequency, pinning its alpha at 1.
-  float alpha = frequencyFade(u.pxPerBp, inst.frequency, u)
-              * qualityFade(inst.qual, u.qualityOpacityZero, u.qualityOpacitySlope,
+  uint row = inst.rowFrequencyQual & ROW_MASK;
+  float frequency = float((inst.rowFrequencyQual >> FREQUENCY_SHIFT) & 0xFFu) / 255.0;
+  float qual = float(inst.rowFrequencyQual >> QUAL_SHIFT);
+  float alpha = frequencyFade(u.pxPerBp, frequency, u)
+              * qualityFade(qual, u.qualityOpacityZero, u.qualityOpacitySlope,
                             u.qualityOpacityMin, u.qualityOpacityMax);
   if (alpha <= 0.0) { return discardVertex(); }
 
@@ -74,7 +79,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // per-base pileup layer measures from — see it for why the anchor matters.
   float2 xx = pileupCellX(inst.position, u);
 
-  float2 yy = pileupY(float(inst.y), u);
+  float2 yy = pileupY(float(row), u);
 
   o.position = flippedQuadPos(xx.x, xx.y, yy.y, yy.x, local, u);
   o.color = float4(baseColor(inst.base, u), alpha);

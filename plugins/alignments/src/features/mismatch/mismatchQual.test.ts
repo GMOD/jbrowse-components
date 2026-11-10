@@ -9,6 +9,19 @@ import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
 import type { MismatchUploadData } from './types.ts'
 
+function cell(buf: ArrayBuffer, i = 0) {
+  const u32 = new Uint32Array(buf)
+  const o = i * mismatchShader.INSTANCE_STRIDE_WORDS
+  const word = u32[o + mismatchShader.INSTANCE_OFFSET_U32.rowFrequencyQual]!
+  return {
+    position: u32[o + mismatchShader.INSTANCE_OFFSET_U32.position],
+    row: word & 0xffff,
+    frequency: (word >>> mismatchShader.FREQUENCY_SHIFT) & 0xff,
+    qual: word >>> mismatchShader.QUAL_SHIFT,
+    base: u32[o + mismatchShader.INSTANCE_OFFSET_U32.base],
+  }
+}
+
 function mm(position: number, qual: number): MismatchData {
   return { readIndex: 0, position, base: 65, strand: 1, qual }
 }
@@ -34,8 +47,34 @@ describe('mismatch quality plumbing', () => {
       mismatchFrequencies: new Uint8Array([255]),
       mismatchQuals: new Uint8Array([37]),
     }
-    const f32 = new Float32Array(MISMATCH_MARK.pass.pack(data) as ArrayBuffer)
-    expect(f32[mismatchShader.INSTANCE_OFFSET_F32.qual]).toBe(37)
+    expect(cell(MISMATCH_MARK.pass.pack(data) as ArrayBuffer).qual).toBe(37)
+  })
+
+  test('the instance is 12 bytes: position, row|frequency|quality, base', () => {
+    const data: MismatchUploadData = {
+      mismatchPositions: new Uint32Array([100, 4_000_000_000]),
+      mismatchYs: new Uint16Array([65535, 3]),
+      mismatchBases: new Uint8Array([65, 116]),
+      mismatchFrequencies: new Uint8Array([7, 255]),
+      mismatchQuals: new Uint8Array([0, QUAL_UNAVAILABLE]),
+    }
+    const buf = MISMATCH_MARK.pass.pack(data) as ArrayBuffer
+    expect(mismatchShader.INSTANCE_STRIDE_BYTES).toBe(12)
+    expect(buf.byteLength).toBe(24)
+    expect(cell(buf, 0)).toEqual({
+      position: 100,
+      row: 65535,
+      frequency: 7,
+      qual: 0,
+      base: 65,
+    })
+    expect(cell(buf, 1)).toEqual({
+      position: 4_000_000_000,
+      row: 3,
+      frequency: 255,
+      qual: QUAL_UNAVAILABLE,
+      base: 116,
+    })
   })
 
   test('emitMismatch distinguishes Phred 0 from a read with no QUAL', () => {
@@ -56,15 +95,18 @@ describe('mismatch quality plumbing', () => {
 
   test('the softclip-bases pass packs the no-quality sentinel, not 0', () => {
     // It shares the mismatch shader, so leaving the slot at its zero default
-    // would now read as Phred 0 and fade every clipped base away.
+    // would read as Phred 0 and frequency 0 and fade every clipped base away.
     const data = {
       softclipBasePositions: new Uint32Array([100]),
       softclipBaseYs: new Uint16Array([0]),
       softclipBaseBases: new Uint8Array([65]),
     } as CigarUploadData
-    const f32 = new Float32Array(
-      SOFTCLIP_BASES_MARK.pass.pack(data) as ArrayBuffer,
-    )
-    expect(f32[mismatchShader.INSTANCE_OFFSET_F32.qual]).toBe(QUAL_UNAVAILABLE)
+    expect(cell(SOFTCLIP_BASES_MARK.pass.pack(data) as ArrayBuffer)).toEqual({
+      position: 100,
+      row: 0,
+      frequency: 255,
+      qual: QUAL_UNAVAILABLE,
+      base: 65,
+    })
   })
 })

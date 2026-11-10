@@ -62,8 +62,8 @@ process; the bench was not kept, so these are the numbers and the method.
 - **Cost was never the objection.** k = 4 runs at 1.19-1.37x the shipped
   extract; the full visit at 249-506 ms, flat across bins. The 1.5-2x this file
   used to quote came from a deleted handoff with no bench behind it. The GPU
-  side would have shrunk: a dedicated shader's instance is 12 bytes against the
-  20 lettering pays through `mismatch.slang`, and the +3 bytes is the worker
+  side would not have shrunk: lettering's instance through `mismatch.slang` is
+  12 bytes, what a dedicated shader's would be, and the +3 bytes is the worker
   payload.
 - **It removed no code and closed no drift.** `perBaseLetter/packGpu.ts` left
   with the mark-list refactor; the fade neutralization is in the shared

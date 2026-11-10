@@ -1,6 +1,10 @@
 import { defineMark } from '@jbrowse/render-core/marks'
 
-import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
+import {
+  FREQUENCY_SHIFT,
+  QUAL_SHIFT,
+  QUAL_UNAVAILABLE,
+} from '../../shaders/slang/mismatch.consts.generated.ts'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import {
   Band,
@@ -22,8 +26,8 @@ import type { MismatchUploadData } from './types.ts'
 /**
  * mismatch.slang's instance, for the three marks that share it. A mark with
  * no frequency or quality of its own packs the two fades' neutral values:
- * frequency=1 (the lerp reaches 1 at full frequency whatever the zoom, so a 0
- * left at the buffer's default fades every base to `pxPerBp`) and the
+ * frequency byte 255 (the lerp reaches 1 at full frequency whatever the zoom,
+ * so a 0 left at the buffer's default fades every base to `pxPerBp`) and the
  * no-quality SENTINEL rather than the 0 the buffer starts at — 0 is a real
  * Phred score, the worst one, which `qualityFade` sends to alpha 0 and
  * `vs_main` then discards. Left at the default, the per-base letter pass drew
@@ -32,22 +36,21 @@ import type { MismatchUploadData } from './types.ts'
  */
 export function packBaseCells(c: PileupChannels) {
   const { positions, rows, kinds, kind, keys, freqs, quals, end } = c
-  const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
   const buf = new ArrayBuffer(
     countMarks(c) * mismatchShader.INSTANCE_STRIDE_BYTES,
   )
   const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
   let o = 0
   for (let i = c.start; i < end; i++) {
     if (markSelects(kinds, kind, i)) {
+      const freq = freqs === undefined ? 255 : freqs[i]!
+      const qual = quals === undefined ? QUAL_UNAVAILABLE : quals[i]!
       u32[o + F_U32.position] = positions[i]!
-      u32[o + F_U32.y] = rows[i]!
+      u32[o + F_U32.rowFrequencyQual] =
+        rows[i]! | (freq << FREQUENCY_SHIFT) | (qual << QUAL_SHIFT)
       u32[o + F_U32.base] = keys![i]!
-      f32[o + F_F32.frequency] = freqs === undefined ? 1 : freqs[i]! / 255
-      f32[o + F_F32.qual] = quals === undefined ? QUAL_UNAVAILABLE : quals[i]!
       o += s32
     }
   }

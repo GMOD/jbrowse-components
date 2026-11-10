@@ -48,16 +48,15 @@ const BLOCK: RenderBlock = {
 function instances() {
   const buf = PER_BASE_LETTER_MARK.pass.pack(DATA) as ArrayBuffer
   const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32
-  const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const out: { position: number; frequency: number; qual: number }[] = []
   for (let o = 0; o < u32.length; o += s32) {
+    const word = u32[o + F_U32.rowFrequencyQual]!
     out.push({
       position: u32[o + F_U32.position]!,
-      frequency: f32[o + F_F32.frequency]!,
-      qual: f32[o + F_F32.qual]!,
+      frequency: ((word >>> mismatchShader.FREQUENCY_SHIFT) & 0xff) / 255,
+      qual: word >>> mismatchShader.QUAL_SHIFT,
     })
   }
   return out
