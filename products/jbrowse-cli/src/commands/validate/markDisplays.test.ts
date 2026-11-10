@@ -533,6 +533,9 @@ describe('a marks list in a config file', () => {
     expect(
       found(colored('bar', rampWith({ domainMin: 10, domainMax: 0 }))),
     ).toEqual([`warning domain-ends ${color}.domainMax`])
+    expect(
+      found(colored('bar', { field: 'strand', scale: { domain: ['+', '-'] } })),
+    ).toEqual([`warning domain-levels ${domain}`])
     expect(found(colored('bar', rampWith({ domainQuantile: 99 })))).toEqual([
       `warning domain-quantile ${color}.domainQuantile`,
     ])
