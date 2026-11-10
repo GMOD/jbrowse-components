@@ -1306,7 +1306,7 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (93)
+# member tags in a file that documents no #stateModel (92)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedRows
 packages/tree-sidebar/src/treeSidebarRowViews.ts bandedSources
@@ -1330,7 +1330,6 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts rowAlias
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationColors
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationColumns
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationDeals
-packages/tree-sidebar/src/treeSidebarRowViews.ts rowAnnotationScales
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBand
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBanding
 packages/tree-sidebar/src/treeSidebarRowViews.ts rowBands
