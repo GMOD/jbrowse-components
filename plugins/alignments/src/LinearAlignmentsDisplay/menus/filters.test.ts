@@ -1,7 +1,4 @@
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-
 import { mergeFilter } from '../../shared/alignmentsFilter.ts'
-import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 import { declaredFiltersOf } from '../dialogs/layerFilters.ts'
 import { getFiltersMenuItems } from './filters.ts'
 

@@ -12,8 +12,8 @@ function overlapSpans(spans: Span[]) {
     spans.length,
   )
   return Array.from({ length: packed.length / 2 }, (_, i) => ({
-    start: packed[i * 2],
-    end: packed[i * 2 + 1],
+    start: packed[i * 2]!,
+    end: packed[i * 2 + 1]!,
   }))
 }
 

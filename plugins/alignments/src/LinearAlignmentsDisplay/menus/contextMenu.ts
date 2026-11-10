@@ -449,10 +449,15 @@ function openSplitViewItems(
 // A concordant pair's mate sits a fragment away, where a second panel would
 // show the same locus.
 function mateIsElsewhere(feat: Feature, mate: MateFields) {
-  const pairOrientation: string | undefined = feat.get('pair_orientation')
+  const pairOrientation: unknown = feat.get('pair_orientation')
   return (
     adapterRefNameText(mate.nextRef) !== mate.refName ||
-    !isConcordantPairRead(getFlags(feat), pairOrientationToNum(pairOrientation))
+    !isConcordantPairRead(
+      getFlags(feat),
+      pairOrientationToNum(
+        typeof pairOrientation === 'string' ? pairOrientation : undefined,
+      ),
+    )
   )
 }
 
