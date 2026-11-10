@@ -9,7 +9,7 @@ const texturedPass = (id: string): PipelineDescriptor => ({
   instanceStride: 4,
   uniformByteSize: 0,
   verticesPerInstance: 6,
-  blend: true,
+  blendState: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' },
   vertexAttributes: [],
   bindings: [],
   textures: [

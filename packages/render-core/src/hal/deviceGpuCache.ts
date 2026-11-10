@@ -1,10 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import {
-  STANDARD_BLEND_STATE,
-  stageVisibility,
-  toGpuVertexFormat,
-} from '../webgpuUtils.ts'
+import { stageVisibility, toGpuVertexFormat } from '../webgpuUtils.ts'
 
 import type {
   BlendState,
@@ -61,7 +57,7 @@ export interface PipelineRecipe {
   wgslSource: string
   bindGroupLayout: GPUBindGroupLayoutEntry[]
   vertexBuffer: GPUVertexBufferLayout
-  blend: GPUBlendState | undefined
+  blend: GPUBlendState
   topology: GPUPrimitiveTopology
   /** Baked in: a pipeline built at 4 draws nothing into a target at 1. */
   sampleCount: SampleCount
@@ -99,11 +95,7 @@ export function pipelineRecipe(
         format: toGpuVertexFormat(attr),
       })),
     },
-    blend: desc.blend
-      ? desc.blendState
-        ? gpuBlendState(desc.blendState)
-        : STANDARD_BLEND_STATE
-      : undefined,
+    blend: gpuBlendState(desc.blendState),
     topology: desc.topology ?? 'triangle-list',
     sampleCount,
   }

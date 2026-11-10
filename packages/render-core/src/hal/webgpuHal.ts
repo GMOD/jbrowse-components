@@ -79,7 +79,6 @@ async function buildPipeline(
       .join('; ')
     throw new ShaderCompileError(passId, details)
   }
-  const { blend } = recipe
   return device.createRenderPipelineAsync({
     layout: getPassLayout(device, recipe.bindGroupLayout).pipelineLayout,
     vertex: { module, entryPoint: 'vs_main', buffers: [recipe.vertexBuffer] },
@@ -89,7 +88,7 @@ async function buildPipeline(
       targets: [
         {
           format: navigator.gpu.getPreferredCanvasFormat(),
-          ...(blend && { blend }),
+          blend: recipe.blend,
         },
       ],
     },

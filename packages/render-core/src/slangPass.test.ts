@@ -44,9 +44,7 @@ describe('slangPass', () => {
       uniformByteSize: 48,
       verticesPerInstance: 6,
       vertexAttributes: ATTRS,
-      // Nothing disables blending today, which is why there is no `//! blend:
-      // none` for a module to inherit it from — so the default is on.
-      blend: true,
+      blendState: SRC_OVER,
     })
   })
 
@@ -148,15 +146,5 @@ describe('slangPass', () => {
 
     expect(desc.textures).toEqual(textures)
     expect(desc.bindings).toEqual(bindings)
-  })
-
-  it('takes an explicit blend over the module default', () => {
-    const desc = slangPass({
-      id: 'outline',
-      mod: shaderModule({ VERTS_PER_INSTANCE: 6 }),
-      blend: false,
-    })
-
-    expect(desc.blend).toBe(false)
   })
 })

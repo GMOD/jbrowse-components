@@ -408,6 +408,6 @@ test.each(['#fff', '#121212'])(
     expect(fills.map(d => d.passId)).toEqual(['fillStraight'])
     expect(
       MULTIWAY_PASSES.find(p => p.id === 'fillStraight')!.blendState,
-    ).toBeUndefined()
+    ).toEqual({ srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' })
   },
 )

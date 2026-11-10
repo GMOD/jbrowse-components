@@ -170,7 +170,6 @@ describe('deviceGpuCache', () => {
       { ...SPAN, instanceStride: SPAN.instanceStride + 4 },
       { ...SPAN, vertexAttributes: [{ ...attr!, offsetBytes: 4 }, ...attrs] },
       { ...SPAN, vertexAttributes: [{ ...attr!, components: 3 }, ...attrs] },
-      { ...SPAN, blend: false },
       { ...SPAN, blendState: { op: 'max' } },
       { ...SPAN, blendState: { op: 'behind' } },
       { ...SPAN, topology: 'line-list' },

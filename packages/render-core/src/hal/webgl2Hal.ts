@@ -599,15 +599,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   private applyBlendState(desc: PipelineDescriptor) {
     const gl = this.gl
-    if (!desc.blend) {
-      gl.disable(gl.BLEND)
-      return
-    }
-    gl.enable(gl.BLEND)
     const bs = desc.blendState
-    if (bs?.op === 'max') {
+    if (bs.op === 'max') {
       gl.blendEquation(gl.MAX)
-    } else if (bs?.op === 'behind') {
+    } else if (bs.op === 'behind') {
       gl.blendEquation(gl.FUNC_ADD)
       gl.blendFuncSeparate(
         gl.ONE_MINUS_DST_ALPHA,
@@ -619,9 +614,12 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       gl.blendEquation(gl.FUNC_ADD)
       // Alpha keeps ONE / ONE_MINUS_SRC_ALPHA whatever the RGB factors: the
       // RGB srcFactor on alpha would square it.
-      const src = bs ? glBlendFactor(gl, bs.srcFactor) : gl.SRC_ALPHA
-      const dst = bs ? glBlendFactor(gl, bs.dstFactor) : gl.ONE_MINUS_SRC_ALPHA
-      gl.blendFuncSeparate(src, dst, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+      gl.blendFuncSeparate(
+        glBlendFactor(gl, bs.srcFactor),
+        glBlendFactor(gl, bs.dstFactor),
+        gl.ONE,
+        gl.ONE_MINUS_SRC_ALPHA,
+      )
     }
   }
 

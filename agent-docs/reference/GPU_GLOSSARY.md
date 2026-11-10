@@ -27,7 +27,7 @@ means a PSO**, and **our uniform "ring buffer" does not wrap**.
 | **Staging buffer** | `uniformStaging` — coalesces a frame's uniform writes into one `queue.writeBuffer` at submit | `webgpuHal.ts` |
 | **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (GLSL ES has no SSBOs) | `packages/render-core/src/computePipeline.ts` |
 | **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. Through `makeComputePipelineCache`; the in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts` | `packages/render-core/src/computePipeline.ts` |
-| **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
+| **Blend state** | `BlendState` | `hal/types.ts` |
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
 | **MSAA / resolve target** | `SampleCount` — per display via `RenderingBackendOptions.sampleCount`, defaulting to `deriveSampleCount(passes)` (1 when every pass is `coverage: 'analytic'`, else 4); `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |

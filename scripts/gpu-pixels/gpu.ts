@@ -93,9 +93,7 @@ export async function render(
     fragment: {
       module,
       entryPoint: 'fs_main',
-      targets: [
-        { format: FORMAT, ...(recipe.blend && { blend: recipe.blend }) },
-      ],
+      targets: [{ format: FORMAT, blend: recipe.blend }],
     },
     primitive: { topology: recipe.topology },
     multisample: samples === 1 ? undefined : { count: samples },

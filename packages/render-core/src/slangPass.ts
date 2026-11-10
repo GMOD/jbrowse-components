@@ -50,9 +50,8 @@ export interface ShaderModule {
  *   step line and center line did while they shared one module and blended
  *   differently (src-over against max); each record now has its own module,
  *   and the center line's states `//! blend: max` itself. A shader whose passes
- *   disagree declares neither and says which at each pass.
- * - `blend: false` — nothing disables blending today, which is why there is no
- *   `//! blend: none` to inherit it from.
+ *   disagree declares neither and says which at each pass; one stated nowhere
+ *   blends straight alpha.
  *
  * There is deliberately no `verticesPerInstance` override. A shape whose count
  * moves per frame (the canvas chevrons, one slot per chevron the canvas can
@@ -79,8 +78,12 @@ export interface SlangPassOpts {
   id: string
   mod: ShaderModule
   topology?: PipelineDescriptor['topology']
-  blend?: boolean
   blendState?: BlendState
+}
+
+const STRAIGHT_ALPHA: BlendState = {
+  srcFactor: 'src-alpha',
+  dstFactor: 'one-minus-src-alpha',
 }
 
 function generatedBeforeLazyText(mod: Partial<ShaderModule>) {
@@ -109,8 +112,7 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     instanceStride: opts.mod.INSTANCE_STRIDE_BYTES,
     uniformByteSize: opts.mod.UNIFORMS_SIZE_BYTES,
     verticesPerInstance,
-    blend: opts.blend ?? true,
-    blendState: opts.blendState ?? opts.mod.BLEND_STATE,
+    blendState: opts.blendState ?? opts.mod.BLEND_STATE ?? STRAIGHT_ALPHA,
     vertexAttributes: opts.mod.VERTEX_ATTRIBUTES,
     topology: opts.topology ?? opts.mod.TOPOLOGY,
     coverage: opts.mod.COVERAGE,

@@ -2,27 +2,6 @@
 
 import type { ShaderStage } from './hal/types.ts'
 
-// Standard alpha blend state:
-//   - Uses src-alpha, one-minus-src-alpha for color.
-//   - Converts straight (non-premultiplied) alpha output from shaders
-//     into premultiplied alpha in the framebuffer.
-// Shaders MUST output straight alpha: vec4(rgb, alpha).
-//
-// Some passes use a 'premultiplied' blend state ({ srcFactor: 'one' }).
-// Those shaders MUST output premultiplied alpha: vec4(rgb*alpha, alpha).
-export const STANDARD_BLEND_STATE: GPUBlendState = {
-  color: {
-    srcFactor: 'src-alpha',
-    dstFactor: 'one-minus-src-alpha',
-    operation: 'add',
-  },
-  alpha: {
-    srcFactor: 'one',
-    dstFactor: 'one-minus-src-alpha',
-    operation: 'add',
-  },
-}
-
 const STAGE_FLAG = {
   vertex: 'VERTEX',
   fragment: 'FRAGMENT',

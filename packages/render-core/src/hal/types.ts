@@ -118,9 +118,7 @@ export interface PipelineDescriptor {
   uniformByteSize: number
   // 6 for quads (2 triangles), 3 for triangles
   verticesPerInstance: number
-  blend: boolean
-  // custom blend factors (defaults to src-alpha / one-minus-src-alpha if omitted)
-  blendState?: BlendState
+  blendState: BlendState
   vertexAttributes: readonly VertexAttributeLayout[]
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'

@@ -208,7 +208,7 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
       instanceStride: STRIDE,
       uniformByteSize: 0,
       verticesPerInstance: 6,
-      blend: true,
+      blendState: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' },
       vertexAttributes: [],
       bindings: [],
       pack: d => new ArrayBuffer(instances(d) * STRIDE),

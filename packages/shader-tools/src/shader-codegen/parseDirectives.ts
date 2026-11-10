@@ -534,9 +534,8 @@ export type Topology = (typeof TOPOLOGIES)[number]
  * all five carry it for the one reason, which the raw spelling states nowhere.
  * A closed set is also checkable — an unknown mode names the alternatives.
  *
- * `none` is deliberately absent. Nothing in the tree disables blending, and an
- * emitted `BLEND_ENABLED = false` with no consumer is the untested path this
- * codegen refuses elsewhere; a pass that wants it passes `blend: false`.
+ * `none` is deliberately absent: every pipeline blends, and a
+ * `PipelineDescriptor` has no way to say otherwise.
  */
 export const BLEND_MODES = [
   'straight',
