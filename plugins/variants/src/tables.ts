@@ -1,10 +1,12 @@
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
+import {
+  DEFAULT_BYTE_LIMIT,
+  numberByFirstAppearance,
+} from '@jbrowse/core/data_adapters/tables'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { numberByFirstAppearance } from '@jbrowse/core/util/firstAppearance'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'

@@ -1,9 +1,12 @@
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { DEFAULT_BYTE_LIMIT, lociOf } from '@jbrowse/core/data_adapters/tables'
+import {
+  DEFAULT_BYTE_LIMIT,
+  joinTables,
+  lociOf,
+} from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { joinTables } from '@jbrowse/core/util/joinTables'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   byteGatedFetchRegions,

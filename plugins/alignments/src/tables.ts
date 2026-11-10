@@ -34,7 +34,12 @@ import {
 } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { DEFAULT_BYTE_LIMIT, lociOf } from '@jbrowse/core/data_adapters/tables'
+import {
+  DEFAULT_BYTE_LIMIT,
+  joinTables,
+  lociOf,
+  numberByFirstAppearance,
+} from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { adapterRefNameText } from '@jbrowse/core/util'
@@ -44,8 +49,6 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { numberByFirstAppearance } from '@jbrowse/core/util/firstAppearance'
-import { joinTables } from '@jbrowse/core/util/joinTables'
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'

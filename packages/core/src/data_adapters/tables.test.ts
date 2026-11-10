@@ -1,4 +1,4 @@
-import { joinTables } from './joinTables.ts'
+import { joinTables } from './tables.ts'
 
 test('parts join with each index column offset into the table it names', () => {
   const section = (reads: number, marks: number[]) => ({
