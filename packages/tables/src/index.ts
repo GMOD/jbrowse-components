@@ -337,26 +337,19 @@ function tableRows(result: object, path = ''): [string, number][] {
 }
 
 function refuseOverRows(result: object, rowLimit: number | undefined) {
-  if (rowLimit === undefined) {
-    return
-  }
-  for (const [name, rows] of tableRows(result)) {
-    if (rows > rowLimit) {
-      throw new Error(
-        `the file gives ${rows} rows of ${name}, over the ${rowLimit}-row limit for a read with no region; pass a region`,
-      )
-    }
+  const over =
+    rowLimit === undefined
+      ? undefined
+      : tableRows(result).find(([, rows]) => rows > rowLimit)
+  if (over) {
+    throw new Error(
+      `the file gives ${over[1]} rows of ${over[0]}, over the ${rowLimit}-row limit for a read with no region; pass a region`,
+    )
   }
 }
 
 const LISTED_CONTIGS = 20
 
-/**
- * For each region whose contig is not one of `names`, what to tell the
- * reader, naming the file's contigs: its tables come back empty, as the
- * browser draws a track with no such contig, and a host can say why. Empty
- * where the contig is there, or the adapter cannot list its contigs.
- */
 function listContigs(names: string[]) {
   const more =
     names.length > LISTED_CONTIGS
@@ -374,15 +367,6 @@ function lacks(names: string[]) {
   const has = new Set(names)
   return ({ refName, originalRefName = refName }: NamedRegion) =>
     has.size > 0 && !has.has(refName) && !has.has(originalRefName)
-}
-
-function missingContigsOf(names: string[], regions: NamedRegion[]) {
-  const missing = lacks(names)
-  return regions.map(region =>
-    missing(region)
-      ? `${region.refName} is not a contig of this file, whose contigs are ${listContigs(names)}`
-      : '',
-  )
 }
 
 /** Adapters whose reads store their bases as differences from the reference. */
@@ -413,6 +397,12 @@ async function undecodableContigs(
   )
 }
 
+/**
+ * For each region whose contig is not one of the file's, what to tell the
+ * reader, naming the file's contigs: its tables come back empty, as the
+ * browser draws a track with no such contig, and a host can say why. Empty
+ * where the contig is there, or the adapter cannot list its contigs.
+ */
 async function missingContigs(
   pluginManager: PluginManager,
   {
@@ -427,17 +417,21 @@ async function missingContigs(
     regions: NamedRegion[]
   },
 ) {
-  return regions.length === 0
-    ? []
-    : missingContigsOf(
-        await contigNamesOf(
+  const names =
+    regions.length === 0
+      ? []
+      : await contigNamesOf(
           pluginManager,
           adapterConfig,
           sequenceAdapter,
           assemblyName,
-        ),
-        regions,
-      )
+        )
+  const missing = lacks(names)
+  return regions.map(region =>
+    missing(region)
+      ? `${region.refName} is not a contig of this file, whose contigs are ${listContigs(names)}`
+      : '',
+  )
 }
 
 /**
