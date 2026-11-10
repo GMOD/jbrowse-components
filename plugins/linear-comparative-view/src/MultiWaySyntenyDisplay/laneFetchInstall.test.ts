@@ -2,6 +2,8 @@ import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { reaction, when } from 'mobx'
 
+import { laneFetchAwaits } from './laneFetch.ts'
+import { LANE_TEMPLATE_MAX_BP } from './laneLayers.ts'
 import { createDisplayWithSession } from './testEnv.ts'
 
 import type { RpcCall } from './testEnv.ts'
@@ -127,4 +129,32 @@ test('a retry re-issues a lane fetch still in flight', async () => {
   const before = issued
   display.reload()
   await until(() => issued > before)
+})
+
+test('zooming a template layer past its cap stops drawing the bars it held', async () => {
+  const display = await templateDisplay(async name =>
+    name === 'CoreGetEncodedLayers' ? { layers: [] } : orthologs,
+  )
+  await when(() => display.laneLayerData.held.size > 0, { timeout: 5000 })
+  const { landedFor } = display.laneLayerData
+  display.lgv.setDisplayedRegions([
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 2 * LANE_TEMPLATE_MAX_BP,
+      assemblyName: 'volvox',
+    },
+  ])
+  display.lgv.showAllRegions()
+  expect(display.laneLayersFetchSpecs).toEqual([])
+  await when(() => display.laneLayerData.held.size === 0, { timeout: 3000 })
+  expect(display.laneLayerData).toMatchObject({ landed: true, landedFor })
+  expect(
+    laneFetchAwaits(
+      display.laneLayerData,
+      [],
+      display.anchorAssemblyName,
+      false,
+    ),
+  ).toBe(false)
 })

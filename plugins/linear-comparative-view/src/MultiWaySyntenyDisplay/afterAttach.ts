@@ -242,13 +242,15 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     gate: () => !self.isMinimized,
     prepare: () => {
       const specs = fetchSpecs()
+      const { held } = state()
       const stale = staleLaneSpecs(specs, state())
       const anchor = self.anchorAssemblyName
-      return specs.length > 0
+      return specs.length > 0 || held.size > 0
         ? { specs, stale, anchor, asked: laneFetchAsked(specs, stale, anchor) }
         : undefined
     },
-    heldAnswers: ({ stale, asked }) => stale.length === 0 || asked === inFlight,
+    heldAnswers: ({ specs, stale, asked }) =>
+      asked === inFlight || (specs.length > 0 && stale.length === 0),
     run: ({ specs, stale, asked }, ctx) => {
       inFlight = asked
       const wanted = stale.length > 0 ? stale : specs

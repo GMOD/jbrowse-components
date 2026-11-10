@@ -1,4 +1,6 @@
 import {
+  landLaneFetch,
+  laneFetchAwaits,
   laneGenesFetchSpecsOf,
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
@@ -175,5 +177,35 @@ describe('unheldLanePairsOf', () => {
         isMissing: missingB,
       }),
     ).toEqual([{ index: 0, missing: ['b'] }])
+  })
+})
+
+describe('an empty landing', () => {
+  const state = {
+    held: new Map([
+      ['a|b', { key: 'w1' }],
+      ['b|c', { key: 'w1' }],
+    ]),
+    landed: true,
+    landedFor: 'anchor',
+  }
+
+  test('drops every held lane, a pair held under a current key included', () => {
+    expect(landLaneFetch(state, new Map(), [], 'anchor', true).held.size).toBe(
+      0,
+    )
+  })
+
+  test('keeps the anchor it landed for, so nothing is awaited or claimed', () => {
+    const landed = landLaneFetch(state, new Map(), [], 'other')
+    expect(landed).toMatchObject({ landed: true, landedFor: 'anchor' })
+    expect(laneFetchAwaits(landed, [], 'anchor', false)).toBe(false)
+  })
+
+  test('is not this: a pair scrolled out while another is asked for stays held', () => {
+    const asked = [{ lane: 'b|c', key: 'w1', assemblyName: 'b' }]
+    expect([
+      ...landLaneFetch(state, new Map(), asked, 'anchor', true).held.keys(),
+    ]).toEqual(['a|b', 'b|c'])
   })
 })
