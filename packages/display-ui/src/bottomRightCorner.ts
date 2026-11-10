@@ -30,3 +30,9 @@ export const BottomRightCornerContext = createContext<HTMLElement | null>(null)
  * learn.
  */
 export const BOTTOM_RIGHT_CONTROLS_ORDER = 1
+
+/**
+ * The notice row's `order`: above the controls, so a notice arriving never
+ * moves them, and with the status chip on the default.
+ */
+export const BOTTOM_RIGHT_NOTICES_ORDER = 0

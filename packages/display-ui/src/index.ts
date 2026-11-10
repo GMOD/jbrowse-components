@@ -113,6 +113,7 @@ export { isLiveModel } from './isLiveModel.ts'
 // with the chrome that happens to mount it.
 export {
   BOTTOM_RIGHT_CONTROLS_ORDER,
+  BOTTOM_RIGHT_NOTICES_ORDER,
   BottomRightCornerContext,
 } from './bottomRightCorner.ts'
 

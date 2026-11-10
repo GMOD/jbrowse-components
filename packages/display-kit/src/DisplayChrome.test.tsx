@@ -285,6 +285,27 @@ describe('the bottom-right corner has one owner', () => {
     expect(Number(controlRow.style.order)).toBeGreaterThan(0)
   })
 
+  test('the notice chip stacks above the controls too', async () => {
+    const Model = types.compose(
+      TestChromeModel,
+      types.model({}).views(() => ({
+        get cornerNotices() {
+          return ['color.domainMax: domainMax is below domainMin']
+        },
+      })),
+    )
+    const { findByText, getByTestId } = renderWithControls(Model.create({}))
+
+    const noticeRow = (
+      await findByText('1 config problem')
+    ).closest<HTMLElement>('[data-gesture-owner]')!
+    const controlRow = getByTestId('probe-control').parentElement!
+    expect(noticeRow.parentElement).toBe(controlRow.parentElement)
+    expect(Number(noticeRow.style.order)).toBeLessThan(
+      Number(controlRow.style.order),
+    )
+  })
+
   // The trap the chip's own wrapper would have been: a component returning null
   // contributes no DOM node, but a wrapper around it stays a zero-height flex
   // ITEM and spends the column's `gap`, lifting the control row off the corner

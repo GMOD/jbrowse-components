@@ -34,6 +34,7 @@ const OVERFLOW_INDICATOR_Z_INDEX = 999
 
 const BottomRightIndicators = observer(function BottomRightIndicators({
   scrollableHeight = 0,
+  order = BOTTOM_RIGHT_CONTROLS_ORDER,
   children,
 }: {
   /**
@@ -46,6 +47,11 @@ const BottomRightIndicators = observer(function BottomRightIndicators({
    * chip is where the chip was before.
    */
   scrollableHeight?: number
+  /**
+   * The row's place in the corner column. The display's own controls keep the
+   * default and sit lowest; a row the chrome adds sorts above them.
+   */
+  order?: number
   children: ReactNode
 }) {
   const clearance = scrollableHeight > 0 ? VERTICAL_SCROLLBAR_CLEARANCE : 0
@@ -59,7 +65,7 @@ const BottomRightIndicators = observer(function BottomRightIndicators({
           ? {
               // An in-flow member of the corner's column. A flex item honours
               // `z-index` with no `position` of its own (Flexbox §5.4).
-              order: BOTTOM_RIGHT_CONTROLS_ORDER,
+              order,
               zIndex: OVERFLOW_INDICATOR_Z_INDEX,
               marginRight: clearance,
               display: 'flex',

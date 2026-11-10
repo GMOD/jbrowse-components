@@ -1,4 +1,5 @@
 import { pluralize } from '@jbrowse/core/util'
+import { BOTTOM_RIGHT_NOTICES_ORDER } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import BottomRightIndicators from './BottomRightIndicators.tsx'
@@ -55,7 +56,10 @@ export const ConfigProblemsCorner = observer(function ConfigProblemsCorner({
         }
       : undefined
   return notices.length > 0 ? (
-    <BottomRightIndicators scrollableHeight={display.scrollableHeight}>
+    <BottomRightIndicators
+      scrollableHeight={display.scrollableHeight}
+      order={BOTTOM_RIGHT_NOTICES_ORDER}
+    >
       <ConfigProblemsIndicator notices={notices} onClick={onClick} />
     </BottomRightIndicators>
   ) : null
