@@ -321,7 +321,10 @@ pooling step wrote:
   "displayDefaults": {
     "mark": "bar",
     "encoding": {
-      "y": { "scale": { "type": "log" }, "axis": { "title": "CPM" } }
+      "y": {
+        "scale": { "type": "log", "domainMin": 1 },
+        "axis": { "title": "CPM" }
+      }
     },
     "height": 330
   }
@@ -332,8 +335,8 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) is the shape drawn and
 `encoding.y` is the y scale. `bar` compares peak shape, and `rect`, which the
 track menu switches to, maps score to color and fits more rows. The rows share
-one axis, and its `log` type keeps a dim row readable beside a bright one such
-as _LYZ_ in monocytes.
+one axis, and its `log` type, floored at 1 CPM by `domainMin`, keeps a dim row
+readable beside a bright one such as _LYZ_ in monocytes.
 
 Set three things in the `subadapters` list from the single-cell object:
 

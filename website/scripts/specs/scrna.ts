@@ -83,8 +83,8 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     viewportHeight: 730,
   },
   // The window covers LYZ's 3' end only: over the 20 kb the Zarr covers, the
-  // signal is a narrow column in white. At domainMax 4 the one-ambient-UMI
-  // cells of the non-monocyte blocks fade to white.
+  // signal is a narrow column in white. At domainMax 2 the one-ambient-UMI
+  // cells of the non-monocyte blocks stay visible in their own hue.
   {
     mode: 'url',
     name: 'scrna/percell_lyz',
