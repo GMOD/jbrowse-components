@@ -446,6 +446,20 @@ test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
   )
 })
 
+test('a filter on strand lists only the forward blocks the marks draw', async () => {
+  const view = { filter: [{ field: 'strand', equal: 1 }] }
+  const synteny = await engine.synteny({ ...INV_INDELS, view })
+  const dotplot = await engine.dotplot({ ...INV_INDELS_DOTPLOT, view })
+  expect(new Set(synteny.alignments.strand)).toEqual(new Set([1]))
+  expect(synteny.alignments.strand).toHaveLength(
+    new Set(synteny.ribbons.alignment).size,
+  )
+  expect(new Set(dotplot.alignments.strand)).toEqual(new Set([1]))
+  expect(dotplot.alignments.strand).toHaveLength(
+    new Set(dotplot.segments.alignment).size,
+  )
+})
+
 test("the key's chips composite at the view's opacity, floored where the band is faint", async () => {
   const faint = await engine.synteny(INV_INDELS)
   expect(faint.alpha).toBe(0.25)

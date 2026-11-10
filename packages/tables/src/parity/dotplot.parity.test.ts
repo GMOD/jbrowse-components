@@ -65,13 +65,20 @@ function dotplotParity(
       ) =>
         Math.max(a, b) / axis.bpPerPx > axis.offsetPx &&
         Math.min(a, b) / axis.bpPerPx < axis.offsetPx + width
+      const shown = (i: number) =>
+        inWindow(view.hview, x.width, geometry?.x1[i], geometry?.x2[i]) &&
+        inWindow(view.vview, y.width, geometry?.y1[i], geometry?.y2[i])
+      const features = Object.keys(
+        drawnColors(geometry, view.opacityLevel, String, shown),
+      )
+        .map(Number)
+        .sort((a, b) => a - b)
+      const rowOf = new Map(features.map((f, row) => [f, String(row)]))
       const drawn = drawnColors(
         geometry,
         view.opacityLevel,
-        String,
-        i =>
-          inWindow(view.hview, x.width, geometry?.x1[i], geometry?.x2[i]) &&
-          inWindow(view.vview, y.width, geometry?.y1[i], geometry?.y2[i]),
+        f => rowOf.get(f) ?? '',
+        shown,
       )
       return {
         colors: drawn,

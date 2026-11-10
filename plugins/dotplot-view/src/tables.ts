@@ -187,10 +187,10 @@ export async function dotplotTables(
     ) {
       continue
     }
-    drawn.add(instanceData.instanceFeatureIdx[i]!)
     if (isInstanceInvisible(packed, level)) {
       continue
     }
+    drawn.add(instanceData.instanceFeatureIdx[i]!)
     const xa = locateCum(h, x1, x2)
     const xb = locateCum(h, x2, x1)
     const ya = locateCum(v, y1, y2)
