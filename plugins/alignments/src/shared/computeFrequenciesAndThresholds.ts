@@ -141,8 +141,21 @@ function laneCount(types: Uint8Array) {
   return max + 1
 }
 
-// Per-position, per-type count / total depth. Serves insertions, softclips,
-// hardclips (point features), and gap start positions. Depth basis is
+// Each position's interbase depth, measured at the window's first base for one
+// left of it.
+function interbaseDepths(
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+) {
+  return Float32Array.from(positions, pos =>
+    depthNear(coverageDepths, coverageStartPos, pos),
+  )
+}
+
+// Per-position, per-type count / depth, against a depth per position
+// (`pointDepths`). Serves insertions, softclips, hardclips (point features),
+// and gap start positions. Depth basis is
 // interbaseDepthAt (deeper of the two flanking bins); a zero-depth position
 // falls back to 1 so a stray event there reads as full frequency rather than
 // dividing by zero.
@@ -158,34 +171,6 @@ function laneCount(types: Uint8Array) {
 // `computeSNPCoverage` is — these positions ascend only WITHIN each of the three
 // interbase blocks the caller concatenates. The mismatch pass upstairs *could*
 // and is measurably worse for it; see `benches/coverageFrequencies.bench.ts`.
-export function computePositionFrequencies(
-  positions: Uint32Array,
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-  types?: Uint8Array,
-) {
-  return frequenciesOver(
-    positions,
-    interbaseDepths(positions, coverageDepths, coverageStartPos),
-    coverageStartPos,
-    coverageDepths.length,
-    types,
-  )
-}
-
-// Each position's interbase depth, measured at the window's first base for one
-// left of it.
-function interbaseDepths(
-  positions: Uint32Array,
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-) {
-  return Float32Array.from(positions, pos =>
-    depthNear(coverageDepths, coverageStartPos, pos),
-  )
-}
-
-// `computePositionFrequencies` against a depth per position, `pointDepths`.
 function frequenciesOver(
   positions: Uint32Array,
   pointDepths: Float32Array,

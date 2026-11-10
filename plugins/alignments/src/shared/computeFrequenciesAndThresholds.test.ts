@@ -3,51 +3,57 @@ import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../shaders/slang/gap.consts.generated.ts'
-import {
-  computeFrequenciesAndThresholds,
-  computePositionFrequencies,
-} from './computeFrequenciesAndThresholds.ts'
+import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from './types.ts'
 
-describe('computePositionFrequencies (interbase depth)', () => {
+function insertionFrequencies(
+  count: number,
+  position: number,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+) {
+  return computeFrequenciesAndThresholds(
+    {
+      mismatchPositions: new Uint32Array(0),
+      mismatchBases: new Uint8Array(0),
+    },
+    {
+      interbasePositions: new Uint32Array(count).fill(position),
+      interbaseTypes: new Uint8Array(count).fill(INTERBASE_INSERTION),
+    },
+    { gapPositions: new Uint32Array(0), gapTypes: new Uint8Array(0) },
+    coverageDepths,
+    coverageStartPos,
+  ).interbaseFrequencies
+}
+
+describe('computeFrequenciesAndThresholds (interbase depth)', () => {
   it('uses max of left and right depth for interbase features', () => {
     const coverageDepths = new Float32Array([5, 10, 15, 20])
-    const positions = new Uint32Array([2])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 0)
-    expect(freqs[0]).toBe(Math.round((1 / 15) * 255))
+    const freqs = insertionFrequencies(11, 2, coverageDepths, 0)
+    expect(freqs[0]).toBe(Math.round((11 / 15) * 255))
   })
 
   it('handles insertion at left edge (no left neighbor)', () => {
     const coverageDepths = new Float32Array([10, 20, 30])
-    const positions = new Uint32Array([0])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 0)
-    expect(freqs[0]).toBe(Math.round(0.1 * 255))
+    const freqs = insertionFrequencies(9, 0, coverageDepths, 0)
+    expect(freqs[0]).toBe(Math.round(0.9 * 255))
   })
 
   it('handles insertion at right edge (no right neighbor)', () => {
     const coverageDepths = new Float32Array([10, 20, 30])
-    const positions = new Uint32Array([3])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 0)
-    expect(freqs[0]).toBe(Math.round((1 / 30) * 255))
-  })
-
-  it('counts multiple insertions at same position', () => {
-    const coverageDepths = new Float32Array([10, 20])
-    const positions = new Uint32Array([1, 1])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 0)
-    expect(freqs[0]).toBe(Math.round(0.1 * 255))
-    expect(freqs[1]).toBe(Math.round(0.1 * 255))
+    const freqs = insertionFrequencies(10, 3, coverageDepths, 0)
+    expect(freqs[0]).toBe(Math.round((10 / 30) * 255))
   })
 
   it('handles coverageStartPos correctly', () => {
     const coverageDepths = new Float32Array([5, 10, 15])
-    const positions = new Uint32Array([12])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 10)
-    expect(freqs[0]).toBe(Math.round((1 / 15) * 255))
+    const freqs = insertionFrequencies(11, 12, coverageDepths, 10)
+    expect(freqs[0]).toBe(Math.round((11 / 15) * 255))
   })
 
   it('measures a deletion starting left of the window at its first base', () => {
@@ -73,9 +79,8 @@ describe('computePositionFrequencies (interbase depth)', () => {
 
   it('at a coverage cliff, uses the higher side', () => {
     const coverageDepths = new Float32Array([50, 50, 50, 0, 0])
-    const positions = new Uint32Array([3])
-    const freqs = computePositionFrequencies(positions, coverageDepths, 0)
-    expect(freqs[0]).toBe(Math.round(0.02 * 255))
+    const freqs = insertionFrequencies(20, 3, coverageDepths, 0)
+    expect(freqs[0]).toBe(Math.round(0.4 * 255))
   })
 })
 
