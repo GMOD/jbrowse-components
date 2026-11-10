@@ -1273,9 +1273,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
-      '@jbrowse/plugin-comparative-adapters':
-        specifier: workspace:^
-        version: link:../comparative-adapters
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
