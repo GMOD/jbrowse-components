@@ -2560,10 +2560,8 @@ export default function stateModelFactory(
                 colorForField(writtenColorOf(color), field),
               )
             }
-            if (
-              show !== undefined &&
-              show !== (readConfObject(bases, 'show') !== false)
-            ) {
+            const shown = readConfObject(bases, 'show') !== false
+            if (show !== undefined && show !== shown) {
               setConf(
                 conf,
                 ['pileup', 'bases', 'show'],
