@@ -120,13 +120,10 @@ describe('the scale', () => {
     expect(rowOf(anchorLane, 0).scale).toBe('')
   })
 
-  test('is the lane span alone at the anchor scale', () => {
-    expect(rowOf(mateLane({}), 2000).scale).toBe('2Kbp')
-  })
-
-  test('stays quiet about a multiple within rounding of one', () => {
+  test('is nothing for a lane drawn at the anchor scale, or within rounding of it', () => {
+    expect(rowOf(mateLane({}), 2000).scale).toBe('')
     expect(rowOf(mateLane({ frame: { min: 0, max: 2040 } }), 2000).scale).toBe(
-      '2.04Kbp',
+      '',
     )
   })
 

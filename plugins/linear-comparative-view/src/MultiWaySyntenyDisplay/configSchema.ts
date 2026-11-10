@@ -151,7 +151,7 @@ export function configSchemaFactory() {
             type: 'boolean',
             defaultValue: true,
             description:
-              "draw each lane's coordinate ticks; with this off, the header's span and multiple are the only scale shown",
+              "draw each lane's coordinate ticks; with this off, the span and multiple a zoomed-out lane's header prints are the only scale shown",
           },
         },
         { closed: true },

@@ -95,7 +95,6 @@ export function SvgLaneHeaders({
     halo: bandGroundColor(),
     haloWidth: GENE_LABEL_HALO_PX * 2,
   }
-  const changesWidth = changesChipWidth(rows)
   return (
     <>
       {rows.map(row => {
@@ -150,7 +149,7 @@ export function SvgLaneHeaders({
                     ? measureText(row.scale, LABEL_FONT_SIZE) + CHANGES_GAP_PX
                     : 0)
                 }
-                width={changesWidth}
+                width={changesChipWidth(row.changes.text)}
                 y={row.y}
               />
             ) : null}

@@ -13,7 +13,6 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
-  changesChipWidth,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
@@ -195,8 +194,6 @@ const LaneHeaders = observer(function LaneHeaders({
     padding: `0 ${INLINE_CHIP_PAD_PX}px`,
     borderRadius: 2,
   }
-
-  const changesWidth = changesChipWidth(rows)
 
   const startDrag = (assemblyName: string, event: React.MouseEvent) => {
     event.stopPropagation()
@@ -384,8 +381,6 @@ const LaneHeaders = observer(function LaneHeaders({
               title={`against ${row.changes.anchor}`}
               style={{
                 marginLeft: 'auto',
-                minWidth: changesWidth + 2 * CHIP_BORDER_PX,
-                boxSizing: 'border-box',
                 padding: `0 ${INLINE_CHIP_PAD_PX}px`,
                 border: `${CHIP_BORDER_PX}px solid ${bandPalette.text.secondary}`,
                 borderRadius: 2,

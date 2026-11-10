@@ -117,15 +117,8 @@ function laneChanges(
     : undefined
 }
 
-/** one width for every lane's changes chip, so the chips line up */
-export function changesChipWidth(rows: readonly LaneHeaderRow[]) {
-  const widest = Math.max(
-    0,
-    ...rows.map(row =>
-      row.changes ? measureText(row.changes.text, LABEL_FONT_SIZE) : 0,
-    ),
-  )
-  return widest + 2 * INLINE_CHIP_PAD_PX
+export function changesChipWidth(text: string) {
+  return measureText(text, LABEL_FONT_SIZE) + 2 * INLINE_CHIP_PAD_PX
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
@@ -166,7 +159,7 @@ function scaleLabelOf(lane: Lane, visibleBpSpan: number) {
   const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
   return multiple > 1.02
     ? `${getBpDisplayStr(laneSpan)}  ${Number(multiple.toFixed(1))}×`
-    : getBpDisplayStr(laneSpan)
+    : ''
 }
 
 export function laneHeaderRows(
