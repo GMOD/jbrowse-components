@@ -24,6 +24,17 @@ const SV_TRACK = {
 }
 const CNV_GRAPH_CONFIG = 'test_data/graphgenomeview/hprc_cnv.json'
 
+const CN_BEDGRAPH_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'cnv_1000g_bedgraph',
+  name: '1000 Genomes copy number, 2504 individuals',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphTabixAdapter',
+    uri: 'https://jbrowse.org/demos/1000g/qm2_cn_1kb.bedgraph.gz',
+  },
+}
+
 const NESTED_DELETION_WINDOW = 'chr3:162,650,000-163,050,000'
 const HGSVC3_SV_TRACK = {
   type: 'VariantTrack',
@@ -80,7 +91,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'paper/cohort_views',
     url: sessionSpec(CNV_GRAPH_CONFIG, {
-      sessionTracks: [SV_TRACK, HGSVC3_SV_TRACK],
+      sessionTracks: [SV_TRACK, HGSVC3_SV_TRACK, CN_BEDGRAPH_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -111,7 +122,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             },
             {
               ...CN_HEATMAP_SETTINGS,
-              trackId: 'cnv_1000g_zarr',
+              trackId: CN_BEDGRAPH_TRACK.trackId,
               type: 'LinearWiggleDisplay',
               height: 160,
               runClustering: true,
@@ -140,7 +151,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
     annotations: [
       panelLabel(SV_TRACK.trackId, 0.55, 'a'),
-      panelLabel('cnv_1000g_zarr', 0.55, 'b'),
+      panelLabel(CN_BEDGRAPH_TRACK.trackId, 0.55, 'b'),
       panelLabel('hprc_minigraph_segments', 0.17, 'c'),
       trackBlurb(
         SV_TRACK.trackId,
@@ -153,7 +164,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         'HGSVC long-read\nassembly calls',
       ),
       trackBlurb(
-        'cnv_1000g_zarr',
+        CN_BEDGRAPH_TRACK.trackId,
         0.55,
         '1000 Genomes\ncopy number\n(QuicK-mer2)',
       ),
