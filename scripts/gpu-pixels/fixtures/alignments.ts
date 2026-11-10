@@ -83,7 +83,10 @@ function pileupUniforms(
     colorOverlap: 0,
     colorMateOverlap: 0,
     connectorColorShift: 0,
-    linkedReadColor: slots(11, () => zero4) as read.Uniforms['linkedReadColor'],
+    linkedReadColor: slots(
+      read.UNIFORM_SLOT_ARRAYS.linkedReadColor.length,
+      () => zero4,
+    ) as read.Uniforms['linkedReadColor'],
     readCategoryColor: slots(21, i =>
       i === read.RC_FWD_STRAND
         ? vec4(FWD)
