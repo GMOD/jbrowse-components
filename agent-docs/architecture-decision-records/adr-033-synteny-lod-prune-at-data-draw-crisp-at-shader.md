@@ -119,6 +119,17 @@ coordination once that work lands.
   a dense mid-zoom rearrangement (BASE ribbons fade via `fadeThinAlignments`
   while their indels stay solid) warrants unifying both under one density path.
 
+- **Superseded for indels, 2026-11-09: an indel fades by its width.** Every
+  insertion or deletion is a wedge that narrows to nothing at one end, so part
+  of it is under a pixel wide at any zoom, and the 1px minimum band drew that
+  part at full strength: a hairline over a third or more of the band's height
+  in curve mode. The owner's call: an indel is interbase, between two things,
+  and it is fine for it to vanish into nothing. `thinWidthFade` now gives a
+  CIGAR kind `min(perpW, 1)`, as it gives a match tile, on both backends; the
+  "stays solid" half of the Reasoning above no longer holds for them.
+  `scripts/gpu-pixels` fixture `synteny-indels-curve` scores it against the
+  ideal scene.
+
 ## Related
 
 - ADR-005 (shader codegen — never hand-edit `*.generated.ts`)

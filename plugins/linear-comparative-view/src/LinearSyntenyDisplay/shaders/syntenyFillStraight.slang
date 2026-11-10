@@ -6,11 +6,12 @@
 // linear (s=t) and so is y (sd=1, dydt=height), so each edge's slope is just
 // its constant top-to-bottom dx over the height.
 //! targets: wgsl, glsl
+//! topology: triangle-strip
 //! coverage: analytic
 
 import syntenyTypes;
 
-public static const uint VERTS_PER_INSTANCE = 6u;
+public static const uint VERTS_PER_INSTANCE = 4u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 [shader("vertex")]

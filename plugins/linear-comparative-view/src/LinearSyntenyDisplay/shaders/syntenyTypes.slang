@@ -48,7 +48,7 @@ public struct Instance {
   public float featureId         : ATTR5;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyKinds.ts).
   // The fill fragment uses it only for shading: CIGAR indel tiles get the
-  // ground pre-blend in shadeFill and skip the density width-fade in fillFs.
+  // ground pre-blend in shadeFill and fade by their own width in fillFs.
   // The coverage/AA path is identical to BASE, so indels aren't aliased.
   public float kind              : ATTR6;
 };
@@ -62,7 +62,7 @@ public struct Instance {
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
-// (ground pre-blend, no density width-fade); both share the same edge AA.
+// (ground pre-blend, fade by own width); both share the same edge AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
 // The "location marker" tick: a periodic zero-width vertical line emitted
@@ -113,12 +113,19 @@ public static const float WIDTH_FADE_FLOOR = 0.15;
 // would only re-inflate the same product (0.05px tiles: 20 per pixel at a
 // floored 0.15 each, 2.3x). So the floor stays a whole-ribbon affordance.
 //
+// AN INDEL FADES THE SAME WAY, for its own reason. An insertion or deletion is
+// interbase: a wedge between two things that narrows to nothing at one end, so
+// part of every one is under a pixel wide at any zoom. Held at full strength
+// that part is a hairline, over a third or more of the band's height in curve
+// mode where the width leaves zero quadratically. By its width it vanishes
+// into the tip, which is the coverage a path fill gives the same shape.
+//
 // The kind is passed rather than a precomputed bool because the two callers
 // otherwise reach these three cases by different routes — the fragment shader
 // has the kind it was handed, while Canvas2D has already `continue`d past
 // markers — and this is the decision, not the conversion (adr-051).
 public float thinWidthFade(float perpW, float kind, bool fadeThinAlignments) {
-  if (isTileKind(kind)) {
+  if (isTileKind(kind) || isCigarKind(kind)) {
     return min(perpW, 1.0);
   }
   bool applies = !isCigarKind(kind) && !isMarkerKind(kind)
@@ -644,17 +651,16 @@ public bool isClickedSilhouette(Instance inst, Uniforms u) {
 
 public static const uint CURVE_SEGMENTS = 8u;
 
-// One quad (6 verts). Vert layout: 0=TL, 1=TR, 2=BL, 3=BL, 4=TR, 5=BR;
-// triangles (TL, TR, BL) and (BL, TR, BR).
+// One quad as a 4-vert triangle strip: 0=TL, 1=TR, 2=BL, 3=BR.
 public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
                              float extraPerpPx, Uniforms u) {
-  bool isTop = (vid == 0u || vid == 1u || vid == 4u);
-  bool isRight = (vid == 1u || vid == 4u || vid == 5u);
+  bool isTop = vid < 2u;
+  bool isRight = (vid & 1u) == 1u;
 
-  // The quad's two rows sit an AA pixel BEYOND each end of the ribbon (y = -1
-  // and y = height + 1) so vertCoverage has somewhere to ramp, and the blend
-  // extrapolates to match: s = -1/height at the top row, 1 + 1/height at the
-  // bottom. In straight mode x is affine in t and t is affine in screen y, so
+  // The quad's two rows sit one OUTPUT pixel beyond each end of the ribbon
+  // (y = -rowPad and y = height + rowPad) so vertCoverage has somewhere to
+  // ramp, and the blend extrapolates to match: s = -rowPad/height at the top
+  // row, 1 + rowPad/height at the bottom. In straight mode x is affine in t and t is affine in screen y, so
   // those two blends put the quad's sides exactly ON the ribbon's own edge
   // lines, offset by `pad`. Containment is then a property of `pad` alone, at
   // every row, with nothing left for the endpoints to get wrong.
@@ -670,14 +676,16 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   // one, hard-cut rather than faded. syntenyFillPad.test.ts could not see it —
   // it modelled the quad as spanning exactly [y(t0), y(t1)] — and now models the
   // rows the shader actually emits.
-  float dy = 1.0 / u.height;
+  float rowPad = aaPx(u.devicePixelRatio);
+  float dy = rowPad / u.height;
   float sTop = -dy;
   float sBot = 1.0 + dy;
   // Ordered left/right, so a crossed ribbon still gets a forward-facing quad.
   float2 span = edgeSpan(c, isTop ? sTop : sBot);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
-  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5.
+  //   (1) the AA ramp's perpendicular reach, half an OUTPUT pixel:
+  //       perpFactor·aaHalfPx.
   //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
   //       ribbon wider than perpFactor px.
   //   (3) the caller's extraPerpPx, projected onto x at this slope.
@@ -694,12 +702,12 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   float2 d = ribbonEdgeDeltas(c);
   float slope = max(abs(d.x), abs(d.y)) / u.height;
   float perpFactor = sqrt(1.0 + slope * slope);
-  float pad = perpFactor * (0.5 + extraPerpPx)
+  float pad = perpFactor * (aaHalfPx(u.devicePixelRatio) + extraPerpPx)
             + thinRibbonPad(perpFactor, c, sTop, sBot) + PAD_SLACK_PX;
 
   fillVsEmit(o,
              isRight ? span.y + pad : span.x - pad,
-             isTop ? -1.0 : u.height + 1.0,
+             isTop ? -rowPad : u.height + rowPad,
              u);
 }
 
@@ -727,16 +735,17 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
   float2 span = edgeSpan(c, isTop ? s0 : s1);
   float y = u.height * yCurve(t);
 
-  // The straight pass extrapolates its rows' blend to match their ±1px AA
-  // offset; this one does not, and does not need to. The x-curve is momentarily
+  // The straight pass extrapolates its rows' blend to match their AA offset;
+  // this one does not, and does not need to. The x-curve is momentarily
   // vertical at t=0 and t=1, so the first and last segment's rows barely move in
   // x — the shear that costs straight mode a perpendicular pixel is under
-  // 0.26·Δ/h here against a pad of 0.28·Δ/h before the bulge term. Undoing it
+  // 0.26·Δ/h here against a pad of 0.28·Δ/h before the bulge term. Both are
+  // per output pixel: the row offset and term (1) scale by 1/dpr together. Undoing it
   // would mean inverting yCurve per vertex, i.e. a Newton solve on all 48.
   //
   // Perpendicular pad (in horizontal pixels). Accommodates:
-  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5, at THIS
-  //       segment's steepest slope.
+  //   (1) the AA ramp's perpendicular reach, half an OUTPUT pixel:
+  //       perpFactor·aaHalfPx, at THIS segment's steepest slope.
   //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
   //       ribbon wider than perpFactor px, so it costs the common case nothing.
   //   (3) the caller's extraPerpPx, projected onto x at this segment's slope.
@@ -775,13 +784,14 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
                  / yCurveDeriv(tPeak);
   float perpFactor = sqrt(1.0 + segSlope * segSlope);
   float bulgeX = maxEdgeDx * invN * invN * 0.75;
-  float pad = perpFactor * (0.5 + extraPerpPx)
+  float pad = perpFactor * (aaHalfPx(u.devicePixelRatio) + extraPerpPx)
             + thinRibbonPad(perpFactor, c, s0, s1) + bulgeX + PAD_SLACK_PX;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.
-  if (seg == 0u && isTop) { y -= 1.0; }
-  if (seg == CURVE_SEGMENTS - 1u && !isTop) { y += 1.0; }
+  float rowPad = aaPx(u.devicePixelRatio);
+  if (seg == 0u && isTop) { y -= rowPad; }
+  if (seg == CURVE_SEGMENTS - 1u && !isTop) { y += rowPad; }
 
   fillVsEmit(o, isRight ? span.y + pad : span.x - pad, y, u);
 }

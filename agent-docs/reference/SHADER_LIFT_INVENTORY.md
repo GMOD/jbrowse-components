@@ -118,9 +118,9 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `aaHalfPx` | tests only — `arcHull.test.ts`, `barCutCoverage.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
-| `aaPx` | tests only — `barCutCoverage.test.ts` |
-| `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts` |
+| `aaHalfPx` | tests only — `arcHull.test.ts`, `barCutCoverage.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts`, `syntenyFillPad.test.ts` |
+| `aaPx` | tests only — `barCutCoverage.test.ts`, `syntenyFillPad.test.ts` |
+| `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts`, `syntenyWedgeInk.test.ts` |
 | `armCoverage` | tests only — `chevronStroke.test.ts` |
 | `armLocalPx` | tests only — `chevronStroke.test.ts` |
 | `arrowCoverage` | tests only — `arrowCoverage.test.ts` |
@@ -141,7 +141,6 @@ is no longer shared with anything.
 | `polarPoint` | tests only — `ribbonBand.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
 | `ribbonEndPad` | nothing |
-| `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `slabCoverage` | tests only — `barCutCoverage.test.ts` |
 | `slabVertexYPx` | tests only — `barCutCoverage.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |

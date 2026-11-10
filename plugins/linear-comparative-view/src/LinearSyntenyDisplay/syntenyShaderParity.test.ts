@@ -188,10 +188,18 @@ test('the fade floors a hairline ribbon and caps at full opacity', () => {
   expect(thinWidthFade(50, KIND_BASE, true)).toBe(1)
 })
 
-test('an indel quad and a marker tick take no fade at all', () => {
-  for (const kind of [KIND_CIGAR_I, KIND_CIGAR_D, KIND_CIGAR_N, KIND_MARKER]) {
+test('a marker tick takes no fade at all', () => {
+  for (const fadeThin of [false, true]) {
+    expect(thinWidthFade(0.01, KIND_MARKER, fadeThin)).toBe(1)
+  }
+})
+
+test('an indel fades by its own width, unfloored and unswitchable', () => {
+  for (const kind of [KIND_CIGAR_I, KIND_CIGAR_D, KIND_CIGAR_N]) {
     for (const fadeThin of [false, true]) {
-      expect(thinWidthFade(0.01, kind, fadeThin)).toBe(1)
+      expect(thinWidthFade(0.4, kind, fadeThin)).toBeCloseTo(0.4, 7)
+      expect(thinWidthFade(0.01, kind, fadeThin)).toBeCloseTo(0.01, 7)
+      expect(thinWidthFade(9, kind, fadeThin)).toBe(1)
     }
   }
 })

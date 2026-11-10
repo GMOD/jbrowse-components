@@ -290,6 +290,14 @@ for (const f of chosen) {
         console.log(
           `  ${String(dpr).padEnd(4)} ${samples}x @${values.base} ${fmt(score(f, was, ref), translucent)}  (${d.n} px differ, max ${d.max}/255)`,
         )
+        if (values.png && samples === 1) {
+          writePanel(
+            path.join(values.png, `${f.name}@${dpr}@base.png`),
+            [ref, was, now, errorImage(was, ref), errorImage(now, ref)],
+            w,
+            h,
+          )
+        }
       }
     }
     if (values.png) {

@@ -7,11 +7,12 @@
 // ribbon polygon rather than two per-edge line quads is what lets strokeFs
 // measure against the same analytic edges the fill clips to.
 //! targets: wgsl, glsl
+//! topology: triangle-strip
 //! coverage: analytic
 
 import syntenyTypes;
 
-public static const uint VERTS_PER_INSTANCE = 6u;
+public static const uint VERTS_PER_INSTANCE = 4u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 [shader("vertex")]

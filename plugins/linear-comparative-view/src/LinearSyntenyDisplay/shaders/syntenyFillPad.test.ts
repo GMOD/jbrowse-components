@@ -30,7 +30,7 @@
 // consumer of it — which without this line leaves `sBlend` and friends in the
 // GLOBAL scope, where tsc collides them with any sibling that mirrors the same
 // shader under the same names. `probe-synteny-thin-fade.ts` is one.
-export {}
+import { aaHalfPx, aaPx } from '@jbrowse/render-core/shaders/antialias'
 
 const NUM_SEGMENTS = 8
 const invN = 1 / NUM_SEGMENTS
@@ -68,7 +68,7 @@ function edgesAt(c: Corners, h: number, t: number, curve: boolean) {
 // aaHalf is 0.5/dpr CSS px (aaHalfPx), so dpr=1 gives the largest footprint and
 // is the case the geometry has to cover — that is why 0.5 is hard-coded here
 // rather than parameterised. Same for STROKE_PERP_PX below.
-function footprint(c: Corners, h: number, t: number, curve: boolean) {
+function footprint(c: Corners, h: number, t: number, curve: boolean, dpr = 1) {
   const { e0, e1, pf0, pf1 } = edgesAt(c, h, t, curve)
   const xL = Math.min(e0, e1)
   const xR = Math.max(e0, e1)
@@ -76,7 +76,11 @@ function footprint(c: Corners, h: number, t: number, curve: boolean) {
   const pfR = e0 <= e1 ? pf1 : pf0
   const perpW = (xR - xL) / (0.5 * (pfL + pfR))
   const expand = Math.max(0.5 - 0.5 * perpW, 0)
-  return { left: xL - pfL * (0.5 + expand), right: xR + pfR * (0.5 + expand) }
+  const aaHalf = aaHalfPx(dpr)
+  return {
+    left: xL - pfL * (aaHalf + expand),
+    right: xR + pfR * (aaHalf + expand),
+  }
 }
 
 // thinRibbonPad: allowance for perpCoverage's sub-pixel `expand`, bounded by the
@@ -123,6 +127,7 @@ const bulgeX = (c: Corners) =>
 // passes, STROKE_PERP_PX for the clicked-outline passes, whose stroke ramp
 // reaches STROKE_HALF_PX + aaHalf = 1 CSS px outside each edge at dpr=1.
 const STROKE_PERP_PX = 1
+const STROKE_HALF_PX = 0.5
 
 // The two rows one emitted quad is built from: their screen y, and the X-blend
 // the vertex shader takes their x from. This is the part the model used to
@@ -141,11 +146,11 @@ interface Rows {
   sHi: number
 }
 
-const straightRows = (h: number): Rows => ({
-  yLo: -1,
-  yHi: h + 1,
-  sLo: -1 / h,
-  sHi: 1 + 1 / h,
+const straightRows = (h: number, dpr = 1): Rows => ({
+  yLo: -aaPx(dpr),
+  yHi: h + aaPx(dpr),
+  sLo: -aaPx(dpr) / h,
+  sHi: 1 + aaPx(dpr) / h,
 })
 
 // What straightGeometry emitted before: the AA rows moved in y but kept the
@@ -157,12 +162,12 @@ const shearedStraightRows = (h: number): Rows => ({
   sHi: 1,
 })
 
-const curveRows = (h: number, seg: number): Rows => {
+const curveRows = (h: number, seg: number, rowPad = 1): Rows => {
   const t0 = seg * invN
   const t1 = (seg + 1) * invN
   return {
-    yLo: h * yCurve(t0) - (seg === 0 ? 1 : 0),
-    yHi: h * yCurve(t1) + (seg === NUM_SEGMENTS - 1 ? 1 : 0),
+    yLo: h * yCurve(t0) - (seg === 0 ? rowPad : 0),
+    yHi: h * yCurve(t1) + (seg === NUM_SEGMENTS - 1 ? rowPad : 0),
     sLo: sBlend(t0),
     sHi: sBlend(t1),
   }
@@ -177,22 +182,32 @@ interface Geometry {
   pad: (c: Corners, h: number, seg: number, rows: Rows) => number
 }
 
-const straightGeometry = (extraPerpPx = 0, rows = straightRows): Geometry => ({
+const straightGeometry = (
+  extraPerpPx = 0,
+  rows: (h: number, dpr: number) => Rows = straightRows,
+  dpr = 1,
+): Geometry => ({
   curve: false,
-  rows: (_c, h) => rows(h),
+  rows: (_c, h) => rows(h, dpr),
   pad: (c, h, _seg, r) => {
     const pf = straightPerpFactor(c, h)
-    return pf * (0.5 + extraPerpPx) + padExtra(pf, c, r.sLo, r.sHi) + SLACK
+    return (
+      pf * (aaHalfPx(dpr) + extraPerpPx) + padExtra(pf, c, r.sLo, r.sHi) + SLACK
+    )
   },
 })
 
-const curveGeometry = (extraPerpPx = 0): Geometry => ({
+const curveGeometry = (
+  extraPerpPx = 0,
+  dpr = 1,
+  rowPad = aaPx(dpr),
+): Geometry => ({
   curve: true,
-  rows: (_c, h, seg) => curveRows(h, seg),
+  rows: (_c, h, seg) => curveRows(h, seg, rowPad),
   pad: (c, h, seg, r) => {
     const pf = curvePerpFactor(c, h, seg)
     return (
-      pf * (0.5 + extraPerpPx) +
+      pf * (aaHalfPx(dpr) + extraPerpPx) +
       padExtra(pf, c, r.sLo, r.sHi) +
       bulgeX(c) +
       SLACK
@@ -207,15 +222,16 @@ type FootprintFn = (
   h: number,
   t: number,
   curve: boolean,
+  dpr?: number,
 ) => { left: number; right: number }
 
-const strokeFootprint: FootprintFn = (c, h, t, curve) => {
+const strokeFootprint: FootprintFn = (c, h, t, curve, dpr = 1) => {
   const { e0, e1, pf0, pf1 } = edgesAt(c, h, t, curve)
   const pfL = e0 <= e1 ? pf0 : pf1
   const pfR = e0 <= e1 ? pf1 : pf0
   return {
-    left: Math.min(e0, e1) - pfL * STROKE_PERP_PX,
-    right: Math.max(e0, e1) + pfR * STROKE_PERP_PX,
+    left: Math.min(e0, e1) - pfL * (STROKE_HALF_PX + aaHalfPx(dpr)),
+    right: Math.max(e0, e1) + pfR * (STROKE_HALF_PX + aaHalfPx(dpr)),
   }
 }
 
@@ -254,6 +270,7 @@ function worstCrop(
   height: number,
   geom: Geometry,
   footprintFn: FootprintFn = footprint,
+  dpr = 1,
 ) {
   const h = Math.max(height, 1)
   const { curve } = geom
@@ -270,7 +287,7 @@ function worstCrop(
       // rows measure against the frozen t=0 / t=1 edges.
       const t = curve ? curveParamAtY(y, h) : y / h
       const f = (y - r.yLo) / (r.yHi - r.yLo)
-      const fp = footprintFn(c, h, t, curve)
+      const fp = footprintFn(c, h, t, curve, dpr)
       worst = Math.max(
         worst,
         lo.l - pad + (hi.l - lo.l) * f - fp.left,
@@ -556,5 +573,60 @@ describe('thinRibbonPad', () => {
     expect(cropCurve(thin, 100, noExtraCurve)).toBeGreaterThan(3)
     expect(cropStraight(thin, 100)).toBe(0)
     expect(cropCurve(thin, 100)).toBe(0)
+  })
+})
+
+describe.each([1.5, 2, 3])('at devicePixelRatio %s', dpr => {
+  test('every pass still contains its footprint across the sweep', () => {
+    let fillStraight = 0
+    let fillCurve = 0
+    let strokeStraight = 0
+    let strokeCurve = 0
+    for (const [c, h] of [
+      ...shapes.map(([, c, h]): [Corners, number] => [c, h]),
+      ...sweep(4000),
+    ]) {
+      fillStraight = Math.max(
+        fillStraight,
+        worstCrop(c, h, straightGeometry(0, straightRows, dpr), footprint, dpr),
+      )
+      fillCurve = Math.max(
+        fillCurve,
+        worstCrop(c, h, curveGeometry(0, dpr), footprint, dpr),
+      )
+      strokeStraight = Math.max(
+        strokeStraight,
+        worstCrop(
+          c,
+          h,
+          straightGeometry(STROKE_PERP_PX, straightRows, dpr),
+          strokeFootprint,
+          dpr,
+        ),
+      )
+      strokeCurve = Math.max(
+        strokeCurve,
+        worstCrop(
+          c,
+          h,
+          curveGeometry(STROKE_PERP_PX, dpr),
+          strokeFootprint,
+          dpr,
+        ),
+      )
+    }
+    expect(fillStraight).toBe(0)
+    expect(fillCurve).toBe(0)
+    expect(strokeStraight).toBe(0)
+    expect(strokeCurve).toBe(0)
+  })
+
+  test('the curve rows shrink with the ramp pad (do not size them apart)', () => {
+    const cssPxRows = curveGeometry(0, dpr, 1)
+    let worst = 0
+    for (const [c, h] of sweep(4000)) {
+      worst = Math.max(worst, worstCrop(c, h, cssPxRows, footprint, dpr))
+    }
+    expect(worst).toBeGreaterThan(0)
   })
 })

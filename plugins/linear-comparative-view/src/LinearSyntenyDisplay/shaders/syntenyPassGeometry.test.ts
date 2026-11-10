@@ -20,12 +20,12 @@ import * as edgeStraight from './syntenyEdgeStraight.iface.generated.ts'
 import * as fillCurve from './syntenyFillCurve.iface.generated.ts'
 import * as fillStraight from './syntenyFillStraight.iface.generated.ts'
 
-const VERTS_PER_SEGMENT = 6
-
 describe('synteny pass geometry', () => {
-  test('straight passes emit one quad', () => {
-    expect(fillStraight.VERTS_PER_INSTANCE).toBe(VERTS_PER_SEGMENT)
-    expect(edgeStraight.VERTS_PER_INSTANCE).toBe(VERTS_PER_SEGMENT)
+  test('straight passes emit one quad as a four-vertex strip', () => {
+    for (const mod of [fillStraight, edgeStraight]) {
+      expect(mod.VERTS_PER_INSTANCE).toBe(4)
+      expect(mod.TOPOLOGY).toBe('triangle-strip')
+    }
   })
 
   test('each mode’s fill and outline pass share an instance layout', () => {
