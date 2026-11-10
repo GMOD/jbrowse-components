@@ -116,13 +116,14 @@ displays; ADR-157) and derives the rows from it.
 
 **`rows` is one object on every display, and the mixin reads its
 arrangement.** display-kit's `RowArrangement` is the five arrangement members
-(`sort`, `labels`, `colors`, `tree`, `kept`) with `color`, `annotations` and
-`axis`, MAF's `rows` whole. `Rows` extends it with `field`, `filter` and the axis `grid`: a
+(`sort`, `labels`, `colors`, `tree`, `kept`) with `color` and `axis`, MAF's
+`rows` whole. `Rows` extends it with `field`, `filter`, `annotations` and the
+axis `grid`: a
 feature field where the rows are a field's values, `source` alone on the
 quantitative display (`QuantitativeRows`), and `sample` or `haplotype` on the
 variant display (`VariantRows`). The host is typed on `RowArrangement`, so the
-mixin reads `field` and `filter` only through the schema's declared keyed
-writes and `Reflect`, where a display has them.
+mixin reads `field`, `filter` and `annotations` only through the schema's
+declared keyed writes and `Reflect`, where a display has them.
 
 `rows.color` is display-kit's `RowColor` on every row display, one categorical
 channel whose `field` names a row attribute, `name` by default, with
@@ -244,14 +245,16 @@ another setting.
   row's label bar, and a display paints its marks in it only where
   `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
 
-**A row color has one key, the first of `rowColorScales`**, which every display
+**A row color has one key, the first of `rowColorScales`**
+(`rowColorKeyScales`), which every display
 spreads last into its `colorScales`: one scale titled by the `rows.color` field,
 capitalised, or none where it would have no entries. It keys wherever the labels
 cannot name the colors: by a field on any display at any row height, and by
 `name` only in a shared panel (on stacked rows the labels are the key). After it
-comes one key per `rows.annotations` entry that colors a row
-(`rowAnnotationScales`), titled by its field, with the id
-`rowAnnotationScaleId(index)`. So a reader of the row color's key finds it by
+comes one key per `rowAnnotationColumns` entry (`rowAnnotationScales`),
+titled as its column is labelled, with the id `rowAnnotationScaleId(position)`,
+the entry's place in the config, so a dismissed key stays dismissed while an
+earlier entry comes and goes. So a reader of the row color's key finds it by
 `ROW_COLOR_SCALE_ID`, never at index 0, as variants' `tables.ts` does.
 
 - `rowColorKeyEntries` lists one entry per value some row carries with a color,
@@ -414,9 +417,9 @@ marks derives it (wiggle's `markSources`) rather than storing it on the row.
 any other name type-checks and paints nothing.
 
 **The annotation columns are not a third color on the row.**
-`rows.annotations` is a list of `RowColor` channels (ADR-260), and the mixin's
-`rowAnnotationColors` is one `RowAnnotationColumn` per entry that colors a row:
-a map from row name to color, held beside the rows and never stamped on them.
+`rows.annotations` is a list of `RowAnnotation` entries (ADR-260), and the
+mixin's `rowAnnotationColors` is one `RowAnnotationColumn` per drawn entry: a
+map from row name to color, held beside the rows and never stamped on them.
 `rowAnnotationDeals` deals each entry's values as `dealtValueColors` does.
 
 `rowAxisConfigSchema` (display-kit) is the matching `rows.axis` object (`tree` /
@@ -476,7 +479,19 @@ adds `grid`, the row separators, on every row display but MAF.
   plot's first region. Below `MIN_TEXT_ROW_HEIGHT` the box is the columns'
   width or the swatch's, whichever is wider.
   With the row labels hidden or in a shared panel `rowAnnotationChannels` and
-  `rowAnnotationDeals` are empty, so the columns and their keys go together.
+  `rowAnnotationDeals` are empty, and an entry on the `rows.color` field is
+  dropped there too, since the row color is that column.
+- **One decision says which columns draw.** `rowAnnotationColumns`, a stage
+  after `sources`, keeps each deal that colors one of the rows drawn (after
+  `filter` and `kept`) while the `drawsRowAnnotations` hook holds (wiggle's
+  is `drawsRowLabels`, so one row draws none). The columns, `rowColumnLabels`
+  and so the reserved lines, and the annotation keys all read it, never the
+  deals or `expandedRows` directly.
+- **What draws nothing says so.** `rowAnnotationNotices(height)` names an
+  entry on a field no row carries, one on mostly distinct numbers (each dealt
+  a color, where a continuous scale is what it wants), and column labels over
+  half the track; the wiggle, variant and mark displays spread it beside
+  `rowNarrowingNotices`.
 - **An annotation deals from its own palette.** `rowAnnotationDeals` hands
   `dealValueColors` the deck `annotationPaletteColorAt(position, …)`, where
   `position` is the entry's place in `rows.annotations` as
@@ -484,11 +499,12 @@ adds `grid`, the row separators, on every row display but MAF.
   nothing. None of the palettes is the row color's, and the pale lap is
   capped short of white, as the row palette's is. The entry's `scale.range`
   deals first, as the row color's does. Its key lists only the values
-  `clusterableSources` carry, since it focuses nothing; the row color's key
+  the rows drawn carry, since it focuses nothing; the row color's key
   lists every dealt value, since a focus reaches rows not drawn.
 - **Two or more color columns take a label each above the rows.**
   `rowColumnLabels` lists them, the row color's `rowColorTitle` first where a
-  row has a color and then each drawn annotation's `rowAnnotationTitle`, the
+  row has a color and then each drawn annotation's title (`legend.title`,
+  else the field capitalised), the
   same getters the keys are titled from, and is empty under two columns.
   `SvgRowColumnLabels` draws them stair-step at negative y, a line each
   (`ROW_COLUMN_LABEL_LINE_HEIGHT`), with a 1 px leader to each column's

@@ -171,9 +171,15 @@ A row display's row axis is its `rows` object: `sort`, `labels` and `kept`
 on every one; the row `field`, cluster `tree`, `color` and pinned `colors`,
 `annotations`, `filter`, `step` (row height, a pixel count or `"fit"`),
 `groups` and the sidebar `axis` where the display has them. MAF has no
-`field`, `filter` or `step`, since its rows carry no attributes; wiggle has no
-`step` or `groups`; the multi-way lanes take only `sort`, `labels` and `kept`
+`field`, `filter`, `annotations` or `step`, since its rows carry no
+attributes; wiggle has no `step` or `groups`; the multi-way lanes take only
+`sort`, `labels` and `kept`
 (ADRs [157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md), [160](../architecture-decision-records/adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md), [257](../architecture-decision-records/adr-257-the-row-axis-owns-its-settings.md)). The schema is `rowsConfigSchema.ts` (display-kit).
+`annotations` is a list of `RowAnnotation` entries, each a categorical color
+column beside the labels with a key titled `legend.title`; one on the
+`rows.color` field draws nothing of its own, and the columns, their label
+lines and their keys draw over the rows drawn
+(ADR [260](../architecture-decision-records/adr-260-row-annotations-are-color-columns-beside-the-row-labels.md)).
 `TreeSidebarMixin` (`packages/tree-sidebar`) owns the arrangement: rows a
 source lists keep its order past the `sort` list (`orderRowsByDomain`), a
 tree rotates to it (`rotateNewickByDomain`), and clustering writes back into

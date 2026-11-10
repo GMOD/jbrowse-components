@@ -1,6 +1,6 @@
 ---
 name: a-row-listing-carries-its-rows-attributes
-description: A mark display over a multi-BigWig cannot facet, filter or color its rows by a subtrack's `group` or a samples table column, because an adapter's row listing carries only name, label and color. Read before adding a row attribute source.
+description: A mark display over a multi-BigWig cannot facet, filter, color or annotate its rows by a subtrack's `group` or a samples table column, because an adapter's row listing carries only name, label and color. Read before adding a row attribute source.
 ---
 
 # A row listing carries its rows' attributes
@@ -20,6 +20,14 @@ travel.
   adapter reads them.
 - The VCF adapters list no rows, so a mark display over a VCF sees none of its
   samples table.
+
+`rows.annotations`
+([ADR-260](../../architecture-decision-records/adr-260-row-annotations-are-color-columns-beside-the-row-labels.md))
+is the first reader that wants several attributes of a row at once: a color
+column per samples table column beside the labels, as IGV's sample-attribute
+panel draws a sample information file's columns beside its track names. On a
+mark display it draws nothing from those columns while the listing drops
+them, and says so in the display's notice ("no row carries ...").
 
 The change is the listing carrying each row's attributes and the mark family
 spreading them onto its rows before `rows.groups` tags `group`.

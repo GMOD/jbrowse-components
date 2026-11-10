@@ -48,9 +48,10 @@ between displays.
   2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
   no writer outside the tree spelled it, and ggjbrowse's engine pin includes
   it. No shared path was respelled from 11-08 through 11-09, v5.0.0-beta.21
-  included, but one was added: `rows.annotations` on the shared row
-  arrangement (946afc33db, regenerated into six displays' slots by
-  925e55d750). The first gate below needs a ruling on whether an addition
+  included, but one was added: `rows.annotations` (946afc33db), since moved
+  from the shared row arrangement to `Rows`, so MAF no longer declares it,
+  and its entries reshaped as `RowAnnotation` with `legend.title`
+  (ADR-260). The first gate below needs a ruling on whether an addition
   counts as a shared-path change.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
