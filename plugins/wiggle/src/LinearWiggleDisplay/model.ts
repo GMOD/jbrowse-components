@@ -70,6 +70,7 @@ import {
 } from '../shared/wiggleStages.ts'
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_PLOTS } from '../util.ts'
+import { exportedWiggleFeatures } from './exportedFeatures.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { sourceWarnings } from './sourcesLogic.ts'
 
@@ -342,20 +343,23 @@ export default function stateModelFactory(
       /**
        * #method
        * The exported features this display draws: those of a subtrack no
-       * filter, focus or subtree hides. Asked of the rows hidden rather than
-       * the rows shown, so an export before the first fetch lists its
-       * subtracks keeps every feature.
+       * filter, focus or subtree hides, each scored by the field plotted
+       * (`exportedWiggleFeatures`). Asked of the rows hidden rather than the
+       * rows shown, so an export before the first fetch lists its subtracks
+       * keeps every feature.
        */
       exportedFeatures(features: Feature[]) {
         const shown = new Set(self.sources.map(row => row.name))
-        const hidden = new Set(
-          self.discoveredRows
-            .map(row => row.name)
-            .filter(name => !shown.has(name)),
-        )
-        return hidden.size > 0
-          ? features.filter(f => !hidden.has(f.get('source') ?? ''))
-          : features
+        return exportedWiggleFeatures({
+          features,
+          hidden: new Set(
+            self.discoveredRows
+              .map(row => row.name)
+              .filter(name => !shown.has(name)),
+          ),
+          yField: self.yField,
+          jexl: getEnv(self).pluginManager.jexl,
+        })
       },
       /**
        * #getter
