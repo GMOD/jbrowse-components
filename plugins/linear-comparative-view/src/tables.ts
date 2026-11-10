@@ -607,10 +607,10 @@ export async function syntenyTables(
     if (isRibbonCulled(corners, query.width, DEFAULT_OVERDRAW_PX, marker)) {
       continue
     }
-    drawn.add(instanceFeatureIdx[i]!)
     if (isInstanceInvisible(packed, marker ? 1 : level)) {
       continue
     }
+    drawn.add(instanceFeatureIdx[i]!)
     const { thin, fade } = marker
       ? { thin: true, fade: 1 }
       : ribbonThinFade(corners, height, curves, kind, fadeThin)

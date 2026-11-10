@@ -291,6 +291,8 @@ test('the view settings color by strand, set the opacity and hide short blocks',
     new Set(t.ribbons.alignment.map(f => t.alignments.length[f]! >= 400)),
   ).toEqual(new Set([true]))
   expect(new Set(t.ribbons.alignment).size).toBe(6)
+  expect(t.alignments.length).toHaveLength(6)
+  expect(t.alignments.length.every(l => l >= 400)).toBe(true)
   expect(t.ribbons.kind).toContain('marker')
   expect(t.legend.label.slice(0, 2)).toEqual(['forward', 'reverse'])
 
