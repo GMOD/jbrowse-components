@@ -4,6 +4,7 @@ import {
   enumConstantValues,
   literalConstantValue,
   numericConstantValue,
+  referencedObjectLiteral,
   scalarConstantValue,
 } from './enumConstants.ts'
 import { stripPropertyName } from './util.ts'
@@ -42,7 +43,12 @@ export function parseSlotMeta(value: string): SlotMeta {
     true,
   )
   const decl = sf.statements.find(ts.isVariableStatement)
-  const init = decl?.declarationList.declarations[0]?.initializer
+  const written = decl?.declarationList.declarations[0]?.initializer
+  const init =
+    written &&
+    (ts.isIdentifier(written) || ts.isPropertyAccessExpression(written))
+      ? (referencedObjectLiteral(written) ?? written)
+      : written
   const meta: SlotMeta = {}
   if (init && ts.isObjectLiteralExpression(init)) {
     for (const p of init.properties) {
@@ -121,6 +127,10 @@ function applySlotProperty(
 // enum-constant index — schemas share those tables with the track menus, and a
 // reader still needs the members.
 function enumerationValues(node: ts.Expression): string[] | undefined {
+  const named = ts.isCallExpression(node) ? node.arguments.at(1) : undefined
+  if (named && ts.isIdentifier(named)) {
+    return enumConstantValues(named.text)
+  }
   const arr = ts.isCallExpression(node)
     ? node.arguments.find(ts.isArrayLiteralExpression)
     : undefined

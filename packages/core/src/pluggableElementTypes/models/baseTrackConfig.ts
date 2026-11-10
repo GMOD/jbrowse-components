@@ -282,13 +282,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        * An **array** of full display configs, e.g.
-       * `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry
-       * names a display `type`; use this when you need exact control — your own
-       * `displayId`, different settings for two displays, or choosing which
-       * display is the default.
+       * `displays: [{ type: 'LinearBasicDisplay', encoding: { color: { value: 'green' } } }]`.
+       * Each entry names a display `type`; use this when you need exact
+       * control — your own `displayId`, different settings for two displays,
+       * or choosing which display is the default.
        *
        * For the common case, prefer the `displayDefaults` shorthand instead — an
-       * object of appearance settings (e.g. `displayDefaults: { color: 'green' }`)
+       * object of appearance settings (e.g.
+       * `displayDefaults: { encoding: { color: { value: 'green' } } }`)
        * that JBrowse routes to whichever display uses each setting, so you don't
        * have to name the display or write the array. A `type` in it names the
        * one display it reaches.

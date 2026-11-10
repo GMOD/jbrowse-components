@@ -11,6 +11,7 @@ import {
   slotFieldConstantPairs,
   slotFieldFactoryPairs,
 } from './enumConstants.ts'
+import { parseSlotMeta } from './slotSource.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
 import type * as ts from 'typescript'
@@ -180,6 +181,36 @@ describe('enumConstantValues, derived constants', () => {
       ),
     ])
     expect(enumConstantValues('DERIVED_T13')).toBeUndefined()
+  })
+
+  test('a list spread from other constants and naming a string constant resolves', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'composed-a.ts',
+        `const ALL_T21 = [...SOME_T21, 'log', LAST_T21] as const`,
+      ),
+      sourceFile(
+        'composed-b.ts',
+        `const SOME_T21 = ['ordinal', 'threshold'] as const
+         const LAST_T21 = 'identity'`,
+      ),
+    ])
+    expect(enumConstantValues('ALL_T21')).toEqual([
+      'ordinal',
+      'threshold',
+      'log',
+      'identity',
+    ])
+  })
+
+  test('a list under `as const satisfies` resolves', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'satisfies.ts',
+        `const MODES_T22 = ['fixed', 'fit'] as const satisfies readonly Mode[]`,
+      ),
+    ])
+    expect(enumConstantValues('MODES_T22')).toEqual(['fixed', 'fit'])
   })
 })
 
@@ -533,5 +564,43 @@ describe('literalConstantValue', () => {
     expect(
       literalConstantValue(reference('AMBIG_LIT_T18.height')),
     ).toBeUndefined()
+  })
+
+  test("reads a constant array's element and a copy spread from it", () => {
+    buildEnumConstantIndex([
+      sourceFile('lit-e.ts', `const DOMAIN_T19 = [5, 20] as const`),
+    ])
+    expect(literalConstantValue(reference('DOMAIN_T19[1]'))).toBe('20')
+    expect(literalConstantValue(reference('[...DOMAIN_T19]'))).toBe('[5, 20]')
+    expect(literalConstantValue(reference('DOMAIN_T19[2]'))).toBeUndefined()
+  })
+})
+
+describe('parseSlotMeta, through the constant index', () => {
+  test('a slot written as a shared slot constant reads as that slot', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'slot-ref.ts',
+        `const RAMP_T23 = { mid: { type: 'maybeNumber', description: 'the middle' } } as const`,
+      ),
+    ])
+    expect(parseSlotMeta('RAMP_T23.mid')).toEqual({
+      type: 'maybeNumber',
+      description: 'the middle',
+    })
+  })
+
+  test('an enumeration over a named list documents its members', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'slot-enum.ts',
+        `const UNITS_T24 = ['base', 'codon'] as const`,
+      ),
+    ])
+    expect(
+      parseSlotMeta(
+        `{ type: 'stringEnum', model: types.enumeration('Unit', UNITS_T24) }`,
+      ).enumValues,
+    ).toEqual(['base', 'codon'])
   })
 })

@@ -108,7 +108,7 @@ export function yChannelSchema(options: YScaleOptions = {}) {
       /**
        * #slot scale
        * `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`, `constant`
-       * and `group`.
+       * and `share`.
        */
       scale: yScaleSchema(options),
       /**

@@ -461,6 +461,19 @@ function referencedSource(
   if (ts.isIdentifier(reference)) {
     return constantSources.get(reference.text) ?? undefined
   }
+  if (ts.isElementAccessExpression(reference)) {
+    const owner = referencedSource(reference.expression)
+    const array = owner && unwrapAssertion(owner.node)
+    const element =
+      array &&
+      ts.isArrayLiteralExpression(array) &&
+      ts.isNumericLiteral(reference.argumentExpression)
+        ? array.elements[Number(reference.argumentExpression.text)]
+        : undefined
+    return element && owner && !ts.isSpreadElement(element)
+      ? { node: element, sf: owner.sf, text: element.getText(owner.sf) }
+      : undefined
+  }
   if (!ts.isPropertyAccessExpression(reference)) {
     return undefined
   }
@@ -483,9 +496,9 @@ function referencedSource(
     : undefined
 }
 
-function unwrapAssertion(node: ts.Expression) {
+function unwrapAssertion(node: ts.Expression): ts.Expression {
   return ts.isAsExpression(node) || ts.isSatisfiesExpression(node)
-    ? node.expression
+    ? unwrapAssertion(node.expression)
     : node
 }
 
@@ -515,7 +528,11 @@ function literalText(
   if (numeric !== undefined) {
     return numeric
   }
-  if (ts.isIdentifier(value) || ts.isPropertyAccessExpression(value)) {
+  if (
+    ts.isIdentifier(value) ||
+    ts.isPropertyAccessExpression(value) ||
+    ts.isElementAccessExpression(value)
+  ) {
     const source = referencedSource(value)
     return source && literalText(source.node, source.sf, depth + 1)
   }
@@ -539,7 +556,9 @@ function literalText(
         : `${prop.name!.getText(sf)}: ${member}`
     })
     return entries.every(e => e !== undefined)
-      ? `{ ${entries.join(', ')} }`
+      ? entries.length
+        ? `{ ${entries.join(', ')} }`
+        : '{}'
       : undefined
   }
   return undefined
@@ -728,8 +747,8 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
           const init = decl.initializer
           if (init && ts.isIdentifier(decl.name)) {
             const name = decl.name.text
-            // `as const` wraps the literal in an assertion expression
-            const value = ts.isAsExpression(init) ? init.expression : init
+            // `as const` and `satisfies` wrap the literal
+            const value = unwrapAssertion(init)
             recordConstantSource(name, value, sf)
             const direct = stringsOf(value)
             const numeric = numericLiteralText(value, sf)
@@ -799,7 +818,34 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
 
 /** Members of a named string-array constant, or undefined if unknown/ambiguous. */
 export function enumConstantValues(name: string) {
-  return index.get(name) ?? undefined
+  return constantStrings(name, 0)
+}
+
+function listOfOne(value: string | null | undefined) {
+  return value ? [value] : undefined
+}
+
+// A list built from other constants, `[...FIELD_COLOR_SCALES, IDENTITY_SCALE]`,
+// is read from its initializer once every file has been seen.
+function constantStrings(name: string, depth: number): string[] | undefined {
+  const source = constantSources.get(name)
+  const value = source && unwrapAssertion(source.node)
+  const items =
+    depth < 5 && value && ts.isArrayLiteralExpression(value)
+      ? value.elements.map(e =>
+          ts.isSpreadElement(e) && ts.isIdentifier(e.expression)
+            ? constantStrings(e.expression.text, depth + 1)
+            : ts.isStringLiteralLike(e)
+              ? [e.text]
+              : ts.isIdentifier(e)
+                ? listOfOne(scalarIndex.get(e.text))
+                : undefined,
+        )
+      : undefined
+  return (
+    index.get(name) ??
+    (items?.every(i => i !== undefined) ? items.flat() : undefined)
+  )
 }
 
 /** Value of a named string constant, or undefined if unknown/ambiguous. */
@@ -815,10 +861,33 @@ export function numericConstantValue(name: string) {
   return numericIndex.get(name) ?? undefined
 }
 // `NAME` or `NAME.member`'s literal, read through any constants it names.
-export function literalConstantValue(reference: ts.Expression) {
-  return ts.isIdentifier(reference) || ts.isPropertyAccessExpression(reference)
-    ? literalText(reference, reference.getSourceFile())
+export function literalConstantValue(expression: ts.Expression) {
+  return namesConstant(expression)
+    ? literalText(expression, expression.getSourceFile())
     : undefined
+}
+
+// A reference, or a list copying one, `[...DEFAULT_WINDOW_FRAME]`; a literal
+// written out keeps its author's layout.
+function namesConstant(expression: ts.Expression) {
+  return (
+    ts.isIdentifier(expression) ||
+    ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression) ||
+    (ts.isArrayLiteralExpression(expression) &&
+      expression.elements.some(ts.isSpreadElement))
+  )
+}
+
+/**
+ * The object literal a `NAME` or `NAME.member` reference names, so a slot
+ * written as a shared slot constant (`domainMid: colorRampSlots.domainMid`)
+ * reads as the slot object it is.
+ */
+export function referencedObjectLiteral(reference: ts.Expression) {
+  const source = referencedSource(reference)
+  const object = source && unwrapAssertion(source.node)
+  return object && ts.isObjectLiteralExpression(object) ? object : undefined
 }
 
 /**
