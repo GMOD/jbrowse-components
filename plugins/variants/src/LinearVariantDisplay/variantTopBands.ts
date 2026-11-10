@@ -25,9 +25,10 @@ export const MIN_RECORDS_HEIGHT = 8
 export const DEFAULT_RECORDS_HEIGHT = 170
 
 /**
- * The strip under the records band holding its chips: each band's hide and
- * show, and the count of hidden records. Reserved rather than laid over the
- * rows, whose tree, facet strip and labels draw over their left edge.
+ * The strip under the records band heading the genotype rows: their hide,
+ * a hidden band's show, and the records' chips where the band's top is taken.
+ * Reserved rather than laid over the rows, whose tree, facet strip and labels
+ * draw over their left edge.
  */
 export const BAND_CHIPS_HEIGHT = GROUP_LABEL_HEIGHT + 4
 

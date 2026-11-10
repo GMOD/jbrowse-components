@@ -371,6 +371,21 @@ close the gap").
 | Start the chips after the tree and facet strip | The row labels still draw over them |
 | Raise the chips over the labels | They cover the first row's label and data |
 
+## Amendment: each part's chip heads it (2026-11-10)
+
+Colin: "the 'records' and 'genotypes' are at same y position...shouldn't
+records pill be above near y=0 so it reads like separate subtracks". While
+both draw, `Records ×` and the `+N hidden` count sit at the records band's
+top-left, and the strip under the band holds `Genotypes ×` alone, heading the
+rows. The rows take the track label's offset then (`prefersOffset`), so the
+band's top-left is free. They keep the strip when the band's top is taken: by
+its section chips (`records.facet`), by the track label over a band with the
+rows hidden, or by a band shorter than a chip.
+
+| Alternative | Why not |
+| --- | --- |
+| Put the Records chip beside the topmost section chip when faceted | The section chips already name the records' parts; a shared chip row means changing `GroupLabelChips` for one caller |
+
 ## Rejected alternatives
 
 | Alternative | Why not |

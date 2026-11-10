@@ -116,22 +116,19 @@ const ChipButton = observer(function ChipButton({
 })
 
 /**
- * The records band's and the genotype rows' chips, one row under the band:
- * each shown part hides with its ×, while the other still draws, and a hidden
- * part comes back from its "Show" chip. Beside them, the count of records the
- * band hides past its height, which raises the band to its stack.
+ * The records' chips: the band's hide and the count of records it hides past
+ * its height, whose click raises the band to its stack.
  */
-const BandChips = observer(function BandChips({
+const RecordsChips = observer(function RecordsChips({
   model,
+  hideable,
 }: {
   model: LinearVariantDisplayModel
+  hideable: boolean
 }) {
-  const { classes } = useStyles()
-  const { drawsGenotypeRows, showRecords, recordsHiddenCount, topBands } = model
-  const bothShown = drawsGenotypeRows && showRecords
-  return topBands.reserved.chips > 0 ? (
-    <div className={classes.row} style={{ top: topBands.top.chips + 2 }}>
-      {bothShown ? (
+  return (
+    <>
+      {hideable ? (
         <HideablePill
           label="Records"
           onHide={() => {
@@ -139,45 +136,90 @@ const BandChips = observer(function BandChips({
           }}
         />
       ) : null}
-      {recordsHiddenCount > 0 ? (
+      {model.recordsHiddenCount > 0 ? (
         <ChipButton
           testid="records_hidden_chip"
           title="Records that do not fit the band. Click to show every row."
-          text={`+${recordsHiddenCount.toLocaleString('en-US')} hidden`}
+          text={`+${model.recordsHiddenCount.toLocaleString('en-US')} hidden`}
           onClick={() => {
             model.showAllRecordRows()
           }}
         />
       ) : null}
-      {bothShown ? (
-        <HideablePill
-          label="Genotypes"
-          onHide={() => {
-            model.setShowGenotypes(false)
-          }}
-        />
+    </>
+  )
+})
+
+/**
+ * Each shown part's chip heads it, so the records and the genotype rows read
+ * as two subtracks: the records' at the band's top, the genotypes' in the
+ * strip under the band. Each hides with its ×, while the other still draws,
+ * and a hidden part comes back from its "Show" chip in the strip. The
+ * records' chips fall back to the strip where the band's top is taken: by its
+ * sections' chips, by the track label over a band with no rows under it, or
+ * by a band shorter than a chip.
+ */
+const BandChips = observer(function BandChips({
+  model,
+}: {
+  model: LinearVariantDisplayModel
+}) {
+  const { classes } = useStyles()
+  const { drawsGenotypeRows, showRecords, topBands, recordsFacet } = model
+  const bothShown = drawsGenotypeRows && showRecords
+  const recordsOnBand =
+    bothShown &&
+    recordsFacet === undefined &&
+    topBands.reserved.records > GROUP_LABEL_HEIGHT
+  return topBands.reserved.chips > 0 ? (
+    <>
+      {recordsOnBand ? (
+        <div
+          className={classes.row}
+          style={{ top: 1 }}
+          data-testid="records_band_chips"
+        >
+          <RecordsChips model={model} hideable />
+        </div>
       ) : null}
-      {drawsGenotypeRows && !showRecords ? (
-        <ChipButton
-          testid="show_records_chip"
-          title="Draw the records above the genotype rows"
-          text="Show records"
-          onClick={() => {
-            model.setShowRecords(true)
-          }}
-        />
-      ) : null}
-      {drawsGenotypeRows ? null : (
-        <ChipButton
-          testid="show_genotypes_chip"
-          title="Draw a row per sample under the records"
-          text="Show genotypes"
-          onClick={() => {
-            model.setShowGenotypes(true)
-          }}
-        />
-      )}
-    </div>
+      <div
+        className={classes.row}
+        style={{ top: topBands.top.chips + 2 }}
+        data-testid="band_chips_strip"
+      >
+        {recordsOnBand ? null : (
+          <RecordsChips model={model} hideable={bothShown} />
+        )}
+        {bothShown ? (
+          <HideablePill
+            label="Genotypes"
+            onHide={() => {
+              model.setShowGenotypes(false)
+            }}
+          />
+        ) : null}
+        {drawsGenotypeRows && !showRecords ? (
+          <ChipButton
+            testid="show_records_chip"
+            title="Draw the records above the genotype rows"
+            text="Show records"
+            onClick={() => {
+              model.setShowRecords(true)
+            }}
+          />
+        ) : null}
+        {drawsGenotypeRows ? null : (
+          <ChipButton
+            testid="show_genotypes_chip"
+            title="Draw a row per sample under the records"
+            text="Show genotypes"
+            onClick={() => {
+              model.setShowGenotypes(true)
+            }}
+          />
+        )}
+      </div>
+    </>
   ) : null
 })
 
