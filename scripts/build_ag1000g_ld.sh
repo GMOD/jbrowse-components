@@ -512,23 +512,11 @@ for pop, (trackId, name) in karyo.items():
         'displays': [{
             'type': 'LinearVariantDisplay',
             'displayId': f'{trackId}-LinearVariantDisplay',
-            # karyotype sorts standard, het, inverted on its own, so the three
-            # classes come out as contiguous blocks in dosage order
-            'facet': {'field': 'karyotype'},
+            'facet': {
+                'field': 'karyotype',
+                'sort': ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
+            },
             'rows': {'color': 'karyotype'},
-            # Reference cells on, not the default off. Off fills the whole track
-            # background with REFERENCE_COLOR and paints only ALT, so a
-            # standard-arrangement mosquito is indistinguishable from empty
-            # canvas - which is the entire distinction this figure exists to make
-            # for the near-fixed population. Drawing reference puts a grey cell at
-            # the call's span for those rows, so every mosquito shows a block over
-            # the inversion and its shade is its karyotype.
-            'genotypes': {'reference': {'show': True}},
-            # No color. The default alt shade is keyed to allele dosage, so
-            # a heterozygote paints lighter than a homozygote and the three
-            # classes read apart; an override flattens het and hom-alt to one flat
-            # color and throws that away.
-            'rows': {'step': 3},
         }],
     })
 cfg['defaultSession'] = {
