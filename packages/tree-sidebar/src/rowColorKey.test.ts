@@ -22,6 +22,7 @@ interface TestRow {
   label?: string
   group?: string
   sex?: string
+  tissue?: string
   color?: string
 }
 
@@ -280,6 +281,16 @@ describe('rows.annotations', () => {
 
   it('adds one key per annotation, after the row color key', () => {
     const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['sex', 'group'] } },
+      { rows: SEXED },
+    )
+    expect(keysOf(display).map(key => key.title)).toEqual(['Group', 'Sex'])
+  })
+
+  // The row color is the column of its field, with its focus and its pins,
+  // so an annotation on that field would draw it twice.
+  it('draws no column or key for an annotation on the rows.color field', () => {
+    const display = makeDisplay(
       { rows: { color: 'group', annotations: ['group', SEX] } },
       { rows: SEXED },
     )
@@ -295,15 +306,6 @@ describe('rows.annotations', () => {
       },
       {
         id: 'rows.annotations.0',
-        title: 'Group',
-        focusesRows: undefined,
-        entries: [
-          ['x', a(0, 0)],
-          ['y', a(0, 1)],
-        ],
-      },
-      {
-        id: 'rows.annotations.1',
         title: 'Sex',
         focusesRows: undefined,
         entries: [
@@ -312,6 +314,8 @@ describe('rows.annotations', () => {
         ],
       },
     ])
+    expect(display.rowAnnotationColors).toHaveLength(1)
+    expect(display.rowColumnLabels).toEqual(['Group', 'Sex'])
   })
 
   it('keys only the annotation values the drawn rows carry', () => {
@@ -325,7 +329,6 @@ describe('rows.annotations', () => {
         ['x', p(0)],
         ['y', p(1)],
       ],
-      [['y', a(0, 1)]],
       [['m', '#00f']],
     ])
   })
@@ -354,7 +357,7 @@ describe('rows.annotations', () => {
 
   it("deals each annotation from a palette of its own, none the row color's", () => {
     const display = makeDisplay(
-      { rows: { color: 'group', annotations: ['group', 'group'] } },
+      { rows: { color: 'sex', annotations: ['group', 'group'] } },
       { rows: SEXED },
     )
     const [first, second] = display.rowAnnotationColors
@@ -653,8 +656,8 @@ describe('rowColumnLabels', () => {
 
   it('starts the rows a line lower per label, under the focus chip, and exports the lines', () => {
     const display = makeDisplay(
-      { rows: { color: 'group', annotations: ['group', 'sex'] } },
-      { rows: SEXED },
+      { rows: { color: 'group', annotations: ['tissue', 'sex'] } },
+      { rows: SEXED.map(row => ({ ...row, tissue: 'liver' })) },
     )
     const lines = 3 * ROW_COLUMN_LABEL_LINE_HEIGHT
     expect(display.rowsLeadHeight).toBe(lines)
@@ -662,7 +665,7 @@ describe('rowColumnLabels', () => {
     expect(display.svgControlsStrip).toEqual({ top: 0, height: 0 })
     expect(display.rowSidebarProps.columnLabels).toEqual([
       'Group',
-      'Group',
+      'Tissue',
       'Sex',
     ])
     display.setRowFocus(['a'])

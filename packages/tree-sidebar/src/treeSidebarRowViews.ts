@@ -161,8 +161,9 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
      * The `rows.annotations` channels drawn, in the order listed, each read
      * as `rowColorChannel` reads `rows.color`: none where the display's
      * `rows` declares no `annotations` (MAF's), none while the row labels
-     * they draw beside are hidden, and never one on `name`, which the
-     * labels already show. Each keeps its `position` in the list.
+     * they draw beside are hidden, never one on `name`, which the labels
+     * already show, and none on the `rows.color` field, whose column the
+     * row color already draws. Each keeps its `position` in the list.
      */
     get rowAnnotationChannels(): RowAnnotationSetting[] {
       const annotations: unknown = Reflect.get(
@@ -177,7 +178,11 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
                 ? [rowAnnotationSettingOf(annotation, position)]
                 : [],
             )
-            .filter(setting => setting.field !== 'name')
+            .filter(
+              setting =>
+                setting.field !== 'name' &&
+                setting.field !== this.rowColorChannel.field,
+            )
         : []
     },
   }

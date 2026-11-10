@@ -90,7 +90,12 @@ export const rowsConfigSchema = ConfigurationSchema(
      * only: each value of the field takes a color the way `rows.color`
      * deals one, a row with no value leaves a gap, a field no row carries
      * draws nothing, and each column gets a key titled `legend.title`, else
-     * the field. An entry with no field, or on `name`, is refused. It
+     * the field. An entry with no field, or on `name`, is refused, and one
+     * on the `rows.color` field draws no column of its own, since the row
+     * color is that column. Where the row color paints no mark and shows
+     * only beside the label (the variant display, and wiggle while a score
+     * gradient paints), it is the first column, the one whose key focuses
+     * rows and whose colors `rows.colors` pins. It
      * reorders no row, so under one tree several attributes read against
      * the same clusters. Like `filter` it names no row: "Reset row order"
      * and a write changing `field` keep it.
