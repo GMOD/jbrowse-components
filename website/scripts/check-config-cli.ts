@@ -460,7 +460,7 @@ for (const { file, text } of docsMatching(docsDir, TAGGED_FENCE)) {
   }
 }
 // Every tagged doc block is currently CLI-clean, so the add-track-json fallback
-// — and the plugin's "CLI (add-track-json)" tab with it — would otherwise ship
+// — and the plugin's CLI tab over it — would otherwise ship
 // with no coverage at all. These stand in for the two shapes that reach it.
 const FALLBACK_FIXTURES: Record<string, unknown>[] = [
   {

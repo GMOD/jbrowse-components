@@ -16,7 +16,7 @@ import { escapeAttr } from './inline-html.ts'
 import { desktopLinkHtml } from './desktop-link.ts'
 import { panels } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
-import { APP_TAB, JSON_TAB_KIND } from './tab-kinds.ts'
+import { APP_TAB, CLI_TAB, JSON_TAB_KIND } from './tab-kinds.ts'
 
 import type { LiveLinks } from './derive-track-url.ts'
 import type {
@@ -90,8 +90,7 @@ function parseConfig(json: string) {
 function cliTab(config: Record<string, unknown>, json: string): Tab {
   const command = deriveAddTrack(config)
   return {
-    kind: 'cli',
-    label: command === null ? 'CLI (add-track-json)' : 'CLI (add-track)',
+    ...CLI_TAB,
     nodes: [
       cliPlacement([
         'Edits ',
@@ -110,8 +109,7 @@ function assemblyCliTab(config: Record<string, unknown>): Tab | undefined {
   return command === null
     ? undefined
     : {
-        kind: 'cli',
-        label: 'CLI (add-assembly)',
+        ...CLI_TAB,
         nodes: [
           cliPlacement([
             'Edits ',
@@ -133,8 +131,7 @@ function sessionCliTab(
   return command === null
     ? undefined
     : {
-        kind: 'cli',
-        label: 'CLI (set-default-session)',
+        ...CLI_TAB,
         nodes: [
           cliPlacement([
             'Replaces any ',

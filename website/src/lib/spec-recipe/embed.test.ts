@@ -101,6 +101,17 @@ test('the dialog gets an Embed tab after the Notebook tab', () => {
   expect(html).toContain('href="/docs/embedded_components/"')
 })
 
+test('the Embed note names the React major the package requires', () => {
+  const { peerDependencies } = JSON.parse(
+    read('products/jbrowse-react-app/package.json'),
+  ) as { peerDependencies: { react: string } }
+  const major = /\d+/.exec(peerDependencies.react)?.[0]
+  expect(major).toBeDefined()
+  expect(recipeDialogHtml(recipeOf(linearSpec), 'e')).toContain(
+    `React ${major} app`,
+  )
+})
+
 function read(path: string) {
   return readFileSync(join(repoRoot, path), 'utf8')
 }

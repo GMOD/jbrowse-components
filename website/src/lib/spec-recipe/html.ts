@@ -1,6 +1,6 @@
 import { desktopLinkHtml } from '../desktop-link.ts'
 import { escapeAttr } from '../inline-html.ts'
-import { APP_TAB, JSON_TAB_KIND } from '../tab-kinds.ts'
+import { APP_TAB, CLI_TAB, JSON_TAB_KIND } from '../tab-kinds.ts'
 
 import { OWN_FILE } from './configTracks.ts'
 import { EMBED_PACKAGE } from './embed.ts'
@@ -121,8 +121,7 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
     ...(recipe.cli
       ? [
           {
-            label: 'CLI',
-            kind: 'cli',
+            ...CLI_TAB,
             body: [
               note(
                 `Adds these tracks to your <code>config.json</code>, <a href="/docs/config_guides/tracks/#configuring-displays">styled</a> as in the figure. Point each <code>uri</code> at your file${recipe.cli.commands.includes(OWN_FILE) ? ` (replace <code>${OWN_FILE}</code>)` : ''}.`,
@@ -156,7 +155,7 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
             kind: 'embed',
             body: [
               note(
-                `This view in your React app, with <a href="/docs/embedded_components/">${EMBED_PACKAGE}</a> and <code>@jbrowse/core</code>. Add your own files to <code>tracks</code>.`,
+                `This view in your React 19 app, with <a href="/docs/embedded_components/">${EMBED_PACKAGE}</a> and <code>@jbrowse/core</code>. Add your own files to <code>tracks</code>.`,
               ),
               copyableBlock(recipe.embed, 'spec-json'),
             ].join(''),

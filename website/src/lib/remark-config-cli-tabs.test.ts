@@ -263,7 +263,8 @@ test('a whole-track shorthand fence gets the add-track tab and its synteny note'
     uri: 'https://example.com/grape_peach.paf',
     assemblyNames: ['peach', 'grape'],
   })
-  expect(html).toContain('CLI (add-track)')
+  expect(html).toContain('>CLI</label>')
+  expect(html).toContain('jbrowse add-track ')
   expect(html).toContain('--name grape_peach.paf')
   expect(html).toContain('For the synteny view')
 })
