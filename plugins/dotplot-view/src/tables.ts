@@ -1,15 +1,17 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
-import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
+import { fullConfSnapshot } from '@jbrowse/core/configuration'
+import { lowerBoundOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { types } from '@jbrowse/mobx-state-tree'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
-  attributeColumns,
   axesNamePositionFor,
   comparativeFrame,
   comparativeLegend,
+  comparativeViewSettings,
+  drawnRows,
+  indelsDrawingOf,
   isInstanceInvisible,
   locateCum,
-  liftSyntenyViewSettings,
-  resolvedIndels,
   unpack,
   viewColorSettings,
 } from '@jbrowse/synteny-core'
@@ -30,6 +32,7 @@ import type {
   FilterArg,
   IndelsArg,
   OpacityArg,
+  ViewParts,
 } from '@jbrowse/synteny-core'
 
 export { registerComparativeAdapters }
@@ -57,6 +60,10 @@ export interface DotplotTablesArgs {
   }
 }
 
+const DotplotViewSettings = comparativeViewSettings({
+  lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
+} satisfies ViewParts<NonNullable<DotplotTablesArgs['view']>>)
+
 const OP_NAMES: Record<number, string> = {
   [CIGAR_I]: 'insertion',
   [CIGAR_D]: 'deletion',
@@ -83,14 +90,14 @@ const OP_NAMES: Record<number, string> = {
  */
 export async function dotplotTables(
   pluginManager: PluginManager,
-  { adapterConfig, trackName, x, y, view: written = {} }: DotplotTablesArgs,
+  { adapterConfig, trackName, x, y, view: written }: DotplotTablesArgs,
 ) {
-  const view = liftSyntenyViewSettings(written) as typeof written
-  const indels = resolvedIndels(view.indels)
+  const view = DotplotViewSettings.create(written)
+  const indels = indelsDrawingOf(view.indels)
   const config = {
-    filter: view.filter ?? [],
-    indels: indels.settings,
-    lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
+    filter: predicatesOf(view.filter),
+    indels: fullConfSnapshot(view.indels),
+    lineWidth: view.lineWidth,
   }
   const hFrame = comparativeFrame(x, adapterConfig, 0)
   const vFrame = comparativeFrame(y, adapterConfig, 1)
@@ -107,21 +114,20 @@ export async function dotplotTables(
   })
   const { skippedHRefNames, skippedVRefNames, ...rpcData } = value
   const settings = viewColorSettings({
-    color: view.encoding?.color,
-    opacity: view.encoding?.opacity,
+    encoding: view.encoding,
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: rpcData.attributeRanges,
   })
   const namePosition = axesNamePositionFor(settings.field, [h, v])
   const instanceData = buildLineSegments(
     rpcData,
-    indels.drawing !== 'off',
+    indels !== 'off',
     lowerBoundOf(config.filter, 'length') ?? 0,
     h.bpPerPx,
     v.bpPerPx,
     0,
     0,
-    indels.drawing === 'matches',
+    indels === 'matches',
   )
   const colorArgs = {
     field: settings.field,
@@ -210,30 +216,18 @@ export async function dotplotTables(
     segments.alpha.push(alpha * level)
   }
 
-  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
-    Array.from(ids, id => dict[id]!)
-  const rows = [...drawn].sort((a, b) => a - b)
-  const rowOf = new Map(rows.map((f, row) => [f, row]))
-  function pick<T>(column: ArrayLike<T>) {
-    return rows.map(f => column[f]!)
-  }
-  const attributes = attributeColumns(
-    rpcData.attributes,
-    rpcData.attributeRanges,
-  )
+  const { rows, pick, named, attributes, rowOf } = drawnRows(drawn, rpcData)
   const alignments = {
-    name: named(rpcData.nameDict, pick(rpcData.nameIds)),
-    xChrom: named(rpcData.refNameDict, pick(rpcData.refNameIds)),
+    name: named(rpcData.nameDict, rpcData.nameIds),
+    xChrom: named(rpcData.refNameDict, rpcData.refNameIds),
     xStart: [] as number[],
     xEnd: [] as number[],
-    yChrom: named(rpcData.mateRefNameDict, pick(rpcData.mateRefNameIds)),
+    yChrom: named(rpcData.mateRefNameDict, rpcData.mateRefNameIds),
     yStart: [] as number[],
     yEnd: [] as number[],
     strand: pick(rpcData.strands),
     length: pick(rpcData.alignmentLengths),
-    ...Object.fromEntries(
-      Object.entries(attributes).map(([key, column]) => [key, pick(column)]),
-    ),
+    ...attributes,
     color: [] as string[],
     alpha: [] as number[],
   }
@@ -254,7 +248,7 @@ export async function dotplotTables(
     alignments.alpha.push(alpha * level)
   }
 
-  segments.alignment = segments.alignment.map(f => rowOf.get(f)!)
+  segments.alignment = segments.alignment.map(rowOf)
 
   return {
     alignments,

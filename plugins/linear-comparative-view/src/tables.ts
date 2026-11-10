@@ -1,21 +1,26 @@
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { clamp } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
+import { types } from '@jbrowse/mobx-state-tree'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
   FADE_AUTO_MIN_FEATURES,
-  attributeColumns,
   axesNamePositionFor,
   axisNamePosition,
   bandGroundColor,
   cappedMeanWidthPx,
   comparativeFrame,
   comparativeLegend,
+  comparativeViewSettings,
+  drawnRows,
   fadesThinAt,
+  indelsDrawingOf,
   isInstanceInvisible,
   locateCum,
-  liftSyntenyViewSettings,
-  resolvedIndels,
+  syntenyMarkConfigSchema,
+  syntenyRenderConfigSchema,
   unpack,
   viewColorSettings,
 } from '@jbrowse/synteny-core'
@@ -51,6 +56,7 @@ import {
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './LinearSyntenyRPC/syntenyKinds.ts'
+import { linearSyntenyAxisConfigSchema } from './LinearSyntenyView/axisConfigSchema.ts'
 import {
   DEFAULT_ALPHA,
   DEFAULT_OVERDRAW_PX,
@@ -79,6 +85,7 @@ import type {
   OpacityArg,
   RefNamePosition,
   RibbonInterpolation,
+  ViewParts,
 } from '@jbrowse/synteny-core'
 
 export { registerComparativeAdapters }
@@ -125,6 +132,13 @@ const KIND_NAMES: Record<number, string> = {
 }
 
 const DEFAULT_LEVEL_HEIGHT = 100
+
+const SyntenyViewSettings = comparativeViewSettings({
+  mark: types.stripDefault(syntenyMarkConfigSchema, {}),
+  axis: types.stripDefault(linearSyntenyAxisConfigSchema, {}),
+  render: types.stripDefault(syntenyRenderConfigSchema, {}),
+  height: types.stripDefault(types.number, DEFAULT_LEVEL_HEIGHT),
+} satisfies ViewParts<NonNullable<SyntenyTablesArgs['view']>>)
 
 interface OffscreenLane {
   // every entry the worker placed, which the rows list
@@ -458,29 +472,22 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  */
 export async function syntenyTables(
   pluginManager: PluginManager,
-  {
-    adapterConfig,
-    trackName,
-    query,
-    target,
-    view: written = {},
-  }: SyntenyTablesArgs,
+  { adapterConfig, trackName, query, target, view: written }: SyntenyTablesArgs,
 ) {
-  const view = liftSyntenyViewSettings(written) as typeof written
+  const view = SyntenyViewSettings.create(written)
   const queryFrame = comparativeFrame(query, adapterConfig, 0)
   const targetFrame = comparativeFrame(target, adapterConfig, 1)
   const q = queryFrame.frame
   const t = targetFrame.frame
-  const indels = resolvedIndels(view.indels)
   const config = {
-    filter: view.filter ?? [],
-    indels: indels.settings,
-    mark: { interpolate: view.mark?.interpolate ?? 'linear' },
-    axis: { grid: view.axis?.grid ?? false },
-    render: { antialias: view.render?.antialias },
-    height: view.height ?? DEFAULT_LEVEL_HEIGHT,
+    filter: predicatesOf(view.filter),
+    indels: fullConfSnapshot(view.indels),
+    mark: fullConfSnapshot(view.mark),
+    axis: fullConfSnapshot(view.axis),
+    render: fullConfSnapshot(view.render),
+    height: view.height,
   }
-  const { height } = config
+  const { height } = view
   const { value } = await executeSyntenyFeaturesAndPositions({
     pluginManager,
     sessionId: 'tables',
@@ -499,13 +506,12 @@ export async function syntenyTables(
       windowRegions: targetFrame.fetchRegions,
       fetchRegions: targetFrame.fetchRegions,
     },
-    cigarMode: indels.drawing,
+    cigarMode: indelsDrawingOf(view.indels),
     statusCallback: () => {},
   })
   const { instanceData, ...featureData } = value
   const settings = viewColorSettings({
-    color: view.encoding?.color,
-    opacity: view.encoding?.opacity,
+    encoding: view.encoding,
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: featureData.attributeRanges,
   })
@@ -527,7 +533,7 @@ export async function syntenyTables(
     featureData,
     ...colorArgs,
     valueColor: settings.valueColor,
-    axisGrid: config.axis.grid,
+    axisGrid: readConfObject(view.axis, 'grid'),
     groundColor: bandGroundColor(),
   })
   const featureColor = createSyntenyColorFunction({
@@ -537,7 +543,7 @@ export async function syntenyTables(
   })
 
   const n = featureData.featureIds.length
-  const mode = config.render.antialias
+  const mode = readConfObject(view.render, 'antialias')
   const fadeThin =
     mode === undefined
       ? fadesThinAt(
@@ -548,7 +554,7 @@ export async function syntenyTables(
         )
       : mode
   const level = settings.level
-  const curves = config.mark.interpolate === 'bump'
+  const curves = readConfObject(view.mark, 'interpolate') === 'bump'
 
   const ribbons = {
     alignment: [] as number[],
@@ -636,42 +642,27 @@ export async function syntenyTables(
     ribbons.thin.push(thin)
   }
 
-  const named = (dict: readonly string[], ids: ArrayLike<number>) =>
-    Array.from(ids, id => dict[id]!)
-  const rows = [...drawn].sort((a, b) => a - b)
-  const rowOf = new Map(rows.map((f, row) => [f, row]))
-  function pick<T>(column: ArrayLike<T>) {
-    return rows.map(f => column[f]!)
-  }
-  const attributes = attributeColumns(
-    featureData.attributes,
-    featureData.attributeRanges,
-  )
+  const { rows, pick, named, attributes, rowOf } = drawnRows(drawn, featureData)
   const paints = rows.map(f => unpack(featureColor(f)))
   const alignments = {
     id: pick(featureData.featureIds),
-    name: named(featureData.nameDict, pick(featureData.nameIds)),
-    queryChrom: named(featureData.refNameDict, pick(featureData.refNameIds)),
+    name: named(featureData.nameDict, featureData.nameIds),
+    queryChrom: named(featureData.refNameDict, featureData.refNameIds),
     queryStart: pick(featureData.starts),
     queryEnd: pick(featureData.ends),
-    targetChrom: named(
-      featureData.mateRefNameDict,
-      pick(featureData.mateRefNameIds),
-    ),
+    targetChrom: named(featureData.mateRefNameDict, featureData.mateRefNameIds),
     targetStart: pick(featureData.mateStarts),
     targetEnd: pick(featureData.mateEnds),
     strand: pick(featureData.strands),
     length: rows.map(f =>
       Math.abs(featureData.ends[f]! - featureData.starts[f]!),
     ),
-    ...Object.fromEntries(
-      Object.entries(attributes).map(([key, column]) => [key, pick(column)]),
-    ),
+    ...attributes,
     color: paints.map(p => p.color),
     alpha: paints.map(p => p.alpha * level),
   }
 
-  ribbons.alignment = ribbons.alignment.map(f => rowOf.get(f)!)
+  ribbons.alignment = ribbons.alignment.map(rowOf)
 
   const culled = culledRibbonMateData(
     instanceData,

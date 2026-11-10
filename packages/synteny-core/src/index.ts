@@ -172,7 +172,6 @@ export { syntenyDataConfigSchema } from './syntenyDataConfigSchema.ts'
 export {
   indelsDrawingOf,
   indelsOfDrawing,
-  resolvedIndels,
   syntenyIndelsConfigSchema,
 } from './syntenyIndelsConfigSchema.ts'
 export type { IndelsArg, IndelsDrawing } from './syntenyIndelsConfigSchema.ts'
@@ -439,13 +438,15 @@ export { getMate, getRecordName } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'
 export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 export {
-  attributeColumns,
   axesNamePositionFor,
   axisNamePosition,
   comparativeAxis,
   comparativeFrame,
   comparativeLegend,
+  comparativeViewSettings,
+  drawnRows,
   locateCum,
+  positionIn,
   unpack,
   viewColorSettings,
 } from './comparativeTables.ts'
@@ -457,4 +458,5 @@ export type {
   FilterArg,
   OpacityArg,
   ViewColorSettings,
+  ViewParts,
 } from './comparativeTables.ts'

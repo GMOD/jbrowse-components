@@ -256,6 +256,22 @@ test('the indels part draws the ops colored, the matches alone, or the block alo
   expect(strandMatches.legend.label).toEqual(['forward', 'reverse'])
 })
 
+test("a v4.3.0 view's colorBy, alpha and minAlignmentLength draw as the encoding and filter", async () => {
+  const current = {
+    encoding: { color: { field: 'strand' }, opacity: 0.6 },
+    filter: [{ field: 'length', gte: 400 }],
+  }
+  const retired = { colorBy: 'strand', alpha: 0.6, minAlignmentLength: 400 }
+  expect(
+    // @ts-expect-error v4.3.0's spellings
+    await engine.synteny({ ...INV_INDELS, view: retired }),
+  ).toEqual(await engine.synteny({ ...INV_INDELS, view: current }))
+  expect(
+    // @ts-expect-error v4.3.0's spellings
+    await engine.dotplot({ ...INV_INDELS_DOTPLOT, view: retired }),
+  ).toEqual(await engine.dotplot({ ...INV_INDELS_DOTPLOT, view: current }))
+})
+
 test("a v4.3.0 dotplot's drawCigar still draws as the indels part", async () => {
   const plain = await engine.dotplot({
     ...INV_INDELS_DOTPLOT,

@@ -1,4 +1,8 @@
-import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import {
+  fullConfSnapshot,
+  readConfObject,
+  refusingUndeclaredKeys,
+} from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -237,11 +241,13 @@ const displayConfigSchema = configSchemaFactory()
 
 /** The display's settings as its own config reads them, defaults included. */
 function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
-  const conf = displayConfigSchema.create({
-    type: 'MultiWaySyntenyDisplay',
-    displayId: SESSION,
-    ...slots,
-  })
+  const conf = refusingUndeclaredKeys(() =>
+    displayConfigSchema.create({
+      type: 'MultiWaySyntenyDisplay',
+      displayId: SESSION,
+      ...slots,
+    }),
+  )
   const color = conf.ribbons.encoding.color
   const setting = colorSnapshotOf(color)
   const rowLabels = readConfObject(conf, ['rows', 'labels'])

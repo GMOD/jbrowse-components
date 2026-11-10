@@ -87,22 +87,6 @@ export interface IndelsArg {
   encoding?: { opacity?: number | { value?: number } }
 }
 
-/** An `indels` part written as plain settings, with its defaults filled. */
-export function resolvedIndels(indels: IndelsArg = {}) {
-  const conf = syntenyIndelsConfigSchema.create(indels)
-  return {
-    drawing: indelsDrawingOf(conf),
-    settings: {
-      show: readConfObject(conf, 'show'),
-      encoding: {
-        opacity: {
-          value: readConfObject(conf, ['encoding', 'opacity', 'value']),
-        },
-      },
-    },
-  }
-}
-
 /** The `indels` snapshot that draws `drawing`. */
 export function indelsOfDrawing(drawing: IndelsDrawing) {
   return drawing === 'off'

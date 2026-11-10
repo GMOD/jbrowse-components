@@ -105,7 +105,11 @@ a quiet region.
   sequence for, naming the lanes it has in the window.
 - The engine refuses an args key the call does not take, naming it, so a host's
   misspelled or renamed key fails rather than drops; each call's key list is
-  checked against its args type (`ArgKeys` in `src/index.ts`).
+  checked against its args type (`ArgKeys` in `src/index.ts`). The settings
+  inside an arg are refused the same way, at any depth: `synteny` and `dotplot`
+  read `view` through the view's own part types (`comparativeViewSettings`)
+  once its v4.3.0 spellings are lifted, and `multiway` creates its `display`
+  config inside `refusingUndeclaredKeys`.
 - A BED, GFF or VCF lists only contigs holding records, so for those a contig of
   the call's sequence counts as the file's.
 - `alignmentTables`'s `config` holds the four band objects resolved (`coverage`,
@@ -121,8 +125,8 @@ a quiet region.
   name, defaults included (`fullConfSnapshot`), from `alignments`, `features`,
   `wiggle` and `variants` alike. `multiway` returns its display's the same way;
   `synteny` and `dotplot`, whose settings live on a view rather than a config
-  schema, return the view's settings with the view's defaults, `encoding.color`
-  and `encoding.opacity` as config objects.
+  schema, return the view's settings with the defaults of the types the view
+  holds them in, `encoding.color` and `encoding.opacity` as config objects.
 - `alignmentTables` adds a `color` column, off the palette, to `mismatches`,
   `gaps`, `insertions`, `clips`, `coverage`, `alleleCoverage`, `interbaseCoverage`,
   `indicators` and `junctions`. It resolves a base through `effectiveBaseColors`,

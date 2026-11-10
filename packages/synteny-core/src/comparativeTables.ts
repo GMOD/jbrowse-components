@@ -1,4 +1,7 @@
-import { fullConfSnapshot } from '@jbrowse/core/configuration'
+import {
+  fullConfSnapshot,
+  refusingUndeclaredKeys,
+} from '@jbrowse/core/configuration'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import {
@@ -7,6 +10,8 @@ import {
   cssColorToHex,
 } from '@jbrowse/core/util/colorBits'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { fieldPredicateArray } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { orderAttributeLabels } from './TrackColorsMixin.ts'
 import {
@@ -17,12 +22,17 @@ import {
 } from './colorLegend.ts'
 import { colorPaintOf, hasColorKey, isAttributeLabels } from './colorRamps.ts'
 import { legendChipAlpha } from './colorUtils.ts'
+import { liftSyntenyViewSettings } from './liftSyntenyViewSettings.ts'
 import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
-import { syntenyColorConfigSchema } from './syntenyColorConfigSchema.ts'
+import { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
 import { syntenyFetchRegions } from './syntenyFetchWindow.ts'
-import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
+import { syntenyIndelsConfigSchema } from './syntenyIndelsConfigSchema.ts'
+import {
+  opacitySnapshotOf,
+  syntenyOpacityConfigSchema,
+} from './syntenyOpacityConfigSchema.ts'
 import { syntenyTrackPalette } from './trackColors.ts'
 
 import type { RefNamePosition } from './colorFunctions.ts'
@@ -30,6 +40,11 @@ import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  IAnyType,
+  Instance,
+  ModelPropertiesDeclaration,
+} from '@jbrowse/mobx-state-tree'
 
 // What the synteny and dotplot tables share: an axis as a host describes it,
 // the view's color and opacity settings read off their config objects, a
@@ -174,7 +189,8 @@ export function axisNamePosition(axis: ComparativeAxis) {
   return axis.refNamePosition ?? positionIn(axis.refNames)
 }
 
-function positionIn(refNames: readonly string[]) {
+/** Each of `refNames` by its index, the order a palette is handed out in. */
+export function positionIn(refNames: readonly string[]) {
   const position = new Map(refNames.map((name, i) => [name, i]))
   return (refName: string) => position.get(refName)
 }
@@ -199,6 +215,49 @@ export type ColorArg = string | Record<string, unknown> | undefined
 export type OpacityArg = number | SyntenyOpacitySnapshot | undefined
 export type FilterArg = readonly FieldPredicate[] | undefined
 
+const sharedParts = {
+  encoding: types.stripDefault(syntenyEncodingConfigSchema, {}),
+  filter: types.stripDefault(fieldPredicateArray(), []),
+  indels: types.stripDefault(syntenyIndelsConfigSchema, {}),
+}
+
+/** The settings of a view `V` beyond those every comparative view's tables read. */
+export type ViewParts<V> = Record<
+  Exclude<keyof V, keyof typeof sharedParts>,
+  IAnyType
+>
+
+/**
+ * A comparative view's settings as its tables read them: `encoding`, `filter`
+ * and `indels`, which the linear synteny and dotplot views share, and the
+ * view's own `parts`, each through the type the view holds it in, so every
+ * default is the view's. A snapshot's v4.3.0 spellings lift first
+ * (`liftSyntenyViewSettings`); then `create` refuses a key no part declares,
+ * at any depth, naming the keys it takes.
+ */
+export function comparativeViewSettings<P extends ModelPropertiesDeclaration>(
+  parts: P,
+) {
+  const properties = { ...sharedParts, ...parts }
+  const keys = Object.keys(properties)
+  const model = types
+    .model('view', properties)
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+      const lifted = liftSyntenyViewSettings(snap) ?? {}
+      const unknown = Object.keys(lifted).filter(k => !keys.includes(k))
+      if (unknown.length > 0) {
+        throw new Error(
+          `view takes no ${unknown.join(', ')}; its keys are ${keys.join(', ')}`,
+        )
+      }
+      return lifted
+    })
+  return {
+    create: (...args: Parameters<typeof model.create>) =>
+      refusingUndeclaredKeys(() => model.create(...args)),
+  }
+}
+
 export interface ViewColorSettings {
   field: string | undefined
   valueColor?: string
@@ -207,7 +266,6 @@ export interface ViewColorSettings {
   title?: string
   descending?: boolean
   trackColor: string
-  opacity: SyntenyOpacitySnapshot
   fade?: SyntenyOpacitySnapshot
   level: number
   attributeRanges: Record<string, AttributeRange>
@@ -227,24 +285,19 @@ export interface ViewColorSettings {
  * alignment draws at and the fade a field applies under it.
  */
 export function viewColorSettings({
-  color,
-  opacity,
+  encoding,
   defaultOpacity,
   attributeRanges,
 }: {
-  color: ColorArg
-  opacity: OpacityArg
+  encoding: Instance<typeof syntenyEncodingConfigSchema>
   defaultOpacity: number
   attributeRanges: Record<string, AttributeRange>
 }): ViewColorSettings {
-  const conf = syntenyColorConfigSchema.create(
-    typeof color === 'string' ? { field: color } : (color ?? {}),
-  )
+  const conf = encoding.color
   const setting = colorSnapshotOf(conf)
   const field0 = paintedField(setting)
   const field = field0 === 'reference' ? 'query' : field0
-  const opacitySnap: SyntenyOpacitySnapshot =
-    typeof opacity === 'number' ? { value: opacity } : (opacity ?? {})
+  const opacitySnap = opacitySnapshotOf(encoding.opacity)
   const ordered = orderAttributeLabels(
     attributeRanges,
     setting.scale.domain,
@@ -258,7 +311,6 @@ export function viewColorSettings({
     title: setting.legend.title,
     descending: setting.legend.descending,
     trackColor: syntenyTrackPalette[0]!,
-    opacity: opacitySnap,
     fade: opacityFadeOf(opacitySnap),
     level: opacityLevel(opacitySnap, defaultOpacity, ordered),
     attributeRanges: ordered,
@@ -281,7 +333,7 @@ export function viewColorSettings({
  * its numbers (NaN where a feature has none), a text column as its labels.
  * `mappingQual` is written as `mapq`, the name the view paints it under.
  */
-export function attributeColumns(
+function attributeColumns(
   attributes: Record<string, Float32Array>,
   attributeRanges: Record<string, AttributeRange>,
 ) {
@@ -297,6 +349,41 @@ export function attributeColumns(
       : Array.from(values, v => (Number.isNaN(v) ? null : v))
   }
   return out
+}
+
+/**
+ * The blocks the alignments table lists, the `drawn` ones in fetch order:
+ * `pick` reads a per-block column at them, `named` a column of ids into
+ * `dict`, `attributes` is every channel the fetch carried
+ * (`attributeColumns`), and `rowOf` a block's row.
+ */
+export function drawnRows(
+  drawn: ReadonlySet<number>,
+  {
+    attributes,
+    attributeRanges,
+  }: {
+    attributes: Record<string, Float32Array>
+    attributeRanges: Record<string, AttributeRange>
+  },
+) {
+  const rows = [...drawn].sort((a, b) => a - b)
+  const index = new Map(rows.map((f, row) => [f, row]))
+  function pick<T>(column: ArrayLike<T>) {
+    return rows.map(f => column[f]!)
+  }
+  return {
+    rows,
+    pick,
+    named: (dict: readonly string[], ids: ArrayLike<number>) =>
+      rows.map(f => dict[ids[f]!]!),
+    attributes: Object.fromEntries(
+      Object.entries(attributeColumns(attributes, attributeRanges)).map(
+        ([key, column]) => [key, pick(column)],
+      ),
+    ),
+    rowOf: (f: number) => index.get(f)!,
+  }
 }
 
 /** A packed ABGR color as `#rrggbb`, and its own alpha, 0 to 1. */
