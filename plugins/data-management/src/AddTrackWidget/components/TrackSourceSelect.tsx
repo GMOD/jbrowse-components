@@ -1,17 +1,15 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
-  paper: {
-    padding: theme.spacing(2),
-  },
-  spacer: {
-    height: theme.spacing(8),
+  files: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
   },
 }))
 
@@ -24,31 +22,33 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
   const { rootModel } = getEnv(model).pluginManager
 
   return (
-    <Paper className={classes.paper}>
-      <FileSelector
-        name="Main file"
-        description=""
-        location={model.trackData}
-        setLocation={loc => {
-          model.setTrackData(loc)
-        }}
-        rootModel={rootModel}
-      />
-      <div className={classes.spacer} />
-      <FileSelector
-        name="Index file"
-        description={
-          model.detectedIndexName
-            ? `Found "${model.detectedIndexName}" next to the main file and filled it in. Replace it to use a different index.`
-            : '(Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied.'
-        }
-        location={model.indexTrackData}
-        setLocation={loc => {
-          model.setIndexTrackData(loc)
-        }}
-        rootModel={rootModel}
-      />
-    </Paper>
+    <div className={classes.files}>
+      <div>
+        <FileSelector
+          name="Main file"
+          location={model.trackData}
+          setLocation={loc => {
+            model.setTrackData(loc)
+          }}
+          rootModel={rootModel}
+        />
+      </div>
+      <div>
+        <FileSelector
+          name="Index file"
+          description={
+            model.detectedIndexName
+              ? `Found "${model.detectedIndexName}" next to the main file and filled it in. Replace it to use a different index.`
+              : 'Optional. Left empty, the index is looked for next to the main file.'
+          }
+          location={model.indexTrackData}
+          setLocation={loc => {
+            model.setIndexTrackData(loc)
+          }}
+          rootModel={rootModel}
+        />
+      </div>
+    </div>
   )
 })
 

@@ -206,24 +206,13 @@ async function procedureFrame(
   }
 }
 
-// The Add-track stepper renders one button (testid addTrackNextButton) per step,
-// but only the active step's button is displayed. Click the visible, enabled one
-// to advance ("Next" on the source step, "Add" on the confirm step).
-async function clickActiveAddTrackButton(driver: WebDriver): Promise<void> {
-  const deadline = Date.now() + 20000
-  while (Date.now() < deadline) {
-    const buttons = await driver.findElements(
-      By.css('[data-testid="addTrackNextButton"]'),
-    )
-    for (const button of buttons) {
-      if ((await button.isDisplayed()) && (await button.isEnabled())) {
-        await driver.executeScript('arguments[0].click();', button)
-        return
-      }
-    }
-    await delay(300)
-  }
-  throw new Error('no enabled addTrackNextButton found')
+// Add stays disabled until the form has guessed an adapter for the file
+async function clickAddTrackButton(driver: WebDriver): Promise<void> {
+  const button = await driver.wait(
+    until.elementLocated(By.css('[data-testid="addTrackButton"]:enabled')),
+    20000,
+  )
+  await driver.executeScript('arguments[0].click();', button)
 }
 
 // Kill CSS transitions/animations so a capture can't land on a half-faded
@@ -952,9 +941,7 @@ async function main(): Promise<void> {
   )
   await delay(500)
   await procedureFrame(driver, 'desktop-add-track-steps.png', 1)
-  await clickActiveAddTrackButton(driver) // Next: source -> confirm track type
-  await delay(1500)
-  await clickActiveAddTrackButton(driver) // Add: shows track + closes widget
+  await clickAddTrackButton(driver) // shows track + closes widget
   await waitForAppReady(driver) // the GFF3 track fetches and paints
   // Adding a GFF3 also kicks off name indexing, which opens the jobs list and
   // raises a toast. The subject here is the track, and the drawer narrows the

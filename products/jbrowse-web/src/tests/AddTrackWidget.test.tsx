@@ -19,14 +19,8 @@ const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('adds a PAF via the add track workflow', async () => {
-  const {
-    getByTestId,
-    getAllByTestId,
-    findByText,
-    findByRole,
-    findAllByTestId,
-    view,
-  } = await createView()
+  const { getByTestId, findByText, findByRole, findAllByTestId, view } =
+    await createView()
   view.showAllRegions()
   fireEvent.click(await findByText('File', ...opts))
   fireEvent.click(await findByText('Open track...', ...opts))
@@ -35,7 +29,6 @@ test('adds a PAF via the add track workflow', async () => {
       value: 'volvox_del.paf',
     },
   })
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   fireEvent.change(getByTestId('trackNameInput'), {
     target: {
       value: 'volvox_del vs volvox',
@@ -49,20 +42,15 @@ test('adds a PAF via the add track workflow', async () => {
     await findByRole('combobox', { name: 'Target assembly', hidden: true }),
   )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox'))
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  fireEvent.click(getByTestId('addTrackButton'))
 
   const display = await findAnyDisplayPainted(delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {
-  const {
-    getAllByTestId,
-    findByText,
-    findByTestId,
-    findAllByTestId,
-    queryByText,
-  } = await createView()
+  const { findByText, findByTestId, findAllByTestId, queryByText } =
+    await createView()
 
   // Open add track widget
   fireEvent.click(await findByText('File', ...opts))
@@ -75,14 +63,7 @@ test('bug: error message persists after fixing URL', async () => {
     },
   })
 
-  // Click "Next" and see the message that JBrowse is not able to guess the adapter type
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
-
-  // Should show error message about not being able to guess adapter type
-  await findByText(/JBrowse was not able to guess the adapter type/, ...opts)
-
-  // Click "Back" to go back to URL input
-  fireEvent.click(getAllByTestId('addTrackBackButton')[0]!)
+  await findByText(/format could not be guessed/, ...opts)
 
   // Fix the URL to a valid one
   fireEvent.change((await findAllByTestId('urlInput'))[0]!, {
@@ -91,14 +72,9 @@ test('bug: error message persists after fixing URL', async () => {
     },
   })
 
-  // Click "Next" again
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
-
-  // volvox.bam has a guessable adapter, so the form advances to the confirm
-  // step (trackNameInput). The bug was that the "not able to guess" message
-  // lingered from the previous URL; assert it is gone once we've advanced.
+  // volvox.bam has a guessable adapter, so the form shows its confirm fields
+  // (trackNameInput). The bug was that the "could not be guessed" message
+  // lingered from the previous URL.
   await findByTestId('trackNameInput', ...opts)
-  expect(
-    queryByText(/JBrowse was not able to guess the adapter type/),
-  ).toBeNull()
+  expect(queryByText(/format could not be guessed/)).toBeNull()
 }, 60000)

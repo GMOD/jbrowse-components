@@ -1016,7 +1016,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
       { type: 'click', text: 'Open track...' },
-      { type: 'waitForText', text: 'Enter track data' },
+      { type: 'waitForText', text: 'Main file' },
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
     ],
@@ -1028,7 +1028,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: { text: 'Open track...', dx: 96 },
-        anchor: { text: 'Enter track data' },
+        anchor: { text: 'Main file' },
         dx: -30,
       },
     ],

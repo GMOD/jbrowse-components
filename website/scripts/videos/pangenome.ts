@@ -78,7 +78,7 @@ function addGraphTrackSteps(json: string): VideoStep[] {
     },
     { type: 'waitForText', text: 'Open track...' },
     { type: 'click', text: 'Open track...' },
-    { type: 'waitForText', text: 'Enter track data' },
+    { type: 'waitForText', text: 'Main file' },
     // the workflow select, by the option it is showing
     {
       type: 'click',

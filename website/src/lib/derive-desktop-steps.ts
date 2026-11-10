@@ -72,7 +72,6 @@ export const DESKTOP_UI_LABELS = {
   addFromFile: 'Add a track from file or URL',
   mainFile: 'Main file',
   indexFile: 'Index file',
-  next: 'Next',
   trackName: 'Track name',
   assembly: 'Assembly',
   add: 'Add',
@@ -288,10 +287,8 @@ function formNodes(config: Record<string, unknown>): RootContent[] | undefined {
       ...(index ? [field(DESKTOP_UI_LABELS.indexFile, index)] : []),
     ]),
     paragraph([
-      text('Click '),
-      strong(DESKTOP_UI_LABELS.next),
       text(
-        '. JBrowse reads the adapter and track type off the file name. Then fill in:',
+        'JBrowse reads the adapter and track type off the file name. Then fill in:',
       ),
     ]),
     bullets([

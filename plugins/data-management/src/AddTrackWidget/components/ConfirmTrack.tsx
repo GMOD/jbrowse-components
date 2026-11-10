@@ -17,8 +17,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormControl, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import StatusMessage from './AddTrackStatusMessage.tsx'
-import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt.tsx'
 import TextIndexingConfig from './TextIndexingConfig.tsx'
 import TrackAdapterSelector from './TrackAdapterSelector.tsx'
 import TrackTypeSelector from './TrackTypeSelector.tsx'
@@ -27,13 +25,10 @@ import type { AddTrackModel } from '../model.ts'
 import type { AddTrackComponentProps } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
-  spacing: {
-    marginBottom: theme.spacing(3),
-  },
-  selectorsContainer: {
+  fields: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
+    gap: theme.spacing(2),
   },
 }))
 
@@ -49,7 +44,7 @@ const TrackAssemblySelector = observer(function TrackAssemblySelector({
   return (
     <AssemblySelector
       session={session}
-      helperText="Select assembly to add track to"
+      helperText=""
       selected={model.assembly}
       onChange={asm => {
         model.setAssembly(asm)
@@ -75,41 +70,28 @@ const ConfirmTrack = observer(function ConfirmTrack({
     trackName,
     submittableTrackName,
     trackAdapter,
-    trackType,
     warningMessage,
     textIndexTrack,
     adapterHintNotConfigurable,
   } = model
 
   if (trackAdapter?.type === UNKNOWN || adapterHintNotConfigurable) {
-    // Either the format couldn't be guessed, or the user picked an adapter the
-    // extension point can't configure for this file. Both cases keep the
-    // adapter dropdown on screen (it surfaces its own inline error) so the user
-    // can recover by choosing a different adapter without going Back.
-    return <UnknownAdapterPrompt model={model} />
+    return <TrackAdapterSelector model={model} />
   } else if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   } else {
     const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter.type)
     const { pluginManager } = getEnv(model)
     return (
-      <div>
-        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+      <div className={classes.fields}>
         {warningMessage ? (
           <Typography color="warning">{warningMessage}</Typography>
         ) : null}
         <TextField
-          className={classes.spacing}
           label="Track name"
-          // The field can now be emptied (it used to refill itself with the
-          // filename), so say why Add is disabled rather than leaving a greyed
-          // button and no reason
+          variant="outlined"
           error={!submittableTrackName}
-          helperText={
-            submittableTrackName
-              ? 'A name for this track'
-              : 'Enter a track name'
-          }
+          helperText={submittableTrackName ? undefined : 'Enter a track name'}
           fullWidth
           value={trackName}
           onChange={event => {
@@ -121,30 +103,28 @@ const ConfirmTrack = observer(function ConfirmTrack({
             },
           }}
         />
-        <div className={classes.selectorsContainer}>
-          <TrackAdapterSelector model={model} />
-          <TrackTypeSelector model={model} />
-          {adapterNeedsAddTrackComponent(
-            pluginManager,
-            trackAdapter.type,
-          ) ? null : (
-            <TrackAssemblySelector model={model} />
-          )}
+        <TrackAdapterSelector model={model} />
+        <TrackTypeSelector model={model} />
+        {adapterNeedsAddTrackComponent(
+          pluginManager,
+          trackAdapter.type,
+        ) ? null : (
+          <TrackAssemblySelector model={model} />
+        )}
 
-          <Suspense fallback={null}>
-            <PluggableComponent
-              pluginManager={pluginManager}
-              name="Core-addTrackComponent"
-              component={NoAddTrackExtension}
-              props={{ model }}
-            />
-          </Suspense>
-          {model.mixinMissing ? (
-            <Typography color="error" variant="body2">
-              {model.mixinMissing}
-            </Typography>
-          ) : null}
-        </div>
+        <Suspense fallback={null}>
+          <PluggableComponent
+            pluginManager={pluginManager}
+            name="Core-addTrackComponent"
+            component={NoAddTrackExtension}
+            props={{ model }}
+          />
+        </Suspense>
+        {model.mixinMissing ? (
+          <Typography color="error" variant="body2">
+            {model.mixinMissing}
+          </Typography>
+        ) : null}
 
         {isElectron && supportedForIndexing && (
           <FormControl>

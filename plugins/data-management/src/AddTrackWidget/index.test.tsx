@@ -437,7 +437,7 @@ test('adapterHintNotConfigurable distinguishes resolvable hints from dead ones',
   expect(widget.adapterHintNotConfigurable).toBe(false)
 
   // an adapter with no guesser branch falls through to UNKNOWN; ConfirmTrack
-  // routes this to UnknownAdapterPrompt so the dropdown stays on screen
+  // keeps the adapter dropdown on screen for it
   widget.setAdapterHint('NonexistentAdapter')
   expect(widget.trackAdapterType).toBe('UNKNOWN')
   expect(widget.adapterHintNotConfigurable).toBe(true)

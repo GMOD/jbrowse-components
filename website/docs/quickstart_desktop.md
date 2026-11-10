@@ -82,8 +82,8 @@ Open the **File** menu and choose **Open track...**, or use the track selector's
 - Choose **Add a track from file or URL**, set the **Main file** as a local path
   or URL, and leave the **Index file** blank for BAM, CRAM or tabix files to
   infer it.
-- Click **Next**. JBrowse guesses the track and adapter type from the file;
-  confirm or adjust them, set a name, pick the assembly, and click **Add**.
+- JBrowse guesses the track and adapter type from the file; confirm or adjust
+  them, set a name, pick the assembly, and click **Add**.
 - **Add multiple tracks at once** in the same form loads many files together.
 - Desktop reads the same formats as JBrowse Web
   ([](/docs/config_guides/file_types)), and the indexing commands are on the

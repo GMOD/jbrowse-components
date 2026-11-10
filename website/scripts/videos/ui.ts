@@ -136,11 +136,11 @@ export const uiVideos: VideoSpec[] = [
   // THE MOST-ASKED ROUTE IN THE DOCS, and the one basic_usage.md's two figures
   // are furthest from carrying. Both are of the form standing open — one under
   // the File menu that opened it, one under the track selector's plus button —
-  // and between them the page says "enter a URL, then Next, then Add" over a
-  // stepper whose second step does not exist until the first is filled in. What
-  // a reader cannot see in either still is that the form ANSWERS: a URL typed
-  // into it resolves its own adapter and names the track, so the two clicks
-  // after it are confirmations rather than a second form to fill in.
+  // and between them the page says "enter a URL, then Add" over a form whose
+  // lower half does not exist until the file is filled in. What a reader
+  // cannot see in either still is that the form ANSWERS: a URL typed into it
+  // resolves its own adapter and names the track, so the click after it is a
+  // confirmation rather than a second form to fill in.
   //
   // It ends on the track opening, which is the thing being asked for and the one
   // frame neither figure has.

@@ -86,9 +86,9 @@ export function openTrackByUrlSteps(
     { type: 'click', text: 'File', say: open, hold: 900 },
     { type: 'waitForText', text: 'Open track...' },
     { type: 'click', text: 'Open track...' },
-    { type: 'waitForText', text: 'Enter track data' },
+    { type: 'waitForText', text: 'Main file' },
     { type: 'delay', ms: 1000 },
-    // held long enough to see the second step appear under the field
+    // held long enough to see the guessed fields appear under the file
     {
       type: 'type',
       selector: '[data-testid="urlInput"]',
@@ -97,12 +97,10 @@ export function openTrackByUrlSteps(
     },
     {
       type: 'click',
-      selector: '[data-testid="addTrackNextButton"]',
+      selector: '[data-testid="addTrackButton"]',
       say: add,
       hold: 1800,
     },
-    // the same button, now reading Add
-    { type: 'click', selector: '[data-testid="addTrackNextButton"]' },
     { type: 'waitForAppSettled', timeout: 120000 },
   ]
 }

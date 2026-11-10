@@ -161,29 +161,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     'the index probe never filled in volvox.sort.gff3.gz.tbi',
   )
 
-  console.log('    DEBUG: Clicking Next...')
-  const nextButton = await driver.wait(
-    until.elementLocated(By.css('[data-testid="addTrackNextButton"]')),
-    5000,
-  )
-  await driver.executeScript('arguments[0].scrollIntoView(true);', nextButton)
-  await driver.executeScript('arguments[0].click();', nextButton)
-
-  // step 2 is the same button relabelled
-  await driver.wait(
-    () =>
-      driver.executeScript<boolean>(
-        `return document.querySelector('[data-testid="addTrackNextButton"]')?.textContent.trim() === 'Add'`,
-      ),
-    10000,
-    'the add-track wizard never reached its Add step',
-  )
-
-  // Click Add button to finish the wizard (same data-testid, now shows "Add")
   console.log('    DEBUG: Looking for Add button...')
   const addButton = await driver.wait(
-    until.elementLocated(By.css('[data-testid="addTrackNextButton"]')),
-    5000,
+    until.elementLocated(By.css('[data-testid="addTrackButton"]:enabled')),
+    10000,
   )
   await driver.executeScript('arguments[0].scrollIntoView(true);', addButton)
   // Armed before the click for the same reason the wait below is placed here:

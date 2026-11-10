@@ -1,16 +1,7 @@
-import { useState } from 'react'
-
 import { getNotificationSink } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Link,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
-  Typography,
-} from '@mui/material'
+import { isUriLocation } from '@jbrowse/core/util/types'
+import { Button, Link, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { BULK_WORKFLOW } from '../workflowNames.ts'
@@ -22,39 +13,25 @@ import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    marginTop: theme.spacing(1),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    margin: theme.spacing(1),
   },
-  stepper: {
-    backgroundColor: theme.palette.background.default,
-  },
-  button: {
-    marginRight: theme.spacing(1),
-  },
-  actionsContainer: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(2),
+  submit: {
+    alignSelf: 'flex-start',
   },
 }))
 
-const steps = [
-  {
-    label: 'Enter track data',
-    content: (model: AddTrackModel) => <TrackSourceSelect model={model} />,
-    isComplete: (model: AddTrackModel) => !!model.trackData,
-  },
-  {
-    label: 'Confirm track type',
-    content: (model: AddTrackModel) => <ConfirmTrack model={model} />,
-    isComplete: (model: AddTrackModel) =>
-      !!(
-        model.submittableTrackName &&
-        model.trackType &&
-        model.trackAdapter?.type &&
-        model.assembly &&
-        !model.mixinMissing
-      ),
-  },
-]
+function isSubmittable(model: AddTrackModel) {
+  return !!(
+    model.submittableTrackName &&
+    model.trackType &&
+    model.trackAdapter?.type &&
+    model.assembly &&
+    !model.mixinMissing
+  )
+}
 
 const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
@@ -63,21 +40,9 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model: AddTrackModel
   switchWorkflow: (name: string) => void
 }) {
-  const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
-  const isLastStep = activeStep === steps.length - 1
-
-  function handleNext() {
-    if (isLastStep) {
-      try {
-        doSubmit({ model })
-      } catch (e) {
-        getNotificationSink(model).notifyError(`${e}`, e)
-      }
-    } else {
-      setActiveStep(activeStep + 1)
-    }
-  }
+  const { trackData } = model
+  const hasFile = isUriLocation(trackData) ? !!trackData.uri : !!trackData
 
   return (
     <div className={classes.root} data-testid="addTrackWorkflow">
@@ -93,52 +58,24 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
           Add multiple tracks at once
         </Link>
       </Typography>
-      <Stepper
-        className={classes.stepper}
-        activeStep={activeStep}
-        orientation="vertical"
+      <TrackSourceSelect model={model} />
+      {hasFile ? <ConfirmTrack model={model} /> : null}
+      <Button
+        disabled={!hasFile || !isSubmittable(model)}
+        variant="contained"
+        color="primary"
+        className={classes.submit}
+        onClick={() => {
+          try {
+            doSubmit({ model })
+          } catch (e) {
+            getNotificationSink(model).notifyError(`${e}`, e)
+          }
+        }}
+        data-testid="addTrackButton"
       >
-        {steps.map(({ label, content, isComplete }) => (
-          <Step key={label}>
-            {/* hide the numbered step badge — with the second step collapsed the
-                lone "1" reads as an orphaned label rather than a real sequence */}
-            <StepLabel
-              slotProps={{ stepIcon: { sx: { display: 'none' } } }}
-              sx={{ '& .MuiStepLabel-iconContainer': { display: 'none' } }}
-            >
-              {label}
-            </StepLabel>
-            <StepContent>
-              {content(model)}
-              <div className={classes.actionsContainer}>
-                <Button
-                  variant="contained"
-                  disabled={activeStep === 0}
-                  className={classes.button}
-                  onClick={() => {
-                    setActiveStep(activeStep - 1)
-                  }}
-                  data-testid="addTrackBackButton"
-                >
-                  Back
-                </Button>
-                <Button
-                  disabled={!isComplete(model)}
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    handleNext()
-                  }}
-                  className={classes.button}
-                  data-testid="addTrackNextButton"
-                >
-                  {isLastStep ? 'Add' : 'Next'}
-                </Button>
-              </div>
-            </StepContent>
-          </Step>
-        ))}
-      </Stepper>
+        Add
+      </Button>
     </div>
   )
 })

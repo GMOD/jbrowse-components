@@ -383,7 +383,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
       { type: 'click', text: 'Open track...' },
-      { type: 'waitForText', text: 'Enter track data' },
+      { type: 'waitForText', text: 'Main file' },
     ],
     stages: [
       {

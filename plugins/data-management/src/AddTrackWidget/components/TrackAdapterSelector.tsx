@@ -40,16 +40,18 @@ const TrackAdapterSelector = observer(function ({
       variant="outlined"
       select
       fullWidth
-      error={adapterHintNotConfigurable}
+      error={adapterHintNotConfigurable || !displayValue}
       // Stated on the field rather than only as a group inside the menu: the
       // whole problem is that nobody opens a dropdown they have no reason to
       // think holds a better answer.
       helperText={
         adapterHintNotConfigurable
-          ? `The "${adapterHint}" adapter cannot be configured for the provided file. This adapter may require a specific file extension or additional setup.`
+          ? `The "${adapterHint}" adapter could not be configured for this file. Pick a different adapter, or check the file's extension.`
           : alternatives.length
             ? `This file can also be read as: ${alternatives.map(e => e.displayName).join(', ')}`
-            : undefined
+            : displayValue
+              ? undefined
+              : 'The format could not be guessed from the file name. Choose an adapter.'
       }
       onChange={event => {
         model.setAdapterHint(event.target.value)

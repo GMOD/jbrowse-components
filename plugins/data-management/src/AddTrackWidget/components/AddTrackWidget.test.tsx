@@ -111,7 +111,6 @@ test('adds a track', async () => {
       value: 'test.txt',
     },
   })
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   fireEvent.mouseDown(getByRole('combobox', { name: 'Adapter type' }))
   const bamAdapter = await findByText('BAM adapter')
   fireEvent.click(bamAdapter)
@@ -124,7 +123,7 @@ test('adds a track', async () => {
   fireEvent.click(await findByText('Feature track'))
   fireEvent.mouseDown(getByRole('combobox', { name: 'Assembly' }))
   fireEvent.click(within(await findByRole('listbox')).getByText('volMyt1'))
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  fireEvent.click(getByTestId('addTrackButton'))
   expect(session.sessionTracks.length).toBe(2)
 })
 

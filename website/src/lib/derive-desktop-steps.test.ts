@@ -179,7 +179,7 @@ test('a one-file track walks the add-track form', () => {
     "<div class="desktop-steps">
     In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then File → Open track... and, in Add a track from file or URL, enter:
     Main file: https://example.com/genes.gff3.gz
-    Click Next. JBrowse reads the adapter and track type off the file name. Then fill in:
+    JBrowse reads the adapter and track type off the file name. Then fill in:
     Track name: GenesAssembly: hg38
     Click Add.
     </div>"
