@@ -78,9 +78,10 @@ compiler hold in agreement: GRAMMAR_OF_GRAPHICS.md §"Where a proposal lands".
 ## Scale: color
 
 `encoding.color` is in one of three states (ADR [241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md)): unset (the display's
-default, or the `impliedField` its schema declares), a constant `value` (a
-bare CSS string is the shorthand), or a `field` read through a `scale` and
-keyed by a `legend`. Scale types are `ordinal`, `threshold`, `linear`, `log`,
+default, or the `impliedField` its schema declares), a constant `value`, or a
+`field` read through a `scale` and keyed by a `legend`. A bare string is the
+`field`, so a CSS color written bare is refused with the `{ value: … }`
+spelling (`refuseConstantAsField`). Scale types are `ordinal`, `threshold`, `linear`, `log`,
 `symlog` and `identity`, each display declaring the ones it paints; the
 members (`domain`, `range`, `scheme`, `domainMin`/`domainMid`/`domainMax`,
 `domainQuantile`, `names`, `unknown`, `invalid`, `reverse`) and which display
