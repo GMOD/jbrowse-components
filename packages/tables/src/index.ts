@@ -384,22 +384,17 @@ async function undecodableContigs(
 
 async function missingContigs(
   pluginManager: PluginManager,
-  { adapterConfig, sequenceAdapter, regions }: RegionArgs,
-) {
-  return regions.length === 0
-    ? []
-    : missingContigsOf(
-        await contigNamesOf(pluginManager, adapterConfig, sequenceAdapter),
-        regions,
-      )
-}
-
-/** `missingContigs` for one axis of a comparative file, on its assembly's side. */
-async function axisMissingContigs(
-  pluginManager: PluginManager,
-  adapterConfig: Record<string, unknown>,
-  assemblyName: string | undefined,
-  regions: { refName: string }[],
+  {
+    adapterConfig,
+    sequenceAdapter,
+    assemblyName,
+    regions,
+  }: {
+    adapterConfig: Record<string, unknown>
+    sequenceAdapter?: Record<string, unknown>
+    assemblyName?: string
+    regions: NamedRegion[]
+  },
 ) {
   return regions.length === 0
     ? []
@@ -407,7 +402,7 @@ async function axisMissingContigs(
         await contigNamesOf(
           pluginManager,
           adapterConfig,
-          undefined,
+          sequenceAdapter,
           assemblyName,
         ),
         regions,
@@ -542,6 +537,36 @@ export function createTablesEngine() {
       refNamePosition: resolved?.refNamePosition,
     }
   }
+  type Positioned = Awaited<ReturnType<typeof positioned>>
+  const alongTwoAxes = async <
+    T extends { assemblyNames: (string | undefined)[] },
+  >(
+    adapterConfig: Record<string, unknown>,
+    first: HostAxisArgs,
+    second: HostAxisArgs,
+    table: (first: Positioned, second: Positioned) => Promise<T>,
+  ) => {
+    const tables = await table(
+      await positioned(first, adapterConfig, 0),
+      await positioned(second, adapterConfig, 1),
+    )
+    const [firstName, secondName] = tables.assemblyNames
+    return {
+      tables,
+      missing: await Promise.all([
+        missingContigs(pluginManager, {
+          adapterConfig,
+          assemblyName: firstName,
+          regions: first.regions,
+        }),
+        missingContigs(pluginManager, {
+          adapterConfig,
+          assemblyName: secondName,
+          regions: second.regions,
+        }),
+      ]),
+    }
+  }
   const call =
     <A extends object, R>(
       name: string,
@@ -670,54 +695,26 @@ export function createTablesEngine() {
     alignmentMarkAlpha,
     alignmentConnectorCurves,
     synteny: call('synteny', SYNTENY_ARGS, async (args: SyntenyTablesArgs) => {
-      const tables = await syntenyTables(pluginManager, {
-        ...args,
-        query: await positioned(args.query, args.adapterConfig, 0),
-        target: await positioned(args.target, args.adapterConfig, 1),
-      })
-      const [query, target] = tables.assemblyNames
+      const { tables, missing } = await alongTwoAxes(
+        args.adapterConfig,
+        args.query,
+        args.target,
+        (query, target) =>
+          syntenyTables(pluginManager, { ...args, query, target }),
+      )
       return {
         ...tables,
-        missingContigs: {
-          query: await axisMissingContigs(
-            pluginManager,
-            args.adapterConfig,
-            query,
-            args.query.regions,
-          ),
-          target: await axisMissingContigs(
-            pluginManager,
-            args.adapterConfig,
-            target,
-            args.target.regions,
-          ),
-        },
+        missingContigs: { query: missing[0], target: missing[1] },
       }
     }),
     dotplot: call('dotplot', DOTPLOT_ARGS, async (args: DotplotTablesArgs) => {
-      const tables = await dotplotTables(pluginManager, {
-        ...args,
-        x: await positioned(args.x, args.adapterConfig, 0),
-        y: await positioned(args.y, args.adapterConfig, 1),
-      })
-      const [x, y] = tables.assemblyNames
-      return {
-        ...tables,
-        missingContigs: {
-          x: await axisMissingContigs(
-            pluginManager,
-            args.adapterConfig,
-            x,
-            args.x.regions,
-          ),
-          y: await axisMissingContigs(
-            pluginManager,
-            args.adapterConfig,
-            y,
-            args.y.regions,
-          ),
-        },
-      }
+      const { tables, missing } = await alongTwoAxes(
+        args.adapterConfig,
+        args.x,
+        args.y,
+        (x, y) => dotplotTables(pluginManager, { ...args, x, y }),
+      )
+      return { ...tables, missingContigs: { x: missing[0], y: missing[1] } }
     }),
     contigs: call('contigs', CONTIGS_ARGS, (args: ContigTablesArgs) =>
       contigTables(pluginManager, args),
@@ -755,12 +752,11 @@ export function createTablesEngine() {
         })
         return {
           ...tables,
-          missingContigs: await axisMissingContigs(
-            pluginManager,
-            args.adapterConfig,
-            tables.lanes.assembly[0],
-            args.anchor.regions,
-          ),
+          missingContigs: await missingContigs(pluginManager, {
+            adapterConfig: args.adapterConfig,
+            assemblyName: tables.lanes.assembly[0],
+            regions: args.anchor.regions,
+          }),
         }
       },
     ),
