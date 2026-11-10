@@ -129,12 +129,19 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 }
 ```
 
+The coverage track draws the mean alone, with the axis fixed at 0 to 40, so a
+bin's minimum and maximum do not fill the low-coverage block at this zoom:
+
 ```json addtrack
 {
   "trackId": "hg38-gnomad3MeanCoverage",
   "name": "gnomAD v3 Genome Coverage - Mean Coverage",
   "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw",
-  "assemblyNames": ["hg38"]
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "mark": { "extent": "none" },
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 40 } } }
+  }
 }
 ```
 
