@@ -1,3 +1,4 @@
+import { isGpuContextLostError } from '../gpuContextLostError.ts'
 import { pointMark } from '../marks/pointMark.ts'
 import { spanMark } from '../marks/spanMark.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
@@ -198,14 +199,15 @@ test('a program that fails to link is compiled once and reported for each pass',
     pass('bad0', broken),
     pass('bad1', broken),
   ])
-  const reported: string[] = []
+  const reported: Error[] = []
   hal.setErrorHandler(e => {
-    reported.push(e.message)
+    reported.push(e)
   })
   drawEach(hal, ['bad0', 'bad1', 'bad0'])
   expect(log.compiles.filter(s => s.includes('broken'))).toHaveLength(1)
-  expect(reported).toEqual([
+  expect(reported.map(e => e.message)).toEqual([
     expect.stringContaining('"bad0"'),
     expect.stringContaining('"bad1"'),
   ])
+  expect(reported.every(isGpuContextLostError)).toBe(true)
 })

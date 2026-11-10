@@ -10,6 +10,10 @@ const SURFACE_LOST_MESSAGE =
   'WebGPU could not give this display a drawable surface. The GPU driver ' +
   'rejected the canvas image, so every frame this display submits is discarded.'
 
+const SHADER_BUILD_MESSAGE =
+  'WebGL could not build a shader this display needs. The GPU driver rejected ' +
+  'it, so the marks it draws are missing.'
+
 /**
  * Flagged rather than matched by message or `instanceof`, so the error UI can
  * offer the remedy specific to a loss (switch the page to Canvas2D) without
@@ -42,6 +46,14 @@ export function createGpuDeviceLostError() {
  */
 export function createGpuSurfaceLostError(detail: string) {
   return createGpuContextLostError(`${SURFACE_LOST_MESSAGE} (${detail})`)
+}
+
+/**
+ * A GL stack that cannot compile or link one of our shaders. Every frame on
+ * this context would miss the same marks; Canvas2D needs no shader compiler.
+ */
+export function createGpuShaderBuildError(detail: string) {
+  return createGpuContextLostError(`${SHADER_BUILD_MESSAGE} (${detail})`)
 }
 
 export function isGpuContextLostError(error: unknown) {

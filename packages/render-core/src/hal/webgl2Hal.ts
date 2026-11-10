@@ -1,5 +1,6 @@
 import { getDpr, syncCanvasSize } from '../canvas2dUtils.ts'
 import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
+import { createGpuShaderBuildError } from '../gpuContextLostError.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 
 import type {
@@ -386,8 +387,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       return pass
     } catch (e) {
       this.passes.set(passId, null)
-      this.oom.report(
-        `#${this.instanceId} could not build the "${passId}" shader on this GPU: ${e instanceof Error ? e.message : String(e)}`,
+      this.oom.reportClassified(
+        createGpuShaderBuildError(
+          `#${this.instanceId} pass "${passId}": ${e instanceof Error ? e.message : String(e)}`,
+        ),
       )
       return undefined
     }
