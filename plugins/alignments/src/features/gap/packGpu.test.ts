@@ -1,5 +1,6 @@
 import {
   GAP_DELETION,
+  GAP_ROW_BITS,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
@@ -11,7 +12,7 @@ const packGaps = (data: GapUploadData, mark: typeof SKIP_MARK) =>
   mark.pass.pack(data) as ArrayBuffer
 
 const s32 = gapShader.INSTANCE_STRIDE_WORDS
-const { startOff, endOff, y, gapType } = gapShader.INSTANCE_OFFSET_U32
+const { startOff, endOff, rowAndType } = gapShader.INSTANCE_OFFSET_U32
 
 // Interleaved on purpose: the two packers walk the same array and each has to
 // skip the other's entries wherever they fall, so a run of one kind followed by
@@ -31,8 +32,8 @@ function instances(buf: ArrayBuffer) {
     out.push({
       start: u32[o + startOff]!,
       end: u32[o + endOff]!,
-      row: u32[o + y]!,
-      type: u32[o + gapType]!,
+      row: u32[o + rowAndType]! & ((1 << GAP_ROW_BITS) - 1),
+      type: u32[o + rowAndType]! >>> GAP_ROW_BITS,
     })
   }
   return out
@@ -86,6 +87,21 @@ test('a gap type belonging to neither mark is packed by neither pass', () => {
   }
   expect(packGaps(withUnknown, SKIP_MARK).byteLength).toBe(0)
   expect(packGaps(withUnknown, DELETION_MARK).byteLength).toBe(0)
+})
+
+test('the widest row a Uint16Array holds keeps its gap type', () => {
+  const lastRow: GapUploadData = {
+    gapPositions: new Uint32Array([10, 20, 30, 40]),
+    gapYs: new Uint16Array([0xffff, 0xffff]),
+    gapTypes: new Uint8Array([GAP_SKIP, GAP_DELETION]),
+    gapFrequencies: new Uint8Array([255, 255]),
+  }
+  expect(instances(packGaps(lastRow, SKIP_MARK))).toEqual([
+    { start: 10, end: 20, row: 0xffff, type: GAP_SKIP },
+  ])
+  expect(instances(packGaps(lastRow, DELETION_MARK))).toEqual([
+    { start: 30, end: 40, row: 0xffff, type: GAP_DELETION },
+  ])
 })
 
 test('an empty payload packs an empty buffer', () => {

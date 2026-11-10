@@ -1,7 +1,7 @@
 // Gap pass: deletion (rect) or skip (1px centerline) per CIGAR D/N op.
 //! targets: wgsl, glsl
 //! js-export: intronAlpha
-//! export-consts: GAP_DELETION, GAP_SKIP
+//! export-consts: GAP_DELETION, GAP_SKIP, GAP_ROW_BITS
 
 import alignmentsUniforms;
 import colorPack;
@@ -16,6 +16,9 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // the move insertion.slang already made for its own thresholds.
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
+
+static const uint GAP_ROW_BITS = 16u;
+static const uint GAP_ROW_MASK = (1u << GAP_ROW_BITS) - 1u;
 
 // Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
 // per-row centerlines pack together into a solid smear. Fade them toward
@@ -40,15 +43,16 @@ float intronAlpha(float featHeight) {
 struct Instance {
   uint  startOff  : ATTR0;
   uint  endOff    : ATTR1;
-  uint  y         : ATTR2;
-  uint  gapType   : ATTR3;  // 0 = deletion, 1 = skip
-  float frequency : ATTR4;
+  uint  rowAndType : ATTR2;
+  float frequency  : ATTR3;
 };
 
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   float2 local = quadLocal(vid);
+  float row = float(inst.rowAndType & GAP_ROW_MASK);
+  uint gapType = inst.rowAndType >> GAP_ROW_BITS;
 
   // Widen to a minimum of 1 CSS px, as drawGaps' `Math.max(1, widthPx)` does:
   // a few-bp deletion is sub-pixel at ordinary zoom, and without this it
@@ -60,19 +64,19 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx1 = xx.x;
   float sx2 = xx.y;
 
-  float2 yy = pileupY(float(inst.y), u);
+  float2 yy = pileupY(row, u);
   float yTop = yy.x;
   float yBot = yy.y;
 
   float alpha = 1.0;
 
-  if (inst.gapType == GAP_SKIP) {
-    float2 line = pileupCenterlineY(float(inst.y), u);
+  if (gapType == GAP_SKIP) {
+    float2 line = pileupCenterlineY(row, u);
     yTop = line.x;
     yBot = line.y;
     alpha = intronAlpha(u.featHeight);
   }
-  if (inst.gapType == GAP_DELETION) {
+  if (gapType == GAP_DELETION) {
     // A deletion HAS a reference span, so its own width is the measure — the
     // same quantity the frequency fade squares, and the reason that fade takes
     // widthPx² rather than pxPerBp². sizeAlpha is still needed on top of it:
@@ -87,7 +91,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   if (alpha <= 0.0) { return discardVertex(); }
 
   o.position = flippedQuadPos(sx1, sx2, yBot, yTop, local, u);
-  float3 c = (inst.gapType == GAP_DELETION) ? unpackRGBA(u.colorDeletion).xyz : unpackRGBA(u.colorSkip).xyz;
+  float3 c = (gapType == GAP_DELETION) ? unpackRGBA(u.colorDeletion).xyz : unpackRGBA(u.colorSkip).xyz;
   o.color = float4(c, alpha);
   return o;
 }

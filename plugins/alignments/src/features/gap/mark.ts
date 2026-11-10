@@ -7,6 +7,7 @@ import {
 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   GAP_DELETION,
+  GAP_ROW_BITS,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
@@ -64,11 +65,7 @@ export function packGaps(c: PileupChannels) {
     if (markSelects(kinds, kind, i)) {
       u32[o + F_U32.startOff] = positions[i * 2]!
       u32[o + F_U32.endOff] = positions[i * 2 + 1]!
-      u32[o + F_U32.y] = rows[i]!
-      // The shader still branches on it: one `.slang` serves both passes, so
-      // the attribute conveys which branch even though it is constant per
-      // buffer.
-      u32[o + F_U32.gapType] = kinds![i]!
+      u32[o + F_U32.rowAndType] = rows[i]! | (kinds![i]! << GAP_ROW_BITS)
       f32[o + F_F32.frequency] = freqs![i]! / 255
       o += s32
     }
