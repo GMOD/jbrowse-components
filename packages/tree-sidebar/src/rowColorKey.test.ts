@@ -305,7 +305,7 @@ describe('rows.annotations', () => {
         ],
       },
       {
-        id: 'rows.annotations.0',
+        id: 'rows.annotations.1',
         title: 'Sex',
         focusesRows: undefined,
         entries: [
@@ -439,7 +439,28 @@ describe('rows.annotations', () => {
       { rows: SEXED },
     )
     expect(display.rowAnnotationColors).toHaveLength(1)
-    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.0'])
+    expect(keysOf(display).map(key => key.id)).toEqual(['rows.annotations.1'])
+  })
+
+  // A key's id is its entry's place in the config, and a dismissed legend
+  // section is remembered by id, so an earlier entry that starts or stops
+  // drawing moves neither.
+  it("keeps a key's id while an earlier entry comes and goes", () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['group', 'sex'] } },
+      { rows: SEXED },
+    )
+    const sexKey = () => keysOf(display).find(key => key.title === 'Sex')?.id
+    expect(keysOf(display).map(key => key.id)).toEqual([
+      'rows.color',
+      'rows.annotations.1',
+    ])
+    setConf(display, ['rows', 'color'], 'name')
+    expect(keysOf(display).map(key => key.id)).toEqual([
+      'rows.annotations.0',
+      'rows.annotations.1',
+    ])
+    expect(sexKey()).toBe('rows.annotations.1')
   })
 
   // The columns, their labels' lines and their keys read one decision over

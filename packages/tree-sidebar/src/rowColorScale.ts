@@ -353,9 +353,13 @@ export function annotationColumn(
   )
 }
 
-/** The id of the key of the `rows.annotations` entry at `index`. */
-export function rowAnnotationScaleId(index: number) {
-  return `rows.annotations.${index}`
+/**
+ * The id of the key of the `rows.annotations` entry at `position` in the
+ * config list, so an entry before it drawing nothing moves no key's id, nor
+ * which keys a reader dismissed.
+ */
+export function rowAnnotationScaleId(position: number) {
+  return `rows.annotations.${position}`
 }
 
 /**
@@ -367,9 +371,9 @@ export function rowAnnotationScales(
   rows: readonly RowSource[],
   drawn: readonly RowAnnotationDrawn[],
 ): CategoricalScale[] {
-  return drawn.map(({ setting, dealt, colors }, index) => ({
+  return drawn.map(({ setting, dealt, colors }) => ({
     kind: 'categorical',
-    id: rowAnnotationScaleId(index),
+    id: rowAnnotationScaleId(setting.position),
     title: setting.title,
     entries: rowColorKeyEntries(
       rows,
