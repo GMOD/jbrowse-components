@@ -196,7 +196,7 @@ import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
-import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
+import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
@@ -437,10 +437,10 @@ export default function stateModelFactory(
           hoveredConnectorReadIds: [] as string[],
           /**
            * #volatile
-           * The sashimi junction under the cursor, whose supporting reads the
-           * hover lights.
+           * The sashimi junction or split-read arc under the cursor, whose
+           * supporting reads the hover lights.
            */
-          hoveredJunction: undefined as LaneJunction | undefined,
+          hoveredJunction: undefined as HoveredJunction | undefined,
 
           /**
            * #volatile
@@ -1684,23 +1684,27 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * The slots of the reads in the junction's lane that support it.
+           * The slots of the reads that support the junction, in its lane, or
+           * in every drawn lane for a junction naming none.
            */
-          sashimiSupportingReadSlots(junction: LaneJunction) {
-            const sec = self.renderSections.find(
-              s => s.groupKey === junction.groupKey,
-            )
-            return sec
-              ? junctionSupportingReadSlots(
+          sashimiSupportingReadSlots(junction: HoveredJunction) {
+            return self.renderSections
+              .filter(
+                s =>
+                  junction.groupKey === undefined ||
+                  s.groupKey === junction.groupKey,
+              )
+              .flatMap(sec =>
+                junctionSupportingReadSlots(
                   [...sec.laidOutPileupMap].map(([i, data]) => ({
                     displayedRegionIndex: i,
                     refName: self.loadedRegions.get(i)?.refName,
                     data,
                   })),
-                  junction,
+                  { ...junction, groupKey: sec.groupKey },
                   self.canonicalRefName,
-                )
-              : []
+                ),
+              )
           },
         }
       })
@@ -2793,7 +2797,7 @@ export default function stateModelFactory(
             // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch
             // with no arc clears the highlight by not mentioning one.
             hoveredArcHighlight?: ArcHighlight
-            hoveredJunction?: LaneJunction
+            hoveredJunction?: HoveredJunction
             hoveredConnectorReadIds?: string[]
           }) {
             if (self.contextMenuInfo) {

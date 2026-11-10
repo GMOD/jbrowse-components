@@ -21,6 +21,7 @@ import {
   makePileupDataResult,
 } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { LINKED_READ_LINE_MARK } from '../features/linkedReads/mark.ts'
+import { arcSplitJunction } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
@@ -47,6 +48,7 @@ import {
 } from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type { BaseLayer } from '../shared/types.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
@@ -2232,5 +2234,104 @@ describe('setHoverState', () => {
     const first = hover(100)
     expect(hover(100)).toBe(first)
     expect(hover(200)).not.toBe(first)
+  })
+
+  // An inversion read grouped by strand: its forward piece in one lane, its
+  // reverse piece in the other, joined by one LL-type split junction.
+  function invertedReadByStrand() {
+    const display = createDisplay({ withRegions: true })
+    const piece = (
+      start: number,
+      end: number,
+      strand: number,
+      clip: number,
+      flags: number,
+      sa: string,
+    ) => ({
+      ...baseWorkerPileupData(1),
+      ...namesToBlock(['inv']),
+      readKeys: [`inv-${strand}`],
+      readPositions: new Uint32Array([start, end]),
+      readStrands: new Int8Array([strand]),
+      readFlags: new Uint16Array([flags]),
+      readClipAtStart: new Uint32Array([clip]),
+      readSuppAlignments: [sa],
+    })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: 'fwd',
+            label: 'fwd',
+            data: piece(100, 200, 1, 0, 0, 'ctgA,301,-,200M100S,60,0;'),
+          },
+          {
+            key: 'rev',
+            label: 'rev',
+            data: piece(
+              300,
+              500,
+              -1,
+              100,
+              SAM_FLAG_SUPPLEMENTARY,
+              'ctgA,101,+,100M200S,60,0;',
+            ),
+          },
+        ],
+      },
+      region(0),
+    )
+    display.setDrawnReadConnections('link')
+    return display
+  }
+
+  const hoverOn = (
+    display: ReturnType<typeof createDisplay>,
+    hoveredJunction: HoveredJunction | undefined,
+  ) => {
+    display.setHoverState({
+      overCigarItem: false,
+      featureIdUnderMouse: undefined,
+      mouseoverExtraInformation: undefined,
+      hoveredJunction,
+    })
+  }
+
+  const litLanes = (display: ReturnType<typeof createDisplay>) =>
+    display.hoveredJunction
+      ? display
+          .sashimiSupportingReadSlots(display.hoveredJunction)
+          .map(s => s.groupKey)
+          .toSorted()
+      : []
+
+  test("a split arc's hover lights its reads in every lane", () => {
+    const display = invertedReadByStrand()
+    const hits = [...display.themed.arcFeedsByGroup].flatMap(([, feeds]) =>
+      [...feeds].flatMap(([index, feed]) =>
+        feed.linkHits.map(hit =>
+          arcSplitJunction(hit, display.loadedRegions.get(index)?.refName),
+        ),
+      ),
+    )
+    expect(hits).toEqual([
+      { refName: 'ctgA', start: 200, end: 500, split: 'splitInvLL' },
+    ])
+    hoverOn(display, hits[0])
+    expect(litLanes(display)).toEqual(['fwd', 'rev'])
+    expect(display.hoverInk).toHaveLength(2)
+  })
+
+  test("a sashimi junction's hover lights its own lane only", () => {
+    const display = invertedReadByStrand()
+    hoverOn(display, {
+      groupKey: 'rev',
+      refName: 'ctgA',
+      start: 200,
+      end: 500,
+      split: 'splitInvLL',
+    })
+    expect(litLanes(display)).toEqual(['rev'])
   })
 })

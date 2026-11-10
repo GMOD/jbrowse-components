@@ -1,7 +1,9 @@
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { adapterRefNameText } from '@jbrowse/core/util'
 
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { GAP_SKIP } from '../../shaders/slang/gap.consts.generated.ts'
+import { isArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import { splitClassCode } from './junctionClass.ts'
 import { forEachSplitJunction } from './splitJunctions.ts'
 
@@ -9,9 +11,10 @@ import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
+import type { ArcBandHit } from '../arcs/bandFeed.ts'
 import type { AdapterRefName } from '@jbrowse/core/util'
 
-/** A junction as one lane draws it: what a hovered arc names. */
+/** A junction as one lane draws it: what a hovered sashimi arc names. */
 export interface LaneJunction {
   groupKey: string
   refName: string
@@ -21,8 +24,43 @@ export interface LaneJunction {
   split?: ArcSplitCategory
 }
 
+/**
+ * A hovered junction: a sashimi junction names its lane, and a split arc,
+ * whose support pools every lane, names none.
+ */
+export type HoveredJunction = Omit<LaneJunction, 'groupKey'> & {
+  groupKey?: string
+}
+
+/**
+ * The split junction a hovered arc draws on `refName`, the canonical name of
+ * the region it is filed under. None for a mate link, a tick, an arc reaching
+ * another chromosome or one whose feet share a base, which no sashimi class
+ * names.
+ */
+export function arcSplitJunction(hit: ArcBandHit, refName: string | undefined) {
+  let junction: HoveredJunction | undefined
+  if (
+    hit.kind === 'arc' &&
+    hit.endRefName === undefined &&
+    hit.x1 !== hit.x2 &&
+    refName !== undefined
+  ) {
+    const split = arcSlotCategory(hit.colorType)
+    if (isArcSplitCategory(split)) {
+      junction = {
+        refName,
+        start: Math.min(hit.x1, hit.x2),
+        end: Math.max(hit.x1, hit.x2),
+        split,
+      }
+    }
+  }
+  return junction
+}
+
 /** Whether two hovers name one junction, so a mousemove along it rewrites nothing. */
-export function sameLaneJunction(a?: LaneJunction, b?: LaneJunction) {
+export function sameLaneJunction(a?: HoveredJunction, b?: HoveredJunction) {
   return (
     a === b ||
     (a !== undefined &&

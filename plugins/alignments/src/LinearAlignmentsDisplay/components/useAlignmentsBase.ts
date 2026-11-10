@@ -4,6 +4,7 @@ import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
+import { arcSplitJunction } from '../../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { arcBandState } from '../renderers/arcMarks.ts'
@@ -285,6 +286,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               hit.endRefName,
             ),
       highlight,
+      junction: arcSplitJunction(
+        hit,
+        model.loadedRegions.get(hover.regionIndex)?.refName,
+      ),
     }
     return arc
   }
@@ -424,6 +429,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: result.tooltip,
           hoveredArcHighlight: result.highlight,
+          hoveredJunction: result.junction,
         }
       case 'indicator':
       case 'coverage': {

@@ -10,6 +10,7 @@ import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
 import { ARC_BAND_MARKS } from '../renderers/arcMarks.ts'
 
 import type { ArcBandFeed, ArcBandHit } from '../../features/arcs/bandFeed.ts'
+import type { HoveredJunction } from '../../features/sashimi/supportingReads.ts'
 import type { ArcBandState } from '../renderers/arcMarks.ts'
 import type { SectionRender } from '../renderers/rendererTypes.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
@@ -71,6 +72,8 @@ export interface ArcMarkHit {
   type: 'arc'
   tooltip: TooltipPayload
   highlight: ArcHighlight
+  /** The split junction a same-chromosome split-read arc draws. */
+  junction?: HoveredJunction
 }
 
 export interface ArcBandHover {
