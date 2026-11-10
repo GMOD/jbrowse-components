@@ -3,6 +3,7 @@ import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { joinTables } from '@jbrowse/core/util/joinTables'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   byteGatedFetchRegions,
@@ -656,16 +657,6 @@ export function laidOutTables(
 }
 
 type RegionTables = ReturnType<typeof laidOutTables>
-const TABLES = [
-  'features',
-  'subfeatures',
-  'rects',
-  'lines',
-  'chevrons',
-  'arrows',
-  'aminoAcids',
-  'labels',
-] as const
 
 /**
  * Each region's tables as one set: every row names its region's index, and
@@ -673,44 +664,14 @@ const TABLES = [
  * and `subfeatures`. A feature crossing regions is listed in each.
  */
 function joinRegionTables(parts: RegionTables[]) {
-  let features = 0
-  let subfeatures = 0
-  const joined = parts.map((part, region) => {
-    const out = Object.fromEntries(
-      TABLES.map(name => {
-        const table: Record<string, unknown[]> = { ...part[name] }
-        const n = Object.values(table)[0]?.length ?? 0
-        if (table.feature) {
-          table.feature = table.feature.map(f => (f as number) + features)
-        }
-        if (table.subfeature) {
-          table.subfeature = table.subfeature.map(s =>
-            (s as number) < 0 ? s : (s as number) + subfeatures,
-          )
-        }
-        table.region = new Array(n).fill(region)
-        return [name, table]
-      }),
-    )
-    features += part.features.id.length
-    subfeatures += part.subfeatures.id.length
-    return out
-  })
-  const tables = Object.fromEntries(
-    TABLES.map(name => {
-      const columns = Object.keys(joined[0]?.[name] ?? {})
-      return [
-        name,
-        Object.fromEntries(
-          columns.map(c => [c, joined.flatMap(part => part[name]![c]!)]),
-        ),
-      ]
-    }),
-  ) as {
-    [K in (typeof TABLES)[number]]: RegionTables[K] & { region: number[] }
-  }
   return {
-    ...tables,
+    ...joinTables(
+      parts.map(({ height, truncated, ...tables }, region) => ({
+        columns: { region },
+        tables,
+      })),
+      { feature: 'features', subfeature: 'subfeatures' },
+    ),
     height: Math.max(0, ...parts.map(part => part.height)),
     truncated: parts.reduce((sum, part) => sum + part.truncated, 0),
   }

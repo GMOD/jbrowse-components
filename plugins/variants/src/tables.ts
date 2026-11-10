@@ -4,6 +4,7 @@ import { DEFAULT_BYTE_LIMIT } from '@jbrowse/core/data_adapters/tables'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { numberByFirstAppearance } from '@jbrowse/core/util/firstAppearance'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
@@ -399,16 +400,13 @@ export async function variantTables(
     color: [] as string[],
     region: [] as number[],
   }
-  const keys = new Map<string, number>()
+  const keyOf = numberByFirstAppearance<string>()
   for (const { region: regionIndex, data, shown } of perRegion) {
     const offset = variants.start.length
     const featureColors = recordColors.get(regionIndex)!
     const variantOf = new Map(shown.map((f, i) => [f, offset + i]))
     for (const f of shown) {
       const info = data.featureInfo[f]!
-      if (!keys.has(info.featureId)) {
-        keys.set(info.featureId, keys.size)
-      }
       variants.start.push(data.featurePositions[f * 2]!)
       variants.end.push(data.featurePositions[f * 2 + 1]!)
       variants.id.push(info.featureId)
@@ -418,7 +416,7 @@ export async function variantTables(
       variants.type.push(info.type)
       variants.color.push(abgrToHex(featureColors[f]!))
       variants.region.push(regionIndex)
-      variants.key.push(keys.get(info.featureId)!)
+      variants.key.push(keyOf(info.featureId))
     }
     const colors = cellColors.get(regionIndex)!
     for (let i = 0; i < data.numCells; i++) {
@@ -861,16 +859,13 @@ export async function variantGenotypeMatrix(
     pluginManager,
     variantArgs,
   )
-  const keyed = new Map<string, Feature>()
-  for (const { data, shown } of perRegion) {
-    for (const f of shown) {
-      const id = data.featureInfo[f]!.featureId
-      if (!keyed.has(id)) {
-        keyed.set(id, recordOf.get(id)!)
-      }
-    }
-  }
-  const records = [...keyed.values()]
+  const records = [
+    ...new Set(
+      perRegion.flatMap(({ data, shown }) =>
+        shown.map(f => data.featureInfo[f]!.featureId),
+      ),
+    ),
+  ].map(id => recordOf.get(id)!)
   const phased = args.rowsField === 'haplotype'
   const matrix = await genotypeMatrixOf(matrixWalkOf(records, {}), {
     sources: drawn,

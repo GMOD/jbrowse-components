@@ -44,6 +44,8 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import { numberByFirstAppearance } from '@jbrowse/core/util/firstAppearance'
+import { joinTables } from '@jbrowse/core/util/joinTables'
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
@@ -191,7 +193,6 @@ import {
   workerFacet,
   workerInsertSizeBand,
 } from './shared/groupFeatures.ts'
-import { joinSections } from './shared/joinSections.ts'
 import {
   arcLegendTitle,
   getArcLegendItems,
@@ -370,10 +371,12 @@ function windowedPart<
   return {
     columns,
     tables,
-    keepRead: (read: number) =>
-      (d.readPositions[read * 2]! < region.end &&
-        d.readPositions[read * 2 + 1]! > region.start) ||
-      joined.has(tables.reads.key[read]!),
+    keep: {
+      reads: (read: number) =>
+        (d.readPositions[read * 2]! < region.end &&
+          d.readPositions[read * 2 + 1]! > region.start) ||
+        joined.has(tables.reads.key[read]!),
+    },
   }
 }
 
@@ -388,13 +391,7 @@ function denseKeys<
     connectors: { key: number[]; mateKey: number[] }
   },
 >(tables: T) {
-  const dense = new Map<number, number>()
-  const renumber = (key: number) => {
-    const known = dense.get(key)
-    const next = known ?? dense.size
-    dense.set(key, next)
-    return next
-  }
+  const renumber = numberByFirstAppearance<number>()
   return {
     ...tables,
     reads: { ...tables.reads, key: tables.reads.key.map(renumber) },
@@ -1007,12 +1004,10 @@ function sectionConnections(
   ])
   const ticks = own.numArcLines
   return {
-    arcs: Object.fromEntries(
-      Object.entries(ownArcs).map(([name, column]) => [
-        name,
-        [...column, ...crossArcs[name as keyof typeof crossArcs]],
-      ]),
-    ) as typeof ownArcs,
+    arcs: joinTables([
+      { columns: {}, tables: { arcs: ownArcs } },
+      { columns: {}, tables: { arcs: crossArcs } },
+    ]).arcs,
     arcTicks: {
       position: own.arcLinePositions.subarray(0, ticks),
       support: own.arcLineSupport.subarray(0, ticks),
@@ -1730,15 +1725,7 @@ function laidOutTables(
   const connectorSlotColor = buildArcColorPalette(colors.palette).map(
     normalizedRgbToHex,
   )
-  const keys = new Map<WorkerPileupData['readKeys'][number], number>()
-  const keyOf = (readKey: WorkerPileupData['readKeys'][number]) => {
-    let key = keys.get(readKey)
-    if (key === undefined) {
-      key = keys.size
-      keys.set(readKey, key)
-    }
-    return key
-  }
+  const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
   const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)
   const pileups = regions.flatMap((r, i) =>
     order.flatMap(({ key, label }) => {
@@ -1778,17 +1765,16 @@ function laidOutTables(
     }),
   )
   const tables = drawnBands(conf, {
-    ...denseKeys(joinSections(pileups, t => t.reads.start.length)),
-    ...joinSections(
+    ...denseKeys(joinTables(pileups, { read: 'reads' })),
+    ...joinTables(
       regions.flatMap((_, i) =>
         order.map(({ key, label }) => ({
           columns: { section: label, region: i },
           tables: connections.bySection.get(key)!.get(i)!,
         })),
       ),
-      () => 0,
     ),
-    ...joinSections(
+    ...joinTables(
       order.map(({ key, label }) => ({
         columns: { section: label },
         tables: {
@@ -1800,7 +1786,6 @@ function laidOutTables(
           ),
         },
       })),
-      () => 0,
     ),
   })
   return {
