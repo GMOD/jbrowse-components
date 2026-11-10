@@ -47,13 +47,9 @@ export async function fileContigsOf(
   if (isContigSource(dataAdapter)) {
     return dataAdapter.getContigs({ assemblyName })
   }
-  const refNames: string[] =
+  const refNames =
     'getRefNames' in dataAdapter
-      ? await (
-          dataAdapter as {
-            getRefNames: (opts: { assemblyName?: string }) => Promise<string[]>
-          }
-        ).getRefNames({ assemblyName })
+      ? await dataAdapter.getRefNames({ assemblyName })
       : []
   const listed = NAMES_FROM_RECORDS.has(String(adapterConfig.type))
   return refNames.map(refName => ({ refName, hasData: listed ? true : null }))

@@ -149,8 +149,7 @@ async function spellingIn(
     adapterConfig,
     sequenceAdapter,
   )
-  const names: string[] =
-    'getRefNames' in adapter ? await adapter.getRefNames() : []
+  const names = 'getRefNames' in adapter ? await adapter.getRefNames() : []
   const listed = new Set(names)
   const byCanonical = new Map(names.map(n => [canonical(n), n]))
   return (name: string) =>
