@@ -70,30 +70,33 @@ function showFatalError(title: string, error: unknown) {
 // event that fires before 'ready' (macOS delivers both that way on a cold
 // launch). Resolves exactly once, when 'ready' fires.
 //
-// `on`, not `once`: a jbrowse:// url that doesn't parse resolves nothing, and a
-// `once` listener is removed whether or not it did. So one unusable link ate the
-// only pre-'ready' listener, and a good link arriving behind it — a browser that
-// fires the handler twice, a user who clicks again when nothing happens — landed
-// in the window before the app-level handlers exist and was dropped with no
-// diagnostic. Resolving is what has to happen once, and a promise already does
-// that; the listener staying is free. It also keeps `preventDefault` on every
-// delivery rather than only the first.
+// A link that cannot be opened does not settle it: a usable one arriving
+// behind it (a browser that fires the handler twice, a second click) still
+// opens, and the unusable one is reported only when nothing else turned up.
 function getInitialTarget(): Promise<ArgvTarget | undefined> {
   return new Promise(resolve => {
     const onOpenFile = (event: Electron.Event, filePath: string) => {
       event.preventDefault()
       resolve(openFileTarget(filePath))
     }
+    let unusable: ArgvTarget | undefined
     const onOpenUrl = (event: Electron.Event, url: string) => {
       event.preventDefault()
-      resolve(protocolTarget(url))
+      const target = protocolTarget(url)
+      if (target.type === 'invalid') {
+        unusable ??= target
+      } else {
+        resolve(target)
+      }
     }
     app.on('open-file', onOpenFile)
     app.on('open-url', onOpenUrl)
     void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
       app.off('open-url', onOpenUrl)
-      resolve(findLaunchTarget(appArgv(process.argv), process.cwd()))
+      resolve(
+        findLaunchTarget(appArgv(process.argv), process.cwd()) ?? unusable,
+      )
     })
   })
 }
