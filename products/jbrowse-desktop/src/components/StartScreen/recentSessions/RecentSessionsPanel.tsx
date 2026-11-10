@@ -300,7 +300,7 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
         // owns the box
         <div
           style={{
-            maxHeight: Math.max(200, innerHeight - (compact ? 235 : 370)),
+            maxHeight: Math.max(200, innerHeight - (compact ? 283 : 418)),
             overflow: 'auto',
           }}
         >
