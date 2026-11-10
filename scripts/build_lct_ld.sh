@@ -391,6 +391,15 @@ cfg['tracks'] += [
             # whole point
             'resolutionMultiplier': 0.001,
         },
+        'displayDefaults': {
+            'mark': {'type': 'point', 'extent': 'none'},
+            'encoding': {
+                'size': 2,
+                'y': {'field': 'maxScore',
+                      'scale': {'domainMin': 0.1, 'domainMax': 0.5}},
+                'color': {'value': '#0068d1'},
+            },
+        },
     },
     {
         'type': 'VariantTrack',
@@ -401,18 +410,12 @@ cfg['tracks'] += [
             'type': 'VcfTabixAdapter',
             'uri': hap,
             'csi': True,
-            # sample id -> population, which is assembly-independent; it is
-            # hosted under genomes/hg19/ only because that is where it was
-            # first needed.
-            'samplesTsvLocation': {
-                'uri': 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
-            },
         },
         'displays': [{
             'type': 'LinearVariantDisplay',
             'variantLayout': 'columns',
             'displayId': 'kgp_lct_haplotypes-LinearVariantDisplay',
-            'rows': {'field': 'haplotype', 'color': 'population'},
+            'rows': 'haplotype',
             # This lane still reads genotypes, so unlike the LD tracks above
             # it keeps both: the floor is a control a reader can move, and the
             # gate has a real byte estimate to trip on.

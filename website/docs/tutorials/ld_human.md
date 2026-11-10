@@ -223,6 +223,17 @@ differentiated variants among the many around them:
     "type": "BigWigAdapter",
     "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw",
     "resolutionMultiplier": 0.001
+  },
+  "displayDefaults": {
+    "mark": { "type": "point", "extent": "none" },
+    "encoding": {
+      "size": 2,
+      "y": {
+        "field": "maxScore",
+        "scale": { "domainMin": 0.1, "domainMax": 0.5 }
+      },
+      "color": { "value": "#0068d1" }
+    }
   }
 }
 ```
@@ -241,6 +252,17 @@ loads the same way:
     "type": "BigWigAdapter",
     "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw",
     "resolutionMultiplier": 0.001
+  },
+  "displayDefaults": {
+    "mark": { "type": "point", "extent": "none" },
+    "encoding": {
+      "size": 2,
+      "y": {
+        "field": "maxScore",
+        "scale": { "domainMin": 0.1, "domainMax": 0.5 }
+      },
+      "color": { "value": "#0068d1" }
+    }
   }
 }
 ```
@@ -279,7 +301,10 @@ families:
   "trackId": "decode_recomb",
   "name": "deCODE recombination rate (cM/Mb, pedigree)",
   "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw",
-  "assemblyNames": ["hg38"]
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 100 } } }
+  }
 }
 ```
 
