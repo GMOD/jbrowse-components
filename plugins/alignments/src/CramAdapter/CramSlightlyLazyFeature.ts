@@ -1,9 +1,18 @@
-import { CramRecord, RF_DELETION, RF_INSERTION, RF_REF_SKIP } from '@gmod/cram'
+import {
+  CramRecord,
+  RF_DELETION,
+  RF_HARD_CLIP,
+  RF_INSERTION,
+  RF_POSITIONAL,
+  RF_REF_SKIP,
+  RF_SOFT_CLIP,
+} from '@gmod/cram'
 import {
   CIGAR_HAS_SKIP,
   CIGAR_HAS_SV_DELETION,
   CIGAR_HAS_SV_INSERTION,
   SV_INDEL_MIN_BP,
+  alignedReadBasesNumeric,
   numericCigarToString,
 } from '@jbrowse/cigar-utils'
 
@@ -40,6 +49,12 @@ RF_SKIP_BIT[RF_REF_SKIP] = CIGAR_HAS_SKIP
 const RF_SV_INDEL_BIT = new Uint8Array(128)
 RF_SV_INDEL_BIT[RF_DELETION] = CIGAR_HAS_SV_DELETION
 RF_SV_INDEL_BIT[RF_INSERTION] = CIGAR_HAS_SV_INSERTION
+
+// A read feature an end clip's run can hold: a clip, or one that places no base
+const AT_END_CLIP = new Uint8Array(128).map(
+  (_, code) =>
+    +(code === RF_SOFT_CLIP || code === RF_HARD_CLIP || !RF_POSITIONAL[code]),
+)
 
 /**
  * EXTENDS CramRecord because CramAdapter passes this class to `@gmod/cram` as
@@ -230,6 +245,29 @@ export default class CramSlightlyLazyFeature
         ? this.getTrailingClipLength()
         : this.getLeadingClipLength()
     return this.clipStart
+  }
+
+  // The read length less its soft clips, off the features at each end of the
+  // read. A soft clip can only sit at an end, past at most a hard clip, so
+  // each walk stops at the first feature that places a base. A record storing
+  // no bases has no read length to subtract from, and walks its CIGAR.
+  get alignedReadBases() {
+    const arena = this.readFeatureArena
+    let soft = 0
+    if (arena && !this.isUnknownBases()) {
+      const { codes, num } = arena
+      const end = this.readFeatureStart + this.readFeatureCount
+      let i = this.readFeatureStart
+      for (; i < end && AT_END_CLIP[codes[i]!]; i++) {
+        soft += codes[i] === RF_SOFT_CLIP ? num[i]! : 0
+      }
+      for (let j = end - 1; j >= i && AT_END_CLIP[codes[j]!]; j--) {
+        soft += codes[j] === RF_SOFT_CLIP ? num[j]! : 0
+      }
+    }
+    return this.isUnknownBases()
+      ? alignedReadBasesNumeric(this.NUMERIC_CIGAR, 0)
+      : this.readLength - soft
   }
 
   // Off the slice's read-feature columns, which `forEachMismatch` walks too,

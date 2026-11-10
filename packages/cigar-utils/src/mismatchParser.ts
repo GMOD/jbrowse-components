@@ -1,9 +1,12 @@
 import {
   CIGAR_D,
+  CIGAR_EQ,
   CIGAR_H,
   CIGAR_I,
+  CIGAR_M,
   CIGAR_N,
   CIGAR_S,
+  CIGAR_X,
 } from './cigarConstants.ts'
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
@@ -197,6 +200,48 @@ export function clipLengthAtStartOfReadNumeric(
   const packed = strand === -1 ? cigar[len - 1]! : cigar[0]!
   const op = packed & 0xf
   return op === CIGAR_S || op === CIGAR_H ? packed >>> 4 : 0
+}
+
+// The soft clip at one end of a packed CIGAR, `outer` its end op and `inner`
+// the op inside it, which a hard clip at `outer` leaves to hold it.
+function softClipAt(cigar: ArrayLike<number>, outer: number, inner: number) {
+  const op = cigar[outer]! & 0xf
+  return op === CIGAR_S
+    ? cigar[outer]! >>> 4
+    : op === CIGAR_H && (cigar[inner]! & 0xf) === CIGAR_S
+      ? cigar[inner]! >>> 4
+      : 0
+}
+
+function walkedReadBases(cigar: ArrayLike<number>) {
+  let bases = 0
+  for (let i = 0; i < cigar.length; i++) {
+    const op = cigar[i]! & 0xf
+    if (op === CIGAR_M || op === CIGAR_I || op === CIGAR_EQ || op === CIGAR_X) {
+      bases += cigar[i]! >>> 4
+    }
+  }
+  return bases
+}
+
+/**
+ * #api
+ * The read bases a packed CIGAR aligns (M, I, =, X): the stored sequence's
+ * `seqLength` less its soft clips, or a walk of the CIGAR for a record that
+ * stores no sequence (`seqLength` 0).
+ */
+export function alignedReadBasesNumeric(
+  cigar: ArrayLike<number>,
+  seqLength: number,
+) {
+  const n = cigar.length
+  return n === 0
+    ? 0
+    : seqLength > 0
+      ? seqLength -
+        softClipAt(cigar, 0, 1) -
+        (n > 1 ? softClipAt(cigar, n - 1, n - 2) : 0)
+      : walkedReadBases(cigar)
 }
 
 // produces a list of "feature-like" object from parsing supplementary

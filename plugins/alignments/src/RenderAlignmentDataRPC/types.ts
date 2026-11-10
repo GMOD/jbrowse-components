@@ -367,6 +367,11 @@ export interface WorkerPileupData {
   // chain in true read order rather than genomic order (see readGroupConnections).
   readClipAtStart?: Uint32Array
 
+  // Per-read bases the record aligns (M, I, =, X), 0 for a read with no SA
+  // tag: with `readClipAtStart`, where a split piece ends along the read.
+  // Absent when no read carried an SA tag.
+  readAlignedBases?: Uint32Array
+
   // The sample's position events, shipped only while the filter leaves some of
   // the section's reads out of the pileup
   sampleEvents?: SampleEvents

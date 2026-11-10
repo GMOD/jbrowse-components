@@ -1,5 +1,6 @@
 import { BamRecord, forEachMismatchNumeric } from '@gmod/bam'
 import {
+  alignedReadBasesNumeric,
   clipLengthAtStartOfReadNumeric,
   numericCigarCategoryBits,
 } from '@jbrowse/cigar-utils'
@@ -179,6 +180,10 @@ export default class BamSlightlyLazyFeature
 
   get clipLengthAtStartOfRead() {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
+  }
+
+  get alignedReadBases() {
+    return alignedReadBasesNumeric(this.NUMERIC_CIGAR, this.seq_length)
   }
 
   get hasEndClip() {
@@ -420,6 +425,10 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   get clipLengthAtStartOfRead() {
     return this.base.clipLengthAtStartOfRead
+  }
+
+  get alignedReadBases() {
+    return this.base.alignedReadBases
   }
 
   get hasEndClip() {

@@ -83,6 +83,7 @@ export {
   toNavLocString,
 } from './locStrings.ts'
 export {
+  alignedBasesAt,
   classifyConnection,
   clipAt,
   connectionEndpoints,
@@ -91,6 +92,7 @@ export {
   isAbnormalConnection,
   pairFieldEntry,
   primaryOf,
+  readGapBetween,
   readGroupConnections,
   resolveReadGroup,
   spanOf,

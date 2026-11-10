@@ -31,6 +31,7 @@ export interface ConnectionReadArrays {
   readPairOrientations: Uint8Array
   readSuppAlignments?: string[]
   readClipAtStart?: Uint32Array
+  readAlignedBases?: Uint32Array
 }
 
 // Maps a raw BAM refName (SA tag, RNEXT) to the name the fetched reads carry.
@@ -81,6 +82,19 @@ export interface ConnectionEndpoints {
 // that arithmetic in one place while being the second place it was written.
 export function clipAt(e: MinEntry) {
   return e.data.readClipAtStart?.[e.readIdx] ?? 0
+}
+
+/** The read bases a record aligns, 0 for one with no SA tag. */
+export function alignedBasesAt(e: MinEntry) {
+  return e.data.readAlignedBases?.[e.readIdx] ?? 0
+}
+
+/**
+ * The read bases between two read-adjacent pieces of one read, the earlier
+ * piece's start clip and aligned bases placing its end along the read.
+ */
+export function readGapBetween(e1: MinEntry, e2: MinEntry) {
+  return clipAt(e2) - (clipAt(e1) + alignedBasesAt(e1))
 }
 
 // Not exported: only `dedupeByReadId` below wants it. The KEY, not the id

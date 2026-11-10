@@ -1,5 +1,9 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
-import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
+import {
+  getClip,
+  getLengthOnRef,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 
@@ -39,6 +43,7 @@ export function pileupDataFromSamRecords(
   const readFlags = new Uint16Array(n)
   const readStrands = new Int8Array(n)
   const readClipAtStart = new Uint32Array(n)
+  const readAlignedBases = new Uint32Array(n)
   for (const [i, rec] of records.entries()) {
     const start = rec.pos - 1
     readPositions[i * 2] = start
@@ -46,6 +51,7 @@ export function pileupDataFromSamRecords(
     readFlags[i] = rec.flag
     readStrands[i] = rec.strand
     readClipAtStart[i] = getClip(rec.CIGAR, rec.strand)
+    readAlignedBases[i] = rec.SA ? getLengthSansClipping(rec.CIGAR) : 0
   }
   return {
     ...baseWorkerPileupData(0),
@@ -53,6 +59,7 @@ export function pileupDataFromSamRecords(
     readFlags,
     readStrands,
     readClipAtStart,
+    readAlignedBases,
     // ids are per-record and distinct; names are the QNAME, which split
     // segments of one read share and which is what groups them
     readKeys: records.map((_, i) => `id${i}`),

@@ -1,5 +1,6 @@
 import { forEachMismatchNumeric } from '@gmod/bam'
 import {
+  alignedReadBasesNumeric,
   clipLengthAtStartOfReadNumeric,
   encodeSeqNumeric,
   numericCigarCategoryBits,
@@ -183,6 +184,10 @@ export default class SamRecordFeature implements MismatchFeature {
 
   get clipLengthAtStartOfRead() {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
+  }
+
+  get alignedReadBases() {
+    return alignedReadBasesNumeric(this.NUMERIC_CIGAR, this.seq_length)
   }
 
   get hasEndClip() {

@@ -345,6 +345,7 @@ export interface ReadLists<F> {
   suppAlignments: string[] | undefined
   categoryBits: Uint8Array
   clipAtStart: number[]
+  alignedBases: number[]
 }
 
 /** The drawn reads' entries of each list, in read order. */
@@ -370,5 +371,6 @@ export function drawnReadLists<F>(
       new Uint8Array(compaction.kept.length),
     ),
     clipAtStart: drawnEntries(lists.clipAtStart, compaction),
+    alignedBases: drawnEntries(lists.alignedBases, compaction),
   }
 }

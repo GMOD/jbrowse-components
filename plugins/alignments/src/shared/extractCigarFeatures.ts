@@ -49,6 +49,12 @@ export interface MismatchFeature extends Feature {
   // features at that end.
   readonly clipLengthAtStartOfRead: number
 
+  // REQUIRED. The read bases the alignment covers (M, I, =, X), which with
+  // the start clip places the record along the read, for the read gap a split
+  // junction is classed by. Off the stored read length less its soft clips,
+  // so a CRAM record answers without building `NUMERIC_CIGAR`.
+  readonly alignedReadBases: number
+
   // OPTIONAL — a performance hint, never a requirement. The packed
   // `(len << 4) | opIndex` CIGAR. A source that has only the text `CIGAR` omits
   // it and renders identically — `packedCigarOps` (features/alignedBaseWalk.ts)

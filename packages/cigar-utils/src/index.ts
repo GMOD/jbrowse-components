@@ -74,6 +74,7 @@ export {
   readTrailingBp,
 } from './readEndpoints.ts'
 export {
+  alignedReadBasesNumeric,
   clipLengthAtStartOfReadNumeric,
   featurizeSA,
   featurizeSAEntries,

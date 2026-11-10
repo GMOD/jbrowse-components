@@ -197,6 +197,7 @@ async function buildGroupResult(
     perBaseLetters,
     suppAlignments,
     clipAtStart,
+    alignedBases,
     detectedModifications,
   } = extraction
   const {
@@ -307,6 +308,7 @@ async function buildGroupResult(
     suppAlignments,
     categoryBits: extraction.categoryBits,
     clipAtStart,
+    alignedBases,
   }
   const compaction = drawnMask && readCompaction(drawnMask)
   const drawnLists = compaction ? drawnReadLists(lists, compaction) : lists
@@ -364,6 +366,9 @@ async function buildGroupResult(
     readBlockLines: buildReadBlockLines(drawn.lists.rawFeatures),
     readCategoryBits: drawn.lists.categoryBits,
     readClipAtStart: new Uint32Array(drawn.lists.clipAtStart),
+    readAlignedBases: drawn.lists.suppAlignments
+      ? new Uint32Array(drawn.lists.alignedBases)
+      : undefined,
 
     insertSizeStats,
 

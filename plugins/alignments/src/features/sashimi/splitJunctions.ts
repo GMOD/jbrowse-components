@@ -27,6 +27,7 @@ const ZERO = 48
 const NINE = 57
 const CLIP_OPS = new Set(['S', 'H'].map(c => c.charCodeAt(0)))
 const REF_OPS = new Set(['M', 'D', 'N', '=', 'X'].map(c => c.charCodeAt(0)))
+const READ_OPS = new Set(['M', 'I', '=', 'X'].map(c => c.charCodeAt(0)))
 
 // NaN unless `s[from, to)` is a non-empty run of digits.
 function digitsAt(s: string, from: number, to: number) {
@@ -114,7 +115,8 @@ function visitJoin(
 /**
  * Called once per SA entry with a reference span: the entry's refName as
  * `sa.slice(nameStart, nameEnd)`, its 0-based span, strand, clip at the start
- * of the read, and MAPQ (NaN when the field is absent).
+ * of the read, MAPQ (NaN when the field is absent), and the read bases it
+ * aligns (M, I, =, X).
  */
 type SAEntryVisit = (
   nameStart: number,
@@ -124,6 +126,7 @@ type SAEntryVisit = (
   strand: number,
   clip: number,
   mapq: number,
+  readBases: number,
 ) => void
 
 /**
@@ -146,6 +149,7 @@ export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
       const start = pos - 1
       const strand = sa.charCodeAt(c2 + 1) === MINUS ? -1 : 1
       let refLength = 0
+      let readBases = 0
       let firstClip = -1
       let lastClip = 0
       let len = 0
@@ -162,6 +166,9 @@ export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
           if (REF_OPS.has(code)) {
             refLength += len
           }
+          if (READ_OPS.has(code)) {
+            readBases += len
+          }
           len = 0
         }
       }
@@ -175,6 +182,7 @@ export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
           strand,
           strand === -1 ? lastClip : Math.max(0, firstClip),
           digitsAt(sa, c4 + 1, c5 === -1 || c5 > entryEnd ? entryEnd : c5),
+          readBases,
         )
       }
     }

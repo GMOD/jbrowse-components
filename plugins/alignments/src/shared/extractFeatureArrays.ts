@@ -127,6 +127,10 @@ export function extractFeatureArrays<T extends FeatureData>(
   // lets the main thread chain split segments in true read order rather than
   // genomic order. Synteny features have no CIGAR and contribute 0.
   const clipAtStart: number[] = []
+  // The read bases each record aligns, beside its start clip: with it, where
+  // the record ends along the read. Asked only of a record with an SA tag, the
+  // one a split junction is classed from.
+  const alignedBases: number[] = []
   const colorTag = fieldTag(colorField)
   const colorAttribute =
     colorFieldKindOf(colorField) === 'tag' && !colorTag ? colorField : undefined
@@ -189,6 +193,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         ? feature.clipLengthAtStartOfRead
         : getClip(cigarString, strand),
     )
+    alignedBases.push(sa !== '' && isMismatch ? feature.alignedReadBases : 0)
 
     if (colorTag) {
       tagColorValues.push(extractFeatureTagValue(feature, colorTag))
@@ -324,6 +329,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     suppAlignments: hasSuppAlignment ? suppAlignments : undefined,
     categoryBits,
     clipAtStart,
+    alignedBases,
     detectedModifications,
     // Raw (strand, type) pairs seen in this call. The worker merges these across
     // groups and resolves simplex globally so modification coloring is identical
