@@ -24,8 +24,8 @@ public int chevronCapsEdge(int strand, uint edgeFlags) {
 // edge to an apex CHEVRON_PX beyond it at mid-row. This is the signed CSS-px
 // distance from a point to one of its slanted edges, positive inside: `dxPx`
 // beyond the capped edge, `dyPx` from mid-row toward the corner that edge
-// leaves from — the other edge is the same function at -dyPx. The vertex stage
-// seeds `localPos` from it (the outline reads the min of the two), and
+// leaves from — the other edge is the same function at -dyPx. read.slang's
+// fragment inks and outlines the cap off the min of the two, and
 // `chevronContains` is built on it, so the tip a hover lands on is the tip the
 // fragment inked.
 public float chevronEdgeDistPx(float dxPx, float dyPx, float featHeight) {

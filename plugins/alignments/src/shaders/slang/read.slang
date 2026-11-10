@@ -247,10 +247,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 yy = pileupY(float(row), u);
   float syTop = yy.x;
   float syBot = yy.y;
-  float syMid = (syTop + syBot) * 0.5;
 
-  // 8px-wide chevron when featHeight>=3 and zoom supports it.
-  float chevronClip = pxToClipLen(CHEVRON_PX, u.canvasW);
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featWPx = featWPx;
 
@@ -286,18 +283,27 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     sy = lerp(syBot, syTop, ly);
   } else if (drawFwd || drawRev) {
     ef = 2.0;
-    // `localPos` on a cap vertex is its distance to each slanted edge: a corner
-    // sits ON one (0) and `alt` from the other, the apex on both.
-    float alt = chevronEdgeDistPx(0.0, -u.featHeight * 0.5, u.featHeight);
-    if (drawFwd) {
-      if (v == 6u)      { sx = sx2; sy = syTop; lx = 0.0; ly = alt; }
-      else if (v == 7u) { sx = sx2; sy = syBot; lx = alt; ly = 0.0; }
-      else              { sx = sx2 + chevronClip; sy = syMid; lx = 0.0; ly = 0.0; }
-    } else {
-      if (v == 6u)      { sx = sx1; sy = syTop; lx = 0.0; ly = alt; }
-      else if (v == 7u) { sx = sx1 - chevronClip; sy = syMid; lx = 0.0; ly = 0.0; }
-      else              { sx = sx1; sy = syBot; lx = alt; ly = 0.0; }
-    }
+    // The arrowhead with both slanted edges moved out one output pixel, so
+    // their ramps fit; the fragment cuts the overhang at the row's top and
+    // bottom. `localPos` is (px beyond the capped edge, px from mid-row).
+    float padPx = aaPx(u.devicePixelRatio);
+    float halfH = u.featHeight * 0.5;
+    float slant = sqrt(halfH * halfH + CHEVRON_PX * CHEVRON_PX);
+    float cornerDy = halfH + padPx * slant / CHEVRON_PX;
+    float apexDx = CHEVRON_PX + padPx * slant / halfH;
+    float midPx = pileupRowCenterPx(float(row), u);
+    float sxEdge = drawFwd ? sx2 : sx1;
+    float dir = drawFwd ? 1.0 : -1.0;
+    float2 corner = float2(0.0, -cornerDy);
+    float2 apex = float2(apexDx, 0.0);
+    float2 otherCorner = float2(0.0, cornerDy);
+    float2 local = v == 6u ? corner
+        : (v == 7u) == drawFwd ? otherCorner
+        : apex;
+    lx = local.x;
+    ly = local.y;
+    sx = sxEdge + dir * pxToClipLen(lx, u.canvasW);
+    sy = yPxToClipY(midPx + ly, u.canvasH);
   } else {
     // No cap on this read — fold its three verts to one zero-area (culled)
     // point. Both ways of having no cap land here: the zoom gates said no, or
@@ -318,9 +324,13 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float edgeDist;
   float coverage;
   if (fragIn.edgeFlag > 1.5) {
-    // The cap is not padded, so its slanted edges ramp inside the ink.
-    edgeDist = min(fragIn.localPos.x, fragIn.localPos.y);
-    coverage = edgeCoverage(edgeDist - aaHalfPx(dpr), dpr);
+    float dx = fragIn.localPos.x;
+    float dy = fragIn.localPos.y;
+    float toUpper = chevronEdgeDistPx(dx, dy, u.featHeight);
+    float toLower = chevronEdgeDistPx(dx, -dy, u.featHeight);
+    edgeDist = min(toUpper, toLower);
+    float inRow = abs(dy) <= u.featHeight * 0.5 ? 1.0 : 0.0;
+    coverage = edgeCoverage(toUpper, dpr) * edgeCoverage(toLower, dpr) * inRow;
   } else {
     // Whichever side the chevron joins on hands its outline to the cap.
     float dxL = fragIn.localPos.x;

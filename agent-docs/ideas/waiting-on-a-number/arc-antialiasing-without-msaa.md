@@ -707,10 +707,14 @@ tree:
   drew whole or not at all, so a sub-pixel gap between two reads in a row was
   a white column or nothing, where v4.3.0's `fillRect` gave a light tint.
   `read.slang`'s body now pads each uncapped end one output pixel and inks
-  `edgeCoverage(start) - edgeCoverage(past end)` in CSS px; the chevron cap,
-  unpadded, ramps its slanted edges inside the ink, a half device px blunter
-  at the apex than a padded cap would be. Two reads abutting at a fractional
-  px now leave a faint seam, as `fillRect` did in v4.
+  `edgeCoverage(start) - edgeCoverage(past end)` in CSS px; the chevron cap
+  moves both slants out one output pixel, inks the product of their two ramps
+  (the min of the two over-inked the pixel past the apex) and cuts at the
+  row. `alignments-read` at one sample, against the 32x supersample: 1.34 /
+  5.86 / 0.68% at dpr 1 / 1.5 / 2 before, 0.23 / 5.27 / 0.13% after, under
+  four samples' old 0.55 / 0.98 / 0.31% except at 1.5, where the rest is the
+  row edges at fractional device px. Two reads abutting at a fractional px
+  now leave a faint seam, as `fillRect` did in v4.
 - **The strand arrowhead.** `arrow.slang`, same treatment, smallest of the three.
 
 Two constraints from this repo. The distance must be computed in **screen px
