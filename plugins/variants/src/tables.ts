@@ -7,7 +7,7 @@ import {
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
-import { abgrToHex } from '@jbrowse/core/util/colorBits'
+import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { windowFetchRegions } from '@jbrowse/display-kit/regionHost'
@@ -359,9 +359,12 @@ export async function variantTables(
     const rowColors = host.resolvedRowColors
     return {
       band: drawn.map(row => host.rowBand(row)),
-      color: drawn.map(row => rowColors.get(row.name) ?? ''),
-      rowKey: host.rowColorScales.find(
-        scale => scale.id === ROW_COLOR_SCALE_ID,
+      color: drawn.map(row => {
+        const rowColor = rowColors.get(row.name)
+        return rowColor ? cssColorToHex(rowColor) : ''
+      }),
+      rowKey: colorKeyTables(
+        host.rowColorScales.filter(scale => scale.id === ROW_COLOR_SCALE_ID),
       ),
       rowBands: host.rowBands,
       recordColors: host.regionRecordColors,
@@ -463,11 +466,8 @@ export async function variantTables(
     cells,
     rows,
     ...colorKeyTables(scales),
-    rowLegend: {
-      label: rowKey?.entries.map(e => e.label) ?? [],
-      color: rowKey?.entries.map(e => e.color ?? '') ?? [],
-    },
-    rowLegendTitle: rowKey?.title ?? '',
+    rowLegend: { label: rowKey.legend.label, color: rowKey.legend.color },
+    rowLegendTitle: rowKey.legendTitle,
     bands: {
       key: rowBands.map(b => b.key),
       label: rowBands.map(b => b.label),

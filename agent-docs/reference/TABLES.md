@@ -565,7 +565,11 @@ display does (`paintCellColors`, `paintFeatureColors`):
   default, a reference call has no cell.
 - `rows`: one per sample, or under `rows.field: 'haplotype'` one per haplotype,
   named as the display names them (`<sample> HP1`), arranged as the display arranges
-  them; `haplotype` counts from 1, 0 on a sample row.
+  them; `haplotype` counts from 1, 0 on a sample row. `color` is the row's resolved
+  color as `#rrggbb`, `''` where it has none.
+- `rowLegend` and `rowLegendTitle`: the row color key the display shows, shaped by
+  `colorKeyTables`, so it is empty where the display keys no row color (pins with
+  no `rows.color` field: the labels are the key).
 - `legend`, `legendTitle` and `ramps`: the display's key, from
   `getVariantColorScales` over what the cells painted, shaped by `colorKeyTables` as
   the feature tables shape theirs. Each `legend` row names in `section` the title of

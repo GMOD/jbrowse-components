@@ -230,6 +230,32 @@ test('a row rows.colors pins takes its key entry by its rows.labels label, as th
   expect(t.rowLegend.label).not.toContain(pinned)
 })
 
+test('a row color written in any CSS form comes back as #rrggbb, in rows and in the row key', async () => {
+  const plain = await engine.variants(DOG_SV)
+  const pinned = plain.rows.name[0]!
+  const unkeyed = await engine.variants({
+    ...DOG_SV,
+    display: { rows: { colors: { [pinned]: 'red' } } },
+  })
+  expect(unkeyed.rows.color[0]).toBe('#ff0000')
+  expect(unkeyed.rowLegend.label).toEqual([])
+  const keyed = await engine.variants({
+    ...DOG_SV,
+    display: {
+      rows: {
+        color: { field: 'group' },
+        colors: { [pinned]: 'rgb(0, 128, 0)' },
+        labels: { [pinned]: 'Pinned dog' },
+      },
+    },
+  })
+  expect(keyed.rows.color[keyed.rows.name.indexOf(pinned)]).toBe('#008000')
+  expect(
+    keyed.rowLegend.color[keyed.rowLegend.label.indexOf('Pinned dog')],
+  ).toBe('#008000')
+  expect(keyed.rowLegend.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
+})
+
 test('the rows take the arrangement `rows` saves: its order first, its labels, its focus', async () => {
   const plain = await engine.variants(DOG_VCF)
   const [a, b, c] = plain.rows.name.slice(-3) as [string, string, string]
