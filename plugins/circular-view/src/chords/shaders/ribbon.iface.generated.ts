@@ -92,14 +92,14 @@ export const INSTANCE_OFFSET_U32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_y1', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_xGaps', components: 1, type: 'uint', offsetBytes: 16, integer: true },
-  { name: 'a_yGaps', components: 1, type: 'uint', offsetBytes: 20, integer: true },
-  { name: 'a_strand', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 28, integer: true },
+  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0 },
+  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 4 },
+  { name: 'a_y1', components: 1, type: 'float', offsetBytes: 8 },
+  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12 },
+  { name: 'a_xGaps', components: 1, type: 'uint', offsetBytes: 16 },
+  { name: 'a_yGaps', components: 1, type: 'uint', offsetBytes: 20 },
+  { name: 'a_strand', components: 1, type: 'float', offsetBytes: 24 },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 28 },
 ]
 
 export interface InstanceArrays {

@@ -314,11 +314,11 @@ export const INSTANCE_OFFSET_U32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_startOff', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_endOff', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_insertSize', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_fillColor', components: 1, type: 'uint', offsetBytes: 12, integer: true },
-  { name: 'a_packedFields', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_startOff', components: 1, type: 'uint', offsetBytes: 0 },
+  { name: 'a_endOff', components: 1, type: 'uint', offsetBytes: 4 },
+  { name: 'a_insertSize', components: 1, type: 'float', offsetBytes: 8 },
+  { name: 'a_fillColor', components: 1, type: 'uint', offsetBytes: 12 },
+  { name: 'a_packedFields', components: 1, type: 'uint', offsetBytes: 16 },
 ]
 
 export interface InstanceArrays {

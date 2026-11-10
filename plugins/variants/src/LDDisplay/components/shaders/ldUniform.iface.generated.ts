@@ -70,7 +70,7 @@ export const INSTANCE_OFFSET_F32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_ldValue', components: 1, type: 'float', offsetBytes: 0, integer: false },
+  { name: 'a_ldValue', components: 1, type: 'float', offsetBytes: 0 },
 ]
 
 export interface InstanceArrays {

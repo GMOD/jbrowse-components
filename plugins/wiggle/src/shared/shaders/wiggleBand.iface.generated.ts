@@ -189,15 +189,15 @@ export const INSTANCE_OFFSET_U32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_startEnd', components: 2, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_prevStartEnd', components: 2, type: 'uint', offsetBytes: 8, integer: true },
-  { name: 'a_minScore', components: 1, type: 'float', offsetBytes: 16, integer: false },
-  { name: 'a_maxScore', components: 1, type: 'float', offsetBytes: 20, integer: false },
-  { name: 'a_prevMinScore', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_prevMaxScore', components: 1, type: 'float', offsetBytes: 28, integer: false },
-  { name: 'a_posColor', components: 1, type: 'uint', offsetBytes: 32, integer: true },
-  { name: 'a_negColor', components: 1, type: 'uint', offsetBytes: 36, integer: true },
-  { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 40, integer: false },
+  { name: 'a_startEnd', components: 2, type: 'uint', offsetBytes: 0 },
+  { name: 'a_prevStartEnd', components: 2, type: 'uint', offsetBytes: 8 },
+  { name: 'a_minScore', components: 1, type: 'float', offsetBytes: 16 },
+  { name: 'a_maxScore', components: 1, type: 'float', offsetBytes: 20 },
+  { name: 'a_prevMinScore', components: 1, type: 'float', offsetBytes: 24 },
+  { name: 'a_prevMaxScore', components: 1, type: 'float', offsetBytes: 28 },
+  { name: 'a_posColor', components: 1, type: 'uint', offsetBytes: 32 },
+  { name: 'a_negColor', components: 1, type: 'uint', offsetBytes: 36 },
+  { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 40 },
 ]
 
 export interface InstanceArrays {

@@ -636,21 +636,20 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
         continue
       }
       const attr = desc.vertexAttributes[i]!
-      if (attr.integer) {
-        const glType = attr.type === 'uint' ? gl.UNSIGNED_INT : gl.INT
-        gl.vertexAttribIPointer(
-          loc,
-          attr.components,
-          glType,
-          desc.instanceStride,
-          attr.offsetBytes,
-        )
-      } else {
+      if (attr.type === 'float') {
         gl.vertexAttribPointer(
           loc,
           attr.components,
           gl.FLOAT,
           false,
+          desc.instanceStride,
+          attr.offsetBytes,
+        )
+      } else {
+        gl.vertexAttribIPointer(
+          loc,
+          attr.components,
+          attr.type === 'uint' ? gl.UNSIGNED_INT : gl.INT,
           desc.instanceStride,
           attr.offsetBytes,
         )

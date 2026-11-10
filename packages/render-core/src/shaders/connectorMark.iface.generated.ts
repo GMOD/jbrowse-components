@@ -1143,15 +1143,15 @@ export const INSTANCE_OFFSET_U32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_x', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_x2Region', components: 1, type: 'uint', offsetBytes: 8, integer: true },
-  { name: 'a_row', components: 1, type: 'uint', offsetBytes: 12, integer: true },
-  { name: 'a_row2', components: 1, type: 'uint', offsetBytes: 16, integer: true },
-  { name: 'a_bend', components: 1, type: 'float', offsetBytes: 20, integer: false },
-  { name: 'a_width', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 28, integer: true },
-  { name: 'a_bits', components: 1, type: 'uint', offsetBytes: 32, integer: true },
+  { name: 'a_x', components: 1, type: 'uint', offsetBytes: 0 },
+  { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4 },
+  { name: 'a_x2Region', components: 1, type: 'uint', offsetBytes: 8 },
+  { name: 'a_row', components: 1, type: 'uint', offsetBytes: 12 },
+  { name: 'a_row2', components: 1, type: 'uint', offsetBytes: 16 },
+  { name: 'a_bend', components: 1, type: 'float', offsetBytes: 20 },
+  { name: 'a_width', components: 1, type: 'float', offsetBytes: 24 },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 28 },
+  { name: 'a_bits', components: 1, type: 'uint', offsetBytes: 32 },
 ]
 
 export interface InstanceArrays {

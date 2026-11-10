@@ -222,15 +222,15 @@ describe('emitInterface instances', () => {
     expect(out).toContain('kind: 3,')
   })
 
-  test('emits VERTEX_ATTRIBUTES with component counts, types and integer flags', () => {
+  test('emits VERTEX_ATTRIBUTES with component counts and types', () => {
     expect(out).toContain(
-      "{ name: 'a_pos', components: 2, type: 'float', offsetBytes: 0, integer: false },",
+      "{ name: 'a_pos', components: 2, type: 'float', offsetBytes: 0 },",
     )
     expect(out).toContain(
-      "{ name: 'a_id', components: 1, type: 'uint', offsetBytes: 8, integer: true },",
+      "{ name: 'a_id', components: 1, type: 'uint', offsetBytes: 8 },",
     )
     expect(out).toContain(
-      "{ name: 'a_kind', components: 1, type: 'int', offsetBytes: 12, integer: true },",
+      "{ name: 'a_kind', components: 1, type: 'int', offsetBytes: 12 },",
     )
   })
 

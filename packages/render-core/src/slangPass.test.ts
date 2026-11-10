@@ -10,7 +10,6 @@ const ATTRS = [
     components: 2,
     type: 'float',
     offsetBytes: 0,
-    integer: false,
   },
 ] as const
 

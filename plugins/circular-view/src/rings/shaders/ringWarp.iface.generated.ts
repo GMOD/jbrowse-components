@@ -58,8 +58,8 @@ export const INSTANCE_OFFSET_F32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_innerPx', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_outerPx', components: 1, type: 'float', offsetBytes: 4, integer: false },
+  { name: 'a_innerPx', components: 1, type: 'float', offsetBytes: 0 },
+  { name: 'a_outerPx', components: 1, type: 'float', offsetBytes: 4 },
 ]
 
 export interface InstanceArrays {

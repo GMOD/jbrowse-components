@@ -1134,7 +1134,7 @@ export function emitInterface(inputs: CodegenInputs) {
       const view = viewOf(a.type)
       const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
       lines.push(
-        `  { name: 'a_${a.name}', components: ${comps}, type: '${VIEW_COMPONENT[view]}', offsetBytes: ${a.offsetBytes}, integer: ${view !== 'f32'} },`,
+        `  { name: 'a_${a.name}', components: ${comps}, type: '${VIEW_COMPONENT[view]}', offsetBytes: ${a.offsetBytes} },`,
       )
     }
     lines.push(']', '')

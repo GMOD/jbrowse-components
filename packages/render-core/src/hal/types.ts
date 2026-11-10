@@ -13,8 +13,6 @@ export interface VertexAttributeLayout {
   components: number
   type: 'float' | 'uint' | 'int'
   offsetBytes: number
-  // true => vertexAttribIPointer (integer), false => vertexAttribPointer (float)
-  integer: boolean
 }
 
 /**

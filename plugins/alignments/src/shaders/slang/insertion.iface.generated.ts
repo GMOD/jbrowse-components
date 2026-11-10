@@ -313,10 +313,10 @@ export const INSTANCE_OFFSET_U32 = {
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_y', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_length', components: 1, type: 'uint', offsetBytes: 8, integer: true },
-  { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0 },
+  { name: 'a_y', components: 1, type: 'uint', offsetBytes: 4 },
+  { name: 'a_length', components: 1, type: 'uint', offsetBytes: 8 },
+  { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 12 },
 ]
 
 export interface InstanceArrays {
