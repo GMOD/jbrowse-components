@@ -129,12 +129,14 @@ export function arcsToRegionResult(
   }
 
   const arcLinePositions = new Uint32Array(regionLines.length)
+  const arcLineDirs = new Int8Array(regionLines.length)
   const arcLineSupport = new Uint32Array(regionLines.length)
   const arcLinePartnerRefNames: string[][] = []
   const arcLinePartnerLoci: PartnerLocus[][] = []
   for (let i = 0; i < regionLines.length; i++) {
     const line = regionLines[i]!
     arcLinePositions[i] = line.x.bp
+    arcLineDirs[i] = line.dir
     arcLineSupport[i] = line.support
     arcLinePartnerRefNames.push(line.partnerRefNames)
     arcLinePartnerLoci.push(line.partnerLoci)
@@ -151,6 +153,7 @@ export function arcsToRegionResult(
     numArcs: regionArcs.length,
     maxFlatArcSpanBp,
     arcLinePositions,
+    arcLineDirs,
     arcLineSupport,
     arcLinePartnerRefNames,
     arcLinePartnerLoci,

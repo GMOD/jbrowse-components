@@ -126,6 +126,7 @@ describe('a band of ticks and no arcs', () => {
   const lines: ComputedLine[] = [
     {
       x: { refName: 'chr1', bp: 300 },
+      dir: 1,
       support: 3,
       partnerRefNames: ['chr9'],
       partnerLoci: [{ refName: 'chr9', bp: 5, support: 3 }],
@@ -141,8 +142,10 @@ describe('a band of ticks and no arcs', () => {
     })
   })
 
-  test('the highlight traces the full-band vertical the tick draws', () => {
-    expect(hover(300, 120, { lines })!.highlight.d).toBe('M300 160L300 100')
+  test('the highlight traces the full-band vertical the tick draws, and its foot', () => {
+    expect(hover(300, 120, { lines })!.highlight.d).toBe(
+      'M300 160L300 100M300 159.0641353123017L320 159.0641353123017',
+    )
   })
 })
 

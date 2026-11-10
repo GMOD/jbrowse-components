@@ -75,6 +75,7 @@ function tick(
 ): ComputedLine {
   return {
     x: { refName, bp },
+    dir: 1,
     support,
     partnerRefNames: [partner],
     partnerLoci: [],
@@ -205,12 +206,14 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines).toEqual([
       {
         x: { refName: 'chr1', bp: 1000 },
+        dir: -1,
         support: 3,
         partnerRefNames: ['chr2'],
         partnerLoci: [{ refName: 'chr2', bp: 5000, support: 3 }],
       },
       {
         x: { refName: 'chr2', bp: 5000 },
+        dir: -1,
         support: 3,
         partnerRefNames: ['chr1'],
         partnerLoci: [{ refName: 'chr1', bp: 1000, support: 3 }],
@@ -247,6 +250,80 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr2', bp: 900_000, support: 2 },
       { refName: 'chr2', bp: 5000, support: 1 },
     ])
+  })
+
+  // A tick is a breakend: two junctions on one base keeping opposite sides are
+  // two ticks, and two keeping one side are one. Two forward pairs whose outer
+  // edge is chr1:1000 keep the side below it; a reverse pair ending there keeps
+  // the side above.
+  describe('a tick is keyed on its position and the side it keeps', () => {
+    const chr1 = [
+      { refName: 'chr1', start: 500, end: 2000, displayedRegionIndex: 0 },
+    ]
+    const atOneBase = (thirdStrand: number) =>
+      makePileupData({
+        readPositions: new Uint32Array([
+          1000,
+          1100,
+          1000,
+          1100,
+          ...(thirdStrand === -1 ? [900, 1000] : [1000, 1100]),
+        ]),
+        readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array([1, 1, thirdStrand]),
+        readInsertSizes: new Float32Array([0, 0, 0]),
+        readPairOrientations: new Uint8Array([1, 1, 1]),
+        ...namesToBlock(['readA', 'readB', 'readC']),
+        ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
+        readNextPositions: new Uint32Array([5000, 5000, 900_000]),
+        readClipAtStart: new Uint32Array([0, 1, 2]),
+      })
+    const chr1Ticks = (thirdStrand: number) =>
+      computeArcsFromPileupData(new Map([[0, atOneBase(thirdStrand)]]), chr1, {
+        filter: { minInterchromReads: 1 },
+      })
+        .lines.filter(l => l.x.refName === 'chr1')
+        .map(({ x, dir, support }) => ({ bp: x.bp, dir, support }))
+
+    test('opposite sides draw two ticks, each with its own support', () => {
+      expect(chr1Ticks(-1)).toEqual([
+        { bp: 1000, dir: 1, support: 1 },
+        { bp: 1000, dir: -1, support: 2 },
+      ])
+    })
+
+    test('one side coalesces and sums', () => {
+      expect(chr1Ticks(1)).toEqual([{ bp: 1000, dir: -1, support: 3 }])
+    })
+
+    test('the floor is taken against each breakend’s own sum', () => {
+      const lines = computeArcsFromPileupData(
+        new Map([[0, atOneBase(-1)]]),
+        chr1,
+        { filter: { minInterchromReads: 2 } },
+      ).lines.filter(l => l.x.refName === 'chr1')
+      expect(lines.map(l => [l.dir, l.support])).toEqual([[-1, 2]])
+    })
+
+    test('each tick keeps the side the arc for its connection keeps there', () => {
+      const both = [
+        ...chr1,
+        { refName: 'chr2', start: 0, end: 1_000_000, displayedRegionIndex: 1 },
+      ]
+      const data = new Map([[0, atOneBase(-1)]])
+      const settings = { filter: { minInterchromReads: 1 } }
+      const arcs = computeArcsFromPileupData(data, chr1, settings, both)
+      const ticks = computeArcsFromPileupData(data, chr1, settings)
+      const arcDirs = arcs.crossRegion
+        .map(a => ({ bp: a.p1.bp, dir: a.p1Dir }))
+        .sort((a, b) => a.dir - b.dir)
+      const tickDirs = ticks.lines
+        .filter(l => l.x.refName === 'chr1')
+        .map(l => ({ bp: l.x.bp, dir: l.dir }))
+        .sort((a, b) => a.dir - b.dir)
+      expect(arcDirs).toHaveLength(2)
+      expect(tickDirs).toEqual(arcDirs)
+    })
   })
 
   // A mate-pair breakpoint is not localized to a base: the mates straddle it, so

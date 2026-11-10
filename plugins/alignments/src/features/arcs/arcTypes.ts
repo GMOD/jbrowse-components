@@ -116,9 +116,10 @@ export interface CrossRegionArc extends ComputedArc {
   // It is the arm, not the segment's own aligned body: the two coincide for a
   // split junction (`connectionEndpointBps`' `dir1`/`dir2`) and are opposite
   // for a mate link, whose endpoint is the fragment's outer edge
-  // (`pairOuterDir`). Only the overlay reads it (`buildArcBandFeeds`), which is
-  // why it lives here and not on `ComputedArc` or `ComputedLine`. A property of
-  // the junction, so safe on a coalesced arc (`readTrailingBodyDir`).
+  // (`pairOuterDir`). Only an interchromosomal mark draws it
+  // (`buildArcBandFeeds`), so it lives here and on `ComputedLine`, not on
+  // `ComputedArc`. A property of the junction, so safe on a coalesced arc
+  // (`readTrailingBodyDir`).
   p1Dir: number
   p2Dir: number
 }
@@ -131,10 +132,14 @@ export interface PartnerLocus {
   support: number
 }
 
-// A connector tick, one per distinct breakpoint. No color: every tick is
-// ARC_COLOR_INTERCHROM.
+// A connector tick, one per breakend: a position and the side of it the
+// junction keeps. No color: every tick is ARC_COLOR_INTERCHROM.
 export interface ComputedLine {
   x: ArcEndpoint
+  // The retained arm's genomic direction at `x` (`CrossRegionArc.p1Dir`), part
+  // of the tick's identity: two junctions on one base keeping opposite sides
+  // are two ticks.
+  dir: number
   // Reads through this breakpoint, drawn through `arcStrokeScale` like an
   // arc's: the sum of the sizes of the distinct windowed clusters reaching this
   // coordinate, each once. `pushLine` has why, and `ComputedArc.support` the

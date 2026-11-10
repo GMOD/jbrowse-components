@@ -253,13 +253,22 @@ export function buildArcBandFeeds({
     for (let i = 0; i < data.numArcLines; i++) {
       const bp = data.arcLinePositions[i]!
       const support = data.arcLineSupport[i]!
-      l.ticks.push(bp, bp, LINK_NO_REGION, 0, support, tickColor, 0, {
-        kind: 'tick',
+      l.ticks.push(
         bp,
+        bp,
+        LINK_NO_REGION,
+        0,
         support,
-        partnerRefNames: data.arcLinePartnerRefNames[i]!,
-        partnerLoci: data.arcLinePartnerLoci[i]!,
-      })
+        tickColor,
+        linkFeet(data.arcLineDirs[i]!, 0),
+        {
+          kind: 'tick',
+          bp,
+          support,
+          partnerRefNames: data.arcLinePartnerRefNames[i]!,
+          partnerLoci: data.arcLinePartnerLoci[i]!,
+        },
+      )
     }
     for (let i = 0; i < data.numArcs; i++) {
       const x1 = data.arcX1[i]!

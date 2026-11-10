@@ -14,7 +14,7 @@ import { arcsToRegionResult } from './arcRegions.ts'
 import { buildArcBandFeeds } from './bandFeed.ts'
 
 // The stroke the band draws for `support` reads at a configured `base` width,
-// read off a tick's ink, which is exactly its stroke wide.
+// read off a footless tick's ink, which is exactly its stroke wide.
 function strokeFor(support: number, base: number) {
   const region = {
     refName: 'chr1',
@@ -31,6 +31,7 @@ function strokeFor(support: number, base: number) {
           [
             {
               x: { refName: 'chr1', bp: 500 },
+              dir: 0,
               support,
               partnerRefNames: ['chr2'],
               partnerLoci: [],

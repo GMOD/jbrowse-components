@@ -140,13 +140,14 @@ test('a read cloud bar takes its category color at the cloud alpha, squares at e
   expect(markerHits[0]).toBe(f.get(0)!.linkHits[0])
 })
 
-test('ticks are stems in the interchromosomal color, a mark of their own', () => {
+test('ticks are stems in the interchromosomal color, a mark of their own, with their breakend foot', () => {
   const f = feeds(
     [arc(100, 400)],
     [],
     [
       {
         x: { refName: 'chr1', bp: 700 },
+        dir: 1,
         support: 3,
         partnerRefNames: ['chr9'],
         partnerLoci: [{ refName: 'chr9', bp: 5, support: 3 }],
@@ -157,6 +158,7 @@ test('ticks are stems in the interchromosomal color, a mark of their own', () =>
   expect([...ticks.x]).toEqual([700])
   expect([...links.x]).toEqual([100])
   expect(ticks.x2Region[0]).toBe(LINK_NO_REGION)
+  expect([...ticks.feet!]).toEqual([linkFeet(1, 0)])
   expect((ticks.color as Uint32Array)[0]).toBe(slotColor(ARC_COLOR_INTERCHROM))
   expect(tickHits[0]).toMatchObject({ kind: 'tick', bp: 700, support: 3 })
 })

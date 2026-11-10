@@ -39,6 +39,9 @@ export interface ArcsUploadData {
   // spans the full band, so no Y is stored, and every tick is
   // ARC_COLOR_INTERCHROM, so no color is stored either.
   arcLinePositions: Uint32Array
+  // The side of its position each tick's junction keeps (`ComputedLine.dir`),
+  // the stem's breakend foot.
+  arcLineDirs: Int8Array
   // Reads behind each tick, the same channel `arcSupport` is for arcs: stroke
   // width through `arcStrokeScale`, and the number the hover reports.
   arcLineSupport: Uint32Array
@@ -83,6 +86,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     numArcs: 0,
     maxFlatArcSpanBp: 0,
     arcLinePositions: new Uint32Array(0),
+    arcLineDirs: new Int8Array(0),
     arcLineSupport: new Uint32Array(0),
     arcLinePartnerRefNames: [],
     arcLinePartnerLoci: [],

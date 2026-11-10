@@ -206,10 +206,11 @@ function resolveArcs(
     }
   >()
 
-  // One tick per breakpoint, coalescing the reads that agree on it as `arcKey`
-  // does for arcs, so support becomes a channel and the hover has a count.
+  // One tick per breakend, a coordinate and the side it keeps, coalescing the
+  // reads that agree on it as `arcKey` does for arcs, so support becomes a
+  // channel and the hover has a count.
   //
-  // Its support is the sum of the distinct clusters reaching this coordinate,
+  // Its support is the sum of the distinct clusters reaching this breakend,
   // each once. The connections at the coordinate would read 1 for nearly every
   // mate pair, since mates straddle a breakpoint; one cluster's size would
   // undercount two events sharing a base, the shape `partnerRefNames` is plural
@@ -222,6 +223,7 @@ function resolveArcs(
   function pushLine(
     refName: string,
     bp: number,
+    dir: number,
     partnerRef: string,
     partnerBp: number,
     cluster: number,
@@ -230,7 +232,7 @@ function resolveArcs(
     // keeps the tick whatever the sum.
     exempt: boolean,
   ) {
-    const key = `${refName}\0${bp}`
+    const key = `${refName}\0${bp}\0${dir}`
     const seen = byLineKey.get(key)
     const locus = {
       refName: partnerRef,
@@ -252,6 +254,7 @@ function resolveArcs(
     byLineKey.set(key, {
       line: {
         x: { refName, bp },
+        dir,
         support: clusterSupport,
         partnerRefNames: [partnerRef],
         partnerLoci: [locus],
@@ -392,8 +395,8 @@ function resolveArcs(
         // Each endpoint's tick names the other's chromosome; one off every
         // displayed region is dropped by `lineTouchesRegion`. Pushed unfiltered:
         // the floor is taken against the coalesced total (`pushLine`).
-        pushLine(p1Ref, p1Bp, p2Ref, p2Bp, cluster, support, exempt)
-        pushLine(p2Ref, p2Bp, p1Ref, p1Bp, cluster, support, exempt)
+        pushLine(p1Ref, p1Bp, arc.p1Dir, p2Ref, p2Bp, cluster, support, exempt)
+        pushLine(p2Ref, p2Bp, arc.p2Dir, p1Ref, p1Bp, cluster, support, exempt)
       }
       continue
     }
@@ -483,8 +486,11 @@ function resolveArcs(
   const lines = kept.map(e => e.line)
 
   // Ticks are opaque and the hit test takes the later-drawn, so they paint
-  // heaviest last; bp is unique within a refName, the only scope drawn together.
-  lines.sort((a, b) => a.support - b.support || a.x.bp - b.x.bp)
+  // heaviest last; bp and side are unique within a refName, the only scope
+  // drawn together.
+  lines.sort(
+    (a, b) => a.support - b.support || a.x.bp - b.x.bp || a.dir - b.dir,
+  )
   // Sorted, since first-seen order is arrival order and not stable.
   for (const line of lines) {
     line.partnerRefNames.sort()

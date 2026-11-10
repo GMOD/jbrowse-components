@@ -293,6 +293,129 @@ test('a SAME-CHROMOSOME cross-region arc draws none', () => {
   expect(oneArcFeet(display).count).toBe(0)
 })
 
+// ctgA alone, so a connection to ctgB has no second pixel and ticks.
+function oneContigDisplay(data: ReturnType<typeof oneReadWithInterchromMate>) {
+  const { view, display } = createTestAlignmentsDisplay()
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+  ])
+  applyView(view, 20, 0)
+  display.setDrawnReadConnections('link')
+  display.setConnectionFilter({ minInterchromReads: 1 })
+  display.setRpcData(
+    0,
+    { groups: [{ key: '', label: '', data }] },
+    { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+  )
+  return display
+}
+
+function paintedTicks(display: ReturnType<typeof twoContigDisplay>) {
+  const feed = display.themed.sourceSections[0]!.arcFeeds.get(0)!
+  const { renderState } = display
+  const recorder = recordPath()
+  ARC_LINK_MARKS[0]!.paintBlock(
+    recorder.ctx,
+    feed,
+    canvasWideBlock(0, renderState.canvasWidth),
+    arcBandState(renderState, renderState.sections[0]!)!,
+  )
+  return { count: feed.ticks.count, d: recorder.d }
+}
+
+function oneTickFoot(display: ReturnType<typeof twoContigDisplay>) {
+  const { count, d } = paintedTicks(display)
+  expect(count).toBe(1)
+  const feet = feetIn(d)
+  expect(feet).toHaveLength(1)
+  return feet[0]!.dir
+}
+
+// ctgA:4001 reading into a clipped tail that aligns at ctgB:6001, forward or
+// reverse: the junction is ctgA's right edge for the forward read and its left
+// edge for the reverse one.
+function splitRead(strand: 1 | -1) {
+  return pileupDataFromSamRecords([
+    strand === 1
+      ? {
+          name: 'splitRead',
+          flag: 0,
+          strand: 1,
+          pos: 4001,
+          CIGAR: '200M300S',
+          SA: 'ctgB,6001,+,200S300M,60,0;',
+        }
+      : {
+          name: 'splitRead',
+          flag: 16,
+          strand: -1,
+          pos: 4001,
+          CIGAR: '300S200M',
+          SA: 'ctgB,6001,-,300M200S,60,0;',
+        },
+  ])
+}
+
+describe('a tick draws the foot its arc draws at the same end', () => {
+  // Held against the arc for the same connection, drawn with its partner
+  // displayed, rather than against a remembered sign: the tick and the arc's
+  // ctgA foot are one breakend.
+  const arcFootOnCtgA = (data: ReturnType<typeof splitRead>) =>
+    oneArcFeet(twoContigDisplay(data)).left
+
+  test('a forward split read', () => {
+    const data = splitRead(1)
+    expect(oneTickFoot(oneContigDisplay(data))).toBe(arcFootOnCtgA(data))
+  })
+
+  test('a reverse split read, which keeps the other side', () => {
+    const data = splitRead(-1)
+    const foot = oneTickFoot(oneContigDisplay(data))
+    expect(foot).toBe(arcFootOnCtgA(data))
+    expect(foot).toBe(-oneTickFoot(oneContigDisplay(splitRead(1))))
+  })
+
+  test('a mate link over the same junction as the forward split read', () => {
+    const pair = oneReadWithInterchromMate({
+      mateRefName: 'ctgB',
+      mateBp: 2000,
+      mateReverse: true,
+    })
+    const foot = oneTickFoot(oneContigDisplay(pair))
+    expect(foot).toBe(arcFootOnCtgA(pair))
+    expect(foot).toBe(oneTickFoot(oneContigDisplay(splitRead(1))))
+  })
+
+  test('in the read cloud, which ticks a connection whose partner is displayed', () => {
+    const data = splitRead(-1)
+    const display = twoContigDisplay(data)
+    display.setDrawnReadConnections('rule')
+    expect(oneTickFoot(display)).toBe(arcFootOnCtgA(data))
+  })
+})
+
+test('the hover finds a tick by its foot and traces it', () => {
+  const display = oneContigDisplay(splitRead(1))
+  const { renderState } = display
+  const arcBand = renderState.sections[0]!.arcBand!
+  const footY = arcBand.down
+    ? arcBand.top + 1
+    : arcBand.top + arcBand.height - 1
+  const foot = feetIn(paintedTicks(display).d)[0]!
+  const hoverAt = (dx: number) =>
+    resolveArcBandHover(
+      foot.x + dx,
+      footY,
+      display.themed.sourceSections[0]!.arcFeeds,
+      arcBandState(renderState, renderState.sections[0]!)!,
+      display.renderBlocks,
+    )
+  const onFoot = hoverAt(foot.dir * 14)
+  expect(onFoot?.hit.kind).toBe('tick')
+  expect(feetIn(onFoot!.highlight.d)).toHaveLength(1)
+  expect(hoverAt(-foot.dir * 14)).toBeUndefined()
+})
+
 test('the hover highlight traces the feet too', () => {
   // The hover traces the arc through the mark's own painter, so a foot the
   // mark paints is a foot the highlight carries.
