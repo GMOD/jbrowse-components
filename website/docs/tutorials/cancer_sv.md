@@ -84,6 +84,7 @@ each sample:
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
 ```bash
+curl -O https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 # awk keeps the contigs in hg38.chrom.sizes; bedGraphToBigWig fails on any other
 gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
   awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > cov.bg
@@ -329,7 +330,8 @@ On the hg38 row, the figures draw UCSC's RefSeq genes:
 }
 ```
 
-The gene annotation projected onto the derivative comes from the demo's config.
+The demo config has no gene track on the derivative. The figures below draw the
+RefSeq annotation projected onto it, which is not part of the files above.
 
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny
