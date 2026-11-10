@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Reproducibly build the 127-epigenome ChromHMM track shown under "Scaling up"
-# in website/docs/tutorials/chromhmm.md, and wire up a runnable JBrowse.
+# Reproducibly build the 127-epigenome ChromHMM track shown under "Roadmap's
+# epigenomes at PAX5 and HOXA" in website/docs/tutorials/chromhmm.md, and wire
+# up a runnable JBrowse.
 #
 # This is the same recipe as scripts/build_chromhmm_multirow.sh -- concatenate
 # per-cell-type segmentations into one file with a `cellType` column and let
