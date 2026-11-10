@@ -45,6 +45,7 @@ import {
   getSyntenyTracks,
   indelsDrawingOf,
   indelsOfDrawing,
+  releaseTemporaryAssemblies,
   reorderChromosomesMenuItem,
   syntenyCoordConfigSchema,
   syntenyIndelsConfigSchema,
@@ -88,7 +89,6 @@ import type {
   ExportSvgOptions,
   LinearSyntenyViewCommands,
 } from './types.ts'
-import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
@@ -257,12 +257,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * through `trackContainerFor`.
          */
         levels: types.array(LinearSyntenyLevel),
-        /**
-         * #property
-         * Assembly configs for assemblies only this view draws, such as the read
-         * of a read-vs-ref launch. The session has each while the view is open.
-         */
-        syntheticAssemblies: types.frozen<SyntheticAssembly[] | undefined>(),
         /**
          * #property
          * N genome rows, with N-1 synteny `levels` between adjacent pairs (see
@@ -821,6 +815,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      // releases session assemblies made for this view, e.g. read vs ref.
+      // Both hooks: `removeView` detaches before it destroys.
+      beforeDetach() {
+        releaseTemporaryAssemblies(self)
+      },
+      beforeDestroy() {
+        releaseTemporaryAssemblies(self)
+      },
+
       /**
        * #action
        */
@@ -1084,7 +1087,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       clearView() {
         self.takeOutRows()
         self.levels = cast([])
-        self.syntheticAssemblies = undefined
         self.volatileError = undefined
         self.launch = undefined
         self.cancelAutoDiagonalize()

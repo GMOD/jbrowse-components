@@ -8,9 +8,8 @@ import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 // pinned beside it in `core/util/temporaryAssembly.test.ts`. What is here is the
 // two things built on top: the report, and the menu.
 const SESSION = {
-  assemblyManager: {
-    isTemporaryAssembly: (name: string) => name === 'der_chr3_1',
-  },
+  temporaryAssemblies: [{ name: 'der_chr3_1' }],
+  assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
 }
 
 const SEGMENTS = {

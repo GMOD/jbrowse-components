@@ -345,7 +345,7 @@ describe('the baseline', () => {
       return display
     }
 
-    test('a plugin describes the lanes whose genome the session lacks in one batch, and the display declares the lane as a synthetic assembly', async () => {
+    test('a plugin describes the lanes whose genome the session lacks in one batch, and the lane is held as a temporary assembly', async () => {
       const batches: string[][] = []
       const rpcCalls: Record<string, unknown>[] = []
       const display = await describedDisplay({
@@ -365,7 +365,8 @@ describe('the baseline', () => {
           return []
         },
       })
-      expect(display.lgv.syntheticAssemblies).toEqual([HG002])
+      const session = getSession(display)
+      expect(session.temporaryAssemblies).toEqual([HG002])
       expect(display.laneLabel('hg002')).toBe('HG002')
       const described = () =>
         rpcCalls.find(
@@ -432,7 +433,7 @@ describe('the baseline', () => {
       expect(batches).toEqual([['hg002'], ['hg002']])
     })
 
-    test('a lane the session holds only temporarily is described again, for its gene adapter', async () => {
+    test('a lane a restored session holds only temporarily is described again, for its gene adapter', async () => {
       const batches: string[][] = []
       const { display, session } = createDisplayWithSession({
         trackAssemblyNames: ['volvox', 'hg002'],
@@ -460,10 +461,11 @@ describe('the baseline', () => {
 
     test('"Open in new view" hands the genome back, so its hub can connect it, and the display does not hold it again', async () => {
       const display = await describedDisplay()
+      const session = getSession(display)
       display.openInNewView('hg002', 'ctgA:1-100')
-      expect(display.lgv.syntheticAssemblies).toEqual([])
+      expect(session.temporaryAssemblies).toEqual([])
       await new Promise(resolve => setTimeout(resolve, 50))
-      expect(display.lgv.syntheticAssemblies).toEqual([])
+      expect(session.temporaryAssemblies).toEqual([])
       expect(display.holdsAssembly('hg002')).toBe(false)
     })
 
@@ -481,14 +483,15 @@ describe('the baseline', () => {
       warn.mockRestore()
     })
 
-    test('the lane assemblies go with the display', async () => {
+    test('the display gives its temporary assemblies back when it goes', async () => {
       const display = await describedDisplay()
-      const view = display.lgv
-      view.hideTrack(view.tracks[0]!.configuration.trackId)
-      expect(view.syntheticAssemblies).toEqual([])
+      const session = getSession(display)
+      const track = display.lgv.tracks[0]!
+      display.lgv.hideTrack(track.configuration.trackId)
+      expect(session.temporaryAssemblies).toEqual([])
     })
 
-    test('two displays sharing a lane keep its assembly until the last one goes', async () => {
+    test('two displays sharing a lane keep its temporary assembly until the last one goes', async () => {
       const { displays, session } = createDisplayWithSession({
         trackAssemblyNames: ['volvox', 'hg002'],
         copies: 2,
@@ -501,11 +504,13 @@ describe('the baseline', () => {
         })
       }
       const view = displays[0]!.lgv
-      expect(session.syntheticAssemblies()).toEqual([HG002])
+      const [held] = session.temporaryAssemblies
+      expect(held).toEqual(HG002)
       view.hideTrack('multiway_track')
-      expect(session.syntheticAssemblies()).toEqual([HG002])
+      expect(session.temporaryAssemblies).toEqual([held])
+      expect(session.temporaryAssemblies[0]).toBe(held)
       view.hideTrack('multiway_track')
-      expect(session.syntheticAssemblies()).toEqual([])
+      expect(session.temporaryAssemblies).toEqual([])
     })
 
     test('"Open in new view" on one of two displays sharing a lane leaves the other holding it', async () => {
@@ -520,13 +525,14 @@ describe('the baseline', () => {
           timeout: 5000,
         })
       }
+      const [held] = session.temporaryAssemblies
       displays[0]!.openInNewView('hg002', 'ctgA:1-100')
-      expect(session.syntheticAssemblies()).toEqual([HG002])
+      expect(session.temporaryAssemblies[0]).toBe(held)
       const view = displays[0]!.lgv
       view.hideTrack('multiway_track')
-      expect(session.syntheticAssemblies()).toEqual([HG002])
+      expect(session.temporaryAssemblies[0]).toBe(held)
       view.hideTrack('multiway_track')
-      expect(session.syntheticAssemblies()).toEqual([])
+      expect(session.temporaryAssemblies).toEqual([])
     })
 
     test('a genome still loading keeps the divider until its load redraws the lane', async () => {

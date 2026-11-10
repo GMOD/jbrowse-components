@@ -26,9 +26,6 @@ function makeSession(adminMode: boolean) {
         get jbrowse() {
           return jbrowse
         },
-        get root() {
-          return { assemblyManager: { syntheticAssemblyConfs: [] } }
-        },
       })),
       AssembliesMixin(assemblySchema),
     )

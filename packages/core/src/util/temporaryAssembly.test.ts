@@ -1,9 +1,10 @@
 import { namesTemporaryAssembly } from './temporaryAssembly.ts'
 
+const assemblyManager = { getCanonicalAssemblyName: (name: string) => name }
+
 const SESSION = {
-  assemblyManager: {
-    isTemporaryAssembly: (name: string) => name === 'der_chr3_1',
-  },
+  temporaryAssemblies: [{ name: 'der_chr3_1' }],
+  assemblyManager,
 }
 
 const SEGMENTS = {
@@ -44,7 +45,7 @@ test('a track spanning a temporary and a permanent assembly is one', () => {
 test('a session holding no temporary assembly never reports', () => {
   expect(
     namesTemporaryAssembly(
-      { assemblyManager: { isTemporaryAssembly: () => false } },
+      { temporaryAssemblies: [], assemblyManager },
       SEGMENTS,
     ),
   ).toBe(false)

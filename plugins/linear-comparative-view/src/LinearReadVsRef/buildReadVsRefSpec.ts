@@ -8,8 +8,14 @@ import { gatherOverlaps } from '@jbrowse/core/util'
 
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
 
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+
+export interface ReadVsRefSpec {
+  temporaryAssembly: SyntheticAssembly
+  viewSpec: ViewSnapshotInput<'LinearSyntenyView'>
+}
 
 export interface BuildReadVsRefArgs {
   primaryFeature: Feature
@@ -22,12 +28,11 @@ export interface BuildReadVsRefArgs {
   rand: () => number
 }
 
-// Pure spec builder for the "Linear read vs ref" dialog; the caller adds the
-// view. Inputs are pre-resolved primitives + injected
+// Pure spec builder for the "Linear read vs ref" dialog. All session/MST
+// side-effects (addTemporaryAssembly, addView) are performed by the caller
+// against the returned spec. Inputs are pre-resolved primitives + injected
 // `now`/`rand` so the result is fully deterministic for tests.
-export function buildReadVsRefSpec(
-  args: BuildReadVsRefArgs,
-): ViewSnapshotInput<'LinearSyntenyView'> {
+export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   const {
     primaryFeature: feature,
     windowSize,
@@ -72,72 +77,76 @@ export function buildReadVsRefSpec(
   const refLen = lgvRegions.reduce((a, r) => a + r.end - r.start, 0)
 
   return {
-    type: 'LinearSyntenyView',
-    syntheticAssemblies: [
-      buildSyntheticAssembly({
-        refName: readName,
-        assemblyName: readAssembly,
-        displayName: readAssemblyDisplayName,
-        sequenceTrackName: 'Read sequence',
-        totalLength,
-        seq: featSeq,
-        trackId: seqTrackId,
-        uniqueId: `${rand()}`,
-      }),
-    ],
-    displayName,
-    views: [
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        windowWidthBp: refLen,
-        displayedRegions: lgvRegions,
-        tracks: [
-          buildSequenceTrack(rand, [trackAssembly], sequenceTrackConf.trackId),
-        ],
-      },
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        windowWidthBp: totalLength,
-        displayedRegions: [
-          {
-            assemblyName: readAssembly,
-            start: 0,
-            end: totalLength,
-            refName: readName,
-          },
-        ],
-        tracks: [buildSequenceTrack(rand, undefined, seqTrackId)],
-      },
-    ],
-    // the band between the two rows. `tracks` on the view means trackIds to
-    // open, so a built track snapshot written there is a launch recipe and
-    // never becomes a band.
-    levels: [
-      {
-        tracks: [
-          {
-            type: 'SyntenyTrack',
-            configuration: {
-              type: 'SyntenyTrack',
-              assemblyNames: [trackAssembly, readAssembly],
-              adapter: withAdapterId({
-                type: 'FromConfigAdapter',
-                features: configFeatureStore,
-              }),
-              trackId: syntenyTrackId,
-              name: syntenyTrackName,
+    temporaryAssembly: buildSyntheticAssembly({
+      refName: readName,
+      assemblyName: readAssembly,
+      displayName: readAssemblyDisplayName,
+      sequenceTrackName: 'Read sequence',
+      totalLength,
+      seq: featSeq,
+      trackId: seqTrackId,
+      uniqueId: `${rand()}`,
+    }),
+    viewSpec: {
+      type: 'LinearSyntenyView',
+      displayName,
+      views: [
+        {
+          type: 'LinearGenomeView',
+          hideHeader: true,
+          windowWidthBp: refLen,
+          displayedRegions: lgvRegions,
+          tracks: [
+            buildSequenceTrack(
+              rand,
+              [trackAssembly],
+              sequenceTrackConf.trackId,
+            ),
+          ],
+        },
+        {
+          type: 'LinearGenomeView',
+          hideHeader: true,
+          windowWidthBp: totalLength,
+          displayedRegions: [
+            {
+              assemblyName: readAssembly,
+              start: 0,
+              end: totalLength,
+              refName: readName,
             },
-            displays: [
-              {
-                type: 'LinearSyntenyDisplay',
-                configuration: `${syntenyTrackId}-LinearSyntenyDisplay`,
+          ],
+          tracks: [buildSequenceTrack(rand, undefined, seqTrackId)],
+        },
+      ],
+      // the band between the two rows. `tracks` on the view means trackIds to
+      // open, so a built track snapshot written there is a launch recipe and
+      // never becomes a band.
+      levels: [
+        {
+          tracks: [
+            {
+              type: 'SyntenyTrack',
+              configuration: {
+                type: 'SyntenyTrack',
+                assemblyNames: [trackAssembly, readAssembly],
+                adapter: withAdapterId({
+                  type: 'FromConfigAdapter',
+                  features: configFeatureStore,
+                }),
+                trackId: syntenyTrackId,
+                name: syntenyTrackName,
               },
-            ],
-          },
-        ],
-      },
-    ],
+              displays: [
+                {
+                  type: 'LinearSyntenyDisplay',
+                  configuration: `${syntenyTrackId}-LinearSyntenyDisplay`,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   }
 }

@@ -103,6 +103,7 @@ export type {
 export type { SyntenyFeatureLanes } from './syntenyFeatureLanes.generated.ts'
 export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
+export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'
 export type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
 // Types only. `executeDiagonalize` itself is deliberately NOT exported here:
 // `runDiagonalize` reaches it through a dynamic import, and a static export

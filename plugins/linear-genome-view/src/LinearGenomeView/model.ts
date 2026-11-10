@@ -134,11 +134,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  AssemblyManager,
-  ParsedLocString,
-  SyntheticAssemblySource,
-} from '@jbrowse/core/util'
+import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
@@ -637,14 +633,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #volatile
-         * The displays on this view declaring synthetic assemblies, each
-         * registered from its own `afterAttach`. ADR-261.
-         */
-        syntheticAssemblySources: observable.set<SyntheticAssemblySource>([], {
-          deep: false,
-        }),
-        /**
-         * #volatile
          * Height of each track's in-flow label band, measured by
          * TrackContainer as the rendering container's offset inside its Paper.
          * Absent (0) while the label is hidden, overlapping, or not yet
@@ -883,17 +871,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get ownTracks() {
         return [...self.tracks]
-      },
-      /**
-       * #getter
-       * The assemblies only this view's displays can draw, such as a
-       * multi-way synteny display's lane genomes. The session has each while
-       * a display here declares it. ADR-261.
-       */
-      get syntheticAssemblies() {
-        return [...self.syntheticAssemblySources].flatMap(
-          source => source.syntheticAssemblies ?? [],
-        )
       },
       /**
        * #getter
@@ -1566,18 +1543,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHideHeaderOverview(b: boolean) {
         self.hideHeaderOverview = b
-      },
-      /**
-       * #action
-       */
-      addSyntheticAssemblySource(source: SyntheticAssemblySource) {
-        self.syntheticAssemblySources.add(source)
-      },
-      /**
-       * #action
-       */
-      removeSyntheticAssemblySource(source: SyntheticAssemblySource) {
-        self.syntheticAssemblySources.delete(source)
       },
       /**
        * #action

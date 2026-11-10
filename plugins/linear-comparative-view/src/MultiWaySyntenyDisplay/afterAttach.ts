@@ -17,6 +17,7 @@ import { getMate } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { laneFetchAsked, staleLaneSpecs } from './laneFetch.ts'
+import { holdLaneAssembly, releaseLaneAssemblies } from './laneHolders.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
@@ -317,15 +318,28 @@ function installFreezeExpiry(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
-// The view is captured: a display is destroyed after its view detaches, when
-// it can no longer walk to one.
+// A restored session's temporary assembly has no adder, so the display holds
+// whatever it draws. Captures the session, since `getSession` finds none once
+// the view detaches.
 function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
-  const view = self.lgv
-  view.addSyntheticAssemblySource(self)
+  const session = getSession(self)
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        for (const [lane, assembly] of self.laneAssemblyConfs) {
+          const name = String(assembly.name)
+          if (!self.holdsAssembly(lane) && !self.holdsAssembly(name)) {
+            session.addTemporaryAssembly?.(assembly)
+          }
+          holdLaneAssembly(self, session, name)
+        }
+      },
+      { name: 'MultiWayLaneAssemblies' },
+    ),
+  )
   addDisposer(self, () => {
-    if (isAlive(view)) {
-      view.removeSyntheticAssemblySource(self)
-    }
+    releaseLaneAssemblies(self)
   })
 }
 

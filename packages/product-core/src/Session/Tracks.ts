@@ -67,13 +67,18 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       // Assembly sequences by trackId, which win over a track base of the same
       // id
       const sequencesById = computed<Record<string, AnyTrackConfig>>(
-        () =>
-          Object.fromEntries(
-            self.root.assemblyManager.assemblyList.map(a => [
-              a.sequence.trackId,
-              a.sequence,
-            ]),
-          ),
+        () => {
+          const temporaryAssemblies =
+            'temporaryAssemblies' in self
+              ? (self.temporaryAssemblies as {
+                  sequence: { trackId: string }
+                }[])
+              : []
+          return Object.fromEntries([
+            ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+            ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
+          ])
+        },
         { name: 'sequencesById' },
       )
       // Connection tracks by trackId, which win over both

@@ -29,7 +29,7 @@ export async function launchLinearReadVsRef({
     throw new Error('assembly has no reference sequence track')
   }
 
-  const viewSpec = buildReadVsRefSpec({
+  const { temporaryAssembly, viewSpec } = buildReadVsRefSpec({
     primaryFeature,
     windowSize,
     trackAssembly: assembly.name,
@@ -39,6 +39,7 @@ export async function launchLinearReadVsRef({
     rand: () => Math.random(),
   })
 
+  session.addTemporaryAssembly?.(temporaryAssembly)
   await launchOrReplaceView({
     session,
     typeName: 'LinearSyntenyView',

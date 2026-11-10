@@ -8,7 +8,6 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { declaredSyntheticAssemblies } from '@jbrowse/core/util'
 import {
   displayTestSessionModel,
   testAssembly,
@@ -29,7 +28,7 @@ import type {
   Alias,
   BaseRefNameAliasAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AbstractViewModel, AnimationMode } from '@jbrowse/core/util'
+import type { AnimationMode } from '@jbrowse/core/util'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
 
 export function heldSpecs(
@@ -229,23 +228,6 @@ export function createDisplayWithSession({
   }>([], {
     deep: false,
   })
-  const openView = observable.box<AbstractViewModel | undefined>(undefined, {
-    deep: false,
-  })
-  // what the assembly manager builds from the displays' declarations: one
-  // assembly per name
-  const syntheticAssemblies = () => {
-    const view = openView.get()
-    return [
-      ...new Map(
-        declaredSyntheticAssemblies(view ? [view] : []).map(a => [a.name, a]),
-      ).values(),
-    ]
-  }
-  const temporaryAssembly = (name: string) =>
-    [...temporaryAssemblies, ...syntheticAssemblies()].find(
-      a => a.name === name,
-    )
 
   const trackSchema = pluginManager.pluggableConfigSchemaType('track')
   const syntenyTrack = trackSchema.create(
@@ -294,19 +276,15 @@ export function createDisplayWithSession({
         requireAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
         getDisplayName: (name: string) => {
-          const temporary = temporaryAssembly(name)
+          const temporary = temporaryAssemblies.find(a => a.name === name)
           return temporary
-            ? String(
-                'displayName' in temporary && temporary.displayName
-                  ? temporary.displayName
-                  : name,
-              )
+            ? String(temporary.displayName ?? name)
             : assemblyOf(name).displayName || name
         },
         // any other name is a multi-genome file's sample the session does not hold
         has: (name: string) =>
-          HELD_ASSEMBLIES.has(name) || !!temporaryAssembly(name),
-        isTemporaryAssembly: (name: string) => !!temporaryAssembly(name),
+          HELD_ASSEMBLIES.has(name) ||
+          temporaryAssemblies.some(a => a.name === name),
         // always-true would read every re-anchor locstring as ambiguous
         isValidRefName: (refName: string) => refName === 'ctgA',
       },
@@ -322,7 +300,6 @@ export function createDisplayWithSession({
         views: [] as { id: string }[],
         addedViews: [] as { type: string; init: Record<string, unknown> }[],
         temporaryAssemblies,
-        syntheticAssemblies,
       }))
       .actions(self => ({
         addView(type: string, init: Record<string, unknown>) {
@@ -351,7 +328,6 @@ export function createDisplayWithSession({
       })),
     }),
   )
-  openView.set(view)
   view.setWidth(800)
   view.setDisplayedRegions([
     { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },

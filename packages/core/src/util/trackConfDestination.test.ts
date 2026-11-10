@@ -110,9 +110,7 @@ test('addTrackFromWidget puts a synthesized-assembly track on the track, not in 
     } as never,
     session: {
       ...session,
-      assemblyManager: {
-        isTemporaryAssembly: (name: string) => name === 'tmp',
-      },
+      temporaryAssemblies: [{ name: 'tmp' }],
     } as never,
     conf,
   })

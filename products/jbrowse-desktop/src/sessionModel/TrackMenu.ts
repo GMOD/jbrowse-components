@@ -20,10 +20,7 @@ import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  AbstractSessionModel,
-  TrackActionView,
-} from '@jbrowse/core/util/types'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 import type {
   BaseSession,
   SessionWithDrawerWidgets,
@@ -32,8 +29,7 @@ import type {
 
 type SessionBase = BaseSession &
   SessionWithSessionTracks &
-  SessionWithDrawerWidgets &
-  Pick<AbstractSessionModel, 'assemblyManager'>
+  SessionWithDrawerWidgets
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin

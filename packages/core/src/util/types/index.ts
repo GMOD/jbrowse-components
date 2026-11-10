@@ -22,7 +22,6 @@ import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { HighlightType } from '../highlights.ts'
 import type { Feature } from '../simpleFeature.ts'
-import type { SyntheticAssemblySnapshot } from '../syntheticAssemblies.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
 import type { JBrowseConfigModel } from './jbrowseConfig.ts'
@@ -881,11 +880,6 @@ export interface AbstractViewModel {
    * putting something that is not a track in front of the readiness marker.
    */
   ownTracks: AbstractTrackModel[]
-  /**
-   * assembly configs for the assemblies only this view, or a display on it,
-   * can draw; the session has each while the view declares it. ADR-261.
-   */
-  syntheticAssemblies?: readonly SyntheticAssemblySnapshot[]
   /** the views nested directly inside this one — see `ownTracks` */
   ownViews: AbstractViewModel[]
 }

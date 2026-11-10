@@ -1,5 +1,5 @@
-// The one-contig assembly a launcher writes into its view's
-// `syntheticAssemblies`, so that a synthetic sequence can be drawn against the
+// The one-contig temporary assembly a launcher registers via
+// `addTemporaryAssembly`, so that a synthetic sequence can be drawn against the
 // reference as if it were a genome. Two launchers mint one, "linear read vs
 // ref" and "dotplot of read vs ref", whose contig is a single read. Kept as one
 // builder so they cannot drift apart — a drift here previously hung
@@ -7,7 +7,7 @@
 //
 // The return type is annotated inline (an anonymous object type, not a named
 // interface) so it keeps an implicit index signature and stays assignable to
-// an assembly config snapshot.
+// session.addTemporaryAssembly's `Record<string, unknown>` arg.
 export function buildSyntheticAssembly({
   refName,
   assemblyName,

@@ -6,8 +6,14 @@ import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { gatherOverlaps, sum } from '@jbrowse/core/util'
 
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+
+export interface DotplotReadVsRefSpec {
+  temporaryAssembly: SyntheticAssembly
+  viewSpec: ViewSnapshotInput<'DotplotView'>
+}
 
 export interface BuildDotplotReadVsRefArgs {
   feature: Feature
@@ -25,8 +31,9 @@ export interface BuildDotplotReadVsRefArgs {
   rand: () => number
 }
 
-// Pure spec builder for "Dotplot of read vs ref"; the caller adds the view.
-// Mirrors linear-comparative-view's buildReadVsRefSpec.
+// Pure spec builder for "Dotplot of read vs ref". All session/MST side-effects
+// (addTemporaryAssembly, addView) are performed by the caller against the
+// returned spec, mirroring linear-comparative-view's buildReadVsRefSpec.
 export function buildDotplotReadVsRefSpec({
   feature,
   windowSize,
@@ -36,7 +43,7 @@ export function buildDotplotReadVsRefSpec({
   getCanonicalRefName,
   now,
   rand,
-}: BuildDotplotReadVsRefArgs): ViewSnapshotInput<'DotplotView'> {
+}: BuildDotplotReadVsRefArgs): DotplotReadVsRefSpec {
   const { features, totalLength, readName } = buildReadVsRefFeatures(
     feature.toJSON(),
     getCanonicalRefName,
@@ -63,66 +70,67 @@ export function buildDotplotReadVsRefSpec({
   )
 
   return {
-    type: 'DotplotView',
-    // The view initializes once every assemblyName resolves
-    // (assembliesInitialized), and the read's assembly is the view's own.
-    syntheticAssemblies: [
-      buildSyntheticAssembly({
-        refName: readName,
-        assemblyName: readAssembly,
-        displayName: readAssemblyDisplayName,
-        sequenceTrackName: 'Read sequence',
-        totalLength,
-        // No bases: a dotplot draws no sequence track, and the assembly's
-        // region comes from the feature's start/end
-        // (mergeFeaturesToRegions), not from the string. Carrying a whole ONT
-        // read's SEQ here would only bloat the session snapshot. The linear
-        // launcher, which does render the read sequence, passes it.
-        seq: undefined,
-        trackId: seqTrackId,
-        uniqueId: seqTrackId,
-      }),
-    ],
-    displayName,
-    assemblyNames,
-    hview: {
-      offsetPx: 0,
-      bpPerPx: sum(hviewRegions.map(r => r.end - r.start)) / plotWidth,
-      displayedRegions: hviewRegions,
-    },
-    vview: {
-      offsetPx: 0,
-      bpPerPx: totalLength / plotHeight,
-      minimumBlockWidth: 0,
-      displayedRegions: [
-        {
-          assemblyName: readAssembly,
-          start: 0,
-          end: totalLength,
-          refName: readName,
-        },
-      ],
-    },
-    tracks: [
-      {
-        type: 'SyntenyTrack',
-        configuration: {
-          type: 'SyntenyTrack',
-          assemblyNames,
-          adapter: withAdapterId({
-            type: 'FromConfigAdapter',
-            features,
-          }),
-          trackId: syntenyTrackId,
-          name: syntenyTrackName,
-        },
-        displays: [
+    // The synthetic read assembly must be registered for the DotplotView to
+    // initialize (assembliesInitialized gates on every assemblyName resolving);
+    // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
+    temporaryAssembly: buildSyntheticAssembly({
+      refName: readName,
+      assemblyName: readAssembly,
+      displayName: readAssemblyDisplayName,
+      sequenceTrackName: 'Read sequence',
+      totalLength,
+      // No bases: a dotplot draws no sequence track, and the assembly's region
+      // comes from the feature's start/end (mergeFeaturesToRegions), not from
+      // the string. Carrying a whole ONT read's SEQ here would only bloat the
+      // session snapshot. The linear launcher, which does render the read
+      // sequence, passes it.
+      seq: undefined,
+      trackId: seqTrackId,
+      uniqueId: seqTrackId,
+    }),
+    viewSpec: {
+      type: 'DotplotView',
+      displayName,
+      assemblyNames,
+      hview: {
+        offsetPx: 0,
+        bpPerPx: sum(hviewRegions.map(r => r.end - r.start)) / plotWidth,
+        displayedRegions: hviewRegions,
+      },
+      vview: {
+        offsetPx: 0,
+        bpPerPx: totalLength / plotHeight,
+        minimumBlockWidth: 0,
+        displayedRegions: [
           {
-            type: 'DotplotDisplay',
-            configuration: `${syntenyTrackId}-DotplotDisplay`,
+            assemblyName: readAssembly,
+            start: 0,
+            end: totalLength,
+            refName: readName,
           },
         ],
       },
-    ],
+      tracks: [
+        {
+          type: 'SyntenyTrack',
+          configuration: {
+            type: 'SyntenyTrack',
+            assemblyNames,
+            adapter: withAdapterId({
+              type: 'FromConfigAdapter',
+              features,
+            }),
+            trackId: syntenyTrackId,
+            name: syntenyTrackName,
+          },
+          displays: [
+            {
+              type: 'DotplotDisplay',
+              configuration: `${syntenyTrackId}-DotplotDisplay`,
+            },
+          ],
+        },
+      ],
+    },
   }
 }

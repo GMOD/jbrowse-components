@@ -14,7 +14,7 @@ import type { AnyConfiguration } from '@jbrowse/core/configuration'
  * #category root
  *
  * Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
- * `temporaryAssemblies` (a plugin's ad-hoc assemblies).
+ * `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
  */
 export function AssembliesMixin(
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
@@ -30,8 +30,6 @@ export function AssembliesMixin(
       ),
       /**
        * #property
-       * @deprecated a view or display declares `syntheticAssemblies` instead,
-       * and the assembly then leaves with it (ADR-261). Kept for plugins.
        */
       temporaryAssemblies: types.stripDefault(
         types.array(assemblyConfigSchemasType),
@@ -44,7 +42,6 @@ export function AssembliesMixin(
         ...self.jbrowse.assemblies,
         ...self.sessionAssemblies,
         ...self.temporaryAssemblies,
-        ...self.root.assemblyManager.syntheticAssemblyConfs,
       ]
       return {
         /**
@@ -58,7 +55,7 @@ export function AssembliesMixin(
         /**
          * #method
          * The assembly config whose name or one of whose aliases is `name`,
-         * from any of the arrays the assemblyManager draws on, or
+         * from any of the three arrays the assemblyManager draws on, or
          * undefined.
          *
          * One namespace, because `name` is the assembly config's MST
@@ -67,7 +64,7 @@ export function AssembliesMixin(
          * `assembly.configuration` safeReference in the manager ambiguous, and
          * MST then throws on every read of one — inside the manager's own
          * autorun and inside `assemblyNameMap`, which takes the session down.
-         * So each add path checks them all, not just the array it pushes to.
+         * So each add path checks all three, not just the array it pushes to.
          * Aliases count too: a new assembly named `GRCh38` beside an `hg38`
          * aliased `GRCh38` would leave `get('GRCh38')` to array order.
          */
@@ -138,9 +135,7 @@ export function AssembliesMixin(
 
         /**
          * #action
-         * @deprecated declare `syntheticAssemblies` on the view or display that
-         * draws the assembly (ADR-261); this one stays until
-         * `removeTemporaryAssembly` is called
+         * used for read vs ref type assemblies.
          */
         addTemporaryAssembly(conf: AnyConfiguration) {
           const asm = self.findAssemblyConf(conf.name)
@@ -154,7 +149,6 @@ export function AssembliesMixin(
 
         /**
          * #action
-         * @deprecated see `addTemporaryAssembly`
          */
         removeTemporaryAssembly(name: string) {
           const elt = self.temporaryAssemblies.find(a => a.name === name)

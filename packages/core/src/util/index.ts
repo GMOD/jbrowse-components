@@ -308,11 +308,6 @@ export {
   type WidgetTrackConf,
 } from './addTrackFromWidget.ts'
 export { namesTemporaryAssembly } from './temporaryAssembly.ts'
-export { declaredSyntheticAssemblies } from './syntheticAssemblies.ts'
-export type {
-  SyntheticAssemblySnapshot,
-  SyntheticAssemblySource,
-} from './syntheticAssemblies.ts'
 export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 
