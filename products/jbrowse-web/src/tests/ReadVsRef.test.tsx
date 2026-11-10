@@ -34,9 +34,9 @@ test('launch read vs ref panel', async () => {
 
   const display = await findDisplayPainted('pileup-display', delay)
   const canvas = findCanvasIn(display)
-  fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
-  fireEvent.click(canvas, { clientX: 200, clientY: 80 })
-  fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
+  fireEvent.mouseMove(canvas, { clientX: 200, clientY: 84 })
+  fireEvent.click(canvas, { clientX: 200, clientY: 84 })
+  fireEvent.contextMenu(canvas, { clientX: 200, clientY: 84 })
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Linear read vs ref...', {}, delay))
@@ -60,9 +60,9 @@ test('launch read vs ref dotplot', async () => {
 
   const display = await findDisplayPainted('pileup-display', delay)
   const canvas = findCanvasIn(display)
-  fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
-  fireEvent.click(canvas, { clientX: 200, clientY: 80 })
-  fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
+  fireEvent.mouseMove(canvas, { clientX: 200, clientY: 84 })
+  fireEvent.click(canvas, { clientX: 200, clientY: 84 })
+  fireEvent.contextMenu(canvas, { clientX: 200, clientY: 84 })
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Dotplot of read vs ref...', {}, delay))
@@ -107,9 +107,9 @@ test('replace the launching view with the read vs ref dotplot', async () => {
 
     const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
-    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
-    fireEvent.click(canvas, { clientX: 200, clientY: 80 })
-    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 84 })
+    fireEvent.click(canvas, { clientX: 200, clientY: 84 })
+    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 84 })
 
     fireEvent.click(await findByText(/Launch/, {}, delay))
     fireEvent.click(await findByText('Dotplot of read vs ref...', {}, delay))

@@ -597,9 +597,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Derived from the read height, never stored: a 1px gap once there is
-           * room (pitch/height > 3), else flush. One rule covers the fixed
-           * presets and the fit squeeze.
+           * Derived from the read height, never stored: 2px from a Normal
+           * read up, 1px once there is room (pitch/height > 3), else flush. One
+           * rule covers the fixed presets and the fit squeeze.
            */
           get featureSpacing(): number {
             return featureSpacingForHeight(

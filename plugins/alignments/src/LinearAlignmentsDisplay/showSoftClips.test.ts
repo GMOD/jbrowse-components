@@ -69,7 +69,7 @@ describe('alignments compactness', () => {
   it('is Normal with no config', () => {
     const { display } = createDisplay()
     expect(display.featureHeight).toBe(7)
-    expect(display.featureSpacing).toBe(1)
+    expect(display.featureSpacing).toBe(2)
   })
 
   it('takes a per-track size from the config', () => {
@@ -87,7 +87,7 @@ describe('alignments compactness', () => {
 
     presetRow(display, 'Normal')?.onClick?.()
     expect(display.featureHeight).toBe(7)
-    expect(display.featureSpacing).toBe(1)
+    expect(display.featureSpacing).toBe(2)
     expect(presetRow(display, 'Normal')?.checked).toBe(true)
     expect(presetRow(display, 'Super-compact')?.checked).toBe(false)
   })
@@ -297,17 +297,24 @@ describe('alignments fit-to-display-height split', () => {
     // no fetched reads -> no rows -> nothing to fit
     expect(display.fittedFeatureHeight).toBe(0)
     expect(display.featureHeight).toBe(7)
-    expect(display.featureSpacing).toBe(1)
+    expect(display.featureSpacing).toBe(2)
   })
 
   it('spares a 1px gap once the pitch clears 3px, body fills the rest', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
-    display.setFittedHeightPx(10)
+    display.setFittedHeightPx(6)
     expect(display.featureSpacing).toBe(1)
-    expect(display.featureHeight).toBe(9)
-    // body + spacing reconstructs the pitch exactly
-    expect(display.featureHeight + display.featureSpacing).toBe(10)
+    expect(display.featureHeight).toBe(5)
+    expect(display.featureHeight + display.featureSpacing).toBe(6)
+  })
+
+  it('spares a 2px gap from a Normal-height pitch up', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.setFittedHeightPx(9)
+    expect(display.featureSpacing).toBe(2)
+    expect(display.featureHeight).toBe(7)
   })
 
   it('keeps reads flush (no spacing) at a 3px pitch or tighter', () => {
@@ -335,13 +342,13 @@ describe('alignments fit-to-display-height split', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     display.setFittedHeightPx(10)
-    expect(display.featureHeight).toBe(9)
+    expect(display.featureHeight).toBe(8)
 
     // leaving fit doesn't reset the cache, but the getters gate on fit mode so
     // the config values win again
     display.setHeightMode('fixed')
     expect(display.featureHeight).toBe(7)
-    expect(display.featureSpacing).toBe(1)
+    expect(display.featureSpacing).toBe(2)
   })
 })
 

@@ -101,7 +101,7 @@ export function getFeatureHeightMenuItem(
             PixelHeightDialog,
             {
               title: `Custom ${noun} height`,
-              description: `Adjust the ${noun} height. The spacing between ${noun}s is derived from it — a 1px gap once ${noun}s are tall enough, otherwise flush. Setting the height to 1 makes the display very compact.`,
+              description: `Adjust the ${noun} height. The spacing between ${noun}s is derived from it — 2px from 7px up, 1px for shorter ${noun}s, flush at 3px or less. Setting the height to 1 makes the display very compact.`,
               label: `${capitalizeFirst(noun)} height (px)`,
               initialValue: model.markHeight,
               onSubmit: (height: number) => {

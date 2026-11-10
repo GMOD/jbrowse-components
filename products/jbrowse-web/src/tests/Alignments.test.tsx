@@ -41,8 +41,8 @@ test(
     const canvas = findCanvasIn(display)
     expectCanvasMatch(canvas)
 
-    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
-    fireEvent.click(canvas, { clientX: 200, clientY: 80 })
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 84 })
+    fireEvent.click(canvas, { clientX: 200, clientY: 84 })
 
     // this is to confirm a alignment detail widget opened
     await findByTestId('alignment-side-drawer', ...opts)

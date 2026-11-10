@@ -339,7 +339,7 @@ function walkReads(
       ctx.fill()
       if (outline) {
         // The outline re-traces the arrow inset, because stroking the fill's
-        // own path would put half the stroke outside the read, in the 1px gap
+        // own path would put half the stroke outside the read, in the gap
         // between rows, where read.slang's distance-to-edge outline never goes.
         traceReadArrow(ctx, xL, xR, y, fH, apexX, READ_OUTLINE_PX / 2)
         ctx.stroke()

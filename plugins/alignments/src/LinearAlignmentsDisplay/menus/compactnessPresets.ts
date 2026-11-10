@@ -16,13 +16,14 @@ export const COMPACTNESS_PRESETS = {
   'super-compact': { label: 'Super-compact', height: 1 },
 } as const
 
-// The one rule turning a read size into its inter-read gap: a 1px gap once
-// there's room for a >2px body, else flush. Spacing is derived, never stored, so
-// this is the single source both the `featureSpacing` getter (fixed body / fit
-// pitch) and the fit cap (`normal pitch = body + gap`) key off — encoding it once
-// keeps the presets and the fit squeeze from disagreeing.
+// The one rule turning a read size into its inter-read gap: 2px from a Normal
+// read up, as v4 drew it, 1px once there's room for a >2px body, else flush.
+// Spacing is derived, never stored, so this is the single source both the
+// `featureSpacing` getter (fixed body / fit pitch) and the fit cap (`normal
+// pitch = body + gap`) key off — encoding it once keeps the presets and the fit
+// squeeze from disagreeing.
 export function featureSpacingForHeight(height: number) {
-  return height > 3 ? 1 : 0
+  return height >= COMPACTNESS_PRESETS.normal.height ? 2 : height > 3 ? 1 : 0
 }
 
 // The pitch a Normal read occupies (body + its derived gap). The fit squeeze

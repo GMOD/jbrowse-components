@@ -14,16 +14,18 @@ import {
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-test('featureSpacingForHeight: 1px gap only once the body clears 3px', () => {
+test('featureSpacingForHeight: flush to 3px, 1px gap past it, 2px from Normal up', () => {
   expect(featureSpacingForHeight(1)).toBe(0)
   expect(featureSpacingForHeight(3)).toBe(0)
   expect(featureSpacingForHeight(3.5)).toBe(1)
-  expect(featureSpacingForHeight(7)).toBe(1)
+  expect(featureSpacingForHeight(6.5)).toBe(1)
+  expect(featureSpacingForHeight(7)).toBe(2)
+  expect(featureSpacingForHeight(12)).toBe(2)
 })
 
 test('featureSpacingForHeight reproduces the fixed-mode preset pitches', () => {
   const pitch = (h: number) => h + featureSpacingForHeight(h)
-  expect(pitch(COMPACTNESS_PRESETS.normal.height)).toBe(8)
+  expect(pitch(COMPACTNESS_PRESETS.normal.height)).toBe(9)
   expect(pitch(COMPACTNESS_PRESETS.compact.height)).toBe(3)
   expect(pitch(COMPACTNESS_PRESETS['super-compact'].height)).toBe(1)
 })
@@ -33,7 +35,7 @@ test('NORMAL_PITCH is the Normal body plus its derived gap (the fit cap)', () =>
   expect(NORMAL_PITCH).toBe(
     featureHeight + featureSpacingForHeight(featureHeight),
   )
-  expect(NORMAL_PITCH).toBe(8)
+  expect(NORMAL_PITCH).toBe(9)
 })
 
 // The props of every dialog the display has queued. `rpcManager` is what makes

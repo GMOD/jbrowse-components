@@ -86,7 +86,7 @@ static const float PAIR_MIN_SPAN_PX = 10.0;
 //
 // It reads lighter than 0.7 without reading hazier, which is the whole point:
 // what made the old outline soft was placement, not weight. A centred stroke
-// spends half its width in the 1 px gap between pileup rows — and that gap takes
+// spends half its width in the gap between pileup rows — and that gap takes
 // it from the read above and the read below at once, which is why the boundary
 // smudged. Inside the glyph, the same ink is a clean edge.
 //

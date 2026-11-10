@@ -1304,7 +1304,7 @@ test('every mark carries the color the display paints it, keyed beside the reads
   expect(new Set(t.interbaseLegend.color)).toEqual(
     new Set(t.interbaseCoverage.color),
   )
-  expect(t.readPitch).toEqual({ featureHeight: 7, featureSpacing: 1 })
+  expect(t.readPitch).toEqual({ featureHeight: 7, featureSpacing: 2 })
   const thin = await engine.alignments({
     ...SPLICED,
     display: { pileup: { mark: { height: 3 } } },
