@@ -1,6 +1,6 @@
 ---
 name: fill-the-whole-display-rectangle-not-just-the-hi-c-triangle
-description: Filling the Hi-C display's empty bottom corners needs contacts whose far end is off screen, a fetch margin of up to half a span past each edge, which costs panning and rules out the parked smaller fetch quantum; the call is whether the corners are worth that.
+description: Filling the Hi-C display's empty bottom corners needs contacts whose far end is off screen, a fetch margin up to half a span past each edge, which costs panning and rules out the parked smaller fetch quantum.
 ---
 
 # Fill the whole display rectangle, not just the hi-C triangle

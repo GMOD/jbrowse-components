@@ -1,6 +1,6 @@
 ---
 name: evaluate-jexl-channels-a-column-at-a-time
-description: A jexl channel or filter evaluated over whole columns runs several times faster than per feature, but only when the data is already columnar; the adapters that answer column tables and the plain-field fast path leave the call of whether expression channels over them are common enough.
+description: A jexl channel or filter evaluated over whole columns runs several times faster than per feature, but only over columnar data; with column-table adapters and the plain-field fast path in, the call is whether computed channels over them are common enough.
 ---
 
 # Evaluate jexl channels a column at a time

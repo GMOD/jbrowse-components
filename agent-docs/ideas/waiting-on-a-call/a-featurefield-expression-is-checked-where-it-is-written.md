@@ -1,6 +1,6 @@
 ---
 name: a-featurefield-expression-is-checked-where-it-is-written
-description: The feature display names a plot's bad `jexl:` expression in its notices and Edit plot (`plotJexlProblems`), but other displays, `jbrowse validate` and the config editor do not, so there a typo surfaces only when a worker reader compiles it. Waits on a user asking for it.
+description: The feature display names a plot's bad `jexl:` expression in its notices (`plotJexlProblems`), but other displays, `jbrowse validate` and the config editor do not, so there a typo surfaces only when a worker compiles it. Waits on a user asking.
 ---
 
 # A featureField expression is checked where it is written
