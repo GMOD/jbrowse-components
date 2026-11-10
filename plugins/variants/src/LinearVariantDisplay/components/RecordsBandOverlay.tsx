@@ -15,11 +15,7 @@ import {
   recordsBandPainter,
   recordsSectionsInBand,
 } from '../recordsBandPaint.ts'
-import {
-  RecordsChips,
-  recordsChipsHeadBand,
-  recordsSectionChipsDrawn,
-} from './BandChips.tsx'
+import { RecordsChips } from './BandChips.tsx'
 import { buildRecordHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
@@ -156,11 +152,11 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
 }) {
   const { recordsGroupSections, recordsFacet } = model
   const canHide = recordsGroupSections.length > 1
-  return recordsFacet && recordsSectionChipsDrawn(model) ? (
+  return recordsFacet && model.recordsSectionChipsDrawn ? (
     <GroupLabelChips
       canvasHeight={model.topBands.reserved.records}
       leading={
-        recordsChipsHeadBand(model) ? (
+        model.recordsChipsHeadBand ? (
           <RecordsChips model={model} hideable />
         ) : null
       }

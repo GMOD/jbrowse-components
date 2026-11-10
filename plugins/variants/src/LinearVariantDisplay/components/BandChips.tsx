@@ -116,29 +116,6 @@ const ChipButton = observer(function ChipButton({
 })
 
 /**
- * Whether the records' chips head the band, which they do while the genotype
- * rows draw under it and it is tall enough for a chip. With no rows the track
- * label sits over the band's top.
- */
-export function recordsChipsHeadBand(model: LinearVariantDisplayModel) {
-  return (
-    model.drawsGenotypeRows &&
-    model.showRecords &&
-    model.topBands.reserved.records > GROUP_LABEL_HEIGHT
-  )
-}
-
-/**
- * Whether the band's top holds its sections' chips (`records.facet`), which
- * then carry the records' chips ahead of the topmost.
- */
-export function recordsSectionChipsDrawn(model: LinearVariantDisplayModel) {
-  return (
-    model.recordsFacet !== undefined && model.recordsGroupSections.length > 0
-  )
-}
-
-/**
  * The records' chips: the band's hide and the count of records it hides past
  * its height, whose click raises the band to its stack.
  */
@@ -187,12 +164,17 @@ const BandChips = observer(function BandChips({
   model: LinearVariantDisplayModel
 }) {
   const { classes } = useStyles()
-  const { drawsGenotypeRows, showRecords, topBands } = model
+  const {
+    drawsGenotypeRows,
+    showRecords,
+    topBands,
+    recordsChipsHeadBand,
+    recordsSectionChipsDrawn,
+  } = model
   const bothShown = drawsGenotypeRows && showRecords
-  const recordsHeadBand = recordsChipsHeadBand(model)
   return topBands.reserved.chips > 0 ? (
     <>
-      {recordsHeadBand && !recordsSectionChipsDrawn(model) ? (
+      {recordsChipsHeadBand && !recordsSectionChipsDrawn ? (
         <div
           className={classes.row}
           style={{ top: 1 }}
@@ -206,7 +188,7 @@ const BandChips = observer(function BandChips({
         style={{ top: topBands.top.chips + 2 }}
         data-testid="band_chips_strip"
       >
-        {recordsHeadBand ? null : (
+        {recordsChipsHeadBand ? null : (
           <RecordsChips model={model} hideable={bothShown} />
         )}
         {bothShown ? (

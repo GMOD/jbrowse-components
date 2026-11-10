@@ -380,9 +380,10 @@ top-left, and the strip under the band holds `Genotypes ×` alone, heading the
 rows. The rows take the track label's offset then (`prefersOffset`), so the
 band's top-left is free. With sections (`records.facet`) the records' chips
 ride ahead of the topmost section chip, through `GroupLabelChips`' `leading`
-slot, rather than fall back beside `Genotypes ×`. They keep the strip when the
-track label sits over the band (rows hidden) or the band is shorter than a
-chip.
+slot, rather than fall back beside `Genotypes ×`. With the rows hidden there is
+no subtrack to tell apart and no `Records ×`, so the count stays in the strip;
+so do the records' chips over a band shorter than a chip
+(`recordsChipsHeadBand`).
 
 | Alternative | Why not |
 | --- | --- |

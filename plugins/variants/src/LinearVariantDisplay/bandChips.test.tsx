@@ -59,7 +59,7 @@ test('each chip heads its own part: records at the band top, genotypes above the
   expect(within(strip).queryByTitle('Hide records')).toBeNull()
 })
 
-test('with the rows hidden the records keep the strip, clear of the track label', () => {
+test('with the rows hidden nothing heads the band; the strip offers the rows back', () => {
   const { display } = recordsDisplayAt(FEW, 10)
   render(<BandChips model={display} />)
   fireEvent.click(screen.getByTitle('Hide genotypes'))
@@ -92,5 +92,15 @@ test('sectioned records carry their chip ahead of the topmost section chip', () 
   expect(screen.queryByTestId('records_band_chips')).toBeNull()
   expect(
     within(screen.getByTestId('band_chips_strip')).getByTitle('Hide genotypes'),
+  ).toBeTruthy()
+})
+
+test('a band shorter than a chip keeps the records chip in the strip', () => {
+  const { display } = recordsDisplayAt(FEW, 10, { height: 12 })
+  render(<BandChips model={display} />)
+  expect(display.topBands.reserved.records).toBe(12)
+  expect(screen.queryByTestId('records_band_chips')).toBeNull()
+  expect(
+    within(screen.getByTestId('band_chips_strip')).getByTitle('Hide records'),
   ).toBeTruthy()
 })

@@ -852,6 +852,28 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     },
     /**
      * #getter
+     * Whether the records' chips head the band rather than sit in the strip:
+     * while the genotype rows draw under it, so the two read as subtracks,
+     * and it is taller than a chip. With the rows hidden the records have no
+     * × to show.
+     */
+    get recordsChipsHeadBand() {
+      return (
+        self.drawsGenotypeRows &&
+        self.showRecords &&
+        this.topBands.reserved.records > GROUP_LABEL_HEIGHT
+      )
+    },
+    /**
+     * #getter
+     * Whether the band's top holds its sections' chips (`records.facet`),
+     * which then carry the records' chips ahead of the topmost.
+     */
+    get recordsSectionChipsDrawn() {
+      return this.recordsGroupSections.length > 0
+    },
+    /**
+     * #getter
      * The rows; with no rows the records' drawn stack on screen, as a
      * feature track scrolls what `fixed` or a capped `grow` cannot show.
      */
