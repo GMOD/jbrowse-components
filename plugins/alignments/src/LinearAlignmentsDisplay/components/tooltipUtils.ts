@@ -17,6 +17,7 @@ import {
 } from '../../features/arcs/shapes.ts'
 import { SPLIT_JUNCTION_NAMES } from '../../features/sashimi/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
+import { forEachSAEntry } from '../../features/sashimi/splitJunctions.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
@@ -285,6 +286,37 @@ function readLines(rpcData: PileupDataResult, idx: number, refName: string) {
       nextRef: nextRefAt(rpcData, idx),
     }),
     ...(flags & SAM_FLAG_SUPPLEMENTARY ? ['Supplementary alignment'] : []),
+    ...otherAlignmentLines(rpcData.readSuppAlignments?.[idx]),
+  ]
+}
+
+const SHOWN_OTHER_ALIGNMENTS = 2
+
+/** The read's other pieces off its SA tag, in read order. */
+export function otherAlignmentLines(sa: string | undefined) {
+  const pieces: {
+    line: string
+    clip: number
+  }[] = []
+  if (sa) {
+    forEachSAEntry(sa, (nameStart, nameEnd, start, end, strand, clip, mapq) => {
+      const location = formatLocationRange(
+        sa.slice(nameStart, nameEnd),
+        start,
+        end,
+      )
+      const mapqText = Number.isNaN(mapq) ? '' : ` MAPQ ${mapq}`
+      pieces.push({
+        line: `Also aligned: ${location} (${strand === -1 ? '-' : '+'})${mapqText}`,
+        clip,
+      })
+    })
+  }
+  pieces.sort((a, b) => a.clip - b.clip)
+  const more = pieces.length - SHOWN_OTHER_ALIGNMENTS
+  return [
+    ...pieces.slice(0, SHOWN_OTHER_ALIGNMENTS).map(p => p.line),
+    ...(more > 0 ? [`and ${more} more`] : []),
   ]
 }
 
