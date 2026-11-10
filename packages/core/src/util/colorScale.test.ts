@@ -246,6 +246,22 @@ test('an ordinal scheme with no domain paints the default palette', () => {
   expect(rules(scaled({ scheme: 'viridis' }, 'score'), 'linear')).toEqual([])
 })
 
+test("a domain naming a value outside a closed preset's levels is named, with the levels", () => {
+  const problems = colorProblems(
+    { field: 'strand', scale: { domain: ['+', '-', '1'] } },
+    {},
+  )
+  expect(problems.map(p => p.rule)).toEqual(['domain-levels'])
+  expect(problems[0]!.message).toContain('1, -1, 0')
+  expect(problems[0]!.message).toContain('"+", "-"')
+  expect(
+    rules(scaled({ domain: ['HIGH', 'LOW'] }, 'impact')).filter(
+      r => r === 'domain-levels',
+    ),
+  ).toEqual([])
+  expect(rules(scaled({ domain: ['a', 'b'] }, 'type'))).toEqual([])
+})
+
 test('invalid outside an ordinal scale paints nothing', () => {
   expect(rules(scaled({ domain: ['a'], invalid: 'grey' }, 'type'))).toEqual([])
   expect(rules(scaled({ invalid: 'grey' }, 'score'), 'linear')).toEqual([

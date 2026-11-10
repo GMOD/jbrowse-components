@@ -88,6 +88,11 @@ export interface FieldPreset<S extends string = ColorScaleName> {
   legend?: ColorLegendSlots
   /** The key a feature carrying no value files under. */
   missing?: string
+  /**
+   * Its `domain` lists every value the field takes, so a written domain
+   * naming another value names nothing a feature carries.
+   */
+  closed?: true
 }
 
 /** Each field's preset, `*` for any other field. */
@@ -118,6 +123,7 @@ export const UNIVERSAL_FIELD_PRESETS = {
       names: ['Forward strand', 'Reverse strand', 'No strand'],
     },
     missing: '0',
+    closed: true,
   },
   svType: {
     scale: {
@@ -156,6 +162,7 @@ export const UNIVERSAL_FIELD_PRESETS = {
     },
     legend: { title: 'Consequence impact' },
     missing: 'Unannotated',
+    closed: true,
   },
 } as const satisfies FieldPresets<'ordinal'>
 
@@ -369,6 +376,7 @@ export interface ScaleProblem {
     | 'names-domain'
     | 'unknown-domain'
     | 'scheme-domain'
+    | 'domain-levels'
     | 'unknown-scale'
     | 'invalid-scale'
   /** the slot to look at, relative to the object that holds the scale */
@@ -605,6 +613,18 @@ export function colorProblems(
       slot: 'scale.scheme',
       message:
         'an ordinal scale samples its scheme once per domain value, and with no domain it paints the default palette; list the values in domain, or set type to linear for a ramp',
+    })
+  }
+  const preset = presetOf(presets, written.field ?? '')
+  const levels = preset.scale.domain ?? []
+  const outside = (written.scale?.domain ?? []).filter(
+    value => !levels.includes(value),
+  )
+  if (preset.closed && scale === 'ordinal' && outside.length > 0) {
+    problems.push({
+      rule: 'domain-levels',
+      slot: 'scale.domain',
+      message: `${written.field} takes only the values ${levels.join(', ')}, and domain names ${outside.map(value => `"${value}"`).join(', ')}, which no feature carries`,
     })
   }
   if (invalid !== undefined && scale !== 'ordinal') {
