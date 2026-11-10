@@ -217,8 +217,10 @@ anywhere.
 FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
 `wolfdog_chr1.anc.vcf.gz`.
 [`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
-merges each haplotype's run of identical calls into one BED9 line, taking row
-labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
+merges each haplotype's run of identical calls into one BED9 line and colors by
+ancestry via `itemRgb`. `labels.tsv` has two tab-separated columns, a sample
+name and a row label. Each listed sample gets the rows `<label> hap1` and
+`<label> hap2`, in file order, and an unlisted sample is skipped:
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 
