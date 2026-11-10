@@ -109,7 +109,15 @@ test('config= on an addtrack fence opens the track as a session track', () => {
     'addtrack config=test_data/volvox/config.json loc=chr1:1-100',
   )
   expect(messages).toEqual([])
-  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live', 'notebook', 'img'])
+  expect(kinds).toEqual([
+    'config',
+    'cli',
+    'desktop',
+    'live',
+    'notebook',
+    'embed',
+    'img',
+  ])
   const web = hrefs.find(h => h.startsWith(CODE_BASE))!
   const params = new URL(web).searchParams
   expect(params.get('config')).toBe('test_data/volvox/config.json')
@@ -139,7 +147,15 @@ function configParam(html: string) {
 test('loc= alone opens the default config of the first assembly', () => {
   const { kinds, html, messages } = render('addtrack loc=chr1:1-100')
   expect(messages).toEqual([])
-  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live', 'notebook', 'img'])
+  expect(kinds).toEqual([
+    'config',
+    'cli',
+    'desktop',
+    'live',
+    'notebook',
+    'embed',
+    'img',
+  ])
   expect(configParam(html)).toBe(defaultConfigs.hg38)
   expect(
     configParam(
@@ -325,7 +341,14 @@ test('a fence opening a spec session gains the recipe tabs it lacks, and no Agen
     'live config=test_data/volvox/config.json',
     SPEC,
   )
-  expect(kinds).toEqual(['config', 'live', 'desktop', 'notebook', 'img'])
+  expect(kinds).toEqual([
+    'config',
+    'live',
+    'desktop',
+    'notebook',
+    'embed',
+    'img',
+  ])
   expect(html).toContain('from jbrowse_anywidget import')
 })
 
