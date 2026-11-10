@@ -635,12 +635,19 @@ export function refNamePaletteColorAt(position: number) {
 
 const rowColorHexes = tableau10.filter(hex => !NEUTRALS.has(hex))
 
+// A row's color is a bar or column on the paper background and a row's line
+// or fill, where a pale lap of a light hue is white: tableau10's yellow re-lit
+// uncapped is `#fffffe`. A row palette's pale lap stops at this OKLCH
+// lightness.
+const ROW_MAX_LIGHTNESS = 0.85
+
 /**
  * The color the row palette deals the row or value at `position`: tableau10
- * less its grey, then re-lit laps of it, as a karyotype's are.
+ * less its grey, then re-lit laps of it, as a karyotype's are, the pale lap
+ * stopping short of white.
  */
 export function rowPaletteColorAt(position: number) {
-  return lapColorAt(rowColorHexes, position)
+  return lapColorAt(rowColorHexes, position, ROW_MAX_LIGHTNESS)
 }
 
 /**
@@ -719,11 +726,6 @@ const tableau20 = [
   '#d7b5a6',
 ]
 
-// A column of color beside the row labels sits on the paper background, where
-// the row palette's pale lap of a light hue is white: its yellow re-lit is
-// `#fffffe`. An annotation's pale lap stops at this OKLCH lightness.
-const ANNOTATION_MAX_LIGHTNESS = 0.85
-
 // None is tableau10, which the row color deals from, so a column beside the
 // row color shares no color with it.
 const annotationPalettes = [tolMuted, set2, okabeIto, set1, tolBright].map(
@@ -739,7 +741,7 @@ export function annotationPaletteColorAt(column: number, position: number) {
   return lapColorAt(
     annotationPalettes[column % annotationPalettes.length]!,
     position,
-    ANNOTATION_MAX_LIGHTNESS,
+    ROW_MAX_LIGHTNESS,
   )
 }
 

@@ -56,11 +56,13 @@ it exported.
   never one color. The place is the entry's place in the config list, so a
   column keeps its colors while an earlier entry draws nothing. An entry's
   own `scale.domain` and `scale.range` still deal first.
-- **An annotation's pale lap stops short of white.** Past a palette's end
-  the hues re-light as the row palette's do, deep and then pale, and the pale
-  lap is capped at an OKLCH lightness of 0.85. The row palette's pale lap of
-  its yellow is `#fffffe` and of its pink `#fff5f6`, which a narrow column on
-  the paper background cannot show. The row color's own deal is unchanged.
+- **A pale lap stops short of white, the row color's included.** Past a
+  palette's end the hues re-light, deep and then pale, and the pale lap is
+  capped at an OKLCH lightness of 0.85. Uncapped, the row palette's pale lap
+  of its yellow was `#fffffe` and of its pink `#fff5f6`, which neither a
+  column nor a row's line on the paper background can show, so the cap
+  changes only colors no reader could see. The karyotype palette, drawn at a
+  low alpha, keeps its laps uncapped.
 - **A column is 8 px at every row height**, `ROW_SWATCH_WIDTH`, in runs
   (`rowRuns`), and beside one the row color is a column as wide, where alone
   beside the names it stays a 4 px bar. The first build drew 4 px columns,
@@ -86,8 +88,12 @@ it exported.
   of pitch per column, three times a column's width, and the labels cover
   the first region's data, so width is the cost to avoid.
 - **Each annotation has a key**, appended to `rowColorScales` after the row
-  color's, titled by its field. Its entries name colors and focus no rows.
-  The row color's key is found by `ROW_COLOR_SCALE_ID`, never by position.
+  color's, titled by its field. Its entries name colors and focus no rows,
+  so it lists only the values the drawn rows carry (`clusterableSources`),
+  not every value of the field across the rows a focus hides. The row
+  color's key keeps every value, since its entries focus rows and a focus
+  must be able to reach one not drawn. The row color's key is found by
+  `ROW_COLOR_SCALE_ID`, never by position.
 - **No UI yet.** A config, a session spec and launch args set it; a lone
   field or channel, as `rows.annotations=sex` writes it, is a list of one.
   The arrangement dialog shows `rows.color` alone.
@@ -113,6 +119,8 @@ it exported.
   draws no label.
 - The okabeIto palette's own yellow is the lightest color an annotation
   deals, about 1.3:1 on white.
+- Some row colors past the 18th value, the light hues' pale lap, are darker
+  than before the cap, in a figure as in the app.
 - A capture run's `window.jbrowseRowPalette` replaces the row palette alone.
 - Below the text threshold a track with annotations and no row color draws its
   columns from the left edge, inside the 8 px the swatch would take.

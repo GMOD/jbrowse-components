@@ -672,17 +672,6 @@ export function editableRowViews<S extends RowSource>(self: RowColorsHost<S>) {
         alias: self.rowAlias,
       }
     },
-    /**
-     * #getter
-     * One key per `rows.annotations` entry that colors a row, titled by its
-     * field, whose entries focus nothing.
-     */
-    get rowAnnotationScales(): CategoricalScale[] {
-      const deals = self.rowAnnotationDeals
-      return deals.length > 0
-        ? rowAnnotationScales(self.rowColorDealRows, deals)
-        : []
-    },
   }
 }
 
@@ -709,7 +698,9 @@ export function clusterableRowViews<S extends RowSource>(
      * where the labels cannot name the colors: by a field, where a row
      * `rows.colors` pins takes an entry by its label, or by name in a
      * shared panel. By name on stacked rows the labels are the key. After
-     * it, `rowAnnotationScales`.
+     * it, one key per `rows.annotations` entry that colors a row drawn,
+     * titled by its field, listing only the values the drawn rows carry,
+     * since its entries focus nothing.
      */
     get rowColorScales(): CategoricalScale[] {
       const field = self.rowColorField
@@ -733,7 +724,10 @@ export function clusterableRowViews<S extends RowSource>(
       }
       return [
         ...(entries.length > 0 ? [rowKey] : []),
-        ...self.rowAnnotationScales,
+        ...rowAnnotationScales(
+          this.clusterableSources,
+          self.rowAnnotationDeals,
+        ),
       ]
     },
   }

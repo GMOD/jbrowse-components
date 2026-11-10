@@ -232,7 +232,8 @@ another setting.
   multi-row display's `rows.groups` groups) take their turns first, loaded or
   not, so a later region moves no color.
 - Listed values take their `scale.range` color, the rest first seen first from
-  tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`); a set
+  tableau10 less its grey and then re-lit laps of it, the pale lap capped
+  short of white (`rowPaletteColorAt`); a set
   `scale.unknown` stands in for the palette.
 - A name deal skips a row carrying its own color. A field deal skips the empty
   value, so a row with none takes a color only from a `''` pair (ggplot's
@@ -481,8 +482,10 @@ adds `grid`, the row separators, on every row display but MAF.
   `position` is the entry's place in `rows.annotations` as
   `rowAnnotationChannels` read it, before any entry is dropped for drawing
   nothing. None of the palettes is the row color's, and the pale lap is
-  capped short of white, since a column sits on the paper background. The
-  entry's `scale.range` deals first, as the row color's does.
+  capped short of white, as the row palette's is. The entry's `scale.range`
+  deals first, as the row color's does. Its key lists only the values
+  `clusterableSources` carry, since it focuses nothing; the row color's key
+  lists every dealt value, since a focus reaches rows not drawn.
 - **Two or more color columns take a label each above the rows.**
   `rowColumnLabels` lists them, the row color's `rowColorTitle` first where a
   row has a color and then each drawn annotation's `rowAnnotationTitle`, the

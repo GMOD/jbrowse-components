@@ -314,6 +314,22 @@ describe('rows.annotations', () => {
     ])
   })
 
+  it('keys only the annotation values the drawn rows carry', () => {
+    const display = makeDisplay(
+      { rows: { color: 'group', annotations: ['group', SEX] } },
+      { rows: SEXED },
+    )
+    display.setRowFocus(['b'])
+    expect(keysOf(display).map(key => key.entries)).toEqual([
+      [
+        ['x', p(0)],
+        ['y', p(1)],
+      ],
+      [['y', a(0, 1)]],
+      [['m', '#00f']],
+    ])
+  })
+
   it('keys an annotation where rows.color has no key', () => {
     const display = makeDisplay(
       { rows: { annotations: ['sex'] } },
@@ -402,21 +418,22 @@ describe('rows.annotations', () => {
     })
   })
 
-  it('deals no annotation color without contrast on white', () => {
+  it('deals no row or annotation color without contrast on white', () => {
     const luminance = (hex: string) => {
       const [r, g, b] = [1, 3, 5]
         .map(i => Number.parseInt(hex.slice(i, i + 2), 16) / 255)
         .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
       return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
     }
-    const contrasts = Array.from({ length: 5 }, (_, column) =>
-      Array.from(
-        { length: 30 },
-        (_, position) => 1.05 / (luminance(a(column, position)) + 0.05),
-      ),
-    ).flat()
+    const positions = Array.from({ length: 30 }, (_, position) => position)
+    const dealt = [
+      ...positions.map(p),
+      ...Array.from({ length: 5 }, (_, column) =>
+        positions.map(position => a(column, position)),
+      ).flat(),
+    ]
+    const contrasts = dealt.map(hex => 1.05 / (luminance(hex) + 0.05))
     expect(Math.min(...contrasts)).toBeGreaterThan(1.3)
-    expect(1.05 / (luminance(p(23)) + 0.05)).toBeLessThan(1.01)
   })
 
   it('draws no column and no key for a field no row carries', () => {
