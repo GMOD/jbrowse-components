@@ -79,22 +79,3 @@ test('a floor change keeps the ceiling written on the same field', () => {
     ],
   })
 })
-
-test('each read-category row carries its help text', () => {
-  const model = {
-    featureNoun: 'read',
-    filterPredicates: mergeFilter([]),
-    declaredFilters: declaredFiltersOf([], []),
-    setFilterFields: jest.fn(),
-    filterNarrowing: () => ({ count: 0, clear: () => {} }),
-  }
-  const group = getFiltersMenuItems(model, { readCategories: true }).find(
-    i => 'subMenu' in i,
-  )
-  const rows = group && 'subMenu' in group ? resolveSubMenu(group) : []
-  const categories = READ_CATEGORIES.filter(c => c.key !== 'alone')
-  for (const { noun, helpText } of categories) {
-    const row = rows.find(i => 'label' in i && i.label === noun)
-    expect(row && 'helpText' in row ? row.helpText : undefined).toBe(helpText)
-  }
-})

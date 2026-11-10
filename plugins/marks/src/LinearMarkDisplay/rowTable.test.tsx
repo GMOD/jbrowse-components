@@ -547,7 +547,9 @@ test('a key too long to list offers no Categories submenu, even with a hide', ()
   expect(display.activeHiddenCategories).toHaveLength(1)
   expect(menuLabels(display)).toContain('  Show all categories')
   expect(
-    menuLabels(display).filter(label => label.startsWith('Categories')),
+    menuLabels(display).filter(
+      label => typeof label === 'string' && label.startsWith('Categories'),
+    ),
   ).toEqual([])
 })
 
