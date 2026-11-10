@@ -176,7 +176,7 @@ export function structureOrder(profiles: ReadonlyMap<string, Float64Array>) {
   const names = [...profiles.keys()].sort()
   const vectors = names.map(n => profiles.get(n)!)
   const n = names.length
-  if (n < 3) {
+  if (n === 0) {
     return names
   }
   const anchor = new Float64Array(3 * BINS).fill(1, 0, BINS)

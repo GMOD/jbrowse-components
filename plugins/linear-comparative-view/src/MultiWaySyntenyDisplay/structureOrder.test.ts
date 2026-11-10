@@ -52,6 +52,17 @@ test('lanes of one structure sit together, the anchor-like ones first', () => {
   expect(runs[0]).toBe('s')
 })
 
+test('of two lanes, the anchor-like one sits first', () => {
+  expect(
+    structureOrder(
+      stack([
+        ['a', 'deletion'],
+        ['b', 'same'],
+      ]),
+    ),
+  ).toEqual(['b', 'a'])
+})
+
 test('an insertion that split its record weighs what one inside a record does', () => {
   const piece = (
     id: string,
