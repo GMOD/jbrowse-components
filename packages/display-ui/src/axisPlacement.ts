@@ -89,12 +89,17 @@ export function leftAxisGutterWidth(
 
 /**
  * Whether an axis's numbers grow rightward from its spine: a right-side axis
- * keeps them inside the plot's right edge, and a left-side axis set past a
- * panel keeps its spine against the panel. Only a left-side axis at the
- * display's own edge grows them leftward, toward that edge.
+ * keeps them inside the plot's right edge, and on screen a left-side axis set
+ * past a panel keeps its spine against the panel. Every other left-side axis
+ * grows them leftward, out of the plot: on screen one at the display's own
+ * edge, and in an export all of them, since the export margin is the gutter
+ * and the panel is parked past it.
  */
-export function numbersGrowRight(axis: Pick<YAxis, 'side' | 'left'>) {
-  return axis.side === 'right' || (axis.left ?? 0) > 0
+export function numbersGrowRight(
+  axis: Pick<YAxis, 'side' | 'left'>,
+  exported = false,
+) {
+  return axis.side === 'right' || (!exported && (axis.left ?? 0) > 0)
 }
 
 function bandsOverlap(

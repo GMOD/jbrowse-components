@@ -273,8 +273,8 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   })
 
   // The scalebars stay beside the plot in the export margin whether or not a
-  // tree is showing; the tree and labels sit left of them, so the spine turns
-  // to face them and the numbers grow right, toward the plot.
+  // tree is showing, the spine on the plot's edge and the numbers growing left
+  // toward the tree and labels parked past them, as the alignments' axis does.
   it('keeps the per-row axes beside the plot when a tree is showing', async () => {
     const gutters = (html: string) =>
       [
@@ -298,8 +298,8 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
         ),
       ),
     ).toEqual([
-      [-50, 0],
-      [-50, 0],
+      [-50, 50],
+      [-50, 50],
     ])
   })
 

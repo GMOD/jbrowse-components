@@ -102,11 +102,14 @@ content edge.
   (`ScoreDomainCaption`), and the legend starts below the captions.
 - **One form for every axis, on screen and in the export.** The axis sits in
   a gutter `AXIS_GUTTER_WIDTH_PX` (50 px) wide with its spine on the gutter's
-  inner edge and its numbers growing outward (`AxisGutter`), except that a
-  left-side axis with a panel at its `left` keeps its spine against the
-  panel and grows its numbers right (`numbersGrowRight`, 2026-10-09: the
-  multi-wiggle's row labels sit left of the scalebar, as the export already
-  parked them, and its numbers face the plot). The rule reads `left`, which
+  inner edge and its numbers growing outward (`AxisGutter`), except that on
+  screen a left-side axis with a panel at its `left` keeps its spine against
+  the panel and grows its numbers right (`numbersGrowRight`, 2026-10-09: the
+  multi-wiggle's row labels sit left of the scalebar and its numbers face the
+  plot). The export does not follow it (2026-11-10): its margin is the
+  gutter, so every exported left-side axis keeps its spine on the plot's edge
+  and its numbers outside, the multi-wiggle's drawn as the alignments' is
+  rather than as a bracket standing off the plot. The rule reads `left`, which
   the scale already declares, so no orientation member returns. On screen the
   gutter is inside the plot, at `left` or inside the right edge clear of the
   vertical scrollbar; in an export a left-side axis nothing pushes right sits

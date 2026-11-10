@@ -1,4 +1,4 @@
-import { rightAxisStackInsets } from './axisPlacement.ts'
+import { numbersGrowRight, rightAxisStackInsets } from './axisPlacement.ts'
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
 import type { AxisSide } from './valueScale.ts'
@@ -39,4 +39,11 @@ test('left-side and captioned axes take no room on the right', () => {
       axis('right', [0]),
     ]),
   ).toEqual([0, 0, 0])
+})
+
+test('a left-side axis past a panel grows its numbers right on screen and left in an export', () => {
+  const pastPanel = { side: 'left' as const, left: 40 }
+  expect(numbersGrowRight(pastPanel)).toBe(true)
+  expect(numbersGrowRight(pastPanel, true)).toBe(false)
+  expect(numbersGrowRight({ side: 'right' }, true)).toBe(true)
 })

@@ -246,17 +246,22 @@ describe('the y axis', () => {
   })
 
   // The export parks the dendrogram and labels in the margin past the axis
-  // strip, so a scale's on-screen `left` does not move its gutter off the
-  // plot; the spine stays against the panel and the numbers grow right of it.
-  test('a scale with a panel at the left draws its numbers between the panel and the plot', async () => {
-    const { container } = await renderShell(axisHost([scale({ left: 40 })]), [])
-    for (const x of labelXs(container)) {
-      expect(x).toBeGreaterThan(-50)
-      expect(x).toBeLessThan(0)
+  // strip, so a scale's on-screen `left` neither moves its gutter off the plot
+  // nor turns its spine: the spine stays on the plot's edge and the numbers
+  // grow left of it, as a scale with no panel draws them.
+  test('a scale with a panel at the left draws the axis a scale without one does', async () => {
+    const drawn = async (left?: number) => {
+      const { container } = await renderShell(axisHost([scale({ left })]), [])
+      return {
+        xs: labelXs(container),
+        anchor: container
+          .querySelector('g[text-anchor]')
+          ?.getAttribute('text-anchor'),
+      }
     }
-    expect(
-      container.querySelector('g[text-anchor]')?.getAttribute('text-anchor'),
-    ).toBe('start')
+    const withPanel = await drawn(40)
+    expect(withPanel).toEqual(await drawn())
+    expect(withPanel.anchor).toBe('end')
   })
 
   test('a scale ruling several bands gets an axis per band', async () => {

@@ -44,13 +44,15 @@ export default function AxisCaption({
   axis,
   bandTops,
   height,
+  exported,
 }: {
   axis: YAxis
   bandTops: number[]
   height: number
+  exported?: boolean
 }) {
   const palette = usePalette()
-  const x = numbersGrowRight(axis)
+  const x = numbersGrowRight(axis, exported)
     ? axisGutterWidth(axis) - CAPTION_INSET_PX
     : CAPTION_INSET_PX
   const caption = fitCaption(axis.caption ?? '', height)
