@@ -174,7 +174,13 @@ through the cuts in `scale.domain` to the colors in `scale.range`.
 ## Converting the HiFi reads to CRAM
 
 The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
-against the reference above:
+against the reference above, which this step needs as a local FASTA:
+
+```bash
+curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz |
+  gzip -dc > GRCh38.fa
+samtools faidx GRCh38.fa
+```
 
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
 
@@ -306,7 +312,7 @@ dotplot views draw its alignment to GRCh38, a PAF file:
 ```bash
 # asm5: minimap2's preset for an assembly against a reference of the same species
 # -c: write base-level CIGARs
-minimap2 -cx asm5 GRCh38.fa HG008T_v3.2.fasta > HG008T_v3.2.paf
+minimap2 -cx asm5 GRCh38.fa HG008T_v3.2.fasta.gz > HG008T_v3.2.paf
 ```
 
 The track lists the query assembly (the tumor assembly) first and the target
