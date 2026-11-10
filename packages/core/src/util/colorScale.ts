@@ -618,7 +618,7 @@ export function colorProblems(
   const preset = presetOf(presets, written.field ?? '')
   const levels = preset.scale.domain ?? []
   const outside = (written.scale?.domain ?? []).filter(
-    value => !levels.includes(value),
+    value => !levels.includes(String(value)),
   )
   if (preset.closed && scale === 'ordinal' && outside.length > 0) {
     problems.push({

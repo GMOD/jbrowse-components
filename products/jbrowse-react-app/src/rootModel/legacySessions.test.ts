@@ -692,7 +692,11 @@ test("an assembly sequence track's hidden rows stay hidden after a reload", asyn
     JSON.stringify(getSnapshot(root.jbrowse.assemblies[0]!.sequence)),
   ).not.toContain('show')
 
-  const { display: reloaded } = await load(saved)
+  const fresh = setup()
+  await fresh.pluginManager.preloadSessionTypes(saved)
+  fresh.root.setSession(saved)
+  const reloaded = (fresh.root.session!.views[0] as LinearGenomeViewModel)
+    .tracks[0]!.displays[0]!
   expect(getConf(reloaded, ['forward', 'show'])).toBe(true)
   expect(getConf(reloaded, ['reverse', 'show'])).toBe(false)
   expect(getConf(reloaded, ['translation', 'show'])).toBe(false)
