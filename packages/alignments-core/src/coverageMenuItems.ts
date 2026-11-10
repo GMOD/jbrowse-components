@@ -109,30 +109,3 @@ export function interbaseIndicatorsMenuItem(model: {
     },
   )
 }
-
-/**
- * @deprecated the "Coverage mismatch threshold" radios in `getCoverageMenuItems`
- * carry the on/off as their first row.
- *
- * The coverage band's "Coverage alleles" row, `coverage.alleles.show`: off, the
- * depth bars draw plain grey. Greyed with the band hidden, as the interbase
- * row is.
- */
-export function coverageAllelesMenuItem(model: {
-  showCoverage: boolean
-  showCoverageAlleles: boolean
-  setShowCoverageAlleles: (show: boolean) => void
-}): MenuItem {
-  return toggleItem(
-    'Coverage alleles',
-    model.showCoverageAlleles,
-    show => {
-      model.setShowCoverageAlleles(show)
-    },
-    {
-      disabled: !model.showCoverage,
-      disabledHelpText:
-        'Alleles are colored in the coverage band — turn on "Show → Show coverage" first',
-    },
-  )
-}
