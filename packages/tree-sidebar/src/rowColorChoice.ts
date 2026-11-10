@@ -46,16 +46,21 @@ export function liftRowColor(value: unknown): RowColorSetting {
   }
 }
 
+const readUnknown = (
+  node: AnyConfigurationModel,
+  path: string | string[],
+): unknown => readConfObject(node, path)
+
 /** A `rows.color` config node read as a `RowColorSetting`. */
 export function rowColorSettingOf(
   color: AnyConfigurationModel,
 ): RowColorSetting {
   return liftRowColor({
-    field: readConfObject(color, 'field'),
+    field: readUnknown(color, 'field'),
     scale: {
-      domain: readConfObject(color, ['scale', 'domain']),
-      range: readConfObject(color, ['scale', 'range']),
-      unknown: readConfObject(color, ['scale', 'unknown']),
+      domain: readUnknown(color, ['scale', 'domain']),
+      range: readUnknown(color, ['scale', 'range']),
+      unknown: readUnknown(color, ['scale', 'unknown']),
     },
   })
 }
@@ -69,13 +74,13 @@ export function rowAnnotationSettingOf(
   position: number,
 ): RowAnnotationSetting {
   const setting = rowColorSettingOf(annotation)
-  const title: string | undefined = readConfObject(annotation, [
-    'legend',
-    'title',
-  ])
+  const title = readUnknown(annotation, ['legend', 'title'])
   return {
     ...setting,
-    title: title || capitalizeFirst(setting.field),
+    title:
+      typeof title === 'string' && title !== ''
+        ? title
+        : capitalizeFirst(setting.field),
     position,
   }
 }

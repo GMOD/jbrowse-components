@@ -8,7 +8,11 @@ const MIN_TAIL_START = 3
 
 const boundary = /[^\p{L}\p{N}]+/gu
 const startsWithName = new RegExp(
-  `^(?!\\p{N}+(?:[^\\p{L}\\p{N}]|$))[\\p{L}\\p{N}]{${MIN_TAIL_START},}`,
+  [
+    '^(?!\\p{N}+(?:[^\\p{L}\\p{N}]|$))',
+    '[\\p{L}\\p{N}]',
+    `{${MIN_TAIL_START},}`,
+  ].join(''),
   'u',
 )
 
