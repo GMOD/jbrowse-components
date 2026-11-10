@@ -272,7 +272,8 @@ shows several loci, so each fetches itself.
 `regions: [region]`:
 
 - Every index and key column (`region`, `read`, `variant`, `key`, `row`) is a
-  0-based int32. A call with one region names region 0 in every row.
+  0-based int32, except the variant tables' `cells.row`, which names its row as
+  `rows.name` does. A call with one region names region 0 in every row.
 - A read crossing regions is listed in each, under one `key` and on one `row`, from
   the display's multi-region layout (`buildLaidOutPileupMap`). A per-read table's
   `read` points at that region's copy.
