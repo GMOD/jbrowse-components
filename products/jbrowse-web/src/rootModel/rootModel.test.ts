@@ -391,7 +391,7 @@ describe('sessions opened from a config template get their own id', () => {
     root.setDefaultSession()
     const file = resolveMenus(root.menus()).find(m => m.label === 'File')!
     const preset = file.menuItems.find(
-      i => 'label' in i && i.label === 'Pre-configured sessions...',
+      i => 'label' in i && i.label === 'Pre-configured sessions',
     ) as { subMenu: { onClick: () => void }[] }
     preset.subMenu[0]!.onClick()
     await waitFor(() => {

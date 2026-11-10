@@ -63,8 +63,8 @@ hand-written view for anything you keep editing.
 
 [`preConfiguredSessions`](/docs/config/jbrowserootconfig/#slot-preconfiguredsessions)
 is a top-level array of the same session objects, each with a `name`, listed
-under File → "Pre-configured sessions..." in jbrowse-web and jbrowse-desktop.
-One instance can then serve a figure per publication or a locus per assay, and a
+under File → "Pre-configured sessions" in jbrowse-web and jbrowse-desktop. One
+instance can then serve a figure per publication or a locus per assay, and a
 reader switches without a link:
 
 ```json

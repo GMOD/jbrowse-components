@@ -116,9 +116,11 @@ function setup(subfeatureInfos: SubfeatureInfo[]) {
 
 function collapseItem(display: Display) {
   const items: MenuItem[] = display.contextMenuItems()
-  const item = items.find(m => 'label' in m && m.label === 'Collapse introns')
+  const item = items.find(
+    m => 'label' in m && m.label === 'Collapse introns...',
+  )
   if (!item) {
-    throw new Error('no "Collapse introns" menu item')
+    throw new Error('no "Collapse introns..." menu item')
   }
   return item
 }
@@ -227,7 +229,7 @@ describe('which right-clicked features are offered a collapse', () => {
     display.setRpcData(0, makeFeatureData({ flatbushItems: [item] }), ctgA)
     rightClick(display, item)
     const items: MenuItem[] = display.contextMenuItems()
-    return items.some(m => 'label' in m && m.label === 'Collapse introns')
+    return items.some(m => 'label' in m && m.label === 'Collapse introns...')
   }
 
   it('offers it on a feature the worker found a gap in', () => {

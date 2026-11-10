@@ -499,7 +499,7 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
   const launch = items.at(-1)
   const subMenu = launch && 'subMenu' in launch ? resolveSubMenu(launch) : []
   expect(subMenu.map(i => ('label' in i ? i.label : undefined))).toEqual([
-    'Linear synteny view (visible region)',
+    'Linear synteny view (visible region)...',
   ])
 })
 

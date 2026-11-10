@@ -39,7 +39,7 @@ test('launch read vs ref panel', async () => {
   fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
-  fireEvent.click(await findByText('Linear read vs ref', {}, delay))
+  fireEvent.click(await findByText('Linear read vs ref...', {}, delay))
   const elt = await findByText('Open in new view', {}, delay)
 
   await waitFor(() => {
@@ -65,7 +65,7 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
-  fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
+  fireEvent.click(await findByText('Dotplot of read vs ref...', {}, delay))
 
   // Both launchers share one dialog: it resolves the clicked segment to its
   // primary alignment (so the read axis is the read's own orientation, not the
@@ -112,7 +112,7 @@ test('replace the launching view with the read vs ref dotplot', async () => {
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
     fireEvent.click(await findByText(/Launch/, {}, delay))
-    fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
+    fireEvent.click(await findByText('Dotplot of read vs ref...', {}, delay))
 
     const elt = await findByText('Replace current view', {}, delay)
     await waitFor(() => {

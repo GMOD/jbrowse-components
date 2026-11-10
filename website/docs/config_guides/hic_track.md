@@ -96,8 +96,8 @@ whose control count is below 5, so a ratio over a near-empty bin does not
 speckle the triangle. A floor on `control` keeps the contacts the map lost,
 which a floor on `observed` would drop.
 
-The track menu's **Compare with...** builds the same track from two tracks
-already loaded
+The track menu's **Compare with** builds the same track from two tracks already
+loaded
 ([comparing two conditions](/docs/user_guides/hic_track#comparing-two-conditions)).
 
 ## Loops and interactions as arcs

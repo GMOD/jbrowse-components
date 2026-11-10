@@ -114,7 +114,7 @@ test('the drag menu’s three offers reach the track menu', () => {
   expect(labels(launchSubMenu(model()))).toEqual([
     'View subsequences (visible region)',
     'Open aligned genome at the matching region',
-    'Linear synteny view, hg38 vs...',
+    'Linear synteny view, hg38 vs',
   ])
 })
 

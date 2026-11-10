@@ -25,7 +25,7 @@ reach every mark, scale, filter and facet setting.
 When you pick it from **Display types**, JBrowse reads a sample of the features
 once and splits them on a column the file has: a RepeatMasker table opens as ~20
 rows of `repClass`, and anything else falls back to the `name` column. Which
-column assigns a feature to a row is then **One row per...** in the same track
+column assigns a feature to a row is then **One row per** in the same track
 menu, which lists the attributes the sampled features have, so RepeatMasker also
 offers `repFamily` and `name` beside the class it started on. A saved row order,
 its labels and colors, and a clustering run are kept across a repartition. They

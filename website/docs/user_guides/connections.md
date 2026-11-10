@@ -36,7 +36,7 @@ Expand the one you want; leave the rest collapsed.
 Open the form from either route:
 
 - Menu bar: `File` → `Open connection...`
-- Track selector's hamburger menu → `Connections...` → `Add connection...`
+- Track selector's hamburger menu → `Connections` → `Add connection...`
 
 Paste the hub URL (see below for the format), choose the connection type, and
 submit. A newly added connection loads right away, so its tracks appear
@@ -53,7 +53,7 @@ a connection stays lightweight even when the underlying hub is huge.
 
 ## Removing a connection
 
-Open the track selector's hamburger menu → `Connections...` →
+Open the track selector's hamburger menu → `Connections` →
 `Delete connections...` and choose the connection to remove.
 
 ## UCSC track hub URL format

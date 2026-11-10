@@ -42,7 +42,7 @@ AC, 2026-10-24 and 2026-10-25:
   block a `flatten` fans out of a feature's child features hovers and opens as
   the feature, through the `root` lane (`rootRowOf`, commit fe10636be2,
   which named it `owner`).
-- **The menus write the display.** One row per... writes `rows.field`, Group
+- **The menus write the display.** One row per writes `rows.field`, Group
   by `facet`, Color by the display's `encoding.color`, which every mark naming
   no color paints (ADR-248).
 - **The rows are the window's.** `discoveredRows` keeps a section only where a
@@ -60,7 +60,7 @@ AC, 2026-10-24 and 2026-10-25:
   `mark.height.band`, and rows compare on what colors the blocks.
 - A `jexl:` `value` beside an identity scale no longer names the key; the
   volvox and ARG configs say `scale.type: 'identity'` alone or with a `field`.
-- "One row per..." lists the attributes the scan's sample carries, with no row
+- "One row per" lists the attributes the scan's sample carries, with no row
   counts.
 - The tooltip names no feature:
   [ideas/ready/the-mark-tooltip-names-the-feature.md](../ideas/ready/the-mark-tooltip-names-the-feature.md).

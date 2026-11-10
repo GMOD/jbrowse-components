@@ -306,10 +306,10 @@ copy and one uninverted.
 
 ### One read against the reference
 
-Right-click any read for **Linear read vs ref** or **Dotplot of read vs ref**,
-which lay one read out against every locus it touches. On a read spanning a
-breakpoint, the order in which its segments align to those loci gives the
-structure of the rearrangement. See
+Right-click any read for **Linear read vs ref...** or **Dotplot of read vs
+ref...**, which lay one read out against every locus it touches. On a read
+spanning a breakpoint, the order in which its segments align to those loci gives
+the structure of the rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read against the reference below." src="/img/read_vs_ref_insertion.png" />
@@ -462,7 +462,7 @@ this through with the HG008 phased tumor assembly.
 | Read arcs                            | Read connections in track menu  | Overview of long-range connections                 |
 | SV channels                          | Presets in track menu           | One band per kind of SV evidence, with arcs        |
 | Read cloud                           | Read connections in track menu  | Counting discordant pairs, orientation per read    |
-| Linear read vs ref                   | Right-click on any read         | Complex alignment of a single long read            |
+| Linear read vs ref...                | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view                | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
 | Group by HP tag                      | Group by in track menu          | Confirming heterozygous SVs on one haplotype       |
 | Dotplot view                         | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |

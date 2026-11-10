@@ -903,8 +903,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       },
       { type: 'waitForText', text: 'Open feature details' },
       { type: 'hover', text: 'Launch' },
-      { type: 'waitForText', text: 'Linear read vs ref' },
-      { type: 'click', text: 'Linear read vs ref' },
+      { type: 'waitForText', text: 'Linear read vs ref...' },
+      { type: 'click', text: 'Linear read vs ref...' },
       { type: 'waitForText', text: 'Set window size' },
       { type: 'click', text: 'Open in new view' },
       { type: 'waitForText', text: 'Reference sequence' },
@@ -1066,15 +1066,15 @@ export const uiSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: '[data-testid="hierarchical-add-track-fab"]',
           },
-          { type: 'waitForText', text: 'Add track' },
+          { type: 'waitForText', text: 'Add track...' },
         ],
         annotations: [
-          // an arrow here cuts across the "Add track" box
+          // an arrow here cuts across the "Add track..." box
           {
             type: 'circle',
             anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
           },
-          { type: 'box', anchor: { text: 'Add track' } },
+          { type: 'box', anchor: { text: 'Add track...' } },
         ],
       },
     ],
@@ -1367,7 +1367,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readySelector: TRACK_SELECTOR,
     actions: [
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      ...menuCascade(['Collapse...', 'Collapse top-level categories']),
+      ...menuCascade(['Collapse', 'Collapse top-level categories']),
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Collapse top-level categories' } },
@@ -1598,7 +1598,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readySelector: TRACK_SELECTOR,
     actions: [
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      ...menuCascade(['Collapse...', 'Collapse top-level categories']),
+      ...menuCascade(['Collapse', 'Collapse top-level categories']),
       { type: 'click', text: 'Collapse top-level categories' },
     ],
   },
@@ -1678,13 +1678,13 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Admin' },
-          { type: 'waitForText', text: 'Set default session' },
+          { type: 'waitForText', text: 'Set default session...' },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Admin' } }],
       },
       {
         actions: [
-          { type: 'click', text: 'Set default session' },
+          { type: 'click', text: 'Set default session...' },
           { type: 'waitForText', text: 'Clear default session' },
         ],
       },

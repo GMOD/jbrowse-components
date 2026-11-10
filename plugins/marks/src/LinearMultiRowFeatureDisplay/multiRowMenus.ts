@@ -61,7 +61,7 @@ function rowsFieldMenuItems(self: MultiRowMenuModel): MenuItem[] {
   return fields.length > 0
     ? [
         {
-          label: 'One row per...',
+          label: 'One row per',
           icon: TableRowsIcon,
           subMenu: [
             ...customExpressionItems(current),

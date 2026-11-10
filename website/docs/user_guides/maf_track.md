@@ -223,12 +223,12 @@ window, so reaching a species' genome needs no selection.
 A drag-selected span — or the visible window, from the track menu's **Launch**
 submenu — opens as a two-row
 [linear synteny view](/docs/user_guides/linear_synteny_view): **Linear synteny
-view, \<ref\> vs...** lists the same species, and picking one opens the
-reference over that species' genome with the alignment drawn between them as
-ribbons. The view draws the ribbons from the MAF's columns, so each insertion
-and deletion appears where the alignment placed it, without a synteny file. The
-reference row has the tracks this view had open, the MAF included; the species
-row has that species' gene track where the session has one.
+view, \<ref\> vs** lists the same species, and picking one opens the reference
+over that species' genome with the alignment drawn between them as ribbons. The
+view draws the ribbons from the MAF's columns, so each insertion and deletion
+appears where the alignment placed it, without a synteny file. The reference row
+has the tracks this view had open, the MAF included; the species row has that
+species' gene track where the session has one.
 
 <Figure caption="The menu a drag across the rows raises, listing each strain the drag covers." src="/img/maf_row_menu.png" />
 

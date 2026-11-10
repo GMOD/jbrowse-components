@@ -14,8 +14,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const VISIBLE_LABEL = 'Linear synteny view (visible region)'
-const SELECTION_LABEL = 'Linear synteny view'
+const VISIBLE_LABEL = 'Linear synteny view (visible region)...'
+const SELECTION_LABEL = 'Linear synteny view...'
 
 // The two entries differ only in their label and which region they read;
 // everything else about the offer is the view's current state, resolved at menu

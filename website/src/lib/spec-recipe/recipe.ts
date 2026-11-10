@@ -226,7 +226,7 @@ interface BandContext {
 const OPEN_TRACK =
   'Add your track: **File → Open track...**, or check it in the track selector.'
 const ADD_TRACK =
-  "Add your track: **+** → **Add track** in this view's track selector, or check it there."
+  "Add your track: **+** → **Add track...** in this view's track selector, or check it there."
 
 const NEXT_TRACK = 'Add the next track the same way.'
 

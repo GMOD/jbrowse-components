@@ -26,7 +26,7 @@ export default function LinearReadVsRefMenuItemF(pm: PluginManager) {
       return featureId === undefined
         ? undefined
         : {
-            label: 'Linear read vs ref',
+            label: 'Linear read vs ref...',
             icon: AddIcon,
             onClick: () => {
               withContextMenuFeature(self, featureId, feature, feat => {

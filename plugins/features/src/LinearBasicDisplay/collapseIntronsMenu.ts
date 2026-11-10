@@ -59,7 +59,7 @@ export function collapseIntronsMenuItem(
     }
   }
   return {
-    label: 'Collapse introns',
+    label: 'Collapse introns...',
     icon: CloseFullscreenIcon,
     onClick: async () => {
       await withFeatureDetails(

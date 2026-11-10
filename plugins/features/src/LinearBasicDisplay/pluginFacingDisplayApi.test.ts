@@ -40,7 +40,7 @@ test('contextMenuItems survives being called detached, the way a plugin wraps it
   expect(() => superContextMenuItems()).not.toThrow()
   expect(
     superContextMenuItems().map(i => ('label' in i ? i.label : undefined)),
-  ).toContain('Collapse introns')
+  ).toContain('Collapse introns...')
 })
 
 test('isGeneLike answers for the right-clicked feature', () => {

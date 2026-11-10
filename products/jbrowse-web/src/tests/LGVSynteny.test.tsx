@@ -289,7 +289,7 @@ test('launch a multi-panel synteny view from a region selection', async () => {
       const found =
         launch && 'subMenu' in launch
           ? resolveSubMenu(launch).find(
-              f => 'label' in f && f.label === 'Linear synteny view',
+              f => 'label' in f && f.label === 'Linear synteny view...',
             )
           : undefined
       if (!found || !('onClick' in found)) {

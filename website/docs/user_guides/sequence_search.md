@@ -5,7 +5,7 @@ description:
 guide_category: Sequence tools
 ---
 
-The linear genome view's **Sequence search** menu item searches the reference
+The linear genome view's **Sequence search...** menu item searches the reference
 sequence itself and adds the hits as a new track, whether or not a sequence
 track is displayed. The track scans the region in view, so zoomed out past the
 display's

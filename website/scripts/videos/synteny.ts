@@ -92,11 +92,11 @@ const panMaternal = (from: string, to: string, say?: string): VideoStep => ({
 // name is also its label in the view behind the menu, and a text match resolves
 // to the first visible one, which is that label. Both slugs are what
 // CascadingMenu's makeTestId builds out of the labels -- 'Launch' from
-// buildRubberBandMenuItems, 'Linear synteny view' from linearViewMenuItems'
+// buildRubberBandMenuItems, 'Linear synteny view...' from linearViewMenuItems'
 // SELECTION_LABEL.
 const LAUNCH_SUBMENU = '[data-testid="cascading-submenu-launch"]'
 const LAUNCH_SYNTENY_VIEW =
-  '[data-testid="cascading-menuitem-linear_synteny_view"]'
+  '[data-testid="cascading-menuitem-linear_synteny_view..."]'
 
 // `cascading-menuitem-<label>`, lowercased with whitespace as `_`: the child's
 // label is the strain and its locus, and only the strain half is stable.
@@ -156,7 +156,7 @@ export const syntenyVideos: VideoSpec[] = [
   {
     name: 'synteny/multiway_launch_stack',
     description:
-      "From the grasses lane track to the stacked view: the track menu's Advanced → Launch → Linear synteny view (visible region) entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
+      "From the grasses lane track to the stacked view: the track menu's Advanced → Launch → Linear synteny view (visible region)... entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
     goal: 'Turn the grasses ortholog lanes into a stack, one panel per grass',
     url: grassesLanes,
     // Sized to the LAUNCHED STACK, the tallest of the three states and the
@@ -186,15 +186,15 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'hover', text: 'Advanced', hold: 700 },
       { type: 'waitForText', text: 'Launch' },
       { type: 'hover', text: 'Launch', hold: 900 },
-      { type: 'waitForText', text: 'Linear synteny view (visible region)' },
+      { type: 'waitForText', text: 'Linear synteny view (visible region)...' },
       {
         type: 'hover',
-        text: 'Linear synteny view (visible region)',
+        text: 'Linear synteny view (visible region)...',
         hold: 1600,
       },
       {
         type: 'click',
-        text: 'Linear synteny view (visible region)',
+        text: 'Linear synteny view (visible region)...',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The rows arrive from the worker's mate discovery, which re-reads the
@@ -1262,11 +1262,11 @@ export const syntenyVideos: VideoSpec[] = [
         say: 'Drag across the rows; the menu offers a view per strain',
         hold: 900,
       },
-      { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
+      { type: 'waitForText', text: 'Linear synteny view, K12 vs' },
       { type: 'delay', ms: 1800 },
       {
         type: 'click',
-        text: 'Linear synteny view, K12 vs...',
+        text: 'Linear synteny view, K12 vs',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: MAF_IAI39_ENTRY },

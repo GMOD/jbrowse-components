@@ -196,7 +196,7 @@ test('the default plot writes its rows and color, and leaves a declared color al
   expect(declared.colorField).toBe('name')
 })
 
-test('One row per... and Color by offer the scanned attributes and write the display', () => {
+test('One row per and Color by offer the scanned attributes and write the display', () => {
   const model = display({ rows: 'sample', marks: RECT_MARKS })
   model.setPlotFields({
     numeric: ['score'],
@@ -204,7 +204,7 @@ test('One row per... and Color by offer the scanned attributes and write the dis
     attributes: ['itemRgb', 'name', 'sample', 'score', 'strand'],
   })
   const items = multiRowMenuItems(model)
-  expect(labels(subMenu(items, 'One row per...'))).toEqual(['name', 'sample'])
+  expect(labels(subMenu(items, 'One row per'))).toEqual(['name', 'sample'])
   const colorBy = labels(subMenu(items, 'Color by'))
   expect(colorBy).toEqual(
     expect.arrayContaining(['Strand', 'itemRgb', 'name', 'sample', 'score']),
@@ -237,7 +237,7 @@ test('Color by a `jexl:` field ticks nothing and names it a custom expression', 
   expect(labels(colorBy.filter(i => 'checked' in i && i.checked))).toEqual([])
 })
 
-test('One row per... another field drops the arrangement, and the field in force keeps it', () => {
+test('One row per another field drops the arrangement, and the field in force keeps it', () => {
   const rows = {
     field: 'sample',
     sort: ['b', 'a'],
@@ -254,7 +254,7 @@ test('One row per... another field drops the arrangement, and the field in force
 
 // The keyed rule (ADR-257): the pins name the old field's rows, and the
 // color channel names an attribute, valid on the new rows.
-test('One row per... another field drops the pinned row colors and keeps rows.color', () => {
+test('One row per another field drops the pinned row colors and keeps rows.color', () => {
   const model = display({
     rows: {
       field: 'sample',
@@ -508,7 +508,7 @@ test("a declared plot whose first window holds no features offers the next windo
   await waitFor(() => {
     expect(display.attributes).toEqual(['name', 'repClass'])
   })
-  expect(labels(subMenu(display.trackMenuItems(), 'One row per...'))).toContain(
+  expect(labels(subMenu(display.trackMenuItems(), 'One row per'))).toContain(
     'repClass',
   )
   expect(display.rowsField).toBe('name')

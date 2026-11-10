@@ -141,7 +141,7 @@ corner.
 ## Comparing two conditions
 
 Two maps of one assembly, two cell types or a treatment and its control, compare
-as one track. **Compare with...** in a Hi-C track's menu lists the other Hi-C
+as one track. **Compare with** in a Hi-C track's menu lists the other Hi-C
 tracks on its assembly; picking one opens a new track of this map over that one,
 the view Juicebox calls Observed/Control. Both maps are scaled to one library
 depth first, so two libraries sequenced to different depths compare, and a

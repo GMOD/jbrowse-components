@@ -45,7 +45,7 @@ genes under each rule. Clicking it opens the same three modes.
 
 ## Collapsing introns
 
-**Collapse introns**, from a gene's right-click menu, replaces the view's
+**Collapse introns...**, from a gene's right-click menu, replaces the view's
 displayed regions with that gene's exons side by side. A window-size setting
 keeps some flanking sequence around each splice boundary. Right-clicking a
 transcript offers that isoform as well as the whole gene (exons unioned), and

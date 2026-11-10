@@ -104,7 +104,7 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
       : []
   expect(
     subMenu.flatMap(item => ('label' in item ? [item.label] : [])),
-  ).toContain('Linear synteny view (visible region)')
+  ).toContain('Linear synteny view (visible region)...')
 }, 40000)
 
 // `coarseDynamicBlocks` is empty for the 500ms between a view initializing and

@@ -1609,7 +1609,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       displayType === 'LinearMultiRowFeatureDisplay'
     ) {
       return {
-        path: `${TRACK_MENU} → One row per... → ${field}`,
+        path: `${TRACK_MENU} → One row per → ${field}`,
         note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
       }
     }

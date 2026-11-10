@@ -127,7 +127,7 @@ test('only the first row of a synteny view says how a track is added', () => {
   const [first, second] = recipe.steps
     .filter(s => s.title.startsWith('Row'))
     .map(row => row.substeps?.[0]?.title)
-  expect(first).toContain('**Add track**')
+  expect(first).toContain('**Add track...**')
   expect(second).toMatch(/^Add the next track the same way\./)
 })
 

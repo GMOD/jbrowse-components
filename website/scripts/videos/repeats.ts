@@ -17,7 +17,7 @@ export const repeatVideos: VideoSpec[] = [
   //
   // The painting partitions on `repClass` whenever the file has that column
   // (PREFERRED_ROWS_FIELDS), so one Display types pick is the whole
-  // route. A "One row per..." beat was filmed here too and cut: it picked the
+  // route. A "One row per" beat was filmed here too and cut: it picked the
   // radio the app had already filled.
   {
     name: 'repeats/painting_display_switch',

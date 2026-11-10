@@ -56,7 +56,7 @@ Right-click any chain block and choose **Launch → Linear synteny view with
 <Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to hs1 liftOver track at TNNT3: the right-click menu, the framing dialog, and Replace current view." />
 
 For a locus no single chain block covers, drag-select it on the scale bar and
-pick **Launch → Linear synteny view**, whose dialog offers every assembly the
+pick **Launch → Linear synteny view...**, whose dialog offers every assembly the
 session's synteny datasets align to it. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 

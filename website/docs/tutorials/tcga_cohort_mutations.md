@@ -212,7 +212,7 @@ row's label bar, so it puts the matching color strip in the gutter.
 We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
 
 - Right-click _CDH1_ in the MANE track.
-- Choose **Collapse introns**, then **Replace current view**.
+- Choose **Collapse introns...**, then **Replace current view**.
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The CDH1 transcript reshaped to its exons from the gene's menu, and the tumor matrix redrawn over it." />
 

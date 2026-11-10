@@ -89,18 +89,18 @@ for a dataset that is configured but closed.
   alignment maps your window to, for any mate the session has loaded. The same
   three are links in the feature's details panel, clipped to the panel's visible
   window.
-- The same **Linear synteny view (visible region)** entry sits in the view's
+- The same **Linear synteny view (visible region)...** entry sits in the view's
   hamburger menu under **Launch**, for when the region you want is the whole
   view and there is nothing to select.
 - **A row of a synteny view launches too.** Drag-select on any row's scale bar
-  and the same **Launch → Linear synteny view** reads the bands' datasets, so
+  and the same **Launch → Linear synteny view...** reads the bands' datasets, so
   the dialog opens anchored on that row's genome with a panel for every assembly
   aligning to it there. **Replace current view** then swaps the stack for one
   anchored on that row, which is how a stack is re-anchored on any of its
   genomes.
 - **A row of a [](/docs/user_guides/maf_track)** opens as a synteny view too:
-  drag-select across the rows and pick **Linear synteny view, \<ref\> vs...**,
-  then the sample. The ribbons are cut from the alignment's columns, so the view
+  drag-select across the rows and pick **Linear synteny view, \<ref\> vs**, then
+  the sample. The ribbons are cut from the alignment's columns, so the view
   needs no synteny file.
 
 Every Launch dialog above offers a **window size** (padding added to every

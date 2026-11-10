@@ -87,7 +87,7 @@ export function hasCollapsibleIntrons(transcripts: Feature[]) {
 }
 
 /**
- * Whether "Collapse introns" has a gap to close on this feature. A gap alone is
+ * Whether "Collapse introns..." has a gap to close on this feature. A gap alone is
  * not enough — a repeat_region's parts leave gaps too — so the type has to be
  * one whose parts introns separate: a gene or one of its transcripts, or a
  * sequence alignment, whose `match_part` children are the aligned blocks.

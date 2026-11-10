@@ -27,7 +27,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
       return featureId === undefined
         ? undefined
         : {
-            label: 'Dotplot of read vs ref',
+            label: 'Dotplot of read vs ref...',
             icon: AddIcon,
             onClick: () => {
               withContextMenuFeature(self, featureId, feature, feat => {

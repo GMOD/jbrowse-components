@@ -47,7 +47,7 @@ test('collapse introns on gene feature', async () => {
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)
 
-  fireEvent.click(await findByText('Collapse introns', ...opts))
+  fireEvent.click(await findByText('Collapse introns...', ...opts))
   await findByText('Collapse introns of EDEN', ...opts)
   fireEvent.click(await findByText('Open in new view', ...opts))
 
@@ -94,7 +94,7 @@ test('collapse introns dialog lists the transcripts to scope to', async () => {
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)
 
-  fireEvent.click(await findByText('Collapse introns', ...opts))
+  fireEvent.click(await findByText('Collapse introns...', ...opts))
   await findByText('Collapse introns of EDEN', ...opts)
 
   fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Transcript' }))
@@ -113,7 +113,7 @@ test('the dialog says what the window size collapses to before anything is click
   await openGenesTrack(view)
 
   fireEvent.contextMenu(await screen.findByTestId('feature-name-EDEN', ...opts))
-  fireEvent.click(await findByText('Collapse introns', ...opts))
+  fireEvent.click(await findByText('Collapse introns...', ...opts))
   await findByText('Collapse introns of EDEN', ...opts)
 
   // The count and the bp are the real ones for EDEN at the default 100bp window,

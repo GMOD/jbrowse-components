@@ -194,7 +194,7 @@ of the chain:
 
 <Figure caption="Opening the split view by right-clicking the breakend." src="/img/cancer_sv/split_view_from_breakend.png" />
 
-To follow a single read, right-click it and choose **Linear read vs ref**.
+To follow a single read, right-click it and choose **Linear read vs ref...**.
 JBrowse opens a synteny view with the read as an assembly along the bottom and
 every locus it touches along the top, the layout Ribbon
 ([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa680))

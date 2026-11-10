@@ -23,7 +23,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel LinearMultiRowFeatureDisplay
  * #category display
  * The mark display drawing a row per value of a feature attribute, with the
- * menus a painting is read through: One row per..., Group by and Color by.
+ * menus a painting is read through: One row per, Group by and Color by.
  */
 export function stateModelFactory(
   pluginManager: PluginManager,

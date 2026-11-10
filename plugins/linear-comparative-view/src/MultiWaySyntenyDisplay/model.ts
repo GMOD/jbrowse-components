@@ -3214,7 +3214,7 @@ export function stateModelFactory(
             ...lodMenuItems(self),
           ]
           for (const item of syntenyRegionMenuItems({
-            label: 'Linear synteny view (visible region)',
+            label: 'Linear synteny view (visible region)...',
             region: widestRegion(view.dynamicBlocks.contentBlocks),
             session: getSession(self),
             openTracks: [self.parentTrack.configuration],

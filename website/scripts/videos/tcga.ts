@@ -114,8 +114,8 @@ export const tcgaVideos: VideoSpec[] = [
         say: `Right-click ${tcgaMutationVideoFixtures.gene} and collapse its introns`,
         hold: 1800,
       },
-      { type: 'waitForText', text: 'Collapse introns' },
-      { type: 'click', text: 'Collapse introns', hold: 1600 },
+      { type: 'waitForText', text: 'Collapse introns...' },
+      { type: 'click', text: 'Collapse introns...', hold: 1600 },
       { type: 'waitForText', text: 'Replace current view' },
       {
         type: 'click',

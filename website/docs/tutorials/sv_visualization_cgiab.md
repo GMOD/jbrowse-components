@@ -420,7 +420,7 @@ assembly-vs-reference diagonal per haplotype.
 
 <Figure caption="HG008-T's two haplotypes (y) against GRCh38 (x) as dotplots, hap1 left and hap2 right." src="/img/sv_cgiab/dotplot_haplotypes.png" />
 
-Drag over a region and take **Launch → Linear synteny view**, keeping
+Drag over a region and take **Launch → Linear synteny view...**, keeping
 **HG008T_v3.2 vs GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the
 synteny track, then enter `chr13 chr3` in the GRCh38 search box.
 

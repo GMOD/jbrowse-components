@@ -38,7 +38,8 @@ export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 
 const APPLE3_MRNA = { trackId: 'gff3tabix_genes', feature: 'Apple3' }
 
-const COLLAPSE_INTRONS = '[data-testid="cascading-menuitem-collapse_introns"]'
+const COLLAPSE_INTRONS =
+  '[data-testid="cascading-menuitem-collapse_introns..."]'
 
 const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 

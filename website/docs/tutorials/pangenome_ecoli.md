@@ -186,9 +186,9 @@ a row per assembly the track lists.
 
 <Figure caption="The wfmash alignment pggb built the graph from, the strains stacked." src="/img/pangenome/pggb_synteny.png" />
 
-Select a span on K12's ruler and pick **Launch → Linear synteny view** to stack
-the strains over that span alone. The same selection on another strain's row,
-with **Replace current view**, re-anchors the stack on that strain:
+Select a span on K12's ruler and pick **Launch → Linear synteny view...** to
+stack the strains over that span alone. The same selection on another strain's
+row, with **Replace current view**, re-anchors the stack on that strain:
 
 <Video src="/media/synteny/ecoli_roundtrip.mp4" caption="Launch over a K12 window opens a stack anchored on K12; a drag on the Sakai row re-anchors it on Sakai." />
 
@@ -376,7 +376,7 @@ covers under two submenus:
 
 - **Open aligned genome at the matching region** opens that strain's genome at
   the aligned stretch
-- **Linear synteny view, K12 vs...** opens K12 and that strain as a
+- **Linear synteny view, K12 vs** opens K12 and that strain as a
   [linear synteny view](/docs/user_guides/linear_synteny_view)
 
 <Video src="/media/synteny/maf_row_synteny.mp4" caption="A drag across the MAF rows, the menu listing the strains it covers, and the synteny view the IAI39 entry opens." />

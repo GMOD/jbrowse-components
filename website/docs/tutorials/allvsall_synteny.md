@@ -354,9 +354,9 @@ coordinates of the strain it shows, one ribbon per PAF record
 
 ### Launching a stacked view at one locus
 
-Drag-select a region on the scale bar and pick **Launch → Linear synteny view**.
-The dialog lists every assembly aligning to that region as a panel, top to
-bottom, with arrows to reorder them and a checkbox to drop one; **Replace
+Drag-select a region on the scale bar and pick **Launch → Linear synteny
+view...**. The dialog lists every assembly aligning to that region as a panel,
+top to bottom, with arrows to reorder them and a checkbox to drop one; **Replace
 current view** or **Open in new view** launches the stack. Ribbons are drawn
 between neighbouring rows only.
 
@@ -371,7 +371,7 @@ Right-clicking a single alignment offers three routes under **Launch**:
 
 <Figure caption="Right-clicking one alignment in the one-vs-all lanes opens the Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
-<Figure caption="A rubberband selection, the Launch → Linear synteny view entry it raises, and the stack it opens." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="A rubberband selection, the Launch → Linear synteny view... entry it raises, and the stack it opens." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Result=multiway_synteny/ecoli_launch_result" />
 
 <Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, and the dialog's arrows reorder the panels before launch." />
 

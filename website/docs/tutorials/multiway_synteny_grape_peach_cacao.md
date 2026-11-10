@@ -425,7 +425,7 @@ number differs.
 Two routes open a stacked synteny view from the lanes:
 
 - from the lane track, **Advanced → Launch → Linear synteny view (visible
-  region)** in its track menu offers a row to every aligning genome
+  region)...** in its track menu offers a row to every aligning genome
 - from the scale bar, drag-select a locus and pick **Launch → Linear synteny
   view**. The dialog opens a row per genome, grape already placed between peach
   and cacao for the [reference-in-the-middle](#direct-vs-transitive-pairs)

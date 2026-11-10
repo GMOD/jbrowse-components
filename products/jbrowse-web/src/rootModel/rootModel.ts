@@ -505,7 +505,7 @@ export default function RootModel({
                 ...(preConfiguredSessions.length
                   ? [
                       {
-                        label: 'Pre-configured sessions...',
+                        label: 'Pre-configured sessions',
                         subMenu: preConfiguredSessions.map(r => ({
                           label: r.name,
                           onClick: () => {
@@ -542,7 +542,7 @@ export default function RootModel({
                         },
                       },
                       {
-                        label: 'Set default session',
+                        label: 'Set default session...',
                         onClick: () => {
                           self.session?.queueDialog((onClose: () => void) => [
                             SetDefaultSession,

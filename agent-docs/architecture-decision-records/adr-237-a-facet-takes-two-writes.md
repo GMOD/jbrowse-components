@@ -14,7 +14,7 @@ Accepted (2026-10-20). The facet counterpart of
 Amended 2026-10-27: `rows` takes the same rule. `rowsForField` (display-kit)
 keeps the arrangement for the field in force and drops `sort`, `labels`,
 `tree`, `treeProvenance` and `kept` for another, since they name the old
-field's values. Multi-row's One row per... and the mark display's Edit plot
+field's values. Multi-row's One row per and the mark display's Edit plot
 form write through it. Wiggle's Multi-row/Overlapping toggle still writes the
 field alone, since overlaid sources are still the rows the arrangement names.
 `setFacetDomain` is now `setFacetSort`, and the facet's `domain` is `sort`.

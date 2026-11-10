@@ -68,7 +68,7 @@ const NON_ROW_FIELDS = new Set<string>([
   ...BED_COLOR_FIELDS,
 ])
 
-/** The attributes "One row per..." offers. */
+/** The attributes "One row per" offers. */
 export function rowsFieldChoices(attributes: readonly string[]) {
   return attributes.filter(name => !NON_ROW_FIELDS.has(name))
 }

@@ -80,7 +80,7 @@ export function comparisonTrackConf(
 }
 
 /**
- * "Compare with..." on a Hi-C track's menu, in the track selector and the
+ * "Compare with" on a Hi-C track's menu, in the track selector and the
  * view: a new session track of this map over another condition's. The
  * configured tracks are left as they are, and nothing is published into the
  * config every visitor is served.
@@ -96,7 +96,7 @@ export default function HicCompareTrackMenuItemsF(
     const others = comparableTracks(session, mine)
     return others.length
       ? {
-          label: 'Compare with...',
+          label: 'Compare with',
           helpText:
             'Open a track of this map over another condition, red where contacts were gained and blue where they were lost.',
           subMenu: others.map(other => ({

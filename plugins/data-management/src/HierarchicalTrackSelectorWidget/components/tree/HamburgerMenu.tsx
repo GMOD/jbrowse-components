@@ -79,7 +79,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
           ...(isSessionModelWithConnectionEditing(session)
             ? [
                 {
-                  label: 'Connections...',
+                  label: 'Connections',
                   subMenu: [
                     {
                       label: 'Add connection...',
@@ -98,7 +98,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
               ]
             : []),
           {
-            label: 'Sort...',
+            label: 'Sort',
             subMenu: [
               {
                 label: 'Sort tracks by name',
@@ -119,7 +119,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
             ],
           },
           {
-            label: 'Collapse...',
+            label: 'Collapse',
             subMenu: [
               ...(model.hasAnySubcategories
                 ? [

@@ -278,8 +278,8 @@ export const uiVideos: VideoSpec[] = [
         say: 'Open Sequence search from the view menu',
         hold: 900,
       },
-      { type: 'waitForText', text: 'Sequence search' },
-      { type: 'click', text: 'Sequence search', hold: 1800 },
+      { type: 'waitForText', text: 'Sequence search...' },
+      { type: 'click', text: 'Sequence search...', hold: 1800 },
       // The dialog opens on Sequence pattern, so the toggle is a real move
       // rather than a formality.
       { type: 'waitForText', text: 'Motif list' },

@@ -72,7 +72,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
               showAddConnectionWidget(session)
             }}
           >
-            Add connection
+            Add connection...
           </MenuItem>
         ) : null}
         {hasAddTrack ? (
@@ -86,7 +86,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
               )
             }}
           >
-            Add track
+            Add track...
           </MenuItem>
         ) : null}
       </Menu>

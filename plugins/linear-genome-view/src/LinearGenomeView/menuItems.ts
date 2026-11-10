@@ -94,7 +94,7 @@ export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     })),
     ...showWholeGenomeMenuItems(self),
     {
-      label: 'Custom zoom',
+      label: 'Custom zoom...',
       onClick: () => {
         getDialogHost(self).queueDialog(handleClose => [
           RegionWidthEditorDialog,
@@ -175,7 +175,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     ...(isSessionWithAddSessionTrack(session)
       ? [
           {
-            label: 'Sequence search',
+            label: 'Sequence search...',
             icon: SearchIcon,
             onClick: () => {
               session.queueDialog(handleClose => [

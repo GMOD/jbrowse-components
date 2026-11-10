@@ -598,14 +598,14 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
     },
     {
       type: 'waitForSelector' as const,
-      selector: '[data-testid="cascading-menuitem-linear_synteny_view"]',
+      selector: '[data-testid="cascading-menuitem-linear_synteny_view..."]',
     },
     { type: 'delay' as const, ms: 500 },
   ]
   const openDialog = [
     {
       type: 'click' as const,
-      selector: '[data-testid="cascading-menuitem-linear_synteny_view"]',
+      selector: '[data-testid="cascading-menuitem-linear_synteny_view..."]',
     },
     { type: 'waitForText' as const, text: 'Panels, top to bottom' },
     { type: 'delay' as const, ms: 4000 },
@@ -3508,7 +3508,7 @@ function launchMenuStills(): ScreenshotSpec[] {
             fracY: 0.98,
           },
         },
-        { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
+        { type: 'waitForText', text: 'Linear synteny view, K12 vs' },
         { type: 'hover', text: 'Open aligned genome at the matching region' },
         { type: 'waitForText', text: 'CFT073 chr:' },
         { type: 'delay', ms: 500 },

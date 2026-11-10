@@ -191,7 +191,7 @@ export function mafSyntenyLaunchItems(
     ? []
     : [
         {
-          label: `Linear synteny view, ${refAssembly} vs...`,
+          label: `Linear synteny view, ${refAssembly} vs`,
           subMenu: targets.map(target => ({
             label: `${target.sampleLabel} ${navigationLocString(target)}`,
             onClick: () => {

@@ -160,7 +160,7 @@ export function addViewMenuItems<
  *   items: self =>
  *     self.contextMenuFeatureId === undefined
  *       ? undefined
- *       : { label: 'Dotplot of read vs ref', onClick: () => {} },
+ *       : { label: 'Dotplot of read vs ref...', onClick: () => {} },
  * })
  * ```
  */

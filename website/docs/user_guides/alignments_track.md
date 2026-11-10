@@ -430,16 +430,16 @@ A long read crossing a structural variant aligns in pieces: a primary alignment
 plus one supplementary per additional locus, the whole set recorded in each
 record's `SA` tag, drawn as separate rows in the pileup.
 
-Right-click any of them and choose **Launch → Linear read vs ref** to put them
-back together. The read becomes a separate assembly along one row, every
+Right-click any of them and choose **Launch → Linear read vs ref...** to put
+them back together. The read becomes a separate assembly along one row, every
 reference locus it touches lies along the other, and each alignment segment is a
 ribbon between them in read order. An insertion shows as a gap in the diagonal.
 Dragging over the read row extracts that sequence.
 
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read drawn against the reference below. Each gap in the diagonal is inserted sequence." src="/img/read_vs_ref_insertion.png" />
 
-`Dotplot of read vs ref` plots the same alignment as a dotplot, clearer when a
-read aligns to one locus several times.
+`Dotplot of read vs ref...` plots the same alignment as a dotplot, clearer when
+a read aligns to one locus several times.
 
 ## See also
 

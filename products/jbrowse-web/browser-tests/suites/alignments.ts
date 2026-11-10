@@ -119,7 +119,7 @@ const suite: TestSuite = {
         await assertContextMenuContains(page, 'Launch')
         await (await findByText(page, 'Launch')).hover()
         await delay(500)
-        await findByText(page, 'Linear read vs ref')
+        await findByText(page, 'Linear read vs ref...')
       },
     },
     lgvSnapshotTest({
