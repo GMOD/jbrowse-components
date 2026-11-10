@@ -648,13 +648,14 @@ export const TASKS: EvalTask[] = [
       'Show the forward and reverse translations of the region on screen.',
     setup: `
       await jb.addTrack({ trackId: 'volvox_refseq' })
-      await jb.trackModel('volvox_refseq').applyDisplaySettings({ showReverse: false, showTranslation: false })
+      await jb.trackModel('volvox_refseq').applyDisplaySettings({ reverse: { show: false }, translation: { show: false } })
       await jb.view().navToLocString('ctgA:1,000-1,300')
       return jb.waitReady(30000)`,
-    solution: `return jb.trackModel('volvox_refseq').applyDisplaySettings({ showForward: true, showReverse: true, showTranslation: true })`,
+    solution: `return jb.trackModel('volvox_refseq').applyDisplaySettings({ forward: { show: true }, reverse: { show: true }, translation: { show: true } })`,
     grade: `
-      const d = ${shownTrack('volvox_refseq')}?.activeDisplay
-      const rows = { forward: d?.showForward, reverse: d?.showReverse, translation: d?.showTranslation }
+      const conf = ${shownTrack('volvox_refseq')}?.activeDisplay.configuration
+      const shown = part => conf && jb.readConfObject(conf, [part, 'show'])
+      const rows = { forward: shown('forward'), reverse: shown('reverse'), translation: shown('translation') }
       return { pass: rows.forward === true && rows.reverse === true && rows.translation === true, detail: rows }`,
   },
   {
@@ -1542,15 +1543,15 @@ TASKS.push(
     prompt:
       "In hg38, zoom to base level on BRCA1's 5382insC founder variant (rs80357906) and show the amino-acid translation of the strand BRCA1 is read from.",
     solution: `${lgv('chr17:43,057,000-43,057,120', ['hg38-refseq']).replace('return ', 'await ')}
-      return jb.trackModel('hg38-refseq').applyDisplaySettings({ showReverse: true, showTranslation: true })`,
+      return jb.trackModel('hg38-refseq').applyDisplaySettings({ reverse: { show: true }, translation: { show: true } })`,
     grade: `
       const out = []
       for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
         const rs = await jb.visibleRegions(v.id)
         const at = rs.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < ${RS80357906} && r.end >= ${RS80357906} && r.end - r.start <= 500)
         for (const t of v.tracks.filter(t => t.type === 'ReferenceSequenceTrack')) {
-          const d = t.activeDisplay
-          out.push({ at, span: rs.map(r => r.end - r.start), reverse: d.showReverse, translation: d.showTranslation })
+          const conf = t.activeDisplay.configuration
+          out.push({ at, span: rs.map(r => r.end - r.start), reverse: jb.readConfObject(conf, ['reverse', 'show']), translation: jb.readConfObject(conf, ['translation', 'show']) })
         }
         if (!v.tracks.some(t => t.type === 'ReferenceSequenceTrack')) {
           out.push({ at, span: rs.map(r => r.end - r.start), sequence: false })
@@ -1831,7 +1832,7 @@ TASKS.push(
       const phylo = t('hg38-phyloP100way', whole)
       const r = await phylo.applyDisplaySettings({ encoding: { y: { scale: { domainMin: -2, domainMax: 5 } } } })
       if (!r.applied.includes('encoding')) { await phylo.applyDisplaySettings({ scales: { y: { domainMin: -2, domainMax: 5 } } }) }
-      await zoom.launchTrack(jb.session.assemblyManager.get('hg38').configuration.sequence.trackId, {}, { showTranslation: true, showForward: true, showReverse: false })
+      await zoom.launchTrack(jb.session.assemblyManager.get('hg38').configuration.sequence.trackId, {}, { translation: { show: true }, forward: { show: true }, reverse: { show: false } })
       return jb.waitReady(120000)`,
     grade: `${SYNTENY_STACK}
       const seqId = jb.session.assemblyManager.get('hg38').configuration.sequence.trackId
@@ -1843,11 +1844,12 @@ TASKS.push(
         const ids = v.tracks.map(t => t.configuration.trackId)
         const phylo = v.tracks.find(t => t.configuration.trackId === 'hg38-phyloP100way')?.activeDisplay
         const domain = phylo?.domain
-        const seq = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay
+        const seqConf = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay.configuration
+        const seq = seqConf && Object.fromEntries(['forward', 'reverse', 'translation'].map(part => [part, jb.readConfObject(seqConf, [part, 'show'])]))
         out.push({
           whole: rs.some(r => r.start <= ${CFTR_SPAN[0] + 100} && r.end >= ${CFTR_SPAN[1] - 100}) && span < 1500000 && ids.includes('hg38-mane') && ids.includes('hg38-clinvarMain') && domain?.[0] === -2 && domain?.[1] === 5,
-          zoom: rs.some(r => r.start < ${F508DEL} && r.end > ${F508DEL}) && span <= 100 && seq?.showTranslation === true && seq?.showForward !== false,
-          span, ids, domain, translation: seq && [seq.showForward, seq.showReverse, seq.showTranslation],
+          zoom: rs.some(r => r.start < ${F508DEL} && r.end > ${F508DEL}) && span <= 100 && seq?.translation === true && seq?.forward !== false,
+          span, ids, domain, translation: seq,
         })
       }
       const human = rows.findIndex(r => r.assembly === 'hg38')
@@ -2019,7 +2021,7 @@ TASKS.push(
     solution: `${importHub('https://jbrowse.org/ucsc/wuhCor1/', 'config.json', '/ncbiGeneBGP$/')}
       await jb.addView({ type: 'LinearGenomeView', assembly: asm.name, loc: 'NC_045512v2:23,560-23,660', tracks: [asm.name + '-ncbiGeneBGP'] })
       const v = jb.session.views.at(-1)
-      await v.launchTrack(jb.session.assemblyManager.get(asm.name).configuration.sequence.trackId, {}, { showTranslation: true })
+      await v.launchTrack(jb.session.assemblyManager.get(asm.name).configuration.sequence.trackId, {}, { translation: { show: true } })
       return jb.waitReady(120000)`,
     grade: `
       const out = []
@@ -2035,9 +2037,10 @@ TASKS.push(
         const from = spike ? spike.get('start') + 680 * 3 : NaN
         const seqId = jb.session.assemblyManager.get(asm).configuration.sequence.trackId
         const codons = spike ? (await jb.getFeatures({ trackId: seqId, viewId: v.id, loc: r.refName + ':' + (from + 1) + '-' + (from + 15) }))[0]?.get('seq').toUpperCase() : ''
-        const seq = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay
+        const seqConf = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay.configuration
+        const shown = part => seqConf && jb.readConfObject(seqConf, [part, 'show'])
         const covers = rs.some(x => x.start <= from && x.end >= from + 15 && x.end - x.start <= 300)
-        out.push({ asm, rs: rs.map(x => x.refName + ':' + x.start + '-' + x.end), from, codons, covers, translation: seq?.showTranslation, forward: seq?.showForward })
+        out.push({ asm, rs: rs.map(x => x.refName + ':' + x.start + '-' + x.end), from, codons, covers, translation: shown('translation'), forward: shown('forward') })
       }
       const furin = c => /^CC[TCAG][CA]G[TCAG][CA]G[TCAG]GC[TCAG][CA]G[TCAG]$/.test(c)
       return { pass: out.some(o => furin(o.codons) && o.covers && o.translation === true && o.forward !== false), detail: out }`,
