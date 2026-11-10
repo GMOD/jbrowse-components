@@ -99,6 +99,7 @@ exports[`adds menus 1`] = `
     "label": "Tools",
     "menuItems": [
       {
+        "disabled": true,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -111,6 +112,7 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
+        "disabled": true,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -291,6 +293,7 @@ exports[`adds menus 2`] = `
     "label": "Tools",
     "menuItems": [
       {
+        "disabled": true,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -303,6 +306,7 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
+        "disabled": true,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
