@@ -2,7 +2,6 @@ import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { lowerBoundOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { types } from '@jbrowse/mobx-state-tree'
-import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
   axesNamePositionFor,
   comparativeFrame,
@@ -34,8 +33,6 @@ import type {
   OpacityArg,
   ViewParts,
 } from '@jbrowse/synteny-core'
-
-export { registerComparativeAdapters }
 
 export interface DotplotTablesArgs {
   adapterConfig: Record<string, unknown>

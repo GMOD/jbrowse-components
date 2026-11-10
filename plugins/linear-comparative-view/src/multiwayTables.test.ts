@@ -3,9 +3,10 @@ import { pathToFileURL } from 'node:url'
 
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 
 import * as getFeatures from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
-import { multiwayTables, registerComparativeAdapters } from './tables.ts'
+import { multiwayTables } from './tables.ts'
 
 function engine(capabilities: string[]) {
   class Adapters extends Plugin {

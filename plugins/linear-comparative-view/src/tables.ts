@@ -4,7 +4,6 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
-import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
   FADE_AUTO_MIN_FEATURES,
   axesNamePositionFor,
@@ -88,7 +87,6 @@ import type {
   ViewParts,
 } from '@jbrowse/synteny-core'
 
-export { registerComparativeAdapters }
 export { multiwayTables } from './multiwayTables.ts'
 export type { MultiWayTables, MultiWayTablesArgs } from './multiwayTables.ts'
 

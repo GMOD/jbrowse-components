@@ -8,7 +8,10 @@ import {
   registerAlignmentsAdapters,
 } from '@jbrowse/plugin-alignments/tables'
 import BedPlugin from '@jbrowse/plugin-bed'
-import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
+import {
+  contigTables,
+  registerComparativeAdapters,
+} from '@jbrowse/plugin-comparative-adapters/tables'
 import { registerConfigAdapters } from '@jbrowse/plugin-config/adapters'
 import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 import {
@@ -19,7 +22,6 @@ import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import {
   multiwayTables,
-  registerComparativeAdapters,
   syntenyTables,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
