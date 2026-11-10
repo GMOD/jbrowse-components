@@ -1026,8 +1026,8 @@ importers:
         specifier: ^3.13.1
         version: 3.13.1
       '@gmod/trix':
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^3.2.2
+        version: 3.2.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1951,8 +1951,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^3.2.2
+        version: 3.2.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4600,8 +4600,8 @@ packages:
   '@gmod/tabix@3.13.1':
     resolution: {integrity: sha512-usyBxD1EQ/wfIzeT/wQsqJBT6aGZwgaIFG94lBYFhWdK+csHjQU7t9i/iIjDSCIcZFTFiQ1TFp3McCMf4aH/4A==}
 
-  '@gmod/trix@3.2.1':
-    resolution: {integrity: sha512-rdnfreX9FId/ipSFZRgfQfTKanISq1ldHOalWw3DTlsNesVPvhJYRQM7wbApL24lCY+3/1oTi/0LKwJbhBZprQ==}
+  '@gmod/trix@3.2.2':
+    resolution: {integrity: sha512-67P4zyE5UAs9sh1oO5T4dgdgua0FvvgMZ/DnxF8htK1IfsQldWMrsK6rO8ctwafGpQe1d0PHr2t2jY0FTAAImQ==}
 
   '@gmod/twobit@6.0.14':
     resolution: {integrity: sha512-qO2kCWy3QDQqf8EQReb9JDKco7N+Vr7n3viDcmv8Q1D2ht8YnGtLbPqrEWCEQaT3974QjVur2/j4vbxr7drVRw==}
@@ -12761,7 +12761,7 @@ snapshots:
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
 
-  '@gmod/trix@3.2.1': {}
+  '@gmod/trix@3.2.2': {}
 
   '@gmod/twobit@6.0.14':
     dependencies:
