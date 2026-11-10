@@ -4,10 +4,10 @@ import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// A reference sequence track is the `sequence` of an assembly rather than an
-// entry in the track list, so a setting written on it has nowhere to go but the
-// assembly's own config.
-test('a setting toggled on a reference sequence track is saved in its assembly', async () => {
+// A reference sequence track's edits are saved as the session's delta over the
+// assembly's `sequence`, so the assembly config a page load starts from stays
+// as served.
+test('a setting toggled on a reference sequence track is saved in the session', async () => {
   const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
@@ -55,24 +55,26 @@ test('a setting toggled on a reference sequence track is saved in its assembly',
       ],
     },
   })
-  const { views, jbrowse } = session as unknown as {
+  const { views } = session as unknown as {
     views: {
       tracks: {
         displays: { showForward: boolean; toggleShowForward: () => void }[]
+        persistConfigurationNow: () => void
       }[]
     }[]
-    jbrowse: object
   }
-  const display = views[0]!.tracks[0]!.displays[0]!
+  const track = views[0]!.tracks[0]!
+  const display = track.displays[0]!
   expect(display.showForward).toBe(true)
 
   display.toggleShowForward()
+  track.persistConfigurationNow()
 
   expect(display.showForward).toBe(false)
-  const saved = getSnapshot<{
-    assemblies: {
-      sequence: { displays: { forward?: { show?: boolean } }[] }
-    }[]
-  }>(jbrowse)
-  expect(saved.assemblies[0]!.sequence.displays[0]!.forward?.show).toBe(false)
+  expect(session.trackConfigDeltas.volvox_refseq).toMatchObject({
+    displays: [{ forward: { show: false } }],
+  })
+  expect(
+    JSON.stringify(getSnapshot(session.jbrowse.assemblies[0]!.sequence)),
+  ).not.toContain('show')
 })
