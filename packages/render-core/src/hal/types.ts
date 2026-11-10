@@ -1,7 +1,5 @@
 import type { CanvasScale } from '../canvas2dUtils.ts'
 
-export type { CanvasScale }
-
 /**
  * One field of a pass's **vertex input layout** — the map from bytes in the
  * packed instance buffer to an input the shader declares. Both HALs build from
@@ -125,9 +123,7 @@ export interface PipelineDescriptor {
   // 'analytic' when the fragment stage computes its own edge coverage or
   // pixel-snaps, so the pass draws the same at sample count 1 and 4
   coverage?: 'analytic'
-  // Texture binding for this pass. Only textures[0] is wired up by both HAL
-  // implementations — multi-texture passes are not currently supported, and
-  // `pnpm gen:shaders` refuses a shader that declares a second sampler.
+  // Every sampler the shader declares; both HALs bind each to its own texture.
   textures?: readonly [TextureBinding, ...TextureBinding[]]
   // The shader's reflected binding table (its generated `BINDINGS`). The WebGPU
   // HAL builds the pass's bind-group layout and bind group from it, each

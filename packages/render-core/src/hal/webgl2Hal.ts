@@ -383,8 +383,6 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    // A render autorun can fire between `dispose` and the model dropping its
-    // backend reference, and nothing destroys what a disposed HAL allocates.
     if (this.disposed) {
       return { x: getDpr(), y: getDpr() }
     }

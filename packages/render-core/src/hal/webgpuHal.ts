@@ -386,10 +386,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     const pipelines = await resolvePipelines(device, descriptors, sampleCount)
     const context = canvas.getContext('webgpu')
     if (!context) {
-      // Returning null (rather than throwing) keeps the ladder running, so this
-      // is the one rung whose reason would otherwise be console-only. It is
-      // recorded as the rung's failure so `createGpuHal` can attach it to
-      // whatever the ladder eventually fails with.
       throw canvasContextError(canvas, 'webgpu')
     }
     noteCanvasContext(canvas, 'webgpu')
@@ -404,8 +400,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    // A render autorun can fire between `dispose` and the model dropping its
-    // backend reference, and nothing destroys what a disposed HAL allocates.
     if (this.disposed) {
       return { x: getDpr(), y: getDpr() }
     }
