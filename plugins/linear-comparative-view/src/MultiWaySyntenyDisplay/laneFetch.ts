@@ -106,6 +106,23 @@ export function staleLaneSpecs<Spec extends LaneFetchSpec>(
 }
 
 /**
+ * What a run is asked for: the lanes it lands for and the stale ones it
+ * fetches. A run in flight under the same answer is not worth restarting, even
+ * though the specs it came from were rebuilt.
+ */
+export function laneFetchAsked(
+  specs: LaneFetchSpec[],
+  stale: LaneFetchSpec[],
+  anchor: string,
+) {
+  return JSON.stringify([
+    anchor,
+    specs.map(spec => spec.lane),
+    stale.map(spec => [spec.lane, spec.key]),
+  ])
+}
+
+/**
  * Drops a lane no spec names; with `keepCurrentKeys`, one held under a key a
  * spec still carries stays, as a scrolled-out pair does
  */

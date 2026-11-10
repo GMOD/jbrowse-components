@@ -16,7 +16,7 @@ import { autorun, reaction, untracked } from 'mobx'
 import { getMate } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFeatures } from './geneGlyph.ts'
-import { staleLaneSpecs } from './laneFetch.ts'
+import { laneFetchAsked, staleLaneSpecs } from './laneFetch.ts'
 import { holdLaneAssembly, releaseLaneAssemblies } from './laneHolders.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 
@@ -234,6 +234,7 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     commit: (byLane: Map<string, Result>, specs: Spec[], anchor: string) => void
   },
 ) {
+  let inFlight: string | undefined
   installFetch(self, {
     name,
     delay: DEPENDENT_FETCH_DELAY,
@@ -241,16 +242,15 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     gate: () => !self.isMinimized,
     prepare: () => {
       const specs = fetchSpecs()
+      const stale = staleLaneSpecs(specs, state())
+      const anchor = self.anchorAssemblyName
       return specs.length > 0
-        ? {
-            specs,
-            stale: staleLaneSpecs(specs, state()),
-            anchor: self.anchorAssemblyName,
-          }
+        ? { specs, stale, anchor, asked: laneFetchAsked(specs, stale, anchor) }
         : undefined
     },
-    heldAnswers: ({ stale }) => stale.length === 0,
-    run: ({ specs, stale }, ctx) => {
+    heldAnswers: ({ stale, asked }) => stale.length === 0 || asked === inFlight,
+    run: ({ specs, stale, asked }, ctx) => {
+      inFlight = asked
       const wanted = stale.length > 0 ? stale : specs
       return (
         fetchMany?.(wanted, ctx) ??
@@ -259,6 +259,11 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     },
     commit: (byLane, { specs, anchor }) => {
       commit(byLane, specs, anchor)
+    },
+    onEnd: current => {
+      if (current) {
+        inFlight = undefined
+      }
     },
     setError: () => {},
   })
