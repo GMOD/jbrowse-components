@@ -14,8 +14,8 @@ interface DensityBox {
   gene?: boolean
 }
 
-// Gates on the box's own rendered width to match the shader's `realWidthPx <
-// MIN_RECT_WIDTH_PX` test.
+// Gates on the box's own unsnapped width against the MIN_RECT_WIDTH_PX the
+// shader widens a sub-pixel mark to.
 export function isSubPixelFade(
   ext: { densityFade: boolean; startBp: number; endBp: number },
   bpPerPx: number,

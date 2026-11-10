@@ -99,9 +99,9 @@ export interface FeatureDataResult {
   // shader unpacks with bit shifts.
   rectColors: Uint32Array
   rectStrands: Float32Array
-  // The worker allocates this zero-filled; the main-thread layout values it.
-  // Bit flags despite the name (`RECT_FLAG_*` in rect.slang): the pileup fade
-  // and the sparse-exon floor.
+  // Bit flags despite the name (`RECT_FLAG_*` in rectInstance.slang): the worker
+  // sets the inset bit, and the main-thread layout adds the pileup fade and the
+  // sparse-exon floor.
   // Dropping it from the wire saves only the allocation and changes a
   // plugin-ABI type, so it stays (declined 2026-10-02).
   rectDensityFade: Uint32Array
