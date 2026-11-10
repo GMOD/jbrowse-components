@@ -1,14 +1,15 @@
 ---
 name: read-the-callers-own-fields
-description: VCF INFO fields that state what the app guesses or ignores (`SVCLAIM`, `EVENTTYPE`, Severus's `CLUSTERID` and `MATE_ID`, `CIPOS`/`CIEND`), so SV drawings show less than the file says.
+description: VCF INFO fields that say what kind of evidence an SV call stands on (`SVCLAIM`) and where its breakpoint may be (`CIPOS`/`CIEND`, `IMPRECISE`, `HOMSEQ`), which every drawing ignores, so a depth-only deletion and an imprecise breakend draw like base-precise junctions.
 ---
 
 # Read the caller's own fields
 
-Two of the fields are in the VCF 4.4 specification and one is a caller's own
-spelling of a standard key. Reading them is the converter shape ADR-140 puts in
-the tree, and the pictures they change are drawn today from less than the file
-says.
+Both sets of fields are in the VCF 4.4 specification. Reading them is the
+converter shape ADR-140 puts in the tree, and the pictures they change are
+drawn today from less than the file says. The `EVENTTYPE` label and Severus's
+spellings, which are prints and lookups, are
+[their own doc](../ready/read-severus-spellings-and-print-the-eventtype.md).
 
 ## `SVCLAIM`: depth claim or junction claim
 
@@ -26,39 +27,8 @@ kind of evidence a bar stands on.
 - The SV inspector's chord track cannot draw DEL and DUP today; a `D` record
   stays off the circle and a `J` one could join it.
 
-`plugins/variants/src/shared/variantSvType.ts` resolves the class, and the
-claim belongs beside it.
-
-## `EVENTTYPE`: the class of an event
-
-`EVENT` groups a rearrangement's records and the SV inspector reads it
-(`SV_EVENT_COLUMN` in `SpreadsheetModel.tsx`). `EVENTTYPE` is the caller's
-class string for that event, and the dropdown shows the id alone, so
-`cluster_3` reads as a name and not as the chromoplexy the caller called it.
-Print the class after the id in the event dropdown, in the split view's "open
-every locus of" option and in the feature detail. The breakend walk reads
-`EVENT` for its stops and needs nothing from the class.
-
-## Severus's spellings
-
-Severus writes `CLUSTERID` where the specification has `EVENT` and `MATE_ID`
-where it has `MATEID`. Two readers look for the standard keys and nothing else:
-`SpreadsheetModel.tsx` finds the event column by the literal `INFO.EVENT`, and
-its docstring records that a caller with its own key "is renamed before import,
-not recognised here"; `walkBreakendChain.ts` reads `info.MATEID` to pair a
-record with its mate. `sv_inspector_view.md` therefore carries a four-line sed
-recipe over the header and every record, and the cgiab tutorial's HG008-T
-callset is a Severus callset, so every reader of that page with their own
-Severus output runs the recipe first.
-
-- The event column resolves to `INFO.EVENT`, then `INFO.CLUSTERID`; the
-  dropdown and "open every locus of" read the resolved column unchanged.
-- The mate id reads `MATEID`, then `MATE_ID`.
-- The recipe leaves the guide, replaced by one sentence naming the spellings.
-
-Two spellings at two sites, standard first. A third caller's key goes in the
-same two places, and a caller writing no grouping is unchanged, since the walk
-still orders its stops from the records.
+Core's `svClassOf` (`packages/core/src/util/svAlt.ts`) resolves the class, and
+the claim belongs beside it.
 
 ## `CIPOS`, `CIEND`, `IMPRECISE` and `HOMSEQ`: where the breakpoint may be
 
@@ -82,6 +52,4 @@ hundred bases draws the same foot as a base-precise one.
 
 ## What it waits on
 
-The `EVENTTYPE` label and the Severus spellings are prints and lookups and can
-go first. The depth-claim drawing changes how an existing callset draws, which
-is the call.
+Both drawings change how an existing callset draws, which is the call.

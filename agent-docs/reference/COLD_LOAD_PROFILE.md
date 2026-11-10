@@ -189,7 +189,7 @@ them heuristically, and `index.html` revalidates for one round trip.
 0.36 s against 1.11 s cold, the 11-track session (`"--only=11 tracks"`) in 0.65 s
 against 1.25 s. What grows with track count on the WebGL2 rung is one context and
 one set of programs per display, recorded in
-[cut-webgl2-contexts-per-display](../ideas/waiting-on-someone-else/cut-webgl2-contexts-per-display.md).
+[cut-webgl2-contexts-per-display](../ideas/waiting-on-a-number/cut-webgl2-contexts-per-display.md).
 
 ## What a cold load shows
 

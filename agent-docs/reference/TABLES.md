@@ -830,7 +830,7 @@ RSS in R:
 - **Whole-file loops from R level off:** 16 distinct 24 MB plain VCFs hold 757
   MB RSS, and 6 distinct 70 MB ones 1147 MB.
 - **The engine still estimates what a parsed index holds.**
-  [ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md](../ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md)
+  [ideas/ready/compact-parsed-indexes-in-bam-js-and-tabix-js.md](../ideas/ready/compact-parsed-indexes-in-bam-js-and-tabix-js.md)
   lists what would replace it.
 
 ## Hooks: who notices a break

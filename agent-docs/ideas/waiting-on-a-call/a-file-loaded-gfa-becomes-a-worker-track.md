@@ -5,6 +5,9 @@ description: "A file-loaded graph (`gfaLocation`) draws all or nothing: past `ma
 
 # A file-loaded GFA becomes a worker track
 
+> Belongs in the graph plugin repo (jbrowse-plugin-graphgenomeviewer), under
+> its `agent-docs/ideas/`; it stays here until it moves.
+
 The ceiling is in [reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md)
 §"Ceilings": parsing is cheap, but `assertDrawable` refuses a graph past
 `maxGraphNodes`, a file graph has no region to cut, and the main thread reads

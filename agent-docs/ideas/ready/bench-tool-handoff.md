@@ -102,6 +102,9 @@ than a deletion.
 
 ## In-silico PCR has a parameter that does nothing
 
+> Belongs in GMOD/jbrowse-plugin-blat, where `ispcrQuery.ts` now lives; it
+> stays here until it moves.
+
 `ispcrQuery.ts` sends `wp_perfect: '15', wp_good: '15'`. In kent's
 `gfPcrLib.c`, `goodSize = minGood - minPerfect`, which is zero at those values,
 and the behaviour that follows is asymmetric:

@@ -8,8 +8,9 @@ description: A parsed BAI, CSI, TBI or CRAI holds several times its bytes as JS 
 `packages/tables/src/cache.ts` weighs an adapter at four times the
 uncompressed size of each index it read whole, because no parser reports what
 its parsed index holds. A BAI holds 1.7x its file with one contig read and 4.2x
-with five, since `memoizeByRefId` keeps five decoded contigs as `Chunk` objects
-and `VirtualOffset` arrays, and a CRAI holds 4.3x.
+with five, since `memoizeByRefId` keeps five decoded contigs' bins as `Chunk`
+objects (the linear index is already a pair of `Float64Array`s), and a CRAI
+holds 4.3x.
 
 - **A `retainedBytes` getter would only be an estimate.** The parsers would
   have to sum object sizes V8 does not expose.
