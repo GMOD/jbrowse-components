@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
@@ -665,4 +665,44 @@ test('a v4 paired arc display picked from the menu opens as links', async () => 
       encoding: { x2: { refName: 'mate.refName', pos: 'mate.start' } },
     },
   ])
+})
+
+const refseqSession = (display: object) =>
+  v4Session('ReferenceSequenceTrack', 'volvox_refseq', {
+    type: 'LinearReferenceSequenceDisplay',
+    configuration: 'volvox_refseq-LinearReferenceSequenceDisplay',
+    ...display,
+  })
+
+// A fresh root each time, as a page load is: the assembly config a reload
+// starts from is the config.json's, so an edit written into it in place would
+// survive a same-root reload and still be gone on the next visit.
+test("an assembly sequence track's hidden rows stay hidden after a reload", async () => {
+  const { root, pluginManager } = setup()
+  const snap = refseqSession({})
+  await pluginManager.preloadSessionTypes(snap)
+  root.setSession(snap)
+  const track = (root.session!.views[0] as LinearGenomeViewModel).tracks[0]!
+  const display = track.displays[0]!
+  setConf(display, ['reverse', 'show'], false)
+  setConf(display, ['translation', 'show'], false)
+  track.persistConfigurationNow()
+  const saved = getSnapshot(root.session!)
+  expect(
+    JSON.stringify(getSnapshot(root.jbrowse.assemblies[0]!.sequence)),
+  ).not.toContain('show')
+
+  const { display: reloaded } = await load(saved)
+  expect(getConf(reloaded, ['forward', 'show'])).toBe(true)
+  expect(getConf(reloaded, ['reverse', 'show'])).toBe(false)
+  expect(getConf(reloaded, ['translation', 'show'])).toBe(false)
+})
+
+test('a v4 reference sequence display keeps its hidden rows', async () => {
+  const { display } = await load(
+    refseqSession({ showReverse: false, showTranslation: false }),
+  )
+  expect(getConf(display, ['forward', 'show'])).toBe(true)
+  expect(getConf(display, ['reverse', 'show'])).toBe(false)
+  expect(getConf(display, ['translation', 'show'])).toBe(false)
 })

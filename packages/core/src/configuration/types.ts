@@ -460,7 +460,8 @@ export interface TrackConfigEntry {
 
 /**
  * What `getTrackById` answers: a {@link TrackConfigEntry}, or a live node for
- * an assembly's sequence track or a track a connection holds. A raw member
+ * a track a connection holds, or for an assembly's sequence track in a session
+ * that keeps no track edits (`trackConfigDeltas`). A raw member
  * read works on both, and finds a slot at its default only on the node.
  */
 export type AnyTrackConfig = TrackConfigEntry | TrackConfigNode

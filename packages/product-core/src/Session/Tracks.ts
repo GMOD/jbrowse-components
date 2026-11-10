@@ -49,6 +49,14 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         return base
       },
       /**
+       * #method
+       * An assembly's sequence track as the session resolves it, its edits
+       * applied. Here the assembly's live node, which an edit writes directly.
+       */
+      withSequenceEdits(sequence: AnyTrackConfig): AnyTrackConfig {
+        return sequence
+      },
+      /**
        * #getter
        */
       get tracks(): TrackConfigEntry[] {
@@ -56,9 +64,9 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .extend(self => {
-      // Assembly sequences and connection tracks by trackId, which win over a
-      // track base of the same id.
-      const otherConfigsById = computed<Record<string, AnyTrackConfig>>(
+      // Assembly sequences by trackId, which win over a track base of the same
+      // id
+      const sequencesById = computed<Record<string, AnyTrackConfig>>(
         () => {
           const temporaryAssemblies =
             'temporaryAssemblies' in self
@@ -66,7 +74,16 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
                   sequence: { trackId: string }
                 }[])
               : []
-
+          return Object.fromEntries([
+            ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+            ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
+          ])
+        },
+        { name: 'sequencesById' },
+      )
+      // Connection tracks by trackId, which win over both
+      const connectionConfigsById = computed<Record<string, AnyTrackConfig>>(
+        () => {
           // both come from the connections mixin, which not every session
           // composes. connectionInstances is annotated because its element type
           // is a runtime-pluggable stateModel, so the guard can't infer it.
@@ -78,8 +95,6 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             : {}
 
           return Object.fromEntries([
-            ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
-            ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
             ...connectionInstances.flatMap(c =>
               c.tracks.map(t => [t.trackId, t]),
             ),
@@ -92,6 +107,18 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             ]),
           ])
         },
+        { name: 'connectionConfigsById' },
+      )
+      const otherConfigsById = computed<Record<string, AnyTrackConfig>>(
+        () => ({
+          ...Object.fromEntries(
+            Object.entries(sequencesById.get()).map(([trackId, sequence]) => [
+              trackId,
+              self.withSequenceEdits(sequence),
+            ]),
+          ),
+          ...connectionConfigsById.get(),
+        }),
         { name: 'otherConfigsById' },
       )
       // Kept against the two lists it was built from rather than held, since
@@ -124,16 +151,27 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             let c = trackByIdComputeds.get(id)
             if (!c) {
               c = computed(() => {
-                const other = otherConfigsById.get()[id]
-                if (other) {
-                  return other
-                }
+                const connection = connectionConfigsById.get()[id]
+                const sequence = sequencesById.get()[id]
                 const base = self.trackBasesById.get(id)
-                return base && self.withTrackEdits(base)
+                return (
+                  connection ??
+                  (sequence
+                    ? self.withSequenceEdits(sequence)
+                    : base && self.withTrackEdits(base))
+                )
               })
               trackByIdComputeds.set(id, c)
             }
             return c.get()
+          },
+          /**
+           * #method
+           * The assembly's own sequence track config under `id`, before any
+           * edit, or undefined.
+           */
+          assemblySequenceById(id: string): AnyTrackConfig | undefined {
+            return sequencesById.get()[id]
           },
           /**
            * #method

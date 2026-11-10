@@ -262,8 +262,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // by identity, so reading one id's through its own computed wakes only
       // the edited track's readers.
       const deltaFor = perIdComputed(trackId => self.trackConfigDeltas[trackId])
+      const sequenceBaseFor = perIdComputed(trackId => {
+        const sequence = self.assemblySequenceById(trackId)
+        return sequence && isStateTreeNode(sequence)
+          ? getSnapshot<TrackConfigEntry>(sequence)
+          : undefined
+      })
       const baseFor = perIdComputed(trackId => {
-        const base = self.trackBasesById.get(trackId)
+        const base =
+          self.trackBasesById.get(trackId) ?? sequenceBaseFor(trackId)
         return base ? toPlainConfig(base) : undefined
       })
       const editableBySchema = new Map<
@@ -288,6 +295,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          */
         withTrackEdits(base: TrackConfigEntry): TrackConfigEntry {
           return withDelta(base, deltaFor(base.trackId))
+        },
+        /**
+         * #method
+         * An assembly's sequence track with its delta (trackConfigDeltas)
+         * merged over it, the same as any track's. Its base is a snapshot of
+         * the assembly's node, so an edit lands in a working copy and a delta
+         * rather than in the assembly config.
+         */
+        withSequenceEdits(sequence: AnyTrackConfig): AnyTrackConfig {
+          const base = sequenceBaseFor(sequence.trackId)
+          return base ? withDelta(base, deltaFor(base.trackId)) : sequence
         },
         /**
          * #getter
