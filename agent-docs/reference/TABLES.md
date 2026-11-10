@@ -692,6 +692,50 @@ A new table follows the same split. Field names are an external contract once
 ggjbrowse reads them: renaming one breaks a downstream repo with no compiler between
 them, which is what the downstream canary is for.
 
+## The static hosts
+
+A table runs the display's own decisions, not a copy of them, on a static host:
+a minimal MST model per display with no session, view or autoruns
+(`wiggleStaticHost.ts` and `featureStaticHost.ts` in each plugin's `shared/`,
+`VariantTablesHost` and `AlignmentsTablesHost` in their `tables.ts`).
+
+- **The display's chain is views functions** over a duck-typed host, each
+  returning an object of getters. The display model installs each with
+  `.views(self => xViews(self))`, so every getter stays its own computed; the
+  host installs the same functions in the same order. Inside one, every member
+  is read through `self`, and a getter reading a sibling goes in a later
+  function.
+- **The host is declared at module scope**: the display's config schema as a
+  child, the frame and the fetched results as volatiles each set by one
+  action, the config mixins the display composes (`TrackHeightMixin`,
+  `YFieldConfigMixin`, `ScoreScaleMixin`), then the views. A display's hook
+  overrides are a views function too, installed after the layers that declare
+  the hooks. `afterAttach` never fires on a root, so nothing autoruns.
+- **Read the host in one `runInAction` per phase**, the fetch inputs and then
+  everything after the fetch: MobX caches a computed read outside a reaction
+  only inside a batch, and unbatched reads recomputed `laidOutByGroupColored`
+  twice and `bakedColorExtent` three times per call.
+- **One installer per chain.** A chain both the display and a host run is one
+  function taking and returning `IModelType<P, O, C, S>`, each layer still its
+  own `.views()`: `treeSidebarRowStages<S>()` (`TreeSidebarMixin` and the
+  wiggle and variants hosts), and `wiggleScoreStages` and
+  `wiggleSidebarStages` (`LinearWiggleDisplay` and the wiggle host). Views that
+  read `configuration`, a prop, are listed in both, since an installer would
+  have to constrain the model's props.
+- **Not a plain object.** A plain object with getters installed by hand needed
+  a cast for the views' own hooks and lazy forwarding between host and views,
+  and one spread-merged with a views object evaluated every getter eagerly, so
+  `labelVisibility` recomputed about five times and a later layer's override
+  never applied.
+- **Not one pure `resolveX(...)` per display.** A model getter calling it
+  recomputes the whole chain when any input moves, so a row-color edit would
+  re-walk the autoscale stats.
+
+A display's change lands in a table only when the host installs the views
+function it changed; the parity suites in `src/parity/` catch one that does
+not. Nothing else runs these hosts: drawing SVG from them was built and removed
+([ADR-262](../architecture-decision-records/adr-262-jb2export-stays-on-the-session-path.md)).
+
 ## The bare-host bundle
 
 `pnpm build:bundle` writes `dist/jbrowse-tables.js`, one IIFE with no imports.

@@ -600,7 +600,7 @@ what the display changes, so a new sidebar field needs no display edit:
 - wiggle and marks add the axis gutter as `leftInset` in `svgSidebar`, and
   their y scale's `left` is `sidebarPanelWidth(sidebarPanel)`.
 
-The static hosts (`wiggleStaticHost`, `markStaticHost`) install
+The wiggle static host (`wiggleStaticHost`) installs
 `rowSidebarViews` after `hierarchyViews`, as the mixin does. On screen
 `RowsPanel` and wiggle's `WiggleRowLabels` pass `rowAnnotationColors` to the
 same drawer, so the labels, the axis and the export gutter are one width.
