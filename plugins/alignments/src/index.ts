@@ -111,7 +111,10 @@ export type {
 export type { SashimiLabel } from './LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { MergedJunction } from './features/sashimi/junctions.ts'
-export type { LaneJunction } from './features/sashimi/supportingReads.ts'
+export type {
+  HoveredJunction,
+  LaneJunction,
+} from './features/sashimi/supportingReads.ts'
 export type { ReadSlot } from './shared/readSlot.ts'
 export type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 export type { ArcCategory } from './shaders/palettes.ts'
