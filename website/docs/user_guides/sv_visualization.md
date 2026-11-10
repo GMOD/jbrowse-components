@@ -196,10 +196,12 @@ insertion longer than the fragment adds mates that do not map.
 
 A read counts as **SV evidence** when it is a split read whose placed pieces
 join, an insertion or deletion of 50 bp or more, or a discordant pair, with both
-ends placed. **Filter by** and **Sort by** use it, and **SV kind**, the Group by
-row this arrangement sets, bands a read, its mate and its split pieces together
-by the kind of SV they point at, so the last band holds exactly the reads the
-filter hides.
+ends placed. An end is placed at mapping quality above 0: a split read counts
+when two pieces next to each other along the read are placed and join, and a
+discordant read unless its MQ tag puts the mate at 0. **Filter by** and **Sort
+by** use it, and **SV kind**, the Group by row this arrangement sets, bands a
+read, its mate and its split pieces together by the kind of SV they point at, so
+the last band holds exactly the reads the filter hides.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 

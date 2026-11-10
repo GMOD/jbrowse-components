@@ -24,6 +24,7 @@ import {
   readFieldsEntries,
   readFieldsFormOf,
 } from '../../shared/alignmentsFilter.ts'
+import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 import {
   CategoryRow,
   FilterForm,
@@ -40,6 +41,7 @@ import {
   layerFilterStateOf,
 } from './layerFilters.ts'
 
+import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { TagFilter } from '../../shared/types.ts'
 import type { LayerFiltersModel } from './layerFilters.ts'
 import type {
@@ -96,6 +98,8 @@ const useStyles = makeStyles()(theme => ({
     font: 'inherit',
   },
 }))
+
+const ALONE: ReadCategorySpec & { key: 'alone' } = READ_CATEGORIES[1]
 
 function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
@@ -486,10 +490,10 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
               />
             </FormRow>
             <CategoryRow
-              label="Reads with no mate in view"
+              label={ALONE.noun}
               all="All reads"
-              only="Only reads with no mate in view"
-              exclude="Hide reads with no mate in view"
+              only={ALONE.only}
+              exclude={ALONE.exclude}
               value={layers.alone}
               onChange={alone => {
                 setLayers({ ...layers, alone })
