@@ -124,6 +124,15 @@
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw"
+      },
+      "displayDefaults": {
+        "mark": "rect",
+        "encoding": {
+          "color": {
+            "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }
+          }
+        },
+        "height": 40
       }
     },
     {

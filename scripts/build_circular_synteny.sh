@@ -153,13 +153,11 @@ density = {
         'type': 'BigWigAdapter',
         'uri': served(f'{pair}.genes.gff.density.bw'),
     },
-    'displays': [{
-        'type': 'LinearWiggleDisplay',
-        'displayId': f'{pair}_gene_density-LinearWiggleDisplay',
+    'displayDefaults': {
         'mark': 'rect',
-        'encoding': {'color': {'scale': {'type': 'threshold', 'range': ['#e01e26', '#d95f02']}}},
+        'encoding': {'color': {'scale': {'type': 'linear', 'range': ['#ffffff', '#d95f02']}}},
         'height': 40,
-    }],
+    },
 }
 
 target_assembly, target_genes = hub_parts(target)

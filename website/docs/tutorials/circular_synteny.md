@@ -374,8 +374,8 @@ control.
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
 
 Below the 100 kb **Min length** cut, the PIF holds short rows between human chrX
-and mouse autosomes, each a repeat or retrocopy a few hundred bases long, and
-lowering **Min length** brings them back.
+and mouse autosomes, mostly a few hundred bases long, and lowering **Min
+length** brings them back.
 
 ## Hovering a ribbon
 
