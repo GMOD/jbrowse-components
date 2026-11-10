@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { ErrorMessage, LabeledCheckbox } from '@jbrowse/core/ui'
+import {
+  CascadingMenuButton,
+  ErrorMessage,
+  LabeledCheckbox,
+} from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { mutate, useFetch } from '@jbrowse/core/util/useFetch'
@@ -12,8 +16,6 @@ import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
   FormControl,
   IconButton,
-  Menu,
-  MenuItem,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -30,7 +32,7 @@ import {
 } from '../../removeRecentAction.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameDialog from '../dialogs/RenameDialog.tsx'
-import { NARROW_QUERY } from '../narrow.ts'
+import { COMPACT_QUERY, NARROW_QUERY } from '../narrow.ts'
 import { useStartScreenLaunch } from '../startScreenLaunch.ts'
 import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager } from '../util.tsx'
@@ -49,6 +51,7 @@ const useStyles = makeStyles()({
     // a narrow panel used to crush the row's items below their content width;
     // let them spill onto a second line instead
     flexWrap: 'wrap',
+    marginBottom: 10,
   },
   label: {
     whiteSpace: 'nowrap',
@@ -71,27 +74,22 @@ const ToggleButtonWithTooltip = observer(function ToggleButtonWithTooltip({
 
 const IconButtonWithTooltip = observer(function IconButtonWithTooltip({
   title,
-  disabled,
   onClick,
   children,
 }: {
   title: string
-  disabled?: boolean
   onClick: () => void
   children: React.ReactNode
 }) {
   return (
     <Tooltip title={title}>
-      <span>
-        <IconButton
-          disabled={disabled}
-          onClick={() => {
-            onClick()
-          }}
-        >
-          {children}
-        </IconButton>
-      </span>
+      <IconButton
+        onClick={() => {
+          onClick()
+        }}
+      >
+        {children}
+      </IconButton>
     </Tooltip>
   )
 })
@@ -102,11 +100,11 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
   const notifyError = useNotifyError()
   const { height: innerHeight } = useInnerDims()
   const narrow = useMediaQuery(NARROW_QUERY, { noSsr: true })
+  const compact = useMediaQuery(COMPACT_QUERY, { noSsr: true })
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
-  const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement>()
   const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
@@ -114,6 +112,10 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
   )
   const [showFavoritesOnly, setShowFavoritesOnly] = useLocalStorage(
     'showFavoritesOnly',
+    false,
+  )
+  const [showSessionPath, setShowSessionPath] = useLocalStorage(
+    'startScreen-showSessionPath',
     false,
   )
   const { isFavorite, toggleFavorite, pruneTo } = useFavoriteSessions()
@@ -201,94 +203,90 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
           }}
         />
       ) : null}
-      <div className={classes.flex}>
-        <FormControl>
-          <ToggleButtonGroup
-            exclusive
-            value={displayMode}
-            onChange={(_, newVal) => {
-              if (newVal) {
-                setDisplayMode(newVal)
-              }
-            }}
-          >
-            <ToggleButtonWithTooltip value="grid" title="Grid view">
-              <ViewComfyIcon />
-            </ToggleButtonWithTooltip>
-            <ToggleButtonWithTooltip value="list" title="List view">
-              <ListIcon />
-            </ToggleButtonWithTooltip>
-          </ToggleButtonGroup>
-        </FormControl>
-        {/* the grid drops its checkbox column at this width, so these two have
-        nothing left to act on; the row's own menu carries both actions */}
-        {displayMode === 'list' && !narrow ? (
-          <div style={{ display: 'flex' }}>
-            <IconButtonWithTooltip
-              title="Delete sessions"
-              disabled={!visibleSelection.length}
-              onClick={() => {
-                setSessionsToDelete(visibleSelection)
+      {sessions.length ? (
+        <div className={classes.flex}>
+          <FormControl>
+            <ToggleButtonGroup
+              exclusive
+              value={displayMode}
+              onChange={(_, newVal) => {
+                if (newVal) {
+                  setDisplayMode(newVal)
+                }
               }}
             >
-              <DeleteIcon />
-            </IconButtonWithTooltip>
-            <IconButtonWithTooltip
-              title="Add sessions to quickstart list"
-              disabled={!visibleSelection.length}
-              onClick={async () => {
-                await addToQuickstartList(visibleSelection)
-              }}
-            >
-              <PlaylistAddIcon />
-            </IconButtonWithTooltip>
-          </div>
-        ) : null}
-        <Tooltip title="More actions">
-          <IconButton
-            onClick={event => {
-              setMoreMenuAnchor(event.currentTarget)
-            }}
+              <ToggleButtonWithTooltip value="grid" title="Grid view">
+                <ViewComfyIcon />
+              </ToggleButtonWithTooltip>
+              <ToggleButtonWithTooltip value="list" title="List view">
+                <ListIcon />
+              </ToggleButtonWithTooltip>
+            </ToggleButtonGroup>
+          </FormControl>
+          {/* the grid drops its checkbox column at this width, so these two have
+          nothing left to act on; the row's own menu carries both actions */}
+          {displayMode === 'list' && !narrow && visibleSelection.length ? (
+            <div style={{ display: 'flex' }}>
+              <IconButtonWithTooltip
+                title="Delete sessions"
+                onClick={() => {
+                  setSessionsToDelete(visibleSelection)
+                }}
+              >
+                <DeleteIcon />
+              </IconButtonWithTooltip>
+              <IconButtonWithTooltip
+                title="Add sessions to quickstart list"
+                onClick={async () => {
+                  await addToQuickstartList(visibleSelection)
+                }}
+              >
+                <PlaylistAddIcon />
+              </IconButtonWithTooltip>
+            </div>
+          ) : null}
+          <CascadingMenuButton
+            tooltip="More actions"
+            menuItems={() => [
+              {
+                label: 'Show session path',
+                type: 'checkbox',
+                checked: showSessionPath,
+                onClick: () => {
+                  setShowSessionPath(!showSessionPath)
+                },
+              },
+              {
+                label: oldAutosaves.length
+                  ? `Delete ${oldAutosaves.length} autosave${oldAutosaves.length === 1 ? '' : 's'} older than 30 days`
+                  : 'No autosaves older than 30 days',
+                disabled: !oldAutosaves.length,
+                onClick: () => {
+                  setSessionsToDelete(oldAutosaves)
+                },
+              },
+            ]}
           >
             <MoreVertIcon />
-          </IconButton>
-        </Tooltip>
-        <Menu
-          anchorEl={moreMenuAnchor}
-          open={Boolean(moreMenuAnchor)}
-          onClose={() => {
-            setMoreMenuAnchor(undefined)
-          }}
-        >
-          <MenuItem
-            disabled={!oldAutosaves.length}
-            onClick={() => {
-              setMoreMenuAnchor(undefined)
-              setSessionsToDelete(oldAutosaves)
+          </CascadingMenuButton>
+          <LabeledCheckbox
+            className={classes.label}
+            label="Show autosaves"
+            checked={showAutosaves}
+            onChange={val => {
+              setShowAutosaves(val)
             }}
-          >
-            {oldAutosaves.length
-              ? `Delete ${oldAutosaves.length} autosave${oldAutosaves.length === 1 ? '' : 's'} older than 30 days`
-              : 'No autosaves older than 30 days'}
-          </MenuItem>
-        </Menu>
-        <LabeledCheckbox
-          className={classes.label}
-          label="Show autosaves"
-          checked={showAutosaves}
-          onChange={val => {
-            setShowAutosaves(val)
-          }}
-        />
-        <LabeledCheckbox
-          className={classes.label}
-          label="Show favorites only"
-          checked={showFavoritesOnly}
-          onChange={val => {
-            setShowFavoritesOnly(val)
-          }}
-        />
-      </div>
+          />
+          <LabeledCheckbox
+            className={classes.label}
+            label="Show favorites only"
+            checked={showFavoritesOnly}
+            onChange={val => {
+              setShowFavoritesOnly(val)
+            }}
+          />
+        </div>
+      ) : null}
 
       {!filteredSessions.length ? (
         <Typography>
@@ -297,9 +295,15 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
             : 'No sessions available'}
         </Typography>
       ) : (
-        // both views scroll inside half the window rather than pushing the
-        // start screen's own page scroll, so the panel owns the box
-        <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
+        // both views scroll inside what the window has left below the header
+        // rather than pushing the start screen's own page scroll, so the panel
+        // owns the box
+        <div
+          style={{
+            maxHeight: Math.max(200, innerHeight - (compact ? 235 : 370)),
+            overflow: 'auto',
+          }}
+        >
           {displayMode === 'grid' ? (
             <RecentSessionsCards
               launch={launch}
@@ -317,6 +321,7 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
               setSessionToRename={setSessionToRename}
               setSessionsToDelete={setSessionsToDelete}
               sessions={filteredSessions}
+              showPath={showSessionPath}
               isFavorite={isFavorite}
               toggleFavorite={toggleFavorite}
               addToQuickstartList={entry => addToQuickstartList([entry])}

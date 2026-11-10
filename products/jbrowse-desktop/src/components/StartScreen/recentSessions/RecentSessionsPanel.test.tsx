@@ -57,3 +57,42 @@ test('clicking a session launches it through the start screen', async () => {
   })
   expect(launch).toHaveBeenCalledTimes(1)
 })
+
+test('the More actions menu brings the session path column back', async () => {
+  localStorage.clear()
+  renderPanel()
+  await screen.findByText('Volvox')
+  expect(screen.queryByText('Session path')).toBeNull()
+
+  fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+  fireEvent.click(await screen.findByText('Show session path'))
+
+  expect(await screen.findByText('Session path')).toBeTruthy()
+})
+
+test('the bulk delete and quickstart icons appear only once a row is ticked', async () => {
+  renderPanel()
+  await screen.findByText('Volvox')
+  expect(screen.queryByRole('button', { name: 'Delete sessions' })).toBeNull()
+
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select row' }))
+
+  expect(
+    await screen.findByRole('button', { name: 'Delete sessions' }),
+  ).toBeTruthy()
+  expect(
+    screen.getByRole('button', { name: 'Add sessions to quickstart list' }),
+  ).toBeTruthy()
+})
+
+test('with no sessions the list toolbar is hidden', async () => {
+  jest
+    .mocked(invokeIpc)
+    .mockImplementation(async (...args) =>
+      args[0] === 'listSessions' ? [] : undefined,
+    )
+  renderPanel()
+  expect(await screen.findByText('No sessions available')).toBeTruthy()
+  expect(screen.queryByText('Show autosaves')).toBeNull()
+  expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull()
+})

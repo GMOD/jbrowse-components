@@ -12,7 +12,7 @@ jest.mock('../../../ipc.ts', () => ({ invokeIpc: jest.fn() }))
 // component that has no narrow branch at all. Only `matches` is read, for the
 // one px max-width query the start screen asks; the listeners are there because
 // useMediaQuery subscribes before it ever reads, and nothing here resizes.
-function renderAt(width: number) {
+function renderAt(width: number, showPath = false) {
   window.matchMedia = (query: string) => {
     const px = Number(/\(max-width:\s*(\d+)px\)/.exec(query)?.[1])
     return {
@@ -25,6 +25,7 @@ function renderAt(width: number) {
     <RecentSessionsDataGrid
       launch={async () => {}}
       sessions={sessions}
+      showPath={showPath}
       setSelectedSessions={() => {}}
       setSessionToRename={() => {}}
       setSessionsToDelete={() => {}}
@@ -47,11 +48,23 @@ const sessions: RecentSessionData[] = [
   },
 ]
 
-test('a wide window gets the path column and the selection checkboxes', () => {
+test('a wide window gets the selection checkboxes and no path column until asked', () => {
   const { container } = renderAt(1400)
 
-  expect(screen.getByText('Session path')).toBeTruthy()
+  expect(screen.queryByText('Session path')).toBeNull()
   expect(container.querySelector('[data-field="__check__"]')).not.toBeNull()
+})
+
+test('showPath brings the path column back in a wide window', () => {
+  renderAt(1400, true)
+
+  expect(screen.getByText('Session path')).toBeTruthy()
+})
+
+test('a list of 100 sessions or fewer has no footer', () => {
+  const { container } = renderAt(1400)
+
+  expect(container.querySelector('.MuiDataGrid-footerContainer')).toBeNull()
 })
 
 // The narrow layout spends the grid's width on the name: a path column that
@@ -60,7 +73,7 @@ test('a wide window gets the path column and the selection checkboxes', () => {
 // row's own menu. Both columns coming back is what would go unnoticed — the
 // grid still renders, just scrolled sideways with the name unreadable.
 test('a narrow window drops the path column and the selection checkboxes', () => {
-  const { container } = renderAt(380)
+  const { container } = renderAt(380, true)
 
   expect(screen.queryByText('Session path')).toBeNull()
   expect(container.querySelector('[data-field="__check__"]')).toBeNull()

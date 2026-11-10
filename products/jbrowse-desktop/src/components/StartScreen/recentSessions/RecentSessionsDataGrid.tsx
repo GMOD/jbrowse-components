@@ -17,10 +17,6 @@ import type {
   GridRowSelectionModel,
 } from '@mui/x-data-grid'
 
-// SessionNameCell puts a small star IconButton (30px) and a MoreHoriz
-// IconButton (40px) after the name, none of which measureGridWidth sees
-const nameCellIconsWidth = 70
-
 const useStyles = makeStyles()({
   cell: {
     whiteSpace: 'nowrap',
@@ -32,6 +28,7 @@ const useStyles = makeStyles()({
 const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
   launch,
   sessions,
+  showPath,
   setSelectedSessions,
   setSessionToRename,
   setSessionsToDelete,
@@ -44,6 +41,7 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
   setSessionsToDelete: (arg: RecentSessionData[]) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
+  showPath: boolean
   isFavorite: (sessionPath: string) => boolean
   toggleFavorite: (sessionPath: string) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
@@ -60,10 +58,6 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
     return { ...session, lastModified: label, lastModifiedTooltip: tooltip }
   })
 
-  const nameWidth = measureGridWidth(
-    rows.map(r => r.name),
-    { stripHTML: true, padding: 30 + nameCellIconsWidth },
-  )
   const lastModifiedWidth =
     measureGridWidth(
       rows.map(r => r.lastModified),
@@ -74,9 +68,8 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
     {
       field: 'name',
       headerName: 'Session name',
-      // measured to fit at any width the grid can have; narrow, the name is the
-      // only column worth the space, so it takes what the others leave
-      ...(narrow ? { flex: 1, minWidth: 150 } : { width: nameWidth }),
+      flex: 1,
+      minWidth: 150,
       renderCell: ({ value, row }: GridRenderCellParams) => (
         <SessionNameCell
           value={String(value)}
@@ -93,9 +86,8 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
     // a path column narrow enough to fit shows "/home/user/jbrowse/sessi…" and
     // nothing the user can act on, so a narrow window spends the width on the
     // name instead; the row menu still names the file
-    ...(narrow
-      ? []
-      : [
+    ...(showPath && !narrow
+      ? [
           {
             field: 'path',
             headerName: 'Session path',
@@ -106,7 +98,8 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
               </Tooltip>
             ),
           },
-        ]),
+        ]
+      : []),
     {
       field: 'lastModified',
       headerName: 'Last modified',
@@ -128,6 +121,7 @@ const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
         // own menu, and the name needs the space more
         checkboxSelection={!narrow}
         disableRowSelectionOnClick
+        hideFooter={rows.length <= 100}
         getRowId={row => row.path}
         onRowSelectionModelChange={(model: GridRowSelectionModel) => {
           setSelectedSessions(selectedFromModel(model, sessions))
