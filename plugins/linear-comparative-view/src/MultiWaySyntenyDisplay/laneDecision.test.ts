@@ -345,6 +345,17 @@ describe('a stray piece', () => {
     expect(decision.alsoAt).toEqual([{ start: 501_900, end: 502_500 }])
   })
 
+  test('releasing a block pin decides as if the lane had never been pinned', () => {
+    const groups = split(450)
+    const pinned = decide(groups, {
+      pins: [{ lane: 'peach', refName: 'Pp1', at: 500_200 }],
+    })
+    expect(pinned.get('peach')!.fitMin).toBe(500_000)
+    expect(decide(groups, { previous: pinned }).get('peach')).toEqual(
+      decide(groups).get('peach'),
+    )
+  })
+
   test('a small cluster the lane already draws stays in its block', () => {
     const lane = (smallBp: number) =>
       groupFeatures([

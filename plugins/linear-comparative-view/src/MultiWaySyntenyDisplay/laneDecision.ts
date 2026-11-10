@@ -237,7 +237,7 @@ export function computeRowFrame(
     groups,
     assemblyName,
     unitBp,
-    incumbent,
+    unlessReleased(incumbent, undefined),
     undefined,
     laneOpeningsOf(groups),
   )?.frame
@@ -252,6 +252,15 @@ type FitIncumbent = Pick<
   'refName' | 'rung' | 'fitMin' | 'fitMax' | 'pinned'
 >
 
+function unlessReleased<T extends FitIncumbent>(
+  incumbent: T | undefined,
+  pinned: LanePlacePin | undefined,
+) {
+  return incumbent?.pinned && incumbent.refName !== pinned?.refName
+    ? undefined
+    : incumbent
+}
+
 function fitLane(
   groups: MultiWayGroup[],
   assemblyName: string,
@@ -260,11 +269,10 @@ function fitLane(
   pinned: LanePlacePin | undefined,
   openingsOf: OpeningsOf,
 ) {
-  const released = incumbent?.pinned && incumbent.refName !== pinned?.refName
   const contig = pickContig(
     groups,
     assemblyName,
-    released ? undefined : incumbent?.refName,
+    incumbent?.refName,
     pinned?.refName,
   )
   if (!contig) {
@@ -611,13 +619,14 @@ export function decideLaneFrames({
       }
       continue
     }
-    const prev = previous.get(assemblyName)
+    const placePin = placePinOf(pins, assemblyName)
+    const prev = unlessReleased(previous.get(assemblyName), placePin)
     const fit = fitLane(
       groups,
       assemblyName,
       unitBp,
       prev,
-      placePinOf(pins, assemblyName),
+      placePin,
       openingsOf,
     )
     if (fit === undefined) {
