@@ -1,3 +1,5 @@
+import LaunchIcon from '@mui/icons-material/Launch'
+
 import type { MenuItem, SubMenuItem } from './MenuTypes.ts'
 
 // The submenu every "open something for this region" contribution collects
@@ -34,15 +36,21 @@ export function pushIntoSubMenu(
       subMenu.push(item)
     }
   } else {
-    items.push({ label, type: 'subMenu', subMenu: [item] })
+    items.push({
+      label,
+      type: 'subMenu',
+      subMenu: [item],
+      ...(label === LAUNCH_LABEL ? { icon: LaunchIcon } : {}),
+    })
   }
 }
 
 /**
  * A track menu's Launch submenu moved to the end of its Advanced submenu, where
  * it has one: what Launch opens (a consensus readout, another view on the
- * region) is occasional, and the top level keeps the everyday rows. A menu
- * without an Advanced row keeps Launch where it is.
+ * region) is occasional, and the top level keeps the everyday rows. It drops
+ * its icon there, as Advanced's other rows do. A menu without an Advanced row
+ * keeps Launch where it is.
  */
 export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
   const launch = items.find(subMenuLabeled(LAUNCH_LABEL))
@@ -51,6 +59,7 @@ export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
     return items
   }
   const { subMenu } = advanced
+  const { icon: _icon, ...launchWithoutIcon } = launch
   return items
     .filter(i => i !== launch)
     .map(i =>
@@ -59,7 +68,7 @@ export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
             ...advanced,
             subMenu: [
               ...(typeof subMenu === 'function' ? subMenu() : subMenu),
-              launch,
+              launchWithoutIcon,
             ],
           }
         : i,

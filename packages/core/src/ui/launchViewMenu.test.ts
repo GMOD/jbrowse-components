@@ -18,6 +18,15 @@ test('creates the submenu once and appends to it after', () => {
   ).toEqual(['a', 'b'])
 })
 
+test('a created Launch submenu carries the Launch icon, another group none', () => {
+  const items: MenuItem[] = []
+  pushIntoSubMenu(items, 'Launch', { label: 'a', onClick: () => {} })
+  pushIntoSubMenu(items, 'Export', { label: 'b', onClick: () => {} })
+  const [launch, other] = items
+  expect(launch && 'icon' in launch ? launch.icon : undefined).toBeDefined()
+  expect(other && 'icon' in other ? other.icon : undefined).toBeUndefined()
+})
+
 test('appends to a function-form submenu without calling it', () => {
   const build = jest.fn((): MenuItem[] => [{ label: 'a', onClick: () => {} }])
   const items: MenuItem[] = [
@@ -51,6 +60,15 @@ describe('nestLaunchInAdvanced', () => {
     expect(
       'subMenu' in advanced ? labels(resolveSubMenu(advanced)) : [],
     ).toEqual(['Edit plot...', 'Launch'])
+  })
+
+  test('drops the Launch icon inside Advanced', () => {
+    const items: MenuItem[] = [sub('Advanced', [row('Edit plot...')])]
+    pushIntoSubMenu(items, 'Launch', row('Consensus'))
+    const [advanced] = nestLaunchInAdvanced(items)
+    const nested =
+      advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []
+    expect(nested.some(i => 'icon' in i && i.icon)).toBe(false)
   })
 
   test('keeps Launch where it is on a menu without Advanced', () => {

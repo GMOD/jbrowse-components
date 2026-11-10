@@ -493,8 +493,8 @@ export default function rootModelFactory({
                   redoMenuItem(self.history),
                   { type: 'divider' },
                   pluginStoreMenuItem(),
-                  preferencesMenuItem(pluginManager),
                   assemblyManagerMenuItem(),
+                  preferencesMenuItem(pluginManager),
                   {
                     label: 'Jobs list',
                     icon: Indexing,
