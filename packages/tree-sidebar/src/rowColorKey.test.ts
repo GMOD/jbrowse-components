@@ -23,8 +23,14 @@ interface TestRow {
   group?: string
   sex?: string
   tissue?: string
+  age?: string
   color?: string
 }
+
+const SEXED_TWO: TestRow[] = [
+  { name: 'a', group: 'x', sex: 'f' },
+  { name: 'b', group: 'y', sex: 'm' },
+]
 
 const GROUPED: TestRow[] = [
   { name: 'a', group: 'x' },
@@ -721,5 +727,70 @@ describe('rowColumnLabels', () => {
       top: 0,
       height: SIDEBAR_HINT_LINE_PX,
     })
+  })
+})
+
+// What a display's corner notice says of rows.annotations, as rows.filter's
+// unread field and facet.field's unbanded rows are said.
+describe('rowAnnotationNotices', () => {
+  const AGED: TestRow[] = Array.from({ length: 12 }, (_, i) => ({
+    name: `r${i}`,
+    sex: i % 2 ? 'f' : 'm',
+    age: String(20 + i),
+  }))
+
+  it('names a field no row carries', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['population', 'sex'] } },
+      { rows: AGED },
+    )
+    expect(display.rowAnnotationNotices(500)).toEqual([
+      'rows.annotations: no row carries "population", so it draws no column',
+    ])
+  })
+
+  it('names mostly distinct numbers, each dealt a color of its own', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['age', 'sex'] } },
+      { rows: AGED },
+    )
+    expect(display.rowAnnotationNotices(500)).toEqual([
+      expect.stringMatching(
+        /^rows\.annotations: "age" holds 12 distinct numbers.*continuous color scale is not supported$/,
+      ),
+    ])
+    expect(
+      makeDisplay(
+        { rows: { annotations: ['age'] } },
+        { rows: AGED.slice(0, 6) },
+      ).rowAnnotationNotices(500),
+    ).toEqual([])
+  })
+
+  it('names column labels taking more than half the track', () => {
+    const display = makeDisplay(
+      { rows: { annotations: ['sex', 'group'] } },
+      { rows: SEXED_TWO },
+    )
+    const lines = 2 * ROW_COLUMN_LABEL_LINE_HEIGHT
+    expect(display.rowAnnotationNotices(2 * lines)).toEqual([])
+    expect(display.rowAnnotationNotices(2 * lines - 1)).toEqual([
+      `rows.annotations: the 2 column labels take ${lines} of the track's ${2 * lines - 1} px, leaving the rows less than half`,
+    ])
+  })
+
+  it('says nothing before the rows are known, or while the columns cannot draw', () => {
+    expect(
+      makeDisplay(
+        { rows: { annotations: ['population'] } },
+        { rows: [] },
+      ).rowAnnotationNotices(500),
+    ).toEqual([])
+    expect(
+      makeDisplay(
+        { rows: { annotations: ['population'], axis: { labels: false } } },
+        { rows: AGED },
+      ).rowAnnotationNotices(500),
+    ).toEqual([])
   })
 })

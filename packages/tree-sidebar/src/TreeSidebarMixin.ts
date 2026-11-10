@@ -31,6 +31,7 @@ import {
   unmatchedKeptNames,
   unreadRowFields,
 } from './narrowRows.ts'
+import { rowAnnotationNotices } from './rowAnnotationNotices.ts'
 import {
   liftRowColor,
   pinnedColorsOf,
@@ -676,6 +677,24 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       * The lines for the corner notice about `rows.annotations` on a track
+       * `height` px tall (`rowAnnotationNotices`): an entry on a field no row
+       * carries, one on mostly distinct numbers, and column labels taking
+       * more than half the track. Each display spreads it into its
+       * `notices`.
+       */
+      rowAnnotationNotices(height: number): string[] {
+        return rowAnnotationNotices({
+          rows: self.expandedRows,
+          settings: self.drawsRowAnnotations
+            ? self.rowAnnotationDeals.map(deal => deal.setting)
+            : [],
+          columnLabels: self.rowColumnLabels,
+          height,
+        })
+      },
       /**
        * #getter
        * The chip above the rows while `rowNarrowingShows`: "Showing N of M

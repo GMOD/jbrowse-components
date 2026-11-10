@@ -234,6 +234,15 @@ test('rows: a one-row track draws no annotation column, label line or key', asyn
   expect(display.svgSidebar.annotations).toEqual([])
 })
 
+test('rows: an annotation on a field no subtrack carries is a live notice', async () => {
+  const display = await loaded(TISSUES, {
+    rows: { field: 'source', annotations: ['population', 'tissue'] },
+  })
+  expect(display.liveNotices).toContain(
+    'rows.annotations: no row carries "population", so it draws no column',
+  )
+})
+
 test('rows: the declared order leads and the rest keep adapter order', async () => {
   const display = await loaded(GROUPED, rowsPerSource(['Grain3']))
   expect(derived(display)).toMatchSnapshot()

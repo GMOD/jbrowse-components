@@ -314,13 +314,14 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * What the loaded sources said they could not serve, and
-       * `rowNarrowingNotices`.
+       * What the loaded sources said they could not serve,
+       * `rowNarrowingNotices` and `rowAnnotationNotices`.
        */
       get liveNotices(): string[] {
         return [
           ...sourceWarnings(self.rpcDataMap),
           ...self.rowNarrowingNotices,
+          ...self.rowAnnotationNotices(self.height),
           ...(self.isDensityMode && self.sharesPanel
             ? [
                 'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',

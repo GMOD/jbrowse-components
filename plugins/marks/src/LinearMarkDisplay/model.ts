@@ -645,6 +645,7 @@ export function stateModelFactory(
             ...this.dataNotices,
             ...this.displayNotices,
             ...self.rowNarrowingNotices,
+            ...self.rowAnnotationNotices(self.height),
             ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
           ]
@@ -662,6 +663,7 @@ export function stateModelFactory(
             ...this.dataNotices,
             ...this.displayNotices,
             ...self.rowNarrowingNotices,
+            ...self.rowAnnotationNotices(self.height),
             ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
             ...(total > 0 && skipped === total
