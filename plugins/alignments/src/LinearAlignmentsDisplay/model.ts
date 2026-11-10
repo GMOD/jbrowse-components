@@ -3012,8 +3012,8 @@ export default function stateModelFactory(
             disabledHelpText: 'Turn on "Show pileup" to change read height',
           }
           // Where the band switches live is settled (Coverage, Pileup and
-          // Sashimi arcs in "Show...", the pair band in "Read connections"),
-          // so a menu review leaves them there.
+          // Sashimi arcs in "Show...", the connection band in "Read
+          // connections"), so a menu review leaves them there.
           return [
             getReadsColorByMenuItem(self),
             getSortMenuItem(self, {
