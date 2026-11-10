@@ -10,26 +10,27 @@ import { toWire } from './wire.ts'
 
 const send = (value: unknown) => {
   const { json, bytes } = toWire(value)
-  ;(globalThis as Record<string, unknown>).jbrowseBytes = bytes
+  Object.assign(globalThis, { jbrowseBytes: bytes })
   return json
 }
 
-const engine = createTablesEngine()
+const { sequence, cache, clearCache, ...tables } = createTablesEngine()
 
 const cacheArgs = ({ limit }: { limit?: number | null }) =>
   limit === undefined ? {} : { limit: limit ?? Infinity }
 
-;(globalThis as Record<string, unknown>).jbrowse = {
-  ...Object.fromEntries(
-    Object.entries(engine).map(([name, table]) => [
-      name,
-      async (args: string) =>
-        send(await (table as (args: unknown) => unknown)(JSON.parse(args))),
-    ]),
-  ),
-  sequence: async (args: string) => engine.sequence(JSON.parse(args)),
-  alignmentColors: () => send(alignmentColors()),
-  cache: async (args: string) =>
-    JSON.stringify(await engine.cache(cacheArgs(JSON.parse(args)))),
-  clearCache: async () => JSON.stringify(await engine.clearCache()),
-}
+Object.assign(globalThis, {
+  jbrowse: {
+    ...Object.fromEntries(
+      Object.entries(tables).map(([name, table]) => [
+        name,
+        async (args: string) => send(await table(JSON.parse(args))),
+      ]),
+    ),
+    sequence: async (args: string) => sequence(JSON.parse(args)),
+    alignmentColors: () => send(alignmentColors()),
+    cache: async (args: string) =>
+      JSON.stringify(await cache(cacheArgs(JSON.parse(args)))),
+    clearCache: async () => JSON.stringify(await clearCache()),
+  },
+})
