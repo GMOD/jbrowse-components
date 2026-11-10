@@ -77,7 +77,11 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
       headerName: 'Type',
       flex: 1,
       renderCell: ({ row }) => (
-        <Typography variant="body2" color={statusColor(row.status)}>
+        <Typography
+          component="span"
+          variant="body2"
+          color={statusColor(row.status)}
+        >
           {row.type}
         </Typography>
       ),

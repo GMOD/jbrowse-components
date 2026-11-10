@@ -1,4 +1,5 @@
 import { getNotificationSink } from '@jbrowse/core/util'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isUriLocation } from '@jbrowse/core/util/types'
 import { Button, Link, Typography } from '@mui/material'
@@ -24,10 +25,12 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 function isSubmittable(model: AddTrackModel) {
+  const adapterType = model.trackAdapter?.type
   return !!(
     model.submittableTrackName &&
     model.trackType &&
-    model.trackAdapter?.type &&
+    adapterType &&
+    adapterType !== UNKNOWN &&
     model.assembly &&
     !model.mixinMissing
   )
