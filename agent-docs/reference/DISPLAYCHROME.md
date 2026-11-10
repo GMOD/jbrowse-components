@@ -130,7 +130,7 @@ Every LGV display emits one chrome element with four orthogonal attributes:
 | `data-testid` | the display type's base name, never mutated | which KIND of display |
 | `data-display-id` | `configuration.displayId` | WHICH display |
 | `data-display-drawn` | `true` / `false` | has it painted (FIRST paint) |
-| `data-display-phase` | `ready` / `loading` / `error` / `canceled` | is it FINISHED (all but `loading`) |
+| `data-display-phase` | `ready` / `loading` / `error` / `canceled`, and `tooLarge` / `renderError` on the banner's own root | is it FINISHED (all but `loading`) |
 
 [ADR-065](../architecture-decision-records/adr-065-display-readiness-selectors.md)
 deleted the mutating `-done` suffix. "This display type, painted" is a

@@ -5,6 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
@@ -97,10 +98,11 @@ const MultiWaySyntenyReactComponent = observer(
           const { clientX, clientY } = event
           model.setPointer({ ...eventPoint(event), clientX, clientY })
           const target = model.hoverTarget
-          if (target?.loci?.length) {
-            event.preventDefault()
-            model.openContextMenu({ clientX, clientY, target })
-          }
+          openContextMenuFromEvent(
+            model,
+            event,
+            target?.loci?.length ? { clientX, clientY, target } : undefined,
+          )
         }}
         onClick={event => {
           const pressed = pressX.current

@@ -49,8 +49,7 @@ export interface DisplayPhaseInputs extends DisplayStatusPhaseInputs {
  * the containing view (`visibleRegions`, `loadedRegions`, …), and evaluating it
  * eagerly would subscribe every reader of `displayPhase` to that churn even
  * while a banner is up — and `DisplayChrome`'s observer, re-firing during a
- * terminal state, then fails to commit the banner subtree (see
- * DisplayChrome.tsx).
+ * terminal state, then fails to commit the banner subtree.
  */
 export function computeDisplayPhase(
   { renderError, regionTooLarge, error }: DisplayPhaseInputs,
