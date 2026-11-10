@@ -112,14 +112,23 @@ test('BAM, CRAM and SAM records of one split read align the same read bases', as
   const cram = await fetchAll(cramAdapter())
   const sam = await fetchAll(samAdapter(bam))
   const flags = new Set(bam.map(f => f.get('flags')))
-  const cigars = bam.map(f => f.get('CIGAR') as string)
+  const cigars = bam.flatMap(f => {
+    const cigar = f.get('CIGAR')
+    return typeof cigar === 'string' ? [cigar] : []
+  })
   expect(flags.has(2064)).toBe(true)
   expect(flags.has(16)).toBe(true)
   expect(cigars.some(c => /^\d+H/.test(c))).toBe(true)
   expect(cigars.some(c => /^\d+S|\d+S$/.test(c))).toBe(true)
 
   const walked = Object.fromEntries(
-    bam.map(f => [keyOf(f), getLengthSansClipping(f.get('CIGAR'))]),
+    bam.map(f => {
+      const cigar = f.get('CIGAR')
+      return [
+        keyOf(f),
+        typeof cigar === 'string' ? getLengthSansClipping(cigar) : Number.NaN,
+      ]
+    }),
   )
   expect(alignedBasesByRecord(bam)).toEqual(walked)
   expect(alignedBasesByRecord(cram)).toEqual(walked)

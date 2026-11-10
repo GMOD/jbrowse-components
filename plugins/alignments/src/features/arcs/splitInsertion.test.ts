@@ -1,4 +1,4 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, adapterRefNameText } from '@jbrowse/core/util'
 
 import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
@@ -174,7 +174,7 @@ function classified(read: Piece[]) {
       [{ refName: 'ctgA', start: 0, end: 50_000, displayedRegionIndex: 0 }],
       '',
     ),
-    { filter: {}, canonicalRefName: name => name },
+    { filter: {}, canonicalRefName: adapterRefNameText },
   ).map(getArcColorType)
   const connectors = [
     ...iterLinkedPairs(

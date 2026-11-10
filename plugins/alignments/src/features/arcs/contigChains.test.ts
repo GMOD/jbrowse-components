@@ -24,6 +24,10 @@ class ContigBlock extends SimpleFeature implements MismatchFeature {
     return (this.get('mate') as { start: number }).start
   }
 
+  get alignedReadBases() {
+    return 0
+  }
+
   get cigarCategoryBits() {
     return 0
   }

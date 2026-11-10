@@ -5,13 +5,13 @@ import { arcCategoryColor } from '../../shaders/palettes.ts'
 import { buildSashimiBandFeeds } from './bandFeed.ts'
 import { junctionKey } from './junctions.ts'
 
-import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { SashimiSplitClass } from './junctionClass.ts'
 import type { MergedJunction } from './junctions.ts'
 
 function junction(
   start: number,
   end: number,
-  split?: ArcSplitCategory,
+  split?: SashimiSplitClass,
 ): MergedJunction {
   return {
     key: junctionKey('chr1', start, end, split),

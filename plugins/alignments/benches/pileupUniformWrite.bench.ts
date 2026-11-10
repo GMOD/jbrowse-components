@@ -434,6 +434,7 @@ function totalValues(block: Block, top: number): Uniforms {
       totalSlot(c.linked[8]!),
       totalSlot(c.linked[9]!),
       totalSlot(c.linked[10]!),
+      totalSlot(c.linked[11]!),
     ],
     readCategoryColor: [
       totalSlot(c.category[0]!),
@@ -533,6 +534,7 @@ function templateValues(): Uniforms {
       totalSlot(c.linked[8]!),
       totalSlot(c.linked[9]!),
       totalSlot(c.linked[10]!),
+      totalSlot(c.linked[11]!),
     ],
     readCategoryColor: [
       totalSlot(c.category[0]!),
@@ -683,6 +685,7 @@ function hoistColors(): HoistedColors {
       slot(COLORS.linked[8]!),
       slot(COLORS.linked[9]!),
       slot(COLORS.linked[10]!),
+      slot(COLORS.linked[11]!),
     ],
     category: [
       slot(COLORS.category[0]!),

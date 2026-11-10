@@ -26,9 +26,9 @@ function piece(
   end: number,
   strand: number,
   clip: number,
-  { refName = 'ctgA', placed = true } = {},
+  { refName = 'ctgA', placed = true, alignedBases = end - start } = {},
 ): ReadPiece {
-  return { refName, start, end, strand, clip, placed }
+  return { refName, start, end, strand, clip, alignedBases, placed }
 }
 
 test('a forward read jumping ahead is a deletion-type junction, filed with LR pairs', () => {

@@ -7,7 +7,7 @@ import {
 } from './motif.ts'
 
 import type { CategoryFilter, JunctionFilter } from '../../shared/types.ts'
-import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { SashimiSplitClass } from './junctionClass.ts'
 import type { RegionJunctions, SashimiPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
@@ -18,7 +18,7 @@ interface JunctionDetail {
   rev?: number
   donor?: string
   acceptor?: string
-  split?: ArcSplitCategory
+  split?: SashimiSplitClass
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
