@@ -133,15 +133,12 @@ function splitJunctionColor(arc: SplitPendingArc) {
  * Whether a same-strand junction is an insertion: the read comes back where
  * it left (`refGap`, the reference it skips in its own direction, 0), or reads
  * an SV-size stretch (`readGap`) between pieces that overlap or miss by at
- * most half of it, as a target-site duplication or flank homology leaves them,
- * and skip under an SV's worth of reference, which a deletion would.
+ * most half of it, as a target-site duplication or flank homology leaves them.
  */
 export function isSplitInsertion(refGap: number, readGap: number) {
   return (
     refGap === 0 ||
-    (readGap >= SV_INDEL_MIN_BP &&
-      2 * Math.abs(refGap) <= readGap &&
-      refGap < SV_INDEL_MIN_BP)
+    (readGap >= SV_INDEL_MIN_BP && 2 * Math.abs(refGap) <= readGap)
   )
 }
 

@@ -45,11 +45,11 @@ describe('a same-strand split junction is an insertion', () => {
   )
 
   test.each([1, -1])(
-    'unless it skips an SV-size stretch of reference, strand %i',
+    'however much reference it skips, by the same half, strand %i',
     strand => {
-      expect(sameStrand(49, 1000, strand)).toBe(ARC_COLOR_SPLIT_INSERTION)
-      expect(sameStrand(50, 1000, strand)).toBe(ARC_COLOR_SPLIT_FORWARD)
-      expect(sameStrand(50, 100, strand)).toBe(ARC_COLOR_SPLIT_FORWARD)
+      expect(sameStrand(50, 100, strand)).toBe(ARC_COLOR_SPLIT_INSERTION)
+      expect(sameStrand(500, 1000, strand)).toBe(ARC_COLOR_SPLIT_INSERTION)
+      expect(sameStrand(501, 1000, strand)).toBe(ARC_COLOR_SPLIT_FORWARD)
     },
   )
 
@@ -209,8 +209,13 @@ describe('the band, the arc and the connector class one junction alike', () => {
     ['a deletion', pieces(1000, 7000, 1000), ARC_COLOR_SPLIT_FORWARD],
     ['a tandem duplication', pieces(6000, 2000, 1000), ARC_COLOR_SPLIT_BACK],
     [
-      'a deletion beside an inserted stretch',
+      'an insertion beside a shorter skipped stretch',
       pieces(1000, 2100, 1300),
+      ARC_COLOR_SPLIT_INSERTION,
+    ],
+    [
+      'a deletion beside a shorter inserted stretch',
+      pieces(1000, 2400, 1300),
       ARC_COLOR_SPLIT_FORWARD,
     ],
     [

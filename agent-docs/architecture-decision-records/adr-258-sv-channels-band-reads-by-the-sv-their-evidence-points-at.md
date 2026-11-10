@@ -78,29 +78,33 @@ and the arc painted deletion-type gold. With `refGap` the reference the read
 skips between its pieces in its own direction and `readGap` the read bases
 between them (`clipAtStart(B) - (clipAtStart(A) + alignedBases(A))`), a
 same-strand junction is an insertion when `refGap` is 0, or when `readGap` is
-at least `SV_INDEL_MIN_BP`, `|refGap|` at most half of it, and `refGap` under
-`SV_INDEL_MIN_BP`: a junction skipping an SV-size stretch is a deletion first,
-as a CIGAR holding both files. `splitJunctionSlot` decides it for the band,
-the arc, the connector and the hover; the arc paints `splitInsertion`, the
-short-insert pink of the too-close pairs. An insertion junction draws no
-sashimi arc, since it spans no reference; the sashimi classes stay four. A
-junction is size-matched below when `readGap` or `readGap - refGap` is within
-20% of a Tier1 insertion within 1 kb:
+at least `SV_INDEL_MIN_BP` and `|refGap|` at most half of it.
+`splitJunctionSlot` decides it for the band, the arc, the connector and the
+hover; the arc paints `splitInsertion`, the short-insert pink of the too-close
+pairs. An insertion junction draws no sashimi arc and the sashimi classes stay
+four, so a moved junction loses the duplication-type arc over its overlap or
+the deletion-type arc over the reference it skips. A junction is size-matched
+below when `readGap` or `readGap - refGap` is within 20% of a Tier1 insertion
+within 1 kb:
 
 | | Sequel HiFi | Revio | ONT |
 | --- | --- | --- | --- |
-| junctions moved / size-matched | 575 / 489 | 54 / 37 | 616 / 282 |
-| moved off duplication-type / deletion-type | 553 / 22 | 50 / 4 | 527 / 89 |
-| Tier1 insertion loci with 2+ junction reads, all insertion | 90 of 115 | 10 of 20 | 19 of 104 |
+| junctions moved / size-matched | 606 / 515 | 69 / 48 | 932 / 487 |
+| moved off duplication-type / deletion-type | 553 / 53 | 50 / 19 | 527 / 405 |
+| Tier1 insertion loci with 2+ junction reads, all insertion | 97 of 115 | 14 of 20 | 64 of 104 |
 | chr20 stretch with no locus selection, moved / matched | 9 / 8 | 0 of 1 junction | 15 / 14 |
-| tandem duplications size-matched to a `REPTYPE=DUP` call, moved | 0 of 18 | 0 of 11 | 12 of 85 |
+| tandem duplications size-matched to a `REPTYPE=DUP` call, moved | 0 of 18 | 0 of 11 | 14 of 85 |
 
 The chr20 stretch is 10-30 Mb on Sequel and 10-15 Mb on Revio and ONT. In the
 -350 to -100 bp overlap group, SVLEN matches `readGap - refGap` better than
 `readGap` for 260 of 274 matched Sequel junctions, 8 of 8 Revio and 92 of 101
-ONT. The `refGap` clause takes 31, 15 and 316 junctions back out of the
-insertion class; on ONT it costs most of the all-insertion loci (64 of 104
-without it), whose reads skip 50 bp or more of reference beside the insertion.
+ONT. A third clause keeping a junction that skips `SV_INDEL_MIN_BP` or more of
+reference as deletion-type, as a CIGAR holding both an SV-size deletion and an
+insertion files (`evidenceKind` tests the deletion first), was built and
+dropped: it took 31, 15 and 316 junctions back out, 26, 11 and 205 of them
+size-matched insertions, and left 19 of ONT's 104 loci all insertion. So the
+split form and the CIGAR form of a deletion beside a longer insertion file
+apart.
 Out of scope: a read whose inserted sequence aligned elsewhere as a middle
 piece has no junction between its flanks, stays in "Partner on another
 chromosome or unmapped" when that piece is on another reference, and these

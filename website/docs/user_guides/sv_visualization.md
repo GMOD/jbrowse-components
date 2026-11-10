@@ -185,8 +185,8 @@ orientation, an LR pair whose mates sit closer than the library's fragments as
 an insertion, and a split read by its junction, so short and long reads of one
 event fill the same band. A long read split around an insertion files as an
 insertion when 50 or more read bases lie between its two pieces and the pieces
-overlap on the reference by at most half that many bases, or leave a gap under
-both 50 bases and half that many. Concordant pairs and every other read without
+overlap on the reference, or leave a gap there, by at most half that many bases.
+Concordant pairs and every other read without
 SV evidence fill the last band, the depth the others are read against. The
 preset also sets **Filter by → SV evidence → Only SV evidence**, which hides
 rows and leaves every band's coverage counting all its reads, so the last band
