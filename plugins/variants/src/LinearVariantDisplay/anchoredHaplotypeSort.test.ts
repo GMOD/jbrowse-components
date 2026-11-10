@@ -166,7 +166,8 @@ function makePayload(table: Record<string, Record<string, string>>) {
     sites: featureIds.map(id => [id]),
     sampleNames,
     genotypeDict,
-    genotypeCodesByFeatureId,
+    genotypeCodesOf: (featureId: string) =>
+      genotypeCodesByFeatureId.get(featureId),
   }
 }
 

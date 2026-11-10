@@ -309,7 +309,7 @@ export function sortSourcesAroundVariant({
   sampleNames,
   genotypeDict,
   sites,
-  genotypeCodesByFeatureId,
+  genotypeCodesOf,
   anchorFeatureId,
   phased,
   maxFlank = 1000,
@@ -319,7 +319,7 @@ export function sortSourcesAroundVariant({
   genotypeDict: string[]
   // Loaded features grouped by `sitesBySpan`
   sites: string[][]
-  genotypeCodesByFeatureId: Map<string, Uint32Array>
+  genotypeCodesOf: (featureId: string) => Uint32Array | undefined
   anchorFeatureId: string
   phased: boolean
   // How far out ties may be broken, in sites each side. This is a locality
@@ -360,10 +360,10 @@ export function sortSourcesAroundVariant({
     items: sources,
     maxValue,
     sites: anchorFirstRecords(sites, anchorFeatureId, maxFlank),
-    // One `genotypeCodesByFeatureId` lookup per site rather than per row, and
+    // One `genotypeCodesOf` lookup per site rather than per row, and
     // separate phased/dosage readers so neither re-tests the mode per row.
     readSite: site => {
-      const codes = genotypeCodesByFeatureId.get(featureIds[site]!)
+      const codes = genotypeCodesOf(featureIds[site]!)
       if (!codes) {
         return undefined
       }

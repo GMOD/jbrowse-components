@@ -40,10 +40,7 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
-import {
-  containingHost,
-  onTrackAssembly,
-} from '@jbrowse/display-kit/foundationView'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -117,6 +114,8 @@ import {
   recordsOpeningHeightActions,
   recordsRenderViews,
   recordsSettingsViews,
+  recordsTrackHeightViews,
+  recordsTrackResizeActions,
 } from './recordsBandViews.ts'
 import { recordCountMeasurements } from './recordsDensityGate.ts'
 import { recordsHighlightViews } from './recordsHighlightViews.ts'
@@ -196,21 +195,6 @@ function warnMissingAttribute(
       `${setting} attribute "${attribute}" not found in sample metadata. ` +
         `Available attributes: ${Object.keys(sources[0]!).join(', ')}`,
     )
-  }
-}
-
-// What an anchored sort needs: the sites in genomic order and each feature's
-// interned codes, which live per region.
-function getOrderedGenotypeCodes(cellData: CellDataResult) {
-  const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
-  for (const regionData of Object.values(cellData.perRegionCellData)) {
-    for (const info of regionData.featureInfo) {
-      genotypeCodesByFeatureId.set(info.featureId, info.genotypeCodes)
-    }
-  }
-  return {
-    sites: sitesBySpan(cellData.simplifiedFeatures),
-    genotypeCodesByFeatureId,
   }
 }
 
@@ -521,6 +505,7 @@ export function stateModelFactory(
               cellData: CellDataResult
               info: Map<string, VariantFeatureInfo>
               positional: Map<string, SimplifiedVariantFeature>
+              sampleIndex: Map<string, number>
             }
           | undefined
         // keyed on the payload rather than a computed: pointer handlers read
@@ -539,6 +524,7 @@ export function stateModelFactory(
               positional: new Map(
                 cellData.simplifiedFeatures.map(f => [f.id, f]),
               ),
+              sampleIndex: buildSampleIndex(cellData.sampleNames),
             }
           }
           return held
@@ -560,6 +546,16 @@ export function stateModelFactory(
           simplifiedFeatureById(featureId: string) {
             return self.cellData
               ? recordsOf(self.cellData).positional.get(featureId)
+              : undefined
+          },
+          /**
+           * #getter
+           * sampleName -> column of each feature's interned `genotypeCodes`,
+           * for the tooltips (genotypeCodec.ts).
+           */
+          get genotypeSampleIndex() {
+            return self.cellData
+              ? recordsOf(self.cellData).sampleIndex
               : undefined
           },
         }
@@ -1212,19 +1208,6 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * sampleName -> column of each feature's interned `genotypeCodes`,
-           * for the tooltips (genotypeCodec.ts). Rebuilt per pointer frame, its
-           * readers being untracked pointer handlers. A keep-alive autorun was
-           * tried and throws on test stubs that resolve the cell-data RPC to a
-           * bare `[]`.
-           */
-          get genotypeSampleIndex() {
-            return self.cellData
-              ? buildSampleIndex(self.cellData.sampleNames)
-              : undefined
-          },
-          /**
-           * #getter
            * Worker row -> screen row. The cells arrive numbered against the
            * worker's `rowNames`, so rebuilding this is all a reorder costs, and
            * a change that moves no row hands back the previous array. A worker
@@ -1267,130 +1250,76 @@ export function stateModelFactory(
       .views(self => variantRowsHeightViews(self))
       .views(recordsLayoutViews)
       .views(self => variantHeightViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * Genotype rows hidden on a VCF with samples: the band and its chip
-         * strip are all the track draws, and the slot waits for the rows'
-         * return.
-         */
-        get rowsHidden() {
-          return !self.drawsGenotypeRows && !self.recordsOnly
-        },
-        /**
-         * #getter
-         * The records band as the whole track, which the R export hands over
-         * as a feature track: the height it draws at, and whether it fits its
-         * records into that height, as it does over hidden rows. Undefined
-         * while genotype rows draw.
-         */
-        get recordsAlone(): { height: number; fits: boolean } | undefined {
-          return self.drawsGenotypeRows
-            ? undefined
-            : { height: self.topBands.reserved.records, fits: this.rowsHidden }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Over genotype rows the records band and its chip strip add their
-         * height to the track above them, so the rows keep the slot's height;
-         * with the rows hidden the track is the band and its chip strip.
-         * With no samples, or in a ring, the band is the display, sized by
-         * `heightMode`. Overrides `HeightModeMixin.height`.
-         */
-        get height(): number {
-          const sized =
-            self.autoHeight && containingHost(self).initialized
-              ? self.grownHeight
-              : self.fitTargetHeight
-          return self.recordsOnly
-            ? sized
-            : (self.rowsHidden ? 0 : sized) + self.topBands.addedHeight
-        },
-      }))
+      .views(recordsTrackHeightViews)
       .actions(recordsLayoutActions)
-      .actions(self => {
-        const superResizeHeight = self.resizeHeight
-        const superExpandToContentHeight = self.expandToContentHeight
-        return {
-          /**
-           * #action
-           * With the rows hidden the track's edge resizes the records band;
-           * otherwise `HeightModeMixin`'s, on the slot the rows draw at.
-           */
-          resizeHeight(distance: number) {
-            return self.rowsHidden
-              ? self.resizeRecordsBand(distance)
-              : superResizeHeight(distance)
-          },
-          /**
-           * #action
-           * With the rows hidden the handle's double click grows the band
-           * to its whole stack, so no record hides; it never shrinks it.
-           */
-          expandToContentHeight() {
-            return self.rowsHidden
-              ? self.showAllRecordRows()
-              : superExpandToContentHeight()
-          },
-        }
-      })
+      .actions(recordsTrackResizeActions)
       .actions(recordsOpeningHeightActions)
       .views(recordsHighlightViews)
       .actions(featureHighlightListActions)
-      .views(self => ({
-        /**
-         * #getter
-         * Screen row -> worker row, `-1` for a screen row the data has no cells
-         * for. The cell arrays stay in the worker's numbering, which
-         * `findCellIndex` binary-searches, so the hit test converts its row.
-         */
-        get rowUnmap(): Int32Array | undefined {
-          const remap = self.rowRemap
-          if (!remap) {
-            return undefined
-          }
-          const out = new Int32Array(self.sources.length).fill(-1)
-          for (let workerRow = 0; workerRow < remap.length; workerRow++) {
-            const screenRow = remap[workerRow]!
-            if (screenRow < out.length) {
-              out[screenRow] = workerRow
+      .views(self => {
+        // keyed on the remap rather than a computed: pointer handlers read
+        // it untracked, where a computed would rebuild per call
+        let held:
+          | { remap: Uint32Array; rows: number; unmap: Int32Array }
+          | undefined
+        function unmapOf(remap: Uint32Array, rows: number) {
+          let unmap =
+            held?.remap === remap && held.rows === rows ? held.unmap : undefined
+          if (!unmap) {
+            unmap = new Int32Array(rows).fill(-1)
+            for (let workerRow = 0; workerRow < remap.length; workerRow++) {
+              const screenRow = remap[workerRow]!
+              if (screenRow < rows) {
+                unmap[screenRow] = workerRow
+              }
             }
+            held = { remap, rows, unmap }
           }
-          return out
-        },
-        /**
-         * #method
-         * A hit as the tooltip table reads it: the record's fields over the
-         * hit row's sample metadata.
-         */
-        tooltipSourceOf(hit: VariantHoverFields) {
-          const source = self.sourceMap.get(hit.name)
-          return source ? { ...source, ...hit } : hit
-        },
-        /**
-         * #method
-         * The tooltip a hit shows, as plain text, for "Copy tooltip text";
-         * undefined with `tooltip.show` off.
-         */
-        tooltipTextOf(hit: VariantHoverFields) {
-          return self.showTooltips
-            ? tooltipPlainText(this.tooltipSourceOf(hit))
-            : undefined
-        },
-        /**
-         * #getter
-         * The hovered thing as the tooltip table reads it. Undefined with
-         * `tooltip.show` off.
-         */
-        get hoveredTooltipSource() {
-          const { hoveredFeature } = self
-          return hoveredFeature && self.showTooltips
-            ? this.tooltipSourceOf(hoveredFeature)
-            : undefined
-        },
-      }))
+          return unmap
+        }
+        return {
+          /**
+           * #getter
+           * Screen row -> worker row, `-1` for a screen row the data has no cells
+           * for. The cell arrays stay in the worker's numbering, which
+           * `findCellIndex` binary-searches, so the hit test converts its row.
+           */
+          get rowUnmap(): Int32Array | undefined {
+            const remap = self.rowRemap
+            return remap ? unmapOf(remap, self.sources.length) : undefined
+          },
+          /**
+           * #method
+           * A hit as the tooltip table reads it: the record's fields over the
+           * hit row's sample metadata.
+           */
+          tooltipSourceOf(hit: VariantHoverFields) {
+            const source = self.sourceMap.get(hit.name)
+            return source ? { ...source, ...hit } : hit
+          },
+          /**
+           * #method
+           * The tooltip a hit shows, as plain text, for "Copy tooltip text";
+           * undefined with `tooltip.show` off.
+           */
+          tooltipTextOf(hit: VariantHoverFields) {
+            return self.showTooltips
+              ? tooltipPlainText(this.tooltipSourceOf(hit))
+              : undefined
+          },
+          /**
+           * #getter
+           * The hovered thing as the tooltip table reads it. Undefined with
+           * `tooltip.show` off.
+           */
+          get hoveredTooltipSource() {
+            const { hoveredFeature } = self
+            return hoveredFeature && self.showTooltips
+              ? this.tooltipSourceOf(hoveredFeature)
+              : undefined
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action
@@ -1407,14 +1336,13 @@ export function stateModelFactory(
           // drop the cluster tree
           let sorted: ProcessedSource[] | undefined
           if (cellData && sources.length > 1) {
-            const { sites, genotypeCodesByFeatureId } =
-              getOrderedGenotypeCodes(cellData)
             sorted = sortSourcesAroundVariant({
               sources,
               sampleNames: cellData.sampleNames,
               genotypeDict: cellData.genotypeDict,
-              sites,
-              genotypeCodesByFeatureId,
+              sites: sitesBySpan(cellData.simplifiedFeatures),
+              genotypeCodesOf: featureId =>
+                self.featureInfoById(featureId)?.genotypeCodes,
               anchorFeatureId: featureId,
               phased: self.rowsField === 'haplotype',
             })
@@ -1577,9 +1505,8 @@ export function stateModelFactory(
           }
           // resolved before the await, so the RPC sends what is marked loaded
           const args = rpcArgs(self)
-          const fetchedAt =
-            variantLayout === 'columns' ? view.bpPerPx : undefined
           const { bpPerPx } = view
+          const fetchedAt = variantLayout === 'columns' ? bpPerPx : undefined
           const { maxFeatureDensity } = self
           await fetchRegionsBatched(self, regions, {
             call: (batch, ctx) =>

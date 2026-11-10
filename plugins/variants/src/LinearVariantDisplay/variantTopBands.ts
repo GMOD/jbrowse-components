@@ -3,7 +3,7 @@
  * one pure function:
  *
  * - the **records band**, the VCF's records laid out and stacked as a
- *   `LinearVariantDisplay` lays them out (`records.show`);
+ *   feature track lays them out (`records.show`);
  * - the **connectors band**, which ties a matrix column to its genomic
  *   position (`connectorsBand`, active only in columns).
  *

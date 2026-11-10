@@ -1,8 +1,10 @@
 /**
  * The records band as one seam on the variant display: its
- * settings, its render data, the hosted fit ladder and the display hooks the
- * band decides. Every `recordsOnly` choice the model makes is made here; the
- * model composes these in order, each block reading the ones before it.
+ * settings, its render data, the hosted fit ladder, the track height and the
+ * display hooks the band decides. Every `recordsOnly` choice the model makes
+ * is made here, but the opening height `configuredHeight` reads
+ * (`variantRowViews.ts`); the model composes these in order, each block
+ * reading the ones before it.
  */
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
@@ -10,6 +12,7 @@ import { boundBandHeight, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { containingHost } from '@jbrowse/display-kit/foundationView'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   sameAsLast,
@@ -65,7 +68,7 @@ import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Band } from '@jbrowse/core/util/bandLayout'
 import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   DisplayMode,
   FeatureBandHost,
@@ -280,16 +283,12 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * The density axis acts only on a VCF with no samples, where the
-     * records are the display, as on a feature track. Over rows, shown or
-     * hidden, the byte gate alone guards the fetch.
+     * records are the display, as on a feature track, always at genomic
+     * positions. Over rows, shown or hidden, the byte gate alone guards
+     * the fetch.
      */
     get densityGateActive() {
-      return (
-        self.gateActive &&
-        self.aboveForceLoadFloor &&
-        self.recordsOnly &&
-        self.atGenomicPositions
-      )
+      return self.gateActive && self.aboveForceLoadFloor && self.recordsOnly
     },
     /**
      * #getter
@@ -390,12 +389,13 @@ export function recordColorViews(self: RecordColorHost) {
      * shading nor the phased mode moves.
      */
     get regionRecordColors() {
-      const { cellData } = self
-      return self.recordsColorBySvClass
-        ? mapPayloadRegions(cellData, data => svClassColors(data.featureInfo))
-        : mapPayloadRegions(cellData, data =>
-            paintFeatureColors(data, self.cellHue, self.cellHueValuesRead),
-          )
+      const { cellHue, cellHueValuesRead } = self
+      return mapPayloadRegions(
+        self.cellData,
+        self.recordsColorBySvClass
+          ? data => svClassColors(data.featureInfo)
+          : data => paintFeatureColors(data, cellHue, cellHueValuesRead),
+      )
     },
   }
 }
@@ -406,7 +406,6 @@ interface RecordsRenderHost
     Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsGenotypeRows'> {
   cellData: CellDataResult | undefined
   regionRecordColors: ReadonlyMap<number, Uint32Array>
-  keyedVariants: KeyedVariants
   sources: ProcessedSource[]
   view: LinearGenomeViewModel
   canRender: boolean
@@ -474,23 +473,31 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
+     * The records of the sections the user hid, as LinearBasicDisplay's
+     * `hiddenGroupFeatureIds`: once per payload, facet and hidden set,
+     * not per pan.
+     */
+    get recordsHiddenGroupIds() {
+      return hiddenSectionFeatureIds(
+        this.recordsSpans,
+        self.recordsFacet,
+        self.recordsHiddenGroups,
+      )
+    },
+    /**
+     * #getter
      * The records the band draws whose span touches the screen, as
      * LinearBasicDisplay's `onScreenFeatureIds`: what its labels gate
      * on, so records buffered off screen cost no label. None before the
      * view has a width to lay its blocks out across.
      */
     get recordsOnScreenIds(): ReadonlySet<string> {
-      const spans = this.recordsSpans
       return self.canRender
         ? onScreenIdsMemo(
             featureIdsTouchingBlocks(
-              spans,
+              this.recordsSpans,
               self.view.settledDynamicBlocks,
-              hiddenSectionFeatureIds(
-                spans,
-                self.recordsFacet,
-                self.recordsHiddenGroups,
-              ),
+              this.recordsHiddenGroupIds,
             ),
           )
         : NO_FEATURE_IDS
@@ -661,7 +668,6 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   scrollTop: number
   rowsContentHeight: number
   availableHeight: number
-  rowsTopOffset: number
 }
 
 export function recordsLayoutViews(self: RecordsLayoutHost) {
@@ -897,6 +903,93 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
 }
 
 export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
+
+interface RecordsTrackHeightHost extends IStateTreeNode {
+  recordsOnly: boolean
+  drawsGenotypeRows: boolean
+  autoHeight: boolean
+  grownHeight: number
+  fitTargetHeight: number
+  topBands: RecordsLayout['topBands']
+}
+
+export function recordsTrackHeightViews(self: RecordsTrackHeightHost) {
+  return {
+    /**
+     * #getter
+     * Genotype rows hidden on a VCF with samples: the band and its chip
+     * strip are all the track draws, and the slot waits for the rows'
+     * return.
+     */
+    get rowsHidden() {
+      return !self.drawsGenotypeRows && !self.recordsOnly
+    },
+    /**
+     * #getter
+     * The records band as the whole track, which the R export hands over
+     * as a feature track: the height it draws at, and whether it fits its
+     * records into that height, as it does over hidden rows. Undefined
+     * while genotype rows draw.
+     */
+    get recordsAlone(): { height: number; fits: boolean } | undefined {
+      return self.drawsGenotypeRows
+        ? undefined
+        : { height: self.topBands.reserved.records, fits: this.rowsHidden }
+    },
+    /**
+     * #getter
+     * Over genotype rows the records band and its chip strip add their
+     * height to the track above them, so the rows keep the slot's height;
+     * with the rows hidden the track is the band and its chip strip.
+     * With no samples, or in a ring, the band is the display, sized by
+     * `heightMode`. Overrides `HeightModeMixin.height`.
+     */
+    get height(): number {
+      const sized =
+        self.autoHeight && containingHost(self).initialized
+          ? self.grownHeight
+          : self.fitTargetHeight
+      return self.recordsOnly
+        ? sized
+        : (this.rowsHidden ? 0 : sized) + self.topBands.addedHeight
+    },
+  }
+}
+
+interface RecordsTrackResizeHost {
+  rowsHidden: boolean
+  resizeHeight: (distance: number) => number
+  expandToContentHeight: () => number
+  resizeRecordsBand: (distance: number) => number
+  showAllRecordRows: () => number
+}
+
+export function recordsTrackResizeActions(self: RecordsTrackResizeHost) {
+  const superResizeHeight = self.resizeHeight
+  const superExpandToContentHeight = self.expandToContentHeight
+  return {
+    /**
+     * #action
+     * With the rows hidden the track's edge resizes the records band;
+     * otherwise `HeightModeMixin`'s, on the slot the rows draw at.
+     */
+    resizeHeight(distance: number) {
+      return self.rowsHidden
+        ? self.resizeRecordsBand(distance)
+        : superResizeHeight(distance)
+    },
+    /**
+     * #action
+     * With the rows hidden the handle's double click grows the band
+     * to its whole stack, so no record hides; it never shrinks it.
+     */
+    expandToContentHeight() {
+      return self.rowsHidden
+        ? self.showAllRecordRows()
+        : superExpandToContentHeight()
+    },
+  }
+}
 
 interface RecordsLayoutActionsHost extends RecordsLayout {
   configuration: RecordsSettingsHost['configuration']

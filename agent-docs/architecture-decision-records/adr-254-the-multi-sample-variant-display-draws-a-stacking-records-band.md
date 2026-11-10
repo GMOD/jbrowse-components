@@ -239,7 +239,9 @@ Settles the two provisional rules over rows.
   170px of ticks with 4,201 hidden before it, and draw one 15px row after.
 - **Every record states its carriers**: a sample calling any ALT carries a
   small variant, one calling a structural ALT an SV
-  (`countRecordCarriers`).
+  (`recordCarrierCounter`, which counts a record when its drawn label or a
+  hover first asks: the eager count walked every record and sample per
+  payload, about 95 ms for 5,000 records of 3,202 samples).
 - **The record hover drops the Alleles row**, which its description already
   spells, and either hover shows Length only past one base, where an
   insertion's `Length 1bp` sat over its `Insertion 209bp`.

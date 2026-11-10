@@ -472,7 +472,8 @@ a `recordsOnly` choice in the model belongs there.
 - **One label line over rows**: ID, description, then the share of the shown
   samples carrying it (`recordCarriers.ts`; the denominator is
   `recordCarrierSamples`, one line to make it every sample in the payload), as
-  `recordLabel`. The label pipeline places a description under its name, so an
+  `recordLabel`. A record is counted when a label with text or a hover first
+  asks (`recordCarriersOf`), never every fetched record up front. The label pipeline places a description under its name, so an
   inline description is part of the name and the ladder drops it with the name.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
