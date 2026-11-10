@@ -36,6 +36,8 @@ export function arcBandState(
 
 /** The read cloud's endpoint square, in CSS px. */
 export const ARC_MARKER_PX = 5
+/** A tick's breakend foot, short so neighbouring ticks' feet do not join. */
+export const ARC_TICK_FOOT_PX = 6
 /** How far inside the band the y scale ends, so a square at either end draws whole. */
 export const ARC_BAND_INSET_PX = ARC_MARKER_PX / 2
 
@@ -134,7 +136,10 @@ export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
   defineMark({
     shape: withPassId(linkMark, 'arcTick'),
     channels: (f: ArcBandFeed) => f.ticks,
-    params: (s: ArcBandState) => linkParams(s),
+    params: (s: ArcBandState) => ({
+      ...linkParams(s),
+      footPx: ARC_TICK_FOOT_PX,
+    }),
     enabled: bandOpen,
   }),
   defineMark({

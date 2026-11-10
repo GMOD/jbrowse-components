@@ -4,6 +4,7 @@ import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT_SPLIT,
 } from '../../features/arcs/shapes.ts'
+import { ARC_TICK_FOOT_PX } from '../renderers/arcMarks.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
@@ -144,7 +145,7 @@ describe('a band of ticks and no arcs', () => {
 
   test('the highlight traces the full-band vertical the tick draws, and its foot', () => {
     expect(hover(300, 120, { lines })!.highlight.d).toBe(
-      'M300 160L300 100M300 159.0641353123017L320 159.0641353123017',
+      `M300 160L300 100M300 159.0641353123017L${300 + ARC_TICK_FOOT_PX} 159.0641353123017`,
     )
   })
 })

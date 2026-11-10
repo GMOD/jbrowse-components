@@ -153,7 +153,9 @@ horizontal tick at each foot lies over the arm that foot's junction keeps:
 outward feet are a deletion-type junction, inward a duplication-type, parallel an
 inversion. A tick draws the one foot at its own end, so a tick is a breakend,
 keyed on position and kept side (`pushLine`): two junctions on one base keeping
-opposite sides draw two ticks, each with its own foot and support.
+opposite sides draw two ticks, each with its own foot and support. A tick's foot
+(`ARC_TICK_FOOT_PX`) is shorter than an arc's, so neighbouring ticks' feet do
+not join into bars that read as links.
 
 ## The gesture guard
 

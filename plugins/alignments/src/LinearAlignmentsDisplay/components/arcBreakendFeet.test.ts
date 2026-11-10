@@ -1,7 +1,13 @@
 import { recordPath } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
+import { LINK_FOOT_PX } from '@jbrowse/render-core/shaders/linkMarkConsts'
+import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
 
-import { ARC_LINK_MARKS, arcBandState } from '../renderers/arcMarks.ts'
+import {
+  ARC_LINK_MARKS,
+  ARC_TICK_FOOT_PX,
+  arcBandState,
+} from '../renderers/arcMarks.ts'
 import { pileupDataFromSamRecords } from '../samRecordFixture.ts'
 import {
   applyView,
@@ -118,6 +124,7 @@ function feetIn(d: string) {
     m => ({
       x: Number(m[1]),
       dir: Math.sign(Number(m[3]) - Number(m[1])),
+      len: Math.abs(Number(m[3]) - Number(m[1])),
     }),
   )
 }
@@ -320,7 +327,11 @@ function paintedTicks(display: ReturnType<typeof twoContigDisplay>) {
     canvasWideBlock(0, renderState.canvasWidth),
     arcBandState(renderState, renderState.sections[0]!)!,
   )
-  return { count: feed.ticks.count, d: recorder.d }
+  return {
+    count: feed.ticks.count,
+    d: recorder.d,
+    lineWidth: recorder.lineWidth,
+  }
 }
 
 function oneTickFoot(display: ReturnType<typeof twoContigDisplay>) {
@@ -401,7 +412,10 @@ test('the hover finds a tick by its foot and traces it', () => {
   const footY = arcBand.down
     ? arcBand.top + 1
     : arcBand.top + arcBand.height - 1
-  const foot = feetIn(paintedTicks(display).d)[0]!
+  const { d, lineWidth } = paintedTicks(display)
+  const foot = feetIn(d)[0]!
+  const stemReach = ARC_HIT_SLOP_PX + lineWidth / 2
+  expect(ARC_TICK_FOOT_PX).toBeGreaterThan(stemReach)
   const hoverAt = (dx: number) =>
     resolveArcBandHover(
       foot.x + dx,
@@ -410,10 +424,19 @@ test('the hover finds a tick by its foot and traces it', () => {
       arcBandState(renderState, renderState.sections[0]!)!,
       display.renderBlocks,
     )
-  const onFoot = hoverAt(foot.dir * 14)
+  const onFoot = hoverAt(foot.dir * ARC_TICK_FOOT_PX)
   expect(onFoot?.hit.kind).toBe('tick')
   expect(feetIn(onFoot!.highlight.d)).toHaveLength(1)
-  expect(hoverAt(-foot.dir * 14)).toBeUndefined()
+  expect(hoverAt(-foot.dir * ARC_TICK_FOOT_PX)).toBeUndefined()
+})
+
+test('a tick’s foot is shorter than an arc’s, so neighbouring ticks’ feet do not join', () => {
+  const data = splitRead(1)
+  const tickFeet = feetIn(paintedTicks(oneContigDisplay(data)).d)
+  const arcFeet = feetIn(paintedArc(twoContigDisplay(data)))
+  expect(tickFeet.map(f => f.len)).toEqual([ARC_TICK_FOOT_PX])
+  expect(arcFeet.map(f => f.len)).toEqual([LINK_FOOT_PX, LINK_FOOT_PX])
+  expect(ARC_TICK_FOOT_PX).toBeLessThan(LINK_FOOT_PX)
 })
 
 test('the hover highlight traces the feet too', () => {
