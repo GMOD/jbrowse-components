@@ -73,6 +73,13 @@ const tracks = [
     ],
   },
   {
+    type: 'SyntenyTrack',
+    trackId: 'paf',
+    name: 'paf',
+    assemblyNames: ['volvox', 'volvox'],
+    adapter: { type: 'PAFAdapter', uri: 'a.paf' },
+  },
+  {
     type: 'MultiQuantitativeTrack',
     trackId: 'multi',
     name: 'multi',
@@ -210,6 +217,22 @@ test('a v4 pileup display keeps its settings on a config.json that still spells 
   )
   expect(getConf(display, ['encoding', 'color', 'field'])).toBe('strand')
   expect(getConf(display, ['coverage', 'show'])).toBe(false)
+})
+
+test('a v4 synteny alignments display keeps its color, filter and mismatch toggle', async () => {
+  const { display } = await load(
+    v4Session('SyntenyTrack', 'paf', {
+      type: 'LGVSyntenyDisplay',
+      configuration: 'paf-LGVSyntenyDisplay',
+      colorBySetting: { type: 'mappingQuality' },
+      filterBySetting: { flagInclude: 0, flagExclude: 4, readName: 'chr1' },
+      hideMismatchesSetting: true,
+    }),
+  )
+  expect(display.type).toBe('LGVSyntenyDisplay')
+  expect(getConf(display, ['encoding', 'color', 'field'])).toBe('mapq')
+  expect(getConf(display, ['pileup', 'mismatches', 'show'])).toBe(false)
+  expect(JSON.stringify(getConf(display, 'filter'))).toContain('chr1')
 })
 
 test('a v4 read-arcs display on a config.json track keeps drawing arcs', async () => {

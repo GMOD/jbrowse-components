@@ -8,7 +8,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF()
-    const { ReactComponent } = pluginManager.getDisplayType(
+    // v4.3.0 built this display on the pileup mixin, so its sessions carry
+    // the colorBySetting and filterBySetting the alignments display lifts
+    const { ReactComponent, retiredState } = pluginManager.getDisplayType(
       'LinearAlignmentsDisplay',
     )
     return new DisplayType({
@@ -23,6 +25,7 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
       viewType: 'LinearGenomeView',
       plotExamples: LGV_SYNTENY_PLOT_EXAMPLES,
       ReactComponent,
+      retiredState,
     })
   })
 }
