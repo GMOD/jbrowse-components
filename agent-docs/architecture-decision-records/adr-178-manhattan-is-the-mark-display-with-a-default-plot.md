@@ -83,7 +83,9 @@ transforms or Edit plot.
   own constant or callback color kept beside the r² scale, and every index
   twin draws after the last partner; every other mark stays. Off strips
   exactly those pieces (`withoutLd`), so a round trip leaves the plot, and the
-  session delta, as they were; a plot with no such point greys the item out.
+  session delta, as they were, except a color over a field of its own, which
+  the r² scale replaces and Off cannot bring back; a plot with no such point
+  greys the item out.
   (Amended 2026-09-26: it replaced the whole plot, which reset the demos'
   7 and 8 px points and every Point size to 4 px on a round trip.) A first
   version wrote the color and shape onto every point mark, which painted the
@@ -105,6 +107,12 @@ transforms or Edit plot.
   and Edit plot lists `r2` and `ld_role` through the mark model's
   `joinedPlotFields` hook, its field scan reading a 20 kb sample no join
   reliably reaches.
+- **The LD fields are the join's alone** (amended 2026-11-09). With an
+  `ldAdapter`, `GWASAdapter` drops a column of the file named `r2` or
+  `ld_role` as it reads each row. A summary-statistics file's own `r2` is
+  imputation quality, and the join writes only the SNPs it matches, so every
+  unmatched point was colored through the LD threshold by that column in place
+  of the grey "No LD data".
 - **No field preset for `r2`.** The previous color object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.

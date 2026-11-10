@@ -79,8 +79,9 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
      * #slot
      * optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter)
      * supplying each SNP's r² to an index SNP, which a fetch joins as the `r2`
-     * and `ld_role` fields while the Manhattan display's plot names one;
-     * leave it unset to disable
+     * and `ld_role` fields while the Manhattan display's plot names one, and
+     * a column of the file under either name is then dropped; leave it unset
+     * to disable
      */
     ldAdapter: {
       type: 'maybeFrozen',

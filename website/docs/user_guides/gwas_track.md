@@ -69,7 +69,8 @@ LD data must be in PLINK LD table format, either 1.9's `.ld` or 2.0's `.vcor`,
 bgzipped or not. Generate it from:
 
 - Your own cohort - `plink2 --r2-unphased --ld-window-kb 1000 --ld-window-r2 0`,
-  or 1.9's `plink --r2 --ld-window-kb 1000 --ld-window-r2 0`
+  or 1.9's `plink --r2 --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0`
+  (1.9 otherwise pairs each variant with only its next 9)
 - Reference panel - 1000 Genomes phase 3 at
   `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
   AMR, or SAS by population). Point `bcftools` at the `.bcf` files under

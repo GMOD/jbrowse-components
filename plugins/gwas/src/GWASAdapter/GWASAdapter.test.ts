@@ -64,11 +64,15 @@ test('a jexl: scoreTransform is evaluated per score', async () => {
 })
 
 describe('an LD join asked for through the fetch options', () => {
-  async function sle(opts: GWASFetchOptions = {}, region = SLE_REGION) {
+  async function sle(
+    opts: GWASFetchOptions = {},
+    region = SLE_REGION,
+    adapterConfig: Record<string, unknown> = SLE_ADAPTER,
+  ) {
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: slePluginManager(),
       sessionId: 's',
-      adapterConfig: SLE_ADAPTER,
+      adapterConfig,
     })
     return dataAdapter.getFeaturesArray(region, opts)
   }
@@ -91,6 +95,29 @@ describe('an LD join asked for through the fetch options', () => {
     const features = await sle()
     expect(features.length).toBeGreaterThan(100)
     expect(features.some(f => f.get('r2') !== undefined)).toBe(false)
+  })
+
+  it("keeps a file's own r2 column out of the join's field", async () => {
+    const features = await sle(
+      { ld: { start: SLE_INDEX_START, refName: '2' } },
+      SLE_REGION,
+      {
+        ...SLE_ADAPTER,
+        columnNames: [
+          'chrom',
+          'chromStart',
+          'name',
+          'ref',
+          'alt',
+          'neg_log_pvalue',
+          'r2',
+        ],
+      },
+    )
+    const unjoined = features.filter(f => f.get('ld_role') === undefined)
+    expect(unjoined.length).toBeGreaterThan(0)
+    expect(unjoined.every(f => f.get('r2') === undefined)).toBe(true)
+    expect(named(features, 'rs193239665').get('r2')).toBeCloseTo(0.037)
   })
 
   it('joins only the index where the LD file is asked under another name', async () => {

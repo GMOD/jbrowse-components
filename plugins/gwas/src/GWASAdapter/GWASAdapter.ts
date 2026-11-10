@@ -21,8 +21,12 @@ export default class GWASAdapter extends BedTabixAdapter {
 
   private readonly scoreTransform: ((score: number) => number) | undefined
 
+  // the join's fields are its alone: a file's own r2 column is imputation quality
+  private readonly ownsLdFields: boolean
+
   constructor(...args: ConstructorParameters<typeof BedTabixAdapter>) {
     super(...args)
+    this.ownsLdFields = readConfObject(this.config, 'ldAdapter') !== undefined
     this.scoreTransform = getScoreTransform(
       this.config.scoreTransform,
       this.pluginManager?.jexl,
@@ -74,6 +78,10 @@ export default class GWASAdapter extends BedTabixAdapter {
     const transform = this.scoreTransform
     if (transform && data.score !== undefined) {
       data.score = transform(data.score)
+    }
+    if (this.ownsLdFields) {
+      delete data[LD_FIELD]
+      delete data[LD_ROLE_FIELD]
     }
     return super.featureOf(data)
   }

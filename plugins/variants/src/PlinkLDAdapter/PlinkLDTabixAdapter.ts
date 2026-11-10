@@ -4,8 +4,8 @@ import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import {
   DEFAULT_PLINK_LD_HEADER,
-  parsePlinkLDHeader,
   parsePlinkLDLine,
+  resolvePlinkLDHeader,
 } from '@jbrowse/ld-core'
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
@@ -53,21 +53,16 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<
     //
     // Every line getHeaderLines returns is a header by declaration —
     // either the index's meta character marked it, or the index's skipLines
-    // counted it — so it is parsed as one rather than pattern-matched. Content
-    // matching is a guess, and it is one that misfires on a headerless file
-    // whose chromosome column reads `CHR1`. The last line is the column
-    // defline; a commented preamble may sit above it.
+    // counted it — so no data row is pattern-matched: that guess misfires on
+    // a headerless file whose chromosome column reads `CHR1`. The last line
+    // is the column defline; a commented preamble may sit above it. One
+    // naming the position columns is the layout, and throws where it names
+    // no r² or D′, as `plink --r`'s signed `R` does; any other comment
+    // leaves the default layout.
     const defline = (await ld.getHeaderLines()).at(-1)
-    let header = DEFAULT_PLINK_LD_HEADER
-    if (defline) {
-      try {
-        header = parsePlinkLDHeader(defline)
-      } catch {
-        // a declared header this does not recognize: the default layout still
-        // finds the position and r² columns
-      }
-    }
-
+    const header = defline
+      ? resolvePlinkLDHeader(defline).header
+      : DEFAULT_PLINK_LD_HEADER
     return { ld, header }
   }
 

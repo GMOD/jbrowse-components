@@ -77,3 +77,12 @@ test('keeps a headerless file whose chrom column looks like a header', async () 
   expect(records[0]!.r2).toBeCloseTo(0.82)
   expect((await adapter.getHeader()).dprimeIdx).toBe(-1)
 })
+
+// `plink --r` writes the signed correlation under `R`. The default layout
+// reads its seventh column as r², which drew r = -0.95 in the lowest bin.
+test('refuses a declared header with no r² or D′ column', async () => {
+  const adapter = makeAdapter('./test_data/signed_r.ld.gz')
+  await expect(adapter.getHeader()).rejects.toThrow(
+    /Expected at least R2 or DP column/,
+  )
+})
