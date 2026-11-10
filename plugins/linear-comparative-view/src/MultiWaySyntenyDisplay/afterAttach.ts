@@ -134,76 +134,62 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
 }
 
 /**
- * Every pair on one window in one call, which the adapter answers from a
- * single cut; a record goes to the pair its lane and its mate's lane name. A
- * failed call fails every pair in it.
+ * Every pair in one call, which the adapter answers from a single cut of the
+ * anchor's window; a record goes to the pair its lane and its mate's lane name.
+ * A failed call fails every pair in it.
  */
 async function fetchLanePairBatch(
   self: MultiWaySyntenyDisplayModel,
-  specs: LaneLinksFetchSpec[],
+  [first, ...rest]: [LaneLinksFetchSpec, ...LaneLinksFetchSpec[]],
   ctx: FetchContext,
 ) {
-  const byKey = Map.groupBy(specs, spec => spec.key)
-  const byLane = new Map<string, HeldLaneLinks>()
-  await Promise.all(
-    [...byKey.values()].map(async group => {
-      const [first] = group
-      const held = new Map(
-        group.map(spec => [
-          spec.lane,
-          {
-            key: spec.key,
-            links: [] as Feature[],
-            ops: new Map<string, Uint32Array>(),
-          },
-        ]),
-      )
-      let failure: unknown
-      try {
-        const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
-          adapterConfig: self.adapterConfig,
-          regions: first!.regions,
-          opts: {
-            lanePairs: group.map(spec => ({
-              queryAssemblyName: spec.assemblyName,
-              targetAssemblyName: spec.lowerAssembly,
-            })),
-            lodTier: first!.lodTier,
-          },
-        })
-        for (const feature of features) {
-          const mate = getMate(feature)
-          const pair =
-            mate &&
-            held.get(
-              lanePairKey(
-                feature.get('assemblyName') as string,
-                mate.assemblyName,
-              ),
-            )
-          if (pair) {
-            pair.links.push(feature)
-            const op = ops.get(feature.id())
-            if (op) {
-              pair.ops.set(feature.id(), op)
-            }
-          }
-        }
-      } catch (error) {
-        if (!ctx.isStale()) {
-          console.error('MultiWayLaneLinks: the pair batch failed', error)
-        }
-        failure = error
-      }
-      for (const [lane, result] of held) {
-        byLane.set(
-          lane,
-          failure === undefined ? result : { ...result, error: failure },
-        )
-      }
-    }),
+  const specs = [first, ...rest]
+  const held = new Map(
+    specs.map(spec => [
+      spec.lane,
+      {
+        key: spec.key,
+        links: [] as Feature[],
+        ops: new Map<string, Uint32Array>(),
+      },
+    ]),
   )
-  return byLane
+  try {
+    const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
+      adapterConfig: self.adapterConfig,
+      regions: first.regions,
+      opts: {
+        lanePairs: specs.map(spec => ({
+          queryAssemblyName: spec.assemblyName,
+          targetAssemblyName: spec.lowerAssembly,
+        })),
+        lodTier: first.lodTier,
+      },
+    })
+    for (const feature of features) {
+      const mate = getMate(feature)
+      const pair =
+        mate &&
+        held.get(
+          lanePairKey(feature.get('assemblyName') as string, mate.assemblyName),
+        )
+      if (pair) {
+        pair.links.push(feature)
+        const op = ops.get(feature.id())
+        if (op) {
+          pair.ops.set(feature.id(), op)
+        }
+      }
+    }
+    return new Map<string, HeldLaneLinks>(held)
+  } catch (error) {
+    if (!ctx.isStale()) {
+      console.error('MultiWayLaneLinks: the pair batch failed', error)
+    }
+    return new Map<string, HeldLaneLinks>(
+      [...held].map(([lane, result]) => [lane, { ...result, error }] as const),
+    )
+  }
 }
 
 /**
@@ -242,10 +228,10 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     gate: () => !self.isMinimized,
     prepare: () => {
       const specs = fetchSpecs()
-      const { held } = state()
-      const stale = staleLaneSpecs(specs, state())
+      const current = state()
+      const stale = staleLaneSpecs(specs, current)
       const anchor = self.anchorAssemblyName
-      return specs.length > 0 || held.size > 0
+      return specs.length > 0 || current.held.size > 0
         ? { specs, stale, anchor, asked: laneFetchAsked(specs, stale, anchor) }
         : undefined
     },
@@ -492,9 +478,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       )
       return { key: spec.key, links, ops }
     },
-    fetchMany: (specs, ctx) =>
-      self.adapterBatchesLanePairs && specs.every(spec => spec.onAnchor)
-        ? fetchLanePairBatch(self, specs, ctx)
+    fetchMany: ([first, ...rest], ctx) =>
+      first && self.adapterBatchesLanePairs && self.adapterPairsOnAnchor
+        ? fetchLanePairBatch(self, [first, ...rest], ctx)
         : undefined,
     empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
     commit: (links, specs, anchor) => {
