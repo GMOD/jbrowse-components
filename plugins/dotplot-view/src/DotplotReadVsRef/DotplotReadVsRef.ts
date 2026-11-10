@@ -35,7 +35,7 @@ export async function launchDotplotReadVsRef({
   // dotplot's own default height, each less the axis border floor.
   const { width } = getContainingView(track) as { width: number }
 
-  const { temporaryAssembly, viewSpec } = buildDotplotReadVsRefSpec({
+  const viewSpec = buildDotplotReadVsRefSpec({
     feature: primaryFeature,
     windowSize,
     trackAssembly: assembly.name,
@@ -46,7 +46,6 @@ export async function launchDotplotReadVsRef({
     rand: () => Math.random(),
   })
 
-  session.addTemporaryAssembly?.(temporaryAssembly)
   await launchOrReplaceView({
     session,
     typeName: 'DotplotView',

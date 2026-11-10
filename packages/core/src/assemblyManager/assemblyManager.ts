@@ -7,12 +7,15 @@ import {
 import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
+import { declaredSyntheticAssemblies } from '../util/syntheticAssemblies.ts'
 import assemblyFactory from './assembly.ts'
 import { indexAssemblyNames } from './indexAssemblyNames.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { StatusCallback } from '../util/progress.ts'
+import type { SyntheticAssemblySnapshot } from '../util/syntheticAssemblies.ts'
+import type { AbstractViewModel } from '../util/types/index.ts'
 import type { Assembly } from './assembly.ts'
 import type {
   BaseAssemblyConfigModel,
@@ -29,6 +32,8 @@ interface AssemblyManagerParent {
   session?: {
     sessionAssemblies?: BaseAssemblyConfigModel[]
     temporaryAssemblies?: BaseAssemblyConfigModel[]
+    // walked for the synthetic assemblies its views declare
+    views?: AbstractViewModel[]
     // only `loading` is read: a connection mid-fetch is something that could
     // still add an assembly, and settleAssemblyResolution waits for that to
     // finish rather than for a timeout
@@ -159,10 +164,18 @@ function assemblyManagerFactory(
       /**
        * #property
        * this is automatically managed by an autorun which looks in the parent
-       * session.assemblies, session.sessionAssemblies, and
-       * session.temporaryAssemblies
+       * session.assemblies, session.sessionAssemblies,
+       * session.temporaryAssemblies, and `syntheticAssemblyConfs`
        */
       assemblies: types.array(assemblyFactory(conf, pm)),
+      /**
+       * #property
+       * A config for each assembly a view or display of the session declares
+       * as `syntheticAssemblies` (a read-vs-ref read, a multi-way lane). Kept
+       * by the same autorun, so one is here exactly while something declares
+       * it. ADR-261.
+       */
+      syntheticAssemblyConfs: types.array(conf),
     })
     .volatile(() => ({
       /**
@@ -279,7 +292,31 @@ function assemblyManagerFactory(
       // read is never undefined to the compiler, so `!!` on it infers the
       // literal `true` and `!has(name)` would be dead code at every call site.
       has(asmName: string): boolean {
-        return !!self.assemblyNameMap[asmName] || this.confByName.has(asmName)
+        return (
+          !!self.assemblyNameMap[asmName] ||
+          this.confByName.has(asmName) ||
+          this.declaredSyntheticAssemblies.has(asmName)
+        )
+      },
+
+      /**
+       * #method
+       * Whether the assembly leaves with whatever brought it: one a view or
+       * display declares, or one in `session.temporaryAssemblies`. A track
+       * config naming one is dead once that owner goes.
+       */
+      isTemporaryAssembly(asmName: string) {
+        const name = self.assemblyNameMap[asmName]?.name ?? asmName
+        const { session } = getParent<AssemblyManagerParent>(self)
+        return (
+          this.declaredSyntheticAssemblies.has(name) ||
+          self.syntheticAssemblyConfs.some(
+            a => readConfObject(a, 'name') === name,
+          ) ||
+          !!session?.temporaryAssemblies?.some(
+            a => readConfObject(a, 'name') === name,
+          )
+        )
       },
 
       /**
@@ -329,14 +366,45 @@ function assemblyManagerFactory(
       /**
        * #getter
        * combined jbrowse.assemblies, session.sessionAssemblies, and
-       * session.temporaryAssemblies
+       * session.temporaryAssemblies: the configs something wrote into a list
        */
-      get assemblyList() {
+      get listedAssemblies() {
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
         } = getParent<AssemblyManagerParent>(self)
         return [...assemblies, ...sessionAssemblies, ...temporaryAssemblies]
+      },
+
+      /**
+       * #getter
+       * The synthetic assemblies the session's views declare, by name. Two owners declaring one name share it, and a name or
+       * alias a listed assembly answers to is left to that assembly.
+       */
+      get declaredSyntheticAssemblies(): Map<
+        string,
+        SyntheticAssemblySnapshot
+      > {
+        const { session } = getParent<AssemblyManagerParent>(self)
+        const listed = indexAssemblyNames(this.listedAssemblies, asm => ({
+          name: readConfObject(asm, 'name'),
+          aliases: readConfObject(asm, 'aliases'),
+        }))
+        const declared = new Map<string, SyntheticAssemblySnapshot>()
+        for (const assembly of declaredSyntheticAssemblies(session?.views)) {
+          if (!listed.has(assembly.name) && !declared.has(assembly.name)) {
+            declared.set(assembly.name, assembly)
+          }
+        }
+        return declared
+      },
+
+      /**
+       * #getter
+       * `listedAssemblies` plus `syntheticAssemblyConfs`
+       */
+      get assemblyList() {
+        return [...this.listedAssemblies, ...self.syntheticAssemblyConfs]
       },
 
       get rpcManager(): RpcManager {
@@ -389,7 +457,7 @@ function assemblyManagerFactory(
           // a config answering to the name, as its name or an alias, is
           // already in the tree and the afterAttach autorun is about to build
           // its model
-          !self.confByName.has(assemblyName) &&
+          !self.has(assemblyName) &&
           // a connection mid-fetch could be carrying it. Every loading
           // connection counts, not just one naming this assembly: a connection
           // config need not declare what it will turn out to provide, and
@@ -487,7 +555,8 @@ function assemblyManagerFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        const reconcile = (assemblyConfs: BaseAssemblyConfigModel[]) => {
+        const reconcile = () => {
+          this.syncSyntheticAssemblyConfs()
           // filter() returns a new plain array, so removing from
           // self.assemblies in the loop below does not skip elements
           // (removeAssembly splices the live observable array)
@@ -496,7 +565,7 @@ function assemblyManagerFactory(
             this.removeAssembly(asm)
           }
           const built = new Set(self.assemblies.map(a => a.name))
-          for (const conf of assemblyConfs) {
+          for (const conf of self.assemblyList) {
             if (!built.has(readConfObject(conf, 'name'))) {
               this.addAssembly(conf)
             }
@@ -504,20 +573,46 @@ function assemblyManagerFactory(
         }
         // also here, because an enclosing action defers the autorun's first
         // run, and a load waiting on the model would wait for that
-        reconcile(self.assemblyList)
+        reconcile()
         addDisposer(
           self,
           autorun(
             () => {
-              const assemblyConfs = self.assemblyList
+              // read here so the autorun tracks them: reconcile reads them
+              // again, untracked, after its own writes
+              void self.assemblyList
+              void self.declaredSyntheticAssemblies
               // eslint-disable-next-line no-restricted-syntax -- self-write: removes from the assemblies it reads
               untracked(() => {
-                reconcile(assemblyConfs)
+                reconcile()
               })
             },
             { name: 'assemblyManagerAfterAttach' },
           ),
         )
+      },
+
+      /**
+       * #action
+       * private: brings `syntheticAssemblyConfs` level with what the views
+       * declare
+       */
+      syncSyntheticAssemblyConfs() {
+        const declared = self.declaredSyntheticAssemblies
+        const undeclared = self.syntheticAssemblyConfs.filter(
+          a => !declared.has(readConfObject(a, 'name')),
+        )
+        for (const synthetic of undeclared) {
+          self.syntheticAssemblyConfs.remove(synthetic)
+        }
+        const held = new Set(
+          self.syntheticAssemblyConfs.map(a => readConfObject(a, 'name')),
+        )
+        for (const [name, snapshot] of declared) {
+          if (!held.has(name)) {
+            self.syntheticAssemblyConfs.push(snapshot)
+          }
+        }
       },
 
       /**

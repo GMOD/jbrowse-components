@@ -2,11 +2,9 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
-import type { ReadVsRefSpec } from './buildReadVsRefSpec.ts'
-
 // The synthesized config rides on the track that draws it rather than in any
 // session or view-level list, so it goes out with the view.
-function syntenyConf(viewSpec: ReadVsRefSpec['viewSpec']) {
+function syntenyConf(viewSpec: ReturnType<typeof buildReadVsRefSpec>) {
   return (viewSpec.levels![0]!.tracks![0] as { configuration: unknown })
     .configuration
 }
@@ -61,15 +59,15 @@ describe('buildReadVsRefSpec', () => {
       rand: seqRand,
     })
 
-    expect(spec.viewSpec.displayName).toBe('read1 vs hg38')
-    expect(spec.temporaryAssembly.name).toBe(
+    expect(spec.displayName).toBe('read1 vs hg38')
+    expect(spec.syntheticAssemblies![0]!.name).toBe(
       'read1_assembly_1700000000000-100100',
     )
     // Two LGVs: top is the ref-assembly side, bottom is the synthetic read
-    expect(spec.viewSpec.views).toHaveLength(2)
+    expect(spec.views).toHaveLength(2)
     // No SA → only the primary in the synteny feature store. The store also
     // contains its mate, so total = 1 feat + 1 mate = 2
-    const cfg = syntenyConf(spec.viewSpec) as {
+    const cfg = syntenyConf(spec) as {
       adapter: { features: { uniqueId: string }[] }
     }
     expect(cfg.adapter.features).toHaveLength(2)
@@ -100,7 +98,7 @@ describe('buildReadVsRefSpec', () => {
       rand: seqRand,
     })
 
-    const cfg = syntenyConf(spec.viewSpec) as {
+    const cfg = syntenyConf(spec) as {
       adapter: {
         features: { syntenyId: number; mate: { syntenyId: number } }[]
       }
@@ -134,7 +132,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const cfg = syntenyConf(spec.viewSpec) as {
+    const cfg = syntenyConf(spec) as {
       adapter: { features: { refName: string }[] }
     }
     // The primary feature's refName got canonicalized
@@ -162,7 +160,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const topView = spec.viewSpec.views![0] as {
+    const topView = spec.views![0] as {
       displayedRegions: { start: number; end: number }[]
     }
     // 1000 - 50 = 950, 1100 + 50 = 1150
@@ -193,7 +191,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const topView = spec.viewSpec.views![0] as {
+    const topView = spec.views![0] as {
       displayedRegions: { start: number; end: number }[]
     }
     expect(topView.displayedRegions[0]!.start).toBeGreaterThanOrEqual(0)
@@ -220,7 +218,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const cfg = syntenyConf(spec.viewSpec) as {
+    const cfg = syntenyConf(spec) as {
       adapter: { features: { mate: { refName?: string } }[] }
     }
     expect(cfg.adapter.features[0]!.mate.refName).toBe('myRead')
@@ -247,9 +245,9 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    expect(spec.temporaryAssembly.sequence.adapter.features[0]!.seq).toBe(
-      'ACGTACGT',
-    )
+    expect(
+      spec.syntheticAssemblies![0]!.sequence.adapter.features[0]!.seq,
+    ).toBe('ACGTACGT')
   })
 
   it('hides color legend and reverse/translation sequence rows by default', () => {
@@ -273,7 +271,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    for (const view of spec.viewSpec.views! as {
+    for (const view of spec.views! as {
       tracks: { displays: { configuration: unknown }[] }[]
     }[]) {
       const display = view.tracks[0]!.displays[0]!
@@ -305,6 +303,8 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    expect(spec.temporaryAssembly.sequence.adapter.features[0]!.seq).toBe('')
+    expect(
+      spec.syntheticAssemblies![0]!.sequence.adapter.features[0]!.seq,
+    ).toBe('')
   })
 })

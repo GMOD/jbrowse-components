@@ -50,7 +50,6 @@ import {
   comparativeSurfaceSettled,
   liftSyntenyViewSettings,
   indelsDrawingOf,
-  releaseTemporaryAssemblies,
   syntenyCoordConfigSchema,
   syntenyIndelsConfigSchema,
 } from '@jbrowse/synteny-core'
@@ -75,6 +74,7 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type { DotplotHoverHighlight } from '../DotplotDisplay/types.ts'
 import type { Dotplot1DViewModel } from './1dview.ts'
 import type { Coord, DotplotViewCommands } from './types.ts'
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -254,6 +254,12 @@ export default function stateModelFactory(pm: PluginManager) {
            * `views[1].assembly`.
            */
           assemblyNames: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * Assembly configs for assemblies only this view draws, such as the read
+           * of a read-vs-ref launch. The session has each while the view is open.
+           */
+          syntheticAssemblies: types.frozen<SyntheticAssembly[] | undefined>(),
           /**
            * #property
            * The insertions and deletions inside each alignment, a
@@ -1020,6 +1026,7 @@ export default function stateModelFactory(pm: PluginManager) {
           self.hview.setDisplayedRegions([])
           self.vview.setDisplayedRegions([])
           self.assemblyNames = cast([])
+          self.syntheticAssemblies = undefined
           self.tracks.clear()
           // A launch that never finished applying still counts towards
           // hasSomethingToShow, so leaving it here means "return to import form"
@@ -1378,16 +1385,6 @@ export default function stateModelFactory(pm: PluginManager) {
             opts,
             () => import('./svgcomponents/SVGDotplotView.tsx'),
           )
-        },
-        // if any of our assemblies are temporary assemblies. Both hooks, and
-        // `releaseTemporaryAssemblies` says why: `removeView` detaches before
-        // it destroys, so the reach for the session has to happen at the
-        // detach.
-        beforeDetach() {
-          releaseTemporaryAssemblies(self)
-        },
-        beforeDestroy() {
-          releaseTemporaryAssemblies(self)
         },
         afterAttach() {
           doAfterAttach(self as DotplotViewModel)

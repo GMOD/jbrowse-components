@@ -25,15 +25,15 @@ export function buildReadVsRefNames({
   // Minted here rather than taken as an argument, because `now()` alone is not
   // unique and both launchers passed exactly that. It is millisecond
   // resolution, so the same read launched twice inside one millisecond named
-  // one temporary assembly — `addTemporaryAssembly` warns and hands back the
-  // FIRST, and the second view draws its ribbons against an axis of the wrong
-  // totalLength. The clock still leads, so a session snapshot reads in launch
-  // order.
+  // one synthetic assembly. Two views declaring one name share the first's
+  // (ADR-261), and the linear and dotplot launches differ (only the linear one
+  // carries the bases), so the second view would draw against the wrong one.
+  // The clock still leads, so a session snapshot reads in launch order.
   const stamp = `${now()}-${Math.floor(rand() * 1e6)}`
   return {
     shortName,
     // Per-launch unique: relaunching on the same read must not collide with the
-    // temporary assembly the previous view registered and still owns.
+    // assembly the previous view declared and still owns.
     readAssembly: `${readName}_assembly_${stamp}`,
     // What that assembly is CALLED on screen. The name above is an id and reads
     // like one, but it is also what a panel header shows (through

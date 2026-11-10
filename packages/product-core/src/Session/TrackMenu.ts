@@ -36,20 +36,11 @@ interface TrackActionSession<C> {
   deleteTrackConf: (conf: AnyTrackConfig) => void
   resetTrackConfiguration?: (trackId: string) => void
   /**
-   * Declared here, though only the copy guard below reads it, so a session that
-   * loses the list loses the guard *loudly*. `namesTemporaryAssembly` takes an
-   * `unknown` session and answers false for one that holds no such list, which
-   * is right for a caller that genuinely has none and wrong for one that let it
-   * drop — and that second case is a copy action silently offered again.
-   *
-   * `unknown[]`, the spelling `AbstractSessionModel` already uses, and not the
-   * `{ name?: string }[]` the guard narrows to: that one is a weak type, so a
-   * real MST array of assembly configs — whose element type is an index
-   * signature that declares no `name` — shares no property with it and TS
-   * rejects the assignment. The shape belongs in the guard, which is the only
-   * thing that reads it.
+   * required, though only the copy guard reads it: `namesTemporaryAssembly`
+   * answers false for a session with no manager, which would offer the copy
+   * again without a word
    */
-  temporaryAssemblies?: unknown[]
+  assemblyManager: { isTemporaryAssembly: (name: string) => boolean }
 }
 
 /**

@@ -129,7 +129,6 @@ import {
   laneHeaderRows,
   shownLaneChanges,
 } from './laneHeader.ts'
-import { releaseLaneAssembly } from './laneHolders.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
   LANE_TEMPLATE_MAX_BP,
@@ -1097,9 +1096,8 @@ export function stateModelFactory(
       },
       /** #method */
       holdsTemporarily(assemblyName: string) {
-        const name = self.laneKey(assemblyName)
-        return (getSession(self).temporaryAssemblies ?? []).some(
-          conf => isObject(conf) && conf.name === name,
+        return getSession(self).assemblyManager.isTemporaryAssembly(
+          assemblyName,
         )
       },
       /**
@@ -1272,6 +1270,18 @@ export function stateModelFactory(
           }
         }
         return out
+      },
+      /**
+       * #getter
+       * The lane genomes the session lacks, which it holds while this display
+       * declares them (ADR-261). "Open in new view" stops declaring a lane, so
+       * its hub can connect the genome.
+       */
+      get syntheticAssemblies() {
+        return [...this.laneAssemblyConfs.values()].map(assembly => ({
+          ...assembly,
+          name: String(assembly.name),
+        }))
       },
       /** #getter */
       get canReanchor() {
@@ -3188,12 +3198,20 @@ export function stateModelFactory(
         })
       },
       /** #action */
+      releaseLane(assemblyName: string) {
+        self.releasedLanes = new Set([...self.releasedLanes, assemblyName])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Not an action: the session gives the lane's genome up when
+       * `releaseLane` returns, before the new view asks for it.
+       */
       openInNewView(assemblyName: string, loc: string) {
         const session = getSession(self)
-        const described = self.laneAssemblyConfs.get(assemblyName)
-        if (described) {
-          self.releasedLanes = new Set([...self.releasedLanes, assemblyName])
-          releaseLaneAssembly(self, String(described.name))
+        if (self.laneAssemblyConfs.has(assemblyName)) {
+          self.releaseLane(assemblyName)
         }
         const genes = self.laneGeneTracks.get(assemblyName)
         openAssemblyInLinearView({
@@ -3209,6 +3227,8 @@ export function stateModelFactory(
           session.notifyError(`${e}`, e)
         })
       },
+    }))
+    .actions(self => ({
       /** #action */
       zoomTo(loc: string) {
         self.lgv.navToLocString(loc).catch((e: unknown) => {

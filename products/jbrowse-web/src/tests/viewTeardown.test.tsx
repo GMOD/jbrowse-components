@@ -163,47 +163,48 @@ test('a dialog holding a node in a replaced view does not take the page', async 
   expect(screen.getByTestId('app-bar')).toBeTruthy()
 }, 60000)
 
-// The half of the detach that would have broken silently, and the reason
-// `beforeDetach` carries this rather than `beforeDestroy` alone. A comparative
-// view synthesizes a read-vs-ref assembly nothing else owns, and gives it back
-// when it closes. Detach the view first and that hook runs on a root, where
-// `getSession` throws — so `releaseTemporaryAssemblies` guards on `hasParent`,
-// and a guard is exactly the shape that turns a broken teardown into a leak
-// with nothing said. This is the assertion that would notice.
-test('a comparative view gives its temporary assembly back when removed', async () => {
-  const { session } = await createView(config)
-
-  session.addTemporaryAssembly({
+// The assembly a read-vs-ref launch synthesizes for its read, which the view
+// that draws it carries as `syntheticAssemblies`.
+function readVsRefAssembly(length: number) {
+  return {
     name: 'readvsref',
+    displayName: 'readvsref',
     sequence: {
-      type: 'ReferenceSequenceTrack',
+      type: 'ReferenceSequenceTrack' as const,
+      name: 'Read sequence',
       trackId: 'readvsref-ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
+        type: 'FromConfigSequenceAdapter' as const,
         features: [
           {
             refName: 'readvsref',
             uniqueId: 'readvsref-1',
             start: 0,
-            end: 10,
-            seq: 'ACGTACGTAC',
+            end: length,
+            seq: 'A'.repeat(length),
           },
         ],
       },
     },
-  })
-  expect(session.temporaryAssemblies.map(a => a.name)).toContain('readvsref')
+  }
+}
+
+// A comparative view synthesizes a read-vs-ref assembly nothing else draws and
+// declares it, so the session has the assembly exactly while the view is open.
+// ADR-261.
+test('a comparative view takes its synthetic assembly with it when removed', async () => {
+  const { session } = await createView(config)
 
   const dotplot = await session.launchView('DotplotView', {
     assemblyNames: ['readvsref'],
+    syntheticAssemblies: [readVsRefAssembly(10)],
   })
+  expect(session.assemblyManager.get('readvsref')).toBeTruthy()
   act(() => {
     session.removeView(dotplot)
   })
 
-  expect(session.temporaryAssemblies.map(a => a.name)).not.toContain(
-    'readvsref',
-  )
+  expect(session.assemblyManager.has('readvsref')).toBe(false)
 }, 60000)
 
 // The other half of what a comparative view brings in, and the reason nothing
@@ -218,27 +219,8 @@ test('a comparative view gives its temporary assembly back when removed', async 
 test('a view-local track config goes out with the view', async () => {
   const { session } = await createView(config)
 
-  session.addTemporaryAssembly({
-    name: 'readvsref',
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId: 'readvsref-ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'readvsref',
-            uniqueId: 'readvsref-1',
-            start: 0,
-            end: 10,
-            seq: 'ACGTACGTAC',
-          },
-        ],
-      },
-    },
-  })
-
   const synteny = (await session.launchView('LinearSyntenyView', {
+    syntheticAssemblies: [readVsRefAssembly(10)],
     views: [
       {
         type: 'LinearGenomeView',
@@ -333,7 +315,7 @@ test('a view-local track config goes out with the view', async () => {
   })
 
   expect(session.sessionTracks).toHaveLength(0)
-  expect(session.temporaryAssemblies).toHaveLength(0)
+  expect(session.assemblyManager.has('readvsref')).toBe(false)
   expect(screen.getByTestId('app-bar')).toBeTruthy()
 }, 60000)
 
@@ -366,6 +348,7 @@ test('an inline view-local config survives a session round trip', async () => {
   }
   const viewSnap: ViewSnapshotInput<'LinearSyntenyView'> = {
     type: 'LinearSyntenyView',
+    syntheticAssemblies: [readVsRefAssembly(50)],
     views: [
       {
         type: 'LinearGenomeView',
@@ -388,25 +371,6 @@ test('an inline view-local config survives a session round trip', async () => {
   }
 
   const first = await createView(config)
-  first.session.addTemporaryAssembly({
-    name: 'readvsref',
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId: 'readvsref-ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'readvsref',
-            uniqueId: 'readvsref-1',
-            start: 0,
-            end: 50,
-            seq: 'A'.repeat(50),
-          },
-        ],
-      },
-    },
-  })
   const built = (await first.session.launchView(
     'LinearSyntenyView',
     viewSnap,

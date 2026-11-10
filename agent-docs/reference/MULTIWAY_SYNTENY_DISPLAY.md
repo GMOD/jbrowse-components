@@ -108,16 +108,15 @@ cost is linear in lanes.
 - **A gutter stacks its ribbons' alpha**, as the pairwise band does. A
   strongest-ribbon `min` blend was removed: it flattened overlap shading.
 - **Nothing hands an adapter its sequence**: no RPC passes one, and renaming keeps
-  none a caller passes. The display holds a lane's assembly as a temporary one
-  (`installLaneAssemblies`) so `loadRefNameMap`'s `CoreGetContigs` primes the
+  none a caller passes. The display declares a lane's assembly as a synthetic one
+  (`syntheticAssemblies`, ADR-261) so `loadRefNameMap`'s `CoreGetContigs` primes the
   adapter with the genome's sequence. Per-lane gene adapters written into the star
   config were declined.
 - **Never call `assemblyManager.get` for a lane the session lacks.** It fires
   `Core-handleUnrecognizedAssembly` per lane and makes the Hubs plugin connect each
   genome's whole config. The display puts them to `Core-describeAssemblies` in one
-  batch (`lanesToDescribe`). Temporary assemblies return through the session
-  captured at attach, since a display is destroyed after its view detaches; "Open
-  in new view" returns one first. A GenArk-backed db draws only through the
+  batch (`lanesToDescribe`). A lane's assembly lasts while a display declares
+  it; "Open in new view" stops declaring it first (`releaseLane`). A GenArk-backed db draws only through the
   aliases (jb2hubs' `defaultGeneTrackId` spelling).
 - **An `{assembly}` entry in `laneGeneTracks` or `laneLayers[].tracks` is filled
   per lane** with the lane's canonical name, then its aliases, and only a held

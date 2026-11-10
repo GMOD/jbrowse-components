@@ -212,8 +212,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         // and the walk to the session still resolves. That matters: anything of
         // a view's that reaches OUTSIDE its own tree has to move to that hook,
         // because after this line the view is a root and `getSession` from a
-        // root throws. ADR-069's detach-time disposer, at view scope — the
-        // comparative views' `releaseTemporaryAssemblies` is the one case.
+        // root throws. ADR-069's detach-time disposer, at view scope.
         detach(view)
         scheduleDetachedDestroy(view)
       }

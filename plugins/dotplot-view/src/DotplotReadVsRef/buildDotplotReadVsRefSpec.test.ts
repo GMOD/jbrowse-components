@@ -2,11 +2,9 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildDotplotReadVsRefSpec } from './buildDotplotReadVsRefSpec.ts'
 
-import type { DotplotReadVsRefSpec } from './buildDotplotReadVsRefSpec.ts'
-
 // The synthesized config rides on the track that draws it rather than in any
 // session or view-level list, so it goes out with the view.
-function syntenyConf(viewSpec: DotplotReadVsRefSpec['viewSpec']) {
+function syntenyConf(viewSpec: ReturnType<typeof buildDotplotReadVsRefSpec>) {
   return (viewSpec.tracks![0] as { configuration: unknown }).configuration
 }
 
@@ -50,7 +48,7 @@ describe('buildDotplotReadVsRefSpec', () => {
         tags: {},
       }),
     })
-    const { hview, vview } = spec.viewSpec as {
+    const { hview, vview } = spec as {
       hview: { bpPerPx: number; displayedRegions: { refName: string }[] }
       vview: { bpPerPx: number; displayedRegions: { refName: string }[] }
     }
@@ -79,10 +77,11 @@ describe('buildDotplotReadVsRefSpec', () => {
       }),
     })
     const readAssembly = 'read1_assembly_1700000000000-500000'
-    expect(spec.temporaryAssembly.name).toBe(readAssembly)
-    expect(spec.viewSpec.assemblyNames).toEqual(['hg38', readAssembly])
+    expect(spec.syntheticAssemblies![0]!.name).toBe(readAssembly)
+    expect(spec.assemblyNames).toEqual(['hg38', readAssembly])
     // a dotplot draws no sequence track; the region still spans the read
-    const seqFeature = spec.temporaryAssembly.sequence.adapter.features[0]!
+    const seqFeature =
+      spec.syntheticAssemblies![0]!.sequence.adapter.features[0]!
     expect(seqFeature.seq).toBe('')
     expect(seqFeature).toMatchObject({ start: 0, end: 8, refName: 'read1' })
   })
@@ -106,14 +105,14 @@ describe('buildDotplotReadVsRefSpec', () => {
         tags: { SA: 'chr2,3001,+,50M50S,60,0;' },
       }),
     })
-    const { hview } = spec.viewSpec as {
+    const { hview } = spec as {
       hview: { displayedRegions: { refName: string }[] }
     }
     expect(hview.displayedRegions.map(r => r.refName).sort()).toEqual([
       '1',
       '2',
     ])
-    const cfg = syntenyConf(spec.viewSpec) as {
+    const cfg = syntenyConf(spec) as {
       adapter: { features: { refName: string }[] }
     }
     expect(cfg.adapter.features.map(f => f.refName)).toEqual(['2', '1'])
@@ -136,7 +135,7 @@ describe('buildDotplotReadVsRefSpec', () => {
         tags: { SA: 'chr1,1026,+,50M50S,60,0;' },
       }),
     })
-    const { hview } = spec.viewSpec as {
+    const { hview } = spec as {
       hview: { bpPerPx: number; displayedRegions: { start: number }[] }
     }
     expect(hview.displayedRegions).toHaveLength(1)
@@ -161,7 +160,7 @@ describe('buildDotplotReadVsRefSpec', () => {
         tags: {},
       }),
     })
-    const { hview } = spec.viewSpec as {
+    const { hview } = spec as {
       hview: { displayedRegions: { start: number; end: number }[] }
     }
     expect(hview.displayedRegions[0]).toMatchObject({ start: 0, end: 600 })

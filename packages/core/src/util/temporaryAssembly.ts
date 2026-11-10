@@ -1,54 +1,38 @@
-import { getConfAssemblyNamesOrNone, isSameAssemblyName } from './tracks.ts'
+import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
 import type { AnyConfiguration } from '../configuration/index.ts'
-import type { AssemblyNameResolver } from './tracks.ts'
 
-interface SessionWithTemporaryAssemblies {
-  temporaryAssemblies: { name?: string }[]
-  assemblyManager: AssemblyNameResolver
+interface SessionAskingItsAssemblyManager {
+  assemblyManager: { isTemporaryAssembly: (name: string) => boolean }
 }
 
-function hasTemporaryAssemblies(
+function asksItsAssemblyManager(
   session: unknown,
-): session is SessionWithTemporaryAssemblies {
+): session is SessionAskingItsAssemblyManager {
   return (
     typeof session === 'object' &&
     session !== null &&
-    'temporaryAssemblies' in session &&
-    Array.isArray(session.temporaryAssemblies) &&
-    'assemblyManager' in session
+    'assemblyManager' in session &&
+    typeof session.assemblyManager === 'object' &&
+    session.assemblyManager !== null &&
+    'isTemporaryAssembly' in session.assemblyManager
   )
 }
 
 /**
- * Whether a track config names an assembly the session holds as **temporary** —
- * the read-vs-ref pair a comparative view synthesizes, which goes away when that
- * view closes (`releaseTemporaryAssemblies`).
- *
- * `some`, not `every`: a config half of whose assemblies survive is still one
- * nothing can draw once the other half is gone, and unlike a sweep that DELETES
- * a config this question never has to decide whose it is. The `every`/`some`
- * distinction is what made the session-track sweep ADR-084 removed a judgment
- * call; a question asked at the moment of the write has no such problem.
- *
- * Down here rather than beside the contract check that started it
- * (`product-core/Session/temporaryAssemblyTracks.ts`) because two callers now
- * ask it and they are on opposite sides of the dependency: the check and the
- * track menu's copy guard in product-core, and `addTrackFromWidget` in this
- * package, which routes a track around the session lists entirely when the
- * answer is yes. A second copy of the predicate is the thing to avoid — a copied
- * guard is where the escape clause gets added to only one of them.
+ * Whether a track config names a temporary assembly: one a view or display
+ * declares (a read-vs-ref read, a multi-way lane) or a plugin put in
+ * `session.temporaryAssemblies`, which goes when its owner does. `some`, since
+ * a config half of whose assemblies survive still draws nothing. ADR-084.
  */
 export function namesTemporaryAssembly(
   session: unknown,
   trackConf: AnyConfiguration,
 ) {
   return (
-    hasTemporaryAssemblies(session) &&
+    asksItsAssemblyManager(session) &&
     getConfAssemblyNamesOrNone(trackConf).some(name =>
-      session.temporaryAssemblies.some(a =>
-        isSameAssemblyName(a.name, name, session.assemblyManager),
-      ),
+      session.assemblyManager.isTemporaryAssembly(name),
     )
   )
 }
