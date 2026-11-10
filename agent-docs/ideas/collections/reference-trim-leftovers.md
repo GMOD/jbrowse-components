@@ -44,7 +44,7 @@ has been re-checked since the cut.
   figure on large multi-region views; whether hardware GL should default on or
   be a per-spec `hardwareGl` opt-in; the ~32 s full-page synteny capture.
 - **INTERACTION_PERF:** scalebar churn, RNA-seq frame budget, main-thread
-  instance encoding, staggering the coarse tick, `setMouseCoord` re-renders,
+  instance encoding, `setMouseCoord` re-renders,
   and the measurements behind the wheel-backlog
   redesign.
 - **MAF_LARGE_BLOCKS:** re-measure the Canvas2D row; only 2 of the 6
@@ -102,8 +102,9 @@ Open items the second, harder trim removed from the docs.
   first); whether the K562 BCR-ABL1 acceptor is alternative splicing or an
   alignment artefact is unestablished.
 - **Lint:** migrate oxlint-owned suppressions to `oxlint-disable` (TOOLCHAIN).
-- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve that names the oversized
-  block instead of running out of memory; a `--max-ref-span` option on
+- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve in the adapter that names
+  the oversized block instead of running out of memory; the fetch-cost work is
+  parked; the all-samples synteny stack is not offered; a `--max-ref-span` option on
   `scripts/maf_to_bed.py`; an identity plot confined below the summary
   threshold.
 - **Grammar** (GRAMMAR_OF_GRAPHICS): a stacked band per mark with a free y
@@ -111,28 +112,22 @@ Open items the second, harder trim removed from the docs.
   row field.
 - **Tree sidebar** (CLUSTERING_WORKFLOW): clade collapse, highlight, node labels,
   extra panels.
-- **Multiway** (MULTIWAY_SYNTENY_DISPLAY): send `GraphNode.samples` to
-  `setSelectedLanes` as a cheap `launchFromGraph` bridge; `LaneSelectionDialog`
-  is a flat list that stays slow at thousands of haplotypes.
+- **Multiway** (MULTIWAY_SYNTENY_DISPLAY): `LaneSelectionDialog` is a flat list
+  that stays slow at thousands of haplotypes.
 - **R export** (R_EXPORT): `GRanges` `[[` and label-decimation parity traps.
-- **SV** (SV_MULTIHOP): seven unexplained HG008-T misses.
 
 ## Third pass (2026-09-30)
 
 Items the whole-unit cuts removed. Same caveat: unverified since the cut.
 
-- **BAM** (BAM_STACK_INTEGRATION): no bgzf worker-pool sharing across RPC
-  workers (seam 1); the MD-tag rescan fix belongs in `@gmod/bam` (seam 5); a
-  QNAME-write API belongs on `BamRecord` (seam 6); remote 300x BAM fetches issue
-  many range requests (seam 7).
-- **Synteny** (SYNTENY_LOD): slim the coarse row and write a coarse/fine ratio
-  into the `#pif` header; an unindexed-hull fix for all-vs-all picking; three
-  parked per-candidate picking ideas.
+- **BAM** (BAM_STACK_INTEGRATION): remote 300x BAM fetches issue many range
+  requests (seam 7).
+- **Synteny** (SYNTENY_LOD): an unindexed-hull fix for all-vs-all picking;
+  three parked per-candidate picking ideas.
 - **View init** (VIEW_INIT): a synteny size guard; `connectedViewId` for
   synteny; show the launcher when no synteny track is open.
 - **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; release-2 files
   nothing reads yet; the abandoned gfa-to-tabix lessons.
-- **ARC_BAND:** draw one mark per cluster.
 - **TOOLCHAIN:** the list of lint rules measured and rejected.
 - **Session and fetch** (SESSION_SPEC_FORMAT, REGION_TOO_LARGE): spreadsheet
   rows leave the session snapshot silently and a local import cannot restore
@@ -142,11 +137,9 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   size estimate; the density-axis extrapolation is non-monotone.
 - **Pangenome reader** (HPRC_RELEASE2, MULTIWAY_SYNTENY_DISPLAY): the reader's
   `align()` and [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) emit different CIGARs and nothing
-  measures it; `launchFromGraph` never builds a MultiWay display (send
-  `GraphNode.samples` to `setSelectedLanes`); the `SyntenyFollow` and
+  measures it; nothing opens a MultiWay display from a graph node (its
+  `samples` could go to `setSelectedLanes`); the `SyntenyFollow` and
   `RowFrame` shapes do not unify.
-- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve in the adapter; the
-  fetch-cost work is parked; the all-samples synteny stack is not offered.
 - **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
   verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
 - **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,

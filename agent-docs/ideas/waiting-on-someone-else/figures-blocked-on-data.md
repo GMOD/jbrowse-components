@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them the RNA-seq tutorial's junction BED, wheat Compara and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
+description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them a dotplot set at one genomic scale, a genome-wide wolf-ancestry sweep and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
 ---
 
 # Figures blocked on data, a cost or a call
@@ -13,23 +13,6 @@ Once the data is hosted the figure itself is ordinary: a spec in
 
 Pangenome graph figures have their own ranked queue in
 [pangenome-figures-unshot.md](../ready/pangenome-figures-unshot.md).
-
-## The junction-BED tutorial section has no figure
-
-`bc04116182` added the RNA-seq tutorial section on loading junction files as BED
-arcs and left it with prose only. Every other section on that page carries a
-still, so the one route a reader is most likely to get wrong — which column the
-score comes from, and what the arcs look like once they land — is the one with
-nothing to compare against.
-
-**The blocker is data, not capture.** The section names a junction BED that is
-not hosted anywhere, so a spec pointing at it has nothing to fetch. That means a
-`scripts/build_*.sh` producing the BED from a public RNA-seq alignment, then
-`scripts/deploy-demo.sh` — never `aws s3 cp`, which does no versioning. Neither
-has been run.
-
-Once it is hosted the figure is ordinary: a spec in `website/scripts/specs/`,
-`pnpm figures:push --filter`, commit `figures.lock`.
 
 ## Parked on a cost or a decision
 

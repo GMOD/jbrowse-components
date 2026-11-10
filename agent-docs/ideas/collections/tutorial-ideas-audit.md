@@ -121,17 +121,6 @@ tutorial.
 
 ## genomes.jbrowse.org
 
-**Half of what a link to that site reaches is decided in another repo.**
-`~/src/jb2hubs/website/src/config/features.ts` gates `/synteny`,
-`/conserved-gene-order`, `/protein-browser` and `/pangenomes/*` on
-`PUBLIC_STAGING`, and a production build serves each as an
-`Astro.redirect('/')` — a 200 carrying a `<meta refresh>` stub, which every
-status check calls healthy. `check-external-links.ts` now reads the body of our
-own page URLs and fails on a stub. Only `/orthologs` of that set is live in
-production, and its per-row **Synteny** links are deliberately ungated. Check
-the flag before linking anything else there, and expect `/protein-browser` to
-overlap `genomes_proteins` when it ships.
-
 **The hub configs name a MafViewer plugin that core also carries.**
 `@jbrowse/plugin-maf` is in `products/jbrowse-web/src/corePlugins.ts` since
 33dff33a71, which is not in v4.3.0, what production launches point at. So the

@@ -336,8 +336,3 @@ the page is for the subset a filter leaves.
   `@jbrowse/capture` the opt-in.
 - **A contig is only as good as its alignment.** A contig through segmental
   duplication draws like a unique one unless the allele row colors by MAPQ.
-
-## Decisions for Colin
-
-- HG008 first (has `EVENT`, needs NCBI range requests) or COLO829 first (all
-  hosted, no events). Proposed: HG008.

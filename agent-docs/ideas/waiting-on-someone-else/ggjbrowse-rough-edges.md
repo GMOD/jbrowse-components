@@ -10,9 +10,7 @@ against ggjbrowse's main before fixing it.
 
 - `inherit.aes = FALSE` drops plot-level aesthetics.
 - A join on `features` does not reach `geom_jbrowse_glyphs`' other tables.
-- R reads a locus past its contig's end without a warning.
-- `width` and `px_per_bp` name one thing twice.
-- Printed regions are 0-based.
+
 - Two tracks on different contigs with the same span stack under one label.
 - At 1 px a row the browser blends a bar into a tint; R draws its height within
   the row, which reads as fine stripes.

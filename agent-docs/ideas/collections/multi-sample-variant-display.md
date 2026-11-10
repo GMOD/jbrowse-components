@@ -44,9 +44,10 @@ worker ships as values and the main thread paints, as
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
 group's legend swatch focuses that group (`focusLegendEntry`, over `rows.kept`),
 and the genotype sort has a column-anchored form a session can name
-(`sortRowsByGenotypeAt` / `sortRowsBy`). What is still missing is a predicate
-over `samplesTsv` columns — *cases only, in EUR*; `row-display-followups.md` prices the filter
-dialog and why it wants a slot of its own rather than the name set.
+(`sortRowsByGenotypeAt` / `sortRowsBy`), and `rows.filter` narrows the rows by
+a predicate over their attributes. What is still missing is a dialog that
+writes that predicate from the `samplesTsv` columns (*cases only, in EUR*);
+`row-display-followups.md` has it.
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments

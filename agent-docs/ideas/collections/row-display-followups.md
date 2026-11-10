@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: Unbuilt row-display follow-ups (multi-row features, multi-wiggle, MAF, multi-sample variants), among them MAF row separators, a metadata filter dialog and row-model loose ends, each with its cost and the parts that already exist.
+description: Unbuilt row-display follow-ups (multi-row features, multi-wiggle, MAF, multi-sample variants), among them MAF row separators, a dialog that writes `rows.filter` and row-model loose ends, each with its cost and the parts that already exist.
 ---
 
 # Row display follow-ups
@@ -16,12 +16,11 @@ at `rowProportion: 1` is the case that would want it.
 
 **A metadata filter dialog.** `focusRows` from a legend swatch covers "show
 only this population"; "cases only, in EUR, over 60" is a predicate over
-`samplesTsv` columns. The focus, `rows.kept`, is a name set, so a dialog
-that evaluates a jexl over each source and writes the matching names is small;
-what it lacks is a persistent record of WHY those rows (the filter expression),
-which a name set cannot carry — a session would reopen with the rows narrowed
-and no way to widen the criterion. That wants a `rowFilter` member beside
-`rows.kept`, resolved into the name set on read.
+`samplesTsv` columns. `rows.filter` already holds such a criterion (a list of
+`RowPredicate` entries over row attributes, ANDed) and narrows the rows before
+`rows.kept` does, so a session keeps the criterion and the chip's "Show all"
+widens it. Nothing writes it but a config or a session: what is missing is a
+dialog over `rows.filter`.
 
 **A multi-row item the 2026-09-01 review left as a product decision.** A jexl
 "Filter by..." on the multi-row painting (LinearBasicDisplay has it on the same

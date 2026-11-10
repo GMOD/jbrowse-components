@@ -1,6 +1,6 @@
 ---
 name: browser-goldens-that-may-hide-regressions
-description: Thirteen failing canvas2d browser tests whose new capture looks like a regression rather than a stale golden, plus four failing asserts. Each needs its owner to rule on the new picture before anyone runs -u.
+description: Failing canvas2d browser tests whose new capture looks like a regression rather than a stale golden, plus failing asserts. Each needs its owner to rule on the new picture before anyone runs -u.
 ---
 
 # Browser goldens that may hide regressions
@@ -21,8 +21,6 @@ Golden first, new capture second.
 
 - `Alignments Track > BAM track screenshot` and `Alignments Color Schemes >
   color by mapping quality`: reads go from the default fill to bright yellow.
-- `Alignments Track > volvox long reads with SV (linked reads)`: the red
-  clipped reads turn grey, and an arc appears over the pair.
 - `Long Reads and Inversions > inversion paired BAM coverage-only` and
   `inversion pbsim coverage-only`: a coverage-only track now draws reads
   under its coverage.

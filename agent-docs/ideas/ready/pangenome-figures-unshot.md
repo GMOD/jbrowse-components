@@ -43,12 +43,10 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   unresolved half (release 1 has CAT GENCODE38, release 2 needs checking or a
   liftoff), so scope it at r1 samples that are also in r2 if the annotation search
   comes up empty.
-- **A chromosome-scale band, config only.** A `LinearWiggleDisplay` on the
-  existing bubble track gives the overview band with no new rendering code
-  (`MinigraphBubbleAdapter` already sets `score: segmentCount`), and it is still
-  unbuilt. It is the one thing that makes the graph navigable at chromosome scale,
-  and the next figure after it is a whole-chr6 variability profile with the MHC as
-  a visible spike.
+- **A whole-chr6 variability profile with the MHC as a visible spike.** The
+  bubble track's wiggle display (`MinigraphBubbleAdapter` sets
+  `score: segmentCount`) already draws chr1's; chr6 is the same config over
+  another chromosome.
 - **Still open from the CHM13 figure:** highlight-into-the-donor view. The
   synteny launch stays prose on part 3, since its figure repeated
   `pangenome/hprc_chm13_allele` above a liftOver ribbon (a figure of it needs

@@ -1,13 +1,13 @@
 ---
 name: tutorial-corpus-audit
-description: Measurements and a structural read of website/docs/tutorials/, naming the pages that are user guides in tutorial form and two that want splitting. Read before restructuring a tutorial or quoting one of its censuses.
+description: Measurements and a structural read of website/docs/tutorials/, naming the pages that are still user guides in tutorial form. Read before restructuring a tutorial or quoting one of its censuses.
 ---
 
 # The tutorial corpus, audited
 
 Two passes over `website/docs/tutorials/`, kept together because they read the
 same pages and their findings land on the same edits. §2-4 are three measurements
-taken on 2026-08-31 across the 48 pages there then; §5-6 are the structural half,
+taken on 2026-08-31 across the 48 pages there then; §5 is the structural half,
 from a ten-agent read of the 43 pages there on 2026-08-21. The corpus is 57 pages
 today, so a census below is a floor rather than a current count — re-run one
 before quoting it.
@@ -183,19 +183,6 @@ If they could, it is a user guide wearing a tutorial's clothes."
   gene is the closing check. ACTB and IsoSeq become one figure each if they
   answer something that spine raised. Alternatively move it to `user_guides/`,
   where `alignments_track` already covers half of it.
-- **`multiway_synteny_grape_peach_cacao.md:186-340`** — 155 lines of a 497-line
-  page, a catalogue of four independent input routes plus a BED recipe, sitting
-  between "Producing the data" and "Setting up the assemblies". Two of the four
-  duplicate pages it links.
-- **`orthofinder_synteny.md`** — puts its results before the pipeline that
-  makes them: five sections read finished figures that `## Producing the blocks
-  table` (once `## The conversion`) only later explains how to build, so the
-  dependency arrow runs backwards through half the page. Inverting it puts ~150
-  lines of bash and JSON ahead of the first figure, which is an editorial call
-  against the house show-rather-than-tell order rather than a fix. The dataset
-  half of this entry is done and not worth re-proposing: the page visits five
-  sets, and each owns one `##` that leads with its organisms and names its set
-  id.
 - **`genomes_proteins.md`**: the launchers now read as a progression (the page
   picks, then you pick), and the comparison table is gone. What fails is the
   closing "More protein browser sessions" gallery: figures with no instruction
@@ -204,17 +191,6 @@ If they could, it is a user guide wearing a tutorial's clothes."
   reader reaches through menus
   ([reference/PROTEIN_FIGURES.md](../../reference/PROTEIN_FIGURES.md)).
   Move it to a showcase page or cut it to the states a reader can reach.
-- **`dog10k_svs.md`** — the opening paragraph states the anti-pattern in its own words
-  ("Five loci, one recipe, a different class of variant each time"; the page has
-  four). The `NHEJ1` spine is real. **The cheapest fix is one paragraph**:
-  `:237-243` already says "the same track scrolled anywhere else is a screen of
-  variants nobody has interpreted yet" — turn that into the question `FGF4`
-  answers and the page becomes continuous.
-- **`tcga_cohort_mutations.md`** — after "Load it", every heading is an
-  independent display setting. `## Cluster the rows instead of grouping them`
-  says it replaces the previous section's reading; `## Thin the matrix down to
-  recurrent mutations` says it empties the window the histology figure is built
-  on. Both belong in `user_guides/multivariant_track` and `clustering`.
 
 **On `ld_human` vs `ld_mosquitoes`: keep two pages.** This is the "second dataset
 the first raised the question for" case — `ld_human` establishes live r² from a
@@ -222,32 +198,9 @@ VCF and runs straight into the fetch gate, and a 22 Mb inversion is past what
 live computation reaches, which `ld_mosquitoes:26-28` states as its reason for
 existing. What should merge is the *guide* material out of both.
 
-**On the two TCGA pages: keep two, fix the handoff.** Merging gives a ~37 KB page
-demonstrating two display types on one cohort, which is the excluded shape. What
-is wrong is the link: `tcga_cohort_mutations.md:338-344` is a bare pointer, not a
-question the first page raised. The material exists on both pages and is unused —
-17q gain confined to the HER2+ row, `TP53` dense in triple-negative. "Copy number
-sorts the cohort by amplification; the point mutations sort a group the segments
-cannot separate" is the sentence that would make the second page arrive.
-
-## 6. The pages that want splitting, at a named seam
-
-- **`sv_visualization_cgiab.md`** — split into `sv_visualization_cgiab` (SV
-  callsets, translocation, _CUZD1_, assembly synteny) and `cnv_cgiab` (copy-number
-  callsets, depth, BAF, four driver genes), a shared trunk of assemblies, reads
-  and benchmark with two branches. The seam proposed here, between building and
-  reading, leaves a ~600-line page of bash and JSON with three figures, so each
-  page would not carry its own lesson and figures.
-- **`pangenome_ecoli.md`** (61 KB) — cut at `## The graph itself` (line 743),
-  which already reads as a second page's title and carries 22.9 KB.
-  `### Browsing the whole graph by locus` alone is 15.4 KB, larger than the whole
-  `hg002_haplotypes` page. Page B has a real chain: index → tier finds the bubble
-  → fine index opens it → carriage says who → the node's menu opens CFT073 → the
-  file cut brings the paths back.
-
 ## Order
 
 §4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
-in `reference/WEBSITE_WRITING.md` §"Tutorials". §2 is the only real work. §5-6 are editorial calls
-on pages that already work, so they wait on someone deciding to take a page
-apart; §6 is the cheaper of the two, because each cut is at a line number.
+in `reference/WEBSITE_WRITING.md` §"Tutorials". §2 is the only real work. §5 is
+editorial calls on pages that already work, so it waits on someone deciding to
+take a page apart.

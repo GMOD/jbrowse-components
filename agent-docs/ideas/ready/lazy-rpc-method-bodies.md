@@ -1,19 +1,19 @@
 ---
 name: lazy-rpc-method-bodies
-description: The RPC registry eagerly imports featureTransforms, markEncoding and flatbush for five method bodies, costing 20 KB gz on an empty page; lazy preload() bodies like RenderAlignmentData's would remove it.
+description: What is left of the eager RPC weight after the encoded-layer, plot-field and consensus bodies went behind preload(): `MafGetSequences`' body, `matedBy` inside featureTransforms, and wiggle's util pulling markEncoding for its constants.
 ---
 
 # Lazy RPC method bodies
 
-20 KB gz on an empty page, 13 KB with four tracks, about 2 KB with a plugin
-named. Re-measure on a fresh build first.
+RPC method classes register at plugin install, so a body named at module scope
+loads on every page. The encoded-layer, plot-field and consensus bodies now come
+in on first use, as `RenderAlignmentData`'s does
+(`plugins/alignments/src/RenderAlignmentDataRPC/`). Three imports remain;
+measure each on a fresh build before moving it.
 
-- Give `CoreGetEncodedLayers`, `CoreGetEncodedFeature`, `MarkScanPlotFields`,
-  `GetConsensusSequence` and `MafGetSequences` a `preload()` body, as
-  `RenderAlignmentData` has (`plugins/alignments/src/RenderAlignmentDataRPC/`).
-- Move `matedBy` into its own module.
-- Split `plugins/wiggle/src/util.ts` so its constants stop
-  importing `markEncoding`.
-- Add `rpcMethods: ['CoreGetEncodedLayers']` to `LinearMarkDisplay` and
-  `MultiWaySyntenyDisplay`; without it the first fetch waits an extra round trip
-  (`CoreLoadTrackCode` preloads the named methods).
+- Give `MafGetSequences` a `preload()` body; it names
+  `processFeaturesToFasta` at module scope.
+- Move `matedBy` out of `packages/core/src/util/featureTransforms.ts` into its
+  own module, so a caller wanting only it stops pulling the transforms.
+- Split `plugins/wiggle/src/util.ts` so its constants stop importing
+  `markEncoding`.

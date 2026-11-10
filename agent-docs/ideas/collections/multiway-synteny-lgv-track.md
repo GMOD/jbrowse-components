@@ -204,15 +204,14 @@ then append whichever unused lane shares the most collinear runs with the last
 one placed, which shortens the travel without giving up the density-first
 property that keeps chains running.
 
-Still open: a **Match anchor scale** mode (one line in `computeRowFrame` — every
+Still open: a **Match anchor scale** mode (one line in `computeRowFrame`: every
 lane's span is the anchor's, and content that does not fit runs off the lane
-edge, which is itself the information); an auto-collapse for lanes placing
+edge, which is itself the information) and an auto-collapse for lanes placing
 nothing (the stacked view's `collapseEmptyRows` has no lane counterpart, and
 Hide lane is purely manual — the stability walk below shows 33/259 empty steps
 per lane; a lane `rows.kept` names keeps its "no alignment in this window" foot
-row through any collapse, since an explicit choice outranks it); and a user-guide section for the lanes UI: the tutorials cover the Lanes
-menu, the label drag and Hide lane, but `website/docs/user_guide.md` has no
-multiway section. `GbzBaseSyntenyAdapter`'s slots are documented by
+row through any collapse, since an explicit choice outranks it).
+`GbzBaseSyntenyAdapter`'s slots are documented by
 `pangenome_hprc.md` with no config page behind them, because the adapter lives
 in another repository. Per-lane pan/zoom stays deliberately absent: the lanes
 re-fit to the anchor's viewport by design, and the launch to a linear synteny

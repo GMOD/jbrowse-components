@@ -60,10 +60,6 @@ Gating reversal on within-best-pair rank correlation was worse: it misses fused
 chromosomes, whose arms go to different partners. The same run found that
 `diagonalizeRegions` ignored a reversed reference chromosome, since fixed.
 
-**CIGAR draw toggles via gpuProps.** Shader uniform bit flags to gate
-`drawCIGAR`/`drawCIGARMatchesOnly`; worker always emits full geometry, flags control
-visibility. Only worth it if users toggle frequently.
-
 **A location-marker tick can't be read, only seen.** A tick states "this query
 coordinate maps to that target coordinate" and there is no way to get the two numbers:
 markers are excluded from the pick index by construction — both their edges are single

@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Pileup and coverage-band ideas, among them a read-count floor for the low-frequency threshold, strand-split allele bars, variant navigation, bedGraph export, read downsampling, lifting `MAX_GROUPS`, interning `readTagValues`, and RNA-seq splice and pair follow-ups.
+description: Pileup and coverage-band ideas, among them a read-count floor for the low-frequency threshold, strand-split allele bars, variant navigation, allele-count export, read downsampling, lifting `MAX_GROUPS`, interning `readTagValues`, and RNA-seq splice and pair follow-ups.
 ---
 
 # Alignments
@@ -60,14 +60,10 @@ main thread. Its threshold is the caller's, so this should read the same
 second notion of significant. Bounded by the fetched region, which is the honest
 limit and worth saying in the UI: "next in view", not "next in the genome".
 
-**Export the coverage band's data.** `coverageDepths` is per-bp on the main
-thread at every zoom, and the packed SNP buffer beside it decodes through
-`readSnpSegments`. A bedGraph/wig (depth) or VCF-ish (allele counts) download
-from the Coverage submenu is a small addition and a frequent ask. The precedent
-for the plumbing is `SaveTrackData.tsx` and the highlight list's
-`downloadHighlightFile`. The open question is scope: the visible region is what
-the user is looking at and what the display actually holds, but "export this
-track" reads as the whole file — say which one the menu item means in its label.
+**Export the coverage band's allele counts.** Save track data writes the depth
+as a bedGraph; the packed SNP buffer beside it decodes through
+`readSnpSegments`, and a VCF-ish allele-count download beside the bedGraph is
+the other half.
 
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
 sub-objects (mods, sashimi, coverage). Flat is simple but long; just an idea.
