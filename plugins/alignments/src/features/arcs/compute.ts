@@ -57,72 +57,35 @@ import type {
 } from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// NOTHING IS RE-EXPORTED FROM HERE. The types live in `arcTypes.ts`, color
-// classification in `arcColors.ts`, region partitioning in `arcRegions.ts`, read
-// grouping in `arcChains.ts`; every consumer imports the module that DEFINES
-// what it wants, so the render path does not pull in two thousand lines of read
-// grouping and junction clustering for a comparator and a lookup table.
+// Nothing is re-exported from here: consumers import the module that defines
+// what they want, so the render path does not pull in read grouping.
 
-// Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
-// offset regardless of fetch/render order, so snapshot tests don't flake.
-// `Math.sin(x)*43758.5453 mod 1` is the standard GPU-style cheap hash.
+// Deterministic 0..1 hash of a junction's endpoints, a stable cloud jitter
+// regardless of fetch or render order.
 function pairJitter01(aBp: number, bBp: number) {
-  // Order-normalized INSIDE the hash rather than at the call site, so this is a
-  // property of the junction and no caller can forget to make it one. The two
-  // multipliers differ, so a pair named (a, b) and the same pair named (b, a)
-  // hashed to different offsets and drew as two flat lines at slightly
-  // different Y — which is the same junction split in two, exactly what
-  // `arcKey`'s normalization exists to prevent, and it would have defeated that
-  // fix in read-cloud mode since `yBp` is what the two arcs would then differ
-  // in. "Stable regardless of fetch/render order" was already the stated
-  // contract; mate order is that same kind of accident.
+  // Order-normalized inside the hash so mate order cannot split one junction
+  // into two Y offsets, and two `arcKey`s.
   const p1Bp = Math.min(aBp, bBp)
   const p2Bp = Math.max(aBp, bBp)
-  // Math.imul keeps each product a true 32-bit multiply; a plain `*` overflows
-  // the 2^53 safe-integer range for large genomic coordinates (bp·constant ≈
-  // 1e17) and silently rounds away low bits before the `>>> 0`.
+  // Math.imul keeps each product 32-bit; a plain `*` exceeds 2^53 at genomic
+  // coordinates and loses the low bits.
   const seed = (Math.imul(p1Bp, 374761393) + Math.imul(p2Bp, 668265263)) >>> 0
   const x = Math.sin(seed) * 43758.5453
   return x - Math.floor(x)
 }
 
-// Pick the shape constant and target Y (in genomic bp) for a single arc.
-// Read cloud: flat line with ±8% multiplicative jitter so coincident reads separate
-// visually. Y is the pair's genomic span on the shared insert-size axis: a mate
-// link plots at Y=|tlen|; a split junction (no tlen) at the full breakpoint gap
-// |p2Bp−p1Bp| — NOT half of it, so a split-supported SV lands on the same
-// insertSizeTicks ruler height as the equivalent-span discordant pair (and isn't
-// mislabeled at half its real size). A pair whose TLEN is *unset* (0 — the SAM
-// "information unavailable" encoding, which discordant and supplementary records
-// often carry) falls back to that same breakpoint gap, for the reason
-// getArcColorType already distrusts TLEN there: plotting it at |0| would park
-// exactly the reads read cloud exists to surface on the baseline. Otherwise it's
-// the single curved ARC shape (the renderer chooses dome vs vertical-lines by
-// zoom); Y is the genomic radius.
+// The shape and target Y (bp) of one arc. Arc mode: the curved ARC shape at
+// the genomic radius. Read cloud: a flat line at the span with
+// `CLOUD_JITTER_BOUNDS` jitter, the span being |tlen| for a mate link and the
+// full breakpoint gap for a split junction or an unset TLEN of 0, so a split
+// SV sits at the same ruler height as an equal-span discordant pair.
 //
-// A CONNECTION THE VIEW CAN PLACE ONLY ONE END OF LEAVES THE AXIS
-// (ARC_SHAPE_FLAT_UNPLACED at `yBp` 0, drawn on the zero anchor). A read cloud
-// bar joins two feet, and when the partner sits outside every loaded region
-// there is no second pixel to draw to: the bar is extrapolated to a coordinate
-// no block covers, runs off the screen edge, and paints the full width of the
-// band while saying nothing its near foot does not. On HG002 300x that is 96
-// screen-wide bars in one 200 kb window, and they are the solid mass along the
-// bottom.
-//
-// The same connection also sets `arcsYDomainBp` for every lane — 379 of 5,281
-// arcs over 47 deep 20 kb windows have a partner more than 1 Mb away, spread
-// uniformly over the chromosome, so the median window's axis topped out at 73 Mb
-// and every real pair was squeezed into the top third of the band. That is the
-// failure the interchromosomal exclusion below was written to prevent, reached
-// from a same-chromosome connection; `plotsOnInsertSizeAxis` is the other half.
-//
-// IT IS A PLACEMENT TEST, NOT A SPAN THRESHOLD, and the difference is the whole
-// design. A pair 5 Mb apart in a view showing BOTH of its ends — two
-// discontiguous displayed regions at the two breakpoints, which is what read
-// connections exist for — draws its bar between two real pixels and belongs on
-// the axis. A pair 30 kb apart in a 20 kb window does not. So the question is
-// what is on screen, and the answer moves with the view: zoom out, or bring the
-// partner's locus into a second region, and the same connection joins the axis.
+// A cloud connection the view can place only one end of leaves the axis
+// (ARC_SHAPE_FLAT_UNPLACED at `yBp` 0): with no second pixel to draw to, its bar
+// runs off screen and its span sets `arcsYDomainBp` for every lane. This is a
+// placement test, not a span threshold: a pair 5 Mb apart with both ends in
+// view belongs on the axis, and one 30 kb apart in a 20 kb window does not
+// (ARC_BAND.md).
 function computeArcShape({
   cloud,
   arc,
@@ -132,51 +95,36 @@ function computeArcShape({
   cloud: boolean
   arc: PendingArc
   absrad: number
-  // Whether BOTH feet fall in a region this fetch loaded — the one question
-  // that decides whether a bar can be drawn at all.
+  // Whether both feet are near a loaded region (`nearLoadedRegion`).
   placed: boolean
 }) {
   const { p1Bp, p2Bp } = arc
   if (cloud) {
-    // `|| gap` reads as the fallback it is: a split junction has no tlen at
-    // all, and an unset one is 0. Routing splits through a 0 sentinel so the
-    // next line's `> 0` could catch both hid that the union already proves
-    // which arm has a tlen.
     const gapBp = Math.abs(p2Bp - p1Bp)
     const spanBp = arc.isSplit ? gapBp : Math.abs(arc.tlen) || gapBp
     if (!placed) {
-      // No jitter: the anchor row is not a scale, so there is nothing for a
-      // ±8% offset to separate. `spanBp` survives for the hover, which is the
-      // only place the distance to the unplaced partner is still readable.
+      // No jitter on the anchor row; `spanBp` keeps the distance for the hover.
       return { shapeType: ARC_SHAPE_FLAT_UNPLACED, yBp: 0, spanBp }
     }
     const jitter = 1 + CLOUD_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: arc.isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(spanBp * jitter),
-      // The jitter is a DRAWING device — it exists so coincident lines don't
-      // stack into one — so the span survives it separately for anything that
-      // reports a number rather than a position. The hover read `yBp` back as
-      // "Insert size", which is that number times a deterministic factor in
-      // [0.92, 1.08]: a 10 kb insert was reported as anything from 9.2 to 10.8
-      // kb, and reproducibly so, since the factor is a hash of the endpoints.
+      // Unjittered, for anything that reports a number rather than a position.
       spanBp,
     }
   }
   return { shapeType: ARC_SHAPE_ARC, yBp: absrad, spanBp: absrad }
 }
 
-// Per-group half of the pipeline: the expensive read grouping + connection
-// resolution, plus the two dataset facts a pooled scale is built from. Split out
-// so every group's arcs exist before any of them is colored.
+// One group's pending arcs and the insert-size band its scale is built from.
 interface ArcInputs {
   pendingArcs: PendingArc[]
   stats: InsertSizeBand | undefined
 }
 
-// The filter plus the refName normalizer, in the one shape pending-arc emission
-// takes them. Both entry points build it, so neither can hand the chainer a
-// different filter from the other.
+// The filter and refName normalizer pending-arc emission takes, built in one
+// place so both entry points hand the chainer the same.
 function arcChainContext(settings: ArcCollectionSettings): ArcChainContext {
   return {
     filter: settings.filter ?? {},
@@ -194,11 +142,9 @@ function collectArcInputs(
   return { pendingArcs, stats: insertSizeStatsOf(rpcDataMap) }
 }
 
-// What belongs to the whole fetched read set rather than to one group,
-// pooled for the reason the model maxes `arcsYDomainBp` across groups.
+// What is pooled across the whole fetched read set rather than per group.
 // `stats` sizes only the interchromosomal clustering window; an arc's insert
-// class reads its own region's band (`arc.stats`), since each region's fetch
-// samples one and the reads are filled by it.
+// class reads its own region's band (`arc.stats`).
 export interface ArcScale {
   stats: InsertSizeBand | undefined
 }
@@ -207,32 +153,13 @@ function poolArcScale(inputs: ArcScale[]): ArcScale {
   return { stats: inputs.find(i => i.stats !== undefined)?.stats }
 }
 
-// Color + shape one group's resolved connections against the pooled scale,
-// COALESCING connections that would draw as the same arc.
+// Color and shape one group's connections, coalescing those that would draw
+// as the same arc (`arcKey`) so support becomes a channel (`arcStrokeScale`).
 //
-// Every read spanning a junction used to contribute its own instance, and arc
-// colors are opaque with no alpha, so N identical arcs were pixel-identical to
-// one: the picture said "a junction is here" and could not say how many reads
-// said so. Measured on the HG002 chr12 fold-back, a 24 kb window: 89
-// connections over 38 distinct arcs, the busiest drawn 27 times, and a 6-read
-// junction 689 bp away drawn with exactly the same weight as the 27-read one.
-//
-// Coalescing is what lets support become a channel (`arcStrokeScale`) instead of
-// being thrown away, and it removes the redundant instances rather than
-// stacking them: 57% of the arcs in that window were exact repeats.
-//
-// The read-cloud jitter does not stop two identical pairs coalescing: it hashes
-// the same two bp to the same offset (`pairJitter01`), so arcs agreeing on the
-// endpoints agree on it. What it does NOT make agree is the span the offset
-// scales — see `arcKey`, which is why `yBp` is keyed on.
-//
-// THREE outputs, from ONE region lookup per connection. The alternative — emit
-// arcs, then partition them in a second pass — was written first and is worse
-// for a reason that is not style: the second pass has to ask "which region is
-// this foot in" all over again, so "an interchromosomal arc is always in the
-// cross-region set" holds only as long as the two lookups agree. Deciding it
-// here, off `p1RegionIndex`/`p2RegionIndex` resolved once, makes it structural,
-// which is what `groupArcsByRef` and `arcTouchesRegion` both rely on.
+// Three outputs (arcs, cross-region arcs, ticks) from one region lookup per
+// connection. Partitioning in a second pass would repeat the lookup, and "an
+// interchromosomal arc is always cross-region" would hold only while the two
+// agreed; `groupArcsByRef` and `arcTouchesRegion` rely on it.
 function resolveArcs(
   pendingArcs: PendingArc[],
   settings: ArcSettings,
@@ -240,8 +167,7 @@ function resolveArcs(
   { clusterOf, sizeOf }: InterchromClusters,
 ) {
   const { displayed: displayedRegions, loaded: loadedRegions } = regions
-  // How far past the fetched data a bar may still point — see `cloudReachBp`.
-  // Resolved once for the feed: it describes the VIEW, not a connection.
+  // Describes the view, not a connection, so resolved once (`cloudReachBp`).
   const reachBp = cloudReachBp(loadedRegions)
   const { cloud = false, filter = {} } = settings
   const { minInterchromReads = 1 } = filter
@@ -251,13 +177,11 @@ function resolveArcs(
   )
   const arcs: ComputedArc[] = []
   const crossRegion: CrossRegionArc[] = []
-  // ONE map over both arrays. An arc is pushed to exactly one of them on first
-  // sight and the later `support++` mutates that same object, so the count
-  // cannot end up on a copy in the other half.
+  // One map over both `arcs` and `crossRegion`: a later `support++` mutates
+  // the object already pushed to one of them.
   const byKey = new Map<string, ComputedArc>()
   // The fragments behind each arc, so a PCR or optical copy adds no support
-  // (`fragmentEndsKey`). Built only once a second connection reaches a key,
-  // from the index of the first, so an arc of one read keys nothing.
+  // (`fragmentEndsKey`). Built only once a second connection reaches a key.
   const firstAt = new Map<string, number>()
   const fragmentsAt = new Map<string, Set<string>>()
   function addsFragment(key: string, index: number) {
@@ -271,11 +195,8 @@ function resolveArcs(
     fragmentsAt.set(key, fragments)
     return added
   }
-  // The tick, the clusters already counted into it, and whether any of them is
-  // exempt from the floor — see `pushLine`. All three are off `ComputedLine`
-  // because they are bookkeeping for the coalescing rather than fields of the
-  // mark, and `clusters` is one element for all but a coordinate two events
-  // share.
+  // Each tick with the coalescing's bookkeeping: the clusters already counted
+  // into it and whether any is exempt from the floor (`pushLine`).
   const byLineKey = new Map<
     string,
     {
@@ -285,57 +206,19 @@ function resolveArcs(
     }
   >()
 
-  // One tick per breakpoint, COUNTING the reads that agree on it — the same
-  // move `arcKey` makes for arcs, and for the same two reasons.
+  // One tick per breakpoint, coalescing the reads that agree on it as `arcKey`
+  // does for arcs, so support becomes a channel and the hover has a count.
   //
-  // Every read over a translocation used to push its own pair of ticks. Opaque
-  // marks at one x, so N of them were pixels-identical to one: the picture said
-  // "a breakpoint is here" and could not say how many reads said so. Worse, the
-  // GPU pass shades its edges by coverage (`strokeCoverage`), so the duplicates
-  // alpha-composited and a 50-read breakpoint drew a perceptibly wider,
-  // harder-edged tick than a 1-read one, while the Canvas2D mirror strokes
-  // opaque and drew the two the same.
+  // Its support is the sum of the distinct clusters reaching this coordinate,
+  // each once. The connections at the coordinate would read 1 for nearly every
+  // mate pair, since mates straddle a breakpoint; one cluster's size would
+  // undercount two events sharing a base, the shape `partnerRefNames` is plural
+  // for. Both coordinates of one event report the whole event, as an arc does.
   //
-  // Coalescing is what lets `support` become a channel (`arcStrokeScale`, the
-  // same curve the arcs use) instead of being thrown away, and what gives the
-  // hover something to report. Deduping alone would have been lossy.
-  //
-  // THE SUM OF THE DISTINCT CLUSTERS reaching this coordinate, which is neither
-  // of the two obvious numbers and is the only one that survives both cases.
-  //
-  // Counting the connections AT the coordinate — which this did — is the
-  // measurement the interchromosomal family was already shown not to have. Mate
-  // pairs straddle a breakpoint rather than landing on it, so the count is 1 for
-  // 862 of 865 connections (`ComputedArc.support`), and the tick is the mark a
-  // SINGLE-chromosome view draws for a translocation: the arc half of the fix
-  // never reaches it. Worse, `minInterchromReads` gates a tick on its cluster,
-  // so a five-pair breakpoint cleared a floor of 2 and then drew, and hovered,
-  // as one read.
-  //
-  // Taking the cluster's own size instead understates the other way: two
-  // singleton events sharing a chr1 base (`a breakpoint reaching two chromosomes
-  // names both`) would report the larger, 1, for the two reads sitting there.
-  // `partnerRefNames` is plural for exactly that shape.
-  //
-  // So: each cluster contributes its size ONCE. A tick is half a junction, and
-  // the reads standing behind the halves that meet here is what it can say. Its
-  // two coordinates of one event do both report the whole event — the same trade
-  // an arc makes, and for the same reason: the mark is the junction and the
-  // POSITION is its own read's.
-  //
-  // EVERY CLUSTER IS COUNTED, and `minInterchromReads` is applied to the SUM
-  // afterwards rather than to each addend. Filtering the addends made the number
-  // a tick reports depend on the setting: on one donor with a 3-read and a
-  // 1-read acceptor, the donor coordinate read 4 at `all` and 3 at the default
-  // floor of 2, over four reads that all cross that base either way. The gate and
-  // the drawn number are supposed to be one number — `ComputedArc.support` says
-  // so — and they are on the arc arm, where an arc IS one cluster. On this arm
-  // the number is a sum, so the gate has to be taken against the sum or it is
-  // testing one term of it.
-  //
-  // It also deleted marks the floor had no quarrel with: two reads at one
-  // breakpoint whose partners land 3 bp apart are two clusters of 1, so nothing
-  // drew at a coordinate two reads agree on. Summing first draws it at 2.
+  // `minInterchromReads` is applied to the sum after coalescing, not to each
+  // addend: gating the addends made the reported count follow the setting, and
+  // dropped two reads at one breakpoint whose partners landed apart as two
+  // clusters of 1.
   function pushLine(
     refName: string,
     bp: number,
@@ -343,10 +226,8 @@ function resolveArcs(
     partnerBp: number,
     cluster: number,
     clusterSupport: number,
-    // Whether this cluster's evidence answers to the floor at all — see
-    // `clearsInterchromFloor`. One exempt cluster keeps the tick whatever the
-    // sum, since the floor is a statement about scattered mate pairs and has
-    // nothing to say about a read that crosses the breakpoint.
+    // Exempt from the floor (`clearsInterchromFloor`); one exempt cluster
+    // keeps the tick whatever the sum.
     exempt: boolean,
   ) {
     const key = `${refName}\0${bp}`
@@ -380,35 +261,22 @@ function resolveArcs(
     })
   }
 
-  // One arc per distinct junction, COALESCING the reads that agree on it — the
-  // same move `pushLine` makes for the ticks, keyed by `arcKey`.
-  //
-  // It also files each arc into the half that can DRAW it, off the two region
-  // indices resolved once per connection above. BOTH producers go through here,
-  // and that is what makes "an interchromosomal arc is never in the per-region
-  // feed" structural rather than a rule two branches happen to agree on: two
-  // refNames cannot land in one displayed region, so the cross-region branch is
-  // the only one such an arc can take. `groupArcsByRef` is keyed on exactly that.
+  // One arc per distinct junction, filed into the half that can draw it off the
+  // connection's two region indices. Two refNames cannot share a displayed
+  // region, so an interchromosomal arc can only take the cross-region branch.
   function pushArc(
     arc: Omit<ComputedArc, 'support' | 'key'>,
     p1RegionIndex: number | undefined,
     p2RegionIndex: number | undefined,
-    // The index of the connection in `pendingArcs`: its two arm directions,
-    // kept only on the cross-region half (`CrossRegionArc.p1Dir`), and the
-    // fragment it counts as.
+    // The connection's index in `pendingArcs`, for its arm directions
+    // (`CrossRegionArc.p1Dir`) and the fragment it counts as.
     pendingIndex: number,
-    // The reads this connection already stands for, when its family cannot be
-    // counted a read at a time — `ComputedArc.support`. Absent means COUNT: each
-    // connection is one more read agreeing on this junction to the base.
+    // The reads this connection already stands for when its family is
+    // clustered (`ComputedArc.support`); absent means count one per fragment.
     clusterSupport?: number,
-    // WHAT THIS CONNECTION JOINS, when that is no longer what it DRAWS between.
-    // An unplaced mark has both feet collapsed onto its on-screen end, so keying
-    // off the drawn feet asks "same foot, same color?" — and every read at that
-    // outer edge answers yes however far away its own partner is. They then
-    // coalesce into one mark whose `support` counts them all and whose `spanBp`
-    // is whichever arrived first, so the hover says "Supported by 2 reads" over
-    // a partner distance true of one of them. One arc is one junction, and a
-    // junction is its two ends.
+    // The true endpoints when the drawn feet are collapsed (an unplaced mark).
+    // The key must take these, or every read at that outer edge coalesces into
+    // one mark whatever its partner.
     keyFeet?: { p1Ref: string; p1Bp: number; p2Ref: string; p2Bp: number },
   ) {
     const key = arcKey({
@@ -423,10 +291,8 @@ function resolveArcs(
     })
     const seen = byKey.get(key)
     if (seen) {
-      // Nothing to add on the clustered arm, and that is an invariant rather
-      // than a shortcut: every connection coalescing onto one arc shares both
-      // coordinates, so it is in the same cluster and arrived with the same
-      // number. One arc is one junction is one cluster.
+      // Nothing to add on the clustered arm: connections sharing both
+      // coordinates share a cluster and its size.
       if (clusterSupport === undefined && addsFragment(key, pendingIndex)) {
         seen.support++
       }
@@ -436,29 +302,19 @@ function resolveArcs(
     const computed: ComputedArc = {
       ...arc,
       support: clusterSupport ?? 1,
-      // kept for the sort's tie-break below, where it is the only thing that
-      // does not depend on what order the reads arrived in
       key,
     }
     byKey.set(key, computed)
-    // pushed in first-seen order, so the feed's order is still the reads' —
-    // a later support bump mutates the entry already in the array
-    //
-    // An arc with EITHER foot in no displayed region is not cross-region: that
-    // is the off-screen-partner case, which has no second pixel to draw to and
-    // keeps `arcTouchesRegion`'s existing handling, where the leg rising toward
-    // the screen edge is the correct picture.
+    // An arc with either foot in no displayed region is not cross-region: it
+    // has no second pixel and stays per-region (`arcTouchesRegion`).
     if (
       p1RegionIndex !== undefined &&
       p2RegionIndex !== undefined &&
       p1RegionIndex !== p2RegionIndex
     ) {
-      // `Object.assign`, not a spread: the object identity has to be the one in
+      // `Object.assign`, not a spread: the identity has to be the one in
       // `byKey`, or a later `support++` lands on an arc nothing draws.
       crossRegion.push(
-        // Named one at a time rather than spread: the callers hand their whole
-        // `PendingArc` in, so a spread would copy `p1Ref`, `tlen`, `isSplit` and
-        // the rest onto an arc nothing reads them off.
         Object.assign(computed, {
           p1RegionIndex,
           p2RegionIndex,
@@ -474,8 +330,8 @@ function resolveArcs(
   for (let i = 0; i < pendingArcs.length; i++) {
     const arc = pendingArcs[i]!
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
-    // ONE gate over every mark a connection can become (arc, tick, flat bar),
-    // so neither category can be bypassed by a branch added below.
+    // One category gate over every mark a connection can become, so no branch
+    // below can bypass it.
     const interchromosomal = p1Ref !== p2Ref
     if (
       !passesCategory(
@@ -489,72 +345,32 @@ function resolveArcs(
     ) {
       continue
     }
-    // THE region lookup for this connection, and the only one. Every decision
-    // below about where the arc can be drawn is taken from these two.
-    //
-    // Above every filter rather than beside the one caller that needs it today:
-    // the interchromosomal branch asks the same question (commit 3's arc-or-tick
-    // decision), and two lookup sites is how the invariant `groupArcsByRef`
-    // depends on stops being structural. The cost is a scan of a 1-2 element
-    // list, which is nothing next to the `arcKey` string this loop builds for
-    // every connection that survives.
+    // The region lookup for this connection, and the only one: every decision
+    // below about where it draws, arc or tick included, reads these two.
     const p1RegionIndex = regionIndexOf(displayedRegions, p1Ref, p1Bp)
     const p2RegionIndex = regionIndexOf(displayedRegions, p2Ref, p2Bp)
-    // Interchromosomal. Always painted the single dedicated interchromosomal
-    // color: insert size, long-range distance and pair orientation are all
-    // meaningless across refs (a cross-chromosome "pair orientation" is
-    // arbitrary), so coloring by them just produces visual noise — one uniform
-    // color, regardless of whether the evidence
-    // is a split read or a mate pair. As a TICK that was because the mark
-    // carries no color of its own. As an ARC the reason is stronger: "crosses
-    // chromosomes" used to be readable from the mark itself, and it is not from
-    // a curve — a same-chromosome cross-region arc crosses the same panel
-    // divider — so the color is now the ONLY channel carrying it.
+    // Interchromosomal: always the one interchromosomal color, since insert
+    // size, distance and pair orientation mean nothing across refs, and on a
+    // curve the color is the only channel saying it crosses chromosomes.
     if (interchromosomal) {
-      // Scattered IS the criterion for the `minInterchromReads` floor, so it
-      // drops the whole connection rather than merging it: a breakpoint whose
-      // reads cluster keeps every mark at the coordinate its own read put it
-      // at. Merging a cluster would have to invent a position for it, which is
-      // the thing `arcKey`'s exact-coordinate rule exists to refuse.
-      //
-      // The reads behind this connection, and the number both its marks are
-      // drawn and reported with — see `ComputedArc.support`. The tick also takes
-      // the cluster's IDENTITY, because a coordinate several events reach adds
-      // each of them once (`pushLine`).
+      // The cluster's size is both marks' support (`ComputedArc.support`); the
+      // tick also takes its identity, to add each event once (`pushLine`). No
+      // mark is moved to a merged position: each draws at its own read's.
       const cluster = clusterOf[i]!
       const support = sizeOf[cluster]!
-      // Whether the floor has anything to say about this connection's evidence —
-      // see `clearsInterchromFloor`.
       const exempt = arc.isSplit
-      // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
-      // connection, so a breakpoint reaching one displayed and one undisplayed
-      // chromosome gets an arc *and* a tick and both counts stay honest.
-      //
-      // Replacing the ticks rather than drawing beside them, because a tick's
-      // whole job is "there is a connection to somewhere you cannot see",
-      // which is precisely false in this configuration. No position is lost:
-      // the arc's feet are the two tick positions.
-      //
-      // NOT IN READ-CLOUD MODE, and that exclusion is the severe one. The
-      // cloud's Y axis IS insert size and an interchromosomal connection has
-      // none: it carries TLEN 0 (SAM sets it so across refs), so
-      // `computeArcShape` would fall back to the endpoint GAP — |ctgBbp -
-      // ctgAbp|, about 1.07e8 for a real chr9/chr22 junction — and that
-      // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
-      // across every group, which the insert-size axis prints on the
-      // ruler. One connection would rescale the whole read cloud to a 107 Mb
-      // "insert size" and label it. Arc mode draws it with no value at all,
-      // half as tall as its feet are apart (`arcMarks.ts`).
+      // An arc when both feet are in displayed regions, ticks otherwise, per
+      // connection; a tick claims a connection to somewhere unseen. Not in the
+      // read cloud: TLEN is 0 across refs, so `computeArcShape` would fall back
+      // to a ~100 Mb endpoint gap and rescale every lane's insert-size axis
+      // (ARC_BAND.md).
       if (
         !cloud &&
         p1RegionIndex !== undefined &&
         p2RegionIndex !== undefined
       ) {
-        // THE ARC'S OWN GATE, against the same number it will draw with: an arc
-        // is one junction is one cluster, so here the count the floor tests and
-        // the count `arcStrokeScale` spends are the same value. The tick arm below
-        // cannot say that — its number is a sum — so its gate is applied after
-        // the summing instead.
+        // Gated on the same number it draws with; the ticks' gate waits for
+        // their sum.
         if (clearsInterchromFloor(exempt, support, minInterchromReads)) {
           pushArc(
             {
@@ -563,11 +379,7 @@ function resolveArcs(
               colorType: ARC_COLOR_INTERCHROM,
               shapeType: ARC_SHAPE_ARC,
               yBp: 0,
-              // No reported quantity: the hover prints two POSITIONS for this
-              // arc rather than a span, since a bp distance across a
-              // translocation is a subtraction of two unrelated number lines.
-              // Inert rather than arbitrary — `maxFlatArcSpanBp` reads only flat
-              // shapes and `formatArcTooltip` only ARC_SHAPE_FLAT.
+              // No span across chromosomes; the hover prints two positions.
               spanBp: 0,
             },
             p1RegionIndex,
@@ -577,24 +389,17 @@ function resolveArcs(
           )
         }
       } else {
-        // Each endpoint's tick names the OTHER endpoint's chromosome — that is
-        // the whole content of a translocation marker, and the direction is
-        // what makes the two ticks different marks rather than a mirrored
-        // pair. The one whose chromosome is not displayed reaches no region
-        // and is dropped by `lineTouchesRegion`.
-        //
-        // Pushed unfiltered: the floor is taken against the coalesced total
-        // below, for the reason `pushLine` gives.
+        // Each endpoint's tick names the other's chromosome; one off every
+        // displayed region is dropped by `lineTouchesRegion`. Pushed unfiltered:
+        // the floor is taken against the coalesced total (`pushLine`).
         pushLine(p1Ref, p1Bp, p2Ref, p2Bp, cluster, support, exempt)
         pushLine(p2Ref, p2Bp, p1Ref, p1Bp, cluster, support, exempt)
       }
       continue
     }
 
-    // The cloud's ordinary pair is one of modal |TLEN|, not one the aligner
-    // flagged proper: the cloud surfaces anything anomalous in SIZE, so it
-    // must keep a proper pair of odd length (`isConcordantPairRead` has the
-    // split). A split junction has no template length and never qualifies.
+    // The cloud's ordinary pair is one of modal |TLEN|, not one flagged
+    // proper, so a proper pair of odd length stays.
     if (
       cloud &&
       !showOrdinaryPairs &&
@@ -606,34 +411,13 @@ function resolveArcs(
 
     const absrad = Math.abs((p2Bp - p1Bp) / 2)
 
-    // No bp distance ever hides or reshapes a both-mates-visible pair: every
-    // pair renders as an arc. "Long range" is purely the *visual* result of
-    // zoom — a far-apart arc collapses to near-vertical lines at its real
-    // endpoints (the link mark), and zooming out to show the whole span restores
-    // the rounded arc. (`offscreenMates` only filters connections to mates that
-    // aren't loaded in the current view; see `offScreenMateArcs`.)
+    // No bp distance hides or reshapes a pair with both mates visible; a far arc
+    // collapsing to vertical lines is purely the renderer's response to zoom.
     const colorType = getArcColorType(arc)
-    // The arcs' ordinary pair, which at depth stops being context and becomes
-    // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
-    // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).
-    //
-    // TWO conditions, and the second is what keeps the setting honest.
-    //
-    // `isConcordantPairRead` is the READ filter's rule, shared verbatim: a pair
-    // it calls ordinary is one `svSignal` does not keep for its pairing. But
-    // that rule reads the aligner's verdict, and the arc's COLOR can disagree
-    // with it: a pair flagged proper whose |TLEN| falls below the insert band
-    // paints short-insert. Hiding it would take a pink arc
-    // off the screen under a setting about ordinary pairs, which reads as a bug
-    // — measured, it was 42 of the 48 short-insert arcs in that window.
-    //
-    // So it must ALSO be painting the baseline slot: nothing the display is
-    // currently drawing as a category can be hidden as routine, whatever the
-    // flags say. `arcPaintRank` is the same classifier the paint order uses, so
-    // "hidden" and "grey" are the same set by construction.
-    //
-    // A split junction has no pair to call proper and is never suppressed: it is
-    // evidence whatever the reads around it are flagged.
+    // The arcs' ordinary pair (DEEP_COVERAGE.md) must be both proper by the
+    // read filter's rule (`isConcordantPairRead`) and painting the baseline
+    // slot (`arcPaintRank`), so "hidden" and "grey" are one set and a proper
+    // pair painted short-insert stays. A split junction is never ordinary.
     if (
       !cloud &&
       !showOrdinaryPairs &&
@@ -644,25 +428,10 @@ function resolveArcs(
       continue
     }
 
-    // CAN THE VIEW PLACE THIS CONNECTION'S TWO ENDS? Asked of the LOADED list,
-    // not the displayed one, and that is the whole point of asking it here:
-    // `displayedRegions` in an ordinary LGV is the WHOLE chromosome, so a mate
-    // 214 Mb away resolves to a region and reads as perfectly placeable. The
-    // loaded list is the fetch — the blocks on screen plus the half-screen each
-    // side `planRegionFetch` buffers.
-    //
-    // Widened by `cloudReachBp`, so the test is "is there something over there"
-    // rather than "did this fetch pull it". A real event just past the window
-    // edge draws its bars — every one of its pairs agreeing on one span, which
-    // is one clean row — where a strict containment test threw them away along
-    // with the mismapping. The reach is a multiple of the loaded span and the
-    // measurement behind it is with the constant.
-    //
-    // Two discontiguous displayed regions are two loaded regions, so a pair
-    // bridging the breakpoints of a long-range event has both feet placed and
-    // keeps its bar however far apart they are — no reach needed. That view is
-    // what read connections exist for, and the span it puts on the axis is the
-    // one the reader asked to see.
+    // Whether the view can place each end, asked of the loaded list, not
+    // `displayedRegions`, which in an ordinary LGV is the whole chromosome.
+    // Widened by `cloudReachBp`. Two discontiguous displayed regions are two
+    // loaded regions, so a pair bridging them stays placed however far apart.
     const p1Placed = nearLoadedRegion(loadedRegions, p1Ref, p1Bp, reachBp)
     const p2Placed = nearLoadedRegion(loadedRegions, p2Ref, p2Bp, reachBp)
     const shape = computeArcShape({
@@ -671,26 +440,12 @@ function resolveArcs(
       absrad,
       placed: p1Placed && p2Placed,
     })
-    // AN UNPLACED CONNECTION IS ONE MARK AT THE END THAT IS ON SCREEN, so both
-    // feet collapse onto that end here rather than one being left at a
-    // coordinate no block covers.
-    //
-    // Collapsing in bp, before anything is projected, is what lets the marks
-    // draw it with no geometry of their own: the link widens a zero-length line
-    // to its minimum centred on the foot, the two endpoint squares land on top
-    // of each other there, and the hit test measures that same stub.
-    //
-    // `p1` is the placed end for every connection either mate-link producer
-    // makes — both put a FETCHED read's own outer edge there (`mateLinkArc`,
-    // `offScreenMateArcs`) — but a split chain can step through an off-screen SA
-    // segment on either side, so the foot is chosen rather than assumed. Neither
-    // placed means the connection joins two off-screen segments, which
-    // `arcTouchesRegion` drops from every region anyway.
-    //
-    // The far coordinate is not lost, only unplotted: `spanBp` carries the
-    // distance into the hover, which is the one place it can still be read —
-    // and `keyFeet` below keeps it in the cluster key, so two connections that
-    // merely share a foot stay two marks.
+    // An unplaced connection is one mark at the end that is on screen: both
+    // feet collapse onto that end in bp, so the marks and hit test need no
+    // geometry of their own. The placed end is chosen, not assumed, since a
+    // split chain can step off screen on either side; neither placed means two
+    // off-screen segments, which no region takes. The far coordinate survives in
+    // `spanBp` for the hover and in `keyFeet` for the key.
     const keepP1 = p1Placed || !p2Placed
     const foot = keepP1
       ? { refName: p1Ref, bp: p1Bp }
@@ -698,15 +453,9 @@ function resolveArcs(
     const unplaced = shape.shapeType === ARC_SHAPE_FLAT_UNPLACED
     const p1 = unplaced ? foot : { refName: p1Ref, bp: p1Bp }
     const p2 = unplaced ? foot : { refName: p2Ref, bp: p2Bp }
-    // The REGION INDICES collapse with the feet, or the routing below still
-    // reads a one-footed mark as a connection between two places and files it
-    // cross-region. The band then places each foot through its own region —
-    // and where those two regions overlap in bp, the second lookup
-    // succeeds and the collapsed mark draws back out as a screen-wide bar with
-    // its squares in two regions, which is the picture parking exists to
-    // remove. The far mate need not be exotic to land in a second displayed
-    // region: a whole-chromosome region beside a zoomed window is two, and only
-    // the window is fetched.
+    // The region indices collapse with the feet, or the mark is filed
+    // cross-region and drawn back out as a bar wherever the far foot lands in a
+    // second displayed region.
     const footRegionIndex = keepP1 ? p1RegionIndex : p2RegionIndex
     pushArc(
       {
@@ -724,30 +473,19 @@ function resolveArcs(
   }
 
   arcs.sort(arcPaintOrder)
-  // The same TOTAL order over the overlay's half, for the same reason one level
-  // down: SVG document order is paint order, and equal-support arcs left in the
-  // reads' arrival order are not in the same order twice.
+  // SVG document order is paint order, so the overlay's half is sorted too.
   crossRegion.sort(arcPaintOrder)
 
-  // THE TICKS' FLOOR, taken here rather than per contributing cluster — see
-  // `pushLine`. This is where the tick family's gate and its drawn number become
-  // one number, which is what the arc arm already had by construction.
+  // The ticks' floor, applied to the summed support (`pushLine`).
   const kept = [...byLineKey.values()].filter(e =>
     clearsInterchromFloor(e.exempt, e.line.support, minInterchromReads),
   )
   const lines = kept.map(e => e.line)
 
-  // The same ordering, for the same reason, over the ticks. They are opaque
-  // full-band verticals, so two within a stroke width of each other resolve by
-  // paint order, and the band's hit test answers an on-ink tie with the
-  // later-drawn one. Tie-broken on the breakpoint's own bp, which the
-  // coalescing above makes unique WITHIN a refName — the only scope that has to
-  // be ordered, since `groupArcsByRef` buckets these before anything draws them
-  // and two refNames never share a region's feed.
+  // Ticks are opaque and the hit test takes the later-drawn, so they paint
+  // heaviest last; bp is unique within a refName, the only scope drawn together.
   lines.sort((a, b) => a.support - b.support || a.x.bp - b.x.bp)
-  // Sorted, so a tooltip listing two partners lists them the same way twice.
-  // First-seen order is the reads' arrival order, which is not stable across
-  // runs — the trap `arcs.sort`'s tie-break is written up for, one field over.
+  // Sorted, since first-seen order is arrival order and not stable.
   for (const line of lines) {
     line.partnerRefNames.sort()
     line.partnerLoci.sort(
@@ -763,20 +501,11 @@ function resolveArcs(
 
 /**
  * Which interchromosomal cluster each pending arc belongs to, and each
- * cluster's size: what an interchromosomal mark's `support` is, and so what
- * `minInterchromReads` gates.
- *
- * Taken over every lane of a fetch at once. Grouping partitions reads for
- * drawing and says nothing about how many reads stand behind a breakpoint, so
- * clustering one lane at a time split a translocation's pairs across the lanes
- * they happened to fall in — at the default floor of 2, a two-pair event
- * grouped by strand drew in neither lane.
- *
- * The window is the library's fragment length (`stats.upper`), pooled across
- * lanes like the rest of `ArcScale`: too wide a window merges events on a 150
- * bp amplicon library, too narrow a one splits a 3 kb mate-pair library's
- * translocation into singletons. Skipped while `interchrom` is excluded, since every
- * reader sits in the branch that setting closes.
+ * cluster's size: an interchromosomal mark's `support`, which
+ * `minInterchromReads` gates. Taken over every lane at once, since grouping by
+ * strand scatters a breakpoint's pairs across lanes. The window is the
+ * library's fragment length (`stats.upper`). Skipped while `interchrom` is
+ * excluded.
  */
 function interchromClusters(
   pendingArcs: PendingArc[],
@@ -792,14 +521,9 @@ function interchromClusters(
 }
 
 /**
- * Arcs + cross-region arcs + connector ticks for one group's raw pileup data,
- * scaled to that group alone. The single-group entry point; grouped rendering
- * goes through `computeArcsByGroup` instead, which pools the color scale across
- * every lane.
- *
- * `displayedRegions` defaults to the fetched list, which is the truth in the
- * single-region view this entry point describes — see `ArcRegions` for when the
- * two genuinely differ and why the difference matters.
+ * Arcs, cross-region arcs and connector ticks for one group's pileup data:
+ * the single-group entry point (`computeArcsByGroup` pools across lanes).
+ * `displayedRegions` defaults to the fetched list (`ArcRegions`).
  */
 export function computeArcsFromPileupData(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
@@ -818,58 +542,32 @@ export function computeArcsFromPileupData(
 }
 
 /**
- * Everything one fetch's arcs are: both drawable halves, plus the three facts
- * that are asked ACROSS the lanes rather than of one.
- *
- * Those three used to be walks of `byGroup` in the model, and splitting the
- * cross-region arcs out of it broke two of them at once — a legend swatch keyed
- * off arcs that had moved, a Y domain sized without them, a band strip reserved
- * for a lane whose ink was now entirely in the overlay. They were not three
- * slips: "which arcs does this lane draw" had stopped having one answer. They
- * are outputs of the pass holding both halves for that reason, and a third half
- * would have to come through here too.
- *
- * All three are computed AFTER regionization, which is the other half of the
- * same rule. An arc reaching no displayed region at all is dropped by
- * `arcTouchesRegion`, so keying a swatch off the pre-regionization set would
- * name a color nothing draws.
+ * Everything one fetch's arcs are: both drawable halves, plus the facts asked
+ * across lanes. Those are computed here, over both halves and after
+ * regionization, because which arcs a lane draws has two answers once
+ * cross-region arcs leave the per-region feed, and an arc reaching no region
+ * is dropped by `arcTouchesRegion` and must not key a legend swatch.
  */
 export interface ArcsByGroupResult {
   byGroup: Map<string, Map<number, ArcsUploadData>>
-  // The arcs no per-region buffer can draw, per group — see `CrossRegionArc`.
-  // Empty in the single-region view, which is why the overlay that draws them
-  // costs nothing there.
+  // The arcs no per-region buffer can draw, per group (`CrossRegionArc`).
   crossRegionByGroup: Map<string, CrossRegionArc[]>
-  // The lanes with ANY arc-band ink, in either half. Drives the per-section band
-  // reservation: a lane whose reads yield no arc and no tick reserves no strip,
-  // so its pileup starts right under its coverage. A lane whose every arc
-  // crosses a seam — two windows either side of a breakpoint, the view read
-  // connections exist for — has ink in the overlay only, and must still reserve.
+  // The lanes with any arc-band ink in either half, which reserve a band strip;
+  // a lane may have ink only in the overlay.
   inkGroupKeys: Set<string>
-  // The arc color slots actually drawn, across every lane. The legend maps them
-  // through `arcSlotCategory`, which needs a setting this pass doesn't
-  // have, so the slots stay raw here.
+  // The arc color slots drawn across every lane, raw; the legend maps them
+  // through `arcSlotCategory`.
   colorSlots: Set<number>
-  // The largest reported flat-arc span, which is the read cloud's Y domain: its
-  // axis autoscales to this and the insert-size axis labels its top tick
-  // with it. 0 when nothing flat is drawn.
+  // The largest reported flat-arc span, the read cloud's Y domain; 0 when
+  // nothing flat is drawn.
   maxFlatArcSpanBp: number
 }
 
 /**
- * The full arc upload feed for every group of one fetch.
- *
- * Resolution runs per group (a read belongs to exactly one lane, and each lane
- * draws its own band), but the color scale is characterized ONCE across all of
- * them — see `poolArcScale`. Resolving every group before coloring any is what
- * makes that possible at no extra cost: the expensive half already had to run
- * per group.
- *
- * Every group handed in is pooled, so a lane the display doesn't draw must not
- * be in the map: it would shift the scale the visible lanes share. That is the
- * caller's `rawDataByGroup`, which drops `hiddenGroups` at the source
- * (`buildRawDataByGroup`) precisely so no walk of it — this one included — has
- * to re-apply the rule.
+ * The full arc upload feed for every group of one fetch: collected over every
+ * lane, resolved per lane against one pooled scale. Every group handed in is
+ * pooled, so hidden lanes must already be out of `rawDataByGroup`
+ * (`buildRawDataByGroup`).
  */
 export function computeArcsByGroup(
   rawDataByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>,
@@ -909,13 +607,9 @@ export function collectArcs(
   loaded: RegionInfo[],
   settings: ArcCollectionSettings,
 ): ArcCollection {
-  // COLLECTION IS POOLED, resolution is per lane. Grouping partitions reads for
-  // drawing and says nothing about which molecule carries which junction, so
-  // chaining one lane at a time counted a read once per lane its segments
-  // landed in — see `collectPendingArcsByLane`. Each pending arc
-  // arrives stamped with its fragment's lane, and a lane that produced none
-  // still gets its (empty) entry below, since the band reservation reads
-  // `byGroup` for every group the display drew.
+  // Collection is pooled across lanes (`collectPendingArcsByLane`); a lane
+  // that produced nothing still gets an empty entry, since the band
+  // reservation reads `byGroup` for every drawn group.
   const arcsByLane = collectPendingArcsByLane(
     groupLaneReadsByName(rawDataByGroup, loaded),
     arcChainContext(settings),
@@ -974,15 +668,12 @@ export function resolveArcsByGroup(
       },
     )
     offset += pending.length
-    // The per-region feed is keyed on the LOADED list, unchanged: it is what a
-    // block draws from, and a displayed region whose fetch has not landed has
-    // no block to draw.
+    // Keyed on the loaded list: a block draws from it.
     const regionMap = arcsToRegionMap({ arcs, lines }, regions.loaded)
     byGroup.set(key, regionMap)
     crossRegionByGroup.set(key, crossRegion)
 
-    // The cross-group facts, over BOTH halves and AFTER regionization — see
-    // `ArcsByGroupResult`.
+    // Over both halves and after regionization (`ArcsByGroupResult`).
     let hasInk = crossRegion.length > 0
     for (const data of regionMap.values()) {
       if (hasArcBandInk(data)) {
@@ -991,9 +682,7 @@ export function resolveArcsByGroup(
       for (const ct of data.arcColorTypes) {
         colorSlots.add(ct)
       }
-      // A tick carries no color type — every one of them is
-      // ARC_COLOR_INTERCHROM — so their presence, not a scan of their colors,
-      // is what keys the swatch.
+      // Every tick is ARC_COLOR_INTERCHROM.
       if (data.numArcLines > 0) {
         colorSlots.add(ARC_COLOR_INTERCHROM)
       }
@@ -1001,12 +690,8 @@ export function resolveArcsByGroup(
         maxFlatArcSpanBp = data.maxFlatArcSpanBp
       }
     }
-    // The same axis rule the per-region arm applies, and DEFENSIVE here rather
-    // than load-bearing: an unplaced mark's region indices collapse with its
-    // feet, so it always files into the per-region feed and this arm never sees
-    // the one shape the two predicates disagree about. Stated the same way
-    // anyway — the reason a span may size the axis is the shape, not which
-    // buffer the arc happened to land in.
+    // The per-region arm's axis rule: whether a span sizes the axis depends on
+    // the shape, not on which buffer the arc landed in.
     for (const arc of crossRegion) {
       colorSlots.add(arc.colorType)
       if (

@@ -37,24 +37,15 @@ import type {
   SegAln,
 } from './arcTypes.ts'
 
-// Reads in, PENDING arcs out: grouping by QNAME, walking a read's SA segments
-// into a chain, and emitting one pending arc per junction or mate link.
+// Reads in, pending arcs out: grouping by QNAME, walking a read's SA segments
+// into a chain, and emitting one pending arc per junction or mate link, in
+// genomic bp with no color, shape or region partitioning.
 
-// Everything here works in genomic bp on records alone — no color, no shape,
-// no region partitioning. `compute.ts` takes it from `collectPendingArcs`.
-
-// Bucket every fetched read by its QNAME so mates / split segments that share a
-// name (possibly across displayed regions) land in the same list. Walks the
-// regions rather than the data map, so a region whose fetch has not landed drops
-// out and every entry gets its region's refName.
-//
-// The connector mark has the twin of this loop over its own entry type. Sharing
-// them was tried and measured back out; the object build is the hot part and every way of varying
-// it generically costs more than the eight lines are worth.
-//
-// A nameless feature is skipped, the same rule and for the same reason as the
-// twin's: a PAF/synteny block carries no QNAME, and one '' bucket made every
-// block in view a segment of one enormous read.
+// Bucket every fetched read by QNAME so mates and split segments, possibly in
+// different regions, share a list. Walks the regions so an unfetched one drops
+// out. The connector mark has a twin of this loop; sharing them was measured
+// slower. A nameless feature (a PAF/synteny block) is skipped, or every block
+// in view would become one read.
 export function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
@@ -81,9 +72,8 @@ export function groupReadsByName(
   return readsByName
 }
 
-// The same bucketing over EVERY lane at once, each entry stamped with the lane
-// it came from. One QNAME's records then meet whatever lane they were fetched
-// into, which is what `collectPendingArcsByLane` needs to emit a junction once.
+// The same bucketing over every lane at once, each entry stamped with its
+// lane, so `collectPendingArcsByLane` emits each junction once.
 export function groupLaneReadsByName(
   lanes: Iterable<readonly [string, ReadonlyMap<number, WorkerPileupData>]>,
   regions: RegionInfo[],
@@ -102,19 +92,10 @@ export function insertSizeStatsOf(
     ?.insertSizeStats
 }
 
-// Whether a connection whose far end is NOT loaded in this view is emitted.
-//
-// The two categories are orthogonal and the menu offers them as siblings —
-// "Off-screen mate connections" is about a partner this view has not loaded,
-// "Inter-chromosomal pairs" about one on another chromosome — so
-// either alone has to be able to produce a connection. Layered instead (one
-// gating EMISSION here, the other filtering in `resolveArcs`) they were an AND
-// wearing the costume of an OR: a single-chromosome view never loads the far
-// mate of a translocation, so excluding off-screen mates also silently dropped
-// the inter-chromosomal ticks while their own checkbox stayed on.
-//
-// Both categories still filter in `resolveArcs`, so the OR here cannot smuggle
-// a connection past a user who excluded it, and `only` drops the rest there.
+// Whether a connection whose far end is not loaded in this view is emitted:
+// either category asks for it, since the menu offers them as siblings and a
+// single-chromosome view never loads a translocation's far mate. Both still
+// filter in `resolveArcs`, so this cannot bypass an exclusion.
 export function emitsOffScreenPartner(
   { filter }: ArcChainContext,
   interchromosomal: boolean,
@@ -136,24 +117,11 @@ function entrySeg(entry: ReadEntry): SegAln {
   }
 }
 
-// Identity of a segment WITHIN ONE READ — the dedup key that collapses a
-// fetched segment and its SA-tag twin. The locus alone (refName + start) is not
-// that: a read that traverses a circular amplicon or a tandem repeat more than
-// once aligns at one locus repeatedly, and a locus key collapsed the passes —
-// deleting the circle-closing junction while still counting the read as support
-// for a linear allele it does not describe, or dropping a one-segment circle
-// read's chain outright. `clipAtStart` is where the segment sits in the read,
-// which no two segments of one read can share, so it separates the passes; a
-// record and its SA twin agree on it because both sides derive the same
-// strand-corrected clip from the same alignment's CIGAR, S and H alike
-// (`getClip` / `clipLengthAtStartOfRead` against `featurizeSA`'s
-// `clipLengthAtStartOfReadNumeric`).
-//
-// Sound only because every SegAln's refName is canonical (entries already are;
-// SA segments are normalized in `saSegments`) and because `readPositions`
-// carries the read's TRUE start (buildBaseReadArrays): a start clipped to the
-// region would never match its SA twin's un-clipped one, leaving both copies in
-// the chain to be joined as a spurious same-strand "deletion".
+// Identity of a segment within one read, which collapses a fetched segment and
+// its SA-tag twin. The clip at start of read is part of it, so passes of a read
+// over one locus (circles, tandem repeats) stay apart. Sound only because every
+// SegAln refName is canonical and `readPositions` carries the read's true,
+// unclipped start (split-read-chains.md section 4).
 function segLocusKey(seg: SegAln) {
   return `${seg.refName}:${seg.start}:${seg.clipAtStart}`
 }
@@ -188,26 +156,19 @@ function saSegments(
     }))
 }
 
-// The read's complete segment chain: every on-screen segment (a fetched entry)
-// plus any segment named in a sibling's SA tag that no view currently shows,
-// deduplicated by segment identity (segLocusKey) and sorted into read order by
-// clip-at-start-of-read.
-// That single canonical chain is what lets a connector step through an
-// off-screen segment and keeps a same-chr split junction from reading as
-// inter-chromosomal. What every consumer of a chain owes is
-// `agent-docs/mechanisms/split-read-chains.md`.
-// `entries` arrives already deduped by readId and stripped of
-// secondary alignments — resolveReadGroup's partition owns both rules.
-// Takes the normalizer alone, not an `ArcChainContext`: the SA walk is how a
-// read's segments are DISCOVERED, so it always runs, and `showLongRange` only
-// decides which of the resulting junctions are drawn (`unpairedChainArcs`).
+// The read's complete segment chain: every fetched segment plus any segment
+// named only in a sibling's SA tag, deduplicated by `segLocusKey` and sorted
+// into read order by clip at start of read. What every consumer of a chain owes
+// is `agent-docs/mechanisms/split-read-chains.md`. `entries` arrives deduped and
+// without secondaries (`resolveReadGroup`). Takes only the normalizer: the SA
+// walk always runs, and the filters decide only which junctions are drawn.
 export function unpairedReadChain(
   entries: ReadEntry[],
   canonicalRefName: CanonicalRefName,
 ): SegAln[] {
   const byPos = new Map<string, SegAln>()
-  // On-screen segments first, so a segment described by BOTH a fetched record
-  // and a sibling's SA tag keeps the on-screen record (first writer wins).
+  // On-screen segments first, so a segment also named by an SA tag keeps its
+  // fetched record.
   for (const seg of [
     ...entries.map(entrySeg),
     ...entries.flatMap(e => saSegments(e, canonicalRefName)),
@@ -220,12 +181,9 @@ export function unpairedReadChain(
   return [...byPos.values()].sort((a, b) => a.clipAtStart - b.clipAtStart)
 }
 
-// The junction between two read-adjacent segments: the first segment's
-// read-trailing (3') edge joined to the next segment's read-leading (5') edge,
-// so a fwd→rev inversion lands on the breakpoint rather than the far edge of the
-// reverse segment. One spelling of the `connectionEndpointBps` call, so the
-// SegAln path can't disagree with the entry path (`pendingArcFromConnection`)
-// about which edges a split junction connects.
+// The junction between two read-adjacent segments: the first's read-trailing
+// (3') edge joined to the next's read-leading (5') edge, so an inversion lands
+// on the breakpoint rather than the far edge of the reverse segment.
 function splitJunctionArc(
   a1: SegAln,
   a2: SegAln,
@@ -254,18 +212,10 @@ function splitJunctionArc(
   }
 }
 
-// Chain an unpaired read's segments in true read order (by clip-at-start-of-read,
-// which getClip already makes strand-correct), connecting each segment's
-// read-trailing (3') edge to the next segment's read-leading (5') edge — so a
-// fwd→rev inversion joins at the breakpoint, not the far edge of the reverse
-// segment. A junction between two on-screen segments always draws; one touching
-// an off-screen segment is a connection to something this view has not loaded,
-// emitted on `emitsOffScreenPartner` — this is also what suppresses a misleading
-// direct join across an off-screen segment (the flanking pair are not actually
-// read-adjacent). A translocation supported by a split read reaches its far
-// chromosome exactly the way an off-screen mate does, so it takes the same gate:
-// dropping it whenever off-screen mates were off left "Show inter-chromosomal
-// pairs" with no split-read evidence to draw.
+// Junctions along an unpaired read's chain. One between two on-screen
+// segments always draws; one touching an off-screen segment is emitted on
+// `emitsOffScreenPartner`, which also suppresses a direct join across a hidden
+// segment. An interchromosomal junction needs both pieces placed (ADR-229).
 function unpairedChainArcs(
   entries: ReadEntry[],
   ctx: ArcChainContext,
@@ -287,61 +237,31 @@ function unpairedChainArcs(
   return arcs
 }
 
-// A mate's own outer (5', read-leading) edge — the fragment boundary TLEN is
-// measured from, as opposed to connectionEndpointBps' read-trailing edge (built
-// for split-junction/bezier connectors, which want the facing GAP between two
-// drawn segments). Using the gap edges for a mate-link arc understated its span
-// by both mates' own lengths, so the dome's width silently disagreed with the
-// TLEN driving its color (a pair could look unremarkably small yet be painted
-// long-insert, or vice versa).
+// A mate's own outer (5', read-leading) edge, the fragment boundary TLEN is
+// measured from. Not `connectionEndpointBps`' facing-gap edges, which would
+// understate a mate link's span by both reads' lengths and disagree with the
+// TLEN that colors it.
 export function pairOuterBp(entry: ReadEntry) {
   const { start, end } = spanOf(entry)
   return readLeadingBp(strandOf(entry), start, end)
 }
 
-// The foot direction that goes with `pairOuterBp`'s edge, and it is the READ'S
-// OWN DIRECTION NEGATED — `readTrailingBodyDir`, not the `readLeadingBodyDir`
-// that mirrors the bp above. The asymmetry is the whole point, so it is worth
-// saying why before someone lines the two ternaries up again.
-//
-// A foot says which ARM the junction keeps, measured from the junction. A split
-// junction's endpoint IS the junction, so there "the arm" and "this segment's
-// own aligned body" are the same ray and `connectionEndpointBps` can answer with
-// one ternary. A mate link's endpoint is the FRAGMENT's outer edge, a read
-// length outside the junction, and from there the read's body points INWARD, at
-// the junction — the opposite ray. Both rays lie inside the retained arm, so
-// both readings are defensible in isolation; what is not defensible is the two
-// producers disagreeing, since nothing in the picture says which evidence drew a
-// given arc.
-//
-// So: taking the read's own direction here made an FR pair — the deletion-type
-// signature — draw INWARD feet, which the mark's grammar spells "duplication",
-// while a split read over the identical junction drew outward. On a translocation
-// with both kinds of support the two land within a fragment length of each other,
-// in one color, pointing opposite ways. `arcBreakendFeet.test.ts` pins the two
-// families against each other rather than against a remembered ±1.
+// The foot direction for `pairOuterBp`'s edge: the read's own direction
+// negated (`readTrailingBodyDir`), not the `readLeadingBodyDir` that mirrors
+// the bp. A foot names the arm the junction keeps, measured from the junction.
+// A split junction's endpoint is the junction, so there the arm and the
+// segment's body are one ray; a mate link's endpoint is the fragment's outer
+// edge, from which the read's body points back at the junction, the opposite
+// ray. Using the read's own direction makes an FR pair draw inward
+// (duplication) feet while a split read over the same junction draws outward.
+// `arcBreakendFeet.test.ts` pins the two families against each other.
 export function pairOuterDir(entry: ReadEntry) {
   return readTrailingBodyDir(strandOf(entry))
 }
 
-// The mate link between the two reads of one pair, sourcing orientation and
-// template length from a primary segment (see `pairFieldEntry`, which owns that
-// rule for this path and for the connector mark alike).
-//
-// Split junctions do not come through here. The arc path chains a read's
-// segments as `SegAln`s so it can walk off-screen SA records, and
-// `splitJunctionArc` is that path's junction builder — so this took a
-// `ReadConnection` and branched on `isSplit` for an arm the one call site
-// (`mateLink`, which passes `isSplit: false` literally) could never reach. The
-// dead arm was also the only consumer of `connectionEndpoints` here: the live
-// arm asked it for two endpoints and then overwrote both.
-//
-// Those endpoints are each read's own outer (5') edge — the fragment boundary
-// TLEN is measured from — not `connectionEndpointBps`' read-trailing edges,
-// which are built for split/bezier connectors and want the facing GAP between
-// two drawn segments. Using the gap edges understated a mate link's span by
-// both mates' own lengths, so the dome's width silently disagreed with the TLEN
-// driving its color.
+// The mate link between the two reads of one pair, with orientation, TLEN and
+// flags from the primary `pairFieldEntry` picks, and each end at its read's
+// outer edge (`pairOuterBp`). Split junctions go through `splitJunctionArc`.
 export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
   const src = pairFieldEntry(e1, e2)
   return {
@@ -357,10 +277,8 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
     tlen: src.data.readInsertSizes[src.readIdx]!,
     interchrom: interchromOf(src),
-    // Off the SAME entry the orientation and tlen come from — `pairFieldEntry`
-    // picks a primary, and the proper-pair flag is a pair field like the other
-    // two. Taking it off `e1` instead would read a supplementary's flags where
-    // the other two read a primary's.
+    // Off the same primary as the orientation and tlen, not `e1`, which may be
+    // a supplementary.
     flags: flagsOf(src),
     stats: src.data.insertSizeStats,
     offScreen: false,
@@ -369,34 +287,16 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
   }
 }
 
-// The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
-// is the one connection kind the connector mark can't draw and the arc path can.
-// Gated on `emitsOffScreenPartner` — either user setting can ask for it, and a
-// translocation seen from a single-chromosome view has ONLY this path, which is
-// why the inter-chromosomal category is one of the two — and on the mate
-// actually having a locus. An unmapped mate has none; neither does a record
-// naming a real RNEXT with PNEXT 0, which SAM spells "unavailable" and
-// `parseSam` maps to `undefined`. Substituting bp 0 there drew a
-// full-chromosome arc down to the origin.
+// The link to a mate that isn't on screen, located only by RNEXT/PNEXT, gated
+// on `emitsOffScreenPartner` and on the mate having a locus. An unmapped mate
+// has none, nor does PNEXT 0 ("unavailable"), which would draw an arc to the
+// origin. `readNextPositions` stores absent as 0, so a mate at a contig's first
+// base also draws nothing; separating them would touch extraction,
+// `buildReadInterchrom` and the tooltip, and is not worth it. RNEXT `*` is
+// already undefined from `nextRefAt`.
 //
-// The `!mateBp` half of that test is what catches the second case, and it is
-// approximate in the one direction that costs nothing: `extractFeatureArrays`
-// stores the absent position as 0 (`readNextPositions` is a Uint32Array with no
-// sentinel to spare), so a mate genuinely aligned to the FIRST BASE of a contig
-// reads as absent and its arc is not drawn. Separating the two would mean
-// zeroing the read's mate-reference slot at extraction time, where `undefined`
-// is still visible — which also moves `buildReadInterchrom` and the tooltip's
-// RNEXT, for a mate at base 0 of a contig with its arc off screen. Not worth
-// the three consumers; recorded so it is not re-derived.
-// The RNEXT `*` case is NOT this test's: `nextRefAt` already answers undefined for a
-// BAM `next_refid` -1, and `parseSam` maps a literal `*` to `undefined`.
-//
-// The arc connects the read's own outer (5') edge — the fragment boundary TLEN
-// measures from — to the recorded mate position. Only PNEXT (the mate's
-// leftmost/5' base) is known off-screen, not the mate's CIGAR/length, so for a
-// forward-strand mate the far endpoint lands at its 5' edge rather than its true
-// 3' end (off by one read length). Negligible at arc-view zoom; exact resolution
-// would need the off-screen mate's alignment.
+// Only PNEXT is known off-screen, not the mate's CIGAR, so the far endpoint is
+// the mate's leftmost base: off by up to a read length, negligible at arc zoom.
 export function offScreenMateArcs(
   entry: ReadEntry,
   ctx: ArcChainContext,
@@ -408,9 +308,8 @@ export function offScreenMateArcs(
   if (mateUnmapped || !mateRef || !mateBp) {
     return []
   }
-  // Normalized before the comparison, not after: an SA/RNEXT `chr1` against a
-  // fetched `1` is the same chromosome, and asking the gate with the raw name
-  // would call every aliased mate a translocation.
+  // Normalized before the comparison, or every aliased mate reads as a
+  // translocation.
   const mateCanonRef = ctx.canonicalRefName(mateRef)
   const interchromosomal = mateCanonRef !== refName
   if (
@@ -424,23 +323,15 @@ export function offScreenMateArcs(
   return [
     {
       p1Ref: refName,
-      // The pair family's edge and its foot direction, through the two helpers
-      // that own them together rather than spelled again here — this endpoint is
-      // the same fragment-outer edge `mateLinkArc` places, and the direction is
-      // the half that reads backwards on its own (see `pairOuterDir`).
+      // The same fragment-outer edge and foot as `mateLinkArc` (`pairOuterDir`).
       p1Bp: pairOuterBp(entry),
       p1Strand: strand,
       p1Dir: pairOuterDir(entry),
       p2Ref: mateCanonRef,
       p2Bp: mateBp,
       p2Strand: mateStrand,
-      // The mate's arm direction, carrying the SAME read-length approximation
-      // `p2Bp` already does: PNEXT is the mate's leftmost base, so for a reverse
-      // mate the fragment boundary this direction is measured from is one read
-      // length to the right of where the foot is placed. Negligible at arc-view
-      // zoom, for the reason above — and the alternative of reporting no
-      // direction throws away the orientation, which for an interchromosomal
-      // pair is the whole of what the mark has to say.
+      // Carries the same read-length approximation as `p2Bp`; omitting it would
+      // lose the orientation, all an interchromosomal pair's mark has to say.
       p2Dir: readTrailingBodyDir(mateStrand),
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
@@ -461,27 +352,6 @@ interface LanePendingArc {
   arc: PendingArc
 }
 
-// Every QNAME group resolves the same way — the connector mark's group
-// resolution (resolveReadGroup owns the secondary filter, the readId dedup, the
-// mate partition, and the mate-link guard) with two arc-path substitutions:
-//
-//   - the SA-augmented per-mate chainer, which steps through an off-screen SA
-//     segment (gated by showLongRange) so a 3rd, off-screen split segment still
-//     gets its junctions instead of being skipped over. The bezier path chains
-//     only on-screen entries, so the SA walk lives here rather than leaking
-//     pseudo-entries into the shared skeleton;
-//   - the off-screen mate link, which only this path can draw.
-//
-// An unpaired (long) read falls out as the case where the partition puts every
-// segment on one side and neither mate hook fires.
-//
-// EVERY LANE AT ONCE. A display's grouping partitions reads for drawing and
-// says nothing about which molecule carries which junction, and a lane
-// holds one segment as a fetched entry and reaches the rest through that
-// segment's SA tag, so resolving lane by lane emitted one junction once per
-// lane its segments landed in, each copy carrying a fraction of the support
-// `arcStrokeScale` then drew. On the HG02768 inverted duplication that put the
-// same junction in the LR, RR and LL bands at three different widths.
 // A lane's pending arcs and, parallel to them, the QNAME each came from: the
 // key the connectors over the pileup look up a connection's floor verdict by.
 export interface LaneArcs {
@@ -489,6 +359,14 @@ export interface LaneArcs {
   names: string[]
 }
 
+/**
+ * Every QNAME group's pending arcs, by lane. `resolveReadGroup` is the
+ * connector mark's group resolution, with two arc-path hooks: the SA-augmented
+ * chainer that steps through an off-screen split segment, and the off-screen
+ * mate link only this path draws. Resolved over every lane at once, since a
+ * lane holds one segment and reaches the rest through its SA tag, so resolving
+ * per lane would emit one junction per lane at a fraction of its support.
+ */
 export function collectPendingArcsByLane(
   readsByName: Map<string, ReadEntry[]>,
   ctx: ArcChainContext,
@@ -496,17 +374,14 @@ export function collectPendingArcsByLane(
   const byLane = new Map<string, LaneArcs>()
   for (const [name, entries] of readsByName) {
     const laned = resolveReadGroup<ReadEntry, LanePendingArc>(entries, {
-      // The fragment's own lane, not the segment's. A mate's chain is walked
-      // once over every lane's records, so an inverted supplementary — which
-      // computes its own `pair_orientation` and lands in a different lane from
-      // its primary — no longer gives its lane a second copy of the junction.
+      // The fragment's primary's lane, not the segment's: an inverted
+      // supplementary lands in a different lane from its primary.
       chainMate: segs => {
         const arcs = unpairedChainArcs(segs, ctx)
         const groupKey = arcs.length > 0 ? primaryOf(segs).groupKey : ''
         return arcs.map(arc => ({ groupKey, arc }))
       },
-      // The entry the orientation and TLEN are already read off, so the lane a
-      // mate link draws in is the one whose reads gave it its color.
+      // The lane of the entry the orientation and TLEN come from.
       mateLink: (e1, e2) => {
         const arc = mateLinkArc(e1, e2)
         const crosses = arc.interchrom || e1.refName !== e2.refName
