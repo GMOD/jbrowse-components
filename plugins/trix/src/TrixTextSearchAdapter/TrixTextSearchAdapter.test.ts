@@ -182,3 +182,43 @@ describe('an unreadable record', () => {
     }
   })
 })
+
+describe('a query whose first word is on more records than one scan reads', () => {
+  const names = Array.from(
+    { length: 1600 },
+    (_, i) => `name${String(i).padStart(4, '0')}`,
+  )
+  const record = (name: string) => `["ctgA%3A1..10"|"t"|"common%20${name}"],1`
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'trix-'))
+  const ix = path.join(dir, 'x.ix')
+  const ixx = path.join(dir, 'x.ixx')
+  fs.writeFileSync(
+    ix,
+    [
+      `common ${names.map(record).join(' ')}`,
+      ...names.map(name => `${name} ${record(name)}`),
+      '',
+    ].join('\n'),
+  )
+  fs.writeFileSync(ixx, '')
+  const adapter = new Adapter(
+    configSchema.create({
+      type: 'TrixTextSearchAdapter',
+      ixFilePath: { localPath: ix, locationType: 'LocalPathLocation' },
+      ixxFilePath: { localPath: ixx, locationType: 'LocalPathLocation' },
+    }),
+  )
+  afterAll(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+  const labels = async (queryString: string) =>
+    (await adapter.searchIndex({ queryString })).map(r => r.getLabel())
+
+  it('still finds the record its second word names', async () => {
+    expect(await labels('common name1599')).toEqual(['common name1599'])
+  })
+
+  it('answers the same with the words the other way round', async () => {
+    expect(await labels('name1599 common')).toEqual(['common name1599'])
+  })
+})
