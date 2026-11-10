@@ -270,15 +270,15 @@ const readFixture = defineFixture({
   instances: {
     startOff: READS.map(r => readBp(r[0])),
     endOff: READS.map(r => readBp(r[1])),
-    y: READS.map(r => r[2]),
-    flags: READS.map(() => 0),
     insertSize: READS.map(() => 0),
-    strand: READS.map(r => r[3]),
     fillColor: READS.map(() => 0),
-    edgeFlags: READS.map(() => 3),
-    interchrom: READS.map(() => 0),
-    colorCategory: READS.map(r =>
-      r[3] > 0 ? read.RC_FWD_STRAND : read.RC_REV_STRAND,
+    packedFields: READS.map(
+      r =>
+        (r[2] << read.READ_PACK_ROW_SHIFT) |
+        ((r[3] > 0 ? read.RC_FWD_STRAND : read.RC_REV_STRAND) <<
+          read.READ_PACK_CATEGORY_SHIFT) |
+        ((r[3] + 1) << read.READ_PACK_STRAND_SHIFT) |
+        (3 << read.READ_PACK_EDGE_SHIFT),
     ),
   },
   uniforms: (dpr: number) =>

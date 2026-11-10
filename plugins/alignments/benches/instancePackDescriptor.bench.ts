@@ -946,6 +946,8 @@ function sameBytes(name: string, a: ArrayBuffer, b: ArrayBuffer) {
 
 declare const gc: (() => void) | undefined
 
+export {}
+
 const FIXTURES = [
   // A deep pileup at long-read density — the largest read buffer this pipeline
   // packs, 8.8 MB at a 44-byte stride.
