@@ -111,16 +111,20 @@ function sequenceTrack(
     : undefined
 }
 
-// A session track written as `{ type, uri }` names its adapter only through
-// the file the uri points at, as the app's own shorthand does.
-function shorthandAdapterType(track: RawTrack) {
-  const { adapter } = expandTrackShorthand({ ...track })
-  return typeof adapter === 'object' &&
-    adapter !== null &&
-    'type' in adapter &&
-    typeof adapter.type === 'string'
-    ? adapter.type
-    : undefined
+// A session track written as `{ uri }` names its track and adapter types only
+// through the file the uri points at, as the app's own shorthand does.
+function shorthandTypes(track: RawTrack) {
+  const { type, adapter } = expandTrackShorthand({ ...track })
+  return {
+    type: typeof type === 'string' ? type : undefined,
+    adapterType:
+      typeof adapter === 'object' &&
+      adapter !== null &&
+      'type' in adapter &&
+      typeof adapter.type === 'string'
+        ? adapter.type
+        : undefined,
+  }
 }
 
 export function lookupTrack(
@@ -133,12 +137,13 @@ export function lookupTrack(
     sessionTracks?.find(t => t.trackId === trackId) ??
     raw?.tracks?.find(t => t.trackId === trackId) ??
     sequenceTrack(raw?.assemblies, trackId)
+  const shorthand = track ? shorthandTypes(track) : undefined
   return track
     ? {
         trackId,
         name: track.name ?? trackId,
-        type: track.type ?? '',
-        adapterType: track.adapter?.type ?? shorthandAdapterType(track) ?? '',
+        type: track.type ?? shorthand?.type ?? '',
+        adapterType: track.adapter?.type ?? shorthand?.adapterType ?? '',
         declaredDisplayTypes: (track.displays ?? [])
           .map(d => d.type)
           .filter(t => typeof t === 'string'),

@@ -1,7 +1,6 @@
-import { liveHref } from './code-base.ts'
+import { CODE_BASE, liveHref } from './code-base.ts'
 import { deriveAddTrack } from './derive-add-track.ts'
-import { deriveSpecUrl } from './derive-spec-url.ts'
-import { deriveTrackLinks } from './derive-track-url.ts'
+import { trackConfigUrl } from './derive-track-url.ts'
 import { rawPageMarkdown } from './emit-raw-markdown.ts'
 import { figureLiveRefs } from './liveLinks.generated.ts'
 import { decodeSpecUrl, specConfigUrl } from './spec-recipe/decode.ts'
@@ -65,15 +64,16 @@ const trackFence = (open: string, indent = '') =>
     .map(line => indent + line)
     .join('\n')}\n${indent}\`\`\``
 
-test('an addtrack fence with loc= keeps a plain json fence, then the CLI and the live link', () => {
+test('an addtrack fence with loc= keeps a plain json fence, then the CLI and the config it opens on', () => {
   const open = '```json addtrack loc=chr1:1-100'
   const body = `Intro.\n\n${trackFence(open)}\n\nAfter.\n`
   const out = emit(body, [fenceAt(body, open)])
-  const links = deriveTrackLinks(TRACK, 'addtrack loc=chr1:1-100')
-  const webUrl = links && 'webUrl' in links ? links.webUrl : 'none'
+  const config = trackConfigUrl('addtrack loc=chr1:1-100', 'hg38')
+  expect(config).toBeDefined()
   expect(out).not.toContain('addtrack')
+  expect(out).not.toContain('session=spec-')
   expect(out).toContain(
-    `\`\`\`json\n${JSON.stringify(TRACK, null, 2)}\n\`\`\`\n\nCLI:\n\n\`\`\`bash\n${deriveAddTrack(TRACK)}\n\`\`\`\n\nOpen in JBrowse: <${webUrl}>\n\nAfter.`,
+    `\`\`\`json\n${JSON.stringify(TRACK, null, 2)}\n\`\`\`\n\nCLI:\n\n\`\`\`bash\n${deriveAddTrack(TRACK)}\n\`\`\`\n\nOpens on config <${config}> at \`chr1:1-100\`\n\nAfter.`,
   )
 })
 
@@ -85,13 +85,13 @@ test('an addassembly fence no command expresses is the fence alone', () => {
   expect(out).not.toContain('CLI:')
 })
 
-test('a json live fence keeps a plain json fence, then the spec link', () => {
+test('a json live fence keeps a plain json fence, then the config it opens on', () => {
   const open = '```json live config=test_data/volvox/config.json'
   const spec = '{ "views": [{ "assembly": "volvox", "loc": "ctgA:1-100" }] }'
   const body = `${open}\n${spec}\n\`\`\`\n`
   const out = emit(body, [fenceAt(body, open)])
   expect(out).toContain(
-    `\`\`\`json\n${spec}\n\`\`\`\n\nOpen in JBrowse: <${deriveSpecUrl(JSON.parse(spec), 'live config=test_data/volvox/config.json')}>`,
+    `\`\`\`json\n${spec}\n\`\`\`\n\nOpens on config <${CODE_BASE}test_data/volvox/config.json>`,
   )
 })
 
@@ -114,7 +114,7 @@ test('an indented tagged fence gets its derived forms at its own indentation', (
   )
 })
 
-test('a Figure with a live ref gets its link and its decoded session spec', () => {
+test('a Figure with a live ref gets its decoded session spec and config, not the encoded link', () => {
   const [name, ref] = Object.entries(figureLiveRefs).find(
     ([, r]) => decodeSpecUrl(liveHref(r)) !== undefined,
   )!
@@ -123,8 +123,17 @@ test('a Figure with a live ref gets its link and its decoded session spec', () =
   const body = `${tag}\n\nAfter.\n`
   const out = emit(body, [htmlAt(body, tag)])
   expect(out).toContain(
-    `${tag}\n\nOpen in JBrowse: <${url}>\n\nSession spec, on config <${specConfigUrl(url)}>:\n\n\`\`\`json\n${JSON.stringify(decodeSpecUrl(url)!.spec, null, 2)}\n\`\`\`\n\nAfter.`,
+    `${tag}\n\nSession spec, on config <${specConfigUrl(url)}>:\n\n\`\`\`json\n${JSON.stringify(decodeSpecUrl(url)!.spec, null, 2)}\n\`\`\`\n\nAfter.`,
   )
+})
+
+test('a Figure whose live link is a long encoded session is unchanged', () => {
+  const [name] = Object.entries(figureLiveRefs).find(
+    ([, r]) => liveHref(r).includes('session=encoded-') && liveHref(r).length > 600,
+  )!
+  const tag = `<Figure caption="A view." src="/img/${name}.png" />`
+  const body = `${tag}\n\nAfter.\n`
+  expect(emit(body, [htmlAt(body, tag)])).toBe(`# Guide\n\n${body}\n`)
 })
 
 test('a Figure with no live ref is unchanged', () => {

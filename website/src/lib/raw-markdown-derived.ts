@@ -1,16 +1,16 @@
-import { liveHref } from './code-base.ts'
+import { CODE_BASE, liveHref } from './code-base.ts'
 import { deriveAddAssembly } from './derive-add-assembly.ts'
 import { deriveAddTrack, deriveAddTrackJson } from './derive-add-track.ts'
 import { asRecord } from './derive-cli-command.ts'
-import { deriveSessionUrl } from './derive-session-url.ts'
+import { fenceMeta, sessionConfigUrl } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
-import { deriveSpecUrl, isLive } from './derive-spec-url.ts'
-import { deriveTrackLinks } from './derive-track-url.ts'
+import { trackConfigUrl, trackLocation } from './derive-track-url.ts'
 import { figureLiveTargets, videoLiveRef } from './figure-live-links.ts'
 import { parseAttrs } from './inline-html.ts'
 import {
   isAddassembly,
   isAddtrack,
+  isLive,
   isSession,
 } from './remark-config-cli-tabs.ts'
 import { decodeSpecUrl, specConfigUrl } from './spec-recipe/decode.ts'
@@ -19,10 +19,14 @@ import type { Code, Html, Parent, Root } from 'mdast'
 
 // The raw markdown served to agents carries, as plain markdown under each
 // tagged fence, `<Figure>` and `<Video>`, what a reader of the rendered page
-// gets from its tabs and dialogs: the CLI command, the live link and the
-// figure's session spec. A spec longer than this many characters is left out,
-// its link standing alone.
+// gets from its tabs and dialogs: the CLI command, the hosted config a fence
+// opens on, and a figure's session spec. A percent-encoded live link repeats
+// JSON the page already shows, so one appears only where the spec does not: a
+// video, and a figure whose link is no spec or whose spec is longer than
+// SPEC_LIMIT characters. A link past LINK_LIMIT, an encoded session or a long
+// spec, is left out: it costs an agent thousands of tokens it cannot read.
 export const SPEC_LIMIT = 4000
+export const LINK_LIMIT = 600
 
 interface Edit {
   start: number
@@ -46,20 +50,27 @@ function fence(lang: string, value: string) {
   return [`${ticks}${lang}`, ...value.split('\n'), ticks]
 }
 
-function openLine(url: string, label = '') {
-  return ['', `Open in JBrowse${label ? ` (${label})` : ''}: <${url}>`]
+function linkLine(lead: string, url: string) {
+  return url.length <= LINK_LIMIT ? ['', `${lead}: <${url}>`] : []
 }
 
-function cliLines(command: string | null, url?: string) {
+function openLine(url: string, label = '') {
+  return linkLine(`Open in JBrowse${label ? ` (${label})` : ''}`, url)
+}
+
+function configLine(config: string | undefined, loc?: string) {
+  return config
+    ? [
+        '',
+        `Opens on config <${new URL(config, CODE_BASE).href}>${loc ? ` at \`${loc}\`` : ''}`,
+      ]
+    : []
+}
+
+function cliLines(command: string | null, config?: string, loc?: string) {
   return command === null
     ? []
-    : [
-        '',
-        'CLI:',
-        '',
-        ...fence('bash', command),
-        ...(url ? openLine(url) : []),
-      ]
+    : ['', 'CLI:', '', ...fence('bash', command), ...configLine(config, loc)]
 }
 
 function isTagged(node: Code) {
@@ -69,20 +80,24 @@ function isTagged(node: Code) {
 function fenceLines(node: Code, parsed: unknown) {
   const config = asRecord(parsed)
   if (isAddtrack(node)) {
-    const links = deriveTrackLinks(config, node.meta)
+    const { assemblyNames } = config
+    const assembly = Array.isArray(assemblyNames) ? assemblyNames[0] : undefined
     return cliLines(
       deriveAddTrack(config) ?? deriveAddTrackJson(node.value),
-      links && 'webUrl' in links ? links.webUrl : undefined,
+      typeof assembly === 'string'
+        ? trackConfigUrl(node.meta, assembly)
+        : undefined,
+      trackLocation(node.meta),
     )
   } else if (isAddassembly(node)) {
     return cliLines(deriveAddAssembly(config))
   } else if (isSession(node)) {
     return cliLines(
       deriveSetDefaultSession(config, node.value),
-      deriveSessionUrl(config, node.meta),
+      sessionConfigUrl(node.meta),
     )
   } else {
-    return openLine(deriveSpecUrl(parsed, node.meta))
+    return configLine(fenceMeta(node.meta).config)
   }
 }
 
@@ -92,17 +107,14 @@ function figureLines(attrs: Record<string, string>) {
     const decoded = decodeSpecUrl(url)
     const spec = decoded && JSON.stringify(decoded.spec, null, 2)
     const config = specConfigUrl(url)
-    return [
-      ...openLine(url, label),
-      ...(spec !== undefined && spec.length <= SPEC_LIMIT
-        ? [
-            '',
-            `Session spec${config ? `, on config <${config}>` : ''}:`,
-            '',
-            ...fence('json', spec),
-          ]
-        : []),
-    ]
+    return spec !== undefined && spec.length <= SPEC_LIMIT
+      ? [
+          '',
+          `Session spec${label ? ` (${label})` : ''}${config ? `, on config <${config}>` : ''}:`,
+          '',
+          ...fence('json', spec),
+        ]
+      : openLine(url, label)
   })
 }
 
@@ -110,7 +122,7 @@ function videoLines(attrs: Record<string, string>) {
   const ref = videoLiveRef(attrs.src ?? '')
   return ref === undefined
     ? []
-    : ['', `Open the session this video starts in: <${liveHref(ref)}>`]
+    : linkLine('Open the session this video starts in', liveHref(ref))
 }
 
 function htmlLines(node: Html) {
