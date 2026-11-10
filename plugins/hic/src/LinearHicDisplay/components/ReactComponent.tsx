@@ -1,5 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { toLocale } from '@jbrowse/core/util'
+import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -87,6 +87,15 @@ const HicTooltip = observer(function HicTooltip({
   )
 })
 
+function distanceRows(data: HicDataResult, item: HicContactItem) {
+  const { regions, binSize } = data
+  const bins = Math.abs(item.bin2 - item.bin1)
+  return regions[item.region1Idx]?.refName ===
+    regions[item.region2Idx]?.refName && bins > 0
+    ? [['Distance', getBpDisplayStr(bins * binSize)] as const]
+    : []
+}
+
 // A ratio is read with its two operands beside it, so speckle over a tiny
 // count can be told from signal.
 function valueRows(
@@ -133,7 +142,10 @@ const HicPointer = observer(function HicPointer({
         <HicTooltip
           locus1={formatLocus(rpcData, item.region1Idx, item.bin1)}
           locus2={formatLocus(rpcData, item.region2Idx, item.bin2)}
-          rows={valueRows(model, rpcData, item)}
+          rows={[
+            ...distanceRows(rpcData, item),
+            ...valueRows(model, rpcData, item),
+          ]}
           x={mouseState.clientX}
           y={mouseState.clientY}
         />

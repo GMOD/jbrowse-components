@@ -27,9 +27,9 @@ converting first, e.g. with `hicConvertFormat` from HiCExplorer.
 <Figure caption="A Hi-C contact matrix for hg19 chr8:50.4–61.3Mb with a gene track above. The diagonal runs along the top edge." src="/img/hic_track.png" />
 
 Mousing over the matrix draws a V-shaped guide down to the two positions the bin
-under the cursor pairs, with a tooltip giving both loci and the contact score.
-The guide tracks over empty bins too, so it reads positions anywhere in the
-triangle.
+under the cursor pairs, with a tooltip giving both loci, the distance between
+them on one chromosome, and the contact score. The guide tracks over empty bins
+too, so it reads positions anywhere in the triangle.
 
 ## Adjusting resolution
 
