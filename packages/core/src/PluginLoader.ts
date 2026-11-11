@@ -94,11 +94,11 @@ function promisifiedLoadScript(src: string, integrity?: string) {
     }
     script.src = src
     // A script that throws while it is evaluated still fires `load`, and what
-    // it threw goes to the window. A cross-origin script loaded without CORS
-    // reports no filename, so only its missing global says it failed.
+    // it threw goes to the window, where `currentScript` says whose it was. A
+    // cross-origin script loaded without CORS reports only "Script error."
     let thrown: ErrorEvent | undefined
     const onWindowError = (event: ErrorEvent) => {
-      if (event.filename === script.src) {
+      if (document.currentScript === script) {
         thrown = event
       }
     }

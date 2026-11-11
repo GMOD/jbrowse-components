@@ -175,10 +175,9 @@ const AvailablePlugins = observer(function AvailablePlugins({
             onInstall={definition => {
               // the store's name (the UMD global, e.g. "GWAS") is what the
               // definition must be installed under, the same way the in-session
-              // plugin store does it. It is already on a UMD definition, but an
-              // ESM/CJS one carries none — and a nameless entry in the global
-              // list is one samePlugin() can only match by url, so the same
-              // plugin pinned to a different version in a config loads twice.
+              // plugin store does it. A nameless entry in the global list is
+              // one samePlugin() can only match by url, so the same plugin
+              // pinned to a different version in a config loads twice.
               //
               // The store ref beside the pinned url is what lets this entry
               // outlive the Desktop it was installed on: it resolves against

@@ -14,6 +14,7 @@ import { expandLooseTrackConfig } from './util/tracks.ts'
 
 import type Plugin from './Plugin.ts'
 import type { PluginConstructor } from './Plugin.ts'
+import type { PluginRecord } from './PluginLoader.ts'
 import type { PluggableConfigNode } from './configuration/index.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
@@ -51,7 +52,6 @@ import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackCo
 // and re-enabled after it, so the rule still covers the rest of the file.
 /* eslint-disable unicorn/require-module-specifiers */
 import type {} from './pluggableElementTypes/models/migrateTrackConfig.ts'
-import type { PluginRecord } from './PluginLoader.ts'
 import type { PluginDefinition } from './pluginDefinitions.ts'
 import type {} from './rpc/WebWorkerRpcDriver.ts'
 import type {} from './ui/buildExtraTrackMenuItems.ts'

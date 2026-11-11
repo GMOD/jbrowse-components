@@ -51,6 +51,26 @@ test('installs a plugin once, whichever copy arrives first', () => {
   warn.mockRestore()
 })
 
+// the plugin store finds a loaded plugin's list entry by this url, so losing
+// it turns uninstall and update into silent no-ops
+test('a runtime plugin is described by its definition', () => {
+  const { downloaded } = pluginPair()
+  const definition = { name: 'Duplicate', url: 'https://example.com/dup.js' }
+  const fromDefinition = new PluginManager([{ plugin: downloaded, definition }])
+  expect(fromDefinition.pluginMetadata.DuplicatePlugin).toEqual({
+    name: 'Duplicate',
+    url: 'https://example.com/dup.js',
+  })
+  const withMetadata = new PluginManager([
+    { plugin: downloaded, definition, metadata: { isGlobal: true } },
+  ])
+  expect(withMetadata.pluginMetadata.DuplicatePlugin).toEqual({
+    name: 'Duplicate',
+    url: 'https://example.com/dup.js',
+    isGlobal: true,
+  })
+})
+
 test('a skipped duplicate is not reported as an installed runtime plugin', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const { bundled, downloaded } = pluginPair()

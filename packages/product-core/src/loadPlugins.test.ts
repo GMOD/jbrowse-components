@@ -57,8 +57,6 @@ test('a product that does not bundle them still fetches one', async () => {
   expect(calls[0]!.names).toEqual(['MafViewer', 'UCSC'])
 })
 
-// each of these passes a definition, because a definition is what makes a
-// loader exist at all now — see 'a config that names nothing loads nothing'
 test('baseUri resolves relative plugin urls', async () => {
   const calls = captureLoad()
   await loadRuntimePlugins(defs, {

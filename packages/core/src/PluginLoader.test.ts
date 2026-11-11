@@ -49,9 +49,7 @@ test('drops a vendored plugin whatever format names it', () => {
       { name: 'MafViewer', esmUrl: 'https://example.com/mafviewer.esm.js' },
       { name: 'MsaView', esmUrl: 'https://example.com/msaview.esm.js' },
     ]),
-  ).toEqual([
-    { name: 'MsaView', esmUrl: 'https://example.com/msaview.esm.js' },
-  ])
+  ).toEqual([{ name: 'MsaView', esmUrl: 'https://example.com/msaview.esm.js' }])
 })
 
 // pluginUrl feeds the trust gate (checkPlugins) and pluginDescriptionString the
@@ -829,7 +827,11 @@ describe('a UMD bundle on the page', () => {
       .mockImplementation((...nodes) => {
         for (const node of nodes) {
           if (node instanceof HTMLScriptElement) {
+            const current = jest
+              .spyOn(document, 'currentScript', 'get')
+              .mockReturnValue(node)
             run(node)
+            current.mockRestore()
             node.onload?.(new Event('load'))
           }
         }
@@ -844,11 +846,11 @@ describe('a UMD bundle on the page', () => {
   })
 
   it('reports what the bundle threw while it was evaluated', async () => {
-    evaluateOnAppend(script => {
+    evaluateOnAppend(() => {
       window.dispatchEvent(
         new ErrorEvent('error', {
-          filename: script.src,
-          message: "This JBrowse does not serve '@jbrowse/core/gone' to plugins",
+          message:
+            "This JBrowse does not serve '@jbrowse/core/gone' to plugins",
         }),
       )
     })
@@ -857,20 +859,20 @@ describe('a UMD bundle on the page', () => {
     )
   })
 
-  it('does not blame the bundle for another script throwing meanwhile', async () => {
+  it('does not blame the bundle for an error thrown while it downloads', async () => {
     class Thrower {}
-    evaluateOnAppend(() => {
-      window.dispatchEvent(
-        new ErrorEvent('error', {
-          filename: 'https://example.com/unrelated.js',
-          message: 'unrelated',
-        }),
-      )
-      scope.JBrowsePluginThrower = { default: Thrower }
-    })
-    await expect(new PluginLoader().loadPlugin(definition)).resolves.toBe(
-      Thrower,
-    )
+    const append = jest
+      .spyOn(document.head, 'append')
+      .mockImplementation(() => {})
+    const loading = new PluginLoader().loadPlugin(definition)
+    await Promise.resolve()
+    window.dispatchEvent(new ErrorEvent('error', { message: 'unrelated' }))
+    scope.JBrowsePluginThrower = { default: Thrower }
+    const script = append.mock.calls
+      .flat()
+      .find(node => node instanceof HTMLScriptElement)
+    script?.onload?.(new Event('load'))
+    await expect(loading).resolves.toBe(Thrower)
   })
 
   it('does not hand back the build an earlier load left on the global', async () => {

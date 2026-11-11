@@ -4,10 +4,7 @@ import './startScreenExtensionPoints.ts'
 
 import { useState } from 'react'
 
-import {
-  pluginDescriptionString,
-  pluginUrl,
-} from '@jbrowse/core/pluginDefinitions'
+import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -223,7 +220,7 @@ const StartScreen = observer(function StartScreen({
           console.error(error)
           notifyError(
             new Error(
-              `Failed to load global plugin ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}`,
+              `Failed to load global plugin ${pluginLabel(definition)}`,
               { cause: error },
             ),
             manage,
