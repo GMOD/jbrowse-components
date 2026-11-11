@@ -112,7 +112,10 @@ function verdictOf(
   value: unknown,
 ) {
   const meta = getConfigurationSchemaMetadata(schema)
-  const retired = declaredMember(meta?.options.retired ?? {}, key)
+  const declared = !!meta && declaredMember(meta.definition, key) !== undefined
+  const retired = declared
+    ? undefined
+    : declaredMember(meta?.options.retired ?? {}, key)
   const declares = retired ? undefined : namespaceMembers(schema, key, value)
   if (declares?.length === 0) {
     return { declares }
@@ -123,7 +126,7 @@ function verdictOf(
   try {
     members = retired
       ? retired(value)
-      : meta && declaredMember(meta.definition, key)
+      : declared
         ? { [key]: placed }
         : undefined
   } catch (e) {

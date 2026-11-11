@@ -111,6 +111,34 @@ describe('collectDisplayOverrides', () => {
     expect(unknownKeys).toEqual(['colour'])
   })
 
+  test('a slot a display declares wins over the spelling its base retired', () => {
+    const base = ConfigurationSchema(
+      'BaseLinearDisplay',
+      { height: { type: 'number', defaultValue: 100 } },
+      { retired: { fetchSizeLimit: () => ({}) } },
+    )
+    const schemas = new Map<string, AnyConfigurationSchemaType>([
+      [
+        'LinearBasicDisplay',
+        ConfigurationSchema(
+          'LinearBasicDisplay',
+          { fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 } },
+          { baseConfiguration: base },
+        ),
+      ],
+      ['LinearWiggleDisplay', base],
+    ])
+    const { overrides, unknownKeys } = collectDisplayOverrides(
+      { fetchSizeLimit: 40_000_000 },
+      schemas,
+    )
+    expect(overrides.get('LinearBasicDisplay')).toEqual({
+      fetchSizeLimit: 40_000_000,
+    })
+    expect(overrides.has('LinearWiggleDisplay')).toBe(false)
+    expect(unknownKeys).toEqual([])
+  })
+
   test.each(['toString', 'constructor', 'hasOwnProperty', 'valueOf'])(
     'treats the inherited name %s like any other unknown key',
     key => {
