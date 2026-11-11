@@ -23,6 +23,8 @@ export class MafRegionSink extends MafWirePacker {
 
   private visible: Set<string> | undefined
 
+  private visibility = new Map<string, boolean>()
+
   constructor(visible: Set<string> | undefined) {
     super()
     this.visible = visible
@@ -41,6 +43,17 @@ export class MafRegionSink extends MafWirePacker {
     this.refSampleId ??= refSampleId
   }
 
+  /** Whether the row is visible, settled once per row id as it is discovered. */
+  private discover(sampleId: string) {
+    let visible = this.visibility.get(sampleId)
+    if (visible === undefined) {
+      visible = isRowVisible(sampleId, this.visible)
+      this.visibility.set(sampleId, visible)
+      this.discovered.add(sampleId)
+    }
+    return visible
+  }
+
   override addRow(
     sampleId: string,
     text: string,
@@ -52,8 +65,7 @@ export class MafRegionSink extends MafWirePacker {
     srcSize: number,
     context: AlignmentContext | undefined,
   ) {
-    this.discovered.add(sampleId)
-    if (isRowVisible(sampleId, this.visible)) {
+    if (this.discover(sampleId)) {
       super.addRow(
         sampleId,
         text,
@@ -69,8 +81,7 @@ export class MafRegionSink extends MafWirePacker {
   }
 
   override addEmpty(sampleId: string, empty: EmptyRecord) {
-    this.discovered.add(sampleId)
-    if (isRowVisible(sampleId, this.visible)) {
+    if (this.discover(sampleId)) {
       super.addEmpty(sampleId, empty)
     }
   }
