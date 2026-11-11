@@ -67,6 +67,9 @@ Schem = "Schem"
 # `assemblys` beside a declared plugin to assert it stays the schema's error,
 # and validateConfig.ts names it in the comment over that check
 assemblys = "assemblys"
+# same fixture shape for jb.addTrack: jbApi.test.ts passes `setings` to assert
+# the refusal names the key it does not take beside the ones it does
+setings = "setings"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"

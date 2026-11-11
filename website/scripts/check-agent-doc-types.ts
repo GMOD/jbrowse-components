@@ -64,6 +64,9 @@ const EXEMPT: Record<string, string> = {
   // Internal duck-type interface in jbApi.ts used to check if picker dialogs
   // are open, not a displayable type for agents.
   PickerView: 'internal duck-type interface, not a display type',
+  // JavaScript's typed-array view, which jbApi.ts tests for when it serializes
+  // a reply's typed arrays by their contents.
+  DataView: 'the JavaScript built-in, not a view type',
 }
 
 function documented(name: string) {
