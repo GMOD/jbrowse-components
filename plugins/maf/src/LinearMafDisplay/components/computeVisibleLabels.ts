@@ -51,6 +51,20 @@ export function computeVisibleLabels(
           continue
         }
         const refSeqBytes = block.refSeqBytes
+        // Found once a block, not once a row: one TAF/bigMaf stanza can span
+        // the whole buffered region, and every row shares the reference's
+        // columns.
+        let firstCol = 0
+        let firstOffset = 0
+        while (
+          firstCol < refSeqBytes.length &&
+          block.startBp + firstOffset < firstCellBp
+        ) {
+          if (refSeqBytes[firstCol] !== DASH) {
+            firstOffset++
+          }
+          firstCol++
+        }
 
         for (const row of block.rows) {
           const alignmentBytes = row.alignmentBytes
@@ -60,20 +74,18 @@ export function computeVisibleLabels(
           const len = Math.min(alignmentBytes.length, refSeqBytes.length)
 
           // Hot loop: work on bytes to skip a per-row TextDecoder.decode().
-          for (let i = 0, genomicOffset = 0; i < len; i++) {
+          for (let i = firstCol, genomicOffset = firstOffset; i < len; i++) {
             const refCode = refSeqBytes[i]!
             if (refCode !== DASH) {
               const bp = block.startBp + genomicOffset
-              // The region clamp applied per column, since one TAF/bigMaf stanza
-              // can span the whole buffered region: the cell center must be
-              // inside the displayed region and near the screen. `bp` only
-              // increases, so the right edge ends the row's walk.
+              // The cell center must be inside the displayed region and near
+              // the screen. `bp` only increases, so the right edge ends the
+              // row's walk.
               if (bp >= endCellBp) {
                 break
               }
               const alnCode = alignmentBytes[i]!
               if (
-                bp >= firstCellBp &&
                 !isGapByte(alnCode) &&
                 paintsOwnColor(refCode, alnCode, paints)
               ) {

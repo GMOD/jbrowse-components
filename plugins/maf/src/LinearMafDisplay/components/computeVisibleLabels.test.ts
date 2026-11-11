@@ -211,3 +211,28 @@ test('letters keep the case the file gives them', () => {
   })
   expect(labels.map(l => l.text)).toEqual(['c', 'G', 't'])
 })
+
+test('a walk starting mid-block counts the reference gaps before it', () => {
+  const letters = 'abcdefghijklmnopqrstuvwxyzabcd'
+  const withGap = (s: string, gap: string) =>
+    `${s.slice(0, 5)}${gap}${s.slice(5)}`
+  const rpcDataMap = new Map<number, MafRegionData>([
+    [0, regionData(withGap('A'.repeat(30), '---'), withGap(letters, 'NNN'))],
+  ])
+  const labels = computeVisibleLabels({
+    view: {
+      ...view,
+      displayedRegions: [{ start: 100, end: 130 }],
+      visibleRegions: [{ ...view.visibleRegions[0]!, start: 110, end: 120 }],
+    },
+    rpcDataMap,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    paints: { mismatches: true, everyBase: true },
+  })
+  const texts = labels.map(l => l.text).join('')
+  expect(texts).toContain('klmnopqrst')
+  expect(texts).not.toContain('a')
+  expect(texts).not.toContain('N')
+  expect(labels.find(l => l.text === 'k')!.x).toBe(10)
+})
