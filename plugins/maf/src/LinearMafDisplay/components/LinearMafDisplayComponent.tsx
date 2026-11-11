@@ -55,7 +55,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
     const overData = !sidebarCovers(model.sidebarBounds, x, y)
     // The hit resolves here because `closeContextMenu` runs before an item's
     // onClick.
-    const { pos, baseBp, inBands, hover } = resolveMafPointerHit({
+    const { pos, baseBp, onRow, hover } = resolveMafPointerHit({
       model,
       mouseX: x,
       mouseY: y,
@@ -64,7 +64,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
     openContextMenuFromEvent(
       model,
       e,
-      overData && !pos.oob && !inBands
+      onRow
         ? {
             clientX: e.clientX,
             clientY: e.clientY,

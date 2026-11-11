@@ -84,7 +84,7 @@ function passOf<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
 }
 
 /** The identity heatmap: each row's mean identity per window, tiling like the cells. */
-export const MAF_IDENTITY_MARK = defineMark({
+const MAF_IDENTITY_MARK = defineMark({
   shape: passOf(spanMark, 'mafIdentity'),
   channels: (d: MafRowsPayload) => d.identity,
   params: cellSpanParams,
@@ -95,7 +95,7 @@ export const MAF_IDENTITY_MARK = defineMark({
  * The identity X-Y plot: a bar per window standing from each row band's
  * bottom to its identity, the band the cells would fill.
  */
-export const MAF_IDENTITY_BAR_MARK = defineMark({
+const MAF_IDENTITY_BAR_MARK = defineMark({
   shape: passOf(barMark, 'mafIdentityBar'),
   channels: (d: MafRowsPayload) => d.identityBars,
   params: (s: MafGPURenderState) => {
@@ -114,7 +114,7 @@ export const MAF_IDENTITY_BAR_MARK = defineMark({
 })
 
 /** The codon view: each species' codon cells, filled by its change. */
-export const MAF_CODON_MARK = defineMark({
+const MAF_CODON_MARK = defineMark({
   shape: passOf(spanMark, 'mafCodon'),
   channels: (d: MafRowsPayload) => d.codonCells,
   params: blockSpanParams,
@@ -186,7 +186,7 @@ export function mafInsertionParams(s: MafGPURenderState) {
   }
 }
 
-export const MAF_INSERTION_MARK = defineMark({
+const MAF_INSERTION_MARK = defineMark({
   shape: insertionMark,
   channels: (d: MafRowsPayload) => d.insertions,
   params: mafInsertionParams,
