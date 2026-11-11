@@ -31,13 +31,17 @@ function extent(feats: Feature[]) {
   }
 }
 
+// The children that are a row's blocks: a transcript's exons, a BED12 row's
+// parsed `block`s and a match's aligned `match_part`s.
+const SEGMENT_TYPES = new Set(['exon', 'block', 'match_part'])
+
 // A gene arrives as gene -> mRNA -> exon/CDS, and BED has one line per
-// transcript rather than a nesting: descend to the level that owns exons (or
-// bare CDS), and emit that. A feature with no such children is its own single
-// block, which is what a flat BED/bigBed feature already was.
+// transcript rather than a nesting: descend to the level that owns segments
+// (or bare CDS), and emit that. A feature with no such children is its own
+// single block, which is what a flat BED/bigBed feature already was.
 function collectRows(feature: Feature): BedRow[] {
   const subfeatures = feature.get('subfeatures') ?? []
-  const exons = subfeatures.filter(f => f.get('type') === 'exon')
+  const exons = subfeatures.filter(f => SEGMENT_TYPES.has(f.get('type') ?? ''))
   const cds = subfeatures.filter(f => f.get('type') === 'CDS')
 
   if (exons.length === 0 && cds.length === 0 && subfeatures.length > 0) {

@@ -173,6 +173,28 @@ describe('BED export', () => {
     expect(widths).toEqual([12, 12])
   })
 
+  it.each(['block', 'match_part'])(
+    'writes %s children as BED12 blocks rather than rows of their own',
+    type => {
+      const f = createFeature({
+        id: 'bed12',
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        name: 'row',
+        strand: 1,
+        subfeatures: [
+          { id: 'b1', refName: 'chr1', start: 100, end: 200, type },
+          { id: 'b2', refName: 'chr1', start: 800, end: 900, type },
+        ],
+      })
+      const out = rows(stringifyBED({ features: [f] }))
+      expect(out).toHaveLength(1)
+      expect(out[0]?.slice(0, 4)).toEqual(['chr1', '100', '900', 'row'])
+      expect(out[0]?.slice(9)).toEqual(['2', '100,100,', '0,700,'])
+    },
+  )
+
   it('falls back to CDS blocks when a transcript has no exons', () => {
     const f = createFeature({
       id: 'mRNA1',
