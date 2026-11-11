@@ -368,8 +368,9 @@ sequence names PanSN-prefixed (`peach#1#chr1`), indexed with
 - one BED per column whose fourth field holds those same gene ids
 
 [The grape, peach and cacao tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#producing-the-data)
-builds both from jcvi. [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse)
-converts the output of other tools, one command per tool:
+builds both from jcvi.
+[orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse) converts the
+output of other tools, one command per tool:
 
 ```bash
 pip install git+https://github.com/cmdcolin/orthologs2jbrowse
@@ -425,14 +426,15 @@ orthologs2jbrowse compara Compara.116.protein_default.homologies.tsv.gz \
 
 `attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
 way the scored table above names `score`. For a partner species the export
-lacks, it writes no table and exits without an error, so check each
-`--species` name against the `homology_species` column in the file.
+lacks, it writes no table and exits without an error, so check each `--species`
+name against the `homology_species` column in the file.
 
 ### From gene symbols
 
 NCBI's RefSeq pipelines name a gene after its ortholog, so for RefSeq
 annotations the table is a join on each GFF3's gene names, with no alignment.
-`orthologs2jbrowse symbols` writes the table and a BED per genome, and prints the column order:
+`orthologs2jbrowse symbols` writes the table and a BED per genome, and prints
+the column order:
 
 ```bash
 # --anchor names the genome whose genes are the rows
@@ -446,9 +448,10 @@ locus tag and genes renamed between releases.
 
 ### From odp
 
-`orthologs2jbrowse odp` converts an [odp](https://github.com/conchoecia/odp) `.rbh` table, and passes
-named columns such as `gene_group` and `color` through as attributes to color
-by. [](/docs/tutorials/odp_linkage_groups_synteny) runs it.
+`orthologs2jbrowse odp` converts an [odp](https://github.com/conchoecia/odp)
+`.rbh` table, and passes named columns such as `gene_group` and `color` through
+as attributes to color by. [](/docs/tutorials/odp_linkage_groups_synteny) runs
+it.
 
 ### From reciprocal best BLAST hits
 
