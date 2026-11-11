@@ -65,9 +65,9 @@ at a 3 Gb start where a float32 modulo is not.
   trim keep it in step with the other line fields.
 - A line's hover and hit box grows by a chevron's reach only when a grid point
   lands on it.
-- ggjbrowse should draw chevron arms from the `halfHeight` column; until it
-  does, it draws them at the fixed `glyph.chevronHeight`, which `glyph` keeps
-  until then.
+- ggjbrowse draws chevron arms at the `halfHeight` column (its
+  `half_height`) since ggjbrowse ab972d3; `glyph.chevronHeight`
+  stays as the unflattened ceiling.
 - `chevronGrid.test.ts` pins the grid, the columns, the zoom nesting, the end
   clearance, the window, the slot budget, the phase, the height rule and a
   chevron in every display mode at the default height; `yLanes.test.ts` pins
