@@ -42,6 +42,8 @@ runs:
     # the archive is reached only when the runner image or the package list
     # changes. A cache from an older image is tried first, since the same debs
     # usually still install; only when they don't does the job need the archive.
+    # The image's mirror list puts the Azure mirror first, and apt spends the
+    # whole timeout waiting on it, so a retry names archive.ubuntu.com directly.
     - if: inputs.apt-packages != ''
       id: apt-key
       shell: bash
@@ -82,6 +84,8 @@ runs:
             exit 0
           fi
           echo "apt attempt $attempt failed"
+          { grep -rls apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d || true; } |
+            xargs -r sudo sed -i 's#mirror+file:/etc/apt/apt-mirrors.txt#http://archive.ubuntu.com/ubuntu/#'
         done
         exit 1
     - if: steps.apt-install.outputs.fetched == 'true'
