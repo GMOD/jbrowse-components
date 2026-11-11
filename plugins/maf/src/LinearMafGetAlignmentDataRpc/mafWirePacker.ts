@@ -1,5 +1,3 @@
-import { DASH } from '@jbrowse/core/util/alignedBytes'
-
 import { encodeMafStatus } from '../util/mafStatus.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -218,15 +216,15 @@ export class MafWirePacker implements MafBlockSink {
   }
 
   /**
-   * Opens a block at `startBp` with `ref[refFrom..refTo)` as its reference row.
-   * `endBp` is derived here from the reference's non-dash byte count — the
-   * block's genomic extent — so no consumer has to re-walk the reference to
-   * learn it.
+   * Opens a block at `[startBp, endBp)` with `ref[refFrom..refTo)` as its
+   * reference row. Every reader states `endBp` as the start plus the reference
+   * row's aligned bases, so no consumer has to re-walk the reference to learn
+   * it.
    */
   startBlock(
     _id: string,
     startBp: number,
-    _end: number,
+    endBp: number,
     ref: string,
     refFrom: number,
     refTo: number,
@@ -234,14 +232,8 @@ export class MafWirePacker implements MafBlockSink {
   ) {
     const block = this.blockCount++
     const { offset, length } = this.write(ref, refFrom, refTo)
-    let refLen = 0
-    for (let i = offset; i < offset + length; i++) {
-      if (this.arena[i] !== DASH) {
-        refLen++
-      }
-    }
     this.blockStartBp.set(block, startBp)
-    this.blockEndBp.set(block, startBp + refLen)
+    this.blockEndBp.set(block, endBp)
     this.blockRefOffset.set(block, offset)
     this.blockRefLength.set(block, length)
     this.blockRowStart.set(block, this.rowCount)

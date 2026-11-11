@@ -34,7 +34,8 @@ export interface TestWireBlock {
 export function packTestWire(blocks: TestWireBlock[]): MafWirePacked {
   const packer = new MafWirePacker()
   for (const [i, { startBp, refSeq, rows, empties }] of blocks.entries()) {
-    packer.startBlock(String(i), startBp, startBp, refSeq, 0, refSeq.length)
+    const endBp = startBp + refSeq.replaceAll('-', '').length
+    packer.startBlock(String(i), startBp, endBp, refSeq, 0, refSeq.length)
     for (const row of rows) {
       packer.addRow(
         row.sampleId,

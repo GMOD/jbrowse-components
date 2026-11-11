@@ -301,7 +301,14 @@ function pack(features: readonly Feature[]): MafWireRegionData {
     >
     const ref = feature.get('seq') as string
     const start = feature.get('start')
-    packer.startBlock(feature.id(), start, start, ref, 0, ref.length)
+    packer.startBlock(
+      feature.id(),
+      start,
+      feature.get('end'),
+      ref,
+      0,
+      ref.length,
+    )
     for (const sampleId in alignments) {
       const a = alignments[sampleId]!
       packer.addRow(

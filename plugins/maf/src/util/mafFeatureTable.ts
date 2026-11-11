@@ -9,7 +9,6 @@ import type { Column } from '@jbrowse/core/util/featureTable'
 
 interface Blocks {
   ids: string[]
-  end: number[]
   refName: string
 }
 
@@ -25,7 +24,7 @@ export class MafTableSink extends MafWirePacker {
 
   constructor(refName: string) {
     super()
-    this.blocks = { ids: [], end: [], refName }
+    this.blocks = { ids: [], refName }
   }
 
   override startBlock(
@@ -37,7 +36,6 @@ export class MafTableSink extends MafWirePacker {
     refTo: number,
   ) {
     this.blocks.ids.push(id)
-    this.blocks.end.push(end)
     super.startBlock(id, start, end, ref, refFrom, refTo)
   }
 
@@ -123,7 +121,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
     blocks.ids.length,
     new Map<string, Column>([
       ['start', number(packed.blockStartBp)],
-      ['end', number(Uint32Array.from(blocks.end))],
+      ['end', number(packed.blockEndBp)],
       ['refName', { kind: 'value', read: () => blocks.refName }],
       ['strand', number(new Int8Array(blocks.ids.length).fill(1))],
       [
