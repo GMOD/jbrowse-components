@@ -393,30 +393,32 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               ])
             },
           },
-          ...(self.showCircularView
-            ? [
-                {
-                  label: 'Show only regions with data',
-                  type: 'checkbox' as const,
-                  checked: self.onlyDisplayRelevantRegionsInCircularView,
-                  onClick: () => {
-                    self.setOnlyDisplayRelevantRegionsInCircularView(
-                      !self.onlyDisplayRelevantRegionsInCircularView,
-                    )
-                  },
-                },
-                {
-                  label: 'Circular view',
-                  subMenu: self.circularView
-                    .menuItems()
-                    .filter(
-                      item =>
-                        !('label' in item) ||
-                        item.label !== 'Return to import form',
-                    ),
-                },
-              ]
-            : []),
+        ]
+      },
+      /**
+       * #method
+       * the circular pane's own menu: the inspector's setting for it, then
+       * the circular view's items
+       */
+      circularViewMenuItems(): MenuItem[] {
+        return [
+          {
+            label: 'Show only regions with data',
+            type: 'checkbox',
+            checked: self.onlyDisplayRelevantRegionsInCircularView,
+            onClick: () => {
+              self.setOnlyDisplayRelevantRegionsInCircularView(
+                !self.onlyDisplayRelevantRegionsInCircularView,
+              )
+            },
+          },
+          { type: 'divider' },
+          ...self.circularView
+            .menuItems()
+            .filter(
+              item =>
+                !('label' in item) || item.label !== 'Return to import form',
+            ),
         ]
       },
     }))

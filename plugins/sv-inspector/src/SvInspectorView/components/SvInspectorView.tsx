@@ -1,5 +1,7 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
 import ChordLegend from './ChordLegend.tsx'
@@ -12,6 +14,14 @@ const useStyles = makeStyles()({
   },
   container: {
     overflow: 'hidden',
+  },
+  circularPane: {
+    position: 'relative',
+  },
+  circularPaneMenu: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
 })
 
@@ -52,10 +62,22 @@ const SvInspectorView = observer(function SvInspectorView({
                 )
               }}
             />
-            <div style={{ width: model.circularView.width }}>
+            <div
+              className={classes.circularPane}
+              style={{ width: model.circularView.width }}
+            >
               <ChordLegend model={model}>
                 <CircularViewReactComponent model={model.circularView} />
               </ChordLegend>
+              <div className={classes.circularPaneMenu}>
+                <CascadingMenuButton
+                  tooltip="Circular view options"
+                  data-testid="sv_inspector_circular_menu"
+                  menuItems={() => model.circularViewMenuItems()}
+                >
+                  <MoreVertIcon />
+                </CascadingMenuButton>
+              </div>
             </div>
           </>
         ) : null}
