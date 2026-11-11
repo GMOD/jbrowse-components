@@ -112,16 +112,11 @@ differ only in the file:
 
 The copy-number track reads the Zarr store through
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr), which
-is not yet in the plugin store. Add its hosted bundle to the config's `plugins`:
+the config names by its plugin store name:
 
 ```json
 {
-  "plugins": [
-    {
-      "name": "Zarr",
-      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
-    }
-  ]
+  "plugins": [{ "storePlugin": "Zarr" }]
 }
 ```
 

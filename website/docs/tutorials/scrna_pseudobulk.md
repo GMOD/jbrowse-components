@@ -414,19 +414,12 @@ The `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) reads
 the store, the same adapter [](/docs/tutorials/population_cnv) uses for the 1000
 Genomes panel. The build step writes the cell list, bin size and row colors as
-attributes of the store. The plugin is not in the plugin store yet. On Desktop,
-add the URL below as a
-[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
-`Zarr`; elsewhere, add this `plugins` entry to `config.json`:
+attributes of the store. Install `Zarr` from the
+[plugin store](/docs/user_guides/plugin_store), or name it in `config.json`:
 
 ```json
 {
-  "plugins": [
-    {
-      "name": "Zarr",
-      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
-    }
-  ]
+  "plugins": [{ "storePlugin": "Zarr" }]
 }
 ```
 

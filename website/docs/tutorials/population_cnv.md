@@ -280,19 +280,12 @@ hosting, so a window takes two metadata requests and one chunk.
 
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
 `MultiWiggleZarrAdapter` that reads such a store with the same display settings
-as the BigWig track. The plugin is in beta and not yet in the plugin store. On
-Desktop, add the URL below as a
-[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
-`Zarr`; elsewhere, add this `plugins` entry to `config.json`:
+as the BigWig track. Install `Zarr` from the
+[plugin store](/docs/user_guides/plugin_store), or name it in `config.json`:
 
 ```json
 {
-  "plugins": [
-    {
-      "name": "Zarr",
-      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
-    }
-  ]
+  "plugins": [{ "storePlugin": "Zarr" }]
 }
 ```
 
