@@ -73,7 +73,7 @@ function MafSvgBody({
         <g transform={`translate(0, ${coverage.top})`}>
           <MarkSvgLayer
             marks={MAF_COVERAGE_MARKS}
-            regions={model.rpcDataMap}
+            regions={model.detailOnScreen}
             blocks={renderBlocks}
             state={{
               ...svgState,

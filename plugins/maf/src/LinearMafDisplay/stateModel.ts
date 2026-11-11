@@ -1086,7 +1086,7 @@ export default function stateModelFactory(
           return visibleStats({
             active: self.coverageBandActive,
             view: self.view,
-            payloadFor: index => self.rpcDataMap.get(index)?.coverage,
+            payloadFor: index => self.detailOnScreen.get(index)?.coverage,
             itemsFor: coverage => [coverage],
             accumulate: entries => computeVisibleCoverageStats(entries),
           })
@@ -1205,7 +1205,8 @@ export default function stateModelFactory(
          * for the depth area and everywhere else.
          */
         coverageBandHit(displayedRegionIndex: number, x: number, y: number) {
-          const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+          const coverage =
+            self.detailOnScreen.get(displayedRegionIndex)?.coverage
           const block = self.renderBlocks.find(
             b => b.displayedRegionIndex === displayedRegionIndex,
           )
@@ -1225,7 +1226,8 @@ export default function stateModelFactory(
           bpPerPx: number,
           reversed = false,
         ) {
-          const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+          const coverage =
+            self.detailOnScreen.get(displayedRegionIndex)?.coverage
           return coverage
             ? coverageTooltipBinAt(
                 coverage,
@@ -1242,7 +1244,8 @@ export default function stateModelFactory(
          * way the alignments band summarizes its interbase events.
          */
         interbaseTooltipBin(displayedRegionIndex: number, position: number) {
-          const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+          const coverage =
+            self.detailOnScreen.get(displayedRegionIndex)?.coverage
           const bin = coverage
             ? buildCoverageTooltipBin(
                 position,
