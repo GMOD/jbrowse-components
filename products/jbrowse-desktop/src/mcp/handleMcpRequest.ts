@@ -11,6 +11,7 @@ import { codeTimeout } from '../../electron/mcp/budgets.ts'
 import { drainPageErrors } from './pageErrors.ts'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
+import type { PageError } from './pageErrors.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
@@ -87,8 +88,10 @@ export function captureConsole(logs: string[]) {
   })
 }
 
-export function codePositions(stack: string) {
-  return [...stack.matchAll(/<anonymous>:(\d+):(\d+)/g)]
+export function codePositions(stack: string, sourceURL: string) {
+  return [
+    ...stack.matchAll(new RegExp(`[\\s(]${sourceURL}:(\\d+):(\\d+)`, 'g')),
+  ]
     .map(m => ({ line: Number(m[1]) - CODE_LINE_OFFSET, column: Number(m[2]) }))
     .filter(p => p.line >= 1)
 }
@@ -119,11 +122,15 @@ class CodeCancelledError extends CodeHalted {
 // thrown (V8 numbers lines from the wrapper, which is why the rebasing), and
 // everything the code printed first — the message alone left it editing a
 // sixty-line script blind.
-export function codeErrorMessage(e: unknown, logs: string[]) {
+export function codeErrorMessage(
+  e: unknown,
+  logs: string[],
+  sourceURL: string,
+) {
   const head = e instanceof Error ? `${e.name}: ${e.message}` : String(e)
   const positions =
     e instanceof Error && e.stack && !(e instanceof CodeHalted)
-      ? codePositions(e.stack)
+      ? codePositions(e.stack, sourceURL)
       : []
   const where =
     positions.length > 0
@@ -136,7 +143,9 @@ export function codeErrorMessage(e: unknown, logs: string[]) {
   return `${head}${where}${output}`
 }
 
-function compileCode(code: string) {
+let compiledCount = 0
+
+function compileCode(code: string, sourceURL: string) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     return new Function(
@@ -146,7 +155,7 @@ function compileCode(code: string) {
       'jb',
       'console',
       'signal',
-      `return (async () => {\n${code}\n})()`,
+      `return (async () => {\n${code}\n})()\n//# sourceURL=${sourceURL}`,
     ) as (
       session: AbstractSessionModel | undefined,
       rootModel: unknown,
@@ -227,6 +236,12 @@ function notificationsText(
     : ''
 }
 
+function pageErrorsText(pageErrors: PageError[]) {
+  return pageErrors.length > 0
+    ? `\npage errors raised before the error:\n${pageErrors.map(p => `- ${p.source}: ${p.message}`).join('\n')}`
+    : ''
+}
+
 // The evaluations in flight, so `cancel` can reach the one a client gave up on.
 // Keyed by the bridge's own request id, which is what the cancel carries.
 const running = new Map<number, AbortController>()
@@ -274,7 +289,9 @@ async function evaluateWith(
     },
     signal: abort.signal,
   })
-  const fn = compileCode(code)
+  compiledCount += 1
+  const sourceURL = `run_javascript-${compiledCount}`
+  const fn = compileCode(code, sourceURL)
   const logs: string[] = []
   let value: unknown
   try {
@@ -293,7 +310,7 @@ async function evaluateWith(
     )
   } catch (e) {
     throw new Error(
-      `${codeErrorMessage(e, logs)}${notificationsText(consumedByCode.splice(0))}`,
+      `${codeErrorMessage(e, logs, sourceURL)}${notificationsText(consumedByCode.splice(0))}${pageErrorsText(drainPageErrors())}`,
       { cause: e },
     )
   }
@@ -305,7 +322,7 @@ async function evaluateWith(
     ? await waitReady(SETTLE_AFTER_CODE_MS, liveSession, {
         signal: abort.signal,
       }).catch((e: unknown) => {
-        throw new Error(codeErrorMessage(e, logs), { cause: e })
+        throw new Error(codeErrorMessage(e, logs, sourceURL), { cause: e })
       })
     : undefined
   const notifications = [
@@ -335,12 +352,13 @@ async function evaluateWith(
     json = safeJson(value)
   } catch (e) {
     throw new Error(
-      codeErrorMessage(
+      `${codeErrorMessage(
         new Error(
           `the returned value could not be serialized (${e instanceof Error ? e.message : String(e)}). A live model node or a rendering backend serializes its whole object graph — return a summary you built from it instead of the object.`,
         ),
         logs,
-      ),
+        sourceURL,
+      )}${notificationsText(notifications)}${pageErrorsText(pageErrors)}`,
       { cause: e },
     )
   }

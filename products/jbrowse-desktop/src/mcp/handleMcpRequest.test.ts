@@ -9,6 +9,7 @@ import {
   codePositions,
   handleMcpRequest,
 } from './handleMcpRequest.ts'
+import { drainPageErrors, watchPageErrors } from './pageErrors.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -67,22 +68,34 @@ describe('captureConsole', () => {
 })
 
 describe('codePositions', () => {
-  it('rebases V8 anonymous-function lines onto the submitted code', () => {
+  it("rebases this call's lines onto the submitted code", () => {
     const stack =
-      'Error: boom\n    at eval (eval at evaluate (file.ts:1:1), <anonymous>:6:9)\n    at real.ts:10:2'
-    expect(codePositions(stack)).toEqual([{ line: 3, column: 9 }])
+      'Error: boom\n    at eval (run_javascript-7:6:9)\n    at real.ts:10:2'
+    expect(codePositions(stack, 'run_javascript-7')).toEqual([
+      { line: 3, column: 9 },
+    ])
   })
 
   it('drops frames that fall inside the wrapper', () => {
-    expect(codePositions('<anonymous>:2:1')).toEqual([])
+    expect(
+      codePositions('at run_javascript-7:2:1', 'run_javascript-7'),
+    ).toEqual([])
+  })
+
+  it("skips another call's code, and a name this one only prefixes", () => {
+    const stack =
+      'Error: boom\n    at globalThis.parked (run_javascript-1:6:9)\n    at run_javascript-12:8:2\n    at eval (run_javascript-2:5:3)'
+    expect(codePositions(stack, 'run_javascript-2')).toEqual([
+      { line: 2, column: 3 },
+    ])
   })
 })
 
 describe('codeErrorMessage', () => {
   it('appends the console output printed before the error', () => {
-    expect(codeErrorMessage(new Error('x'), ['step 1'])).toBe(
-      'Error: x\nconsole output before the error:\nstep 1',
-    )
+    expect(
+      codeErrorMessage(new Error('x'), ['step 1'], 'run_javascript-1'),
+    ).toBe('Error: x\nconsole output before the error:\nstep 1')
   })
 })
 
@@ -145,6 +158,38 @@ describe('run_javascript envelope', () => {
     await expect(
       run(pluginManager, 'const a = 1\nconst b = 2\nthrow new Error("boom")'),
     ).rejects.toThrow(/Error: boom\n\s+at code line 3, column \d+/)
+  })
+
+  // every call's code used to share the name <anonymous>, so a function an
+  // earlier call parked on globalThis that threw during this one was reported
+  // as a line of this one's code
+  it("names this call's line, not a line of an earlier call's code", async () => {
+    const { pluginManager } = fakeApp()
+    await run(
+      pluginManager,
+      '\n\n\nglobalThis.__mcpParked = () => { throw new Error("parked") }\nreturn 1',
+    )
+    await expect(
+      run(pluginManager, 'const x = 1\nglobalThis.__mcpParked()'),
+    ).rejects.toThrow(/Error: parked\n\s+at code line 2, column \d+/)
+    delete (globalThis as Record<string, unknown>).__mcpParked
+  })
+
+  it('carries the page errors raised before the error, and only once', async () => {
+    watchPageErrors()
+    drainPageErrors()
+    const { pluginManager } = fakeApp()
+    window.dispatchEvent(
+      Object.assign(new Event('error'), {
+        error: new TypeError('x is not a function'),
+      }),
+    )
+    await expect(run(pluginManager, 'throw new Error("boom")')).rejects.toThrow(
+      /Error: boom[\s\S]*\npage errors raised before the error:\n- uncaught: TypeError: x is not a function/,
+    )
+    expect(await run(pluginManager, 'return 1')).not.toHaveProperty(
+      'pageErrors',
+    )
   })
 
   it('names a compile error for what it is', async () => {
