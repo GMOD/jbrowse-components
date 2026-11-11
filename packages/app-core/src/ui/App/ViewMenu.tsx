@@ -1,4 +1,4 @@
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -8,7 +8,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
-import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import TabIcon from '@mui/icons-material/Tab'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
@@ -64,9 +63,8 @@ const ViewMenu = observer(function ViewMenu({
   }
 
   return (
-    <CascadingMenuButton
-      data-testid="view_menu_icon"
-      tooltip="View menu"
+    <ViewMenuButton
+      className={className}
       menuItems={() => {
         // A move's scope is this view's tab. Read on open rather than in
         // render, so the menu does not observe every tab's membership.
@@ -172,9 +170,7 @@ const ViewMenu = observer(function ViewMenu({
           ...model.menuItems(),
         ]
       }}
-    >
-      <MenuIcon className={className} fontSize="small" />
-    </CascadingMenuButton>
+    />
   )
 })
 export default ViewMenu

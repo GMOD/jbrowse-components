@@ -1,9 +1,8 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
+import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import MenuIcon from '@mui/icons-material/Menu'
 import { useMediaQuery } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -64,15 +63,7 @@ const Controls = observer(function Controls({
   })
   return (
     <div className={classes.headerBar} ref={ref}>
-      {viewMenu ? (
-        <CascadingMenuButton
-          tooltip="View menu"
-          menuItems={() => model.menuItems()}
-          data-testid="view_menu_icon"
-        >
-          <MenuIcon />
-        </CascadingMenuButton>
-      ) : null}
+      {viewMenu ? <ViewMenuButton menuItems={() => model.menuItems()} /> : null}
       <HeaderTrackSelectorButton
         model={model}
         indent={fit.trackSelectorIndent}

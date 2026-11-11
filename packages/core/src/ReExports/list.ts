@@ -263,6 +263,7 @@ export default [
   '@jbrowse/core/ui/useCoalescedPointer',
   '@jbrowse/core/ui/useMouseTracking',
   '@jbrowse/core/ui/VerticalScrollbar',
+  '@jbrowse/core/ui/ViewMenuButton',
   '@jbrowse/core/ui/zIndexes',
   '@jbrowse/core/util',
   '@jbrowse/core/util/aborting',

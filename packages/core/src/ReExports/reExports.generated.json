@@ -2298,6 +2298,18 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/ViewMenuButton": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
     "@jbrowse/core/ui/zIndexes": {
       "package": "@jbrowse/core",
       "names": [
