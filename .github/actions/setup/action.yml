@@ -35,23 +35,60 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         registry-url: ${{ inputs.registry-url }}
-    # The timeout and retries are for a package archive that hangs rather than
-    # refuses: a stalled `apt-get update` once held a main run until its job
-    # timeout. A mirror that stalls on one package usually serves it on a fresh
-    # attempt, so the whole install is retried rather than failing the job.
+    # The package archive is the flakiest thing a job touches: a stalled
+    # `apt-get update` once held a main run until its job timeout, and on
+    # 2026-11-11 azure.archive.ubuntu.com went unanswered for 45 minutes and
+    # failed every job that installed anything. So the .debs are cached, and
+    # the archive is reached only when the runner image or the package list
+    # changes. A cache from an older image is tried first, since the same debs
+    # usually still install; only when they don't does the job need the archive.
     - if: inputs.apt-packages != ''
+      id: apt-key
       shell: bash
       env:
         APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
-        apt=(sudo timeout 120 apt-get -o Acquire::Retries=3)
+        hash=$(tr ' ' '\n' <<<"$APT_PACKAGES" | sed '/^$/d' | sort -u | sha256sum | cut -c1-12)
+        echo "prefix=apt-debs-$ImageOS-$hash-" >>"$GITHUB_OUTPUT"
+        echo "key=apt-debs-$ImageOS-$hash-$ImageVersion" >>"$GITHUB_OUTPUT"
+        echo "dir=$RUNNER_TEMP/apt-debs" >>"$GITHUB_OUTPUT"
+    - if: inputs.apt-packages != ''
+      id: apt-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.apt-key.outputs.dir }}
+        key: ${{ steps.apt-key.outputs.key }}
+        restore-keys: ${{ steps.apt-key.outputs.prefix }}
+    - if: inputs.apt-packages != ''
+      id: apt-install
+      shell: bash
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
+        DEBS: ${{ steps.apt-key.outputs.dir }}
+      run: |
+        if compgen -G "$DEBS/*.deb" >/dev/null &&
+          sudo apt-get install -y --no-download "$DEBS"/*.deb; then
+          echo "installed from the cached debs"
+          exit 0
+        fi
+        rm -rf "$DEBS"
+        mkdir -p "$DEBS/partial"
+        apt=(sudo timeout 120 apt-get -o Acquire::Retries=3
+          -o Dir::Cache::Archives="$DEBS" -o APT::Keep-Downloaded-Packages=true)
         for attempt in 1 2 3; do
           if "${apt[@]}" update && "${apt[@]}" install -y $APT_PACKAGES; then
+            sudo rm -rf "$DEBS/partial" "$DEBS/lock"
+            echo "fetched=true" >>"$GITHUB_OUTPUT"
             exit 0
           fi
           echo "apt attempt $attempt failed"
         done
         exit 1
+    - if: steps.apt-install.outputs.fetched == 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.apt-key.outputs.dir }}
+        key: ${{ steps.apt-key.outputs.key }}
     - if: inputs.install == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}

@@ -494,8 +494,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-        with:
-          apt-packages: tabix
       - name: Pack artifacts for component tests
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
@@ -714,8 +712,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-        with:
-          apt-packages: tabix
       # Needs no build: it bundles the painters itself.
       - name: Check batched Canvas2D paths stay under Chrome's path size limit
         run: pnpm check-canvas-path-limits
@@ -893,13 +889,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      # The runner image ships Chromium's own dependencies, so the packaged
-      # Electron tree needs nothing extra — but it has no X server, and the app
-      # is a real window even in --headless. xvfb-run is what test:e2e:headless
-      # wraps the run in.
+      # The runner image ships Chromium's own dependencies and xvfb, which
+      # test:e2e:headless wraps the run in: the app is a real window even in
+      # --headless.
       - uses: ./.github/actions/setup
-        with:
-          apt-packages: xvfb
       - name: Package and test Electron on Linux
         run: pnpm test:e2e:ci
         working-directory: products/jbrowse-desktop
