@@ -981,7 +981,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             ...searchBoxMenuItems(
               storedSearchBoxPrefs('bsv', self.views.length),
-              { keepMenuOpen: false },
+              { keepMenuOpen: false, disabled: !self.showHeader },
             ),
           ]),
           {

@@ -1,8 +1,10 @@
-import { useLocalStorage } from '@jbrowse/core/util/hooks'
+import { useSyncExternalStore } from 'react'
+
 import {
   localStorageGetBoolean,
   localStorageSetItem,
   notifyLocalStorageKey,
+  subscribeToLocalStorageKey,
 } from '@jbrowse/core/util/localStorage'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -15,6 +17,48 @@ function searchBoxPrefKeys(prefix: string, numViews: number) {
     showKey: `${prefix}-showSearchBoxes-${regime}`,
     sideKey: `${prefix}-sideBySide-${regime}`,
   }
+}
+
+// What the store refused to take (blocked third-party storage, a full quota),
+// held for the page's life so a header and a model's menu still agree.
+const unsaved = new Map<string, boolean>()
+
+function readPref(key: string, defaultVal: boolean) {
+  return unsaved.get(key) ?? localStorageGetBoolean(key, defaultVal)
+}
+
+function writePref(key: string, value: boolean) {
+  if (localStorageSetItem(key, JSON.stringify(value))) {
+    unsaved.delete(key)
+  } else {
+    unsaved.set(key, value)
+  }
+  notifyLocalStorageKey(key)
+}
+
+function usePref(key: string, defaultVal: boolean) {
+  return useSyncExternalStore(
+    notify => subscribeToLocalStorageKey(key, notify),
+    () => readPref(key, defaultVal),
+  )
+}
+
+function prefSetters(showKey: string, sideKey: string) {
+  return {
+    setShowSearchBoxes: (value: boolean) => {
+      writePref(showKey, value)
+    },
+    setSideBySide: (value: boolean) => {
+      writePref(sideKey, value)
+    },
+  }
+}
+
+export interface SearchBoxPrefs {
+  showSearchBoxes: boolean
+  setShowSearchBoxes: (value: boolean) => void
+  sideBySide: boolean
+  setSideBySide: (value: boolean) => void
 }
 
 /**
@@ -30,46 +74,33 @@ function searchBoxPrefKeys(prefix: string, numViews: number) {
  * `HeaderSearchBoxRow` from this plugin, so the shared home costs no new
  * dependency edge.
  */
-export function useSearchBoxPrefs(prefix: string, numViews: number) {
+export function useSearchBoxPrefs(
+  prefix: string,
+  numViews: number,
+): SearchBoxPrefs {
   const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
-  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
-    showKey,
-    compact,
-  )
-  const [sideBySide, setSideBySide] = useLocalStorage(sideKey, compact)
-  return { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide }
-}
-
-export interface SearchBoxPrefs {
-  showSearchBoxes: boolean
-  setShowSearchBoxes: (value: boolean) => void
-  sideBySide: boolean
-  setSideBySide: (value: boolean) => void
-}
-
-function writeStoredBoolean(key: string, value: boolean) {
-  if (localStorageSetItem(key, JSON.stringify(value))) {
-    notifyLocalStorageKey(key)
+  return {
+    showSearchBoxes: usePref(showKey, compact),
+    sideBySide: usePref(sideKey, compact),
+    ...prefSetters(showKey, sideKey),
   }
 }
 
 /**
- * The same prefs read from the store outside React, for a model's menu: a
- * write announces itself, so a header holding `useSearchBoxPrefs` on the same
- * keys follows it. The open menu does not, so its rows pass
- * `keepMenuOpen: false` to `searchBoxMenuItems`.
+ * The same prefs read outside React, for a model's menu. A write announces
+ * itself, so a header holding `useSearchBoxPrefs` on the same keys follows it.
+ * The open menu does not, so its rows pass `keepMenuOpen: false` to
+ * `searchBoxMenuItems`.
  */
-export function storedSearchBoxPrefs(prefix: string, numViews: number) {
+export function storedSearchBoxPrefs(
+  prefix: string,
+  numViews: number,
+): SearchBoxPrefs {
   const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
   return {
-    showSearchBoxes: localStorageGetBoolean(showKey, compact),
-    setShowSearchBoxes: (value: boolean) => {
-      writeStoredBoolean(showKey, value)
-    },
-    sideBySide: localStorageGetBoolean(sideKey, compact),
-    setSideBySide: (value: boolean) => {
-      writeStoredBoolean(sideKey, value)
-    },
+    showSearchBoxes: readPref(showKey, compact),
+    sideBySide: readPref(sideKey, compact),
+    ...prefSetters(showKey, sideKey),
   }
 }
 
@@ -84,7 +115,10 @@ export function searchBoxMenuItems(
     sideBySide,
     setSideBySide,
   }: SearchBoxPrefs,
-  { keepMenuOpen }: { keepMenuOpen?: boolean } = {},
+  {
+    keepMenuOpen,
+    disabled,
+  }: { keepMenuOpen?: boolean; disabled?: boolean } = {},
 ): MenuItem[] {
   return [
     {
@@ -92,12 +126,14 @@ export function searchBoxMenuItems(
       type: 'checkbox',
       checked: showSearchBoxes,
       keepMenuOpen,
+      disabled,
       onClick: () => {
         setShowSearchBoxes(!showSearchBoxes)
       },
     },
     {
       label: 'Search box orientation',
+      disabled,
       subMenu: [
         {
           label: 'Side-by-side',
