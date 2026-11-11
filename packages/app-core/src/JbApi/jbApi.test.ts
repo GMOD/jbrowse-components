@@ -620,6 +620,15 @@ describe('waitReady', () => {
 
   // react-app2 embeds the app in a host page, so a second mounted app must not
   // be able to answer for this one
+  // the hold is a second, so a shorter timeout could never report an idle app
+  // settled
+  it('settles an idle app within a timeout shorter than the hold', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    expect(await drained(waitReady(500, session))).toMatchObject({
+      settled: true,
+    })
+  })
+
   it("stops polling on the caller's signal, throwing its reason", async () => {
     const call = new AbortController()
     const cancelled = new Error('the client cancelled this call')
@@ -2147,6 +2156,21 @@ describe('setSession', () => {
     ])
   })
 
+  // 0 skips the settle in addTrack and addView; here it ran one pass that
+  // could never satisfy the hold and answered settled:false with a note
+  it('skips the settle when settleMs is 0', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const result = await drained(
+      jbOver(Session.create({})).setSession(
+        { views: [{ id: 'a', type: 'StubView' }] },
+        0,
+      ),
+    )
+    expect(result).toEqual({
+      session: expect.objectContaining({ views: [expect.anything()] }),
+    })
+  })
+
   it('loads lazily registered types before the snapshot is applied', async () => {
     preloaded.length = 0
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
@@ -2165,6 +2189,28 @@ describe('setSession', () => {
     await expect(
       drained(jb.setSession({ views: [{ id: 'x', type: 'Nope' }] }, 100)),
     ).rejects.toThrow(/jb\.setSession refused the document: .*Nope/)
+  })
+})
+
+describe('loadSessionSpec', () => {
+  onAFakeClock()
+
+  // the same answer addView gives under 0: the summary, no settle fields
+  it('skips the settle when settleMs is 0', async () => {
+    const session = {
+      name: 'spec',
+      assemblyNames: [],
+      views: [],
+      snackbarMessages: [],
+      notifyError: () => {},
+    }
+    const jb = createJbApi({
+      rootModel: { session, setSession: () => {} },
+      getElementTypeRecord: () => ({ has: () => false }),
+    } as unknown as PluginManager)
+    expect(await drained(jb.loadSessionSpec({ views: [] }, 0))).toEqual({
+      session: { name: 'spec', assemblyNames: [], views: [] },
+    })
   })
 })
 

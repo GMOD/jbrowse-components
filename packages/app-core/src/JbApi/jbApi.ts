@@ -575,7 +575,7 @@ export async function waitReady(
   session?: AbstractSessionModel,
   { root = document, signal }: SettleScope = {},
 ) {
-  const deadline = Date.now() + timeoutMs
+  const deadline = Date.now() + Math.max(timeoutMs, READY_HOLD_MS)
   let readySince: number | undefined
   let outcome
   while (outcome === undefined) {
@@ -2169,8 +2169,10 @@ async function setSession(
       { cause: e },
     )
   }
-  const settle = await waitReady(settleMs, session, { signal })
-  return { ...settle, session: sessionSummary(session) }
+  const summary = { session: sessionSummary(session) }
+  return settleMs > 0
+    ? { ...(await waitReady(settleMs, session, { signal })), ...summary }
+    : summary
 }
 
 // Under the 45 s one evaluation gets from the Claude in Chrome extension: a
@@ -2196,13 +2198,12 @@ async function loadSpec(
   )
   // the session was REPLACED by the spec load — settle against the new one
   const session = sessionOf(pluginManager)
-  const settle = await waitReady(
-    args.settleMs ?? SPEC_SETTLE_DEFAULT_MS,
-    session,
-    { signal: args.signal },
-  )
-  return {
-    ...settle,
-    ...(session ? { session: sessionSummary(session) } : {}),
-  }
+  const settleMs = args.settleMs ?? SPEC_SETTLE_DEFAULT_MS
+  const summary = session ? { session: sessionSummary(session) } : {}
+  return settleMs > 0
+    ? {
+        ...(await waitReady(settleMs, session, { signal: args.signal })),
+        ...summary,
+      }
+    : summary
 }
