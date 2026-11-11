@@ -1,5 +1,4 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { breakendTickPx, junctionEnds } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
@@ -10,6 +9,7 @@ import {
 } from '../util.ts'
 import {
   OverlayPaths,
+  VARIANT_JUNCTION_COLOR,
   buildJunctionPath,
   buildPairTooltip,
   variantWidgetOpener,
@@ -29,7 +29,7 @@ import type { JunctionEnd } from '@jbrowse/sv-core'
 // in the pileup, so its y snaps to the track top (getY reads slots 1 and 3).
 const NO_LAYOUT: LayoutRecord = [0, 0, 0, 0]
 
-// One curve per junction, for every kind of variant record: a VCF breakend, a
+// One connector per junction, for every kind of variant record: a VCF breakend, a
 // symbolic SV with INFO.CHR2/END, or a paired adapter's row. They used to be
 // three overlays behind a per-track classification, which drew a mixed callset
 // as whichever kind it saw first and gave a symbolic DEL/DUP/INV no curve at
@@ -39,7 +39,7 @@ const Variants = observer(function Variants(props: OverlayProps) {
     <OverlayPaths
       {...props}
       pathTestId="r2"
-      stroke={DEFAULT_MARK_COLOR}
+      stroke={VARIANT_JUNCTION_COLOR}
       strokeWidth={5}
       hoverStrokeWidth={10}
       render={variantPaths}

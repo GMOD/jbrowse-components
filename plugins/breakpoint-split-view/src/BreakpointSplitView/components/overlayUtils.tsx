@@ -110,21 +110,28 @@ export interface JunctionPoint {
   reversed: boolean
 }
 
-// A junction as the link mark draws one: a foot over the arm each end keeps,
-// and between the ends the connector cubic, which leaves each end on the side
-// it joins and bows over a pair on one row.
+export const VARIANT_JUNCTION_COLOR = '#2e7d32'
+export const VARIANT_JUNCTION_LABEL = 'Variant call'
+
+// A variant call's junction: a foot over the arm each end keeps, joined by a
+// straight line between rows so the call crosses the read curves it sits among.
+// A pair on one row has no line to draw, so it takes the connector cubic, which
+// leaves each end on the side it joins and bows over the row.
 export function buildJunctionPath(a: JunctionPoint, b: JunctionPoint) {
-  const curve = bezierConnectorPath({
-    x1: a.x,
-    y1: a.y,
-    x2: b.x,
-    y2: b.y,
-    s1: -a.keeps,
-    s2: -b.keeps,
-    reversed1: a.reversed,
-    reversed2: b.reversed,
-  })
-  return `M ${a.tick} ${a.y} L${curve.slice(1)} L ${b.tick} ${b.y}`
+  const join =
+    a.y === b.y
+      ? `L${bezierConnectorPath({
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
+          s1: -a.keeps,
+          s2: -b.keeps,
+          reversed1: a.reversed,
+          reversed2: b.reversed,
+        }).slice(1)}`
+      : `L ${a.x} ${a.y} L ${b.x} ${b.y}`
+  return `M ${a.tick} ${a.y} ${join} L ${b.tick} ${b.y}`
 }
 
 function featureTooltipLabel(feature: Feature) {
@@ -309,7 +316,22 @@ export function drawnConnectionKey(
       }
     }
   }
-  return connectionKeyRows(styled)
+  const drawsVariantCall = trackIds.some(trackId => {
+    const match = model.overlayMatches.get(trackId)
+    return match?.kind === 'variant' && match.layoutMatches.length > 0
+  })
+  return [
+    ...(drawsVariantCall
+      ? [
+          {
+            key: VARIANT_JUNCTION_LABEL,
+            color: VARIANT_JUNCTION_COLOR,
+            label: VARIANT_JUNCTION_LABEL,
+          },
+        ]
+      : []),
+    ...connectionKeyRows(styled),
+  ]
 }
 
 export interface HighlightRect {

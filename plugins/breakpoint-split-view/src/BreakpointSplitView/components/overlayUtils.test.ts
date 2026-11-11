@@ -215,7 +215,13 @@ describe('buildJunctionPath', () => {
     expect(path.endsWith('150 100 L 170 100')).toBe(true)
   })
 
-  test('the curve leaves each end on the side it joins, and bows over one row', () => {
+  test('ends on different rows join with a straight line between their feet', () => {
+    expect(buildJunctionPath(start, { ...end, y: 300 })).toBe(
+      'M 30 100 L 50 100 L 150 300 L 170 300',
+    )
+  })
+
+  test('a pair on one row leaves each end on the side it joins, and bows over the row', () => {
     const [c1x, c1y, c2x, c2y] = controls(buildJunctionPath(start, end))
     expect(c1x).toBeGreaterThan(50)
     expect(c2x).toBeLessThan(150)
