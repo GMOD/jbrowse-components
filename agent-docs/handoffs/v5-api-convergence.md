@@ -54,8 +54,8 @@ displays or a display's parts, with the ruling on each.
   included, but one was added: `rows.annotations` (946afc33db), since moved
   from the shared row arrangement to `Rows`, so MAF no longer declares it,
   and its entries reshaped as `RowAnnotation` with `legend.title`
-  (ADR-260). The meter gate below needs a ruling on whether an addition, or
-  a removal such as `scale.clamp`, counts as a shared-path change.
+  (ADR-260). An addition or a removal counts as a shared-path change, as a
+  respell does, and is listed here.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
@@ -134,7 +134,8 @@ displays or a display's parts, with the ruling on each.
   2026-11-11; whoever re-reads moves the sha). The count pin passes a
   display that moves between two existing variants and a variant whose
   members change in place.
-- The meter shows no shared-path change since the last respell landed.
+- The meter shows no shared-path change, respell, addition or removal, past
+  the last one "Measuring churn" lists.
 - Every `retired` entry maps a name a v1–v4 release declared, none a
   beta-only one, except a display type a beta session names (the rule above).
   No test checks the gate, since v4 shipped no JSON schema and
