@@ -2280,6 +2280,25 @@ describe('loadSessionSpec', () => {
       session: { name: 'spec', assemblyNames: [], views: [] },
     })
   })
+
+  it('summarizes the session as the settle left it', async () => {
+    const session = {
+      name: 'loading',
+      assemblyNames: [],
+      views: [],
+      snackbarMessages: [],
+      notifyError: () => {},
+    }
+    const jb = createJbApi({
+      rootModel: { session, setSession: () => {} },
+      getElementTypeRecord: () => ({ has: () => false }),
+    } as unknown as PluginManager)
+    setTimeout(() => {
+      session.name = 'settled'
+    }, 100)
+    const loaded = await drained(jb.loadSessionSpec({ views: [] }, 5000))
+    expect(loaded.session?.name).toBe('settled')
+  })
 })
 
 // Desktop's run_javascript calls this before every evaluate. A runtime plugin

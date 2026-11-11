@@ -2184,10 +2184,9 @@ async function setSession(
       { cause: e },
     )
   }
-  const summary = { session: sessionSummary(session) }
-  return settleMs > 0
-    ? { ...(await waitReady(settleMs, session, { signal })), ...summary }
-    : summary
+  const settle =
+    settleMs > 0 ? await waitReady(settleMs, session, { signal }) : {}
+  return { ...settle, session: sessionSummary(session) }
 }
 
 // Under the 45 s one evaluation gets from the Claude in Chrome extension: a
@@ -2214,11 +2213,12 @@ async function loadSpec(
   // the session was REPLACED by the spec load — settle against the new one
   const session = sessionOf(pluginManager)
   const settleMs = args.settleMs ?? SPEC_SETTLE_DEFAULT_MS
-  const summary = session ? { session: sessionSummary(session) } : {}
-  return settleMs > 0
-    ? {
-        ...(await waitReady(settleMs, session, { signal: args.signal })),
-        ...summary,
-      }
-    : summary
+  const settle =
+    settleMs > 0
+      ? await waitReady(settleMs, session, { signal: args.signal })
+      : {}
+  return {
+    ...settle,
+    ...(session ? { session: sessionSummary(session) } : {}),
+  }
 }
