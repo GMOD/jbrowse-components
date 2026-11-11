@@ -94,7 +94,8 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-menuitems">**menuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMa…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; onClick: () =&gt; void; }[]</code></pre></dialog></span> |  |
+| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
+| <span id="method-circularviewmenuitems">**circularViewMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | the circular pane's own menu: the inspector's setting for it, then the circular view's items |
 
 ## Actions
 

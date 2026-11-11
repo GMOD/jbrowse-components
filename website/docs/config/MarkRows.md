@@ -29,6 +29,7 @@ a `facet` bands the rows by and `rows.color` colors them by.
 
 ## Related links
 
+- **Extended by:** [MultiRowRows](../multirowrows)
 - **Base config:** [RowsWithStep](../rowswithstep)
 
 ## Config slots

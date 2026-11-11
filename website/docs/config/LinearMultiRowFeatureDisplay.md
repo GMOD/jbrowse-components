@@ -10,15 +10,22 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 Colored features in stacked rows, one row per value of a feature
 attribute: a chromosome painting, an ancestry painting, a chromatin-state
 track per cell type. It is the mark display with a `rect` per feature as
-its default plot, so every mark, scale, facet and row setting applies.
+its plot, so every mark, scale, facet and row setting applies.
 
-With nothing declared it reads a sample of the features once. Rows: a row
-per `repClass` where they carry one, else per the attribute whose values
-each hold features that never overlap (`sample` in the first example, where
-a sample's segments run end to end), else a single row. Color: each feature its
-file's own BED color where it has one. Shape: a feature whose children have
-none of their own, a BED12 row or a transcript, as its blocks joined by a
-line.
+It draws what the config states and saves no guess. Rows: one per value
+of `rows.field`, whose declared default is `type`, so a GFF3 draws a row per
+feature type and a ClinVar bigBed a row per variant type. `rows: 'sample'`
+or `rows: { field: 'sample', ... }` overrides it, as the examples write, and
+`rows: ''` is one row. Where no feature in view carries the field in force,
+as a plain BED carries no `type`, the features draw in the one row of no
+value and the display opens the track menu's One row per picker once,
+listing the attributes the features in view carry. Color: a stated `rows.colors` entry, else each feature's own BED
+color (`itemRgb`, a bigBed's `reserved`, a BED9's ninth column), else the
+default; a placeholder `0` or `0,0,0` reads as no color. A key appears only
+where a color names its values: a field, or an identity scale's `domain`
+and `names`, as the second example writes. Shape: one `rect` per feature;
+"Edit plot..." offers a BED12 row's blocks joined by a line, and a
+transcript with its protein domains over it.
 
 ## Example usage
 
@@ -48,7 +55,6 @@ HG00097 above HG00096 regardless of file order:
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
-      displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
       rows: {
         field: 'sample',
         sort: ['HG00097', 'HG00096'],
@@ -59,7 +65,10 @@ HG00097 above HG00096 regardless of file order:
 }
 ```
 
-Each feature in its file's BED color, the key naming three of them:
+The `rows` shorthand, a row per `sample`, and each feature in its file's
+BED color, with a key naming three of them;
+where black is a color the file means, the written identity scale also
+paints `0,0,0` as black:
 
 ```js
 {
@@ -75,6 +84,12 @@ Each feature in its file's BED color, the key naming three of them:
     },
   },
 }
+```
+
+One row, written so the `type` default does not split the features:
+
+```js
+{ type: 'LinearMultiRowFeatureDisplay', rows: '' }
 ```
 
 ## Related links
@@ -110,7 +125,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeat
 | Slot | Description |
 | --- | --- |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | The bytes a region may download before the display asks first: a painting's rows stack many features over each base.<br>_advanced_ |
-| <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">35 slots</span> |
+| <span id="slot-marks">**marks**</span><br>[list of Mark entries](#slot-marksencodingshapevalue) | The plot, as `LinearMarkDisplay` reads it: unwritten, a `rect` per feature. |
+| <span id="slot-rows">**rows**</span><br>[MultiRowRows](../multirowrows) | The rows, a [MultiRowRows](../multirowrows): a row per value of `field`, `type` unless written, and `''` for one row. |
+| <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">33 slots</span> |
 | <span id="slot-marksencodingshapevalue">**marks.encoding.shape.value**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (circle, triangle-down, diamond, square) = <code>'circle'</code> | `circle`, `triangle-down`, `diamond` or `square`, or a jexl callback over `feature` returning one, for a point mark whose shape is not a scale.<br>_callback args:_ `feature` |
 | <span id="slot-marksencodingshapefield">**marks.encoding.shape.field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field an ordinal scale reads, or a jexl expression over `feature`, which is slower per feature. |
 | <span id="slot-marksencodingshapescale">**marks.encoding.shape.scale**</span><br>[MarkShapeScale sub-schema](#slot-marksencodingshapescaletype) | How the field's values map to shapes, Vega-Lite's scale object. |
@@ -136,10 +153,8 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeat
 | <span id="slot-markstransform">**marks.transform**</span><br>[list of MarkTransform entries](../marktransform) | Steps over the region's features before this mark encodes them, in order, after the display's own `transform`, and over each section alone under a facet. A `bin` then an `aggregate` grouped by `start` and `end` is a density: `count` per bin, which the mark plots as `y` unless its encoding names another field. |
 | <span id="slot-marksminbpperpx">**marks.minBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws when the view's bp per px is at least this value. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows a density zoomed out and the features zoomed in. |
 | <span id="slot-marksmaxbpperpx">**marks.maxBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws only when the view is zoomed in past this, in bp per px. 0 sets no bound. |
-| <span id="slot-marks">**marks**</span><br>[list of Mark entries](#slot-marksencodingshapevalue) | The marks to draw, in order — a later one paints over an earlier one. Each is a `mark` and an `encoding`. |
 | <span id="slot-transform">**transform**</span><br>[list of MarkTransform entries](../marktransform) | Steps over the region's features before the facet splits them and before any mark's own, after `filter`: where a field the facet reads is made, such as a formula lifting a read's tag. |
 | <span id="slot-facet">**facet**</span><br>[MarkFacet](../markfacet) | Labelled sections, one per value of a field, each as tall as its steps pack it: `"tags.HP"`, or `{ field, sort, transform }` with the order the sections stack in and the steps each runs before any mark's, a per-section `pileup` among them. A chip names each section and hides it. Split after `transform` and before any mark's own steps. Beside `rows`, a facet on a row attribute, the `group` `rows.groups` writes, stacks the rows in labelled bands instead, each band's rows in their arranged order. |
-| <span id="slot-rows">**rows**</span><br>[MarkRows](../markrows) | One row per value of a field: `"source"` over a multi-BigWig is one xyplot per file. The worker splits the features on the field as it does for `facet`, and the rows take the tree sidebar, the row labels, clustering and the arrangement dialog, whose order, labels, colors, tree and focus this object holds. A row's color, `rows.colors` pinned on it or `rows.color` mapped from an attribute, is the bar beside its label, and the color of a mark naming none, or of a mark colored by the rows' own field. A `facet` on a row attribute, the `group` `rows.groups` tags, stacks the rows in bands; a facet on a feature field draws its sections in place of the rows, and the display shows a notice.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rows: 'source' }</code></pre><pre><code>{ rows: { field: 'source', sort: ['tumor', 'normal'], step: 12 } }</code></pre></dialog></span> |
 | <span id="slot-encoding">**encoding**</span><br>[MarkDisplayEncoding](../markdisplayencoding) | The display-level [MarkDisplayEncoding](../markdisplayencoding), shared by all marks. `y` is the [YChannel](../ychannel) that every mark's `encoding.y` uses, and it names no field because each mark sets its own. `color` is the default color for any mark whose `encoding.color` is unset, as a ggplot2 layer inherits the plot's aesthetics. `encoding.y.axis` is the value axis; the row axis is `rows.axis`.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }</code></pre></dialog></span> |
 | <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from. The axis widens to include it whenever a bar mark is drawn. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The key for every mark whose color or shape is a scale; `show` defaults to on. |
