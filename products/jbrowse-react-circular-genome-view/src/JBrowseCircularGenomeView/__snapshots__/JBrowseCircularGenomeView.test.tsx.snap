@@ -561,14 +561,16 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             class="css-HASH"
           >
             <button
+              aria-label="View menu"
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+              data-mui-internal-clone-element="true"
               data-testid="view_menu_icon"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
                 data-testid="MenuIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
