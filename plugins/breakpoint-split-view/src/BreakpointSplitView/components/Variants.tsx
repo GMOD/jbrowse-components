@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { assembleLocString } from '@jbrowse/core/util'
 import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
@@ -5,9 +6,9 @@ import { observer } from 'mobx-react'
 import { computeOverlayX } from '../util.ts'
 import {
   OverlayPaths,
-  VARIANT_JUNCTION_COLOR,
   buildJunctionPath,
   buildPairTooltip,
+  variantJunctionColor,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
 import { connectedVariantJunctions } from './variantJunctions.ts'
@@ -31,11 +32,12 @@ const NO_LAYOUT: LayoutRecord = [0, 0, 0, 0]
 // as whichever kind it saw first and gave a symbolic DEL/DUP/INV no curve at
 // all. junctionEnds answers for all of them, so what is left is geometry.
 const Variants = observer(function Variants(props: OverlayProps) {
+  const palette = usePalette()
   return (
     <OverlayPaths
       {...props}
       pathTestId="r2"
-      stroke={VARIANT_JUNCTION_COLOR}
+      stroke={variantJunctionColor(palette)}
       strokeWidth={5}
       hoverStrokeWidth={10}
       render={variantPaths}

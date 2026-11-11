@@ -111,7 +111,10 @@ export interface JunctionPoint {
   reversed: boolean
 }
 
-export const VARIANT_JUNCTION_COLOR = '#2e7d32'
+// The call's green, lighter on a dark ground where the deep one sinks into it
+export function variantJunctionColor({ mode }: JBrowsePalette) {
+  return mode === 'dark' ? '#66bb6a' : '#2e7d32'
+}
 export const VARIANT_JUNCTION_LABEL = 'Variant call'
 
 // A variant call's junction: a foot over the arm each end keeps, joined by a
@@ -336,7 +339,7 @@ export function drawnConnectionKeySections(
         ? [
             {
               key: VARIANT_JUNCTION_LABEL,
-              color: VARIANT_JUNCTION_COLOR,
+              color: variantJunctionColor(theme),
               label: VARIANT_JUNCTION_LABEL,
             },
           ]
