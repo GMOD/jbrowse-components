@@ -2181,6 +2181,26 @@ describe('setSession', () => {
     expect(preloaded).toMatchObject([{ views: [{ type: 'StubView' }] }])
   })
 
+  it('takes nothing out before refusing a document the model rejects', async () => {
+    const session = Session.create({
+      views: [{ id: 'a', type: 'StubView', label: 'one' }],
+    })
+    takenOut.length = 0
+    await expect(
+      drained(
+        jbOver(session).setSession(
+          {
+            views: [{ id: 'b', type: 'StubView' }],
+            name: 5,
+          },
+          100,
+        ),
+      ),
+    ).rejects.toThrow(/jb\.setSession refused the document: .*name/s)
+    expect(takenOut).toEqual([])
+    expect(session.views.map(v => v.id)).toEqual(['a'])
+  })
+
   it('refuses what is not a document, and a document the model rejects, by name', async () => {
     const jb = jbOver(Session.create({}))
     await expect(

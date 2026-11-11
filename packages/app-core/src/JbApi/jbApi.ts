@@ -43,6 +43,7 @@ import {
   getSnapshot,
   getType,
   isStateTreeNode,
+  typecheck,
 } from '@jbrowse/mobx-state-tree'
 import * as mobx from 'mobx'
 
@@ -2160,6 +2161,7 @@ async function setSession(
     session.notifyError(problem)
   }
   try {
+    typecheck(getType(session), next)
     ;(session as unknown as SnapshotTarget).takeOutViewsMissingFrom?.(next)
     applySnapshot(session, next)
   } catch (e) {
