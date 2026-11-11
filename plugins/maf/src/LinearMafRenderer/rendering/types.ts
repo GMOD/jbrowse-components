@@ -1,8 +1,9 @@
 import { measuredFont } from '@jbrowse/core/util'
 
-// The one font every MAF label draws in — base cells, codons, and the insertion
-// and deletion counts — carrying its own measurement so a caller reserving room
-// for a count cannot measure a different font than it paints. It measured a
+// The font the MAF base letters, codons and deletion counts draw in, carrying
+// its own measurement so a caller reserving room for a count cannot measure a
+// different font than it paints. The insertion counts are the shared
+// `paintInsertionLabels`', in alignments-core's `labelFont`. It measured a
 // monospace label against the proportional table until 2026-08-16, which the
 // deletion count's padding hid for three digits; `measuredFont` is where that is
 // written down.

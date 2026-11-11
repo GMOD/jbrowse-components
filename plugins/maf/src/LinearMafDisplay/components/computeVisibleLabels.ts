@@ -30,8 +30,8 @@ export function computeVisibleLabels(
 
   const labels: VisibleLabel[] = []
   const { h, offset } = rowBandGeometry(params)
-  // Gated on the same zoom and row height as the insertion and deletion count
-  // labels, so all row text reveals together.
+  // A letter needs its cell as wide as the font; the row height gate is the
+  // insertion and deletion counts'.
   if (1 / view.bpPerPx >= CHAR_SIZE_WIDTH && h >= MIN_HEIGHT_FOR_TEXT) {
     const hp2 = h / 2
 

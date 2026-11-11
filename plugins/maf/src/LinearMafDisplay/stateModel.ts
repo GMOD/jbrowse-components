@@ -785,22 +785,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Read `topBands.rects.coverage.height`.
-         * @deprecated
-         */
-        get coverageDisplayHeight() {
-          return self.topBands.rects.coverage.height
-        },
-        /**
-         * #getter
-         * Read `topBands.rects.conservation.height`.
-         * @deprecated
-         */
-        get conservationDisplayHeight() {
-          return self.topBands.rects.conservation.height
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: where the band stack ends. Every rows
          * hit-test, draw and export offset reads the mixin's `rowsTopOffset`
          * over it, so adding a band or the focus chip's line can't desync them.

@@ -32,8 +32,9 @@ export {
   insertionSizeAlpha,
 }
 // Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`
-// labels, clip summaries) is drawn. Shared by plugin-alignments and plugin-maf
-// so the two displays reveal these labels at the same zoom.
+// labels, clip summaries) is drawn. The MAF display's insertion counts take it
+// through `paintInsertionLabels`; its base letters wait for a cell as wide as
+// their own font.
 export const MIN_PX_PER_BP_FOR_TEXT = 6.5
 
 // The palette a SNP-coverage segment draw reads, and the whole of it: the
@@ -166,9 +167,8 @@ export function insertionBarWidth(
   return insertionBarWidthPx(len, pxPerBp, featureHeight)
 }
 
-// Shared tooltip body for an insertion, used by both plugin-alignments and
-// plugin-maf so the phrasing stays identical. Callers append their own location
-// suffix ("at <pos>" / a Location line).
+// The alignments tooltip body for an insertion. Callers append their own
+// location suffix ("at <pos>" / a Location line).
 export function formatInsertionLabel(length: number, sequence?: string) {
   return sequence && sequence.length <= 20
     ? `Insertion (${length}bp): ${sequence}`
