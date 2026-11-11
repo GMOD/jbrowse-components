@@ -1,5 +1,6 @@
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
+import { forwardStart } from '../util/parseStrand.ts'
 import { wholeLines } from '../util/taiBlocks.ts'
 import {
   filterFirstLineInstructions,
@@ -7,7 +8,11 @@ import {
 } from './rowInstructions.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
-import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
+import type {
+  KeepBlock,
+  MafStanzaReader,
+  PastQuery,
+} from '../util/mafStanzaReader.ts'
 import type { TaiSlice } from '../util/taiSlice.ts'
 import type { RowInstruction } from './rowInstructions.ts'
 
@@ -207,6 +212,36 @@ export function finalizeBlock(
 }
 
 /**
+ * Each row's `length`, its non-gap count, and not its `bases`: all the
+ * coordinate chain to the next block needs of a block nothing reads.
+ */
+export function countAlignedBases(block: AlignmentBlock, columns: string[]) {
+  const { rows } = block
+  const lengths = new Uint32Array(rows.length)
+  for (const col of columns) {
+    const n = Math.min(col.length, rows.length)
+    for (let j = 0; j < n; j++) {
+      if (col.charCodeAt(j) !== DASH) {
+        lengths[j]!++
+      }
+    }
+  }
+  rows.forEach((row, j) => {
+    row.length = lengths[j]!
+  })
+}
+
+function alignedBasesOfRow(columns: string[], j: number) {
+  let length = 0
+  for (const col of columns) {
+    if (j < col.length && col.charCodeAt(j) !== DASH) {
+      length++
+    }
+  }
+  return length
+}
+
+/**
  * A finalized block into `sink` through `reader`: the first row is the
  * reference and fixes the span, every row resolves to its sample. Nothing for
  * a block with no rows; `BgzipTaffyAdapter` finalizes only a block with columns.
@@ -215,50 +250,49 @@ export function readTafBlock(
   block: AlignmentBlock,
   reader: MafStanzaReader,
   sink: MafBlockSink,
-  keep: KeepBlock,
   id: string,
 ) {
-  if (block.rows.length === 0) {
-    return false
-  }
-  reader.begin()
-  const row0 = block.rows[0]!
-  reader.reference(
-    row0.sequenceName,
-    row0.start,
-    row0.length,
-    row0.strand,
-    row0.sequenceLength,
-    row0.bases,
-  )
-  for (const row of block.rows) {
-    const parsed = reader.resolve(row.sequenceName)
-    if (parsed?.assemblyName) {
-      reader.addRow(
-        parsed.assemblyName,
-        parsed.refName,
-        row.start,
-        row.length,
-        row.strand,
-        row.sequenceLength,
-        row.bases,
-      )
+  const [reference] = block.rows
+  if (reference) {
+    reader.begin()
+    reader.reference(
+      reference.sequenceName,
+      reference.start,
+      reference.length,
+      reference.strand,
+      reference.sequenceLength,
+      reference.bases,
+    )
+    for (const row of block.rows) {
+      const parsed = reader.resolve(row.sequenceName)
+      if (parsed?.assemblyName) {
+        reader.addRow(
+          parsed.assemblyName,
+          parsed.refName,
+          row.start,
+          row.length,
+          row.strand,
+          row.sequenceLength,
+          row.bases,
+        )
+      }
     }
-  }
-  const wanted = reader.wanted(keep)
-  if (wanted) {
     reader.emitPlaced(sink, id)
   }
-  return wanted
 }
 
-/** The blocks of a TAF slice into `sink` through `reader`, those `keep` wants. */
+/**
+ * The blocks of a TAF slice into `sink` through `reader`, those `keep` wants.
+ * A block `keep` turns down is only counted, for the coordinate chain, and the
+ * read ends at the first block past the query.
+ */
 export function readTafSlice(
   { text, blockIdAt }: TaiSlice,
   runLengthEncodeBases: boolean,
   reader: MafStanzaReader,
   sink: MafBlockSink,
   keep: KeepBlock,
+  pastQuery: PastQuery,
 ) {
   const decoder = new TextDecoder()
   let pBlock: AlignmentBlock | undefined
@@ -267,9 +301,28 @@ export function readTafSlice(
   let isFirstCoordLine = true
   let blockOffset = 0
   let lineOffset = 0
-  const emit = (block: AlignmentBlock, cols: string[]) => {
-    finalizeBlock(block, cols, decoder)
-    readTafBlock(block, reader, sink, keep, blockIdAt(blockOffset))
+  let past = false
+  /** The block read, or only counted, and whether it lies past the query. */
+  const closeBlock = (
+    block: AlignmentBlock,
+    reference: RowState,
+    cols: string[],
+  ) => {
+    const size = alignedBasesOfRow(cols, 0)
+    const start = forwardStart(
+      reference.sequenceLength,
+      reference.start,
+      size,
+      reference.strand,
+    )
+    const kept = keep(reference.sequenceName, start, start + size)
+    if (kept) {
+      finalizeBlock(block, cols, decoder)
+      readTafBlock(block, reader, sink, blockIdAt(blockOffset))
+    } else {
+      countAlignedBases(block, cols)
+    }
+    return !kept && pastQuery(reference.sequenceName, start)
   }
 
   // A cut coordinate line is the one `wholeLines` has to drop here: cut
@@ -277,7 +330,8 @@ export function readTafSlice(
   // `parseBasesColumn` as one.
   const { lines, endsClean } = wholeLines(text)
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length && !past; i++) {
+    const line = lines[i]!
     const lineStart = lineOffset
     lineOffset += line.length + 1
     const trimmedLine = line.trim()
@@ -288,21 +342,24 @@ export function readTafSlice(
     const semicolonIndex = findCoordinateSeparator(trimmedLine)
     const hasCoordinates = semicolonIndex !== -1
 
-    if (hasCoordinates) {
-      if (currentBlock) {
-        if (columns.length > 0) {
-          emit(currentBlock, columns)
-        }
-        // Advance the chain even for a block that emitted no feature. TAF
-        // coordinates are deltas against the *immediately preceding* block
-        // (parseCoordinatesAndEstablishBlock walks `pBlock`), so skipping one
-        // silently reanchors every block after it — plausible-looking rows at
-        // wrong coordinates rather than a visible failure. A column-less
-        // block is only reachable from a malformed file, but the cost of
-        // being wrong here is high and the cost of being right is nil.
-        pBlock = currentBlock
+    if (hasCoordinates && currentBlock) {
+      const [reference] = currentBlock.rows
+      if (reference && columns.length > 0) {
+        past = closeBlock(currentBlock, reference, columns)
       }
+      // Advance the chain even for a block that emitted no feature. TAF
+      // coordinates are deltas against the *immediately preceding* block
+      // (parseCoordinatesAndEstablishBlock walks `pBlock`), so skipping one
+      // silently reanchors every block after it — plausible-looking rows at
+      // wrong coordinates rather than a visible failure. A column-less
+      // block is only reachable from a malformed file, but the cost of
+      // being wrong here is high and the cost of being right is nil.
+      pBlock = currentBlock
+    }
 
+    if (past) {
+      currentBlock = undefined
+    } else if (hasCoordinates) {
       // Parse the coordinate instructions
       const basesAndTags = trimmedLine.slice(0, semicolonIndex)
       let instructions = parseRowInstructions(
@@ -333,7 +390,8 @@ export function readTafSlice(
   // Only when the slice ended cleanly: TAF has no block terminator, so a
   // block is complete exactly when the *next* coordinate line arrives — a cut
   // tail leaves the open one missing however many columns the cut removed.
-  if (endsClean && currentBlock && columns.length > 0) {
-    emit(currentBlock, columns)
+  const reference = currentBlock?.rows[0]
+  if (endsClean && currentBlock && reference && columns.length > 0) {
+    closeBlock(currentBlock, reference, columns)
   }
 }

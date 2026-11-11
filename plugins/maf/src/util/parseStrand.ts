@@ -12,3 +12,12 @@ export function otherStrandStart(
 ) {
   return srcSize - srcStart - size
 }
+
+export function forwardStart(
+  srcSize: number,
+  srcStart: number,
+  size: number,
+  strand: number,
+) {
+  return strand === -1 ? otherStrandStart(srcSize, srcStart, size) : srcStart
+}

@@ -89,9 +89,18 @@ function readMaf(text: string, query: SliceQuery, sink: MafBlockSink) {
   readMafBlocks(text, blockIdAt, reader, sink, keepFor(query))
 }
 
+// A base that predates `pastQuery` ignores the argument.
 function readTaf(text: string, query: SliceQuery, sink: MafBlockSink) {
   const reader = new MafStanzaReader(makeSourceResolver())
-  readTafSlice({ text, blockIdAt }, false, reader, sink, keepFor(query))
+  const onQueriedRefName = makeRefNameFilter(query.refName)
+  readTafSlice(
+    { text, blockIdAt },
+    false,
+    reader,
+    sink,
+    keepFor(query),
+    (refSrc, start) => start >= query.end && onQueriedRefName(refSrc),
+  )
 }
 
 export function countMaf(text: string, query: SliceQuery) {

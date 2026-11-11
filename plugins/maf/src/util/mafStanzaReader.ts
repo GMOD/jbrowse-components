@@ -1,7 +1,7 @@
 import { revcom } from '@jbrowse/core/util'
 
 import { applyMafLine } from './mafLines.ts'
-import { otherStrandStart } from './parseStrand.ts'
+import { forwardStart, otherStrandStart } from './parseStrand.ts'
 import { RecordSlots } from './recordSlots.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
@@ -12,19 +12,11 @@ import type { SourceResolver, makeSourceResolver } from './parseAssemblyName.ts'
 /** Whether a block at its reference row's forward extent is one to emit. */
 export type KeepBlock = (refSrc: string, start: number, end: number) => boolean
 
-/** Whether `keep` wants the block this reference row heads. */
-export function keepsReference(
-  keep: KeepBlock,
-  src: string,
-  start: number,
-  size: number,
-  strand: number,
-  srcSize: number,
-) {
-  const forwardStart =
-    strand === -1 ? otherStrandStart(srcSize, start, size) : start
-  return keep(src, forwardStart, forwardStart + size)
-}
+/**
+ * Whether a block at its reference row's forward start lies past the query,
+ * and so, in a slice sorted as a `.tai` indexes it, every block after it.
+ */
+export type PastQuery = (refSrc: string, start: number) => boolean
 
 /**
  * One block's rows on their way into a {@link MafBlockSink}, for every
@@ -169,18 +161,14 @@ export class MafStanzaReader implements MafLineTarget {
 
   /** Whether `keep` wants the block, asked before a `-` block is turned over. */
   wanted(keep: KeepBlock) {
-    const { refSrc } = this
-    return (
-      refSrc !== undefined &&
-      keepsReference(
-        keep,
-        refSrc,
-        this.refStart,
-        this.refSize,
-        this.refStrand,
-        this.refSrcSize,
-      )
+    const { refSrc, refSize } = this
+    const start = forwardStart(
+      this.refSrcSize,
+      this.refStart,
+      refSize,
+      this.refStrand,
     )
+    return refSrc !== undefined && keep(refSrc, start, start + refSize)
   }
 
   /** The block at its reference row's forward extent. */

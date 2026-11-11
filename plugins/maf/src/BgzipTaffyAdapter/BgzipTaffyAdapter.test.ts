@@ -2,8 +2,13 @@ import * as io from '@jbrowse/core/util/io'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { MafFeatureSink } from '../util/mafFeatureSink.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
-import { tafBlockOf, tafSliceBlocksOf } from '../util/parsedBlocks.fixture.ts'
+import {
+  readerOf,
+  tafBlockOf,
+  tafSliceBlocksOf,
+} from '../util/parsedBlocks.fixture.ts'
 import { queryBlockSpan } from '../util/taiIndex.ts'
 import { readTaiSlice } from '../util/taiSlice.ts'
 import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
@@ -17,7 +22,10 @@ import {
   finalizeBlock,
   parseBases,
   parseCoordinatesAndEstablishBlock,
+  readTafSlice,
 } from './tafParsing.ts'
+
+import type MafFeature from '../MafFeature.ts'
 
 // Test the core parsing logic with sample TAF data
 describe('TAF parsing', () => {
@@ -1091,6 +1099,68 @@ describe('BgzipTaffyAdapter RLE detection', () => {
     })
     await expect(adapter.readHeader()).rejects.toThrow()
     await expect(adapter.configure()).rejects.toThrow()
+  })
+})
+
+describe('a TAF block the query does not keep', () => {
+  // mm10's second block starts where its first block's two aligned bases end,
+  // so the skipped block still has to count them; the read stops at the third
+  // block, past the query, and never reaches the fourth's bad opcode
+  const taf = [
+    'AA ; i 0 hg38.chr1 100 + 1000 i 1 mm10.chr2 50 + 900',
+    'A-',
+    'AA',
+    'CC ; g 0 7',
+    'CC',
+    'GG ; g 0 10',
+    'GG',
+    'TT ; x 0',
+    'TT',
+    '',
+  ].join('\n')
+
+  const read = () => {
+    const resolved: string[] = []
+    const reader = readerOf(token => {
+      resolved.push(token)
+      return makeSourceResolver().resolve(token)
+    })
+    const features: MafFeature[] = []
+    const sink = new MafFeatureSink('', f => {
+      features.push(f)
+    })
+    const decode = jest.spyOn(TextDecoder.prototype, 'decode')
+    readTafSlice(
+      { text: taf, blockIdAt: offset => `${offset}` },
+      false,
+      reader,
+      sink,
+      (_refSrc, start) => start >= 110 && start < 120,
+      (_refSrc, start) => start >= 120,
+    )
+    const decoded = decode.mock.calls.length
+    decode.mockRestore()
+    sink.finish()
+    return { resolved, features, decoded }
+  }
+
+  test('is neither transposed nor row-parsed', () => {
+    const { resolved, features, decoded } = read()
+    expect(features.map(f => f.get('start'))).toEqual([110])
+    expect(decoded).toBe(2)
+    expect(resolved.filter(token => token === 'mm10.chr2')).toHaveLength(1)
+  })
+
+  test('past the query ends the read', () => {
+    expect(read).not.toThrow()
+  })
+
+  test('still advances the coordinate chain', () => {
+    const { features } = read()
+    expect(features[0]!.get('alignments').mm10).toMatchObject({
+      srcStart: 52,
+      seq: 'CC',
+    })
   })
 })
 

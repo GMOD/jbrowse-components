@@ -63,7 +63,10 @@ export function mafBlocksOf(text: string, resolve: SourceResolver) {
 export function tafBlockOf(block: AlignmentBlock, resolve: SourceResolver) {
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
-    readTafBlock(block, reader, sink, keep, 'block')
+    const [reference] = block.rows
+    if (reference && keep(reference.sequenceName)) {
+      readTafBlock(block, reader, sink, 'block')
+    }
   })[0]
 }
 
@@ -84,6 +87,7 @@ export function tafSliceBlocksOf(
       reader,
       sink,
       keep,
+      () => false,
     )
   })
 }

@@ -6,7 +6,7 @@ import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { KeepBlock } from './mafStanzaReader.ts'
+import type { KeepBlock, PastQuery } from './mafStanzaReader.ts'
 import type { TaiIndex, TaiSlice } from './taiSlice.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, Region } from '@jbrowse/core/util'
@@ -33,6 +33,7 @@ export abstract class MafTaiAdapterBase<
     reader: MafStanzaReader,
     sink: MafBlockSink,
     keep: KeepBlock,
+    pastQuery: PastQuery,
   ): void
 
   async getRefNames(opts?: BaseOptions) {
@@ -80,6 +81,7 @@ export abstract class MafTaiAdapterBase<
       sink,
       (refSrc, start, end) =>
         blockOverlaps(start, end, query) && onQueriedRefName(refSrc),
+      (refSrc, start) => start >= query.end && onQueriedRefName(refSrc),
     )
     reader.reportUnmatched()
   }
