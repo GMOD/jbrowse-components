@@ -69,11 +69,11 @@ How the SyRI lanes were built
 
   minimap2 2.24-r1122; SyRI 1.8.2 installed from
   github.com/schneebergerlab/syri at acf72ccf47beffaaeade849fd258827ef24bedf4.
-  scripts/syri_to_paf.py then wrote each pair's top-level regions (SYN, INV,
-  TRANS, INVTR, DUP, INVDP) as PAF records between PanSN names carrying
-  syri:Z:<type> and color:Z:<plotsr's color>, concatenated into
+  syri2jbrowse (github.com/cmdcolin/syri2jbrowse) then wrote every pair's
+  top-level regions (SYN, INV, TRANS, INVTR, DUP, INVDP) as one PAF between
+  PanSN names carrying syri:Z:<type> and color:Z:<plotsr's color>,
   syri_1001g.paf, and the same regions on TAIR10 alone with the accession in a
-  `query` column, concatenated into syri_regions.bed.gz.
+  `query` column, syri_regions.bed.gz.
 
   What SyRI found, per accession, against TAIR10:
 

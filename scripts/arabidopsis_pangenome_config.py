@@ -17,7 +17,6 @@ import os
 import sys
 import urllib.request
 
-from syri_to_paf import COLORS
 
 BASE = sys.argv[sys.argv.index('--base-url') + 1].rstrip('/') + '/' if '--base-url' in sys.argv else ''
 
@@ -26,9 +25,16 @@ GENARK = 'https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/b
 EVA = 'https://ftp.ebi.ac.uk/pub/databases/eva'
 GRAPH = 'arabidopsis-tair10-minigraph'
 PANSN = {'assemblyNameToPanSN': {'TAIR10': 'TAIR10'}}
-SYRI_TYPES = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
 # the portal's gene annotation of 85-3 is named after its corrected assembly
 GENE_FILE_ID = {'22001': '22001f'}
+
+
+
+def syri_regions_color():
+    with open('syri_jbrowse/config.json') as fh:
+        tracks = json.load(fh)['tracks']
+    regions = next(t for t in tracks if t['trackId'] == 'syri_regions_on_TAIR10')
+    return regions['displays'][0]['encoding']['color']
 
 
 def exists(url):
@@ -44,7 +50,7 @@ def accessions():
     with open('accessions.tsv') as fh:
         for line in fh:
             acc_id, name, country, group = line.rstrip('\n').split('\t')
-            if os.path.exists(f'TAIR10_{name}.paf'):
+            if os.path.exists(f'TAIR10_{name}.syri.out'):
                 rows.append({'id': acc_id, 'name': name, 'country': country, 'group': group})
     return rows
 
@@ -220,6 +226,7 @@ def absolutize(node):
 
 def main():
     rows = accessions()
+    syri_color = syri_regions_color()
     names = [r['name'] for r in rows]
     config = {
         '$schema': 'https://jbrowse.org/jb2/schema/v5/config.json',
@@ -311,13 +318,7 @@ def main():
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay',
                         'rows': {'field': 'query', 'sort': names},
-                        'encoding': {
-                            'color': {
-                                'field': 'name',
-                                'scale': {'domain': SYRI_TYPES, 'range': [COLORS[t] for t in SYRI_TYPES]},
-                                'legend': {'title': 'syri'},
-                            }
-                        },
+                        'encoding': {'color': syri_color},
                     }
                 ],
             },
@@ -332,7 +333,7 @@ def main():
                         'type': 'MultiWaySyntenyDisplay',
                         'displayId': 'syri_1001g-MultiWaySyntenyDisplay',
                         'rows': {'sort': names},
-                        'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': SYRI_TYPES}}}},
+                        'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': syri_color['scale']['domain']}}}},
                     }
                 ],
             },

@@ -12,7 +12,8 @@
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
 #           biocontainers image), node (npx) and gfa-to-tabix 2.0.0
-#           or later
+#           or later, and syri2jbrowse
+#           (pip install git+https://github.com/cmdcolin/syri2jbrowse)
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #
 # ROWS is one `<id> <name> <country> <admixture group>` line per accession,
@@ -24,14 +25,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in curl unzip awk sort gzip python3 samtools minimap2 minigraph gfatools bgzip tabix bedGraphToBigWig datasets gfa-to-tabix; do
+for tool in curl unzip awk sort gzip python3 samtools minimap2 minigraph gfatools bgzip tabix bedGraphToBigWig datasets gfa-to-tabix syri2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
 done
 
-HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py)
+HELPERS=(arabidopsis_pangenome_config.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
@@ -116,7 +117,7 @@ printf 'Chr1\tNC_003070.9\t1\tchr1\nChr2\tNC_003071.7\t2\tchr2\nChr3\tNC_003074.
 mkdir -p graph
 [ -s graph/$REF.pansn.fa ] || sed "s/^>Chr/>$REF#1#Chr/" $REF.fa >graph/$REF.pansn.fa
 
-echo "== each accession: fetch, align to TAIR10, SyRI, convert"
+echo "== each accession: fetch, align to TAIR10, SyRI"
 while read -r id name _ _; do
   pair="${REF}_$name"
   if [ ! -s "$name.fa" ] && { [ ! -s "$pair.syri.out" ] || [ ! -s "graph/$name.pansn.fa" ]; }; then
@@ -146,16 +147,21 @@ while read -r id name _ _; do
     run_syri -c "$pair.aln.paf" -r $REF.fa -q "$name.fa" -F P --prefix "$pair." --nc 5 >"$pair.syri.log" 2>&1
     rm -f "$pair.aln.paf"
   fi
-  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --reference $REF --query "$name"
   rm -f "$name.fa" "$name.fa.fai"
 done <accessions.tsv
 
 echo "== one PAF for every pair, one BED of every accession's regions on TAIR10"
-while read -r _ name _ _; do cat "${REF}_$name.paf"; done <accessions.tsv >syri_1001g.paf
+PAIRS=()
 {
-  head -n1 "${REF}_Col-0.6909.regions.bed"
-  while read -r _ name _ _; do tail -n +2 "${REF}_$name.regions.bed"; done <accessions.tsv | sort -k1,1 -k2,2n
-} | bgzip >syri_regions.bed.gz
+  printf '%s.chrom.sizes\t%s\tft:cl\n' $REF $REF
+  while read -r _ name _ _; do
+    printf '%s.chrom.sizes\t%s\tft:cl\n' "$name" "$name"
+    PAIRS+=(--pair "$REF" "$name" "${REF}_$name.syri.out")
+  done <accessions.tsv
+} >syri_genomes.txt
+syri2jbrowse --genomes syri_genomes.txt "${PAIRS[@]}" -o syri_jbrowse
+cp syri_jbrowse/syri.paf syri_1001g.paf
+bgzip -c syri_jbrowse/syri_regions.bed >syri_regions.bed.gz
 tabix -f -C -p bed syri_regions.bed.gz
 
 echo "== the 1135-accession Fst and OmegaPlus scans as bigWigs"
