@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
 import type { BreakpointViewModel } from './model.ts'
@@ -14,7 +15,7 @@ const REGION = {
 
 function flatten(items: MenuItem[]): MenuItem[] {
   return items.flatMap(item =>
-    'subMenu' in item ? [item, ...flatten(item.subMenu)] : [item],
+    'subMenu' in item ? [item, ...flatten(resolveSubMenu(item))] : [item],
   )
 }
 
@@ -38,7 +39,11 @@ test('the search-box rows disable while the header they act on is hidden', async
     v.setWidth(800)
     v.setWindow(8000, 10_000)
   }
-  expect(searchBoxRows(view).map(row => row.disabled)).toEqual([false, false])
+  expect(
+    searchBoxRows(view).map(row => 'disabled' in row && row.disabled),
+  ).toEqual([false, false])
   view.setShowHeader(false)
-  expect(searchBoxRows(view).map(row => row.disabled)).toEqual([true, true])
+  expect(
+    searchBoxRows(view).map(row => 'disabled' in row && row.disabled),
+  ).toEqual([true, true])
 })
