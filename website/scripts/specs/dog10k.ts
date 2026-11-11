@@ -555,8 +555,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-rnase1-insertion',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // The gene is 1.4 kb; a wider window makes it a sliver.
-      loc: 'chr15:18,161,500-18,167,000',
+      // The insertion spans a few reference bases, so a window the width of
+      // the gene drew each carrier as a hairline. 150 bp keeps the start codon
+      // and the 5' UTR beside it, and each carrier a cell wide enough to read.
+      loc: 'chr15:18,163,998-18,164,147',
       tracks: [
         // LOC106557526 spans the window, so the gene track needs two rows.
         {
