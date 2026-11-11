@@ -399,7 +399,9 @@ describe('cancel', () => {
       )
       await cancel(11, pluginManager)
       await jest.advanceTimersByTimeAsync(500)
-      expect(wait.outcome).toMatch(/^CodeCancelledError: the client cancelled/)
+      expect(wait.outcome).toMatch(
+        /^CallEndedError: this jb belongs to a run_javascript call that timed out or was cancelled/,
+      )
     })
 
     it('stop on a cancel, in the settle after the code returned', async () => {

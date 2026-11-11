@@ -114,8 +114,8 @@ and never cache it. `open` from the start screen loads a new page, emptying
 `globalThis`.
 
 `value` is your return as JSON: a model node as its snapshot, a `Map` as an
-object of its entries, a `Set` or typed array as an array, an `Error` as its
-`name` and `message`. Besides `value`, a call returns:
+array of its `[key, value]` entries, a `Set` or typed array as an array, an
+`Error` as its `name` and `message`. Besides `value`, a call returns:
 
 - `logs`, the console output in order. Print intermediate state instead of
   returning it.
@@ -129,7 +129,7 @@ object of its entries, a `Set` or typed array as an array, an `Error` as its
   non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) returns an error and the logs
   so far; the code keeps running with `signal` aborted, and a `jb` wait or read
-  it is in throws that same error. For a long job, park the promise:
+  it is in throws `CallEndedError`. For a long job, park the promise:
 
 ```js
 // call 1

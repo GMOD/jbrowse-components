@@ -85,8 +85,11 @@ describe('safeJson', () => {
         }),
       ),
     ).toEqual({
-      counts: { gene: 3, mRNA: 2 },
-      numbered: { 1: 'a' },
+      counts: [
+        ['gene', 3],
+        ['mRNA', 2],
+      ],
+      numbered: [[1, 'a']],
       keyedByObject: [[{ id: 1 }, 'a']],
       types: ['gene', 'mRNA'],
       error: {
@@ -97,7 +100,32 @@ describe('safeJson', () => {
       bytes: [1, 2],
       big: ['5'],
     })
-    expect(JSON.parse(safeJson(counts))).toEqual({ gene: 3, mRNA: 2 })
+    expect(JSON.parse(safeJson(counts))).toEqual([
+      ['gene', 3],
+      ['mRNA', 2],
+    ])
+  })
+
+  // as an object, 1 and '1' collapsed into one entry and '100' sorted after
+  // '20', so a Map ranked by position came back reordered
+  it('keeps every entry of a Map, in its own order', () => {
+    expect(
+      JSON.parse(
+        safeJson(
+          new Map<unknown, string>([
+            ['100', 'first'],
+            ['20', 'second'],
+            [1, 'number'],
+            ['1', 'string'],
+          ]),
+        ),
+      ),
+    ).toEqual([
+      ['100', 'first'],
+      ['20', 'second'],
+      [1, 'number'],
+      ['1', 'string'],
+    ])
   })
 
   it('reports a cycle through a Map and does not call a shared Set one', () => {
@@ -105,7 +133,7 @@ describe('safeJson', () => {
     m.set('self', m)
     const shared = new Set([1])
     expect(JSON.parse(safeJson({ m, left: shared, right: shared }))).toEqual({
-      m: { self: '[circular]' },
+      m: [['self', '[circular]']],
       left: [1],
       right: [1],
     })
@@ -1389,6 +1417,26 @@ describe('getFeatures reads through the RPC', () => {
       // @ts-expect-error a list of regions is what `regions` takes
       jb.getFeatures('genes', [{ refName: 'ctgA', start: 10, end: 20 }]),
     ).rejects.toThrow(/several regions go in regions: \[\.\.\.\]/)
+    expect(calls).toHaveLength(0)
+  })
+
+  // a bound that is not a number read as no bound, so the read ran to the end
+  // of the sequence
+  it('refuses a region object whose start or end is not a number', async () => {
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        // @ts-expect-error the value being refused
+        loc: { refName: 'ctgA', start: '10', end: 20 },
+      }),
+    ).rejects.toThrow(/start and end numbers.*got \{"refName":"ctgA"/)
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        // @ts-expect-error the value being refused
+        regions: [{ refName: 'ctgA', start: 10, end: '20' }],
+      }),
+    ).rejects.toThrow(/a list of region objects/)
     expect(calls).toHaveLength(0)
   })
 

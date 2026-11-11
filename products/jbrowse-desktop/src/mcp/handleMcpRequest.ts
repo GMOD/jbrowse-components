@@ -172,6 +172,30 @@ function compileCode(code: string, sourceURL: string) {
   }
 }
 
+// What a `jb` wait or read throws once its call is over. Not the call's own
+// halt: a job parked on globalThis keeps this jb, and a later call awaiting it
+// would otherwise be told that IT timed out, with no line.
+class CallEndedError extends Error {
+  constructor() {
+    super(
+      'this jb belongs to a run_javascript call that timed out or was cancelled, so its waits and reads have stopped — run the work again from a new call',
+    )
+    this.name = 'CallEndedError'
+  }
+}
+
+function endedWith(signal: AbortSignal) {
+  const ended = new AbortController()
+  signal.addEventListener(
+    'abort',
+    () => {
+      ended.abort(new CallEndedError())
+    },
+    { once: true },
+  )
+  return ended.signal
+}
+
 function haltReason(signal: AbortSignal) {
   return signal.reason instanceof CodeHalted
     ? signal.reason
@@ -287,7 +311,7 @@ async function evaluateWith(
     onNotifications: messages => {
       consumedByCode.push(...messages)
     },
-    signal: abort.signal,
+    signal: endedWith(abort.signal),
   })
   compiledCount += 1
   const sourceURL = `run_javascript-${compiledCount}`

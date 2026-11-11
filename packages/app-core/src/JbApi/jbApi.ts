@@ -373,9 +373,7 @@ function isTypedArray(v: object): v is ArrayLike<number | bigint> {
 
 function plainForm(v: object) {
   return isMap(v)
-    ? [...v.keys()].every(k => typeof k === 'string' || typeof k === 'number')
-      ? Object.fromEntries([...v].map(([k, entry]) => [String(k), entry]))
-      : [...v]
+    ? [...v]
     : isSet(v)
       ? [...v]
       : v instanceof Error
@@ -576,7 +574,7 @@ export async function waitReady(
   session?: AbstractSessionModel,
   { root = document, signal }: SettleScope = {},
 ) {
-  const deadline = Date.now() + Math.max(timeoutMs, READY_HOLD_MS)
+  const deadline = Date.now() + Math.max(timeoutMs, READY_HOLD_MS + 200)
   let readySince: number | undefined
   let outcome
   while (outcome === undefined) {
@@ -1106,7 +1104,12 @@ function isRegionLoc(loc: unknown): loc is Exclude<JbLoc, string> {
   return (
     !!loc &&
     typeof loc === 'object' &&
-    typeof (loc as { refName?: unknown }).refName === 'string'
+    typeof (loc as { refName?: unknown }).refName === 'string' &&
+    ['start', 'end'].every(key =>
+      ['number', 'undefined'].includes(
+        typeof (loc as Record<string, unknown>)[key],
+      ),
+    )
   )
 }
 
@@ -1166,11 +1169,11 @@ const POSITIONAL_GET_FEATURES_TAKES: Takes<GetFeaturesPositionalOptions> = {
 const GET_FEATURES_TAKES: Takes<GetFeaturesOptions> = {
   trackId: aString,
   loc: {
-    what: 'ONE place — a locstring ("ctgA:1-100") or a region object ({ refName, start, end }); several regions go in regions: [...]',
+    what: 'ONE place — a locstring ("ctgA:1-100") or a region object ({ refName, start, end }, start and end numbers); several regions go in regions: [...]',
     is: v => typeof v === 'string' || isRegionLoc(v),
   },
   regions: {
-    what: 'a list of region objects ({ refName, start, end })',
+    what: 'a list of region objects ({ refName, start, end }, start and end numbers)',
     is: v => Array.isArray(v) && v.every(isRegionLoc),
   },
   ...POSITIONAL_GET_FEATURES_TAKES,
@@ -1193,6 +1196,14 @@ const ADD_TRACK_TAKES: Takes<AddTrackOptions> = {
   settleMs: aNumber,
 }
 
+function shown(value: unknown) {
+  const text =
+    typeof value === 'number' || value === undefined
+      ? String(value)
+      : safeJson(value)
+  return text.length > 200 ? `${text.slice(0, 200)}…` : text
+}
+
 function refuseUntaken(
   helper: string,
   options: unknown,
@@ -1201,7 +1212,7 @@ function refuseUntaken(
   const taken = Object.keys(takes).join(', ')
   if (!isSettings(options)) {
     throw new Error(
-      `${helper} takes one object of ${taken} — got ${options === undefined ? 'undefined' : safeJson(options)}`,
+      `${helper} takes one object of ${taken} — got ${shown(options)}`,
     )
   }
   const untaken = Object.keys(options).filter(key => !Object.hasOwn(takes, key))
@@ -1213,7 +1224,7 @@ function refuseUntaken(
   const wrong = Object.entries(options).flatMap(([key, value]) => {
     const kind = takes[key]
     return value !== undefined && kind && !kind.is(value)
-      ? [`${key} as ${kind.what} — got ${safeJson(value)}`]
+      ? [`${key} as ${kind.what} — got ${shown(value)}`]
       : []
   })
   if (wrong.length) {
