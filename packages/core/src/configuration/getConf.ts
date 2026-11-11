@@ -129,9 +129,10 @@ function unsetStaleKeyedMembers(
 ) {
   const writes = getConfigurationSchemaMetadata(node)?.options.writes
   if (isKeyedWrites(writes) && writes.keyedBy === leaf) {
+    const inForce: unknown = readConfObject(node, leaf)
     const prior = {
       ...getSnapshot<Record<string, unknown>>(node),
-      [leaf]: readConfObject(node, leaf),
+      [leaf]: inForce,
     }
     for (const member of staleKeyedMembers(writes, prior, { [leaf]: value })) {
       if (Object.hasOwn(prior, member)) {
