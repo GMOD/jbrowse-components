@@ -337,12 +337,6 @@
     "reviewedAt": "2026-09-14T03:41:15.519Z",
     "hash": "a5aee49035692639b0e9cb57ffffc72183308ce5"
   },
-  "hs1_vs_mm39_synteny": {
-    "name": "hs1_vs_mm39_synteny",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-04T18:16:12.328Z"
-  },
   "inverted_duplication/normal_height": {
     "name": "inverted_duplication/normal_height",
     "status": "good",

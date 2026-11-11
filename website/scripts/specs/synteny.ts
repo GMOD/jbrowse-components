@@ -42,7 +42,6 @@ const HG38_VERTEBRATES_TREE_ORDER = [
 ]
 
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
-export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
 // scripts/build_grape_peach_cacao_synteny.sh, which also hosts the pairwise
 // grape-peach anchors that mcscan_synteny_grape_peach.md loads
@@ -2488,29 +2487,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     viewportHeight: 616,
-  },
-
-  // mirrors the hs1_vs_mm39 config's defaultSession
-  {
-    mode: 'url',
-    name: 'hs1_vs_mm39_synteny',
-    url: sessionSpec(HS1_MM39_CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['hs1ToMm39.over.chain.pif'],
-          filter: [{ field: 'length', gte: 500000 }],
-          mark: { interpolate: 'linear' },
-          autoDiagonalize: true,
-          encoding: { color: 'query', opacity: 0.4 },
-          levelHeights: [350],
-          views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
-        },
-      ],
-    }),
-    viewportHeight: 672,
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 180000,
   },
 
   // 'matches' keeps strand the only thing the ribbon color means
