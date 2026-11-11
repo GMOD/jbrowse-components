@@ -2,7 +2,7 @@ import {
   buildCoverageTooltipBin,
   computeVisibleCoverageStats,
   coverageAutoscaleViews,
-  coverageDepthDomain,
+  coverageDomainViews,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
 import {
@@ -47,7 +47,6 @@ import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
   ContextMenuMixin,
@@ -58,11 +57,7 @@ import {
   sortRowsAtColumn,
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
-import {
-  ScoreScaleMixin,
-  resolveSymlogConstant,
-  visibleStats,
-} from '@jbrowse/wiggle-core'
+import { ScoreScaleMixin, visibleStats } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -1098,19 +1093,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => coverageAutoscaleViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * The domain the coverage band draws against, a log scale's floor at
-         * one read; the ticks and the marks both read it.
-         */
-        get coverageDepthDomain(): [number, number] | undefined {
-          const domain = self.autoscaledDomain
-          return domain
-            ? coverageDepthDomain(domain, self.scaleType)
-            : undefined
-        },
-      }))
+      .views(self => coverageDomainViews(self))
       .views(self => ({
         /**
          * #getter
@@ -1153,20 +1136,9 @@ export default function stateModelFactory(
          * the view.
          */
         get coverageBandState(): CoverageBandState {
-          const [domainMin, domainMax] = self.coverageDepthDomain ?? [0, 0]
           return {
             ...self.topBands.rects.coverage,
-            domainMin,
-            domainMax: self.coverageDepthDomain?.[1],
-            scaleType: scaleTypeCode(self.scaleType),
-            symlogConstant: resolveSymlogConstant(
-              domainMin,
-              domainMax,
-              self.symlogConstant,
-            ),
-            minAlleleFraction: self.coverageMinAlleleFraction,
-            showAlleles: self.showCoverageAlleles,
-            showInterbase: self.showInterbase,
+            ...self.coverageScaleState,
             colors: self.coverageBandColors,
           }
         },

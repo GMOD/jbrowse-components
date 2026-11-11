@@ -1,8 +1,10 @@
-import { widenRangeToRules } from '@jbrowse/wiggle-core'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { resolveSymlogConstant, widenRangeToRules } from '@jbrowse/wiggle-core'
 
 import {
   computeVisibleCoverageDomain,
   coverageDefaultDomain,
+  coverageDepthDomain,
 } from './coverageDownsampling.ts'
 
 import type { CoverageRegion } from './coverageDownsampling.ts'
@@ -62,6 +64,71 @@ export function coverageAutoscaleViews(self: CoverageAutoscaleHost) {
      */
     get defaultScoreDomain(): [number | undefined, number | undefined] {
       return coverageDefaultDomain(self.scaleZero)
+    },
+  }
+}
+
+/** What {@link coverageDomainViews} reads: the autoscaled domain and the band's settings. */
+export interface CoverageDomainHost {
+  autoscaledDomain: [number, number] | undefined
+  scaleType: string
+  symlogConstant: number
+  coverageMinAlleleFraction: number
+  showCoverageAlleles: boolean
+  showInterbase: boolean
+}
+
+/** The domain the coverage band draws against, and its scale as the marks take it. */
+export function coverageDomainViews(self: CoverageDomainHost) {
+  return {
+    /**
+     * #getter
+     */
+    get coverageScaleType() {
+      return scaleTypeCode(self.scaleType)
+    },
+    /**
+     * #getter
+     * The autoscaled depth domain. Undefined until some region holds
+     * one.
+     */
+    get coverageDomain(): [number, number] | undefined {
+      return self.autoscaledDomain
+    },
+    /**
+     * #getter
+     * The domain the coverage band draws against: `coverageDomain` with a
+     * log scale's floor pulled up to one read (see
+     * `coverageDepthDomain`). Every consumer reads this one — the y-axis
+     * ticks and both renderers' normalizers.
+     */
+    get coverageDepthDomain() {
+      return self.autoscaledDomain
+        ? coverageDepthDomain(self.autoscaledDomain, self.scaleType)
+        : undefined
+    },
+    /**
+     * #getter
+     * The band's scale and layer switches as `CoverageBandState` spells them,
+     * less its rect and colors. The raw symlog slot means "derive from the
+     * domain"; it resolves here, where the domain is in hand, so every backend
+     * normalizes with one number.
+     */
+    get coverageScaleState() {
+      const [domainMin, domainMax] = this.coverageDepthDomain ?? [0, undefined]
+      return {
+        domainMin,
+        domainMax,
+        scaleType: this.coverageScaleType,
+        symlogConstant: resolveSymlogConstant(
+          domainMin,
+          domainMax ?? 0,
+          self.symlogConstant,
+        ),
+        minAlleleFraction: self.coverageMinAlleleFraction,
+        showAlleles: self.showCoverageAlleles,
+        showInterbase: self.showInterbase,
+      }
     },
   }
 }

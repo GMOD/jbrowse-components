@@ -1,10 +1,8 @@
 import {
   computeCoverageTicks,
   computeVisibleCoverageStats,
-  coverageDepthDomain,
 } from '@jbrowse/alignments-core'
 import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { visibleStats } from '@jbrowse/wiggle-core'
 
 import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
@@ -63,44 +61,6 @@ export function coverageStatsViews(self: CoverageStatsHost) {
             .map(({ data }) => data),
         accumulate: entries => computeVisibleCoverageStats(entries),
       })
-    },
-  }
-}
-
-/** What {@link coverageDomainViews} reads: the autoscaled domain and its type. */
-export interface CoverageDomainHost {
-  autoscaledDomain: [number, number] | undefined
-  scaleType: string
-}
-
-/** The domain the coverage band draws against. */
-export function coverageDomainViews(self: CoverageDomainHost) {
-  return {
-    /**
-     * #getter
-     */
-    get coverageScaleType() {
-      return scaleTypeCode(self.scaleType)
-    },
-    /**
-     * #getter
-     * The autoscaled depth domain. Undefined until some region holds
-     * one.
-     */
-    get coverageDomain(): [number, number] | undefined {
-      return self.autoscaledDomain
-    },
-    /**
-     * #getter
-     * The domain the coverage band draws against: `coverageDomain` with a
-     * log scale's floor pulled up to one read (see
-     * `coverageDepthDomain`). Every consumer reads this one — the y-axis
-     * ticks and both renderers' normalizers.
-     */
-    get coverageDepthDomain() {
-      return self.autoscaledDomain
-        ? coverageDepthDomain(self.autoscaledDomain, self.scaleType)
-        : undefined
     },
   }
 }

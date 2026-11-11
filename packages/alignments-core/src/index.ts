@@ -196,8 +196,14 @@ export type { ModCovSegment } from './modCovSegments.ts'
 export { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
 export { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 export { computeCoverage } from './coverageCompute.ts'
-export { coverageAutoscaleViews } from './coverageAutoscaleViews.ts'
-export type { CoverageAutoscaleHost } from './coverageAutoscaleViews.ts'
+export {
+  coverageAutoscaleViews,
+  coverageDomainViews,
+} from './coverageAutoscaleViews.ts'
+export type {
+  CoverageAutoscaleHost,
+  CoverageDomainHost,
+} from './coverageAutoscaleViews.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
   SNP_TOOLTIP_SNAP_FLOOR,

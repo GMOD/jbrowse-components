@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
-import { coverageAutoscaleViews } from '@jbrowse/alignments-core'
+import {
+  coverageAutoscaleViews,
+  coverageDomainViews,
+} from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
   coverageBandSlotActions,
@@ -56,7 +59,7 @@ import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
-import { ScoreScaleMixin, resolveSymlogConstant } from '@jbrowse/wiggle-core'
+import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
@@ -120,7 +123,6 @@ import {
 } from './configSlotViews.ts'
 import {
   bandPlotViews,
-  coverageDomainViews,
   coverageStatsViews,
   coverageTicksViews,
 } from './coverageScaleViews.ts'
@@ -1912,20 +1914,7 @@ export default function stateModelFactory(
             featureSpacing: self.featureSpacing,
             coverage: {
               height: self.coverageBandHeight,
-              domainMin: self.coverageDepthDomain?.[0] ?? 0,
-              domainMax: self.coverageDepthDomain?.[1],
-              scaleType: self.coverageScaleType,
-              // The raw slot means "derive from the domain"; resolved here,
-              // where the domain is in hand, so every backend normalizes with
-              // one number.
-              symlogConstant: resolveSymlogConstant(
-                self.coverageDepthDomain?.[0] ?? 0,
-                self.coverageDepthDomain?.[1] ?? 0,
-                self.symlogConstant,
-              ),
-              minAlleleFraction: self.coverageMinAlleleFraction,
-              showAlleles: self.showCoverageAlleles,
-              showInterbase: self.showInterbase,
+              ...self.coverageScaleState,
             },
             showMismatches: self.showMismatches,
             fadeLowFrequency: self.fadeLowFrequency,
