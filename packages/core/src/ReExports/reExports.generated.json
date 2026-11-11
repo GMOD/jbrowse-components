@@ -1299,6 +1299,7 @@
         "default",
         "pluggableElementTypeGroups",
         "pluggableStateModelGroup",
+        "runtimePluginRecords",
         "wrappedComponent"
       ],
       "worker": "real"
@@ -3521,6 +3522,7 @@
         "rpcResult",
         "rpcResultWithArrayBuffers",
         "serializeError",
+        "transferableBuffers",
         "unwrapRpcResult"
       ],
       "worker": "real"
