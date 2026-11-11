@@ -42,7 +42,7 @@ export function buildCoverageResultFields(
     MAX_COVERAGE_STATS_BINS,
   )
 
-  // Empty TypedArrays must be allocated per-call: collectGroupedTransferables
+  // Empty TypedArrays must be allocated per-call: transferableBuffers
   // adds their underlying ArrayBuffer to the worker's transfer list, which
   // detaches it. Sharing a module-level singleton causes DataCloneError on
   // the second RPC reply.
@@ -63,7 +63,7 @@ export function buildCoverageResultFields(
 
     ...coverageAreaPacked,
     ...sashimi,
-    // Spread flat: `collectGroupedTransferables` walks the result's own values,
+    // Spread flat: `transferableBuffers` walks the result's own values,
     // so a typed array nested one level down would be structured-cloned instead
     // of transferred — silently, and this is the field that shape was built to
     // stop copying.

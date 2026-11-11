@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { transferableBuffers } from '@jbrowse/core/util/rpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
@@ -25,7 +26,6 @@ import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
-import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationField } from '../shared/colorFieldDefs.ts'
 import {
   drawnInstanceArrays,
@@ -429,9 +429,14 @@ export async function executeRenderAlignmentData({
     signal,
   })
   const groups = await groupsOfFetch({ pluginManager, args, featuresArray })
+  // A group's buffers live one level down, and its `sampleEvents` one further.
   return rpcResult(
     { groups, bytes, lodTier },
-    collectGroupedTransferables(groups),
+    transferableBuffers(
+      ...groups.flatMap(({ data }) =>
+        data.sampleEvents ? [data, data.sampleEvents] : [data],
+      ),
+    ),
   )
 }
 

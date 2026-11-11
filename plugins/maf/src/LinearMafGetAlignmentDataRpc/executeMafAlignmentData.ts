@@ -1,11 +1,11 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { transferableBuffers } from '@jbrowse/core/util/rpc'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { isRowVisible, withCopyRows } from '../util/sampleCopies.ts'
 import { visibleSamples } from '../util/visibleSamples.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
-import { collectMafTransferables } from './collectTransferables.ts'
 import { MafRegionSink } from './mafRegionSink.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -57,7 +57,10 @@ export interface LinearMafGetAlignmentDataResult {
  * Nothing per-row is ever allocated as an object here. The packer is fed
  * streaming and its columns go out on the transfer list as a fixed handful of
  * buffers, which is what makes a wide region's reply cost microseconds instead
- * of seconds — see `collectMafTransferables` for the measurement.
+ * of seconds. `postMessage`'s per-entry cost is superlinear in the list's
+ * length: a buffer per row, 86k entries, blocked the worker for 3.3s in Chrome
+ * where structured-cloning the same buffers took 159ms, and the columnar
+ * wire's ~20 entries cost 0.03ms.
  */
 export async function executeMafAlignmentData({
   pluginManager,
@@ -153,10 +156,9 @@ export async function executeMafAlignmentData({
     bytes,
   }
   // second arg is the transfer list: these buffers are moved to the main
-  // thread, not structured-cloned. collectMafTransferables walks the result and
-  // gathers every ArrayBuffer in it — a fixed handful, because the wire is
-  // columnar; see that function for why the length of this list is what the
-  // whole shape is designed around.
-  return rpcResult(result, collectMafTransferables(regionData))
+  // thread, not structured-cloned. Every one is freshly allocated inside this
+  // RPC (the packer's arena and columns, the coverage packers), and the
+  // dictionaries (`sampleIds`, `refNames`) and `refSampleId` clone.
+  return rpcResult(result, transferableBuffers(regionData, regionData.coverage))
   // #endregion
 }

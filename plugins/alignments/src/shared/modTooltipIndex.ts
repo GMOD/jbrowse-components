@@ -176,7 +176,7 @@ export function buildModTooltipIndex(
 }
 
 // Zero-length arrays for the branch that builds no band. Allocated per call:
-// collectGroupedTransferables detaches them on transfer, so a module-level
+// transferableBuffers detaches them on transfer, so a module-level
 // singleton would throw DataCloneError on the second RPC reply.
 export function emptyModTooltipIndex(): ModTooltipIndex {
   return {

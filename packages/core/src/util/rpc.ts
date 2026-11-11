@@ -29,3 +29,29 @@ export type UnwrapRpcResult<T> = T extends RpcResult<infer V> ? V : T
 export function unwrapRpcResult<T>(value: T) {
   return (isRpcResult(value) ? value.value : value) as UnwrapRpcResult<T>
 }
+
+/**
+ * The buffer under every `ArrayBuffer` and typed-array field of `holders`, once
+ * each, for an RPC reply's transfer list. Derived by walking the fields, so a
+ * newly added typed array is never left behind to clone; a `SharedArrayBuffer`
+ * view is skipped, since it cannot be transferred.
+ *
+ * Transferring moves: every buffer handed over must be allocated by the call
+ * that replies, or a later call finds it detached.
+ */
+export function transferableBuffers(...holders: object[]) {
+  const buffers = new Set<ArrayBuffer>()
+  for (const holder of holders) {
+    for (const value of Object.values(holder)) {
+      if (value instanceof ArrayBuffer) {
+        buffers.add(value)
+      } else if (
+        ArrayBuffer.isView(value) &&
+        value.buffer instanceof ArrayBuffer
+      ) {
+        buffers.add(value.buffer)
+      }
+    }
+  }
+  return [...buffers]
+}

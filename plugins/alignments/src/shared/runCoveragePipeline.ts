@@ -247,7 +247,7 @@ function computeCoverageBand({
 // Zero-length equivalents of every band field, shaped to match
 // computeCoverageBand so buildCoverageResultFields spreads identical field
 // names whether or not the band ran. Empty TypedArrays/ArrayBuffers are
-// allocated per call (collectGroupedTransferables detaches them on transfer).
+// allocated per call (transferableBuffers detaches them on transfer).
 function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
   return {
     interbaseMaxCount: 0,

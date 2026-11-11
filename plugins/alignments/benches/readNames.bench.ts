@@ -373,7 +373,7 @@ async function main() {
       { k: 'pstr' as const, run: () => structuredClone(strs) },
       { k: 'bbytes' as const, run: () => buildBytes(records) },
       {
-        // transferred, which is what collectTransferables does for every typed
+        // transferred, which is what transferableBuffers does for every typed
         // array in the result. A fresh copy each round, since transferring
         // detaches the source.
         k: 'pbytes' as const,

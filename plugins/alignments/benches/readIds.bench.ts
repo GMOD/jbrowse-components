@@ -146,7 +146,7 @@ async function main() {
       { k: 'bnum' as const, run: () => buildNum(records) },
       { k: 'pstr' as const, run: () => structuredClone(strs) },
       {
-        // transferred, which is what collectTransferables does for every typed
+        // transferred, which is what transferableBuffers does for every typed
         // array in the result — so the clone is a pointer handoff, not a copy.
         // A fresh copy each round, since transferring detaches the source.
         k: 'pnum' as const,
