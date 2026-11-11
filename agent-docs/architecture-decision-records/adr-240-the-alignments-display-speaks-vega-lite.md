@@ -54,17 +54,17 @@ block description in place of a read's lines (each side's assembly and span,
 the other side's name, `Inverted`, the block's identity, mapping quality and
 syntenic depth), rather than LGVSyntenyDisplay defaulting `tooltip.field` to
 `mate.name`; its color line stays only in chain mode.
-Amended 2026-11-11: the mismatch fade's `scale.clamp` went. Off, its line
-ran on to 0 or 1 past the range, which `domainMin: 5, domainMax: 30, range:
-[0, 1]` draws for `domainMin: 10, domainMax: 30, range: [0.2, 1]` unclamped.
-The key was beta-only (betas 18 to 21) and nothing wrote it off.
-
 Amended 2026-11-07: call 5's `scale.group` is `scale.share`. `group` already
 names the row-group attribute (`rows.groups[].group`, which `facet: "group"`
 and `rows.color` read, and the multi-wiggle subadapter's v4 `group`), and both
 sit on one mark-display plot. Vega-Lite's word is `resolve.scale: 'shared'`,
 and the axis panel says "Share axis with". The key was beta-only, so it goes
 with no lift. The model's `autoscaleGroup` getters keep their names.
+
+Amended 2026-11-11: the mismatch fade's `scale.clamp` went. Off, its line
+ran on to 0 or 1 past the range, which `domainMin: 5, domainMax: 30, range:
+[0, 1]` draws for `domainMin: 10, domainMax: 30, range: [0.2, 1]` unclamped.
+The key was beta-only (betas 18 to 21) and nothing wrote it off.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -288,7 +288,7 @@ jbrowse-img's `applyTrackOpts.ts` key list, `retired.ts`, `plotExamples`, the
 |---|---|---|
 | 1. Layer `show`s, MAF's coverage band with them through the shared schema | rename | `pnpm verify --full`, plotExamples round-trip, launch-args tests |
 | 2. The channel object, from display-kit's color factory out: `encoding.color`, `scale.names`, `scale.group`, the missing-value member, `readConnections.encoding`, `pileup.bases`, legends; coverage y with wiggle's y step | rename | `--all`; agree the order with the color-object thread |
-| 2b. The quality fade as opacity | four uniforms (`zero`, `slope`, `min`, `max`): a written `range` and `clamp` need the two bounds | one run of the mismatch bench |
+| 2b. The quality fade as opacity | four uniforms (`zero`, `slope`, `min`, `max`): a written `range` needs the two bounds | one run of the mismatch bench |
 | 3a. The read filter on the predicate compiler, with the merge rule | worker | whole-fetch A/B on `1000x.shortread.bam` on ada; on a loss the flag and MAPQ entries lower to today's hand test behind the same config |
 | 3b. `junction.*`, `connection.*`, `breakpoint.*` | main thread, same compares | arcs and sashimi suites; no refetch on an edit |
 | 3c. The layer filters: `alleles`, `interbase`, `bases` (percent to fraction) | same compares | coverage and modification suites |

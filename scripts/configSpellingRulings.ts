@@ -43,7 +43,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.opacity.scale': {
     variants: 2,
-    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain` (ADR-240); no scale declares `clamp` (ADR-238)',
+    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain` (ADR-240)',
   },
   'encoding.size': { variants: 2, why: VALUE_ONLY_WIDTH },
   'encoding.strokeWidth': { variants: 2, why: VALUE_ONLY_WIDTH },
@@ -73,11 +73,11 @@ export const RULINGS: Record<string, Ruling> = {
   },
   mark: {
     variants: 6,
-    why: "each mark object holds what its glyph reads (ADR-238): a chord's `depth`; a feature's, a record's and a read's box `height` (featureMarkConfigSchema.ts, ADR-255, ADR-240); read connections' `type` alone (ADR-240); a `marks` entry's MarkDef (markDefConfigSchema.ts); wiggle's `type`, `interpolate` and `extent` (wiggleMarkConfigSchema.ts); a ribbon's `interpolate` alone (syntenyMarkConfigSchema.ts)",
+    why: "each mark object holds what its glyph reads (ADR-238): a chord's `depth`; a feature's, a record's and a read's box `height` (featureMarkConfigSchema.ts, ADR-255, ADR-240) and MAF's alignments rect its `height` band (ADR-194); read connections' `type` alone (ADR-240); a `marks` entry's MarkDef (markDefConfigSchema.ts); wiggle's `type`, `interpolate` and `extent` (wiggleMarkConfigSchema.ts); a ribbon's `interpolate` alone (syntenyMarkConfigSchema.ts)",
   },
   'mark.height': {
     variants: 2,
-    why: "a feature's, a record's and a read's box is px tall (ADR-240, ADR-255); a rect standing in a band takes Vega-Lite's `{ band }`, a fraction of it, on the mark display and MAF's alignments (ADR-194)",
+    why: "a feature's, a record's and a read's box is px tall (featureMarkConfigSchema.ts, ADR-240, ADR-255); a rect standing in a band takes Vega-Lite's `{ band }`, a fraction of it, on the mark display and MAF's alignments (ADR-194)",
   },
   'mark.interpolate': {
     variants: 3,
@@ -93,11 +93,11 @@ export const RULINGS: Record<string, Ruling> = {
   },
   placement: {
     variants: 4,
-    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, `auto` on sashimi alone (ADR-231); a label sits `above`, `below` or as an `overlay`, a feature's part labels and the multi-way lane names each listing their own (ADR-238)",
+    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, with `auto` on sashimi alone among the bands (ADR-231); a label sits `above`, `below` or as an `overlay`, or `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
   },
   rows: {
     variants: 5,
-    why: '`step` where rows scroll, `groups` on the mark family, `filter` and `field` where rows carry attributes, so not MAF or the lanes (ADR-257); `annotations` on `Rows` (ADR-260)',
+    why: "`step` where rows scroll, `groups` on the mark family, `filter` and `field` where rows carry attributes, so not MAF or the lanes (ADR-257); `annotations` on `Rows` (ADR-260); multi-way's rows are its lanes, which keep `kept`, `labels` and `sort` alone (ADR-257)",
   },
   'rows.axis': {
     variants: 2,

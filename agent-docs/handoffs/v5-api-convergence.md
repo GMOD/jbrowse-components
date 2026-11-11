@@ -48,14 +48,14 @@ displays or a display's parts, with the ruling on each.
   `scale.clamp` (2026-11-11, −2 shared: LinearAlignments and LGVSynteny),
   beta-only and written by no config, since every scale clamps (ADR-238).
   The last respell before it is `encoding.y.scale.group` to `share`
-  (3cc17821fb, 2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
-  no writer outside the tree spelled it, and ggjbrowse's engine pin includes
-  it. No shared path was respelled from 11-08 through 11-09, v5.0.0-beta.21
+  (3cc17821fb, 2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key
+  was beta-only, no writer outside the tree spelled it, and ggjbrowse's
+  engine pin includes it. No shared path was respelled from 11-08 through 11-09, v5.0.0-beta.21
   included, but one was added: `rows.annotations` (946afc33db), since moved
   from the shared row arrangement to `Rows`, so MAF no longer declares it,
   and its entries reshaped as `RowAnnotation` with `legend.title`
-  (ADR-260). The first gate below needs a ruling on whether an addition
-  counts as a shared-path change.
+  (ADR-260). The meter gate below needs a ruling on whether an addition, or
+  a removal such as `scale.clamp`, counts as a shared-path change.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 - Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
@@ -130,9 +130,10 @@ displays or a display's parts, with the ruling on each.
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
   as kept or respelled, and the first table's rows are re-read against their
   whys since the last read: `git diff <sha> --
-  agent-docs/reference/CONFIG_SPELLINGS.md` (read through c58cbf0311,
-  2026-11-11). The count pin passes a display that moves between two
-  existing variants and a variant whose members change in place.
+  agent-docs/reference/CONFIG_SPELLINGS.md` (read through 02d6a33036,
+  2026-11-11; whoever re-reads moves the sha). The count pin passes a
+  display that moves between two existing variants and a variant whose
+  members change in place.
 - The meter shows no shared-path change since the last respell landed.
 - Every `retired` entry maps a name a v1–v4 release declared, none a
   beta-only one, except a display type a beta session names (the rule above).
