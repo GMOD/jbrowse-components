@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
+import SubmitDialog from '@jbrowse/core/ui/SubmitDialog'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 

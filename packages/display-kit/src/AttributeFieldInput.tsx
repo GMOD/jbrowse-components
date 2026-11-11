@@ -1,4 +1,5 @@
-import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import ErrorBanner from '@jbrowse/core/ui/ErrorBanner'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Autocomplete, TextField, Typography } from '@mui/material'

@@ -1730,7 +1730,7 @@ export function createJbApi(
     get rootModel() {
       return pluginManager.rootModel
     },
-    require: (lib: Parameters<PluginManager['jbrequire']>[0]) => {
+    require: (lib: Parameters<PluginManager['jbrequire']>[0]): unknown => {
       if (typeof lib === 'string' && !hasReExports()) {
         throw new Error(
           `jb.require('${lib}') has no module registry to read yet — await jb.ensureRequire() once first; jb.require stays synchronous after that`,
