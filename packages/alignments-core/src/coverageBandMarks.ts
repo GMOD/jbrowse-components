@@ -92,6 +92,15 @@ export interface CoverageBandRegion extends CoverageBandBuffers {
  * the painters convert per block, so the two backends cannot be handed two
  * palettes.
  */
+/**
+ * How far toward white the band's indicator marks go on a dark track
+ * background, where the saturated insertion and clip colors wash out. 0 in
+ * light mode leaves them the base colors.
+ */
+export function indicatorLighten(mode: 'light' | 'dark') {
+  return mode === 'dark' ? 0.45 : 0
+}
+
 export interface CoverageBandState {
   /** The band's height and its top edge on the canvas, CSS px. */
   height: number

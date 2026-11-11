@@ -1,3 +1,4 @@
+import { indicatorLighten } from '@jbrowse/alignments-core'
 import {
   colorFwdStrand,
   colorInterchrom,
@@ -51,11 +52,6 @@ function lighten([r, g, b]: RGBColor, amt: number): RGBColor {
   return [r + (1 - r) * amt, g + (1 - g) * amt, b + (1 - b) * amt]
 }
 
-// Coverage-track indicator marks sit on the dark track background in dark mode,
-// where the saturated on-read insertion/clip colors wash out. Lighten them for
-// that context only; the on-read box/bar/text keep the saturated base color.
-const INDICATOR_DARK_LIGHTEN = 0.45
-
 export function buildColorPaletteFromPalette(
   palette: JBrowsePalette,
   {
@@ -64,8 +60,9 @@ export function buildColorPaletteFromPalette(
     declared?: Partial<Record<ReadColorCategory, RGBColor>>
   } = {},
 ): ColorPalette {
-  // 0 in light mode leaves the indicator colors equal to the base colors
-  const indicatorLighten = palette.mode === 'dark' ? INDICATOR_DARK_LIGHTEN : 0
+  // The coverage band's marks only; the on-read box, bar and text keep the
+  // saturated base color.
+  const lightenBy = indicatorLighten(palette.mode)
   const colorInsertion = toRgb(palette.insertion)
   const colorSoftclip = toRgb(palette.softclip)
   const colorHardclip = toRgb(palette.hardclip)
@@ -88,9 +85,9 @@ export function buildColorPaletteFromPalette(
     colorSkip: toRgb(palette.skip),
     colorSoftclip,
     colorHardclip,
-    colorInsertionIndicator: lighten(colorInsertion, indicatorLighten),
-    colorSoftclipIndicator: lighten(colorSoftclip, indicatorLighten),
-    colorHardclipIndicator: lighten(colorHardclip, indicatorLighten),
+    colorInsertionIndicator: lighten(colorInsertion, lightenBy),
+    colorSoftclipIndicator: lighten(colorSoftclip, lightenBy),
+    colorHardclipIndicator: lighten(colorHardclip, lightenBy),
     colorCoverage: toRgb(palette.coverage),
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),

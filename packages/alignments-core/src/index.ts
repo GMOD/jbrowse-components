@@ -153,6 +153,7 @@ export {
 } from './coverageGpuPacking.ts'
 export {
   coverageBandMarks,
+  indicatorLighten,
   coverageBarShape,
   coverageInterbaseShape,
   coverageModShape,
