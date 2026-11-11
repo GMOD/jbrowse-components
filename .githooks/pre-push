@@ -814,8 +814,11 @@ if [ -n "$auto" ]; then
     >"$tmp/msg"
   printf '%s' "$auto" | sed 's/^/  /' >>"$tmp/msg"
   # Pathspec commit: the index may hold someone else's staged work, and this
-  # commit is about these paths only. --no-verify because the formatter has
-  # already run over every path in it.
+  # commit is about these paths only. A file a generator created is untracked,
+  # and a pathspec naming one fails the whole commit, so it is added first.
+  # --no-verify because the formatter has already run over every path in it.
+  printf '%s' "$auto" | tr '\n' '\0' |
+    xargs -0 git add -- >&2
   printf '%s' "$auto" | tr '\n' '\0' |
     xargs -0 git commit --quiet --no-verify -F "$tmp/msg" -- >&2
   echo >&2
