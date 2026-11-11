@@ -298,9 +298,9 @@ export const OverlayPaths = observer(function OverlayPaths({
   )
 })
 
-// The overlay's key: each drawn alignment connector's color and label in
-// `theme`, one row per color.
-export function drawnConnectionKey(
+// The overlay's key in sections: the variant calls, then each drawn alignment
+// connector's color and label in `theme`, one row per color.
+export function drawnConnectionKeySections(
   model: BreakpointViewModel,
   theme: JBrowsePalette,
   trackIds = model.overlayTracks.map(t => t.configuration.trackId),
@@ -321,17 +321,35 @@ export function drawnConnectionKey(
     return match?.kind === 'variant' && match.layoutMatches.length > 0
   })
   return [
-    ...(drawsVariantCall
-      ? [
-          {
-            key: VARIANT_JUNCTION_LABEL,
-            color: VARIANT_JUNCTION_COLOR,
-            label: VARIANT_JUNCTION_LABEL,
-          },
-        ]
-      : []),
-    ...connectionKeyRows(styled),
-  ]
+    {
+      title: 'Calls',
+      rows: drawsVariantCall
+        ? [
+            {
+              key: VARIANT_JUNCTION_LABEL,
+              color: VARIANT_JUNCTION_COLOR,
+              label: VARIANT_JUNCTION_LABEL,
+            },
+          ]
+        : [],
+    },
+    { title: 'Reads', rows: connectionKeyRows(styled) },
+  ].filter(section => section.rows.length > 0)
+}
+
+// The same key as one list of rows, each section under a heading row when
+// there is more than one.
+export function drawnConnectionKey(
+  model: BreakpointViewModel,
+  theme: JBrowsePalette,
+  trackIds?: string[],
+) {
+  const sections = drawnConnectionKeySections(model, theme, trackIds)
+  return sections.flatMap(({ title, rows }) =>
+    sections.length > 1
+      ? [{ key: title, label: title, color: undefined }, ...rows]
+      : rows,
+  )
 }
 
 export interface HighlightRect {
