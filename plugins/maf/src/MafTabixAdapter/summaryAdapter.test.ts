@@ -11,7 +11,6 @@ import BgzipMafConfigSchema from '../BgzipMafAdapter/configSchema.ts'
 import BgzipTaffyAdapter from '../BgzipTaffyAdapter/BgzipTaffyAdapter.ts'
 import TaffyConfigSchema from '../BgzipTaffyAdapter/configSchema.ts'
 import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
-import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
@@ -70,7 +69,7 @@ const REGION = {
 }
 
 async function records(adapter: MafTabixAdapter) {
-  return firstValueFrom(mafSummaryFeatures(adapter, REGION).pipe(toArray()))
+  return firstValueFrom(adapter.getSummaryFeatures(REGION).pipe(toArray()))
 }
 
 describe('a maf2bed --summary BED round-trips into summary records', () => {
@@ -127,9 +126,9 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
     expect(out).toEqual([])
   })
 
-  // Through the adapters' own `getSummaryFeatures`, not the shared helper: the
-  // slot and the method are two separate things to forget, and a track with the
-  // slot but no method summarizes to nothing with no error. Neither adapter's
+  // Through the `.tai` adapters too: the slot and the method are two separate
+  // things to forget, and a track with the slot but no method summarizes to
+  // nothing with no error. Neither adapter's
   // primary file is touched on this path, so the bogus location is honest about
   // what is under test.
   it.each([

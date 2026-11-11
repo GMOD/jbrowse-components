@@ -196,8 +196,8 @@ plugins/maf/src/MafTabixAdapter/summaryAdapter.test.ts  (5)  [test]
   286	readConfObject('summaryAdapter')
 plugins/maf/src/util/getSamples.ts  (1)
   210	readConfObject('samples')
-plugins/maf/src/util/loadMafSummaryAdapter.ts  (1)
-  38	self.getConf('summaryAdapter')
+plugins/maf/src/util/MafAdapterBase.ts  (1)
+  170	self.getConf('summaryAdapter')
 plugins/marks/src/LinearMarkDisplay/quantitativeTrackRows.test.ts  (1)  [test]
   52	readConfObject('type')
 plugins/sequence/src/index.test.ts  (1)  [test]

@@ -1,12 +1,14 @@
 import { MafAdapterBase } from './MafAdapterBase.ts'
-import { MafStanzaReader } from './mafStanzaReader.ts'
-import { makeSourceResolver } from './parseAssemblyName.ts'
 import { makeRefNameFilter } from './taiIndex.ts'
 import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { KeepBlock, PastQuery } from './mafStanzaReader.ts'
+import type {
+  KeepBlock,
+  MafStanzaReader,
+  PastQuery,
+} from './mafStanzaReader.ts'
 import type { TaiIndex, TaiSlice } from './taiSlice.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, Region } from '@jbrowse/core/util'
@@ -63,9 +65,7 @@ export abstract class MafTaiAdapterBase<
   ) {
     const { statusCallback, signal } = opts ?? {}
     const setup = await this.configure(opts)
-    const reader = new MafStanzaReader(
-      makeSourceResolver(await this.sampleIds(opts)),
-    )
+    const reader = await this.stanzaReader(opts)
     const onQueriedRefName = makeRefNameFilter(query.refName)
     const slice = await readTaiSlice({
       index: setup.index,
