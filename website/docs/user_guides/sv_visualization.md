@@ -350,17 +350,19 @@ homology the junction formed on. For a translocation, open the
 
 The breakpoint split view opens synchronized panels side by side, each centered
 on one breakpoint locus. Splines connect the reads that span the junction across
-the panels, and the variant call is drawn as a blue curve with feet over the
-side each end keeps. The header bar accepts location searches in either panel.
+the panels, and the variant call is drawn as a thick green line with feet over
+the side each end keeps. The header bar accepts location searches in either
+panel.
 
 A spline takes the color its arc takes in the alignments track. The right end of
-the header, and the top of an SVG export, list the colors the view is drawing.
+the header, and the top of an SVG export, list the colors the view is drawing,
+the variant call under **Calls** and the splines under **Reads**.
 
 Inside one panel, a call whose glyph already spans both of its ends gets no
 curve, and neither do the reads of an alignments track with **View as pairs/link
 supplementary alignments** on.
 
-<Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the blue curve with feet is the variant call." src="/img/breakpoint_split_view.png" />
+<Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the green line with feet is the variant call." src="/img/breakpoint_split_view.png" />
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel where it aligns, and every other spline of the same read thickens

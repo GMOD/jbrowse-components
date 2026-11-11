@@ -413,12 +413,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             },
           },
           { type: 'divider' },
-          ...self.circularView
-            .menuItems()
-            .filter(
-              item =>
-                !('label' in item) || item.label !== 'Return to import form',
-            ),
+          ...self.circularView.menuItems(),
         ]
       },
     }))

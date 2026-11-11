@@ -1694,16 +1694,20 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return [
-          {
-            label: 'Return to import form',
-            onClick: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                ReturnToImportFormDialog,
-                { model: self, handleClose },
-              ])
-            },
-            icon: FolderOpenIcon,
-          },
+          ...(self.disableImportForm
+            ? []
+            : [
+                {
+                  label: 'Return to import form',
+                  onClick: () => {
+                    getDialogHost(self).queueDialog(handleClose => [
+                      ReturnToImportFormDialog,
+                      { model: self, handleClose },
+                    ])
+                  },
+                  icon: FolderOpenIcon,
+                },
+              ]),
           {
             label: 'Reset view',
             onClick: () => {
