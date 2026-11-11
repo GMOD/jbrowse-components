@@ -54,7 +54,10 @@ export type StoredLayer = HitIndexed<EncodedChannels> &
 
 type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 
-// a bar or rect narrower than a pixel still paints one
+// A bar, rule or bin narrower than a pixel still paints one. A rect floors at
+// render-core's MIN_RECT_WIDTH_PX instead (`rectMinWidthPx`): bars and bins
+// abut, so a wider floor would paint each into its neighbour, where a rect is
+// a feature with paper beside it.
 export const MIN_MARK_WIDTH_PX = 1
 
 // Color is checked apart from these, since either of two lanes carries it.
@@ -124,6 +127,11 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
+  /**
+   * A `rect`'s floor where no row table carries one per row: MIN_RECT_WIDTH_PX,
+   * or SPARSE_RECT_MIN_WIDTH_PX where the one row leaves room.
+   */
+  rectMinWidthPx: number
   /** Mark `i`'s px number: a point's `encoding.size`, a rule's, a line's or a link's `encoding.strokeWidth`. */
   markSizes: number[]
   /** Mark `i`'s size scale, where its `encoding.strokeWidth` names a field. */
@@ -451,7 +459,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           colorScale: regionColorScale(s, d, i),
           rowHeight: s.rowHeight,
           rowProportion: s.rowProportions[i]!,
-          minWidthPx: s.minWidthPx,
+          minWidthPx: s.rectMinWidthPx,
           seamPx: 0,
           scrollTop: s.scrollTop,
           rowTable: s.rowTable,

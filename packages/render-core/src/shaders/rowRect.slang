@@ -13,13 +13,14 @@
 // into `minCellPx` — a uniform-write decision, not a reason for two shaders.
 // Whether to floor at all turns on whether the caller's marks leave GAPS: a
 // floored quad grows off its start edge, so a neighbour abutting it covers the
-// growth and the floor paints nothing extra. The multi-row painter's features
-// are sparse intervals with nothing beside them, so it floors; MAF's cells
-// never gap and it passes 0; wiggle density tiles at most zooms and gaps where
-// its source does, so it floors and pays nothing for it on the tiling. Both
-// halves measured — `agent-docs/reference/MAF_LARGE_BLOCKS.md`.
-//! export-consts: MIN_DRAWN_ROW_PX, MULTI_ROW_MIN_CELL_PX
-//! js-export: drawnRowHeightPx, rowBandOffsetPx
+// growth and the floor paints nothing extra. The mark display's rects are
+// sparse intervals with nothing beside them, so they floor at
+// MIN_RECT_WIDTH_PX, and SPARSE_RECT_MIN_WIDTH_PX in a row with room; MAF's
+// cells never gap and it passes 0; wiggle density tiles at most zooms and gaps
+// where its source does, so it floors and pays nothing for it on the tiling.
+// Both halves measured — `agent-docs/reference/MAF_LARGE_BLOCKS.md`.
+//! export-consts: MIN_DRAWN_ROW_PX, MIN_RECT_WIDTH_PX, SPARSE_RECT_MIN_WIDTH_PX
+//! js-export: drawnRowHeightPx, rowBandOffsetPx, rowRectSpan
 module rowRect;
 
 import hpmath;
@@ -43,8 +44,8 @@ public struct RowRectUniforms {
   // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in. Zero
   // is a no-op, and over marks that tile so is every other value; what a floor
   // decides is what a GAP next to a sub-pixel mark looks like. MAF writes 0,
-  // the multi-row painter MULTI_ROW_MIN_CELL_PX, wiggle density
-  // MIN_FILL_WIDTH_PX.
+  // the mark display's rects MIN_RECT_WIDTH_PX or, in a row with room,
+  // SPARSE_RECT_MIN_WIDTH_PX, wiggle density MIN_FILL_WIDTH_PX.
   public float  minCellPx;
   public float  zero;          // always 0.0 — prevents hp-split collapse
   public float  rowHeight;     // CSS px per row
@@ -72,20 +73,39 @@ public struct RowRectVsOut {
 // floor names its own width, below.
 static const float MIN_DRAWN_ROW_PX = 1.0;
 
-// What the multi-row painter ("chromosome painting") writes into `minCellPx`.
+// The narrowest a rect is painted, in CSS px: the feature display's rects
+// and the mark display's `rect`s alike.
 //
-// Wider than a pixel because this display has no second channel to fall back
-// on. MAF's cells tile the row, so a sub-pixel cell sits in a run of its
-// neighbours and the run is what is read; a painting's features are sparse
-// intervals, and at chromosome zoom a RepeatMasker element is a single tick
-// against white paper with nothing beside it. At one pixel — anti-aliased
-// across two, so neither reaches full opacity — the tick reads as a smudge, and
-// the eye scanning for structure across the rows finds none.
-//
-// A floor distorts width; that is what a floor is. This is the only caller that
-// takes the trade, and only where the alternative was showing nothing legible:
-// a feature wide enough to matter is already past it.
-static const float MULTI_ROW_MIN_CELL_PX = 2.0;
+// Wider than a pixel because a rect has no second channel to fall back on. A
+// tiling's sub-pixel cell sits in a run of its neighbours and the run is what
+// is read; a feature is a sparse interval, and at chromosome zoom a
+// RepeatMasker element is a single tick against white paper with nothing
+// beside it. At one pixel — anti-aliased across two, so neither reaches full
+// opacity — the tick reads as a smudge. A floor distorts width; that is what a
+// floor is, and a feature wide enough to matter is already past it. ADR-037's
+// density thresholds are calibrated against this 2.
+public static const float MIN_RECT_WIDTH_PX = 2.0;
+
+// The floor of a rect whose row leaves room around it at this zoom: the lower
+// quartile of the gaps between its row's rects at least SPARSE_MIN_GAP_PX
+// (`marks/sparseSpans.ts`), a sparse transcript's exons on the feature
+// display. A dense row keeps MIN_RECT_WIDTH_PX, so its 1px gaps stay open.
+public static const float SPARSE_RECT_MIN_WIDTH_PX = 3.0;
+
+// The two x edges a rect paints, in whatever unit `minWidth` is in, as a
+// SIGNED pair: on a reversed block x2 < x1 and the rect grows leftward. A
+// point, a zero-length interval such as an insertion, straddles its
+// coordinate, since growing off one side would place it in the next base; a
+// span grows off its start to `minWidth` (`extendToMinWidthPx`). The feature
+// display's `rectSpanPx` is this rule with both edges snapped to a pixel
+// column.
+public float2 rowRectSpan(float x1, float x2, bool isPoint, float minWidth) {
+  if (isPoint) {
+    float half = minWidth * 0.5;
+    return float2(x1 - half, x1 + half);
+  }
+  return float2(x1, extendToMinWidthPx(x1, x2, minWidth));
+}
 
 public struct RowBand {
   public float height;  // what the rect is painted at
@@ -135,10 +155,12 @@ float4 rowRectCorner(
   RowRectUniforms u
 ) {
   float2 local = quadLocal(vid);
-  float sx1 = hpToClipX(hpSplitUint(startBp), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero);
-  sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.minCellDenomPx);
-  return float4(lerp(sx1, sx2, local.x),
+  float2 span = rowRectSpan(
+    hpToClipX(hpSplitUint(startBp), u.bpRangeX, u.zero),
+    hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero),
+    startBp == endBp,
+    pxToClipLen(u.minCellPx, u.minCellDenomPx));
+  return float4(lerp(span.x, span.y, local.x),
                 yPxToClipY(lerp(topPx, bottomPx, local.y), u.canvasHeight),
                 0.0, 1.0);
 }

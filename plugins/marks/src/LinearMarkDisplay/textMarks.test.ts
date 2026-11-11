@@ -80,6 +80,7 @@ const STATE: MarkRenderState = {
   bpPerPx: 1,
   origin: 0,
   minWidthPx: 1,
+  rectMinWidthPx: 2,
   markSizes: [4, 4],
   sizeScales: [],
   linkRegions: [],

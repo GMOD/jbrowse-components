@@ -3,7 +3,7 @@ import { extendToMinWidthPx } from '@jbrowse/render-core/shaders/hpmath'
 import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
 import {
   MIN_RECT_WIDTH_PX,
-  SPARSE_EXON_MIN_WIDTH_PX,
+  SPARSE_RECT_MIN_WIDTH_PX,
 } from './sharedRendererConstants.ts'
 
 function retiredPaintedSpan(
@@ -107,12 +107,12 @@ test('a span whose ends snap together widens rightward, on both backends', () =>
 })
 
 test('a sparse exon widens a sub-floor span to its own floor, points keep theirs', () => {
-  expect(rectSpanPx(100, 100.3, false, SPARSE_EXON_MIN_WIDTH_PX)).toStrictEqual(
+  expect(rectSpanPx(100, 100.3, false, SPARSE_RECT_MIN_WIDTH_PX)).toStrictEqual(
     [100, 103],
   )
   expect(
-    rectSpanPx(100.4, 140.6, false, SPARSE_EXON_MIN_WIDTH_PX),
+    rectSpanPx(100.4, 140.6, false, SPARSE_RECT_MIN_WIDTH_PX),
   ).toStrictEqual([100, 141])
-  const [left, right] = rectSpanPx(100, 100, true, SPARSE_EXON_MIN_WIDTH_PX)
+  const [left, right] = rectSpanPx(100, 100, true, SPARSE_RECT_MIN_WIDTH_PX)
   expect(right - left).toBe(MIN_RECT_WIDTH_PX)
 })

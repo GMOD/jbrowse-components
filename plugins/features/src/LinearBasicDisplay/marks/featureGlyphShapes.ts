@@ -34,7 +34,7 @@ import {
   RECT_FLAG_DENSITY_FADE,
   RECT_FLAG_SPARSE_EXONS,
   RECT_FLAG_INSET,
-  SPARSE_EXON_MIN_WIDTH_PX,
+  SPARSE_RECT_MIN_WIDTH_PX,
   STEM_HALF_H_PX,
   canvasEdgeFlags,
   chevronDrawSlots,
@@ -280,7 +280,7 @@ function placeRectX(c: RectChannels, g: RectFrame, i: number) {
     projectBp(g, endBp),
     startBp === endBp,
     c.densityFade[i]! & RECT_FLAG_SPARSE_EXONS
-      ? SPARSE_EXON_MIN_WIDTH_PX
+      ? SPARSE_RECT_MIN_WIDTH_PX
       : MIN_RECT_WIDTH_PX,
   )
   const width = Math.abs(x2 - x1)

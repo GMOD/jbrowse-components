@@ -1,8 +1,10 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { bpProjection, getDpr, projectBp, spanLeft } from '../canvas2dUtils.ts'
+import { SPARSE_RECT_MIN_WIDTH_PX } from '../shaders/rowRect.generated.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
+  rowRectSpan,
 } from '../shaders/rowRect.js.generated.ts'
 import {
   snappedRowBottomPx,
@@ -12,7 +14,13 @@ import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
-import { rowColor, rowSlot, rowTableKeys, rowTableTextures } from './rowLane.ts'
+import {
+  rowColor,
+  rowSlot,
+  rowSparse,
+  rowTableKeys,
+  rowTableTextures,
+} from './rowLane.ts'
 
 import type { BpProjection } from '../canvas2dUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
@@ -42,7 +50,8 @@ export interface SpanParams {
   rowProportion: number
   /**
    * Narrowest a span is painted, in CSS px. A caller whose marks tile writes
-   * zero; one whose marks are sparse intervals floors them.
+   * zero; one whose marks are sparse intervals floors them, and a key whose
+   * row the table marks sparse floors at least SPARSE_RECT_MIN_WIDTH_PX.
    */
   minWidthPx: number
   /**
@@ -102,9 +111,13 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   if (slot === undefined) {
     return false
   }
-  const xa = projectBp(g, c.x[i]!)
-  const xb = projectBp(g, c.x2[i]!)
-  const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
+  const floor = rowSparse(c.row, i, g.table)
+    ? Math.max(g.minWidthPx, SPARSE_RECT_MIN_WIDTH_PX)
+    : g.minWidthPx
+  const x1 = projectBp(g, c.x[i]!)
+  const x2 = projectBp(g, c.x2[i]!)
+  const [xa, xb] = rowRectSpan(x1, x2, c.x[i] === c.x2[i], floor)
+  const width = Math.max(floor, Math.abs(x2 - x1))
   // rows on the device grid: Canvas2D has no samples to blend two rows meeting
   // on a fractional px, and would seam them
   const row = slot + g.bandOffsetPx / g.rowHeight

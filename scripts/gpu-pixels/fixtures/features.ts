@@ -3,9 +3,9 @@ import {
   snapBoxHeightPx,
   snapBoxTopPx,
 } from '../../../packages/render-core/src/shaders/hpmath.js.generated.ts'
+import { MIN_RECT_WIDTH_PX } from '../../../packages/render-core/src/shaders/rowRect.generated.ts'
 import * as arrow from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/arrow.generated.ts'
 import { arrowHeadHalfHeightPx } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/arrow.js.generated.ts'
-import { MIN_RECT_WIDTH_PX } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
 import * as rect from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.generated.ts'
 import { rectSpanPx } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
 import { abgr, box, defineFixture, paintOver, rgba } from '../fixture.ts'

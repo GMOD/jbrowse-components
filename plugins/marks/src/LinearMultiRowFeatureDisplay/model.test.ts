@@ -513,3 +513,32 @@ test("a row's color paints its blocks while no mark or display color does", () =
   const [recolored] = [...model.rpcDataMap.values()][0]!.layers
   expect(recolored!.colorKey ?? recolored!.color).not.toBe(layer!.color)
 })
+
+test("a rect floors at 2px, and 3px in a row whose rects leave room at this zoom; a bar's floor stays 1px", () => {
+  const sparse = Array.from({ length: 4 }, (_, i) => ({
+    sample: 'sparse',
+    start: i * 2000,
+    end: i * 2000 + 1,
+  }))
+  const dense = Array.from({ length: 40 }, (_, i) => ({
+    sample: 'dense',
+    start: i * 2,
+    end: i * 2 + 1,
+  }))
+  const model = loaded(
+    display({ rows: 'sample' }),
+    features([...sparse, ...dense]),
+  )
+  const table = model.rowTable!
+  const { rowKeys } = model.rowKeySpace
+  expect(table.sparse[rowKeys.lookup('sparse')!]).toBe(1)
+  expect(table.sparse[rowKeys.lookup('dense')!]).toBe(0)
+  expect(model.renderState.rectMinWidthPx).toBe(2)
+  expect(model.renderState.minWidthPx).toBe(1)
+
+  const one = loaded(display({ rows: '' }), features(sparse))
+  expect(one.rowTable).toBeUndefined()
+  expect(one.renderState.rectMinWidthPx).toBe(3)
+  const crowded = loaded(display({ rows: '' }), features(dense))
+  expect(crowded.renderState.rectMinWidthPx).toBe(2)
+})

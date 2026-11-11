@@ -62,6 +62,7 @@ const STATE: MarkRenderState = {
   origin: 0,
   // a bar floored at a width past its bp puts ink neither lookup reaches
   minWidthPx: 0,
+  rectMinWidthPx: 0,
   markSizes: [3, 3, 3],
   sizeScales: [],
   linkRegions: [],

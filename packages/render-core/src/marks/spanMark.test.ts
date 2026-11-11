@@ -1,10 +1,14 @@
 import { clipBlock } from '../blockClipUtils.ts'
 import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
-import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
+import {
+  MIN_RECT_WIDTH_PX,
+  SPARSE_RECT_MIN_WIDTH_PX,
+} from '../shaders/rowRect.generated.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '../shaders/rowRect.js.generated.ts'
+import { SPARSE_ROW_ALPHA } from '../shaders/rowTable.generated.ts'
 import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
@@ -32,7 +36,7 @@ const frame = { canvasWidth: 1000, canvasHeight: 40 }
 const params: SpanParams = {
   rowHeight: 20,
   rowProportion: 1,
-  minWidthPx: MULTI_ROW_MIN_CELL_PX,
+  minWidthPx: MIN_RECT_WIDTH_PX,
   seamPx: 0,
   scrollTop: 0,
 }
@@ -122,10 +126,10 @@ test('sub-pixel spans widen away from their anchored start edge', () => {
     )
     return calls[0]!
   }
-  expect(draw(false)).toMatchObject({ x: 25, w: MULTI_ROW_MIN_CELL_PX })
+  expect(draw(false)).toMatchObject({ x: 25, w: MIN_RECT_WIDTH_PX })
   expect(draw(true)).toMatchObject({
-    x: 25 - MULTI_ROW_MIN_CELL_PX,
-    w: MULTI_ROW_MIN_CELL_PX,
+    x: 25 - MIN_RECT_WIDTH_PX,
+    w: MIN_RECT_WIDTH_PX,
   })
 })
 
@@ -221,7 +225,7 @@ describe('the hit test derived from ink', () => {
   test('a sub-pixel span widens from its start edge on a reversed block', () => {
     const narrow = channels([50], [51], [0], [RED])
     const b = { ...block, screenEndPx: 50, reversed: true }
-    expect(hit(narrow, 25 - MULTI_ROW_MIN_CELL_PX, 10, b)?.index).toBe(0)
+    expect(hit(narrow, 25 - MIN_RECT_WIDTH_PX, 10, b)?.index).toBe(0)
     expect(hit(narrow, 25.5, 10, b)).toBeUndefined()
   })
 
@@ -233,7 +237,8 @@ describe('the hit test derived from ink', () => {
 })
 
 // The painter the span shape retired, its rows on whole px as the shape now
-// puts them at a ratio of 1.
+// puts them at a ratio of 1. A point, x equal to x2, straddles its
+// coordinate (`rowRectSpan`) where the retired painter grew it off its start.
 const retiredSpan: Required<
   Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock' | 'ink'>
 > = {
@@ -252,7 +257,7 @@ const retiredSpan: Required<
       setFill(color[i]!)
       const top = offset + rowHeight * row[i]! - scrollTop
       ctx.fillRect(
-        spanLeft(xa, xb, width + seamPx),
+        x[i] === x2[i] ? xa - width / 2 : spanLeft(xa, xb, width + seamPx),
         Math.floor(top + 0.5),
         width + seamPx,
         Math.max(Math.floor(top + h + 0.5) - Math.floor(top + 0.5), 1),
@@ -273,7 +278,7 @@ const retiredSpan: Required<
       scrollTop
     const h = drawnRowHeightPx(rowHeight, rowProportion)
     return {
-      left: spanLeft(xa, xb, width),
+      left: x[i] === x2[i] ? xa - width / 2 : spanLeft(xa, xb, width),
       top: Math.floor(top + 0.5),
       width,
       height: Math.max(Math.floor(top + h + 0.5) - Math.floor(top + 0.5), 1),
@@ -365,7 +370,7 @@ describe('span places each rect as the painter it retired did', () => {
           {
             rowHeight: 0.8,
             rowProportion: 1,
-            minWidthPx: MULTI_ROW_MIN_CELL_PX,
+            minWidthPx: MIN_RECT_WIDTH_PX,
             seamPx: 0,
             scrollTop: 0,
           },
@@ -481,5 +486,43 @@ describe('a row table between the instance key and the band it draws on', () => 
     expect(keys[shader.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(4)
     spanMark.writeUniforms(scratch, clip, block, tall, params)
     expect(keys[shader.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(-1)
+  })
+})
+
+describe('the rect floors', () => {
+  // one px per bp: a 1 bp feature is a pixel, a point none
+  const narrow = channels(
+    [25, 50, 70],
+    [26, 50, 71],
+    [0, 0, 1],
+    [RED, RED, BLUE],
+  )
+
+  test('a point straddles its coordinate, a span grows off its start', () => {
+    const { calls, ctx } = mockCtx()
+    spanMark.paintBlock(ctx, narrow, block, frame, params)
+    expect(calls.map(c => [c.x, c.w])).toEqual([
+      [250, 10],
+      [500 - MIN_RECT_WIDTH_PX / 2, MIN_RECT_WIDTH_PX],
+      [700, 10],
+    ])
+  })
+
+  test("a key whose row the table marks sparse floors at the sparse width, and writes its slot's alpha", () => {
+    const sub = { ...block, end: 10_000 }
+    const table = buildRowTable(
+      Uint32Array.from([0, 1]),
+      undefined,
+      Uint8Array.from([0, 1]),
+    )
+    const { calls, ctx } = mockCtx()
+    spanMark.paintBlock(ctx, narrow, sub, frame, { ...params, rowTable: table })
+    expect(calls.map(c => c.w)).toEqual([
+      MIN_RECT_WIDTH_PX,
+      MIN_RECT_WIDTH_PX,
+      SPARSE_RECT_MIN_WIDTH_PX,
+    ])
+    expect(table.texture.bytes[3]).toBe(0xff)
+    expect(table.texture.bytes[7]).toBe(SPARSE_ROW_ALPHA)
   })
 })

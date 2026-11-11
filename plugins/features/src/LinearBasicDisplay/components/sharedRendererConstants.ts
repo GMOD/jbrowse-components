@@ -81,12 +81,13 @@ export function canvasEdgeFlags(
 }
 
 // From each shader's `.consts.generated.ts`, never `passes/index.ts`, so this
-// eager module doesn't pull in every pass descriptor and its packer.
+// eager module doesn't pull in every pass descriptor and its packer. The rect
+// floors are render-core's, shared with the mark display's rects.
+export { MIN_DENSITY_ALPHA } from '../passes/shaders/rect.consts.generated.ts'
 export {
-  MIN_DENSITY_ALPHA,
   MIN_RECT_WIDTH_PX,
-  SPARSE_EXON_MIN_WIDTH_PX,
-} from '../passes/shaders/rect.consts.generated.ts'
+  SPARSE_RECT_MIN_WIDTH_PX,
+} from '@jbrowse/render-core/shaders/rowRectConsts'
 export {
   INSET_HEIGHT_FRACTION,
   RECT_FLAG_DENSITY_FADE,

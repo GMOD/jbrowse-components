@@ -1,3 +1,9 @@
+import {
+  leavesRoom,
+  quartileGap,
+  spanGaps,
+} from '@jbrowse/render-core/marks/sparseSpans'
+
 import { RECT_FLAG_SPARSE_EXONS } from './components/sharedRendererConstants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -9,11 +15,6 @@ type SparseExonInput = Pick<
   | 'rectChildOrdinals'
   | 'rectDensityFade'
 > & { flatbushItems: readonly { collapsibleIntrons?: boolean }[] }
-
-// The lower quartile, not the median: a gene whose exons come in tight clusters
-// has a roomy median and would still fuse its clusters into blocks.
-const SPARSE_EXON_GAP_QUANTILE = 0.25
-const SPARSE_EXON_MIN_GAP_PX = 4
 
 function transcriptKey(data: SparseExonInput, i: number) {
   const ordinal = data.rectChildOrdinals[i]
@@ -48,29 +49,11 @@ function intronGapsBp(
   rects: number[],
   toDrawnBp: (bp: number) => number,
 ) {
-  const spans = rects
-    .map((i): [number, number] => [
-      data.rectPositions[i * 2]!,
-      data.rectPositions[i * 2 + 1]!,
-    ])
-    .sort((a, b) => a[0] - b[0])
-  const gaps: number[] = []
-  let end = spans[0]![1]
-  for (const [start, stop] of spans.slice(1)) {
-    if (start > end) {
-      gaps.push(toDrawnBp(start) - toDrawnBp(end))
-    }
-    end = Math.max(end, stop)
-  }
-  return gaps.sort((a, b) => a - b)
-}
-
-function isSparseTranscript(gapsBp: number[], bpPerPx: number) {
-  return (
-    gapsBp.length > 0 &&
-    gapsBp[Math.floor((gapsBp.length - 1) * SPARSE_EXON_GAP_QUANTILE)]! /
-      bpPerPx >=
-      SPARSE_EXON_MIN_GAP_PX
+  return spanGaps(
+    rects.map((i): [number, number] => [
+      toDrawnBp(data.rectPositions[i * 2]!),
+      toDrawnBp(data.rectPositions[i * 2 + 1]!),
+    ]),
   )
 }
 
@@ -81,7 +64,9 @@ export function applySparseExonFlags(
   toDrawnBp: (bp: number) => number,
 ) {
   for (const rects of rectsByTranscript(data).values()) {
-    if (isSparseTranscript(intronGapsBp(data, rects, toDrawnBp), bpPerPx)) {
+    if (
+      leavesRoom(quartileGap(intronGapsBp(data, rects, toDrawnBp)), bpPerPx)
+    ) {
       for (const i of rects) {
         data.rectDensityFade[i]! |= RECT_FLAG_SPARSE_EXONS
       }

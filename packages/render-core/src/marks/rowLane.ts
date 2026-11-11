@@ -70,6 +70,16 @@ export function rowSlot(
   return keySlot(rowKey(row, i), table)
 }
 
+/** Whether instance `i`'s key's row leaves room for a rect's wider floor. */
+export function rowSparse(
+  row: Uint32Array | undefined,
+  i: number,
+  table: RowTable | undefined,
+) {
+  const key = rowKey(row, i)
+  return !!table && key < table.keys && table.sparse[key] === 1
+}
+
 /** Instance `i`'s key's color override, undefined where it keeps its own. */
 export function rowColorOverride(
   row: Uint32Array | undefined,

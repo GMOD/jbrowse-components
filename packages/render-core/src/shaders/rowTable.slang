@@ -7,7 +7,8 @@
 // The table is an RGBA8 texture of two planes, one texel per key, keys wrapped
 // onto rows of ROW_TABLE_MAX_WIDTH past it (the WebGL2 floor on a texture
 // dimension). The slot plane holds the slot's low 24 bits in rgb and 255 in
-// alpha where the key is drawn, 0 where it is hidden; the color plane below it
+// alpha where the key is drawn, SPARSE_ROW_ALPHA where it is drawn and its
+// row leaves room for a wider rect floor, 0 where it is hidden; the color plane below it
 // holds the override, straight alpha, and alpha 0 where the instance keeps its
 // own color. `marks/rowTable.ts` writes it through the texel twins exported
 // here, and is the painter's and hit test's reading of the same bytes.
@@ -23,12 +24,17 @@
 // pass reading a table declares its own `Sampler2D<float4> rowTable` and
 // inherits the filter from here.
 //! texture-filter: rowTable nearest
-//! export-consts: ROW_TABLE_MAX_WIDTH
+//! export-consts: ROW_TABLE_MAX_WIDTH, SPARSE_ROW_ALPHA
 //! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY, rowBandTopPx
 //! js-skip: byteOf — recovers a byte from a sampled texel; the TS side reads the table's bytes directly
 module rowTable;
 
 public static const uint ROW_TABLE_MAX_WIDTH = 2048u;
+
+// The slot plane's alpha for a drawn key whose row's rects leave room
+// (`marks/sparseSpans.ts`), which a rect floors at SPARSE_RECT_MIN_WIDTH_PX.
+// Past the 0.5 a hidden key reads under, by a margin no sampling erodes.
+public static const uint SPARSE_ROW_ALPHA = 192u;
 
 public struct RowPlacement {
   public bool hidden;
@@ -36,6 +42,8 @@ public struct RowPlacement {
   public float4 color;
   // Whether `color` is the table's override rather than the instance's own.
   public bool overridden;
+  // Whether the key's row leaves room for a rect's wider floor.
+  public bool sparse;
 };
 
 public uint rowTableWidth(uint keys) {
@@ -77,6 +85,7 @@ public RowPlacement rowTableLookup(
   p.slot = key;
   p.color = own;
   p.overridden = false;
+  p.sparse = false;
   if (keys < 0) {
     return p;
   }
@@ -95,6 +104,7 @@ public RowPlacement rowTableLookup(
     return p;
   }
   p.slot = byteOf(s.r) | (byteOf(s.g) << 8) | (byteOf(s.b) << 16);
+  p.sparse = byteOf(s.a) == SPARSE_ROW_ALPHA;
   float4 c = table.SampleLevel(float2(u, (float(y + h) + 0.5) / rows), 0.0);
   p.overridden = c.a > 0.0;
   p.color = p.overridden ? c : own;

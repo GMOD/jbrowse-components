@@ -6,7 +6,8 @@
 //
 // `row` is read through the bound row table (`rowTable`): a key resolved to
 // its drawn slot and color, or collapsed to a zero-area quad off clip space
-// where the table hides it. A pass binding no table (`rowTableKeys` −1) draws
+// where the table hides it. A key whose row leaves room takes the wider
+// rect floor, SPARSE_RECT_MIN_WIDTH_PX. A pass binding no table (`rowTableKeys` −1) draws
 // `row` as the slot, which is what every consumer did before the table.
 //
 // The color slot is `markColor`'s: a packed ABGR, or under a ramp or a
@@ -62,7 +63,7 @@ RowRectVsOut vs_main(RowRectInstance inst, uint vid : SV_VertexID) {
   r.bpRangeX       = u.bpRangeX;
   r.canvasHeight   = u.canvasHeight;
   r.minCellDenomPx = u.minCellDenomPx;
-  r.minCellPx      = u.minCellPx;
+  r.minCellPx      = p.sparse ? max(u.minCellPx, SPARSE_RECT_MIN_WIDTH_PX) : u.minCellPx;
   r.zero           = u.zero;
   r.rowHeight      = u.rowHeight;
   r.rowProportion  = u.rowProportion;

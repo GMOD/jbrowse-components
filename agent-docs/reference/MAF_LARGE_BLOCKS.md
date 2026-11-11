@@ -110,7 +110,7 @@ pixel", the normal case at any interesting zoom. **Neither backend floors one.**
 `MAF_ROW_MARK` declares `minWidthPx: 0`, which makes `extendToMinWidthX` a no-op,
 and the `span` painter draws cells at natural width; the rasteriser's blend is the
 answer. The multi-row feature painter draws the same `rowRect` module and does
-floor (`MULTI_ROW_MIN_CELL_PX`), because a MAF cell sits in a run of neighbours
+floor (`MIN_RECT_WIDTH_PX`), because a MAF cell sits in a run of neighbours
 while a chromosome painting's features are sparse intervals where a sub-pixel tick
 reads as nothing.
 

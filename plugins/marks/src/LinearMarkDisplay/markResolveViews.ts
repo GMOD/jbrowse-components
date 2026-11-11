@@ -13,6 +13,11 @@ import {
 } from '@jbrowse/display-ui'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { RowKeys, pointInsetPx } from '@jbrowse/render-core/marks'
+import { leavesRoom } from '@jbrowse/render-core/marks/sparseSpans'
+import {
+  MIN_RECT_WIDTH_PX,
+  SPARSE_RECT_MIN_WIDTH_PX,
+} from '@jbrowse/render-core/shaders/rowRectConsts'
 import { sidebarPanelWidth } from '@jbrowse/tree-sidebar'
 import {
   autoscaleDomainFromSpans,
@@ -23,6 +28,7 @@ import {
   visibleStats,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
+import { computed } from 'mobx'
 
 import {
   facetLayout,
@@ -55,6 +61,7 @@ import {
   markRowTable,
   sectionRowName,
 } from './rowTable.ts'
+import { rowQuartileGaps } from './sparseRows.ts'
 
 import type { FacetLayout } from './facet.ts'
 import type { MarkLegendSection } from './legend.ts'
@@ -384,6 +391,29 @@ export function markRowTableViews(self: MarkLaidOutHost) {
     return self.rowKeySpace.rowKeys.names.slice()
   })
   const order = stableIdentityComputed(() => self.sources.map(row => row.name))
+  // A row's quartile gap is the data's; only its comparison is the zoom's, so
+  // a zoom rebuilds the table only where a row crosses the threshold.
+  const rowGaps = computed(() =>
+    rowQuartileGaps(
+      self.rpcDataMap.values(),
+      self.markTypes.map(type => type === 'rect'),
+    ),
+  )
+  const sparseKeys = stableIdentityComputed(() => {
+    const { bpPerPx } = self.host
+    return [...rowGaps.get()]
+      .flatMap(([key, gap]) => (leavesRoom(gap, bpPerPx) ? [key] : []))
+      .sort((a, b) => a - b)
+  })
+  const sparseFlags = (keys: number) => {
+    const flags = new Uint8Array(keys)
+    for (const key of sparseKeys.get()) {
+      if (key < keys) {
+        flags[key] = 1
+      }
+    }
+    return flags
+  }
   return {
     /**
      * #getter
@@ -402,11 +432,23 @@ export function markRowTableViews(self: MarkLaidOutHost) {
      * bytes. Undefined while nothing splits the features.
      */
     get rowTable(): RowTable | undefined {
+      const names = keyNames.get()
       return self.drawsRows
-        ? markRowTable(keyNames.get(), order.get())
+        ? markRowTable(names, order.get(), sparseFlags(names.length))
         : self.facet
-          ? facetRowTable(keyNames.get(), self.facetLayout)
+          ? facetRowTable(names, self.facetLayout, sparseFlags(names.length))
           : undefined
+    },
+    /**
+     * #getter
+     * The floor a `rect` paints at, in CSS px: MIN_RECT_WIDTH_PX, or
+     * SPARSE_RECT_MIN_WIDTH_PX where the one row nothing splits leaves room
+     * at this zoom; under a row table each key's row decides its own.
+     */
+    get rectMinWidthPx(): number {
+      return !self.drawsRows && !self.facet && sparseKeys.get().includes(0)
+        ? SPARSE_RECT_MIN_WIDTH_PX
+        : MIN_RECT_WIDTH_PX
     },
   }
 }
@@ -880,6 +922,7 @@ export function markScaleViews(self: MarkSidebarHost) {
         bpPerPx: self.host.bpPerPx,
         origin: self.origin,
         minWidthPx: MIN_MARK_WIDTH_PX,
+        rectMinWidthPx: self.rectMinWidthPx,
         markSizes: self.markSizes,
         sizeScales: self.sizeScales,
         linkRegions: self.linkRegions,

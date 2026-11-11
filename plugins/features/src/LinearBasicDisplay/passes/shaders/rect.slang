@@ -2,7 +2,7 @@
 // instancing (ADR-005).
 //! targets: wgsl, glsl
 //! coverage: analytic
-//! export-consts: MIN_RECT_WIDTH_PX, SPARSE_EXON_MIN_WIDTH_PX, MIN_DENSITY_ALPHA
+//! export-consts: MIN_DENSITY_ALPHA
 //! js-export: rectSpanPx, rectDrawsOutline
 
 import antialias;
@@ -10,14 +10,13 @@ import hpmath;
 import colorPack;
 import featureGlyphUniforms;
 import rectInstance;
+import rowRect;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-static const float MIN_RECT_WIDTH_PX = 2.0;
-// The floor for an exon of a transcript whose introns have room to give up a
-// pixel (sparseExons.ts); dense transcripts keep MIN_RECT_WIDTH_PX so
-// their 1px intron gaps stay open.
-static const float SPARSE_EXON_MIN_WIDTH_PX = 3.0;
+// The floors are render-core's (`rowRect`): MIN_RECT_WIDTH_PX, and
+// SPARSE_RECT_MIN_WIDTH_PX for an exon of a transcript whose introns have room
+// to give up a pixel (sparseExons.ts), shared with the mark display's rects.
 // Alpha for a mark the layout flagged `densityFade` (see PILEUP_FADE_DEPTH), so
 // a pile of collapsed marks reads as density rather than a flat fill. The blend
 // accumulates 1-(1-a)^n, and a low `a` keeps that tracking pile depth (0.3: 1
@@ -74,7 +73,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
     clipXToPx(bpToClipX(inst.startEnd.y, u), cw),
     inst.startEnd.x == inst.startEnd.y,
     (inst.densityFade & RECT_FLAG_SPARSE_EXONS) != 0u
-      ? SPARSE_EXON_MIN_WIDTH_PX
+      ? SPARSE_RECT_MIN_WIDTH_PX
       : MIN_RECT_WIDTH_PX
   );
   float left = min(span.x, span.y);

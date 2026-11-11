@@ -68,10 +68,13 @@ export function keyRegion(
 export function markRowTable(
   keyNames: readonly string[],
   order: readonly string[],
+  sparse?: Uint8Array,
 ): RowTable {
   const slotOf = new Map(order.map((name, i) => [name, i]))
   return buildRowTable(
     Uint32Array.from(keyNames, name => slotOf.get(name) ?? HIDDEN_ROW),
+    undefined,
+    sparse,
   )
 }
 
@@ -84,6 +87,7 @@ export function markRowTable(
 export function facetRowTable(
   keyNames: readonly string[],
   layout: FacetLayout,
+  sparse?: Uint8Array,
 ): RowTable {
   return buildRowTable(
     Uint32Array.from(keyNames, name => {
@@ -92,6 +96,8 @@ export function facetRowTable(
       const depth = Number(name.slice(at + 1))
       return band && depth < band.rowCount ? band.firstRow + depth : HIDDEN_ROW
     }),
+    undefined,
+    sparse,
   )
 }
 

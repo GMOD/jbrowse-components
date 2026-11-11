@@ -411,6 +411,7 @@ function hoverCheck(bars: EncodedChannels, region: Region, bpPerPx: number) {
     bpPerPx,
     origin: 0,
     minWidthPx: 0,
+    rectMinWidthPx: 0,
     markSizes: [0],
     sizeScales: [],
     linkRegions: [],

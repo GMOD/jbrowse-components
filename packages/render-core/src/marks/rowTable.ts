@@ -1,3 +1,4 @@
+import { SPARSE_ROW_ALPHA } from '../shaders/rowTable.generated.ts'
 import {
   rowTablePlaneHeight,
   rowTableTexelX,
@@ -17,7 +18,8 @@ const MAX_SLOT = 0xffffff
 
 /**
  * The row axis as a pass reads it: each key's drawn slot or `HIDDEN_ROW`, its
- * packed ABGR color override or `NO_ROW_COLOR`, and the RGBA8 texture the
+ * packed ABGR color override or `NO_ROW_COLOR`, whether its row leaves room
+ * for a rect's wider floor (`sparseSpans.ts`), and the RGBA8 texture the
  * vertex stage samples for the same answers (`shaders/rowTable.slang` has the
  * layout). One object, so the shader, the painter, the ink and the hit test
  * cannot place a key differently. Immutable: a reorder, focus, hide or
@@ -27,24 +29,28 @@ export interface RowTable {
   readonly keys: number
   readonly slot: Uint32Array
   readonly color: Uint32Array
+  /** 1 where the key's row leaves room, so a rect floors wider. */
+  readonly sparse: Uint8Array
   readonly texture: MarkTexels
 }
 
 /**
- * The table for `slot[key]` and `color[key]`, both indexed by key: `slot` is
- * `HIDDEN_ROW` where the key draws nothing, `color` is `NO_ROW_COLOR` where the
- * instance keeps its own color, an override alpha 0 being none. Both arrays
- * are held, not copied. Each key's texel sits where the shader's own twins
- * put it.
+ * The table for `slot[key]`, `color[key]` and `sparse[key]`, all indexed by
+ * key: `slot` is `HIDDEN_ROW` where the key draws nothing, `color` is
+ * `NO_ROW_COLOR` where the instance keeps its own color, an override alpha 0
+ * being none, and `sparse` 1 where the key's row leaves room. The arrays are
+ * held, not copied. Each key's texel sits where the shader's own twins put
+ * it.
  */
 export function buildRowTable(
   slot: Uint32Array,
   color: Uint32Array = new Uint32Array(slot.length),
+  sparse: Uint8Array = new Uint8Array(slot.length),
 ): RowTable {
   const keys = slot.length
-  if (color.length !== keys) {
+  if (color.length !== keys || sparse.length !== keys) {
     throw new Error(
-      `buildRowTable: ${keys} slots but ${color.length} colors; both are per key`,
+      `buildRowTable: ${keys} slots but ${color.length} colors and ${sparse.length} sparse flags; all are per key`,
     )
   }
   const width = rowTableWidth(keys)
@@ -64,7 +70,7 @@ export function buildRowTable(
       bytes[o] = s & 0xff
       bytes[o + 1] = (s >>> 8) & 0xff
       bytes[o + 2] = (s >>> 16) & 0xff
-      bytes[o + 3] = 0xff
+      bytes[o + 3] = sparse[key] ? SPARSE_ROW_ALPHA : 0xff
     }
     const c = color[key]!
     const p = ((y + plane) * width + x) * 4
@@ -77,6 +83,7 @@ export function buildRowTable(
     keys,
     slot,
     color,
+    sparse,
     texture: { bytes, width, height: plane * 2 },
   }
 }
