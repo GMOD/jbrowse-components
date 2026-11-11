@@ -2252,6 +2252,18 @@ test('ensureReExports fills an empty registry with the map it is handed', async 
   expect(getReExportRegistry()).toBe(productMap)
 })
 
+test('jb.ensureRequire fills an empty registry with the product map it was built with', async () => {
+  const productMap = { '@jbrowse/display-kit/configSchema': {} }
+  const jb = createJbApi(new PluginManager([]), {
+    reExports: async () => ({ default: productMap }),
+  })
+  setReExportRegistry({})
+  await jb.ensureRequire()
+  expect(jb.require('@jbrowse/display-kit/configSchema')).toBe(
+    productMap['@jbrowse/display-kit/configSchema'],
+  )
+})
+
 // A browser page fills the registry only when a runtime plugin loads, so the
 // first jb.require on a plain JBrowse Web said the module was not re-exported
 // at all, which reads as "this module does not exist"

@@ -55,7 +55,9 @@ const JBrowse = observer(function JBrowse({
     // through the plugin manager on every call rather than capturing the one
     // above, so it survives a session swap; reassigning here rather than
     // memoizing is what keeps it in step with the two globals beside it.
-    window.jb = createJbApi(pluginManager)
+    window.jb = createJbApi(pluginManager, {
+      reExports: () => import('../reExports.generated.ts'),
+    })
     // the one channel a browser agent that only reads console output gets;
     // the DOM channel is the ai-instructions meta tag in index.html
     if (process.env.NODE_ENV !== 'test') {
