@@ -54,6 +54,11 @@ block description in place of a read's lines (each side's assembly and span,
 the other side's name, `Inverted`, the block's identity, mapping quality and
 syntenic depth), rather than LGVSyntenyDisplay defaulting `tooltip.field` to
 `mate.name`; its color line stays only in chain mode.
+Amended 2026-11-11: the mismatch fade's `scale.clamp` went. Off, its line
+ran on to 0 or 1 past the range, which `domainMin: 5, domainMax: 30, range:
+[0, 1]` draws for `domainMin: 10, domainMax: 30, range: [0.2, 1]` unclamped.
+The key was beta-only (betas 18 to 21) and nothing wrote it off.
+
 Amended 2026-11-07: call 5's `scale.group` is `scale.share`. `group` already
 names the row-group attribute (`rows.groups[].group`, which `facet: "group"`
 and `rows.color` read, and the multi-wiggle subadapter's v4 `group`), and both
@@ -125,7 +130,7 @@ hand, and Colin's rulings on the calls they split.
     "maxLayoutHeight": 6000,
     "fadeLowFrequency": true,
     "mismatches": { "show": true, "encoding": { "opacity": {
-      "field": "baseQuality", "scale": { "domainMin": 0, "domainMax": 50, "range": [0, 1], "clamp": true } } } },
+      "field": "baseQuality", "scale": { "domainMin": 0, "domainMax": 50, "range": [0, 1] } } } },
     "softClips": { "show": false },
     "connectors": { "show": false },
     "bases": {

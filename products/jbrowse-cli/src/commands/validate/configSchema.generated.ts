@@ -6751,16 +6751,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
-        },
-        "clamp": {
-          "description": "a quality past the domain takes the nearer end of the range; off, the line runs on until the base is fully opaque or gone.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
         }
       },
       "patternProperties": {

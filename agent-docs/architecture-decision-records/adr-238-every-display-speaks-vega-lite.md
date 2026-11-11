@@ -133,9 +133,15 @@ Amended 2026-10-24:
 ### Channel
 
 `{ value | datum | field, scale: { type, domain, range, scheme, reverse,
-zero, clamp, constant, unknown, share }, sort, legend | axis }` serves
+zero, constant, unknown, share }, sort, legend | axis }` serves
 `color`, `opacity`, `size`, `strokeWidth`, `shape` and the positional
 channels.
+
+Amended 2026-11-11: no scale declares `clamp`. Every scale holds a value past
+its domain at the nearer end of its range (ADR-179), and the one member that
+turned it off, on the alignments mismatch fade, drew the picture a wider
+`domainMin` and `domainMax` under `range: [0, 1]` already draws
+([ADR-240](adr-240-the-alignments-display-speaks-vega-lite.md)).
 
 - `scale.type` is d3's list.
 - A domain end of `null` autoscales by the display's own method, so wiggle

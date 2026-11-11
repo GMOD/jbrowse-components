@@ -44,8 +44,11 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last respell is `encoding.y.scale.group` to `share` (3cc17821fb,
-  2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
+- The last shared-path change is the alignments mismatch fade losing
+  `scale.clamp` (2026-11-11, −2 shared: LinearAlignments and LGVSynteny),
+  beta-only and written by no config, since every scale clamps (ADR-238).
+  The last respell before it is `encoding.y.scale.group` to `share`
+  (3cc17821fb, 2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
   no writer outside the tree spelled it, and ggjbrowse's engine pin includes
   it. No shared path was respelled from 11-08 through 11-09, v5.0.0-beta.21
   included, but one was added: `rows.annotations` (946afc33db), since moved
@@ -125,7 +128,11 @@ displays or a display's parts, with the ruling on each.
 ## Release candidate gates
 
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
-  as kept or respelled.
+  as kept or respelled, and the first table's rows are re-read against their
+  whys since the last read: `git diff <sha> --
+  agent-docs/reference/CONFIG_SPELLINGS.md` (read through c58cbf0311,
+  2026-11-11). The count pin passes a display that moves between two
+  existing variants and a variant whose members change in place.
 - The meter shows no shared-path change since the last respell landed.
 - Every `retired` entry maps a name a v1–v4 release declared, none a
   beta-only one, except a display type a beta session names (the rule above).

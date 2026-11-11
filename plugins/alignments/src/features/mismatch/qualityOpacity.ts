@@ -41,7 +41,6 @@ export interface MismatchOpacitySetting {
     domainMin: number
     domainMax: number
     range: readonly string[]
-    clamp: boolean
   }
 }
 
@@ -88,8 +87,8 @@ export function qualityOpacityOf({
   return {
     zero: d0 - r0 / slope,
     slope,
-    min: scale.clamp ? clamp01(Math.min(r0, r1)) : 0,
-    max: scale.clamp ? clamp01(Math.max(r0, r1)) : 1,
+    min: clamp01(Math.min(r0, r1)),
+    max: clamp01(Math.max(r0, r1)),
   }
 }
 
@@ -102,7 +101,6 @@ export const DEFAULT_QUALITY_FADE = qualityOpacityOf(
       domainMin: QUALITY_OPACITY_DOMAIN[0],
       domainMax: QUALITY_OPACITY_DOMAIN[1],
       range: QUALITY_OPACITY_RANGE.map(String),
-      clamp: true,
     },
   }),
 )

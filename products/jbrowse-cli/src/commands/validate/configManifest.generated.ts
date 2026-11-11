@@ -4183,10 +4183,6 @@ export const configManifest: ConfigManifest = {
                               "name": "range",
                               "type": "string[]",
                               "liftsNumbers": true
-                            },
-                            {
-                              "name": "clamp",
-                              "type": "boolean"
                             }
                           ],
                           "schema": "PileupMismatchesOpacityScale",
@@ -5394,10 +5390,6 @@ export const configManifest: ConfigManifest = {
                               "name": "range",
                               "type": "string[]",
                               "liftsNumbers": true
-                            },
-                            {
-                              "name": "clamp",
-                              "type": "boolean"
                             }
                           ],
                           "schema": "PileupMismatchesOpacityScale",

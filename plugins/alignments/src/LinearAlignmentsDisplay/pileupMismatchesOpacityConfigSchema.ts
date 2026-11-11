@@ -22,7 +22,6 @@ export type PileupMismatchesOpacitySnapshot =
         domainMin?: number
         domainMax?: number
         range?: readonly (number | string)[]
-        clamp?: boolean
       }
     }
 
@@ -109,20 +108,14 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
         },
         /**
          * #slot scale.range
+         * A quality past the domain takes the nearer end, as on every
+         * scale: a line that runs on to 0 or 1 is a wider domain under
+         * `[0, 1]`.
          */
         range: {
           type: 'stringArray',
           defaultValue: QUALITY_OPACITY_RANGE.map(String),
           description: 'the opacities, 0 to 1, at the two ends of the domain',
-        },
-        /**
-         * #slot scale.clamp
-         */
-        clamp: {
-          type: 'boolean',
-          defaultValue: true,
-          description:
-            'a quality past the domain takes the nearer end of the range; off, the line runs on until the base is fully opaque or gone',
         },
       },
       {

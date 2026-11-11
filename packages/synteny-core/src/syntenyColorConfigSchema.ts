@@ -58,6 +58,12 @@ export interface SyntenyColorSnapshot {
  * The `scale` slots every comparative color channel declares: the synteny
  * views' `encoding.color` and the multi-way display's
  * `ribbons.encoding.color`, which paint through the same resolver.
+ *
+ * No `domainQuantile`: a column's open end follows the widest span the view
+ * has seen, each fetch's extremes unioned and only widening so a pan rescales
+ * nothing, and that span outlives the fetches it was measured on, leaving no
+ * values to rank. `domainMin` and `domainMax` pin a ramp one outlier
+ * stretches, and picking the field again forgets the span.
  */
 export function syntenyColorScaleSlots(scaleName: string) {
   return {

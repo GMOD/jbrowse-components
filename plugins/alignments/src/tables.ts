@@ -2301,7 +2301,6 @@ export function alignmentMarkAlpha({
       domainMin: readConfObject(opacity, ['scale', 'domainMin']),
       domainMax: readConfObject(opacity, ['scale', 'domainMax']),
       range: readConfObject(opacity, ['scale', 'range']),
-      clamp: readConfObject(opacity, ['scale', 'clamp']),
     },
   })
   const byQuality = setting.field === 'baseQuality'

@@ -208,7 +208,6 @@ export function configSlotViews(
         domainMin: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMin']),
         domainMax: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMax']),
         range: getConf(self, [...MISMATCH_OPACITY, 'scale', 'range']),
-        clamp: getConf(self, [...MISMATCH_OPACITY, 'scale', 'clamp']),
       },
     })
   return {

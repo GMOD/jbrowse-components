@@ -531,7 +531,6 @@ describe('a mismatch its quality fade leaves unpainted hands the hover to its re
             domainMin: 0,
             domainMax: 50,
             range: ['0', '1'],
-            clamp: true,
           },
         }),
       }),

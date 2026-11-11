@@ -68,6 +68,14 @@ menu offers **Clip outliers**, a checkbox that writes the display's declared
 quantile where that is below 1 and 0.99 otherwise, and 1 to turn it off;
 Hi-C's "Emphasize faint contacts" is the same checkbox under its own name.
 
+### Amended 2026-11-11: the comparative ramps take no quantile
+
+SyntenyColor, on the synteny views and the multi-way display's `ribbons`,
+declares no `domainQuantile`. Its open end is the widest span the view has
+seen, each fetch's extremes unioned and only widening so a pan rescales
+nothing, which leaves no values to rank. `domainMin` and `domainMax` pin a
+ramp one outlier stretches, and picking the field again forgets the span.
+
 ### Amended 2026-09-26: the coverage band starts at 0.99
 
 The coverage band had kept 1 because its old modes lifted there, not for a

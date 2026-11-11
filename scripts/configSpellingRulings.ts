@@ -31,8 +31,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.color.scale': {
     variants: 7,
-    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's and LD's ramp is built from `scheme` and `reverse` alone (hicColorConfigSchema.ts, ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts); ribbons take the synteny views' scale (syntenyColorConfigSchema.ts)",
-    open: "MultiWaySynteny `ribbons`, and the synteny views whose scale it shares, have no `domainQuantile`, though a numeric column's ramp follows the loaded values",
+    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's and LD's ramp is built from `scheme` and `reverse` alone (hicColorConfigSchema.ts, ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts); ribbons take the synteny views' scale, whose open end is a widening span with no values to rank, so no `domainQuantile` (syntenyColorConfigSchema.ts, ADR-179)",
   },
   'encoding.color.scale.type': {
     variants: 7,
@@ -44,8 +43,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.opacity.scale': {
     variants: 2,
-    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain`, and `clamp` (ADR-240)',
-    open: 'the synteny opacity scale (MultiWaySynteny `ribbons` and the synteny views) always clamps and has no `clamp` member',
+    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain` (ADR-240); no scale declares `clamp` (ADR-238)',
   },
   'encoding.size': { variants: 2, why: VALUE_ONLY_WIDTH },
   'encoding.strokeWidth': { variants: 2, why: VALUE_ONLY_WIDTH },

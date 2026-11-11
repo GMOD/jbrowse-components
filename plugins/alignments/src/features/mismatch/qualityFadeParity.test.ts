@@ -30,11 +30,7 @@ function fade(qual: number, { zero, slope, min, max }: QualityOpacity) {
   return qualityFade(qual, zero, slope, min, max)
 }
 
-function scaleOf(
-  domain: number[],
-  range: number[],
-  clamp = true,
-): QualityOpacity {
+function scaleOf(domain: number[], range: number[]): QualityOpacity {
   return qualityOpacityOf({
     value: undefined,
     field: 'baseQuality',
@@ -42,7 +38,6 @@ function scaleOf(
       domainMin: domain[0]!,
       domainMax: domain[1]!,
       range: range.map(String),
-      clamp,
     },
   })
 }
@@ -75,7 +70,7 @@ test('no field leaves every quality opaque', () => {
     qualityOpacityOf({
       value: undefined,
       field: undefined,
-      scale: { domainMin: 0, domainMax: 30, range: ['0', '1'], clamp: true },
+      scale: { domainMin: 0, domainMax: 30, range: ['0', '1'] },
     }),
   ).toBe(OPAQUE_MISMATCHES)
 })
@@ -84,7 +79,7 @@ test('a constant value draws every quality at it, and a missing one opaque', () 
   const half = qualityOpacityOf({
     value: 0.5,
     field: undefined,
-    scale: { domainMin: 5, domainMax: 20, range: ['0.1', '1'], clamp: true },
+    scale: { domainMin: 5, domainMax: 20, range: ['0.1', '1'] },
   })
   for (const qual of QUALS.filter(q => q !== QUAL_UNAVAILABLE)) {
     expect(fade(qual, half)).toBe(0.5)
@@ -127,14 +122,14 @@ test('a written domain moves the opaque threshold', () => {
   expect(fade(40, to30)).toBe(1)
 })
 
-test('a written range holds a floor under clamp, and runs past it without', () => {
+test('a written range holds a floor, and a wider domain under 0 to 1 runs past it', () => {
   const floored = scaleOf([10, 30], [0.2, 1])
   expect(fade(20, floored)).toBeCloseTo(0.6, 9)
   expect(fade(0, floored)).toBeCloseTo(0.2, 9)
-  const unclamped = scaleOf([10, 30], [0.2, 1], false)
-  expect(fade(20, unclamped)).toBeCloseTo(0.6, 9)
-  expect(fade(5, unclamped)).toBeCloseTo(0, 9)
-  expect(fade(40, unclamped)).toBe(1)
+  const widened = scaleOf([5, 30], [0, 1])
+  expect(fade(20, widened)).toBeCloseTo(0.6, 9)
+  expect(fade(5, widened)).toBeCloseTo(0, 9)
+  expect(fade(40, widened)).toBe(1)
 })
 
 test('a descending range fades the best calls', () => {
@@ -156,7 +151,6 @@ test('a domain end or range that is not a number takes the default', () => {
       domainMin: Number.NaN,
       domainMax: 50,
       range: ['0', '1', '2'],
-      clamp: true,
     },
   })
   expect(bad).toEqual(DEFAULT_QUALITY_FADE)

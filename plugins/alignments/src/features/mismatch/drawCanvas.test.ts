@@ -173,7 +173,7 @@ describe('mismatch quality fade', () => {
     const toZero = qualityOpacityOf({
       value: undefined,
       field: 'baseQuality',
-      scale: { domainMin: 0, domainMax: 50, range: ['0', '1'], clamp: true },
+      scale: { domainMin: 0, domainMax: 50, range: ['0', '1'] },
     })
     expect(drawOne(baseState({ qualityOpacity: toZero }), 0)).toBeUndefined()
   })

@@ -140,7 +140,7 @@ describe('SNP letters carry the per-base quality fade', () => {
   const qualOver50 = qualityOpacityOf({
     value: undefined,
     field: 'baseQuality',
-    scale: { domainMin: 0, domainMax: 50, range: ['0', '1'], clamp: true },
+    scale: { domainMin: 0, domainMax: 50, range: ['0', '1'] },
   })
   const qualLabels = (fade: boolean) =>
     computeVisibleLabels({
