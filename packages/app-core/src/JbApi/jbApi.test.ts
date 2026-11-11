@@ -799,6 +799,43 @@ describe('addTrack with a trackId the catalog already holds', () => {
     expect(shown).toEqual([])
   })
 
+  it('refuses a key it does not take, naming the ones it does', async () => {
+    await expect(
+      // @ts-expect-error the misspelling being refused
+      jb.addTrack({ trackId: 'volvox_alignments', setings: { height: 9 } }),
+    ).rejects.toThrow(
+      'jb.addTrack does not take setings — it takes location, trackId, index, assembly, name, settings, show, viewId, settleMs',
+    )
+    expect(shown).toEqual([])
+  })
+
+  it('refuses a value of the wrong type rather than defaulting it', async () => {
+    await expect(
+      jb.addTrack({
+        trackId: 'volvox_alignments',
+        // @ts-expect-error the string being refused
+        settings: 'compact',
+        // @ts-expect-error the string being refused
+        show: 'false',
+      }),
+    ).rejects.toThrow(
+      'jb.addTrack takes settings as an object of display settings — got "compact"; show as true or false — got "false"',
+    )
+    await expect(
+      // @ts-expect-error the types being refused
+      jb.addTrack({ trackId: 'volvox_alignments', settleMs: '0', viewId: 1 }),
+    ).rejects.toThrow(
+      'jb.addTrack takes settleMs as a number — got "0"; viewId as a string — got 1',
+    )
+    await expect(
+      // @ts-expect-error a bare string is not the options object
+      jb.addTrack('https://x.org/a.bw'),
+    ).rejects.toThrow(
+      /jb.addTrack takes one object of location, .* — got "https:\/\/x.org\/a.bw"/,
+    )
+    expect(shown).toEqual([])
+  })
+
   it('names the catalog for a trackId in neither place', async () => {
     await expect(jb.addTrack({ trackId: 'nope' })).rejects.toThrow(
       /No track with trackId "nope" — jb.listTracks\(\)/,
@@ -1224,6 +1261,39 @@ describe('getFeatures reads through the RPC', () => {
       // @ts-expect-error a list of regions is what `regions` takes
       jb.getFeatures('genes', [{ refName: 'ctgA', start: 10, end: 20 }]),
     ).rejects.toThrow(/several regions go in regions: \[\.\.\.\]/)
+    expect(calls).toHaveLength(0)
+  })
+
+  // an untaken key used to fall through to the VISIBLE region, which answered
+  // with features from somewhere the agent never named
+  it('refuses a key it does not take rather than reading the visible region', async () => {
+    await expect(
+      // @ts-expect-error the spelling being refused
+      jb.getFeatures({ trackId: 'genes', region: 'ctgA:1-100' }),
+    ).rejects.toThrow(
+      'jb.getFeatures does not take region — it takes trackId, loc, regions, assembly, viewId, byteLimit',
+    )
+    await expect(
+      // @ts-expect-error the spelling being refused
+      jb.getFeatures('genes', 'ctgA:1-100', { loc: 'ctgA:1-5' }),
+    ).rejects.toThrow(
+      'jb.getFeatures(trackId, loc, options) does not take loc — it takes assembly, viewId, byteLimit',
+    )
+    await expect(
+      // @ts-expect-error the type being refused
+      jb.getFeatures('genes', 'ctgA:1-100', { byteLimit: '5' }),
+    ).rejects.toThrow('takes byteLimit as a number — got "5"')
+    expect(calls).toHaveLength(0)
+  })
+
+  it('refuses loc and regions together rather than dropping loc', async () => {
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        loc: 'ctgA:1-5',
+        regions: [{ refName: 'ctgA', start: 0, end: 100 }],
+      }),
+    ).rejects.toThrow('jb.getFeatures takes loc or regions, not both')
     expect(calls).toHaveLength(0)
   })
 

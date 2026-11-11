@@ -908,7 +908,7 @@ function listTracks(
 
 function pickView(
   session: AbstractSessionModel,
-  args: Record<string, unknown>,
+  viewId: string | undefined,
   capability: 'navToLocString' | 'showTrack' | 'launchTrack' | 'hideTrack',
   wants?: {
     assembly?: string
@@ -916,7 +916,6 @@ function pickView(
     pluginManager?: PluginManager
   },
 ) {
-  const viewId = typeof args.viewId === 'string' ? args.viewId : undefined
   const candidates = viewScope(session, viewId)
   const able = candidates.filter(
     v => typeof viewSelf(v)[capability] === 'function',
@@ -1070,6 +1069,117 @@ function isRegionLoc(loc: unknown): loc is Exclude<JbLoc, string> {
   )
 }
 
+interface GetFeaturesOptions {
+  trackId: string
+  loc?: JbLoc
+  assembly?: string
+  regions?: Exclude<JbLoc, string>[]
+  viewId?: string
+  byteLimit?: number
+}
+
+type GetFeaturesPositionalOptions = Pick<
+  GetFeaturesOptions,
+  'assembly' | 'viewId' | 'byteLimit'
+>
+
+interface AddTrackOptions {
+  location?: string | string[]
+  trackId?: string
+  index?: string
+  assembly?: string
+  name?: string
+  settings?: Record<string, unknown>
+  show?: boolean
+  viewId?: string
+  settleMs?: number
+}
+
+interface Kind {
+  what: string
+  is: (value: unknown) => boolean
+}
+
+type Takes<T> = { [K in keyof Required<T>]: Kind }
+
+const aString: Kind = { what: 'a string', is: v => typeof v === 'string' }
+const aNumber: Kind = {
+  what: 'a number',
+  is: v => typeof v === 'number' && !Number.isNaN(v),
+}
+const aBoolean: Kind = {
+  what: 'true or false',
+  is: v => typeof v === 'boolean',
+}
+
+function isSettings(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+const POSITIONAL_GET_FEATURES_TAKES: Takes<GetFeaturesPositionalOptions> = {
+  assembly: aString,
+  viewId: aString,
+  byteLimit: aNumber,
+}
+
+const GET_FEATURES_TAKES: Takes<GetFeaturesOptions> = {
+  trackId: aString,
+  loc: {
+    what: 'ONE place — a locstring ("ctgA:1-100") or a region object ({ refName, start, end }); several regions go in regions: [...]',
+    is: v => typeof v === 'string' || isRegionLoc(v),
+  },
+  regions: {
+    what: 'a list of region objects ({ refName, start, end })',
+    is: v => Array.isArray(v) && v.every(isRegionLoc),
+  },
+  ...POSITIONAL_GET_FEATURES_TAKES,
+}
+
+const ADD_TRACK_TAKES: Takes<AddTrackOptions> = {
+  location: {
+    what: 'a URL or an absolute path, a list of them, or a catalog trackId',
+    is: v =>
+      typeof v === 'string' ||
+      (Array.isArray(v) && v.every(l => typeof l === 'string')),
+  },
+  trackId: aString,
+  index: aString,
+  assembly: aString,
+  name: aString,
+  settings: { what: 'an object of display settings', is: isSettings },
+  show: aBoolean,
+  viewId: aString,
+  settleMs: aNumber,
+}
+
+function refuseUntaken(
+  helper: string,
+  options: unknown,
+  takes: Record<string, Kind | undefined>,
+) {
+  const taken = Object.keys(takes).join(', ')
+  if (!isSettings(options)) {
+    throw new Error(
+      `${helper} takes one object of ${taken} — got ${options === undefined ? 'undefined' : safeJson(options)}`,
+    )
+  }
+  const untaken = Object.keys(options).filter(key => !Object.hasOwn(takes, key))
+  if (untaken.length) {
+    throw new Error(
+      `${helper} does not take ${untaken.join(', ')} — it takes ${taken}`,
+    )
+  }
+  const wrong = Object.entries(options).flatMap(([key, value]) => {
+    const kind = takes[key]
+    return value !== undefined && kind && !kind.is(value)
+      ? [`${key} as ${kind.what} — got ${safeJson(value)}`]
+      : []
+  })
+  if (wrong.length) {
+    throw new Error(`${helper} takes ${wrong.join('; ')}`)
+  }
+}
+
 async function trackAssembly(
   session: AbstractSessionModel,
   conf: AnyTrackConfig,
@@ -1105,14 +1215,9 @@ async function trackAssembly(
 async function locToRegion(
   session: AbstractSessionModel,
   conf: AnyTrackConfig,
-  loc: unknown,
+  loc: JbLoc,
   assemblyArg: string | undefined,
 ): Promise<JbRegion> {
-  if (typeof loc !== 'string' && !isRegionLoc(loc)) {
-    throw new Error(
-      `jb.getFeatures takes loc as ONE place — a locstring ("ctgA:1-100") or a region object ({ refName, start, end }) — and got ${JSON.stringify(loc)}${Array.isArray(loc) ? '; several regions go in regions: [...]' : ''}`,
-    )
-  }
   const { assembly, assemblyName } = await trackAssembly(
     session,
     conf,
@@ -1379,15 +1484,6 @@ function multiWiggleTrackConf(locations: string[], assemblyName: string) {
   }
 }
 
-// one location, a list of them, or nothing usable
-function locationsOf(value: unknown) {
-  return Array.isArray(value)
-    ? value.filter((l): l is string => typeof l === 'string')
-    : typeof value === 'string'
-      ? value
-      : ''
-}
-
 interface SlotDescription {
   type: string
   description?: string
@@ -1588,49 +1684,35 @@ export function createJbApi(
     ) => reported(await setSession(pluginManager, live(), document, settleMs)),
     fitToWindow: async (settleMs = 30_000) =>
       reported(await fitToWindow(live(), settleMs)),
-    addTrack: (opts: {
-      // a file to add to the catalog and show, or the trackId of one the
-      // catalog already holds, to show it
-      location?: string | string[]
-      trackId?: string
-      index?: string
-      assembly?: string
-      name?: string
-      settings?: Record<string, unknown>
-      show?: boolean
-      viewId?: string
-      settleMs?: number
-    }) => addTrack(pluginManager, live(), opts).then(reported),
+    addTrack: (opts: AddTrackOptions) =>
+      addTrack(pluginManager, live(), opts).then(reported),
     // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
     // turn to "No track with trackId undefined", and a third wrote
     // jb.getFeatures('trackId', loc, { assembly }) and had the options
     // silently ignored — so the positional form is accepted alongside the
     // object it was documented as, options third.
     getFeatures: async (
-      args:
-        | string
-        | {
-            trackId: string
-            // one place: a locstring or a region object
-            loc?: JbLoc
-            assembly?: string
-            // each entry as `loc` takes one: locToRegion fills the assembly
-            regions?: Exclude<JbLoc, string>[]
-            viewId?: string
-            // raises the region-too-large refusal for a read you mean to be big
-            byteLimit?: number
-          },
+      args: string | GetFeaturesOptions,
       positionalLoc?: JbLoc,
-      positionalOpts?: {
-        assembly?: string
-        viewId?: string
-        byteLimit?: number
-      },
+      positionalOpts: GetFeaturesPositionalOptions = {},
     ) => {
+      if (typeof args === 'string') {
+        refuseUntaken(
+          'jb.getFeatures(trackId, loc, options)',
+          positionalOpts,
+          POSITIONAL_GET_FEATURES_TAKES,
+        )
+      }
       const fetchArgs =
         typeof args === 'string'
           ? { trackId: args, loc: positionalLoc, ...positionalOpts }
           : args
+      refuseUntaken('jb.getFeatures', fetchArgs, GET_FEATURES_TAKES)
+      if (fetchArgs.loc !== undefined && fetchArgs.regions !== undefined) {
+        throw new Error(
+          'jb.getFeatures takes loc or regions, not both — loc is one place, regions several',
+        )
+      }
       const session = live()
       const conf = session.getTrackById(fetchArgs.trackId)
       if (!conf) {
@@ -1681,10 +1763,10 @@ export type JbApi = ReturnType<typeof createJbApi>
 // views that were fine; the wait exits the moment they are ready
 const ADD_TRACK_SETTLE_MS = 60_000
 
-function namesAFile(value: unknown) {
-  return Array.isArray(value)
-    ? value.some(l => typeof l === 'string' && isFileLocationText(l))
-    : typeof value === 'string' && isFileLocationText(value)
+function namesAFile(location: AddTrackOptions['location']) {
+  return typeof location === 'string'
+    ? isFileLocationText(location)
+    : !!location?.some(isFileLocationText)
 }
 
 // The name an agent meant as a catalog trackId: `trackId`, or a `location`
@@ -1695,21 +1777,19 @@ function namesAFile(value: unknown) {
 // A location that names a file is the file route whatever else came with it:
 // `trackId` beside `location` is how a track CONFIG spells this, and taking it
 // as the catalog route would refuse the file the caller asked to add.
-function catalogName(args: Record<string, unknown>) {
-  if (namesAFile(args.location)) {
-    return undefined
-  }
-  if (typeof args.trackId === 'string') {
-    return args.trackId
-  }
-  return typeof args.location === 'string' ? args.location : undefined
+function catalogName(args: AddTrackOptions) {
+  return namesAFile(args.location)
+    ? undefined
+    : (args.trackId ??
+        (typeof args.location === 'string' ? args.location : undefined))
 }
 
 async function addTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
-  args: Record<string, unknown>,
+  args: AddTrackOptions,
 ) {
+  refuseUntaken('jb.addTrack', args, ADD_TRACK_TAKES)
   const named = catalogName(args)
   const inCatalog =
     named === undefined ? undefined : session.getTrackById(named)
@@ -1718,7 +1798,7 @@ async function addTrack(
   if (inCatalog) {
     return showCatalogTrack(pluginManager, session, inCatalog, args)
   }
-  if (named !== undefined && typeof args.trackId === 'string') {
+  if (named !== undefined && args.trackId !== undefined) {
     throw new Error(
       `No track with trackId "${args.trackId}" — jb.listTracks() shows what the catalog holds, and jb.addTrack({ location }) adds a file to it.`,
     )
@@ -1726,14 +1806,13 @@ async function addTrack(
   if (!isSessionWithAddSessionTrack(session)) {
     throw new Error('This session cannot add tracks')
   }
-  const location = locationsOf(args.location)
+  const location = args.location ?? ''
   if (!location.length) {
     throw new Error(
       'jb.addTrack needs a location (an absolute local path or a URL) to add a file, or the trackId of a track already in the catalog to show it — jb.listTracks() lists those.',
     )
   }
-  const requested =
-    typeof args.assembly === 'string' ? args.assembly : session.assemblyNames[0]
+  const requested = args.assembly ?? session.assemblyNames[0]
   if (requested === undefined) {
     throw new Error('The session has no assemblies to attach the track to')
   }
@@ -1751,13 +1830,13 @@ async function addTrack(
     ? multiWiggleTrackConf(location, assembly)
     : guessTrackConfForLocation(
         fileLocation(location),
-        typeof args.index === 'string' ? fileLocation(args.index) : undefined,
+        args.index === undefined ? undefined : fileLocation(args.index),
         pluginManager,
         assembly,
       )
   session.addSessionTrackConf({
     ...conf,
-    ...(typeof args.name === 'string' ? { name: args.name } : {}),
+    ...(args.name === undefined ? {} : { name: args.name }),
   })
   const summary = {
     trackId: conf.trackId,
@@ -1789,13 +1868,12 @@ async function showCatalogTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
   conf: AnyTrackConfig,
-  args: Record<string, unknown>,
+  args: AddTrackOptions,
 ) {
   // index, assembly and name describe the file being added, and the catalog's
   // copy already has all three — taking them here would drop them in silence
-  const fileArgs = ['index', 'assembly', 'name'].filter(
-    key => args[key] !== undefined,
-  )
+  const fileKeys: (keyof AddTrackOptions)[] = ['index', 'assembly', 'name']
+  const fileArgs = fileKeys.filter(key => args[key] !== undefined)
   if (fileArgs.length) {
     throw new Error(
       `"${conf.trackId}" is in the catalog already, so ${fileArgs.join(' and ')} would be ignored — drop ${fileArgs.length > 1 ? 'them' : 'it'}, or pass a location to add a new file.`,
@@ -1823,10 +1901,6 @@ async function showCatalogTrack(
       }
 }
 
-function isSettings(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object' && !Array.isArray(value)
-}
-
 async function showTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
@@ -1836,9 +1910,9 @@ async function showTrack(
     adapter?: { type?: unknown }
     assembly?: string
   },
-  args: Record<string, unknown>,
+  args: Pick<AddTrackOptions, 'viewId' | 'settings' | 'settleMs'>,
 ) {
-  const view = pickView(session, args, 'launchTrack', {
+  const view = pickView(session, args.viewId, 'launchTrack', {
     assembly: track.assembly,
     track: { type: track.trackType, adapter: track.adapter },
     pluginManager,
@@ -1847,14 +1921,9 @@ async function showTrack(
   // synchronous showTrack answers before the chunk lands — so the settle below
   // would run against a session that does not hold the track yet, and report
   // ready over it
-  await viewSelf(view).launchTrack!(
-    track.trackId,
-    {},
-    isSettings(args.settings) ? args.settings : undefined,
-  )
+  await viewSelf(view).launchTrack!(track.trackId, {}, args.settings)
   // 0 skips the settle, so several adds can share one jb.waitReady
-  const settleMs =
-    typeof args.settleMs === 'number' ? args.settleMs : ADD_TRACK_SETTLE_MS
+  const settleMs = args.settleMs ?? ADD_TRACK_SETTLE_MS
   return {
     shownInView: view.id,
     ...(settleMs > 0 ? await waitReady(settleMs, session) : {}),
