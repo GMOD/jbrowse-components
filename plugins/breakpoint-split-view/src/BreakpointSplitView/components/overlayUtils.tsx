@@ -14,6 +14,7 @@ import { readIdOf } from '../readChains.ts'
 import { computeOverlayRect } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 import { connectionKeyRows } from './connectionStyle.ts'
+import { connectedVariantJunctions } from './variantJunctions.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadEntry } from '../readChains.ts'
@@ -318,7 +319,15 @@ export function drawnConnectionKeySections(
   }
   const drawsVariantCall = trackIds.some(trackId => {
     const match = model.overlayMatches.get(trackId)
-    return match?.kind === 'variant' && match.layoutMatches.length > 0
+    return (
+      !!match &&
+      connectedVariantJunctions({
+        match,
+        views: model.views,
+        assemblies: model.assemblies,
+        tracks: model.getMatchedTracks(trackId),
+      }).length > 0
+    )
   })
   return [
     {

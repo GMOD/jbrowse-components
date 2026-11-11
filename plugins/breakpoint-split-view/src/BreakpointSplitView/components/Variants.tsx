@@ -1,12 +1,8 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { breakendTickPx, junctionEnds } from '@jbrowse/sv-core'
+import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import {
-  computeOverlayX,
-  findFeatureViewLevel,
-  isLevelPairMinimized,
-} from '../util.ts'
+import { computeOverlayX } from '../util.ts'
 import {
   OverlayPaths,
   VARIANT_JUNCTION_COLOR,
@@ -14,6 +10,7 @@ import {
   buildPairTooltip,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
+import { connectedVariantJunctions } from './variantJunctions.ts'
 
 import type { LayoutRecord } from '../types.ts'
 import type {
@@ -22,7 +19,6 @@ import type {
   OverlayProps,
   PathSpec,
 } from './overlayUtils.tsx'
-import type { Feature } from '@jbrowse/core/util'
 import type { JunctionEnd } from '@jbrowse/sv-core'
 
 // The far end of a junction whose own record the fetch didn't return has no row
@@ -49,16 +45,6 @@ const Variants = observer(function Variants(props: OverlayProps) {
 
 export default Variants
 
-// A record whose own glyph reaches its mate end, a symbolic DEL, DUP or INV,
-// already draws the junction in its row.
-function spansMate(feature: Feature, mate: JunctionEnd) {
-  return (
-    feature.get('refName') === mate.refName &&
-    feature.get('start') <= mate.pos &&
-    mate.pos <= feature.get('end')
-  )
-}
-
 export function variantPaths({
   session,
   match,
@@ -69,9 +55,6 @@ export function variantPaths({
   getY,
   assemblies,
 }: OverlayContext) {
-  if (match.kind !== 'variant') {
-    return []
-  }
   // per ROW: the rows are independently assembly-picked, so one shared
   // resolver would drop every contig of the rows it does not answer for
   const canon = (level: number, refName: string) =>
@@ -96,24 +79,12 @@ export function variantPaths({
       reversed,
     }
   }
-  return match.layoutMatches.flatMap<PathSpec>(([near, far]) => {
-    const ends = near && junctionEnds(near.feature)
-    if (!near || !ends) {
-      return []
-    }
-    // the far record's own end where the fetch returned it, so the position and
-    // the kept side are both in the spelling that record's row resolves
-    const mateEnd = (far && junctionEnds(far.feature)?.own) ?? ends.mate
-    const farLevel =
-      far?.level ??
-      findFeatureViewLevel(views, assemblies, mateEnd.refName, mateEnd.pos)
-    if (
-      farLevel === undefined ||
-      (farLevel === near.level && spansMate(near.feature, mateEnd)) ||
-      isLevelPairMinimized(tracks, near.level, farLevel)
-    ) {
-      return []
-    }
+  return connectedVariantJunctions({
+    match,
+    views,
+    tracks,
+    assemblies,
+  }).flatMap<PathSpec>(({ near, far, ends, mateEnd, farLevel }) => {
     const farLayout = far?.layout ?? NO_LAYOUT
     // Each end meets its feature on the side facing the other end, so the
     // connector stays clear of the labels a feature draws under its glyph; a
