@@ -12,6 +12,20 @@ import type { SourceResolver, makeSourceResolver } from './parseAssemblyName.ts'
 /** Whether a block at its reference row's forward extent is one to emit. */
 export type KeepBlock = (refSrc: string, start: number, end: number) => boolean
 
+/** Whether `keep` wants the block this reference row heads. */
+export function keepsReference(
+  keep: KeepBlock,
+  src: string,
+  start: number,
+  size: number,
+  strand: number,
+  srcSize: number,
+) {
+  const forwardStart =
+    strand === -1 ? otherStrandStart(srcSize, start, size) : start
+  return keep(src, forwardStart, forwardStart + size)
+}
+
 /**
  * One block's rows on their way into a {@link MafBlockSink}, for every
  * format: a bigMaf stanza, a bgzip MAF stanza and a TAF block all file their
@@ -149,25 +163,32 @@ export class MafStanzaReader implements MafLineTarget {
     this.emit(sink, id, start, end)
   }
 
-  /**
-   * The block at its reference row's forward extent, where `keep` wants it.
-   * Nothing without a reference row.
-   */
-  emitPlaced(sink: MafBlockSink, keep: KeepBlock, id: string) {
+  get hasReference() {
+    return this.refSrc !== undefined
+  }
+
+  /** Whether `keep` wants the block, asked before a `-` block is turned over. */
+  wanted(keep: KeepBlock) {
     const { refSrc } = this
-    if (refSrc === undefined) {
-      return false
-    }
+    return (
+      refSrc !== undefined &&
+      keepsReference(
+        keep,
+        refSrc,
+        this.refStart,
+        this.refSize,
+        this.refStrand,
+        this.refSrcSize,
+      )
+    )
+  }
+
+  /** The block at its reference row's forward extent. */
+  emitPlaced(sink: MafBlockSink, id: string) {
     if (this.refStrand === -1) {
       this.flip()
     }
-    const start = this.refStart
-    const end = start + this.refSize
-    if (!keep(refSrc, start, end)) {
-      return false
-    }
-    this.emit(sink, id, start, end)
-    return true
+    this.emit(sink, id, this.refStart, this.refStart + this.refSize)
   }
 
   reportUnmatched() {

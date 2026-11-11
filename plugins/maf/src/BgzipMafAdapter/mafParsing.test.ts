@@ -1,6 +1,9 @@
-import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
+import { MafFeatureSink } from '../util/mafFeatureSink.ts'
+import { mafBlocksOf, readerOf } from '../util/parsedBlocks.fixture.ts'
 import { makeRefNameFilter } from '../util/taiIndex.ts'
+import { readMafBlocks } from './mafParsing.ts'
 
+import type { KeepBlock } from '../util/mafStanzaReader.ts'
 import type { ParsedAssemblyName } from '../util/parseAssemblyName.ts'
 
 // `genome.chr` -> row/contig, the same split the tabix and bigMaf paths use.
@@ -287,6 +290,61 @@ test('the adapter filter keeps only the queried chromosome', () => {
     f => f.end > query.start && f.start < query.end && onChr1(f.refSrc),
   )
   expect(kept.map(f => f.refSrc)).toEqual(['hg38.chr1'])
+})
+
+describe('a block the query does not keep', () => {
+  const read = (text: string, keep: KeepBlock) => {
+    const resolved: string[] = []
+    const reader = readerOf(token => {
+      resolved.push(token)
+      return resolve(token)
+    })
+    const starts: number[] = []
+    const sink = new MafFeatureSink('', f => {
+      starts.push(f.get('start'))
+    })
+    readMafBlocks(text, offset => `${offset}`, reader, sink, keep)
+    sink.finish()
+    return { resolved, starts }
+  }
+
+  test('has only its reference row parsed', () => {
+    const { resolved, starts } = read(
+      [
+        'a',
+        's hg38.chr1 0 10 + 1000 ACGTACGTAC',
+        's mm10.chr2 50 10 + 900 ACGTACGTAT',
+        'i mm10.chr2 C 0 I 12',
+        'e rn6.chr3 10 5 + 800 I',
+        '',
+        'a',
+        's hg38.chr1 500 10 + 1000 ACGTACGTAC',
+        's panTro4.chr1 50 10 + 900 ACGTACGTAT',
+        '',
+      ].join('\n'),
+      (_refSrc, start) => start >= 500,
+    )
+    expect(starts).toEqual([500])
+    expect(new Set(resolved)).toEqual(new Set(['hg38.chr1', 'panTro4.chr1']))
+  })
+
+  test('is judged at a minus-strand reference row forward extent', () => {
+    const asked: [number, number][] = []
+    const { starts } = read(
+      [
+        'a',
+        's hg38.chr1 1000 10 - 2000 ACGTACGTAC',
+        's mm10.chr2 50 10 + 500 ACGTACGTAT',
+        '',
+      ].join('\n'),
+      (_refSrc, start, end) => {
+        asked.push([start, end])
+        return true
+      },
+    )
+    expect(asked).toEqual([[990, 1000]])
+    expect(starts).toEqual([990])
+  })
 })
 
 test('two blocks at the same reference span get distinct ids', () => {

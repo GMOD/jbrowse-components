@@ -245,7 +245,11 @@ export function readTafBlock(
       )
     }
   }
-  return reader.emitPlaced(sink, keep, id)
+  const wanted = reader.wanted(keep)
+  if (wanted) {
+    reader.emitPlaced(sink, id)
+  }
+  return wanted
 }
 
 /** The blocks of a TAF slice into `sink` through `reader`, those `keep` wants. */

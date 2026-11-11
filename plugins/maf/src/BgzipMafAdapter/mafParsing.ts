@@ -8,10 +8,12 @@ import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
  * `s`/`i`/`e`/`q` lines, terminated by a blank line. The lines are
  * `applyMafLine`'s grammar through `reader`, shared with bigMaf.
  *
- * A block is emitted only once its terminator has been seen, and the final
- * block only when the slice ended on a line boundary: a byte-range read very
- * often cuts its last block mid-row, and a short sequence at real coordinates
- * renders as a plausible alignment that is simply wrong.
+ * Whether `keep` wants a block is settled at its reference row, and the rows
+ * after it in a block it does not want are never parsed. A block is emitted
+ * only once its terminator has been seen, and the final block only when the
+ * slice ended on a line boundary: a byte-range read very often cuts its last
+ * block mid-row, and a short sequence at real coordinates renders as a
+ * plausible alignment that is simply wrong.
  */
 export function readMafBlocks(
   text: string,
@@ -21,14 +23,14 @@ export function readMafBlocks(
   keep: KeepBlock,
 ) {
   const { lines, endsClean } = wholeLines(text)
-  let open = false
+  let block: 'none' | 'unplaced' | 'kept' | 'skipped' = 'none'
   let blockOffset = 0
   let lineOffset = 0
   const flush = () => {
-    if (open) {
-      reader.emitPlaced(sink, keep, blockIdAt(blockOffset))
+    if (block === 'kept') {
+      reader.emitPlaced(sink, blockIdAt(blockOffset))
     }
-    open = false
+    block = 'none'
   }
   for (const raw of lines) {
     const line = raw.trimEnd()
@@ -37,10 +39,15 @@ export function readMafBlocks(
     } else if (line.startsWith('a')) {
       flush()
       reader.begin()
-      open = true
+      block = 'unplaced'
       blockOffset = lineOffset
-    } else if (open) {
+    } else if (block === 'kept') {
       reader.line(line)
+    } else if (block === 'unplaced') {
+      reader.line(line)
+      if (reader.hasReference) {
+        block = reader.wanted(keep) ? 'kept' : 'skipped'
+      }
     }
     lineOffset += raw.length + 1
   }
