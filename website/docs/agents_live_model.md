@@ -16,8 +16,9 @@ expression. In scope either way:
 - `pluginManager`, the plugin registry: track, view and adapter types, extension
   points
 - `jb`, the helper library below; `jb.help` restates it in one string
-- `signal` (Desktop only), an `AbortSignal` that fires when `timeoutMs` expires;
-  check it in long loops
+- `signal` (Desktop only), an `AbortSignal` that fires when `timeoutMs` expires
+  or the client cancels the call; check it in long loops. `jb`'s own waits and
+  reads stop on it
 - `window`, the real DOM
 
 ## The helper library
@@ -44,13 +45,14 @@ Orientation and building:
 - `jb.setSession(document, settleMs?)` rewrites the session as a document,
   `jb.mst.getSnapshot(jb.session)` edited: an entry keeping its `id` is patched,
   one dropped is closed, one without is new, and a top-level key left out keeps
-  its value.
+  its value. A document the model's types reject throws before anything closes.
 - `jb.fitToWindow(settleMs?)` shrinks what is open until it fits the window.
 - `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
   adds an absolute local path or a URL (relative refused), infers the format,
   shows it and settles; an unreadable file is listed in `notReady`.
 - `jb.addTrack({ trackId, settings?, viewId?, settleMs? })` shows a catalog
-  track; the file keys are refused.
+  track; the file keys are refused. Either form throws on a key it does not take
+  or a value of the wrong type, naming what it takes.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
   throws naming each, as do `jb.trackModel`, `jb.visibleRegions`, `jb.addTrack`
   and `jb.getFeatures`; `viewId` comes from `jb.sessionSummary()`.
@@ -69,22 +71,25 @@ Reading:
   or `jb.getFeatures(trackId, loc?, { assembly?, viewId?, byteLimit? })`, is the
   track's data as live Feature objects, over the visible region by default. It
   runs `renameRegionsIfNeeded`, so a file that spells "ctgA" as "contigA" still
-  returns features. See
-  [Reading data directly](#reading-data-directly-fast-path).
+  returns features. A key it does not take throws, as do `loc` and `regions`
+  together. See [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
   (`{ assemblyName, refName, start, end }`).
 - `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
-  drawing (default 30000), returning `notifications` (error toasts), `notReady`
-  (views failed or `initializing`, tracks settled without drawing (`phase`) or
-  drawn around config (`notices`), views working around a failed step
-  (`notices`)), `offscreen` (views taller than the window), `drawer` and
-  `dialog`. Check this report, since these fields raise no toast.
+  drawing (default 30000, at least one second). It never throws on the timeout:
+  `settled` is `true` when rendering held still, and `false` with a `note` when
+  the timeout came first. Every helper that settles returns these same fields.
+  Beside `settled` it returns `notifications` (error toasts), `notReady` (views
+  failed or `initializing`, tracks settled without drawing (`phase`) or drawn
+  around config (`notices`), views working around a failed step (`notices`)),
+  `offscreen` (views taller than the window), `drawer` and `dialog`. Check this
+  report, since these fields raise no toast.
 
 The foundations:
 
 - `jb.require(name)` is the module registry plugins link against, by the same
   names (`'@jbrowse/core/util'`, `'react'`); a browser needs
-  `await jb.ensureRequire()` once first.
+  `await jb.ensureRequire()` once first, and says so when it is missing.
 - `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.
 - `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
   slots, which are not plain properties.
@@ -108,7 +113,9 @@ State persists between calls in one app run: stash helpers on `globalThis`. The
 and never cache it. `open` from the start screen loads a new page, emptying
 `globalThis`.
 
-Besides `value`, a call returns:
+`value` is your return as JSON: a model node as its snapshot, a `Map` as an
+object of its entries, a `Set` or typed array as an array, an `Error` as its
+`name` and `message`. Besides `value`, a call returns:
 
 - `logs`, the console output in order. Print intermediate state instead of
   returning it.
@@ -117,11 +124,12 @@ Besides `value`, a call returns:
 - `pageErrors`, the throws that got no toast and appear nowhere else: an
   uncaught exception, an unawaited rejection, a mobx reaction that died.
 - a thrown error as its message plus `at code line L, column C`, counted in your
-  code. A compile error has no line; look for an unbalanced bracket or an
-  `await` in a non-async callback.
+  code, followed by the notifications and page errors raised before it. A
+  compile error has no line; look for an unbalanced bracket or an `await` in a
+  non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) returns an error and the logs
-  so far; the code keeps running with `signal` aborted. For a long job, park the
-  promise:
+  so far; the code keeps running with `signal` aborted, and a `jb` wait or read
+  it is in throws that same error. For a long job, park the promise:
 
 ```js
 // call 1
@@ -300,8 +308,8 @@ More detail on the building helpers:
   `set<Key>` action, which you call yourself.
 - `jb.addView` goes through the same launcher a spec uses, a ProteinView's
   `connectedView` shorthand included.
-- `jb.addTrack` takes `settleMs: 0` to skip the settle, for several adds
-  followed by one `jb.waitReady`.
+- `settleMs: 0` skips the settle in `jb.addTrack`, `jb.addView`, `jb.setSession`
+  and `jb.loadSessionSpec`, for several changes followed by one `jb.waitReady`.
 - `jb.fitToWindow` shrinks every display, synteny band and dotplot in proportion
   to its headroom.
 - Nested synteny and breakpoint rows count as open views, so they are among the
@@ -346,6 +354,10 @@ return {
 - `loc` is one place: a locstring, or a region object
   (`{ refName, start, end }`, what `jb.visibleRegions` returns). Several places
   go in `regions`.
+- A locstring counts as a person writes it, 1-based and inclusive
+  (`'ctgA:1-100'`); a region object, `jb.visibleRegions` and a feature's
+  `get('start')` and `get('end')` are 0-based half-open, so that locstring is
+  `{ refName: 'ctgA', start: 0, end: 100 }`.
 - `assembly` is for a track that names none. A wrong one, or a visible region
   from a view on another assembly, throws rather than reading the wrong
   coordinates.
@@ -545,7 +557,8 @@ JBrowse Web publishes `window.jb` beside `window.JBrowseSession` and
   page.
 - **A read runs on the thread that draws**, so the page stops repainting while a
   large `jb.getFeatures` runs. Aggregate in code and return the answer.
-- **`jb.require` needs `await jb.ensureRequire()` first**, once.
+- **`jb.require` needs `await jb.ensureRequire()` first**, once; it then serves
+  every package the app bundles.
 - **`jb.loadSessionSpec` also rewrites the URL** and stores a new session, and
   the one it replaced is not recoverable from the page. Prefer adding to the
   open session where that will do.
