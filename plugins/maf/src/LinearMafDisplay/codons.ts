@@ -8,7 +8,7 @@ import { columnAtBp } from '../LinearMafRenderer/blockAtBp.ts'
 import { CHAR_SIZE_WIDTH } from '../LinearMafRenderer/rendering/types.ts'
 import {
   eachVisibleRegion,
-  rowViewport,
+  rowBandGeometry,
 } from './components/visibleRegionGeometry.ts'
 
 import type { GenomicColumns } from '../LinearMafRenderer/binning.ts'
@@ -489,7 +489,7 @@ export function computeVisibleCodonGlyphs(
 ): CodonGlyph[] {
   const { rowHeight } = geometry
   const glyphs: CodonGlyph[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(geometry)
+  const { h, offset } = rowBandGeometry(geometry)
   if (h < MIN_HEIGHT_FOR_TEXT) {
     return glyphs
   }
@@ -515,13 +515,11 @@ export function computeVisibleCodonGlyphs(
           widest.x < regionPxHi
         ) {
           for (const call of calls) {
-            if (call.rowIndex >= firstRow && call.rowIndex < endRow) {
-              glyphs.push({
-                x: widest.x,
-                y: Math.round(offset + rowHeight * call.rowIndex + h / 2),
-                aa: call.aa,
-              })
-            }
+            glyphs.push({
+              x: widest.x,
+              y: Math.round(offset + rowHeight * call.rowIndex + h / 2),
+              aa: call.aa,
+            })
           }
         }
       }

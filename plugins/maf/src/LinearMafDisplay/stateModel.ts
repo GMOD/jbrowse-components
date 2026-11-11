@@ -825,17 +825,6 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The per-sample rows area has something to draw: the view can place
-         * it, the rows are shown and the row set is known. The `visible*`
-         * getters share this gate instead of re-spelling it.
-         */
-        get rowsVisible() {
-          return (
-            self.host.initialized && self.showAlignments && self.sourcesKnown
-          )
-        },
-        /**
-         * #getter
          * Max CSS-px height the rows canvas may take before its backing store
          * (`× dpr`) hits the browser/GPU canvas limit.
          */
@@ -875,6 +864,17 @@ export default function stateModelFactory(
         get effectiveRowHeight() {
           const fit = self.rowsHeight / self.nrow
           return fit > 0 ? fit : 1
+        },
+        /**
+         * #getter
+         * The per-sample rows area has something to draw: the view can place
+         * it, the rows have px and the row set is known. The `visible*`
+         * getters share this gate instead of re-spelling it.
+         */
+        get rowsVisible() {
+          return (
+            self.host.initialized && self.rowsHeight > 0 && self.sourcesKnown
+          )
         },
         /**
          * #getter
@@ -1065,7 +1065,6 @@ export default function stateModelFactory(
           return {
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
-            viewportHeight: self.rowsHeight,
           }
         },
         /**

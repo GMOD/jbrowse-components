@@ -420,7 +420,6 @@ describe('the letters', () => {
   const geometry = {
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   }
 
   test('draw one per call, centred on its codon', () => {

@@ -49,15 +49,15 @@ describe('cullMafRows', () => {
       { cells: EMPTY_MAF_CELLS, summary },
       [BLOCK],
       100,
-      { firstRow: 0, endRow: 2 },
     )
     expect(culled.summary!.records).toEqual([
       records[0],
       records[4],
       records[2],
+      records[3],
     ])
-    expect([...culled.summary!.row]).toEqual([0, 0, 1])
-    expect(culled.summary!.count).toBe(3)
+    expect([...culled.summary!.row]).toEqual([0, 0, 1, 5])
+    expect(culled.summary!.count).toBe(4)
   })
 
   it('keeps an insertion just past the block whose marker reaches into it', () => {
@@ -76,12 +76,11 @@ describe('cullMafRows', () => {
       },
       [BLOCK],
       100,
-      { firstRow: 0, endRow: 2 },
     )
-    expect([...culled.insertions!.x]).toEqual([1500, 2150])
+    expect([...culled.insertions!.x]).toEqual([1500, 2150, 1500])
   })
 
-  it('keeps the conservation bars a block can show, whatever rows scrolled out', () => {
+  it('keeps the conservation bars a block can show', () => {
     const culled = cullMafRows(
       {
         cells: EMPTY_MAF_CELLS,
@@ -96,7 +95,6 @@ describe('cullMafRows', () => {
       },
       [BLOCK],
       100,
-      { firstRow: 4, endRow: 6 },
     )
     expect(culled.conservation).toEqual({
       x: Uint32Array.from([1500]),
@@ -109,10 +107,7 @@ describe('cullMafRows', () => {
   })
 
   it('keeps nothing for a region no block shows', () => {
-    const culled = cullMafRows({ cells: EMPTY_MAF_CELLS, summary }, [], 100, {
-      firstRow: 0,
-      endRow: 10,
-    })
+    const culled = cullMafRows({ cells: EMPTY_MAF_CELLS, summary }, [], 100)
     expect(culled.summary!.count).toBe(0)
   })
 })

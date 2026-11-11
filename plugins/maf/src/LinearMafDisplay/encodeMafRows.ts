@@ -248,16 +248,13 @@ function pickInsertions(
 }
 
 /**
- * `payload` less the instances no block of its region can show: rows outside
- * `rows` and spans outside every block's painted bp range. The
- * conservation band sits above the rows, so only the bp range culls it. The SVG
- * export paints this.
+ * `payload` less the instances no block of its region can show: spans outside
+ * every block's painted bp range. The SVG export paints this.
  */
 export function cullMafRows(
   payload: MafRowsPayload,
   blocks: readonly RenderBlock[],
   canvasWidth: number,
-  rows: { firstRow: number; endRow: number },
 ): MafRowsPayload {
   const rangesWithin = (slackPx?: number) =>
     blocks.flatMap(block => {
@@ -269,25 +266,16 @@ export function cullMafRows(
   const shownInsertions = (c: InsertionChannels) => {
     const kept: number[] = []
     for (let i = 0; i < c.count; i++) {
-      const row = c.row[i]!
-      if (
-        row >= rows.firstRow &&
-        row < rows.endRow &&
-        markerRanges.some(r => r.overlaps(c.x[i]!, c.x2[i]! + 1))
-      ) {
+      if (markerRanges.some(r => r.overlaps(c.x[i]!, c.x2[i]! + 1))) {
         kept.push(i)
       }
     }
     return kept
   }
-  const shown = (spans: SpanChannels, band = false) => {
+  const shown = (spans: SpanChannels) => {
     const kept: number[] = []
     for (let i = 0; i < spans.count; i++) {
-      const row = spans.row[i]!
-      if (
-        (band || (row >= rows.firstRow && row < rows.endRow)) &&
-        ranges.some(r => r.overlaps(spans.x[i]!, spans.x2[i]!))
-      ) {
+      if (ranges.some(r => r.overlaps(spans.x[i]!, spans.x2[i]!))) {
         kept.push(i)
       }
     }
@@ -313,8 +301,7 @@ export function cullMafRows(
   return {
     codons,
     codonCells: codonCells && pickSpans(codonCells, shown(codonCells)),
-    conservation:
-      conservation && pickBars(conservation, shown(conservation, true)),
+    conservation: conservation && pickBars(conservation, shown(conservation)),
     cells: pickSpans(cells, shown(cells)),
     refNameRank: refNameRank && pickSpans(refNameRank, shown(refNameRank)),
     identity: identity && pickSpans(identity, shown(identity)),

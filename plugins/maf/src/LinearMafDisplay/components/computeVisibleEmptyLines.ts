@@ -1,6 +1,6 @@
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
-import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafStatus } from '../../types.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -24,7 +24,7 @@ export function computeVisibleEmptyLines(
 ): EmptyLineSegment[] {
   const { view, rpcDataMap, rowHeight } = params
   const segments: EmptyLineSegment[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(params)
+  const { h, offset } = rowBandGeometry(params)
 
   for (const {
     data: regionData,
@@ -45,15 +45,13 @@ export function computeVisibleEmptyLines(
       ) {
         const { left: xLeft, width } = spanRect(bpToPx, lo, hi)
         for (const e of block.empties) {
-          if (e.rowIndex >= firstRow && e.rowIndex < endRow) {
-            segments.push({
-              x: xLeft,
-              width,
-              rowTop: offset + rowHeight * e.rowIndex,
-              h,
-              status: e.status,
-            })
-          }
+          segments.push({
+            x: xLeft,
+            width,
+            rowTop: offset + rowHeight * e.rowIndex,
+            h,
+            status: e.status,
+          })
         }
       }
     }

@@ -5,7 +5,7 @@ import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeleti
 import { rowFlankOf } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { LABEL_FONT } from '../../LinearMafRenderer/rendering/types.ts'
 import { regionDeletionRunBounds } from './mafRowEvents.ts'
-import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -42,7 +42,7 @@ export function computeVisibleDeletions(
 ): DeletionMarker[] {
   const { view, rpcDataMap, rowHeight } = params
   const markers: DeletionMarker[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(params)
+  const { h, offset } = rowBandGeometry(params)
   // A run's screen width is its length over `bpPerPx`, so the label test is a
   // test on length, which makes both block culls exact.
   // `regionDeletionRunBounds` covers a block wide enough to label whose runs
@@ -75,14 +75,9 @@ export function computeVisibleDeletions(
         if (bound !== 0 && bound - 1 < minLabelBp) {
           continue
         }
-        // Walked to full depth while measuring, so the bound survives a scroll.
         const measuring = bound === 0
         longest = 0
         for (const row of block.rows) {
-          const drawn = row.rowIndex >= firstRow && row.rowIndex < endRow
-          if (!drawn && !measuring) {
-            continue
-          }
           const rowTop = offset + rowHeight * row.rowIndex
           forEachDeletion(
             block.refSeqBytes,
@@ -95,7 +90,7 @@ export function computeVisibleDeletions(
               }
               const lo = Math.max(start, visibleStart)
               const hi = Math.min(start + length, visibleEnd)
-              if (drawn && hi > lo) {
+              if (hi > lo) {
                 const { left: xLeft, width } = spanRect(bpToPx, lo, hi)
                 if (width >= MIN_LABEL_WIDTH) {
                   markers.push({ xLeft, width, rowTop, h, length })

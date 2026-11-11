@@ -48,7 +48,6 @@ const view = {
 const opts = {
   rowHeight: 10,
   rowProportion: 1,
-  viewportHeight: 1000,
 }
 
 // The pairing the model makes: the consensus over every loaded region, then the

@@ -36,20 +36,20 @@ describe('rowBandGeometry matches the generated rowRect twins', () => {
   )(
     'rowHeight=$rowHeight proportion=$rowProportion',
     ({ rowHeight, rowProportion }) => {
-      const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+      const { h, offset } = rowBandGeometry({ rowHeight, rowProportion })
       expect(h).toBe(drawnRowHeightPx(rowHeight, rowProportion))
       expect(offset).toBe(rowBandOffsetPx(rowHeight, rowProportion))
     },
   )
 
   it('floors a sub-pixel band at 1px, centered so it overhangs evenly', () => {
-    const { h, offset } = rowBandGeometry(0.4, 1)
+    const { h, offset } = rowBandGeometry({ rowHeight: 0.4, rowProportion: 1 })
     expect(h).toBe(1)
     expect(offset).toBeCloseTo(-0.3)
   })
 
   it('leaves a normal band at its natural height and inset', () => {
-    const { h, offset } = rowBandGeometry(10, 0.8)
+    const { h, offset } = rowBandGeometry({ rowHeight: 10, rowProportion: 0.8 })
     expect(h).toBe(8)
     expect(offset).toBe(1)
   })

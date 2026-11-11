@@ -50,7 +50,6 @@ function run(
     ]),
     rowHeight,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
 }
 
@@ -82,7 +81,6 @@ test('a run wider than the viewport marks the part on screen', () => {
     rpcDataMap: new Map([[0, data]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   expect(markers).toMatchObject([{ xLeft: 0, width: 80, length: 20 }])
 })
@@ -153,7 +151,6 @@ test('multiple rows each contribute their own markers', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   // row 1 is ungapped, so only rows 0 and 2 mark
   expect(markers.map(m => m.rowTop)).toEqual([1.5, 31.5])
@@ -180,35 +177,16 @@ function rowsRegion(refSeq: string, alignments: string[]): MafRegionData {
   }
 }
 
-function frame(
-  data: MafRegionData,
-  { bpPerPx = 1, viewportHeight = 1000 } = {},
-) {
+function frame(data: MafRegionData, { bpPerPx = 1 } = {}) {
   return computeVisibleDeletions({
     view: view(bpPerPx),
     rpcDataMap: new Map([[0, data]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight,
   })
 }
 
-// Taken over every row, not the ones on screen when it was filled — otherwise
-// a taller track showing a deep row with longer runs finds the block already
-// culled.
-test('a bound filled while a row was off the rows area still admits that row', () => {
-  const short = `AAAAA${'-'.repeat(3)}AAAAAAAAAAAAAAAAAAAAAA`
-  const long = `AAAAA${'-'.repeat(20)}AAAAA`
-  const rows = [short, short, short, short, short, long]
-  const data = rowsRegion('A'.repeat(30), rows)
-
-  // one row tall, so the first call sees row 0 only and never touches row 5
-  expect(frame(data, { viewportHeight: 15 })).toEqual([])
-  const taller = frame(data, { viewportHeight: 90 })
-  expect(taller.map(m => m.length)).toEqual([20])
-})
-
-// ...and a length, not a verdict about the zoom it was filled at.
+// A length, not a verdict about the zoom it was filled at.
 test('a bound filled at a zoom where nothing labelled admits a closer one', () => {
   const data = rowsRegion('A'.repeat(30), [`AAAAA${'-'.repeat(20)}AAAAA`])
 
@@ -254,7 +232,6 @@ describe('two visible regions', () => {
       ]),
       rowHeight: 15,
       rowProportion: 0.8,
-      viewportHeight: 1000,
     })
 
   it('stops a deletion at its region edge', () => {

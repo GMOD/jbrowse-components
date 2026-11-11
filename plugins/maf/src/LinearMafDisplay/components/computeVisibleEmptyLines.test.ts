@@ -56,7 +56,6 @@ test('positions an empty-row segment across the block extent', () => {
     rpcDataMap: { get: () => data },
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   // h = 12, offset = 1.5, rowTop = 1.5 + 15*2; x spans bp 100..110 at scale 1
   expect(segs).toEqual([{ x: 0, width: 10, rowTop: 31.5, h: 12, status: 'C' }])
@@ -77,7 +76,6 @@ test('emits nothing for blocks without empties', () => {
     rpcDataMap: { get: () => data },
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   expect(segs).toHaveLength(0)
 })
@@ -109,7 +107,6 @@ test('mirrors x for reversed regions', () => {
     rpcDataMap: { get: () => data },
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   // reversed: x = end - bp → bp 100..110 maps to px 100..90; left=90, width=10
   expect(segs[0]).toMatchObject({ x: 90, width: 10, status: 'I' })
@@ -126,23 +123,15 @@ describe('the rows area', () => {
       empties: rows.map(r => emptyRow(r, 'C')),
     },
   ])
-  const compute = (viewportHeight: number) =>
-    computeVisibleEmptyLines({
-      view,
-      rpcDataMap: { get: () => data },
-      rowHeight: 10,
-      rowProportion: 1,
-      viewportHeight,
-    })
-
   it('places every marker at its row', () => {
-    expect(compute(1000).map(s => s.rowTop)).toEqual([
-      0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
-    ])
-  })
-
-  it('emits only the rows the area shows, the last one partly', () => {
-    expect(compute(25).map(s => s.rowTop)).toEqual([0, 10, 20])
+    expect(
+      computeVisibleEmptyLines({
+        view,
+        rpcDataMap: { get: () => data },
+        rowHeight: 10,
+        rowProportion: 1,
+      }).map(s => s.rowTop),
+    ).toEqual([0, 10, 20, 30, 40, 50, 60, 70, 80, 90])
   })
 })
 
@@ -164,7 +153,6 @@ test('a line crossing the screen edge runs on past it, within the region', () =>
     rpcDataMap: { get: () => data },
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
   })
   expect(seg!.x).toBe(20)
   expect(seg!.x + seg!.width).toBeGreaterThan(50)
@@ -210,7 +198,6 @@ describe('two visible regions', () => {
       rpcDataMap: { get: i => (i === 0 ? data : undefined) },
       rowHeight: 15,
       rowProportion: 0.8,
-      viewportHeight: 1000,
     })
 
   it('stops a line at its region edge', () => {

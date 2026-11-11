@@ -23,7 +23,6 @@ import {
   paintMafRowOverlays,
 } from '../LinearMafRenderer/rendering/rowOverlays.ts'
 import { SvgMafBandLabels } from './components/MafBandLabels.tsx'
-import { visibleRowRange } from './components/visibleRegionGeometry.ts'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -45,7 +44,7 @@ function MafSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const palette = usePalette()
-  const { effectiveRowHeight, rowsHeight, topBands, rowsTopOffset } = model
+  const { rowsHeight, topBands, rowsTopOffset } = model
   const { coverage, conservation } = topBands.rects
   const theme = getMafOverlayTheme(palette)
   const colorPalette = theme.colors
@@ -58,7 +57,6 @@ function MafSvgBody({
     palette: colorPalette,
   }
   const encodeProps = model.rowsEncodePropsIn(colorPalette)
-  const shownRows = visibleRowRange(effectiveRowHeight, rowsHeight)
   const svgRows = new Map(
     [...model.rowsSources].map(([idx, source]) => [
       idx,
@@ -66,7 +64,6 @@ function MafSvgBody({
         encodeMafRows(source, encodeProps),
         renderBlocks.filter(b => b.displayedRegionIndex === idx),
         width,
-        shownRows,
       ),
     ]),
   )

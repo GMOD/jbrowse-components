@@ -44,7 +44,6 @@ test('mismatched bases produce labels', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
@@ -65,7 +64,6 @@ test('reversed region mirrors label x positions through the region end', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
@@ -86,7 +84,6 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
   // Only the two 'A' matches would produce labels (under the base layer);
@@ -107,7 +104,6 @@ test('columns outside the visible span emit no label', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
   expect(labels).toHaveLength(10)
@@ -131,7 +127,6 @@ describe('a region scrolled partly off screen', () => {
       rpcDataMap,
       rowHeight: 15,
       rowProportion: 0.8,
-      viewportHeight: 1000,
       paints: { mismatches: true, everyBase: true },
     }).map(l => Math.round(l.x))
 
@@ -178,7 +173,6 @@ describe('two visible regions', () => {
       rpcDataMap: new Map([[0, regionData('A'.repeat(30), 'A'.repeat(30))]]),
       rowHeight: 15,
       rowProportion: 0.8,
-      viewportHeight: 1000,
       paints: { mismatches: true, everyBase: true },
     })
 
@@ -202,7 +196,6 @@ test('dashes in alignment are treated as gaps', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
   expect(labels.map(l => l.text)).toEqual(['A', 'A'])
@@ -214,7 +207,6 @@ test('letters keep the case the file gives them', () => {
     rpcDataMap: new Map([[0, regionData('AAAAA', 'AcGtA')]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['c', 'G', 't'])

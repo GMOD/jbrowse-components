@@ -45,8 +45,6 @@ export interface MafRowGeometryParams {
   /** the fitted per-row height */
   rowHeight: number
   rowProportion: number
-  /** Height of the rows area, for culling rows past it. */
-  viewportHeight: number
 }
 
 /**
@@ -67,36 +65,13 @@ export interface MafOverlayParams extends MafRowGeometryParams {
  * Delegates to `rowRect.slang`'s generated twins so the floor and centering
  * match the GPU pass by construction.
  */
-export function rowBandGeometry(rowHeight: number, rowProportion: number) {
+export function rowBandGeometry({
+  rowHeight,
+  rowProportion,
+}: MafRowGeometryParams) {
   return {
     h: drawnRowHeightPx(rowHeight, rowProportion),
     offset: rowBandOffsetPx(rowHeight, rowProportion),
-  }
-}
-
-/**
- * Half-open `[firstRow, endRow)` range of row indices the rows area shows,
- * the last one partly.
- *
- * A filter bound, not an array bound: `endRow` can be past the last row that
- * exists. A caller sizing a buffer or indexing rows needs its own
- * `Math.min(endRow, nRows)`. `@jbrowse/core/util/virtualRange` clamps instead.
- */
-export function visibleRowRange(rowHeight: number, viewportHeight: number) {
-  return { firstRow: 0, endRow: Math.ceil(viewportHeight / rowHeight) }
-}
-
-/**
- * The row geometry every per-row overlay opens with. Taking the params object
- * removes the positional arguments, whose swap would type-check and misplace
- * every marker. See this file's closing NOTE for why sharing the per-row walk
- * is a different question.
- */
-export function rowViewport(params: MafRowGeometryParams) {
-  const { rowHeight, rowProportion, viewportHeight } = params
-  return {
-    ...rowBandGeometry(rowHeight, rowProportion),
-    ...visibleRowRange(rowHeight, viewportHeight),
   }
 }
 

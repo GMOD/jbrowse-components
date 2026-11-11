@@ -3,7 +3,7 @@ import { DASH, LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { paintsOwnColor } from '../../LinearMafRenderer/resolveCellColor.ts'
-import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { BasePaints } from '../../LinearMafRenderer/resolveCellColor.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -29,7 +29,7 @@ export function computeVisibleLabels(
   const { view, rpcDataMap, rowHeight, paints } = params
 
   const labels: VisibleLabel[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(params)
+  const { h, offset } = rowBandGeometry(params)
   // Gated on the same zoom and row height as the insertion and deletion count
   // labels, so all row text reveals together.
   if (1 / view.bpPerPx >= CHAR_SIZE_WIDTH && h >= MIN_HEIGHT_FOR_TEXT) {
@@ -53,9 +53,6 @@ export function computeVisibleLabels(
         const refSeqBytes = block.refSeqBytes
 
         for (const row of block.rows) {
-          if (row.rowIndex < firstRow || row.rowIndex >= endRow) {
-            continue
-          }
           const alignmentBytes = row.alignmentBytes
           const rowTop = offset + rowHeight * row.rowIndex
           const yPos = Math.round(hp2 + rowTop)

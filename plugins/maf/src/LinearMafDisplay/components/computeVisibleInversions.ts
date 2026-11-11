@@ -2,7 +2,7 @@ import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { regionInvertedRows } from './mafRowEvents.ts'
 import { rowRefNameBp } from './rowRefNameBp.ts'
-import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -76,7 +76,7 @@ export function computeVisibleInversions(
 ): InversionMarker[] {
   const { view, rpcDataMap, rowHeight, consensus } = params
   const markers: InversionMarker[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(params)
+  const { h, offset } = rowBandGeometry(params)
 
   for (const {
     data: regionData,
@@ -96,22 +96,20 @@ export function computeVisibleInversions(
       }
       let span: ReturnType<typeof spanRect> | undefined
       for (const row of invertedRows(b)) {
-        if (row >= firstRow && row < endRow) {
-          span ??= spanRect(bpToPx, block.startBp, block.endBp)
-          const visibleLeft = Math.min(Math.max(span.left, pxLo), pxHi)
-          markers.push({
-            xLeft: span.left,
-            width: span.width,
+        span ??= spanRect(bpToPx, block.startBp, block.endBp)
+        const visibleLeft = Math.min(Math.max(span.left, pxLo), pxHi)
+        markers.push({
+          xLeft: span.left,
+          width: span.width,
+          visibleLeft,
+          visibleWidth:
+            Math.max(visibleLeft, Math.min(span.left + span.width, pxHi)) -
             visibleLeft,
-            visibleWidth:
-              Math.max(visibleLeft, Math.min(span.left + span.width, pxHi)) -
-              visibleLeft,
-            regionLeft: regionPxLo,
-            regionRight: regionPxHi,
-            rowTop: offset + rowHeight * row,
-            h,
-          })
-        }
+          regionLeft: regionPxLo,
+          regionRight: regionPxHi,
+          rowTop: offset + rowHeight * row,
+          h,
+        })
       }
     }
   }

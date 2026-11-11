@@ -1,7 +1,7 @@
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { frameColorIndex } from '../../LinearMafRenderer/util.ts'
-import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
 import type {
@@ -62,7 +62,7 @@ export function computeVisibleFrames(
 ): FrameMarker[] {
   const { view, framesDataMap, rowIndexBySrc, rowHeight } = params
   const markers: FrameMarker[] = []
-  const { h, offset, firstRow, endRow } = rowViewport(params)
+  const { h, offset } = rowBandGeometry(params)
   // A quarter of the drawn band, floored at 2px and capped at half of it, so
   // the strip stays a band on the row instead of replacing its coloring.
   const stripH = Math.min(h / 2, Math.max(2, Math.round(h * 0.25)))
@@ -86,12 +86,7 @@ export function computeVisibleFrames(
       const lo = Math.max(r.start, regionStart)
       const hi = Math.min(r.end, regionEnd)
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (
-        hi > lo &&
-        rowIndex !== undefined &&
-        rowIndex >= firstRow &&
-        rowIndex < endRow
-      ) {
+      if (hi > lo && rowIndex !== undefined) {
         // >=1px so a single-base CDS segment still reads
         const { left, width } = spanRect(bpToPx, lo, hi, 1)
         const xLeft = Math.max(regionPxLo, Math.min(left, regionPxHi - width))
