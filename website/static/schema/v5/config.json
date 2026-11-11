@@ -16331,6 +16331,189 @@
       },
       "unevaluatedProperties": false
     },
+    "MultiRowRows": {
+      "title": "MultiRowRows",
+      "anyOf": [
+        {
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "default": "type",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "MultiRowRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "sort": {
+              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "tree": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowTree"
+              }
+            },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "the field whose values each take a row.",
+              "default": "type",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "filter": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
+                }
+              }
+            },
+            "annotations": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowAnnotation"
+                }
+              }
+            },
+            "step": {
+              "description": "row height in px, the rows that do not fit scrolling; or \"fit\" (the default) to divide the track height between the rows, as heightMode \"fit\" does on a feature track.",
+              "default": "fit",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "const": "fit"
+                  }
+                ]
+              }
+            },
+            "groups": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowGroup"
+                }
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
       "properties": {
@@ -16399,7 +16582,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/MarkRows"
+            "$ref": "#/$defs/MultiRowRows"
           }
         },
         "encoding": {

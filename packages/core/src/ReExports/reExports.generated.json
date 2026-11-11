@@ -1783,6 +1783,16 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/ErrorBanner": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/ErrorBar": {
       "package": "@jbrowse/core",
       "names": [
@@ -3165,6 +3175,7 @@
       "package": "@jbrowse/core",
       "names": [
         "censusFields",
+        "isBlobText",
         "isRecord"
       ],
       "worker": "real"
@@ -3275,6 +3286,13 @@
       "package": "@jbrowse/core",
       "names": [
         "getRelativeX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/groupByCandidates": {
+      "package": "@jbrowse/core",
+      "names": [
+        "summarizeGroupByCandidates"
       ],
       "worker": "real"
     },
@@ -4343,6 +4361,27 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/AttributeFieldInput": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/attributeVerdict": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "COLORING",
+        "GROUPING",
+        "ROWS",
+        "attributeVerdict",
+        "candidateCountHint"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/BandSeamHandle": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4441,6 +4480,16 @@
         "coarseTierSvgReady"
       ],
       "worker": "real"
+    },
+    "@jbrowse/display-kit/ColorByAttributeDialog": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
     },
     "@jbrowse/display-kit/colorByMenu": {
       "package": "@jbrowse/display-kit",
@@ -5803,6 +5852,17 @@
         "inkOnRect",
         "nearestInk",
         "shapeHitNearest"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/sparseSpans": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "SPARSE_GAP_QUANTILE",
+        "SPARSE_MIN_GAP_PX",
+        "leavesRoom",
+        "quartileGap",
+        "spanGaps"
       ],
       "worker": "real"
     },

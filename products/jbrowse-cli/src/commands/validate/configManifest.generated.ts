@@ -11457,7 +11457,12 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             }
           ],
-          "schema": "Mark"
+          "schema": "Mark",
+          "defaultEntries": [
+            {
+              "mark": "rect"
+            }
+          ]
         },
         {
           "name": "transform",
@@ -11502,7 +11507,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "MarkRowsConfigurationSchema",
+          "type": "MultiRowRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -11731,7 +11736,7 @@ export const configManifest: ConfigManifest = {
               "schema": "RowGroup"
             }
           ],
-          "schema": "MarkRows",
+          "schema": "MultiRowRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
