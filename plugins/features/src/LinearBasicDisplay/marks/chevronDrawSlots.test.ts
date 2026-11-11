@@ -1,26 +1,19 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/render-core/blockClipUtils'
 
 import {
+  CHEVRON_SPACING_PX,
   CHEVRON_VERTS,
-  CHEVRON_W_PX,
+  chevronGridWindow,
   chevronSlotBudget,
 } from '../components/sharedRendererConstants.ts'
-import {
-  chevronCount,
-  chevronFirstVisible,
-  chevronLastVisible,
-  chevronOffset,
-  showChevrons,
-} from '../passes/shaders/chevron.js.generated.ts'
 import { chevronShape } from './featureGlyphShapes.ts'
 
 import type { LineChannels } from './featureGlyphShapes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// chevron.slang's vertex stage walked in JS: the chevron indices one line puts
-// down when its draw shades `slots` chevrons per instance. The line's px width
-// goes through float32 as the shader computes it.
+// chevron.slang's vertex stage walked in JS: the grid indices one line puts
+// down when its draw shades `slots` chevrons per instance.
 function drawnChevrons(
   start: number,
   end: number,
@@ -28,26 +21,14 @@ function drawnChevrons(
   reversed: boolean,
   slots: number,
 ) {
-  const lengthBp = end - start
-  const widthPx = Math.fround(Math.fround(lengthBp) / Math.fround(clip.bpPerPx))
-  if (!showChevrons(widthPx)) {
-    return []
-  }
-  const count = chevronCount(widthPx)
-  const spacing = chevronOffset(lengthBp, count, 0)
   const [hi, lo, span] = bpRangeXTuple(clip, reversed)
   const viewStart = hi + lo - start
-  const reach = (CHEVRON_W_PX / 2) * clip.bpPerPx
-  const first = chevronFirstVisible(
+  const { first, last } = chevronGridWindow(
+    start,
+    end - start,
+    clip.bpPerPx,
     Math.min(viewStart, viewStart + span),
-    spacing,
-    reach,
-  )
-  const last = chevronLastVisible(
     Math.max(viewStart, viewStart + span),
-    spacing,
-    count,
-    reach,
   )
   const drawn = []
   for (let slot = 0; slot < slots && first + slot <= last; slot++) {
@@ -60,6 +41,7 @@ function lineChannels(lines: [number, number][]): LineChannels {
   return {
     startEnd: new Uint32Array(lines.flat()),
     y: new Float32Array(lines.length),
+    height: new Float32Array(lines.length).fill(10),
     direction: new Int8Array(lines.length).fill(1),
     color: new Uint32Array(lines.length),
     count: lines.length,
@@ -168,8 +150,6 @@ test('every chevron the canvas-wide budget drew, the per-draw budget draws', () 
 })
 
 test('a line a chevron or two longer than its block still fills every slot', () => {
-  // The window's worst case (`chevronWindow.test.ts`): spacing furthest under
-  // the full step, which only the block's own budget bounds.
   const differ = []
   for (const canvasWidth of [320, 1920]) {
     const block = {
@@ -196,35 +176,6 @@ test('a line a chevron or two longer than its block still fills every slot', () 
   expect(differ.slice(0, 3)).toEqual([])
 })
 
-test('a line a float32 rounding short of the next chevron keeps its last slot', () => {
-  // 40 * 25 px of line at a bpPerPx whose float32 rounding lifts the count
-  const differ = []
-  for (const bpPerPx of [0.1, 0.3, 1 / 3, 2.2, 7.7]) {
-    for (const k of [1, 2, 25, 37]) {
-      const end = Math.floor(40 * k * bpPerPx)
-      for (const start of [0, 1]) {
-        differ.push(
-          ...compareChevrons(
-            1500,
-            [
-              {
-                displayedRegionIndex: 0,
-                start: 0,
-                end: 1500 * bpPerPx,
-                screenStartPx: 0,
-                screenEndPx: 1500,
-                reversed: false,
-              },
-            ],
-            [[start, end]],
-          ).differ,
-        )
-      }
-    }
-  }
-  expect(differ).toEqual([])
-})
-
 test('a gene region shades a few chevrons per line, not a canvas of them', () => {
   // A 120 kb view at 1500 px: the longest intron, 18 kb, spans 225 px.
   const canvasWidth = 1500
@@ -244,8 +195,8 @@ test('a gene region shades a few chevrons per line, not a canvas of them', () =>
   ]
   const { shaded, differ } = compareChevrons(canvasWidth, [block], introns)
   expect(differ).toEqual([])
-  expect(chevronSlotBudget(canvasWidth)).toBe(40)
-  expect(shaded).toBe(chevronCount(18_000 / bpPerPx) + 1)
+  expect(shaded).toBe(Math.floor(18_000 / bpPerPx / CHEVRON_SPACING_PX) + 2)
+  expect(shaded * 5).toBeLessThan(chevronSlotBudget(canvasWidth))
 })
 
 test('a draw whose lines carry no direction shades nothing', () => {

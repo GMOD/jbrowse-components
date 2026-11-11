@@ -50,6 +50,7 @@ export const MULTIWAY_MARKS = [
     params: (state, cell) => ({
       scrollY: state.scrollTopPx,
       outlineColor: cell.kind === 'glyphs' ? (cell.data.outlineColor ?? 0) : 0,
+      hideChevrons: true,
     }),
     continuation: false,
   }),

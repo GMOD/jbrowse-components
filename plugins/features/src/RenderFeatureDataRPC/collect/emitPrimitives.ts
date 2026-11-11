@@ -56,6 +56,7 @@ export function emitIntronLines(
       start: lineStart,
       end: lineEnd,
       y: lineY,
+      height: transcript.height,
       ...stroke,
       direction,
       flatbushIdx,

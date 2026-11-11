@@ -65,6 +65,7 @@ const EMPTY: RegionRenderData = {
   linePositions: new Uint32Array(),
   lineYs: new Float32Array(),
   lineColors: new Uint32Array(),
+  lineHeights: new Float32Array(),
   lineDirections: new Int8Array(),
   arrowXs: new Uint32Array(),
   arrowYs: new Float32Array(),
@@ -106,21 +107,22 @@ function chevronApexOffsets(region: RegionRenderData, reversed: boolean) {
 }
 
 test('intron chevrons follow the screen axis', () => {
-  // 80px of intron hosts two chevrons at the 40px nominal spacing.
+  // 80px of intron hosts three chevrons on the 32px grid at 1 bp per px.
   const region: RegionRenderData = {
     ...EMPTY,
     linePositions: new Uint32Array([60, 140]),
     lineYs: new Float32Array([20]),
     lineColors: new Uint32Array([0xff_00_00_00]),
+    lineHeights: new Float32Array([10]),
     lineDirections: new Int8Array([1]),
   }
   const forward = chevronApexOffsets(region, false)
-  expect(forward.length).toBe(2)
+  expect(forward.length).toBe(3)
   for (const d of forward) {
     expect(d).toBeGreaterThan(0)
   }
   const flipped = chevronApexOffsets(region, true)
-  expect(flipped.length).toBe(2)
+  expect(flipped.length).toBe(3)
   for (const d of flipped) {
     expect(d).toBeLessThan(0)
   }
@@ -132,10 +134,11 @@ test('an intron strokes all its chevrons in one path', () => {
     linePositions: new Uint32Array([60, 140]),
     lineYs: new Float32Array([20]),
     lineColors: new Uint32Array([0xff_00_00_00]),
+    lineHeights: new Float32Array([10]),
     lineDirections: new Int8Array([1]),
   }
   const { triangles, strokes } = draw(region, false)
-  expect(triangles).toHaveLength(2)
+  expect(triangles).toHaveLength(3)
   expect(strokes).toBe(2)
 })
 

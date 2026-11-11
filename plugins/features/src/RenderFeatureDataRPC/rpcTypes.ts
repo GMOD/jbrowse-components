@@ -122,6 +122,7 @@ export interface FeatureDataResult {
   linePositions: Uint32Array
   lineYs: Float32Array
   lineColors: Uint32Array
+  lineHeights: Float32Array
   lineDirections: Int8Array
   lineColorClasses: Uint8Array
   lineLabelRows: Uint16Array

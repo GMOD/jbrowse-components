@@ -58,6 +58,7 @@ export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
       d && {
         startEnd: d.linePositions,
         y: d.lineYs,
+        height: d.lineHeights,
         direction: d.lineDirections,
         color: d.lineColors,
         count: d.lineYs.length,

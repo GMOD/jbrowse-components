@@ -29,6 +29,8 @@ export interface RectData extends PrimitiveBase {
 export interface LineData extends PrimitiveBase {
   start: number
   end: number
+  // Height of the box the line runs through, which sizes its chevrons.
+  height: number
   direction: number
 }
 
@@ -164,6 +166,7 @@ export function packRenderArrays(
   const linePositions = new Uint32Array(visibleLines.length * 2)
   const lineYs = new Float32Array(visibleLines.length)
   const lineColors = new Uint32Array(visibleLines.length)
+  const lineHeights = new Float32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
   const lineColorClasses = colorClassArray(visibleLines)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
@@ -175,6 +178,7 @@ export function packRenderArrays(
     linePositions[i * 2 + 1] = line.end
     lineYs[i] = line.y
     lineColors[i] = line.color
+    lineHeights[i] = line.height
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
   }
@@ -217,6 +221,7 @@ export function packRenderArrays(
     linePositions,
     lineYs,
     lineColors,
+    lineHeights,
     lineDirections,
     lineColorClasses,
     lineFeatureIndices,

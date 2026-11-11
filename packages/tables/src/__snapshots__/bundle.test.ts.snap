@@ -675,6 +675,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "color": "array",
       "direction": "array",
       "feature": "array",
+      "halfHeight": "array",
       "position": "array",
       "region": "array",
       "subfeature": "array",

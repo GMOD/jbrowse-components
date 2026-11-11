@@ -249,6 +249,7 @@ function trimPrimitiveKind(
     data.rectDensityFade = pick(data.rectDensityFade, kept, 1)
   } else if (kind === 'line') {
     data.linePositions = pick(data.linePositions, kept, 2)
+    data.lineHeights = pick(data.lineHeights, kept, 1)
     data.lineDirections = pick(data.lineDirections, kept, 1)
   } else {
     data.arrowHeights = pick(data.arrowHeights, kept, 1)

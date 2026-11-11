@@ -61,6 +61,7 @@ const glyphs: LaneGlyphData = {
   linePositions: Uint32Array.of(PX_ORIGIN + 400, PX_ORIGIN + 500),
   lineYs: Float32Array.of(GLYPH_CENTRE),
   lineColors: Uint32Array.of(0xff333333),
+  lineHeights: Float32Array.of(10),
   lineDirections: Int8Array.of(1),
   arrowXs: Uint32Array.of(PX_ORIGIN + 560),
   arrowYs: Float32Array.of(GLYPH_CENTRE),
@@ -188,13 +189,9 @@ test('the GPU frame draws the layers in the order the state lists them, ribbons 
   expect(hal.draws().map(d => d.passId)).toEqual([
     'fillStraight',
     'line',
-    'chevron',
     'rect',
     'arrow',
   ])
-  expect(hal.draws().find(d => d.passId === 'chevron')!.bufferPassId).toBe(
-    'line',
-  )
 })
 
 test('a drawCurves toggle draws the other fill pass off the same buffer', () => {

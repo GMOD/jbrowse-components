@@ -7,4 +7,6 @@ public struct LineInstance {
   public float y         : ATTR1;
   public float direction : ATTR2;
   public uint  color     : ATTR3;
+  // The box the line runs through; only the chevron sizes off it.
+  public float height    : ATTR4;
 };

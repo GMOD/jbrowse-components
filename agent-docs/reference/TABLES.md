@@ -452,8 +452,9 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   display's px), and `subfeatures`, a gene's transcripts.
 - `rects`, `lines`, `chevrons` and `arrows`, the glyph's primitives in their
   resolved colors. A chevron or arrow comes back only where the display draws one
-  at this zoom (the shaders' `showChevrons` and `arrowDraws`), and `glyph` gives the
-  px sizes they draw at.
+  at this zoom (`chevronGridWindow` with `chevronHalfHeightPx`, and `arrowDraws`),
+  a chevron with the `halfHeight` it flattens to in its box, and `glyph` gives
+  the px sizes they draw at.
 - `labels`, each name, description and transcript label the display shows at this
   zoom, placed by its rule, with `position` in bp. A feature crossing several
   regions gets its labels once, under the first region showing them, since one

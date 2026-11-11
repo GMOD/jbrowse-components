@@ -343,6 +343,7 @@ describe('a family other than rect still inks', () => {
             start: 1000,
             end: 2000,
             y: 5,
+            height: 10,
             direction: 1,
             labelRowsAbove: 0,
           },

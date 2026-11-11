@@ -33,6 +33,7 @@ function regionData(numRects: number, over: Partial<RegionRenderData> = {}) {
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),
     lineColors: new Uint32Array(0),
+    lineHeights: new Float32Array(0),
     lineDirections: new Int8Array(0),
     arrowXs: new Uint32Array(0),
     arrowYs: new Float32Array(0),
@@ -72,6 +73,7 @@ function everyFamily() {
     linePositions: new Uint32Array([100, 200, 300, 400]),
     lineYs: new Float32Array(2),
     lineColors: new Uint32Array(2).fill(0xff00_00ff),
+    lineHeights: new Float32Array(2).fill(10),
     lineDirections: new Int8Array(2).fill(1),
     arrowXs: new Uint32Array([150, 350]),
     arrowYs: new Float32Array(2),
@@ -173,6 +175,7 @@ describe('draw passes', () => {
       linePositions: new Uint32Array([100, 400]),
       lineYs: new Float32Array(1),
       lineColors: new Uint32Array(1).fill(0xff00_00ff),
+      lineHeights: new Float32Array(1).fill(10),
       lineDirections: new Int8Array(1).fill(1),
     })
     renderer.upload(REGION, data)
@@ -191,15 +194,16 @@ describe('draw passes', () => {
       linePositions: new Uint32Array([100, 400]),
       lineYs: new Float32Array(1),
       lineColors: new Uint32Array(1).fill(0xff00_00ff),
+      lineHeights: new Float32Array(1).fill(10),
       lineDirections: new Int8Array(1).fill(1),
     })
     renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
     const drawn = hal.draws()
-    // The 300 bp line spans 240 px, six chevrons, so one spare makes seven of
-    // the 22 slots an 800 px canvas could hold.
+    // The 300 bp line spans 240 px, room for nine grid points 28 px apart,
+    // so one spare makes ten of the 31 slots an 800 px canvas could hold.
     expect(drawn.find(d => d.passId === 'chevron')!.verticesPerInstance).toBe(
-      7 * CHEVRON_VERTS,
+      10 * CHEVRON_VERTS,
     )
     // Only the chevron pass asks; the rest draw their descriptor's count.
     expect(drawn.find(d => d.passId === 'line')!.verticesPerInstance).toBe(

@@ -22,7 +22,6 @@ import { snapBoxCenterYPx } from '@jbrowse/render-core/shaders/hpmath'
 
 import {
   ARROW_LENGTH_PX,
-  CHEVRON_H_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_VERTS,
   CHEVRON_W_PX,
@@ -39,6 +38,7 @@ import {
   STEM_HALF_H_PX,
   canvasEdgeFlags,
   chevronDrawSlots,
+  chevronGridWindow,
 } from '../components/sharedRendererConstants.ts'
 import {
   ArrowPass,
@@ -54,13 +54,7 @@ import {
   arrowDraws,
   arrowHeadHalfHeightPx,
 } from '../passes/shaders/arrow.js.generated.ts'
-import {
-  chevronCount,
-  chevronFirstVisible,
-  chevronLastVisible,
-  chevronOffset,
-  showChevrons,
-} from '../passes/shaders/chevron.js.generated.ts'
+import { chevronHalfHeightPx } from '../passes/shaders/chevron.js.generated.ts'
 import {
   markerApexInsetPx,
   markerDirection,
@@ -82,6 +76,8 @@ import type {
   MarkShape,
 } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
+const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 
 /**
  * What every feature-glyph shape takes beside the frame: the rows-area scroll
@@ -106,10 +102,14 @@ export interface RectChannels {
   count: number
 }
 
-/** A 1px line at `y` (a box centre) with strand chevrons in `direction`. */
+/**
+ * A 1px line at `y`, the centre of a box `height` tall, with strand chevrons
+ * in `direction`.
+ */
 export interface LineChannels {
   startEnd: Uint32Array
   y: Float32Array
+  height: Float32Array
   direction: Int8Array
   color: Uint32Array
   count: number
@@ -126,9 +126,6 @@ export interface ArrowChannels {
   color: Uint32Array
   count: number
 }
-
-const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
-const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 // The furthest a glyph reaches outside the box it rides on: a chevron arm, an
 // arrowhead, a continuation triangle, plus the ≤1px center-row snap.
@@ -338,10 +335,12 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   writeUniforms: writeFeatureGlyphUniforms,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startEnd, y: ys, direction, color, count } = channels
+    const { startEnd, y: ys, height, direction, color, count } = channels
     const { scrollY, hideChevrons } = params
     const { canvasWidth, canvasHeight } = frame
     const toX = makeBpMapper(block)
+    const { signedSpanPx, spanBp } = bpProjection(block)
+    const pxPerBp = signedSpanPx / spanBp
     const setStroke = makeAbgrStroke(ctx)
     for (let i = 0; i < count; i++) {
       if (!centerRowVisible(scrollY, canvasHeight, ys[i]!)) {
@@ -361,32 +360,29 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
       // with it.
       const rawDir = direction[i]!
       const dir = block.reversed ? -rawDir : rawDir
-      if (dir !== 0 && !hideChevrons) {
+      const halfH = hideChevrons ? 0 : chevronHalfHeightPx(height[i]!)
+      if (dir !== 0 && halfH > 0) {
+        const startBp = startEnd[i * 2]!
+        // The canvas as a bp window from the line's start, in either block
+        // direction.
+        const a = -x1 / pxPerBp
+        const b = (canvasWidth - x1) / pxPerBp
+        const { grid, phase, first, last } = chevronGridWindow(
+          startBp,
+          startEnd[i * 2 + 1]! - startBp,
+          Math.abs(1 / pxPerBp),
+          Math.min(a, b),
+          Math.max(a, b),
+        )
         ctx.lineWidth = CHEVRON_THICKNESS_PX
-        const lineWidthPx = Math.abs(x2 - x1)
-        if (showChevrons(lineWidthPx)) {
-          const totalChevrons = chevronCount(lineWidthPx)
-          const spacing = chevronOffset(lineWidthPx, totalChevrons, 0)
-          const minX = Math.min(x1, x2)
-          // A long intron zoomed in spans millions of px with almost every
-          // chevron off-screen. The window measures from the LINE'S start,
-          // which is why the canvas enters it as `-minX`.
-          const firstC = chevronFirstVisible(-minX, spacing, CHEVRON_HALF_W)
-          const lastC = chevronLastVisible(
-            canvasWidth - minX,
-            spacing,
-            totalChevrons,
-            CHEVRON_HALF_W,
-          )
-          ctx.beginPath()
-          for (let c = firstC; c <= lastC; c++) {
-            const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
-            ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
-            ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
-            ctx.lineTo(cx - CHEVRON_HALF_W * dir, y + CHEVRON_HALF_H)
-          }
-          ctx.stroke()
+        ctx.beginPath()
+        for (let k = first; k <= last; k++) {
+          const cx = toX(startBp + phase + k * grid)
+          ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - halfH)
+          ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
+          ctx.lineTo(cx - CHEVRON_HALF_W * dir, y + halfH)
         }
+        ctx.stroke()
       }
     }
   },
@@ -396,7 +392,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   // hull, which the arrow and the rect give and this shape's placement rule
   // does not.
   ink(channels, block, frame, params, i) {
-    const { startEnd, y: ys, direction } = channels
+    const { startEnd, y: ys, height, direction } = channels
     if (!centerRowVisible(params.scrollY, frame.canvasHeight, ys[i]!)) {
       return undefined
     }
@@ -405,10 +401,23 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
     const x2 = toX(startEnd[i * 2 + 1]!)
     const y = snapBoxCenterYPx(ys[i]!, params.scrollY)
     const width = Math.abs(x2 - x1)
-    const chevrons =
-      !params.hideChevrons && direction[i] !== 0 && showChevrons(width)
-    const gx = chevrons ? CHEVRON_HALF_W + CHEVRON_THICKNESS_PX / 2 : 0
-    const gy = chevrons ? CHEVRON_HALF_H + CHEVRON_THICKNESS_PX / 2 : 0.5
+    const halfH =
+      !params.hideChevrons && direction[i] !== 0
+        ? chevronHalfHeightPx(height[i]!)
+        : 0
+    const { signedSpanPx, spanBp } = bpProjection(block)
+    const startBp = startEnd[i * 2]!
+    const grid =
+      halfH > 0
+        ? chevronGridWindow(
+            startBp,
+            startEnd[i * 2 + 1]! - startBp,
+            Math.abs(1 / (signedSpanPx / spanBp)),
+          )
+        : undefined
+    const arms = grid !== undefined && grid.last >= grid.first
+    const gx = arms ? CHEVRON_HALF_W + CHEVRON_THICKNESS_PX / 2 : 0
+    const gy = arms ? halfH + CHEVRON_THICKNESS_PX / 2 : 0.5
     return {
       left: Math.min(x1, x2) - gx,
       top: y - gy,

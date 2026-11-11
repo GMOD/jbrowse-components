@@ -24,6 +24,7 @@ const EMPTY = {
   linePositions: new Uint32Array(),
   lineYs: new Float32Array(),
   lineColors: new Uint32Array(),
+  lineHeights: new Float32Array(),
   lineDirections: new Int8Array(),
   arrowXs: new Uint32Array(),
   arrowYs: new Float32Array(),

@@ -23,6 +23,7 @@ import {
   peptideFill,
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
+import { chevronGridWindow } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 import { sectionIdsOf } from './LinearBasicDisplay/facet.ts'
 import {
   ARROW_LENGTH_PX,
@@ -36,11 +37,7 @@ import {
   CHEVRON_H_PX,
   CHEVRON_W_PX,
 } from './LinearBasicDisplay/passes/shaders/chevron.consts.generated.ts'
-import {
-  chevronCount,
-  chevronOffset,
-  showChevrons,
-} from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
+import { chevronHalfHeightPx } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import {
   INSET_HEIGHT_FRACTION,
   RECT_FLAG_INSET,
@@ -236,9 +233,9 @@ function take<T>(lane: ArrayLike<T>, keep: readonly number[]) {
 }
 
 /**
- * The intron lines' chevrons where the display draws them: each line wide
- * enough on screen gets `chevronCount` of them, spaced by `chevronOffset`,
- * pointing along its direction.
+ * The intron lines' chevrons where the display draws them: on the genome grid
+ * `chevronGridWindow` walks, for each line whose box is tall enough to carry
+ * one, pointing along its direction.
  */
 function chevrons(
   d: FeatureDataResult,
@@ -250,6 +247,7 @@ function chevrons(
   const out = {
     position: [] as number[],
     y: [] as number[],
+    halfHeight: [] as number[],
     direction: [] as number[],
     color: [] as string[],
     feature: [] as number[],
@@ -258,12 +256,17 @@ function chevrons(
   for (const i of lines) {
     const direction = d.lineDirections[i]!
     const start = d.linePositions[i * 2]!
-    const widthPx = (d.linePositions[i * 2 + 1]! - start) / bpPerPx
-    if (direction !== 0 && showChevrons(widthPx)) {
-      const count = chevronCount(widthPx)
-      for (let c = 0; c < count; c++) {
-        out.position.push(start + chevronOffset(widthPx, count, c) * bpPerPx)
+    const halfH = chevronHalfHeightPx(d.lineHeights[i]!)
+    if (direction !== 0 && halfH > 0) {
+      const { grid, phase, first, last } = chevronGridWindow(
+        start,
+        d.linePositions[i * 2 + 1]! - start,
+        bpPerPx,
+      )
+      for (let k = first; k <= last; k++) {
+        out.position.push(start + phase + k * grid)
         out.y.push(d.lineYs[i]!)
+        out.halfHeight.push(halfH)
         out.direction.push(direction)
         out.color.push(abgrToHex(d.lineColors[i]!))
         out.feature.push(rows.feature(d.lineFeatureIndices[i]!))

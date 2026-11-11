@@ -21,6 +21,7 @@ function line(start: number, end: number): LineData {
     start,
     end,
     y: 0,
+    height: 10,
     color: 0,
     colorClass: LITERAL,
     direction: 0,

@@ -45,6 +45,7 @@ const featureDataLanes = {
   linePositions: 'other',
   lineYs: 'y',
   lineColors: 'other',
+  lineHeights: 'other',
   lineDirections: 'other',
   lineColorClasses: 'other',
   lineLabelRows: 'other',
@@ -269,9 +270,9 @@ function fixture() {
         { ...prim(1, undefined, 4), start: 0, end: 5, height: 4, strand: 1 },
       ],
       [
-        { ...prim(0, 0, 5), start: 0, end: 5, direction: 1 },
-        { ...prim(0, 1, 6), start: 0, end: 5, direction: 1 },
-        { ...prim(1, undefined, 7), start: 0, end: 5, direction: 1 },
+        { ...prim(0, 0, 5), start: 0, end: 5, height: 4, direction: 1 },
+        { ...prim(0, 1, 6), start: 0, end: 5, height: 4, direction: 1 },
+        { ...prim(1, undefined, 7), start: 0, end: 5, height: 4, direction: 1 },
       ],
       [
         { ...prim(0, 0, 8), x: 2, height: 4, widthBp: 1, direction: 1 },
@@ -552,6 +553,7 @@ test('applyIsoformTrim drops and lifts isoform rows in every lane', () => {
     ]),
     badges: new Map(),
   })
+  expect(data.lineHeights.length).toBe(data.lineYs.length)
   const after = entryMap(data)
   for (const [key, entry] of before) {
     const dropped = entry.owner === 'g0' && entry.ordinal === 0
@@ -568,6 +570,16 @@ test('scaleLaidOutData scales every y lane', () => {
   const scaled = scaleLaidOutData(new Map([[0, fixture()]]), 0.5).get(0)!
   for (const [key, entry] of entryMap(scaled)) {
     expect([key, entry.value]).toEqual([key, before.get(key)!.value * 0.5])
+  }
+})
+
+test('scaleLaidOutData scales every box height with its y', () => {
+  const raw = fixture()
+  const scaled = scaleLaidOutData(new Map([[0, raw]]), 0.5).get(0)!
+  for (const kind of ['rect', 'line', 'arrow'] as const) {
+    expect([...scaled[`${kind}Heights`]]).toEqual(
+      [...raw[`${kind}Heights`]].map(h => h * 0.5),
+    )
   }
 })
 

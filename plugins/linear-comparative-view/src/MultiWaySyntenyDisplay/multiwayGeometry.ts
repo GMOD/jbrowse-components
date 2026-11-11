@@ -739,6 +739,7 @@ class GlyphBuilder {
   linePositions: number[] = []
   lineYs: number[] = []
   lineColors: number[] = []
+  lineHeights: number[] = []
   lineDirections: number[] = []
   arrowXs: number[] = []
   arrowYs: number[] = []
@@ -765,9 +766,17 @@ class GlyphBuilder {
     this.rectFlags.push(flags)
   }
 
-  line(x1: number, x2: number, y: number, direction: number, color: number) {
+  line(
+    x1: number,
+    x2: number,
+    y: number,
+    height: number,
+    direction: number,
+    color: number,
+  ) {
     this.linePositions.push(toU32(x1), toU32(x2))
     this.lineYs.push(y)
+    this.lineHeights.push(height)
     this.lineDirections.push(direction)
     this.lineColors.push(color)
   }
@@ -799,6 +808,7 @@ class GlyphBuilder {
       linePositions: Uint32Array.from(this.linePositions),
       lineYs: Float32Array.from(this.lineYs),
       lineColors: Uint32Array.from(this.lineColors),
+      lineHeights: Float32Array.from(this.lineHeights),
       lineDirections: Int8Array.from(this.lineDirections),
       arrowXs: Uint32Array.from(this.arrowXs),
       arrowYs: Float32Array.from(this.arrowYs),
@@ -991,11 +1001,11 @@ export function buildLaneCells({
   boxes.outlineColor = stroke
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
-    glyphs.line(x1, x2, centerY, 0, divider)
+    glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
   }
   if (anchorRule) {
     for (const [x1, x2] of anchorRule.spans) {
-      glyphs.line(x1, x2, anchorRule.y, 0, stroke)
+      glyphs.line(x1, x2, anchorRule.y, 0, 0, stroke)
     }
     for (const x of anchorRule.ticks) {
       glyphs.rect(
@@ -1034,7 +1044,7 @@ export function buildLaneCells({
     const row = geneRow(lane, glyphHeight, pxDir)
     const rowCenter = row.top + row.height / 2
     for (const [x1, x2] of introns) {
-      glyphs.line(x1, x2, rowCenter, pxDir, stroke)
+      glyphs.line(x1, x2, rowCenter, row.height, pxDir, stroke)
     }
     for (const [x1, x2] of thin) {
       glyphs.rect(x1, x2, row.top, row.height, utrColor, RECT_FLAG_INSET)

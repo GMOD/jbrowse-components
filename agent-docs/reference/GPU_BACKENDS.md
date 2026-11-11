@@ -51,7 +51,7 @@ uses:
   them; too high and every instance pays for every slot. Nothing else catches
   this, so derive the budget from what the frame can show and test it against
   the window it feeds: `chevronSlotBudget` (`sharedRendererConstants.ts`, walked
-  by `chevronWindow.test.ts`), and `chevronDrawSlots`, walked by
+  by `chevronGrid.test.ts`), and `chevronDrawSlots`, walked by
   `chevronDrawSlots.test.ts`.
 
 **Intentional divergences — do NOT "fix" these into parity.** GPU rasterization

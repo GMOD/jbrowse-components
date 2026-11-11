@@ -64,6 +64,7 @@ export function makeDenseRegion(name: string, features: number, exons: number) {
     lines.push({
       start,
       end,
+      height: 10,
       direction: 1,
       y: 0,
       flatbushIdx: i,

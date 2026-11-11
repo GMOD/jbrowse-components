@@ -21,6 +21,7 @@ const EMPTY = {
   linePositions: new Uint32Array(),
   lineYs: new Float32Array(),
   lineColors: new Uint32Array(),
+  lineHeights: new Float32Array(),
   lineDirections: new Int8Array(),
   arrowXs: new Uint32Array(),
   arrowYs: new Float32Array(),
@@ -77,6 +78,7 @@ function drawTranscript(heightPx: number, topY: number) {
     linePositions: new Uint32Array([200, 400]),
     lineYs: new Float32Array([topY + heightPx / 2]),
     lineColors: new Uint32Array([0xff_00_00_00]),
+    lineHeights: new Float32Array([10]),
     // No chevrons, so moveTo fires once, for the line itself.
     lineDirections: new Int8Array([0]),
   }
