@@ -3,6 +3,7 @@ import { pxToBp as corePxToBp } from '@jbrowse/core/util/Base1DUtils'
 import {
   mafPointerAt,
   pointerLocation,
+  resolveMafPointerHit,
   resolveMafRowHover,
   rowSpanAtY,
 } from './mafHitTest.ts'
@@ -182,6 +183,57 @@ describe('resolveMafRowHover', () => {
 // The span runs between the rows the two ends are *over*, the same question
 // mafPointerAt answers for the bp — sampleNavigationItems asks both, and they
 // used to answer on different conventions.
+describe('resolveMafPointerHit below a pixel per row', () => {
+  const rowsAsked: number[] = []
+  function hitWhereRowsDraw(drawn: ReadonlySet<number>) {
+    rowsAsked.length = 0
+    const model = makeModel({
+      effectiveRowHeight: 0.25,
+      rowHoverInfo: (_region, _bp, rowIndex) => {
+        rowsAsked.push(rowIndex)
+        return drawn.has(rowIndex) ? CELL_HOVER : undefined
+      },
+    })
+    const { rowIndex, lowestRowIndex } = mafPointerAt(model, 10, 61)
+    return {
+      nearest: rowIndex,
+      lowest: lowestRowIndex,
+      hit: resolveMafPointerHit({
+        model,
+        mouseX: 10,
+        mouseY: 61,
+        resolveRowHover: true,
+      }),
+    }
+  }
+
+  test('several rows share the pixel', () => {
+    const { nearest, lowest } = hitWhereRowsDraw(new Set())
+    expect(nearest - lowest).toBe(3)
+  })
+
+  test('the top overlapping row answers when it draws there', () => {
+    const probe = hitWhereRowsDraw(new Set())
+    const { hit } = hitWhereRowsDraw(new Set([probe.nearest, probe.lowest]))
+    expect(hit.rowIndex).toBe(probe.nearest)
+    expect(rowsAsked).toEqual([probe.nearest])
+  })
+
+  test('a row with nothing at the cursor yields to the one painted under it', () => {
+    const probe = hitWhereRowsDraw(new Set())
+    const { hit } = hitWhereRowsDraw(new Set([probe.lowest, probe.lowest + 1]))
+    expect(hit.rowIndex).toBe(probe.lowest + 1)
+    expect(hit.hover).toBe(CELL_HOVER)
+  })
+
+  test('no overlapping row drawing keeps the nearest row and asks no row past the pixel', () => {
+    const { hit, nearest, lowest } = hitWhereRowsDraw(new Set([0, 1000]))
+    expect(hit.rowIndex).toBe(nearest)
+    expect(hit.hover).toBeUndefined()
+    expect(Math.min(...rowsAsked)).toBe(lowest)
+  })
+})
+
 describe('rowSpanAtY', () => {
   test('covers the row under each end of the drag', () => {
     // rows are 10px from y=45, so y=74 is over row 2

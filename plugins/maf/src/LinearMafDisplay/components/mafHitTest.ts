@@ -38,6 +38,8 @@ export interface MafPointer extends HoverBp {
   pos: PxToBpResult
   /** display row index; meaningless when `inBands`, and not range-checked */
   rowIndex: number
+  /** the lowest row whose drawn band also covers the pixel, at most `rowIndex` */
+  lowestRowIndex: number
   /** cursor is over the stacked bands above the per-sample rows */
   inBands: boolean
 }
@@ -55,12 +57,12 @@ export function mafPointerAt(
 ): MafPointer {
   const pos = model.view.pxToBp(mouseX)
   return {
+    ...rowsUnder(model, mouseY),
     pos,
     gposFrac: pos.reversed ? pos.end - pos.offset : pos.start + pos.offset,
     // The base *painted* at this pixel, which on a reversed region is not the
     // floor of `gposFrac` — see `HoverBp`.
     baseBp: basePaintedAt(pos, pos.offset),
-    rowIndex: rowIndexUnder(model, mouseY),
     inBands: mouseY < model.rowsTopOffset,
   }
 }
@@ -90,13 +92,13 @@ function rowStackOf(model: RowGeometry) {
 }
 
 /**
- * The row whose color the pixel carries, which is not always the row whose slot
- * the pixel centre falls in. Both painters floor a row's height at
+ * The rows whose drawn band covers the pixel, which is not always the row
+ * whose slot the pixel centre falls in. Both painters floor a row's height at
  * `MIN_DRAWN_ROW_PX` (`rowRect.slang`), so below a pixel per row bands overlap
- * and the highest index paints last; above the floor a pixel in the gutter
- * between bands answers with its slot.
+ * and the highest index with a cell there paints last; above the floor a pixel
+ * in the gutter between bands answers with its slot.
  */
-function rowIndexUnder(model: RowGeometry, mouseY: number) {
+function rowsUnder(model: RowGeometry, mouseY: number) {
   const { effectiveRowHeight: rowHeight, rowProportion } = model
   const { nearest, lowest } = rowsUnderPointer(
     mouseY,
@@ -108,7 +110,9 @@ function rowIndexUnder(model: RowGeometry, mouseY: number) {
     },
     drawnRowHeightPx(rowHeight, rowProportion),
   )
-  return nearest >= lowest ? nearest : rowIndexAt(mouseY, rowStackOf(model))
+  const rowIndex =
+    nearest >= lowest ? nearest : rowIndexAt(mouseY, rowStackOf(model))
+  return { rowIndex, lowestRowIndex: Math.min(lowest, rowIndex) }
 }
 
 /**
@@ -129,8 +133,8 @@ export function rowSpanAtY(
   const hi = Math.min(Math.max(y0, y1), top + model.rowsHeight - 1)
   return lo <= hi
     ? {
-        startRow: Math.max(0, rowIndexUnder(model, lo)),
-        endRow: Math.max(0, rowIndexUnder(model, hi) + 1),
+        startRow: Math.max(0, rowsUnder(model, lo).rowIndex),
+        endRow: Math.max(0, rowsUnder(model, hi).rowIndex + 1),
       }
     : { startRow: 0, endRow: 0 }
 }
@@ -152,7 +156,8 @@ export interface MafPointerHit extends MafPointer {
 
 /**
  * Project the cursor and resolve its row hover in one pass, so the cursor style
- * and the tooltip share one block scan per mousemove. `resolveRowHover` false
+ * and the tooltip share one block scan per mousemove. Where sub-pixel rows
+ * overlap, `rowIndex` is the highest one with something drawn at the cursor. `resolveRowHover` false
  * keeps the projection but skips the hover; the drag-selection readout wants
  * the coordinate, not the cell.
  */
@@ -168,19 +173,21 @@ export function resolveMafPointerHit({
   resolveRowHover: boolean
 }): MafPointerHit {
   const pointer = mafPointerAt(model, mouseX, mouseY)
-  const { pos, gposFrac, baseBp, rowIndex, inBands } = pointer
+  const { pos, gposFrac, baseBp, rowIndex, lowestRowIndex, inBands } = pointer
   const onRow = resolveRowHover && !pos.oob && !inBands
+  const hoverOn = (row: number) =>
+    model.rowHoverInfo(pos.index, { gposFrac, baseBp }, row, model.view.bpPerPx)
+  let paintedRow = rowIndex
+  let hover = onRow ? hoverOn(paintedRow) : undefined
+  while (onRow && !hover && paintedRow > lowestRowIndex) {
+    paintedRow--
+    hover = hoverOn(paintedRow)
+  }
   return {
     ...pointer,
+    rowIndex: hover ? paintedRow : rowIndex,
     onRow,
-    hover: onRow
-      ? model.rowHoverInfo(
-          pos.index,
-          { gposFrac, baseBp },
-          rowIndex,
-          model.view.bpPerPx,
-        )
-      : undefined,
+    hover,
   }
 }
 
