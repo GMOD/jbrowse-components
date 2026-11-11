@@ -152,11 +152,10 @@ const result: LinearMafGetAlignmentDataResult = {
   bytes,
 }
 // second arg is the transfer list: these buffers are moved to the main
-// thread, not structured-cloned. collectMafTransferables walks the result and
-// gathers every ArrayBuffer in it — a fixed handful, because the wire is
-// columnar; see that function for why the length of this list is what the
-// whole shape is designed around.
-return rpcResult(result, collectMafTransferables(regionData))
+// thread, not structured-cloned. Every one is freshly allocated inside this
+// RPC (the packer's arena and columns, the coverage packers), and the
+// dictionaries (`sampleIds`, `refNames`) and `refSampleId` clone.
+return rpcResult(result, transferableBuffers(regionData, regionData.coverage))
 ```
 
 A transferred buffer is **neutered** in the worker — it has zero length there
