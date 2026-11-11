@@ -148,11 +148,13 @@ to be read against is not.
 `box` is likewise the caller's own — hand it the same `{yTop, yBottom}` the
 display's ticks were built with (a `YScaleTicks` satisfies it). A box
 recomputed here would place rules off the ticks of any band that lays its
-axis out differently, and the alignments coverage band does.
+axis out differently, and the alignments coverage band does. A box carrying
+its own `valueToY` places the rules by that instead of `normalize`: the read
+cloud's ladder, whose band flips when it hangs down.
 
 ```js
 // type signature
-({ rules, domain, box, normalize, }: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
+({ rules, domain, box, normalize, }: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: Pick<YScaleTicks, "valueToY" | "yBottom" | "yTop">; normalize: (score: number) => number; }) => ScoreRuleMark[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)

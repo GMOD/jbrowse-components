@@ -3829,6 +3829,27 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/sessionParam": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ENCODED_PREFIX",
+        "JSON_PREFIX",
+        "LOCAL_PREFIX",
+        "SESSION_PARAM_KINDS",
+        "SHARE_KEY_LENGTH",
+        "SHARE_PREFIX",
+        "SPEC_PREFIX",
+        "missingKeyError",
+        "prefetchSharedSession",
+        "sessionParamKind",
+        "sessionParamPayload",
+        "shareEndpoint",
+        "shareIdForKey",
+        "sharedSessionUrl",
+        "takePrefetchedSharedSession"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/setStackTraceLimit": {
       "package": "@jbrowse/core",
       "names": [

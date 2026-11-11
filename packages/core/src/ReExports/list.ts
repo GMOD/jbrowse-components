@@ -374,6 +374,7 @@ export default [
   '@jbrowse/core/util/sameStrings',
   '@jbrowse/core/util/samplesTsv',
   '@jbrowse/core/util/selectEncodedFeature',
+  '@jbrowse/core/util/sessionParam',
   '@jbrowse/core/util/setStackTraceLimit',
   '@jbrowse/core/util/shapeNameList',
   '@jbrowse/core/util/shapeNames',
