@@ -1,6 +1,6 @@
 ---
 name: mcp-and-jb-audit-followups
-description: "What the 2026-11-11 audit of Desktop's MCP server and the `jb` agent API left open: an unverified macOS shim/app path mismatch, `open` answering for the wrong page on a cold start, a release note, and the surface changes that wait on the eval matrix. Read before touching `electron/mcp/` or `JbApi/`, or re-auditing either."
+description: "Left open by the 2026-11-11 audit of the MCP server and `jb` API: an unverified macOS shim/app path mismatch, `open` answering for the wrong page on a cold start, a release note, surface changes awaiting the eval matrix. Read before touching or re-auditing `electron/mcp/` or `JbApi/`."
 ---
 
 # MCP and `jb` audit follow-ups
