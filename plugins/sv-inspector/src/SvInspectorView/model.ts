@@ -1,6 +1,13 @@
+import { lazy } from 'react'
+
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { clamp, getSession, selectedFeatureIdFor } from '@jbrowse/core/util'
+import {
+  clamp,
+  getDialogHost,
+  getSession,
+  selectedFeatureIdFor,
+} from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   pendingLaunch,
@@ -10,7 +17,6 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
-import { circularViewOptionsBarHeight } from './consts.ts'
 import { featureRefNames } from './featureRefNames.ts'
 import { svInspectorLaunchKeys } from './launchKeys.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
@@ -18,6 +24,7 @@ import { CHORD_ALPHA } from './svChordColor.ts'
 
 import type { SvInspectorViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -26,6 +33,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {} from '@jbrowse/plugin-circular-view'
 import type {} from '@jbrowse/plugin-spreadsheet-view'
 /* eslint-enable unicorn/require-module-specifiers */
+
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 
 function trackConfId(configuration: unknown) {
   return typeof configuration === 'string'
@@ -82,7 +93,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
   const minHeight = 400
   const defaultHeight = 550
-  const headerHeight = 52
   const dividerWidth = 4
   const minWidthFraction = 0.2
   const maxWidthFraction = 0.8
@@ -325,20 +335,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             }
           : undefined
       },
-      /**
-       * #method
-       */
-      menuItems() {
-        return [
-          {
-            label: 'Return to import form',
-            icon: FolderOpenIcon,
-            onClick: () => {
-              self.spreadsheetView.returnToImportForm()
-            },
-          },
-        ]
-      },
     }))
     .actions(self => ({
       /**
@@ -372,6 +368,56 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       setLaunch(launch?: LaunchInput<SvInspectorViewCommands>) {
         self.launch = launch
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      menuItems(): MenuItem[] {
+        return [
+          {
+            label: 'Return to import form',
+            icon: FolderOpenIcon,
+            onClick: () => {
+              getDialogHost(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                {
+                  model: {
+                    clearView: () => {
+                      self.spreadsheetView.returnToImportForm()
+                    },
+                  },
+                  handleClose,
+                },
+              ])
+            },
+          },
+          ...(self.showCircularView
+            ? [
+                {
+                  label: 'Show only regions with data',
+                  type: 'checkbox' as const,
+                  checked: self.onlyDisplayRelevantRegionsInCircularView,
+                  onClick: () => {
+                    self.setOnlyDisplayRelevantRegionsInCircularView(
+                      !self.onlyDisplayRelevantRegionsInCircularView,
+                    )
+                  },
+                },
+                {
+                  label: 'Circular view',
+                  subMenu: self.circularView
+                    .menuItems()
+                    .filter(
+                      item =>
+                        !('label' in item) ||
+                        item.label !== 'Return to import form',
+                    ),
+                },
+              ]
+            : []),
+        ]
       },
     }))
     .actions(self => ({
@@ -420,10 +466,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              self.spreadsheetView.setHeight(self.height - headerHeight)
-              self.circularView.setHeight(
-                self.height - headerHeight - circularViewOptionsBarHeight,
-              )
+              self.spreadsheetView.setHeight(self.height)
+              self.circularView.setHeight(self.height)
             },
             { name: 'SvInspectorView height binding' },
           ),
