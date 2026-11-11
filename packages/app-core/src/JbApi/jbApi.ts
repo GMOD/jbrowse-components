@@ -357,6 +357,36 @@ function sessionSummary(session: AbstractSessionModel) {
   }
 }
 
+function isMap(v: object): v is Map<unknown, unknown> {
+  return v instanceof Map
+}
+
+function isSet(v: object): v is Set<unknown> {
+  return v instanceof Set
+}
+
+function isTypedArray(v: object): v is ArrayLike<number | bigint> {
+  return ArrayBuffer.isView(v) && !(v instanceof DataView)
+}
+
+function plainForm(v: object) {
+  return isMap(v)
+    ? [...v.keys()].every(k => typeof k === 'string' || typeof k === 'number')
+      ? Object.fromEntries([...v].map(([k, entry]) => [String(k), entry]))
+      : [...v]
+    : isSet(v)
+      ? [...v]
+      : v instanceof Error
+        ? {
+            name: v.name,
+            message: v.message,
+            ...(v.cause === undefined ? {} : { cause: v.cause }),
+          }
+        : isTypedArray(v)
+          ? Array.from(v)
+          : v
+}
+
 // MST nodes serialize as their snapshot (toJSON), so the live-model walk below
 // can stringify whatever it lands on; the replacer guards what a snapshot
 // cannot contain but a getter's return can.
@@ -366,14 +396,15 @@ export function safeJson(value: unknown) {
   // paths, and a visited-set reports the second one as a cycle that is not
   // there. `this` is the holder JSON.stringify is currently walking, which is
   // what lets the chain unwind on the way back up — so this must stay a
-  // `function`, not an arrow.
-  const chain: unknown[] = []
+  // `function`, not an arrow. A Map, Set, Error or typed array is walked as
+  // its plain form, so each link keeps the object it stands for.
+  const chain: { holder: unknown; source: unknown }[] = []
   // typed by hand: JSON.stringify's declared return is string, but a bare
   // Symbol/undefined at the top level really does yield undefined at runtime
   const json = JSON.stringify(
     isStateTreeNode(value) ? getSnapshot(value) : value,
     function (_key, v: unknown) {
-      while (chain.length > 0 && chain.at(-1) !== this) {
+      while (chain.length > 0 && chain.at(-1)!.holder !== this) {
         chain.pop()
       }
       if (typeof v === 'function') {
@@ -383,10 +414,12 @@ export function safeJson(value: unknown) {
         return `${v}`
       }
       if (v !== null && typeof v === 'object') {
-        if (chain.includes(v)) {
+        if (chain.some(link => link.source === v)) {
           return '[circular]'
         }
-        chain.push(v)
+        const plain = plainForm(v)
+        chain.push({ holder: plain, source: v })
+        return plain
       }
       return v
     },

@@ -67,6 +67,50 @@ describe('safeJson', () => {
     })
   })
 
+  it('keeps the contents of a Map, Set, Error and typed array', () => {
+    const counts = new Map([
+      ['gene', 3],
+      ['mRNA', 2],
+    ])
+    expect(
+      JSON.parse(
+        safeJson({
+          counts,
+          numbered: new Map([[1, 'a']]),
+          keyedByObject: new Map([[{ id: 1 }, 'a']]),
+          types: new Set(['gene', 'mRNA']),
+          error: new Error('outer', { cause: new RangeError('inner') }),
+          bytes: new Uint8Array([1, 2]),
+          big: new BigInt64Array([5n]),
+        }),
+      ),
+    ).toEqual({
+      counts: { gene: 3, mRNA: 2 },
+      numbered: { 1: 'a' },
+      keyedByObject: [[{ id: 1 }, 'a']],
+      types: ['gene', 'mRNA'],
+      error: {
+        name: 'Error',
+        message: 'outer',
+        cause: { name: 'RangeError', message: 'inner' },
+      },
+      bytes: [1, 2],
+      big: ['5'],
+    })
+    expect(JSON.parse(safeJson(counts))).toEqual({ gene: 3, mRNA: 2 })
+  })
+
+  it('reports a cycle through a Map and does not call a shared Set one', () => {
+    const m = new Map<string, unknown>()
+    m.set('self', m)
+    const shared = new Set([1])
+    expect(JSON.parse(safeJson({ m, left: shared, right: shared }))).toEqual({
+      m: { self: '[circular]' },
+      left: [1],
+      right: [1],
+    })
+  })
+
   it('yields a string even when stringify does not', () => {
     expect(safeJson(undefined)).toBe('"[unserializable]"')
   })
