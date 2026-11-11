@@ -20,9 +20,10 @@ import fs from 'node:fs'
 import http from 'node:http'
 import { createRequire } from 'node:module'
 import net from 'node:net'
-import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
+
+import { defaultSocketPath } from './demoCore.mjs'
 
 const repoRoot = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
@@ -72,10 +73,7 @@ if (!fs.existsSync(path.join(desktopRoot, 'build/index.html'))) {
 if (spawnSync('claude', ['--version'], { stdio: 'ignore' }).error) {
   fail('`claude` is not on PATH.')
 }
-const socketPath = (() => {
-  const label = os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')
-  return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label}`, 'mcp.sock')
-})()
+const socketPath = defaultSocketPath()
 if (fs.existsSync(socketPath)) {
   fail(
     `an MCP bridge socket already exists at ${socketPath} — close the running JBrowse Desktop first (its bridge is per-user and this launches its own).`,

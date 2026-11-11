@@ -14,6 +14,8 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
 
+import { defaultSocketPath } from './demoCore.mjs'
+
 // this file's own checkout, so a worktree films the build it holds rather than
 // whichever one was hardcoded
 const repoRoot = path.resolve(
@@ -49,11 +51,6 @@ const take = process.argv[3]
 const TURNS = take.TURNS
 const SHELL = take.SHELL ?? false
 const SYSTEM = take.SYSTEM ?? (() => '')
-
-function socketPath() {
-  const label = os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')
-  return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label}`, 'mcp.sock')
-}
 
 const MIME = {
   '.html': 'text/html',
@@ -94,7 +91,7 @@ function serveRendererBuild() {
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
 async function waitForBridge(timeoutMs) {
-  const sock = socketPath()
+  const sock = defaultSocketPath()
   const deadline = Date.now() + timeoutMs
   for (;;) {
     const up = await new Promise(resolve => {

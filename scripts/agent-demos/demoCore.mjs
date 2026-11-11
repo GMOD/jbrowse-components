@@ -6,18 +6,16 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
 import net from 'node:net'
-import os from 'node:os'
 import path from 'node:path'
+
+import { defaultSocketPath } from '../../products/jbrowse-desktop/electron/mcp/socketPath.ts'
 
 export const delay = ms =>
   new Promise(r => {
     setTimeout(r, ms)
   })
 
-export function defaultSocketPath() {
-  const label = os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')
-  return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label}`, 'mcp.sock')
-}
+export { defaultSocketPath }
 
 // A crashed take leaves the socket file behind, so existence alone is not the
 // question — whether something answers on it is. A dead one is removed.
