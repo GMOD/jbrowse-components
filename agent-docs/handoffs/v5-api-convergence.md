@@ -41,8 +41,8 @@ committed schema gained and lost per day, shared and `LinearMarkDisplay` apart,
 with a net line; `--list <day>` names them. One shared sub-schema change counts
 once per display that embeds it, so read the trend, not the size.
 [reference/CONFIG_SPELLINGS.md](../reference/CONFIG_SPELLINGS.md) is today's
-surface on one page, its first table each shared path whose members differ
-between displays.
+surface on one page, its first table each path whose members differ between
+displays or a display's parts, with the ruling on each.
 
 - The last respell is `encoding.y.scale.group` to `share` (3cc17821fb,
   2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key was beta-only,
@@ -111,13 +111,15 @@ between displays.
    - A plugin's own CI running the generator without a jbrowse-components
      checkout waits on a plugin asking for it; none runs it today.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
-   holds them, a channel under a part compared with the display's own, and
-   `scripts/configSpellingRulings.ts` names the ADR or schema comment ruling
-   on each path (its test refuses a differing path with no entry), the
-   2026-10-30 taste calls among them (ChordColor's `scale`, HicColor's and
-   LDColor's `scale`, WiggleColor's `legend`). Two entries are `open:`, with
-   no ruling: `ribbons.encoding.color.scale` has no `domainQuantile`, and the
-   synteny opacity scale always clamps with no `clamp` member.
+   holds the top-level ones and the channel ones under a part's `encoding`;
+   a non-channel word under a part (`records.facet`, `readConnections.mark`)
+   is outside it. `scripts/configSpellingRulings.ts` names the ADR or schema
+   comment ruling on each path, and its test refuses a differing path with
+   no entry and a path that gains a variant. The 2026-10-30 taste calls are
+   among them (ChordColor's `scale`, HicColor's and LDColor's `scale`,
+   WiggleColor's `legend`). Two entries are `open:`, with no ruling:
+   `ribbons.encoding.color.scale` has no `domainQuantile`, and the synteny
+   opacity scale always clamps with no `clamp` member.
 
 ## Release candidate gates
 

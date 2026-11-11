@@ -1,6 +1,6 @@
 import { slotPathsByType } from './configSlotPaths.ts'
 
-type JsonSchema = Record<string, unknown>
+import type { JsonSchema } from './configSlotPaths.ts'
 
 export const byName = (a: string, b: string) => a.localeCompare(b, 'en')
 
@@ -16,9 +16,9 @@ export const code = (words: Iterable<string>) =>
 // design.
 const isDataWord = (slot: string) => slot === 'type' || slot.endsWith('field')
 
-// A channel is one object wherever its part sits (ADR-238), so a slot below a
-// part's `encoding` compares as the channel's own path, the part named beside
-// the display.
+// Channels sit under `encoding`, inside a named part too (ADR-238), so a slot
+// below a part's `encoding` compares as the channel's own path, the part named
+// beside the display.
 function channelSlot(slot: string) {
   const segments = slot.split('.')
   const at = segments.lastIndexOf('encoding')

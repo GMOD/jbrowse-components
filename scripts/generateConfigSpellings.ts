@@ -17,7 +17,7 @@ import {
   short,
 } from './configSpellingShapes.ts'
 
-type JsonSchema = Record<string, unknown>
+import type { JsonSchema } from './configSlotPaths.ts'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 
@@ -26,12 +26,23 @@ function readConfigSchema() {
     readFileSync(path.join(ROOT, 'products/jbrowse-web/package.json'), 'utf8'),
   ) as { version: string }
   const major = version.split('.')[0]
-  return JSON.parse(
+  const schema: JsonSchema = JSON.parse(
     readFileSync(
       path.join(ROOT, `website/static/schema/v${major}/config.json`),
       'utf8',
     ),
-  ) as JsonSchema
+  )
+  return schema
+}
+
+function whyOf(slot: string) {
+  const ruling = RULINGS[slot]
+  if (!ruling) {
+    throw new Error(
+      `${slot} differs between displays with no entry in scripts/configSpellingRulings.ts`,
+    )
+  }
+  return ruling.why
 }
 
 export function writeConfigSpellings() {
@@ -46,7 +57,7 @@ export function writeConfigSpellings() {
         `\`${slot}\``,
         members ? code(members.split(' ')) : '(leaf)',
         holders.join(', '),
-        variant === 0 ? (RULINGS[slot] ?? '') : '',
+        variant === 0 ? whyOf(slot) : '',
       ]),
     )
 

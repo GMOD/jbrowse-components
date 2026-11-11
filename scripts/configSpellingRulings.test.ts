@@ -5,15 +5,24 @@ import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/
 import { RULINGS } from './configSpellingRulings.ts'
 import { divergentShapes } from './configSpellingShapes.ts'
 
-test('every path that differs between displays names its ruling, and no ruling outlives its difference', () => {
-  expect([...divergentShapes(configJsonSchema).keys()].sort()).toEqual(
-    Object.keys(RULINGS).sort(),
+const divergent = divergentShapes(configJsonSchema)
+
+test('every differing path names its ruling and its shape count, and no ruling outlives its difference', () => {
+  expect(
+    Object.fromEntries(
+      [...divergent].map(([slot, bySlot]) => [slot, bySlot.size]),
+    ),
+  ).toEqual(
+    Object.fromEntries(
+      Object.entries(RULINGS).map(([slot, { variants }]) => [slot, variants]),
+    ),
   )
 })
 
 test("a channel under a part compares with the display's own", () => {
-  const scale = divergentShapes(configJsonSchema).get('encoding.color.scale')
-  expect([...(scale?.values() ?? [])].flat()).toEqual(
+  expect(
+    [...(divergent.get('encoding.color.scale')?.values() ?? [])].flat(),
+  ).toEqual(
     expect.arrayContaining([
       'MultiWaySynteny',
       'MultiWaySynteny `ribbons`',
