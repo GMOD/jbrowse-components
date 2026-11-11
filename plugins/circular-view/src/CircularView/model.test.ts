@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import stateModelFactory from './model.ts'
+import stateModelFactory, { controlsClearancePx } from './model.ts'
 import { maxLabelGutterPx } from './rulerLabels.ts'
 
 import type { Region } from '@jbrowse/core/util/types'
@@ -115,7 +115,7 @@ test('the figure is centered in the box', () => {
 // The SV inspector's circular pane: a full-height column beside the
 // spreadsheet, so the fit is width-bound and every spare pixel is vertical.
 // Split evenly the plot floats in the middle of its own pane.
-test('a taller-than-wide box hangs the figure from the top', () => {
+test('a taller-than-wide box hangs the figure under the controls', () => {
   const view = createView({
     regions: [region('chr1', 1_000_000)],
     width: 300,
@@ -124,7 +124,7 @@ test('a taller-than-wide box hangs the figure from the top', () => {
   expect(view.figureSize).toBeCloseTo(300)
   const [originX, originY] = view.figureOriginXY
   expect(originX).toBeCloseTo(0)
-  expect(originY).toBe(0)
+  expect(originY).toBeCloseTo(controlsClearancePx)
 })
 
 // The top-hang belongs to the tall pane and nowhere else. A WIDE box has
@@ -142,7 +142,7 @@ test('a wider-than-tall box keeps the figure centered when zoomed out', () => {
 })
 
 // and the tall pane still hangs, which is the whole reason the rule exists
-test('a taller-than-wide box still hangs the figure from the top zoomed out', () => {
+test('a taller-than-wide box still hangs the figure under the controls zoomed out', () => {
   const view = createView({
     regions: [region('chr1', 1_000_000)],
     width: 300,
@@ -151,7 +151,7 @@ test('a taller-than-wide box still hangs the figure from the top zoomed out', ()
   view.zoomOutButton()
   const [, originY] = view.figureOriginXY
   expect(view.figureSize).toBeLessThan(300)
-  expect(originY).toBe(0)
+  expect(originY).toBeCloseTo(controlsClearancePx)
 })
 
 // and the case the centering is still there for: a figure bigger than its box

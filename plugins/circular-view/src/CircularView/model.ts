@@ -133,14 +133,15 @@ function isRibbonDisplay<D extends { type: string }>(
 }
 
 const maximumRadiusPx = 5000
+export const controlsClearancePx = 36
 
 // The circle's vertical middle before the pan: centered, except that a figure
-// smaller than a box taller than it is wide hangs from the top (the SV
-// inspector's pane). That middle moves with the figure's size, which
+// smaller than a box taller than it is wide hangs just under the controls strip
+// (the SV inspector's pane). That middle moves with the figure's size, which
 // `zoomToPoint` undoes.
 function figureMiddleY(width: number, height: number, figureSize: number) {
   return height > width
-    ? Math.min(0, (height - figureSize) / 2) + figureSize / 2
+    ? Math.min(controlsClearancePx, (height - figureSize) / 2) + figureSize / 2
     : height / 2
 }
 

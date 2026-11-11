@@ -92,7 +92,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const CircularModel = CircularViewType.stateModel
 
   const minHeight = 400
-  const defaultHeight = 550
+  const defaultHeight = 500
   const dividerWidth = 4
   const minWidthFraction = 0.2
   const maxWidthFraction = 0.8
