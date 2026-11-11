@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A mark display `rect` floors at MIN_RECT_WIDTH_PX (2px), and at SPARSE_RECT_MIN_WIDTH_PX (3px) where its row's lower-quartile gap is at least 4px at the current zoom, as the feature display's exons do; both floors and the gap rule live in render-core, shared with the feature rect. Bars, rules and bins keep their 1px floor. A point straddles its coordinate"
+summary: "A mark display `rect` floors at 2px, and at 3px where its row's lower-quartile gap is at least 4px, as the feature display's exons do; both floors and the gap rule live in render-core. Bars, rules and bins keep their 1px floor"
 ---
 
 # ADR-266: A rect floors at 2px, and 3px in a row with room

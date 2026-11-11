@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-row display states its plot, a `rect` per feature, and rows on `rows.field`, whose declared default is `type`, asking once where no feature in view carries the field; unset, a mark paints the file's own BED color read strictly, below a stated row color; an identity color with no `domain` keys nothing; One row per and Color by pick from the whole view's census. Supersedes ADR-263's lane rule and start-scan menus; amends ADR-243, 245 and 249"
+summary: "The multi-row display states its plot: a `rect` per feature, rows on `rows.field` (default `type`, else asks); unset, a mark paints the file's own BED color; One row per and Color by read the whole view's census. Supersedes ADR-263's lane rule; amends ADR-243, 245, 249"
 ---
 
 # ADR-265: The multi-row display draws what its config states
