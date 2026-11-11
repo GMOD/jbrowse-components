@@ -20,6 +20,7 @@ const useStyles = makeStyles()({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
+    padding: 4,
   },
   buttons: {
     display: 'flex',
