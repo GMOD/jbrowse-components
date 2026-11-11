@@ -141,7 +141,6 @@ is no longer shared with anything.
 | `polarPoint` | tests only — `ribbonBand.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
 | `ribbonEndPad` | nothing |
-| `rowRectSpan` | nothing |
 | `slabCoverage` | tests only — `barCutCoverage.test.ts` |
 | `slabVertexYPx` | tests only — `barCutCoverage.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
