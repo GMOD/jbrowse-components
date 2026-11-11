@@ -102,8 +102,10 @@ its own slots and the declared shorthand.
 - One declaration is one key, so a domain cannot drift from its field, and
   `setFacet`, `setColorScale` and `setFeatureColor` each write one object
   where they wrote two to four slots in step.
-- A display-type switch ports the object through `setSubschema` beside the
-  slots it ports through `setSlot` (`getPortableSettings`).
+- ~~A display-type switch ports the object through `setSubschema` beside the
+  slots it ports through `setSlot` (`getPortableSettings`).~~ No display
+  implemented `getPortableSettings`, and it was removed on 2026-11-11: a
+  display-type switch hands no settings over.
 - No migration from the flat slots. A config written with `facetField`,
   `colorField` or `colorBy` on these displays is reported by the validator and
   ignored by the reader.

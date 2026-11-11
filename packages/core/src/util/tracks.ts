@@ -859,7 +859,6 @@ interface ShownTrack {
   activeDisplay: {
     type: string
     configuration: { displayId: string }
-    getPortableSettings?: (displayId: string) => Record<string, unknown>
   }
   displays: Record<string, unknown>[]
   compatibleDisplays: { type: string; displayId: string }[]
@@ -923,10 +922,7 @@ function restyleShown<T extends ShownTrack>(
       track.replaceDisplay(
         track.activeDisplay.configuration.displayId,
         target.displayId,
-        {
-          ...track.activeDisplay.getPortableSettings?.(target.displayId),
-          ...settings,
-        },
+        settings,
       )
     }
     if (Object.keys(settings).length && track.applyDisplaySettings) {

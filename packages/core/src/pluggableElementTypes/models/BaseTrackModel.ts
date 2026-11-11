@@ -497,8 +497,7 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
       /**
        * #action
        * The awaitable sibling of `replaceDisplay`: loads the target display's
-       * state model, then swaps to it with whatever settings the outgoing
-       * display can hand over.
+       * state model, then swaps to it.
        *
        * `replaceDisplay` stays a plain sync action and asserts the model is
        * loaded, and every display state model in this tree is a dynamic import
@@ -513,7 +512,6 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
           self.replaceDisplay(
             self.activeDisplay.configuration.displayId,
             displayId,
-            self.activeDisplay.getPortableSettings?.(displayId) ?? {},
           )
         }
       },

@@ -508,14 +508,10 @@ export type BaseDisplayModel = Instance<BaseDisplayStateModel>
  * The shape every display instance held in a track's `displays` array
  * satisfies: the composed `BaseDisplay` state model (RenderingComponent,
  * DisplayBlurb, trackMenuItems, ...) plus the `configuration`
- * reference every display gains at instantiation. `getPortableSettings` is
- * optional — only display types that support switching type via the track menu
- * implement it. This is the concrete element type behind
- * `BaseTrackModel.displays`, which the runtime plugin union erases to `any`.
+ * reference every display gains at instantiation. This is the concrete
+ * element type behind `BaseTrackModel.displays`, which the runtime plugin
+ * union erases to `any`.
  */
 export interface DisplayModel extends BaseDisplayModel {
   configuration: AnyConfigurationModel & { displayId: string }
-  getPortableSettings?: (
-    newDisplayId?: string,
-  ) => Record<string, unknown> | undefined
 }
