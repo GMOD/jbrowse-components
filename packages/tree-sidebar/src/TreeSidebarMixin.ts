@@ -2,6 +2,7 @@ import {
   canonicalSpelling,
   getConfigurationSchemaMetadata,
   isKeyedWrites,
+  isSlotDefinitionEntry,
   keyedBase,
   readConfObject,
   setConf,
@@ -145,8 +146,22 @@ function baseRows(self: object): RowsMembers {
   const { writes } = meta.options
   const base = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
   return isKeyedWrites(writes)
-    ? keyedBase(writes, base, keyedFieldOf(live, writes))
+    ? keyedBase(
+        writes,
+        { [writes.keyedBy]: declaredDefaultOf(meta, writes.keyedBy), ...base },
+        keyedFieldOf(live, writes),
+      )
     : base
+}
+
+// What a slot holds where the config writes nothing, as the keyed rule reads
+// the config's field: the multi-row display's `rows.field` is `type`.
+function declaredDefaultOf(
+  meta: NonNullable<ReturnType<typeof getConfigurationSchemaMetadata>>,
+  slot: string,
+): unknown {
+  const entry = meta.definition[slot]
+  return isSlotDefinitionEntry(entry) ? entry.defaultValue : undefined
 }
 
 function keyedFieldOf(live: AnyConfigurationModel, writes: KeyedWrites) {

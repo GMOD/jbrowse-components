@@ -4,6 +4,7 @@ import {
   configSchemaFactory as markConfigSchemaFactory,
   markListSchema,
 } from '../LinearMarkDisplay/configSchema.ts'
+import { multiRowRowsConfigSchema } from './multiRowRowsConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -15,10 +16,14 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * track per cell type. It is the mark display with a `rect` per feature as
  * its plot, so every mark, scale, facet and row setting applies.
  *
- * It draws what the config states and guesses nothing from the data. Rows:
- * one per value of `rows.field`, or a single row where it names none, which
- * the track menu's One row per picks from the attributes the features in view
- * carry. Color: a stated `rows.colors` entry, else each feature's own BED
+ * It draws what the config states and saves no guess. Rows: one per value
+ * of `rows.field`, whose declared default is `type`, so a GFF3 draws a row per
+ * feature type and a ClinVar bigBed a row per variant type. `rows: 'sample'`
+ * or `rows: { field: 'sample', ... }` overrides it, as the examples write, and
+ * `rows: ''` is one row. Where no feature in view carries the field in force,
+ * as a plain BED carries no `type`, the features draw in the one row of no
+ * value and the display opens the track menu's One row per picker once,
+ * listing the attributes the features in view carry. Color: a stated `rows.colors` entry, else each feature's own BED
  * color (`itemRgb`, a bigBed's `reserved`, a BED9's ninth column), else the
  * default; a placeholder `0` or `0,0,0` reads as no color. A key appears only
  * where a color names its values: a field, or an identity scale's `domain`
@@ -61,7 +66,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Each feature in its file's BED color, with a key naming three of them;
+ * The `rows` shorthand, a row per `sample`, and each feature in its file's
+ * BED color, with a key naming three of them;
  * where black is a color the file means, the written identity scale also
  * paints `0,0,0` as black:
  * ```js
@@ -78,6 +84,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     },
  *   },
  * }
+ * ```
+ *
+ * #example
+ * One row, written so the `type` default does not split the features:
+ * ```js
+ * { type: 'LinearMultiRowFeatureDisplay', rows: '' }
  * ```
  */
 export function configSchemaFactory() {
@@ -100,6 +112,12 @@ export function configSchemaFactory() {
        * feature.
        */
       marks: markListSchema([{ mark: 'rect' }]),
+      /**
+       * #slot rows
+       * The rows, a [MultiRowRows](../multirowrows): a row per value of
+       * `field`, `type` unless written, and `''` for one row.
+       */
+      rows: multiRowRowsConfigSchema,
     },
     {
       /**

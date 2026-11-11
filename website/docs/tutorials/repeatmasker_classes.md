@@ -64,9 +64,11 @@ the track:
 - Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
   location box.
 - Choose **Display types → Multi-row display** in the track menu. The display
-  draws every repeat in one row until something says what a row stands for.
-- Click the **One row per...** chip at the head of the track, or choose **One
-  row per → Attribute...** in the track menu, and pick `repClass`.
+  rows on the features' `type` unless told otherwise, and RepeatMasker's table
+  has no `type`, so it draws every repeat in one row and opens **One row per**.
+- Pick `repClass` in the box. Dismissed, the picker comes back from the **One
+  row per...** chip at the head of the track, or from **One row per →
+  Attribute...** in the track menu.
 
 The picker lists every attribute the features in view carry, with how many rows
 each would make, `repFamily` among them. <!-- menu-path-ok -->

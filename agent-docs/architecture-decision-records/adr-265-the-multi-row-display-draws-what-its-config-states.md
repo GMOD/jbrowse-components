@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-row display states its plot, a `rect` per feature, and its rows come only from `rows.field`; unset, a mark paints the file's own BED color read strictly, below a stated row color; an identity color with no `domain` keys nothing; One row per and Color by pick from the whole view's census. Supersedes ADR-263's lane rule and start-scan menus; amends ADR-243, 245 and 249"
+summary: "The multi-row display states its plot, a `rect` per feature, and rows on `rows.field`, whose declared default is `type`, asking once where no feature in view carries the field; unset, a mark paints the file's own BED color read strictly, below a stated row color; an identity color with no `domain` keys nothing; One row per and Color by pick from the whole view's census. Supersedes ADR-263's lane rule and start-scan menus; amends ADR-243, 245 and 249"
 ---
 
 # ADR-265: The multi-row display draws what its config states
@@ -8,7 +8,8 @@ summary: "The multi-row display states its plot, a `rect` per feature, and its r
 ## Status
 
 Accepted (2026-11-11), on Colin's "aim for the ideal end state, not stopgaps"
-after four reviews of the display on real data. Supersedes the parts of
+after four reviews of the display on real data; the default rows rule,
+`type` else ask, is Colin's call the same day, over one row. Supersedes the parts of
 [ADR-263](adr-263-a-row-field-is-a-lane-field-and-the-field-scans-share-one-census.md)
 that pick the rows field by the lane rule and that feed One row per and Color
 by from the start-of-display scan; its one census and its Group by builder
@@ -47,8 +48,37 @@ it.
   declares its point. `multiRowPlot`, the subtype's `defaultPlotOf` and the
   `menusOfferPlotFields` hook are deleted, and with them the mark display's
   overridable `defaultPlotOf`, which nothing else overrode.
-- **Rows come only from `rows.field`.** With none the features draw in one
-  row, and a "One row per..." chip at the head of the plot opens the picker.
+- **Rows by `type` by default, a declared slot default.** The multi-row
+  display's `rows` is `MultiRowRows`, a `MarkRows` whose `field` slot
+  declares `type` as its default; the shared `Rows` keeps `''`, no rows, for
+  wiggle and every other display. A subtype overrides a nested slot's default
+  by declaring its own sub-schema over the base's (`baseConfiguration`), which
+  inherits the `field` shorthand, the keyed writes and the lifts, and
+  replaces the base's `rows` wholesale, as the Manhattan display replaces
+  `marks`. `type` is the one column every annotation format means the same
+  by: a GFF3 rows on `gene`, `mRNA`, `pseudogene`, a ClinVar bigBed on its
+  variant types. Being the slot's default, it shows in the generated config
+  docs and `jbrowse validate`, and every reader of `rowsField` (the row
+  table, sort and clustering, the sidebar, SVG export) takes it through
+  `getConf`; there is no effective-field getter.
+- **One row is written: `rows: ''`.** The grammar's spelling of no field.
+  Against a `type` default `''` is not the default, so the snapshot keeps it
+  and None survives. "One row per → None" writes it, and "Type" writes `type`,
+  which leaves the slot at its declared default.
+- **The keyed rule reads the field in force.** A write of `rows.field`
+  compares the new field with the one in force, the declared default
+  included (`unsetStaleKeyedMembers`), and Reset reads the config's field the
+  same way (`baseRows`), so an arrangement a config writes beside no `field`
+  names the `type` rows and leaves with a pick of `sample`. For a display
+  whose default is `''` nothing changes: an empty field names no values.
+- **Else ask.** Where the loaded regions, split on the field in force
+  (default or written), hold features and none carries it (a plain BED or
+  RepeatMasker's table has no `type`), every feature draws in the one row of
+  no value, a "One row per..." chip shows, and the display opens the picker
+  once in its life, as the mark display opens Edit plot on an undecided plot.
+  The loaded regions are the whole view the render fetch read, the same
+  features the candidates RPC would download again, so the decision costs no
+  fetch and reads no sample; nothing of it is written.
 - **Formats state their plot.** The protein-domain tutorial, its build script
   and figure spec write `rows: 'name'`, the transcript-and-matches marks and
   `encoding.color: { field: 'name' }`; "Edit plot..." offers the same plot as an
@@ -97,10 +127,13 @@ it.
 
 ## Consequences
 
-- A track switched to the display from Display types draws one row in its
-  file's colors until someone picks a rows field; nothing is persisted without
-  a pick.
-- ClinVar draws in its `reserved` colors with no key, and its pickers list
+- A track switched to the display from Display types draws a row per
+  `type`, or one row and the picker where its features carry none; nothing is
+  persisted without a pick.
+- A config whose `rows` writes a `sort` or `labels` but no `field` names the
+  types' rows now, where it named the one row's.
+- ClinVar draws a row per variant type in its `reserved` colors with no key,
+  and its pickers list
   `clinSign`, `type`, `molConseq` and the like, with counts, and never
   `_mouseOver`, `reviewStatus`, `phenotype` or `_jsonHgvsTable`.
 - A config whose rows carry `rows.color` tints and whose display states no
@@ -115,6 +148,9 @@ it.
 
 | Alternative | Why |
 | --- | --- |
+| One row with a "One row per..." chip as the default | The display exists to split features into rows; one row is the feature track's picture with a chip on it |
+| The fewest-valued field in view | Still a guess from the data, and the window decides it: a pan that brings in another column's values changes every row |
+| The track's color key, a row per color | Couples two channels the grammar keeps apart, and a file without colors has no key |
 | An evidence-based lane rule: scan the whole view, require a row to hold several features, cap the row count | Still a guess from data, persisted as a choice; ClinVar's sparse SNVs pass any overlap test on any id column, and a rule good enough for one file misfires on the next |
 | Single-block is not spliced | Fixes the line but not the shadowed `type`, and keeps a plot the user never stated changing with the window |
 | A `flatten` rewrite that keeps the parent's `type` on its blocks | A grammar change for one display's guess; the stated `rect` never flattens |

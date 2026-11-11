@@ -12,13 +12,15 @@ import ColorWritesMixin, {
 } from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { FILE_COLOR } from '../LinearMarkDisplay/markColor.ts'
 import { stateModelFactory as markStateModelFactory } from '../LinearMarkDisplay/model.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
 
 import type { ColorSource } from '../LinearMarkDisplay/markColor.ts'
+import type { MarkRegionData } from '../LinearMarkDisplay/markList.ts'
 import type { LinearMultiRowFeatureDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -29,6 +31,22 @@ const ColorByAttributeDialog = lazy(
   () => import('@jbrowse/display-kit/ColorByAttributeDialog'),
 )
 const RowsFieldDialog = lazy(() => import('./components/RowsFieldDialog.tsx'))
+
+// Whether the loaded regions split on `field` say the features in view carry
+// it: undefined until a region read for it holds a feature, false where every
+// such feature lacks it. The regions are the whole view the render fetch read.
+function featuresCarry(regions: Iterable<MarkRegionData>, field: string) {
+  let read: boolean | undefined
+  for (const region of regions) {
+    if (
+      region.request?.facet?.field === field &&
+      region.layers.some(layer => layer.count > 0)
+    ) {
+      read = !!read || (region.facet ?? []).some(({ key }) => key !== '')
+    }
+  }
+  return read
+}
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
@@ -58,6 +76,27 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Whether One row per has been offered or picked, so the display asks
+       * once.
+       */
+      rowsFieldAsked: false,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the loaded regions show the features in view carrying the
+       * rows field in force: undefined until one read for it holds a
+       * feature, and while no field splits the rows.
+       */
+      get featuresCarryRowsField(): boolean | undefined {
+        return self.drawsRows
+          ? featuresCarry(self.featurePayloads.values(), self.rowsField)
+          : undefined
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -117,11 +156,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The chip at the head of the plot while no attribute splits the
-       * features into rows and no facet splits them into sections.
+       * The chip at the head of the plot while no feature in view carries the
+       * rows field in force, so every feature draws in the one row of no
+       * value.
        */
       get rowsHint(): { title: string; text: string } | undefined {
-        return self.rowsField === '' && self.facet === undefined
+        return self.featuresCarryRowsField === false
           ? {
               title: 'Pick the attribute each row stands for a value of',
               text: 'One row per...',
@@ -159,7 +199,14 @@ export function stateModelFactory(
        * old rows (the keyed rule, ADR-257), and keeps `rows.color`.
        */
       setRowsField(field: string) {
+        self.rowsFieldAsked = true
         setConf(self.conf, ['rows', 'field'], field)
+      },
+      /**
+       * #action
+       */
+      setRowsFieldAsked() {
+        self.rowsFieldAsked = true
       },
     }))
     .actions(self => ({
@@ -203,6 +250,22 @@ export function stateModelFactory(
             handleClose,
           },
         ])
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // Where no feature in view carries the rows field in force, `type`
+        // by default, ask once which attribute the rows stand for, as the
+        // mark display opens its plot dialog on an undecided plot.
+        addDisposer(
+          self,
+          autorun(() => {
+            if (!self.rowsFieldAsked && self.featuresCarryRowsField === false) {
+              self.setRowsFieldAsked()
+              self.openRowsFieldDialog()
+            }
+          }),
+        )
       },
     }))
     .actions(self => {

@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR, colorAt } from '@jbrowse/core/util/markEncoding'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -66,7 +67,7 @@ const PAINTING_COLORS = features([
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
-test('the plot is stated: a rect per feature in one row, with nothing scanned to decide it', async () => {
+test('the plot is stated: a rect per feature in a row per type, with nothing scanned or written to decide it', async () => {
   const methods: string[] = []
   const { display: model } = createTestEnvironment(
     {},
@@ -79,8 +80,10 @@ test('the plot is stated: a rect per feature in one row, with nothing scanned to
   ).createDisplay()
   expect(getSnapshot(model.conf.marks)).toEqual([{ mark: { type: 'rect' } }])
   expect(model.markTypes).toEqual(['rect'])
-  expect(model.rowsField).toBe('')
-  expect(model.drawsRows).toBe(false)
+  expect(model.rowsField).toBe('type')
+  expect(model.drawsRows).toBe(true)
+  expect(model.rpcProps().facet).toEqual({ field: 'type' })
+  expect(getSnapshot(model.conf.rows)).toEqual({})
   expect(model.colorByMode).toBe('default')
   expect(model.conf.encoding.color.scale.type).toBeUndefined()
   await waitFor(() => {
@@ -89,14 +92,74 @@ test('the plot is stated: a rect per feature in one row, with nothing scanned to
   expect(methods).not.toContain('MarkScanPlotFields')
 })
 
-test('with no rows field a chip offers One row per, and a stated field or a facet takes it away', () => {
+const VARIANTS = features([
+  { start: 0, end: 1, type: 'single nucleotide variant', name: 'VCV1' },
+  { start: 10, end: 11, type: 'single nucleotide variant', name: 'VCV2' },
+  { start: 20, end: 30, type: 'Deletion', name: 'VCV3' },
+])
+
+test('rows default to the features type, one labelled row per type in view', () => {
+  const model = loaded(display({}), VARIANTS)
+  expect(model.sources.map(s => s.name)).toEqual([
+    'Deletion',
+    'single nucleotide variant',
+  ])
+  expect(model.featuresCarryRowsField).toBe(true)
+  expect(model.rowsHint).toBeUndefined()
+})
+
+test('features carrying none of the rows field in force draw in one row, and the display asks once, writing nothing', () => {
   const model = display({})
+  const queueDialog = jest.spyOn(getSession(model), 'queueDialog')
+  loaded(model)
+  expect(model.rowsField).toBe('type')
+  expect(model.featuresCarryRowsField).toBe(false)
+  expect(model.sources.map(s => s.name)).toEqual([''])
   expect(model.rowsHint?.text).toBe('One row per...')
+  expect(getSnapshot(model.conf.rows)).toEqual({})
+  expect(queueDialog).toHaveBeenCalledTimes(1)
+  model.setRpcData(0, workerResult(model, PAINTING), REGION)
+  expect(queueDialog).toHaveBeenCalledTimes(1)
   model.setRowsField('sample')
+  model.setRpcData(0, workerResult(model, PAINTING), REGION)
+  expect(model.rowsField).toBe('sample')
   expect(model.rowsHint).toBeUndefined()
-  model.setRowsField('')
-  model.facetByField('sample')
-  expect(model.rowsHint).toBeUndefined()
+  const written = display({ rows: 'cellType' })
+  const asked = jest.spyOn(getSession(written), 'queueDialog')
+  loaded(written)
+  expect(written.rowsHint?.text).toBe('One row per...')
+  expect(asked).toHaveBeenCalledTimes(1)
+})
+
+test('one row is a written choice the default never overrides, and Type returns to the declared default', () => {
+  const one = loaded(display({ rows: '' }), VARIANTS)
+  expect(getSnapshot(one.conf.rows)).toEqual({ field: '' })
+  expect(one.rowsField).toBe('')
+  expect(one.drawsRows).toBe(false)
+  expect(one.rowsHint).toBeUndefined()
+  const typed = display({})
+  typed.setRowsField('')
+  expect(getSnapshot(typed.conf.rows)).toEqual({ field: '' })
+  expect(typed.rowsField).toBe('')
+  typed.setRowsField('type')
+  expect(getSnapshot(typed.conf.rows)).toEqual({})
+  expect(typed.rowsField).toBe('type')
+  const sampled = loaded(display({ rows: { field: 'sample' } }))
+  expect(sampled.rowsField).toBe('sample')
+  expect(sampled.featuresCarryRowsField).toBe(true)
+})
+
+test("a pick off the default type drops the arrangement naming the types' rows", () => {
+  const model = display({
+    rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } },
+  })
+  model.setRowsField('type')
+  expect(getSnapshot(model.conf.rows)).toEqual({
+    sort: ['Deletion'],
+    labels: { Deletion: 'Del' },
+  })
+  model.setRowsField('clinSign')
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'clinSign' })
 })
 
 test("unset, each feature paints its file's own color, and a placeholder black paints the default", () => {
@@ -153,28 +216,31 @@ test('a stated display color paints over the file colors, and Default returns th
   expect(colorsBy(model, 'sample')('kid')).toBe(cssColorToABGR('rgb(0,210,0)'))
 })
 
-test('One row per offers None and Attribute..., and Color by Default, Strand, Attribute... and Solid color...', () => {
-  const model = display({ rows: 'sample' })
-  const rowsBy = subMenu(multiRowMenuItems(model), 'One row per')
-  expect(labels(rowsBy)).toEqual(['None (one row)', 'Attribute...'])
-  expect(labels(rowsBy.filter(i => 'checked' in i && i.checked))).toEqual([
+test('One row per offers None, Type and Attribute..., Type ticked by default, and Color by Default, Strand, Attribute... and Solid color...', () => {
+  const model = display({})
+  const ticked = () =>
+    labels(
+      subMenu(multiRowMenuItems(model), 'One row per').filter(
+        i => 'checked' in i && i.checked,
+      ),
+    )
+  expect(labels(subMenu(multiRowMenuItems(model), 'One row per'))).toEqual([
+    'None (one row)',
+    'Type',
     'Attribute...',
   ])
+  expect(ticked()).toEqual(['Type'])
   expect(labels(subMenu(multiRowMenuItems(model), 'Color by'))).toEqual([
     'Default',
     'Strand',
     'Attribute...',
     'Solid color...',
   ])
+  model.setRowsField('sample')
+  expect(ticked()).toEqual(['Attribute...'])
   model.setRowsField('')
   expect(model.drawsRows).toBe(false)
-  expect(
-    labels(
-      subMenu(multiRowMenuItems(model), 'One row per').filter(
-        i => 'checked' in i && i.checked,
-      ),
-    ),
-  ).toEqual(['None (one row)'])
+  expect(ticked()).toEqual(['None (one row)'])
   model.colorByField('strand')
   expect(model.colorByMode).toBe('strand')
   model.colorByField('clinSign')
@@ -334,18 +400,18 @@ test("Reset row order on another field than the config's returns none of the con
   expect(getSnapshot(model.conf.rows)).toEqual(rows)
 })
 
-// A config's arrangement stating no field names no field, so it returns on
-// whatever field the rows are on.
-test('Reset row order returns a config arrangement stating no field on any field', () => {
+// A config's arrangement stating no field names the declared default's rows,
+// `type`'s, so it leaves with a pick of another field and returns with type.
+test("Reset row order returns a config arrangement stating no field to the default type's rows", () => {
   const rows = { sort: ['kid'], kept: ['mom'] }
   const model = display({ rows })
   model.setRowsField('sample')
-  expect(getSnapshot(model.conf.rows)).toEqual({ ...rows, field: 'sample' })
-  model.setRowsField('name')
-  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
-  expect(model.rowArrangementIsCustom).toBe(true)
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'sample' })
   model.resetRowArrangement()
-  expect(getSnapshot(model.conf.rows)).toEqual({ ...rows, field: 'name' })
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'sample' })
+  model.setRowsField('type')
+  model.resetRowArrangement()
+  expect(getSnapshot(model.conf.rows)).toEqual(rows)
 })
 
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {

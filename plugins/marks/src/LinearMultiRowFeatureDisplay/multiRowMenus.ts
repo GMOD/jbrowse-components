@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/display-kit/colorByMenu'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
+import { DEFAULT_ROWS_FIELD } from './multiRowRowsConfigSchema.ts'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface MultiRowMenuModel {
@@ -32,7 +34,8 @@ function customExpressionItems(field: string | undefined): MenuItem[] {
 }
 
 // Offered while the display draws rows or one lane; a facet's sections take
-// the rows' place, where a pick would change nothing on screen.
+// the rows' place, where a pick would change nothing on screen. Type is the
+// default, None an explicit one row, and Attribute... any other field.
 function rowsFieldMenuItems(self: MultiRowMenuModel): MenuItem[] {
   const current = self.rowsField
   return self.facet === undefined
@@ -51,9 +54,20 @@ function rowsFieldMenuItems(self: MultiRowMenuModel): MenuItem[] {
               },
             },
             {
+              label: 'Type',
+              type: 'radio',
+              checked: current === DEFAULT_ROWS_FIELD,
+              onClick: () => {
+                self.setRowsField(DEFAULT_ROWS_FIELD)
+              },
+            },
+            {
               label: 'Attribute...',
               type: 'radio',
-              checked: current !== '' && !isJexl(current),
+              checked:
+                current !== '' &&
+                current !== DEFAULT_ROWS_FIELD &&
+                !isJexl(current),
               keepMenuOpen: false,
               onClick: () => {
                 self.openRowsFieldDialog()

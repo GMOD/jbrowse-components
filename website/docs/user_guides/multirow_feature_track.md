@@ -22,17 +22,20 @@ reach every mark, scale, filter and facet setting.
 
 ## Turning a feature track into rows
 
-The display draws what its config states and guesses nothing from the data.
-Picked from **Display types** on a track whose config names no rows, it draws
-every feature in one row, in its file's own colors, with a **One row per...**
-chip at the head of the track. The chip, or **One row per → Attribute...** in
-the track menu, opens a picker listing every attribute the features in view
-carry, each with how many rows it would make: on RepeatMasker, `repClass` makes
-about twenty and `repFamily` more. **One row per → None (one row)** puts the
-features back in one row. A saved row order, its labels and colors, and a
-clustering run are kept across a repartition. They refer to rows by value, so
-they apply to no row under the new partition and apply again when the field
-comes back.
+The display draws what its config states and saves no guess. A track whose
+config names no rows takes a row per feature `type`: a GFF3's `gene`, `mRNA` and
+`pseudogene`, a ClinVar bigBed's variant types. A window holding one type shows
+one labelled row. Where the features in view carry no `type` at all, as a plain
+BED's or RepeatMasker's table's do, the display draws every feature in one row,
+in its file's own colors, and opens **One row per** once; a **One row per...**
+chip at the head of the track brings it back. The picker lists every attribute
+the features in view carry, each with how many rows it would make: on
+RepeatMasker, `repClass` makes about twenty and `repFamily` more. In the track
+menu, **One row per** offers **Type**, the default, **Attribute...**, which
+opens the picker, and **None (one row)**, which writes `rows: ""` so the default
+does not come back. A saved row order, its labels and colors, and a clustering
+run are kept across a repartition. They refer to rows by value, so they apply to
+no row under the new partition and apply again when the field comes back.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 
@@ -58,7 +61,10 @@ config:
 
 `rows` names the feature attribute whose value assigns a feature to a row.
 Features sharing a value stack into the same row, and the value becomes the row
-label. Without it every feature is drawn in one row.
+label. Its declared default is `type`, which `rows: "cellType"` above overrides,
+as `rows: { "field": "cellType", ... }` does too, and `rows: ""` is one row.
+When no feature in view carries the field in force, the features draw in one row
+and the display asks once with **One row per**.
 
 The plot is a `rect` per feature, spanning the whole feature. **Advanced → Edit
 plot...** offers two other plots as examples: a BED12 row's or a transcript's
