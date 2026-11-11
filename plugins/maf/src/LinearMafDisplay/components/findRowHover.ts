@@ -309,7 +309,9 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
  * (`cell`), an interbase `insertion` marker, a `deletion` run, or a
  * bridged/empty region (`empty`). An insertion marker under the cursor wins
  * over the base it abuts; a gap cell falls through to the covering deletion
- * run. Returns undefined when no block covers the bp or the row is absent.
+ * run. Zoomed out, the cell is the one its window paints: the window's first
+ * base, as `buildMafChannels` samples it. Returns undefined when no block
+ * covers the bp or the row is absent.
  * `blockIndexAtBp` binary-searches because this runs on every mousemove against
  * the buffered region. See `HoverBp`.
  */
@@ -343,12 +345,15 @@ export function findRowHoverAtBp(
   const block = region.blocks[i]!
   const row = block.rows.find(r => r.rowIndex === rowIndex)
   if (row) {
+    const binBp = insertionBinBp ?? 1
+    const paintedBp =
+      block.startBp + Math.floor((targetBp - block.startBp) / binBp) * binBp
     return (
-      cellHitInRow(block, row, targetBp) ??
+      cellHitInRow(block, row, paintedBp) ??
       deletionHitInRow(
         block,
         row,
-        targetBp,
+        paintedBp,
         rowFlankOf(region.blocks)(i, rowIndex),
       )
     )

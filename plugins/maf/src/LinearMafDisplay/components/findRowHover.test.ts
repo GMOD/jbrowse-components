@@ -491,3 +491,37 @@ test('a binned marker hovers as the insertion it draws, not its neighbour at the
     srcRefName: 'chr3',
   })
 })
+
+test('zoomed out, the cell is the one its window paints', () => {
+  const r = region([
+    {
+      startBp: 101,
+      endBp: 109,
+      refSeqBytes: enc.encode('AAAAAAAA'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('acgtTGCA'),
+          srcRefName: 'chrX',
+          srcStart: 100,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(104), 0, 4, 4, 20)).toMatchObject({
+    kind: 'cell',
+    base: 'a',
+    pos: 100,
+  })
+  expect(findRowHoverAtBp(r, at(107), 0, 4, 4, 20)).toMatchObject({
+    kind: 'cell',
+    base: 'T',
+    pos: 104,
+  })
+  expect(findRowHoverAtBp(r, at(107), 0, 4, 1, 20)).toMatchObject({
+    kind: 'cell',
+    base: 'C',
+  })
+})
