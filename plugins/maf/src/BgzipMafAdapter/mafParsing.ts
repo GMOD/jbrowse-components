@@ -1,3 +1,5 @@
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+
 import { wholeLines } from '../util/taiBlocks.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
@@ -21,6 +23,7 @@ export function readMafBlocks(
   reader: MafStanzaReader,
   sink: MafBlockSink,
   keep: KeepBlock,
+  signal?: AbortSignal,
 ) {
   const { lines, endsClean } = wholeLines(text)
   let block: 'none' | 'unplaced' | 'kept' | 'skipped' = 'none'
@@ -38,6 +41,7 @@ export function readMafBlocks(
       flush()
     } else if (line.startsWith('a')) {
       flush()
+      checkAbortSignal(signal)
       reader.begin()
       block = 'unplaced'
       blockOffset = lineOffset

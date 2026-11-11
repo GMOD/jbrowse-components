@@ -11,6 +11,13 @@ import type { TaiIndex, TaiSlice } from './taiSlice.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, Region } from '@jbrowse/core/util'
 
+/** The blocks a read of a slice wants, where it may stop, and its signal. */
+export interface SliceRead {
+  keep: KeepBlock
+  pastQuery: PastQuery
+  signal?: AbortSignal
+}
+
 /**
  * A bgzip file with a taffy `.tai` index. The index describes bgzf virtual
  * offsets against reference coordinates and does not care which text format
@@ -32,8 +39,7 @@ export abstract class MafTaiAdapterBase<
     setup: SETUP,
     reader: MafStanzaReader,
     sink: MafBlockSink,
-    keep: KeepBlock,
-    pastQuery: PastQuery,
+    read: SliceRead,
   ): void
 
   async getRefNames(opts?: BaseOptions) {
@@ -74,15 +80,13 @@ export abstract class MafTaiAdapterBase<
     if (!slice) {
       return
     }
-    this.readSlice(
-      slice,
-      setup,
-      reader,
-      sink,
-      (refSrc, start, end) =>
+    this.readSlice(slice, setup, reader, sink, {
+      keep: (refSrc, start, end) =>
         blockOverlaps(start, end, query) && onQueriedRefName(refSrc),
-      (refSrc, start) => start >= query.end && onQueriedRefName(refSrc),
-    )
+      pastQuery: (refSrc, start) =>
+        start >= query.end && onQueriedRefName(refSrc),
+      signal,
+    })
     reader.reportUnmatched()
   }
 }

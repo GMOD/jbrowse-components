@@ -347,6 +347,27 @@ describe('a block the query does not keep', () => {
   })
 })
 
+test('an aborted read stops at its next block', () => {
+  const controller = new AbortController()
+  controller.abort()
+  const blocks: string[] = []
+  const sink = new MafFeatureSink('', f => {
+    blocks.push(f.id())
+  })
+  expect(() => {
+    readMafBlocks(
+      tabbed,
+      offset => `${offset}`,
+      readerOf(resolve),
+      sink,
+      () => true,
+      controller.signal,
+    )
+  }).toThrow('aborted')
+  sink.finish()
+  expect(blocks).toEqual([])
+})
+
 test('two blocks at the same reference span get distinct ids', () => {
   const block = [
     'a',

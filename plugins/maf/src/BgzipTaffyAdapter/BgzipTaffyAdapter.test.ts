@@ -1164,6 +1164,28 @@ describe('a TAF block the query does not keep', () => {
   })
 })
 
+test('an aborted TAF read stops at its next block', () => {
+  const controller = new AbortController()
+  controller.abort()
+  const features: MafFeature[] = []
+  const sink = new MafFeatureSink('', f => {
+    features.push(f)
+  })
+  expect(() => {
+    readTafSlice(
+      { text: 'AC ; i 0 hg38.chr1 100 + 1000\nAC\n', blockIdAt: () => 'b' },
+      false,
+      readerOf(makeSourceResolver().resolve),
+      sink,
+      () => true,
+      () => false,
+      controller.signal,
+    )
+  }).toThrow('aborted')
+  sink.finish()
+  expect(features).toEqual([])
+})
+
 describe('readTafSlice guards a cut tail', () => {
   const stream = (taf: string) =>
     tafSliceBlocksOf(

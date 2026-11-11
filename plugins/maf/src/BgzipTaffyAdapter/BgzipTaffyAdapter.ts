@@ -7,12 +7,9 @@ import { NEWLINE } from '../util/taiBlocks.ts'
 import { readTaiIndex } from '../util/taiSlice.ts'
 import { readTafSlice } from './tafParsing.ts'
 
+import type { SliceRead } from '../util/MafTaiAdapterBase.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
-import type {
-  KeepBlock,
-  MafStanzaReader,
-  PastQuery,
-} from '../util/mafStanzaReader.ts'
+import type { MafStanzaReader } from '../util/mafStanzaReader.ts'
 import type { TaiIndex, TaiSlice } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 
@@ -46,10 +43,17 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
     { runLengthEncodeBases }: SetupData,
     reader: MafStanzaReader,
     sink: MafBlockSink,
-    keep: KeepBlock,
-    pastQuery: PastQuery,
+    { keep, pastQuery, signal }: SliceRead,
   ) {
-    readTafSlice(slice, runLengthEncodeBases, reader, sink, keep, pastQuery)
+    readTafSlice(
+      slice,
+      runLengthEncodeBases,
+      reader,
+      sink,
+      keep,
+      pastQuery,
+      signal,
+    )
   }
 
   async doSetup(signal?: AbortSignal): Promise<SetupData> {

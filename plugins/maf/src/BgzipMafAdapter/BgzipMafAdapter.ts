@@ -4,8 +4,9 @@ import { MafTaiAdapterBase } from '../util/MafTaiAdapterBase.ts'
 import { readTaiIndex } from '../util/taiSlice.ts'
 import { readMafBlocks } from './mafParsing.ts'
 
+import type { SliceRead } from '../util/MafTaiAdapterBase.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
-import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
+import type { MafStanzaReader } from '../util/mafStanzaReader.ts'
 import type { TaiSlice } from '../util/taiSlice.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 
@@ -46,8 +47,8 @@ export default class BgzipMafAdapter extends MafTaiAdapterBase<BgzipMafAdapterCo
     _setup: unknown,
     reader: MafStanzaReader,
     sink: MafBlockSink,
-    keep: KeepBlock,
+    { keep, signal }: SliceRead,
   ) {
-    readMafBlocks(text, blockIdAt, reader, sink, keep)
+    readMafBlocks(text, blockIdAt, reader, sink, keep, signal)
   }
 }

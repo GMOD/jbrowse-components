@@ -1,3 +1,4 @@
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 import { forwardStart } from '../util/parseStrand.ts'
@@ -293,6 +294,7 @@ export function readTafSlice(
   sink: MafBlockSink,
   keep: KeepBlock,
   pastQuery: PastQuery,
+  signal?: AbortSignal,
 ) {
   const decoder = new TextDecoder()
   let pBlock: AlignmentBlock | undefined
@@ -308,6 +310,7 @@ export function readTafSlice(
     reference: RowState,
     cols: string[],
   ) => {
+    checkAbortSignal(signal)
     const size = alignedBasesOfRow(cols, 0)
     const start = forwardStart(
       reference.sequenceLength,
