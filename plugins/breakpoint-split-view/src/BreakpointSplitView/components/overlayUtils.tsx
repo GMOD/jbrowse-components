@@ -307,7 +307,7 @@ export const OverlayPaths = observer(function OverlayPaths({
 export function drawnConnectionKeySections(
   model: BreakpointViewModel,
   theme: JBrowsePalette,
-  trackIds = model.overlayTracks.map(t => t.configuration.trackId),
+  trackIds = model.overlayTracks.map(t => String(t.configuration.trackId)),
 ) {
   const styled: StyledConnection[] = []
   for (const trackId of trackIds) {
