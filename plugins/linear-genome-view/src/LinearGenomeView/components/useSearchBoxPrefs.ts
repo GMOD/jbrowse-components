@@ -40,6 +40,7 @@ function usePref(key: string, defaultVal: boolean) {
   return useSyncExternalStore(
     notify => subscribeToLocalStorageKey(key, notify),
     () => readPref(key, defaultVal),
+    () => defaultVal,
   )
 }
 
@@ -74,10 +75,7 @@ export interface SearchBoxPrefs {
  * `HeaderSearchBoxRow` from this plugin, so the shared home costs no new
  * dependency edge.
  */
-export function useSearchBoxPrefs(
-  prefix: string,
-  numViews: number,
-): SearchBoxPrefs {
+export function useSearchBoxPrefs(prefix: string, numViews: number) {
   const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
   return {
     showSearchBoxes: usePref(showKey, compact),
@@ -92,10 +90,7 @@ export function useSearchBoxPrefs(
  * The open menu does not, so its rows pass `keepMenuOpen: false` to
  * `searchBoxMenuItems`.
  */
-export function storedSearchBoxPrefs(
-  prefix: string,
-  numViews: number,
-): SearchBoxPrefs {
+export function storedSearchBoxPrefs(prefix: string, numViews: number) {
   const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
   return {
     showSearchBoxes: readPref(showKey, compact),

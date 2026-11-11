@@ -13,8 +13,8 @@ import { observer } from 'mobx-react'
 import { readIdOf } from '../readChains.ts'
 import { computeOverlayRect } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
+import { connectedVariantJunctions } from './connectedJunctions.ts'
 import { connectionKeyRows } from './connectionStyle.ts'
-import { connectedVariantJunctions } from './variantJunctions.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadEntry } from '../readChains.ts'
@@ -119,8 +119,8 @@ export const VARIANT_JUNCTION_LABEL = 'Variant call'
 
 // A variant call's junction: a foot over the arm each end keeps, joined by a
 // straight line between rows so the call crosses the read curves it sits among.
-// A pair on one row has no line to draw, so it takes the connector cubic, which
-// leaves each end on the side it joins and bows over the row.
+// Ends at one height have no line to draw, so they take the connector cubic,
+// which leaves each end on the side it joins and bows over the row.
 export function buildJunctionPath(a: JunctionPoint, b: JunctionPoint) {
   const join =
     a.y === b.y

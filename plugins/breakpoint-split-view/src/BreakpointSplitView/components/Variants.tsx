@@ -4,6 +4,7 @@ import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { computeOverlayX } from '../util.ts'
+import { connectedVariantJunctions } from './connectedJunctions.ts'
 import {
   OverlayPaths,
   buildJunctionPath,
@@ -11,7 +12,6 @@ import {
   variantJunctionColor,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
-import { connectedVariantJunctions } from './variantJunctions.ts'
 
 import type { LayoutRecord } from '../types.ts'
 import type {
