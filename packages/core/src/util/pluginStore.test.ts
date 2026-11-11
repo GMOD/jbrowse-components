@@ -20,6 +20,26 @@ function plugin(extra: Partial<JBrowsePlugin>): JBrowsePlugin {
   }
 }
 
+// the store's name is what dedupes it against another list's entry and what a
+// failure notice calls it, so an ES module build carries it as a UMD one does
+test('an ES module build resolves under the store name', () => {
+  const esm = plugin({
+    name: 'MsaView',
+    esmUrl: 'https://x/5.0.0/p.esm.js',
+    versions: [
+      {
+        pluginVersion: '5.0.0',
+        jbrowseRange: '>=5.0.0',
+        esmUrl: 'https://x/5.0.0/p.esm.js',
+      },
+    ],
+  })
+  expect(resolvePlugin(esm, '5.0.0').definition).toEqual({
+    name: 'MsaView',
+    esmUrl: 'https://x/5.0.0/p.esm.js',
+  })
+})
+
 const versioned = plugin({
   url: 'https://x/3.0.0/p.js',
   integrity: 'sha384-latest',

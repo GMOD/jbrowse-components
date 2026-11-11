@@ -8,6 +8,7 @@ import {
   isBareConfigurationSchemaType,
 } from './configuration/index.ts'
 import LazyStateModelElement from './pluggableElementTypes/LazyStateModelElement.ts'
+import { pluginDefinitionMetadata } from './pluginDefinitions.ts'
 import createJexlInstance from './util/jexl.ts'
 import { expandLooseTrackConfig } from './util/tracks.ts'
 
@@ -50,6 +51,7 @@ import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackCo
 // and re-enabled after it, so the rule still covers the rest of the file.
 /* eslint-disable unicorn/require-module-specifiers */
 import type {} from './pluggableElementTypes/models/migrateTrackConfig.ts'
+import type { PluginRecord } from './PluginLoader.ts'
 import type { PluginDefinition } from './pluginDefinitions.ts'
 import type {} from './rpc/WebWorkerRpcDriver.ts'
 import type {} from './ui/buildExtraTrackMenuItems.ts'
@@ -658,6 +660,20 @@ export interface RuntimePluginLoadRecord extends PluginLoadRecord {
   definition: PluginDefinition
 }
 
+/**
+ * Instantiate what `PluginLoader` loaded, each with the definition it came
+ * from: `addPlugin` reads the name and url the plugin store shows off it, and
+ * `RpcManager` ships it to the worker so the worker loads the same plugin.
+ */
+export function runtimePluginRecords(
+  records: readonly PluginRecord[],
+): RuntimePluginLoadRecord[] {
+  return records.map(({ plugin: P, definition }) => ({
+    plugin: new P(),
+    definition,
+  }))
+}
+
 export default class PluginManager {
   plugins: Plugin[] = []
 
@@ -829,10 +845,18 @@ export default class PluginManager {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
 
-    const [plugin, metadata] =
+    const [plugin, metadata]: [Plugin, PluginMetadata] =
       'plugin' in load
-        ? [load.plugin, load.metadata ?? {}]
-        : [load, {} as PluginMetadata]
+        ? [
+            load.plugin,
+            {
+              ...('definition' in load
+                ? pluginDefinitionMetadata(load.definition)
+                : {}),
+              ...load.metadata,
+            },
+          ]
+        : [load, {}]
 
     // Refuse a second copy of the same plugin, matched by name rather than by
     // object identity: the two copies of a plugin a product bundles AND a

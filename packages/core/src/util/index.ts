@@ -142,7 +142,6 @@ export {
 export {
   type PluginUpdate,
   type ResolvedPlugin,
-  type StorePluginFailure,
   type StorePluginResolution,
   getPluginUpdate,
   installablePlugins,

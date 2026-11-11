@@ -2,10 +2,9 @@
  * What a plugin definition is, and everything that can be answered by looking
  * at one — its url, its name, whether two describe the same plugin.
  *
- * Kept apart from PluginLoader, which pulls in ReExports (effectively all of
- * core) to be able to run a plugin. Inspecting a definition must not cost that:
- * the plugin store resolves definitions and would otherwise import core's
- * config layer back into itself.
+ * Kept apart from PluginLoader, which runs one: this module imports nothing, so
+ * the plugin store, the trust gate and a worker can read a definition without
+ * the loader's graph.
  */
 
 export interface UMDLocPluginDefinition {
@@ -158,7 +157,16 @@ export function dropVendoredPlugins(
   alsoVendored: Iterable<string> = [],
 ) {
   const vendored = new Set([...vendoredPluginNames, ...alsoVendored])
-  return defs.filter(d => !(isUMDPluginDefinition(d) && vendored.has(d.name)))
+  return defs.filter(d => {
+    const name = pluginName(d)
+    return name === undefined || !vendored.has(name)
+  })
+}
+
+/** A definition that could not be resolved or loaded, with the reason */
+export interface PluginLoadFailure {
+  definition: PluginDefinition
+  error: unknown
 }
 
 // Everything below describes a definition by picking the one url it will be

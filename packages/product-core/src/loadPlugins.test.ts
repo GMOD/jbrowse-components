@@ -91,18 +91,18 @@ test('with neither, urls resolve against the page rather than throwing', async (
   expect(calls[0]!.baseUri).toBe(window.location.href)
 })
 
-// `loadSettled` publishes the runtime re-export ABI on the way past, and that
-// registry names React, react-dom/client and Material UI. Nothing can call
-// `jbrequire` without a runtime plugin, so a host whose config names none must
-// not reach the loader at all.
-test('a config that names nothing loads nothing', async () => {
-  const calls = captureLoad()
-  await loadRuntimePlugins([], {
+// The registry names React, react-dom/client and Material UI, and nothing can
+// call `jbrequire` without a runtime plugin, so a host whose config names none
+// must not fetch it.
+test('a config that names nothing fetches no registry', async () => {
+  const registry = jest.fn(reExports)
+  const records = await loadRuntimePlugins([], {
     dropVendored: true,
     jbrowseVersion,
-    reExports,
+    reExports: registry,
   })
-  expect(calls).toEqual([])
+  expect(records).toEqual([])
+  expect(registry).not.toHaveBeenCalled()
 })
 
 // The order at this seam is load-bearing: dropVendoredPlugins matches on the UMD
@@ -142,7 +142,7 @@ describe('store refs', () => {
       reExports,
     })
     // dropped down to nothing, so there is nothing to load
-    expect(calls).toEqual([])
+    expect(calls.flatMap(c => c.names)).toEqual([])
   })
 
   it('fetches nothing when no definition is a ref', async () => {

@@ -1,8 +1,7 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import {
   dropVendoredPlugins,
-  pluginDescriptionString,
-  pluginUrl,
+  pluginLabel,
 } from '@jbrowse/core/pluginDefinitions'
 import { resolveStorePluginRefs } from '@jbrowse/core/util'
 
@@ -77,11 +76,9 @@ export async function loadRuntimePlugins(
   // relative plugin url used to fail outright instead of resolving against the
   // page the way every other relative url does
   const base = args.baseUri ?? args.baseUrl
-  return toLoad.length
-    ? new PluginLoader(toLoad, args)
-        .installGlobalReExports(window, reExports)
-        .load(base ?? window.location.href)
-    : []
+  return new PluginLoader(toLoad, args)
+    .installGlobalReExports(window, reExports)
+    .load(base ?? window.location.href)
 }
 
 /**
@@ -98,7 +95,7 @@ export function notifyPluginLoadFailures(
   for (const { definition, error } of failures) {
     console.error(error)
     session?.notifyError(
-      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
+      `Failed to load plugin ${pluginLabel(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
       error,
     )
   }

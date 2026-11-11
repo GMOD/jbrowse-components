@@ -47,22 +47,18 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
   if (toLoad.length) {
     hintPrewarmedWorker(toLoad)
   }
-  // No definitions, no loader — see `initializeWorker` for what a loader costs
-  const loaded = toLoad.length
-    ? await new PluginLoader(toLoad, {
-        fetchESM: url => import(/* webpackIgnore:true */ url),
-      })
-        .installGlobalReExports(
-          window,
-          () => registry ?? import('./reExports.generated.ts'),
-        )
-        .loadSettled(window.location.href)
-    : { records: [], failures: [] }
-  const { records, failures } = loaded
+  const { records, failures } = await new PluginLoader(toLoad, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+  })
+    .installGlobalReExports(
+      window,
+      () => registry ?? import('./reExports.generated.ts'),
+    )
+    .loadSettled(window.location.href)
   // A ref with no build for this JBrowse and a bundle that 404s are the same
   // thing to the person looking at the session — a feature that is not there —
   // so they are reported through one path.
-  return { records: [...records], failures: [...unresolved, ...failures] }
+  return { records, failures: [...unresolved, ...failures] }
 }
 
 export function readSessionFromStorage(query: string) {

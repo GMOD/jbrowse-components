@@ -36,11 +36,22 @@ test('matches the external config name, not the core plugin class name', () => {
   expect(dropVendoredPlugins(defs)).toEqual(defs)
 })
 
-test('leaves an ESM definition untouched (no name field to match)', () => {
+test('leaves an unnamed ESM definition untouched', () => {
   const defs: PluginDefinition[] = [
     { esmUrl: 'https://example.com/mafviewer.esm.js' },
   ]
   expect(dropVendoredPlugins(defs)).toEqual(defs)
+})
+
+test('drops a vendored plugin whatever format names it', () => {
+  expect(
+    dropVendoredPlugins([
+      { name: 'MafViewer', esmUrl: 'https://example.com/mafviewer.esm.js' },
+      { name: 'MsaView', esmUrl: 'https://example.com/msaview.esm.js' },
+    ]),
+  ).toEqual([
+    { name: 'MsaView', esmUrl: 'https://example.com/msaview.esm.js' },
+  ])
 })
 
 // pluginUrl feeds the trust gate (checkPlugins) and pluginDescriptionString the
@@ -642,11 +653,15 @@ describe('dedupePlugins', () => {
 // `install()` calls `pluginManager.jbrequire(name)` synchronously.
 // Both must be satisfied by the time any plugin script runs.
 const loadCoreRegistry = () => import('./ReExports/modules.ts')
+const onePlugin = [{ esmUrl: 'https://example.com/p.js' }]
+const stubESM = {
+  fetchESM: () => Promise.resolve({ default: class Stub {} as never }),
+}
 
 describe('runtime re-export ABI', () => {
   it('publishes JBrowseExports on the target before loading plugins', async () => {
     const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
-    await new PluginLoader([])
+    await new PluginLoader(onePlugin, stubESM)
       .installGlobalReExports(target, loadCoreRegistry)
       .load()
     expect(target.JBrowseExports).toBeDefined()
@@ -669,7 +684,7 @@ describe('runtime re-export ABI', () => {
     expect(() => new Manager([]).jbrequire('@jbrowse/core/util')).toThrow(
       /No jbrequire re-export defined .* @jbrowse\/core\/ReExports\/list names/,
     )
-    await new Loader([])
+    await new Loader(onePlugin, stubESM)
       .installGlobalReExports({} as WindowOrWorkerGlobalScope, loadCoreRegistry)
       .load()
     expect(new Manager([]).jbrequire('@jbrowse/core/util')).toHaveProperty(
@@ -681,7 +696,7 @@ describe('runtime re-export ABI', () => {
     const target = {} as WindowOrWorkerGlobalScope & {
       JBrowseExports: Record<string, unknown>
     }
-    await new PluginLoader([])
+    await new PluginLoader(onePlugin, stubESM)
       .installGlobalReExports(target, loadCoreRegistry)
       .load()
     expect(() => target.JBrowseExports['@material-ui/core']).toThrow(
@@ -693,7 +708,21 @@ describe('runtime re-export ABI', () => {
 
   it('leaves the target alone until a load actually happens', () => {
     const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
-    new PluginLoader([]).installGlobalReExports(target, loadCoreRegistry)
+    new PluginLoader(onePlugin, stubESM).installGlobalReExports(
+      target,
+      loadCoreRegistry,
+    )
+    expect(target.JBrowseExports).toBeUndefined()
+  })
+
+  it('fetches no registry when there is nothing to load', async () => {
+    const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
+    const registry = jest.fn(loadCoreRegistry)
+    const loaded = await new PluginLoader([])
+      .installGlobalReExports(target, registry)
+      .loadSettled()
+    expect(loaded).toEqual({ records: [], failures: [] })
+    expect(registry).not.toHaveBeenCalled()
     expect(target.JBrowseExports).toBeUndefined()
   })
 })
@@ -717,7 +746,7 @@ test('a real no-build plugin installs through jbrequire', async () => {
     .installGlobalReExports({} as WindowOrWorkerGlobalScope, loadCoreRegistry)
     .load()
   // the shape every product builds: the loader returns the class, the manager
-  // takes an instance (createPluginManager.ts's asPluginRecord)
+  // takes an instance (`runtimePluginRecords`)
   const pluginManager = new Manager(
     records.map(({ plugin: P, definition }) => ({
       plugin: new P(),
@@ -789,4 +818,66 @@ test("a worker load failure keeps the script's own words", () => {
   expect(
     workerScriptLoadMessage(url, new ReferenceError('window is not defined')),
   ).toBe(`Failed to load ${url} in the worker: window is not defined`)
+})
+
+// jsdom fetches no script, so the append stands in for the browser: it runs
+// the bundle, reports what it threw on the window, then fires `load`
+describe('a UMD bundle on the page', () => {
+  function evaluateOnAppend(run: (script: HTMLScriptElement) => void) {
+    return jest
+      .spyOn(document.head, 'append')
+      .mockImplementation((...nodes) => {
+        for (const node of nodes) {
+          if (node instanceof HTMLScriptElement) {
+            run(node)
+            node.onload?.(new Event('load'))
+          }
+        }
+      })
+  }
+  const definition = { name: 'Thrower', umdUrl: 'https://example.com/t.umd.js' }
+  const scope = globalThis as unknown as Record<string, unknown>
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    delete scope.JBrowsePluginThrower
+  })
+
+  it('reports what the bundle threw while it was evaluated', async () => {
+    evaluateOnAppend(script => {
+      window.dispatchEvent(
+        new ErrorEvent('error', {
+          filename: script.src,
+          message: "This JBrowse does not serve '@jbrowse/core/gone' to plugins",
+        }),
+      )
+    })
+    await expect(new PluginLoader().loadPlugin(definition)).rejects.toThrow(
+      /t\.umd\.js threw while it was evaluated: This JBrowse does not serve '@jbrowse\/core\/gone'/,
+    )
+  })
+
+  it('does not blame the bundle for another script throwing meanwhile', async () => {
+    class Thrower {}
+    evaluateOnAppend(() => {
+      window.dispatchEvent(
+        new ErrorEvent('error', {
+          filename: 'https://example.com/unrelated.js',
+          message: 'unrelated',
+        }),
+      )
+      scope.JBrowsePluginThrower = { default: Thrower }
+    })
+    await expect(new PluginLoader().loadPlugin(definition)).resolves.toBe(
+      Thrower,
+    )
+  })
+
+  it('does not hand back the build an earlier load left on the global', async () => {
+    scope.JBrowsePluginThrower = { default: class Stale {} }
+    evaluateOnAppend(() => {})
+    await expect(new PluginLoader().loadPlugin(definition)).rejects.toThrow(
+      /JBrowsePluginThrower is undefined/,
+    )
+  })
 })

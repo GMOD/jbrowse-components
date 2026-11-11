@@ -19,6 +19,7 @@ import type {
   ESMPluginDefinition,
   LegacyUMDPluginDefinition,
   PluginDefinition,
+  PluginLoadFailure,
   UMDPluginDefinition,
 } from './pluginDefinitions.ts'
 
@@ -63,6 +64,8 @@ function assertRetiredKinds(def: PluginDefinition) {
 // the ReExports graph this module pulls in. Import from there to inspect a
 // definition; import here to run one.
 
+export type { PluginLoadFailure } from './pluginDefinitions.ts'
+
 export interface PluginRecord {
   plugin: PluginConstructor
   definition: PluginDefinition
@@ -74,12 +77,6 @@ export type ReExportRegistryLoader = () => Promise<{
 
 export interface LoadedPlugin {
   default: PluginConstructor
-}
-
-/** A definition that could not be loaded, kept with the reason it failed */
-export interface PluginLoadFailure {
-  definition: PluginDefinition
-  error: unknown
 }
 
 function promisifiedLoadScript(src: string, integrity?: string) {
@@ -96,10 +93,30 @@ function promisifiedLoadScript(src: string, integrity?: string) {
       script.crossOrigin = 'anonymous'
     }
     script.src = src
+    // A script that throws while it is evaluated still fires `load`, and what
+    // it threw goes to the window. A cross-origin script loaded without CORS
+    // reports no filename, so only its missing global says it failed.
+    let thrown: ErrorEvent | undefined
+    const onWindowError = (event: ErrorEvent) => {
+      if (event.filename === script.src) {
+        thrown = event
+      }
+    }
+    window.addEventListener('error', onWindowError)
     script.onload = () => {
-      resolve(script.src)
+      window.removeEventListener('error', onWindowError)
+      if (thrown) {
+        reject(
+          new Error(`${src} threw while it was evaluated: ${thrown.message}`, {
+            cause: thrown.error,
+          }),
+        )
+      } else {
+        resolve(script.src)
+      }
     }
     script.onerror = () => {
+      window.removeEventListener('error', onWindowError)
       reject(new Error(`Failed to load script: ${src}`))
     }
     document.head.append(script)
@@ -398,6 +415,12 @@ export default class PluginLoader {
 
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
+    // An install rebuilds the app in this page, where the build an earlier
+    // load left would answer for a bundle that failed to define its own.
+    // Assigned, since a bundle's top-level `var` cannot be deleted.
+    if (umdName in globalThis) {
+      Reflect.set(globalThis, umdName, undefined)
+    }
     // a cache buster query string would change the bytes the browser hashes for
     // SRI, so skip it when an integrity hash is present (the url is already
     // version-pinned and immutable, so cache-busting is unnecessary anyway)
@@ -497,26 +520,30 @@ export default class PluginLoader {
    * fail renders with a much worse message) keep using `load`.
    */
   async loadSettled(baseUri?: string) {
-    preloadUMDBundles(this.definitions, baseUri)
-    // before the first plugin script evaluates — a UMD bundle reads
-    // `JBrowseExports` off the global at module scope
-    await this.publishReExports()
-    const results = await Promise.allSettled(
-      this.definitions.map(async definition => ({
-        plugin: await this.loadPlugin(definition, baseUri),
-        definition,
-      })),
-    )
     const records: PluginRecord[] = []
     const failures: PluginLoadFailure[] = []
-    for (const [i, result] of results.entries()) {
-      if (result.status === 'fulfilled') {
-        records.push(result.value)
-      } else {
-        failures.push({
-          definition: this.definitions[i]!,
-          error: result.reason,
-        })
+    // nothing to load publishes nothing: the registry is ~126 KB gzipped that
+    // only a runtime plugin reads
+    if (this.definitions.length > 0) {
+      preloadUMDBundles(this.definitions, baseUri)
+      // before the first plugin script evaluates — a UMD bundle reads
+      // `JBrowseExports` off the global at module scope
+      await this.publishReExports()
+      const results = await Promise.allSettled(
+        this.definitions.map(async definition => ({
+          plugin: await this.loadPlugin(definition, baseUri),
+          definition,
+        })),
+      )
+      for (const [i, result] of results.entries()) {
+        if (result.status === 'fulfilled') {
+          records.push(result.value)
+        } else {
+          failures.push({
+            definition: this.definitions[i]!,
+            error: result.reason,
+          })
+        }
       }
     }
     return { records, failures }

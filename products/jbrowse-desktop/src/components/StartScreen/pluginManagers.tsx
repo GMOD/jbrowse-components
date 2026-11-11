@@ -1,9 +1,11 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
-import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
+import PluginManager, {
+  corePluginRecords,
+  runtimePluginRecords,
+} from '@jbrowse/core/PluginManager'
 import {
   dedupePlugins,
   dropVendoredPlugins,
-  pluginDefinitionMetadata,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
 import { resolveStorePluginRefs } from '@jbrowse/core/util'
@@ -60,18 +62,13 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // can say whether it holds; typecheck, the unit suites and every bundle
 // measurement stayed green through the break.
 
-// undefined where there is nothing to load — see `initializeWorker` for what a
-// loader costs
 function makePluginLoader(definitions: PluginDefinition[]) {
-  const toLoad = dropVendoredPlugins(definitions)
-  return toLoad.length
-    ? new PluginLoader(toLoad, {
-        fetchESM: url => import(/* webpackIgnore:true */ url),
-      }).installGlobalReExports(
-        window,
-        () => import('../../reExports.generated.ts'),
-      )
-    : undefined
+  return new PluginLoader(dropVendoredPlugins(definitions), {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+  }).installGlobalReExports(
+    window,
+    () => import('../../reExports.generated.ts'),
+  )
 }
 
 function pluginRecords(
@@ -80,16 +77,12 @@ function pluginRecords(
 ) {
   return [
     ...corePluginRecords(corePlugins),
-    ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        ...pluginDefinitionMetadata(definition),
-        // the in-session plugin store reads this to lock a global plugin: it
-        // is in every session's plugin list but in no session's config, so an
-        // uninstall there would filter a list it isn't in
-        isGlobal: isGlobal(definition),
-      },
+    ...runtimePluginRecords(runtimePlugins).map(record => ({
+      ...record,
+      // the in-session plugin store reads this to lock a global plugin: it
+      // is in every session's plugin list but in no session's config, so an
+      // uninstall there would filter a list it isn't in
+      metadata: { isGlobal: isGlobal(record.definition) },
     })),
   ]
 }
@@ -121,10 +114,9 @@ async function buildPluginManager(
   // config that names none is unaffected.
   const { definitions: resolved, failures: unresolved } =
     await resolveStorePluginRefs(definitions, packageJSON.version)
-  const loader = makePluginLoader(resolved)
-  const { records, failures } = loader
-    ? await loader.loadSettled(window.location.href)
-    : { records: [], failures: [] }
+  const { records, failures } = await makePluginLoader(resolved).loadSettled(
+    window.location.href,
+  )
   const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
   pluginManager.createPluggableElements()
   return { pluginManager, failures: [...unresolved, ...failures] }

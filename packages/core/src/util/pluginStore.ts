@@ -9,7 +9,10 @@ import {
   vendoredPluginNames,
 } from '../pluginDefinitions.ts'
 
-import type { PluginDefinition } from '../pluginDefinitions.ts'
+import type {
+  PluginDefinition,
+  PluginLoadFailure,
+} from '../pluginDefinitions.ts'
 import type { JBrowsePlugin, JBrowsePluginVersion } from './types/data.ts'
 
 // The url-bearing fields shared by a JBrowsePlugin and a JBrowsePluginVersion.
@@ -106,7 +109,7 @@ function definitionFrom(
   return src.umdUrl !== undefined
     ? { name, umdUrl: src.umdUrl, ...integrity }
     : src.esmUrl !== undefined
-      ? { esmUrl: src.esmUrl }
+      ? { name, esmUrl: src.esmUrl }
       : src.url !== undefined
         ? { name, url: src.url, ...integrity }
         : undefined
@@ -227,25 +230,9 @@ export function getPluginUpdate(
     : undefined
 }
 
-/**
- * A definition whose store ref could not be turned into something loadable,
- * with the reason.
- *
- * Structurally identical to `PluginLoader`'s `PluginLoadFailure`, and
- * deliberately re-declared rather than imported: that module pulls in ReExports
- * — effectively all of core — which is the whole reason inspecting a definition
- * lives apart from running one. Matching the shape lets a product report a
- * plugin that could not be resolved and one that could not be loaded through a
- * single path, which is what its user sees anyway.
- */
-export interface StorePluginFailure {
-  definition: PluginDefinition
-  error: unknown
-}
-
 export interface StorePluginResolution {
   definitions: PluginDefinition[]
-  failures: StorePluginFailure[]
+  failures: PluginLoadFailure[]
 }
 
 /**
@@ -286,7 +273,7 @@ export function resolveStoreRefs(
   jbrowseVersion: string,
 ): StorePluginResolution {
   const definitions: PluginDefinition[] = []
-  const failures: StorePluginFailure[] = []
+  const failures: PluginLoadFailure[] = []
   for (const definition of defs) {
     const ref = storePluginName(definition)
     if (ref === undefined) {

@@ -4,8 +4,10 @@ import {
   preloadAppFrame,
   preloadAppShell,
 } from '@jbrowse/app-core'
-import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
-import { pluginDefinitionMetadata } from '@jbrowse/core/pluginDefinitions'
+import PluginManager, {
+  corePluginRecords,
+  runtimePluginRecords,
+} from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import { notifyPluginLoadFailures } from '@jbrowse/product-core'
 
@@ -49,14 +51,6 @@ export interface PluginManagerSource {
   readonly defaultSessionTracks?: Record<string, unknown>[]
 }
 
-function asPluginRecord({ plugin: P, definition }: PluginRecord) {
-  return {
-    plugin: new P(),
-    definition,
-    metadata: pluginDefinitionMetadata(definition),
-  }
-}
-
 function formatSessionError(e: unknown) {
   const m = `${e}`
     .replace('[@jbrowse/mobx-state-tree] ', '')
@@ -74,8 +68,8 @@ export async function createPluginManager(
 ) {
   const pluginManager = new PluginManager([
     ...corePluginRecords(corePlugins),
-    ...(model.runtimePlugins ?? []).map(asPluginRecord),
-    ...(model.sessionPlugins ?? []).map(asPluginRecord),
+    ...runtimePluginRecords(model.runtimePlugins ?? []),
+    ...runtimePluginRecords(model.sessionPlugins ?? []),
   ]).createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
