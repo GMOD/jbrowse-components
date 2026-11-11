@@ -311,6 +311,70 @@ describe('cancel', () => {
     expect(await call).not.toMatch(/at code line/)
   })
 
+  // CodeCancelledError says cooperative work has stopped, and jb's own waits
+  // polled on to their deadlines regardless
+  describe("jb's own waits", () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.useRealTimers()
+      delete (globalThis as Record<string, unknown>).__mcpWait
+    })
+
+    function watch(promise: Promise<unknown>) {
+      const seen = { outcome: 'pending' }
+      promise.then(
+        () => {
+          seen.outcome = 'answered'
+        },
+        (e: unknown) => {
+          seen.outcome = `${(e as Error).name}: ${(e as Error).message}`
+        },
+      )
+      return seen
+    }
+
+    it('stop on a cancel, inside the code', async () => {
+      const { pluginManager } = fakeApp()
+      handleMcpRequest(
+        {
+          id: 11,
+          tool: 'run_javascript',
+          args: {
+            code: 'globalThis.__mcpWait = jb.waitReady(30000); await globalThis.__mcpWait',
+            timeoutMs: 60_000,
+          },
+        },
+        pluginManager,
+      ).catch(() => {})
+      await jest.advanceTimersByTimeAsync(10)
+      const wait = watch(
+        (globalThis as Record<string, unknown>).__mcpWait as Promise<unknown>,
+      )
+      await cancel(11, pluginManager)
+      await jest.advanceTimersByTimeAsync(500)
+      expect(wait.outcome).toMatch(/^CodeCancelledError: the client cancelled/)
+    })
+
+    it('stop on a cancel, in the settle after the code returned', async () => {
+      const { pluginManager } = fakeApp()
+      const call = watch(
+        handleMcpRequest(
+          { id: 12, tool: 'run_javascript', args: { code: 'return 1' } },
+          pluginManager,
+        ),
+      )
+      await jest.advanceTimersByTimeAsync(10)
+      expect(call.outcome).toBe('pending')
+      await cancel(12, pluginManager)
+      await jest.advanceTimersByTimeAsync(500)
+      expect(call.outcome).toMatch(
+        /^Error: CodeCancelledError: the client cancelled/,
+      )
+    })
+  })
+
   it('says so when nothing is running under that id', async () => {
     const { pluginManager } = fakeApp()
     expect(await cancel(404, pluginManager)).toEqual({ cancelled: false })

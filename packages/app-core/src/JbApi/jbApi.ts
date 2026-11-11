@@ -562,18 +562,24 @@ export function undeliveredNotifications(session: AbstractSessionModel) {
   }))
 }
 
-export async function waitReady(
-  timeoutMs: number,
-  session?: AbstractSessionModel,
+interface SettleScope {
   // scoped rather than document-wide because @jbrowse/react-app2 embeds this
   // app in a host page: two mounted apps publish two ready markers, and a
   // document-wide query answers for whichever is first in document order
-  root: ParentNode = document,
+  root?: ParentNode
+  signal?: AbortSignal
+}
+
+export async function waitReady(
+  timeoutMs: number,
+  session?: AbstractSessionModel,
+  { root = document, signal }: SettleScope = {},
 ) {
   const deadline = Date.now() + timeoutMs
   let readySince: number | undefined
   let outcome
   while (outcome === undefined) {
+    signal?.throwIfAborted()
     const ready =
       root.querySelector('[data-app-phase="ready"]') !== null &&
       root.querySelector('[data-testid="loading-overlay"]') === null &&
@@ -822,7 +828,7 @@ function shrinkables(views: AbstractViewModel[]): Shrinkable[] {
 async function fitToWindow(
   session: AbstractSessionModel,
   settleMs: number,
-  root: ParentNode = document,
+  { root = document, signal }: SettleScope = {},
 ) {
   const before = overflow(root)
   const excess = excessOf(before)
@@ -860,7 +866,7 @@ async function fitToWindow(
       }),
     }
   })
-  const settle = await waitReady(settleMs, session, root)
+  const settle = await waitReady(settleMs, session, { root, signal })
   // each panel measured again on its own box, since one that now fits is no
   // longer a scroller for `overflow` to find
   const remaining = cuts.map(c => ({
@@ -1282,8 +1288,15 @@ async function locToRegion(
 async function visibleRegionsOf(
   session: AbstractSessionModel,
   viewId: string | undefined,
-  preferTrackId?: string,
-  trackAssemblies: string[] = [],
+  {
+    preferTrackId,
+    trackAssemblies = [],
+    signal,
+  }: {
+    preferTrackId?: string
+    trackAssemblies?: string[]
+    signal?: AbortSignal
+  } = {},
 ): Promise<JbRegion[]> {
   // `in`, not evaluation: visibleRegions is a getter that THROWS ("width
   // undefined") until the view's component mounts and sets a width — a
@@ -1332,6 +1345,7 @@ async function visibleRegionsOf(
   const deadline = Date.now() + 10_000
   let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
   while (visible === undefined) {
+    signal?.throwIfAborted()
     if (view.error !== undefined) {
       throw new Error(
         `View ${view.id} failed to initialize: ${String(view.error)} — pass loc with assembly, or open a view that loads`,
@@ -1381,6 +1395,7 @@ async function fetchFeatures(
   trackId: string,
   regions: JbRegion[],
   requestedByteLimit?: number,
+  callSignal?: AbortSignal,
 ) {
   const entry = session.getTrackById(trackId)
   // the node a shown track reads: its adapter is in the hydrated form, which is
@@ -1406,7 +1421,10 @@ async function fetchFeatures(
   )
   const { rpcManager } = session
   const controller = new AbortController()
-  const { signal } = controller
+  const signal = AbortSignal.any([
+    controller.signal,
+    ...(callSignal ? [callSignal] : []),
+  ])
   // desktop's MCP relay gives up at 150s, so the read must not outlive it —
   // and an agent-triggered read of a dense region wants a ceiling either way
   const stopTimer = setTimeout(() => {
@@ -1440,12 +1458,14 @@ async function fetchFeatures(
       })
     })
   } catch (e) {
-    throw signal.aborted
-      ? new Error(
-          `jb.getFeatures gave up on track "${trackId}" after 120s. Narrow the region, or check that its data host is answering.`,
-          { cause: e },
-        )
-      : e
+    if (controller.signal.aborted) {
+      throw new Error(
+        `jb.getFeatures gave up on track "${trackId}" after 120s. Narrow the region, or check that its data host is answering.`,
+        { cause: e },
+      )
+    }
+    callSignal?.throwIfAborted()
+    throw e
   } finally {
     clearTimeout(stopTimer)
   }
@@ -1647,6 +1667,8 @@ export interface JbApiOptions {
   onNotifications?: (
     notifications: { level: string; message: string }[],
   ) => void
+  /** Stops every wait and read this object runs, throwing its reason. */
+  signal?: AbortSignal
 }
 
 // The helper library an agent drives the app through. Built from the plugin
@@ -1657,6 +1679,7 @@ export function createJbApi(
   pluginManager: PluginManager,
   options: JbApiOptions = {},
 ) {
+  const { signal } = options
   // Resolved per call, never captured: jb.loadSessionSpec REPLACES the session,
   // and a helper bound to the old one keeps answering from a detached tree —
   // which reads as stale data rather than throwing, so the agent is told about
@@ -1710,7 +1733,7 @@ export function createJbApi(
     // a default because an omitted number made the deadline NaN, and a view
     // that never readied then held the call open to the relay's own timeout
     waitReady: async (timeoutMs = 30_000) =>
-      reported(await waitReady(timeoutMs, live())),
+      reported(await waitReady(timeoutMs, live(), { signal })),
     sessionSummary: () => sessionSummary(live()),
     inspect: (target?: unknown, maxInspectBytes?: number) =>
       inspectSession(live(), { target, maxBytes: maxInspectBytes }),
@@ -1719,19 +1742,23 @@ export function createJbApi(
     view: (viewId?: string) => viewById(live(), viewId),
     trackModel: (trackId: string, viewId?: string) =>
       shownTrackModel(live(), trackId, viewId),
-    visibleRegions: (viewId?: string) => visibleRegionsOf(live(), viewId),
+    visibleRegions: (viewId?: string) =>
+      visibleRegionsOf(live(), viewId, { signal }),
     loadSessionSpec: async (spec: Record<string, unknown>, settleMs?: number) =>
-      reported(await loadSpec(pluginManager, { spec, settleMs })),
+      reported(await loadSpec(pluginManager, { spec, settleMs, signal })),
     addView: async (spec: ViewSpec, settleMs = SPEC_SETTLE_DEFAULT_MS) =>
-      reported(await addView(pluginManager, live(), spec, settleMs)),
+      reported(await addView(pluginManager, live(), spec, settleMs, signal)),
     setSession: async (
       document: Record<string, unknown>,
       settleMs = SPEC_SETTLE_DEFAULT_MS,
-    ) => reported(await setSession(pluginManager, live(), document, settleMs)),
+    ) =>
+      reported(
+        await setSession(pluginManager, live(), document, settleMs, signal),
+      ),
     fitToWindow: async (settleMs = 30_000) =>
-      reported(await fitToWindow(live(), settleMs)),
+      reported(await fitToWindow(live(), settleMs, { signal })),
     addTrack: (opts: AddTrackOptions) =>
-      addTrack(pluginManager, live(), opts).then(reported),
+      addTrack(pluginManager, live(), opts, signal).then(reported),
     // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
     // turn to "No track with trackId undefined", and a third wrote
     // jb.getFeatures('trackId', loc, { assembly }) and had the options
@@ -1785,18 +1812,18 @@ export function createJbApi(
                 fetchArgs.assembly,
               ),
             ]
-          : await visibleRegionsOf(
-              session,
-              fetchArgs.viewId,
-              fetchArgs.trackId,
-              getConfAssemblyNamesOrNone(conf),
-            )
+          : await visibleRegionsOf(session, fetchArgs.viewId, {
+              preferTrackId: fetchArgs.trackId,
+              trackAssemblies: getConfAssemblyNamesOrNone(conf),
+              signal,
+            })
       return fetchFeatures(
         pluginManager,
         session,
         fetchArgs.trackId,
         regions,
         fetchArgs.byteLimit,
+        signal,
       )
     },
   }
@@ -1834,6 +1861,7 @@ async function addTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
   args: AddTrackOptions,
+  signal?: AbortSignal,
 ) {
   refuseUntaken('jb.addTrack', args, ADD_TRACK_TAKES)
   const named = catalogName(args)
@@ -1842,7 +1870,7 @@ async function addTrack(
   // before the add-rights check: showing a track the catalog already holds
   // adds nothing to it
   if (inCatalog) {
-    return showCatalogTrack(pluginManager, session, inCatalog, args)
+    return showCatalogTrack(pluginManager, session, inCatalog, args, signal)
   }
   if (named !== undefined && args.trackId !== undefined) {
     throw new Error(
@@ -1904,6 +1932,7 @@ async function addTrack(
             assembly,
           },
           args,
+          signal,
         )),
       }
 }
@@ -1915,6 +1944,7 @@ async function showCatalogTrack(
   session: AbstractSessionModel,
   conf: AnyTrackConfig,
   args: AddTrackOptions,
+  signal?: AbortSignal,
 ) {
   // index, assembly and name describe the file being added, and the catalog's
   // copy already has all three — taking them here would drop them in silence
@@ -1943,6 +1973,7 @@ async function showCatalogTrack(
           session,
           { ...track, adapter: { type: adapterType } },
           args,
+          signal,
         )),
       }
 }
@@ -1957,6 +1988,7 @@ async function showTrack(
     assembly?: string
   },
   args: Pick<AddTrackOptions, 'viewId' | 'settings' | 'settleMs'>,
+  signal?: AbortSignal,
 ) {
   const view = pickView(session, args.viewId, 'launchTrack', {
     assembly: track.assembly,
@@ -1972,7 +2004,7 @@ async function showTrack(
   const settleMs = args.settleMs ?? ADD_TRACK_SETTLE_MS
   return {
     shownInView: view.id,
-    ...(settleMs > 0 ? await waitReady(settleMs, session) : {}),
+    ...(settleMs > 0 ? await waitReady(settleMs, session, { signal }) : {}),
   }
 }
 
@@ -1993,6 +2025,7 @@ async function addView(
   session: AbstractSessionModel,
   spec: ViewSpec,
   settleMs: number,
+  signal?: AbortSignal,
 ) {
   if (typeof spec !== 'object' || typeof spec.type !== 'string') {
     throw new Error(
@@ -2025,7 +2058,7 @@ async function addView(
     ...(created.length > 1 ? { created: created.map(v => v.id) } : {}),
   }
   return settleMs > 0
-    ? { ...summary, ...(await waitReady(settleMs, session)) }
+    ? { ...summary, ...(await waitReady(settleMs, session, { signal })) }
     : summary
 }
 
@@ -2103,6 +2136,7 @@ async function setSession(
   session: AbstractSessionModel,
   document: unknown,
   settleMs: number,
+  signal?: AbortSignal,
 ) {
   if (
     typeof document !== 'object' ||
@@ -2135,7 +2169,7 @@ async function setSession(
       { cause: e },
     )
   }
-  const settle = await waitReady(settleMs, session)
+  const settle = await waitReady(settleMs, session, { signal })
   return { ...settle, session: sessionSummary(session) }
 }
 
@@ -2146,7 +2180,7 @@ const SPEC_SETTLE_DEFAULT_MS = 30_000
 
 async function loadSpec(
   pluginManager: PluginManager,
-  args: { spec: unknown; settleMs?: number },
+  args: { spec: unknown; settleMs?: number; signal?: AbortSignal },
 ) {
   const spec = args.spec
   const valid =
@@ -2165,6 +2199,7 @@ async function loadSpec(
   const settle = await waitReady(
     args.settleMs ?? SPEC_SETTLE_DEFAULT_MS,
     session,
+    { signal: args.signal },
   )
   return {
     ...settle,

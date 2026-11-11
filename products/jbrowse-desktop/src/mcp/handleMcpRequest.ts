@@ -272,6 +272,7 @@ async function evaluateWith(
     onNotifications: messages => {
       consumedByCode.push(...messages)
     },
+    signal: abort.signal,
   })
   const fn = compileCode(code)
   const logs: string[] = []
@@ -301,7 +302,11 @@ async function evaluateWith(
   // A navToLocString or applyDisplaySettings does not settle, so without this
   // a track left behind a too-much-data banner reaches the agent as success
   const settle = liveSession
-    ? await waitReady(SETTLE_AFTER_CODE_MS, liveSession)
+    ? await waitReady(SETTLE_AFTER_CODE_MS, liveSession, {
+        signal: abort.signal,
+      }).catch((e: unknown) => {
+        throw new Error(codeErrorMessage(e, logs), { cause: e })
+      })
     : undefined
   const notifications = [
     ...consumedByCode.splice(0),

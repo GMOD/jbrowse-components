@@ -620,11 +620,31 @@ describe('waitReady', () => {
 
   // react-app2 embeds the app in a host page, so a second mounted app must not
   // be able to answer for this one
+  it("stops polling on the caller's signal, throwing its reason", async () => {
+    const call = new AbortController()
+    const cancelled = new Error('the client cancelled this call')
+    let outcome: unknown = 'pending'
+    waitReady(30_000, session, { signal: call.signal }).then(
+      () => {
+        outcome = 'answered'
+      },
+      (e: unknown) => {
+        outcome = e
+      },
+    )
+    await jest.advanceTimersByTimeAsync(400)
+    call.abort(cancelled)
+    await jest.advanceTimersByTimeAsync(400)
+    expect(outcome).toBe(cancelled)
+  })
+
   it('answers for the root it is given, not the document', async () => {
     document.body.innerHTML =
       '<div id="other"><div data-app-phase="ready"></div></div><div id="mine"></div>'
     const mine = document.querySelector('#mine')!
-    expect(await drained(waitReady(5000, session, mine))).toMatchObject({
+    expect(
+      await drained(waitReady(5000, session, { root: mine })),
+    ).toMatchObject({
       settled: false,
     })
   })
@@ -980,6 +1000,31 @@ describe('a name that several views could answer', () => {
     expect(() => jbOver([]).view()).toThrow(/No view is open/)
   })
 
+  it("stops waiting for a view's region on the caller's signal", async () => {
+    jest.useFakeTimers()
+    const unmounted = {
+      ...lgv('v1', 'ctgA:1-100', []),
+      get visibleRegions(): never {
+        throw new Error('width undefined')
+      },
+    }
+    const call = new AbortController()
+    const cancelled = new Error('the client cancelled this call')
+    const read = createJbApi(
+      {
+        rootModel: { session: { views: [unmounted] } },
+      } as unknown as PluginManager,
+      { signal: call.signal },
+    )
+      .visibleRegions()
+      .catch((e: unknown) => e)
+    await jest.advanceTimersByTimeAsync(500)
+    call.abort(cancelled)
+    await jest.advanceTimersByTimeAsync(10_000)
+    expect(await read).toBe(cancelled)
+    jest.useRealTimers()
+  })
+
   it('reads the region of the view showing the track, else asks', async () => {
     const jb = jbOver([
       lgv('v1', 'ctgA:1-100', ['genes']),
@@ -1217,6 +1262,36 @@ describe('getFeatures reads through the RPC', () => {
     const read = jb.getFeatures('genes', 'ctgA:1-100').catch((e: unknown) => e)
     await jest.advanceTimersByTimeAsync(120_000)
     expect(`${await read}`).toMatch(/gave up .* after 120s/)
+    jest.useRealTimers()
+  })
+
+  // Desktop's run_javascript builds jb per call with the call's own signal; a
+  // cancelled call used to leave this read running to its 120 s timer
+  it("stops on the caller's signal with the caller's reason", async () => {
+    jest.useFakeTimers()
+    jest.spyOn(rpcManager, 'call').mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise<never>((_resolve, reject) => {
+          const { signal } = args[2] as { signal: AbortSignal }
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('aborted', 'AbortError'))
+          })
+        }),
+    )
+    const call = new AbortController()
+    const cancelled = new Error('the client cancelled this call')
+    const read = createJbApi(
+      { rootModel: { session } } as unknown as PluginManager,
+      {
+        signal: call.signal,
+      },
+    )
+      .getFeatures('genes', 'ctgA:1-100')
+      .catch((e: unknown) => e)
+    await jest.advanceTimersByTimeAsync(10)
+    call.abort(cancelled)
+    await jest.advanceTimersByTimeAsync(120_000)
+    expect(await read).toBe(cancelled)
     jest.useRealTimers()
   })
 
