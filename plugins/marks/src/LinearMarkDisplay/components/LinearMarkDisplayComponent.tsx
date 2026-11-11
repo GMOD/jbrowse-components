@@ -11,12 +11,19 @@ import MarkTooltip from './MarkTooltip.tsx'
 
 import type { MarkTooltipModel } from './MarkTooltip.tsx'
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
+import type { ReactNode } from 'react'
 
+/**
+ * The mark display's plot, with the text, section chip and row layers over
+ * it; `children` joins them, as a subtype's own overlay.
+ */
 const LinearMarkDisplayComponent = observer(
   function LinearMarkDisplayComponent({
     model,
+    children,
   }: {
     model: MarkDisplayModel & MarkTooltipModel
+    children?: ReactNode
   }) {
     return (
       <ScorePlotChrome
@@ -40,6 +47,7 @@ const LinearMarkDisplayComponent = observer(
             <MarkTextLayer model={model} />
             <MarkFacetChips model={model} />
             <MarkRowsLayer model={model} />
+            {children}
           </>
         )}
         // The vertical guide for the pointer, and the row guide beside it

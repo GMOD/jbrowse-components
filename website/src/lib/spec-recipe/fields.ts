@@ -1609,8 +1609,8 @@ export const trackFields: Record<string, FieldRecipe> = {
       displayType === 'LinearMultiRowFeatureDisplay'
     ) {
       return {
-        path: `${TRACK_MENU} → One row per → ${field}`,
-        note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
+        path: `${TRACK_MENU} → One row per → Attribute...`,
+        note: `Pick ${field} in the box, which lists the attributes the features in view carry, each with how many rows it makes.`,
       }
     }
     const variantRows =

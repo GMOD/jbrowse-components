@@ -173,6 +173,38 @@ bgzipped BED from the merge above and `index` at its `.csi`:
           "NHLF"
         ]
       },
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": [
+              "rgb(255,0,0)",
+              "rgb(255,105,105)",
+              "rgb(207,11,198)",
+              "rgb(250,202,0)",
+              "rgb(255,252,4)",
+              "rgb(10,190,254)",
+              "rgb(0,176,80)",
+              "rgb(153,255,102)",
+              "rgb(127,127,127)",
+              "rgb(245,245,245)"
+            ],
+            "names": [
+              "1 Active promoter",
+              "2 Weak promoter",
+              "3 Poised promoter",
+              "4-5 Strong enhancer",
+              "6-7 Weak enhancer",
+              "8 Insulator",
+              "9-10 Transcription",
+              "11 Weak transcription",
+              "12 Polycomb repressed",
+              "13-15 Heterochromatin / repetitive"
+            ]
+          },
+          "legend": { "title": "Chromatin state" }
+        }
+      },
       "height": 200
     }
   ]
@@ -187,12 +219,14 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 - `sort` pins the rows to an order, here ENCODE's tiers; without it the rows
   sort by value
 
-JBrowse paints each feature with its `itemRgb`. The
-[`encoding.color`](/docs/config/featureencoding/#slot-color) slot is a color
-scale that overrides this, mapping the values of a `field` through its
-`scale.domain` to its `scale.range`. The adapter needs
-[`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
-without a defline.
+JBrowse paints each feature with its `itemRgb`, and
+[`encoding.color`](/docs/config/featureencoding/#slot-color) names those colors
+in the key: an identity scale paints the file's own colors, and `scale.names`
+labels the `scale.domain` colors in order. Written with a `field` instead,
+`encoding.color` is a color scale that overrides the file's colors, mapping the
+field's values through its `scale.domain` to its `scale.range`. The adapter
+needs [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a
+file without a defline.
 
 Type `chr7:27,110,000-27,265,000` into the location box, the _HOXA_ cluster:
 
@@ -206,12 +240,11 @@ lineage commits.
 
 ## Chromatin-state legend, filtering and row order {#the-legend-filtering-and-row-order}
 
-JBrowse builds the key from the state colors, one entry per distinct color,
-labeled with the first state name seen in it. States that share a color merge
-into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
-entry with `5_Strong_Enhancer`. An identity
-[`encoding.color`](/docs/config/featureencoding/#slot-color) scale keeps the
-file's colors and relabels them in the key.
+The key lists the identity scale's `scale.domain`, each color under its
+`scale.names` entry. A file states only the color, never what it means, so a
+track whose config names no domain draws no key. States that share a color share
+an entry, so in the Broad 15-state model `4_Strong_Enhancer` and
+`5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:

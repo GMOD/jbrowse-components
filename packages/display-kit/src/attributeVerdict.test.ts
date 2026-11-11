@@ -7,8 +7,8 @@ import {
   candidateCountHint,
 } from './attributeVerdict.ts'
 
-import type { GroupByCandidate } from '../../RenderFeatureDataRPC/groupByCandidates.ts'
 import type { AttributeScan } from './attributeVerdict.ts'
+import type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
 
 const verdict = (field: string, scan: AttributeScan | undefined) =>
   attributeVerdict(field, scan, GROUPING)

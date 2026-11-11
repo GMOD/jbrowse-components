@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import LinearMarkDisplayF from './LinearMarkDisplay/index.ts'
 import LinearMultiRowFeatureDisplayF from './LinearMultiRowFeatureDisplay/index.ts'
+import MarkGetFieldCandidates from './MarkGetFieldCandidates.ts'
 import MarkRowsRPCF from './MarkRowsRPC/index.ts'
 import MarkScanPlotFields from './MarkScanPlotFields.ts'
 
@@ -56,5 +57,6 @@ export default class MarksPlugin extends Plugin {
     LinearMultiRowFeatureDisplayF(pluginManager)
     MarkRowsRPCF(pluginManager)
     pluginManager.addRpcMethod(() => new MarkScanPlotFields(pluginManager))
+    pluginManager.addRpcMethod(() => new MarkGetFieldCandidates(pluginManager))
   }
 }

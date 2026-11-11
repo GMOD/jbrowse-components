@@ -13,7 +13,10 @@ the multi-row swap plan, retired by
 Amends [ADR-166](adr-166-an-identity-scale-names-the-colors-a-file-carries.md),
 which kept identity off the mark display, and
 [ADR-202](adr-202-every-mark-color-resolves-on-the-main-thread.md), whose
-`ColorSource` gains a fifth kind.
+`ColorSource` gains a fifth kind. Amended by
+[ADR-265](adr-265-the-multi-row-display-draws-what-its-config-states.md): an identity color with no `domain` keys nothing, the multi-row
+display's feature-name labels are gone, and its unset color is the file's own,
+read strictly.
 
 ## Context
 

@@ -35,7 +35,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
-import { paintedColorNode } from './inheritedColor.ts'
+import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import { keptInstances } from './keptInstances.ts'
 import { paintScaleOf } from './legend.ts'
 import { plotsValue } from './markSpecs.ts'
@@ -95,17 +95,36 @@ export type ColorSource =
   /**
    * Each feature's own color (ADR-166), the CSS color `field` holds or else
    * its BED color; the worker sends each feature's color as an index into
-   * the colors it met, a feature carrying none in the mark's default. `domain` and `names` are the key's alone; a color in
-   * `hidden`, packed, drops its instances.
+   * the colors it met, a feature carrying none in the mark's default.
+   * `domain` and `names` are the key's alone; a color in `hidden`, packed,
+   * drops its instances. `strict`, a display's unset color (`unsetColor`),
+   * reads a placeholder black as no color.
    */
-  | { kind: 'identity'; field?: string; domain: string[]; hidden?: number[] }
+  | {
+      kind: 'identity'
+      field?: string
+      domain: string[]
+      hidden?: number[]
+      strict?: true
+    }
+
+/**
+ * Each feature's BED color, strictly: what a display's unset color paints
+ * where the display's `unsetColor` says the file's colors (ADR-265).
+ */
+export const FILE_COLOR: ColorSource = {
+  kind: 'identity',
+  domain: [],
+  strict: true,
+}
 
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
  * deal into one set of slots; a caller that only asks the worker leaves it
- * out, as it does `hidden`, the categories the key hides, and `inherited`,
- * the display's color a mark saying none paints through
- * (`paintedColorNode`).
+ * out, as it does `hidden`, the categories the key hides. `inherited` is the
+ * display's color a mark saying none paints through (`paintedColorNode`),
+ * and `unset` what a mark paints where neither names one, the default mark
+ * color where it is undefined.
  */
 export function markColorOf(
   mark: MarkConfig,
@@ -113,8 +132,22 @@ export function markColorOf(
   owner?: object,
   hidden: readonly HiddenCategory[] = [],
   inherited?: MarkColorConfig,
+  unset?: ColorSource,
 ): ColorSource {
-  const setting = colorSettingOf(paintedColorNode(mark, inherited))
+  const painted = paintedColorNode(mark, inherited)
+  return unset && !saysColor(painted)
+    ? unset
+    : colorSourceOf(mark, channels, painted, owner, hidden)
+}
+
+function colorSourceOf(
+  mark: MarkConfig,
+  channels: StepChannels,
+  painted: MarkColorConfig,
+  owner: object | undefined,
+  hidden: readonly HiddenCategory[],
+): ColorSource {
+  const setting = colorSettingOf(painted)
   const hiddenOf = (field: string) =>
     hidden.filter(h => h.field === field).map(h => h.value)
   if (setting.scale.type === IDENTITY_SCALE && setting.value === undefined) {
@@ -158,9 +191,10 @@ export function markColorsOf(
   owner?: object,
   hidden: readonly HiddenCategory[] = [],
   inherited?: MarkColorConfig,
+  unset?: ColorSource,
 ) {
   return marks.map((m, i) =>
-    markColorOf(m, channels[i]!, owner, hidden, inherited),
+    markColorOf(m, channels[i]!, owner, hidden, inherited, unset),
   )
 }
 
@@ -172,9 +206,6 @@ export function markColorsOf(
  * ones without building a ramp, whose cached lookup table would be copied on
  * every fetch.
  */
-/** The field naming each of a feature's own colors where the key lists none. */
-const COLOR_LABEL_FIELD = 'name'
-
 export function wireColorOf(color: ColorSource): MarkColorEncoding {
   switch (color.kind) {
     case 'expression':
@@ -183,7 +214,7 @@ export function wireColorOf(color: ColorSource): MarkColorEncoding {
       return {
         scale: IDENTITY_SCALE,
         ...(color.field === undefined ? {} : { field: color.field }),
-        ...(color.domain.length === 0 ? { labelField: COLOR_LABEL_FIELD } : {}),
+        ...(color.strict ? { strict: true as const } : {}),
       }
     case 'categories':
       return { field: color.encoding.field, scale: 'ordinal' }

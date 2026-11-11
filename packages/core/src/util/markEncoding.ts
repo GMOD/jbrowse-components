@@ -611,40 +611,6 @@ function bedColorFieldOf(table: FeatureTable) {
   return BED_COLOR_FIELDS[0]
 }
 
-const MAX_COLOR_LABELS = 8
-
-// The `labelField` values of the features painted in each color, keyed as
-// the color's entry is, first met first and a few per color.
-function colorLabels(
-  table: FeatureTable,
-  colorRef: FieldRef,
-  labelRef: FieldRef,
-  colors: CategoricalField,
-  { kept, count }: { kept: Kept; count: number },
-  jexl: JexlInstance | undefined,
-) {
-  const readColor = channelReader(table, colorRef, jexl)
-  const readLabel = textChannelReader(table, labelRef, jexl)
-  const labels = new Map<string, Set<string>>()
-  for (let k = 0; k < count; k++) {
-    const r = kept ? kept[k]! : k
-    const key = colors.key(readColor(r))
-    const label = readLabel(r)
-    if (label === '') {
-      continue
-    }
-    let set = labels.get(key)
-    if (!set) {
-      set = new Set()
-      labels.set(key, set)
-    }
-    if (set.size < MAX_COLOR_LABELS) {
-      set.add(label)
-    }
-  }
-  return labels
-}
-
 // A field's CSS color as its key, `''` for a feature holding none.
 function cssColorField(): CategoricalField {
   return {
@@ -653,16 +619,20 @@ function cssColorField(): CategoricalField {
   }
 }
 
+const PLACEHOLDER_RGB = '0,0,0'
+
 // A feature's own color as its key: the `r,g,b` its raw value parses to under
 // UCSC's `itemRgb on`, `''` for none, each distinct raw value parsed once.
-function ownColorField(): CategoricalField {
+// `strict` reads a placeholder black as none.
+function ownColorField(strict: boolean): CategoricalField {
   const parsed = new Map<unknown, string>()
   return {
     ...categoricalField(''),
     key: raw => {
       let key = parsed.get(raw)
       if (key === undefined) {
-        key = featureItemRgb(raw, true) ?? ''
+        const rgb = featureItemRgb(raw, true) ?? ''
+        key = strict && rgb === PLACEHOLDER_RGB ? '' : rgb
         parsed.set(raw, key)
       }
       return key
@@ -1006,9 +976,9 @@ function categoryColors(
 }
 
 // The field an identity color reads and how it keys each value.
-function identityKeying(table: FeatureTable, { field }: IdentityRef) {
+function identityKeying(table: FeatureTable, { field, strict }: IdentityRef) {
   return field === undefined
-    ? { ref: bedColorFieldOf(table), categories: ownColorField() }
+    ? { ref: bedColorFieldOf(table), categories: ownColorField(!!strict) }
     : { ref: field, categories: cssColorField() }
 }
 
@@ -1045,7 +1015,6 @@ function identityColors(
   identity: Extract<MarkColorEncoding, { scale: 'identity' }>,
   keyed: boolean,
 ) {
-  const { labelField } = identity
   const { ref: colorRef, categories } = identityKeying(walk.table, identity)
   const { entries, channel } = categoryColors(
     walk,
@@ -1054,19 +1023,11 @@ function identityColors(
     keyed,
     identityKeyColor,
   )
-  const labels = labelField
-    ? colorLabels(walk.table, colorRef, labelField, categories, walk, walk.jexl)
-    : undefined
   const scale: ColorScaleTable = {
     kind: 'identity',
     field: '',
     domain: [],
-    entries: entries.map(e => {
-      const named = labels?.get(e.value)
-      return named
-        ? { value: e.value, color: e.entry.color, labels: [...named] }
-        : { value: e.value, color: e.entry.color }
-    }),
+    entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
   }
   return { ...channel, scale }
 }

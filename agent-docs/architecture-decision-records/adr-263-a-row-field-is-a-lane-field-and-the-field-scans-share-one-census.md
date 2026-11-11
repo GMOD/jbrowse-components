@@ -11,7 +11,10 @@ Accepted (2026-11-09), on Colin's "aim for the ideal, not intermediate steps"
 after an analysis of `LinearMultiRowFeatureDisplay` and one adversarial review
 of the design. Amends
 [ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md):
-the scan still decides the plot once, by another rule.
+the scan still decides the plot once, by another rule. Partly superseded by
+[ADR-265](adr-265-the-multi-row-display-draws-what-its-config-states.md): the lane rule, the format recipes and the start-of-display
+scan behind One row per and Color by are gone; the one census and the Group by
+builder stand.
 
 ## Context
 

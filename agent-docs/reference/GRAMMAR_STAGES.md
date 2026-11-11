@@ -93,7 +93,9 @@ takes which are CONFIG_SPELLINGS.md §"Where a shared path differs".
   (ADR [153](../architecture-decision-records/adr-153-every-display-resolves-its-color-through-one-function.md)), on the main thread, so a recolor refetches nothing
   (ADR [202](../architecture-decision-records/adr-202-every-mark-color-resolves-on-the-main-thread.md)). A categorical color is dealt once, on first sight, keeping the
   colors on screen apart (ADRs [205](../architecture-decision-records/adr-205-a-categorical-color-is-dealt-once-on-first-sight.md), [233](../architecture-decision-records/adr-233-a-categorical-deal-keeps-the-colors-on-screen-apart.md)); `identity` paints the colors a file
-  carries (ADRs [166](../architecture-decision-records/adr-166-an-identity-scale-names-the-colors-a-file-carries.md), [243](../architecture-decision-records/adr-243-a-mark-paints-a-files-own-colors-through-an-identity-key.md)). Matrix displays read it through `MatrixRampMixin`.
+  carries (ADRs [166](../architecture-decision-records/adr-166-an-identity-scale-names-the-colors-a-file-carries.md), [243](../architecture-decision-records/adr-243-a-mark-paints-a-files-own-colors-through-an-identity-key.md)). An unset color is the display's
+  `unsetColor`: the mark display's default blue, the multi-row display's file
+  colors read strictly, never written into the config (ADR [265](../architecture-decision-records/adr-265-the-multi-row-display-draws-what-its-config-states.md)). Matrix displays read it through `MatrixRampMixin`.
 - **Writes**: `ColorWritesMixin`'s `colorByField` and `setColorValue`, and
   `ParkedColorMixin`, which keeps a field's domain and names after a pick
   leaves it (ADRs [223](../architecture-decision-records/adr-223-a-color-object-takes-two-writes-and-applyplot.md), [241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md)). The menu rows are `colorByMenu.ts` (display-kit).

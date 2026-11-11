@@ -142,10 +142,21 @@ tabix -f -C -p gff pfam.gff3.gz
 
 ## Drawing the domains on their transcripts
 
-JBrowse loads the file as a track in the multi-row feature display, which gives
-each transcript a row: its UTR thin and light grey, its coding exons full height
-and darker, and its domains over them. `encoding.color` colors each domain by
-its Pfam family, and the key names both greys and the families on screen.
+JBrowse loads the file as a track in the multi-row feature display, and the
+config states the whole picture:
+
+- `rows` gives each transcript `name` a row.
+- `marks` draws each transcript as a line with its exons over it, the UTR thin
+  and light grey and the coding exons full height and darker, then its
+  `protein_match` children at the same height over the coding exons. Each
+  `flatten` step reaches the transcript's children, and each `filter` keeps one
+  type.
+- `encoding.color` colors the marks that name no color of their own, the
+  domains, by Pfam family.
+
+The key names both greys and the families on screen. The track menu's **Edit
+plot...** offers the same plot as an example for any GFF3 of transcripts
+carrying protein matches.
 
 ```json addtrack loc=NC_037653.1:4,839,300-4,850,050
 {
@@ -161,7 +172,59 @@ its Pfam family, and the key names both greys and the families on screen.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "pfam_domains-LinearMultiRowFeatureDisplay",
+      "rows": "name",
+      "marks": [
+        {
+          "mark": { "type": "rect", "height": { "band": 0 } },
+          "encoding": { "color": { "value": "#777777" } }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.25 } },
+          "transform": [
+            { "type": "flatten" },
+            { "type": "filter", "expr": "jexl:feature.type == 'exon'" }
+          ],
+          "encoding": {
+            "color": {
+              "field": "type",
+              "scale": {
+                "domain": ["exon", "CDS"],
+                "range": ["#c4c4c4", "#9a9a9a"],
+                "names": ["UTR", "coding"]
+              },
+              "legend": { "title": "Transcript" }
+            }
+          }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.8 } },
+          "transform": [
+            { "type": "flatten" },
+            { "type": "filter", "expr": "jexl:feature.type == 'CDS'" }
+          ],
+          "encoding": {
+            "color": {
+              "field": "type",
+              "scale": {
+                "domain": ["exon", "CDS"],
+                "range": ["#c4c4c4", "#9a9a9a"],
+                "names": ["UTR", "coding"]
+              },
+              "legend": { "title": "Transcript" }
+            }
+          }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.8 } },
+          "transform": [
+            { "type": "flatten" },
+            {
+              "type": "filter",
+              "expr": "jexl:feature.type == 'protein_match'"
+            }
+          ]
+        }
+      ],
       "encoding": {
         "color": { "field": "name", "legend": { "title": "Pfam family" } }
       }

@@ -63,13 +63,15 @@ the track:
 
 - Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
   location box.
-- Choose **Display types → Multi-row display** in the track menu.
+- Choose **Display types → Multi-row display** in the track menu. The display
+  draws every repeat in one row until something says what a row stands for.
+- Click the **One row per...** chip at the head of the track, or choose **One
+  row per → Attribute...** in the track menu, and pick `repClass`.
 
-The display partitions on `repClass` whenever the file has that column, and
-**One row per** in the same menu lists every column the features have,
-`repFamily` among them. <!-- menu-path-ok -->
+The picker lists every attribute the features in view carry, with how many rows
+each would make, `repFamily` among them. <!-- menu-path-ok -->
 
-<Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
+<Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window in the multi-row display with one row per repeat class." />
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
 

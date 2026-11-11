@@ -2,12 +2,14 @@
 
 exports[`display-kit public surface pins the subpath exports 1`] = `
 [
+  "./AttributeFieldInput",
   "./BandSeamHandle",
   "./BlockMsg",
   "./BottomRightIndicators",
   "./ChromeHighlight",
   "./ChromeLegend",
   "./CoarseTierMixin",
+  "./ColorByAttributeDialog",
   "./ColorWritesMixin",
   "./ConfigProblemsIndicator",
   "./ContextMenuMixin",
@@ -44,6 +46,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./TrackHeightMixin",
   "./TriangleMatrixMixin",
   "./TriangleMatrixSvgLayer",
+  "./attributeVerdict",
   "./categoryFilter",
   "./chromeOverlaySlots",
   "./coarseBlocks",

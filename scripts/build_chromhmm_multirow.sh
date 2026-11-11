@@ -91,10 +91,11 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.csi "$APP"/
 # ── config.json: hg19 + the multi-row ChromHMM track ─────────────────────────
 # The assembly is sourced entirely from UCSC (hgdownload), the same host the
 # ENCODE segmentation BEDs came from, so the whole demo reads from one place.
-# Column names come from the BED's own defline, so all the track has to say is
-# which of them partitions the rows; itemRgb paints each feature its state color
-# automatically. The CLI can't set `rows`, so the track is written straight
-# into config.json.
+# Column names come from the BED's own defline, so the track says which of them
+# partitions the rows, and itemRgb paints each feature its state color. The
+# identity scale names those colors in the key: the file says only the color,
+# so the key's names are written here, states sharing a color under one. The
+# CLI can't set `rows`, so the track is written straight into config.json.
 #
 # `rows.sort` is substituted from CELL_TYPES rather than typed out a second time.
 # The placeholder is a real JSON string so the heredoc still parses on its own,
@@ -138,6 +139,38 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
         {
           "type": "LinearMultiRowFeatureDisplay",
           "rows": { "field": "cellType", "sort": ["@ROW_ORDER@"] },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(255,0,0)",
+                  "rgb(255,105,105)",
+                  "rgb(207,11,198)",
+                  "rgb(250,202,0)",
+                  "rgb(255,252,4)",
+                  "rgb(10,190,254)",
+                  "rgb(0,176,80)",
+                  "rgb(153,255,102)",
+                  "rgb(127,127,127)",
+                  "rgb(245,245,245)"
+                ],
+                "names": [
+                  "1 Active promoter",
+                  "2 Weak promoter",
+                  "3 Poised promoter",
+                  "4-5 Strong enhancer",
+                  "6-7 Weak enhancer",
+                  "8 Insulator",
+                  "9-10 Transcription",
+                  "11 Weak transcription",
+                  "12 Polycomb repressed",
+                  "13-15 Heterochromatin / repetitive"
+                ]
+              },
+              "legend": { "title": "Chromatin state" }
+            }
+          },
           "height": 200
         }
       ]

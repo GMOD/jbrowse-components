@@ -2,10 +2,10 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+import { summarizeGroupByCandidates } from '@jbrowse/core/util/groupByCandidates'
 
 import { dedupeFeaturesById } from './dedupeFeatures.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
-import { summarizeGroupByCandidates } from './groupByCandidates.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'

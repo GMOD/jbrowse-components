@@ -14,8 +14,9 @@ export interface RowColors {
 
 /**
  * The region with each instance of a mark `rowColors` lists taking its row's
- * color where the row has one. A mark naming no color keeps its constant on
- * the rows with none. A categorical color over the rows' field keeps what its
+ * color where the row has one. A mark naming no color keeps its constant, or
+ * the file's own colors a display's `unsetColor` paints, on the rows with
+ * none (ADR-265). A categorical color over the rows' field keeps what its
  * scale dealt them, and its key entries take the row colors too, so a written
  * `range` colors only the rows with none and no palette slot moves (ADR-251).
  * A keyed region only: its `row` lane holds the keys `names` spells.
@@ -42,6 +43,13 @@ export function withRowColors(
       const painted = new Uint32Array(layer.count)
       for (let k = 0; k < layer.count; k++) {
         painted[k] = abgrOf(names[row[k]!] ?? '') ?? color
+      }
+      return { ...layer, color: painted }
+    }
+    if (color instanceof Uint32Array && scale?.kind === 'identity') {
+      const painted = new Uint32Array(layer.count)
+      for (let k = 0; k < layer.count; k++) {
+        painted[k] = abgrOf(names[row[k]!] ?? '') ?? color[k]!
       }
       return { ...layer, color: painted }
     }

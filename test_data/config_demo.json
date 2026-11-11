@@ -345,6 +345,38 @@
               "NHLF"
             ]
           },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(255,0,0)",
+                  "rgb(255,105,105)",
+                  "rgb(207,11,198)",
+                  "rgb(250,202,0)",
+                  "rgb(255,252,4)",
+                  "rgb(10,190,254)",
+                  "rgb(0,176,80)",
+                  "rgb(153,255,102)",
+                  "rgb(127,127,127)",
+                  "rgb(245,245,245)"
+                ],
+                "names": [
+                  "1 Active promoter",
+                  "2 Weak promoter",
+                  "3 Poised promoter",
+                  "4-5 Strong enhancer",
+                  "6-7 Weak enhancer",
+                  "8 Insulator",
+                  "9-10 Transcription",
+                  "11 Weak transcription",
+                  "12 Polycomb repressed",
+                  "13-15 Heterochromatin / repetitive"
+                ]
+              },
+              "legend": { "title": "Chromatin state" }
+            }
+          },
           "height": 200
         }
       ]

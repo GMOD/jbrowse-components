@@ -1,7 +1,6 @@
-import { SimpleFeature } from '@jbrowse/core/util'
-import { MAX_GROUPS } from '@jbrowse/core/util/groupKeys'
-
 import { summarizeGroupByCandidates } from './groupByCandidates.ts'
+import { MAX_GROUPS } from './groupKeys.ts'
+import SimpleFeature from './simpleFeature.ts'
 
 let nextId = 0
 

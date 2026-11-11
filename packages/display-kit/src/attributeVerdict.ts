@@ -3,8 +3,8 @@ import { pluralize } from '@jbrowse/core/util'
 import { MAX_GROUPS } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
-import type { GroupByCandidate } from '../../RenderFeatureDataRPC/groupByCandidates.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
 
 export type AttributeScan = GroupByCandidate[] | RegionTooLargeResult
 
@@ -43,6 +43,14 @@ export const COLORING: AttributeUse = {
   absent: () =>
     'Coloring by it paints every feature in the no-value color, until you navigate somewhere it is set.',
   overflow: 'more than the color key lists.',
+}
+
+export const ROWS: AttributeUse = {
+  unit: 'row',
+  refused: 'The rows still apply; zoom in to see how many it makes.',
+  absent: () =>
+    'A row per value of it draws only the features that carry it, here none.',
+  overflow: 'each its own row.',
 }
 
 /**

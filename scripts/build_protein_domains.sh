@@ -118,9 +118,77 @@ tabix -f -C -p gff pfam.gff3.gz
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --load copy --force --out "$APP"
+# The domain track states its plot (tutorials/protein_domains.md): a row per
+# transcript `name`, each drawn as its line, UTR and coding exons with its
+# protein matches over them, the matches colored by Pfam family.
+PFAM_DISPLAYS=$(cat <<'JSON'
+{
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "rows": "name",
+      "marks": [
+        {
+          "mark": { "type": "rect", "height": { "band": 0 } },
+          "encoding": { "color": { "value": "#777777" } }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.25 } },
+          "transform": [
+            { "type": "flatten" },
+            { "type": "filter", "expr": "jexl:feature.type == 'exon'" }
+          ],
+          "encoding": {
+            "color": {
+              "field": "type",
+              "scale": {
+                "domain": ["exon", "CDS"],
+                "range": ["#c4c4c4", "#9a9a9a"],
+                "names": ["UTR", "coding"]
+              },
+              "legend": { "title": "Transcript" }
+            }
+          }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.8 } },
+          "transform": [
+            { "type": "flatten" },
+            { "type": "filter", "expr": "jexl:feature.type == 'CDS'" }
+          ],
+          "encoding": {
+            "color": {
+              "field": "type",
+              "scale": {
+                "domain": ["exon", "CDS"],
+                "range": ["#c4c4c4", "#9a9a9a"],
+                "names": ["UTR", "coding"]
+              },
+              "legend": { "title": "Transcript" }
+            }
+          }
+        },
+        {
+          "mark": { "type": "rect", "height": { "band": 0.8 } },
+          "transform": [
+            { "type": "flatten" },
+            {
+              "type": "filter",
+              "expr": "jexl:feature.type == 'protein_match'"
+            }
+          ]
+        }
+      ],
+      "encoding": {
+        "color": { "field": "name", "legend": { "title": "Pfam family" } }
+      }
+    }
+  ]
+}
+JSON
+)
 jb add-track pfam.gff3.gz --trackId pfam_domains --name "Pfam domains" \
-  -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
+  -a "$ASM" --load copy --force --out "$APP" --config "$PFAM_DISPLAYS"
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

@@ -6,12 +6,23 @@ import { observer } from 'mobx-react'
 
 import { attributeVerdict, candidateCountHint } from './attributeVerdict.ts'
 
-import type { GroupByScanOptions } from '../scanGroupByCandidates.ts'
 import type { AttributeScan, AttributeUse } from './attributeVerdict.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
 
+/** What a scan of the features in view is handed: its abort and its progress. */
+export interface AttributeScanOptions {
+  signal: AbortSignal
+  statusCallback: StatusCallback
+}
+
+/**
+ * A display whose features in view an attribute picker scans: the fields
+ * they carry, each with its values (`summarizeGroupByCandidates`), or the
+ * byte gate's refusal.
+ */
 export interface AttributeScanModel {
   id: string
-  scanGroupByCandidates: (opts: GroupByScanOptions) => Promise<AttributeScan>
+  scanGroupByCandidates: (opts: AttributeScanOptions) => Promise<AttributeScan>
 }
 
 /**

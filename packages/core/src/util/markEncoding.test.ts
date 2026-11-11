@@ -1554,30 +1554,32 @@ test('an identity color over a field paints each feature the CSS color the field
   ])
 })
 
-test('an identity color asked for labels names each color by its features', () => {
-  const state = (name: string, itemRgb: string) =>
+test('a strict identity color reads a placeholder black as no color, and an explicit one as black', () => {
+  const own = (field8: unknown) =>
     new SimpleFeature({
-      uniqueId: `${name}${itemRgb}`,
+      uniqueId: `f${String(field8)}`,
       refName: 'ctgA',
       start: 0,
       end: 10,
-      name,
-      itemRgb,
+      field8,
     })
-  const r = encodeFeatures(
-    [
-      state('1_Active_Promoter', '255,0,0'),
-      state('5_Strong_Enhancer', '250,202,0'),
-      state('6_Weak_Enhancer', '250,202,0'),
-      state('1_Active_Promoter', '255,0,0'),
-    ],
-    { color: { scale: 'identity', labelField: 'name' } },
-    ['colorKey'],
-  )
-  const entries = r.scale?.kind === 'identity' ? r.scale.entries : []
-  expect(entries.map(e => [e.value, e.labels])).toEqual([
-    ['250,202,0', ['5_Strong_Enhancer', '6_Weak_Enhancer']],
-    ['255,0,0', ['1_Active_Promoter']],
+  const features = [own('0,0,0'), own('0'), own(0), own('0,210,0')]
+  const keysOf = (color: { scale: 'identity'; strict?: true }) => {
+    const r = encodeFeatures(features, { color }, ['colorKey'])
+    const entries = r.scale?.kind === 'identity' ? r.scale.entries : []
+    return [...r.colorKey].map(k => entries[k]!.value)
+  }
+  expect(keysOf({ scale: 'identity', strict: true })).toEqual([
+    '',
+    '',
+    '',
+    '0,210,0',
+  ])
+  expect(keysOf({ scale: 'identity' })).toEqual([
+    '0,0,0',
+    '0,0,0',
+    '0,0,0',
+    '0,210,0',
   ])
 })
 

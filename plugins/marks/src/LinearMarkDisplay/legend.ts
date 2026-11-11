@@ -1,5 +1,5 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
@@ -317,6 +317,12 @@ function sectionKey(markIndex: number, scale: ScaleTable, key: MarkKeySetting) {
  * read as a uniform. A key is headed with the `title` `keyOf` answers for its
  * mark and channel, and with its field otherwise.
  */
+// An identity color with no `domain`: nothing states what any of its colors
+// means, so it keys nothing.
+function namesNoColor(scale: ScaleTable) {
+  return scale.kind === 'identity' && scale.domain.length === 0
+}
+
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
   showsMark: (markIndex: number) => boolean = () => true,
@@ -333,7 +339,7 @@ export function buildMarkLegend(
       }
       for (const { channel, tableOf } of CHANNELS) {
         const scale = tableOf(layer)
-        if (!scale) {
+        if (!scale || namesNoColor(scale)) {
           continue
         }
         const key = keyOf(markIndex, channel)
@@ -498,39 +504,23 @@ function shapeSwatches(shape: ShapeScaleTable) {
 
 // An identity key's rows: each `domain` color under its `names` entry, the
 // whole list once the region drew any color, as a threshold lists its bins.
-// With no `domain`, each color met, named by its features' names.
+// With no `domain` nothing states what a color means, so there is no key.
 function identityRows(
   scale: Extract<ScaleTable, { kind: 'identity' }>,
   key: MarkKeySetting,
 ): CategoricalEntry[] {
-  if (scale.entries.length === 0) {
-    return []
-  }
-  if (scale.domain.length === 0) {
-    return scale.entries.flatMap(e => {
-      const color = abgrToCssRgba(e.color)
-      return e.value === '' || !e.labels?.length
-        ? []
-        : [
-            {
-              value: color,
-              label: e.labels.join(', '),
-              color,
-              ...(key.hidden?.includes(color) ? { hidden: true } : {}),
-            },
-          ]
-    })
-  }
   const { label } = categoricalField('', {
     domain: scale.domain,
     labels: key.names,
   })
-  return scale.domain.map(color => ({
-    value: color,
-    label: label(color),
-    color,
-    ...(key.hidden?.includes(color) ? { hidden: true } : {}),
-  }))
+  return scale.entries.length === 0
+    ? []
+    : scale.domain.map(color => ({
+        value: color,
+        label: label(color),
+        color,
+        ...(key.hidden?.includes(color) ? { hidden: true } : {}),
+      }))
 }
 
 // A key's rows struck through where every value a row names is hidden.

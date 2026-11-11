@@ -1,27 +1,14 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
-import { ReactComponent } from '../LinearMarkDisplay/index.ts'
-import { SPLICED_PLOT_EXAMPLE } from '../LinearMarkDisplay/markPlot.ts'
 import { configSchemaFactory } from './configSchema.ts'
+import { MULTI_ROW_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { PlotExample } from '@jbrowse/core/configuration'
 
-/** What "Edit plot..." offers as buttons on a multi-row feature track. */
-export const MULTI_ROW_PLOT_EXAMPLES: PlotExample[] = [
-  {
-    plot: '{ "encoding": { "color": "strand" } }',
-    description: 'forward strand red, reverse blue',
-  },
-  {
-    plot: '{ "encoding": { "color": { "value": "#1f77b4" } } }',
-    description: 'one color for everything',
-  },
-  {
-    plot: SPLICED_PLOT_EXAMPLE,
-    description: "each feature's blocks joined by a line",
-  },
-]
+const ReactComponent = lazyWithPreload(
+  () => import('./components/LinearMultiRowFeatureDisplayComponent.tsx'),
+)
 
 export default function LinearMultiRowFeatureDisplayF(
   pluginManager: PluginManager,
@@ -32,7 +19,7 @@ export default function LinearMultiRowFeatureDisplayF(
       name: 'LinearMultiRowFeatureDisplay',
       displayName: 'Multi-row display',
       helpText:
-        'One row per value of a feature attribute, such as repeat class, sample or cell type, with each feature a colored block: repeat classes, chromatin states, copy number, chromosome and ancestry paintings.',
+        "Each feature a block in its file's own color, one row per value of the attribute One row per... picks, such as sample, cell type or repeat class: chromatin states, copy number, chromosome and ancestry paintings.",
       configSchema,
       stateModel: () =>
         import('./model.ts').then(f =>

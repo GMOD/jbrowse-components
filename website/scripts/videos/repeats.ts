@@ -15,10 +15,9 @@ export const repeatVideos: VideoSpec[] = [
   // second track added, which is the whole of what repeatmasker_classes.md is
   // for.
   //
-  // The painting partitions on `repClass` whenever the file has that column
-  // (PREFERRED_ROWS_FIELDS), so one Display types pick is the whole
-  // route. A "One row per" beat was filmed here too and cut: it picked the
-  // radio the app had already filled.
+  // The session's multi-row display states `rows: 'repClass'`, so one Display
+  // types pick is the whole route; on a track whose config states no rows the
+  // display draws one row and its One row per chip picks the class.
   {
     name: 'repeats/painting_display_switch',
     description:

@@ -11,8 +11,6 @@ export interface DefaultPlot {
   zero?: false
   /** The field each row stands for a value of, where nothing splits the features. */
   rows?: string
-  /** The display's `encoding.color`, where it states none. */
-  color?: Record<string, unknown>
 }
 
 export const DEFAULT_PLOT_FIELD = 'score'

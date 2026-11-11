@@ -22,14 +22,14 @@ reach every mark, scale, filter and facet setting.
 
 ## Turning a feature track into rows
 
-When you pick it from **Display types**, JBrowse reads a sample of the features
-once and splits them on a column the file has: a RepeatMasker table opens as ~20
-rows of `repClass`, and any other file takes the column whose features never
-overlap within one value, as the segments of one `sample` do in a painting, or a
-single row where no column is like that. Which column assigns a feature to a row
-is then **One row per** in the same track menu, which lists the attributes the
-sampled features have, so RepeatMasker also offers `repFamily` and `name` beside
-the class it started on. A saved row order, its labels and colors, and a
+The display draws what its config states and guesses nothing from the data.
+Picked from **Display types** on a track whose config names no rows, it draws
+every feature in one row, in its file's own colors, with a **One row per...**
+chip at the head of the track. The chip, or **One row per → Attribute...** in
+the track menu, opens a picker listing every attribute the features in view
+carry, each with how many rows it would make: on RepeatMasker, `repClass` makes
+about twenty and `repFamily` more. **One row per → None (one row)** puts the
+features back in one row. A saved row order, its labels and colors, and a
 clustering run are kept across a repartition. They refer to rows by value, so
 they apply to no row under the new partition and apply again when the field
 comes back.
@@ -50,7 +50,6 @@ config:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "chromhmm-LinearMultiRowFeatureDisplay",
       "rows": "cellType"
     }
   ]
@@ -59,15 +58,13 @@ config:
 
 `rows` names the feature attribute whose value assigns a feature to a row.
 Features sharing a value stack into the same row, and the value becomes the row
-label. The display picks `rows`, its marks and its color from the features only
-while the config states no `marks`, so a config that sets `marks` must also set
-`rows`, or every feature is drawn in one row.
+label. Without it every feature is drawn in one row.
 
-A feature whose children have none of their own, such as a BED12 row or a GFF
-transcript at the top of its file, draws them as blocks joined by a line, as a
-gene track draws exons. The plot is then two marks, a line over each feature and
-a `rect` over its blocks, and a hover or a click on any block reports the whole
-feature.
+The plot is a `rect` per feature, spanning the whole feature. **Advanced → Edit
+plot...** offers two other plots as examples: a BED12 row's or a transcript's
+blocks joined by a line, as a gene track draws exons, where a hover or a click
+on any block reports the whole feature; and a transcript drawn with its protein
+domains over its coding exons, as [](/docs/tutorials/protein_domains) writes it.
 
 The rows are discovered from the values of the features in the window, so a file
 that gains a sample or a category needs no config change, and a window missing
@@ -91,7 +88,6 @@ is thousands of rows rather than twenty.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "genark_rmsk-LinearMultiRowFeatureDisplay",
       "rows": "jexl:split(split(feature.name,'#')[1],'/')[0]"
     }
   ]
@@ -127,17 +123,26 @@ The blocks take the first of these that names a color:
 - [`encoding.color`](/docs/config/markdisplayencoding/#slot-color), a
   per-feature fill: a CSS color as its `value`, or a field whose values each
   take a color through a scale (a color per value, a color per interval between
-  cut points, or a gradient) with a key naming them. **Color by** writes it.
-- A feature's own color. A BED9 whose features state an `itemRgb` (ChromHMM
-  state colors, for one) opens painted with them, as
-  `encoding.color.scale.type: "identity"`; `scale.domain` and `scale.names` name
-  those colors in the key, and a `field` reads the colors a column holds.
+  cut points, or a gradient) with a key naming them. **Color by** writes it:
+  **Strand**, **Attribute...**, which picks a field from the features in view,
+  or **Solid color...**.
 - The row's color: [`rows.colors`](/docs/config/markrows/#slot-colors), a color
   pinned on a row by its value, else
   [`rows.color`](/docs/config/markrows/#slot-color), a color per value of a row
   attribute such as its `rows.groups` group. Use it when the row identity is the
   signal (one color per population, per treatment arm).
+- A feature's own color, its BED `itemRgb` (a bigBed's `reserved`, a BED9's
+  ninth column): ChromHMM state colors, for one. **Color by → Default** returns
+  to it. A placeholder `0` or `0,0,0`, which plain BED files write for no color,
+  is no color here.
 - Otherwise the default feature color.
+
+A file states its colors but not what they mean, so the file's own colors draw
+no key until the config names them: `encoding.color.scale.type: "identity"` with
+`scale.domain` listing the colors and `scale.names` naming each, as
+[](/docs/tutorials/chromhmm) writes the chromatin states. An identity scale
+written this way also reads `0,0,0` as black, as UCSC's `itemRgb on` does, and a
+`field` beside it reads the CSS colors a column holds.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
 mean copy number, with `scale.names` naming each interval in the key:
@@ -153,7 +158,6 @@ mean copy number, with `scale.names` naming each interval in the key:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
       "rows": "sample",
       "encoding": {
         "color": {
@@ -180,7 +184,7 @@ mean copy number, with `scale.names` naming each interval in the key:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number, one row per tumor, colored by the interval its log2 ratio falls in." />
 
-**Show → Show legend** keys the colors actually present, and the **Categories**
+**Show → Show legend** keys the colors the config names, and the **Categories**
 submenu beside it hides individual categories, so you can drop the states or
 classes you aren't reading and leave the rest painted. The submenu counts what
 is hidden and offers **Show all categories** to put them back.
@@ -276,7 +280,11 @@ jexl `encoding.color`) the bar is the only place a row's color shows.
 Each of these builds the input file and the track config end to end:
 
 - [](/docs/tutorials/chromhmm) - many cell types from one merged BED, colored by
-  `itemRgb`
+  `itemRgb` and keyed by state
+- [](/docs/tutorials/protein_domains) - a transcript per row, its protein
+  domains over its coding exons
+- [](/docs/tutorials/repeatmasker_classes) - a RepeatMasker track split into a
+  row per class
 - [](/docs/tutorials/tcga_cohort_cnv) - a thousand tumors, colored by the
   interval a numeric column falls in
 - [](/docs/tutorials/bxd_qtl) - strain genotype painting beside a QTL Manhattan

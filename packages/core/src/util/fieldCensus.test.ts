@@ -110,3 +110,40 @@ test('a field past the cap drops its values and keeps counting its features', ()
     values: undefined,
   })
 })
+
+test("a BED12 row's block and thick columns are its geometry, never a field", () => {
+  const { fields } = censusFields(
+    features([
+      {
+        name: 'VCV001205451',
+        thickStart: 56191027,
+        thickEnd: 56191028,
+        blockCount: 1,
+        blockSizes: [1],
+        blockStarts: [0],
+        chromStarts: [0],
+        clinSign: 'Likely benign',
+      },
+    ]),
+    40,
+  )
+  expect(fields.map(f => f.field)).toEqual(['name', 'clinSign'])
+})
+
+test('a field holding markup, JSON or prose in any feature is no field', () => {
+  const { fields } = censusFields(
+    features([
+      {
+        clinSign: 'Benign',
+        reviewStatus: '&#9733;&#9733;&#9734;&#9734;',
+        phenotype: "<a target=_blank href='https://example.com'>MedGen</a>",
+        _jsonHgvsTable: '[["g.4690G>A", "-"]]',
+        note: 'x'.repeat(300),
+        allele: 'G>A',
+      },
+      { clinSign: 'Pathogenic', reviewStatus: 'no assertion' },
+    ]),
+    40,
+  )
+  expect(fields.map(f => f.field)).toEqual(['clinSign', 'allele'])
+})

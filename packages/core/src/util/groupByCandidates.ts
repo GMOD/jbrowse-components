@@ -1,7 +1,7 @@
-import { censusFields } from '@jbrowse/core/util/fieldCensus'
-import { MAX_GROUPS, compareGroupKeys } from '@jbrowse/core/util/groupKeys'
+import { censusFields } from './fieldCensus.ts'
+import { MAX_GROUPS, compareGroupKeys } from './groupKeys.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature } from './simpleFeature.ts'
 
 export interface GroupByCandidate {
   field: string

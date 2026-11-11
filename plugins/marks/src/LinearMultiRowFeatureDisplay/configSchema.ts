@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { configSchemaFactory as markConfigSchemaFactory } from '../LinearMarkDisplay/configSchema.ts'
+import {
+  configSchemaFactory as markConfigSchemaFactory,
+  markListSchema,
+} from '../LinearMarkDisplay/configSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -10,15 +13,18 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Colored features in stacked rows, one row per value of a feature
  * attribute: a chromosome painting, an ancestry painting, a chromatin-state
  * track per cell type. It is the mark display with a `rect` per feature as
- * its default plot, so every mark, scale, facet and row setting applies.
+ * its plot, so every mark, scale, facet and row setting applies.
  *
- * With nothing declared it reads a sample of the features once. Rows: a row
- * per `repClass` where they carry one, else per the attribute whose values
- * each hold features that never overlap (`sample` in the first example, where
- * a sample's segments run end to end), else a single row. Color: each feature its
- * file's own BED color where it has one. Shape: a feature whose children have
- * none of their own, a BED12 row or a transcript, as its blocks joined by a
- * line.
+ * It draws what the config states and guesses nothing from the data. Rows:
+ * one per value of `rows.field`, or a single row where it names none, which
+ * the track menu's One row per picks from the attributes the features in view
+ * carry. Color: a stated `rows.colors` entry, else each feature's own BED
+ * color (`itemRgb`, a bigBed's `reserved`, a BED9's ninth column), else the
+ * default; a placeholder `0` or `0,0,0` reads as no color. A key appears only
+ * where a color names its values: a field, or an identity scale's `domain`
+ * and `names`, as the second example writes. Shape: one `rect` per feature;
+ * "Edit plot..." offers a BED12 row's blocks joined by a line, and a
+ * transcript with its protein domains over it.
  *
  * #example
  * A custom BED with a column naming each row, its columns named by a
@@ -44,7 +50,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displays: [
  *     {
  *       type: 'LinearMultiRowFeatureDisplay',
- *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
  *       rows: {
  *         field: 'sample',
  *         sort: ['HG00097', 'HG00096'],
@@ -56,7 +61,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Each feature in its file's BED color, the key naming three of them:
+ * Each feature in its file's BED color, with a key naming three of them;
+ * where black is a color the file means, the written identity scale also
+ * paints `0,0,0` as black:
  * ```js
  * {
  *   type: 'LinearMultiRowFeatureDisplay',
@@ -87,6 +94,12 @@ export function configSchemaFactory() {
         defaultValue: 5_000_000,
         description: 'bytes a region may download before the display asks',
       },
+      /**
+       * #slot marks
+       * The plot, as `LinearMarkDisplay` reads it: unwritten, a `rect` per
+       * feature.
+       */
+      marks: markListSchema([{ mark: 'rect' }]),
     },
     {
       /**

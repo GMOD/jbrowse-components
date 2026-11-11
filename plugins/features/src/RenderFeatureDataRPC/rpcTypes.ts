@@ -1,5 +1,4 @@
 import type { FieldColorValues } from '../shared/fieldColorCandidates.ts'
-import type { GroupByCandidate } from './groupByCandidates.ts'
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
@@ -7,6 +6,7 @@ import type {
   RegionTooLargeResult,
 } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+import type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {

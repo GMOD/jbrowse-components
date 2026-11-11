@@ -33,12 +33,16 @@ protein-coordinate calls on the exons across introns and on either strand, is
   says which transcript a domain sits on, with no column to join. The file is
   valid GFF3; `gt gff3validator -typecheck so` rejects it, since SO makes no
   `protein_match` part of an mRNA, and its job is display, not interchange.
-- **The multi-row display draws it by default.** Where a scanned transcript's
+- ~~**The multi-row display draws it by default.** Where a scanned transcript's
   children include a `protein_match`, `multiRowPlot` draws a row per
   transcript: its span as a line, its exons and CDS in two greys, and the
   matches over them at the Normal row height. The grey marks state their own
   color, so the display's `encoding.color`, which Color by writes, reaches
-  the matches alone, by `name` (the family) unless the config says otherwise.
+  the matches alone, by `name` (the family) unless the config says otherwise.~~
+  Superseded by
+  [ADR-265](adr-265-the-multi-row-display-draws-what-its-config-states.md): the
+  tutorial's config states that plot (`rows`, the marks and the color), and
+  "Edit plot..." offers it as an example; the display guesses no format.
 - **The gene track stays the navigator.** It collapses to one transcript per
   gene zoomed out, where the domain track's rows follow the transcripts in
   the window. The tutorial sets no label or height mode on it.

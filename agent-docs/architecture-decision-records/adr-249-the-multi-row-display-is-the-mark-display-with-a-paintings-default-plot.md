@@ -13,7 +13,9 @@ retires. Amends ADR-165 and ADR-169: the mark display now drives the row table
 and the bands on the painting's behalf. Amended by
 [ADR-263](adr-263-a-row-field-is-a-lane-field-and-the-field-scans-share-one-census.md):
 the default rows field is the scan's lane field, and Group by is the mark
-display's.
+display's. Amended by
+[ADR-265](adr-265-the-multi-row-display-draws-what-its-config-states.md): the plot is stated in the config schema (a `rect` per feature),
+rows come only from `rows.field`, and nothing is picked from a scan.
 
 ## Context
 

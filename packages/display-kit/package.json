@@ -23,6 +23,9 @@
     "!esm/chromeTestModel.*"
   ],
   "exports": {
+    "./AttributeFieldInput": "./src/AttributeFieldInput.tsx",
+    "./attributeVerdict": "./src/attributeVerdict.ts",
+    "./ColorByAttributeDialog": "./src/ColorByAttributeDialog.tsx",
     "./BlockMsg": "./src/BlockMsg.tsx",
     "./BottomRightIndicators": "./src/BottomRightIndicators.tsx",
     "./PlotDialog": "./src/PlotDialog.tsx",
@@ -157,6 +160,9 @@
   "publishConfig": {
     "access": "public",
     "exports": {
+      "./AttributeFieldInput": "./esm/AttributeFieldInput.js",
+      "./attributeVerdict": "./esm/attributeVerdict.js",
+      "./ColorByAttributeDialog": "./esm/ColorByAttributeDialog.js",
       "./BlockMsg": "./esm/BlockMsg.js",
       "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
       "./PlotDialog": "./esm/PlotDialog.js",

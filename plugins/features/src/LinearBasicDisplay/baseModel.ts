@@ -210,12 +210,12 @@ export type {
   RegionInstanceIndex,
 } from './featureHighlightInk.ts'
 export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
-export type { GroupByCandidate } from '../RenderFeatureDataRPC/groupByCandidates.ts'
+export type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
 export type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 export type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 const ColorByAttributeDialog = lazy(
-  () => import('./components/ColorByAttributeDialog.tsx'),
+  () => import('@jbrowse/display-kit/ColorByAttributeDialog'),
 )
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))

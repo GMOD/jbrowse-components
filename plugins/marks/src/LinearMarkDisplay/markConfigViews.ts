@@ -18,7 +18,7 @@ import {
   tagRowGroups,
 } from '@jbrowse/tree-sidebar/rowGroups'
 
-import { paintedColorNode } from './inheritedColor.ts'
+import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import { markColorsOf } from './markColor.ts'
 import { buildMarkList, markDrawsAt } from './markList.ts'
 import {
@@ -267,6 +267,7 @@ export type MarkChannelHost = MarkConfigHost &
   ReturnType<typeof markChannelViews> &
   MarkZoomHost & {
     hiddenCategories: readonly HiddenCategory[] | undefined
+    unsetColor: ColorSource | undefined
   }
 
 /**
@@ -307,6 +308,7 @@ export function markFacetViews(self: MarkChannelHost) {
         self,
         self.hiddenCategories,
         self.configuration.encoding.color,
+        self.unsetColor,
       )
     },
     /**
@@ -342,6 +344,7 @@ export function markFacetViews(self: MarkChannelHost) {
         self.host.bpPerPx,
         self.sharedSteps,
         self.configuration.encoding.color,
+        self.unsetColor,
       )
     },
   }
@@ -368,20 +371,20 @@ export function markEntryViews(self: MarkFacetHost) {
      * #getter
      * Each mark as the text layer places it: the entry with whether it
      * names a `y` and whether its color is written, a constant or a
-     * scale. Its own getter so a slot only a label reads never remakes
-     * the mark list.
+     * scale, or paints the display's `unsetColor`. Its own getter so a
+     * slot only a label reads never remakes the mark list.
      */
     get textMarkEntries(): TextMarkEntry[] {
       const { marks, encoding } = self.configuration
       return self.markEntries.map((entry, i) => {
-        const color = colorSettingOf(
-          paintedColorNode(marks[i]!, encoding.color),
-        )
+        const painted = paintedColorNode(marks[i]!, encoding.color)
+        const color = colorSettingOf(painted)
         return {
           ...entry,
           ownColor:
             featureColorEncoding(color) !== undefined ||
-            color.scale.type === IDENTITY_SCALE,
+            color.scale.type === IDENTITY_SCALE ||
+            (self.unsetColor !== undefined && !saysColor(painted)),
         }
       })
     },

@@ -105,7 +105,7 @@ export type {
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/FeatureGateMixin.ts'
 export type { FeatureGateConfigModel } from './shared/featureGateConfigSchemaFields.ts'
-export type { GroupByCandidate } from './RenderFeatureDataRPC/groupByCandidates.ts'
+export type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
 export type { GroupByScanOptions } from './LinearBasicDisplay/scanGroupByCandidates.ts'
 
 // The feature glyph set as marks, for a display outside this plugin drawing

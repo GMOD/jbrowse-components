@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import GroupByDialog from './GroupByDialog.tsx'
 
-import type { AttributeScan } from './attributeVerdict.ts'
+import type { AttributeScan } from '@jbrowse/display-kit/attributeVerdict'
 
 const PLOT = { facet: null }
 

@@ -109,7 +109,7 @@ import type {
   LinearMarkDisplayConfigModel,
 } from './configSchema.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
-import type { HiddenCategory } from './markColor.ts'
+import type { ColorSource, HiddenCategory } from './markColor.ts'
 import type { MarkRegionData, MarkRenderState } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
@@ -270,21 +270,16 @@ export function stateModelFactory(
           return Promise.resolve(options)
         },
         /**
-         * #method
-         * Overridable hook: what the display draws with nothing declared, off
-         * the scanned fields, or undefined where they decide nothing and the
-         * plot dialog opens instead.
-         */
-        defaultPlotOf(fields: PlotFields): DefaultPlot | undefined {
-          return defaultPlot(fields)
-        },
-        /**
          * #getter
-         * Overridable hook: whether the track menu offers the scanned fields,
-         * so a declared plot still scans, and rescans while it holds none.
+         * Overridable hook: what a mark paints where neither it nor the
+         * display's `encoding.color` names a color, undefined for the default
+         * mark color. Never written into the config, so a display-level
+         * color stated later still reaches every mark naming none (ADR-248).
+         * The multi-row display paints each feature's own BED color
+         * (`FILE_COLOR`, ADR-265).
          */
-        get menusOfferPlotFields(): boolean {
-          return false
+        get unsetColor(): ColorSource | undefined {
+          return undefined
         },
         /**
          * #getter
@@ -924,9 +919,8 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Write a default plot: its marks, its axis, a row per value of its
-         * `rows` field where nothing splits the features yet, and its color
-         * where the display states none.
+         * Write a default plot: its marks, its axis, and a row per value of
+         * its `rows` field where nothing splits the features yet.
          */
         applyDefaultPlot(plot: DefaultPlot) {
           setConf(self.conf, 'marks', plot.marks)
@@ -935,9 +929,6 @@ export function stateModelFactory(
           }
           if (plot.rows && self.splitField === undefined) {
             setConf(self.conf, ['rows', 'field'], plot.rows)
-          }
-          if (plot.color && !saysColor(self.conf.encoding.color)) {
-            setConf(self.conf, ['encoding', 'color'], plot.color)
           }
         },
         /**
@@ -1233,7 +1224,7 @@ export function stateModelFactory(
             return
           }
           self.setPlotDefaultChecked()
-          const plot = self.defaultPlotOf(fields)
+          const plot = defaultPlot(fields)
           if (plot) {
             self.applyDefaultPlot(plot)
           } else {
@@ -1282,24 +1273,19 @@ export function stateModelFactory(
           // while `marks` is empty, the features decide (`defaultPlot`), or the
           // dialog opens where they decide nothing. A window with no features
           // decides nothing, and the next window scans again; a failed scan is
-          // the display's error, and its retry scans again. A display whose
-          // menus offer the fields scans the same way while it holds none.
+          // the display's error, and its retry scans again.
           addDisposer(
             self,
             autorun(() => {
-              const decides =
-                !self.plotDefaultChecked && self.conf.marks.length === 0
-              const holdsFields =
-                self.plotFields !== undefined && !self.plotFields.empty
               if (
-                !(decides || (self.menusOfferPlotFields && !holdsFields)) ||
-                !self.host.initialized ||
-                self.error !== undefined ||
-                self.plotScanWindow.length === 0
+                !self.plotDefaultChecked &&
+                self.conf.marks.length === 0 &&
+                self.host.initialized &&
+                self.error === undefined &&
+                self.plotScanWindow.length > 0
               ) {
-                return
+                void self.decideDefaultPlot()
               }
-              void self.decideDefaultPlot()
             }),
           )
         },

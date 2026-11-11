@@ -16,7 +16,7 @@ fixed in both themes:
 | `REFERENCE_COLOR` | `#ccc` | `plugins/variants/src/shared/constants.ts` |
 | `RIBBON_GREY` | `rgb(130,130,130)` | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts` |
 | `DEFAULT_RULE_COLOR` | `rgb(120,120,120)` | `packages/display-ui/src/yAxisConstants.ts` |
-| transcript greys | `#c4c4c4`, `#9a9a9a`, `#777777` | `plugins/marks/src/LinearMultiRowFeatureDisplay/multiRowPlot.ts` |
+| transcript greys | `#c4c4c4`, `#9a9a9a`, `#777777` | `plugins/marks/src/LinearMultiRowFeatureDisplay/plotExamples.ts` |
 | `FALLBACK_FILL` | `#aaaaaa` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/sequenceGeometry.ts` |
 | `BORDER_COLOR` | `rgb(85,85,85)` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/sequenceMarks.ts` |
 | `NO_RUNS` | `grey[400]` | `plugins/variants/src/VariantFeatureWidget/TandemRepeatPanel/TandemRepeatPanel.tsx` |

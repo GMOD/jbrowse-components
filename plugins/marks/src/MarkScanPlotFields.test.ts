@@ -36,8 +36,6 @@ test("a GFF3 track's source column takes no rows", async () => {
   expect(await scan({})).toEqual({
     numeric: ['score'],
     categorical: ['source'],
-    attributes: ['score', 'source'],
-    lane: 'source',
   })
 })
 
@@ -59,7 +57,6 @@ test("a multi-BigWig's listed files take a row each, though its first features a
   ).toEqual({
     numeric: ['score'],
     categorical: ['source'],
-    attributes: ['score', 'source'],
     rows: 'source',
   })
 })
@@ -73,8 +70,6 @@ test('a multi-BigWig of one file takes no rows', async () => {
   ).toEqual({
     numeric: ['score'],
     categorical: ['source'],
-    attributes: ['score', 'source'],
-    lane: 'source',
   })
 })
 
@@ -90,7 +85,5 @@ test("a MAF's listed species take no rows on source", async () => {
   ).toEqual({
     numeric: ['score'],
     categorical: ['source'],
-    attributes: ['score', 'source'],
-    lane: 'source',
   })
 })

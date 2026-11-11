@@ -24,6 +24,7 @@ export {
 } from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { RowFocusHint } from './RowFocusHint.tsx'
+export { SidebarHintChip } from './SidebarHintChip.tsx'
 export { focusRows } from './focusRows.ts'
 export {
   clusterProvenanceFromRegions,

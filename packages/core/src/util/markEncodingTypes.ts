@@ -115,10 +115,11 @@ export interface IdentityRef {
   scale: 'identity'
   field?: FieldRef
   /**
-   * The field whose values name each color in the key, which the encoder
-   * gathers per color where the display's scale lists no colors of its own.
+   * Read the BED color as a display's unset color does: `0`, `'0'` and
+   * `'0,0,0'` are a placeholder, keyed as no color, where a written identity
+   * scale reads them as UCSC's `itemRgb on` does, as black.
    */
-  labelField?: FieldRef
+  strict?: true
 }
 
 /**
@@ -253,17 +254,8 @@ export type ColorScaleTable =
       field: ''
       /** The colors the key lists, the config's `scale.domain`; the worker sends none. */
       domain: string[]
-      /**
-       * Each color met as `r,g,b`, `''` for a feature carrying none, with the
-       * `labelField` values of the features painted in it where the request
-       * names one.
-       */
-      entries: {
-        value: string
-        color: number
-        hidden?: boolean
-        labels?: string[]
-      }[]
+      /** Each color met as `r,g,b`, `''` for a feature carrying none. */
+      entries: { value: string; color: number; hidden?: boolean }[]
     }
   | {
       kind: 'threshold'

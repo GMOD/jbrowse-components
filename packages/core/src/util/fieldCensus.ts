@@ -2,7 +2,9 @@ import { valueText } from './groupKeys.ts'
 
 import type { Feature } from './simpleFeature.ts'
 
-// Where a feature sits and what it is made of, never a value it carries.
+// Where a feature sits and what it is made of, never a value it carries: a
+// BED12 row's block and thick columns are its geometry, which its children
+// and its drawing already state.
 const STRUCTURE_FIELDS = new Set([
   'uniqueId',
   'refName',
@@ -10,7 +12,40 @@ const STRUCTURE_FIELDS = new Set([
   'end',
   'subfeatures',
   'parentId',
+  'blockCount',
+  'blockSizes',
+  'blockStarts',
+  'chromStarts',
+  'thickStart',
+  'thickEnd',
 ])
+
+// Text past which a value is prose or a payload, never a category.
+const LONG_TEXT = 256
+
+const MARKUP = /<[a-z/!][^>]*>|&(?:#\d+|#x[\da-f]+|[a-z]+);/i
+
+function isJson(text: string) {
+  try {
+    return typeof JSON.parse(text) === 'object'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Whether a text value is a blob a picker should not offer as a field: HTML
+ * (a bigBed's `_mouseOver`, a ClinVar `reviewStatus` of `&#9733;` stars), a
+ * JSON payload, or text long enough to be prose.
+ */
+export function isBlobText(text: string) {
+  const trimmed = text.trim()
+  return (
+    trimmed.length > LONG_TEXT ||
+    MARKUP.test(trimmed) ||
+    (/^[[{]/.test(trimmed) && /[\]}]$/.test(trimmed) && isJson(trimmed))
+  )
+}
 
 /** What a set of features holds in one field. */
 export interface FieldSummary {
@@ -81,6 +116,7 @@ interface Tally {
   carried: number
   numeric: boolean | undefined
   values: Set<string> | undefined
+  blob: boolean
 }
 
 /**
@@ -88,6 +124,8 @@ interface Tally {
  * which fields they carry, how many carry each, whether it is a number, and
  * its distinct values while there are no more than `cap`. A color key, a
  * section list and a row axis each read their own rule off the summaries.
+ * A BED12 row's geometry and a field holding any blob (`isBlobText`) are no
+ * field a picker offers, so neither is listed.
  *
  * The names come from `feature.toJSON()`, the only field list `Feature`
  * offers, and on a gene that serializes the transcript tree as well: nine
@@ -109,9 +147,11 @@ export function censusFields(
           carried: 0,
           numeric: undefined,
           values: new Set<string>(),
+          blob: false,
         }
         tallies.set(field, tally)
         tally.carried++
+        tally.blob ||= isBlobText(text)
         const single = singleOf(value)
         if (single !== undefined) {
           tally.numeric = (tally.numeric ?? true) && isNumericDatum(single)
@@ -125,11 +165,11 @@ export function censusFields(
   }
   return {
     n,
-    fields: [...tallies].map(([field, { carried, numeric, values }]) => ({
-      field,
-      carried,
-      numeric,
-      values: values && [...values],
-    })),
+    fields: [...tallies].flatMap(
+      ([field, { carried, numeric, values, blob }]) =>
+        blob
+          ? []
+          : [{ field, carried, numeric, values: values && [...values] }],
+    ),
   }
 }

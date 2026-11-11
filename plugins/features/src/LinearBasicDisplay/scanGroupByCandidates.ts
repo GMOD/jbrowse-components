@@ -4,7 +4,7 @@ import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { GetGroupByCandidatesArgs } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { StatusCallback } from '@jbrowse/core/util'
+import type { AttributeScanOptions } from '@jbrowse/display-kit/AttributeFieldInput'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface GroupByScanModel extends IStateTreeNode {
@@ -20,10 +20,7 @@ export interface GroupByScanModel extends IStateTreeNode {
   resolvedByteLimit: () => number | undefined
 }
 
-export interface GroupByScanOptions {
-  signal: AbortSignal
-  statusCallback: StatusCallback
-}
+export type GroupByScanOptions = AttributeScanOptions
 
 // The attributes the features in view carry and the sections each would
 // make, read off the render fetch's own download over the visible blocks on

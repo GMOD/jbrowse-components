@@ -21,10 +21,57 @@ const PFAM_TRACK = {
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
-      displayId: 'pfam_domains-LinearMultiRowFeatureDisplay',
-      encoding: {
-        color: { field: 'name', legend: { title: 'Pfam family' } },
-      },
+      rows: 'name',
+      marks: [
+        {
+          mark: { type: 'rect', height: { band: 0 } },
+          encoding: { color: { value: '#777777' } },
+        },
+        {
+          mark: { type: 'rect', height: { band: 0.25 } },
+          transform: [
+            { type: 'flatten' },
+            { type: 'filter', expr: "jexl:feature.type == 'exon'" },
+          ],
+          encoding: {
+            color: {
+              field: 'type',
+              scale: {
+                domain: ['exon', 'CDS'],
+                range: ['#c4c4c4', '#9a9a9a'],
+                names: ['UTR', 'coding'],
+              },
+              legend: { title: 'Transcript' },
+            },
+          },
+        },
+        {
+          mark: { type: 'rect', height: { band: 0.8 } },
+          transform: [
+            { type: 'flatten' },
+            { type: 'filter', expr: "jexl:feature.type == 'CDS'" },
+          ],
+          encoding: {
+            color: {
+              field: 'type',
+              scale: {
+                domain: ['exon', 'CDS'],
+                range: ['#c4c4c4', '#9a9a9a'],
+                names: ['UTR', 'coding'],
+              },
+              legend: { title: 'Transcript' },
+            },
+          },
+        },
+        {
+          mark: { type: 'rect', height: { band: 0.8 } },
+          transform: [
+            { type: 'flatten' },
+            { type: 'filter', expr: "jexl:feature.type == 'protein_match'" },
+          ],
+        },
+      ],
+      encoding: { color: { field: 'name', legend: { title: 'Pfam family' } } },
     },
   ],
 }

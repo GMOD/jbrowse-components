@@ -1,14 +1,13 @@
 import { useState } from 'react'
 
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import AttributeFieldInput from '@jbrowse/display-kit/AttributeFieldInput'
 import GroupByDialogShell from '@jbrowse/display-kit/GroupByDialog'
+import { GROUPING } from '@jbrowse/display-kit/attributeVerdict'
 import { colorsWithGrouping } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
-import AttributeFieldInput from './AttributeFieldInput.tsx'
-import { GROUPING } from './attributeVerdict.ts'
-
-import type { AttributeScanModel } from './AttributeFieldInput.tsx'
+import type { AttributeScanModel } from '@jbrowse/display-kit/AttributeFieldInput'
 import type { GroupByPlotHost } from '@jbrowse/display-kit/GroupByDialog'
 
 export interface GroupByDialogModel

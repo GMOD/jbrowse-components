@@ -89,8 +89,8 @@ export const repeatVideoFixtures = {
     ],
   }),
   // `replaceDisplay` drops the old display's height, so the multi-row display
-  // carries its own or its eight rows overlap. `rows` stays unset: the tour
-  // shows the display picking `repClass` itself.
+  // carries its own or its eight rows overlap. The display draws what its
+  // config states, so the config states its rows.
   twoDisplaySession: sessionSpec(DEMO_CONFIG, {
     sessionTracks: [
       {
@@ -103,6 +103,7 @@ export const repeatVideoFixtures = {
           {
             type: 'LinearMultiRowFeatureDisplay',
             displayId: 'rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay',
+            rows: 'repClass',
             height: 260,
           },
         ],
