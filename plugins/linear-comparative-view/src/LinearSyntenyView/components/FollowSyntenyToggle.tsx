@@ -133,6 +133,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
           // The button's only stable handle: everything else about it is the
           // tooltip, whose wording is a function of the report.
           data-testid="follow-synteny-toggle"
+          aria-label="Follow synteny"
           value="followSynteny"
           selected={followSynteny}
           disabled={views.length < 2}

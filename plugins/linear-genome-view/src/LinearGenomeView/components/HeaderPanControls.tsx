@@ -2,7 +2,7 @@ import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import { Button } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
@@ -37,26 +37,30 @@ const HeaderPanControls = observer(function HeaderPanControls({
   const className = cx(classes.panButton, compact && classes.compact)
   return (
     <>
-      <Button
-        variant="outlined"
-        aria-label="Pan left"
-        className={className}
-        onClick={() => {
-          model.slide(-0.9)
-        }}
-      >
-        <ArrowBackIcon />
-      </Button>
-      <Button
-        variant="outlined"
-        aria-label="Pan right"
-        className={className}
-        onClick={() => {
-          model.slide(0.9)
-        }}
-      >
-        <ArrowForwardIcon />
-      </Button>
+      <Tooltip title="Pan left">
+        <Button
+          variant="outlined"
+          aria-label="Pan left"
+          className={className}
+          onClick={() => {
+            model.slide(-0.9)
+          }}
+        >
+          <ArrowBackIcon />
+        </Button>
+      </Tooltip>
+      <Tooltip title="Pan right">
+        <Button
+          variant="outlined"
+          aria-label="Pan right"
+          className={className}
+          onClick={() => {
+            model.slide(0.9)
+          }}
+        >
+          <ArrowForwardIcon />
+        </Button>
+      </Tooltip>
     </>
   )
 })
