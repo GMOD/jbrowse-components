@@ -248,9 +248,9 @@ against the code, checked the spelling twice.
   `subfeatures` holds `placement`: `auto` labels a polyprotein's cleavage
   products on their rows, `below` and `overlay` every part. `showLabels` and
   `subfeatureLabels` go.
-  - The variant band's `records.labels`, LD's `labels.name`, and the
-    multi-way display's `labels.name` (from `text` and `showGeneLabels`) take
-    the same shape. The multi-way display's top-level `labels` holds its gene
+  - The variant band's `records.labels` and the multi-way display's
+    `labels.name` (from `text` and `showGeneLabels`) take the same shape.
+    LD's `labels.name` holds `show` alone, an LD SNP carrying only its id. The multi-way display's top-level `labels` holds its gene
     names and its lane names (`labels.lanes`), as its top-level `encoding`
     means the gene glyphs.
 - **The density gate always runs, at thresholds the display fixes.** A name

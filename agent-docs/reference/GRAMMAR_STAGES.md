@@ -19,8 +19,8 @@ object, the code that reads it, what writes it, and the decisions in force.
 Three docs sit beside it. [GRAMMAR_OF_GRAPHICS.md](GRAMMAR_OF_GRAPHICS.md)
 holds the positions taken and the features declined: read it before proposing
 a feature. [MARK_ENCODING.md](MARK_ENCODING.md) has the encoder's traps, and
-[CONFIG_SPELLINGS.md](CONFIG_SPELLINGS.md) has every word and which displays
-take it.
+[CONFIG_SPELLINGS.md](CONFIG_SPELLINGS.md) has every word, the paths it sits
+under and how many displays take it.
 
 ![The grammar's eight stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
 

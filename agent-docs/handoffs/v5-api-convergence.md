@@ -111,9 +111,13 @@ between displays.
    - A plugin's own CI running the generator without a jbrowse-components
      checkout waits on a plugin asking for it; none runs it today.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
-   holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
-   the 2026-10-30 taste calls among them (ChordColor's `scale`, HicColor's
-   and LDColor's `scale`, WiggleColor's `legend`).
+   holds them, a channel under a part compared with the display's own, and
+   `scripts/configSpellingRulings.ts` names the ADR or schema comment ruling
+   on each path (its test refuses a differing path with no entry), the
+   2026-10-30 taste calls among them (ChordColor's `scale`, HicColor's and
+   LDColor's `scale`, WiggleColor's `legend`). Two entries are `open:`, with
+   no ruling: `ribbons.encoding.color.scale` has no `domainQuantile`, and the
+   synteny opacity scale always clamps with no `clamp` member.
 
 ## Release candidate gates
 
