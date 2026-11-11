@@ -258,6 +258,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
               onClick: () => {
                 self.setShowCytobands(!self.showCytobands)
               },
+              disabled: self.hideHeader || self.hideHeaderOverview,
             },
           ]
         : []),
