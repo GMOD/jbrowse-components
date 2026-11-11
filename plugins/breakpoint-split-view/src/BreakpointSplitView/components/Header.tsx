@@ -1,15 +1,12 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   HeaderSearchBoxRow,
-  searchBoxMenuItems,
   useSearchBoxPrefs,
 } from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
-import TuneIcon from '@mui/icons-material/Tune'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -58,16 +55,9 @@ const Header = observer(function Header({
             className={classes.toggleButton}
             size="small"
           >
-            <LinkIcon />
+            <LinkIcon fontSize="small" />
           </ToggleButton>
         </Tooltip>
-        <CascadingMenuButton
-          size="small"
-          title="Display settings"
-          menuItems={() => searchBoxMenuItems(prefs)}
-        >
-          <TuneIcon />
-        </CascadingMenuButton>
       </div>
 
       {prefs.showSearchBoxes ? (

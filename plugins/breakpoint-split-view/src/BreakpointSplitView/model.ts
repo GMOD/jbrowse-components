@@ -25,6 +25,8 @@ import {
   multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
   rowLabels,
+  searchBoxMenuItems,
+  storedSearchBoxPrefs,
 } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
@@ -977,7 +979,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 self.setShowHeader(!self.showHeader)
               },
             },
+            ...searchBoxMenuItems(
+              storedSearchBoxPrefs('bsv', self.views.length),
+              { keepMenuOpen: false },
+            ),
           ]),
+          {
+            label: 'Link views',
+            type: 'checkbox',
+            checked: self.linkViews,
+            onClick: () => {
+              self.setLinkViews(!self.linkViews)
+            },
+          },
           {
             label: 'Allow clicking connections',
             type: 'checkbox',

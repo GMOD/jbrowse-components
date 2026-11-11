@@ -106,6 +106,7 @@ export { default as SearchBox } from './LinearGenomeView/components/SearchBox.ts
 export { default as HeaderSearchBoxRow } from './LinearGenomeView/components/HeaderSearchBoxRow.tsx'
 export {
   searchBoxMenuItems,
+  storedSearchBoxPrefs,
   useSearchBoxPrefs,
 } from './LinearGenomeView/components/useSearchBoxPrefs.ts'
 export type { SearchBoxPrefs } from './LinearGenomeView/components/useSearchBoxPrefs.ts'

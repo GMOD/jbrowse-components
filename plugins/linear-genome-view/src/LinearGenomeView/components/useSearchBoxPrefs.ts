@@ -1,6 +1,21 @@
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
+import {
+  localStorageGetBoolean,
+  localStorageSetItem,
+  notifyLocalStorageKey,
+} from '@jbrowse/core/util/localStorage'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+
+function searchBoxPrefKeys(prefix: string, numViews: number) {
+  const compact = numViews <= 3
+  const regime = compact ? 'compact' : 'large'
+  return {
+    compact,
+    showKey: `${prefix}-showSearchBoxes-${regime}`,
+    sideKey: `${prefix}-sideBySide-${regime}`,
+  }
+}
 
 /**
  * Visibility and orientation of the search-box strip a stacked-LGV header
@@ -16,36 +31,67 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * dependency edge.
  */
 export function useSearchBoxPrefs(prefix: string, numViews: number) {
-  const compact = numViews <= 3
-  const regime = compact ? 'compact' : 'large'
+  const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
   const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
-    `${prefix}-showSearchBoxes-${regime}`,
+    showKey,
     compact,
   )
-  const [sideBySide, setSideBySide] = useLocalStorage(
-    `${prefix}-sideBySide-${regime}`,
-    compact,
-  )
+  const [sideBySide, setSideBySide] = useLocalStorage(sideKey, compact)
   return { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide }
 }
 
-export type SearchBoxPrefs = ReturnType<typeof useSearchBoxPrefs>
+export interface SearchBoxPrefs {
+  showSearchBoxes: boolean
+  setShowSearchBoxes: (value: boolean) => void
+  sideBySide: boolean
+  setSideBySide: (value: boolean) => void
+}
+
+function writeStoredBoolean(key: string, value: boolean) {
+  if (localStorageSetItem(key, JSON.stringify(value))) {
+    notifyLocalStorageKey(key)
+  }
+}
+
+/**
+ * The same prefs read from the store outside React, for a model's menu: a
+ * write announces itself, so a header holding `useSearchBoxPrefs` on the same
+ * keys follows it. The open menu does not, so its rows pass
+ * `keepMenuOpen: false` to `searchBoxMenuItems`.
+ */
+export function storedSearchBoxPrefs(prefix: string, numViews: number) {
+  const { compact, showKey, sideKey } = searchBoxPrefKeys(prefix, numViews)
+  return {
+    showSearchBoxes: localStorageGetBoolean(showKey, compact),
+    setShowSearchBoxes: (value: boolean) => {
+      writeStoredBoolean(showKey, value)
+    },
+    sideBySide: localStorageGetBoolean(sideKey, compact),
+    setSideBySide: (value: boolean) => {
+      writeStoredBoolean(sideKey, value)
+    },
+  }
+}
 
 /**
  * The menu rows that drive those prefs. "Stacked" rather than "Vertical": the
  * two headers name the same state and had drifted apart on it once already.
  */
-export function searchBoxMenuItems({
-  showSearchBoxes,
-  setShowSearchBoxes,
-  sideBySide,
-  setSideBySide,
-}: SearchBoxPrefs): MenuItem[] {
+export function searchBoxMenuItems(
+  {
+    showSearchBoxes,
+    setShowSearchBoxes,
+    sideBySide,
+    setSideBySide,
+  }: SearchBoxPrefs,
+  { keepMenuOpen }: { keepMenuOpen?: boolean } = {},
+): MenuItem[] {
   return [
     {
       label: 'Show search boxes',
       type: 'checkbox',
       checked: showSearchBoxes,
+      keepMenuOpen,
       onClick: () => {
         setShowSearchBoxes(!showSearchBoxes)
       },
@@ -57,6 +103,7 @@ export function searchBoxMenuItems({
           label: 'Side-by-side',
           type: 'radio',
           checked: sideBySide,
+          keepMenuOpen,
           onClick: () => {
             setSideBySide(true)
           },
@@ -65,6 +112,7 @@ export function searchBoxMenuItems({
           label: 'Stacked',
           type: 'radio',
           checked: !sideBySide,
+          keepMenuOpen,
           onClick: () => {
             setSideBySide(false)
           },
