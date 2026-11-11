@@ -26,6 +26,7 @@ import {
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
 import { startMcpBridge } from './mcp/bridge.ts'
+import { mcpDisabled } from './mcp/disabled.ts'
 import { socketPaths } from './mcp/socketPath.ts'
 import { runMcpStdioServer } from './mcp/stdioServer.ts'
 import { initializePaths } from './paths.ts'
@@ -334,7 +335,7 @@ function runApp() {
   // it, or never finished. The renderer's background throttling is a separate
   // knob and was not enough. Off with the endpoint, since the endpoint is what
   // makes an unwatched window one that is still in use.
-  if (!process.env.JBROWSE_DISABLE_MCP) {
+  if (!mcpDisabled()) {
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
   }
 
@@ -409,7 +410,7 @@ function runApp() {
       // deployments that don't want a code-executing socket at all (shared
       // workstations, kiosk installs) — see electron/mcp/README.md for the
       // threat model the default accepts.
-      if (!process.env.JBROWSE_DISABLE_MCP) {
+      if (!mcpDisabled()) {
         try {
           const stopMcpBridge = startMcpBridge({
             paths,

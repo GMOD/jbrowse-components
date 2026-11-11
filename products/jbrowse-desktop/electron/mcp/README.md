@@ -32,10 +32,11 @@ What that argument does NOT cover: a prompt-injected agent is a confused deputy
 code, and the server cannot tell good JavaScript from bad. The mitigations are
 the MCP client's per-call approval prompts and the user's judgment, the same
 contract as any code-executing agent tool. Deployments that want no such
-endpoint at all (shared workstations, kiosks) can set `JBROWSE_DISABLE_MCP=1`.
-On Windows the named pipe relies on the default pipe security descriptor;
-multi-user terminal-server setups should verify or disable. Nor is a pipe of the
-same name that another account created first detected there.
+endpoint at all (shared workstations, kiosks) can set `JBROWSE_DISABLE_MCP=1`
+(any value but empty, `0` or `false`). On Windows the named pipe relies on the
+default pipe security descriptor; multi-user terminal-server setups should
+verify or disable. Nor is a pipe of the same name that another account created
+first detected there.
 
 **This design must never be ported to jbrowse-web or any network-reachable
 product.** It is safe because of where it runs: a user-only local socket in a

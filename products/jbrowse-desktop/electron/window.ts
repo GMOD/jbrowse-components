@@ -9,6 +9,7 @@ import {
   mcpClientConfigJson,
   mcpCommand,
 } from './mcp/clientConfig.ts'
+import { mcpDisabled } from './mcp/disabled.ts'
 import { isAppUrl, isOAuthRedirect, isWebUrl } from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
@@ -62,13 +63,12 @@ function openExternal(url: string) {
 // no session open. A bridge that did not start leads, with its reason: the
 // config below it is right, but reaches nothing until that is fixed.
 export async function showConnectAgentDialog(notServing: string | undefined) {
-  if (process.env.JBROWSE_DISABLE_MCP) {
+  if (mcpDisabled()) {
     await dialog.showMessageBox({
       type: 'info',
       title: 'Connect an AI agent',
       message: 'The MCP server is turned off',
-      detail:
-        'JBROWSE_DISABLE_MCP is set in this environment. Unset it and relaunch JBrowse Desktop to let an MCP client such as Claude Desktop or Claude Code drive it.',
+      detail: `JBROWSE_DISABLE_MCP=${process.env.JBROWSE_DISABLE_MCP} is set in this environment. Unset it (or set it to 0) and relaunch JBrowse Desktop to let an MCP client such as Claude Desktop or Claude Code drive it.`,
     })
     return
   }
