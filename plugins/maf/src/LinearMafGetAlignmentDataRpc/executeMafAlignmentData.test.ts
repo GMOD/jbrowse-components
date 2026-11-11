@@ -34,6 +34,7 @@ function feature(
 ) {
   const data: Record<string, unknown> = {
     start: startBp,
+    end: startBp + refSeq.replaceAll('-', '').length,
     seq: refSeq,
     alignments,
     empties,
