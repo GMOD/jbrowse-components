@@ -33,7 +33,8 @@
 # ChromSizesAdapter built from the sequence report's lengths, which is all a
 # gene-level synteny view needs and keeps a five-genome demo small.
 #
-# Requires: orthofinder + diamond, MCScanX_h (bioconda mcscanx=1.0.0), python3,
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           orthofinder + diamond, MCScanX_h (bioconda mcscanx=1.0.0), python3,
 #           curl, awk, gzip, bgzip/tabix (htslib), the NCBI datasets CLI
 #           (`datasets` and `dataformat`), and node (JBrowse CLI, fetched via
 #           npx unless `jbrowse` is on PATH). A manifest naming files by URL
@@ -103,18 +104,11 @@
 #
 set -euo pipefail
 
-for tool in curl awk python3 gzip orthofinder MCScanX_h bgzip tabix node; do
+for tool in curl awk python3 gzip orthofinder MCScanX_h bgzip tabix node orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HELPERS=(orthogroups_to_blocks.py mcscanx_to_anchors.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 SET="${1:-vertebrates}"
@@ -158,7 +152,7 @@ MSA="${MSA:-}"
 # between vertebrates' deep time and drosophila's shallow time and shows
 # nothing either does not.
 #
-# CHAIN_FLAGS go to every mcscanx_to_anchors.py call on the chained blocks; only
+# CHAIN_FLAGS go to every `orthologs2jbrowse mcscanx` call on the chained blocks; only
 # the wheat set sets one.
 CHAIN_FLAGS=""
 case "$SET" in
@@ -811,12 +805,12 @@ HOMARGS=$(echo "$PAIRS" | awk '{ split($1, g, "."); printf " --homology %s:%s=ch
 # shellcheck disable=SC2086  # BEDARGS is a built argument list, not one word
 # The column order in Orthogroups.tsv follows OrthoFinder's own proteome
 # discovery order (directory scan, typically alphabetical by filename), which
-# does not have to match $NAMES. orthogroups_to_blocks.py prints the order it
+# does not have to match $NAMES. `orthologs2jbrowse orthofinder` prints the order it
 # actually used on stdout for exactly this reason: blockAssemblies/bedLocations
 # below must be positionally aligned with the .blocks file's own columns,
 # not with $NAMES. It prints them space-separated, so every consumer below
 # splits on whitespace.
-BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS" \
+BLOCK_ASSEMBLIES=$(orthologs2jbrowse orthofinder "$ORTHOGROUPS" \
   -o "$TABLE" --max-copies "$MAXCOPIES" $BEDARGS $HOMARGS)
 
 gzip -kf "$TABLE"
@@ -829,7 +823,7 @@ for name in $NAMES; do gzip -kf "$name.bed"; done
 # of 10 or more anchors whatever their gaps. The e-value filter decides nothing
 # at these settings, and MCScanX_h 1.0.0 computes it from uninitialized memory
 # (wyp1125/MCScanX#95). MCScanX tells genomes apart by a two-letter tag on the
-# chromosome name, which mcscanx_to_anchors.py strips again.
+# chromosome name, which `orthologs2jbrowse mcscanx` strips again.
 : > "$SETNAME.blocks.paf"
 for pair in $PAIRS; do
   a=${pair%%.*} b=${pair#*.}
@@ -837,7 +831,7 @@ for pair in $PAIRS; do
   awk -v OFS='\t' '{ print "bb" $1, $4, $2 + 1, $3 }' "$b.bed" >> "chain/$pair/x.gff"
   MCScanX_h "chain/$pair/x" -a -b 2 -s 10 -m 24 -g 0 > /dev/null
   # shellcheck disable=SC2086  # CHAIN_FLAGS is empty or one flag
-  python3 "$SCRIPT_DIR/mcscanx_to_anchors.py" $CHAIN_FLAGS --gff "chain/$pair/x.gff" \
+  orthologs2jbrowse mcscanx $CHAIN_FLAGS --gff "chain/$pair/x.gff" \
     --collinearity "chain/$pair/x.collinearity" \
     --species aa="$a" --species bb="$b" --outdir "chain/$pair" \
     --paf "chain/$pair/x.paf" \

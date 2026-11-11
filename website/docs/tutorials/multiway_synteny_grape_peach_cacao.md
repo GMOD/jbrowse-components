@@ -113,7 +113,7 @@ grape02	peach02b	cacao02
 grape03	.	.
 ```
 
-OrthoFinder's converter, `orthogroups_to_blocks.py`, writes this shape by
+OrthoFinder's converter, `orthologs2jbrowse orthofinder`, writes this shape by
 default; the MCScanX converter keeps the best-scoring copy.
 
 </details>

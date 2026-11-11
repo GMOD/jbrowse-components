@@ -368,18 +368,22 @@ sequence names PanSN-prefixed (`peach#1#chr1`), indexed with
 - one BED per column whose fourth field holds those same gene ids
 
 [The grape, peach and cacao tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#producing-the-data)
-builds both from jcvi. Output from other tools converts as follows.
+builds both from jcvi. [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse)
+converts the output of other tools, one command per tool:
+
+```bash
+pip install git+https://github.com/cmdcolin/orthologs2jbrowse
+```
 
 ### From MCScanX {#from-mcscanx}
 
-[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
-converts a `.collinearity` file;
+`orthologs2jbrowse mcscanx` converts a `.collinearity` file;
 [coming from MCScanX](/docs/tutorials/mcscan_synteny_grape_peach#coming-from-mcscanx)
 walks the two-genome case. Naming a third `--species` writes a table, anchored
 on the first, with ties resolved to the best-scoring block:
 
 ```bash
-python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
+orthologs2jbrowse mcscanx --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --species tc=cacao --blocks-score
 ```
 
@@ -405,7 +409,7 @@ feature attribute and an entry in the palette button menu:
 
 ### From OrthoFinder
 
-[`orthogroups_to_blocks.py`](/docs/tutorials/orthofinder_synteny#producing-the-blocks-table)
+[`orthologs2jbrowse orthofinder`](/docs/tutorials/orthofinder_synteny#producing-the-blocks-table)
 reduces `Orthogroups.tsv` to one gene id per cell and prints the column order
 `blockAssemblies` needs. The OrthoFinder tutorial runs it end to end.
 
@@ -414,28 +418,25 @@ reduces `Orthogroups.tsv` to one gene id per cell and prints the column order
 Compara publishes one homology TSV per species, so the table is a download:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/compara_to_blocks.py
-python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
+orthologs2jbrowse compara Compara.116.protein_default.homologies.tsv.gz \
   --reference sorghum_bicolor=sorghum --species triticum_aestivum=wheat \
   --bed sorghum=sorghum.bed --bed wheat=wheat.bed
 ```
 
 `attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
 way the scored table above names `score`. For a partner species the export
-lacks, the script writes no table and exits without an error, so check each
+lacks, it writes no table and exits without an error, so check each
 `--species` name against the `homology_species` column in the file.
 
 ### From gene symbols
 
 NCBI's RefSeq pipelines name a gene after its ortholog, so for RefSeq
 annotations the table is a join on each GFF3's gene names, with no alignment.
-[`symbols_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/symbols_to_blocks.py)
-writes the table and a BED per genome, and prints the column order:
+`orthologs2jbrowse symbols` writes the table and a BED per genome, and prints the column order:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
 # --anchor names the genome whose genes are the rows
-python3 symbols_to_blocks.py --anchor human -o primates.blocks \
+orthologs2jbrowse symbols --anchor human -o primates.blocks \
   human=human.gff.gz chimp=chimp.gff.gz macaque=macaque.gff.gz
 ```
 
@@ -445,8 +446,7 @@ locus tag and genes renamed between releases.
 
 ### From odp
 
-[`rbh_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/rbh_to_blocks.py)
-converts an [odp](https://github.com/conchoecia/odp) `.rbh` table, and passes
+`orthologs2jbrowse odp` converts an [odp](https://github.com/conchoecia/odp) `.rbh` table, and passes
 named columns such as `gene_group` and `color` through as attributes to color
 by. [](/docs/tutorials/odp_linkage_groups_synteny) runs it.
 

@@ -24,7 +24,7 @@
 # (GCA_951802345.1) but no annotation of it, so both come from the consortium's
 # own release on GrainGenes.
 #
-# dN/dS is computed too: `kaks_from_pairs.py` aligns each pair in codon space
+# dN/dS is computed too: `orthologs2jbrowse kaks` aligns each pair in codon space
 # and runs Nei-Gojobori. Pairs are anchors, which are TRANSCRIPT ids, so each
 # rate is measured on the exact pair the synteny was called on.
 #
@@ -40,7 +40,8 @@
 # is all a gene-level view needs: oat as sequence is over 11 GB, as names and
 # lengths a few hundred bytes.
 #
-# Requires: jcvi (it builds C extensions and does not install against every
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does; its commands run as `python`), diamond, python3
 #           with biopython, curl, wget, tar, awk, gzip, and node (JBrowse CLI,
@@ -53,19 +54,12 @@
 #
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in diamond python python3 curl wget tar awk gzip node; do
+for tool in diamond python python3 curl wget tar awk gzip node orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-HELPERS=(kaks_from_pairs.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-oat_homoeologs_build}"
@@ -349,7 +343,7 @@ fi
 # The output is the pair table the adapter loads: the two transcript ids, then
 # dN, dS, the synonymous substitution count and the Fisher p.
 if [ ! -f oat.homoeologs.blocks ]; then
-  python3 "$SCRIPT_DIR/kaks_from_pairs.py" oat.pairs.tsv oat.cds.fa.gz \
+  orthologs2jbrowse kaks oat.pairs.tsv oat.cds.fa.gz \
     --key record --min-syn-subs 3 -o oat.homoeologs.blocks.part
   mv oat.homoeologs.blocks.part oat.homoeologs.blocks
 fi

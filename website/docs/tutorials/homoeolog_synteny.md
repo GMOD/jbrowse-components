@@ -14,7 +14,7 @@ that hybridized to make it, so most of its genes exist three times. We:
 
 - find the gene pairs between the copies with jcvi, and measure each pair's
   divergence at silent sites (dS) and at protein-changing ones (dN) with
-  `kaks_from_pairs.py`
+  `orthologs2jbrowse kaks`
 - load the pair table as a synteny track
 - draw oat against itself in a dotplot, coloring each pair by dS
 
@@ -24,11 +24,12 @@ that hybridized to make it, so most of its genes exist three times. We:
   local file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
-- python3 with [biopython](https://biopython.org/)
+- [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse), and
+  python3 with [biopython](https://biopython.org/)
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -36,11 +37,11 @@ sudo apt install diamond-aligner nodejs python-is-python3
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge diamond nodejs python
 # any platform
-pip install jcvi biopython
+pip install jcvi biopython git+https://github.com/cmdcolin/orthologs2jbrowse
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python -->
+<!-- END GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython,python,orthologs2jbrowse -->
 
 ## The data
 
@@ -152,16 +153,12 @@ awk 'NR == FNR {chrom[$4] = $1; next}
 
 ### Measuring dN and dS on each homoeolog pair
 
-`kaks_from_pairs.py` measures dN and dS on each pair from its two CDS:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
-```
+`orthologs2jbrowse kaks` measures dN and dS on each pair from its two CDS:
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
 ```bash
-python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
+orthologs2jbrowse kaks oat.pairs.tsv oat.cds.fa.gz \
   --key record --min-syn-subs 3 -o oat.homoeologs.blocks
 ```
 

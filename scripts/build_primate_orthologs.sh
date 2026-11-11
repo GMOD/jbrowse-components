@@ -5,7 +5,7 @@
 #
 # NCBI's annotation pipeline names a gene by its ortholog across species (human
 # ATP5F1A is chimp ATP5F1A), so an ortholog table is a join on the gene symbol,
-# which symbols_to_blocks.py does over the GFF3 files in a few seconds. The
+# which `orthologs2jbrowse symbols` does over the GFF3 files in a few seconds. The
 # download is the GFF3 and the sequence report per genome, ~290 MB for eight.
 # The same route with a PGAP bacterial annotation is `--unnamed '_RS[0-9]+$'` on
 # the helper. In either kingdom the join reaches as far as the naming: a gene
@@ -23,21 +23,22 @@
 # Human is first because the table is anchored on it: every row is one human
 # gene and the other columns are that gene's ortholog.
 #
-# Requires: the NCBI `datasets` CLI, curl, awk, sort, gzip, unzip, python3
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           the NCBI `datasets` CLI, curl, awk, sort, gzip, unzip, python3
 # Usage:    bash build_primate_orthologs.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in curl awk sort gzip datasets unzip python3; do
+for tool in curl awk sort gzip datasets unzip python3 orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
 done
 
-HELPERS=(symbols_to_blocks.py hosted_assembly.py)
+HELPERS=(hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
@@ -105,7 +106,7 @@ done < species.tsv
 # The helper prints the column order it wrote, which is the order
 # blockAssemblies and bedLocations below have to list.
 # shellcheck disable=SC2046  # NAME=GFF pairs are a built argument list
-BLOCK_COLUMNS=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
+BLOCK_COLUMNS=$(orthologs2jbrowse symbols \
   --anchor "$ANCHOR" -o primates.blocks \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
 # the adapter reads each file whole and unzips it itself

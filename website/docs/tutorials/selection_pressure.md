@@ -13,7 +13,7 @@ The ratio of non-synonymous to synonymous substitution rates, dN/dS, measures
 the selection pressure on a protein-coding gene between two species. We:
 
 - build a human against rhesus macaque ortholog table with jcvi, and measure dN
-  and dS on every pair with `kaks_from_pairs.py`
+  and dS on every pair with `orthologs2jbrowse kaks`
 - load both genomes and genes, and the table as a synteny track
 - color each ortholog link by the ratio
 - read the lysozyme (_LYZ_) neighbourhood on human chromosome 12, with the
@@ -25,7 +25,8 @@ the selection pressure on a protein-coding gene between two species. We:
   local file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
-- python3 with [biopython](https://biopython.org/)
+- [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse), and
+  python3 with [biopython](https://biopython.org/)
 - htslib (`bgzip`, `tabix`)
 - the
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/download-and-install/)
@@ -35,7 +36,7 @@ jcvi compiles C extensions at install time, and the compile fails on some Python
 versions. If `pip install jcvi` fails, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gives an interpreter it builds on.
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython,python -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython,python,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -49,11 +50,11 @@ wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
-pip install jcvi biopython
+pip install jcvi biopython git+https://github.com/cmdcolin/orthologs2jbrowse
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython,python -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython,python,orthologs2jbrowse -->
 
 ## The data
 
@@ -143,21 +144,17 @@ awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' human.rhesus.anchors > pairs.tsv
 cat human.cds.fa rhesus.cds.fa > both.cds.fa
 ```
 
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
-```
-
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
-python3 kaks_from_pairs.py pairs.tsv both.cds.fa \
+orthologs2jbrowse kaks pairs.tsv both.cds.fa \
   --key record --min-syn-subs 3 --max-ds 0.3 -o primate.blocks
 gzip -kf primate.blocks human.bed rhesus.bed
 ```
 
-[`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
-aligns each pair as protein, back-translates to codons so that nothing shifts
-frame, and runs Nei-Gojobori.
+[`orthologs2jbrowse kaks`](https://github.com/cmdcolin/orthologs2jbrowse) aligns
+each pair as protein, back-translates to codons so that nothing shifts frame,
+and runs Nei-Gojobori.
 
 ### Filtering paralogs and low-count pairs
 

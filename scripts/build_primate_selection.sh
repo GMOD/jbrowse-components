@@ -23,7 +23,8 @@
 # opposite ends of the ramp. Anything that moved both together, an alignment
 # artefact or a mis-set divergence, would not produce that.
 #
-# Requires: jcvi (it builds C extensions and does not install against every
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, htslib
 #           (bgzip/tabix), the NCBI datasets CLI, curl, awk, gzip, and node
@@ -34,19 +35,12 @@
 #
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in curl datasets python python3 diamond awk gzip bgzip tabix node; do
+for tool in curl datasets python python3 diamond awk gzip bgzip tabix node orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-HELPERS=(kaks_from_pairs.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-primate_selection_build}"
@@ -283,7 +277,7 @@ fi
 # them, and unlike a floor on dS it does not punish a short gene for being
 # short.
 if [ ! -f primate.blocks ]; then
-  python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa \
+  orthologs2jbrowse kaks pairs.tsv both.cds.fa \
     --key record --min-syn-subs 3 --max-ds 0.3 -o primate.blocks.part
   mv primate.blocks.part primate.blocks
 fi

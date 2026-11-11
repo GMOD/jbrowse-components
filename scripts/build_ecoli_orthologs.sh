@@ -5,7 +5,7 @@
 #
 # The sibling builders (build_ecoli_pangenome_synteny.sh, _graph, _cactus)
 # describe five strains to each other by aligning them. This one joins the
-# annotations on the gene symbol with symbols_to_blocks.py, the route
+# annotations on the gene symbol with `orthologs2jbrowse symbols`, the route
 # build_primate_orthologs.sh takes for eight primates, so the download is a
 # GFF3 and a sequence report per genome and the table builds in seconds. What
 # the join cannot see is a gene two annotations named differently, so at the
@@ -30,25 +30,19 @@
 # is a screen of its own, because three of the accessions that listing handed
 # over turned out to be a Leclercia, a Salmonella and a suppressed Shigella sp.
 #
-# Requires: the NCBI `datasets` CLI, bgzip/tabix (htslib), unzip, python3,
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           the NCBI `datasets` CLI, bgzip/tabix (htslib), unzip, python3,
 #           curl, awk, sort, gzip
 # Usage:    bash build_ecoli_orthologs.sh [outdir]
 #
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in datasets unzip bgzip tabix curl python3 awk sort gzip; do
+for tool in datasets unzip bgzip tabix curl python3 awk sort gzip orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-HELPERS=(symbols_to_blocks.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-ecoli_orthologs_build}"
@@ -242,7 +236,7 @@ done < strains.tsv
 # writes as a pseudogene feature. The helper prints the column order it wrote,
 # which is the order blockAssemblies and bedLocations below have to list.
 # shellcheck disable=SC2046  # NAME=GFF pairs are a built argument list
-BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
+BLOCK_ASSEMBLIES=$(orthologs2jbrowse symbols \
   --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
 # the adapter reads each file whole and unzips it itself, and the plain text

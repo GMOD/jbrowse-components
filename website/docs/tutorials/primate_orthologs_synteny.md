@@ -29,11 +29,11 @@ what the join does with them. We:
 - The
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
 - htslib (`bgzip`, `tabix`), for the E. coli build
-- `python3`
+- [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse)
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,datasets -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,datasets,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,9 +45,11 @@ wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
+# any platform
+pip install git+https://github.com/cmdcolin/orthologs2jbrowse
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,datasets -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,datasets,orthologs2jbrowse -->
 
 ## The data
 
@@ -96,21 +98,21 @@ datasets download genome accession --inputfile accessions.txt \
 unzip genomes.zip
 ```
 
-`symbols_to_blocks.py` reads each GFF3 once, writes a BED of its protein-coding
-genes and the table, and prints the column order it used:
+`orthologs2jbrowse symbols` reads each GFF3 once, writes a BED of its
+protein-coding genes and the table, and prints the column order it used:
 
 <!-- from: scripts/build_primate_orthologs.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
 # --anchor names the genome whose genes are the rows; every other column is
 # the ortholog of that gene, or a dot
-python3 symbols_to_blocks.py --anchor human -o primates.blocks \
+orthologs2jbrowse symbols --anchor human -o primates.blocks \
   human=human.gff.gz chimp=chimp.gff.gz bonobo=bonobo.gff.gz gorilla=gorilla.gff.gz \
   sumatran=sumatran.gff.gz bornean=bornean.gff.gz siamang=siamang.gff.gz macaque=macaque.gff.gz
 ```
 
-`symbols_to_blocks.py` joins on the case-folded symbol and handles these cases:
+`orthologs2jbrowse symbols` joins on the case-folded symbol and handles these
+cases:
 
 - **A gene named with an NCBI `LOC` placeholder** is left out of the join.
   RefSeq names the salivary amylase copies that way in the other primates.
@@ -338,7 +340,7 @@ The join is the same command with three flags for PGAP:
 # so a hypothetical protein joins nothing; --merge-cited joins a gene PGAP
 # renamed to the gene it was annotated from; --pseudogenes keeps a gene NCBI
 # writes as a pseudogene feature, such as K-12's wbbL
-python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
+orthologs2jbrowse symbols --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
   MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflexneri_301=Sflexneri_301.gff.gz
 ```
 
@@ -401,10 +403,11 @@ Read the lanes from the top:
 - The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
   wherever a strain has them.
 
-`symbols_to_blocks.py` gives each symbol K-12 lacks a separate row, so _vioB_ is
-one color down IAI39 and the BL21 lanes. A gene PGAP left under its locus tag,
-such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of the grey is
-each serotype's sugar genes, which have no K-12 counterpart to join by name.
+`orthologs2jbrowse symbols` gives each symbol K-12 lacks a separate row, so
+_vioB_ is one color down IAI39 and the BL21 lanes. A gene PGAP left under its
+locus tag, such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of
+the grey is each serotype's sugar genes, which have no K-12 counterpart to join
+by name.
 
 ## Reproduce it end to end
 

@@ -27,7 +27,8 @@ have diverged too far to align base by base. We:
   [LAST](https://gitlab.com/mcfrith/last) aligner
 - Or, in place of jcvi, an existing
   [MCScanX](https://github.com/wyp1125/MCScanX) run:
-  [converting one](#coming-from-mcscanx) needs only python3
+  [converting one](#coming-from-mcscanx) needs
+  [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -36,7 +37,7 @@ have diverged too far to align base by base. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -50,10 +51,10 @@ wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
-pip install jcvi
+pip install jcvi git+https://github.com/cmdcolin/orthologs2jbrowse
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last,python,orthologs2jbrowse -->
 
 ## The data
 
@@ -288,13 +289,12 @@ the diagonal, and its other partners stay off it.
 MCScan. It writes one `.collinearity` holding every block, self-synteny and
 cross-species together, and tells genomes apart by a two-letter tag on each
 chromosome name.
-[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
+[`orthologs2jbrowse mcscanx`](https://github.com/cmdcolin/orthologs2jbrowse)
 splits a run into the four files jcvi writes, in place of the
 [jcvi step](#producing-the-data):
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
-python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
+orthologs2jbrowse mcscanx --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
 ```
 

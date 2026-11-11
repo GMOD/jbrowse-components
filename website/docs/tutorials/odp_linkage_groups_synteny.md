@@ -27,7 +27,7 @@ each over several. We:
 ## Prerequisites
 
 - A web browser, to fetch two files from Dryad by hand
-- `python3`
+- [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse)
 - `samtools`
 - `curl` and `tar`
 - `node`, for the [JBrowse CLI](/docs/cli)
@@ -37,7 +37,7 @@ each over several. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,10 +45,11 @@ sudo apt install samtools nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools nodejs
 # any platform
+pip install git+https://github.com/cmdcolin/orthologs2jbrowse
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli,orthologs2jbrowse -->
 
 ## Download the data
 
@@ -174,19 +175,18 @@ holds one coordinate per gene and would make every feature one base long:
 <!-- from: scripts/build_odp_linkage_groups_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/rbh_to_blocks.py
 # --species sets the column order, anchor first, which the track then follows
 # --chrom gives each species' genes their real start and stop
 # --attributes names the columns that pass through after the gene ids
-python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
+orthologs2jbrowse odp EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
   -o RES_EMU.blocks --bed-dir RES_EMU \
   --species RES EMU --chrom RES=RES.chrom EMU=EMU.chrom \
   --attributes gene_group color break_FET
 ```
 
-`rbh_to_blocks.py` prints how many of each genome's gene ids it found in the
-`.chrom` file. An ortholog from outside the BCnS families gets `.` in the group
-column, which the browser draws in grey.
+`orthologs2jbrowse odp` prints how many of each genome's gene ids it found in
+the `.chrom` file. An ortholog from outside the BCnS families gets `.` in the
+group column, which the browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:

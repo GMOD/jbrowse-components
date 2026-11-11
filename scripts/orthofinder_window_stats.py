@@ -254,7 +254,7 @@ def main():
         gene: pos for gene, pos in qbed.items() if overlaps(pos, qregions)
     }
     # Counter, not set, so both bases are available: a `--pick expand` table
-    # names the same pair on several rows (see orthogroups_to_blocks.py), and
+    # names the same pair on several rows (see orthologs2jbrowse orthofinder), and
     # MCScanBlocksAdapter draws such a pair once. So the DISTINCT count is the
     # ribbon count and the row count is larger — the two differ by a few percent
     # on a whole chromosome, and a provenance note that reports one without

@@ -35,7 +35,8 @@ lineage with one copy. We:
   [DIAMOND](https://github.com/bbuchfink/diamond) on `PATH` as `orthofinder`
 - [MCScanX](https://github.com/wyp1125/MCScanX) (`MCScanX_h`), for the
   [collinear blocks](#collinear-blocks)
-- `python3`, htslib (`bgzip`, `tabix`)
+- [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse), htslib
+  (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
   (`datasets`, `dataformat`)
@@ -44,7 +45,7 @@ lineage with one copy. We:
 - A running JBrowse instance ([web](/docs/quickstart_web) or
   [desktop](/docs/quickstart_desktop))
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder,orthologs2jbrowse -->
 
 ```bash
 # Debian/Ubuntu
@@ -58,10 +59,11 @@ wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
+pip install git+https://github.com/cmdcolin/orthologs2jbrowse
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder,orthologs2jbrowse -->
 
 ## The data
 
@@ -113,8 +115,7 @@ next command reduces to one gene id per cell:
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --bed tauschii=tauschii.bed --bed wheat=wheat.bed --bed durum=durum.bed \
   --bed emmer=emmer.bed --bed urartu=urartu.bed \
   --max-copies 4
@@ -124,7 +125,7 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
 `--assembly COLUMN=NAME` renames a column:
 
 ```bash
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --bed tauschii=tauschii.bed --bed wheat=wheat.bed \
   --assembly wheat=bread_wheat
 ```
@@ -147,7 +148,7 @@ between bread wheat and the tetraploids. A cell over `--max-copies` counts as a
 family and contributes no row (`0` keeps every cell):
 
 ```bash
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --bed tauschii=tauschii.bed --bed wheat=wheat.bed \
   --pick single --max-copies 2
 ```
@@ -434,7 +435,7 @@ pair an orthogroup holds between two flies:
 ```bash
 # every melanogaster-simulans pair in an orthogroup, each copy of a duplicated
 # gene included, so MCScanX_h chains whichever copies keep their order
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o melanogaster.blocks \
+orthologs2jbrowse orthofinder Orthogroups.tsv -o melanogaster.blocks \
   --homology melanogaster:simulans=x.homology
 ```
 
@@ -464,8 +465,7 @@ assembly (`melanogaster#1#2L`):
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
-python3 mcscanx_to_anchors.py --gff x.gff --collinearity x.collinearity \
+orthologs2jbrowse mcscanx --gff x.gff --collinearity x.collinearity \
   --species aa=melanogaster --species bb=simulans \
   --paf melanogaster.simulans.paf \
   --chrom-sizes melanogaster=melanogaster.chrom.sizes \

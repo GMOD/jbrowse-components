@@ -17,25 +17,19 @@
 # BCnS_LGs in the older odp that made the deposit), so the JBrowse half below
 # works unchanged on your own species.
 #
-# Requires: python3, samtools, curl, tar, awk, gzip, and node
+# Requires: orthologs2jbrowse (pip install git+https://github.com/cmdcolin/orthologs2jbrowse),
+#           python3, samtools, curl, tar, awk, gzip, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    DRYAD_DIR=~/Downloads bash scripts/build_odp_linkage_groups_synteny.sh [outdir]
 #
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in curl tar awk gzip samtools python3 node; do
+for tool in curl tar awk gzip samtools python3 node orthologs2jbrowse; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
   }
-done
-
-HELPERS=(rbh_to_blocks.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || { curl -fsSL -o "$SCRIPT_DIR/$h.part" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" && mv "$SCRIPT_DIR/$h.part" "$SCRIPT_DIR/$h"; }
 done
 
 OUTDIR="${1:-odp_linkage_groups_build}"
@@ -147,7 +141,7 @@ mkdir -p blocks
 while read -r a b; do
   [ -z "$a" ] && continue
   pair="${a}_${b}"
-  [ -s "blocks/$pair.blocks" ] || python3 "$SCRIPT_DIR/rbh_to_blocks.py" \
+  [ -s "blocks/$pair.blocks" ] || orthologs2jbrowse odp \
     "tables/$(table_of "$a" "$b")" -o "blocks/$pair.blocks" --bed-dir "blocks/$pair" \
     --species "$a" "$b" --chrom "$a=$a.chrom" "$b=$b.chrom" \
     --attributes gene_group color break_FET

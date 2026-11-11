@@ -27,7 +27,7 @@ peach-cacao band of the stacked view.
 
 **OrthoFinder is the all-vs-all producer we support.** `Orthogroups.tsv` is
 inferred over all genomes at once, so a group can hold peach and cacao and no
-grape (`scripts/orthogroups_to_blocks.py`;
+grape (`orthologs2jbrowse orthofinder`;
 `docs/tutorials/orthofinder_synteny.md`).
 
 **An orthogroup cannot say which subgenome a donor gave.** A polyploid's
@@ -39,7 +39,7 @@ tutorial is built on. Subgenome origin needs sequence identity (a PAF track),
 not a gene-id table.
 
 **Between two multi-copy genomes, `--pick expand` pairs copies arbitrarily.**
-`orthogroups_to_blocks.py` index-pairs a cell's copies (row i takes copy
+`orthologs2jbrowse orthofinder` index-pairs a cell's copies (row i takes copy
 i mod n), which is every link where one side has one gene and OrthoFinder's
 listing order where both have several. On the OrthoFinder 2.5.5 wheat table
 hosted until 2026-11-08 the share of links joining different subgenome letters
@@ -64,7 +64,7 @@ block at nearly every locus. Its A/B-only blocks on the same hosted build:
 
 The build script orders the wheat rows tauschii, wheat, urartu, durum, emmer,
 so the only band between two polyploids is durum–emmer, and the wheat set alone
-passes `mcscanx_to_anchors.py --drop-overlapped-blocks`: densest first, a block
+passes `orthologs2jbrowse mcscanx --drop-overlapped-blocks`: densest first, a block
 is dropped when more than half its own span on either genome lies inside one
 already kept, density being anchors over the mean gene count of the two spans.
 Measured on the same hosted PAF (A/B only):
@@ -107,7 +107,7 @@ tauschii_ lineage references, at
 set). On `TA10171_L1-CS2.zip` (Chinese Spring v2.1 against TA10171, 2026-11-08)
 the anchors split A 32%, B 31%, D 37% by Chinese Spring subgenome, against 34% on
 D in our tauschii–wheat blocks, so the homoeolog chaining is MCScanX's and not
-our orthogroup input's. `mcscanx_to_anchors.py --species Cb=CS2 --species
+our orthogroup input's. `orthologs2jbrowse mcscanx --species Cb=CS2 --species
 Tb=TA10171` converts the pair unchanged; with `--drop-overlapped-blocks` 237 of
 1,092 blocks stay and the D share is 85%, keeping about 27k of the 28k D anchors.
 The three tauschii references are not NCBI assemblies; their FASTA and

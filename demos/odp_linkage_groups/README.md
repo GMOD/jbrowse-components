@@ -6,7 +6,7 @@ opens on, and the live link under its figures
 (`config=https://jbrowse.org/demos/odp_linkage_groups/config.json`).
 
 Six ortholog tables from the Schultz et al. 2023 Dryad deposit
-(10.5061/dryad.dncjsxm47, CC0), each converted by `scripts/rbh_to_blocks.py`
+(10.5061/dryad.dncjsxm47, CC0), each converted by `orthologs2jbrowse odp`
 exactly as `scripts/build_odp_linkage_groups_synteny.sh` does: a
 `<pair>.blocks.gz` and one `<pair>.<code>.bed.gz` per genome, carrying
 `gene_group`, `color` and `break_FET`.

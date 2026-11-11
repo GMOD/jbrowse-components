@@ -45,6 +45,10 @@
     "conda": "nodejs",
     "bins": ["node", "npx", "npm"]
   },
+  "orthologs2jbrowse": {
+    "pip": "git+https://github.com/cmdcolin/orthologs2jbrowse",
+    "bins": ["orthologs2jbrowse"]
+  },
   "pigz": {
     "apt": "pigz",
     "conda": "pigz"
