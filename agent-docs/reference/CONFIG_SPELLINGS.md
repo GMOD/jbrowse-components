@@ -1,6 +1,6 @@
 ---
 name: config-spellings
-description: Every display setting's v5 spelling on one page, generated from the committed config schema — where a shared path differs between displays or parts and the ruling on each, each display's top-level settings, every word and where it sits, and the retired keys. Read before reviewing or respelling the config surface.
+description: Every display setting's v5 spelling on one page, generated from the committed config schema — where displays or parts differ and the ruling on each, each display's settings, every word, and the retired keys. Read before reviewing or respelling the config surface.
 kind: spec
 ---
 
