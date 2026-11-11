@@ -76,7 +76,7 @@ afterEach(() => {
 })
 
 function startServer(
-  socketPath: string,
+  socketPath: string | string[],
   onExit: () => void = () => {},
   now: () => number = Date.now,
 ) {
@@ -94,7 +94,7 @@ function startServer(
     }
   })
   runMcpStdioServer({
-    socketPath,
+    socketPaths: [socketPath].flat(),
     version: '1.2.3',
     onExit,
     input,
@@ -353,6 +353,46 @@ test('the app not running reads as a launch hint, not a stack trace', async () =
   )
 })
 
+// Another account on a shared /tmp can create this user's socket directory
+// first and listen in it; the app refuses to serve there, and the shim must
+// refuse to connect there, or the agent's code goes to them.
+test('a socket directory other accounts can enter is refused, not connected to', async () => {
+  const reply = jest.fn(() => ({ result: { from: 'another account' } }))
+  const bridge = await startFakeBridge(reply)
+  const dir = path.dirname(bridge.socketPath)
+  fs.chmodSync(dir, 0o755)
+  const server = startServer(bridge.socketPath)
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  const call = await server.next()
+  expect(call.result?.isError).toBe(true)
+  const text = call.result?.content?.[0]?.text
+  expect(text).toContain('Refusing to connect')
+  expect(text).toContain(dir)
+  expect(text).toContain('mode 0755')
+  expect(reply).not.toHaveBeenCalled()
+  bridge.close()
+})
+
+test('the candidates are tried in order, past one nothing serves', async () => {
+  const bridge = await startFakeBridge(() => ({ result: { reached: true } }))
+  const server = startServer([
+    path.join(os.tmpdir(), 'jb-mcp-test-nonexistent', 'mcp.sock'),
+    bridge.socketPath,
+  ])
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  const call = await server.next()
+  expect(call.result?.content?.[0]?.text).toBe('{"reached":true}')
+  bridge.close()
+})
+
 describe('versionSkewNote', () => {
   it('is silent when the app matches, or the bridge failed for another reason', () => {
     expect(
@@ -604,7 +644,7 @@ test('a broken stdout exits rather than crashing', () => {
   const output = new PassThrough()
   const onExit = jest.fn()
   runMcpStdioServer({
-    socketPath: '/nonexistent/mcp.sock',
+    socketPaths: ['/nonexistent/mcp.sock'],
     version: '1.2.3',
     onExit,
     input: new PassThrough(),
@@ -690,20 +730,28 @@ function startFakeBridgeAsync(
 describe('unreachableMessage', () => {
   const socketPath = '/tmp/jbrowse-desktop-mcp-someone/mcp.sock'
 
+  const missing = Object.assign(new Error('connect ENOENT'), {
+    code: 'ENOENT',
+  })
+  const refused = Object.assign(new Error('connect ECONNREFUSED'), {
+    code: 'ECONNREFUSED',
+  })
+
   it('says to launch the app when nothing has served the socket', () => {
-    const missing = Object.assign(new Error('connect ENOENT'), {
-      code: 'ENOENT',
-    })
-    expect(unreachableMessage(socketPath, missing)).toMatch(
+    expect(unreachableMessage([{ socketPath, error: missing }])).toMatch(
       /Launch the JBrowse Desktop app/,
     )
   })
 
-  it('names the two live causes when the socket refuses', () => {
-    const refused = Object.assign(new Error('connect ECONNREFUSED'), {
-      code: 'ECONNREFUSED',
-    })
-    const message = unreachableMessage(socketPath, refused)
+  it('names the two live causes when any candidate refuses', () => {
+    const message = unreachableMessage([
+      {
+        socketPath: '/run/user/1/jbrowse-desktop-mcp/mcp.sock',
+        error: missing,
+      },
+      { socketPath, error: refused },
+    ])
+    expect(message).toContain(socketPath)
     expect(message).toMatch(/has quit/)
     expect(message).toMatch(/older than 5\.0\.0/)
     expect(message).not.toMatch(/Launch the JBrowse Desktop app, then try/)

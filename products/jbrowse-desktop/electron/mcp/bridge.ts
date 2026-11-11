@@ -52,6 +52,9 @@ interface BridgeDeps {
   // app's; nothing but a test passes one
   socketPath?: string
   getWindow: () => BrowserWindow | null
+  // told why, when the socket turns out not to be this app's to serve; the
+  // "Connect an AI agent" dialog is where the user hears about it
+  onNotServing?: (reason: string) => void
   // ensureWindow, not the link-confirming openTarget: the consent the dialog
   // asks for is given by configuring the MCP client, and a per-call native
   // modal would deadlock an unattended agent
@@ -63,15 +66,16 @@ export function startMcpBridge({
   appVersion,
   socketPath: givenSocketPath,
   getWindow,
+  onNotServing,
   openTarget,
 }: BridgeDeps) {
   // The default rendezvous is the one this has to vouch for — a directory this
   // account exclusively owns, since the endpoint runs arbitrary code. A caller
   // that names its own path owns its own directory.
-  if (givenSocketPath === undefined) {
-    ensureSocketDir()
-  }
   const socketPath = givenSocketPath ?? defaultSocketPath()
+  if (givenSocketPath === undefined && process.platform !== 'win32') {
+    ensureSocketDir(path.dirname(socketPath))
+  }
   let relayId = 0
   const relays = new Map<number, (response: BridgeToolResult) => void>()
 
@@ -540,6 +544,7 @@ export function startMcpBridge({
   server.on('error', (e: NodeJS.ErrnoException) => {
     if (e.code !== 'EADDRINUSE' || process.platform === 'win32' || retried) {
       console.error('MCP bridge failed to listen:', e)
+      onNotServing?.(`Listening on ${socketPath} failed: ${e.message}`)
       return
     }
     retried = true
@@ -548,6 +553,9 @@ export function startMcpBridge({
       probe.destroy()
       console.error(
         `MCP bridge not started: another JBrowse Desktop is serving ${socketPath}`,
+      )
+      onNotServing?.(
+        `Another JBrowse Desktop is serving ${socketPath}, so an MCP client drives that one, not this.`,
       )
     })
     probe.on('error', () => {

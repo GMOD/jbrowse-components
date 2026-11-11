@@ -59,8 +59,9 @@ function openExternal(url: string) {
 
 // The setup text for this install, with the exact path the docs can only
 // guess at per platform. Native, so it works from the start screen and with
-// no session open.
-export async function showConnectAgentDialog() {
+// no session open. A bridge that did not start leads, with its reason: the
+// config below it is right, but reaches nothing until that is fixed.
+export async function showConnectAgentDialog(notServing: string | undefined) {
   if (process.env.JBROWSE_DISABLE_MCP) {
     await dialog.showMessageBox({
       type: 'info',
@@ -79,11 +80,12 @@ export async function showConnectAgentDialog() {
   const json = mcpClientConfigJson(command)
   const claudeCode = claudeCodeAddCommand(command)
   const { response } = await dialog.showMessageBox({
-    type: 'info',
+    type: notServing ? 'warning' : 'info',
     title: 'Connect an AI agent',
-    message:
-      'Leave JBrowse Desktop running and point an MCP client at it. The client then reads and changes the open session: builds views, adds tracks, reads feature data and takes screenshots.',
-    detail: `Claude Desktop (Settings, Developer, Edit Config):\n${json}\n\nClaude Code:\n${claudeCode}\n\nAny code the agent runs has the same access to this computer as the app. Set JBROWSE_DISABLE_MCP=1 to turn the server off.`,
+    message: notServing
+      ? 'This JBrowse Desktop is not serving MCP clients'
+      : 'Leave JBrowse Desktop running and point an MCP client at it. The client then reads and changes the open session: builds views, adds tracks, reads feature data and takes screenshots.',
+    detail: `${notServing ? `${notServing}\n\nFix that and relaunch JBrowse Desktop; until then the setup below reaches nothing here.\n\n` : ''}Claude Desktop (Settings, Developer, Edit Config):\n${json}\n\nClaude Code:\n${claudeCode}\n\nAny code the agent runs has the same access to this computer as the app. Set JBROWSE_DISABLE_MCP=1 to turn the server off.`,
     buttons: [
       'Copy Claude Desktop config',
       'Copy Claude Code command',
@@ -105,7 +107,7 @@ export async function showConnectAgentDialog() {
 }
 
 // A native menu on macOS alone; the other platforms use the renderer's menu bar.
-export function installAppMenu(autoUpdater: Updater) {
+export function installAppMenu(autoUpdater: Updater, connectAgent: () => void) {
   if (process.platform === 'darwin') {
     app.setAboutPanelOptions({
       applicationName: 'JBrowse 2',
@@ -113,13 +115,13 @@ export function installAppMenu(autoUpdater: Updater) {
       copyright: 'Apache License 2.0',
       website: 'https://jbrowse.org',
     })
-    Menu.setApplicationMenu(createMenu(autoUpdater))
+    Menu.setApplicationMenu(createMenu(autoUpdater, connectAgent))
   } else {
     Menu.setApplicationMenu(null)
   }
 }
 
-function createMenu(autoUpdater: Updater) {
+function createMenu(autoUpdater: Updater, connectAgent: () => void) {
   return Menu.buildFromTemplate([
     { role: 'appMenu' },
     { role: 'fileMenu' },
@@ -167,9 +169,7 @@ function createMenu(autoUpdater: Updater) {
         { type: 'separator' },
         {
           label: 'Connect an AI agent...',
-          click: () => {
-            showConnectAgentDialog().catch(logError)
-          },
+          click: connectAgent,
         },
         { type: 'separator' },
         {

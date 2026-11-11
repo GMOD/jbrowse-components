@@ -202,12 +202,16 @@ function bridge(openTarget?: () => Promise<unknown>) {
 }
 
 describe('taking the socket', () => {
-  function startAt(socketPath: string) {
+  function startAt(
+    socketPath: string,
+    onNotServing: (reason: string) => void = () => {},
+  ) {
     return startMcpBridge({
       paths: {} as AppPaths,
       appVersion: '9.9.9',
       socketPath,
       getWindow: () => null,
+      onNotServing,
       openTarget: () => Promise.resolve(),
     })
   }
@@ -244,11 +248,18 @@ describe('taking the socket', () => {
     await new Promise<void>(resolve => other.listen(socketPath, resolve))
     const error = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-    const stop = startAt(socketPath)
+    const onNotServing = jest.fn()
+    const stop = startAt(socketPath, onNotServing)
     await settle(100)
     expect(await answers(socketPath)).toBe('other app')
     expect(error).toHaveBeenCalledWith(
       `MCP bridge not started: another JBrowse Desktop is serving ${socketPath}`,
+    )
+    // what the "Connect an AI agent" dialog leads with
+    expect(onNotServing).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `Another JBrowse Desktop is serving ${socketPath}`,
+      ),
     )
     error.mockRestore()
     stop()

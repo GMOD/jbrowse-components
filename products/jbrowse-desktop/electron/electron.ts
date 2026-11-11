@@ -26,7 +26,7 @@ import {
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
 import { startMcpBridge } from './mcp/bridge.ts'
-import { defaultSocketPath } from './mcp/socketPath.ts'
+import { socketPaths } from './mcp/socketPath.ts'
 import { runMcpStdioServer } from './mcp/stdioServer.ts'
 import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
@@ -355,17 +355,20 @@ function runApp() {
       registerAuthHandlers()
       registerPluginHandlers()
       registerDownloadHandler()
+      // why this app serves no MCP bridge, when it does not
+      let mcpNotServing: string | undefined
+      const connectAgent = () => {
+        showConnectAgentDialog(mcpNotServing).catch(logError)
+      }
       // window.ts sets a native menu on macOS alone, so on the other two
       // platforms the renderer's own Help menu is the only route to this.
-      ipcHandle('showConnectAgent', () => {
-        showConnectAgentDialog().catch(logError)
-      })
+      ipcHandle('showConnectAgent', connectAgent)
       setupAutoUpdater({
         autoUpdater,
         logPath: paths.updateLogPath,
         getProgressBar: () => wm.current,
       })
-      installAppMenu(autoUpdater)
+      installAppMenu(autoUpdater, connectAgent)
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
       // not dropped for lack of a listener
@@ -401,7 +404,8 @@ function runApp() {
       // must not be able to stop the app from starting. ensureSocketDir throws
       // on a socket directory this account does not exclusively own, and that
       // throw would otherwise reach the fatal-error dialog below with no window
-      // ever opened. JBROWSE_DISABLE_MCP turns the endpoint off entirely, for
+      // ever opened — so it is kept for the "Connect an AI agent" dialog
+      // instead. JBROWSE_DISABLE_MCP turns the endpoint off entirely, for
       // deployments that don't want a code-executing socket at all (shared
       // workstations, kiosk installs) — see electron/mcp/README.md for the
       // threat model the default accepts.
@@ -411,11 +415,15 @@ function runApp() {
             paths,
             appVersion: app.getVersion(),
             getWindow: () => wm.current,
+            onNotServing: reason => {
+              mcpNotServing = reason
+            },
             openTarget: target => wm.ensureWindow(target),
           })
           app.on('will-quit', stopMcpBridge)
         } catch (e) {
           console.error('MCP bridge not started:', e)
+          mcpNotServing = e instanceof Error ? e.message : String(e)
         }
       }
 
@@ -436,7 +444,7 @@ if (launchMode.type === 'info') {
 } else if (launchMode.type === 'mcp') {
   app.dock?.hide()
   runMcpStdioServer({
-    socketPath: defaultSocketPath(),
+    socketPaths: socketPaths(),
     version: app.getVersion(),
     onExit: () => {
       app.exit(0)

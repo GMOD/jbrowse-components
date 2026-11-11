@@ -1,7 +1,9 @@
 import net from 'node:net'
+import path from 'node:path'
 
 import { BRIDGE_TIMEOUT_MS } from './budgets.ts'
 import { onJsonLines, writeJsonLine } from './jsonLines.ts'
+import { socketDirStatus } from './socketPath.ts'
 import {
   GUIDANCE_PREFIX,
   MCP_TOOLS,
@@ -52,16 +54,63 @@ export function resultFields(result: unknown) {
  * one too old to serve the bridge at all. 4.3.0 has no `--mcp` handling, so
  * pointing a client at it launches the GUI and serves nothing; the app is then
  * on screen, in front of the user, while the only advice on offer was to launch
- * it.
+ * it. Every candidate path is named, since an app whose environment put its
+ * socket somewhere this process cannot see is the other way to be "not there".
  */
-export function unreachableMessage(socketPath: string, e: Error) {
-  const refused = (e as NodeJS.ErrnoException).code === 'ECONNREFUSED'
+export function unreachableMessage(
+  failures: { socketPath: string; error: Error }[],
+) {
+  const refused = failures.find(
+    ({ error }) => 'code' in error && error.code === 'ECONNREFUSED',
+  )
   return refused
-    ? `A JBrowse Desktop was serving ${socketPath} and is not answering now (${e.message}). Either it has quit — relaunch it — or the one running is older than 5.0.0, which serves no MCP bridge: check Help, "Connect an AI agent...", which only exists in a build that does.`
-    : `Could not reach JBrowse Desktop at ${socketPath} (${e.message}). Launch the JBrowse Desktop app, then try again.`
+    ? `A JBrowse Desktop was serving ${refused.socketPath} and is not answering now (${refused.error.message}). Either it has quit — relaunch it — or the one running is older than 5.0.0, which serves no MCP bridge: check Help, "Connect an AI agent...", which only exists in a build that does.`
+    : `Could not reach JBrowse Desktop (${failures.map(({ error }) => error.message).join('; ')}). Launch the JBrowse Desktop app, then try again.${
+        process.platform === 'win32'
+          ? ''
+          : " If it is already running, it and this server see different XDG_RUNTIME_DIR or TMPDIR values: give this server the app's, in the MCP client's env for it."
+      }`
 }
 
-function connectBridge(socketPath: string) {
+export function unsafeSocketDirMessage(unsafe: string) {
+  return `Refusing to connect to JBrowse Desktop. ${unsafe} Another account on this machine may have created it to receive the code an agent sends; JBrowse Desktop will not serve there either. Remove it, or have an administrator remove it, then relaunch JBrowse Desktop.`
+}
+
+function connectTo(socketPath: string) {
+  return new Promise<net.Socket>((resolve, reject) => {
+    const s = net.createConnection(socketPath, () => {
+      resolve(s)
+    })
+    s.on('error', reject)
+  })
+}
+
+// In order, refusing a directory that fails the app's own ownership test
+// rather than connecting to whoever listens in it. A missing directory is not
+// refused: its connection fails like any other place nothing serves.
+async function reachApp(socketPaths: readonly string[]) {
+  const failures: { socketPath: string; error: Error }[] = []
+  for (const socketPath of socketPaths) {
+    const unsafe =
+      process.platform === 'win32'
+        ? undefined
+        : socketDirStatus(path.dirname(socketPath))?.unsafe
+    if (unsafe) {
+      throw new Error(unsafeSocketDirMessage(unsafe))
+    }
+    try {
+      return await connectTo(socketPath)
+    } catch (e) {
+      failures.push({
+        socketPath,
+        error: e instanceof Error ? e : new Error(String(e)),
+      })
+    }
+  }
+  throw new Error(unreachableMessage(failures))
+}
+
+function connectBridge(socketPaths: readonly string[]) {
   let socket: net.Socket | undefined
   let connecting: Promise<net.Socket> | undefined
   let nextId = 0
@@ -85,29 +134,24 @@ function connectBridge(socketPath: string) {
     if (connecting) {
       return connecting
     }
-    connecting = new Promise<net.Socket>((resolve, reject) => {
-      const s = net.createConnection(socketPath, () => {
-        socket = s
-        onJsonLines(s, line => {
-          if (!('value' in line)) {
-            return
-          }
-          const msg = line.value as unknown as BridgeToolResult & {
-            id: number
-          }
-          const entry = pending.get(msg.id)
-          if (entry) {
-            pending.delete(msg.id)
-            entry.resolve(msg)
-          }
-        })
-        resolve(s)
+    connecting = reachApp(socketPaths).then(s => {
+      socket = s
+      onJsonLines(s, line => {
+        if (!('value' in line)) {
+          return
+        }
+        const msg = line.value as unknown as BridgeToolResult & {
+          id: number
+        }
+        const entry = pending.get(msg.id)
+        if (entry) {
+          pending.delete(msg.id)
+          entry.resolve(msg)
+        }
       })
       s.on('error', (e: Error) => {
         if (socket === s) {
           failAll(e)
-        } else {
-          reject(new Error(unreachableMessage(socketPath, e)))
         }
       })
       s.on('close', () => {
@@ -115,6 +159,7 @@ function connectBridge(socketPath: string) {
           failAll(new Error('JBrowse Desktop closed the connection'))
         }
       })
+      return s
     })
     try {
       return await connecting
@@ -201,21 +246,21 @@ function toolCallContent(outcome: BridgeToolResult) {
 }
 
 export function runMcpStdioServer({
-  socketPath,
+  socketPaths,
   version,
   onExit,
   input = process.stdin,
   output = process.stdout,
   now = Date.now,
 }: {
-  socketPath: string
+  socketPaths: readonly string[]
   version: string
   onExit: () => void
   input?: NodeJS.ReadableStream
   output?: NodeJS.WritableStream
   now?: () => number
 }) {
-  const callBridge = connectBridge(socketPath)
+  const callBridge = connectBridge(socketPaths)
   // A client that dies with calls in flight leaves stdout a broken pipe, and
   // the write that finds it emits 'error': unheard, that crashed the process,
   // with a main-process error dialog in the Electron --mcp entry. Nobody is
