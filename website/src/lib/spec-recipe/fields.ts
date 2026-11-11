@@ -2372,7 +2372,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     return text
       ? {
           path: `Type "${text}" into the table's search box (the magnifier above the grid)`,
-          note: "In the SV inspector the circular view draws only the rows the search leaves, so this narrows the chords too — it does not change which regions the circle shows, which is the 'show only regions with data' checkbox beside it.",
+          note: "In the SV inspector the circular view draws only the rows the search leaves, so this narrows the chords too — it does not change which regions the circle shows, which is 'Show only regions with data' in the circle's ⋮ menu.",
         }
       : undefined
   },

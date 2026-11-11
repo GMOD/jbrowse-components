@@ -73,8 +73,8 @@ belong together in VCF 4.4's `EVENT` key; the C-GIAB benchmark and DRAGEN both
 write it. When the file has it, a **Filter by event** dropdown appears beside
 **Filter by SV type**, listing each event with its record count and the
 chromosomes it touches. Choosing one narrows the table and the circle to that
-event's records, and with **show only regions with data** on, the circle redraws
-over those chromosomes alone.
+event's records, and with **Show only regions with data** on in the circle's ⋮
+menu, the circle redraws over those chromosomes alone.
 
 With no event chosen, selecting a row or chord of an event dims every chord
 outside that event, so its other junctions stand out against the whole callset.
