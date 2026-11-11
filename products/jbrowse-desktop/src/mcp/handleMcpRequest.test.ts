@@ -1,4 +1,9 @@
 import {
+  getReExportRegistry,
+  setReExportRegistry,
+} from '@jbrowse/core/ReExports/registry'
+
+import {
   captureConsole,
   codeErrorMessage,
   codePositions,
@@ -184,6 +189,17 @@ describe('run_javascript envelope', () => {
     ).rejects.toThrow(/still running/)
     expect(seen.aborted).toBe(true)
     delete (globalThis as Record<string, unknown>).__mcpAbortProbe
+  })
+
+  // core's map alone served @jbrowse/core and dropped the display toolkit a
+  // runtime plugin's load would have served, so the same require worked or
+  // threw depending on whether the config named a plugin
+  it("fills an empty registry with desktop's own map, the one a plugin load installs", async () => {
+    setReExportRegistry({})
+    await run(fakeApp().pluginManager, 'return 1')
+    expect(getReExportRegistry()).toHaveProperty([
+      '@jbrowse/display-kit/configSchema',
+    ])
   })
 
   it('delivers each notification once, with its level', async () => {

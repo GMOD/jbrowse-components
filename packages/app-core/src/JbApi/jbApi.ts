@@ -56,6 +56,7 @@ import {
 } from '../SessionSpec/index.ts'
 
 import type { ViewSpec } from '../SessionSpec/index.ts'
+import type { ReExportRegistryLoader } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -1602,13 +1603,18 @@ function describeSlots(
 // external plugins link against. It stays empty until a runtime plugin loads,
 // and a loaded plugin fills it with the product's map, which serves every
 // bundled @jbrowse package rather than core alone — so this fills only an
-// empty registry.
-export async function ensureReExports() {
-  if (Object.keys(getReExportRegistry()).length === 0) {
-    setReExportRegistry(
-      (await import('@jbrowse/core/ReExports/modules')).default,
-    )
+// empty registry, and a product that can name its own map passes it.
+export async function ensureReExports(
+  load: ReExportRegistryLoader = () =>
+    import('@jbrowse/core/ReExports/modules'),
+) {
+  if (!hasReExports()) {
+    setReExportRegistry((await load()).default)
   }
+}
+
+function hasReExports() {
+  return Object.keys(getReExportRegistry()).length > 0
 }
 
 // The front door for an agent that just found `jb` and knows nothing else —
@@ -1687,8 +1693,15 @@ export function createJbApi(
     get rootModel() {
       return pluginManager.rootModel
     },
-    require: pluginManager.jbrequire,
-    ensureRequire: ensureReExports,
+    require: (lib: Parameters<PluginManager['jbrequire']>[0]) => {
+      if (typeof lib === 'string' && !hasReExports()) {
+        throw new Error(
+          `jb.require('${lib}') has no module registry to read yet — await jb.ensureRequire() once first; jb.require stays synchronous after that`,
+        )
+      }
+      return pluginManager.jbrequire(lib)
+    },
+    ensureRequire: () => ensureReExports(),
     mst,
     mobx,
     readConfObject,

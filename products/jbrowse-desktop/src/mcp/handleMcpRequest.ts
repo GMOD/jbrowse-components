@@ -261,7 +261,7 @@ async function evaluateWith(
   args: Record<string, unknown>,
   abort: AbortController,
 ) {
-  await ensureReExports()
+  await ensureReExports(() => import('../reExports.generated.ts'))
   const code = typeof args.code === 'string' ? args.code : ''
   if (!code) {
     throw new Error('run_javascript needs code (an async function body)')
