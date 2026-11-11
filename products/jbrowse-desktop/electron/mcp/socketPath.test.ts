@@ -101,28 +101,44 @@ describe('ensureSocketDir, before the app listens', () => {
 const onLinux = process.platform === 'linux' ? describe : describe.skip
 
 onLinux('the rendezvous on Linux', () => {
-  const saved = process.env.XDG_RUNTIME_DIR
-  afterEach(() => {
-    if (saved === undefined) {
-      delete process.env.XDG_RUNTIME_DIR
-    } else {
-      process.env.XDG_RUNTIME_DIR = saved
-    }
-  })
-
-  it('is served from $XDG_RUNTIME_DIR, and the shim tries it first and tmpdir last', () => {
+  it('is served from a runtime directory this account owns, tmpdir last', () => {
     const runtime = tempDir()
-    process.env.XDG_RUNTIME_DIR = runtime
+    fs.chmodSync(runtime, 0o700)
     const served = path.join(runtime, 'jbrowse-desktop-mcp', 'mcp.sock')
-    expect(defaultSocketPath()).toBe(served)
-    expect(socketPaths()[0]).toBe(served)
-    expect(path.dirname(path.dirname(socketPaths().at(-1) ?? ''))).toBe(
+    expect(defaultSocketPath(runtime)).toBe(served)
+    expect(socketPaths(runtime)[0]).toBe(served)
+    expect(path.dirname(path.dirname(socketPaths(runtime).at(-1) ?? ''))).toBe(
       os.tmpdir(),
     )
   })
 
-  it('ignores a relative $XDG_RUNTIME_DIR', () => {
-    process.env.XDG_RUNTIME_DIR = 'relative/dir'
-    expect(socketPaths().some(p => p.includes('relative'))).toBe(false)
+  it('is served from tmpdir when the runtime directory is missing', () => {
+    const runtime = path.join(tempDir(), 'absent')
+    expect(socketPaths(runtime)).toHaveLength(1)
+    expect(path.dirname(path.dirname(defaultSocketPath(runtime)))).toBe(
+      os.tmpdir(),
+    )
+  })
+
+  it('passes over a runtime directory other accounts can enter', () => {
+    const runtime = tempDir()
+    fs.chmodSync(runtime, 0o755)
+    expect(socketPaths(runtime).some(p => p.startsWith(runtime))).toBe(false)
+  })
+
+  it('does not read $XDG_RUNTIME_DIR, which the shim is rarely given', () => {
+    const saved = process.env.XDG_RUNTIME_DIR
+    const elsewhere = tempDir()
+    fs.chmodSync(elsewhere, 0o700)
+    process.env.XDG_RUNTIME_DIR = elsewhere
+    try {
+      expect(socketPaths().some(p => p.startsWith(elsewhere))).toBe(false)
+    } finally {
+      if (saved === undefined) {
+        delete process.env.XDG_RUNTIME_DIR
+      } else {
+        process.env.XDG_RUNTIME_DIR = saved
+      }
+    }
   })
 })

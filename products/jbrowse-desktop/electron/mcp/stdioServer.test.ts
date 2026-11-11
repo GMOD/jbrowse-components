@@ -393,6 +393,48 @@ test('the candidates are tried in order, past one nothing serves', async () => {
   bridge.close()
 })
 
+// A planted directory further down the list is not where the app serves, so it
+// must neither hide a live app after it nor turn "launch the app" into a
+// refusal the user cannot act on.
+test('an unsafe candidate is passed over for the live one after it', async () => {
+  const planted = await startFakeBridge(() => ({ result: { planted: true } }))
+  fs.chmodSync(path.dirname(planted.socketPath), 0o755)
+  const bridge = await startFakeBridge(() => ({ result: { reached: true } }))
+  const server = startServer([
+    path.join(os.tmpdir(), 'jb-mcp-test-nonexistent', 'mcp.sock'),
+    planted.socketPath,
+    bridge.socketPath,
+  ])
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  const call = await server.next()
+  expect(call.result?.content?.[0]?.text).toBe('{"reached":true}')
+  planted.close()
+  bridge.close()
+})
+
+test("an unsafe candidate after the app's own reads as a launch hint", async () => {
+  const planted = await startFakeBridge(() => ({ result: { planted: true } }))
+  fs.chmodSync(path.dirname(planted.socketPath), 0o755)
+  const server = startServer([
+    path.join(os.tmpdir(), 'jb-mcp-test-nonexistent', 'mcp.sock'),
+    planted.socketPath,
+  ])
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  const call = await server.next()
+  const text = call.result?.content?.[0]?.text
+  expect(text).toContain('Launch the JBrowse Desktop app')
+  expect(text).not.toContain('Refusing to connect')
+  planted.close()
+})
+
 describe('versionSkewNote', () => {
   it('is silent when the app matches, or the bridge failed for another reason', () => {
     expect(

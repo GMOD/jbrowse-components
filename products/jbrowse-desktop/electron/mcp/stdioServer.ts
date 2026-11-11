@@ -54,8 +54,8 @@ export function resultFields(result: unknown) {
  * one too old to serve the bridge at all. 4.3.0 has no `--mcp` handling, so
  * pointing a client at it launches the GUI and serves nothing; the app is then
  * on screen, in front of the user, while the only advice on offer was to launch
- * it. Every candidate path is named, since an app whose environment put its
- * socket somewhere this process cannot see is the other way to be "not there".
+ * it. Every candidate is named, since an app whose TMPDIR put its socket
+ * somewhere this process does not look is the other way to be "not there".
  */
 export function unreachableMessage(
   failures: { socketPath: string; error: Error }[],
@@ -68,7 +68,7 @@ export function unreachableMessage(
     : `Could not reach JBrowse Desktop (${failures.map(({ error }) => error.message).join('; ')}). Launch the JBrowse Desktop app, then try again.${
         process.platform === 'win32'
           ? ''
-          : " If it is already running, it and this server see different XDG_RUNTIME_DIR or TMPDIR values: give this server the app's, in the MCP client's env for it."
+          : " If it is already running, it and this server see different TMPDIR values: give this server the app's, in the MCP client's env for it."
       }`
 }
 
@@ -85,29 +85,45 @@ function connectTo(socketPath: string) {
   })
 }
 
-// In order, refusing a directory that fails the app's own ownership test
-// rather than connecting to whoever listens in it. A missing directory is not
-// refused: its connection fails like any other place nothing serves.
+function notServed(socketPath: string) {
+  return Object.assign(new Error(`nothing is serving ${socketPath}`), {
+    code: 'ENOENT',
+  })
+}
+
+// In order, connecting only inside a directory that has just passed the app's
+// own ownership test: an unsafe one is passed over, and so is an absent one,
+// which another account could create between the look and the connect. The
+// first candidate is where the app serves, so only its being unsafe means the
+// app cannot run there either; a planted later one is just not where the app
+// is.
 async function reachApp(socketPaths: readonly string[]) {
   const failures: { socketPath: string; error: Error }[] = []
+  const unsafe: (string | undefined)[] = []
   for (const socketPath of socketPaths) {
-    const unsafe =
+    const status =
       process.platform === 'win32'
-        ? undefined
-        : socketDirStatus(path.dirname(socketPath))?.unsafe
-    if (unsafe) {
-      throw new Error(unsafeSocketDirMessage(unsafe))
-    }
-    try {
-      return await connectTo(socketPath)
-    } catch (e) {
-      failures.push({
-        socketPath,
-        error: e instanceof Error ? e : new Error(String(e)),
-      })
+        ? { unsafe: undefined }
+        : socketDirStatus(path.dirname(socketPath))
+    unsafe.push(status?.unsafe)
+    if (status && !status.unsafe) {
+      try {
+        return await connectTo(socketPath)
+      } catch (e) {
+        failures.push({
+          socketPath,
+          error: e instanceof Error ? e : new Error(String(e)),
+        })
+      }
+    } else {
+      failures.push({ socketPath, error: notServed(socketPath) })
     }
   }
-  throw new Error(unreachableMessage(failures))
+  throw new Error(
+    unsafe[0]
+      ? unsafeSocketDirMessage(unsafe[0])
+      : unreachableMessage(failures),
+  )
 }
 
 function connectBridge(socketPaths: readonly string[]) {

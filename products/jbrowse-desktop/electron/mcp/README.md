@@ -18,14 +18,15 @@ to genes, add tracks from local files or URLs, and screenshot the result.
 
 `run_javascript` is arbitrary code execution in a renderer with Node access —
 deliberately. The guard is the transport, not the payload: the bridge socket
-lives in the per-user runtime directory on Linux when there is one, otherwise
-under tmpdir in a directory that both the app (before listening) and the stdio
-server (before connecting) refuse unless it is owned by the current user with
-mode 0700. So only processes already running as that user can serve or connect —
-and any such process already holds the same privileges the socket grants. The
-endpoint adds convenience, not escalation (the same argument as Chrome's
-DevTools debugging port). A refused directory is reported by the stdio server's
-tool results and by Help, Connect an AI agent... in the app.
+lives under `/run/user/<uid>` on Linux when that is the current user's own 0700
+directory, otherwise under tmpdir, and in either place in a directory that both
+the app (before listening) and the stdio server (before connecting) refuse
+unless it is owned by the current user with mode 0700. So only processes already
+running as that user can serve or connect — and any such process already holds
+the same privileges the socket grants. The endpoint adds convenience, not
+escalation (the same argument as Chrome's DevTools debugging port). A refused
+directory is reported by the stdio server's tool results and by Help, Connect an
+AI agent... in the app.
 
 What that argument does NOT cover: a prompt-injected agent is a confused deputy
 — a hostile dataset description or web page can ask the agent to run malicious

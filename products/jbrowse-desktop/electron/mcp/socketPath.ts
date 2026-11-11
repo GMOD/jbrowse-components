@@ -8,19 +8,16 @@ import path from 'node:path'
 // from node alone.
 //
 // The candidate directories, in order:
-// - on Linux, the per-user runtime directory — $XDG_RUNTIME_DIR, then
-//   /run/user/<uid> when it exists, which is where logind puts it and so is
-//   found even by a shim an MCP client spawned with a scrubbed environment.
-//   Nobody else can plant anything there.
-// - the per-user directory under tmpdir, where only the ownership test in
-//   `socketDirStatus` keeps out one another account planted on a shared /tmp.
+// - on Linux, logind's per-user runtime directory /run/user/<uid>, taken only
+//   when it passes the ownership test below. Named from the uid alone and not
+//   from $XDG_RUNTIME_DIR, which an MCP client strips from the shim's
+//   environment: the app and the shim then build the same list.
+// - the per-user directory under tmpdir, where the same test keeps out one
+//   another account planted on a shared /tmp.
 //
-// The app serves the first candidate. The shim walks all of them in order,
-// refusing an unsafe one, and talks to the first that answers — so a shim that
-// sees a runtime directory the app did not still reaches it under tmpdir, and
-// the one disagreement left (an app whose $XDG_RUNTIME_DIR is not
-// /run/user/<uid>, behind a shim that cannot see it) ends in a message naming
-// every path it tried, not in a connection to the wrong place.
+// The app serves the first candidate. The shim walks all of them and connects
+// only inside a directory it has just seen pass the test — never into one that
+// was absent a moment ago, which another account could create in between.
 function label() {
   return os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')
 }
@@ -29,39 +26,38 @@ function tmpSocketDir() {
   return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label()}`)
 }
 
-function runtimeSocketDirs() {
-  const logind = `/run/user/${process.getuid?.()}`
-  const runtimeDirs =
-    process.platform === 'linux'
-      ? [process.env.XDG_RUNTIME_DIR, fs.existsSync(logind) ? logind : '']
-      : []
-  return runtimeDirs.flatMap(dir =>
-    dir && path.isAbsolute(dir) ? [path.join(dir, 'jbrowse-desktop-mcp')] : [],
-  )
+function logindRuntimeDir() {
+  return `/run/user/${process.getuid?.()}`
 }
 
-export function socketDirs() {
-  return [...new Set([...runtimeSocketDirs(), tmpSocketDir()])]
+export function socketDirs(runtimeDir = logindRuntimeDir()) {
+  const runtime = process.platform === 'linux' && socketDirStatus(runtimeDir)
+  return [
+    ...(runtime && !runtime.unsafe
+      ? [path.join(runtimeDir, 'jbrowse-desktop-mcp')]
+      : []),
+    tmpSocketDir(),
+  ]
 }
 
 /**
  * The shim's candidates, in the order it tries them. Pure, like
  * `defaultSocketPath`: only the app creates a directory.
  */
-export function socketPaths() {
+export function socketPaths(runtimeDir?: string) {
   return process.platform === 'win32'
     ? [defaultSocketPath()]
-    : socketDirs().map(dir => path.join(dir, 'mcp.sock'))
+    : socketDirs(runtimeDir).map(dir => path.join(dir, 'mcp.sock'))
 }
 
 /**
  * Where the app listens, and nothing else. Pure so that every consumer can name
  * it: only the app creates the directory.
  */
-export function defaultSocketPath() {
+export function defaultSocketPath(runtimeDir?: string) {
   return process.platform === 'win32'
     ? `\\\\.\\pipe\\jbrowse-desktop-mcp-${label()}`
-    : path.join(runtimeSocketDirs()[0] ?? tmpSocketDir(), 'mcp.sock')
+    : path.join(socketDirs(runtimeDir)[0]!, 'mcp.sock')
 }
 
 function unsafeBecause(stat: fs.Stats) {
