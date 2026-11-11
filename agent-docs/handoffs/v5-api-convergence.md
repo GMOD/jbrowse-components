@@ -111,18 +111,21 @@ displays or a display's parts, with the ruling on each.
    - A plugin's own CI running the generator without a jbrowse-components
      checkout waits on a plugin asking for it; none runs it today.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
-   holds the top-level ones and the channel ones under a part's `encoding`;
-   a non-channel word under a part (`records.facet`, `readConnections.mark`)
-   is outside it. `scripts/configSpellingRulings.ts` names the ADR or schema
-   comment ruling on each path, and its test refuses a differing path with
-   no entry and a path that gains a variant. The 2026-10-30 taste calls are
-   among them (ChordColor's `scale`, HicColor's and LDColor's `scale`,
-   WiggleColor's `legend`). Two entries are `open:`, with no ruling:
-   `ribbons.encoding.color.scale` has no `domainQuantile`, and the synteny
-   opacity scale always clamps with no `clamp` member.
+   holds each path the displays share, each channel under a part's
+   `encoding` and each part's `facet`, `tooltip`, `labels`, `mark` and
+   `placement`, compared with the display's own. Any other word under a part
+   meets only the same full path on another display.
+   `scripts/configSpellingRulings.ts` names the ADR or schema comment ruling
+   on each path, with its variant count, and `pnpm autogen` refuses a
+   differing path with no entry or a changed count. The 2026-10-30 taste
+   calls are among them (ChordColor's `scale`, HicColor's and LDColor's
+   `scale`, WiggleColor's `legend`). The page's "Open differences" list holds
+   the ones with no ruling.
 
 ## Release candidate gates
 
+- CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
+  as kept or respelled.
 - The meter shows no shared-path change since the last respell landed.
 - Every `retired` entry maps a name a v1–v4 release declared, none a
   beta-only one, except a display type a beta session names (the rule above).

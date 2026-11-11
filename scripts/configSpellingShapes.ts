@@ -1,6 +1,6 @@
 import { slotPathsByType } from './configSlotPaths.ts'
 
-import type { JsonSchema } from './configSlotPaths.ts'
+import type { JsonSchema } from './configJsonSchema.ts'
 
 export const byName = (a: string, b: string) => a.localeCompare(b, 'en')
 
@@ -16,13 +16,21 @@ export const code = (words: Iterable<string>) =>
 // design.
 const isDataWord = (slot: string) => slot === 'type' || slot.endsWith('field')
 
-// Channels sit under `encoding`, inside a named part too (ADR-238), so a slot
-// below a part's `encoding` compares as the channel's own path, the part named
-// beside the display.
-function channelSlot(slot: string) {
+const PART_WORDS = new Set(['facet', 'tooltip', 'labels', 'mark', 'placement'])
+
+// A channel under a part's `encoding`, and a part's own facet, tooltip,
+// labels, mark or placement, use the display's vocabulary (ADR-238). Such a
+// slot compares as its path from the last `encoding` segment with a channel
+// below it, else from the last segment that is exactly one of those words,
+// the segments before it naming the part beside the display.
+function partSlot(slot: string) {
   const segments = slot.split('.')
-  const at = segments.lastIndexOf('encoding')
-  return at > 0 && at < segments.length - 1
+  const channel = segments.lastIndexOf('encoding')
+  const at =
+    channel !== -1 && channel < segments.length - 1
+      ? channel
+      : segments.findLastIndex(segment => PART_WORDS.has(segment))
+  return at > 0
     ? {
         slot: segments.slice(at).join('.'),
         part: segments.slice(0, at).join('.'),
@@ -77,7 +85,7 @@ export function divergentShapes(schema: JsonSchema) {
   const variants = new Map<string, Map<string, string[]>>()
   for (const type of displayTypes(live)) {
     for (const [fullPath, words] of shapes(live.get(type)!)) {
-      const { slot, part } = channelSlot(fullPath)
+      const { slot, part } = partSlot(fullPath)
       const key = [...words].sort(byName).join(' ')
       const bySlot = variants.get(slot) ?? new Map<string, string[]>()
       bySlot.set(key, [
@@ -92,4 +100,45 @@ export function divergentShapes(schema: JsonSchema) {
       .filter(([, bySlot]) => bySlot.size > 1)
       .sort(([a], [b]) => byName(a, b)),
   )
+}
+
+export interface Ruling {
+  variants: number
+  why: string
+  open?: string
+}
+
+const variantLines = (bySlot: Map<string, string[]>) =>
+  [...bySlot].map(
+    ([members, holders]) =>
+      `    [${members || 'leaf'}] <- ${holders.join(', ')}`,
+  )
+
+/**
+ * Where the rulings and the differing paths disagree: a path with no entry,
+ * one whose variant count moved, and an entry whose path no longer differs.
+ */
+export function rulingProblems(
+  schema: JsonSchema,
+  rulings: Record<string, Ruling>,
+) {
+  const divergent = divergentShapes(schema)
+  return [
+    ...[...divergent].flatMap(([slot, bySlot]) => {
+      const ruling = rulings[slot]
+      return ruling?.variants === bySlot.size
+        ? []
+        : [
+            [
+              ruling
+                ? `${slot} has ${bySlot.size} shapes and its ruling says ${ruling.variants}; re-read its why against:`
+                : `${slot} differs with no ruling; add '${slot}': { variants: ${bySlot.size}, why: '...' } for:`,
+              ...variantLines(bySlot),
+            ].join('\n'),
+          ]
+    }),
+    ...Object.keys(rulings)
+      .filter(slot => !divergent.has(slot))
+      .map(slot => `${slot} no longer differs; delete its ruling`),
+  ]
 }

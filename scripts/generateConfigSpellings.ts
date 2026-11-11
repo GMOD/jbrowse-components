@@ -14,10 +14,11 @@ import {
   code,
   displayTypes,
   divergentShapes,
+  rulingProblems,
   short,
 } from './configSpellingShapes.ts'
 
-import type { JsonSchema } from './configSlotPaths.ts'
+import type { JsonSchema } from './configJsonSchema.ts'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 
@@ -35,18 +36,14 @@ function readConfigSchema() {
   return schema
 }
 
-function whyOf(slot: string) {
-  const ruling = RULINGS[slot]
-  if (!ruling) {
-    throw new Error(
-      `${slot} differs between displays with no entry in scripts/configSpellingRulings.ts`,
-    )
-  }
-  return ruling.why
-}
-
 export function writeConfigSpellings() {
   const schema = readConfigSchema()
+  const problems = rulingProblems(schema, RULINGS)
+  if (problems.length > 0) {
+    throw new Error(
+      `scripts/configSpellingRulings.ts and the config schema disagree:\n${problems.join('\n')}`,
+    )
+  }
   const live = slotPathsByType(schema, { live: true })
   const all = slotPathsByType(schema)
   const displays = displayTypes(live)
@@ -57,7 +54,7 @@ export function writeConfigSpellings() {
         `\`${slot}\``,
         members ? code(members.split(' ')) : '(leaf)',
         holders.join(', '),
-        variant === 0 ? whyOf(slot) : '',
+        variant === 0 ? (RULINGS[slot]?.why ?? '') : '',
       ]),
     )
 
@@ -108,28 +105,34 @@ export function writeConfigSpellings() {
       })
       .filter(([, retired]) => retired)
 
-  return (
-    [
-      [
-        'CONFIG_SPELLINGS_DIVERGENT',
-        ['Path', 'Members or values', 'Who', 'Why'],
-        divergentRows(),
-      ],
-      ['CONFIG_SPELLINGS_TOP_LEVEL', ['Display', 'Settings'], ownWordRows()],
-      [
-        'CONFIG_SPELLINGS_WORDS',
-        ['Word', 'Displays', 'Sits under'],
-        wordRows(),
-      ],
-      ['CONFIG_SPELLINGS_RETIRED', ['Display', 'Retired keys'], retiredRows()],
-    ] as const
-  ).flatMap(([marker, headers, rows]) =>
-    rewriteMarkerBlock(
-      marker,
-      [
-        '<!-- prettier-ignore -->',
-        ...markdownTableLines([...headers], rows),
-      ].join('\n'),
-    ),
+  const openLines = Object.entries(RULINGS).flatMap(([slot, { open }]) =>
+    open ? [`- \`${slot}\`: ${open}`] : [],
   )
+
+  const tables = [
+    [
+      'CONFIG_SPELLINGS_DIVERGENT',
+      ['Path', 'Members or values', 'Who', 'Why'],
+      divergentRows(),
+    ],
+    ['CONFIG_SPELLINGS_TOP_LEVEL', ['Display', 'Settings'], ownWordRows()],
+    ['CONFIG_SPELLINGS_WORDS', ['Word', 'Displays', 'Sits under'], wordRows()],
+    ['CONFIG_SPELLINGS_RETIRED', ['Display', 'Retired keys'], retiredRows()],
+  ] as const
+
+  return [
+    ...rewriteMarkerBlock(
+      'CONFIG_SPELLINGS_OPEN',
+      openLines.length > 0 ? openLines.join('\n') : 'None.',
+    ),
+    ...tables.flatMap(([marker, headers, rows]) =>
+      rewriteMarkerBlock(
+        marker,
+        [
+          '<!-- prettier-ignore -->',
+          ...markdownTableLines([...headers], rows),
+        ].join('\n'),
+      ),
+    ),
+  ]
 }

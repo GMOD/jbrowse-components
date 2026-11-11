@@ -1,15 +1,12 @@
+import type { Ruling } from './configSpellingShapes.ts'
+
 const VALUE_ONLY_WIDTH =
   'a wiggle row draws its points or line at one width, so WiggleSize is `value` alone (wiggleSizeConfigSchema.ts)'
-
-interface Ruling {
-  variants: number
-  why: string
-}
 
 /**
  * Why each path in CONFIG_SPELLINGS.md's first table differs between
  * displays or parts, the ADR or schema comment that rules on it, and how
- * many shapes it has. `open:` marks a difference nothing rules on yet.
+ * many shapes it has. `open` states a difference nothing rules on yet.
  */
 export const RULINGS: Record<string, Ruling> = {
   data: {
@@ -34,7 +31,8 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.color.scale': {
     variants: 7,
-    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's and LD's ramp is built from `scheme` and `reverse` alone (hicColorConfigSchema.ts, ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts). open: ribbons take the synteny views' scale (syntenyColorConfigSchema.ts), which has no `domainQuantile`",
+    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's and LD's ramp is built from `scheme` and `reverse` alone (hicColorConfigSchema.ts, ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts); ribbons take the synteny views' scale (syntenyColorConfigSchema.ts)",
+    open: "MultiWaySynteny `ribbons`, and the synteny views whose scale it shares, have no `domainQuantile`, though a numeric column's ramp follows the loaded values",
   },
   'encoding.color.scale.type': {
     variants: 7,
@@ -46,7 +44,8 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.opacity.scale': {
     variants: 2,
-    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain`, and `clamp` (ADR-240). open: the synteny scale always clamps and has no member for it',
+    why: 'the mismatch fade is one linear ramp over four uniforms, so no `type` or `domain`, and `clamp` (ADR-240)',
+    open: 'the synteny opacity scale (MultiWaySynteny `ribbons` and the synteny views) always clamps and has no `clamp` member',
   },
   'encoding.size': { variants: 2, why: VALUE_ONLY_WIDTH },
   'encoding.strokeWidth': { variants: 2, why: VALUE_ONLY_WIDTH },
@@ -56,7 +55,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.y': {
     variants: 4,
-    why: "`encoding.y` is the value-axis channel (ADR-238): wiggle's holds its plotted `field` beside `scale`, `axis` and `rules`; the mark display's and the coverage bands' have no `field`, each mark's bare `y` naming it; MAF's holds `field` alone, its only value scale being `coverage.encoding.y` (mafYConfigSchema.ts)",
+    why: "`encoding.y` is the value-axis channel (ADR-238): wiggle's holds its plotted `field` beside `scale`, `axis` and `rules`; the mark display's has no `field`, each mark's bare `y` naming it, and a coverage band's has none either; MAF's holds `field` alone, its only value scale being `coverage.encoding.y` (mafYConfigSchema.ts)",
   },
   facet: {
     variants: 3,
@@ -67,20 +66,36 @@ export const RULINGS: Record<string, Ruling> = {
     why: "LD and Hi-C draw a triangle, whose height is its base's, so no `grow` (TriangleMatrixMixin.ts)",
   },
   labels: {
-    variants: 3,
-    why: 'each display names the label parts it draws: LD a variant name, features `description` and `subfeatures`, multi-way its `lanes` (ADR-238)',
+    variants: 6,
+    why: "each display names the label parts it draws: LD a variant name, features `description` and `subfeatures`, multi-way its `lanes` (ADR-238); the records band a record's name and description (recordsBandConfigSchema.ts); sashimi its read counts, a text layer with `show` (ADR-240, sashimiLabelsConfigSchema.ts). `rows.labels`, the row axis's name-to-text map, and `rows.axis.labels`, its draw toggle, are another thing sharing the word (ADR-257)",
   },
   'labels.name': {
     variants: 2,
     why: 'an LD SNP carries only its id, so there is no `field` (configSchemaLDTrack.ts)',
   },
   mark: {
+    variants: 6,
+    why: "each mark object holds what its glyph reads (ADR-238): a chord's `depth`; a feature's, a record's and a read's box `height` (featureMarkConfigSchema.ts, ADR-255, ADR-240); read connections' `type` alone (ADR-240); a `marks` entry's MarkDef (markDefConfigSchema.ts); wiggle's `type`, `interpolate` and `extent` (wiggleMarkConfigSchema.ts); a ribbon's `interpolate` alone (syntenyMarkConfigSchema.ts)",
+  },
+  'mark.height': {
+    variants: 2,
+    why: "a feature's, a record's and a read's box is px tall (ADR-240, ADR-255); a rect standing in a band takes Vega-Lite's `{ band }`, a fraction of it, on the mark display and MAF's alignments (ADR-194)",
+  },
+  'mark.interpolate': {
     variants: 3,
-    why: "a chord's `mark.depth` and wiggle's mark object of `type`, `interpolate` and `extent` (ADR-238, wiggleMarkConfigSchema.ts) and a feature's `mark.height` are each display's own mark properties",
+    why: '`interpolate` is the one curve word (ADR-238) and each mark lists the curves it draws: a `marks` entry in markDefConfigSchema.ts, a wiggle line in wiggleMarkConfigSchema.ts, a ribbon in syntenyMarkConfigSchema.ts',
+  },
+  'mark.type': {
+    variants: 3,
+    why: 'each mark object lists the types its display draws: read connections a `link` or a `rule` (ADR-240); a `marks` entry every built mark (markDefConfigSchema.ts); wiggle `bar`, `line`, `point` and `rect` (wiggleMarkConfigSchema.ts)',
   },
   pileup: {
     variants: 2,
     why: 'a synteny block has no basecaller tags or qualities, so no `bases` layer (LGVSyntenyDisplay/readsOnlySlots.test.ts)',
+  },
+  placement: {
+    variants: 4,
+    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, `auto` on sashimi alone (ADR-231); a label sits `above`, `below` or as an `overlay`, a feature's part labels and the multi-way lane names each listing their own (ADR-238)",
   },
   rows: {
     variants: 5,

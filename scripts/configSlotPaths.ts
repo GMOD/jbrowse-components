@@ -8,7 +8,7 @@
 // The session half is the keys an author writes by hand: the session's own,
 // and each view's launch keys with the legacy spellings it still converts.
 // View and display state stay out, since the app writes those.
-export type JsonSchema = Record<string, unknown>
+type JsonSchema = Record<string, unknown>
 
 const SESSION_KEYS = new Set(['defaultSession', 'preConfiguredSessions'])
 const BRANCHES = ['allOf', 'anyOf', 'oneOf']
