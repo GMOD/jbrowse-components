@@ -1,6 +1,5 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-import { rpcResult } from '@jbrowse/core/util/librpc'
-import { transferableBuffers } from '@jbrowse/core/util/rpc'
+import { rpcResult, transferableBuffers } from '@jbrowse/core/util/librpc'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { isRowVisible, withCopyRows } from '../util/sampleCopies.ts'

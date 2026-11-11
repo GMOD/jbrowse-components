@@ -12,8 +12,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
-import { rpcResult } from '@jbrowse/core/util/librpc'
-import { transferableBuffers } from '@jbrowse/core/util/rpc'
+import { rpcResult, transferableBuffers } from '@jbrowse/core/util/librpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
