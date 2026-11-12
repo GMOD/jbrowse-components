@@ -34,6 +34,21 @@ describe('parseRowsByName', () => {
     )
   })
 
+  it('trims unquoted cells, header and data, keeping a quoted cell as written', () => {
+    const spaced = 'name, label, rowColor\nHG1 , Sample one,#f00'
+    expect(parseRowsByName(spaced)).toEqual(
+      new Map([
+        ['HG1', { name: 'HG1', label: 'Sample one', rowColor: '#f00' }],
+      ]),
+    )
+    expect(parseRowsByName('name, label\n"HG1"," padded "')).toEqual(
+      new Map([['HG1', { name: 'HG1', label: ' padded ' }]]),
+    )
+    expect(ignoredColumns([{ name: 'HG1' }], parseRowsByName(spaced))).toEqual(
+      [],
+    )
+  })
+
   it('throws a clear error on empty/whitespace input', () => {
     expect(() => parseRowsByName('')).toThrow(/Nothing pasted/)
     expect(() => parseRowsByName('   \n  ')).toThrow(/Nothing pasted/)

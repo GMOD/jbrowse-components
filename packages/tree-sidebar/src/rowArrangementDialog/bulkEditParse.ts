@@ -17,10 +17,12 @@ function detectDelimiter(header: string): string {
 
 // CSV parser for one line. Handles quoted fields containing the delimiter and
 // "" as an escaped quote; a newline inside a quoted field is not (callers split
-// on newlines first). Falls back to a plain split when no quotes are present.
+// on newlines first). An unquoted cell is trimmed, so `name, label` heads the
+// columns `name` and `label`. Falls back to a plain split when no quotes are
+// present.
 function parseCSVRow(line: string, delim: string): string[] {
   if (!line.includes('"')) {
-    return line.split(delim)
+    return line.split(delim).map(cell => cell.trim())
   }
   const fields: string[] = []
   let i = 0
@@ -48,7 +50,7 @@ function parseCSVRow(line: string, delim: string): string[] {
       while (i < line.length && line[i] !== delim) {
         i++
       }
-      fields.push(line.slice(start, i))
+      fields.push(line.slice(start, i).trim())
       if (i < line.length) {
         i++
       }
