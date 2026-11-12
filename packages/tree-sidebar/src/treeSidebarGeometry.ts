@@ -39,9 +39,9 @@ export const SIDEBAR_HINT_LINE_PX = 18
 // `height - rowsTopOffset`.
 export function treeContentHeight(model: {
   height: number
-  rowsTopOffset?: number
+  rowsTopOffset: number
 }) {
-  return model.height - (model.rowsTopOffset ?? 0)
+  return model.height - model.rowsTopOffset
 }
 
 interface TreeShowingModel {

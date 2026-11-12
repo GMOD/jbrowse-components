@@ -72,12 +72,12 @@ export interface TreeSidebarModel extends IStateTreeNode {
   scrollTop?: number
   showTree: boolean
   sources: TreeSource[]
-  rowBands?: readonly RowBand[]
+  rowBands: readonly RowBand[]
   rowAnnotationColors?: readonly RowAnnotationColumn[]
   // The label over each color column, whose lines sit between the focus
   // chip's line and the rows.
   rowColumnLabels?: readonly string[]
-  treelessBandCount?: number
+  treelessBandCount: number
   // Whether the tree's leaves are rows a finer field draws, and what the hint
   // says then.
   treeOnFinerRows?: boolean
@@ -113,7 +113,7 @@ export interface TreeDrawingModel extends IStateTreeNode {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
-  rowsTopOffset?: number
+  rowsTopOffset: number
   scrollTop?: number
   // Resolved px row height, never a fit-to-height sentinel. Every row display
   // spells the raw setting `rowHeight` (0 = fit to display height) and the

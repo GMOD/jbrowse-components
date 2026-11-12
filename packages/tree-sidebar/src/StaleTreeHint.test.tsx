@@ -17,6 +17,8 @@ function model(props: Partial<TreeSidebarModel>): TreeSidebarModel {
     height: 100,
     rowsTopOffset: 0,
     rowFocusLineHeight: 0,
+    rowBands: [],
+    treelessBandCount: 0,
     rowNarrowingClears: false,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},

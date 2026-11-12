@@ -66,9 +66,8 @@ describe('treeSidebarRightEdge', () => {
 })
 
 describe('treeContentHeight', () => {
-  it('subtracts the reserved line zone, defaulting it to 0', () => {
+  it('subtracts the zone reserved above the rows', () => {
     expect(treeContentHeight({ height: 100, rowsTopOffset: 20 })).toBe(80)
-    expect(treeContentHeight({ height: 100 })).toBe(100)
   })
 })
 

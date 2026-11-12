@@ -19,6 +19,8 @@ function model(
     treeAreaWidth: 80,
     height: 100,
     rowsTopOffset: 0,
+    rowBands: [],
+    treelessBandCount: 0,
     showTree: true,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},

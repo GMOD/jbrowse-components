@@ -41,8 +41,8 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   top?: number
 }) {
   const { root, sources, showTree } = model
-  const bands = model.rowBands?.length ?? 0
-  const treeless = model.treelessBandCount ?? 0
+  const bands = model.rowBands.length
+  const treeless = model.treelessBandCount
   // `hierarchy` being undefined is not enough on its own — multi-wiggle's
   // overlay modes drop it deliberately, having no row axis to align to.
   const stale =
