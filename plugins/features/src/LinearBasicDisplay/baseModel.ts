@@ -95,12 +95,6 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
-import {
-  fitDrops,
-  fitLadderNote,
-  foldsNames,
-  labelFitHints,
-} from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import {
@@ -649,42 +643,6 @@ export default function baseStateModelFactory(
        */
       get renderedLabelFontSize() {
         return self.renderedLabels.fontSize
-      },
-      /**
-       * #getter
-       * What the ladder took from the labels the settings reserved, and how
-       * far it squeezed — the one derivation both user-facing notes read.
-       */
-      get fitDrops() {
-        return fitDrops(
-          self.fitStage,
-          self.showLabels,
-          self.effectiveShowDescriptions,
-          // Solving for one costs a bisection, and only this rung reports
-          // it.
-          self.fitStage.level === 'decimated'
-            ? self.fitDecimatedFactors
-            : undefined,
-          foldsNames(self.fitStage.layout),
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The track-sizing control's account of what fit mode gave up, or
-       * undefined when nothing.
-       */
-      get fitNote() {
-        return fitLadderNote(self.fitDrops)
-      },
-      /**
-       * #getter
-       * The note on the Names and Descriptions checkboxes while the ladder
-       * is not honouring them.
-       */
-      get labelFitHints() {
-        return labelFitHints(self.fitDrops)
       },
     }))
     .views(yMorphViews)

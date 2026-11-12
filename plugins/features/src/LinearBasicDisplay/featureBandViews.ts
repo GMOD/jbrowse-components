@@ -20,6 +20,12 @@ import {
   solveLabelRoomFactors,
   squeezeFloorScale,
 } from './fitLadder.ts'
+import {
+  fitDrops,
+  fitLadderNote,
+  foldsNames,
+  labelFitHints,
+} from './fitNotes.ts'
 import { maxIsoformCount } from './isoformTrim.ts'
 import { namedLabelTiers } from './labelReservation.ts'
 import {
@@ -752,6 +758,40 @@ export function featureBandViews(self: FeatureBandHost) {
           self.labelFontSize,
         ),
       )
+    },
+    /**
+     * #getter
+     * What the ladder took from the labels the settings reserved, and how
+     * far it squeezed — the one derivation both user-facing notes read.
+     */
+    get fitDrops() {
+      return fitDrops(
+        this.fitStage,
+        self.showLabels,
+        self.effectiveShowDescriptions,
+        // Solving for one costs a bisection, and only this rung reports
+        // it.
+        this.fitStage.level === 'decimated'
+          ? this.fitDecimatedFactors
+          : undefined,
+        foldsNames(this.fitStage.layout),
+      )
+    },
+    /**
+     * #getter
+     * The track-sizing control's account of what fit mode gave up, or
+     * undefined when nothing.
+     */
+    get fitNote() {
+      return fitLadderNote(this.fitDrops)
+    },
+    /**
+     * #getter
+     * The note on the Names and Descriptions checkboxes while the ladder
+     * is not honouring them.
+     */
+    get labelFitHints() {
+      return labelFitHints(this.fitDrops)
     },
     /**
      * #getter
