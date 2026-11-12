@@ -106,6 +106,7 @@ import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import {
+  arcViews,
   connectorSettingViews,
   connectorViews,
   facetLayoutViews,
@@ -143,7 +144,6 @@ import {
   isArcSplitCategory,
 } from './features/arcs/arcSplitCategory.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
-import { collectArcs, computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import {
   connectorArrowPx,
@@ -568,6 +568,12 @@ const AlignmentsTablesHost = types
     get loadedRegions(): ReadonlyMap<number, RegionBounds> {
       return new Map(self.fetchedRegions.map((r, i) => [i, r]))
     },
+    get loadedRegionInfos() {
+      return regionBlocks(self.fetchedRegions)
+    },
+    get displayedRegionInfos() {
+      return self.frames
+    },
     get host() {
       return { displayedRegions: self.frames }
     },
@@ -618,13 +624,7 @@ const AlignmentsTablesHost = types
   .views(self => facetLayoutViews(self))
   .views(self => hiddenGroupsViews(self))
   .views(self => groupLayoutViews(self))
-  .views(self => ({
-    get arcCollection() {
-      return collectArcs(self.rawDataByGroup, self.regionInfos, {
-        filter: self.connectionFilter,
-      })
-    },
-  }))
+  .views(self => arcViews(self))
   .views(self => pileupLayoutViews(self))
   .views(self => connectorViews(self))
   .views(self => bandPlotViews(self))
@@ -1091,22 +1091,7 @@ function readConnectionTables(
   slotColor: string[],
   connectorSlots: ReadonlySet<number>,
 ) {
-  const mode = host.drawnReadConnections
-  const result =
-    mode === 'off'
-      ? undefined
-      : computeArcsByGroup(
-          new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
-          {
-            loaded: regionBlocks(host.fetchedRegions),
-            displayed: host.frames,
-          },
-          {
-            cloud: mode === 'rule',
-            filter: host.connectionFilter,
-            showOrdinaryPairs: host.showOrdinaryPairs,
-          },
-        )
+  const result = host.arcsResult
   const stroke = host.readConnectionsStrokeScale
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
@@ -1129,8 +1114,8 @@ function readConnectionTables(
           i,
           connectionsInWindow(
             sectionConnections(
-              result?.byGroup.get(key)?.get(i) ?? emptyArcsUploadData(),
-              (result?.crossRegionByGroup.get(key) ?? []).filter(
+              result.byGroup.get(key)?.get(i) ?? emptyArcsUploadData(),
+              (result.crossRegionByGroup.get(key) ?? []).filter(
                 arc => arc.p1RegionIndex === i,
               ),
               (start, end) => [
@@ -1149,9 +1134,7 @@ function readConnectionTables(
     getArcLegendItems(
       new Set(
         [
-          ...(result
-            ? arcSlotsInWindows(result, keyWindowsOf(regionInfos))
-            : []),
+          ...arcSlotsInWindows(result, keyWindowsOf(regionInfos)),
           ...connectorSlots,
         ].map(slot => arcSlotCategory(slot)),
       ),
@@ -1165,12 +1148,12 @@ function readConnectionTables(
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
     },
-    arcLegendTitle: arcLegendTitle(mode),
-    arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
+    arcLegendTitle: arcLegendTitle(host.drawnReadConnections),
+    arcSpanMax: result.maxFlatArcSpanBp,
     arcScale: arcScaleOf(
       host,
-      result?.maxFlatArcSpanBp ?? 0,
-      (result?.inkGroupKeys.size ?? 0) > 0,
+      result.maxFlatArcSpanBp,
+      result.inkGroupKeys.size > 0,
     ),
   }
 }

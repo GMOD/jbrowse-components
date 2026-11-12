@@ -62,7 +62,6 @@ import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
-import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
 import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
@@ -166,6 +165,7 @@ import {
   getTrackSizingItems,
 } from './menus/index.ts'
 import {
+  arcViews,
   connectorSettingViews,
   connectorViews,
   facetLayoutViews,
@@ -192,7 +192,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
-import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
@@ -650,6 +649,62 @@ export default function stateModelFactory(
         }
       })
       .views(self => groupLayoutViews(self))
+      .views(self => ({
+        /**
+         * #getter
+         * The fetched regions as `{refName,start,end,displayedRegionIndex}`,
+         * the shape every per-read region scan takes (`computeArcsByGroup`).
+         * Regions whose fetch has not landed are dropped.
+         */
+        get loadedRegionInfos() {
+          return [...self.loadedRegions.entries()]
+            .filter(([idx]) => self.rpcDataMap.has(idx))
+            .map(([displayedRegionIndex, r]) => ({
+              refName: r.refName,
+              start: r.start,
+              end: r.end,
+              displayedRegionIndex,
+            }))
+        },
+
+        /**
+         * #getter
+         * The VIEW's displayed regions in the same shape: not "where did
+         * reads come from" but "where can a coordinate be drawn". The arc
+         * partition (`CrossRegionArc`) keys on this list, since `view.bpToPx`
+         * projects through `displayedRegions` (see `ArcRegions`).
+         * `displayedRegions` changes on navigation, not on pan, so
+         * `arcsByGroup` keeps its fetch invalidation tier.
+         */
+        get displayedRegionInfos() {
+          const view = self.host
+          return view.initialized
+            ? view.displayedRegions.map((r, displayedRegionIndex) => ({
+                refName: r.refName,
+                start: r.start,
+                end: r.end,
+                displayedRegionIndex,
+              }))
+            : []
+        },
+
+        /**
+         * #getter
+         * Normalizer for a refName in the BAM's spelling (an SA tag's or
+         * RNEXT's `chr1`) rather than the assembly-canonical one a fetched
+         * read has (`1`). Undefined when no assembly is resolved, where
+         * consumers fall back to identity. Without it a same-chromosome split
+         * junction reads as inter-chromosomal.
+         */
+        get canonicalRefName() {
+          const assembly = self.loadedAssembly
+          return assembly
+            ? (refName: AdapterRefName) =>
+                canonicalAdapterRefName(assembly, refName)
+            : undefined
+        },
+      }))
+      .views(self => arcViews(self))
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
@@ -731,7 +786,7 @@ export default function stateModelFactory(
               // Both halves arcs resolve into, `byGroup` and
               // `crossRegionByGroup`; see `ArcsByGroupResult`.
               for (const slot of arcSlotsInWindows(
-                this.arcsResult,
+                self.arcsResult,
                 self.keyWindows,
               )) {
                 present.add(arcSlotCategory(slot))
@@ -799,7 +854,7 @@ export default function stateModelFactory(
               readConnectionsHeight: self.readConnectionsHeight,
               showSashimi: self.showSashimi,
               sashimiHeight: self.sashimiHeight,
-              hasArcs: this.arcsResult.inkGroupKeys.size > 0,
+              hasArcs: self.arcsResult.inkGroupKeys.size > 0,
               hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
             }
           },
@@ -839,7 +894,7 @@ export default function stateModelFactory(
             return laneBandOverheads(
               this.belowCoverageBandsInput,
               self.groupOrder.map(g => g.key),
-              this.arcsResult.inkGroupKeys,
+              self.arcsResult.inkGroupKeys,
               this.sashimiDownArcLanes,
             )
           },
@@ -1034,115 +1089,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The fetched regions as `{refName,start,end,displayedRegionIndex}`,
-           * the shape every per-read region scan takes (`computeArcsByGroup`).
-           * Regions whose fetch has not landed are dropped.
-           */
-          get loadedRegionInfos() {
-            return [...self.loadedRegions.entries()]
-              .filter(([idx]) => self.rpcDataMap.has(idx))
-              .map(([displayedRegionIndex, r]) => ({
-                refName: r.refName,
-                start: r.start,
-                end: r.end,
-                displayedRegionIndex,
-              }))
-          },
-
-          /**
-           * #getter
-           * The VIEW's displayed regions in the same shape: not "where did
-           * reads come from" but "where can a coordinate be drawn". The arc
-           * partition (`CrossRegionArc`) keys on this list, since `view.bpToPx`
-           * projects through `displayedRegions` (see `ArcRegions`).
-           * `displayedRegions` changes on navigation, not on pan, so
-           * `arcsByGroup` keeps its fetch invalidation tier.
-           */
-          get displayedRegionInfos() {
-            const view = self.host
-            return view.initialized
-              ? view.displayedRegions.map((r, displayedRegionIndex) => ({
-                  refName: r.refName,
-                  start: r.start,
-                  end: r.end,
-                  displayedRegionIndex,
-                }))
-              : []
-          },
-
-          /**
-           * #getter
-           * Normalizer for a refName in the BAM's spelling (an SA tag's or
-           * RNEXT's `chr1`) rather than the assembly-canonical one a fetched
-           * read has (`1`). Undefined when no assembly is resolved, where
-           * consumers fall back to identity. Without it a same-chromosome split
-           * junction reads as inter-chromosomal.
-           */
-          get canonicalRefName() {
-            const assembly = self.loadedAssembly
-            return assembly
-              ? (refName: AdapterRefName) =>
-                  canonicalAdapterRefName(assembly, refName)
-              : undefined
-          },
-
-          /**
-           * #getter
-           * THE arc resolution: both halves from one pass, read through
-           * `arcsByGroup` (arcs inside one region) or `crossRegionArcsByGroup`
-           * (arcs joining two). `resolveArcsByGroup` owns the whole fan-out
-           * because the pooled arc scale (`poolArcScale`) describes the fetch,
-           * not a lane. Hidden lanes must stay out: the cross-group scans
-           * (`arcsYDomainBp`, `arcLegendCategories`) walk every entry.
-           */
-          get arcsResult(): ArcsByGroupResult {
-            if (
-              self.drawnReadConnections === 'off' ||
-              self.rpcDataMap.size === 0
-            ) {
-              return {
-                byGroup: new Map(),
-                crossRegionByGroup: new Map(),
-                inkGroupKeys: new Set(),
-                colorSlots: new Set(),
-                maxFlatArcSpanBp: 0,
-              }
-            }
-            return resolveArcsByGroup(
-              this.arcCollection,
-              {
-                loaded: this.loadedRegionInfos,
-                displayed: this.displayedRegionInfos,
-              },
-              {
-                cloud: self.drawnReadConnections === 'rule',
-                filter: self.connectionFilter,
-                showOrdinaryPairs: self.showOrdinaryPairs,
-                canonicalRefName: this.canonicalRefName,
-              },
-            )
-          },
-
-          /**
-           * #getter
-           * The collection half of `arcsResult` (`collectArcs`), which the
-           * connectors read for the inter-chromosomal floor with the band
-           * off, so both marks drop the same connections.
-           */
-          get arcCollection() {
-            return collectArcs(self.rawDataByGroup, this.loadedRegionInfos, {
-              filter: self.connectionFilter,
-              canonicalRefName: this.canonicalRefName,
-            })
-          },
-
-          /**
-           * #getter
            * Each group's arcs and ticks by loaded region, every arc filed
            * under the one region holding a foot.
            */
           get arcsByGroup() {
-            return this.arcsResult.byGroup
+            return self.arcsResult.byGroup
           },
 
           /**
@@ -1151,7 +1102,7 @@ export default function stateModelFactory(
            * Empty in a single-region view.
            */
           get crossRegionArcsByGroup() {
-            return this.arcsResult.crossRegionByGroup
+            return self.arcsResult.crossRegionByGroup
           },
         }
       })

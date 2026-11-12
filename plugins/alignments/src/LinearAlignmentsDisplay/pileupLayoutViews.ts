@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 
+import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
 import {
   connectorFilterOf,
   resolveConnectorsByGroup,
@@ -20,8 +21,10 @@ import type {
   ChainedPileupData,
   GroupedAlignmentsResult,
   RowCap,
+  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
+import type { CanonicalRefName, RegionInfo } from '../features/arcs/arcTypes.ts'
+import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type {
   ColorFieldKind,
@@ -31,7 +34,7 @@ import type {
   SortColumn,
 } from '../shared/types.ts'
 import type { ConfigSlotSelf } from './configSlotViews.ts'
-import type { AlignmentsUnit } from './constants.ts'
+import type { AlignmentsUnit, ReadConnectionsMode } from './constants.ts'
 import type { GroupLayoutContext, LaidOutByGroup } from './groupLayout.ts'
 
 /** What {@link facetLayoutViews} reads: the facet and unit settings. */
@@ -286,6 +289,69 @@ export function connectorSettingViews(self: ConnectorSettingHost) {
       // the gold split connector into a grey hairline, a recolor that read as
       // a bug
       return self.unit === 'chain' || self.showConnectors
+    },
+  }
+}
+
+/** What {@link arcViews} reads. */
+export interface ArcHost {
+  drawnReadConnections: ReadConnectionsMode
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
+  rawDataByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>
+  loadedRegionInfos: RegionInfo[]
+  displayedRegionInfos: RegionInfo[]
+  connectionFilter: ConnectionFilter
+  showOrdinaryPairs: boolean
+  canonicalRefName: CanonicalRefName | undefined
+}
+
+/** The read-connection arcs, collected once and resolved from that collection. */
+export function arcViews(self: ArcHost) {
+  return {
+    /**
+     * #getter
+     * THE arc resolution: both halves from one pass, read through
+     * `arcsByGroup` (arcs inside one region) or `crossRegionArcsByGroup`
+     * (arcs joining two). `resolveArcsByGroup` owns the whole fan-out
+     * because the pooled arc scale (`poolArcScale`) describes the fetch,
+     * not a lane. Hidden lanes must stay out: the cross-group scans
+     * (`arcsYDomainBp`, `arcLegendCategories`) walk every entry.
+     */
+    get arcsResult(): ArcsByGroupResult {
+      return self.drawnReadConnections === 'off' || self.rpcDataMap.size === 0
+        ? {
+            byGroup: new Map(),
+            crossRegionByGroup: new Map(),
+            inkGroupKeys: new Set(),
+            colorSlots: new Set(),
+            maxFlatArcSpanBp: 0,
+          }
+        : resolveArcsByGroup(
+            this.arcCollection,
+            {
+              loaded: self.loadedRegionInfos,
+              displayed: self.displayedRegionInfos,
+            },
+            {
+              cloud: self.drawnReadConnections === 'rule',
+              filter: self.connectionFilter,
+              showOrdinaryPairs: self.showOrdinaryPairs,
+              canonicalRefName: self.canonicalRefName,
+            },
+          )
+    },
+
+    /**
+     * #getter
+     * The collection half of `arcsResult` (`collectArcs`), which the
+     * connectors read for the inter-chromosomal floor with the band
+     * off, so both marks drop the same connections.
+     */
+    get arcCollection() {
+      return collectArcs(self.rawDataByGroup, self.loadedRegionInfos, {
+        filter: self.connectionFilter,
+        canonicalRefName: self.canonicalRefName,
+      })
     },
   }
 }
