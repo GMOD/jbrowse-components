@@ -12,7 +12,7 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 type ChordDisplay = DisplayModel & {
   highlightedFeatureIds: string[] | undefined
   visibleFeatureIds: string[] | undefined
-  drawnFeatures: Feature[] | undefined
+  drawnLanes: { features: readonly Feature[] }
   setFeatures: (features: Feature[] | undefined) => void
 }
 
@@ -77,7 +77,7 @@ test('a filter narrows what the chord display draws, on the same track', async (
   expect(track.configuration.adapter.features).toHaveLength(3)
   expect(display.visibleFeatureIds).toEqual(['a', 'b'])
   display.setFeatures(rows.map(r => new SimpleFeature(r.feature)))
-  expect(display.drawnFeatures!.map(f => f.id())).toEqual(['a', 'b'])
+  expect(display.drawnLanes.features.map(f => f.id())).toEqual(['a', 'b'])
 
   view.spreadsheetView.spreadsheet!.setSvEventFilter(undefined)
   expect(display.visibleFeatureIds).toBeUndefined()

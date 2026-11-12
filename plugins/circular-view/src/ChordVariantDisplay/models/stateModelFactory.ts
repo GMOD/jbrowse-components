@@ -142,15 +142,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     .views(self => ({
       /**
        * #getter
-       * the held records `visibleFeatureIds` leaves
-       */
-      get drawnFeatures(): Feature[] | undefined {
-        return self.features?.filter(f => self.isVisible(f))
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * the panel the linear variant displays open for the same record
        */
       get featureWidgetType() {
