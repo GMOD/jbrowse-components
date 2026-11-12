@@ -259,50 +259,59 @@ export default function stateModelFactory(
         }),
       )
       // #endregion
-      .volatile(() => ({
-        /**
-         * #volatile
-         * The `byteLimit` refused the last frames fetch, so the strip
-         * stops drawing; the menu reads this to say so.
-         *
-         * Never in `rpcProps()`: the fetch writes it, the loop trap
-         * FETCH_KEYS.md names.
-         */
-        framesGateBlocked: false,
-        /**
-         * #volatile
-         * The worker's authoritative row set, in tree (leaf) order.
-         * `arrangedRows` arranges and colors it by `rows`, and `drawnRows`
-         * narrows that by the focus.
-         */
-        reportedRows: [] as MafRow[],
-        /**
-         * #volatile
-         * The adapter's guide tree as newick, which `rowTree` draws while some
-         * rotation of it lists `rows.sort` in order.
-         */
-        treeNewickVolatile: undefined as string | undefined,
-        /**
-         * #volatile
-         * Whether the adapter lists its species, by a `samples` config or its
-         * guide tree, rather than discovering them from the blocks it reads.
-         */
-        speciesListed: false,
-        /**
-         * #volatile
-         * What the adapter's samples table disagreed with its species about.
-         */
-        sampleWarnings: [] as string[],
-        /**
-         * #volatile
-         * The reference sample row the worker resolved, held here because the
-         * region store that delivers it empties on chromosome navigation.
-         *
-         * Last write wins, not a latch: a re-pointed adapter or edited
-         * `refAssemblyName` keeps the display instance.
-         */
-        refSampleIdVolatile: undefined as string | undefined,
-      }))
+      .volatile(
+        (): {
+          framesGateBlocked: boolean
+          reportedRows: MafRow[]
+          treeNewickVolatile: string | undefined
+          speciesListed: boolean
+          sampleWarnings: string[]
+          refSampleIdVolatile: string | undefined
+        } => ({
+          /**
+           * #volatile
+           * The `byteLimit` refused the last frames fetch, so the strip
+           * stops drawing; the menu reads this to say so.
+           *
+           * Never in `rpcProps()`: the fetch writes it, the loop trap
+           * FETCH_KEYS.md names.
+           */
+          framesGateBlocked: false,
+          /**
+           * #volatile
+           * The worker's authoritative row set, in tree (leaf) order.
+           * `arrangedRows` arranges and colors it by `rows`, and `drawnRows`
+           * narrows that by the focus.
+           */
+          reportedRows: [],
+          /**
+           * #volatile
+           * The adapter's guide tree as newick, which `rowTree` draws while some
+           * rotation of it lists `rows.sort` in order.
+           */
+          treeNewickVolatile: undefined,
+          /**
+           * #volatile
+           * Whether the adapter lists its species, by a `samples` config or its
+           * guide tree, rather than discovering them from the blocks it reads.
+           */
+          speciesListed: false,
+          /**
+           * #volatile
+           * What the adapter's samples table disagreed with its species about.
+           */
+          sampleWarnings: [],
+          /**
+           * #volatile
+           * The reference sample row the worker resolved, held here because the
+           * region store that delivers it empties on chromosome navigation.
+           *
+           * Last write wins, not a latch: a re-pointed adapter or edited
+           * `refAssemblyName` keeps the display instance.
+           */
+          refSampleIdVolatile: undefined,
+        }),
+      )
       .views(self => ({
         /**
          * #getter
