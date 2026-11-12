@@ -378,10 +378,10 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       return {
         /**
          * #action
-         * the `onChordClick` callback when the config sets one, else the
-         * record's details
+         * what a click on the canvas reaches: the `onChordClick` callback
+         * when the config sets one, else the record's details
          */
-        onChordClick(feature: Feature) {
+        clickFeature(feature: Feature) {
           if (isJexl(self.configuration.onChordClick)) {
             getConf(self, 'onChordClick', { feature, track: self })
           } else {
@@ -391,13 +391,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       * what a click on the canvas reaches
-       */
-      clickFeature(feature: Feature) {
-        self.onChordClick(feature)
-      },
       /**
        * #action
        */

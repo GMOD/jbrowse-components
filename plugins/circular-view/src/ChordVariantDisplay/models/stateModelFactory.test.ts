@@ -185,7 +185,7 @@ test('the key leaves out a value whose chords are all specks, until a zoom opens
 
 test('clicking a chord selects the record and opens its details', async () => {
   const { session, display } = await setup()
-  display.onChordClick(display.features![0]!)
+  display.clickFeature(display.features![0]!)
   expect(session.selection).toBe(display.features![0])
   expect(session.widgets.get('variantFeature')?.type).toBe(
     'VariantFeatureWidget',
@@ -195,7 +195,7 @@ test('clicking a chord selects the record and opens its details', async () => {
 // the circle cannot navigate to a locus, so the details panel's link opens one
 test("the details panel's zoom link opens the locus in a linear view", async () => {
   const { session, view, display } = await setup()
-  display.onChordClick(display.features![0]!)
+  display.clickFeature(display.features![0]!)
   navToLoc('ctgA:101-200', session.widgets.get('variantFeature'))
   const linear = session.views.find(v => v.id === `${view.id}-linear`)
   expect(linear?.type).toBe('LinearGenomeView')
@@ -211,7 +211,7 @@ test('an onChordClick callback runs in place of the details', async () => {
     },
   )
   setConf(display, 'onChordClick', 'jexl:recordChordClick(feature)')
-  display.onChordClick(display.features![0]!)
+  display.clickFeature(display.features![0]!)
   expect(clicked).toHaveLength(1)
   expect(session.widgets.has('variantFeature')).toBe(false)
 }, 20000)
