@@ -537,11 +537,11 @@ export default function stateModelFactory(
         /**
          * #getter
          * What the samples table disagreed with the track's samples about,
-         * and `rowNarrowingNotices`: a `rows.kept` naming no row, or naming
-         * species the config does not list.
+         * and `rowNotices`: a `rows.kept` naming no row, or naming species
+         * the config does not list.
          */
         get liveNotices(): string[] {
-          return [...self.sampleWarnings, ...self.rowNarrowingNotices]
+          return [...self.sampleWarnings, ...self.rowNotices]
         },
 
         /**

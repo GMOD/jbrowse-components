@@ -41,6 +41,7 @@ export interface RowNoticeHost<S extends Row> extends BaseRowsHost {
   drawsRowAnnotations: boolean
   rowAnnotationDeals: readonly RowAnnotationDeal[]
   rowColumnLabels: readonly string[]
+  height: number
 }
 
 /**
@@ -73,8 +74,7 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
     /**
      * #getter
      * A line for the corner notice when rows have arrived and none has
-     * the field `rowBanding` bands by, which then bands nothing. Each
-     * display spreads it into its `notices`.
+     * the field `rowBanding` bands by, which then bands nothing.
      */
     get rowBandingNotices(): string[] {
       const banding = self.rowBanding
@@ -104,8 +104,7 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
      * The corner notice's lines on the narrowing, once the rows are known:
      * a `rows.filter` field no row carries, what left no row where none
      * shows, and where the track lists its rows up front
-     * (`rowsListedUpFront`), the `rows.kept` names no row has. Each
-     * display spreads it into its `notices`.
+     * (`rowsListedUpFront`), the `rows.kept` names no row has.
      */
     get rowNarrowingNotices(): string[] {
       const rows = self.expandedRows
@@ -156,8 +155,7 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
      * The lines for the corner notice about `rows.annotations` on a track
      * `height` px tall (`rowAnnotationNotices`): an entry on a field no row
      * carries, one on mostly distinct numbers, and column labels taking
-     * more than half the track. Each display spreads it into its
-     * `notices`.
+     * more than half the track.
      */
     rowAnnotationNotices(height: number): string[] {
       return rowAnnotationNotices({
@@ -168,6 +166,19 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
         columnLabels: self.rowColumnLabels,
         height,
       })
+    },
+    /**
+     * #getter
+     * The corner notice's lines on the rows, which each display spreads
+     * into its `notices`: `rowBandingNotices`, `rowNarrowingNotices`, then
+     * `rowAnnotationNotices` at the track's `height`.
+     */
+    get rowNotices(): string[] {
+      return [
+        ...this.rowBandingNotices,
+        ...this.rowNarrowingNotices,
+        ...this.rowAnnotationNotices(self.height),
+      ]
     },
     /**
      * #getter

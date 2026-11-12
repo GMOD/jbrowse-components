@@ -504,8 +504,8 @@ adds `grid`, the row separators, on every row display but MAF.
 - **What draws nothing says so.** `rowAnnotationNotices(height)` names an
   entry on a field no row carries, one on mostly distinct numbers (each dealt
   a color, where a continuous scale is what it wants), and column labels over
-  half the track; the wiggle, variant and mark displays spread it beside
-  `rowNarrowingNotices`.
+  half the track; every display spreads it through `rowNotices`, beside
+  `rowBandingNotices` and `rowNarrowingNotices`.
 - **An annotation deals from its own palette.** `rowAnnotationDeals` hands
   `dealValueColors` the deck `annotationPaletteColorAt(position, …)`, where
   `position` is the entry's place in `rows.annotations` as

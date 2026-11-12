@@ -691,15 +691,12 @@ export function stateModelFactory(
 
         /**
          * #getter
-         * `rowBandingNotices`, `rowNarrowingNotices`,
-         * `rowAnnotationNotices`, and each `filter` field no loaded variant
-         * carries, pointing at `rows.filter` where it is a row attribute.
+         * `rowNotices`, and each `filter` field no loaded variant carries,
+         * pointing at `rows.filter` where it is a row attribute.
          */
         get liveNotices(): string[] {
           return [
-            ...self.rowBandingNotices,
-            ...self.rowNarrowingNotices,
-            ...self.rowAnnotationNotices(self.height),
+            ...self.rowNotices,
             ...(self.cellData?.unreadFilterFields ?? []).map(field =>
               self.unreadFilterFieldNotice(field, 'variant'),
             ),

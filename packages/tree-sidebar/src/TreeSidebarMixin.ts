@@ -54,11 +54,13 @@ export type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
  * `rows` object, its axis, colors and color channel, the resolved row
- * height, and the scroll a focus resets (`TrackHeightMixin`).
+ * height, and the track's height and the scroll a focus resets
+ * (`TrackHeightMixin`).
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
   effectiveRowHeight: number
+  height: number
   setScrollTop(top: number): void
 }
 
