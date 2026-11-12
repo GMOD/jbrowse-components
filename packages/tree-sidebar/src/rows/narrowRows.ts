@@ -4,7 +4,7 @@ import {
   unreadFields,
 } from '@jbrowse/core/util/fieldPredicate'
 
-import { rowFieldValue } from '../color/rowColorScale.ts'
+import { rowFieldValue } from './rowFields.ts'
 
 import type { RowAlias } from './arrangeRows.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'

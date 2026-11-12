@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { otherName } from '../rows/arrangeRows.ts'
+import { rowFieldValue } from '../rows/rowFields.ts'
 import { withPairs } from './rowColorChoice.ts'
 
 import type { RowAlias } from '../rows/arrangeRows.ts'
@@ -170,14 +171,6 @@ export function withRowColors<S extends RowSource>(
     }
   }
   return out ?? rows
-}
-
-/** `field`'s value on `row`, `''` where the row has none of its own. */
-export function rowFieldValue(row: object, field: string) {
-  const value: unknown = Object.hasOwn(row, field)
-    ? Reflect.get(row, field)
-    : undefined
-  return value === undefined || value === null ? '' : String(value)
 }
 
 /** The id of the row color key's scale, which `focusLegendEntry` answers. */

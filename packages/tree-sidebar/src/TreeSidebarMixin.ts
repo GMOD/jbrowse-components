@@ -42,7 +42,7 @@ import {
   unreadRowFields,
   keptRows,
 } from './rows/narrowRows.ts'
-import { IDENTITY_FIELDS, extraColumns } from './rows/sourcesGridUtils.ts'
+import { IDENTITY_FIELDS, extraColumns } from './rows/rowFields.ts'
 import {
   hierarchyViews,
   rowSidebarViews,

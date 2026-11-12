@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { extraColumns } from '../rows/sourcesGridUtils.ts'
+import { extraColumns } from '../rows/rowFields.ts'
 import BulkColorControls from './BulkColorControls.tsx'
 import SelectionMoveButtons from './SelectionMoveButtons.tsx'
 import { buildSourceColumns } from './buildSourceColumns.tsx'

@@ -5,7 +5,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { moveDown, moveUp } from '../rows/sourcesGridUtils.ts'
+import { moveDown, moveUp } from './moveRows.ts'
 
 import type { GridRowId } from '@mui/x-data-grid'
 

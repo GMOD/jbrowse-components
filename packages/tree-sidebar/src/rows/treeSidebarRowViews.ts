@@ -17,7 +17,6 @@ import {
   resolveRowColors,
   rowAnnotationScales,
   rowColorKeyEntries,
-  rowFieldValue,
   withPinnedColors,
   withRowColors,
 } from '../color/rowColorScale.ts'
@@ -28,6 +27,7 @@ import { buildTree, treeOfLeaves } from '../tree/newick.ts'
 import { arrangeRows, rowAliasOver } from './arrangeRows.ts'
 import { bandRows } from './bandRows.ts'
 import { narrowRows, narrows } from './narrowRows.ts'
+import { rowFieldValue } from './rowFields.ts'
 
 import type { ClusterProvenance } from '../clustering/clusterProvenance.ts'
 import type { RowColorSnapshot } from '../color/rowColorChoice.ts'

@@ -1,51 +1,16 @@
-import type { GridRowId } from '@mui/x-data-grid'
+/** `field`'s value on `row`, `''` where the row has none of its own. */
+export function rowFieldValue(row: object, field: string) {
+  const value: unknown = Object.hasOwn(row, field)
+    ? Reflect.get(row, field)
+    : undefined
+  return value === undefined || value === null ? '' : String(value)
+}
 
 // Row fields that identify a source rather than describe it. They drive their
 // own handling (join key, hidden columns) so the grid, the row color fields and bulk
 // import/export all exclude them from the auto-derived "extra" attribute list.
 // Each site spreads from this so a new plumbing field is added in one place.
 export const IDENTITY_FIELDS = ['name', 'source', 'baseUri'] as const
-
-// Move the selected rows up by `by` slots. Selected rows keep their relative
-// order; the first row clamps at the top.
-export function moveUp<T extends { name: string }>(
-  arr: readonly T[],
-  sel: GridRowId[],
-  by = 1,
-): T[] {
-  const result = [...arr]
-  const idxs = sel
-    .map(l => result.findIndex(v => v.name === l))
-    .filter(idx => idx >= 0)
-    .sort((a, b) => a - b)
-  let lastIdx = 0
-  for (const old of idxs) {
-    const idx = Math.max(lastIdx, old - by)
-    result.splice(idx, 0, result.splice(old, 1)[0]!)
-    lastIdx = lastIdx + 1
-  }
-  return result
-}
-
-// Mirror of moveUp, descending.
-export function moveDown<T extends { name: string }>(
-  arr: readonly T[],
-  sel: GridRowId[],
-  by = 1,
-): T[] {
-  const result = [...arr]
-  const idxs = sel
-    .map(l => result.findIndex(v => v.name === l))
-    .filter(idx => idx >= 0)
-    .sort((a, b) => b - a)
-  let lastIdx = result.length - 1
-  for (const old of idxs) {
-    const idx = Math.min(lastIdx, old + by)
-    result.splice(idx, 0, result.splice(old, 1)[0]!)
-    lastIdx = lastIdx - 1
-  }
-  return result
-}
 
 // Heterogeneous rows can contribute different keys, so union across all rows
 // rather than peeking at just the first.

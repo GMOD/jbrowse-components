@@ -1,5 +1,8 @@
-import { rowFieldValue } from '../color/rowColorScale.ts'
-import { IDENTITY_FIELDS, allFieldNames } from '../rows/sourcesGridUtils.ts'
+import {
+  IDENTITY_FIELDS,
+  allFieldNames,
+  rowFieldValue,
+} from '../rows/rowFields.ts'
 
 // Detect the primary delimiter from the first line (whichever of tab/comma
 // appears first). Defaults to comma when neither is found.

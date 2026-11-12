@@ -1,5 +1,5 @@
+import { rowFieldValue } from '../rows/rowFields.ts'
 import { rowColumnLabelsHeight } from '../sidebar/rowLabelsBoxWidth.ts'
-import { rowFieldValue } from './rowColorScale.ts'
 
 import type { RowSource } from '../types.ts'
 import type { RowAnnotationSetting } from './rowColorScale.ts'

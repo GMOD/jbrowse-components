@@ -13,12 +13,8 @@ import {
   withPair,
   withPairs,
 } from '../color/rowColorChoice.ts'
-import {
-  resolveRowColors,
-  rowFieldValue,
-  withPinnedColors,
-} from '../color/rowColorScale.ts'
-import { IDENTITY_FIELDS } from '../rows/sourcesGridUtils.ts'
+import { resolveRowColors, withPinnedColors } from '../color/rowColorScale.ts'
+import { IDENTITY_FIELDS, rowFieldValue } from '../rows/rowFields.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import PlotColorRow from './PlotColorRow.tsx'
