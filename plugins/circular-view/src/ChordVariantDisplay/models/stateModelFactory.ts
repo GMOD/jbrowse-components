@@ -451,7 +451,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the key of the values the drawn chords paint, while they paint a field
+       * the key of the values the drawn chords paint, while they paint a field:
+       * a chord whose ends are under a pixel apart draws nothing, so a zoom
+       * that opens it adds its value
        */
       get colorScales(): ColorScale[] {
         const field = self.paintedColorField
@@ -459,11 +461,16 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           return []
         }
         const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
+        const feet = self.chordFeet
+        const stage = self.figureStage
+        const { picked, features } = self.chordPicks
         const painted = new Map<string, number>()
-        for (const feature of self.chordLanes.features) {
-          const value = field.key(read(feature))
-          if (!painted.has(value)) {
-            painted.set(value, cssColorToABGR(field.color(value)))
+        for (const [k, i] of picked.entries()) {
+          if (chordEndsAt(feet, i, stage)) {
+            const value = field.key(read(features[k]!))
+            if (!painted.has(value)) {
+              painted.set(value, cssColorToABGR(field.color(value)))
+            }
           }
         }
         return derivedColorScale(

@@ -149,6 +149,40 @@ test('a constant color keys as one row, a field as the values it paints', async 
   ).toEqual(['Deletion', 'Other'])
 })
 
+test('the key leaves out a value whose chords are all specks, until a zoom opens one', async () => {
+  const { view, display } = await setup(undefined, [
+    {
+      uniqueId: 'sv2',
+      refName: 'ctgA',
+      start: 5000,
+      end: 5100,
+      svType: 'INV',
+      mate: { refName: 'ctgB', start: 6000, end: 6100 },
+    },
+    {
+      uniqueId: 'speck',
+      refName: 'ctgA',
+      start: 3000,
+      end: 3002,
+      svType: 'INS',
+    },
+  ])
+  setConf(display, ['encoding', 'color'], 'svType')
+  const labels = () => {
+    const [scale] = display.colorScales
+    return scale?.kind === 'categorical'
+      ? scale.entries.map(e => e.label)
+      : undefined
+  }
+  expect(display.chordLanes.count).toBe(3)
+  expect(display.shapes.map(s => s.feature.id())).toEqual(['sv1', 'sv2'])
+  expect(labels()).toEqual(['Deletion', 'Inversion'])
+
+  view.setBpPerPx(view.minBpPerPx)
+  expect(display.shapes).toHaveLength(3)
+  expect(labels()).toEqual(['Deletion', 'Insertion', 'Inversion'])
+}, 20000)
+
 test('clicking a chord selects the record and opens its details', async () => {
   const { session, display } = await setup()
   display.onChordClick(display.features![0]!)

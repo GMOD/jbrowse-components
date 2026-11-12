@@ -147,7 +147,7 @@ export interface ChordEnds {
  * an antialiased speck on the rim under the ideogram.
  */
 export function chordEndsAt(
-  lanes: ChordLanes,
+  lanes: Pick<ChordLanes, 'x' | 'x2' | 'xGaps' | 'x2Gaps'>,
   i: number,
   stage: ChordStage,
 ): ChordEnds | undefined {
