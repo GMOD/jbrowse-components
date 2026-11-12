@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { DEFAULT_PLINK_LD_HEADER, LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
 import { executeRenderLDData } from './executeRenderLDData.ts'
@@ -17,6 +18,14 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
 }))
 
 const SPAN = 1000
+
+// each region its own displayed region, end to end on the view's axis
+function axisBlocksOf(regions: Region[]) {
+  return triangleAxis(
+    regions.map((r, displayedRegionIndex) => ({ ...r, displayedRegionIndex })),
+    regions,
+  ).axisBlocks
+}
 
 function region(refName: string, reversed: boolean, offset = 0): Region {
   return {
@@ -84,6 +93,7 @@ async function run(
         sessionId: 'test',
         adapterConfig: { type: 'PlinkLDAdapter' },
         regions,
+        axisBlocks: axisBlocksOf(regions),
         originBp: 0,
         spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
         field: 'r2',
@@ -153,6 +163,24 @@ describe('a reversed region', () => {
     const out = await run(regions, allPairs(loci))
     expect(bps(out)).toEqual([...POSITIONS, 2900, 2400, 2250, 2100])
   })
+})
+
+// A circular view's ring lays every chromosome along one strip, so genomic
+// columns must place each region's SNPs at that region's place on the axis,
+// not at the first region's coordinates.
+test('genomic columns place each region at its own axis offset', async () => {
+  const loci = [at('a', 100), at('a', 900), at('b', 2100), at('b', 2900)]
+  const out = await run(
+    [region('a', false), region('b', false, 2000)],
+    allPairs(loci),
+    true,
+  )
+  expect(out.appliedLayout).toBe('genomic')
+  expect(bps(out)).toEqual([100, 900, 2100, 2900])
+  const axisBp = [...out.boundaries].map(b => b * Math.SQRT2)
+  expect(axisBp[1]).toBeCloseTo((99 + 899) / 2, 3)
+  expect(axisBp[2]).toBeCloseTo((899 + SPAN + 2099 - 2000) / 2, 3)
+  expect(axisBp[3]).toBeCloseTo((SPAN + 99 + SPAN + 899) / 2, 3)
 })
 
 // Collapsing the introns of a minus-strand gene lists the regions descending

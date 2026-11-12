@@ -180,4 +180,30 @@ describe('on a display', () => {
       labels(subMenuOf(display.trackMenuItems(), 'Advanced') ?? []),
     ).toContain('Edit plot...')
   })
+
+  // A circular view's ring lays the strip around the circle, where columns
+  // would spread over the whole circumference at no SNP's angle; the slot
+  // keeps the columns for the same track in a linear view.
+  test('in a ring the layout is genomic, the slot untouched, with no layout toggle', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: { variantLayout: 'columns' },
+    }).createDisplay()
+    const layoutItems = () =>
+      labels(subMenuOf(display.trackMenuItems(), 'Layout')!)
+    expect(display.variantLayout).toBe('columns')
+    expect(layoutItems()).toContain('Size cells by genomic distance')
+
+    display.setHostHeight(60)
+    expect(display.variantLayout).toBe('genomic')
+    expect(display.atGenomicPositions).toBe(true)
+    expect(display.rpcProps().layout).toBe('genomic')
+    expect(layoutItems()).toEqual(['Fit to track height'])
+    expect(readConfObject(display.configuration, 'variantLayout')).toBe(
+      'columns',
+    )
+
+    display.setHostHeight(undefined)
+    expect(display.variantLayout).toBe('columns')
+    expect(display.rpcProps().layout).toBe('columns')
+  })
 })

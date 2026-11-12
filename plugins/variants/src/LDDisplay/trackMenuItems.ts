@@ -20,6 +20,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   showLegend: boolean
   showNames: boolean
   heightMode: TriangleHeightMode
+  inRing: boolean
   variantLayout: 'genomic' | 'columns'
   setIndexSnp: (snp: LDSnp | undefined) => void
   colorByField: (metric: LDMetric) => void
@@ -74,17 +75,21 @@ function layoutMenuItem(self: LDMenuSelf): MenuItem {
     icon: ViewQuiltIcon,
     subMenu: [
       fitToHeightCheckboxItem(self),
-      toggleItem(
-        'Size cells by genomic distance',
-        self.variantLayout === 'genomic',
-        on => {
-          self.setVariantLayout(on ? 'genomic' : 'columns')
-        },
-        {
-          helpText:
-            'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
-        },
-      ),
+      ...(self.inRing
+        ? []
+        : [
+            toggleItem(
+              'Size cells by genomic distance',
+              self.variantLayout === 'genomic',
+              on => {
+                self.setVariantLayout(on ? 'genomic' : 'columns')
+              },
+              {
+                helpText:
+                  'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
+              },
+            ),
+          ]),
     ],
   }
 }

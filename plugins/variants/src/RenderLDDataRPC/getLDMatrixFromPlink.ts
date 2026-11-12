@@ -3,6 +3,7 @@ import { LD_NOT_COMPUTED, isLDRecordSource } from '@jbrowse/ld-core'
 
 import { bpInRegion } from '../PlinkLDAdapter/bpInRegion.ts'
 import { bandCellCount, bandPairIndex } from './ldBand.ts'
+import { regionIndexOf } from './ldLayout.ts'
 
 import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -49,10 +50,6 @@ function resolveMetric(
     return hasDprime ? 'dprime' : 'r2'
   }
   return hasR2 ? 'r2' : 'dprime'
-}
-
-function regionIndexOf(refName: string, bp: number, regions: Region[]) {
-  return regions.findIndex(r => r.refName === refName && bpInRegion(bp, r))
 }
 
 /**

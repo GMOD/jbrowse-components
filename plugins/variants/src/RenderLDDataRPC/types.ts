@@ -19,8 +19,7 @@ export interface LDDataResult {
   uniformW: number
   // echoed from RenderLDDataArgs.originBp; see its note
   originBp: number
-  // Where the cells were laid out: a multi-region view falls back to uniform
-  // columns.
+  // where the cells were laid out
   appliedLayout: LDLayout
   // the metric `ldValues` holds, and which columns the file has
   appliedField: LDMetric

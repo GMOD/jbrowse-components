@@ -8,17 +8,20 @@ import type {
   RegionTooLargeResult,
 } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+import type { TriangleAxisBlock } from '@jbrowse/display-kit/triangleTransform'
 
 export interface RenderLDDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
+  /** where each of `regions` sits on the view's axis (`triangleAxis`) */
+  axisBlocks: TriangleAxisBlock[]
   /** axis bp of the first block, echoed so a stale payload stays placed */
   originBp: number
   /** axis bp from `originBp` to the far edge of the last block */
   spanBp: number
   /** `encoding.color.field`, the statistic the cells are */
   field: LDMetric
-  /** `variantLayout`, which a multi-region view answers with columns */
+  /** `variantLayout` */
   layout: LDLayout
 }
 

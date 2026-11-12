@@ -54,7 +54,12 @@ import type React from 'react'
 /** The RPC's settings, derived from its args so a field cannot be misnamed. */
 export type LDRpcProps = Omit<
   RenderLDDataArgs,
-  'adapterConfig' | 'regions' | 'originBp' | 'spanBp' | 'byteLimit'
+  | 'adapterConfig'
+  | 'regions'
+  | 'axisBlocks'
+  | 'originBp'
+  | 'spanBp'
+  | 'byteLimit'
 >
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
@@ -156,9 +161,19 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
+       * Whether a circular view's ring hosts the display (`hostHeight`).
+       */
+      get inRing(): boolean {
+        return self.hostHeight !== undefined
+      },
+      /**
+       * #getter
+       * The `variantLayout` slot, but genomic on a ring: columns spread over
+       * the whole circumference would sit at no SNP's angle. The slot keeps
+       * its value for the same track in a linear view.
        */
       get variantLayout(): 'genomic' | 'columns' {
-        return getConf(self, 'variantLayout')
+        return this.inRing ? 'genomic' : getConf(self, 'variantLayout')
       },
       /**
        * #getter
@@ -184,8 +199,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Whether the loaded matrix is at genomic positions: a multi-region view
-       * falls back to uniform columns.
+       * Whether the loaded matrix is at genomic positions, read off the
+       * payload so a stale one keeps its own layout until the refetch lands.
        */
       get atGenomicPositions(): boolean {
         return (self.rpcData?.appliedLayout ?? this.variantLayout) === 'genomic'
@@ -495,16 +510,17 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
             if (!regions.length) {
               return undefined
             }
-            const { originBp, spanBp } = triangleAxis(
+            const { originBp, spanBp, axisBlocks } = triangleAxis(
               regions,
               self.host.displayedRegions,
             )
-            return { regions: [...regions], originBp, spanBp }
+            return { regions: [...regions], axisBlocks, originBp, spanBp }
           },
-          run: ({ regions, originBp, spanBp }, ctx) =>
+          run: ({ regions, axisBlocks, originBp, spanBp }, ctx) =>
             ctx.callRpc('RenderLDData', {
               ...rpcArgs(self),
               regions,
+              axisBlocks,
               originBp,
               spanBp,
             }),

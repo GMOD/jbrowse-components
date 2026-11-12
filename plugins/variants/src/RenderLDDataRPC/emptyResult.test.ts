@@ -1,4 +1,5 @@
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 
 import { executeRenderLDData } from './executeRenderLDData.ts'
 import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
@@ -11,6 +12,14 @@ jest.mock('./getLDMatrixFromPlink.ts', () => ({
   ...jest.requireActual('./getLDMatrixFromPlink.ts'),
   getLDMatrixFromPlink: jest.fn(),
 }))
+
+// each region its own displayed region, end to end on the view's axis
+function axisBlocksOf(regions: Region[]) {
+  return triangleAxis(
+    regions.map((r, displayedRegionIndex) => ({ ...r, displayedRegionIndex })),
+    regions,
+  ).axisBlocks
+}
 
 function region(offset = 0): Region {
   return {
@@ -44,6 +53,7 @@ function execute(
       sessionId: 'test',
       adapterConfig: { type: 'PlinkLDTabixAdapter' },
       regions,
+      axisBlocks: axisBlocksOf(regions),
       originBp: 0,
       spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
       field: 'r2',
@@ -67,12 +77,11 @@ test('an empty result keeps reporting the layout mode the display is in', async 
   expect((await run([region()], false)).appliedLayout).toBe('columns')
 })
 
-// The multi-region fallback still has to survive the empty path, or the jump
-// comes back inverted — a request for genomic mode that the worker declines
-// would claim genomic layout while the columns are index-laid-out.
-test('an empty result still declines genomic mode across multiple regions', async () => {
+// Several regions sit end to end on the view's axis, so genomic mode holds
+// across them, empty or not.
+test('an empty result keeps genomic mode across multiple regions', async () => {
   expect((await run([region(0), region(5000)], true)).appliedLayout).toBe(
-    'columns',
+    'genomic',
   )
 })
 
