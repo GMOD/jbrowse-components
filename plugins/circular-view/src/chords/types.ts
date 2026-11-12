@@ -1,6 +1,7 @@
 import type { ChordCell } from './chordMarks.ts'
 import type { ChordLayerDisplay, Shape } from './shapes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TooLargeSource } from '@jbrowse/display-kit/chromeOverlaySlots'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 // what `ChordDisplayFrame` reads: the lifecycle, and the two circle-sized
@@ -8,7 +9,7 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 // (rather than an Instance of one display's state model) so any display drawing
 // into the circle can satisfy it, and so the SVG-export path and the tests can
 // hand these components a plain object
-export interface ChordDisplayFrameModel {
+export interface ChordDisplayFrameModel extends TooLargeSource {
   id: string
   error: unknown
   displayError: unknown
@@ -25,6 +26,7 @@ export interface ChordDisplayFrameModel {
   svgReady: boolean
   configuration: AnyConfigurationModel
   radiusPx: number
+  regionTooLarge: boolean
   openErrorDialog: () => void
   reload: () => void
 }

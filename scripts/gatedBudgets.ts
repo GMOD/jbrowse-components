@@ -261,6 +261,8 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
   'plugins/variants/src/LDDisplay/model.ts': 'LDTrackDisplay',
   'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
+  'plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts':
+    'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb, measured over the whole fetch since the circle holds every region',
 }
 
 export function collectDisplayBudgets() {

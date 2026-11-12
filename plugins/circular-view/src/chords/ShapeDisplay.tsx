@@ -27,10 +27,13 @@ const ShapeDisplay = observer(function ShapeDisplay({
 })
 
 // a radial display has no box to draw an error in, so a track whose data
-// would not load fails the export instead
+// would not load, or was too large to, fails the export instead
 export async function renderShapesSvg(display: ShapeDisplayModel) {
   await awaitSvgReady(display)
-  throwOnExportErrors([display.displayError])
+  throwOnExportErrors([
+    display.displayError,
+    display.regionTooLarge ? display.regionTooLargeReason : undefined,
+  ])
   return display.ready ? (
     <ShapePaths display={display} testid={display.shapesTestId} only="all" />
   ) : null

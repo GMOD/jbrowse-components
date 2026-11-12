@@ -326,6 +326,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   type: 'ChordVariantDisplay',
                   displayId: `${trackId}-chord-display`,
                   onChordClick: 'jexl:defaultOnChordClick(feature, track)',
+                  // the sheet's rows are in memory, with no index to measure
+                  forceLoad: true,
                   encoding: {
                     color: { field: SV_TYPE_FIELD },
                     opacity: CHORD_ALPHA,

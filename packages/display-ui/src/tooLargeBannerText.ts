@@ -22,15 +22,21 @@
  * cannot fall is the one thing the banner must not do. `zoomCanReleaseGate`
  * answers it from two consecutive measurements rather than from a threshold; see
  * `ByteEstimate.zoomIneffective`.
+ *
+ * `release` is that advice, for a view where zooming is not what shrinks the
+ * fetch: the circle fetches every displayed region at any zoom.
  */
 export function tooLargeBannerText(
   regionTooLargeReason: string,
-  { zoomCanRelease = true }: { zoomCanRelease?: boolean } = {},
+  {
+    zoomCanRelease = true,
+    release = 'Zoom in to see features',
+  }: { zoomCanRelease?: boolean; release?: string } = {},
 ) {
   return [
     regionTooLargeReason,
     zoomCanRelease
-      ? 'Zoom in to see features, or force load this track for the rest of the session (may be slow)'
+      ? `${release}, or force load this track for the rest of the session (may be slow)`
       : 'Force load this track for the rest of the session (may be slow)',
   ]
     .filter(f => !!f)

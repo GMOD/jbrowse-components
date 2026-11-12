@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   getContainingView,
@@ -11,7 +12,9 @@ import {
 } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId, isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import RegionTooLargeMixin from '@jbrowse/display-kit/RegionTooLargeMixin'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { openGateCommit } from '@jbrowse/display-kit/gateCommit'
 import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -47,6 +50,8 @@ export interface ChordFetchArgs {
   adapterConfig: Record<string, unknown>
   /** the displayed regions on the track's assemblies, canonical */
   regions: Region[]
+  /** what the whole fetch may download, undefined where the gate may not act */
+  byteLimit: number | undefined
 }
 
 // The host's config, narrowed to the slot this base reads: `getConf` checks a
@@ -60,16 +65,23 @@ const confNode = (self: object) => self as ChordConfigHost
 
 /**
  * #stateModel BaseChordDisplay
+ * #category display
  *
  * What the circular view's chord and ribbon displays share: the features, the
- * slice index a feature end is looked up in, and the lifecycle getters
- * `ChordDisplayFrame` publishes. A track
+ * slice index a feature end is looked up in, the lifecycle getters
+ * `ChordDisplayFrame` publishes, and the linear displays' region-too-large
+ * gate, which a display opts into with `gateEnabled`. A track
  * draws on the arcs of the assemblies it names, so a one-genome variant track
  * on a two-genome circle fetches and places only that genome's chords.
  */
 export function BaseChordDisplay() {
   return types
-    .compose('BaseChordDisplay', BaseDisplay, types.model({}))
+    .compose(
+      'BaseChordDisplay',
+      BaseDisplay,
+      RegionTooLargeMixin(),
+      types.model({}),
+    )
     .volatile(() => ({
       /**
        * #volatile
@@ -134,6 +146,14 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
+       * a chord fetch takes no settings, so the gate's measurement is about
+       * the regions alone
+       */
+      get settingsFetchInputs() {
+        return {}
+      },
+      /**
+       * #getter
        * the off-screen export gate, on the shared `computeSvgReady` policy. A
        * radial display has no box to draw an error in, so the export fails
        * rather than exporting a message
@@ -142,7 +162,7 @@ export function BaseChordDisplay() {
         return computeSvgReady(
           {
             error: this.displayError,
-            regionTooLarge: false,
+            regionTooLarge: self.regionTooLarge,
             extraTerminal: this.fetchInert,
             fetchCanceled: false,
           },
@@ -154,7 +174,7 @@ export function BaseChordDisplay() {
        */
       get displayPhase(): DisplayStatusPhase {
         return computeDisplayStatusPhase(
-          { regionTooLarge: false, error: this.displayError },
+          { regionTooLarge: self.regionTooLarge, error: this.displayError },
           () => (!this.fetchInert && !this.ready ? 'loading' : 'ready'),
         )
       },
@@ -389,7 +409,12 @@ export interface BaseChordDisplayModel extends Instance<
  * A chord display's one fetch: the features `fetchFeatures` brings back over
  * the track's regions. Keyed on the region set ignoring order and `reversed`,
  * because the slice index re-places features and a reorder only moves and flips
- * regions.
+ * regions, and on the byte limit, so a force load refetches.
+ *
+ * Where the gate may act, the index's estimate of the whole fetch comes first
+ * and a fetch over the limit downloads nothing. The whole request rather than
+ * the largest region, as a track save measures it: the circle holds every
+ * region's records at once.
  */
 export function installChordFetch(
   self: BaseChordDisplayModel,
@@ -416,16 +441,33 @@ export function installChordFetch(
             sessionId: getRpcSessionId(self),
             adapterConfig: structuredClone(self.adapterConfig),
             regions: structuredClone(regions),
+            byteLimit: self.resolvedByteLimit(),
           }
         : undefined
     },
-    fetchKey: ({ adapterConfig, regions }) => ({
+    fetchKey: ({ adapterConfig, regions, byteLimit }) => ({
       adapterConfig,
+      byteLimit,
       regions: regions
         .map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`)
         .sort(),
     }),
-    run: fetchFeatures,
+    run: async (args, ctx) => {
+      const gate = openGateCommit(self)
+      const { adapterConfig, regions, byteLimit } = args
+      const bytes =
+        byteLimit === undefined
+          ? undefined
+          : await ctx.callRpc('CoreGetRegionByteEstimate', {
+              adapterConfig,
+              regions,
+              scope: 'wholeRequest',
+            })
+      gate.commit({ perRegionBytes: [bytes], partial: false })
+      return overByteBudget(bytes, byteLimit)
+        ? undefined
+        : fetchFeatures(args, ctx)
+    },
     commit: features => {
       self.setFeatures(features)
     },

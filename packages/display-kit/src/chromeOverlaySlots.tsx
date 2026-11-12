@@ -14,6 +14,8 @@ export interface ErrorSource {
 export interface TooLargeSource {
   regionTooLargeReason: string
   zoomCanReleaseGate: boolean
+  /** the banner's advice in place of zooming in, where zooming shrinks no fetch */
+  tooLargeRelease?: string
   forceLoad: () => void
 }
 
@@ -66,6 +68,7 @@ export const TooLargeSlot = observer(function TooLargeSlot({
     <TooLarge
       message={tooLargeBannerText(model.regionTooLargeReason, {
         zoomCanRelease: model.zoomCanReleaseGate,
+        release: model.tooLargeRelease,
       })}
       onForceLoad={() => {
         if (isLiveModel(model)) {

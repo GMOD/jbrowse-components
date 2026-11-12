@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 
 import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
+import TooLargeBanner from './TooLargeBanner.tsx'
 
 import type { ChordDisplayFrameModel } from './types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -28,6 +29,7 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
   const { chordPass } = display.view
   const drawn =
     phase === 'error' ||
+    phase === 'tooLarge' ||
     (phase === 'ready' &&
       (!cell || chordPass.drew(cell) || chordPass.renderError !== undefined))
   return (
@@ -40,8 +42,8 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
       data-testid="circular-chord-display"
       data-display-id={display.configuration.displayId}
       // Drawn once the view's chord canvas has painted this display's current
-      // cell, or can paint nothing more: an error ring, or a backend that
-      // failed to start, is finished rather than pending, as
+      // cell, or can paint nothing more: an error ring, a too-large banner,
+      // or a backend that failed to start, is finished rather than pending, as
       // `foundationPaintInert` reads them for the canvas families.
       data-display-drawn={drawn}
       data-display-phase={phase}
@@ -57,6 +59,8 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
             display.reload()
           }}
         />
+      ) : phase === 'tooLarge' ? (
+        <TooLargeBanner model={display} line={lineAmong(display, 'tooLarge')} />
       ) : phase === 'loading' ? (
         <Loading model={display} line={lineAmong(display, 'loading')} />
       ) : (

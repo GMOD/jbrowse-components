@@ -48,3 +48,14 @@ test('force load is offered in every case', () => {
     }
   }
 })
+
+test('names what shrinks the fetch where zooming does not', () => {
+  // the circle fetches every displayed region at any zoom
+  expect(
+    tooLargeBannerText('Requested too much data', {
+      release: 'Show fewer chromosomes to see features',
+    }),
+  ).toBe(
+    'Requested too much data. Show fewer chromosomes to see features, or force load this track for the rest of the session (may be slow)',
+  )
+})

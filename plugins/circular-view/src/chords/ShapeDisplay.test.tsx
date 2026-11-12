@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render, within } from '@testing-library/react'
 
 import configSchemaF from '../ChordVariantDisplay/models/configSchema.ts'
 import ShapeDisplay from './ShapeDisplay.tsx'
@@ -50,8 +50,12 @@ function model(
     bezierRadius: 50,
     clickFeature: () => {},
     shapeLabel: () => 'a shape',
+    regionTooLarge: phase === 'tooLarge',
+    regionTooLargeReason: '',
+    zoomCanReleaseGate: true,
     openErrorDialog: () => {},
     reload: () => {},
+    forceLoad: () => {},
     ...overrides,
   }
 }
@@ -173,6 +177,37 @@ test('the error terminal is finished rather than pending', () => {
     drawn: 'true',
     phase: 'error',
   })
+})
+
+// the linear displays' banner and button, with the advice in place of zooming
+// in that the circle names
+test('a gated chord track is finished, says why, and force loads on a click', () => {
+  const forceLoad = jest.fn()
+  const display = model('tooLarge', {
+    regionTooLargeReason: 'Requested too much data (83.9 MB)',
+    tooLargeRelease: 'Show fewer chromosomes to see chords',
+    forceLoad,
+  })
+  expect(attrs(display)).toEqual({
+    testid: 'circular-chord-display',
+    id: 'sv-ChordVariantDisplay',
+    drawn: 'true',
+    phase: 'tooLarge',
+  })
+  const { getByText, getByRole } = within(
+    render(
+      <svg>
+        <ShapeDisplay display={display} />
+      </svg>,
+    ).container,
+  )
+  expect(
+    getByText(
+      'Requested too much data (83.9 MB). Show fewer chromosomes to see chords, or force load this track for the rest of the session (may be slow)',
+    ),
+  ).toBeTruthy()
+  fireEvent.click(getByRole('button', { name: 'Force load' }))
+  expect(forceLoad).toHaveBeenCalledTimes(1)
 })
 
 test('a second failing track adds a line under the first, not another disc', () => {

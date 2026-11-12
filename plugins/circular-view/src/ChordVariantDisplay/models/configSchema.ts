@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 
 import { chordMarkConfigSchema } from '../../chords/chordMarkConfigSchema.ts'
 import { chordEncodingConfigSchema } from './chordEncodingConfigSchema.ts'
@@ -93,6 +94,7 @@ function configSchemaF(_pluginManager: PluginManager) {
        * its line color, and `encoding.opacity`, its alpha.
        */
       encoding: chordEncodingConfigSchema,
+      ...regionTooLargeConfigSchemaFields,
     },
     {
       explicitIdentifier: 'displayId',

@@ -4,7 +4,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getContainingTrack, getEnv, getSession } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   abgrToCssRgba,
@@ -21,6 +21,7 @@ import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import {
@@ -146,6 +147,27 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        */
       get featureWidgetType() {
         return { type: 'VariantFeatureWidget', id: 'variantFeature' }
+      },
+      /**
+       * #getter
+       * the linear displays' region-too-large gate, over the whole fetch
+       */
+      get gateEnabled() {
+        return true
+      },
+      /**
+       * #getter
+       * the too-large banner's advice in place of zooming in, which on the
+       * circle shrinks no fetch since every displayed region is fetched at
+       * once; a file too large for chords, which are for structural variants,
+       * draws as a ring through Display types
+       */
+      get tooLargeRelease() {
+        const name = getTrackName(
+          getContainingTrack(self).configuration,
+          getSession(self),
+        )
+        return `Show fewer chromosomes to see chords, draw this track as a ring (Tracks → ${name} → Display types)`
       },
       /**
        * #getter

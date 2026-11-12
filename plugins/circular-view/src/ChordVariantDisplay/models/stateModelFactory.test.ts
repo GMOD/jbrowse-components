@@ -449,3 +449,119 @@ test("the view's Tracks menu carries the display's Color by and Edit plot", asyn
     subMenuOf(rows.find(i => labelOf(i) === 'Advanced')).map(labelOf),
   ).toEqual(['Edit plot...'])
 }, 20000)
+
+const IN_MEMORY_ADAPTER = {
+  type: 'FromConfigAdapter',
+  features: [
+    {
+      uniqueId: 'sv1',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      svType: 'DEL',
+      mate: { refName: 'ctgB', start: 1000, end: 1100 },
+    },
+  ],
+}
+
+function readsIndexedFile(args: object) {
+  return (
+    'adapterConfig' in args &&
+    typeof args.adapterConfig === 'object' &&
+    args.adapterConfig !== null &&
+    'type' in args.adapterConfig &&
+    args.adapterConfig.type === 'VcfTabixAdapter'
+  )
+}
+
+// An indexed VCF track whose index puts the whole fetch at `bytes`; the
+// estimate is answered here, and every read of the file goes to the in-memory
+// track's rows instead
+async function launchWithEstimate(bytes: number | undefined) {
+  const session = createTestSession()
+  addConf(session)
+  session.addSessionTrackConf({
+    trackId: 'svgz',
+    type: 'VariantTrack',
+    name: 'indexed svs',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'VcfTabixAdapter', uri: 'sv.vcf.gz' },
+  })
+  const { rpcManager } = session
+  const call = rpcManager.call.bind(rpcManager)
+  const asked: { method: string; args: unknown }[] = []
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation((sessionId, method, args) => {
+      asked.push({ method, args })
+      return method === 'CoreGetRegionByteEstimate'
+        ? Promise.resolve(bytes)
+        : call(
+            sessionId,
+            method,
+            readsIndexedFile(args)
+              ? { ...args, adapterConfig: IN_MEMORY_ADAPTER }
+              : args,
+          )
+    })
+  const view = (await session.launchView('CircularView', {
+    assembly: 'volvox',
+    tracks: ['svgz'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await session.assemblyManager.waitForAssembly('volvox')
+  await when(() => view.tracks.length > 0)
+  const display = chordDisplay(view)
+  await when(() => display.ready || display.regionTooLarge)
+  const methods = () => asked.map(a => a.method)
+  return { view, display, asked, methods }
+}
+
+// VcfTabixAdapter's fetchSizeLimit is 5 MB. Fails if the estimate is skipped,
+// taken after the features, or over the largest region alone.
+test('a file the index puts over the byte limit gates and fetches no features', async () => {
+  const { view, display, asked, methods } = await launchWithEstimate(6_000_000)
+  expect(display.displayPhase).toBe('tooLarge')
+  expect(display.features).toBeUndefined()
+  expect(methods()).not.toContain('CoreGetFeatures')
+  expect(
+    asked.find(a => a.method === 'CoreGetRegionByteEstimate')?.args,
+  ).toMatchObject({ scope: 'wholeRequest', regions: view.displayedRegions })
+  expect(display.regionTooLargeReason).toBe('Requested too much data (6.0 MB)')
+  expect(display.tooLargeRelease).toBe(
+    'Show fewer chromosomes to see chords, draw this track as a ring (Tracks → indexed svs → Display types)',
+  )
+  const [trackItem] = subMenuOf(view.tracksMenuItem())
+  const displayTypes = subMenuOf(trackItem).find(
+    i => labelOf(i) === 'Display types',
+  )
+  expect(subMenuOf(displayTypes).map(labelOf)).toContain('Variant display')
+
+  display.forceLoad()
+  await when(() => display.ready)
+  expect(display.displayPhase).toBe('ready')
+  expect(display.features).toHaveLength(1)
+}, 20000)
+
+test('a file under the byte limit fetches and draws', async () => {
+  const { display, methods } = await launchWithEstimate(4_000_000)
+  expect(display.displayPhase).toBe('ready')
+  expect(display.features).toHaveLength(1)
+  expect(methods()).toEqual(
+    expect.arrayContaining(['CoreGetRegionByteEstimate', 'CoreGetFeatures']),
+  )
+}, 20000)
+
+// the SV inspector's rows are in memory, so its chord display sets forceLoad
+test('a display set to force load is never measured', async () => {
+  const { session, display } = await setup()
+  setConf(display, 'forceLoad', true)
+  const call = jest.spyOn(session.rpcManager, 'call')
+  display.reload()
+  await when(() => display.features === undefined)
+  await when(() => display.ready)
+  expect(display.resolvedByteLimit()).toBeUndefined()
+  expect(call.mock.calls.map(([, method]) => method)).not.toContain(
+    'CoreGetRegionByteEstimate',
+  )
+}, 20000)
