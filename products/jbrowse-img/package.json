@@ -51,7 +51,7 @@
     "@jbrowse/react-app2": "workspace:^",
     "@napi-rs/canvas": "^1.1.0",
     "jsdom": "^31.0.0",
-    "mobx": "^7.1.5",
+    "mobx": "^7.1.6",
     "mobx-react": "^10.0.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
