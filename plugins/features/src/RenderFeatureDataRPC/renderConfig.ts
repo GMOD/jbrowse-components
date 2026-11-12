@@ -104,21 +104,13 @@ export type DisplayConfig = {
   }
 }
 
-// The config slots the worker reads. `geneGlyphMode` reaches it resolved
-// against the zoom through the display's `zoomFetchArgs`, and `facetField` is
-// the facet's rather than a slot.
-export type SettingsDisplayConfig = Omit<
-  DisplayConfig,
-  'geneGlyphMode' | 'facetField'
->
-
 /**
  * The half of the worker's settings that shapes a multi-part glyph. Only the
  * feature display declares these as slots; a display drawing single records
  * (the variant display) sends these values.
  */
 export type GeneGlyphSettings = Pick<
-  SettingsDisplayConfig,
+  DisplayConfig,
   | 'subfeatureLabels'
   | 'transcriptTypes'
   | 'canonicalTranscriptField'
