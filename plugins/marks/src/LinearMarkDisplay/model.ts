@@ -657,6 +657,7 @@ export function stateModelFactory(
           return [
             ...this.dataNotices,
             ...this.displayNotices,
+            ...(self.rowListing?.warnings ?? []),
             ...self.rowNarrowingNotices,
             ...self.rowAnnotationNotices(self.height),
             ...this.rowColorNotices,

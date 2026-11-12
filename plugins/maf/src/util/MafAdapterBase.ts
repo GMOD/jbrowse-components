@@ -67,7 +67,7 @@ export abstract class MafAdapterBase<
   }
 
   async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {
-    const { samples, treeNewick } = await this.getSamples(opts)
+    const { samples, treeNewick, warnings } = await this.getSamples(opts)
     return {
       field: 'alignments',
       sources: samples.map(({ name, label, color }) => ({
@@ -76,6 +76,7 @@ export abstract class MafAdapterBase<
         ...(color ? { color } : {}),
       })),
       ...(treeNewick === undefined ? {} : { tree: treeNewick }),
+      ...(warnings.length ? { warnings } : {}),
     }
   }
 

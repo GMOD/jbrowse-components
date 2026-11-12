@@ -2,13 +2,16 @@ import type { BaseOptions } from './types.ts'
 
 /**
  * #api
- * One row an adapter lists: `name` is a value of the listing's field, and
- * `label` and `color` are what the adapter names and colors that row with.
+ * One row an adapter lists: `name` is a value of the listing's field,
+ * `label` and `color` are what the adapter names and colors that row with,
+ * and `attributes` its other fields, such as a samples table's columns or a
+ * subtrack's `group`, which never include its name, label or color.
  */
 export interface ListedRowSource {
   name: string
   label?: string
   color?: string
+  attributes?: Record<string, string>
 }
 
 /**
@@ -23,6 +26,8 @@ export interface RowSourceListing {
   sources: ListedRowSource[]
   /** A guide tree over the names, as Newick, where the adapter ships one. */
   tree?: string
+  /** What the adapter's samples table disagreed with its rows about. */
+  warnings?: string[]
 }
 
 /**

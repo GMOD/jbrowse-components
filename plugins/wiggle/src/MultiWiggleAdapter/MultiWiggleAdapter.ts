@@ -468,15 +468,25 @@ export default class MultiWiggleAdapter
   }
 
   async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {
-    const sources: { name: string; [key: string]: unknown }[] =
-      await this.getSources([], opts)
+    const { sources, warnings } = await this.getSourcesAndWarnings(opts)
     return {
       field: 'source',
-      sources: sources.map(({ name, label, color }) => ({
-        name,
-        ...(isText(label) ? { label } : {}),
-        ...(isText(color) ? { color } : {}),
-      })),
+      sources: sources.map(
+        ({ name, label, color, source: _source, ...rest }) => {
+          const attributes = Object.fromEntries(
+            Object.entries(rest).filter((entry): entry is [string, string] =>
+              isText(entry[1]),
+            ),
+          )
+          return {
+            name,
+            ...(isText(label) ? { label } : {}),
+            ...(isText(color) ? { color } : {}),
+            ...(Object.keys(attributes).length ? { attributes } : {}),
+          }
+        },
+      ),
+      ...(warnings.length ? { warnings } : {}),
     }
   }
 }

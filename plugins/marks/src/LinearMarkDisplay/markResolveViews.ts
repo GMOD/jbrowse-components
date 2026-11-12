@@ -203,6 +203,7 @@ export function markDiscoveredRowViews(self: MarkRegionsHost) {
         const own = listed.get(name)
         const label = own?.label ?? field.label(name)
         return {
+          ...own?.attributes,
           name,
           ...(label === name ? {} : { label }),
           ...(own?.color ? { color: own.color } : {}),
@@ -214,7 +215,8 @@ export function markDiscoveredRowViews(self: MarkRegionsHost) {
     /**
      * #getter
      * `TreeSidebarMixin`'s hook: every row the adapter lists over the
-     * rows' field, in its order and with its label and color, so a
+     * rows' field, in its order and with its label, color and attributes,
+     * so a
      * source with nothing in the loaded regions keeps its row; then the
      * other values the worker split the loaded regions on that have an
      * instance on screen, in the order the field's sections stack. The

@@ -776,7 +776,7 @@ describe('MultiWiggleAdapter.listRowSources', () => {
     expect(await adapter.listRowSources()).toEqual({
       field: 'source',
       sources: [
-        { name: 'k1', color: '#f00' },
+        { name: 'k1', color: '#f00', attributes: { group: 'g' } },
         { name: 'k2', label: 'Knockdown 2' },
         { name: 'k3' },
       ],
@@ -1263,14 +1263,15 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     expect(warnings[0]).toContain('1 of the 3 samples in the subtrack list')
   })
 
-  it('lists the rows in the table order with its colors', async () => {
+  it('lists the rows in the table order with its colors, columns and warnings', async () => {
     const { adapter } = adapterWithTsv()
     expect(await adapter.listRowSources()).toEqual({
       field: 'source',
       sources: [
-        { name: 'c', color: '#f00' },
-        { name: 'a', color: '#00f' },
+        { name: 'c', color: '#f00', attributes: { tissue: 'liver' } },
+        { name: 'a', color: '#00f', attributes: { tissue: 'brain' } },
       ],
+      warnings: [expect.stringContaining('1 of the 3 samples')],
     })
   })
 

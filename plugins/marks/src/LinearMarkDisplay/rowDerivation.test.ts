@@ -357,6 +357,35 @@ test('a listing over the field a flatten keyed the rows by names them, in its or
   expect(display.rowTree).toBeUndefined()
 })
 
+// A samples table's columns and a subtrack's `group` reach the rows, where
+// rows.filter, rows.color and the annotations read them; no attribute can
+// rename a row.
+test("a listed row carries the listing's attributes, and the listing's warnings show", async () => {
+  const listing = {
+    field: 'source',
+    sources: [
+      { name: 'mom', attributes: { tissue: 'liver' } },
+      { name: 'dad', attributes: { tissue: 'liver', name: 'x' } },
+      { name: 's10', attributes: { tissue: 'brain' } },
+    ],
+    warnings: [
+      '1 of the 4 samples in the subtrack list are not in the metadata file',
+    ],
+  }
+  const display = await listingOf(
+    {
+      rows: {
+        field: 'source',
+        filter: [{ field: 'tissue', equal: 'liver' }],
+      },
+    },
+    listing,
+  )
+  expect(display.sources.map(row => row.name)).toEqual(['mom', 'dad'])
+  expect(display.rowColorFields).toContain('tissue')
+  expect(display.liveNotices).toContain(listing.warnings[0])
+})
+
 test('a listing over a field the rows are not on, directly or through a flatten, is ignored', async () => {
   const bySource = await listingOf({ rows: 'source' }, SPECIES_LISTING)
   expect(bySource.adapterSources).toBeUndefined()
