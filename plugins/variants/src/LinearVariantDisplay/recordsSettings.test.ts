@@ -219,6 +219,58 @@ describe('the record menus', () => {
     }
   })
 
+  describe('a ticked label the band is not drawing says why', () => {
+    const showItems = (display: LinearVariantDisplayModel) =>
+      subMenuLabels(display.trackMenuItems(), 'Show').filter(
+        label =>
+          label.startsWith('Show names') ||
+          label.startsWith('Show descriptions'),
+      )
+
+    test('over hidden rows the one label line carries the description', () => {
+      const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+        genotypes: { show: false },
+      })
+      expect(display.recordsOnly).toBe(false)
+      expect(display.drawsGenotypeRows).toBe(false)
+      expect(display.recordsRenderedLabels.showLabels).toBe(true)
+      expect(showItems(display)).toEqual(['Show names', 'Show descriptions'])
+    })
+
+    test('past the description density, hidden at this zoom', () => {
+      const dense: BandRecord[] = Array.from({ length: 300 }, (_, i) => [
+        `d${i}`,
+        100 + i * 10,
+        101 + i * 10,
+        'A -> G',
+        '',
+      ])
+      const { display } = recordsDisplayAt(dense, 10, {}, false, {
+        heightMode: 'fixed',
+      })
+      expect(showItems(display)).toEqual([
+        'Show names',
+        'Show descriptions — hidden at this zoom',
+      ])
+    })
+
+    test('where the fit ladder dropped them, hidden to fit', () => {
+      const pile: BandRecord[] = Array.from({ length: 40 }, (_, i) => [
+        `p${i}`,
+        100,
+        1500 + i,
+        '<DEL>',
+        'DEL',
+      ])
+      const { display } = recordsDisplayAt(pile, 1, {}, false)
+      expect(display.recordsFitStage.showDescriptions).toBe(false)
+      expect(showItems(display)).toEqual([
+        'Show names — hidden to fit',
+        'Show descriptions — hidden to fit',
+      ])
+    })
+  })
+
   test('records.facet hides from the sample Group by over rows', () => {
     const { display } = recordsDisplayAt(KIT, 51, { facet: 'INFO.CLNSIG' })
     expect(subMenuLabels(display.trackMenuItems(), 'Group by')).not.toContain(

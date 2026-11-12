@@ -402,10 +402,14 @@ a `recordsOnly` choice in the model belongs there.
 - **Menus follow the band.** With no rows: Feature height, Names and
   Descriptions in Show, Group by → Field... (`RecordsFacetFieldDialog`), built
   from plugin-features's menu builders (`featureHeightMenuItem`,
-  `labelCheckboxItems`). Over rows the band has no height menu, since its seam
-  handle sizes it and the fit ladder shrinks what does not fit: Row height is the
-  one height row, `records.displayMode` is config only, and Group by stays the
-  sample attributes.
+  `labelCheckboxItems`). A ticked label the band does not draw says why, as
+  on a feature track: the kinds `recordsLabelPlan.lettered` names past the
+  density gate, then the hosted band's `labelFitHints`. Over hidden rows the
+  one line carries the description, so it reads as drawn; when the ladder
+  drops that whole line, only Names says so. Over rows the band has no height
+  menu, since its seam handle sizes it and the fit ladder shrinks what does
+  not fit: Row height is the one height row, `records.displayMode` is config
+  only, and Group by stays the sample attributes.
 - **No rows gates on density, as a feature track does.** The display composes
   `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and overrides
   `densityGateActive` to act only while `recordsOnly` at genomic positions, so

@@ -139,7 +139,7 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
 // "Show" menu does: the way back from hidden sections, and the label parts.
 function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
   const facet = self.recordsFacet
-  const drawn = self.recordsRenderedLabels
+  const { lettered } = self.recordsLabelPlan
   return [
     ...hiddenGroupsItems({
       hiddenGroups: self.recordsHiddenGroups,
@@ -158,10 +158,10 @@ function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
     ...labelCheckboxItems({
       showNames: self.recordsLabels.name !== '',
       showDescriptions: self.recordsLabels.description !== '',
-      showLabels: drawn.showLabels,
-      effectiveShowDescriptions: drawn.showDescriptions,
+      showLabels: lettered.names,
+      effectiveShowDescriptions: lettered.descriptions,
       displayMode: self.recordsDisplayMode,
-      labelFitHints: {},
+      labelFitHints: self.recordsLabelFitHints,
       setShowNames: show => {
         self.setRecordsLabelShow('name', show)
       },

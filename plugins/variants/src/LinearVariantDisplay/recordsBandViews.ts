@@ -566,21 +566,29 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      * How the band letters its records: with no rows as a feature track
      * does, a name line and a description line off the label fields; over
      * rows one `recordLabel` line carrying both, built into each record.
+     * `lettered` is which kinds it letters before the fit ladder, on lines
+     * of their own or on the one line.
      */
     get recordsLabelPlan() {
       const shown = this.recordsVisibleLabels
       const read = labelsReadByWorker(shown, self.recordFieldReads)
+      const lettered = {
+        names: shown.name !== '',
+        descriptions: shown.description !== '',
+      }
       return self.recordsOnly
         ? {
             configLabels: read,
             recordLabels: NO_RECORD_LABELS,
-            showLabels: shown.name !== '',
-            showDescriptions: shown.description !== '',
+            lettered,
+            showLabels: lettered.names,
+            showDescriptions: lettered.descriptions,
           }
         : {
             configLabels: RECORD_LABEL_LINE,
             recordLabels: read,
-            showLabels: shown.name !== '' || shown.description !== '',
+            lettered,
+            showLabels: lettered.names || lettered.descriptions,
             showDescriptions: false,
           }
     },
@@ -815,6 +823,14 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get recordsRenderedLabels(): LabelPlacementContext {
       return band.renderedLabels
+    },
+    /**
+     * #getter
+     * The note on the records' Names and Descriptions checkboxes while the
+     * band's fit ladder is not honouring them.
+     */
+    get recordsLabelFitHints() {
+      return band.labelFitHints
     },
     /**
      * #getter
