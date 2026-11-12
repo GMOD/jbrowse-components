@@ -97,6 +97,8 @@ export type {
 } from './RenderFeatureDataRPC/renderConfig.ts'
 // A display drawing single records lays them out with the gene half at these.
 export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'
+export { geneGlyphRequestViews } from './LinearBasicDisplay/featureRequestViews.ts'
+export type { GeneGlyphRequestHost } from './LinearBasicDisplay/featureRequestViews.ts'
 export type {
   FeatureDataResult,
   FlatbushItem,
