@@ -2395,13 +2395,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * zoom where regions elide, one bar per region would fill the row solid
          * grey.
          *
-         * PaddingBlocks is the in-tree consumer. The SVG export does not use
-         * it: `SVGRegionSeparators` walks dynamicBlocks itself and draws only
-         * the seam, because `elided` and `boundary` mark state for an
-         * interactive row. In a static figure the striped grey would cover most
-         * of the row at whole-genome zoom. The export keeps the seam because
-         * regions lay out contiguously and the seam is all that separates two
-         * of them.
+         * PaddingBlocks draws all three. The SVG export's
+         * `SVGRegionSeparators` draws only the seams, because `elided` and
+         * `boundary` mark state for an interactive row. In a static figure the
+         * striped grey would cover most of the row at whole-genome zoom. The
+         * export keeps the seam because regions lay out contiguously and the
+         * seam is all that separates two of them.
          */
         // Annotated with the shape spelled out rather than as `PaddingSpan`,
         // because the API doc's type column is where a host drawing its own

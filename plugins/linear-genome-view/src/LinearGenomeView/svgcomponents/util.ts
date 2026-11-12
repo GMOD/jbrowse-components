@@ -10,7 +10,7 @@ import {
 import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { TrackLabelMode } from '../types.ts'
-import type { RegionsOrientation } from '../util.ts'
+import type { PaddingSpan, RegionsOrientation } from '../util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -33,6 +33,7 @@ export interface LgvSvgChromeView {
   staticBlocksTranslateX: number
   gridlineTicks: { major: boolean; x: number }[]
   scalebarLabels: { x: number; label: string; key: string }[]
+  paddingSpans: readonly PaddingSpan[]
   displayedRegionsOrientation: RegionsOrientation
 }
 
@@ -128,6 +129,21 @@ export function gridlineTickXs(model: {
     ;(tick.major ? major : minor).push(dx + tick.x)
   }
   return { dx, major, minor }
+}
+
+// The seams whose region ends inside the viewport, shifted into the view
+// frame, at the widths the screen draws: both read `paddingSpans`. That frame
+// overhangs the viewport and a track's clip leaves the left gutter open, so a
+// seam past either edge is dropped here.
+export function viewportSeams(model: {
+  width: number
+  staticBlocksTranslateX: number
+  paddingSpans: readonly PaddingSpan[]
+}) {
+  return model.paddingSpans
+    .filter(span => span.kind === 'seam')
+    .map(span => ({ ...span, x: span.x + model.staticBlocksTranslateX }))
+    .filter(span => span.x > -1 && span.x < model.width)
 }
 
 // `d` for a run of vertical tick lines, collapsed into one <path> rather than a

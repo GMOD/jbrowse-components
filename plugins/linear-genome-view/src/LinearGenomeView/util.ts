@@ -1041,7 +1041,7 @@ function isNarrowRegion(block: BaseBlock | undefined) {
 
 // A full bar covers most of a region a few pixels wide, so a narrow region on
 // either side of the seam takes a hairline.
-export function seamWidthPx(block: BaseBlock, next: BaseBlock | undefined) {
+function seamWidthPx(block: BaseBlock, next: BaseBlock | undefined) {
   return isNarrowRegion(block) || isNarrowRegion(next)
     ? NARROW_REGION_SEAM_PX
     : SEAM_PX
