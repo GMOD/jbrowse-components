@@ -4,9 +4,10 @@ import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { ClusterRunArgs } from './types.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-/** The visible blocks on the track's genomes, which a dialog run clusters. */
+/** The visible blocks on the track's genomes, which a run clusters by default. */
 export function clusterRunRegions(model: IStateTreeNode) {
   const onTrack = onTrackAssembly(model)
   return containingLgv(model).dynamicBlocks.contentBlocks.filter(b =>
@@ -15,24 +16,37 @@ export function clusterRunRegions(model: IStateTreeNode) {
 }
 
 /**
- * The dialog's half of `ClusterRunArgs`: the RPC host, the session id and the
- * visible blocks on the track's genomes, joined to the handles the tab in play created. Thrown rather
- * than declined on an uninitialized view, so the tab reports it beside the
- * button the way it reports an RPC failure.
+ * `ClusterRunArgs` for a run over `regions`: the display's RPC host and session
+ * id joined to the handles the caller created. Both entry points build it here,
+ * so neither can reach for a different session id and land its RPC on another
+ * worker's adapter cache.
+ */
+export function clusterRunArgs(
+  model: IStateTreeNode,
+  regions: Region[],
+  handles: Pick<ClusterRunArgs, 'signal' | 'statusCallback'>,
+): ClusterRunArgs {
+  return {
+    rpcManager: getRpcHost(model).rpcManager,
+    sessionId: getRpcSessionId(model),
+    regions,
+    ...handles,
+  }
+}
+
+/**
+ * The dialog's `ClusterRunArgs`, over the visible blocks. Thrown rather than
+ * declined on an uninitialized view, so the tab reports it beside the button
+ * the way it reports an RPC failure.
  */
 export function resolveClusterRunArgs(
   model: IStateTreeNode,
   handles: Pick<ClusterRunArgs, 'signal' | 'statusCallback'>,
-): ClusterRunArgs {
+) {
   if (!containingLgv(model).initialized) {
     throw new Error(
       'The view is not initialized yet, please wait and try again',
     )
   }
-  return {
-    rpcManager: getRpcHost(model).rpcManager,
-    sessionId: getRpcSessionId(model),
-    regions: clusterRunRegions(model),
-    ...handles,
-  }
+  return clusterRunArgs(model, clusterRunRegions(model), handles)
 }

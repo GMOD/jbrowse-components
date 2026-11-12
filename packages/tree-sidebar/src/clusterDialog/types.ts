@@ -4,16 +4,10 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DialogProps } from '@mui/material'
 
 /**
- * Everything a clustering run needs to make its RPC call, resolved by the
- * dialog and handed down — the same object `setupRunClusteringAutorun` hands
- * its `run`, so a display writes its run ONCE and both entry points call it.
- *
- * `regions` is the visible blocks here (the autorun's is the `clusterRegion`
- * locus when a session named one). `rpcManager` / `sessionId` are resolved here
- * for the reason the autorun resolves them: every dialog opened with the
- * identical `getRpcHost(self).rpcManager` + `getRpcSessionId(self)` pair, and
- * resolving them once means a flavor cannot reach for a different session id
- * and land its RPC on another worker's adapter cache.
+ * Everything a clustering run needs to make its RPC call, built by
+ * `clusterRunArgs` for the dialog and for `setupRunClusteringAutorun` alike,
+ * so a display writes its run once and both entry points call it. `regions`
+ * is the visible blocks, or the `clusterRegion` locus a session named.
  */
 export interface ClusterRunArgs {
   rpcManager: RpcCaller

@@ -1,24 +1,22 @@
 import {
   getNotificationSink,
-  getRpcHost,
   getSession,
   locStringsToRegions,
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
-import type {
-  Region,
-  RpcCaller,
-  RpcStatus,
-  StatusStream,
-} from '@jbrowse/core/util'
+import {
+  clusterRunArgs,
+  clusterRunRegions,
+} from './clusterDialog/clusterRunArgs.ts'
+
+import type { ClusterRunArgs } from './clusterDialog/types.ts'
+import type { Region, StatusStream } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Declarative counterpart to a "Cluster ..." -> "Run clustering" dialog,
 // following the same transient-launch-spec pattern as LinearGenomeView's
@@ -28,9 +26,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // session never re-triggers it. Shared by every row display: each supplies its
 // own `run` (the actual RPC) and may override `autoClusterReady`, while this
 // owns the re-entrancy guard, the view.initialized gate, the signal lifecycle,
-// and the status channel. `autoClusterReady` and `run`'s dependency reads
-// happen synchronously before the first await, so MobX tracks them and the
-// autorun re-fires when sources arrive or the view initializes.
+// and the status channel. Only the reads before the first await are tracked —
+// the trigger, `autoClusterReady`, `view.initialized` and what `clusterRegions`
+// reads before its own await — so the autorun re-fires when sources arrive or
+// the view initializes; `run` itself starts after the regions resolve, so
+// nothing it reads is tracked.
 //
 // `run` gets a `statusCallback` to hand the RPC. It writes the display's
 // `statusMessage`/`statusProgress`, which `DisplayChrome` shows as a corner
@@ -59,27 +59,7 @@ export function setupRunClusteringAutorun(
   },
   opts: {
     name: string
-    // Everything the flavor needs to make its RPC call, in one object.
-    //
-    // `regions` is what to cluster over: the display's `clusterRegion`
-    // resolved, or the visible blocks. Handed down rather than left for each
-    // flavor to read off the view, which is also why none of them takes the
-    // view any more -- resolving the regions was the only thing they used it
-    // for, and two of the three already ignored it.
-    //
-    // `rpcManager` / `sessionId` are here for the same reason one step later:
-    // all three flavors opened with the identical `getRpcHost(self).rpcManager`
-    // + `getRpcSessionId(self)` pair, which was the bulk of what each wrapper
-    // module contained. Resolving them once also means a flavor cannot reach
-    // for a *different* session id and silently land its RPC on another
-    // worker's adapter cache.
-    run: (args: {
-      rpcManager: RpcCaller
-      sessionId: string
-      regions: Region[]
-      signal: AbortSignal
-      statusCallback: (status: RpcStatus) => void
-    }) => Promise<void>
+    run: (args: ClusterRunArgs) => Promise<void>
   },
 ) {
   // Plain closure flag (not observable) guards re-entrant runs while the RPC is
@@ -116,14 +96,12 @@ export function setupRunClusteringAutorun(
         // every status by up to two.
         const stream = self.openStatusStream(() => applying && isAlive(self))
         try {
-          const regions = await clusterRegions(self, view)
-          await opts.run({
-            rpcManager: getRpcHost(self).rpcManager,
-            sessionId: getRpcSessionId(self),
-            regions,
-            signal: controller.signal,
-            statusCallback: stream.statusCallback,
-          })
+          await opts.run(
+            clusterRunArgs(self, await clusterRegions(self), {
+              signal: controller.signal,
+              statusCallback: stream.statusCallback,
+            }),
+          )
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
             console.error(e)
@@ -159,13 +137,13 @@ export function setupRunClusteringAutorun(
 // locstring into a region, and only the client has one.
 async function clusterRegions(
   self: IStateTreeNode & { clusterRegion?: string },
-  view: LinearGenomeViewModel,
 ): Promise<Region[]> {
   const { clusterRegion } = self
-  const onTrack = onTrackAssembly(self)
-  const assemblyName = view.assemblyNames.find(onTrack)
+  const assemblyName = containingLgv(self).assemblyNames.find(
+    onTrackAssembly(self),
+  )
   if (!clusterRegion || !assemblyName) {
-    return view.dynamicBlocks.contentBlocks.filter(b => onTrack(b.assemblyName))
+    return clusterRunRegions(self)
   }
   // waitForAssembly, not `get`: the autorun can fire on the first ready tick,
   // before the assembly manager has finished loading refNames, and a locstring
